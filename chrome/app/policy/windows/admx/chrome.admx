@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitions revision="1.0" schemaVersion="1.0">
   <policyNamespaces>
-    <target prefix="fullarmor" namespace="FullArmor.0ed4732f-0cd4-46eb-884e-fd5e736e5a97" />
+    <target prefix="fullarmor" namespace="FullArmor.9a299da5-c137-4961-be67-d0354b8b3037" />
     <using prefix="windows" namespace="Microsoft.Policies.Windows" />
   </policyNamespaces>
   <supersededAdm fileName="D:\src\chromium\src\chrome\app\policy\windows\adm\en-US\chrome.adm" />
@@ -96,6 +96,16 @@
       </disabledValue>
     </policy>
     <policy name="PasswordManagerEnabled" class="Machine" displayName="$(string.PasswordManagerEnabled)" explainText="$(string.PasswordManagerEnabled_Explain)" presentation="$(presentation.PasswordManagerEnabled)" key="Software\Policies\Google\Chrome" valueName="PasswordManagerEnabled">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AutoFillEnabled" class="Machine" displayName="$(string.AutoFillEnabled)" explainText="$(string.AutoFillEnabled_Explain)" presentation="$(presentation.AutoFillEnabled)" key="Software\Policies\Google\Chrome" valueName="AutoFillEnabled">
       <parentCategory ref="googlechrome" />
       <supportedOn ref="SUPPORTED_WINXPSP2" />
       <enabledValue>

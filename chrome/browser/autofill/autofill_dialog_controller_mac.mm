@@ -18,6 +18,8 @@
 #import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/app_resources.h"
@@ -84,6 +86,10 @@ void UpdateProfileLabels(std::vector<AutoFillProfile>* input) {
 // data loading is complete and ready to be used.
 - (void)onPersonalDataLoaded:(const std::vector<AutoFillProfile*>&)profiles
                  creditCards:(const std::vector<CreditCard*>&)creditCards;
+
+// Called upon changes to AutoFill preferences that should be reflected in the
+// UI.
+- (void)onPrefChanged:(const std::string&)prefName;
 
 // Returns true if |row| is an index to a valid profile in |tableView_|, and
 // false otherwise.
@@ -184,11 +190,37 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
                         creditCards:personal_data_manager_->credit_cards()];
 }
 
+// Bridges preference changed notifications to the dialog controller.
+class PrefObserver : public NotificationObserver {
+ public:
+  explicit PrefObserver(AutoFillDialogController* controller)
+      : controller_(controller) {}
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    if (type == NotificationType::PREF_CHANGED) {
+      const std::string* pref = Details<std::string>(details).ptr();
+      if (pref) {
+        [controller_ onPrefChanged:*pref];
+      }
+    }
+  }
+
+ private:
+  AutoFillDialogController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefObserver);
+};
+
 }  // namespace AutoFillDialogControllerInternal
 
 @implementation AutoFillDialogController
 
 @synthesize autoFillEnabled = autoFillEnabled_;
+@synthesize autoFillManaged = autoFillManaged_;
+@synthesize autoFillManagedAndDisabled = autoFillManagedAndDisabled_;
 @synthesize auxiliaryEnabled = auxiliaryEnabled_;
 @synthesize itemIsSelected = itemIsSelected_;
 @synthesize multipleSelected = multipleSelected_;
@@ -245,9 +277,10 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 
 // Called when the user clicks the save button.
 - (IBAction)save:(id)sender {
-  // If we have an |observer_| then communicate the changes back.
-  if (observer_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kAutoFillEnabled, autoFillEnabled_);
+  // If we have an |observer_| then communicate the changes back, unless
+  // AutoFill has been disabled through policy in the mean time.
+  if (observer_ && !autoFillManagedAndDisabled_) {
+    prefAutoFillEnabled_.SetValueIfNotManaged(autoFillEnabled_);
     profile_->GetPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled,
                                      auxiliaryEnabled_);
     observer_->OnAutoFillDialogApply(&profiles_, &creditCards_);
@@ -631,7 +664,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 
 
 // This is the designated initializer for this class.
-// |profiles| are non-retained immutable list of autofill profiles.
+// |profiles| are non-retained immutable list of AutoFill profiles.
 // |creditCards| are non-retained immutable list of credit card info.
 - (id)initWithObserver:(AutoFillDialogObserver*)observer
                profile:(Profile*)profile
@@ -650,9 +683,15 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     importedProfile_ = importedProfile;
     importedCreditCard_ = importedCreditCard;
 
-    // Use property here to trigger KVO binding.
-    [self setAutoFillEnabled:profile_->GetPrefs()->GetBoolean(
-        prefs::kAutoFillEnabled)];
+    // Initialize the preference observer and watch kAutoFillEnabled.
+    prefObserver_.reset(
+        new AutoFillDialogControllerInternal::PrefObserver(self));
+    prefAutoFillEnabled_.Init(prefs::kAutoFillEnabled, profile_->GetPrefs(),
+                              prefObserver_.get());
+
+    // Call onPrefChanged in order to initialize UI state of the checkbox and
+    // save button.
+    [self onPrefChanged:prefs::kAutoFillEnabled];
 
     // Use property here to trigger KVO binding.
     [self setAuxiliaryEnabled:profile_->GetPrefs()->GetBoolean(
@@ -748,6 +787,17 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   }
 
   UpdateProfileLabels(&profiles_);
+}
+
+- (void)onPrefChanged:(const std::string&)prefName {
+  if (prefName == prefs::kAutoFillEnabled) {
+    [self setAutoFillEnabled:prefAutoFillEnabled_.GetValue()];
+    [self setAutoFillManaged:prefAutoFillEnabled_.IsManaged()];
+    [self setAutoFillManagedAndDisabled:
+        prefAutoFillEnabled_.IsManaged() && !prefAutoFillEnabled_.GetValue()];
+  } else {
+    NOTREACHED();
+  }
 }
 
 - (BOOL)isProfileRow:(NSInteger)row {

@@ -55,6 +55,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       break;
     case OPTIONS_PAGE_CONTENT:
       AddUserPref(prefs::kSyncManaged);
+      AddUserPref(prefs::kAutoFillEnabled);
       AddUserPref(prefs::kPasswordManagerEnabled);
       break;
     case OPTIONS_PAGE_ADVANCED:

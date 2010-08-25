@@ -104,6 +104,7 @@ class ContentPageView : public OptionsPageView,
   views::Link* privacy_dashboard_link_;
 
   BooleanPrefMember ask_to_save_passwords_;
+  BooleanPrefMember form_autofill_enabled_;
   StringPrefMember is_using_default_theme_;
 
   // Cached pointer to ProfileSyncService, if it exists. Kept up to date

@@ -373,6 +373,18 @@ bool ConfigurationPolicyPrefStore::ApplySyncPolicy(PolicyType policy,
   return false;
 }
 
+bool ConfigurationPolicyPrefStore::ApplyAutoFillPolicy(PolicyType policy,
+                                                       Value* value) {
+  if (policy == ConfigurationPolicyStore::kPolicyAutoFillEnabled) {
+    bool auto_fill_enabled;
+    if (value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled)
+      prefs_->Set(prefs::kAutoFillEnabled, Value::CreateBooleanValue(false));
+    delete value;
+    return true;
+  }
+  return false;
+}
+
 bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(PolicyType policy,
     Value* value, const PolicyToPreferenceMapEntry map[], int size) {
   const PolicyToPreferenceMapEntry* end = map + size;
@@ -395,6 +407,9 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
     return;
 
   if (ApplySyncPolicy(policy, value))
+    return;
+
+  if (ApplyAutoFillPolicy(policy, value))
     return;
 
   if (ApplyPolicyFromMap(policy, value, simple_policy_map_,

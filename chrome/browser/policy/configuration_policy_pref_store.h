@@ -99,6 +99,10 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // Assumes ownership of |value| in that case.
   bool ApplySyncPolicy(PolicyType policy, Value* value);
 
+  // Handles policies that affect AutoFill. Returns true if the policy was
+  // handled and assumes ownership of |value| in that case.
+  bool ApplyAutoFillPolicy(PolicyType policy, Value* value);
+
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };
 

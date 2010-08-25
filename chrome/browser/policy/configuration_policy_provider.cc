@@ -44,6 +44,8 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
       Value::TYPE_BOOLEAN, policy::key::kMetricsReportingEnabled },
   { ConfigurationPolicyStore::kPolicyPasswordManagerEnabled,
       Value::TYPE_BOOLEAN, policy::key::kPasswordManagerEnabled },
+  { ConfigurationPolicyStore::kPolicyAutoFillEnabled,
+      Value::TYPE_BOOLEAN, policy::key::kAutoFillEnabled },
   { ConfigurationPolicyStore::kPolicyDisabledPlugins,
       Value::TYPE_STRING, policy::key::kDisabledPluginsList },
   { ConfigurationPolicyStore::kPolicyApplicationLocale,

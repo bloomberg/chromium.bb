@@ -105,6 +105,16 @@ CLASS MACHINE
            VALUEOFF NUMERIC 0
        END POLICY
 
+       POLICY !!AutoFillEnabled
+           #if version >= 4
+             SUPPORTED !!SUPPORTED_WINXPSP2
+           #endif
+           EXPLAIN !!AutoFillEnabled_Explain
+           VALUENAME "AutoFillEnabled"
+           VALUEON NUMERIC 1
+           VALUEOFF NUMERIC 0
+       END POLICY
+
        POLICY !!DisabledPlugins
            #if version >= 4
              SUPPORTED !!SUPPORTED_WINXPSP2
@@ -269,6 +279,10 @@ PasswordManagerEnabled_Explain="Enables saving passwords and using saved passwor
 If you enable this setting, users can have Google Chrome memorize passwords and provide them automatically the next time you log into a site.\n\n\
 If you disable this setting, users are not able to save passwords or use already saved passwords.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
+AutoFillEnabled="Enable AutoFill"
+AutoFillEnabled_Explain="Enables the AutoFill feature.\n\n\
+If you disable this setting, the AutoFill feature will not be available to users.\n\n\
+If you enable or do not configure this setting, users can turn on and configure AutoFill."
 DisabledPlugins="Specify a list of plugins that are disabled"
 DisabledPlugins_Explain="Specifies a list of plugins that are disabled in Google Chrome and prevents users from changing this setting. The value is a comma-separated list of the names of plugins to be disabled.\n\n\
 If you enable this setting, the specified list of plugins is never used in Google Chrome. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them."

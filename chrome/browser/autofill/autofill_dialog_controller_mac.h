@@ -15,9 +15,11 @@
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/pref_member.h"
 
 namespace AutoFillDialogControllerInternal {
 class PersonalDataManagerObserver;
+class PrefObserver;
 }  // AutoFillDialogControllerInternal
 
 @class AutoFillAddressSheetController;
@@ -26,7 +28,7 @@ class PersonalDataManagerObserver;
 class Profile;
 @class WindowSizeAutosaver;
 
-// A window controller for managing the autofill options dialog.
+// A window controller for managing the AutoFill options dialog.
 // Application modally presents a dialog allowing the user to store
 // personal address and credit card information.
 @interface AutoFillDialogController : NSWindowController <NSTableViewDelegate> {
@@ -62,8 +64,17 @@ class Profile;
   // Working list of input credit cards.
   std::vector<CreditCard> creditCards_;
 
+  // Tracks the AutoFill enabled preference.
+  BooleanPrefMember prefAutoFillEnabled_;
+
   // State of checkbox for enabling AutoFill in general.
   BOOL autoFillEnabled_;
+
+  // Whether AutoFill is controlled by configuration management.
+  BOOL autoFillManaged_;
+
+  // Whether AutoFill is managed and disabled.
+  BOOL autoFillManagedAndDisabled_;
 
   // State of checkbox for enabling Mac Address Book integration.
   BOOL auxiliaryEnabled_;
@@ -90,12 +101,24 @@ class Profile;
   // Manages PersonalDataManager loading.
   scoped_ptr<AutoFillDialogControllerInternal::PersonalDataManagerObserver>
       personalDataManagerObserver_;
+
+  // Watches for changes to the AutoFill enabled preference.
+  scoped_ptr<AutoFillDialogControllerInternal::PrefObserver> prefObserver_;
 }
 
 // Property representing state of the AutoFill enabled preference.  Checkbox is
 // bound to this in nib.  Also, enabled state of other controls are also bound
 // to this property.
 @property (nonatomic) BOOL autoFillEnabled;
+
+// Property indicating whether AutoFill is under control of configuration
+// management. The enabled state of the AutoFill enabled checkbox is bound to
+// this property.
+@property (nonatomic) BOOL autoFillManaged;
+
+// Property that is true iff AutoFill is managed and disabled. The save button's
+// enabled state is bound to this property.
+@property (nonatomic) BOOL autoFillManagedAndDisabled;
 
 // Property representing state of Address Book "me" card usage.  Checkbox is
 // bound to this in nib.

@@ -15,6 +15,8 @@
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/pref_member.h"
+#include "chrome/common/notification_observer.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/link.h"
 #include "views/controls/table/table_view_observer.h"
@@ -56,7 +58,8 @@ class AutoFillProfilesView : public views::View,
                              public views::LinkController,
                              public views::FocusChangeListener,
                              public views::TableViewObserver,
-                             public PersonalDataManager::Observer {
+                             public PersonalDataManager::Observer,
+                             public NotificationObserver {
  public:
   virtual ~AutoFillProfilesView();
 
@@ -81,7 +84,7 @@ class AutoFillProfilesView : public views::View,
   void DeleteClicked();
 
   // Updates state of the buttons.
-  void UpdateButtonState();
+  void UpdateWidgetState();
 
   // Updates inferred labels.
   void UpdateProfileLabels();
@@ -140,6 +143,11 @@ class AutoFillProfilesView : public views::View,
 
   // PersonalDataManager::Observer methods:
   virtual void OnPersonalDataLoaded();
+
+  // NotificationObserver methods:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Helper structure to keep info on one address or credit card.
   // Keeps info on one item in EditableSetViewContents.
@@ -452,6 +460,8 @@ class AutoFillProfilesView : public views::View,
   std::vector<EditableSetInfo> credit_card_set_;
 
   AddressComboBoxModel billing_model_;
+
+  BooleanPrefMember enable_auto_fill_;
 
   views::Checkbox* enable_auto_fill_button_;
   views::Button* add_address_button_;

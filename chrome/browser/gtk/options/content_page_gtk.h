@@ -69,6 +69,9 @@ class ContentPageGtk : public OptionsPageBase,
   GtkWidget* passwords_asktosave_radio_;
   GtkWidget* passwords_neversave_radio_;
 
+  // Widgets for the AutoFill group.
+  GtkWidget* autofill_button_;
+
   // Widgets for the Appearance group.
   GtkWidget* system_title_bar_show_radio_;
   GtkWidget* system_title_bar_hide_radio_;
@@ -91,6 +94,7 @@ class ContentPageGtk : public OptionsPageBase,
 
   // Pref members.
   BooleanPrefMember ask_to_save_passwords_;
+  BooleanPrefMember form_autofill_enabled_;
   BooleanPrefMember use_custom_chrome_frame_;
 
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid

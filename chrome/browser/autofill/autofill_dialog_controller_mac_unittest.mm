@@ -4,6 +4,7 @@
 
 #include "base/ref_counted.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -765,6 +767,69 @@ TEST_F(AutoFillDialogControllerTest, AutoFillEnabledChanged) {
   // Auxiliary profiles setting should be unchanged.
   ASSERT_TRUE(helper_.profile()->GetPrefs()->GetBoolean(
       prefs::kAutoFillEnabled));
+}
+
+TEST_F(AutoFillDialogControllerTest, PolicyRefresh) {
+  LoadDialog();
+  ASSERT_FALSE([controller_ autoFillManaged]);
+
+  // Disable AutoFill through configuration policy.
+  helper_.profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kAutoFillEnabled, Value::CreateBooleanValue(false));
+  ASSERT_TRUE([controller_ autoFillManaged]);
+  ASSERT_FALSE([controller_ autoFillEnabled]);
+
+  // Enabling through policy should switch to enabled but not editable.
+  helper_.profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kAutoFillEnabled, Value::CreateBooleanValue(true));
+  ASSERT_TRUE([controller_ autoFillManaged]);
+  ASSERT_TRUE([controller_ autoFillEnabled]);
+
+  [controller_ cancel:nil];
+}
+
+TEST_F(AutoFillDialogControllerTest, PolicyDisabledAndSave) {
+  // Disable AutoFill through configuration policy.
+  helper_.profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kAutoFillEnabled, Value::CreateBooleanValue(false));
+  helper_.profile()->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  LoadDialog();
+
+  // Save should be disabled.
+  ASSERT_TRUE([controller_ autoFillManagedAndDisabled]);
+
+  [controller_ setAuxiliaryEnabled:YES];
+  [controller_ save:nil];
+
+  // Observer should not have been called.
+  ASSERT_FALSE(observer_.hit_);
+
+  // Auxiliary profiles setting should be unchanged.
+  ASSERT_FALSE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+}
+
+TEST_F(AutoFillDialogControllerTest, PolicyEnabledAndSave) {
+  // Enable AutoFill through configuration policy.
+  helper_.profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kAutoFillEnabled, Value::CreateBooleanValue(true));
+  helper_.profile()->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  LoadDialog();
+
+  // Save should be enabled.
+  ASSERT_FALSE([controller_ autoFillManagedAndDisabled]);
+
+  [controller_ setAuxiliaryEnabled:YES];
+  [controller_ save:nil];
+
+  // Observer should have been notified.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Auxiliary profiles setting should have been saved.
+  ASSERT_TRUE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
 }
 
 }  // namespace

@@ -94,6 +94,7 @@ class ProfileSyncService;
 
   // User Data panel
   BooleanPrefMember askSavePasswords_;
+  BooleanPrefMember autoFillEnabled_;
   IBOutlet NSButton* autoFillSettingsButton_;
   IBOutlet NSButton* syncButton_;
   IBOutlet NSButton* syncCustomizeButton_;
@@ -103,6 +104,7 @@ class ProfileSyncService;
   scoped_nsobject<NSColor> syncStatusNoErrorBackgroundColor_;
   scoped_nsobject<NSColor> syncLinkNoErrorBackgroundColor_;
   scoped_nsobject<NSColor> syncErrorBackgroundColor_;
+  BOOL autoFillSettingsButtonEnabled_;
 
   // Under the hood panel
   IBOutlet NSView* underTheHoodContentView_;
@@ -174,8 +176,9 @@ class ProfileSyncService;
 
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property (nonatomic, readonly) CustomHomePagesModel* customPagesSource;
-@property (assign, nonatomic) BOOL proxiesConfigureButtonEnabled;
 @property (assign, nonatomic) BOOL showHomeButtonEnabled;
+@property (assign, nonatomic) BOOL autoFillSettingsButtonEnabled;
+@property (assign, nonatomic) BOOL proxiesConfigureButtonEnabled;
 
 @end
 
@@ -204,4 +207,3 @@ class ProfileSyncService;
 - (NSView*)getPrefsViewForPage:(OptionsPage)page;
 
 @end
-

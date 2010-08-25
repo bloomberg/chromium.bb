@@ -218,6 +218,8 @@ void ContentPageView::InitControlLayout() {
   // Init member prefs so we can update the controls if prefs change.
   ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,
                               profile()->GetPrefs(), this);
+  form_autofill_enabled_.Init(prefs::kAutoFillEnabled,
+                              profile()->GetPrefs(), this);
   is_using_default_theme_.Init(prefs::kCurrentThemeID,
                                profile()->GetPrefs(), this);
 
@@ -235,6 +237,12 @@ void ContentPageView::NotifyPrefChanged(const std::string* pref_name) {
     } else {
       passwords_neversave_radio_->SetChecked(true);
     }
+  }
+  if (!pref_name || *pref_name == prefs::kAutoFillEnabled) {
+    bool disabled_by_policy = form_autofill_enabled_.IsManaged() &&
+        !form_autofill_enabled_.GetValue();
+    change_autofill_settings_button_->SetEnabled(
+        !disabled_by_policy && profile()->GetPersonalDataManager());
   }
   if (!pref_name || *pref_name == prefs::kCurrentThemeID) {
     themes_reset_button_->SetEnabled(
@@ -311,9 +319,6 @@ void ContentPageView::InitPasswordSavingGroup() {
 void ContentPageView::InitFormAutofillGroup() {
   change_autofill_settings_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_AUTOFILL_OPTIONS));
-  if (!profile()->GetPersonalDataManager())
-    change_autofill_settings_button_->SetEnabled(false);
-
 
   using views::GridLayout;
   using views::ColumnSet;

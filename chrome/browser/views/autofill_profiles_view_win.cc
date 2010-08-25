@@ -24,6 +24,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/list_background.h"
 #include "chrome/browser/window_sizer.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
 #include "gfx/native_theme_win.h"
@@ -84,6 +85,7 @@ AutoFillProfilesView::AutoFillProfilesView(
       billing_model_(true),
       child_dialog_opened_(false) {
   DCHECK(preferences_);
+  enable_auto_fill_.Init(prefs::kAutoFillEnabled, preferences_, this);
   if (imported_profile) {
     profiles_set_.push_back(EditableSetInfo(imported_profile));
   }
@@ -152,7 +154,6 @@ void AutoFillProfilesView::AddClicked(int group_type) {
 }
 
 void AutoFillProfilesView::EditClicked() {
-  DCHECK(scroll_view_);
   int index = scroll_view_->FirstSelectedRow();
   if (index == -1)
     return;  // Happens if user double clicks and the table is empty.
@@ -173,8 +174,6 @@ void AutoFillProfilesView::EditClicked() {
 }
 
 void AutoFillProfilesView::DeleteClicked() {
-  DCHECK(scroll_view_);
-  DCHECK(table_model_.get());
   DCHECK_GT(scroll_view_->SelectedRowCount(), 0);
   int last_view_row = -1;
   for (views::TableView::iterator i = scroll_view_->SelectionBegin();
@@ -187,17 +186,13 @@ void AutoFillProfilesView::DeleteClicked() {
   if (last_view_row >= 0)
     scroll_view_->Select(scroll_view_->ViewToModel(last_view_row));
   UpdateBillingModel();
-  UpdateButtonState();
+  UpdateWidgetState();
 }
 
-void AutoFillProfilesView::UpdateButtonState() {
-  DCHECK(personal_data_manager_);
-  DCHECK(scroll_view_);
-  DCHECK(add_address_button_);
-  DCHECK(add_credit_card_button_);
-  DCHECK(edit_button_);
-  DCHECK(remove_button_);
-  bool autofill_enabled = preferences_->GetBoolean(prefs::kAutoFillEnabled);
+void AutoFillProfilesView::UpdateWidgetState() {
+  bool autofill_enabled = enable_auto_fill_.GetValue();
+  enable_auto_fill_button_->SetChecked(autofill_enabled);
+  enable_auto_fill_button_->SetEnabled(!enable_auto_fill_.IsManaged());
   scroll_view_->SetEnabled(autofill_enabled);
   add_address_button_->SetEnabled(personal_data_manager_->IsDataLoaded() &&
                                   !child_dialog_opened_ && autofill_enabled);
@@ -227,12 +222,12 @@ void AutoFillProfilesView::UpdateBillingModel() {
 
 void AutoFillProfilesView::ChildWindowOpened() {
   child_dialog_opened_ = true;
-  UpdateButtonState();
+  UpdateWidgetState();
 }
 
 void AutoFillProfilesView::ChildWindowClosed() {
   child_dialog_opened_ = false;
-  UpdateButtonState();
+  UpdateWidgetState();
 }
 
 SkBitmap* AutoFillProfilesView::GetWarningBitmap(bool good) {
@@ -318,7 +313,6 @@ std::wstring AutoFillProfilesView::GetWindowTitle() const {
 }
 
 void AutoFillProfilesView::WindowClosing() {
-  DCHECK(focus_manager_);
   focus_manager_->RemoveFocusChangeListener(this);
   instance_ = NULL;
 }
@@ -333,7 +327,6 @@ bool AutoFillProfilesView::Cancel() {
 }
 
 bool AutoFillProfilesView::Accept() {
-  DCHECK(observer_);
   std::vector<AutoFillProfile> profiles;
   profiles.reserve(profiles_set_.size());
   std::vector<EditableSetInfo>::iterator it;
@@ -345,7 +338,6 @@ bool AutoFillProfilesView::Accept() {
   for (it = credit_card_set_.begin(); it != credit_card_set_.end(); ++it) {
     credit_cards.push_back(it->credit_card);
   }
-  DCHECK(preferences_);
   observer_->OnAutoFillDialogApply(&profiles, &credit_cards);
   return true;
 }
@@ -367,9 +359,9 @@ void AutoFillProfilesView::ButtonPressed(views::Button* sender,
     UserMetricsAction action(enabled ? "Options_FormAutofill_Enable" :
                                        "Options_FormAutofill_Disable");
     UserMetrics::RecordAction(action, profile_);
-    preferences_->SetBoolean(prefs::kAutoFillEnabled, enabled);
+    enable_auto_fill_.SetValueIfNotManaged(enabled);
     preferences_->ScheduleSavePersistentPrefs();
-    UpdateButtonState();
+    UpdateWidgetState();
   }
 }
 
@@ -395,7 +387,7 @@ void AutoFillProfilesView::FocusWillChange(views::View* focused_before,
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, views::TableViewObserver implementations:
 void AutoFillProfilesView::OnSelectionChanged() {
-  UpdateButtonState();
+  UpdateWidgetState();
 }
 
 void AutoFillProfilesView::OnDoubleClick() {
@@ -412,6 +404,17 @@ void  AutoFillProfilesView::OnPersonalDataLoaded() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// AutoFillProfilesView, NotificationObserver implementation.
+void AutoFillProfilesView::Observe(NotificationType type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
+  const std::string* pref_name = Details<std::string>(details).ptr();
+  if (!pref_name || *pref_name == prefs::kAutoFillEnabled)
+    UpdateWidgetState();
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, private:
 void AutoFillProfilesView::Init() {
   GetData();
@@ -419,8 +422,6 @@ void AutoFillProfilesView::Init() {
   enable_auto_fill_button_ = new views::Checkbox(
       l10n_util::GetString(IDS_OPTIONS_AUTOFILL_ENABLE));
   enable_auto_fill_button_->set_listener(this);
-  enable_auto_fill_button_->SetChecked(
-      preferences_->GetBoolean(prefs::kAutoFillEnabled));
 
   billing_model_.SetAddressLabels(profiles_set_);
 
@@ -482,10 +483,9 @@ void AutoFillProfilesView::Init() {
 
 
   focus_manager_ = GetFocusManager();
-  DCHECK(focus_manager_);
   focus_manager_->AddFocusChangeListener(this);
 
-  UpdateButtonState();
+  UpdateWidgetState();
 }
 
 void AutoFillProfilesView::GetData() {
@@ -520,7 +520,7 @@ void AutoFillProfilesView::GetData() {
 
   // Update state only if buttons already created.
   if (add_address_button_) {
-    UpdateButtonState();
+    UpdateWidgetState();
   }
 }
 

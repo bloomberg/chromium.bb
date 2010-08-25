@@ -419,6 +419,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 @implementation PreferencesWindowController
 
 @synthesize showHomeButtonEnabled = showHomeButtonEnabled_;
+@synthesize autoFillSettingsButtonEnabled = autoFillSettingsButtonEnabled_;
 @synthesize proxiesConfigureButtonEnabled = proxiesConfigureButtonEnabled_;
 
 - (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage {
@@ -488,6 +489,9 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     PersonalDataManager* personalDataManager =
         profile_->GetPersonalDataManager();
     [autoFillSettingsButton_ setHidden:(personalDataManager == NULL)];
+    bool autofill_disabled_by_policy =
+        autoFillEnabled_.IsManaged() && !autoFillEnabled_.GetValue();
+    [self setAutoFillSettingsButtonEnabled:!autofill_disabled_by_policy];
 
     // Initialize the proxy pref set observer.
     proxyPrefs_.reset(
@@ -757,6 +761,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   // Personal Stuff panel
   askSavePasswords_.Init(prefs::kPasswordManagerEnabled,
                          prefs_, observer_.get());
+  autoFillEnabled_.Init(prefs::kAutoFillEnabled, prefs_, observer_.get());
   currentTheme_.Init(prefs::kCurrentThemeID, prefs_, observer_.get());
 
   // Under the hood panel
@@ -1211,6 +1216,11 @@ const int kDisabledIndex = 1;
   if (*prefName == prefs::kPasswordManagerEnabled) {
     [self setPasswordManagerEnabledIndex:askSavePasswords_.GetValue() ?
         kEnabledIndex : kDisabledIndex];
+  }
+  if (*prefName == prefs::kAutoFillEnabled) {
+    bool autofill_disabled_by_policy =
+        autoFillEnabled_.IsManaged() && !autoFillEnabled_.GetValue();
+    [self setAutoFillSettingsButtonEnabled:!autofill_disabled_by_policy];
   }
   if (*prefName == prefs::kCurrentThemeID) {
     [self setIsUsingDefaultTheme:currentTheme_.GetValue().length() == 0];

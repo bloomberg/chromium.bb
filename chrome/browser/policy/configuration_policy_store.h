@@ -30,6 +30,7 @@ class ConfigurationPolicyStore {
     kPolicySafeBrowsingEnabled,
     kPolicyMetricsReportingEnabled,
     kPolicyPasswordManagerEnabled,
+    kPolicyAutoFillEnabled,
     kPolicySyncDisabled,
     kPolicyApplicationLocale,
     kPolicyExtensionInstallAllowList,

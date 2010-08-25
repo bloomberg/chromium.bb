@@ -101,6 +101,8 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
   // Add preferences observers.
   ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,
                               profile->GetPrefs(), this);
+  form_autofill_enabled_.Init(prefs::kAutoFillEnabled,
+                              profile->GetPrefs(), this);
   if (browser_defaults::kCanToggleSystemTitleBar) {
     use_custom_chrome_frame_.Init(prefs::kUseCustomChromeFrame,
                                   profile->GetPrefs(), this);
@@ -160,6 +162,11 @@ void ContentPageGtk::NotifyPrefChanged(const std::string* pref_name) {
       gtk_toggle_button_set_active(
           GTK_TOGGLE_BUTTON(passwords_neversave_radio_), TRUE);
     }
+  }
+  if (!pref_name || *pref_name == prefs::kAutoFillEnabled) {
+    bool disabled_by_policy = form_autofill_enabled_.IsManaged() &&
+        !form_autofill_enabled_.GetValue();
+    gtk_widget_set_sensitive(autofill_button_, !disabled_by_policy);
   }
   if (browser_defaults::kCanToggleSystemTitleBar &&
       (!pref_name || *pref_name == prefs::kUseCustomChromeFrame)) {
@@ -247,12 +254,12 @@ GtkWidget* ContentPageGtk::InitFormAutoFillGroup() {
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
 
   // AutoFill button.
-  GtkWidget* autofill_button = gtk_button_new_with_label(
+  autofill_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_OPTIONS).c_str());
 
-  g_signal_connect(G_OBJECT(autofill_button), "clicked",
+  g_signal_connect(G_OBJECT(autofill_button_), "clicked",
                    G_CALLBACK(OnAutoFillButtonClickedThunk), this);
-  gtk_box_pack_start(GTK_BOX(button_hbox), autofill_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_hbox), autofill_button_, FALSE, FALSE, 0);
 
   return vbox;
 }

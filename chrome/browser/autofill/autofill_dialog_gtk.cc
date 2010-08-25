@@ -273,7 +273,7 @@ void AutoFillDialog::OnAutoFillCheckToggled(GtkWidget* widget) {
     UserMetrics::RecordAction(UserMetricsAction("Options_FormAutofill_Disable"),
                               profile_);
   }
-  enable_form_autofill_.SetValue(enabled);
+  enable_form_autofill_.SetValueIfNotManaged(enabled);
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
   UpdateWidgetState();
 }
@@ -546,6 +546,8 @@ void AutoFillDialog::InitializeWidgets() {
 }
 
 void AutoFillDialog::UpdateWidgetState() {
+  gtk_widget_set_sensitive(form_autofill_enable_check_,
+                           !enable_form_autofill_.IsManaged());
   if (!personal_data_->IsDataLoaded() || !enable_form_autofill_.GetValue()) {
     gtk_widget_set_sensitive(add_address_button_, FALSE);
     gtk_widget_set_sensitive(add_credit_card_button_, FALSE);
