@@ -20,6 +20,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -123,7 +124,10 @@ ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents)
     : DOMUI(tab_contents) {
   should_hide_url_ = true;
   bindings_ = BindingsPolicy::EXTENSION;
-
+  // Bind externalHost to Extension DOMUI loaded in Chrome Frame.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kChromeFrame))
+    bindings_ |= BindingsPolicy::EXTERNAL_HOST;
   // For chrome:// overrides, some of the defaults are a little different.
   GURL url = tab_contents->GetURL();
   if (url.SchemeIs(chrome::kChromeUIScheme) &&
