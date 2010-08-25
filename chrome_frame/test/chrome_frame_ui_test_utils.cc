@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/point.h"
 #include "gfx/rect.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +47,7 @@ AccObject::AccObject(IAccessible* accessible, int child_id)
 // static
 AccObject* AccObject::CreateFromWindow(HWND hwnd) {
   ScopedComPtr<IAccessible> accessible;
-  AccessibleObjectFromWindow(hwnd, OBJID_CLIENT,
+  ::AccessibleObjectFromWindow(hwnd, OBJID_CLIENT,
       IID_IAccessible, reinterpret_cast<void**>(accessible.Receive()));
   if (accessible)
     return new AccObject(accessible);
@@ -58,8 +59,8 @@ AccObject* AccObject::CreateFromEvent(HWND hwnd, LONG object_id,
                                       LONG child_id) {
   ScopedComPtr<IAccessible> accessible;
   ScopedVariant acc_child_id;
-  AccessibleObjectFromEvent(hwnd, object_id, child_id, accessible.Receive(),
-                            acc_child_id.Receive());
+  ::AccessibleObjectFromEvent(hwnd, object_id, child_id, accessible.Receive(),
+                              acc_child_id.Receive());
   if (accessible && acc_child_id.type() == VT_I4)
     return new AccObject(accessible, V_I4(&acc_child_id));
   return NULL;
@@ -81,13 +82,54 @@ AccObject* AccObject::CreateFromPoint(int x, int y) {
   ScopedComPtr<IAccessible> accessible;
   ScopedVariant child_id;
   POINT point = {x, y};
-  AccessibleObjectFromPoint(point, accessible.Receive(), child_id.Receive());
+  ::AccessibleObjectFromPoint(point, accessible.Receive(), child_id.Receive());
   if (accessible && child_id.type() == VT_I4)
     return new AccObject(accessible, V_I4(&child_id));
   return NULL;
 }
 
 bool AccObject::DoDefaultAction() {
+  HWND parent_window = NULL;
+  ::WindowFromAccessibleObject(accessible_, &parent_window);
+  if (!parent_window) {
+    DLOG(ERROR) << "Could not get the window containing the given "
+                << "accessibility object: " << GetDescription();
+    return false;
+  }
+  wchar_t class_name[MAX_PATH];
+  if (!::GetClassName(parent_window, class_name, arraysize(class_name))) {
+    DLOG(ERROR) << "Could not get class name from accessibily object's window";
+    return false;
+  }
+  if (wcscmp(class_name, L"#32768") == 0) {
+    // Hack: if the desktop is locked, menu items cannot be selected using
+    // accDoDefaultAction for some unknown reason. Get around this by
+    // sending mouse button messages at the menu item location. Do this
+    // even if the desktop is unlocked for consistency. We do not do this
+    // for all objects because DoDefaultAction is not always equivalent to
+    // a mouse click.
+    gfx::Rect menu_item_rect;
+    if (GetLocation(&menu_item_rect)) {
+      DLOG(WARNING) << "Attempting to click menu item via mouse messages. "
+                    << "May not work for all menus";
+      // WM_LBUTTON* messages supposedly expect relative coordinates to the
+      // client area, which for popup menus seems to be the entire desktop.
+      gfx::Point center = menu_item_rect.CenterPoint();
+      LPARAM coordinates = (center.y() << 16) | center.x();
+      ::PostMessage(parent_window, WM_LBUTTONDOWN, (WPARAM)0, coordinates);
+      ::PostMessage(parent_window, WM_LBUTTONUP, (WPARAM)0, coordinates);
+      return true;
+    }
+    // TODO(kkania): Try sending the access key for the menu item to the
+    // menu if the mouse button messages are found to be insufficient
+    // at times.
+    DLOG(ERROR) << "Could not get location of menu item via MSAA. "
+        << "Accessibility object: " << WideToUTF8(this->GetDescription())
+        << std::endl << "This is necessary to select a menu item since the "
+        << "desktop is locked.";
+    return false;
+  }
+
   HRESULT result = accessible_->accDoDefaultAction(child_id_);
   EXPECT_HRESULT_SUCCEEDED(result)
       << "Could not do default action for AccObject: " << GetDescription();
@@ -367,15 +409,18 @@ bool AccObjectMatcher::FindHelper(AccObject* object,
   // Determine if |object| is a match.
   bool does_match = true;
   std::wstring name, role_text, value;
-  if (name_.length())
-    does_match = object->GetName(&name) && MatchPatternWide(name, name_);
-  if (does_match && role_text_.length()) {
-    does_match = object->GetRoleText(&role_text) &&
-        MatchPatternWide(role_text, role_text_);
+  if (name_.length()) {
+    object->GetName(&name);
+    does_match = MatchPatternWide(name, name_);
   }
-  if (does_match && value_.length())
-    does_match = object->GetValue(&value) && MatchPatternWide(value, value_);
-
+  if (does_match && role_text_.length()) {
+    object->GetRoleText(&role_text);
+    does_match = MatchPatternWide(role_text, role_text_);
+  }
+  if (does_match && value_.length()) {
+    object->GetValue(&value);
+    does_match = MatchPatternWide(value, value_);
+  }
   if (does_match) {
     *match = object;
   } else {

@@ -324,11 +324,6 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
   ContextMenuTest() {}
 
   virtual void SetUp() {
-    // These tests must run on an unlocked desktop in order to use MSAA to
-    // select menu items.
-    ASSERT_TRUE(IsDesktopUnlocked())
-        << "This test must run on an unlocked desktop";
-
     // These are UI-related tests, so we do not care about the exact
     // navigations that occur.
     ie_mock_.ExpectAnyNavigations();
