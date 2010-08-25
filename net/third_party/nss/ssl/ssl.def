@@ -159,3 +159,13 @@ SSL_SetNextProtoNego;
 ;+    local:
 ;+*;
 ;+};
+;+NSS_3.13 {      # NSS 3.13 release
+;+    global:
+SSL_GetPredictedServerHelloData;
+SSL_GetSnapStartResult;
+SSL_SetPredictedPeerCertificates;
+SSL_SetPredictedServerHelloData;
+SSL_SetSnapStartApplicationData;
+;+    local:
+;+*;
+;+};
