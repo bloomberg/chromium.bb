@@ -504,8 +504,12 @@ void CompilationUnit::ProcessDIEs() {
 
     dieptr += len;
 
-    // Abbrev == 0 represents the end of a list of children.
+    // Abbrev == 0 represents the end of a list of children, or padding
+    // at the end of the compilation unit.
     if (abbrev_num == 0) {
+      if (die_stack.size() == 0)
+        // If it is padding, then we are done with the compilation unit's DIEs.
+        return;
       const uint64 offset = die_stack.top();
       die_stack.pop();
       handler_->EndDIE(offset);
