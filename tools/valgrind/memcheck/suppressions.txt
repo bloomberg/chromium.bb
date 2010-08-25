@@ -4189,6 +4189,17 @@
    fun:_ZN18AutomationProvider18UninstallExtensionEiPb
 }
 {
+   bug_52900
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN20RenderWidgetHostView19CreateViewForWidgetEP16RenderWidgetHost
+   fun:_ZN32RenderViewHostDelegateViewHelper25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeEP17RenderProcessHost
+   fun:_ZN15TabContentsView33CreateNewFullscreenWidgetInternalEiN6WebKit12WebPopupTypeE
+   fun:_ZN15TabContentsView25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
+   fun:_ZN14RenderViewHost25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
+   fun:_ZN46RenderViewHostTest_CreateFullscreenWidget_Test8TestBodyEv
+}
+{
    bug_52957
    Memcheck:Addr4
    fun:glGetString
