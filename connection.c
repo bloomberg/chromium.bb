@@ -30,6 +30,8 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 #include "wayland-util.h"
 #include "connection.h"
@@ -112,6 +114,7 @@ int wl_connection_data(struct wl_connection *connection, uint32_t mask)
 {
 	struct wl_buffer *b;
 	struct iovec iov[2];
+	struct msghdr msg;
 	int len, head, tail, count, size, available;
 
 	if (mask & WL_CONNECTION_READABLE) {
@@ -130,7 +133,13 @@ int wl_connection_data(struct wl_connection *connection, uint32_t mask)
 			count = 2;
 		}
 		do {
-			len = readv(connection->fd, iov, count);
+			msg.msg_name = NULL;
+			msg.msg_namelen = 0;
+			msg.msg_iov = iov;
+			msg.msg_iovlen = count;
+			msg.msg_control = NULL;
+			msg.msg_controllen = 0;
+			len = recvmsg(connection->fd, &msg, 0);
 		} while (len < 0 && errno == EINTR);
 		if (len < 0) {
 			fprintf(stderr,
@@ -175,7 +184,13 @@ int wl_connection_data(struct wl_connection *connection, uint32_t mask)
 			count = 2;
 		}
 		do {
-			len = writev(connection->fd, iov, count);
+			msg.msg_name = NULL;
+			msg.msg_namelen = 0;
+			msg.msg_iov = iov;
+			msg.msg_iovlen = count;
+			msg.msg_control = NULL;
+			msg.msg_controllen = 0;
+			len = sendmsg(connection->fd, &msg, 0);
 		} while (len < 0 && errno == EINTR);
 		if (len < 0) {
 			fprintf(stderr, "write error for connection %p: %m\n", connection);
