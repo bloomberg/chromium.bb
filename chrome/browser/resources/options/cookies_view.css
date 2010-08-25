@@ -1,0 +1,43 @@
+/*
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+.cookies-info-table {
+  width: 100%;
+}
+
+.cookies-details-pane {
+  background-color: lightgrey;
+  border: 1px solid grey;
+  margin: 5px 0;
+}
+
+.cookie-details-label {
+  white-space: pre;
+  vertical-align: top;
+}
+
+html[dir=ltr] .cookie-details-label {
+  text-align: right;
+}
+
+#cookiesSearchBox {
+  border: 1px solid lightgrey;
+  display: box;
+  width: 366px;
+}
+
+#cookiesTree {
+  border: 1px solid lightgrey;
+  height: 200px;
+  margin: 0;
+  padding: 5px;
+}
+
+#cookieContent {
+  display: block;
+  width: 520px;
+  word-wrap: break-word;
+}

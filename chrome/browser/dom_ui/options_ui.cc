@@ -25,6 +25,7 @@
 #include "chrome/browser/dom_ui/browser_options_handler.h"
 #include "chrome/browser/dom_ui/clear_browser_data_handler.h"
 #include "chrome/browser/dom_ui/content_settings_handler.h"
+#include "chrome/browser/dom_ui/cookies_view_handler.h"
 #include "chrome/browser/dom_ui/core_options_handler.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/font_settings_handler.h"
@@ -142,6 +143,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
+  AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new PasswordsExceptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new PasswordsRemoveAllHandler());
@@ -169,7 +171,6 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::LanguagePinyinOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new ProxyHandler());
-  AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
 #endif
 

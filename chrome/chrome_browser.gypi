@@ -1183,6 +1183,8 @@
         'browser/dom_ui/clear_browser_data_handler.h',
         'browser/dom_ui/content_settings_handler.cc',
         'browser/dom_ui/content_settings_handler.h',
+        'browser/dom_ui/cookies_view_handler.cc',
+        'browser/dom_ui/cookies_view_handler.h',
         'browser/dom_ui/core_options_handler.cc',
         'browser/dom_ui/core_options_handler.h',
         'browser/dom_ui/font_settings_handler.cc',

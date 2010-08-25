@@ -56,7 +56,7 @@ cr.define('options', function() {
 
       $('show-cookies-button').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
-        // TODO(estade): show cookies and other site data page.
+        OptionsPage.showPageByName('cookiesView');
       };
     },
   };

@@ -18,12 +18,7 @@ cr.define('options', function() {
                      'accountsPage');
   }
 
-  AccountsOptions.getInstance = function() {
-    if (!AccountsOptions.instance_) {
-      AccountsOptions.instance_ = new AccountsOptions(null);
-    }
-    return AccountsOptions.instance_;
-  };
+  cr.addSingletonGetter(AccountsOptions);
 
   AccountsOptions.prototype = {
     // Inherit AccountsOptions from OptionsPage.

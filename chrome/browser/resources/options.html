@@ -17,6 +17,7 @@
 <script src="chrome://resources/js/cr/ui/list_single_selection_model.js"></script>
 <script src="chrome://resources/js/cr/ui/list_item.js"></script>
 <script src="chrome://resources/js/cr/ui/list.js"></script>
+<script src="chrome://resources/js/cr/ui/tree.js"></script>
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="options/preferences.js"></script>
@@ -55,6 +56,8 @@
 <script src="options/content_settings.js"></script>
 <script src="options/content_settings_exceptions_area.js"></script>
 <script src="options/content_settings_ui.js"></script>
+<script src="options/cookies_tree.js"></script>
+<script src="options/cookies_view.js"></script>
 <script src="options/font_settings_overlay.js"></script>
 <script src="options/import_data_overlay.js"></script>
 <script src="options/passwords_exceptions.js"></script>
@@ -74,6 +77,7 @@ var AutoFillOptions = options.AutoFillOptions;
 var BrowserOptions = options.BrowserOptions;
 var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
 var ContentSettings = options.ContentSettings;
+var CookiesView = options.CookiesView;
 var FontSettingsOverlay = options.FontSettingsOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
 var OptionsPage = options.OptionsPage;
@@ -101,6 +105,7 @@ function load() {
   OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(AutoFillOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
+  OptionsPage.registerSubPage(CookiesView.getInstance());
   OptionsPage.registerSubPage(PasswordsExceptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance());
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
@@ -155,7 +160,7 @@ function load() {
   OptionsPage.initialize();
 
   var path = document.location.pathname;
- 
+
   if (path.length > 1) {
     OptionsPage.showPageByName(path.slice(1));
   } else {
@@ -182,6 +187,7 @@ window.onpopstate = function(e) {
 };
 </script>
 <link rel="stylesheet" href="chrome://resources/css/list.css">
+<link rel="stylesheet" href="chrome://resources/css/tree.css">
 <link rel="stylesheet" href="dom_ui.css">
 <link rel="stylesheet" href="options/options_page.css">
 <link rel="stylesheet" href="options/add_startup_page_overlay.css">
@@ -192,6 +198,7 @@ window.onpopstate = function(e) {
 <link rel="stylesheet" href="options/clear_browser_data_overlay.css">
 <link rel="stylesheet" href="options/content_settings.css">
 <link rel="stylesheet" href="options/content_settings_exceptions_area.css">
+<link rel="stylesheet" href="options/cookies_view.css">
 <link rel="stylesheet" href="options/passwords_exceptions_list.css">
 <link rel="stylesheet" href="options/import_data_overlay.css">
 <link rel="stylesheet" href="options/search_engine_manager.css">
@@ -202,6 +209,9 @@ window.onpopstate = function(e) {
   <link rel="stylesheet" href="options/chromeos_internet_options_page.css">
   <link rel="stylesheet" href="options/chromeos_language_options.css">
 </if>
+
+<script src="chrome://resources/css/tree.css.js"></script>
+
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div class="header">
@@ -253,6 +263,7 @@ window.onpopstate = function(e) {
        <include src="options/autofill_options.html">
        <include src="options/browser_options.html">
        <include src="options/content_settings.html">
+       <include src="options/cookies_view.html">
        <include src="options/passwords_exceptions.html">
        <include src="options/personal_options.html">
        <include src="options/search_engine_manager.html">
