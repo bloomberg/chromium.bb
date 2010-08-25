@@ -31,6 +31,9 @@ cr.define('options', function() {
       $('autoFillEditAddressCancelButton').onclick = function(event) {
         self.dismissOverlay_();
       }
+
+      self.clearInputFields_();
+      self.connectInputEvents_();
     },
 
     /**
@@ -38,22 +41,60 @@ cr.define('options', function() {
      * @private
      */
     dismissOverlay_: function() {
-      AutoFillEditAddressOverlay.clearInputFields();
+      this.clearInputFields_();
       OptionsPage.clearOverlays();
+    },
+
+    /**
+     * Connects each input field to the inputFieldChanged_() method that enables
+     * or disables the 'Ok' button based on whether all the fields are empty or
+     * not.
+     * @private
+     */
+    connectInputEvents_: function() {
+      var self = this;
+      $('fullName').oninput = $('companyName').oninput =
+      $('addrLine1').oninput = $('addrLine2').oninput = $('city').oninput =
+      $('state').oninput = $('zipCode').oninput = $('phone').oninput =
+      $('fax').oninput = $('email').oninput = function(event) {
+        self.inputFieldChanged_();
+      }
+    },
+
+    /**
+     * Checks the values of each of the input fields and disables the 'Ok'
+     * button if all of the fields are empty.
+     * @private
+     */
+    inputFieldChanged_: function() {
+      var disabled =
+          !$('fullName').value && !$('companyName').value &&
+          !$('addrLine1').value && !$('addrLine2').value && !$('city').value &&
+          !$('state').value && !$('zipCode').value && !$('phone').value &&
+          !$('fax').value && !$('email').value;
+      $('autoFillEditAddressApplyButton').disabled = disabled;
+    },
+
+    /**
+     * Clears the value of each input field.
+     * @private
+     */
+    clearInputFields_: function() {
+      $('fullName').value = '';
+      $('companyName').value = '';
+      $('addrLine1').value = '';
+      $('addrLine2').value = '';
+      $('city').value = '';
+      $('state').value = '';
+      $('zipCode').value = '';
+      $('phone').value = '';
+      $('fax').value = '';
+      $('email').value = '';
     },
   };
 
   AutoFillEditAddressOverlay.clearInputFields = function() {
-    $('fullName').value = '';
-    $('companyName').value = '';
-    $('addrLine1').value = '';
-    $('addrLine2').value = '';
-    $('city').value = '';
-    $('state').value = '';
-    $('zipCode').value = '';
-    $('phone').value = '';
-    $('fax').value = '';
-    $('email').value = '';
+    AutoFillEditAddressOverlay.getInstance().clearInputFields_();
   };
 
   AutoFillEditAddressOverlay.setTitle = function(title) {

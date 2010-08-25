@@ -32,6 +32,8 @@ cr.define('options', function() {
         self.dismissOverlay_();
       }
 
+      self.clearInputFields_();
+      self.connectInputEvents_();
       self.setDefaultSelectOptions_();
     },
 
@@ -40,8 +42,36 @@ cr.define('options', function() {
      * @private
      */
     dismissOverlay_: function() {
-      AutoFillEditCreditCardOverlay.clearInputFields();
+      this.clearInputFields_();
       OptionsPage.clearOverlays();
+    },
+
+    /**
+     * Connects each input field to the inputFieldChanged_() method that enables
+     * or disables the 'Ok' button based on whether all the fields are empty or
+     * not.
+     * @private
+     */
+    connectInputEvents_: function() {
+      var self = this;
+      $('nameOnCard').oninput = $('billingAddress').oninput =
+      $('creditCardNumber').oninput = $('expirationMonth').oninput =
+      $('expirationYear').oninput = function(event) {
+        self.inputFieldChanged_();
+      }
+    },
+
+    /**
+     * Checks the values of each of the input fields and disables the 'Ok'
+     * button if all of the fields are empty.
+     * @private
+     */
+    inputFieldChanged_: function() {
+      var disabled =
+          !$('nameOnCard').value && !$('billingAddress').value &&
+          !$('creditCardNumber').value && !$('expirationMonth').value &&
+          !$('expirationYear').value;
+      $('autoFillEditCreditCardApplyButton').disabled = disabled;
     },
 
     /**
@@ -84,15 +114,23 @@ cr.define('options', function() {
         option.value = text;
         expirationYear.add(option, null);
       }
-    }
+    },
+
+    /**
+     * Clears the value of each input field.
+     * @private
+     */
+    clearInputFields_: function() {
+      $('nameOnCard').value = '';
+      $('billingAddress').value = '';
+      $('creditCardNumber').value = '';
+      $('expirationMonth').value = '';
+      $('expirationYear').value = '';
+    },
   };
 
   AutoFillEditCreditCardOverlay.clearInputFields = function(title) {
-    $('nameOnCard').value = '';
-    $('billingAddress').value = '';
-    $('creditCardNumber').value = '';
-    $('expirationMonth').value = '';
-    $('expirationYear').value = '';
+    AutoFillEditCreditCardOverlay.getInstance().clearInputFields_();
   };
 
   AutoFillEditCreditCardOverlay.setTitle = function(title) {
