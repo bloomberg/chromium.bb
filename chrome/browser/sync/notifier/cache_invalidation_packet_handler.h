@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/scoped_callback_factory.h"
 #include "talk/xmpp/jid.h"
 
 namespace buzz {
@@ -47,6 +48,9 @@ class CacheInvalidationPacketHandler {
       invalidation::NetworkEndpoint* const& network_endpoint);
 
   void HandleInboundPacket(const std::string& packet);
+
+  base::ScopedCallbackFactory<CacheInvalidationPacketHandler>
+      scoped_callback_factory_;
 
   buzz::XmppClient* xmpp_client_;
   invalidation::InvalidationClient* invalidation_client_;
