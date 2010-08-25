@@ -98,7 +98,7 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
 
   std::string dialog_name =
       l10n_util::GetStringFUTF8(
-          IDS_OPTIONS_DIALOG_TITLE,
+          IDS_PREFERENCES_DIALOG_TITLE,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   dialog_ = gtk_dialog_new_with_buttons(
       dialog_name.c_str(),
