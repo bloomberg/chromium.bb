@@ -450,7 +450,8 @@ void BookmarkEditorView::NewGroup() {
 BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewGroup(
     EditorNode* parent) {
   EditorNode* new_node = new EditorNode();
-  new_node->SetTitle(l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
+  new_node->SetTitle(
+      l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
   new_node->value = 0;
   // new_node is now owned by parent.
   tree_model_->Add(parent, parent->GetChildCount(), new_node);

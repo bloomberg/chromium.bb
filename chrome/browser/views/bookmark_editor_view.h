@@ -8,6 +8,7 @@
 
 #include "app/menus/simple_menu_model.h"
 #include "app/tree_node_model.h"
+#include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "views/controls/button/button.h"
@@ -59,7 +60,7 @@ class BookmarkEditorView : public BookmarkEditor,
         : TreeNodeModel<EditorNode>(root) {}
 
     virtual void SetTitle(TreeModelNode* node,
-                          const std::wstring& title) {
+                          const string16& title) {
       if (!title.empty())
         TreeNodeModel::SetTitle(node, title);
     }

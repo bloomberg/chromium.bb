@@ -573,7 +573,7 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
       // in debugging.
       static int next_group_id = 1;
       TestNode* new_node =
-          new TestNode(UTF16ToWideHack(base::IntToString16(next_group_id++)),
+          new TestNode(base::IntToString16(next_group_id++),
                        BookmarkNode::FOLDER);
       parent->Add(parent->GetChildCount(), new_node);
       PopulateNodeImpl(description, index, new_node);
@@ -588,7 +588,7 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
       DCHECK(element.find('[') == std::string::npos);
       DCHECK(element.find(']') == std::string::npos);
       parent->Add(parent->GetChildCount(),
-                  new TestNode(UTF8ToWide(element), BookmarkNode::URL));
+                  new TestNode(UTF8ToUTF16(element), BookmarkNode::URL));
     }
   }
 }

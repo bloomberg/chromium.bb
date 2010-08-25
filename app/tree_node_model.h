@@ -38,9 +38,10 @@
 // The following example creates a TreeNode with two children and then
 // creates a TreeNodeModel from it:
 //
-// TreeNodeWithValue<int> root = new TreeNodeWithValue<int>(0, L"root");
-// root.add(new TreeNodeWithValue<int>(1, L"child 1"));
-// root.add(new TreeNodeWithValue<int>(1, L"child 2"));
+// TreeNodeWithValue<int> root =
+//     new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
+// root.add(new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1));
+// root.add(new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 1));
 // TreeNodeModel<TreeNodeWithValue<int>>* model =
 //     new TreeNodeModel<TreeNodeWithValue<int>>(root);
 //
@@ -210,9 +211,9 @@ class TreeNodeWithValue : public TreeNode< TreeNodeWithValue<ValueType> > {
   TreeNodeWithValue() { }
 
   explicit TreeNodeWithValue(const ValueType& value)
-      : ParentType(std::wstring()), value(value) { }
+      : ParentType(string16()), value(value) { }
 
-  TreeNodeWithValue(const std::wstring& title, const ValueType& value)
+  TreeNodeWithValue(const string16& title, const ValueType& value)
       : ParentType(title), value(value) { }
 
   ValueType value;
