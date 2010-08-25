@@ -130,3 +130,14 @@ node = env.CommandSelLdrTestNacl('sysbrk_test.out',
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_sysbrk_test')
+
+# additions to add syscall tests 40-42
+env.ComponentProgram('timefuncs_test.nexe',
+                     ['timefuncs_test.cc'],
+                     EXTRA_LIBS=['pthread', 'syscall_test_framework'])
+node = env.CommandSelLdrTestNacl(
+    'timefuncs_test.out',
+    command=[env.File('timefuncs_test.nexe')]
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'], 'run_timefuncs_test')
