@@ -561,9 +561,10 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 	set_pointer_image(input, pointer);
 }
 
-static void window_handle_button(void *data,
-				 struct wl_input_device *input_device,
-				 uint32_t time, uint32_t button, uint32_t state)
+static void
+window_handle_button(void *data,
+		     struct wl_input_device *input_device,
+		     uint32_t time, uint32_t button, uint32_t state)
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
@@ -717,6 +718,12 @@ input_get_position(struct input *input, int32_t *x, int32_t *y)
 	*y = input->sy;
 }
 
+struct wl_input_device *
+input_get_input_device(struct input *input)
+{
+	return input->input_device;
+}
+
 void
 display_add_drag_listener(struct display *display,
 			  const struct wl_drag_listener *drag_listener,
@@ -729,12 +736,11 @@ display_add_drag_listener(struct display *display,
 }
 
 void
-window_start_drag(struct window *window, struct input *input, uint32_t time,
-		  struct wl_buffer *buffer, int32_t x, int32_t y)
+window_start_drag(struct window *window, struct input *input, uint32_t time)
 {
 	cairo_device_flush (window->display->device);
 
-	wl_drag_prepare(input->drag, window->surface, time, buffer, x, y);
+	wl_drag_prepare(input->drag, window->surface, time);
 	wl_drag_offer(input->drag, "text/plain");
 	wl_drag_activate(input->drag);
 }

@@ -16,26 +16,6 @@ Core wayland protocol
 
  - DnD issues:
 
-   How to roboustly handle failing drag, ie the case where an
-   application gets a button event, tries to activate a drag, but when
-   the server gets the drag request, the button has already been
-   released and the grab is no longer active.  What's the concern:
-
-    - Application may set a drag cursor that doesn't revert back,
-      since a failed drag doesn't result in a pointer_focus event to
-      give focus back to the surface.  We could just do that: if the
-      pointer_focus is the same surface as we tried to start a grab
-      for, just remove and give back pointer_focus.
-
-      Alternatively, set drag cursors only in response to drag events,
-      like drag focus.  But drag_focus and drag_motion are sent to the
-      drag target, so the source surface won't always get those.  We
-      may also end up setting the cursor after the drag ends, but in
-      this case the drag started and ended and we'll get a
-      pointer_focus event, which will make the application reset the
-      pointer image.  Could introduce a drag start event that
-      indicates that the drag active.
-
    How to handle drop decline (accept with type=NULL)
 
     - Targets must send a NULL type in accept if they don't accept a

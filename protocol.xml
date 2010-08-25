@@ -102,9 +102,6 @@
 	   grab started by the button click at time -->
       <arg name="surface" type="object" interface="surface"/>
       <arg name="time" type="uint"/>
-      <arg name="buffer" type="object" interface="buffer"/>
-      <arg name="hotspot_x" type="int"/>
-      <arg name="hotspot_y" type="int"/>
     </request>
 
     <!-- Add an offered mime type.  Can be called several times to

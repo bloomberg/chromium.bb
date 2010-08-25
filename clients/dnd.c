@@ -44,6 +44,9 @@ struct dnd {
 	struct display *display;
 	uint32_t key;
 	struct item *items[16];
+
+	struct wl_buffer *buffer;
+	int hotspot_x, hotspot_y;
 };
 
 struct item {
@@ -249,7 +252,16 @@ static void
 drag_target(void *data,
 	    struct wl_drag *drag, const char *mime_type)
 {
+	struct dnd *dnd = data;
+	struct input *input;
+	struct wl_input_device *device;
+
 	fprintf(stderr, "target %s\n", mime_type);
+
+	input = wl_drag_get_user_data(drag);
+	device = input_get_input_device(input);
+	wl_input_device_attach(device, dnd->buffer,
+			       dnd->hotspot_x, dnd->hotspot_y);
 }
 
 static void
@@ -269,7 +281,7 @@ static void
 drag_data(void *data,
 	  struct wl_drag *drag, struct wl_array *contents)
 {
-	fprintf(stderr, "drag drop, data %s\n", contents->data);
+	fprintf(stderr, "drag drop, data %s\n", (char *) contents->data);
 }
 
 static const struct wl_drag_listener drag_listener = {
@@ -291,7 +303,6 @@ dnd_button_handler(struct window *window,
 	int32_t x, y, hotspot_x, hotspot_y, pointer_width, pointer_height;
 	struct rectangle rectangle;
 	struct item *item;
-	struct wl_buffer *buffer;
 	cairo_surface_t *surface, *pointer;
 	cairo_t *cr;
 
@@ -334,12 +345,12 @@ dnd_button_handler(struct window *window,
 		cairo_paint(cr);
 		cairo_destroy(cr);
 
-		buffer = display_get_buffer_for_surface(dnd->display,
-							surface);
-		window_start_drag(window, input, time,
-				  buffer,
-				  pointer_width + x - item->x,
-				  pointer_height + y - item->y);
+		dnd->buffer = display_get_buffer_for_surface(dnd->display,
+							     surface);
+		dnd->hotspot_x = pointer_width + x - item->x;
+		dnd->hotspot_y = pointer_height + y - item->y;
+
+		window_start_drag(window, input, time);
 
 		/* FIXME: We leak the surface because we can't free it
 		 * until the server has referenced it. */
@@ -407,6 +418,8 @@ dnd_create(struct display *display)
 	rectangle.height = 4 * (item_height + item_padding) + item_padding;
 	window_set_child_size(dnd->window, &rectangle);
 
+	display_add_drag_listener(display, &drag_listener, dnd);
+
 	dnd_draw(dnd);
 
 	return dnd;
@@ -427,8 +440,6 @@ main(int argc, char *argv[])
 	srandom(tv.tv_usec);
 
 	d = display_create(&argc, &argv, option_entries);
-
-	display_add_drag_listener(d, &drag_listener, d);
 
 	dnd = dnd_create (d);
 

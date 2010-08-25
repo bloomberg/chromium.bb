@@ -188,10 +188,12 @@ window_set_frame_handler(struct window *window,
 			 window_frame_handler_t handler);
 
 void
-window_start_drag(struct window *window, struct input *input, uint32_t time,
-		  struct wl_buffer *buffer, int32_t x, int32_t y);
+window_start_drag(struct window *window, struct input *input, uint32_t time);
 
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
+
+struct wl_input_device *
+input_get_input_device(struct input *input);
 
 #endif

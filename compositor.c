@@ -952,8 +952,11 @@ input_device_attach(struct wl_client *client,
 		(struct wlsc_input_device *) device_base;
 	struct wlsc_buffer *buffer = (struct wlsc_buffer *) buffer_base;
 
-	if (device->pointer_focus == NULL ||
-	    device->pointer_focus->base.client != client)
+	if (device->pointer_focus == NULL)
+		return;
+	if (device->pointer_focus->base.client != client &&
+	    !(&device->pointer_focus->base == &wl_grab_surface &&
+	      device->grab_surface->base.client == client))
 		return;
 
 	if (buffer == NULL) {
@@ -1052,8 +1055,7 @@ wl_drag_reset(struct wl_drag *drag)
 
 static void
 drag_prepare(struct wl_client *client,
-	     struct wl_drag *drag, struct wl_surface *surface, uint32_t time,
-	     struct wl_buffer *buffer, int32_t hotspot_x, int32_t hotspot_y)
+	     struct wl_drag *drag, struct wl_surface *surface, uint32_t time)
 {
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) drag->input_device;
@@ -1065,9 +1067,6 @@ drag_prepare(struct wl_client *client,
 	wl_drag_reset(drag);
 	drag->source = surface;
 	drag->time = time;
-	drag->buffer = buffer;
-	drag->hotspot_x = hotspot_x;
-	drag->hotspot_y = hotspot_y;
 }
 
 static void
@@ -1112,8 +1111,6 @@ drag_activate(struct wl_client *client,
 
 	wlsc_input_device_start_grab(device, drag->time,
 				     WLSC_DEVICE_GRAB_DRAG);
-	wlsc_input_device_attach(device, (struct wlsc_buffer *) drag->buffer,
-				 drag->hotspot_x, drag->hotspot_y);
 
 	surface = pick_surface(device, &sx, &sy);
 	wl_drag_set_pointer_focus(&device->drag, surface, drag->time,

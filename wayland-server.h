@@ -134,10 +134,6 @@ struct wl_drag {
 	struct wl_array types;
 	const char *type;
 	uint32_t time;
-
-	struct wl_buffer *buffer;
-	int32_t hotspot_x;
-	int32_t hotspot_y;
 };
 
 void
