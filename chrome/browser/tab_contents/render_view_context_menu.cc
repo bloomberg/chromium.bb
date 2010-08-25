@@ -412,6 +412,10 @@ bool RenderViewContextMenu::AppendCustomItems() {
         IDC_CONTENT_CONTEXT_CUSTOM_LAST);
     if (custom_items[i].type == WebMenuItem::SEPARATOR) {
       menu_model_.AddSeparator();
+    } else if (custom_items[i].type == WebMenuItem::CHECKABLE_OPTION) {
+      menu_model_.AddCheckItem(
+          custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+          custom_items[i].label);
     } else {
       menu_model_.AddItem(
           custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
@@ -748,6 +752,18 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     return false;
   }
 
+  // Custom WebKit items.
+  if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
+      id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
+    const std::vector<WebMenuItem>& custom_items = params_.custom_items;
+    for (size_t i = 0; i < custom_items.size(); ++i) {
+      int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + custom_items[i].action;
+      if (action_id == id)
+        return custom_items[i].enabled;
+    }
+    return true;
+  }
+
   // Extension items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
@@ -971,6 +987,19 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
             WebContextMenuData::MediaControls) != 0;
   }
 
+  // Custom WebKit items.
+  if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
+      id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
+    const std::vector<WebMenuItem>& custom_items = params_.custom_items;
+    for (size_t i = 0; i < custom_items.size(); ++i) {
+      int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + custom_items[i].action;
+      if (action_id == id)
+        return custom_items[i].checked;
+    }
+    return false;
+  }
+
+  // Extension items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     ExtensionMenuItem* item = GetExtensionMenuItem(id);
