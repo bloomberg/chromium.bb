@@ -123,11 +123,11 @@ uint64 ByteReader::ReadEncodedPointer(const char *buffer,
 
     // First, find the offset to START from the closest prior aligned
     // address.
-    uint64_t skew = section_base_ & (AddressSize() - 1);
+    uint64 skew = section_base_ & (AddressSize() - 1);
     // Now find the offset from that aligned address to buffer.
-    uint64_t offset = skew + (buffer - buffer_base_);
+    uint64 offset = skew + (buffer - buffer_base_);
     // Round up to the next boundary.
-    uint64_t aligned = (offset + AddressSize() - 1) & -AddressSize();
+    uint64 aligned = (offset + AddressSize() - 1) & -AddressSize();
     // Convert back to a pointer.
     const char *aligned_buffer = buffer_base_ + (aligned - skew);
     // Finally, store the length and actually fetch the pointer.
