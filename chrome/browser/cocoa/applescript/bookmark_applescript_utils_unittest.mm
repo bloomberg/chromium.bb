@@ -51,7 +51,7 @@ BookmarkAppleScriptTest::BookmarkAppleScriptTest() {
   [appDelegate_.get() setHelper:&helper_];
   [NSApp setDelegate:appDelegate_];
   const BookmarkNode* root = model().GetBookmarkBarNode();
-  const std::wstring modelString(L"a f1:[ b d c ] d f2:[ e f g ] h ");
+  const std::string modelString("a f1:[ b d c ] d f2:[ e f g ] h ");
   model_test_utils::AddNodesFromModelString(model(), root, modelString);
   bookmarkBar_.reset([[BookmarkFolderAppleScript alloc]
       initWithBookmarkNode:model().GetBookmarkBarNode()]);

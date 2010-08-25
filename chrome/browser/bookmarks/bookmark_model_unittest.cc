@@ -315,11 +315,11 @@ TEST_F(BookmarkModelTest, Move) {
 
 TEST_F(BookmarkModelTest, Copy) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  static const std::wstring model_string(L"a 1:[ b c ] d 2:[ e f g ] h ");
+  static const std::string model_string("a 1:[ b c ] d 2:[ e f g ] h ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::wstring actualModelString = model_test_utils::ModelStringFromNode(root);
+  std::string actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Copy 'd' to be after '1:b': URL item from bar to folder.
@@ -327,43 +327,43 @@ TEST_F(BookmarkModelTest, Copy) {
   const BookmarkNode* destination = root->GetChild(1);
   model.Copy(nodeToCopy, destination, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ(L"a 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
+  EXPECT_EQ("a 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
 
   // Copy '1:d' to be after 'a': URL item from folder to bar.
   const BookmarkNode* group = root->GetChild(1);
   nodeToCopy = group->GetChild(1);
   model.Copy(nodeToCopy, root, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ(L"a d 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
+  EXPECT_EQ("a d 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
 
   // Copy '1' to be after '2:e': Folder from bar to folder.
   nodeToCopy = root->GetChild(2);
   destination = root->GetChild(4);
   model.Copy(nodeToCopy, destination, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ(L"a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f g ] h ", actualModelString);
+  EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f g ] h ", actualModelString);
 
   // Copy '2:1' to be after '2:f': Folder within same folder.
   group = root->GetChild(4);
   nodeToCopy = group->GetChild(1);
   model.Copy(nodeToCopy, group, 3);
   actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ(L"a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h ",
+  EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h ",
             actualModelString);
 
   // Copy first 'd' to be after 'h': URL item within the bar.
   nodeToCopy = root->GetChild(1);
   model.Copy(nodeToCopy, root, 6);
   actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ(L"a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
+  EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
             actualModelString);
 
   // Copy '2' to be after 'a': Folder within the bar.
   nodeToCopy = root->GetChild(4);
   model.Copy(nodeToCopy, root, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ(L"a 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] d 1:[ b d c ] "
-            L"d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
+  EXPECT_EQ("a 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] d 1:[ b d c ] "
+            "d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
             actualModelString);
 }
 
@@ -560,24 +560,24 @@ typedef TreeNodeWithValue<BookmarkNode::Type> TestNode;
 
 // Does the work of PopulateNodeFromString. index gives the index of the current
 // element in description to process.
-static void PopulateNodeImpl(const std::vector<std::wstring>& description,
+static void PopulateNodeImpl(const std::vector<std::string>& description,
                              size_t* index,
                              TestNode* parent) {
   while (*index < description.size()) {
-    const std::wstring& element = description[*index];
+    const std::string& element = description[*index];
     (*index)++;
-    if (element == L"[") {
+    if (element == "[") {
       // Create a new group and recurse to add all the children.
       // Groups are given a unique named by way of an ever increasing integer
       // value. The groups need not have a name, but one is assigned to help
       // in debugging.
       static int next_group_id = 1;
       TestNode* new_node =
-          new TestNode(UTF8ToWide(base::IntToString(next_group_id++)),
+          new TestNode(UTF16ToWideHack(base::IntToString16(next_group_id++)),
                        BookmarkNode::FOLDER);
       parent->Add(parent->GetChildCount(), new_node);
       PopulateNodeImpl(description, index, new_node);
-    } else if (element == L"]") {
+    } else if (element == "]") {
       // End the current group.
       return;
     } else {
@@ -588,7 +588,7 @@ static void PopulateNodeImpl(const std::vector<std::wstring>& description,
       DCHECK(element.find('[') == std::string::npos);
       DCHECK(element.find(']') == std::string::npos);
       parent->Add(parent->GetChildCount(),
-                  new TestNode(element, BookmarkNode::URL));
+                  new TestNode(UTF8ToWide(element), BookmarkNode::URL));
     }
   }
 }
@@ -610,9 +610,9 @@ static void PopulateNodeImpl(const std::vector<std::wstring>& description,
 //
 // NOTE: each name must be unique, and groups are assigned a unique title by way
 // of an increasing integer.
-static void PopulateNodeFromString(const std::wstring& description,
+static void PopulateNodeFromString(const std::string& description,
                                    TestNode* parent) {
-  std::vector<std::wstring> elements;
+  std::vector<std::string> elements;
   size_t index = 0;
   SplitStringAlongWhitespace(description, &elements);
   PopulateNodeImpl(elements, &index, parent);
@@ -746,17 +746,17 @@ class BookmarkModelTestWithProfile : public testing::Test,
 TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
   struct TestData {
     // Structure of the children of the bookmark bar model node.
-    const std::wstring bbn_contents;
+    const std::string bbn_contents;
     // Structure of the children of the other node.
-    const std::wstring other_contents;
+    const std::string other_contents;
   } data[] = {
     // See PopulateNodeFromString for a description of these strings.
-    { L"", L"" },
-    { L"a", L"b" },
-    { L"a [ b ]", L"" },
-    { L"", L"[ b ] a [ c [ d e [ f ] ] ]" },
-    { L"a [ b ]", L"" },
-    { L"a b c [ d e [ f ] ]", L"g h i [ j k [ l ] ]"},
+    { "", "" },
+    { "a", "b" },
+    { "a [ b ]", "" },
+    { "", "[ b ] a [ c [ d e [ f ] ] ]" },
+    { "a [ b ]", "" },
+    { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     // Recreate the profile. We need to reset with NULL first so that the last
@@ -959,7 +959,7 @@ TEST_F(BookmarkModelTest, Sort) {
   // Populate the bookmark bar node with nodes for 'B', 'a', 'd' and 'C'.
   // 'C' and 'a' are folders.
   TestNode bbn;
-  PopulateNodeFromString(L"B [ a ] d [ a ]", &bbn);
+  PopulateNodeFromString("B [ a ] d [ a ]", &bbn);
   const BookmarkNode* parent = model.GetBookmarkBarNode();
   PopulateBookmarkNode(&bbn, &model, parent);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ void BookmarkModelTestUtils::AssertNodesEqual(const BookmarkNode* expected,
   ASSERT_TRUE(actual);
   if (check_ids)
     EXPECT_EQ(expected->id(), actual->id());
-  EXPECT_EQ(expected->GetTitle(), actual->GetTitle());
+  EXPECT_EQ(expected->GetTitleAsString16(), actual->GetTitleAsString16());
   EXPECT_EQ(expected->type(), actual->type());
   EXPECT_TRUE(expected->date_added() == actual->date_added());
   if (expected->type() == BookmarkNode::URL) {

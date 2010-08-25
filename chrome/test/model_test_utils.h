@@ -23,7 +23,10 @@ namespace model_test_utils {
 //     folder title = (* string with no spaces *)
 //
 // Example: "a f1:[ b d c ] d f2:[ e f g ] h "
-std::wstring ModelStringFromNode(const BookmarkNode* node);
+//
+// (Logically, we should use |string16|s, but it's more convenient for test
+// purposes to use (UTF-8) |std::string|s.)
+std::string ModelStringFromNode(const BookmarkNode* node);
 
 // Create and add the node hierarchy specified by |nodeString| to the
 // bookmark node given by |node|. The string has the same format as
@@ -34,7 +37,7 @@ std::wstring ModelStringFromNode(const BookmarkNode* node);
 //       exactly (since we're using a very simple parser).
 void AddNodesFromModelString(BookmarkModel& model,
                              const BookmarkNode* node,
-                             const std::wstring& model_string);
+                             const std::string& model_string);
 
 }  // namespace model_test_utils
 
