@@ -379,10 +379,6 @@ class SpdyURLRequestContext : public URLRequestContext {
   scoped_refptr<SpdySessionPool> spdy_session_pool_;
 };
 
-// This creates a proxy for testing purposes.
-// |proxy| should be in the form "myproxy:70".
-ProxyService* SpdyCreateFixedProxyService(const std::string& proxy);
-
 const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type);
 }  // namespace net
 

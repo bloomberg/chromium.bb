@@ -745,14 +745,6 @@ int CombineFrames(const spdy::SpdyFrame** frames, int num_frames,
   return total_len;
 }
 
-// This creates a proxy for testing purposes.
-// |proxy| should be in the form "myproxy:70".
-ProxyService* SpdyCreateFixedProxyService(const std::string& proxy) {
-  net::ProxyConfig proxy_config;
-  proxy_config.proxy_rules().ParseFromString(proxy);
-  return ProxyService::CreateFixed(proxy_config);
-}
-
 const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type) {
   const SpdyHeaderInfo kHeader = {
     type,                         // Kind = Syn
