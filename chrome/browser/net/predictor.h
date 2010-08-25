@@ -98,6 +98,8 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
 
   // Record details of a navigation so that we can preresolve the host name
   // ahead of time the next time the users navigates to the indicated host.
+  // Should only be called when urls are distinct, and they should already be
+  // canonicalized to not have a path.
   void LearnFromNavigation(const GURL& referring_url, const GURL& target_url);
 
   // Dump HTML table containing list of referrers for about:dns.

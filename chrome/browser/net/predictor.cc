@@ -133,8 +133,8 @@ void Predictor::LearnFromNavigation(const GURL& referring_url,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(referring_url == referring_url.GetWithEmptyPath());
   DCHECK(target_url == target_url.GetWithEmptyPath());
-  if (referring_url.has_host() &&
-      referring_url != target_url) {
+  DCHECK(target_url != referring_url);
+  if (referring_url.has_host()) {
     referrers_[referring_url].SuggestHost(target_url);
   }
 }
