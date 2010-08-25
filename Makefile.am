@@ -71,6 +71,7 @@ src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/processor/call_stack.h \
 	src/google_breakpad/processor/code_module.h \
 	src/google_breakpad/processor/code_modules.h \
+	src/google_breakpad/processor/exploitability.h \
 	src/google_breakpad/processor/memory_region.h \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
@@ -95,6 +96,7 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/cfi_frame_info.h \
 	src/processor/contained_range_map-inl.h \
 	src/processor/contained_range_map.h \
+	src/processor/exploitability.cc \
 	src/processor/linked_ptr.h \
 	src/processor/logging.h \
 	src/processor/logging.cc \
@@ -277,6 +279,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo \
 	src/processor/logging.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -342,6 +345,7 @@ src_processor_network_source_line_resolver_server_unittest_LDADD = \
 	src/processor/binarystream.lo \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo \
 	src/processor/logging.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -399,6 +403,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
+	src/processor/exploitability.lo \
 	src/processor/logging.lo \
 	src/processor/minidump.lo \
 	src/processor/pathname_stripper.lo \
@@ -500,6 +505,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/binarystream.lo \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo \
 	src/processor/logging.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \

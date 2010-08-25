@@ -151,7 +151,8 @@ src_libbreakpad_la_LIBADD =
 am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/binarystream.lo src/processor/call_stack.lo \
-	src/processor/cfi_frame_info.lo src/processor/logging.lo \
+	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo src/processor/logging.lo \
 	src/processor/minidump.lo src/processor/minidump_processor.lo \
 	src/processor/network_source_line_resolver.lo \
 	src/processor/network_source_line_server.lo \
@@ -164,8 +165,7 @@ am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
-	src/processor/udp_network.lo \
-	src/processor/exploitability.lo
+	src/processor/udp_network.lo
 src_libbreakpad_la_OBJECTS = $(am_src_libbreakpad_la_OBJECTS)
 @SELFTEST_TRUE@am__EXEEXT_1 =  \
 @SELFTEST_TRUE@	src/processor/stackwalker_selftest$(EXEEXT)
@@ -252,15 +252,15 @@ src_processor_minidump_processor_unittest_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo src/processor/cfi_frame_info.lo \
-	src/processor/logging.lo src/processor/minidump_processor.lo \
-	src/processor/minidump.lo src/processor/pathname_stripper.lo \
+	src/processor/exploitability.lo src/processor/logging.lo \
+	src/processor/minidump_processor.lo src/processor/minidump.lo \
+	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
 	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
-	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
-	src/processor/exploitability.lo
+	src/processor/stackwalker_x86.lo src/processor/tokenize.lo
 am_src_processor_minidump_stackwalk_OBJECTS =  \
 	src/processor/minidump_stackwalk.$(OBJEXT)
 src_processor_minidump_stackwalk_OBJECTS =  \
@@ -269,7 +269,8 @@ src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/binarystream.lo src/processor/call_stack.lo \
-	src/processor/cfi_frame_info.lo src/processor/logging.lo \
+	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo src/processor/logging.lo \
 	src/processor/minidump.lo src/processor/minidump_processor.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo \
@@ -281,8 +282,7 @@ src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
-	src/processor/udp_network.lo \
-	src/processor/exploitability.lo
+	src/processor/udp_network.lo
 am_src_processor_minidump_unittest_OBJECTS = src/common/src_processor_minidump_unittest-test_assembler.$(OBJEXT) \
 	src/processor/src_processor_minidump_unittest-minidump_unittest.$(OBJEXT) \
 	src/processor/src_processor_minidump_unittest-synth_minidump.$(OBJEXT) \
@@ -302,7 +302,8 @@ src_processor_network_source_line_resolver_server_unittest_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/binarystream.lo src/processor/call_stack.lo \
-	src/processor/cfi_frame_info.lo src/processor/logging.lo \
+	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo src/processor/logging.lo \
 	src/processor/minidump_processor.lo src/processor/minidump.lo \
 	src/processor/network_source_line_resolver.lo \
 	src/processor/network_source_line_server.lo \
@@ -315,8 +316,7 @@ src_processor_network_source_line_resolver_server_unittest_DEPENDENCIES =  \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
-	src/processor/udp_network.lo \
-	src/processor/exploitability.lo
+	src/processor/udp_network.lo
 am_src_processor_network_source_line_resolver_unittest_OBJECTS = src/processor/src_processor_network_source_line_resolver_unittest-network_source_line_resolver_unittest.$(OBJEXT) \
 	src/testing/gtest/src/src_processor_network_source_line_resolver_unittest-gtest-all.$(OBJEXT) \
 	src/testing/src/src_processor_network_source_line_resolver_unittest-gmock-all.$(OBJEXT)
@@ -394,8 +394,9 @@ src_processor_stackwalker_selftest_OBJECTS =  \
 src_processor_stackwalker_selftest_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
-	src/processor/call_stack.lo src/processor/logging.lo \
-	src/processor/minidump.lo src/processor/pathname_stripper.lo \
+	src/processor/call_stack.lo src/processor/exploitability.lo \
+	src/processor/logging.lo src/processor/minidump.lo \
+	src/processor/pathname_stripper.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
 	src/processor/stackwalker_arm.lo \
@@ -667,6 +668,7 @@ src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/processor/call_stack.h \
 	src/google_breakpad/processor/code_module.h \
 	src/google_breakpad/processor/code_modules.h \
+	src/google_breakpad/processor/exploitability.h \
 	src/google_breakpad/processor/memory_region.h \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
@@ -678,7 +680,6 @@ src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/processor/stackwalker.h \
 	src/google_breakpad/processor/symbol_supplier.h \
 	src/google_breakpad/processor/system_info.h \
-	src/google_breakpad/processor/exploitability.h \
 	src/processor/address_map-inl.h \
 	src/processor/address_map.h \
 	src/processor/basic_code_module.h \
@@ -692,6 +693,7 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/cfi_frame_info.h \
 	src/processor/contained_range_map-inl.h \
 	src/processor/contained_range_map.h \
+	src/processor/exploitability.cc \
 	src/processor/linked_ptr.h \
 	src/processor/logging.h \
 	src/processor/logging.cc \
@@ -726,8 +728,7 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/tokenize.cc \
 	src/processor/tokenize.h \
 	src/processor/udp_network.cc \
-	src/processor/udp_network.h \
-	src/processor/exploitability.cc
+	src/processor/udp_network.h
 
 check_SCRIPTS = \
 	src/processor/minidump_dump_test \
@@ -850,6 +851,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo \
 	src/processor/logging.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -861,8 +863,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo \
-	src/processor/exploitability.lo
+	src/processor/tokenize.lo
 
 src_processor_minidump_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -922,6 +923,7 @@ src_processor_network_source_line_resolver_server_unittest_LDADD = \
 	src/processor/binarystream.lo \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo \
 	src/processor/logging.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -937,8 +939,7 @@ src_processor_network_source_line_resolver_server_unittest_LDADD = \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/tokenize.lo \
-	src/processor/udp_network.lo \
-	src/processor/exploitability.lo
+	src/processor/udp_network.lo
 
 src_processor_network_source_line_server_unittest_SOURCES = \
 	src/processor/network_source_line_server_unittest.cc \
@@ -986,6 +987,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
+	src/processor/exploitability.lo \
 	src/processor/logging.lo \
 	src/processor/minidump.lo \
 	src/processor/pathname_stripper.lo \
@@ -995,8 +997,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo \
-	src/processor/exploitability.lo
+	src/processor/tokenize.lo
 
 src_processor_stackwalker_amd64_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -1095,6 +1096,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/binarystream.lo \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
+	src/processor/exploitability.lo \
 	src/processor/logging.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
@@ -1109,8 +1111,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/tokenize.lo \
-	src/processor/udp_network.lo \
-	src/processor/exploitability.lo
+	src/processor/udp_network.lo
 
 src_processor_source_daemon_SOURCES = \
 	src/processor/source_daemon.cc
@@ -1425,6 +1426,8 @@ src/processor/binarystream.lo: src/processor/$(am__dirstamp) \
 src/processor/call_stack.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/cfi_frame_info.lo: src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/exploitability.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/logging.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -1998,6 +2001,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/call_stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/cfi_frame_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/logging.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_dump.Po@am__quote@
