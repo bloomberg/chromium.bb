@@ -1796,6 +1796,10 @@
             }],
           ],
         },
+      ]},  # 'targets'
+    ],  # OS=="win"
+    ['OS=="win" or OS=="mac"',
+      { 'targets': [
         {
           # policy_templates has different inputs and outputs, so it can't use
           # the rules of chrome_strings
@@ -1836,6 +1840,9 @@
                 ['use_titlecase_in_grd_files==1', {
                   'action': ['-D', 'use_titlecase'],
                 }],
+                ['OS == "mac"', {
+                  'action': ['-D', 'mac_bundle_id=<(mac_bundle_id)'],
+                }],
               ],
               'message': 'Generating policy templates from <(input_path)',
             },
@@ -1852,7 +1859,7 @@
           ],
         },
       ]},  # 'targets'
-    ],  # OS=="win"
+    ],  # OS=="win" or OS=="mac"
     ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
       'targets': [{
         'target_name': 'packed_resources',

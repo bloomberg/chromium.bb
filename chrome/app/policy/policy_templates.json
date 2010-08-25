@@ -1,4 +1,4 @@
-[
+{
 # policy_templates.json - Metafile for policy templates
 #
 # This file is used as input to generate the following policy templates:
@@ -79,125 +79,133 @@
 #     e.g. the name of the caption of ProxyServerDisabled:
 #       IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION
 #
-  # The homepage-related policies are split into two groups, because if they
-  # are in the same group, then Windows does not allow to set them undefined
-  # independently of each other.
-  {
-    'name': 'HomepageLocation',
-    'policies': [{
-      'name':  'HomepageLocation',
-      'type': 'string',
-     }],
-  },
-  {
-    'name': 'HomepageIsNewTabPage',
-    'policies': [{
+  'policy_groups': [
+    # The homepage-related policies are split into two groups, because if they
+    # are in the same group, then Windows does not allow to set them undefined
+    # independently of each other.
+    {
+      'name': 'HomepageLocation',
+      'policies': [{
+        'name':  'HomepageLocation',
+        'type': 'string',
+      }],
+    },
+    {
       'name': 'HomepageIsNewTabPage',
-      'type': 'main',
-    }],
-  },
-  {
-    'name': 'ApplicationLocale',
-    'policies': [{
-      'name': 'ApplicationLocaleValue',
-      'type': 'string',
-    }]
-  },
-  {
-    'name': 'AlternateErrorPagesEnabled',
-    'policies': [{
+      'policies': [{
+        'name': 'HomepageIsNewTabPage',
+        'type': 'main',
+      }],
+    },
+    {
+      'name': 'ApplicationLocale',
+      'policies': [{
+        'name': 'ApplicationLocaleValue',
+        'type': 'string',
+      }]
+    },
+    {
       'name': 'AlternateErrorPagesEnabled',
-      'type': 'main',
-    }]
-  },
-  {
-    'name': 'SearchSuggestEnabled',
-    'policies': [{
+      'policies': [{
+        'name': 'AlternateErrorPagesEnabled',
+        'type': 'main',
+      }]
+    },
+    {
       'name': 'SearchSuggestEnabled',
-      'type': 'main'
-    }],
-  },
-  {
-    'name': 'DnsPrefetchingEnabled',
-    'policies': [{
+      'policies': [{
+        'name': 'SearchSuggestEnabled',
+        'type': 'main'
+      }],
+    },
+    {
       'name': 'DnsPrefetchingEnabled',
-      'type': 'main'
-    }],
-  },
-  {
-    'name': 'SafeBrowsingEnabled',
-    'policies': [{
+      'policies': [{
+        'name': 'DnsPrefetchingEnabled',
+        'type': 'main'
+      }],
+    },
+    {
       'name': 'SafeBrowsingEnabled',
-      'type': 'main',
-    }]
-  },
-  {
-    'name': 'MetricsReportingEnabled',
-    'policies': [{
+      'policies': [{
+        'name': 'SafeBrowsingEnabled',
+        'type': 'main',
+      }]
+    },
+    {
       'name': 'MetricsReportingEnabled',
-      'type': 'main'
-    }],
-  },
-  {
-    'name': 'PasswordManagerEnabled',
-    'policies': [{
+      'policies': [{
+        'name': 'MetricsReportingEnabled',
+        'type': 'main'
+      }],
+    },
+    {
       'name': 'PasswordManagerEnabled',
-      'type': 'main',
-    }]
-  },
-  {
-    'name': 'DisabledPlugins',
-    'policies': [{
-      'name': 'DisabledPluginsList',
-      'type': 'string',
-    }]
-  },
-  {
-    'name': 'SyncDisabled',
-    'policies': [{
+      'policies': [{
+        'name': 'PasswordManagerEnabled',
+        'type': 'main',
+      }]
+    },
+    {
+      'name': 'DisabledPlugins',
+      'policies': [{
+        'name': 'DisabledPluginsList',
+        'type': 'string',
+      }]
+    },
+    {
       'name': 'SyncDisabled',
-      'type': 'main',
-    }]
-  },
-  {
-    'name': 'Proxy',
-    'policies': [
-      {
-        'name': 'ProxyServerMode',
-        'type': 'enum',
-        'items': [
-          {'name': 'ProxyServerDisabled', 'value': '0'},
-          {'name': 'ProxyServerAutoDetect', 'value': '1'},
-          {'name': 'ProxyServerManual', 'value': '2'},
-          {'name': 'ProxyServerUseSystem', 'value': '3'},
-        ],
-      },
-      {
-        'name': 'ProxyServer',
-        'type': 'string'
-      },
-      {
-        'name': 'ProxyPacUrl',
-        'type': 'string'
-      },
-      {
-        'name': 'ProxyBypassList',
-        'type': 'string'
-      },
-    ]
-  },
-  {
-    'name': 'ExtensionInstallBlacklist',
-    'policies': [{
+      'policies': [{
+        'name': 'SyncDisabled',
+        'type': 'main',
+      }]
+    },
+    {
+      'name': 'Proxy',
+      'policies': [
+        {
+          'name': 'ProxyServerMode',
+          'type': 'enum',
+          'items': [
+            {'name': 'ProxyServerDisabled', 'value': '0'},
+            {'name': 'ProxyServerAutoDetect', 'value': '1'},
+            {'name': 'ProxyServerManual', 'value': '2'},
+            {'name': 'ProxyServerUseSystem', 'value': '3'},
+          ],
+        },
+        {
+          'name': 'ProxyServer',
+          'type': 'string'
+        },
+        {
+          'name': 'ProxyPacUrl',
+          'type': 'string'
+        },
+        {
+          'name': 'ProxyBypassList',
+          'type': 'string'
+        },
+      ]
+    },
+    {
       'name': 'ExtensionInstallBlacklist',
-      'type': 'list',
-    }]
-  },
-  {
-    'name': 'ExtensionInstallWhitelist',
-    'policies': [{
+      'policies': [{
+        'name': 'ExtensionInstallBlacklist',
+        'type': 'list',
+      }]
+    },
+    {
       'name': 'ExtensionInstallWhitelist',
-      'type': 'list',
-    }]
-  }
-]
+      'policies': [{
+        'name': 'ExtensionInstallWhitelist',
+        'type': 'list',
+      }]
+    }
+  ],
+  'placeholders': [
+    {
+      'key': '$2',
+      'value': 'http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett'
+    },
+  ]
+}

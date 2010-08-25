@@ -3,14 +3,18 @@
 # found in the LICENSE file.
 
 
-from template_writer import TemplateWriter
+from grit.format.policy_templates.writers import template_writer
 
 
 def GetWriter(info, messages):
+  '''Factory method for creating AdmWriter objects.
+  See the constructor of TemplateWriter for description of
+  arguments.
+  '''
   return AdmWriter(info, messages)
 
 
-class AdmWriter(TemplateWriter):
+class AdmWriter(template_writer.TemplateWriter):
   '''Class for generating policy templates in Windows ADM format.
   It is used by PolicyTemplateGenerator to write ADM files.
   '''

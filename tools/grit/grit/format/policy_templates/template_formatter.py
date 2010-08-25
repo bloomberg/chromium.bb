@@ -59,7 +59,7 @@ class TemplateFormatter(interface.ItemFormatter):
 
     self._lang = lang
     self._GetFlags(item)
-    self._policy_groups = None
+    self._policy_data = None
     self._messages = {}
     self._ParseGritNodes(item)
     return self._GetOutput()
@@ -72,8 +72,9 @@ class TemplateFormatter(interface.ItemFormatter):
       The text of the policy template based on the parameters passed
       to __init__() and Format().
     '''
-    policy_generator = \
-        PolicyTemplateGenerator(self._messages, self._policy_groups)
+    policy_generator = PolicyTemplateGenerator(
+        self._messages,
+        self._policy_data['policy_groups'])
     writer = self._writer_module.GetWriter(self._info, self._messages)
     str = policy_generator.GetTemplateText(writer)
     return str
@@ -107,8 +108,14 @@ class TemplateFormatter(interface.ItemFormatter):
       message: A <message> node in the grit tree.
     '''
     msg_name = message.GetTextualIds()[0]
+    # Get translation of message.
     msg_txt = message.Translate(self._lang)
+    # Replace the placeholder of app name.
     msg_txt = msg_txt.replace('$1', self._info['app_name'])
+    # Replace other placeholders.
+    for placeholder in self._policy_data['placeholders']:
+      msg_txt = msg_txt.replace(placeholder['key'], placeholder['value'])
+    # Strip spaces and escape newlines.
     lines = msg_txt.split('\n')
     lines = [line.strip() for line in lines]
     msg_txt = "\\n".join(lines)
@@ -126,8 +133,8 @@ class TemplateFormatter(interface.ItemFormatter):
       return
     if (isinstance(item, structure.StructureNode) and
         item.attrs['type'] == 'policy_template_metafile'):
-      assert self._policy_groups == None
-      self._policy_groups = item.gatherer.GetData()
+      assert self._policy_data == None
+      self._policy_data = item.gatherer.GetData()
     elif (isinstance(item, message.MessageNode)):
       self._ImportMessage(item)
     for child in item.children:
