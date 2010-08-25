@@ -50,6 +50,9 @@ class MockClientSocket : public ClientSocket {
     return net_log_;
   }
 
+  virtual void SetSubresourceSpeculation() {}
+  virtual void SetOmniboxSpeculation() {}
+
   // Socket methods:
   virtual int Read(IOBuffer* buf, int buf_len,
                    CompletionCallback* callback) {
@@ -90,6 +93,9 @@ class MockFailingClientSocket : public ClientSocket {
   virtual const BoundNetLog& NetLog() const {
     return net_log_;
   }
+
+  virtual void SetSubresourceSpeculation() {}
+  virtual void SetOmniboxSpeculation() {}
 
   // Socket methods:
   virtual int Read(IOBuffer* buf, int buf_len,
@@ -144,6 +150,9 @@ class MockPendingClientSocket : public ClientSocket {
   virtual const BoundNetLog& NetLog() const {
     return net_log_;
   }
+
+  virtual void SetSubresourceSpeculation() {}
+  virtual void SetOmniboxSpeculation() {}
 
   // Socket methods:
   virtual int Read(IOBuffer* buf, int buf_len,

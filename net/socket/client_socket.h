@@ -15,25 +15,7 @@ class BoundNetLog;
 
 class ClientSocket : public Socket {
  public:
-  ClientSocket();
-
-  // Destructor emits statistics for this socket's lifetime.
-  virtual ~ClientSocket();
-
-  // Set the annotation to indicate this socket was created for speculative
-  // reasons.  Note that if the socket was used before calling this method, then
-  // the call will be ignored (no annotation will be added).
-  void SetSubresourceSpeculation();
-  void SetOmniboxSpeculation();
-
-  // Establish values of was_ever_connected_ and was_used_to_transmit_data_.
-  // The argument indicates if the socket's state, as reported by a
-  // ClientSocketHandle::is_reused(), should show that the socket has already
-  // been used to transmit data.
-  // This is typically called when a transaction finishes, and
-  // ClientSocketHandle is being destroyed.  Calling at that point it allows us
-  // to aggregates the impact of that connect job into this instance.
-  void UpdateConnectivityState(bool is_reused);
+  virtual ~ClientSocket() {}
 
   // Called to establish a connection.  Returns OK if the connection could be
   // established synchronously.  Otherwise, ERR_IO_PENDING is returned and the
@@ -75,23 +57,47 @@ class ClientSocket : public Socket {
   // Gets the NetLog for this socket.
   virtual const BoundNetLog& NetLog() const = 0;
 
- private:
-  // Publish histogram to help evaluate preconnection utilization.
-  void EmitPreconnectionHistograms() const;
+  // Set the annotation to indicate this socket was created for speculative
+  // reasons.  This call is generally fowarded to a basic TCPClientSocket*,
+  // where a UseHistory can be updated.
+  virtual void SetSubresourceSpeculation() = 0;
+  virtual void SetOmniboxSpeculation() = 0;
 
-  // Indicate if any ClientSocketHandle that used this socket was connected as
-  // would be indicated by the IsConnected() method.  This variable set by a
-  // ClientSocketHandle before releasing this ClientSocket.
-  bool was_ever_connected_;
+ protected:
+  // The following class is only used to gather statistics about the history of
+  // a socket.  It is only instantiated and used in basic sockets, such as
+  // TCPClientSocket* instances.  Other classes that are derived from
+  // ClientSocket should forward any potential settings to their underlying
+  // transport sockets.
+  class UseHistory {
+   public:
+    UseHistory();
+    ~UseHistory();
 
-  // Indicate if this socket was first created for speculative use, and identify
-  // the motivation.
-  bool omnibox_speculation_;
-  bool subresource_speculation_;
+    void set_was_ever_connected();
+    void set_was_used_to_convey_data();
 
-  // Indicate if this socket was ever used. This state is set by a
-  // ClientSocketHandle before releasing this ClientSocket.
-  bool was_used_to_transmit_data_;
+    // The next two setters only have any impact if the socket has not yet been
+    // used to transmit data.  If called later, we assume that the socket was
+    // reused from the pool, and was NOT constructed to service a speculative
+    // request.
+    void set_subresource_speculation();
+    void set_omnibox_speculation();
+
+   private:
+    // Summarize the statistics for this socket.
+    void EmitPreconnectionHistograms() const;
+    // Indicate if this was ever connected.
+    bool was_ever_connected_;
+    // Indicate if this socket was ever used to transmit or receive data.
+    bool was_used_to_convey_data_;
+
+    // Indicate if this socket was first created for speculative use, and
+    // identify the motivation.
+    bool omnibox_speculation_;
+    bool subresource_speculation_;
+    DISALLOW_COPY_AND_ASSIGN(UseHistory);
+  };
 };
 
 }  // namespace net

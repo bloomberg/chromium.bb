@@ -262,6 +262,14 @@ int TransportSocket::GetPeerAddress(net::AddressList* address) const {
   return net::OK;
 }
 
+void TransportSocket::SetSubresourceSpeculation() {
+  NOTREACHED();
+}
+
+void TransportSocket::SetOmniboxSpeculation() {
+  NOTREACHED();
+}
+
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
                           net::CompletionCallback* callback) {
   DCHECK(buf);
