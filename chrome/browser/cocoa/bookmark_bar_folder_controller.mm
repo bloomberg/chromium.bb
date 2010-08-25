@@ -1212,41 +1212,37 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)addButtonForNode:(const BookmarkNode*)node
                  atIndex:(NSInteger)buttonIndex {
-  NSRect buttonFrame = NSMakeRect(bookmarks::kBookmarkHorizontalPadding,
-      bookmarks::kBookmarkVerticalPadding,
-      NSWidth([mainView_ frame]) - 2 * bookmarks::kBookmarkHorizontalPadding -
-              bookmarks::kScrollViewContentWidthMargin,
-              bookmarks::kBookmarkBarHeight - 2 *
-                  bookmarks::kBookmarkVerticalPadding);
+  // Propose the frame for the new button.
+  NSRect newButtonFrame = NSMakeRect(0, 0, 500, 500);  // Placeholder values.
   // When adding a button to an empty folder we must remove the 'empty'
   // placeholder button. This can be detected by checking for a parent
   // child count of 1.
   const BookmarkNode* parentNode = node->GetParent();
   if (parentNode->GetChildCount() == 1) {
     BookmarkButton* emptyButton = [buttons_ lastObject];
+    newButtonFrame = [emptyButton frame];
     [emptyButton removeFromSuperview];
     [buttons_ removeLastObject];
-  } else {
-    // Set us up to remember the last moved button's frame.
-    buttonFrame.origin.y += NSHeight([mainView_ frame]) +
-        bookmarks::kBookmarkBarHeight;
   }
 
   if (buttonIndex == -1)
     buttonIndex = [buttons_ count];
 
+  // Offset upward by one button height all buttons above insertion location.
   BookmarkButton* button = nil;  // Remember so it can be de-highlighted.
   for (NSInteger i = 0; i < buttonIndex; ++i) {
     button = [buttons_ objectAtIndex:i];
-    buttonFrame = [button frame];
-    buttonFrame.origin.y += bookmarks::kBookmarkBarHeight;
+    // Remember this location in case it's the last button being moved
+    // which is where the new button will be located.
+    newButtonFrame = [button frame];
+    NSRect buttonFrame = [button frame];
+    buttonFrame.origin.y += bookmarks::kBookmarkBarHeight +
+        bookmarks::kBookmarkVerticalPadding;
     [button setFrame:buttonFrame];
   }
   [[button cell] mouseExited:nil];  // De-highlight.
-  if (parentNode->GetChildCount() > 1)
-    buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight;
   BookmarkButton* newButton = [self makeButtonForNode:node
-                                                frame:buttonFrame];
+                                                frame:newButtonFrame];
   [buttons_ insertObject:newButton atIndex:buttonIndex];
   [mainView_ addSubview:newButton];
 
@@ -1316,7 +1312,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       for (NSInteger i = fromIndex; i < toIndex; ++i) {
         BookmarkButton* button = [buttons_ objectAtIndex:i];
         NSRect frame = [button frame];
-        frame.origin.y += bookmarks::kBookmarkBarHeight;
+        frame.origin.y += bookmarks::kBookmarkBarHeight +
+            bookmarks::kBookmarkVerticalPadding;
         [button setFrameOrigin:frame.origin];
       }
     } else {
@@ -1325,7 +1322,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       for (NSInteger i = fromIndex - 1; i >= toIndex; --i) {
         BookmarkButton* button = [buttons_ objectAtIndex:i];
         NSRect buttonFrame = [button frame];
-        buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight;
+        buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight +
+            bookmarks::kBookmarkVerticalPadding;
         [button setFrameOrigin:buttonFrame.origin];
       }
     }
@@ -1358,7 +1356,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   for (NSInteger i = 0; i < buttonIndex; ++i) {
     BookmarkButton* button = [buttons_ objectAtIndex:i];
     NSRect buttonFrame = [button frame];
-    buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight;
+    buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight +
+      bookmarks::kBookmarkVerticalPadding;
     [button setFrame:buttonFrame];
   }
   // Search for and adjust submenus, if necessary.
