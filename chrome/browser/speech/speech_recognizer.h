@@ -5,14 +5,15 @@
 #ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 #define CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
-#include "media/audio/audio_input_controller.h"
-#include "chrome/browser/speech/speech_recognition_request.h"
-#include "chrome/browser/speech/endpointer/endpointer.h"
 #include <list>
 #include <string>
 #include <utility>
+
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "chrome/browser/speech/endpointer/endpointer.h"
+#include "chrome/browser/speech/speech_recognition_request.h"
+#include "media/audio/audio_input_controller.h"
 
 namespace speech_input {
 
