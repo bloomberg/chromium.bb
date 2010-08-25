@@ -15,7 +15,7 @@
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
 #include "views/grid_layout.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 // Layout constants.

@@ -1019,7 +1019,11 @@ void BrowserWindowGtk::ShowPageInfo(Profile* profile,
                                     const GURL& url,
                                     const NavigationEntry::SSLStatus& ssl,
                                     bool show_history) {
-  browser::ShowPageInfo(window_, profile, url, ssl, show_history);
+  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble))
+    browser::ShowPageInfoBubble(window_, profile, url, ssl, show_history);
+  else
+    browser::ShowPageInfo(window_, profile, url, ssl, show_history);
 }
 
 void BrowserWindowGtk::ShowAppMenu() {

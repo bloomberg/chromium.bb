@@ -3539,6 +3539,7 @@
                 ['include', '^browser/views/notifications/balloon_view_host.h'],
                 ['include', '^browser/views/options/options_page_view.cc'],
                 ['include', '^browser/views/options/options_page_view.h'],
+                ['include', '^browser/views/page_info_bubble_view.cc'],
                 ['include', '^browser/views/page_info_window_view.cc'],
                 ['include', '^browser/views/panel_controller.cc'],
                 ['include', '^browser/views/panel_controller.h'],

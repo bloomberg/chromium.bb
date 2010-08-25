@@ -17,9 +17,7 @@ class Profile;
 @class PageInfoWindowController;
 
 namespace {
-
 class PageInfoWindowMacTest;
-
 };
 
 // This bridge is responsible for getting information from the cross-platform
@@ -30,8 +28,10 @@ class PageInfoWindowMac : public PageInfoModel::PageInfoModelObserver {
  public:
   virtual ~PageInfoWindowMac();
 
-  // Creates and shows the page info.
-  static void ShowPageInfo(Profile* profile,
+  // Used to create the page info window; called from the cross-platform
+  // function.
+  static void ShowPageInfo(gfx::NativeWindow parent,
+                           Profile* profile,
                            const GURL& url,
                            const NavigationEntry::SSLStatus& ssl,
                            bool show_history);
@@ -47,7 +47,7 @@ class PageInfoWindowMac : public PageInfoModel::PageInfoModelObserver {
  private:
   friend class ::PageInfoWindowMacTest;
 
-  // Private constructor, called by ShowPageInfo().
+  // Constructor; private.  Called by ShowPageInfo().
   PageInfoWindowMac(PageInfoWindowController* controller,
                     Profile* profile,
                     const GURL& url,

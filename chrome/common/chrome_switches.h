@@ -135,6 +135,7 @@ extern const char kEnableMemoryInfo[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableNaCl[];
 extern const char kEnableNativeWebWorkers[];
+extern const char kEnableNewPageInfoBubble[];
 extern const char kEnablePreconnect[];
 extern const char kEnablePreparsedJsCaching[];
 extern const char kEnablePrintPreview[];

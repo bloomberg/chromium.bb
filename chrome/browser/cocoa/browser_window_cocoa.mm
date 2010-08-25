@@ -5,6 +5,7 @@
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 
 #include "app/l10n_util_mac.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -395,7 +397,11 @@ void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
                                       const GURL& url,
                                       const NavigationEntry::SSLStatus& ssl,
                                       bool show_history) {
-  PageInfoWindowMac::ShowPageInfo(profile, url, ssl, show_history);
+  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble))
+    browser::ShowPageInfoBubble(window(), profile, url, ssl, show_history);
+  else
+    browser::ShowPageInfo(window(), profile, url, ssl, show_history);
 }
 
 void BrowserWindowCocoa::ShowAppMenu() {

@@ -431,6 +431,9 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
+// Enables the Page Info SSL dialog as a bubble, rather than a separate window.
+const char kEnableNewPageInfoBubble[]       = "enable-new-page-info-bubble";
+
 // Enable content settings based on host *and* plug-in.
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";

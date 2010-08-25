@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/page_info_window_controller.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -46,23 +47,25 @@ const CGFloat kImageSize = 30;
 
 }  // namespace
 
-void PageInfoWindowMac::ShowPageInfo(Profile* profile,
-                                     const GURL& url,
-                                     const NavigationEntry::SSLStatus& ssl,
-                                     bool show_history) {
-  // The controller will clean itself up after the NSWindow it manages closes.
-  // We do not manage it as it owns us.
-  PageInfoWindowController* controller =
-      [[PageInfoWindowController alloc] init];
-  PageInfoWindowMac* page_info = new PageInfoWindowMac(controller,
-                                                       profile,
-                                                       url,
-                                                       ssl,
-                                                       show_history);
-  [controller setPageInfo:page_info];
-  page_info->LayoutSections();
-  page_info->Show();
+namespace browser {
+
+void ShowPageInfo(gfx::NativeWindow parent,
+                  Profile* profile,
+                  const GURL& url,
+                  const NavigationEntry::SSLStatus& ssl,
+                  bool show_history) {
+  PageInfoWindowMac::ShowPageInfo(parent, profile, url, ssl, show_history);
 }
+
+void ShowPageInfoBubble(gfx::NativeWindow parent,
+                        Profile* profile,
+                        const GURL& url,
+                        const NavigationEntry::SSLStatus& ssl,
+                        bool show_history) {
+  NOTIMPLEMENTED();
+}
+
+}  // namespace browser
 
 PageInfoWindowMac::PageInfoWindowMac(PageInfoWindowController* controller,
                                      Profile* profile,
@@ -83,6 +86,26 @@ PageInfoWindowMac::PageInfoWindowMac(PageInfoWindowController* controller,
   Init();
 }
 
+// static
+void PageInfoWindowMac::ShowPageInfo(gfx::NativeWindow parent,
+                                     Profile* profile,
+                                     const GURL& url,
+                                     const NavigationEntry::SSLStatus& ssl,
+                                     bool show_history) {
+  // The controller will clean itself up after the NSWindow it manages closes.
+  // We do not manage it as it owns us.
+  PageInfoWindowController* controller =
+      [[PageInfoWindowController alloc] init];
+  PageInfoWindowMac* page_info = new PageInfoWindowMac(controller,
+                                                       profile,
+                                                       url,
+                                                       ssl,
+                                                       show_history);
+  [controller setPageInfo:page_info];
+  page_info->LayoutSections();
+  page_info->Show();
+}
+
 void PageInfoWindowMac::Init() {
   // Load the image refs.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -97,13 +120,17 @@ void PageInfoWindowMac::Init() {
 PageInfoWindowMac::~PageInfoWindowMac() {
 }
 
-void PageInfoWindowMac::Show() {
-  [[controller_ window] makeKeyAndOrderFront:nil];
-}
-
 void PageInfoWindowMac::ShowCertDialog(int) {
   DCHECK(cert_id_ != 0);
   ShowCertificateViewerByID([controller_ window], cert_id_);
+}
+
+void PageInfoWindowMac::ModelChanged() {
+  LayoutSections();
+}
+
+void PageInfoWindowMac::Show() {
+  [[controller_ window] makeKeyAndOrderFront:nil];
 }
 
 // This will create the subviews for the page info window. The general layout
@@ -229,8 +256,4 @@ void PageInfoWindowMac::LayoutSections() {
   [[controller_ window] setFrame:window_frame
                          display:YES
                          animate:[[controller_ window] isVisible]];
-}
-
-void PageInfoWindowMac::ModelChanged() {
-  LayoutSections();
 }
