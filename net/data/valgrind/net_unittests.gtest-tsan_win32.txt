@@ -11,6 +11,9 @@ URLRequestTest.QuitTest
 # See http://crbug.com/46647
 DiskCacheBackendTest.*
 
+# See http://crbug.com/53304
+URLRequestTest.*
+
 # See http://crbug.com/47836
 ClientSocketPoolBaseTest.CancelPendingSocketAtSocketLimit
 
