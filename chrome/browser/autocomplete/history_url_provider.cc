@@ -403,8 +403,12 @@ bool HistoryURLProvider::FixupExactSuggestion(history::URLDatabase* db,
       return false;
     GURL destination_url(URLFixerUpper::FixupURL(WideToUTF8(input.text()),
                                                  std::string()));
-    if (!db->GetRowForURL(destination_url, &info))
+    if (!db->GetRowForURL(destination_url, NULL))
       return false;
+
+    // If we got here, then we hit the tricky corner case.  Make sure that
+    // |info| corresponds to the right URL.
+    info = history::URLRow(match->destination_url);
   } else {
     // We have data for this match, use it.
     match->deletable = true;

@@ -327,6 +327,9 @@ class AutocompleteEditModel : public NotificationObserver {
   // Called whenever user_text_ should change.
   void InternalSetUserText(const std::wstring& text);
 
+  // Returns true if a keyword is selected.
+  bool KeywordIsSelected() const;
+
   // Conversion between user text and display text. User text is the text the
   // user has input. Display text is the text being shown in the edit. The
   // two are different if a keyword is selected.

@@ -170,7 +170,20 @@ void AutocompleteEditModel::GetDataForURLExport(GURL* url,
 }
 
 std::wstring AutocompleteEditModel::GetDesiredTLD() const {
-  return (control_key_state_ == DOWN_WITHOUT_CHANGE) ?
+  // Tricky corner case: The user has typed "foo" and currently sees an inline
+  // autocomplete suggestion of "foo.net".  He now presses ctrl-a (e.g. to
+  // select all, on Windows).  If we treat the ctrl press as potentially for the
+  // sake of ctrl-enter, then we risk "www.foo.com" being promoted as the best
+  // match.  This would make the autocompleted text disappear, leaving our user
+  // feeling very confused when the wrong text gets highlighted.
+  //
+  // Thus, we only treat the user as pressing ctrl-enter when the user presses
+  // ctrl without any fragile state built up in the omnibox:
+  // * the contents of the omnibox have not changed since the keypress,
+  // * there is no autocompleted text visible, and
+  // * the user is not typing a keyword query.
+  return (control_key_state_ == DOWN_WITHOUT_CHANGE &&
+          inline_autocomplete_text_.empty() && !KeywordIsSelected())?
     std::wstring(L"com") : std::wstring();
 }
 
@@ -705,18 +718,20 @@ void AutocompleteEditModel::InternalSetUserText(const std::wstring& text) {
   inline_autocomplete_text_.clear();
 }
 
+bool AutocompleteEditModel::KeywordIsSelected() const {
+  return ((keyword_ui_state_ != NO_KEYWORD) && !is_keyword_hint_ &&
+          !keyword_.empty());
+}
+
 std::wstring AutocompleteEditModel::DisplayTextFromUserText(
     const std::wstring& text) const {
-  return ((keyword_ui_state_ == NO_KEYWORD) || is_keyword_hint_ ||
-          keyword_.empty()) ?
-      text : KeywordProvider::SplitReplacementStringFromInput(text);
+  return KeywordIsSelected() ?
+      KeywordProvider::SplitReplacementStringFromInput(text) : text;
 }
 
 std::wstring AutocompleteEditModel::UserTextFromDisplayText(
     const std::wstring& text) const {
-  return ((keyword_ui_state_ == NO_KEYWORD) || is_keyword_hint_ ||
-          keyword_.empty()) ?
-      text : (keyword_ + L" " + text);
+  return KeywordIsSelected() ? (keyword_ + L" " + text) : text;
 }
 
 void AutocompleteEditModel::GetInfoForCurrentText(

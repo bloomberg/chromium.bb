@@ -903,10 +903,8 @@ void AutocompleteController::CommitIfQueryHasNeverBeenCommitted() {
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
   CheckIfDone();
-  if (updated_matches || done_) {
+  if (updated_matches || done_)
     UpdateLatestResult(false);
-    return;
-  }
 }
 
 void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
