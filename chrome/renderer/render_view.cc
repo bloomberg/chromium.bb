@@ -1306,6 +1306,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
   params.is_post = false;
   params.page_id = page_id_;
   params.is_content_filtered = response.isContentFiltered();
+  params.was_within_same_page = navigation_state->was_within_same_page();
   if (!navigation_state->security_info().empty()) {
     // SSL state specified in the request takes precedence over the one in the
     // response.
@@ -1449,7 +1450,9 @@ void RenderView::UpdateURL(WebFrame* frame) {
   // we don't want the transition type to persist.  Just clear it.
   navigation_state->set_transition_type(PageTransition::LINK);
 
-  if (accessibility_.get()) {
+  // Check if the navigation was within the same page, in which case we don't
+  // want to clear the accessibility cache.
+  if (accessibility_.get() && !navigation_state->was_within_same_page()) {
     accessibility_->clear();
     accessibility_.reset();
   }
@@ -3117,11 +3120,9 @@ void RenderView::didFinishLoad(WebFrame* frame) {
 
 void RenderView::didNavigateWithinPage(
     WebFrame* frame, bool is_new_navigation) {
-
   // Determine if the UserScriptIdleScheduler already ran scripts on this page,
   // since a new one gets created by didCreateDataSource.
-  NavigationState* state =
-    NavigationState::FromDataSource(frame->dataSource());
+  NavigationState* state = NavigationState::FromDataSource(frame->dataSource());
   bool idle_scheduler_ran = state->user_script_idle_scheduler()->has_run();
 
   // If this was a reference fragment navigation that we initiated, then we
@@ -3133,10 +3134,12 @@ void RenderView::didNavigateWithinPage(
   // DidCreateDataSource conveniently takes care of this for us.
   didCreateDataSource(frame, frame->dataSource());
 
+  NavigationState* new_state =
+      NavigationState::FromDataSource(frame->dataSource());
+  new_state->set_was_within_same_page(true);
+
   if (idle_scheduler_ran) {
     // Update the new UserScriptIdleScheduler so we don't re-run scripts.
-    NavigationState* new_state =
-        NavigationState::FromDataSource(frame->dataSource());
     new_state->user_script_idle_scheduler()->set_has_run(true);
   }
 

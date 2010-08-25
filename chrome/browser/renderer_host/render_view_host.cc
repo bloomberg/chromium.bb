@@ -1015,7 +1015,12 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
   FilterURL(policy, renderer_id, &validated_params.password_form.origin);
   FilterURL(policy, renderer_id, &validated_params.password_form.action);
 
-  SetDocumentLoaded(false);
+  if (!validated_params.was_within_same_page) {
+    // Only set that the document is not loaded if the navigation was not within
+    // the current page. If it was within the same page, the document will not
+    // load again.
+    SetDocumentLoaded(false);
+  }
   delegate_->DidNavigate(this, validated_params);
 }
 

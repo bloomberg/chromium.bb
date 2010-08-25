@@ -228,6 +228,11 @@ struct ViewHostMsg_FrameNavigate_Params {
   // (this can happen if the resource was insecure).
   bool is_content_filtered;
 
+  // Whether the frame navigation resulted in no change to the documents within
+  // the page. For example, the navigation may have just resulted in scrolling
+  // to a named anchor.
+  bool was_within_same_page;
+
   // The status code of the HTTP request.
   int http_status_code;
 };

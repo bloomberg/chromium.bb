@@ -253,6 +253,10 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   void set_was_translated(bool value) { was_translated_ = value; }
   bool was_translated() const { return was_translated_; }
 
+  // True iff the frame's navigation was within the same page.
+  void set_was_within_same_page(bool value) { was_within_same_page_ = value; }
+  bool was_within_same_page() const { return was_within_same_page_; }
+
   void set_was_prefetcher(bool value) { was_prefetcher_ = value; }
   bool was_prefetcher() const { return was_prefetcher_; }
 
@@ -287,6 +291,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         was_alternate_protocol_available_(false),
         was_fetched_via_proxy_(false),
         was_translated_(false),
+        was_within_same_page_(false),
         was_prefetcher_(false),
         was_referred_by_prefetcher_(false) {
   }
@@ -324,6 +329,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   bool was_alternate_protocol_available_;
   bool was_fetched_via_proxy_;
   bool was_translated_;
+  bool was_within_same_page_;
 
   // A prefetcher is a page that contains link rel=prefetch elements.
   bool was_prefetcher_;
