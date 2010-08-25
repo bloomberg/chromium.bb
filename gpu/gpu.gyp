@@ -137,6 +137,7 @@
         'command_buffer_common',
         '../app/app.gyp:app_base',
         '../gfx/gfx.gyp:gfx',
+        '../third_party/angle/src/build_angle.gyp:translator_glsl',
       ],
       'sources': [
         'command_buffer/service/buffer_manager.h',
@@ -182,16 +183,6 @@
         ['OS == "linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-          ],
-        }],
-        # TODO(gman): Change this condition to be false if the backend is
-        # native OpenGL ES 2.0 and false if the backend is OpenGL.
-        ['1==1', {
-          'defines': [
-            'GLES2_GPU_SERVICE_TRANSLATE_SHADER',
-          ],
-          'dependencies': [
-            '../third_party/angle/src/build_angle.gyp:translator_glsl',
           ],
         }],
       ],

@@ -34,10 +34,7 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
-
-#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
-#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -272,7 +269,6 @@ class FrameBuffer {
   DISALLOW_COPY_AND_ASSIGN(FrameBuffer);
 };
 
-#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
 void FinalizeShaderTranslator(void* /* dummy */) {
   ShFinalize();
 }
@@ -285,7 +281,6 @@ bool InitializeShaderTranslator() {
   }
   return initialized;
 }
-#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 // }  // anonymous namespace.
 
 GLES2Decoder::GLES2Decoder(ContextGroup* group)
@@ -1273,8 +1268,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   std::string last_error_;
 
   bool use_shader_translator_;
-  void* vertex_compiler_;
-  void* fragment_compiler_;
+  ShHandle vertex_compiler_;
+  ShHandle fragment_compiler_;
 
   // Cached from the context group.
   const Validators* validators_;
@@ -1671,40 +1666,40 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
   }
 
-#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
-  if (!InitializeShaderTranslator()) {
-    DLOG(ERROR) << "Could not initialize shader translator.";
-    Destroy();
-    return false;
-  }
+  if (use_shader_translator_) {
+    if (!InitializeShaderTranslator()) {
+      DLOG(ERROR) << "Could not initialize shader translator.";
+      Destroy();
+      return false;
+    }
 
-  TBuiltInResource resources;
-  resources.maxVertexAttribs = group_->max_vertex_attribs();
-  resources.maxVertexUniformVectors =
-      group_->max_vertex_uniform_vectors();
-  resources.maxVaryingVectors = group_->max_varying_vectors();
-  resources.maxVertexTextureImageUnits =
-      group_->max_vertex_texture_image_units();
-  resources.maxCombinedTextureImageUnits = group_->max_texture_units();
-  resources.maxTextureImageUnits = group_->max_texture_image_units();
-  resources.maxFragmentUniformVectors =
-      group_->max_fragment_uniform_vectors();
-  resources.maxDrawBuffers = 1;
-  vertex_compiler_ = ShConstructCompiler(EShLangVertex, EShSpecGLES2,
-      &resources);
-  if (vertex_compiler_ == NULL) {
-      DLOG(ERROR) << "Could not create vertex shader translator.";
-      Destroy();
-      return false;
+    TBuiltInResource resources;
+    resources.maxVertexAttribs = group_->max_vertex_attribs();
+    resources.maxVertexUniformVectors =
+        group_->max_vertex_uniform_vectors();
+    resources.maxVaryingVectors = group_->max_varying_vectors();
+    resources.maxVertexTextureImageUnits =
+        group_->max_vertex_texture_image_units();
+    resources.maxCombinedTextureImageUnits = group_->max_texture_units();
+    resources.maxTextureImageUnits = group_->max_texture_image_units();
+    resources.maxFragmentUniformVectors =
+        group_->max_fragment_uniform_vectors();
+    resources.maxDrawBuffers = 1;
+    vertex_compiler_ = ShConstructCompiler(EShLangVertex, EShSpecGLES2,
+        &resources);
+    if (vertex_compiler_ == NULL) {
+        DLOG(ERROR) << "Could not create vertex shader translator.";
+        Destroy();
+        return false;
+    }
+    fragment_compiler_ = ShConstructCompiler(EShLangFragment, EShSpecGLES2,
+        &resources);
+    if (fragment_compiler_ == NULL) {
+        DLOG(ERROR) << "Could not create fragment shader translator.";
+        Destroy();
+        return false;
+    }
   }
-  fragment_compiler_ = ShConstructCompiler(EShLangFragment, EShSpecGLES2,
-      &resources);
-  if (fragment_compiler_ == NULL) {
-      DLOG(ERROR) << "Could not create fragment shader translator.";
-      Destroy();
-      return false;
-  }
-#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 
   return true;
 }
@@ -2082,7 +2077,6 @@ void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
 }
 
 void GLES2DecoderImpl::Destroy() {
-#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
   if (vertex_compiler_ != NULL) {
     ShDestruct(vertex_compiler_);
     vertex_compiler_ = NULL;
@@ -2091,7 +2085,6 @@ void GLES2DecoderImpl::Destroy() {
     ShDestruct(fragment_compiler_);
     fragment_compiler_ = NULL;
   }
-#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER)
 
   if (context_.get()) {
     MakeCurrent();
@@ -3709,7 +3702,6 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
   const char* shader_src = info->source().c_str();
-#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
   if (use_shader_translator_) {
     int dbg_options = 0;
     ShHandle compiler = info->shader_type() == GL_VERTEX_SHADER ?
@@ -3721,7 +3713,6 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
     }
     shader_src = ShGetObjectCode(compiler);
   }
-#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 
   glShaderSource(info->service_id(), 1, &shader_src, NULL);
   glCompileShader(info->service_id());
