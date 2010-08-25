@@ -18,6 +18,14 @@ TEST(FormFieldTest, Match) {
   field.set_label(ASCIIToUTF16("a"));
   EXPECT_TRUE(FormField::Match(&field, string16(), true));
 
+  // Strictly empty pattern matches empty string.
+  field.set_label(ASCIIToUTF16(""));
+  EXPECT_TRUE(FormField::Match(&field, ASCIIToUTF16("^$"), true));
+
+  // Strictly empty pattern does not match non-empty string.
+  field.set_label(ASCIIToUTF16("a"));
+  EXPECT_FALSE(FormField::Match(&field, ASCIIToUTF16("^$"), true));
+
   // Non-empty pattern doesn't match empty string.
   field.set_label(string16());
   EXPECT_FALSE(FormField::Match(&field, ASCIIToUTF16("a"), true));

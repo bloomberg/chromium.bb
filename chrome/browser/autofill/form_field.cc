@@ -67,6 +67,12 @@ namespace {
 // The name of the hidden form control element.
 const char* const kControlTypeHidden = "hidden";
 
+// The name of the radio form control element.
+const char* const kControlTypeRadio = "radio";
+
+// The name of the checkbox form control element.
+const char* const kControlTypeCheckBox = "checkbox";
+
 }  // namespace
 
 class EmailField : public FormField {
@@ -271,9 +277,13 @@ FormFieldSet::FormFieldSet(FormStructure* fields) {
   // Parse fields.
   std::vector<AutoFillField*>::const_iterator field = fields->begin();
   while (field != fields->end() && *field != NULL) {
-    // Don't parse hidden fields.
+    // Don't parse hidden fields or radio or checkbox controls.
     if (LowerCaseEqualsASCII((*field)->form_control_type(),
-                             kControlTypeHidden)) {
+                             kControlTypeHidden) ||
+        LowerCaseEqualsASCII((*field)->form_control_type(),
+                             kControlTypeRadio) ||
+        LowerCaseEqualsASCII((*field)->form_control_type(),
+                             kControlTypeCheckBox)) {
       field++;
       continue;
     }

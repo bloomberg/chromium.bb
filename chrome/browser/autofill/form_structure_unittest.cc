@@ -917,4 +917,88 @@ TEST(FormStructureTest, ThreePartPhoneNumber) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(3)->heuristic_type());
 }
 
+TEST(FormStructureTest, MatchSpecificInputTypes) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
+                                               ASCIIToUTF16("firstname"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
+                                               ASCIIToUTF16("lastname"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("EMail"),
+                                               ASCIIToUTF16("email"),
+                                               string16(),
+                                               ASCIIToUTF16("email"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Phone"),
+                                               ASCIIToUTF16("phone"),
+                                               string16(),
+                                               ASCIIToUTF16("number"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Country"),
+                                               ASCIIToUTF16("country"),
+                                               string16(),
+                                               ASCIIToUTF16("select-one"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Fax"),
+                                               ASCIIToUTF16("fax"),
+                                               string16(),
+                                               ASCIIToUTF16("tel"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                                               ASCIIToUTF16("address"),
+                                               string16(),
+                                               ASCIIToUTF16("radio"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("City"),
+                                               ASCIIToUTF16("city"),
+                                               string16(),
+                                               ASCIIToUTF16("checkbox"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("State"),
+                                               ASCIIToUTF16("state"),
+                                               string16(),
+                                               ASCIIToUTF16("hidden"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("Submit"),
+                                               string16(),
+                                               ASCIIToUTF16("submit"),
+                                               0));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->IsAutoFillable());
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(10U, form_structure->field_count());
+  ASSERT_EQ(6U, form_structure->autofill_count());
+
+  // First name.
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  // Last name.
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  // Email.
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+  // Phone.
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+            form_structure->field(3)->heuristic_type());
+  // Country.
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, form_structure->field(4)->heuristic_type());
+  // Fax.
+  EXPECT_EQ(PHONE_FAX_WHOLE_NUMBER, form_structure->field(5)->heuristic_type());
+  // Address.  Invalid input type.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(6)->heuristic_type());
+  // City.  Invalid input type.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(7)->heuristic_type());
+  // State.  Invalid input type.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(8)->heuristic_type());
+  // Submit.  Invalid input type.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(9)->heuristic_type());
+}
+
 }  // namespace
