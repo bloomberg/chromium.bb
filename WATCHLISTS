@@ -209,7 +209,7 @@
                  'garykac@chromium.org'],
     'domui_options': ['dhg@chromium.org'],
     'cookie_monster': ['rdsmith@chromium.org'],
-    'autofill': ['dhollowa@chromium.org'],
+    'autofill': ['dhollowa@chromium.org', 'jhawkins@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
   },
 }
