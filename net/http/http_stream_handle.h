@@ -14,6 +14,8 @@
 
 namespace net {
 
+struct HttpRequestInfo;
+
 // The HttpStreamHandle provides a container for a ClientSocketHandle and
 // a stream.  The HttpStream does not own the ClientSocketHandle which it uses.
 // The HttpStreamHandle container can be used in cases where you just want a

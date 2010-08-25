@@ -12,7 +12,6 @@
 
 namespace net {
 
-struct HttpRequestInfo;
 class BoundNetLog;
 class HostPortPair;
 class HttpAlternateProtocols;
@@ -24,6 +23,9 @@ class HttpStreamHandle;
 class ProxyInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
+class X509Certificate;
+struct HttpRequestInfo;
+struct SSLConfig;
 
 // The StreamFactory defines an interface for creating usable HttpStreams.
 class StreamFactory {
