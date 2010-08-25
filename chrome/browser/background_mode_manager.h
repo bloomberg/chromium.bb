@@ -12,6 +12,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class Browser;
 class Extension;
 class PrefService;
 class Profile;
@@ -100,6 +101,11 @@ class BackgroundModeManager
   // Removes the status tray icon because we are exiting background mode.
   // Virtual to enable testing.
   virtual void RemoveStatusTrayIcon();
+
+  // Returns a browser window, or creates one if none are open. Used by
+  // operations (like displaying the preferences dialog) that require a Browser
+  // window.
+  Browser* GetBrowserWindow();
 
   NotificationRegistrar registrar_;
 

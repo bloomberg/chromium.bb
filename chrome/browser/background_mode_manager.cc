@@ -23,6 +23,10 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/gtk_util.h"
+#endif
+
 BackgroundModeManager::BackgroundModeManager(Profile* profile)
     : profile_(profile),
       background_app_count_(0),
@@ -197,6 +201,16 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
   menus::SimpleMenuModel* menu = new menus::SimpleMenuModel(this);
   menu->AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+
+#if defined(TOOLKIT_GTK)
+  string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
+  if (preferences.empty())
+    menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+  else
+    menu->AddItem(IDC_OPTIONS, preferences);
+#else
+  menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+#endif
   menu->AddSeparator();
   menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   status_icon_->SetContextMenu(menu);
@@ -231,20 +245,25 @@ void BackgroundModeManager::ExecuteCommand(int item) {
       UserMetrics::RecordAction(UserMetricsAction("Exit"), profile_);
       BrowserList::CloseAllBrowsersAndExit();
       break;
-    case IDC_ABOUT: {
-      // Need to display a browser window to put up the about dialog.
-      Browser* browser = BrowserList::GetLastActive();
-      if (!browser) {
-        Browser::OpenEmptyWindow(profile_);
-        browser = BrowserList::GetLastActive();
-      }
-      browser->OpenAboutChromeDialog();
+    case IDC_ABOUT:
+      GetBrowserWindow()->OpenAboutChromeDialog();
       break;
-    }
+    case IDC_OPTIONS:
+      GetBrowserWindow()->OpenOptionsDialog();
+      break;
     default:
       NOTREACHED();
       break;
   }
+}
+
+Browser* BackgroundModeManager::GetBrowserWindow() {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser) {
+    Browser::OpenEmptyWindow(profile_);
+    browser = BrowserList::GetLastActive();
+  }
+  return browser;
 }
 
 // static

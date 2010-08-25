@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "app/x11_util.h"
+#include "base/string16.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -309,6 +310,10 @@ GtkWindow* GetDialogWindow(GtkWidget* dialog);
 
 // Gets dialog window bounds.
 gfx::Rect GetDialogBounds(GtkWidget* dialog);
+
+// Returns the stock menu item label for the "preferences" item - returns an
+// empty string if no stock item found.
+string16 GetStockPreferencesMenuLabel();
 
 }  // namespace gtk_util
 

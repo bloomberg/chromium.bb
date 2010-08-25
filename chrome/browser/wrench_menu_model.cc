@@ -35,6 +35,7 @@
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
+#include "chrome/browser/gtk/gtk_util.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -322,13 +323,11 @@ void WrenchMenuModel::Build() {
 #if defined(OS_MACOSX)
   AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES_MAC);
 #elif defined(OS_LINUX)
-  GtkStockItem stock_item;
-  if (gtk_stock_lookup(GTK_STOCK_PREFERENCES, &stock_item)) {
-    const char16 kUnderscore[] = { '_', 0 };
-    string16 preferences;
-    RemoveChars(UTF8ToUTF16(stock_item.label), kUnderscore, &preferences);
+  string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
+  if (!preferences.empty())
     AddItem(IDC_OPTIONS, preferences);
-  }
+  else
+    AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #else
   AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif

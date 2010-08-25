@@ -1048,6 +1048,15 @@ gfx::Rect GetDialogBounds(GtkWidget* dialog) {
   return gfx::Rect(x, y, width, height);
 }
 
+string16 GetStockPreferencesMenuLabel() {
+  GtkStockItem stock_item;
+  string16 preferences;
+  if (gtk_stock_lookup(GTK_STOCK_PREFERENCES, &stock_item)) {
+    const char16 kUnderscore[] = { '_', 0 };
+    RemoveChars(UTF8ToUTF16(stock_item.label), kUnderscore, &preferences);
+  }
+  return preferences;
+}
 #endif
 
 }  // namespace gtk_util
