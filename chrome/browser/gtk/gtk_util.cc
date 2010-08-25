@@ -903,6 +903,26 @@ bool AddWindowAlphaChannel(GtkWidget* window) {
   return rgba;
 }
 
+void GetTextColors(GdkColor* normal_base,
+                   GdkColor* selected_base,
+                   GdkColor* normal_text,
+                   GdkColor* selected_text) {
+  GtkWidget* fake_entry = gtk_entry_new();
+  GtkStyle* style = gtk_rc_get_style(fake_entry);
+
+  if (normal_base)
+    *normal_base = style->base[GTK_STATE_NORMAL];
+  if (selected_base)
+    *selected_base = style->base[GTK_STATE_SELECTED];
+  if (normal_text)
+    *normal_text = style->text[GTK_STATE_NORMAL];
+  if (selected_text)
+    *selected_text = style->text[GTK_STATE_SELECTED];
+
+  g_object_ref_sink(fake_entry);
+  g_object_unref(fake_entry);
+}
+
 #if defined(OS_CHROMEOS)
 
 GtkWindow* GetDialogTransientParent(GtkWindow* dialog) {

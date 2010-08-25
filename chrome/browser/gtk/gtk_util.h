@@ -281,6 +281,12 @@ bool URLFromPrimarySelection(Profile* profile, GURL* url);
 // Set the colormap of the given window to rgba to allow transparency.
 bool AddWindowAlphaChannel(GtkWidget* window);
 
+// Get the default colors for a text entry.  Parameters may be NULL.
+void GetTextColors(GdkColor* normal_base,
+                   GdkColor* selected_base,
+                   GdkColor* normal_text,
+                   GdkColor* selected_text);
+
 // Wrappers to show a GtkDialog. On Linux, it merely calls gtk_widget_show_all.
 // On ChromeOs, it calls ShowNativeDialog which hosts the its vbox
 // in a view based Window.

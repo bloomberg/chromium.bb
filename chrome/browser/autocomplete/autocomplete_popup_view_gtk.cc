@@ -380,28 +380,17 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
   if (theme_provider_->UseGtkTheme()) {
     border_color_ = theme_provider_->GetBorderColor();
 
-    // Create a fake gtk table
-    GtkWidget* fake_tree = gtk_entry_new();
-    GtkStyle* style = gtk_rc_get_style(fake_tree);
+    gtk_util::GetTextColors(
+        &background_color_, &selected_background_color_,
+        &content_text_color_, &selected_content_text_color_);
 
-    background_color_ = style->base[GTK_STATE_NORMAL];
-    selected_background_color_ = style->base[GTK_STATE_SELECTED];
     hovered_background_color_ = gtk_util::AverageColors(
         background_color_, selected_background_color_);
-
-    content_text_color_ = style->text[GTK_STATE_NORMAL];
-    selected_content_text_color_ = style->text[GTK_STATE_SELECTED];
-    url_text_color_ =
-        NormalURLColor(style->text[GTK_STATE_NORMAL]);
-    url_selected_text_color_ =
-        SelectedURLColor(style->text[GTK_STATE_SELECTED],
-                         style->base[GTK_STATE_SELECTED]);
-
-    description_text_color_ = style->text[GTK_STATE_NORMAL];
-    description_selected_text_color_ = style->text[GTK_STATE_SELECTED];
-
-    g_object_ref_sink(fake_tree);
-    g_object_unref(fake_tree);
+    url_text_color_ = NormalURLColor(content_text_color_);
+    url_selected_text_color_ = SelectedURLColor(selected_content_text_color_,
+                                                selected_background_color_);
+    description_text_color_ = content_text_color_;
+    description_selected_text_color_ = selected_content_text_color_;
   } else {
     border_color_ = kBorderColor;
     background_color_ = kBackgroundColor;

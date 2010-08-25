@@ -34,6 +34,11 @@
 #include "app/win_util.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "chrome/browser/gtk/gtk_util.h"
+#include "gfx/skia_utils_gtk.h"
+#endif
+
 namespace {
 
 enum ResultViewState {
@@ -60,6 +65,14 @@ SkColor GetColor(ResultViewState state, ColorKind kind) {
     colors[SELECTED][BACKGROUND] = color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
     colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
     colors[SELECTED][TEXT] = color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
+#elif defined(OS_LINUX)
+    GdkColor bg_color, selected_bg_color, text_color, selected_text_color;
+    gtk_util::GetTextColors(
+        &bg_color, &selected_bg_color, &text_color, &selected_text_color);
+    colors[NORMAL][BACKGROUND] = gfx::GdkColorToSkColor(bg_color);
+    colors[SELECTED][BACKGROUND] = gfx::GdkColorToSkColor(selected_bg_color);
+    colors[NORMAL][TEXT] = gfx::GdkColorToSkColor(text_color);
+    colors[SELECTED][TEXT] = gfx::GdkColorToSkColor(selected_text_color);
 #else
     // TODO(beng): source from theme provider.
     colors[NORMAL][BACKGROUND] = SK_ColorWHITE;
