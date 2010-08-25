@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/stats_table.h"
+#include "base/time.h"
 #include "net/http/http_network_layer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
@@ -45,6 +46,26 @@ class BenchmarkingWrapper : public v8::Extension {
         "  native function IsSingleProcess();"
         "  return IsSingleProcess();"
         "};"
+        "chrome.Interval = function() {"
+        "  var start_ = 0;"
+        "  var stop_ = 0;"
+        "  native function HiResTime();"
+        "  this.start = function() {"
+        "    stop_ = 0;"
+        "    start_ = HiResTime();"
+        "  };"
+        "  this.stop = function() {"
+        "    stop_ = HiResTime();"
+        "    if (start_ == 0)"
+        "      stop_ = 0;"
+        "  };"
+        "  this.microseconds = function() {"
+        "    var stop = stop_;"
+        "    if (stop == 0 && start_ != 0)"
+        "      stop = HiResTime();"
+        "    return Math.ceil(stop - start_);"
+        "  };"
+        "}"
         ) {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -59,7 +80,10 @@ class BenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(GetCounter);
     } else if (name->Equals(v8::String::New("IsSingleProcess"))) {
       return v8::FunctionTemplate::New(IsSingleProcess);
+    } else if (name->Equals(v8::String::New("HiResTime"))) {
+      return v8::FunctionTemplate::New(HiResTime);
     }
+
     return v8::Handle<v8::FunctionTemplate>();
   }
 
@@ -98,6 +122,11 @@ class BenchmarkingWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> IsSingleProcess(const v8::Arguments& args) {
     return v8::Boolean::New(webkit_glue::IsSingleProcess());
+  }
+
+  static v8::Handle<v8::Value> HiResTime(const v8::Arguments& args) {
+    return v8::Number::New(
+        static_cast<double>(base::TimeTicks::HighResNow().ToInternalValue()));
   }
 };
 

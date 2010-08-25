@@ -87,7 +87,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/extensions/v8/gears_extension.h"
-#include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
 #include "v8/include/v8.h"
 
@@ -853,8 +852,6 @@ void RenderThread::EnsureWebKitInitialized() {
   // We don't yet support Gears on non-Windows, so don't tell pages that we do.
   WebScriptController::registerExtension(extensions_v8::GearsExtension::Get());
 #endif
-  WebScriptController::registerExtension(
-      extensions_v8::IntervalExtension::Get());
   WebScriptController::registerExtension(
       extensions_v8::LoadTimesExtension::Get());
   WebScriptController::registerExtension(
