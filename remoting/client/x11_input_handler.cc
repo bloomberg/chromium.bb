@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "remoting/client/client_context.h"
+#include "remoting/client/host_connection.h"
 #include "remoting/client/x11_view.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
@@ -16,9 +17,9 @@
 namespace remoting {
 
 X11InputHandler::X11InputHandler(ClientContext* context,
+                                 HostConnection* connection,
                                  ChromotingView* view)
-    : context_(context),
-      view_(view) {
+    : InputHandler(context, connection, view) {
 }
 
 X11InputHandler::~X11InputHandler() {

@@ -68,7 +68,8 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Create the chromoting objects.
   host_connection_.reset(new JingleHostConnection(&context_));
   view_.reset(new PepperView(this));
-  input_handler_.reset(new PepperInputHandler());
+  input_handler_.reset(new PepperInputHandler(&context_, host_connection_.get(),
+                                              view_.get()));
 
   // Default to a medium grey.
   view_->SetSolidFill(0xFFCDCDCD);

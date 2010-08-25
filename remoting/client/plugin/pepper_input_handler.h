@@ -11,7 +11,9 @@ namespace remoting {
 
 class PepperInputHandler : public InputHandler {
  public:
-  PepperInputHandler();
+  PepperInputHandler(ClientContext* context,
+                     HostConnection* connection,
+                     ChromotingView* view);
   virtual ~PepperInputHandler();
 
   void Initialize();

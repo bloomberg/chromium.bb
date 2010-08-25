@@ -10,14 +10,27 @@
 
 namespace remoting {
 
+class ClientContext;
+class ChromotingView;
+class HostConnection;
+
 class InputHandler {
  public:
-  InputHandler() {}
+  InputHandler(ClientContext* context,
+               HostConnection* connection,
+               ChromotingView* view)
+      : context_(context),
+        connection_(connection),
+        view_(view) {}
   virtual ~InputHandler() {}
 
   virtual void Initialize() = 0;
 
  protected:
+  ClientContext* context_;
+  HostConnection* connection_;
+  ChromotingView* view_;
+
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
 

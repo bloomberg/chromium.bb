@@ -6,7 +6,10 @@
 
 namespace remoting {
 
-PepperInputHandler::PepperInputHandler() {
+PepperInputHandler::PepperInputHandler(ClientContext* context,
+                                       HostConnection* connection,
+                                       ChromotingView* view)
+  : InputHandler(context, connection, view) {
 }
 
 PepperInputHandler::~PepperInputHandler() {
