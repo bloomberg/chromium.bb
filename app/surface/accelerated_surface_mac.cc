@@ -8,6 +8,7 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
+#include "base/scoped_cftyperef.h"
 #include "gfx/rect.h"
 
 AcceleratedSurface::AcceleratedSurface()
@@ -109,8 +110,9 @@ static void AddBooleanValue(CFMutableDictionaryRef dictionary,
 static void AddIntegerValue(CFMutableDictionaryRef dictionary,
                             const CFStringRef key,
                             int32 value) {
-  CFNumberRef number = CFNumberCreate(NULL, kCFNumberSInt32Type, &value);
-  CFDictionaryAddValue(dictionary, key, number);
+  scoped_cftyperef<CFNumberRef> number(
+      CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
+  CFDictionaryAddValue(dictionary, key, number.get());
 }
 
 void AcceleratedSurface::AllocateRenderBuffers(GLenum target,
