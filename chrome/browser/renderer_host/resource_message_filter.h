@@ -460,6 +460,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   bool cloud_print_enabled_;
 
+  base::TimeTicks last_plugin_refresh_time_;  // Initialized to 0.
+
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
 

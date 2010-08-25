@@ -102,6 +102,8 @@ using WebKit::WebCache;
 
 namespace {
 
+const int kPluginsRefreshThresholdInSeconds = 3;
+
 // Context menus are somewhat complicated. We need to intercept them here on
 // the I/O thread to add any spelling suggestions to them. After that's done,
 // we need to forward the modified message to the UI thread and the normal
@@ -715,6 +717,22 @@ void ResourceMessageFilter::OnPreCacheFont(LOGFONT font) {
 
 void ResourceMessageFilter::OnGetPlugins(bool refresh,
                                          IPC::Message* reply_msg) {
+  // Don't refresh if the specified threshold has not been passed.  Note that
+  // this check is performed before off-loading to the file thread.  The reason
+  // we do this is that some pages tend to request that the list of plugins be
+  // refreshed at an excessive rate.  This instigates disk scanning, as the list
+  // is accumulated by doing multiple reads from disk.  This effect is
+  // multiplied when we have several pages requesting this operation.
+  if (refresh) {
+      const base::TimeDelta threshold = base::TimeDelta::FromSeconds(
+          kPluginsRefreshThresholdInSeconds);
+      const base::TimeTicks now = base::TimeTicks::Now();
+      if (now - last_plugin_refresh_time_ < threshold)
+        refresh = false;  // Ignore refresh request; threshold not exceeded yet.
+      else
+        last_plugin_refresh_time_ = now;
+  }
+
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
