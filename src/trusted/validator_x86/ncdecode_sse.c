@@ -344,7 +344,6 @@ static void NaClDefBinarySseInsts() {
   NaClDefInvalidIcode(Prefix660F, 0xbb);
   NaClDefInvalidIcode(Prefix660F, 0xbc);
   NaClDefInvalidIcode(Prefix660F, 0xbd);
-  NaClDefInvalidIcode(Prefix660F, 0xbe);
   NaClDefInvalidIcode(Prefix660F, 0xbf);
 
   NaClDefInvalidIcode(PrefixF20F, 0xb8);

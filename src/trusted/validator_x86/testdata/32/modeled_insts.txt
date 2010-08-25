@@ -4116,8 +4116,6 @@ Target: x86-32 bit mode
   66 0f bc                    INVALID 
   --- bd ---
   66 0f bd                    INVALID 
-  --- be ---
-  66 0f be                    INVALID 
   --- bf ---
   66 0f bf                    INVALID 
   --- c3 ---

@@ -3221,3 +3221,18 @@ NaClExpVector[6] = {
   { OperandReference[1] , 2, 0 },
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
+0000000000000000: 66 43 0f be 04 27                            movsx %ax, [%r15+%r12*1]
+  0f be                       386 OpcodeUsesModRm OperandSize_w OperandSize_v
+    Movsx $G, $E
+      G_Operand               OpSet
+      Eb_Operand              OpUse
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %r15, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %r12, ExprUsed | ExprSize64 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+};
