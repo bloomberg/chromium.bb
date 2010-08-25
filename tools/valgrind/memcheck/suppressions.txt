@@ -4244,3 +4244,25 @@
    ...
    fun:_ZN8remoting38SessionManagerTest_OneRecordCycle_Test8TestBodyEv
 }
+{
+   bug_53349
+   Memcheck:Addr4
+   fun:PL_HashTableLookupConst
+   fun:SECOID_FindOID_Util
+   fun:SECOID_FindOIDTag_Util
+   fun:SECOID_GetAlgorithmTag_Util
+   fun:seckey_ExtractPublicKey
+   fun:PKIX_PL_Cert_VerifySignature
+   fun:pkix_SignatureChecker_Check
+   fun:pkix_CheckChain
+   fun:pkix_Build_ValidateEntireChain
+   fun:pkix_BuildForwardDepthFirstSearch
+   fun:pkix_Build_InitiateBuildChain
+   fun:PKIX_BuildChain
+   fun:CERT_PKIXVerifyCert
+   ...
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
+   fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
+}
