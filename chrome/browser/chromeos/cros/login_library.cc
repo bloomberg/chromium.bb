@@ -12,11 +12,24 @@ namespace chromeos {
 
 class LoginLibraryImpl : public LoginLibrary {
  public:
-  LoginLibraryImpl() {}
-  virtual ~LoginLibraryImpl() {}
+  LoginLibraryImpl()
+      : set_owner_key_callback_(NULL) {
+  }
+  virtual ~LoginLibraryImpl() {
+    if (session_connection_) {
+      chromeos::DisconnectSession(session_connection_);
+    }
+  }
 
   bool EmitLoginPromptReady() {
     return chromeos::EmitLoginPromptReady();
+  }
+
+  bool SetOwnerKey(const std::vector<uint8>& public_key_der,
+                   Delegate<bool>* callback) {
+    DCHECK(callback) << "must provide a callback to SetOwnerKey()";
+    set_owner_key_callback_ =  callback;
+    return chromeos::SetOwnerKey(public_key_der);
   }
 
   bool StartSession(const std::string& user_email,
@@ -35,6 +48,41 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
  private:
+  static void Handler(void* object, const OwnershipEvent& event) {
+    LoginLibraryImpl* self = static_cast<LoginLibraryImpl*>(object);
+    switch (event) {
+      case SetKeySuccess:
+        self->CompleteSetOwnerKey(true);
+        break;
+      case SetKeyFailure:
+        self->CompleteSetOwnerKey(false);
+        break;
+      case WhitelistOpSuccess:
+      case WhitelistOpFailure:
+      case SettingsOpSuccess:
+      case SettingsOpFailure:
+        NOTIMPLEMENTED();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void Init() {
+    session_connection_ = chromeos::MonitorSession(&Handler, this);
+  }
+
+  void CompleteSetOwnerKey(bool result) {
+    CHECK(set_owner_key_callback_) << "CompleteSetOwnerKey() called without "
+                                      "a registered callback!";
+    set_owner_key_callback_->Run(result);
+    set_owner_key_callback_ = NULL;
+  }
+
+  chromeos::SessionConnection session_connection_;
+
+  Delegate<bool>* set_owner_key_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginLibraryImpl);
 };
 
@@ -44,12 +92,23 @@ class LoginLibraryStubImpl : public LoginLibrary {
   virtual ~LoginLibraryStubImpl() {}
 
   bool EmitLoginPromptReady() { return true; }
+  bool SetOwnerKey(const std::vector<uint8>& public_key_der,
+                   Delegate<bool>* callback) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(&SetOwnerKeyStubCallback, callback));
+    return true;
+  }
   bool StartSession(const std::string& user_email,
                     const std::string& unique_id /* unused */) { return true; }
   bool StopSession(const std::string& unique_id /* unused */) { return true; }
   bool RestartJob(int pid, const std::string& command_line) { return true; }
 
  private:
+  static void SetOwnerKeyStubCallback(Delegate<bool>* callback) {
+    callback->Run(true);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(LoginLibraryStubImpl);
 };
 

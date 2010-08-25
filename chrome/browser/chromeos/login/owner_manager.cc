@@ -20,67 +20,6 @@ OwnerManager::OwnerManager()
 
 OwnerManager::~OwnerManager() {}
 
-bool OwnerManager::IsAlreadyOwned() {
-  return file_util::PathExists(utils_->GetOwnerKeyFilePath());
-}
-
-bool OwnerManager::StartLoadOwnerKeyAttempt() {
-  if (!IsAlreadyOwned()) {
-    LOG(ERROR) << "Device not yet owned";
-    return false;
-  }
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &OwnerManager::LoadOwnerKey));
-  return true;
-}
-
-bool OwnerManager::StartTakeOwnershipAttempt() {
-  if (IsAlreadyOwned()) {
-    LOG(ERROR) << "Device is already owned";
-    return false;
-  }
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &OwnerManager::GenerateKeysAndExportPublic));
-  return true;
-}
-
-bool OwnerManager::StartSigningAttempt(const std::string& data, Delegate* d) {
-  if (!IsAlreadyOwned()) {
-    LOG(ERROR) << "Device not yet owned";
-    return false;
-  }
-  ChromeThread::ID thread_id;
-  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id))
-    thread_id = ChromeThread::UI;
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &OwnerManager::Sign, thread_id, data, d));
-  return true;
-}
-
-bool OwnerManager::StartVerifyAttempt(const std::string& data,
-                                      const std::string& signature,
-                                      Delegate* d) {
-  if (!IsAlreadyOwned()) {
-    LOG(ERROR) << "Device not yet owned";
-    return false;
-  }
-  ChromeThread::ID thread_id;
-  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id))
-    thread_id = ChromeThread::UI;
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &OwnerManager::Verify,
-                        thread_id,
-                        data,
-                        signature,
-                        d));
-  return true;
-}
-
 void OwnerManager::LoadOwnerKey() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
@@ -120,13 +59,23 @@ void OwnerManager::GenerateKeysAndExportPublic() {
 }
 
 void OwnerManager::ExportKey() {
-  NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
-  if (!utils_->ExportPublicKeyViaDbus(private_key_.get())) {
+  if (!utils_->ExportPublicKeyViaDbus(private_key_.get(), this)) {
     private_key_.reset(NULL);
-    result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &OwnerManager::SendNotification,
+                          NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
+                          NotificationService::NoDetails()));
   }
+}
 
-  // Whether we generated the keys or not, send a notification indicating
+void OwnerManager::Run(bool value) {
+  NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
+  if (!value)
+    result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
+
+  // Whether we exported the public key or not, send a notification indicating
   // that we're done with this attempt.
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
@@ -134,6 +83,7 @@ void OwnerManager::ExportKey() {
                         &OwnerManager::SendNotification,
                         result,
                         NotificationService::NoDetails()));
+
 }
 
 bool OwnerManager::EnsurePublicKey() {

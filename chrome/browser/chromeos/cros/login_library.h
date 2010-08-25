@@ -16,9 +16,23 @@ namespace chromeos {
 // This interface defines the interaction with the ChromeOS login library APIs.
 class LoginLibrary {
  public:
+  template <class T>
+  class Delegate {
+   public:
+    virtual void Run(T value) = 0;
+  };
+
   virtual ~LoginLibrary() {}
   // Requests that the Upstart signal login-prompt-ready be emitted.
   virtual bool EmitLoginPromptReady() = 0;
+
+  // Attempts to asynchronously set the provided public key as the
+  // Owner's public key for this device.  |public_key_der| should be a
+  // DER-encoded PKCS11 SubjectPublicKeyInfo structure.
+  //  Returns true if the attempt was successfully started.
+  //  callback->Run() will be called when the operation is complete.
+  virtual bool SetOwnerKey(const std::vector<uint8>& public_key_der,
+                           Delegate<bool>* callback) = 0;
 
   // Tells the session manager to start a logged-in session for the user
   // |user_email|.  |unique_id| is meant to be used when we have a non-human-

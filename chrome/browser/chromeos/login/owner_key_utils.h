@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 
 class FilePath;
 
@@ -18,7 +20,7 @@ class RSAPrivateKey;
 
 namespace chromeos {
 
-class OwnerKeyUtils {
+class OwnerKeyUtils : public base::RefCounted<OwnerKeyUtils> {
  public:
   class Factory {
    public:
@@ -26,7 +28,6 @@ class OwnerKeyUtils {
   };
 
   OwnerKeyUtils();
-  virtual ~OwnerKeyUtils();
 
   // Sets the factory used by the static method Create to create an
   // OwnerKeyUtils.  OwnerKeyUtils does not take ownership of
@@ -47,10 +48,13 @@ class OwnerKeyUtils {
   //  Returns NULL on error.
   virtual base::RSAPrivateKey* GenerateKeyPair() = 0;
 
-  // DER encodes public half of |pair| and exports it via DBus.
+  // DER encodes public half of |pair| and asynchronously exports it via DBus.
   // The data sent is a DER-encoded X509 SubjectPublicKeyInfo object.
-  // Returns false on error.
-  virtual bool ExportPublicKeyViaDbus(base::RSAPrivateKey* pair) = 0;
+  // Returns false on error, true if the attempt is successfully begun.
+  // d->Run() will be called with a boolean indicating success or failure when
+  // the attempt is complete.
+  virtual bool ExportPublicKeyViaDbus(base::RSAPrivateKey* pair,
+                                      LoginLibrary::Delegate<bool>* d) = 0;
 
   // DER encodes public half of |pair| and writes it out to |key_file|.
   // The blob on disk is a DER-encoded X509 SubjectPublicKeyInfo object.
@@ -71,7 +75,11 @@ class OwnerKeyUtils {
 
   virtual FilePath GetOwnerKeyFilePath() = 0;
 
+ protected:
+  virtual ~OwnerKeyUtils();
+
  private:
+  friend class base::RefCounted<OwnerKeyUtils>;
   static Factory* factory_;
 };
 

@@ -4,12 +4,6 @@
 
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 
-#include <cert.h>
-#include <keyhi.h>
-#include <keythi.h>  // KeyType enum
-#include <pk11pub.h>
-#include <stdlib.h>
-
 #include <string>
 #include <vector>
 
@@ -19,7 +13,7 @@
 #include "base/logging.h"
 #include "base/nss_util_internal.h"
 #include "base/nss_util.h"
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,7 +31,7 @@ class OwnerKeyUtilsTest : public ::testing::Test {
     base::OpenPersistentNSSDB();
   }
 
-  scoped_ptr<OwnerKeyUtils> utils_;
+  scoped_refptr<OwnerKeyUtils> utils_;
 };
 
 TEST_F(OwnerKeyUtilsTest, ExportImportPublicKey) {

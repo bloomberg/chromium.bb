@@ -20,6 +20,8 @@
 #include "base/nss_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 
 using base::RSAPrivateKey;
 
@@ -41,11 +43,11 @@ OwnerKeyUtils::~OwnerKeyUtils() {}
 class OwnerKeyUtilsImpl : public OwnerKeyUtils {
  public:
   OwnerKeyUtilsImpl();
-  virtual ~OwnerKeyUtilsImpl();
 
   RSAPrivateKey* GenerateKeyPair();
 
-  bool ExportPublicKeyViaDbus(RSAPrivateKey* pair);
+  bool ExportPublicKeyViaDbus(RSAPrivateKey* pair,
+                              LoginLibrary::Delegate<bool>* d);
 
   bool ExportPublicKeyToFile(RSAPrivateKey* pair, const FilePath& key_file);
 
@@ -55,6 +57,9 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
   RSAPrivateKey* FindPrivateKey(const std::vector<uint8>& key);
 
   FilePath GetOwnerKeyFilePath();
+
+ protected:
+  virtual ~OwnerKeyUtilsImpl();
 
  private:
   // The file outside the owner's encrypted home directory where her
@@ -93,7 +98,9 @@ RSAPrivateKey* OwnerKeyUtilsImpl::GenerateKeyPair() {
   return RSAPrivateKey::CreateSensitive(kKeySizeInBits);
 }
 
-bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(RSAPrivateKey* pair) {
+bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(
+    RSAPrivateKey* pair,
+    LoginLibrary::Delegate<bool>* d) {
   DCHECK(pair);
   bool ok = false;
 
@@ -103,7 +110,9 @@ bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(RSAPrivateKey* pair) {
     return false;
   }
 
-  // TODO(cmasone): send the data over dbus.
+  if (CrosLibrary::Get()->EnsureLoaded())
+    ok = CrosLibrary::Get()->GetLoginLibrary()->SetOwnerKey(to_export, d);
+
   return ok;
 }
 

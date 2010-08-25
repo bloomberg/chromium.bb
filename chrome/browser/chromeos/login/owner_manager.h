@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/crypto/rsa_private_key.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "chrome/browser/chrome_thread.h"
 
@@ -24,7 +24,8 @@ namespace chromeos {
 // This class allows the registration of an Owner of a Chromium OS device.
 // It handles generating the appropriate keys and storing them in the
 // appropriate locations.
-class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
+class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
+                     public LoginLibrary::Delegate<bool> {
  public:
   // Return codes for public/private key operations.
   enum KeyOpCode {
@@ -46,48 +47,6 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
   OwnerManager();
   virtual ~OwnerManager();
 
-  bool IsAlreadyOwned();
-
-  // If the device has been owned already, posts a task to the FILE thread to
-  // fetch the public key off disk.
-  // Returns true if the attempt was initiated, false otherwise.
-  //
-  // Sends out a OWNER_KEY_FETCH_ATTEMPT_COMPLETE notification on completion.
-  // Notification comes with a Details<SECKEYPublicKey*> that contains a pointer
-  // to the public key, or NULL if the fetch attempt failed.
-  bool StartLoadOwnerKeyAttempt();
-
-  // If the device has not yet been owned, posts a task to the FILE
-  // thread to generate the owner's keys and put them in the right
-  // places.  Keeps them in memory as well, for later use.
-  // Returns true if the attempt was initiated, false otherwise.
-  //
-  // Sends out a OWNER_KEY_FETCH_ATTEMPT_COMPLETE notification on completion.
-  // Notification comes with a Details<SECKEYPublicKey*> that contains a pointer
-  // to the public key, or NULL if the fetch attempt failed.
-  bool StartTakeOwnershipAttempt();
-
-  // Initiate an attempt to sign |data| with |private_key_|.  Will call
-  // d->OnKeyOpComplete() when done.  Upon success, the signature will be passed
-  // as the |payload| argument to d->OnKeyOpComplete().
-  // Returns true if the attempt was initiated, false otherwise.
-  //
-  // If you call this on a well-known thread, you'll be called back on that
-  // thread.  Otherwise, you'll get called back on the UI thread.
-  bool StartSigningAttempt(const std::string& data, Delegate* d);
-
-  // Initiate an attempt to verify that |signature| is valid over |data| with
-  // |public_key_|.  When the attempt is completed, an appropriate KeyOpCode
-  // will be passed to d->OnKeyOpComplete().
-  // Returns true if the attempt was initiated, false otherwise.
-  //
-  // If you call this on a well-known thread, you'll be called back on that
-  // thread.  Otherwise, you'll get called back on the UI thread.
-  bool StartVerifyAttempt(const std::string& data,
-                          const std::string& signature,
-                          Delegate* d);
-
- private:
   // Pulls the owner's public key off disk and into memory.
   //
   // Call this on the FILE thread.
@@ -104,6 +63,9 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
   //
   // Call this on the UI thread (because of DBus usage).
   void ExportKey();
+
+  // Overridden from LoginLibrary::Delegate
+  void Run(bool value);
 
   bool EnsurePublicKey();
   bool EnsurePrivateKey();
@@ -132,6 +94,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
               const std::string& signature,
               Delegate* d);
 
+ private:
   // A helper method to send a notification on another thread.
   void SendNotification(NotificationType type,
                         const NotificationDetails& details);
@@ -146,7 +109,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
   scoped_ptr<base::RSAPrivateKey> private_key_;
   std::vector<uint8> public_key_;
 
-  scoped_ptr<OwnerKeyUtils> utils_;
+  scoped_refptr<OwnerKeyUtils> utils_;
 
   friend class OwnerManagerTest;
 

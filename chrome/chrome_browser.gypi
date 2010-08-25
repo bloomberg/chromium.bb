@@ -527,6 +527,8 @@
         'browser/chromeos/login/owner_key_utils.h',
         'browser/chromeos/login/owner_manager.cc',
         'browser/chromeos/login/owner_manager.h',
+        'browser/chromeos/login/ownership_service.cc',
+        'browser/chromeos/login/ownership_service.h',
         'browser/chromeos/login/password_changed_view.cc',
         'browser/chromeos/login/password_changed_view.h',
         'browser/chromeos/login/registration_screen.cc',

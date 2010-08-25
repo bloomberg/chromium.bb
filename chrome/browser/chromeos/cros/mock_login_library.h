@@ -18,8 +18,9 @@ class MockLoginLibrary : public LoginLibrary {
   MockLoginLibrary() {}
   virtual ~MockLoginLibrary() {}
   MOCK_METHOD0(EmitLoginPromptReady, bool(void));
+  MOCK_METHOD2(SetOwnerKey, bool(const std::vector<uint8>&,
+                                 Delegate<bool>*));
   MOCK_METHOD2(StartSession, bool(const std::string&, const std::string&));
-  MOCK_METHOD1(StartSession, bool(const std::string&));
   MOCK_METHOD1(StopSession, bool(const std::string&));
   MOCK_METHOD2(RestartJob, bool(int, const std::string&));
 };
@@ -27,4 +28,3 @@ class MockLoginLibrary : public LoginLibrary {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_MOCK_LOGIN_LIBRARY_H_
-
