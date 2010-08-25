@@ -119,7 +119,9 @@ class TsanAnalyzer:
 
       tmp = []
       while re.search(TsanAnalyzer.THREAD_CREATION_STR, self.line_):
-        tmp.extend(self.ReadSection())
+        # TODO(glider): that's not really a race section but rather an {{{...}}}
+        # but use this wrong name to quick-fix the script.
+        tmp.extend(self.ReadRaceSection())
         self.ReadLine()
       if re.search(TsanAnalyzer.TSAN_RACE_DESCRIPTION, self.line_):
         tmp.extend(self.ReadRaceSection())
