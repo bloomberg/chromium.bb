@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/scoped_comptr_win.h"
 
+#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/function_stub.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
@@ -97,6 +98,8 @@ STDMETHODIMP BuggyBhoTls::BuggyBhoInvoke(InvokeFunc original, IDispatch* me,
     return S_OK;
   }
 
+  // No need to report crashes in those known-to-be-buggy DLLs.
+  ExceptionBarrierReportOnlyModule barrier;
   return original(me, dispid, riid, lcid, flags, params, result, ei, err);
 }
 
