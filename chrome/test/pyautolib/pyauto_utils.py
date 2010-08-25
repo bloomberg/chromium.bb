@@ -84,5 +84,8 @@ def RemovePath(path):
   if os.path.isdir(path):
     shutil.rmtree(path, ignore_errors=True)
     return
-  os.remove(path)
+  try:
+    os.remove(path)
+  except OSError:
+    pass
 
