@@ -10,9 +10,10 @@
 
 #include <d3d9.h>
 #include <dxva2api.h>
-#include <evr.h>
 #include <initguid.h>
 #include <mfapi.h>
+// Placed after mfapi.h to avoid linking strmiids.lib for MR_BUFFER_SERVICE.
+#include <evr.h>
 #include <mferror.h>
 #include <wmcodecdsp.h>
 
@@ -23,7 +24,6 @@
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfplat.lib")
-#pragma comment(lib, "strmiids.lib")
 
 namespace {
 
@@ -431,9 +431,9 @@ bool MftH264Decoder::CheckDecoderDxvaSupport() {
   UINT32 dxva;
   hr = attributes->GetUINT32(MF_SA_D3D_AWARE, &dxva);
   if (FAILED(hr) || !dxva) {
-    LOG(ERROR) << "Failed to get DXVA attr, hr = "
+    LOG(ERROR) << "Failed to get DXVA attr or decoder is not DXVA-aware, hr = "
                << std::hex << std::showbase << hr
-               << "this might not be the right decoder.";
+               << " this might not be the right decoder.";
     return false;
   }
   return true;
