@@ -31,11 +31,9 @@ TIME_CMD=
 endif
 
 
-
 clean:
 	rm -f -- *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
               $(IT) $(IT).* *.out src/*bc $(EXTRA_CLEAN)
-
 
 
 pnacl_bin: $(IT).pnacl.arm $(IT).pnacl.opt.arm \
@@ -109,7 +107,6 @@ $(IT).nacl.x8664: $(SRC) $(CPPSRC)
 $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
 	$(NACL64_GCC) -O3 $(CFLAGS) $^  -static -lm  -lnosys -o $@
 
-
 ######################################################################
 ## BITCODE TOOLCHAINS
 ######################################################################
@@ -130,18 +127,27 @@ PNACL_FLAGS=--pnacl-driver-verbose
 # of llvm, c.f.: http://code.google.com/p/nativeclient/issues/detail?id=821
 PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS) -D__native_client__=1
 
-.c.bc:
+%.bc: %.c
 	$(BC_GCC) $(PNACL_FLAGS_COMMON) $< -c -o $@
-.cc.bc:
+%.bc: %.cc
 	$(BC_GPP) $(PNACL_FLAGS_COMMON) $< -c -o $@
 
+%.o.bc: %.c
+	$(BC_GCC) $(PNACL_FLAGS_COMMON) -O3 $< -c -o $@
+%.o.bc: %.cc
+	$(BC_GPP) $(PNACL_FLAGS_COMMON) -O3 $< -c -o $@
 
 # llvm bit code combined
 $(IT).bc: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
 	$(BC_LINK) $^  -o $@
 
-# llvm bit combined and code optimized
-$(IT).opt.bc: $(IT).bc
+# optimized llvm bit code combined
+$(IT).preopt.bc: $(SRC:%.c=%.o.bc) $(CPPSRC:%.cc=%.o.bc)
+	$(BC_LINK) $^  -o $@
+
+
+# optimized llvm bit code combined and interprocedurally re-optimized
+$(IT).opt.bc: $(IT).preopt.bc
 	$(BC_OPT) -f -O3 -std-compile-opts $< -o $@
 
 ######################################################################
