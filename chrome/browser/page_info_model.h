@@ -18,7 +18,7 @@ class PrefService;
 class Profile;
 
 // The model that provides the information that should be displayed in the page
-// info dialog.
+// info dialog/bubble.
 class PageInfoModel {
  public:
   class PageInfoModelObserver {
@@ -29,15 +29,23 @@ class PageInfoModel {
     virtual ~PageInfoModelObserver() {}
   };
 
+  enum SectionInfoType {
+    SECTION_INFO_IDENTITY = 0,
+    SECTION_INFO_CONNECTION,
+    SECTION_INFO_FIRST_VISIT,
+  };
+
   struct SectionInfo {
     SectionInfo(bool state,
                 const string16& title,
-                const string16& head_line,
-                const string16& description)
+                const string16& headline,
+                const string16& description,
+                SectionInfoType type)
         : state(state),
           title(title),
-          head_line(head_line),
-          description(description) {
+          headline(headline),
+          description(description),
+          type(type) {
     }
 
     bool state;  // True if state is OK, false otherwise (ex of bad states:
@@ -47,10 +55,14 @@ class PageInfoModel {
     string16 title;
 
     // A single line describing the section, optional.
-    string16 head_line;
+    string16 headline;
 
     // The full description of what this section is.
     string16 description;
+
+    // The type of SectionInfo we are dealing with, for example: Identity,
+    // Connection, First Visit.
+    SectionInfoType type;
   };
 
   PageInfoModel(Profile* profile,

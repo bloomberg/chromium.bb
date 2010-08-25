@@ -99,7 +99,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
       state,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       head_line,
-      description));
+      description,
+      SECTION_INFO_IDENTITY));
 
   // Connection section.
   // We consider anything less than 80 bits encryption to be weak encryption.
@@ -139,8 +140,9 @@ PageInfoModel::PageInfoModel(Profile* profile,
   if (ssl.security_bits() > 0 && cipher_suite) {
     bool did_fallback = (ssl.connection_status() &
                          net::SSL_CONNECTION_SSL3_FALLBACK) != 0;
-    bool no_renegotiation = (ssl.connection_status() &
-                             net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
+    bool no_renegotiation =
+        (ssl.connection_status() &
+        net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
     const char *key_exchange, *cipher, *mac;
     net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, cipher_suite);
 
@@ -181,7 +183,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
       state,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       head_line,
-      description));
+      description,
+      SECTION_INFO_CONNECTION));
 
   // Request the number of visits.
   HistoryService* history = profile->GetHistoryService(
@@ -226,7 +229,8 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
             IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
         string16(),
         l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY)));
+            IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY),
+        SECTION_INFO_FIRST_VISIT));
   } else {
     sections_.push_back(SectionInfo(
         true,
@@ -235,7 +239,8 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
         string16(),
         l10n_util::GetStringFUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,
-            WideToUTF16(base::TimeFormatShortDate(first_visit)))));
+            WideToUTF16(base::TimeFormatShortDate(first_visit))),
+        SECTION_INFO_FIRST_VISIT));
   }
   observer_->ModelChanged();
 }
