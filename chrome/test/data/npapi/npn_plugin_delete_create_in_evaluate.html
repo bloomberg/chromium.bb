@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="npapi.js"></script>
+<script>
+
+ function DeletePluginWithinScript() {
+   var plugin_div = document.getElementById("PluginDiv");
+   var html = plugin_div.innerHTML;
+   html = html.replace("npobject_delete_create_plugin_in_evaluate",
+                       "invoke_js_function_on_create");
+   plugin_div.innerHTML = "Object Deleted";
+   plugin_div.innerHTML = html;
+ }
+
+ function PluginCreated() {
+   onSuccess("npobject_delete_create_plugin_in_evaluate", 1); 
+ }
+
+</script>
+</head>
+
+<body>
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+Tests the case where a plugin instance is deleted and created in the context
+of the NPN_Evaluate call.
+
+<DIV ID=PluginDiv>
+<embed	type="application/vnd.npapi-test" 
+	src="foo"
+	name="npobject_delete_create_plugin_in_evaluate"
+	id="1"
+	mode="np_embed"
+>
+</DIV>
+
+</body>
+</html>

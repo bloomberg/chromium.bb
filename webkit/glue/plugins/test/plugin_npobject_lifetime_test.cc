@@ -17,7 +17,8 @@ NPObjectDeletePluginInNPN_Evaluate*
 NPObjectLifetimeTest::NPObjectLifetimeTest(NPP id,
                                            NPNetscapeFuncs *host_functions)
     : PluginTest(id, host_functions),
-      other_plugin_instance_object_(NULL) {
+      other_plugin_instance_object_(NULL),
+      timer_id_(0) {
 }
 
 NPError NPObjectLifetimeTest::SetWindow(NPWindow* pNPWindow) {
@@ -30,8 +31,8 @@ NPError NPObjectLifetimeTest::SetWindow(NPWindow* pNPWindow) {
     // We attempt to retreive the NPObject for the plugin instance identified
     // by the NPObjectLifetimeTestInstance2 class as it may not have been
     // instantiated yet.
-    SetTimer(window_handle, kNPObjectLifetimeTimer, kNPObjectLifetimeTimerElapse,
-             TimerProc);
+    timer_id_ = SetTimer(window_handle, kNPObjectLifetimeTimer,
+                         kNPObjectLifetimeTimerElapse, TimerProc);
   }
   return NPERR_NO_ERROR;
 }
@@ -40,10 +41,11 @@ void CALLBACK NPObjectLifetimeTest::TimerProc(
     HWND window, UINT message, UINT timer_id,
     unsigned long elapsed_milli_seconds) {
 
-  KillTimer(window, kNPObjectLifetimeTimer);
   NPObjectLifetimeTest* this_instance =
       reinterpret_cast<NPObjectLifetimeTest*>
           (::GetProp(window, L"Plugin_Instance"));
+  KillTimer(window, this_instance->timer_id_);
+  this_instance->timer_id_ = 0;
 
   this_instance->other_plugin_instance_object_ =
       NPObjectLifetimeTestInstance2::plugin_instance_object_;
@@ -107,7 +109,7 @@ NPObjectDeletePluginInNPN_Evaluate::NPObjectDeletePluginInNPN_Evaluate(
     NPP id, NPNetscapeFuncs *host_functions)
     : PluginTest(id, host_functions),
       plugin_instance_object_(NULL),
-      npn_evaluate_timer_proc_set_(false) {
+      timer_id_(0) {
   g_npn_evaluate_test_instance_ = this;
 }
 
@@ -128,12 +130,10 @@ NPError NPObjectDeletePluginInNPN_Evaluate::SetWindow(NPWindow* np_window) {
   // while it is being used in webkit as this leads to crashes and is a
   // more accurate representation of the renderer crash as described in
   // http://b/issue?id=1134683.
-  if (!npn_evaluate_timer_proc_set_) {
-    npn_evaluate_timer_proc_set_ = true;
-    SetTimer(window_handle, kNPObjectLifetimeTimer, kNPObjectLifetimeTimerElapse,
-             TimerProc);
+  if (!timer_id_) {
+    timer_id_ = SetTimer(window_handle, kNPObjectLifetimeTimer,
+                        kNPObjectLifetimeTimerElapse, TimerProc);
   }
-
   return NPERR_NO_ERROR;
 }
 
@@ -141,7 +141,8 @@ void CALLBACK NPObjectDeletePluginInNPN_Evaluate::TimerProc(
     HWND window, UINT message, UINT timer_id,
     unsigned long elapsed_milli_seconds) {
 
-  KillTimer(window, kNPObjectLifetimeTimer);
+  KillTimer(window, g_npn_evaluate_test_instance_->timer_id_);
+  g_npn_evaluate_test_instance_->timer_id_ = 0;
   NPObject *window_obj = NULL;
   g_npn_evaluate_test_instance_->HostFunctions()->getvalue(
       g_npn_evaluate_test_instance_->id(), NPNVWindowNPObject,

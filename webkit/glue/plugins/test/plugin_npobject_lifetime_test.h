@@ -30,6 +30,7 @@ class NPObjectLifetimeTest : public PluginTest {
 #if defined(OS_WIN)
   static void CALLBACK TimerProc(HWND window, UINT message, UINT timer_id,
                                  unsigned long elapsed_milli_seconds);
+  UINT_PTR timer_id_;
 #endif
   DISALLOW_IMPLICIT_CONSTRUCTORS(NPObjectLifetimeTest);
 };
@@ -67,10 +68,10 @@ class NPObjectDeletePluginInNPN_Evaluate : public PluginTest {
 #if defined(OS_WIN)
   static void CALLBACK TimerProc(HWND window, UINT message, UINT timer_id,
                                  unsigned long elapsed_milli_seconds);
+  UINT_PTR timer_id_;
 #endif
 
  private:
-  bool npn_evaluate_timer_proc_set_;
   static NPObjectDeletePluginInNPN_Evaluate* g_npn_evaluate_test_instance_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(NPObjectDeletePluginInNPN_Evaluate);

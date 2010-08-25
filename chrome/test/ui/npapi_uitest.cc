@@ -219,6 +219,20 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
                 kTestCompleteCookie, kTestCompleteSuccess,
                 action_max_timeout_ms());
 }
+
+TEST_F(NPAPIVisiblePluginTester, SelfDeleteCreatePluginInNPNEvaluate) {
+  if (UITest::in_process_renderer())
+    return;
+
+  const FilePath test_case(
+      FILE_PATH_LITERAL("npn_plugin_delete_create_in_evaluate.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
+  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
+  WaitForFinish("npobject_delete_create_plugin_in_evaluate", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                action_max_timeout_ms());
+}
+
 #endif
 
 // Flaky. See http://crbug.com/17645

@@ -75,7 +75,7 @@ class PluginChannelBase : public IPC::Channel::Listener,
   // must still ref count the returned value.  When there are no more routes
   // on the channel and its ref count is 0, the object deletes itself.
   static PluginChannelBase* GetChannel(
-      const std::string& channel_name, IPC::Channel::Mode mode,
+      const std::string& channel_key, IPC::Channel::Mode mode,
       PluginChannelFactory factory, MessageLoop* ipc_message_loop,
       bool create_pipe_now);
 

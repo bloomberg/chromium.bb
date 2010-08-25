@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/string_number_conversions.h"
 #include "chrome/common/child_process.h"
 #include "ipc/ipc_sync_message.h"
 
@@ -24,13 +25,15 @@ static PluginChannelMap g_plugin_channels_;
 static base::LazyInstance<std::stack<scoped_refptr<PluginChannelBase> > >
     lazy_plugin_channel_stack_(base::LINKER_INITIALIZED);
 
+static int next_pipe_id = 0;
+
 PluginChannelBase* PluginChannelBase::GetChannel(
-    const std::string& channel_name, IPC::Channel::Mode mode,
+    const std::string& channel_key, IPC::Channel::Mode mode,
     PluginChannelFactory factory, MessageLoop* ipc_message_loop,
     bool create_pipe_now) {
   scoped_refptr<PluginChannelBase> channel;
 
-  PluginChannelMap::const_iterator iter = g_plugin_channels_.find(channel_name);
+  PluginChannelMap::const_iterator iter = g_plugin_channels_.find(channel_key);
   if (iter == g_plugin_channels_.end()) {
     channel = factory();
   } else {
@@ -40,10 +43,14 @@ PluginChannelBase* PluginChannelBase::GetChannel(
   DCHECK(channel != NULL);
 
   if (!channel->channel_valid()) {
-    channel->channel_name_ = channel_name;
+    channel->channel_name_ = channel_key;
+    if (mode == IPC::Channel::MODE_SERVER) {
+      channel->channel_name_.append(".");
+      channel->channel_name_.append(base::IntToString(next_pipe_id++));
+    }
     channel->mode_ = mode;
     if (channel->Init(ipc_message_loop, create_pipe_now)) {
-      g_plugin_channels_[channel_name] = channel;
+      g_plugin_channels_[channel_key] = channel;
     } else {
       channel = NULL;
     }

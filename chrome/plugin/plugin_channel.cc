@@ -136,12 +136,12 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
 PluginChannel* PluginChannel::GetPluginChannel(int renderer_id,
                                                MessageLoop* ipc_message_loop) {
   // Map renderer ID to a (single) channel to that process.
-  std::string channel_name = StringPrintf(
+  std::string channel_key = StringPrintf(
       "%d.r%d", base::GetCurrentProcId(), renderer_id);
 
   PluginChannel* channel =
       static_cast<PluginChannel*>(PluginChannelBase::GetChannel(
-          channel_name,
+          channel_key,
           IPC::Channel::MODE_SERVER,
           ClassFactory,
           ipc_message_loop,

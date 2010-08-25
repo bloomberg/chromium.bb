@@ -66,7 +66,8 @@ PluginTest* CreatePluginTest(const std::string& test_name,
     new_test = new NPObjectLifetimeTestInstance2(instance, host_functions);
   } else if (test_name == "new_fails") {
     new_test = new NewFailsTest(instance, host_functions);
-  } else if (test_name == "npobject_delete_plugin_in_evaluate") {
+  } else if (test_name == "npobject_delete_plugin_in_evaluate" ||
+             test_name == "npobject_delete_create_plugin_in_evaluate") {
     new_test = new NPObjectDeletePluginInNPN_Evaluate(instance, host_functions);
 #endif
   } else if (test_name == "plugin_javascript_open_popup_with_plugin") {
@@ -86,7 +87,8 @@ PluginTest* CreatePluginTest(const std::string& test_name,
   } else if (test_name == "hidden_plugin" ||
              test_name == "create_instance_in_paint" ||
              test_name == "alert_in_window_message" ||
-             test_name == "ensure_scripting_works_in_destroy") {
+             test_name == "ensure_scripting_works_in_destroy" ||
+             test_name == "invoke_js_function_on_create") {
     new_test = new WindowedPluginTest(instance, host_functions);
 #endif
   }
