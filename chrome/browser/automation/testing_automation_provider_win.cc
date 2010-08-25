@@ -6,7 +6,9 @@
 
 #include <windows.h>
 
+#include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
+#include "chrome/browser/browser_window.h"
 
 void TestingAutomationProvider::ActivateWindow(int handle) {
   if (window_tracker_->ContainsHandle(handle)) {
@@ -25,6 +27,54 @@ void TestingAutomationProvider::IsWindowMaximized(int handle,
     WINDOWPLACEMENT window_placement;
     GetWindowPlacement(hwnd, &window_placement);
     *is_maximized = (window_placement.showCmd == SW_MAXIMIZE);
+  }
+}
+
+void TestingAutomationProvider::TerminateSession(int handle, bool* success) {
+  *success = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    HWND window = browser->window()->GetNativeHandle();
+    *success = (::PostMessageW(window, WM_ENDSESSION, 0, 0) == TRUE);
+  }
+}
+
+void TestingAutomationProvider::GetWindowBounds(int handle,
+                                                gfx::Rect* bounds,
+                                                bool* success) {
+  *success = false;
+  HWND hwnd = window_tracker_->GetResource(handle);
+  if (hwnd) {
+    *success = true;
+    WINDOWPLACEMENT window_placement;
+    GetWindowPlacement(hwnd, &window_placement);
+    *bounds = window_placement.rcNormalPosition;
+  }
+}
+
+void TestingAutomationProvider::SetWindowBounds(int handle,
+                                                const gfx::Rect& bounds,
+                                                bool* success) {
+  *success = false;
+  if (window_tracker_->ContainsHandle(handle)) {
+    HWND hwnd = window_tracker_->GetResource(handle);
+    if (::MoveWindow(hwnd, bounds.x(), bounds.y(), bounds.width(),
+                     bounds.height(), true)) {
+      *success = true;
+    }
+  }
+}
+
+void TestingAutomationProvider::SetWindowVisible(int handle,
+                                                 bool visible,
+                                                 bool* result) {
+  if (window_tracker_->ContainsHandle(handle)) {
+    HWND hwnd = window_tracker_->GetResource(handle);
+    ::ShowWindow(hwnd, visible ? SW_SHOW : SW_HIDE);
+    *result = true;
+  } else {
+    *result = false;
   }
 }
 

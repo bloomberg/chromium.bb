@@ -187,52 +187,25 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetShowingAppModalDialog(bool* showing_dialog, int* dialog_button);
   void ClickAppModalDialogButton(int button, bool* success);
   void ShutdownSessionService(int handle, bool* result);
-  void TerminateSession(int handle, bool* success);
-  void WindowGetViewBounds(int handle, int view_id, bool screen_coordinates,
-                           bool* success, gfx::Rect* bounds);
   void WindowSimulateDrag(int handle,
                           std::vector<gfx::Point> drag_path,
                           int flags,
                           bool press_escape_en_route,
                           IPC::Message* reply_message);
-  void WindowSimulateClick(const IPC::Message& message,
-                           int handle,
-                           const gfx::Point& click,
-                           int flags);
-  void WindowSimulateMouseMove(const IPC::Message& message,
-                               int handle,
-                               const gfx::Point& location);
-  void WindowSimulateKeyPress(const IPC::Message& message,
-                              int handle,
-                              int key,
-                              int flags);
-  void GetWindowBounds(int handle, gfx::Rect* bounds, bool* result);
-  void SetWindowBounds(int handle, const gfx::Rect& bounds, bool* result);
-  void SetWindowVisible(int handle, bool visible, bool* result);
 
-  void GetTabCount(int handle, int* tab_count);
-  void GetType(int handle, int* type_as_int);
-  void GetTab(int win_handle, int tab_index, int* tab_handle);
 #if defined(OS_WIN)
   // TODO(port): Replace HWND.
   void GetTabHWND(int handle, HWND* tab_hwnd);
 #endif  // defined(OS_WIN)
-  void GetTabProcessID(int handle, int* process_id);
-  void GetTabTitle(int handle, int* title_string_size, std::wstring* title);
-  void GetTabIndex(int handle, int* tabstrip_index);
-  void GetTabURL(int handle, bool* success, GURL* url);
   void HandleUnused(const IPC::Message& message, int handle);
   void ExecuteJavascript(int handle,
                          const std::wstring& frame_xpath,
                          const std::wstring& script,
                          IPC::Message* reply_message);
-  void GetShelfVisibility(int handle, bool* visible);
   void SetShelfVisibility(int handle, bool visible);
   void SetFilteredInet(const IPC::Message& message, bool enabled);
   void GetFilteredInetHitCount(int* hit_count);
   void SetProxyConfig(const std::string& new_proxy_config);
-  void IsFullscreen(int handle, bool* is_fullscreen);
-  void GetFullscreenBubbleVisibility(int handle, bool* is_visible);
   void SetContentSetting(int handle,
                          const std::string& host,
                          ContentSettingsType content_type,

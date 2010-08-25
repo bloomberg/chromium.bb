@@ -220,41 +220,6 @@ void AutomationProvider::WindowSimulateDrag(int handle,
   }
 }
 
-void AutomationProvider::GetWindowBounds(int handle, gfx::Rect* bounds,
-                                         bool* success) {
-  *success = false;
-  HWND hwnd = window_tracker_->GetResource(handle);
-  if (hwnd) {
-    *success = true;
-    WINDOWPLACEMENT window_placement;
-    GetWindowPlacement(hwnd, &window_placement);
-    *bounds = window_placement.rcNormalPosition;
-  }
-}
-
-void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
-                                         bool* success) {
-  *success = false;
-  if (window_tracker_->ContainsHandle(handle)) {
-    HWND hwnd = window_tracker_->GetResource(handle);
-    if (::MoveWindow(hwnd, bounds.x(), bounds.y(), bounds.width(),
-                     bounds.height(), true)) {
-      *success = true;
-    }
-  }
-}
-
-void AutomationProvider::SetWindowVisible(int handle, bool visible,
-                                          bool* result) {
-  if (window_tracker_->ContainsHandle(handle)) {
-    HWND hwnd = window_tracker_->GetResource(handle);
-    ::ShowWindow(hwnd, visible ? SW_SHOW : SW_HIDE);
-    *result = true;
-  } else {
-    *result = false;
-  }
-}
-
 void AutomationProvider::GetTabHWND(int handle, HWND* tab_hwnd) {
   *tab_hwnd = NULL;
 
@@ -430,16 +395,6 @@ void AutomationProvider::ConnectExternalTab(
   }
 
   TRACE_EVENT_END("AutomationProvider::ConnectExternalTab", 0, "");
-}
-
-void AutomationProvider::TerminateSession(int handle, bool* success) {
-  *success = false;
-
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    HWND window = browser->window()->GetNativeHandle();
-    *success = (::PostMessageW(window, WM_ENDSESSION, 0, 0) == TRUE);
-  }
 }
 
 void AutomationProvider::SetEnableExtensionAutomation(

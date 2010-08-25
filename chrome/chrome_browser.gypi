@@ -1,6 +1,6 @@
 # Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file. 
+# found in the LICENSE file.
 
 {
   'targets': [
@@ -224,6 +224,7 @@
         'browser/automation/extension_port_container.h',
         'browser/automation/testing_automation_provider_gtk.cc',
         'browser/automation/testing_automation_provider_mac.mm',
+        'browser/automation/testing_automation_provider_views.cc',
         'browser/automation/testing_automation_provider_win.cc',
         'browser/automation/testing_automation_provider.cc',
         'browser/automation/testing_automation_provider.h',

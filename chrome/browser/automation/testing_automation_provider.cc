@@ -12,15 +12,18 @@
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
+#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "net/url_request/url_request_context.h"
+#include "views/event.h"
 
 namespace {
 
@@ -126,8 +129,36 @@ class DeleteCookieTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(DeleteCookieTask);
 };
 
-}  // namespace
+class ClickTask : public Task {
+ public:
+  explicit ClickTask(int flags) : flags_(flags) {}
+  virtual ~ClickTask() {}
 
+  virtual void Run() {
+    ui_controls::MouseButton button = ui_controls::LEFT;
+    if ((flags_ & views::Event::EF_LEFT_BUTTON_DOWN) ==
+        views::Event::EF_LEFT_BUTTON_DOWN) {
+      button = ui_controls::LEFT;
+    } else if ((flags_ & views::Event::EF_RIGHT_BUTTON_DOWN) ==
+        views::Event::EF_RIGHT_BUTTON_DOWN) {
+      button = ui_controls::RIGHT;
+    } else if ((flags_ & views::Event::EF_MIDDLE_BUTTON_DOWN) ==
+        views::Event::EF_MIDDLE_BUTTON_DOWN) {
+      button = ui_controls::MIDDLE;
+    } else {
+      NOTREACHED();
+    }
+
+    ui_controls::SendMouseClick(button);
+  }
+
+ private:
+  int flags_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClickTask);
+};
+
+}  // namespace
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
     : AutomationProvider(profile),
@@ -188,6 +219,25 @@ void TestingAutomationProvider::OnMessageReceived(
                         ExecuteBrowserCommandAsync)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowExecuteCommand,
                         ExecuteBrowserCommand)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TerminateSession, TerminateSession)
+    IPC_MESSAGE_HANDLER(AutomationMsg_WindowViewBounds, WindowGetViewBounds)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetWindowBounds, GetWindowBounds)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowBounds, SetWindowBounds)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowVisible, SetWindowVisible)
+    IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
+    IPC_MESSAGE_HANDLER(AutomationMsg_WindowMouseMove, WindowSimulateMouseMove)
+    IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabCount, GetTabCount)
+    IPC_MESSAGE_HANDLER(AutomationMsg_Type, GetType)
+    IPC_MESSAGE_HANDLER(AutomationMsg_Tab, GetTab)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabProcessID, GetTabProcessID)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabTitle, GetTabTitle)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabIndex, GetTabIndex)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabURL, GetTabURL)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ShelfVisibility, GetShelfVisibility)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreen, IsFullscreen)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreenBubbleVisible,
+                        GetFullscreenBubbleVisibility)
 
     IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
   IPC_END_MESSAGE_MAP()
@@ -648,6 +698,178 @@ void TestingAutomationProvider::IsWindowActive(int handle,
   } else {
     *success = false;
     *is_active = false;
+  }
+}
+
+void TestingAutomationProvider::WindowSimulateClick(const IPC::Message& message,
+                                                    int handle,
+                                                    const gfx::Point& click,
+                                                    int flags) {
+  if (window_tracker_->ContainsHandle(handle)) {
+    ui_controls::SendMouseMoveNotifyWhenDone(click.x(), click.y(),
+                                             new ClickTask(flags));
+  }
+}
+
+void TestingAutomationProvider::WindowSimulateMouseMove(
+    const IPC::Message& message,
+    int handle,
+    const gfx::Point& location) {
+  if (window_tracker_->ContainsHandle(handle))
+    ui_controls::SendMouseMove(location.x(), location.y());
+}
+
+void TestingAutomationProvider::WindowSimulateKeyPress(
+    const IPC::Message& message,
+    int handle,
+    int key,
+    int flags) {
+  if (!window_tracker_->ContainsHandle(handle))
+    return;
+
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  // The key event is sent to whatever window is active.
+  ui_controls::SendKeyPress(window, static_cast<base::KeyboardCode>(key),
+                           ((flags & views::Event::EF_CONTROL_DOWN) ==
+                              views::Event::EF_CONTROL_DOWN),
+                            ((flags & views::Event::EF_SHIFT_DOWN) ==
+                              views::Event::EF_SHIFT_DOWN),
+                            ((flags & views::Event::EF_ALT_DOWN) ==
+                              views::Event::EF_ALT_DOWN),
+                            ((flags & views::Event::EF_COMMAND_DOWN) ==
+                              views::Event::EF_COMMAND_DOWN));
+}
+
+void TestingAutomationProvider::GetTabCount(int handle, int* tab_count) {
+  *tab_count = -1;  // -1 is the error code
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    *tab_count = browser->tab_count();
+  }
+}
+
+void TestingAutomationProvider::GetType(int handle, int* type_as_int) {
+  *type_as_int = -1;  // -1 is the error code
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    *type_as_int = static_cast<int>(browser->type());
+  }
+}
+
+void TestingAutomationProvider::GetTab(int win_handle,
+                                       int tab_index,
+                                       int* tab_handle) {
+  *tab_handle = 0;
+  if (browser_tracker_->ContainsHandle(win_handle) && (tab_index >= 0)) {
+    Browser* browser = browser_tracker_->GetResource(win_handle);
+    if (tab_index < browser->tab_count()) {
+      TabContents* tab_contents =
+          browser->GetTabContentsAt(tab_index);
+      *tab_handle = tab_tracker_->Add(&tab_contents->controller());
+    }
+  }
+}
+
+void TestingAutomationProvider::GetTabProcessID(int handle, int* process_id) {
+  *process_id = -1;
+
+  if (tab_tracker_->ContainsHandle(handle)) {
+    *process_id = 0;
+    TabContents* tab_contents =
+        tab_tracker_->GetResource(handle)->tab_contents();
+    RenderProcessHost* rph = tab_contents->GetRenderProcessHost();
+    if (rph)
+      *process_id = base::GetProcId(rph->GetHandle());
+  }
+}
+
+void TestingAutomationProvider::GetTabTitle(int handle,
+                                            int* title_string_size,
+                                            std::wstring* title) {
+  *title_string_size = -1;  // -1 is the error code
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationEntry* entry = tab->GetActiveEntry();
+    if (entry != NULL) {
+      *title = UTF16ToWideHack(entry->title());
+    } else {
+      *title = std::wstring();
+    }
+    *title_string_size = static_cast<int>(title->size());
+  }
+}
+
+void TestingAutomationProvider::GetTabIndex(int handle, int* tabstrip_index) {
+  *tabstrip_index = -1;  // -1 is the error code
+
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    Browser* browser = Browser::GetBrowserForController(tab, NULL);
+    *tabstrip_index = browser->tabstrip_model()->GetIndexOfController(tab);
+  }
+}
+
+void TestingAutomationProvider::GetTabURL(int handle,
+                                          bool* success,
+                                          GURL* url) {
+  *success = false;
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    // Return what the user would see in the location bar.
+    *url = tab->GetActiveEntry()->virtual_url();
+    *success = true;
+  }
+}
+
+void TestingAutomationProvider::GetShelfVisibility(int handle, bool* visible) {
+  *visible = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+#if defined(OS_CHROMEOS)
+    // Chromium OS shows FileBrowse ui rather than download shelf. So we
+    // enumerate all browsers and look for a chrome://filebrowse... pop up.
+    for (BrowserList::const_iterator it = BrowserList::begin();
+         it != BrowserList::end(); ++it) {
+      if ((*it)->type() == Browser::TYPE_POPUP) {
+        const GURL& url =
+            (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+
+        if (url.SchemeIs(chrome::kChromeUIScheme) &&
+            url.host() == chrome::kChromeUIFileBrowseHost) {
+          *visible = true;
+          break;
+        }
+      }
+    }
+#else
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      *visible = browser->window()->IsDownloadShelfVisible();
+    }
+#endif
+  }
+}
+
+void TestingAutomationProvider::IsFullscreen(int handle, bool* visible) {
+  *visible = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser)
+      *visible = browser->window()->IsFullscreen();
+  }
+}
+
+void TestingAutomationProvider::GetFullscreenBubbleVisibility(int handle,
+                                                              bool* visible) {
+  *visible = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser)
+      *visible = browser->window()->IsFullscreenBubbleVisible();
   }
 }
 

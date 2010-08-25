@@ -83,6 +83,33 @@ class TestingAutomationProvider : public AutomationProvider,
   void IsWindowActive(int handle, bool* success, bool* is_active);
   void ActivateWindow(int handle);
   void IsWindowMaximized(int handle, bool* is_maximized, bool* success);
+  void TerminateSession(int handle, bool* success);
+  void WindowGetViewBounds(int handle, int view_id, bool screen_coordinates,
+                           bool* success, gfx::Rect* bounds);
+  void GetWindowBounds(int handle, gfx::Rect* bounds, bool* result);
+  void SetWindowBounds(int handle, const gfx::Rect& bounds, bool* result);
+  void SetWindowVisible(int handle, bool visible, bool* result);
+  void WindowSimulateClick(const IPC::Message& message,
+                           int handle,
+                           const gfx::Point& click,
+                           int flags);
+  void WindowSimulateMouseMove(const IPC::Message& message,
+                               int handle,
+                               const gfx::Point& location);
+  void WindowSimulateKeyPress(const IPC::Message& message,
+                              int handle,
+                              int key,
+                              int flags);
+  void GetTabCount(int handle, int* tab_count);
+  void GetType(int handle, int* type_as_int);
+  void GetTab(int win_handle, int tab_index, int* tab_handle);
+  void GetTabProcessID(int handle, int* process_id);
+  void GetTabTitle(int handle, int* title_string_size, std::wstring* title);
+  void GetTabIndex(int handle, int* tabstrip_index);
+  void GetTabURL(int handle, bool* success, GURL* url);
+  void GetShelfVisibility(int handle, bool* visible);
+  void IsFullscreen(int handle, bool* is_fullscreen);
+  void GetFullscreenBubbleVisibility(int handle, bool* is_visible);
 
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
