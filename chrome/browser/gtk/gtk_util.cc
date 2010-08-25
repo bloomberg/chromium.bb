@@ -1047,6 +1047,7 @@ gfx::Rect GetDialogBounds(GtkWidget* dialog) {
 
   return gfx::Rect(x, y, width, height);
 }
+#endif
 
 string16 GetStockPreferencesMenuLabel() {
   GtkStockItem stock_item;
@@ -1057,6 +1058,5 @@ string16 GetStockPreferencesMenuLabel() {
   }
   return preferences;
 }
-#endif
 
 }  // namespace gtk_util
