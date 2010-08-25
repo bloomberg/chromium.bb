@@ -12,7 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h" 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/point.h"
@@ -535,11 +535,11 @@ void StatusBubbleViews::StatusViewExpander::SetBubbleWidth(int width) {
 
 const int StatusBubbleViews::kShadowThickness = 1;
 
-StatusBubbleViews::StatusBubbleViews(views::Widget* frame)
+StatusBubbleViews::StatusBubbleViews(views::View* base_view)
     : offset_(0),
       popup_(NULL),
       opacity_(0),
-      frame_(frame),
+      base_view_(base_view),
       view_(NULL),
       download_shelf_is_visible_(false),
       is_expanded_(false),
@@ -559,12 +559,13 @@ void StatusBubbleViews::Init() {
                                            Widget::NotAcceptEvents,
                                            Widget::NotDeleteOnDestroy,
                                            Widget::MirrorOriginInRTL));
+    views::Widget* frame = base_view_->GetWidget();
     if (!view_)
-      view_ = new StatusView(this, popup_.get(), frame_->GetThemeProvider());
+      view_ = new StatusView(this, popup_.get(), frame->GetThemeProvider());
     if (!expand_view_.get())
       expand_view_.reset(new StatusViewExpander(this, view_));
     popup_->SetOpacity(0x00);
-    popup_->Init(frame_->GetNativeView(), gfx::Rect());
+    popup_->Init(frame->GetNativeView(), gfx::Rect());
     popup_->SetContentsView(view_);
     Reposition();
     popup_->Show();
@@ -572,22 +573,11 @@ void StatusBubbleViews::Init() {
 }
 
 void StatusBubbleViews::Reposition() {
-  int xpos;
-  // If the UI layout is RTL, we need to mirror the position of the bubble
-  // relative to the parent. Don't hold onto the mirrored position, or
-  // the bubble will flip back and forth from left to right.
-  if (base::i18n::IsRTL()) {
-    gfx::Rect frame_bounds;
-    frame_->GetBounds(&frame_bounds, false);
-    xpos = frame_bounds.width() - position_.x() - size_.width();
-  } else {
-    xpos = position_.x();
-  }
-
   if (popup_.get()) {
     gfx::Point top_left;
-    views::View::ConvertPointToScreen(frame_->GetRootView(), &top_left);
-    popup_->SetBounds(gfx::Rect(top_left.x() + xpos,
+    views::View::ConvertPointToScreen(base_view_, &top_left);
+
+    popup_->SetBounds(gfx::Rect(top_left.x() + position_.x(),
                                 top_left.y() + position_.y(),
                                 size_.width(), size_.height()));
   }
@@ -599,7 +589,8 @@ gfx::Size StatusBubbleViews::GetPreferredSize() {
 }
 
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
-  position_.SetPoint(x, y);
+  original_position_.SetPoint(x, y);
+  position_.SetPoint(base_view_->MirroredXWithWidthInsideView(x, w), y);
   size_.SetSize(w, h);
   Reposition();
 }
@@ -711,9 +702,9 @@ void StatusBubbleViews::UpdateDownloadShelfVisibility(bool visible) {
 void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
   // Get the position of the frame.
   gfx::Point top_left;
-  views::RootView* root = frame_->GetRootView();
-  views::View::ConvertPointToScreen(root, &top_left);
-  int window_width = root->GetLocalBounds(true).width();  // border included.
+  views::View::ConvertPointToScreen(base_view_, &top_left);
+  // Border included.
+  int window_width = base_view_->GetLocalBounds(true).width();
 
   // Get the cursor position relative to the popup.
   gfx::Point relative_location = location;
@@ -759,7 +750,7 @@ void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
 
     // Check if the bubble sticks out from the monitor or will obscure
     // download shelf.
-    gfx::NativeView widget = frame_->GetNativeView();
+    gfx::NativeView widget = base_view_->GetWidget()->GetNativeView();
     gfx::Rect monitor_rect =
         views::Screen::GetMonitorWorkAreaNearestWindow(widget);
     const int bubble_bottom_y = top_left.y() + position_.y() + size_.height();
@@ -795,10 +786,11 @@ void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
 }
 
 bool StatusBubbleViews::IsFrameVisible() {
-  if (!frame_->IsVisible())
+  views::Widget* frame = base_view_->GetWidget();
+  if (!frame->IsVisible())
     return false;
 
-  views::Window* window = frame_->GetWindow();
+  views::Window* window = frame->GetWindow();
   return !window || !window->IsMinimized();
 }
 
@@ -822,22 +814,19 @@ void StatusBubbleViews::ExpandBubble() {
 }
 
 int StatusBubbleViews::GetStandardStatusBubbleWidth() {
-  gfx::Rect frame_bounds;
-  frame_->GetBounds(&frame_bounds, false);
-  return frame_bounds.width() / 3;
+  return base_view_->bounds().width() / 3;
 }
 
 int StatusBubbleViews::GetMaxStatusBubbleWidth() {
-  gfx::Rect frame_bounds;
-  frame_->GetBounds(&frame_bounds, false);
-  return static_cast<int>(frame_bounds.width() - (kShadowThickness * 2) -
-      kTextPositionX - kTextHorizPadding - 1 -
-      views::NativeScrollBar::GetVerticalScrollBarWidth());
+  return static_cast<int>(std::max(0, base_view_->bounds().width() -
+      (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1 -
+      views::NativeScrollBar::GetVerticalScrollBarWidth()));
 }
 
 void StatusBubbleViews::SetBubbleWidth(int width) {
   size_.set_width(width);
-  SetBounds(position_.x(), position_.y(), size_.width(), size_.height());
+  SetBounds(original_position_.x(), original_position_.y(),
+            size_.width(), size_.height());
 }
 
 void StatusBubbleViews::CancelExpandTimer() {

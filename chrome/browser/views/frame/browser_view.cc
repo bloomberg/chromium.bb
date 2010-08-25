@@ -502,7 +502,7 @@ BrowserView::BrowserView(Browser* browser)
       initialized_(false),
       ignore_layout_(true)
 #if defined(OS_WIN)
-      ,hung_window_detector_(&hung_plugin_action_),
+      , hung_window_detector_(&hung_plugin_action_),
       ticker_(0)
 #endif
                  {
@@ -1948,7 +1948,7 @@ void BrowserView::Init() {
   AddChildView(contents_split_);
   set_contents_view(contents_split_);
 
-  status_bubble_.reset(new StatusBubbleViews(GetWidget()));
+  status_bubble_.reset(new StatusBubbleViews(contents_));
 
 #if defined(OS_WIN)
   InitSystemMenu();
@@ -2007,8 +2007,8 @@ void BrowserView::LayoutStatusBubble(int top) {
   if (UseVerticalTabs() && IsTabStripVisible())
     x += tabstrip_->bounds().right();
   int height = status_bubble_->GetPreferredSize().height();
-  gfx::Point origin(x, top - height + overlap);
-  ConvertPointToView(this, GetParent(), &origin);
+  gfx::Point origin(
+      -overlap, contents_container_->bounds().height() - height + overlap);
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
 
@@ -2479,7 +2479,6 @@ void BrowserView::HideMatchPreview() {
 
 void BrowserView::ProcessTabSelected(TabContents* new_contents,
                                      bool change_tab_contents) {
-
   // Update various elements that are interested in knowing the current
   // TabContents.
 

@@ -18,6 +18,7 @@ namespace gfx {
 class Point;
 }
 namespace views {
+class View;
 class Widget;
 }
 
@@ -32,7 +33,7 @@ class StatusBubbleViews : public StatusBubble {
   // The combined vertical padding above and below the text.
   static const int kTotalVerticalPadding = 7;
 
-  explicit StatusBubbleViews(views::Widget* frame);
+  explicit StatusBubbleViews(views::View* base_view);
   ~StatusBubbleViews();
 
   // Reposition the bubble - as we are using a WS_POPUP for the bubble,
@@ -67,7 +68,7 @@ class StatusBubbleViews : public StatusBubble {
   // users to see links in the region normally occupied by the status bubble.
   void AvoidMouse(const gfx::Point& location);
 
-  // Returns true if the frame_ is visible and not minimized.
+  // Returns true if the base_view_'s widget is visible and not minimized.
   bool IsFrameVisible();
 
   // Expand bubble size to accommodate a long URL.
@@ -95,7 +96,9 @@ class StatusBubbleViews : public StatusBubble {
   // Used to elide the original URL again when we expand it.
   std::wstring languages_;
 
-  // Position relative to the parent window.
+  // Position relative to the base_view_.
+  gfx::Point original_position_;
+  // original_position_ adjusted according to the current RTL.
   gfx::Point position_;
   gfx::Size size_;
 
@@ -107,7 +110,7 @@ class StatusBubbleViews : public StatusBubble {
   scoped_ptr<views::Widget> popup_;
   double opacity_;
 
-  views::Widget* frame_;
+  views::View* base_view_;
   StatusView* view_;
 
   // Manages the expansion of a status bubble to fit a long URL.
