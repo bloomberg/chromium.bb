@@ -251,52 +251,51 @@ def RemoveDirectory(*path):
     os.rmdir(file_path)
 
 
-def SubprocessCall(command, in_directory, fail_status=None):
-  """Runs command, a list, in directory in_directory.
+def SubprocessCall(args, **kwargs):
+  """Wraps SubprocessCallAndFilter() with different default arguments.
 
-  This function wraps SubprocessCallAndFilter, but does not perform the
-  filtering functions.  See that function for a more complete usage
-  description.
-  """
-  # Call subprocess and capture nothing:
-  SubprocessCallAndFilter(command, in_directory, True, True, fail_status)
+  Calls subprocess and capture nothing."""
+  kwargs['print_messages'] = True
+  kwargs['print_stdout'] = True
+  return SubprocessCallAndFilter(args, **kwargs)
 
 
-def SubprocessCallAndFilter(command,
-                            in_directory,
-                            print_messages,
-                            print_stdout,
-                            fail_status=None,
-                            filter_fn=None,
-                            stdout=None):
-  """Runs command, a list, in directory in_directory.
+def SubprocessCallAndFilter(args, **kwargs):
+  """Runs a command and prints a header line if appropriate.
 
-  If print_messages is true, a message indicating what is being done
-  is printed to stdout. If print_messages is false, the message is printed
-  only if we actually need to print something else as well, so you can
-  get the context of the output. If print_messages is false and print_stdout
-  is false, no output at all is generated.
+  If |print_messages| is True, a message indicating what is being done
+  is printed to stdout. Otherwise the message is printed only if the call
+  generated any ouput. If both |print_messages| and |print_stdout| are False,
+  no output at all is generated.
 
-  Also, if print_stdout is true, the command's stdout is also forwarded
-  to stdout.
+  If |print_stdout| is True, the command's stdout is also forwarded to stdout.
 
-  If a filter_fn function is specified, it is expected to take a single
+  If |filter_fn| function is specified, it is expected to take a single
   string argument, and it will be called with each line of the
   subprocess's output. Each line has had the trailing newline character
   trimmed.
 
   If the command fails, as indicated by a nonzero exit status, gclient will
-  exit with an exit status of fail_status.  If fail_status is None (the
+  exit with an exit status of fail_status. If fail_status is None (the
   default), gclient will raise an Error exception.
+
+  Other subprocess.Popen parameters can be specified.
   """
-  stdout = stdout or sys.stdout
-  logging.debug(command)
+  stdout = kwargs.pop('stdout', sys.stdout) or sys.stdout
+  assert not 'stderr' in kwargs
+  filter_fn = kwargs.pop('filter_fn', None)
+  print_messages = kwargs.pop('print_messages', False)
+  print_stdout = kwargs.pop('print_stdout', False)
+  fail_status = kwargs.pop('fail_status', None)
+
+  logging.debug(args)
   if print_messages:
     stdout.write('\n________ running \'%s\' in \'%s\'\n'
-          % (' '.join(command), in_directory))
+          % (' '.join(args), kwargs['cwd']))
 
-  kid = Popen(command, bufsize=0, cwd=in_directory,
-              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  kid = Popen(args, bufsize=0,
+              stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+              **kwargs)
 
   # Do a flush of sys.stdout before we begin reading from the subprocess's
   # stdout.
@@ -314,7 +313,7 @@ def SubprocessCallAndFilter(command,
       if print_stdout:
         if not print_messages:
           stdout.write('\n________ running \'%s\' in \'%s\'\n'
-              % (' '.join(command), in_directory))
+              % (' '.join(args), kwargs['cwd']))
           print_messages = True
         stdout.write(in_byte)
       if in_byte != '\n':
@@ -337,7 +336,7 @@ def SubprocessCallAndFilter(command,
   rv = kid.wait()
 
   if rv:
-    msg = 'failed to run command: %s' % ' '.join(command)
+    msg = 'failed to run command: %s' % ' '.join(args)
     if fail_status != None:
       sys.stderr.write(msg + '\n')
       sys.exit(fail_status)

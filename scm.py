@@ -117,38 +117,9 @@ class GIT(object):
     return results
 
   @staticmethod
-  def RunAndFilterOutput(args,
-                         in_directory,
-                         print_messages,
-                         print_stdout,
-                         filter_fn,
-                         stdout=None):
-    """Runs a command, optionally outputting to stdout.
-
-    stdout is passed line-by-line to the given filter_fn function. If
-    print_stdout is true, it is also printed to sys.stdout as in Run.
-
-    Args:
-      args: A sequence of command line parameters to be passed.
-      in_directory: The directory where git is to be run.
-      print_messages: Whether to print status messages to stdout about
-        which commands are being run.
-      print_stdout: Whether to forward program's output to stdout.
-      filter_fn: A function taking one argument (a string) which will be
-        passed each line (with the ending newline character removed) of
-        program's output for filtering.
-
-    Raises:
-      gclient_utils.Error: An error occurred while running the command.
-    """
-    command = [GIT.COMMAND]
-    command.extend(args)
-    gclient_utils.SubprocessCallAndFilter(command,
-                                          in_directory,
-                                          print_messages,
-                                          print_stdout,
-                                          filter_fn=filter_fn,
-                                          stdout=stdout)
+  def RunAndFilterOutput(args, **kwargs):
+    """Wrapper to gclient_utils.SubprocessCallAndFilter()."""
+    return gclient_utils.SubprocessCallAndFilter([GIT.COMMAND] + args, **kwargs)
 
   @staticmethod
   def GetEmail(repo_root):
@@ -345,20 +316,9 @@ class SVN(object):
   current_version = None
 
   @staticmethod
-  def Run(args, in_directory):
-    """Runs svn, sending output to stdout.
-
-    Args:
-      args: A sequence of command line parameters to be passed to svn.
-      in_directory: The directory where svn is to be run.
-
-    Raises:
-      Error: An error occurred while running the svn command.
-    """
-    c = [SVN.COMMAND]
-    c.extend(args)
-    # TODO(maruel): This is very gclient-specific.
-    gclient_utils.SubprocessCall(c, in_directory)
+  def Run(args, **kwargs):
+    """Wrappers to gclient_utils.SubprocessCall()."""
+    return gclient_utils.SubprocessCall([SVN.COMMAND] + args, **kwargs)
 
   @staticmethod
   def Capture(args, in_directory=None, print_error=True):
@@ -380,7 +340,7 @@ class SVN(object):
         stderr=stderr).communicate()[0]
 
   @staticmethod
-  def RunAndGetFileList(verbose, args, in_directory, file_list, stdout=None):
+  def RunAndGetFileList(verbose, args, cwd, file_list, stdout=None):
     """Runs svn checkout, update, or status, output to stdout.
 
     The first item in args must be either "checkout", "update", or "status".
@@ -392,13 +352,12 @@ class SVN(object):
     Args:
       verbose: If True, uses verbose output
       args: A sequence of command line parameters to be passed to svn.
-      in_directory: The directory where svn is to be run.
+      cwd: The directory where svn is to be run.
 
     Raises:
       Error: An error occurred while running the svn command.
     """
-    command = [SVN.COMMAND]
-    command.extend(args)
+    stdout = stdout or sys.stdout
 
     # svn update and svn checkout use the same pattern: the first three columns
     # are for file status, property status, and lock status.  This is followed
@@ -434,11 +393,9 @@ class SVN(object):
           failure.append(line)
 
       try:
-        SVN.RunAndFilterOutput(args,
-                               in_directory,
-                               verbose,
-                               True,
-                               CaptureMatchingLines,
+        SVN.RunAndFilterOutput(args, cwd=cwd, print_messages=verbose,
+                               print_stdout=True,
+                               filter_fn=CaptureMatchingLines,
                                stdout=stdout)
       except gclient_utils.Error:
         def IsKnownFailure():
@@ -481,38 +438,9 @@ class SVN(object):
       break
 
   @staticmethod
-  def RunAndFilterOutput(args,
-                         in_directory,
-                         print_messages,
-                         print_stdout,
-                         filter_fn,
-                         stdout=None):
-    """Runs a command, optionally outputting to stdout.
-
-    stdout is passed line-by-line to the given filter_fn function. If
-    print_stdout is true, it is also printed to sys.stdout as in Run.
-
-    Args:
-      args: A sequence of command line parameters to be passed.
-      in_directory: The directory where svn is to be run.
-      print_messages: Whether to print status messages to stdout about
-        which commands are being run.
-      print_stdout: Whether to forward program's output to stdout.
-      filter_fn: A function taking one argument (a string) which will be
-        passed each line (with the ending newline character removed) of
-        program's output for filtering.
-
-    Raises:
-      gclient_utils.Error: An error occurred while running the command.
-    """
-    command = [SVN.COMMAND]
-    command.extend(args)
-    gclient_utils.SubprocessCallAndFilter(command,
-                                          in_directory,
-                                          print_messages,
-                                          print_stdout,
-                                          filter_fn=filter_fn,
-                                          stdout=stdout)
+  def RunAndFilterOutput(args, **kwargs):
+    """Wrapper for gclient_utils.SubprocessCallAndFilter()."""
+    return gclient_utils.SubprocessCallAndFilter([SVN.COMMAND] + args, **kwargs)
 
   @staticmethod
   def CaptureInfo(relpath, in_directory=None, print_error=True):

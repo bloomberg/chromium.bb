@@ -451,7 +451,8 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # Use a discrete exit status code of 2 to indicate that a hook action
     # failed.  Users of this script may wish to treat hook action failures
     # differently from VC failures.
-    return gclient_utils.SubprocessCall(command, self.root_dir(), fail_status=2)
+    return gclient_utils.SubprocessCall(command, cwd=self.root_dir(),
+        fail_status=2)
 
   def root_dir(self):
     return self.parent.root_dir()
@@ -605,7 +606,6 @@ solutions = [
                                   'incomplete: %s' % s)
     # .gclient can have hooks.
     self.deps_hooks = config_dict.get('hooks', [])
-    self.direct_reference = True
     self.deps_parsed = True
 
   def SaveConfig(self):
@@ -881,10 +881,10 @@ def CMDrecurse(parser, args):
     scm = gclient_scm.GetScmName(url)
     if scm_set and scm not in scm_set:
       continue
-    dir = os.path.normpath(os.path.join(root, path))
+    cwd = os.path.normpath(os.path.join(root, path))
     env['GCLIENT_SCM'] = scm
     env['GCLIENT_URL'] = url
-    subprocess.Popen(args, cwd=dir, env=env).communicate()
+    subprocess.Popen(args, cwd=cwd, env=env).communicate()
 
 
 @attr('usage', '[url] [safesync url]')

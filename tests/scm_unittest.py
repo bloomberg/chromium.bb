@@ -316,9 +316,9 @@ class SVNTestCase(BaseSCMTestCase):
   def testRun(self):
     param2 = 'bleh'
     scm.gclient_utils.SubprocessCall(['svn', 'foo', 'bar'],
-                                     param2).AndReturn(None)
+                                     cwd=param2).AndReturn(None)
     self.mox.ReplayAll()
-    scm.SVN.Run(['foo', 'bar'], param2)
+    scm.SVN.Run(['foo', 'bar'], cwd=param2)
 
   def testCaptureStatusEmpty(self):
     text = r"""<?xml version="1.0"?>

@@ -37,29 +37,29 @@ class GclientUtilsUnittest(GclientUtilBase):
 
 class CheckCallTestCase(GclientUtilBase):
   def testCheckCallSuccess(self):
-    command = ['boo', 'foo', 'bar']
+    args = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
     process.returncode = 0
     env = gclient_utils.os.environ.copy()
     env['LANGUAGE'] = 'en'
     gclient_utils.subprocess.Popen(
-        command, cwd=None,
+        args, cwd=None,
         stderr=None,
         env=env,
         stdout=gclient_utils.subprocess.PIPE,
         shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
     process.communicate().AndReturn(['bleh', 'foo'])
     self.mox.ReplayAll()
-    gclient_utils.CheckCall(command)
+    gclient_utils.CheckCall(args)
 
   def testCheckCallFailure(self):
-    command = ['boo', 'foo', 'bar']
+    args = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
     process.returncode = 42
     env = gclient_utils.os.environ.copy()
     env['LANGUAGE'] = 'en'
     gclient_utils.subprocess.Popen(
-        command, cwd=None,
+        args, cwd=None,
         stderr=None,
         env=env,
         stdout=gclient_utils.subprocess.PIPE,
@@ -67,10 +67,10 @@ class CheckCallTestCase(GclientUtilBase):
     process.communicate().AndReturn(['bleh', 'foo'])
     self.mox.ReplayAll()
     try:
-      gclient_utils.CheckCall(command)
+      gclient_utils.CheckCall(args)
       self.fail()
     except gclient_utils.CheckCallError, e:
-      self.assertEqual(e.command, command)
+      self.assertEqual(e.command, args)
       self.assertEqual(e.cwd, None)
       self.assertEqual(e.retcode, 42)
       self.assertEqual(e.stdout, 'bleh')
@@ -84,8 +84,8 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
     def wait(self):
         pass
 
-  def _inner(self, command, test_string):
-    in_directory = 'bleh'
+  def _inner(self, args, test_string):
+    cwd = 'bleh'
     env = gclient_utils.os.environ.copy()
     env['LANGUAGE'] = 'en'
     gclient_utils.sys.stdout.write(
@@ -93,8 +93,8 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
     for i in test_string:
       gclient_utils.sys.stdout.write(i)
     gclient_utils.subprocess.Popen(
-        command,
-        cwd=in_directory,
+        args,
+        cwd=cwd,
         shell=(gclient_utils.sys.platform == 'win32'),
         env=env,
         stdout=gclient_utils.subprocess.PIPE,
@@ -111,20 +111,21 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
       if match:
         capture_list.append(match.group(1))
     gclient_utils.SubprocessCallAndFilter(
-        command, in_directory, True, True, None, FilterLines)
+        args, cwd=cwd, print_messages=True, print_stdout=True,
+        filter_fn=FilterLines)
     self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb'])
     self.assertEquals(capture_list, ['cc', 'dd'])
 
   def testSubprocessCallAndFilter(self):
-    command = ['boo', 'foo', 'bar']
+    args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n'
-    self._inner(command, test_string)
+    self._inner(args, test_string)
 
   def testNoLF(self):
     # Exactly as testSubprocessCallAndFilter without trailing \n
-    command = ['boo', 'foo', 'bar']
+    args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb'
-    self._inner(command, test_string)
+    self._inner(args, test_string)
 
 
 class SplitUrlRevisionTestCase(GclientUtilBase):

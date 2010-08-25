@@ -154,7 +154,7 @@ class GitWrapper(SCMWrapper):
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
     command = ['diff', merge_base]
     filterer = DiffFilterer(self.relpath)
-    scm.GIT.RunAndFilterOutput(command, path, False, False, filterer.Filter,
+    scm.GIT.RunAndFilterOutput(command, cwd=path, filter_fn=filterer.Filter,
         stdout=options.stdout)
 
   def update(self, options, args, file_list):
@@ -644,7 +644,7 @@ class GitWrapper(SCMWrapper):
   def _Run(self, args, cwd=None, redirect_stdout=True):
     # TODO(maruel): Merge with Capture or better gclient_utils.CheckCall().
     if cwd is None:
-        cwd = self.checkout_path
+      cwd = self.checkout_path
     stdout = None
     if redirect_stdout:
       stdout = subprocess.PIPE
@@ -671,18 +671,15 @@ class SVNWrapper(SCMWrapper):
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
-    command = ['cleanup']
-    command.extend(args)
-    scm.SVN.Run(command, os.path.join(self._root_dir, self.relpath))
+    scm.SVN.Run(['cleanup'] + args,
+                cwd=os.path.join(self._root_dir, self.relpath))
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
       raise gclient_utils.Error('Directory %s is not present.' % path)
-    command = ['diff']
-    command.extend(args)
-    scm.SVN.Run(command, path)
+    scm.SVN.Run(['diff'] + args, cwd=path)
 
   def export(self, options, args, file_list):
     """Export a clean directory tree into the given path."""
@@ -693,9 +690,8 @@ class SVNWrapper(SCMWrapper):
     except OSError:
       pass
     assert os.path.exists(export_path)
-    command = ['export', '--force', '.']
-    command.append(export_path)
-    scm.SVN.Run(command, os.path.join(self._root_dir, self.relpath))
+    scm.SVN.Run(['export', '--force', '.', export_path],
+                cwd=os.path.join(self._root_dir, self.relpath))
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
@@ -707,7 +703,8 @@ class SVNWrapper(SCMWrapper):
     command.extend(args)
 
     filterer = DiffFilterer(self.relpath)
-    scm.SVN.RunAndFilterOutput(command, path, False, False, filterer.Filter,
+    scm.SVN.RunAndFilterOutput(command, cwd=path, print_messages=False,
+        print_stdout=False, filter_fn=filterer.Filter,
         stdout=options.stdout)
 
   def update(self, options, args, file_list):
@@ -765,7 +762,7 @@ class SVNWrapper(SCMWrapper):
     dir_info = scm.SVN.CaptureStatus(os.path.join(checkout_path, '.'))
     if [True for d in dir_info if d[0][2] == 'L' and d[1] == checkout_path]:
       # The current directory is locked, clean it up.
-      scm.SVN.Run(['cleanup'], checkout_path)
+      scm.SVN.Run(['cleanup'], cwd=checkout_path)
 
     # Retrieve the current HEAD version because svn is slow at null updates.
     if options.manually_grab_svn_rev and not revision:
@@ -797,7 +794,7 @@ class SVNWrapper(SCMWrapper):
                    from_info['Repository Root'],
                    to_info['Repository Root'],
                    self.relpath]
-        scm.SVN.Run(command, self._root_dir)
+        scm.SVN.Run(command, cwd=self._root_dir)
         from_info['URL'] = from_info['URL'].replace(
             from_info['Repository Root'],
             to_info['Repository Root'])
@@ -840,7 +837,7 @@ class SVNWrapper(SCMWrapper):
         # Create an empty checkout and then update the one file we want.  Future
         # operations will only apply to the one file we checked out.
         command = ["checkout", "--depth", "empty", self.url, checkout_path]
-        scm.SVN.Run(command, self._root_dir)
+        scm.SVN.Run(command, cwd=self._root_dir)
         if os.path.exists(os.path.join(checkout_path, filename)):
           os.remove(os.path.join(checkout_path, filename))
         command = ["update", filename]
@@ -860,7 +857,7 @@ class SVNWrapper(SCMWrapper):
                  os.path.join(checkout_path, filename)]
       command = self._AddAdditionalUpdateFlags(command, options,
           options.revision)
-      scm.SVN.Run(command, self._root_dir)
+      scm.SVN.Run(command, cwd=self._root_dir)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications. Subversion specific.

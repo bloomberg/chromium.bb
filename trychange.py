@@ -97,6 +97,7 @@ class SCM(object):
     self.options.files = None
     self.codereview_settings = None
     self.codereview_settings_file = 'codereview.settings'
+    self.gclient_root = None
 
   def GetFileNames(self):
     """Return the list of files in the diff."""
@@ -136,7 +137,6 @@ class SCM(object):
 
   def _GclientStyleSettings(self):
     """Find the root, assuming a gclient-style checkout."""
-    self.gclient_root = None
     if not self.options.no_gclient and not self.options.root:
       root = self.checkout_root
       self.gclient_root = gclient_utils.FindGclientRoot(root)
@@ -301,7 +301,7 @@ def _SendChangeHTTP(options):
         'server port to connect to.')
 
   values = _ParseSendChangeOptions(options)
-  description = ''.join("%s=%s\n" % (k,v) for (k,v) in values.iteritems())
+  description = ''.join("%s=%s\n" % (k, v) for (k, v) in values.iteritems())
   values['patch'] = options.diff
 
   url = 'http://%s:%s/send_try_patch' % (options.host, options.port)
@@ -345,7 +345,7 @@ def _SendChangeSVN(options):
                             ' try server svn repository to connect to.')
 
   values = _ParseSendChangeOptions(options)
-  description = ''.join("%s=%s\n" % (k,v) for (k,v) in values.iteritems())
+  description = ''.join("%s=%s\n" % (k, v) for (k, v) in values.iteritems())
   logging.info('Sending by SVN')
   logging.info(description)
   logging.info(options.svn_repo)

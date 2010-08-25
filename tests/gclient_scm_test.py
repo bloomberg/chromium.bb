@@ -43,6 +43,7 @@ class BaseTestCase(GCBaseTestCase):
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Run')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'RunAndGetFileList')
     self._scm_wrapper = gclient_scm.CreateSCM
+    gclient_scm.sys.stdout.flush = lambda: None
 
 
 class SVNWrapperTestCase(BaseTestCase):
@@ -68,7 +69,7 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testDir(self):
     members = [
-        'AddAdditionalFlags', 'FullUrlForRelativeUrl', 'RunCommand',
+        'FullUrlForRelativeUrl', 'RunCommand',
         'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'status', 'update',
         'updatesingle', 'url',
@@ -118,6 +119,8 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     gclient_scm.os.path.isdir(base_path).AndReturn(False)
+    gclient_scm.scm.SVN.Capture(['--version']
+        ).AndReturn('svn, version 1.5.1 (r32289)')
     # It'll to a checkout instead.
     gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
                                ).AndReturn(False)
@@ -126,7 +129,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
-                                          ['checkout', self.url, base_path],
+                                          ['checkout', self.url, base_path,
+                                           '--force'],
                                           self.root_dir, files_list)
 
     self.mox.ReplayAll()
@@ -235,7 +239,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
-                                          ['checkout', self.url, base_path],
+                                          ['checkout', self.url, base_path,
+                                           '--force'],
                                           self.root_dir, files_list)
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -307,7 +312,8 @@ class SVNWrapperTestCase(BaseTestCase):
     # When checking out a single file, we issue an svn checkout and svn update.
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Run(
-        ['checkout', '--depth', 'empty', self.url, base_path], self.root_dir)
+        ['checkout', '--depth', 'empty', self.url, base_path],
+        cwd=self.root_dir)
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose, ['update', 'DEPS'],
         gclient_scm.os.path.join(self.root_dir, self.relpath), files_list)
 
@@ -345,7 +351,8 @@ class SVNWrapperTestCase(BaseTestCase):
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Run(
         ['export', gclient_scm.os.path.join(self.url, 'DEPS'),
-            gclient_scm.os.path.join(base_path, 'DEPS')], self.root_dir)
+            gclient_scm.os.path.join(base_path, 'DEPS')],
+        cwd=self.root_dir)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -379,7 +386,8 @@ class SVNWrapperTestCase(BaseTestCase):
     # When checking out a single file, we issue an svn checkout and svn update.
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Run(
-        ['checkout', '--depth', 'empty', self.url, base_path], self.root_dir)
+        ['checkout', '--depth', 'empty', self.url, base_path],
+        cwd=self.root_dir)
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose, ['update', 'DEPS'],
         gclient_scm.os.path.join(self.root_dir, self.relpath), files_list)
 

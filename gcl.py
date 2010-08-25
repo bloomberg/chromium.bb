@@ -143,12 +143,12 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
             # stderr into content_array.
             content_array = []
             svn_path = url_path + "/" + filename
-            SVN.RunAndFilterOutput(['cat', svn_path, '--non-interactive'], '.',
-                                   False, False, content_array.append)
+            SVN.RunAndFilterOutput(['cat', svn_path, '--non-interactive'],
+                                   cwd='.', filter_fn=content_array.append)
             # Exit the loop if the file was found. Override content.
             content = '\n'.join(content_array)
             break
-          except gclient_utils.Error, e:
+          except gclient_utils.Error:
             if content_array[0].startswith(
                 'svn: Can\'t get username or password'):
               ErrorExit('Your svn credentials expired. Please run svn update '
@@ -716,7 +716,7 @@ def CMDstatus():
 
 
 @need_change_and_args
-@attrs(usage='[--no_presubmit] [--clobber] [--no_watchlists]')
+@attrs(usage='[--no_presubmit] [--no_watchlists]')
 def CMDupload(change_info, args):
   """Uploads the changelist to the server for review.
 
@@ -735,9 +735,6 @@ def CMDupload(change_info, args):
   # Map --send-mail to --send_mail
   if FilterFlag(args, "--send-mail"):
     args.append("--send_mail")
-
-  # Supports --clobber for the try server.
-  clobber = FilterFlag(args, "--clobber")
 
   upload_arg = ["upload.py", "-y"]
   server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
