@@ -1373,6 +1373,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     if (NSMaxX([button frame]) < maxViewX)
       break;
     [buttons_ removeLastObject];
+    [button setDelegate:nil];
     [button removeFromSuperview];
     --displayedButtonCount_;
   }
@@ -1440,7 +1441,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // Delete all buttons (bookmarks, chevron, "other bookmarks") from the
 // bookmark bar; reset knowledge of bookmarks.
 - (void)clearBookmarkBar {
-  [buttons_ makeObjectsPerformSelector:@selector(removeFromSuperview)];
+  for (BookmarkButton* button in buttons_.get()) {
+    [button setDelegate:nil];
+    [button removeFromSuperview];
+  }
   [buttons_ removeAllObjects];
   [self clearMenuTagMap];
   displayedButtonCount_ = 0;
@@ -2379,6 +2383,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     poofPoint = [oldButton convertPoint:poofPoint toView:nil];
     poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
     NSRect oldFrame = [oldButton frame];
+    [oldButton setDelegate:nil];
     [oldButton removeFromSuperview];
     if (animate && !ignoreAnimations_ && [self isVisible])
       NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,

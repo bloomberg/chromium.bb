@@ -180,6 +180,8 @@
 // To implement "hover open a bookmark button to open the folder"
 // which feels like menus, we override NSButtonCell's mouseEntered:
 // and mouseExited:, then and pass them along to our owning control.
+// Note: as verified in a debugger, mouseEntered: does NOT increase
+// the retainCount of the cell or its owning control.
 - (void)mouseEntered:(NSEvent*)event {
   [super mouseEntered:event];
   [[self controlView] mouseEntered:event];
@@ -187,8 +189,8 @@
 
 // See comment above mouseEntered:, above.
 - (void)mouseExited:(NSEvent*)event {
-  [super mouseExited:event];
   [[self controlView] mouseExited:event];
+  [super mouseExited:event];
 }
 
 - (void)setDrawFolderArrow:(BOOL)draw {
