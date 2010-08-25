@@ -285,7 +285,8 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 
 - (void)renewGState {
   // Synchronize with window server to avoid flashes or corrupt drawing.
-  [[self window] disableScreenUpdatesUntilFlush];
+  // Disabled for now, see http://crbug.com/52798
+  //[[self window] disableScreenUpdatesUntilFlush];
   [self globalFrameDidChange:nil];
   [super renewGState];
 }
