@@ -144,58 +144,76 @@ $(IT).bc: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
 $(IT).opt.bc: $(IT).bc
 	$(BC_OPT) -f -O3 -std-compile-opts $< -o $@
 
-# llvm bit pre linked for use with translator
-# Note: we are using -arch arm here, BUT the actual arch should be irrelevant
-#       The primary purpose is to find the undefined references in some
-#       native startup object files
-
 ######################################################################
 # BITCODE - BACKEND - ARM
-
-BC_ARM_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/arm/translator
 
 $(IT).pnacl.arm: $(IT).bc
 	$(BC_TRANSLATE) $(IT).bc  -arch arm $(PNACL_FLAGS) -o $@ -lm
 
-# TODO(robertm): the arm translator is not fully supported at this time
-$(IT).pnacl_translator.arm: $(IT).bc
-	$(BC_ARM_TRANSLATOR) $(IT).bc $@
-
 $(IT).pnacl.opt.arm: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch arm $(PNACL_FLAGS) -o $@ -lm
 
-# TODO(robertm): the arm translator is not fully supported at this time
-$(IT).pnacl_translator.opt.arm: $(IT).opt.bc
-	$(BC_ARM_TRANSLATOR) $(IT).opt.bc $@
-
 ######################################################################
 # BITCODE - BACKEND - X8632
-BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8632/translator
 
 $(IT).pnacl.x8632: $(IT).bc
 	$(BC_TRANSLATE) $(IT).bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
 
-$(IT).pnacl_translator.x8632: $(IT).bc
-	$(BC_X8632_TRANSLATOR) $(IT).bc $@
-
 $(IT).pnacl.opt.x8632: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
 
-$(IT).pnacl_translator.opt.x8632: $(IT).opt.bc
-	$(BC_X8632_TRANSLATOR) $(IT).opt.bc $@
 
 ######################################################################
 # BITCODE - BACKEND - X8664
-BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8664/translator
 
 $(IT).pnacl.x8664: $(IT).bc
 	$(BC_TRANSLATE) $(IT).bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
 
-$(IT).pnacl_translator.x8664: $(IT).bc
-	$(BC_X8664_TRANSLATOR) $(IT).bc $@
-
 $(IT).pnacl.opt.x8664: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
 
-$(IT).pnacl_translator.opt.x8664: $(IT).opt.bc
-	$(BC_X8664_TRANSLATOR) $(IT).opt.bc $@
+######################################################################
+# SANDBOXED TRANSLATOR
+# In order to use these the following setup is necessary:
+# tools/llvm/utman.sh build-sandboxed-translators
+# tools/llvm/utman.sh install-translators
+######################################################################
+# Note: we are using -arch arm here, BUT the actual arch should be irrelevant
+BC_PRELINK=$(LLVM_FAKE_ROOT)/llvm-fake-bcfinal -L$(LIB_BC_PATH)  -arch arm
+
+# optimized llvm bit code combined and interprocedurally optimized
+$(IT).opt.prelinked.bc: $(IT).opt.bc
+	$(BC_PRELINK) $^ -lm -o $(IT).opt.prelinked
+
+# optimized llvm bit code combined and interprocedurally optimized
+$(IT).prelinked.bc: $(IT).bc
+	$(BC_PRELINK) $^ -lm -o $(IT).prelinked
+
+
+# TODO(abetul): the arm translator is not fully supported at this time
+#
+#BC_ARM_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/arm/translator
+#
+#$(IT).pnacl_translator.arm: $(IT).prelinked.bc
+#	$(BC_ARM_TRANSLATOR) $(IT).prelinked.bc $@
+#
+#$(IT).pnacl_translator.opt.arm: $(IT).opt.prelinked.bc
+#	$(BC_ARM_TRANSLATOR) $(IT).opt.prelinked.bc $@
+
+BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8632/translator
+
+$(IT).pnacl_translator.x8632: $(IT).prelinked.bc
+	$(BC_X8632_TRANSLATOR) $(IT).prelinked.bc $@
+
+$(IT).pnacl_translator.opt.x8632: $(IT).opt.prelinked.bc
+	$(BC_X8632_TRANSLATOR) $(IT).opt.prelinked.bc $@
+
+
+BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8664/translator
+
+$(IT).pnacl_translator.x8664: $(IT).prelinked.bc
+	$(BC_X8664_TRANSLATOR) $(IT).prelinked.bc $@
+
+$(IT).pnacl_translator.opt.x8664: $(IT).opt.prelinked.bc
+	$(BC_X8664_TRANSLATOR) $(IT).opt.prelinked.bc $@
+
