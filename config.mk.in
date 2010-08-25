@@ -7,6 +7,7 @@ udev_rules_dir = @sysconfdir@/udev/rules.d
 libdir = @libdir@
 includedir = @includedir@
 datadir = @datadir@
+datarootdir = @datarootdir@
 
 COMPOSITOR_CFLAGS = @COMPOSITOR_CFLAGS@
 COMPOSITOR_LIBS = @COMPOSITOR_LIBS@

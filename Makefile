@@ -71,7 +71,7 @@ install : $(libs) compositor subdirs-install
 	install 70-wayland.rules ${udev_rules_dir}
 
 clean : subdirs-clean
-	rm -f compositor scanner *.o *.so
+	rm -f compositor scanner *.o *.so .*.deps
 	rm -f wayland-protocol.c \
 		wayland-server-protocol.h wayland-client-protocol.h
 

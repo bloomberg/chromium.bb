@@ -9,7 +9,7 @@ cairo_clients = flower screenshot terminal image view dnd
 all : $(egl_clients) $(cairo_clients)
 
 clean :
-	rm -f $(egl_clients) $(cairo_clients) *.o
+	rm -f $(egl_clients) $(cairo_clients) *.o .*.deps
 
 flower : flower.o window.o wayland-glib.o cairo-util.o
 gears : gears.o window.o wayland-glib.o cairo-util.o
