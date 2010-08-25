@@ -251,7 +251,15 @@ bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module,
                                   length:module_path.length()];
     DumpSymbols dump;
     if (dump.Read(module_str)) {
-      if (dump.SetArchitecture(system_info->cpu)) {
+      // What Breakpad calls "x86" should be given to the system as "i386".
+      std::string architecture;
+      if (system_info->cpu.compare("x86") == 0) {
+        architecture = "i386";
+      } else {
+        architecture = system_info->cpu;
+      }
+
+      if (dump.SetArchitecture(architecture)) {
         FILE *file = fopen([symbol_path fileSystemRepresentation],"w");
         if (file) {
           dump.WriteSymbolFile(file);
