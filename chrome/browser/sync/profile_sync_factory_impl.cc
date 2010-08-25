@@ -80,9 +80,9 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   ProfileSyncService* pss = new ProfileSyncService(
       this, profile_, browser_defaults::kBootstrapSyncAuthentication);
 
-  // App sync is disabled by default.  Register only if
-  // explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncApps)) {
+  // App sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncApps)) {
     pss->RegisterDataTypeController(
         new AppDataTypeController(this, profile_, pss));
   }
