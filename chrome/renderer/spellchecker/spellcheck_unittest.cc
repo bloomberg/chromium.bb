@@ -474,7 +474,9 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"\x05D5\x05DC\x05D4\x05E4\x05D5\x05DA \x05D0\x05D5\x05EA\x05D5 "
       L"\x05DC\x05D6\x05DE\x05D9\x05DF "
       L"\x05D5\x05E9\x05D9\x05DE\x05D5\x05E9\x05D9 \x05D1\x05DB\x05DC "
-      L"\x05D4\x05E2\x05D5\x05DC\x05DD."
+      L"\x05D4\x05E2\x05D5\x05DC\x05DD. "
+      // Two words with ASCII double/single quoation marks.
+      L"\x05DE\x05E0\x05DB\x0022\x05DC \x05E6\x0027\x05D9\x05E4\x05E1"
     }, {
       // Hindi
       "hi-IN",
