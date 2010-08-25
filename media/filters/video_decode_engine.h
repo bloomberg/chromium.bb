@@ -72,6 +72,7 @@ class VideoDecodeEngine : public base::RefCountedThreadSafe<VideoDecodeEngine> {
  public:
   struct EventHandler {
    public:
+    virtual ~EventHandler() {}
     virtual void OnInitializeComplete(const VideoCodecInfo& info) = 0;
     virtual void OnUninitializeComplete() = 0;
     virtual void OnFlushComplete() = 0;
@@ -95,7 +96,7 @@ class VideoDecodeEngine : public base::RefCountedThreadSafe<VideoDecodeEngine> {
                           const VideoCodecConfig& config) = 0;
 
   // Uninitialize the engine. Engine should destroy all resources and call
-  // EventHandler::OnInitializeDone().
+  // EventHandler::OnUninitializeComplete().
   virtual void Uninitialize() = 0;
 
   // Flush the engine. Engine should return all the buffers to owner ( which

@@ -2,37 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <d3d9.h>
-#include <dxva2api.h>
-#include <mfapi.h>
-
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
-#include "media/mf/d3d_util.h"
+#include "media/filters/video_decode_engine.h"
 #include "media/mf/file_reader_util.h"
 #include "media/mf/mft_h264_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::TimeDelta;
 
 namespace media {
 
 static const int kDecoderMaxWidth = 1920;
 static const int kDecoderMaxHeight = 1088;
 
-class FakeMftReader {
+class BaseMftReader : public base::RefCountedThreadSafe<BaseMftReader> {
+ public:
+  virtual ~BaseMftReader() {}
+  virtual void ReadCallback(scoped_refptr<DataBuffer>* input) = 0;
+};
+
+class FakeMftReader : public BaseMftReader {
  public:
   FakeMftReader() : frames_remaining_(20) {}
   explicit FakeMftReader(int count) : frames_remaining_(count) {}
-  ~FakeMftReader() {}
+  virtual ~FakeMftReader() {}
 
   // Provides garbage input to the decoder.
-  void ReadCallback(scoped_refptr<DataBuffer>* input) {
+  virtual void ReadCallback(scoped_refptr<DataBuffer>* input) {
     if (frames_remaining_ > 0) {
       int sz = 4096;
       uint8* buf = new uint8[sz];
@@ -54,49 +59,34 @@ class FakeMftReader {
   int frames_remaining_;
 };
 
-class FakeMftRenderer : public base::RefCountedThreadSafe<FakeMftRenderer> {
+class FFmpegFileReaderWrapper : public BaseMftReader {
  public:
-  explicit FakeMftRenderer(scoped_refptr<MftH264Decoder> decoder)
-      : decoder_(decoder),
-        count_(0),
-        flush_countdown_(0) {
-  }
-
-  virtual ~FakeMftRenderer() {}
-
-  virtual void WriteCallback(scoped_refptr<VideoFrame> frame) {
-    static_cast<IMFMediaBuffer*>(frame->private_buffer())->Release();
-    ++count_;
-    if (flush_countdown_ > 0) {
-      if (--flush_countdown_ == 0) {
-        decoder_->Flush();
-      }
+  FFmpegFileReaderWrapper() {}
+  virtual ~FFmpegFileReaderWrapper() {}
+  bool InitReader(const std::string& filename) {
+    reader_.reset(new FFmpegFileReader(filename));
+    if (!reader_.get() || !reader_->Initialize()) {
+      reader_.reset();
+      return false;
     }
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(decoder_.get(), &MftH264Decoder::GetOutput));
+    return true;
   }
-
-  virtual void Start() {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(decoder_.get(), &MftH264Decoder::GetOutput));
+  virtual void ReadCallback(scoped_refptr<DataBuffer>* input) {
+    if (reader_.get()) {
+      reader_->Read(input);
+    }
   }
-
-  virtual void OnDecodeError(MftH264Decoder::Error error) {
-    MessageLoop::current()->Quit();
+  bool GetWidth(int* width) {
+    if (!reader_.get())
+      return false;
+    return reader_->GetWidth(width);
   }
-
-  virtual void SetFlushCountdown(int countdown) {
-    flush_countdown_ = countdown;
+  bool GetHeight(int* height) {
+    if (!reader_.get())
+      return false;
+    return reader_->GetHeight(height);
   }
-
-  int count() const { return count_; }
-
- protected:
-  scoped_refptr<MftH264Decoder> decoder_;
-  int count_;
-  int flush_countdown_;
+  scoped_ptr<FFmpegFileReader> reader_;
 };
 
 class MftH264DecoderTest : public testing::Test {
@@ -109,158 +99,270 @@ class MftH264DecoderTest : public testing::Test {
   virtual void TearDown() {}
 };
 
+class SimpleMftH264DecoderHandler : public VideoDecodeEngine::EventHandler {
+ public:
+  SimpleMftH264DecoderHandler()
+      : init_count_(0),
+        uninit_count_(0),
+        flush_count_(0),
+        format_change_count_(0),
+        empty_buffer_callback_count_(0),
+        fill_buffer_callback_count_(0) {
+    memset(&info_, 0, sizeof(info_));
+  }
+  virtual ~SimpleMftH264DecoderHandler() {}
+  virtual void OnInitializeComplete(const VideoCodecInfo& info) {
+    info_ = info;
+    init_count_++;
+  }
+  virtual void OnUninitializeComplete() {
+    uninit_count_++;
+  }
+  virtual void OnFlushComplete() {
+    flush_count_++;
+  }
+  virtual void OnSeekComplete() {}
+  virtual void OnError() {}
+  virtual void OnFormatChange(VideoStreamInfo stream_info) {
+    format_change_count_++;
+    info_.stream_info_ = stream_info;
+  }
+  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+    if (reader_.get() && decoder_.get()) {
+      empty_buffer_callback_count_++;
+      scoped_refptr<DataBuffer> input;
+      reader_->ReadCallback(&input);
+      decoder_->EmptyThisBuffer(input);
+    }
+  }
+  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+    fill_buffer_callback_count_++;
+    current_frame_ = frame;
+  }
+  void SetReader(scoped_refptr<BaseMftReader> reader) {
+    reader_ = reader;
+  }
+  void SetDecoder(scoped_refptr<MftH264Decoder> decoder) {
+    decoder_ = decoder;
+  }
+
+  int init_count_;
+  int uninit_count_;
+  int flush_count_;
+  int format_change_count_;
+  int empty_buffer_callback_count_;
+  int fill_buffer_callback_count_;
+  VideoCodecInfo info_;
+  scoped_refptr<BaseMftReader> reader_;
+  scoped_refptr<MftH264Decoder> decoder_;
+  scoped_refptr<VideoFrame> current_frame_;
+};
+
 // A simple test case for init/deinit of MF/COM libraries.
-TEST_F(MftH264DecoderTest, SimpleInit) {
-  EXPECT_HRESULT_SUCCEEDED(
-      CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE));
-  EXPECT_HRESULT_SUCCEEDED(MFStartup(MF_VERSION, MFSTARTUP_FULL));
-  EXPECT_HRESULT_SUCCEEDED(MFShutdown());
-  CoUninitialize();
+TEST_F(MftH264DecoderTest, LibraryInit) {
+  EXPECT_TRUE(MftH264Decoder::StartupComLibraries());
+  MftH264Decoder::ShutdownComLibraries();
 }
 
-TEST_F(MftH264DecoderTest, InitWithDxvaButNoD3dDevice) {
+TEST_F(MftH264DecoderTest, DecoderUninitializedAtFirst) {
   scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(true));
-  ASSERT_TRUE(decoder.get() != NULL);
-  FakeMftReader reader;
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  EXPECT_FALSE(
-      decoder->Init(NULL, 6, 7, 111, 222, 3, 1,
-                    NewCallback(&reader, &FakeMftReader::ReadCallback),
-                    NewCallback(renderer.get(),
-                                &FakeMftRenderer::WriteCallback),
-                    NewCallback(renderer.get(),
-                                &FakeMftRenderer::OnDecodeError)));
+  ASSERT_TRUE(decoder.get());
+  EXPECT_EQ(MftH264Decoder::kUninitialized, decoder->state());
 }
 
-TEST_F(MftH264DecoderTest, InitMissingCallbacks) {
+TEST_F(MftH264DecoderTest, DecoderInitMissingArgs) {
+  VideoCodecConfig config;
+  config.width_ = 800;
+  config.height_ = 600;
   scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-  EXPECT_FALSE(decoder->Init(NULL, 1, 3, 111, 222, 56, 34, NULL, NULL, NULL));
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(NULL, NULL, config);
+  EXPECT_EQ(MftH264Decoder::kUninitialized, decoder->state());
+}
+
+TEST_F(MftH264DecoderTest, DecoderInitNoDxva) {
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 800;
+  config.height_ = 600;
+  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(1, handler.init_count_);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  decoder->Uninitialize();
+}
+
+TEST_F(MftH264DecoderTest, DecoderInitDxva) {
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 800;
+  config.height_ = 600;
+  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(true));
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(1, handler.init_count_);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  decoder->Uninitialize();
+}
+
+TEST_F(MftH264DecoderTest, DecoderUninit) {
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 800;
+  config.height_ = 600;
+  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  decoder->Uninitialize();
+  EXPECT_EQ(1, handler.uninit_count_);
+  EXPECT_EQ(MftH264Decoder::kUninitialized, decoder->state());
+}
+
+TEST_F(MftH264DecoderTest, UninitBeforeInit) {
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 800;
+  config.height_ = 600;
+  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  ASSERT_TRUE(decoder.get());
+  decoder->Uninitialize();
+  EXPECT_EQ(0, handler.uninit_count_);
 }
 
 TEST_F(MftH264DecoderTest, InitWithNegativeDimensions) {
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = -123;
+  config.height_ = -456;
   scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-  FakeMftReader reader;
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  EXPECT_TRUE(decoder->Init(NULL, 0, 6, -123, -456, 22, 4787,
-                            NewCallback(&reader, &FakeMftReader::ReadCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-
-  // By default, decoder should "guess" the dimensions to be the maximum.
-  EXPECT_EQ(kDecoderMaxWidth, decoder->width());
-  EXPECT_EQ(kDecoderMaxHeight, decoder->height());
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  EXPECT_EQ(kDecoderMaxWidth, handler.info_.stream_info_.surface_width_);
+  EXPECT_EQ(kDecoderMaxHeight, handler.info_.stream_info_.surface_height_);
+  decoder->Uninitialize();
 }
 
 TEST_F(MftH264DecoderTest, InitWithTooHighDimensions) {
-  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-  FakeMftReader reader;
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  EXPECT_TRUE(decoder->Init(NULL, 0, 0,
-                            kDecoderMaxWidth + 1, kDecoderMaxHeight + 1,
-                            0, 0,
-                            NewCallback(&reader, &FakeMftReader::ReadCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-
-  // Decoder should truncate the dimensions to the maximum supported.
-  EXPECT_EQ(kDecoderMaxWidth, decoder->width());
-  EXPECT_EQ(kDecoderMaxHeight, decoder->height());
-}
-
-TEST_F(MftH264DecoderTest, InitWithNormalDimensions) {
-  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-  FakeMftReader reader;
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  int width = 1024, height = 768;
-  EXPECT_TRUE(decoder->Init(NULL, 0, 0, width, height, 0, 0,
-                            NewCallback(&reader, &FakeMftReader::ReadCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-
-  EXPECT_EQ(width, decoder->width());
-  EXPECT_EQ(height, decoder->height());
-}
-
-// SendDrainMessage() is not a public method. Nonetheless it does not hurt
-// to test that the decoder should not do things before it is initialized.
-TEST_F(MftH264DecoderTest, SendDrainMessageBeforeInitDeathTest) {
-  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-  EXPECT_DEATH({ decoder->SendDrainMessage(); }, ".*initialized_.*");
-}
-
-// Tests draining after init, but before any input is sent.
-TEST_F(MftH264DecoderTest, SendDrainMessageAtInit) {
-  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-  FakeMftReader reader;
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  ASSERT_TRUE(decoder->Init(NULL, 0, 0, 111, 222, 0, 0,
-                            NewCallback(&reader, &FakeMftReader::ReadCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-  EXPECT_TRUE(decoder->SendDrainMessage());
-  EXPECT_TRUE(decoder->drain_message_sent_);
-}
-
-TEST_F(MftH264DecoderTest, DrainOnEndOfInputStream) {
   MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = kDecoderMaxWidth + 1;
+  config.height_ = kDecoderMaxHeight + 1;
   scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-
-  // No frames, outputs a NULL indicating end-of-stream
-  FakeMftReader reader(0);
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  ASSERT_TRUE(decoder->Init(NULL, 0, 0, 111, 222, 0, 0,
-                            NewCallback(&reader, &FakeMftReader::ReadCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(renderer.get(), &FakeMftRenderer::Start));
-  MessageLoop::current()->Run();
-  EXPECT_TRUE(decoder->drain_message_sent());
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  EXPECT_EQ(kDecoderMaxWidth, handler.info_.stream_info_.surface_width_);
+  EXPECT_EQ(kDecoderMaxHeight, handler.info_.stream_info_.surface_height_);
+  decoder->Uninitialize();
 }
 
-// 100 input garbage samples should be enough to test whether the decoder
-// will output decoded garbage frames.
+TEST_F(MftH264DecoderTest, DrainOnEmptyBuffer) {
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 1024;
+  config.height_ = 768;
+  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  scoped_refptr<Buffer> buffer(new DataBuffer(0));
+
+  // Decoder should switch to drain mode because of this NULL buffer, and then
+  // switch to kStopped when it says it needs more input during drain mode.
+  decoder->EmptyThisBuffer(buffer);
+  EXPECT_EQ(MftH264Decoder::kStopped, decoder->state());
+
+  // Should have called back with one empty frame.
+  EXPECT_EQ(1, handler.fill_buffer_callback_count_);
+  ASSERT_TRUE(handler.current_frame_.get());
+  EXPECT_EQ(VideoFrame::EMPTY, handler.current_frame_->format());
+  decoder->Uninitialize();
+}
+
 TEST_F(MftH264DecoderTest, NoOutputOnGarbageInput) {
+  // 100 samples of garbage.
+  const int kNumFrames = 100;
+  scoped_refptr<FakeMftReader> reader(new FakeMftReader(kNumFrames));
+  ASSERT_TRUE(reader.get());
+
   MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 1024;
+  config.height_ = 768;
   scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-  int num_frames = 100;
-  FakeMftReader reader(num_frames);
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  ASSERT_TRUE(decoder->Init(NULL, 0, 0, 111, 222, 0, 0,
-                            NewCallback(&reader, &FakeMftReader::ReadCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-  MessageLoop::current()->PostTask(
-      FROM_HERE, NewRunnableMethod(renderer.get(), &FakeMftRenderer::Start));
-  MessageLoop::current()->Run();
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  handler.SetReader(reader);
+  handler.SetDecoder(decoder);
+  while (MftH264Decoder::kStopped != decoder->state()) {
+    scoped_refptr<VideoFrame> frame;
+    decoder->FillThisBuffer(frame);
+  }
 
-  // Decoder should accept corrupt input data and silently ignore it.
-  EXPECT_EQ(num_frames, decoder->frames_read());
+  // Output callback should only be invoked once - the empty frame to indicate
+  // end of stream.
+  EXPECT_EQ(1, handler.fill_buffer_callback_count_);
+  ASSERT_TRUE(handler.current_frame_.get());
+  EXPECT_EQ(VideoFrame::EMPTY, handler.current_frame_->format());
 
-  // Decoder should not have output anything if input is corrupt.
-  EXPECT_EQ(0, decoder->frames_decoded());
-  EXPECT_EQ(0, renderer->count());
+  // One extra count because of the end of stream NULL sample.
+  EXPECT_EQ(kNumFrames, handler.empty_buffer_callback_count_ - 1);
+  decoder->Uninitialize();
+}
+
+TEST_F(MftH264DecoderTest, FlushAtStart) {
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 1024;
+  config.height_ = 768;
+  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  decoder->Flush();
+
+  // Flush should succeed even if input/output are empty.
+  EXPECT_EQ(1, handler.flush_count_);
+  decoder->Uninitialize();
+}
+
+TEST_F(MftH264DecoderTest, NoFlushAtStopped) {
+  scoped_refptr<BaseMftReader> reader(new FakeMftReader());
+  ASSERT_TRUE(reader.get());
+
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 1024;
+  config.height_ = 768;
+  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  handler.SetReader(reader);
+  handler.SetDecoder(decoder);
+  while (MftH264Decoder::kStopped != decoder->state()) {
+    scoped_refptr<VideoFrame> frame;
+    decoder->FillThisBuffer(frame);
+  }
+  EXPECT_EQ(0, handler.flush_count_);
+  int old_flush_count = handler.flush_count_;
+  decoder->Flush();
+  EXPECT_EQ(old_flush_count, handler.flush_count_);
+  decoder->Uninitialize();
 }
 
 FilePath GetVideoFilePath(const std::string& file_name) {
@@ -273,116 +375,49 @@ FilePath GetVideoFilePath(const std::string& file_name) {
   return path;
 }
 
-// Decodes media/test/data/bear.1280x720.mp4 which is expected to be a valid
-// H.264 video.
+void DecodeValidVideo(const std::string& filename, int num_frames, bool dxva) {
+  scoped_refptr<FFmpegFileReaderWrapper> reader(new FFmpegFileReaderWrapper());
+  ASSERT_TRUE(reader.get());
+  FilePath path = GetVideoFilePath(filename);
+  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(reader->InitReader(WideToASCII(path.value())));
+  int actual_width;
+  int actual_height;
+  ASSERT_TRUE(reader->GetWidth(&actual_width));
+  ASSERT_TRUE(reader->GetHeight(&actual_height));
+
+  MessageLoop loop;
+  SimpleMftH264DecoderHandler handler;
+  VideoCodecConfig config;
+  config.width_ = 1;
+  config.height_ = 1;
+  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(dxva));
+  ASSERT_TRUE(decoder.get());
+  decoder->Initialize(&loop, &handler, config);
+  EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
+  handler.SetReader(reader);
+  handler.SetDecoder(decoder);
+  while (MftH264Decoder::kStopped != decoder->state()) {
+    scoped_refptr<VideoFrame> frame;
+    decoder->FillThisBuffer(frame);
+  }
+
+  // We expect a format change when decoder receives enough data to determine
+  // the actual frame width/height.
+  EXPECT_GT(handler.format_change_count_, 0);
+  EXPECT_EQ(actual_width, handler.info_.stream_info_.surface_width_);
+  EXPECT_EQ(actual_height, handler.info_.stream_info_.surface_height_);
+  EXPECT_GE(handler.empty_buffer_callback_count_, num_frames);
+  EXPECT_EQ(num_frames, handler.fill_buffer_callback_count_ - 1);
+  decoder->Uninitialize();
+}
+
 TEST_F(MftH264DecoderTest, DecodeValidVideoDxva) {
-  MessageLoop loop;
-  FilePath path = GetVideoFilePath("bear.1280x720.mp4");
-  ASSERT_TRUE(file_util::PathExists(path));
-
-  ScopedComPtr<IDirect3D9> d3d9;
-  ScopedComPtr<IDirect3DDevice9> device;
-  ScopedComPtr<IDirect3DDeviceManager9> dev_manager;
-  dev_manager.Attach(CreateD3DDevManager(GetDesktopWindow(),
-                                         d3d9.Receive(),
-                                         device.Receive()));
-  ASSERT_TRUE(dev_manager.get() != NULL);
-
-  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(true));
-  ASSERT_TRUE(decoder.get() != NULL);
-  scoped_ptr<FFmpegFileReader> reader(
-      new FFmpegFileReader(WideToASCII(path.value())));
-  ASSERT_TRUE(reader->Initialize());
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  ASSERT_TRUE(decoder->Init(dev_manager.get(), 0, 0, 111, 222, 0, 0,
-                            NewCallback(reader.get(), &FFmpegFileReader::Read),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(renderer.get(), &FakeMftRenderer::Start));
-  MessageLoop::current()->Run();
-
-  // If the video is valid, then it should output frames. However, for some
-  // videos, the number of frames decoded is one-off.
-  EXPECT_EQ(82, decoder->frames_read());
-  EXPECT_LE(decoder->frames_read() - decoder->frames_decoded(), 1);
+  DecodeValidVideo("bear.1280x720.mp4", 82, true);
 }
 
-TEST_F(MftH264DecoderTest, FlushAtInit) {
-  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-  FakeMftReader reader;
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  ASSERT_TRUE(decoder->Init(NULL, 0, 0, 111, 222, 0, 0,
-                            NewCallback(&reader, &FakeMftReader::ReadCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-  EXPECT_TRUE(decoder->Flush());
-}
-
-TEST_F(MftH264DecoderTest, FlushAtEnd) {
-  MessageLoop loop;
-  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(false));
-  ASSERT_TRUE(decoder.get() != NULL);
-
-  // No frames, outputs a NULL indicating end-of-stream
-  FakeMftReader reader(0);
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  ASSERT_TRUE(decoder->Init(NULL, 0, 0, 111, 222, 0, 0,
-                            NewCallback(&reader, &FakeMftReader::ReadCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(renderer.get(), &FakeMftRenderer::Start));
-  MessageLoop::current()->Run();
-  EXPECT_TRUE(decoder->Flush());
-}
-
-TEST_F(MftH264DecoderTest, FlushAtMiddle) {
-  MessageLoop loop;
-  FilePath path = GetVideoFilePath("bear.1280x720.mp4");
-  ASSERT_TRUE(file_util::PathExists(path));
-
-  ScopedComPtr<IDirect3D9> d3d9;
-  ScopedComPtr<IDirect3DDevice9> device;
-  ScopedComPtr<IDirect3DDeviceManager9> dev_manager;
-  dev_manager.Attach(CreateD3DDevManager(GetDesktopWindow(),
-                                         d3d9.Receive(),
-                                         device.Receive()));
-  ASSERT_TRUE(dev_manager.get() != NULL);
-
-  scoped_refptr<MftH264Decoder> decoder(new MftH264Decoder(true));
-  ASSERT_TRUE(decoder.get() != NULL);
-  scoped_ptr<FFmpegFileReader> reader(
-      new FFmpegFileReader(WideToASCII(path.value())));
-  ASSERT_TRUE(reader->Initialize());
-  scoped_refptr<FakeMftRenderer> renderer(new FakeMftRenderer(decoder));
-  ASSERT_TRUE(renderer.get());
-
-  // Flush after obtaining 40 decode frames. There are no more key frames after
-  // the first one, so we expect it to stop outputting frames after flush.
-  int flush_at_nth_decoded_frame = 40;
-  renderer->SetFlushCountdown(flush_at_nth_decoded_frame);
-  ASSERT_TRUE(decoder->Init(dev_manager.get(), 0, 0, 111, 222, 0, 0,
-                            NewCallback(reader.get(), &FFmpegFileReader::Read),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::WriteCallback),
-                            NewCallback(renderer.get(),
-                                        &FakeMftRenderer::OnDecodeError)));
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(renderer.get(), &FakeMftRenderer::Start));
-  MessageLoop::current()->Run();
-  EXPECT_EQ(82, decoder->frames_read());
-  EXPECT_EQ(decoder->frames_decoded(), flush_at_nth_decoded_frame);
+TEST_F(MftH264DecoderTest, DecodeValidVideoNoDxva) {
+  DecodeValidVideo("bear.1280x720.mp4", 82, false);
 }
 
 }  // namespace media

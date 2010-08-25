@@ -178,7 +178,6 @@ int64 FFmpegFileReader::TimeBaseToMicroseconds(
 
 int64 FFmpegFileReader::MicrosecondsToTimeBase(
     int64 time_base_unit) const {
-  // ffmpeg.
   CHECK(codec_context_) << "Codec context needs to be initialized";
   return time_base_unit * codec_context_->time_base.den / 2000 /
          codec_context_->time_base.num;

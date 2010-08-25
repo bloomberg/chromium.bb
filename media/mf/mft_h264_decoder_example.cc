@@ -19,24 +19,27 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "media/base/data_buffer.h"
 #include "media/base/media.h"
 #include "media/base/video_frame.h"
+#include "media/base/yuv_convert.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/file_protocol.h"
-#include "media/mf/basic_renderer.h"
-#include "media/mf/d3d_util.h"
 #include "media/mf/file_reader_util.h"
 #include "media/mf/mft_h264_decoder.h"
 
 using base::AtExitManager;
 using base::Time;
 using base::TimeDelta;
-using media::BasicRenderer;
-using media::NullRenderer;
+using media::Buffer;
+using media::DataBuffer;
 using media::FFmpegFileReader;
 using media::MftH264Decoder;
-using media::MftRenderer;
+using media::VideoCodecConfig;
+using media::VideoCodecInfo;
+using media::VideoDecodeEngine;
 using media::VideoFrame;
+using media::VideoStreamInfo;
 
 namespace {
 
@@ -61,16 +64,6 @@ static bool InitFFmpeg() {
   avcodec_init();
   av_register_all();
   av_register_protocol2(&kFFmpegFileProtocol, sizeof(kFFmpegFileProtocol));
-  return true;
-}
-
-bool InitComLibrary() {
-  HRESULT hr;
-  hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "CoInit fail";
-    return false;
-  }
   return true;
 }
 
@@ -103,6 +96,14 @@ static HWND CreateDrawWindow(int width, int height) {
     LOG(ERROR) << "Failed to create window";
     return NULL;
   }
+  RECT rect;
+  rect.left = 0;
+  rect.right = width;
+  rect.top = 0;
+  rect.bottom = height;
+  AdjustWindowRect(&rect, kWindowStyleFlags, FALSE);
+  MoveWindow(window, 0, 0, rect.right - rect.left, rect.bottom - rect.top,
+             TRUE);
   return window;
 }
 
@@ -115,10 +116,8 @@ class WindowObserver : public base::MessagePumpWin::Observer {
 
   virtual void WillProcessMessage(const MSG& msg) {
     if (msg.message == WM_CHAR && msg.wParam == ' ') {
-      if (!decoder_->Flush()) {
-        LOG(ERROR) << "Flush failed";
-      }
       // Seek forward 5 seconds.
+      decoder_->Flush();
       reader_->SeekForward(5000000);
     }
   }
@@ -131,17 +130,150 @@ class WindowObserver : public base::MessagePumpWin::Observer {
   MftH264Decoder* decoder_;
 };
 
-static int Run(bool use_dxva, bool render, const std::string& input_file) {
-  // If we are not rendering, we need a window anyway to create a D3D device,
-  // so we will just use the desktop window. (?)
-  HWND window = GetDesktopWindow();
-  if (render) {
-    window = CreateDrawWindow(640, 480);
-    if (window == NULL) {
-      LOG(ERROR) << "Failed to create window";
-      return -1;
+class MftH264DecoderHandler
+    : public VideoDecodeEngine::EventHandler,
+      public base::RefCountedThreadSafe<MftH264DecoderHandler> {
+ public:
+  MftH264DecoderHandler() : frames_read_(0), frames_decoded_(0) {
+    memset(&info_, 0, sizeof(info_));
+  }
+  virtual ~MftH264DecoderHandler() {}
+  virtual void OnInitializeComplete(const VideoCodecInfo& info) {
+    info_ = info;
+  }
+  virtual void OnUninitializeComplete() {
+  }
+  virtual void OnFlushComplete() {
+  }
+  virtual void OnSeekComplete() {}
+  virtual void OnError() {}
+  virtual void OnFormatChange(VideoStreamInfo stream_info) {
+    info_.stream_info_ = stream_info;
+  }
+  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+    if (reader_ && decoder_.get()) {
+      scoped_refptr<DataBuffer> input;
+      reader_->Read(&input);
+      if (!input->IsEndOfStream())
+        frames_read_++;
+      decoder_->EmptyThisBuffer(input);
     }
   }
+  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+    if (frame.get()) {
+      if (frame->format() != VideoFrame::EMPTY) {
+        frames_decoded_++;
+      }
+    }
+  }
+  virtual void SetReader(FFmpegFileReader* reader) {
+    reader_ = reader;
+  }
+  virtual void SetDecoder(scoped_refptr<MftH264Decoder> decoder) {
+    decoder_ = decoder;
+  }
+  virtual void DecodeSingleFrame() {
+    scoped_refptr<VideoFrame> frame;
+    decoder_->FillThisBuffer(frame);
+  }
+  virtual void Start() {
+    while (decoder_->state() != MftH264Decoder::kStopped)
+      DecodeSingleFrame();
+  }
+
+  VideoCodecInfo info_;
+  int frames_read_;
+  int frames_decoded_;
+  FFmpegFileReader* reader_;
+  scoped_refptr<MftH264Decoder> decoder_;
+};
+
+class RenderToWindowHandler : public MftH264DecoderHandler {
+ public:
+  RenderToWindowHandler(HWND window, MessageLoop* loop)
+      : MftH264DecoderHandler(),
+        window_(window),
+        loop_(loop),
+        has_output_(false) {
+  }
+  virtual ~RenderToWindowHandler() {}
+  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+    has_output_ = true;
+    if (frame.get()) {
+      if (frame->format() != VideoFrame::EMPTY) {
+        frames_decoded_++;
+        loop_->PostDelayedTask(
+            FROM_HERE,
+            NewRunnableMethod(this, &RenderToWindowHandler::DecodeSingleFrame),
+            frame->GetDuration().InMilliseconds());
+
+        int width = frame->width();
+        int height = frame->height();
+
+        // Assume height does not change.
+        static uint8* rgb_frame = new uint8[height * frame->stride(0) * 4];
+        uint8* frame_y = static_cast<uint8*>(frame->data(VideoFrame::kYPlane));
+        uint8* frame_u = static_cast<uint8*>(frame->data(VideoFrame::kUPlane));
+        uint8* frame_v = static_cast<uint8*>(frame->data(VideoFrame::kVPlane));
+        media::ConvertYUVToRGB32(frame_y, frame_v, frame_u, rgb_frame,
+                                 width, height,
+                                 frame->stride(0), frame->stride(1),
+                                 4 * frame->stride(0), media::YV12);
+        PAINTSTRUCT ps;
+        InvalidateRect(window_, NULL, TRUE);
+        HDC hdc = BeginPaint(window_, &ps);
+        BITMAPINFOHEADER hdr;
+        hdr.biSize = sizeof(BITMAPINFOHEADER);
+        hdr.biWidth = width;
+        hdr.biHeight = -height;      // minus means top-down bitmap
+        hdr.biPlanes = 1;
+        hdr.biBitCount = 32;
+        hdr.biCompression = BI_RGB;  // no compression
+        hdr.biSizeImage = 0;
+        hdr.biXPelsPerMeter = 1;
+        hdr.biYPelsPerMeter = 1;
+        hdr.biClrUsed = 0;
+        hdr.biClrImportant = 0;
+        int rv = StretchDIBits(hdc, 0, 0, width, height, 0, 0, width, height,
+                               rgb_frame, reinterpret_cast<BITMAPINFO*>(&hdr),
+                               DIB_RGB_COLORS, SRCCOPY);
+        EndPaint(window_, &ps);
+        if (!rv) {
+          LOG(ERROR) << "StretchDIBits failed";
+          loop_->QuitNow();
+        }
+      } else {    // if frame is type EMPTY, there will be no more frames.
+        loop_->QuitNow();
+      }
+    }
+  }
+  virtual void DecodeSingleFrame() {
+    if (decoder_->state() != MftH264Decoder::kStopped) {
+      while (decoder_->state() != MftH264Decoder::kStopped && !has_output_) {
+        scoped_refptr<VideoFrame> frame;
+        decoder_->FillThisBuffer(frame);
+      }
+      if (decoder_->state() == MftH264Decoder::kStopped)
+        loop_->QuitNow();
+      has_output_ = false;
+    } else {
+      loop_->QuitNow();
+    }
+  }
+  virtual void Start() {
+    loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &RenderToWindowHandler::DecodeSingleFrame));
+    loop_->Run();
+  }
+
+ private:
+  HWND window_;
+  MessageLoop* loop_;
+  bool has_output_;
+};
+
+static int Run(bool use_dxva, bool render, const std::string& input_file) {
   scoped_ptr<FFmpegFileReader> reader(new FFmpegFileReader(input_file));
   if (reader.get() == NULL || !reader->Initialize()) {
     LOG(ERROR) << "Failed to create/initialize reader";
@@ -151,86 +283,54 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
   if (!reader->GetWidth(&width) || !reader->GetHeight(&height)) {
     LOG(WARNING) << "Failed to get width/height from reader";
   }
-  int aspect_ratio_num = 0, aspect_ratio_denom = 0;
-  if (!reader->GetAspectRatio(&aspect_ratio_num, &aspect_ratio_denom)) {
-    LOG(WARNING) << "Failed to get aspect ratio";
-  }
-  int frame_rate_num = 0, frame_rate_denom = 0;
-  if (!reader->GetFrameRate(&frame_rate_num, &frame_rate_denom)) {
-    LOG(WARNING) << "Failed to get frame rate";
-  }
-  ScopedComPtr<IDirect3D9> d3d9;
-  ScopedComPtr<IDirect3DDevice9> device;
-  ScopedComPtr<IDirect3DDeviceManager9> dev_manager;
-  if (use_dxva) {
-    dev_manager.Attach(media::CreateD3DDevManager(window,
-                                                  d3d9.Receive(),
-                                                  device.Receive()));
-    if (dev_manager.get() == NULL) {
-      LOG(ERROR) << "Cannot create D3D9 manager";
+  VideoCodecConfig config;
+  config.width_ = width;
+  config.height_ = height;
+  HWND window = NULL;
+  if (render) {
+    window = CreateDrawWindow(width, height);
+    if (window == NULL) {
+      LOG(ERROR) << "Failed to create window";
       return -1;
     }
   }
+
   scoped_refptr<MftH264Decoder> mft(new MftH264Decoder(use_dxva));
-  scoped_refptr<MftRenderer> renderer;
-  if (render) {
-    renderer = new BasicRenderer(mft.get(), window, device);
-  } else {
-    renderer = new NullRenderer(mft.get());
-  }
-  if (mft.get() == NULL) {
-    LOG(ERROR) << "Failed to create fake renderer / MFT";
+  if (!mft.get()) {
+    LOG(ERROR) << "Failed to create fake MFT";
     return -1;
   }
-  if (!mft->Init(dev_manager,
-                 frame_rate_num, frame_rate_denom,
-                 width, height,
-                 aspect_ratio_num, aspect_ratio_denom,
-                 NewCallback(reader.get(), &FFmpegFileReader::Read),
-                 NewCallback(renderer.get(), &MftRenderer::ProcessFrame),
-                 NewCallback(renderer.get(),
-                             &MftRenderer::OnDecodeError))) {
-    LOG(ERROR) << "Failed to initialize mft";
+
+  scoped_refptr<MftH264DecoderHandler> handler;
+  if (render)
+    handler = new RenderToWindowHandler(window, MessageLoop::current());
+  else
+    handler = new MftH264DecoderHandler();
+  handler->SetDecoder(mft);
+  handler->SetReader(reader.get());
+  if (!handler.get()) {
+    LOG(ERROR) << "FAiled to create handler";
     return -1;
   }
+
+  mft->Initialize(MessageLoop::current(), handler.get(), config);
   scoped_ptr<WindowObserver> observer;
+
   // If rendering, resize the window to fit the video frames.
   if (render) {
-    RECT rect;
-    rect.left = 0;
-    rect.right = mft->width();
-    rect.top = 0;
-    rect.bottom = mft->height();
-    AdjustWindowRect(&rect, kWindowStyleFlags, FALSE);
-    if (!MoveWindow(window, 0, 0, rect.right - rect.left,
-                    rect.bottom - rect.top, TRUE)) {
-      LOG(WARNING) << "Warning: Failed to resize window";
-    }
     observer.reset(new WindowObserver(reader.get(), mft.get()));
     MessageLoopForUI::current()->AddObserver(observer.get());
   }
-  if (use_dxva) {
-    // Reset the device's back buffer dimensions to match the window's
-    // dimensions.
-    if (!media::AdjustD3DDeviceBackBufferDimensions(device.get(),
-                                                    window,
-                                                    mft->width(),
-                                                    mft->height())) {
-      LOG(WARNING) << "Warning: Failed to reset device to have correct "
-                   << "backbuffer dimension, scaling might occur";
-    }
-  }
+
   Time decode_start(Time::Now());
-
-  MessageLoopForUI::current()->PostTask(FROM_HERE,
-      NewRunnableMethod(renderer.get(), &MftRenderer::StartPlayback));
-  MessageLoopForUI::current()->Run(NULL);
-
+  handler->Start();
   TimeDelta decode_time = Time::Now() - decode_start;
 
   printf("All done, frames read: %d, frames decoded: %d\n",
-         mft->frames_read(), mft->frames_decoded());
+         handler->frames_read_, handler->frames_decoded_);
   printf("Took %lldms\n", decode_time.InMilliseconds());
+  if (window)
+    DestroyWindow(window);
   return 0;
 }
 
@@ -264,10 +364,6 @@ int main(int argc, char** argv) {
 
   if (!InitFFmpeg()) {
     LOG(ERROR) << "InitFFMpeg() failed";
-    return -1;
-  }
-  if (!InitComLibrary()) {
-    LOG(ERROR) << "InitComLibraries() failed";
     return -1;
   }
   int ret = Run(use_dxva, render, input_file);
