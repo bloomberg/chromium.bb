@@ -15,7 +15,7 @@ AppCacheRequestHandler::AppCacheRequestHandler(AppCacheHost* host,
                                                ResourceType::Type resource_type)
     : host_(host), resource_type_(resource_type),
       is_waiting_for_cache_selection_(false), found_cache_id_(0),
-      found_network_namespace_(false) {
+      found_network_namespace_(false), cache_entry_not_found_(false) {
   DCHECK(host_);
   host_->AddObserver(this);
 }
@@ -42,7 +42,7 @@ void AppCacheRequestHandler::GetExtraResponseInfo(
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
     URLRequest* request) {
-  if (!host_ || !IsSchemeAndMethodSupported(request))
+  if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
 
   // This method can get called multiple times over the life
@@ -55,6 +55,8 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
   if (job_) {
     DCHECK(job_->is_delivering_network_response() ||
            job_->cache_entry_not_found());
+    if (job_->cache_entry_not_found())
+      cache_entry_not_found_ = true;
     job_ = NULL;
     return NULL;
   }
@@ -85,7 +87,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
     URLRequest* request, const GURL& location) {
-  if (!host_ || !IsSchemeAndMethodSupported(request))
+  if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
   if (is_main_resource())
     return NULL;
@@ -113,7 +115,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
     URLRequest* request) {
-  if (!host_ || !IsSchemeAndMethodSupported(request))
+  if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
   if (!found_fallback_entry_.has_response_id())
     return NULL;

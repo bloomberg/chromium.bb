@@ -104,6 +104,12 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   GURL found_manifest_url_;
   bool found_network_namespace_;
 
+  // True if a cache entry this handler attempted to return was
+  // not found in the disk cache. Once set, the handler will take
+  // no action on all subsequent intercept opportunities, so the
+  // request and any redirects will be handled by the network library.
+  bool cache_entry_not_found_;
+
   // The job we use to deliver a response.
   scoped_refptr<AppCacheURLRequestJob> job_;
 
