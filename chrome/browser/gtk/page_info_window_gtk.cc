@@ -157,8 +157,8 @@ GtkWidget* PageInfoWindowGtk::CreateSection(
   gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
 
   GtkWidget* text_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  if (!section.headline.empty()) {
-    label = gtk_label_new(UTF16ToUTF8(section.headline).c_str());
+  if (!section.head_line.empty()) {
+    label = gtk_label_new(UTF16ToUTF8(section.head_line).c_str());
     gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
     gtk_box_pack_start(GTK_BOX(text_box), label, FALSE, FALSE, 0);
   }
