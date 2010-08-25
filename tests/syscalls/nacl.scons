@@ -117,3 +117,16 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_semaphore_tests')
 
+env.ComponentProgram('mem_test.nexe', ['mem_test.cc', 'test.cc'])
+node = env.CommandSelLdrTestNacl('mem_test.out',
+                                 command=[env.File('mem_test.nexe')])
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_mem_test')
+
+env.ComponentProgram('sysbrk_test.nexe', ['sysbrk_test.cc', 'test.cc'])
+node = env.CommandSelLdrTestNacl('sysbrk_test.out',
+                                 command=[env.File('sysbrk_test.nexe')])
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_sysbrk_test')
