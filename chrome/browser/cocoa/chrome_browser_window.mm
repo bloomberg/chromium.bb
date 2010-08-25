@@ -5,13 +5,13 @@
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 
 #include "base/logging.h"
-#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/browser_frame_view.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 
 namespace {
   // Size of the gradient. Empirically determined so that the gradient looks

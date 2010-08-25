@@ -5,8 +5,8 @@
 #include "chrome/browser/cocoa/infobar_gradient_view.h"
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/themes/browser_theme_provider.h"
 
 namespace {
 

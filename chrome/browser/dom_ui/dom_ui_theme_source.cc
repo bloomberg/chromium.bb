@@ -8,11 +8,11 @@
 #include "app/theme_provider.h"
 #include "base/message_loop.h"
 #include "base/ref_counted_memory.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/resources_util.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 

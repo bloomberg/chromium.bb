@@ -5,7 +5,7 @@
 #include "chrome/browser/ntp_background_util.h"
 
 #include "base/logging.h"
-#include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "gfx/canvas.h"
 #include "gfx/rect.h"
 #include "gfx/skia_util.h"

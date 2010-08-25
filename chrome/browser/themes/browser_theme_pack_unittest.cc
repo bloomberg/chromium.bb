@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_theme_pack.h"
+#include "chrome/browser/themes/browser_theme_pack.h"
 
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -10,8 +10,8 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
 #include "gfx/color_utils.h"

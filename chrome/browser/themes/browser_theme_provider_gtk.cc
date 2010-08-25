@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 

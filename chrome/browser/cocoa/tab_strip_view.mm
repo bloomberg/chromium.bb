@@ -4,12 +4,12 @@
 
 #import "chrome/browser/cocoa/tab_strip_view.h"
 
+#include "base/logging.h"
 #include "base/mac_util.h"
-#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/view_id_util.h"
-#include "base/logging.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 
 @implementation TabStripView
 

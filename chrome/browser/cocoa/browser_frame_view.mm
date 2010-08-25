@@ -9,9 +9,9 @@
 
 #include "base/logging.h"
 #include "base/scoped_nsautorelease_pool.h"
-#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/themes/browser_theme_provider.h"
 #include "grit/theme_resources.h"
 
 static const CGFloat kBrowserFrameViewPaintHeight = 60.0;

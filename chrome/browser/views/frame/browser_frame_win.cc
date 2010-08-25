@@ -13,7 +13,7 @@
 #include "base/win_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/views/frame/app_panel_browser_frame_view.h"
 #include "chrome/browser/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/views/frame/browser_root_view.h"

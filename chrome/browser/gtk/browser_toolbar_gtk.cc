@@ -4,9 +4,9 @@
 
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 
+#include <X11/XF86keysym.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
-#include <X11/XF86keysym.h>
 
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
@@ -19,7 +19,6 @@
 #include "base/singleton.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/back_forward_button_gtk.h"
@@ -39,6 +38,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"

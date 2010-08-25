@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_THEME_PROVIDER_H_
-#define CHROME_BROWSER_BROWSER_THEME_PROVIDER_H_
+#ifndef CHROME_BROWSER_THEMES_BROWSER_THEME_PROVIDER_H_
+#define CHROME_BROWSER_THEMES_BROWSER_THEME_PROVIDER_H_
 #pragma once
 
 #include <map>
@@ -272,4 +272,4 @@ class BrowserThemeProvider : public NonThreadSafe,
   DISALLOW_COPY_AND_ASSIGN(BrowserThemeProvider);
 };
 
-#endif  // CHROME_BROWSER_BROWSER_THEME_PROVIDER_H_
+#endif  // CHROME_BROWSER_THEMES_BROWSER_THEME_PROVIDER_H_

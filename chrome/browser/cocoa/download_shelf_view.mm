@@ -5,9 +5,9 @@
 #import "chrome/browser/cocoa/download_shelf_view.h"
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/view_id_util.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "grit/theme_resources.h"
 
 @implementation DownloadShelfView

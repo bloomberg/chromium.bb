@@ -8,11 +8,11 @@
 #import "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/scoped_cftyperef.h"
-#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/view_id_util.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "grit/theme_resources.h"
 
 namespace {

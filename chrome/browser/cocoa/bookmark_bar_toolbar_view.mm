@@ -6,12 +6,12 @@
 
 #include "app/theme_provider.h"
 #include "gfx/rect.h"
-#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #include "chrome/browser/ntp_background_util.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "gfx/canvas_skia_paint.h"
 
 const CGFloat kBorderRadius = 3.0;

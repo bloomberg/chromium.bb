@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
-#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/image_utils.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/themes/browser_theme_provider.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 

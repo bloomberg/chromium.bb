@@ -10,7 +10,6 @@
 
 #include "app/x11_util.h"
 #include "base/i18n/rtl.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
 #include "chrome/browser/profile.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkShader.h"
 

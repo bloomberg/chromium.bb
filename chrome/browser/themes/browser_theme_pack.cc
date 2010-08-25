@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_theme_pack.h"
+#include "chrome/browser/themes/browser_theme_pack.h"
 
 #include "app/resource_bundle.h"
 #include "base/data_pack.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"

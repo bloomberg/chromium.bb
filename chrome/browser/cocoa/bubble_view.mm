@@ -4,8 +4,8 @@
 
 #import "chrome/browser/cocoa/bubble_view.h"
 
-#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 

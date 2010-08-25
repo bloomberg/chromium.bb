@@ -6,8 +6,8 @@
 
 #include "app/resource_bundle.h"
 #include "base/logging.h"
-#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "gfx/font.h"
 #include "grit/theme_resources.h"
 

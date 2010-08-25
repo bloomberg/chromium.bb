@@ -5,8 +5,8 @@
 #include "chrome/browser/views/theme_background.h"
 
 #include "app/resource_bundle.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "gfx/canvas.h"
 #include "grit/app_resources.h"

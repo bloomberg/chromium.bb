@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/point.h"
 #include "googleurl/src/gurl.h"

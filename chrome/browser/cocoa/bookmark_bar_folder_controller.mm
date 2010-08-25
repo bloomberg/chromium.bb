@@ -3,20 +3,21 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
+
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"  // namespace bookmarks
 #import "chrome/browser/cocoa/bookmark_bar_controller.h" // namespace bookmarks
-#import "chrome/browser/cocoa/bookmark_bar_folder_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_hover_state.h"
+#import "chrome/browser/cocoa/bookmark_bar_folder_view.h"
 #import "chrome/browser/cocoa/bookmark_folder_target.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
+#import "chrome/browser/themes/browser_theme_provider.h"
 
 namespace {
 
