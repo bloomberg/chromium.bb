@@ -310,35 +310,50 @@
 
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><!-- BEGIN AUTHORED CONTENT -->
-<p>The omnibox API allows you to register a
-keyword with Google Chrome's omnibox.
+<p>
+The omnibox API allows you to register a
+keyword with Google Chrome's address bar,
+which is also known as the omnibox.
+</p>
 
-</p><p><img src="omnibox.png" width="480" height="300">
+<p>
+<img src="images/omnibox.png" width="480" height="300" alt="A screenshot showing suggestions related to the keyword 'Chromium Search'">
+</p>
 
-</p><p>When the user enters your extension's
-keyword, they enter a mode where they are
+<p>
+When the user enters your extension's
+keyword, the user starts
 interacting solely with your extension.
-Each of their keystrokes is sent to your
+Each keystroke is sent to your
 extension, and you can provide suggestions
 in response.
+</p>
 
-</p><p>The suggestions can be richly formatted
-in a variety of ways. When the user accepts
+<p>
+The suggestions can be richly formatted
+in a variety of ways.
+<!-- PENDING: for example? (include a mention of method name, maybe show a code snippet) -->
+When the user accepts
 a suggestion, your extension is notified
 and can take action.
+</p>
 
-</p><h2 id="manifest">Manifest</h2>
+<h2 id="manifest">Manifest</h2>
 
-<p>To use the Omnibox API, your manifest must
+<p>
+To use the omnibox API, your manifest must
 declare the "experimental" permission and
-register an omnibox keyword. You should also
-specify a 16x16-pixel icon. This will get
+specify an <code>omnibox_keyword</code> field. You should also
+specify a 16x16-pixel icon, which will be
 displayed in the omnibox when suggesting users
 enter keyword mode.
+</p>
 
-</p><p>For example:
+<p>
+For example:
+</p>
 
-</p><pre>{
+<pre>{
   "name": "Aaron's omnibox extension",
   "version": "1.0",
   <b>"permissions": ["experimental"],</b>
@@ -347,7 +362,6 @@ enter keyword mode.
     <b>"16": "16-full-color.png"</b>
   <b>},</b>
   "background_page": "background.html"
-  
 }</pre>
 
 <p><b class="note">Note:</b> Google Chrome
@@ -355,8 +369,9 @@ automatically creates a greyscale version of
 your 16x16-pixel icon. You should provide
 a full-color version so that it can also be
 used in other situations that require color.
-For example, the <a href="contextMenus.html">Context Menus API</a> also uses a 16x16-pixel
+For example, the <a href="contextMenus.html">context menus API</a> also uses a 16x16-pixel
 icon, but it is displayed in color.
+
 
 </p><h2 id="examples">Examples</h2>
 

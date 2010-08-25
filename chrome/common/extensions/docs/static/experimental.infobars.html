@@ -1,33 +1,40 @@
 <!-- BEGIN AUTHORED CONTENT -->
-<p>The infobars API allows you to add
-horizontal panels to the top of tabs.
+<p>
+The infobars API allows you to add a
+horizontal panel just above a tab's contents,
+as the following screenshot shows.
+</p>
 
-<p><img src="infobars.png" width="598">
+<p>
+<img src="images/infobar.png"
+  width="566" height="150"
+  alt="An infobar asking whether the user wants to translate the current page" />
+</p>
 
-<p>You implement the content of your
-infobar using HTML. Just like with other
-parts of the extension system, you can
-communicate to an from the infobar
-using APIs like
-<a href="extension.html#method-getBackgroundPage"
-  >chrome.extension.getBackgroundPage()</a>
-and
-<a href="extension.html#method-getViews"
-  >chrome.extension.getViews()</a>.
+<p>
+Use an infobar to tell the reader
+something about a particular page.
+When the user leaves the page for which the infobar is displayed,
+Google Chrome automatically closes the infobar.
+</p>
 
-<p>Infobars should be used to tell users
-something about a particular page. Google
-Chrome automatically closes an infobar when
-the page that it was displayed for is navigated
-elsewhere.
+<p>
+You implement the content of your
+infobar using HTML. Because infobars are ordinary pages inside an extension,
+they can
+<a href="overview.html#pageComm">communicate with other extension pages</a>.
+</p>
+
 
 <h2 id="manifest">Manifest</h2>
 
-<p>Because the Infobars API is currently
-experimental, you must declare the "experimental"
+<p>
+The infobars API is currently
+experimental, so you must declare the "experimental"
 permission to use it. Also, you should specify
 a 16x16-pixel icon for display next to your infobar.
 For example:
+</p>
 
 <pre>{
   "name": "Andy's infobar extension",
