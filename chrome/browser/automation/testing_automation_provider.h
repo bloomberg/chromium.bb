@@ -30,6 +30,8 @@ class TestingAutomationProvider : public AutomationProvider,
   virtual void OnChannelError();
 
  private:
+  class PopupMenuWaiter;
+
   virtual ~TestingAutomationProvider();
 
   // IPC Message callbacks.
@@ -110,6 +112,67 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetShelfVisibility(int handle, bool* visible);
   void IsFullscreen(int handle, bool* is_fullscreen);
   void GetFullscreenBubbleVisibility(int handle, bool* is_visible);
+  void GetAutocompleteEditForBrowser(int browser_handle, bool* success,
+                                     int* autocomplete_edit_handle);
+
+  // Retrieves the visible text from the autocomplete edit.
+  void GetAutocompleteEditText(int autocomplete_edit_handle,
+                               bool* success, std::wstring* text);
+
+  // Sets the visible text from the autocomplete edit.
+  void SetAutocompleteEditText(int autocomplete_edit_handle,
+                               const std::wstring& text,
+                               bool* success);
+
+  // Retrieves if a query to an autocomplete provider is in progress.
+  void AutocompleteEditIsQueryInProgress(int autocomplete_edit_handle,
+                                         bool* success,
+                                         bool* query_in_progress);
+
+  // Retrieves the individual autocomplete matches displayed by the popup.
+  void AutocompleteEditGetMatches(int autocomplete_edit_handle,
+                                  bool* success,
+                                  std::vector<AutocompleteMatchData>* matches);
+
+  // Deprecated.
+  void ApplyAccelerator(int handle, int id);
+
+  void ExecuteJavascript(int handle,
+                         const std::wstring& frame_xpath,
+                         const std::wstring& script,
+                         IPC::Message* reply_message);
+
+  void GetConstrainedWindowCount(int handle, int* count);
+
+  // This function has been deprecated, please use HandleFindRequest.
+  void HandleFindInPageRequest(int handle,
+                               const std::wstring& find_request,
+                               int forward,
+                               int match_case,
+                               int* active_ordinal,
+                               int* matches_found);
+
+#if defined(TOOLKIT_VIEWS)
+  void GetFocusedViewID(int handle, int* view_id);
+
+  // Block until the focused view ID changes to something other than
+  // previous_view_id.
+  void WaitForFocusedViewIDToChange(int handle,
+                                    int previous_view_id,
+                                    IPC::Message* reply_message);
+
+  // Start tracking popup menus. Must be called before executing the
+  // command that might open the popup menu; then call WaitForPopupMenuToOpen.
+  void StartTrackingPopupMenus(int browser_handle, bool* success);
+
+  // Wait until a popup menu has opened.
+  void WaitForPopupMenuToOpen(IPC::Message* reply_message);
+#endif  // defined(TOOLKIT_VIEWS)
+
+  void HandleInspectElementRequest(int handle,
+                                   int x,
+                                   int y,
+                                   IPC::Message* reply_message);
 
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
@@ -123,6 +186,15 @@ class TestingAutomationProvider : public AutomationProvider,
                        const NotificationDetails& details);
 
   void OnRemoveProvider();  // Called via PostTask
+
+#if defined(TOOLKIT_VIEWS)
+  // Keep track of whether a popup menu has been opened since the last time
+  // that StartTrackingPopupMenus has been called.
+  bool popup_menu_opened_;
+
+  // A temporary object that receives a notification when a popup menu opens.
+  PopupMenuWaiter* popup_menu_waiter_;
+#endif  // defined(TOOLKIT_VIEWS)
 
   // Handle for an in-process redirect query. We expect only one redirect query
   // at a time (we should have only one caller, and it will block while waiting

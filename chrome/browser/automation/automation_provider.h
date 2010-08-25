@@ -132,9 +132,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
-  // Received response from inspector controller
-  void ReceivedInspectElementResponse(int num_resources);
-
   IPC::Message* reply_message_release() {
     IPC::Message* reply_message = reply_message_;
     reply_message_ = NULL;
@@ -157,7 +154,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
  protected:
   friend class base::RefCounted<AutomationProvider>;
-  friend class PopupMenuWaiter;
   virtual ~AutomationProvider();
 
   // Helper function to find the browser window that contains a given
@@ -165,6 +161,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Returns the Browser if found.
   Browser* FindAndActivateTab(NavigationController* contents);
 
+  // Convert a tab handle into a TabContents. If |tab| is non-NULL a pointer
+  // to the tab is also returned. Returns NULL in case of failure or if the tab
+  // is not of the TabContents type.
+  TabContents* GetTabContentsForHandle(int handle, NavigationController** tab);
+
+  scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;
@@ -198,10 +200,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetTabHWND(int handle, HWND* tab_hwnd);
 #endif  // defined(OS_WIN)
   void HandleUnused(const IPC::Message& message, int handle);
-  void ExecuteJavascript(int handle,
-                         const std::wstring& frame_xpath,
-                         const std::wstring& script,
-                         IPC::Message* reply_message);
   void SetShelfVisibility(int handle, bool visible);
   void SetFilteredInet(const IPC::Message& message, bool enabled);
   void GetFilteredInetHitCount(int* hit_count);
@@ -211,21 +209,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                          ContentSettingsType content_type,
                          ContentSetting setting,
                          bool* success);
-
-  void GetFocusedViewID(int handle, int* view_id);
-
-  // Deprecated.
-  void ApplyAccelerator(int handle, int id);
-
-  void GetConstrainedWindowCount(int handle, int* count);
-
-  // This function has been deprecated, please use HandleFindRequest.
-  void HandleFindInPageRequest(int handle,
-                               const std::wstring& find_request,
-                               int forward,
-                               int match_case,
-                               int* active_ordinal,
-                               int* matches_found);
 
   // Responds to the FindInPage request, retrieves the search query parameters,
   // launches an observer to listen for results and issues a StartFind request.
@@ -538,21 +521,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                                   DictionaryValue*,
                                                   IPC::Message*);
 
-  // Responds to InspectElement request
-  void HandleInspectElementRequest(int handle,
-                                   int x,
-                                   int y,
-                                   IPC::Message* reply_message);
-
   void GetDownloadDirectory(int handle, FilePath* download_directory);
 
   // Retrieves a Browser from a Window and vice-versa.
   void GetWindowForBrowser(int window_handle, bool* success, int* handle);
   void GetBrowserForWindow(int window_handle, bool* success,
                            int* browser_handle);
-
-  void GetAutocompleteEditForBrowser(int browser_handle, bool* success,
-                                     int* autocomplete_edit_handle);
 
   // If |show| is true, call Show() on the new window after creating it.
   void OpenNewBrowserWindow(bool show, IPC::Message* reply_message);
@@ -654,26 +628,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                 int type,
                 bool* success);
 
-  // Retrieves the visible text from the autocomplete edit.
-  void GetAutocompleteEditText(int autocomplete_edit_handle,
-                               bool* success, std::wstring* text);
-
-  // Sets the visible text from the autocomplete edit.
-  void SetAutocompleteEditText(int autocomplete_edit_handle,
-                               const std::wstring& text,
-                               bool* success);
-
-  // Retrieves if a query to an autocomplete provider is in progress.
-  void AutocompleteEditIsQueryInProgress(int autocomplete_edit_handle,
-                                         bool* success,
-                                         bool* query_in_progress);
-
-  // Retrieves the individual autocomplete matches displayed by the popup.
-  void AutocompleteEditGetMatches(int autocomplete_edit_handle,
-                                  bool* success,
-                                  std::vector<AutocompleteMatchData>* matches);
-
-
   // Retrieves the number of info-bars currently showing in |count|.
   void GetInfoBarCount(int handle, int* count);
 
@@ -766,11 +720,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                               int number_of_navigations,
                                               IPC::Message* reply_message);
 
-  // Convert a tab handle into a TabContents. If |tab| is non-NULL a pointer
-  // to the tab is also returned. Returns NULL in case of failure or if the tab
-  // is not of the TabContents type.
-  TabContents* GetTabContentsForHandle(int handle, NavigationController** tab);
-
 #if defined(OS_CHROMEOS)
   // Logs in through the Chrome OS Login Wizard with given |username| and
   // password.  Returns true via |reply_message| on success.
@@ -794,19 +743,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Returns the extension for the given handle, if the handle is valid and
   // the associated extension is disabled. Returns NULL otherwise.
   Extension* GetDisabledExtension(int extension_handle);
-
-  // Block until the focused view ID changes to something other than
-  // previous_view_id.
-  void WaitForFocusedViewIDToChange(int handle,
-                                    int previous_view_id,
-                                    IPC::Message* reply_message);
-
-  // Start tracking popup menus. Must be called before executing the
-  // command that might open the popup menu; then call WaitForPopupMenuToOpen.
-  void StartTrackingPopupMenus(int browser_handle, bool* success);
-
-  // Wait until a popup menu has opened.
-  void WaitForPopupMenuToOpen(IPC::Message* reply_message);
 
   // Method called by the popup menu tracker when a popup menu is opened.
   void NotifyPopupMenuOpened();
@@ -881,19 +817,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       extension_test_result_observer_;
   scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
-  scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
   scoped_ptr<NavigationControllerRestoredObserver> restore_tracker_;
   PortContainerMap port_containers_;
   NotificationObserverList notification_observer_list_;
   scoped_refptr<AutomationResourceMessageFilter>
       automation_resource_message_filter_;
-
-  // Keep track of whether a popup menu has been opened since the last time
-  // that StartTrackingPopupMenus has been called.
-  bool popup_menu_opened_;
-
-  // A temporary object that receives a notification when a popup menu opens.
-  PopupMenuWaiter* popup_menu_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };

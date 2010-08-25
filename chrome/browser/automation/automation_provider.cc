@@ -132,8 +132,7 @@ class AutomationInterstitialPage : public InterstitialPage {
 
 AutomationProvider::AutomationProvider(Profile* profile)
     : profile_(profile),
-      reply_message_(NULL),
-      popup_menu_waiter_(NULL) {
+      reply_message_(NULL) {
   TRACE_EVENT_BEGIN("AutomationProvider::AutomationProvider", 0, "");
 
   browser_tracker_.reset(new AutomationBrowserTracker(this));
@@ -313,15 +312,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_TabHWND, GetTabHWND)
 #endif  // defined(OS_WIN)
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleUnused, HandleUnused)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ApplyAccelerator, ApplyAccelerator)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
-                                    ExecuteJavascript)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ConstrainedWindowCount,
-                        GetConstrainedWindowCount)
-    IPC_MESSAGE_HANDLER(AutomationMsg_FindInPage, HandleFindInPageRequest)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetFocusedViewID, GetFocusedViewID)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InspectElement,
-                                    HandleInspectElementRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_DownloadDirectory, GetDownloadDirectory)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetProxyConfig, SetProxyConfig);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_OpenNewBrowserWindow,
@@ -329,8 +319,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_OpenNewBrowserWindowOfType,
                                     OpenNewBrowserWindowOfType)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowForBrowser, GetWindowForBrowser)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditForBrowser,
-                        GetAutocompleteEditForBrowser)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserForWindow, GetBrowserForWindow)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ShowInterstitialPage,
                                     ShowInterstitialPage)
@@ -350,14 +338,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_PrintNow, PrintNow)
     IPC_MESSAGE_HANDLER(AutomationMsg_PrintAsync, PrintAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_SavePage, SavePage)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditGetText,
-                        GetAutocompleteEditText)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditSetText,
-                        SetAutocompleteEditText)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditIsQueryInProgress,
-                        AutocompleteEditIsQueryInProgress)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditGetMatches,
-                        AutocompleteEditGetMatches)
     IPC_MESSAGE_HANDLER(AutomationMsg_OpenFindInPage,
                         HandleOpenFindInPageRequest)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Find, HandleFindRequest)
@@ -459,14 +439,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBrowsingData, RemoveBrowsingData)
     IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
-#if defined(TOOLKIT_VIEWS)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForFocusedViewIDToChange,
-                                    WaitForFocusedViewIDToChange)
-    IPC_MESSAGE_HANDLER(AutomationMsg_StartTrackingPopupMenus,
-                        StartTrackingPopupMenus)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForPopupMenuToOpen,
-                                    WaitForPopupMenuToOpen)
-#endif  // defined(TOOLKIT_VIEWS)
 #if defined(OS_WIN)
     // These are for use with external tabs.
     IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
@@ -582,43 +554,6 @@ Browser* AutomationProvider::FindAndActivateTab(
   return browser;
 }
 
-void AutomationProvider::ApplyAccelerator(int handle, int id) {
-  NOTREACHED() << "This function has been deprecated. "
-               << "Please use ExecuteBrowserCommandAsync instead.";
-}
-
-void AutomationProvider::ExecuteJavascript(int handle,
-                                           const std::wstring& frame_xpath,
-                                           const std::wstring& script,
-                                           IPC::Message* reply_message) {
-  bool succeeded = false;
-  TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
-  if (tab_contents) {
-    // Set the routing id of this message with the controller.
-    // This routing id needs to be remembered for the reverse
-    // communication while sending back the response of
-    // this javascript execution.
-    std::wstring set_automation_id;
-    SStringPrintf(&set_automation_id,
-      L"window.domAutomationController.setAutomationId(%d);",
-      reply_message->routing_id());
-
-    DCHECK(reply_message_ == NULL);
-    reply_message_ = reply_message;
-
-    tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-        frame_xpath, set_automation_id);
-    tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-        frame_xpath, script);
-    succeeded = true;
-  }
-
-  if (!succeeded) {
-    AutomationMsg_DomOperation::WriteReplyParams(reply_message, std::string());
-    Send(reply_message);
-  }
-}
-
 void AutomationProvider::SetShelfVisibility(int handle, bool visible) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
@@ -629,26 +564,6 @@ void AutomationProvider::SetShelfVisibility(int handle, bool visible) {
         browser->window()->GetDownloadShelf()->Close();
     }
   }
-}
-
-void AutomationProvider::GetConstrainedWindowCount(int handle, int* count) {
-  *count = -1;  // -1 is the error code
-  if (tab_tracker_->ContainsHandle(handle)) {
-      NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-      TabContents* tab_contents = nav_controller->tab_contents();
-      if (tab_contents) {
-        *count = static_cast<int>(tab_contents->child_windows_.size());
-      }
-  }
-}
-
-void AutomationProvider::HandleFindInPageRequest(
-    int handle, const std::wstring& find_request,
-    int forward, int match_case, int* active_ordinal, int* matches_found) {
-  NOTREACHED() << "This function has been deprecated."
-    << "Please use HandleFindRequest instead.";
-  *matches_found = -1;
-  return;
 }
 
 void AutomationProvider::HandleFindRequest(
@@ -2722,30 +2637,6 @@ void AutomationProvider::SendJSONRequest(int handle,
   }
 }
 
-void AutomationProvider::HandleInspectElementRequest(
-    int handle, int x, int y, IPC::Message* reply_message) {
-  TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
-  if (tab_contents) {
-    DCHECK(reply_message_ == NULL);
-    reply_message_ = reply_message;
-
-    DevToolsManager::GetInstance()->InspectElement(
-        tab_contents->render_view_host(), x, y);
-  } else {
-    AutomationMsg_InspectElement::WriteReplyParams(reply_message, -1);
-    Send(reply_message);
-  }
-}
-
-void AutomationProvider::ReceivedInspectElementResponse(int num_resources) {
-  if (reply_message_) {
-    AutomationMsg_InspectElement::WriteReplyParams(reply_message_,
-                                                   num_resources);
-    Send(reply_message_);
-    reply_message_ = NULL;
-  }
-}
-
 class SetProxyConfigTask : public Task {
  public:
   SetProxyConfigTask(URLRequestContextGetter* request_context_getter,
@@ -2866,23 +2757,6 @@ void AutomationProvider::GetWindowForBrowser(int browser_handle,
     gfx::NativeWindow win = browser->window()->GetNativeHandle();
     // Add() returns the existing handle for the resource if any.
     *handle = window_tracker_->Add(win);
-    *success = true;
-  }
-}
-
-void AutomationProvider::GetAutocompleteEditForBrowser(
-    int browser_handle,
-    bool* success,
-    int* autocomplete_edit_handle) {
-  *success = false;
-  *autocomplete_edit_handle = 0;
-
-  if (browser_tracker_->ContainsHandle(browser_handle)) {
-    Browser* browser = browser_tracker_->GetResource(browser_handle);
-    LocationBar* loc_bar = browser->window()->GetLocationBar();
-    AutocompleteEditView* edit_view = loc_bar->location_entry();
-    // Add() returns the existing handle for the resource if any.
-    *autocomplete_edit_handle = autocomplete_edit_tracker_->Add(edit_view);
     *success = true;
   }
 }
@@ -3063,60 +2937,6 @@ void AutomationProvider::SavePage(int tab_handle,
 
   *success = true;
 }
-
-void AutomationProvider::GetAutocompleteEditText(int autocomplete_edit_handle,
-                                                 bool* success,
-                                                 std::wstring* text) {
-  *success = false;
-  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    *text = autocomplete_edit_tracker_->GetResource(autocomplete_edit_handle)->
-        GetText();
-    *success = true;
-  }
-}
-
-void AutomationProvider::SetAutocompleteEditText(int autocomplete_edit_handle,
-                                                 const std::wstring& text,
-                                                 bool* success) {
-  *success = false;
-  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    autocomplete_edit_tracker_->GetResource(autocomplete_edit_handle)->
-        SetUserText(text);
-    *success = true;
-  }
-}
-
-void AutomationProvider::AutocompleteEditGetMatches(
-    int autocomplete_edit_handle,
-    bool* success,
-    std::vector<AutocompleteMatchData>* matches) {
-  *success = false;
-  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    const AutocompleteResult& result = autocomplete_edit_tracker_->
-        GetResource(autocomplete_edit_handle)->model()->result();
-    for (AutocompleteResult::const_iterator i = result.begin();
-        i != result.end(); ++i)
-      matches->push_back(AutocompleteMatchData(*i));
-    *success = true;
-  }
-}
-
-void AutomationProvider::AutocompleteEditIsQueryInProgress(
-    int autocomplete_edit_handle,
-    bool* success,
-    bool* query_in_progress) {
-  *success = false;
-  *query_in_progress = false;
-  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    *query_in_progress = autocomplete_edit_tracker_->
-        GetResource(autocomplete_edit_handle)->model()->query_in_progress();
-    *success = true;
-  }
-}
-
-#if !defined(OS_MACOSX)
-
-#endif  // !defined(OS_MACOSX)
 
 TabContents* AutomationProvider::GetTabContentsForHandle(
     int handle, NavigationController** tab) {
@@ -3782,26 +3602,6 @@ void AutomationProvider::SetContentSetting(
     *success = true;
   }
 }
-
-#if !defined(TOOLKIT_VIEWS)
-void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
-  NOTIMPLEMENTED();
-};
-
-void AutomationProvider::WaitForFocusedViewIDToChange(
-    int handle, int previous_view_id, IPC::Message* reply_message) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::StartTrackingPopupMenus(
-    int browser_handle, bool* success) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::WaitForPopupMenuToOpen(IPC::Message* reply_message) {
-  NOTIMPLEMENTED();
-}
-#endif  // !defined(TOOLKIT_VIEWS)
 
 void AutomationProvider::ResetToDefaultTheme() {
   profile_->ClearTheme();

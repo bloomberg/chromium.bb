@@ -700,7 +700,7 @@ class TabContents : public PageNavigator,
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
   // automation purposes.
-  friend class AutomationProvider;
+  friend class TestingAutomationProvider;
 
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, UpdateTitle);

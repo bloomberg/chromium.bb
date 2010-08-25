@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/automation/automation_autocomplete_edit_tracker.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
@@ -15,9 +17,12 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/location_bar.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
@@ -163,6 +168,9 @@ class ClickTask : public Task {
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
     : AutomationProvider(profile),
+#if defined(TOOLKIT_VIEWS)
+      popup_menu_waiter_(NULL),
+#endif
       redirect_query_(0) {
   BrowserList::AddObserver(this);
   registrar_.Add(this, NotificationType::SESSION_END,
@@ -239,6 +247,33 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreen, IsFullscreen)
     IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreenBubbleVisible,
                         GetFullscreenBubbleVisibility)
+    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditForBrowser,
+                        GetAutocompleteEditForBrowser)
+    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditGetText,
+                        GetAutocompleteEditText)
+    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditSetText,
+                        SetAutocompleteEditText)
+    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditIsQueryInProgress,
+                        AutocompleteEditIsQueryInProgress)
+    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditGetMatches,
+                        AutocompleteEditGetMatches)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ApplyAccelerator, ApplyAccelerator)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
+                                    ExecuteJavascript)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ConstrainedWindowCount,
+                        GetConstrainedWindowCount)
+    IPC_MESSAGE_HANDLER(AutomationMsg_FindInPage, HandleFindInPageRequest)
+#if defined(TOOLKIT_VIEWS)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetFocusedViewID, GetFocusedViewID)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForFocusedViewIDToChange,
+                                    WaitForFocusedViewIDToChange)
+    IPC_MESSAGE_HANDLER(AutomationMsg_StartTrackingPopupMenus,
+                        StartTrackingPopupMenus)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForPopupMenuToOpen,
+                                    WaitForPopupMenuToOpen)
+#endif  // defined(TOOLKIT_VIEWS)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InspectElement,
+                                    HandleInspectElementRequest)
 
     IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
   IPC_END_MESSAGE_MAP()
@@ -871,6 +906,152 @@ void TestingAutomationProvider::GetFullscreenBubbleVisibility(int handle,
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser)
       *visible = browser->window()->IsFullscreenBubbleVisible();
+  }
+}
+
+void TestingAutomationProvider::GetAutocompleteEditText(
+    int autocomplete_edit_handle,
+    bool* success,
+    std::wstring* text) {
+  *success = false;
+  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    *text = autocomplete_edit_tracker_->GetResource(autocomplete_edit_handle)->
+        GetText();
+    *success = true;
+  }
+}
+
+void TestingAutomationProvider::SetAutocompleteEditText(
+    int autocomplete_edit_handle,
+    const std::wstring& text,
+    bool* success) {
+  *success = false;
+  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    autocomplete_edit_tracker_->GetResource(autocomplete_edit_handle)->
+        SetUserText(text);
+    *success = true;
+  }
+}
+
+void TestingAutomationProvider::AutocompleteEditGetMatches(
+    int autocomplete_edit_handle,
+    bool* success,
+    std::vector<AutocompleteMatchData>* matches) {
+  *success = false;
+  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    const AutocompleteResult& result = autocomplete_edit_tracker_->
+        GetResource(autocomplete_edit_handle)->model()->result();
+    for (AutocompleteResult::const_iterator i = result.begin();
+        i != result.end(); ++i)
+      matches->push_back(AutocompleteMatchData(*i));
+    *success = true;
+  }
+}
+
+void TestingAutomationProvider::GetAutocompleteEditForBrowser(
+    int browser_handle,
+    bool* success,
+    int* autocomplete_edit_handle) {
+  *success = false;
+  *autocomplete_edit_handle = 0;
+
+  if (browser_tracker_->ContainsHandle(browser_handle)) {
+    Browser* browser = browser_tracker_->GetResource(browser_handle);
+    LocationBar* loc_bar = browser->window()->GetLocationBar();
+    AutocompleteEditView* edit_view = loc_bar->location_entry();
+    // Add() returns the existing handle for the resource if any.
+    *autocomplete_edit_handle = autocomplete_edit_tracker_->Add(edit_view);
+    *success = true;
+  }
+}
+
+void TestingAutomationProvider::AutocompleteEditIsQueryInProgress(
+    int autocomplete_edit_handle,
+    bool* success,
+    bool* query_in_progress) {
+  *success = false;
+  *query_in_progress = false;
+  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    *query_in_progress = autocomplete_edit_tracker_->
+        GetResource(autocomplete_edit_handle)->model()->query_in_progress();
+    *success = true;
+  }
+}
+
+void TestingAutomationProvider::ApplyAccelerator(int handle, int id) {
+  LOG(ERROR) << "ApplyAccelerator has been deprecated. "
+             << "Please use ExecuteBrowserCommandAsync instead.";
+}
+
+void TestingAutomationProvider::ExecuteJavascript(
+    int handle,
+    const std::wstring& frame_xpath,
+    const std::wstring& script,
+    IPC::Message* reply_message) {
+  bool succeeded = false;
+  TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
+  if (tab_contents) {
+    // Set the routing id of this message with the controller.
+    // This routing id needs to be remembered for the reverse
+    // communication while sending back the response of
+    // this javascript execution.
+    std::wstring set_automation_id;
+    SStringPrintf(&set_automation_id,
+      L"window.domAutomationController.setAutomationId(%d);",
+      reply_message->routing_id());
+
+    DCHECK(reply_message_ == NULL);
+    reply_message_ = reply_message;
+
+    tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+        frame_xpath, set_automation_id);
+    tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+        frame_xpath, script);
+    succeeded = true;
+  }
+
+  if (!succeeded) {
+    AutomationMsg_DomOperation::WriteReplyParams(reply_message, std::string());
+    Send(reply_message);
+  }
+}
+
+void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
+                                                          int* count) {
+  *count = -1;  // -1 is the error code
+  if (tab_tracker_->ContainsHandle(handle)) {
+      NavigationController* nav_controller = tab_tracker_->GetResource(handle);
+      TabContents* tab_contents = nav_controller->tab_contents();
+      if (tab_contents) {
+        *count = static_cast<int>(tab_contents->child_windows_.size());
+      }
+  }
+}
+
+void TestingAutomationProvider::HandleFindInPageRequest(
+    int handle,
+    const std::wstring& find_request,
+    int forward,
+    int match_case,
+    int* active_ordinal,
+    int* matches_found) {
+  LOG(ERROR) << "HandleFindInPageRequest has been deprecated."
+             << "Please use HandleFindRequest instead.";
+  *matches_found = -1;
+}
+
+void TestingAutomationProvider::HandleInspectElementRequest(
+    int handle, int x, int y, IPC::Message* reply_message) {
+  TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
+  if (tab_contents) {
+    DCHECK(reply_message_ == NULL);
+    reply_message_ = reply_message;
+
+    DevToolsManager::GetInstance()->InspectElement(
+        tab_contents->render_view_host(), x, y);
+  } else {
+    AutomationMsg_InspectElement::WriteReplyParams(reply_message, -1);
+    Send(reply_message);
   }
 }
 
