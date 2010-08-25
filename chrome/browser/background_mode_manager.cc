@@ -35,13 +35,10 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile)
     return;
 
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
-  // in the background until the user explicitly terminates it.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kKeepAliveForTest)) {
-    StartBackgroundMode();
-    registrar_.Add(this, NotificationType::APP_TERMINATING,
-                 NotificationService::AllSources());
-  }
+  // in the background until the user explicitly terminates it, by acting as if
+  // we loaded a background app.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepAliveForTest))
+    OnBackgroundAppLoaded();
 
   // When an extension is installed, make sure launch on startup is properly
   // set if appropriate. Likewise, turn off launch on startup when the last
@@ -62,6 +59,12 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile)
   // while Chrome was not running.
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
                  Source<Profile>(profile));
+
+  // Listen for the application shutting down so we can decrement our KeepAlive
+  // count.
+  registrar_.Add(this, NotificationType::APP_TERMINATING,
+                 NotificationService::AllSources());
+
 
 }
 
@@ -100,12 +103,13 @@ void BackgroundModeManager::Observe(NotificationType type,
         OnBackgroundAppUninstalled();
       break;
     case NotificationType::APP_TERMINATING:
-      // Performing an explicit shutdown, so allow the browser process to exit.
-      // (we only listen for this notification if the keep-alive-for-test flag
-      // is passed).
-      DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kKeepAliveForTest));
-      EndBackgroundMode();
+      // Performing an explicit shutdown, so exit background mode if we were in
+      // background mode.
+      if (background_app_count_ > 0 && IsBackgroundModeEnabled())
+        EndBackgroundMode();
+      // Shutting down, so don't listen for any more notifications so we don't
+      // try to re-enter/exit background mode again.
+      registrar_.RemoveAll();
       break;
     default:
       NOTREACHED();

@@ -13,8 +13,6 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
   void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
-    // Tests rely on chrome exiting, so disable background mode.
-    command_line->AppendSwitch(switches::kDisableBackgroundMode);
   }
 };
 
