@@ -217,7 +217,7 @@ void PageInfoWindowView::LayoutSections() {
   for (int i = 0; i < model_.GetSectionCount(); ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
     layout->StartRow(0, 0);
-    layout->AddView(new Section(info.title, info.state, info.head_line,
+    layout->AddView(new Section(info.title, info.state, info.headline,
                                 info.description));
     layout->AddPaddingRow(0, kVerticalPadding);
   }

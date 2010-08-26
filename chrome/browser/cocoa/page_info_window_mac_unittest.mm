@@ -21,12 +21,14 @@ class FakeModel : public PageInfoModel {
  public:
   void AddSection(bool state,
                   const string16& title,
-                  const string16& description) {
+                  const string16& description,
+                  SectionInfoType type) {
     sections_.push_back(SectionInfo(
         state,
         title,
         string16(),
-        description));
+        description,
+        type));
   }
 };
 
@@ -113,12 +115,14 @@ TEST_F(PageInfoWindowMacTest, NoHistoryNoSecurity) {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
-          ASCIIToUTF16("google.com")));
+          ASCIIToUTF16("google.com")),
+      PageInfoModel::SECTION_INFO_IDENTITY);
   model_->AddSection(false,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
-          ASCIIToUTF16("google.com")));
+          ASCIIToUTF16("google.com")),
+      PageInfoModel::SECTION_INFO_CONNECTION);
 
   bridge_->ModelChanged();
 
@@ -131,12 +135,14 @@ TEST_F(PageInfoWindowMacTest, HistoryNoSecurity) {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
-          ASCIIToUTF16("google.com")));
+          ASCIIToUTF16("google.com")),
+      PageInfoModel::SECTION_INFO_IDENTITY);
   model_->AddSection(false,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
-          ASCIIToUTF16("google.com")));
+          ASCIIToUTF16("google.com")),
+      PageInfoModel::SECTION_INFO_CONNECTION);
 
   // In practice, the history information comes later because it's queried
   // asynchronously, so replicate the double-build here.
@@ -146,7 +152,8 @@ TEST_F(PageInfoWindowMacTest, HistoryNoSecurity) {
       l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
       l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY));
+          IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY),
+      PageInfoModel::SECTION_INFO_FIRST_VISIT);
 
   bridge_->ModelChanged();
 
@@ -159,7 +166,8 @@ TEST_F(PageInfoWindowMacTest, NoHistoryMixedSecurity) {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY,
-          ASCIIToUTF16("Goat Security Systems")));
+          ASCIIToUTF16("Goat Security Systems")),
+      PageInfoModel::SECTION_INFO_IDENTITY);
 
   // This string is super long and the text should overflow the default clip
   // region (kImageSize).
@@ -174,7 +182,8 @@ TEST_F(PageInfoWindowMacTest, NoHistoryMixedSecurity) {
               ASCIIToUTF16("chrome.google.com"),
               base::IntToString16(1024)),
           l10n_util::GetStringUTF16(
-              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
+              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)),
+      PageInfoModel::SECTION_INFO_CONNECTION);
 
   bridge_->ModelChanged();
 
