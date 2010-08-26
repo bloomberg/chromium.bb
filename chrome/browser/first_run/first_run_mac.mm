@@ -72,14 +72,6 @@ bool FirstRunController::DoFirstRun(Profile* profile,
   // This object is responsible for deleting itself, make sure that happens.
   scoped_ptr<FirstRunController> gc(this);
 
-  // Breakpad should not be enabled on first run until the user has explicitly
-  // opted-into stats.
-  // TODO: The behavior we probably want here is to enable Breakpad on first run
-  // but display a confirmation dialog before sending a crash report so we
-  // respect a user's privacy while still getting any crashes that might happen
-  // before this point.  Then remove the need for that dialog here.
-  DCHECK(!IsCrashReporterEnabled());
-
   scoped_nsobject<FirstRunDialogController> dialog(
       [[FirstRunDialogController alloc] init]);
 
@@ -108,23 +100,24 @@ bool FirstRunController::DoFirstRun(Profile* profile,
     return false;
   }
 
-  // Don't enable stats in Chromium.
-  bool stats_enabled = false;
-#if defined(GOOGLE_CHROME_BUILD)
-  stats_enabled = [dialog.get() statsEnabled] ? true : false;
-#endif  // GOOGLE_CHROME_BUILD
   FirstRun::CreateSentinel();
-  GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
+
+  // If the dialog asked the user to opt-in for stats and crash reporting,
+  // record the decision and enable the crash reporter if appropriate.
+  if (![dialog.get() statsCheckboxHidden]) {
+    bool stats_enabled = [dialog.get() statsEnabled];
+    GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
 
 #if defined(GOOGLE_CHROME_BUILD)
-  // Breakpad is normally enabled very early in the startup process,
-  // however, on the first run it's off by default.  If the user opts-in to
-  // stats, enable breakpad.
-  if (stats_enabled) {
-    InitCrashReporter();
-    InitCrashProcessInfo();
-  }
+    // Breakpad is normally enabled very early in the startup process.  However,
+    // on the first run it may not have been enabled due to the missing opt-in
+    // from the user.  If the user agreed now, enable breakpad if necessary.
+    if (!IsCrashReporterEnabled() && stats_enabled) {
+      InitCrashReporter();
+      InitCrashProcessInfo();
+    }
 #endif  // GOOGLE_CHROME_BUILD
+  }
 
   // If selected set as default browser.
   BOOL make_default_browser = [dialog.get() makeDefaultBrowser];

@@ -8,6 +8,9 @@
 #include "base/logging.h"
 #include "base/mac_util.h"
 #import "base/scoped_nsobject.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
@@ -49,7 +52,15 @@ NSInteger CompareFrameY(id view1, id view2, void* context) {
     statsEnabled_ = YES;
     importBookmarks_ = YES;
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
+    // If the send stats option is controlled by enterprise configuration
+    // management, hide the checkbox.
+    const PrefService::Preference* metrics_reporting_pref =
+        g_browser_process->local_state()->FindPreference(
+            prefs::kMetricsReportingEnabled);
+    if (metrics_reporting_pref && metrics_reporting_pref->IsManaged())
+      statsCheckboxHidden_ = YES;
+#else
     // In Chromium builds all stats reporting is disabled so there's no reason
     // to display the checkbox - the setting is always OFF.
     statsCheckboxHidden_ = YES;
