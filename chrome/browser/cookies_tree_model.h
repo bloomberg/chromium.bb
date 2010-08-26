@@ -6,12 +6,17 @@
 #define CHROME_BROWSER_COOKIES_TREE_MODEL_H_
 #pragma once
 
+// TODO(viettrungluu): This header file #includes far too much and has too much
+// inline code (which shouldn't be inline).
+
 #include <string>
 #include <vector>
 
 #include "app/tree_node_model.h"
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
@@ -56,6 +61,30 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
       TYPE_APPCACHE,  // This is used for CookieTreeAppCacheNode.
     };
 
+    // TODO(viettrungluu): Figure out whether we want to store |origin| as a
+    // |string16| or a (UTF-8) |std::string|, and convert. Remove constructor
+    // taking an |std::wstring|.
+    DetailedInfo(const string16& origin, NodeType node_type,
+        const net::CookieMonster::CanonicalCookie* cookie,
+        const BrowsingDataDatabaseHelper::DatabaseInfo* database_info,
+        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
+            local_storage_info,
+        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
+            session_storage_info,
+        const appcache::AppCacheInfo* appcache_info)
+        : origin(UTF16ToWideHack(origin)),
+          node_type(node_type),
+          cookie(cookie),
+          database_info(database_info),
+          local_storage_info(local_storage_info),
+          session_storage_info(session_storage_info),
+          appcache_info(appcache_info) {
+      DCHECK((node_type != TYPE_DATABASE) || database_info);
+      DCHECK((node_type != TYPE_LOCAL_STORAGE) || local_storage_info);
+      DCHECK((node_type != TYPE_SESSION_STORAGE) || session_storage_info);
+      DCHECK((node_type != TYPE_APPCACHE) || appcache_info);
+    }
+#if !defined(WCHAR_T_IS_UTF16)
     DetailedInfo(const std::wstring& origin, NodeType node_type,
         const net::CookieMonster::CanonicalCookie* cookie,
         const BrowsingDataDatabaseHelper::DatabaseInfo* database_info,
@@ -76,6 +105,7 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
       DCHECK((node_type != TYPE_SESSION_STORAGE) || session_storage_info);
       DCHECK((node_type != TYPE_APPCACHE) || appcache_info);
     }
+#endif
 
     std::wstring origin;
     NodeType node_type;
@@ -88,7 +118,7 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
   };
 
   CookieTreeNode() {}
-  explicit CookieTreeNode(const std::wstring& title)
+  explicit CookieTreeNode(const string16& title)
       : TreeNode<CookieTreeNode>(title) {}
   virtual ~CookieTreeNode() {}
 
@@ -128,8 +158,9 @@ class CookieTreeRootNode : public CookieTreeNode {
   // CookieTreeNode methods:
   virtual CookiesTreeModel* GetModel() const { return model_; }
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(std::wstring(), DetailedInfo::TYPE_ROOT, NULL, NULL,
-                        NULL, NULL, NULL);
+    return DetailedInfo(string16(),
+                        DetailedInfo::TYPE_ROOT,
+                        NULL, NULL, NULL, NULL, NULL);
   }
  private:
 
@@ -149,8 +180,9 @@ class CookieTreeOriginNode : public CookieTreeNode {
 
   // CookieTreeNode methods:
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetTitle(), DetailedInfo::TYPE_ORIGIN, NULL, NULL,
-                        NULL, NULL, NULL);
+    return DetailedInfo(GetTitleAsString16(),
+                        DetailedInfo::TYPE_ORIGIN,
+                        NULL, NULL, NULL, NULL, NULL);
   }
 
   // CookieTreeOriginNode methods:
@@ -199,9 +231,9 @@ class CookieTreeCookieNode : public CookieTreeNode {
   // CookieTreeNode methods:
   virtual void DeleteStoredObjects();
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_COOKIE, cookie_, NULL, NULL, NULL,
-                        NULL);
+    return DetailedInfo(GetParent()->GetParent()->GetTitleAsString16(),
+                        DetailedInfo::TYPE_COOKIE,
+                        cookie_, NULL, NULL, NULL, NULL);
   }
 
  private:
@@ -218,7 +250,8 @@ class CookieTreeCookiesNode : public CookieTreeNode {
   virtual ~CookieTreeCookiesNode() {}
 
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(), DetailedInfo::TYPE_COOKIES,
+    return DetailedInfo(GetParent()->GetTitleAsString16(),
+                        DetailedInfo::TYPE_COOKIES,
                         NULL, NULL, NULL, NULL, NULL);
   }
 
@@ -243,7 +276,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
 
   virtual void DeleteStoredObjects();
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
+    return DetailedInfo(GetParent()->GetParent()->GetTitleAsString16(),
                         DetailedInfo::TYPE_APPCACHE,
                         NULL, NULL, NULL, NULL, appcache_info_);
   }
@@ -259,7 +292,7 @@ class CookieTreeAppCachesNode : public CookieTreeNode {
   virtual ~CookieTreeAppCachesNode() {}
 
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
+    return DetailedInfo(GetParent()->GetTitleAsString16(),
                         DetailedInfo::TYPE_APPCACHES,
                         NULL, NULL, NULL, NULL, NULL);
   }
@@ -285,9 +318,9 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
 
   virtual void DeleteStoredObjects();
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_DATABASE, NULL, database_info_,
-                        NULL, NULL, NULL);
+    return DetailedInfo(GetParent()->GetParent()->GetTitleAsString16(),
+                        DetailedInfo::TYPE_DATABASE,
+                        NULL, database_info_, NULL, NULL, NULL);
   }
 
  private:
@@ -304,7 +337,7 @@ class CookieTreeDatabasesNode : public CookieTreeNode {
   virtual ~CookieTreeDatabasesNode() {}
 
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
+    return DetailedInfo(GetParent()->GetTitleAsString16(),
                         DetailedInfo::TYPE_DATABASES,
                         NULL, NULL, NULL, NULL, NULL);
   }
@@ -331,9 +364,9 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
   // CookieTreeNode methods:
   virtual void DeleteStoredObjects();
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_LOCAL_STORAGE, NULL, NULL,
-                        local_storage_info_, NULL, NULL);
+    return DetailedInfo(GetParent()->GetParent()->GetTitleAsString16(),
+                        DetailedInfo::TYPE_LOCAL_STORAGE,
+                        NULL, NULL, local_storage_info_, NULL, NULL);
   }
 
  private:
@@ -350,7 +383,7 @@ class CookieTreeLocalStoragesNode : public CookieTreeNode {
   virtual ~CookieTreeLocalStoragesNode() {}
 
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
+    return DetailedInfo(GetParent()->GetTitleAsString16(),
                         DetailedInfo::TYPE_LOCAL_STORAGES,
                         NULL, NULL, NULL, NULL, NULL);
   }
@@ -377,9 +410,9 @@ class CookieTreeSessionStorageNode : public CookieTreeNode {
 
   // CookieTreeNode methods:
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_SESSION_STORAGE, NULL, NULL, NULL,
-                        session_storage_info_, NULL);
+    return DetailedInfo(GetParent()->GetParent()->GetTitleAsString16(),
+                        DetailedInfo::TYPE_SESSION_STORAGE,
+                        NULL, NULL, NULL, session_storage_info_, NULL);
   }
 
  private:
@@ -396,7 +429,7 @@ class CookieTreeSessionStoragesNode : public CookieTreeNode {
   virtual ~CookieTreeSessionStoragesNode() {}
 
   virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
+    return DetailedInfo(GetParent()->GetTitleAsString16(),
                         DetailedInfo::TYPE_SESSION_STORAGES,
                         NULL, NULL, NULL, NULL, NULL);
   }

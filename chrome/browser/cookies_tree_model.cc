@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "grit/app_resources.h"
@@ -46,7 +47,7 @@ CookiesTreeModel* CookieTreeNode::GetModel() const {
 
 CookieTreeCookieNode::CookieTreeCookieNode(
     net::CookieMonster::CanonicalCookie* cookie)
-    : CookieTreeNode(UTF8ToWide(cookie->Name())),
+    : CookieTreeNode(UTF8ToUTF16(cookie->Name())),
       cookie_(cookie) {
 }
 
@@ -125,7 +126,7 @@ class OriginNodeComparator {
 
 CookieTreeAppCacheNode::CookieTreeAppCacheNode(
     const appcache::AppCacheInfo* appcache_info)
-    : CookieTreeNode(UTF8ToWide(appcache_info->manifest_url.spec())),
+    : CookieTreeNode(UTF8ToUTF16(appcache_info->manifest_url.spec())),
       appcache_info_(appcache_info) {
 }
 
@@ -141,8 +142,8 @@ void CookieTreeAppCacheNode::DeleteStoredObjects() {
 CookieTreeDatabaseNode::CookieTreeDatabaseNode(
     BrowsingDataDatabaseHelper::DatabaseInfo* database_info)
     : CookieTreeNode(database_info->database_name.empty() ?
-          l10n_util::GetString(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
-          UTF8ToWide(database_info->database_name)),
+          l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
+          UTF8ToUTF16(database_info->database_name)),
       database_info_(database_info) {
 }
 
@@ -156,7 +157,7 @@ void CookieTreeDatabaseNode::DeleteStoredObjects() {
 
 CookieTreeLocalStorageNode::CookieTreeLocalStorageNode(
     BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info)
-    : CookieTreeNode(UTF8ToWide(
+    : CookieTreeNode(UTF8ToUTF16(
           local_storage_info->origin.empty() ?
               local_storage_info->database_identifier :
               local_storage_info->origin)),
@@ -173,7 +174,7 @@ void CookieTreeLocalStorageNode::DeleteStoredObjects() {
 
 CookieTreeSessionStorageNode::CookieTreeSessionStorageNode(
     BrowsingDataLocalStorageHelper::LocalStorageInfo* session_storage_info)
-    : CookieTreeNode(UTF8ToWide(
+    : CookieTreeNode(UTF8ToUTF16(
           session_storage_info->origin.empty() ?
               session_storage_info->database_identifier :
               session_storage_info->origin)),
@@ -216,7 +217,7 @@ std::wstring CookieTreeOriginNode::TitleForUrl(
 }
 
 CookieTreeOriginNode::CookieTreeOriginNode(const GURL& url)
-    : CookieTreeNode(TitleForUrl(url)),
+    : CookieTreeNode(WideToUTF16Hack(TitleForUrl(url))),
       cookies_child_(NULL),
       databases_child_(NULL),
       local_storages_child_(NULL),
@@ -285,35 +286,36 @@ bool CookieTreeOriginNode::CanCreateContentException() const {
 // CookieTreeCookiesNode, public:
 
 CookieTreeCookiesNode::CookieTreeCookiesNode()
-    : CookieTreeNode(l10n_util::GetString(IDS_COOKIES_COOKIES)) {
+    : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_COOKIES)) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeAppCachesNode, public:
 
 CookieTreeAppCachesNode::CookieTreeAppCachesNode()
-    : CookieTreeNode(l10n_util::GetString(IDS_COOKIES_APPLICATION_CACHES)) {
+    : CookieTreeNode(l10n_util::GetStringUTF16(
+                         IDS_COOKIES_APPLICATION_CACHES)) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeDatabasesNode, public:
 
 CookieTreeDatabasesNode::CookieTreeDatabasesNode()
-    : CookieTreeNode(l10n_util::GetString(IDS_COOKIES_WEB_DATABASES)) {
+    : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASES)) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeLocalStoragesNode, public:
 
 CookieTreeLocalStoragesNode::CookieTreeLocalStoragesNode()
-    : CookieTreeNode(l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE)) {
+    : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE)) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeSessionStoragesNode, public:
 
 CookieTreeSessionStoragesNode::CookieTreeSessionStoragesNode()
-    : CookieTreeNode(l10n_util::GetString(IDS_COOKIES_SESSION_STORAGE)) {
+    : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_SESSION_STORAGE)) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
