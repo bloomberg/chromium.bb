@@ -20,7 +20,7 @@
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

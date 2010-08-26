@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/session_startup_pref.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 
 #include <string>
 
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/scoped_pref_update.h"
 #include "chrome/common/pref_names.h"
 
 namespace {

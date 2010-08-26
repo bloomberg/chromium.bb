@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/cocoa/view_id_util.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"

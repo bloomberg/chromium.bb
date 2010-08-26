@@ -4,10 +4,10 @@
 
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/dummy_pref_store.h"
-#include "chrome/browser/pref_value_store.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/prefs/dummy_pref_store.h"
+#include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

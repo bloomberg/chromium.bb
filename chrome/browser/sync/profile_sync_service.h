@@ -14,7 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/dom_ui/options_ui.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 
 // Font settings overlay page UI handler.
 class FontSettingsHandler : public OptionsPageUIHandler {

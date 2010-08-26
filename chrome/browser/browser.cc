@@ -60,7 +60,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #if defined(ENABLE_REMOTING)
 #include "chrome/browser/remoting/remoting_setup_flow.h"

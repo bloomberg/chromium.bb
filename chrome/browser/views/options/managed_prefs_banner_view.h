@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_MANAGED_PREFS_BANNER_VIEW_H_
 #pragma once
 
-#include "chrome/browser/managed_prefs_banner_base.h"
+#include "chrome/browser/policy/managed_prefs_banner_base.h"
 #include "views/view.h"
 
 namespace views {

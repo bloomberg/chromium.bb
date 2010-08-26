@@ -5,13 +5,13 @@
 #include "chrome/browser/options_util.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 

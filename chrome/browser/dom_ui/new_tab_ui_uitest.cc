@@ -7,7 +7,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/pref_value_store.h"
+#include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/browser_proxy.h"

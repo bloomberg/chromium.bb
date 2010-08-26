@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREF_VALUE_STORE_H_
-#define CHROME_BROWSER_PREF_VALUE_STORE_H_
+#ifndef CHROME_BROWSER_PREFS_PREF_VALUE_STORE_H_
+#define CHROME_BROWSER_PREFS_PREF_VALUE_STORE_H_
 #pragma once
 
 #include <string>
@@ -15,7 +15,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/pref_notifier.h"
+#include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/common/pref_store.h"
 
 class FilePath;
@@ -195,4 +195,4 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };
 
-#endif  // CHROME_BROWSER_PREF_VALUE_STORE_H_
+#endif  // CHROME_BROWSER_PREFS_PREF_VALUE_STORE_H_

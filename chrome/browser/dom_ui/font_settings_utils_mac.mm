@@ -8,7 +8,7 @@
 
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
 static void ValidateFontFamily(PrefService* prefs,

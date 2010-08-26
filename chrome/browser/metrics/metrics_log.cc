@@ -20,7 +20,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gpu_process_host.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"

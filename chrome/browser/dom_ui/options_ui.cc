@@ -37,7 +37,7 @@
 #include "chrome/browser/dom_ui/stop_syncing_handler.h"
 #include "chrome/browser/dom_ui/sync_options_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"

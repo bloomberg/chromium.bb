@@ -16,7 +16,7 @@
 #import "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/window_size_autosaver.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"

@@ -7,8 +7,8 @@
 #pragma once
 
 #include "chrome/browser/dom_ui/options_ui.h"
-#include "chrome/browser/pref_member.h"
-#include "chrome/browser/pref_set_observer.h"
+#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/shell_dialogs.h"
 
 class OptionsManagedBannerHandler;

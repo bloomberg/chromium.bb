@@ -5,8 +5,8 @@
 #include "chrome/browser/translate/translate_prefs.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/pref_service.h"
-#include "chrome/browser/scoped_pref_update.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_pref_update.h"
 
 const char TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
     "translate_language_blacklist";

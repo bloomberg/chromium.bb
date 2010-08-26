@@ -9,7 +9,7 @@
 #pragma once
 
 #include "build/build_config.h"
-#include "chrome/browser/session_startup_pref.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 
 namespace browser_defaults {
 

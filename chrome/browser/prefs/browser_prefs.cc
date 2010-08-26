@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_prefs.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/background_contents_service.h"
@@ -33,15 +33,15 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/ssl/ssl_manager.h"
-#include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/upgrade_detector.h"

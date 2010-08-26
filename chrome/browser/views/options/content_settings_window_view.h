@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_SETTINGS_WINDOW_VIEW_H_
 #pragma once
 
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/content_settings_types.h"
 #include "views/controls/listbox/listbox.h"
 #include "views/view.h"

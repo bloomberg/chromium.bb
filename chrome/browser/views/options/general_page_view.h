@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_GENERAL_PAGE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/views/url_picker.h"

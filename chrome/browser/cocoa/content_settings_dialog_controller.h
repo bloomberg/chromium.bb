@@ -7,7 +7,7 @@
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 
 // Index of the "enabled" and "disabled" radio group settings in all tabs except
 // for the cookies tab.

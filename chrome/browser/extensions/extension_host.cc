@@ -25,7 +25,7 @@
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/message_box_handler.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

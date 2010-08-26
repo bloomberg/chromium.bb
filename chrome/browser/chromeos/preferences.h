@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/notification_observer.h"
 
 class PrefService;

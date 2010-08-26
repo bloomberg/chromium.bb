@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_LANGUAGES_PAGE_VIEW_H__
 #pragma once
 
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/button/button.h"

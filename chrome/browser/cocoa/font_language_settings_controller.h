@@ -6,7 +6,7 @@
 
 #include "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 
 class Profile;
 

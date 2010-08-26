@@ -12,7 +12,7 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer_mock.h"

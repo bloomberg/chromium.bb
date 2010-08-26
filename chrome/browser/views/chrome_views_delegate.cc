@@ -8,7 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/views/accessibility_event_router_views.h"
 #include "chrome/browser/window_sizer.h"
 #include "gfx/rect.h"

@@ -17,7 +17,7 @@
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/browser/password_manager/ie7_password.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"

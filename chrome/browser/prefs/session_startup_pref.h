@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSION_STARTUP_PREF_H__
-#define CHROME_BROWSER_SESSION_STARTUP_PREF_H__
+#ifndef CHROME_BROWSER_PREFS_SESSION_STARTUP_PREF_H__
+#define CHROME_BROWSER_PREFS_SESSION_STARTUP_PREF_H__
 #pragma once
 
 #include <vector>
@@ -48,4 +48,4 @@ struct SessionStartupPref {
   std::vector<GURL> urls;
 };
 
-#endif  // CHROME_BROWSER_SESSION_STARTUP_PREF_H__
+#endif  // CHROME_BROWSER_PREFS_SESSION_STARTUP_PREF_H__

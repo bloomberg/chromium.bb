@@ -4,8 +4,8 @@
 
 #include "chrome/test/testing_pref_service.h"
 
-#include "chrome/browser/dummy_pref_store.h"
-#include "chrome/browser/pref_value_store.h"
+#include "chrome/browser/prefs/dummy_pref_store.h"
+#include "chrome/browser/prefs/pref_value_store.h"
 
 TestingPrefService::TestingPrefValueStore::TestingPrefValueStore(
     PrefStore* managed_prefs,

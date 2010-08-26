@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/pref_notifier.h"
-#include "chrome/browser/pref_service.h"
-#include "chrome/browser/pref_value_store.h"
+#include "chrome/browser/prefs/pref_notifier.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"

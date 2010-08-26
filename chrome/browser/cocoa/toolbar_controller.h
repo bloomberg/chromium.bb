@@ -14,7 +14,7 @@
 #import "chrome/browser/cocoa/delayedmenu_button.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
 #import "chrome/browser/cocoa/view_resizer.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;

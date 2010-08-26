@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_PREFS_H__
-#define CHROME_BROWSER_BROWSER_PREFS_H__
+#ifndef CHROME_BROWSER_PREFS_BROWSER_PREFS_H__
+#define CHROME_BROWSER_PREFS_BROWSER_PREFS_H__
 #pragma once
 
 class PrefService;
@@ -17,4 +17,4 @@ void RegisterUserPrefs(PrefService* user_prefs);
 
 } // namespace browser
 
-#endif  // CHROME_BROWSER_BROWSER_PREFS_H__
+#endif  // CHROME_BROWSER_PREFS_BROWSER_PREFS_H__

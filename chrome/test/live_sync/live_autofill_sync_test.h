@@ -17,7 +17,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"

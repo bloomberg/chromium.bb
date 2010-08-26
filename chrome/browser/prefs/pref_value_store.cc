@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/pref_value_store.h"
+#include "chrome/browser/prefs/pref_value_store.h"
 
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/command_line_pref_store.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 

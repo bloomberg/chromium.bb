@@ -37,7 +37,7 @@
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugin_service.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"

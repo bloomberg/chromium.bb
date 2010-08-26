@@ -15,7 +15,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/pref_notifier.h"
+#include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_store.h"

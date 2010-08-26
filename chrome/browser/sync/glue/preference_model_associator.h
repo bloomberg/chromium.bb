@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 

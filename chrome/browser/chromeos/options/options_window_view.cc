@@ -14,7 +14,7 @@
 #include "chrome/browser/gtk/options/advanced_page_gtk.h"
 #include "chrome/browser/gtk/options/content_page_gtk.h"
 #include "chrome/browser/gtk/options/general_page_gtk.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/accessible_view_helper.h"
 #include "chrome/browser/window_sizer.h"

@@ -8,7 +8,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/language_combobox_model.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"

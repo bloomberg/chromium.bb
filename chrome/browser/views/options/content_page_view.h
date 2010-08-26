@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/views/confirm_message_box_dialog.h"

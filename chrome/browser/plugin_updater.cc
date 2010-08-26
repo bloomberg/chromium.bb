@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

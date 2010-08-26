@@ -4,8 +4,8 @@
 
 // This provides a way to access the application's current preferences.
 
-#ifndef CHROME_BROWSER_PREF_SERVICE_H_
-#define CHROME_BROWSER_PREF_SERVICE_H_
+#ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_H_
+#define CHROME_BROWSER_PREFS_PREF_SERVICE_H_
 #pragma once
 
 #include <set>
@@ -14,7 +14,7 @@
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/pref_value_store.h"
+#include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/pref_store.h"
 
 class FilePath;
@@ -251,4 +251,4 @@ class PrefService : public NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
 
-#endif  // CHROME_BROWSER_PREF_SERVICE_H_
+#endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_H_

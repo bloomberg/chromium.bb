@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREF_NOTIFIER_H_
-#define CHROME_BROWSER_PREF_NOTIFIER_H_
+#ifndef CHROME_BROWSER_PREFS_PREF_NOTIFIER_H_
+#define CHROME_BROWSER_PREFS_PREF_NOTIFIER_H_
 #pragma once
 
 #include <string>
@@ -109,4 +109,4 @@ class PrefNotifier : public NonThreadSafe,
   DISALLOW_COPY_AND_ASSIGN(PrefNotifier);
 };
 
-#endif  // CHROME_BROWSER_PREF_NOTIFIER_H_
+#endif  // CHROME_BROWSER_PREFS_PREF_NOTIFIER_H_

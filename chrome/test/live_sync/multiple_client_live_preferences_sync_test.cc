@@ -5,7 +5,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/test/live_sync/live_preferences_sync_test.h"
-#include "chrome/browser/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_pref_update.h"
 
 IN_PROC_BROWSER_TEST_F(MultipleClientLivePreferencesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

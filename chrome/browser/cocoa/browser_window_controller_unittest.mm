@@ -12,7 +12,7 @@
 #include "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"

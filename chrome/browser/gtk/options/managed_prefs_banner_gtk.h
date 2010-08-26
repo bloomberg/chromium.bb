@@ -8,7 +8,7 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/managed_prefs_banner_base.h"
+#include "chrome/browser/policy/managed_prefs_banner_base.h"
 
 // Constructs and maintains a GTK widget displaying a warning banner. The banner
 // is displayed on the preferences dialog whenever there are options that are

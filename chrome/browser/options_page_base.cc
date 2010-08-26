@@ -5,7 +5,7 @@
 #include "chrome/browser/options_page_base.h"
 
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_service.h"
 
 ///////////////////////////////////////////////////////////////////////////////

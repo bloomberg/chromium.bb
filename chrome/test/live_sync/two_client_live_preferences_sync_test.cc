@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/test/live_sync/live_preferences_sync_test.h"
 
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,

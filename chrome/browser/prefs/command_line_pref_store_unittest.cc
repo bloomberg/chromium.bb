@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/command_line_pref_store.h"
+#include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 

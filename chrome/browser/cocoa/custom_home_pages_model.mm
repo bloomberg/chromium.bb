@@ -6,7 +6,7 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/session_startup_pref.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 
 NSString* const kHomepageEntryChangedNotification =
     @"kHomepageEntryChangedNotification";

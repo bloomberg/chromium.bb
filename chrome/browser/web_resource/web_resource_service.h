@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 

@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"

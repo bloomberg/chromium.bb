@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/cocoa/window_size_autosaver.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/common/pref_names.h"

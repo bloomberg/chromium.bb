@@ -15,7 +15,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"

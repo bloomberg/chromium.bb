@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MANAGED_PREFS_BANNER_BASE_H_
-#define CHROME_BROWSER_MANAGED_PREFS_BANNER_BASE_H_
+#ifndef CHROME_BROWSER_POLICY_MANAGED_PREFS_BANNER_BASE_H_
+#define CHROME_BROWSER_POLICY_MANAGED_PREFS_BANNER_BASE_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/options_window.h"
-#include "chrome/browser/pref_set_observer.h"
+#include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/common/notification_observer.h"
 
 class PrefService;
@@ -65,4 +65,4 @@ class ManagedPrefsBannerBase : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ManagedPrefsBannerBase);
 };
-#endif  // CHROME_BROWSER_MANAGED_PREFS_BANNER_BASE_H_
+#endif  // CHROME_BROWSER_POLICY_MANAGED_PREFS_BANNER_BASE_H_

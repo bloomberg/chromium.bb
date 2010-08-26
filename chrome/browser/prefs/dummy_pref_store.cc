@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dummy_pref_store.h"
+#include "chrome/browser/prefs/dummy_pref_store.h"
 
 #include "base/values.h"
 

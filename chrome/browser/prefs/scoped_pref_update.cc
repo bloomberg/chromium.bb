@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): remove
-#include "chrome/browser/pref_service.h"
-#include "chrome/browser/scoped_pref_update.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_pref_update.h"
 
 ScopedPrefUpdate::ScopedPrefUpdate(PrefService* service, const char* path)
     : service_(service),

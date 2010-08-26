@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/chromeos/login/view_screen.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"

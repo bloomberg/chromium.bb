@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/host_zoom_map.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"

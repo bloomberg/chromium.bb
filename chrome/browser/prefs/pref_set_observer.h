@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREF_SET_OBSERVER_H_
-#define CHROME_BROWSER_PREF_SET_OBSERVER_H_
+#ifndef CHROME_BROWSER_PREFS_PREF_SET_OBSERVER_H_
+#define CHROME_BROWSER_PREFS_PREF_SET_OBSERVER_H_
 #pragma once
 
 #include <set>
 
 #include "base/basictypes.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_observer.h"
 
 // Observes the state of a set of preferences and allows to query their combined
@@ -51,4 +51,4 @@ class PrefSetObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(PrefSetObserver);
 };
 
-#endif  // CHROME_BROWSER_PREF_SET_OBSERVER_H_
+#endif  // CHROME_BROWSER_PREFS_PREF_SET_OBSERVER_H_

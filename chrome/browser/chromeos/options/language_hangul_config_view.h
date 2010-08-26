@@ -10,7 +10,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"

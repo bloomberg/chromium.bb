@@ -35,7 +35,7 @@
 #import "chrome/browser/cocoa/view_id_util.h"
 #import "chrome/browser/cocoa/wrench_menu_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

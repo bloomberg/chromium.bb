@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/back_forward_menu_model.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "chrome/browser/views/reload_button.h"

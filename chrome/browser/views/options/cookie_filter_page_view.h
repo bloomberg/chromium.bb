@@ -8,7 +8,7 @@
 
 #include "chrome/browser/views/options/content_filter_page_view.h"
 
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/prefs/pref_member.h"
 
 namespace views {
 class Checkbox;
