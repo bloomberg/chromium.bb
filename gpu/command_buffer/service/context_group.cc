@@ -55,14 +55,67 @@ bool ContextGroup::Initialize() {
 
   AddExtensionString("GL_CHROMIUM_map_sub");
 
-  // Check if we should allow GL_EXT_texture_compression_dxt1.
-  if (strstr(extensions, "GL_EXT_texture_compression_dxt1") ||
-      strstr(extensions, "GL_EXT_texture_compression_s3tc")) {
+  // Check if we should allow GL_EXT_texture_compression_dxt1 and
+  // GL_EXT_texture_compression_s3tc.
+  bool enable_dxt1 = false;
+  bool enable_s3tc = false;
+
+  if (strstr(extensions, "GL_EXT_texture_compression_dxt1")) {
+    enable_dxt1 = true;
+  }
+  if (strstr(extensions, "GL_EXT_texture_compression_s3tc")) {
+    enable_dxt1 = true;
+    enable_s3tc = true;
+  }
+
+  if (enable_dxt1) {
     AddExtensionString("GL_EXT_texture_compression_dxt1");
     validators_.compressed_texture_format.AddValue(
         GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
     validators_.compressed_texture_format.AddValue(
         GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
+  }
+
+  if (enable_s3tc) {
+    AddExtensionString("GL_EXT_texture_compression_s3tc");
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+  }
+
+  // Check if we should enable GL_EXT_texture_filter_anisotropic.
+  if (strstr(extensions, "GL_EXT_texture_filter_anisotropic")) {
+    AddExtensionString("GL_EXT_texture_filter_anisotropic");
+    validators_.texture_parameter.AddValue(
+        GL_TEXTURE_MAX_ANISOTROPY_EXT);
+    validators_.g_l_state.AddValue(
+        GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+  }
+
+  // Check if we should support GL_OES_packed_depth_stencil and/or
+  // GL_GOOGLE_depth_texture.
+  bool enable_depth_texture = false;
+  if (strstr(extensions, "GL_ARB_depth_texture") ||
+      strstr(extensions, "GL_OES_depth_texture")) {
+    enable_depth_texture = true;
+    AddExtensionString("GL_GOOGLE_depth_texture");
+    validators_.texture_internal_format.AddValue(GL_DEPTH_COMPONENT);
+    validators_.texture_format.AddValue(GL_DEPTH_COMPONENT);
+    validators_.pixel_type.AddValue(GL_UNSIGNED_SHORT);
+    validators_.pixel_type.AddValue(GL_UNSIGNED_INT);
+  }
+  // TODO(gman): Add depth types fo ElementsPerGroup and BytesPerElement
+
+  if (strstr(extensions, "GL_EXT_packed_depth_stencil") ||
+      strstr(extensions, "GL_OES_packed_depth_stencil")) {
+    AddExtensionString("GL_OES_packed_depth_stencil");
+    if (enable_depth_texture) {
+      validators_.texture_internal_format.AddValue(GL_DEPTH_STENCIL);
+      validators_.texture_format.AddValue(GL_DEPTH_STENCIL);
+      validators_.pixel_type.AddValue(GL_UNSIGNED_INT_24_8);
+    }
+    validators_.render_buffer_format.AddValue(GL_DEPTH24_STENCIL8);
   }
 
   bool enable_texture_format_bgra8888 = false;
@@ -148,7 +201,6 @@ bool ContextGroup::Initialize() {
     validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
     validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
     validators_.g_l_state.AddValue(GL_READ_FRAMEBUFFER_BINDING_EXT);
-    validators_.g_l_state.AddValue(GL_DRAW_FRAMEBUFFER_BINDING_EXT);
     validators_.render_buffer_parameter.AddValue(GL_MAX_SAMPLES_EXT);
     AddExtensionString("GL_EXT_framebuffer_multisample");
     AddExtensionString("GL_EXT_framebuffer_blit");
@@ -157,7 +209,6 @@ bool ContextGroup::Initialize() {
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth24
   //     GL_OES_depth32
-  //     GL_OES_packed_depth_stencil
   //     GL_OES_element_index_uint
 
   buffer_manager_.reset(new BufferManager());

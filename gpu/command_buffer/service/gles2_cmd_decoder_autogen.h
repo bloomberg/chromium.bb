@@ -367,6 +367,11 @@ error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
     SetGLError(GL_INVALID_ENUM, "glCopyTexImage2D: target GL_INVALID_ENUM");
     return error::kNoError;
   }
+  if (!validators_->texture_internal_format.IsValid(internalformat)) {
+    SetGLError(
+        GL_INVALID_ENUM, "glCopyTexImage2D: internalformat GL_INVALID_ENUM");
+    return error::kNoError;
+  }
   if (width < 0) {
     SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: width < 0");
     return error::kNoError;

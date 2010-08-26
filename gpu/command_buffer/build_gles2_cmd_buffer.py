@@ -56,7 +56,7 @@ GL_APICALL void         GL_APIENTRY glColorMask (GLboolean red, GLboolean green,
 GL_APICALL void         GL_APIENTRY glCompileShader (GLidShader shader);
 GL_APICALL void         GL_APIENTRY glCompressedTexImage2D (GLenumTextureTarget target, GLint level, GLenumCompressedTextureFormat internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
 GL_APICALL void         GL_APIENTRY glCompressedTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenumCompressedTextureFormat format, GLsizei imageSize, const void* data);
-GL_APICALL void         GL_APIENTRY glCopyTexImage2D (GLenumTextureTarget target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
+GL_APICALL void         GL_APIENTRY glCopyTexImage2D (GLenumTextureTarget target, GLint level, GLenumTextureInternalFormat internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
 GL_APICALL void         GL_APIENTRY glCopyTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL GLuint       GL_APIENTRY glCreateProgram (void);
 GL_APICALL GLuint       GL_APIENTRY glCreateShader (GLenumShaderType type);

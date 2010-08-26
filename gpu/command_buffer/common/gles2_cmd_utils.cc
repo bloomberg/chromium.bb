@@ -6,6 +6,7 @@
 // includes where appropriate.
 
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #include <GLES2/gles2_command_buffer.h>
 
 #include "../common/gles2_cmd_utils.h"
@@ -304,6 +305,7 @@ int ElementsPerGroup(int format, int type) {
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
+    case GL_UNSIGNED_INT_24_8_OES:
        return 1;
     default:
        break;
@@ -313,12 +315,13 @@ int ElementsPerGroup(int format, int type) {
     case GL_RGB:
        return 3;
     case GL_LUMINANCE_ALPHA:
-       return 2;
     case GL_RGBA:
     case GL_BGRA_EXT:
        return 4;
     case GL_ALPHA:
     case GL_LUMINANCE:
+    case GL_DEPTH_COMPONENT:
+    case GL_DEPTH_STENCIL_OES:
        return 1;
     default:
        return 0;
@@ -329,6 +332,7 @@ int ElementsPerGroup(int format, int type) {
 int BytesPerElement(int type) {
   switch (type) {
     case GL_FLOAT:
+    case GL_UNSIGNED_INT_24_8_OES:
       return 4;
     case GL_HALF_FLOAT_OES:
     case GL_UNSIGNED_SHORT:

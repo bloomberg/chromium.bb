@@ -268,6 +268,9 @@ void TextureManager::TextureInfo::SetParameter(
     case GL_TEXTURE_WRAP_T:
       wrap_t_ = param;
       break;
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT:
+      // Nothing to do for this case at the moment.
+      break;
     default:
       NOTREACHED();
       break;

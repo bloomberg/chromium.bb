@@ -82,8 +82,37 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_FALSE(group_.validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGBA_S3TC_DXT1_EXT));
+  EXPECT_FALSE(group_.validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
+  EXPECT_FALSE(group_.validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
   EXPECT_FALSE(group_.validators()->read_pixel_format.IsValid(
       GL_BGRA_EXT));
+  EXPECT_FALSE(group_.validators()->texture_parameter.IsValid(
+      GL_TEXTURE_MAX_ANISOTROPY_EXT));
+  EXPECT_FALSE(group_.validators()->g_l_state.IsValid(
+      GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+  EXPECT_FALSE(group_.validators()->frame_buffer_target.IsValid(
+      GL_READ_FRAMEBUFFER_EXT));
+  EXPECT_FALSE(group_.validators()->frame_buffer_target.IsValid(
+      GL_DRAW_FRAMEBUFFER_EXT));
+  EXPECT_FALSE(group_.validators()->g_l_state.IsValid(
+      GL_READ_FRAMEBUFFER_BINDING_EXT));
+  EXPECT_FALSE(group_.validators()->render_buffer_parameter.IsValid(
+      GL_MAX_SAMPLES_EXT));
+  EXPECT_FALSE(group_.validators()->texture_internal_format.IsValid(
+      GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(group_.validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+  EXPECT_FALSE(group_.validators()->render_buffer_format.IsValid(
+      GL_DEPTH24_STENCIL8));
+  EXPECT_FALSE(group_.validators()->texture_internal_format.IsValid(
+      GL_DEPTH_STENCIL));
+  EXPECT_FALSE(group_.validators()->texture_format.IsValid(
+      GL_DEPTH_STENCIL));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(
+      GL_UNSIGNED_INT_24_8));
 }
 
 TEST_F(ContextGroupTest, InitializeNPOTExtensionGLES) {
@@ -109,6 +138,10 @@ TEST_F(ContextGroupTest, InitializeDXTExtensionGLES2) {
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_TRUE(group_.validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGBA_S3TC_DXT1_EXT));
+  EXPECT_FALSE(group_.validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
+  EXPECT_FALSE(group_.validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
 }
 
 TEST_F(ContextGroupTest, InitializeDXTExtensionGL) {
@@ -116,10 +149,16 @@ TEST_F(ContextGroupTest, InitializeDXTExtensionGL) {
   group_.Initialize();
   EXPECT_THAT(group_.extensions(),
               HasSubstr("GL_EXT_texture_compression_dxt1"));
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_EXT_texture_compression_s3tc"));
   EXPECT_TRUE(group_.validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_TRUE(group_.validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGBA_S3TC_DXT1_EXT));
+  EXPECT_TRUE(group_.validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
+  EXPECT_TRUE(group_.validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
 }
 
 TEST_F(ContextGroupTest, InitializeEXT_texture_format_BGRA8888GLES2) {
@@ -244,11 +283,89 @@ TEST_F(ContextGroupTest, InitializeEXT_framebuffer_multisample) {
       GL_DRAW_FRAMEBUFFER_EXT));
   EXPECT_TRUE(group_.validators()->g_l_state.IsValid(
       GL_READ_FRAMEBUFFER_BINDING_EXT));
-  EXPECT_TRUE(group_.validators()->g_l_state.IsValid(
-      GL_DRAW_FRAMEBUFFER_BINDING_EXT));
   EXPECT_TRUE(group_.validators()->render_buffer_parameter.IsValid(
       GL_MAX_SAMPLES_EXT));
 }
+
+TEST_F(ContextGroupTest, InitializeEXT_texture_filter_anisotropic) {
+  SetupInitExpectations("GL_EXT_texture_filter_anisotropic");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_EXT_texture_filter_anisotropic"));
+  EXPECT_TRUE(group_.validators()->texture_parameter.IsValid(
+      GL_TEXTURE_MAX_ANISOTROPY_EXT));
+  EXPECT_TRUE(group_.validators()->g_l_state.IsValid(
+      GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+}
+
+TEST_F(ContextGroupTest, InitializeEXT_ARB_depth_texture) {
+  SetupInitExpectations("GL_ARB_depth_texture");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_GOOGLE_depth_texture"));
+  EXPECT_TRUE(group_.validators()->texture_internal_format.IsValid(
+      GL_DEPTH_COMPONENT));
+  EXPECT_TRUE(group_.validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+}
+
+TEST_F(ContextGroupTest, InitializeOES_ARB_depth_texture) {
+  SetupInitExpectations("GL_OES_depth_texture");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_GOOGLE_depth_texture"));
+  EXPECT_TRUE(group_.validators()->texture_internal_format.IsValid(
+      GL_DEPTH_COMPONENT));
+  EXPECT_TRUE(group_.validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+}
+
+TEST_F(ContextGroupTest, InitializeEXT_packed_depth_stencil) {
+  SetupInitExpectations("GL_EXT_packed_depth_stencil");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_OES_packed_depth_stencil"));
+  EXPECT_TRUE(group_.validators()->render_buffer_format.IsValid(
+      GL_DEPTH24_STENCIL8));
+  EXPECT_FALSE(group_.validators()->texture_internal_format.IsValid(
+      GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(group_.validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+}
+
+TEST_F(ContextGroupTest, InitializeOES_packed_depth_stencil) {
+  SetupInitExpectations("GL_OES_packed_depth_stencil");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_OES_packed_depth_stencil"));
+  EXPECT_TRUE(group_.validators()->render_buffer_format.IsValid(
+      GL_DEPTH24_STENCIL8));
+  EXPECT_FALSE(group_.validators()->texture_internal_format.IsValid(
+      GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(group_.validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+}
+
+TEST_F(ContextGroupTest,
+       InitializeOES_packed_depth_stencil_and_GL_ARB_depth_texture) {
+  SetupInitExpectations("GL_OES_packed_depth_stencil GL_ARB_depth_texture");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_OES_packed_depth_stencil"));
+  EXPECT_TRUE(group_.validators()->render_buffer_format.IsValid(
+      GL_DEPTH24_STENCIL8));
+  EXPECT_TRUE(group_.validators()->texture_internal_format.IsValid(
+      GL_DEPTH_STENCIL));
+  EXPECT_TRUE(group_.validators()->texture_format.IsValid(
+      GL_DEPTH_STENCIL));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(
+      GL_UNSIGNED_INT_24_8));
+}
+
 
 }  // namespace gles2
 }  // namespace gpu
