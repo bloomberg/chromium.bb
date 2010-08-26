@@ -16,7 +16,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -110,13 +109,11 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    // Don't include the WebStore component app. The WebStore launcher
-    // gets special treatment in ntp/apps.js.
-    if ((*it)->is_app() && (*it)->id() != extension_misc::kWebStoreAppId) {
-      DictionaryValue* app_info = new DictionaryValue();
-      CreateAppInfo(*it, app_info);
-      list->Append(app_info);
-    }
+     if ((*it)->is_app()) {
+       DictionaryValue* app_info = new DictionaryValue();
+       CreateAppInfo(*it, app_info);
+       list->Append(app_info);
+     }
   }
 
   dictionary.Set("apps", list);

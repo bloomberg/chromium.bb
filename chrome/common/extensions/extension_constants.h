@@ -212,9 +212,6 @@ namespace extension_misc {
 
   // The extension id of the bookmark manager.
   extern const char* kBookmarkManagerId;
-
-  // The extension id of the Web Store component application.
-  extern const char* kWebStoreAppId;
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

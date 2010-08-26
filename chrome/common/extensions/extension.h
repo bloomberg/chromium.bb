@@ -346,13 +346,10 @@ class Extension {
   const std::string omnibox_keyword() const { return omnibox_keyword_; }
 
   bool is_app() const { return is_app_; }
-  ExtensionExtent& web_extent() { return web_extent_; }
+  const ExtensionExtent& web_extent() const { return web_extent_; }
   const ExtensionExtent& browse_extent() const { return browse_extent_; }
   const std::string& launch_local_path() const { return launch_local_path_; }
   const std::string& launch_web_url() const { return launch_web_url_; }
-  void set_launch_web_url(const std::string& launch_web_url) {
-    launch_web_url_ = launch_web_url;
-  }
   LaunchContainer launch_container() const { return launch_container_; }
   bool launch_fullscreen() const { return launch_fullscreen_; }
   int launch_width() const { return launch_width_; }
