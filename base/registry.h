@@ -24,7 +24,7 @@ class RegKey {
   RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access);
   ~RegKey();
 
-  bool Create(HKEY rootkey, const wchar_t* subkey, REGSAM access = KEY_READ);
+  bool Create(HKEY rootkey, const wchar_t* subkey, REGSAM access);
 
   bool CreateWithDisposition(HKEY rootkey, const wchar_t* subkey,
                              DWORD* disposition, REGSAM access);
