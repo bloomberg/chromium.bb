@@ -59,3 +59,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
+}

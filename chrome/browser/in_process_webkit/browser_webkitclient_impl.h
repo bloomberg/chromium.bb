@@ -45,6 +45,10 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
+  virtual void createIDBKeysFromSerializedValuesAndKeyPath(
+      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+      const WebKit::WebString& keyPath,
+      WebKit::WebVector<WebKit::WebIDBKey>& keys);
 
  private:
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
