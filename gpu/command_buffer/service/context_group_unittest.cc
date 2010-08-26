@@ -113,6 +113,8 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
       GL_DEPTH_STENCIL));
   EXPECT_FALSE(group_.validators()->pixel_type.IsValid(
       GL_UNSIGNED_INT_24_8));
+  EXPECT_FALSE(group_.validators()->render_buffer_format.IsValid(
+      GL_DEPTH_COMPONENT24));
 }
 
 TEST_F(ContextGroupTest, InitializeNPOTExtensionGLES) {
@@ -366,6 +368,13 @@ TEST_F(ContextGroupTest,
       GL_UNSIGNED_INT_24_8));
 }
 
+TEST_F(ContextGroupTest, InitializeOES_depth24) {
+  SetupInitExpectations("GL_OES_depth24");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_OES_depth24"));
+  EXPECT_TRUE(group_.validators()->render_buffer_format.IsValid(
+      GL_DEPTH_COMPONENT24));
+}
 
 }  // namespace gles2
 }  // namespace gpu

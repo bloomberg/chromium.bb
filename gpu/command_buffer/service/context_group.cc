@@ -206,8 +206,13 @@ bool ContextGroup::Initialize() {
     AddExtensionString("GL_EXT_framebuffer_blit");
   }
 
+  if (strstr(extensions, "GL_OES_depth24") ||
+      gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+    AddExtensionString("GL_OES_depth24");
+    validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
+  }
+
   // TODO(gman): Add support for these extensions.
-  //     GL_OES_depth24
   //     GL_OES_depth32
   //     GL_OES_element_index_uint
 
