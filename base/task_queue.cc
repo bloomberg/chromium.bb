@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/task_queue.h"
+#include "base/task_queue.h"
 
+#include "base/logging.h"
 #include "base/stl_util-inl.h"
 
 TaskQueue::TaskQueue() {
@@ -32,6 +33,8 @@ void TaskQueue::Run() {
 }
 
 void TaskQueue::Push(Task* task) {
+  DCHECK(task);
+
   // Add the task to the back of the queue.
   queue_.push_back(task);
 }
@@ -41,6 +44,6 @@ void TaskQueue::Clear() {
   STLDeleteElements(&queue_);
 }
 
-bool TaskQueue::Empty() const {
+bool TaskQueue::IsEmpty() const {
   return queue_.empty();
 }

@@ -112,8 +112,6 @@
           'common/sandbox_policy.h',
           'common/serialized_script_value.cc',
           'common/serialized_script_value.h',
-          'common/task_queue.cc',
-          'common/task_queue.h',
           'common/time_format.cc',
           'common/time_format.h',
           'common/win_safe_util.cc',

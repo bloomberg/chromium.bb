@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_TASK_QUEUE_H__
-#define CHROME_COMMON_TASK_QUEUE_H__
+#ifndef BASE_TASK_QUEUE_H_
+#define BASE_TASK_QUEUE_H_
 #pragma once
 
 #include <deque>
@@ -33,11 +33,11 @@ class TaskQueue : public Task {
   void Clear();
 
   // Returns true if this queue contains no tasks.
-  bool Empty() const;
+  bool IsEmpty() const;
 
  private:
    // The list of tasks we are waiting to run.
    std::deque<Task*> queue_;
 };
 
-#endif  // CHROME_COMMON_TASK_QUEUE_H__
+#endif  // BASE_TASK_QUEUE_H_
