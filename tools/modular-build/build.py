@@ -130,6 +130,8 @@ def GetTargets(src):
   # order to get full-gcc to build against nacl-glibc.
   arch = "nacl"
   common_gcc_options = [
+      "--disable-multilib", # See note for newlib.
+      "--disable-libgomp",
       "--disable-libmudflap",
       "--disable-decimal-float",
       "--disable-libssp",
@@ -166,8 +168,8 @@ def GetTargets(src):
           "-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
       # The default make target doesn't work - it gives libiberty
       # configure failures.  Need to do "all-gcc" instead.
-      make_cmd=["make", "all-gcc"],
-      install_cmd=["make", "install-gcc"])
+      make_cmd=["make", "all-gcc", "all-target-libgcc"],
+      install_cmd=["make", "install-gcc", "install-target-libgcc"])
   AddAutoconfModule(
       "newlib", "newlib2", deps=["binutils", "pre-gcc"] + gcc_libs,
       configure_opts=[
@@ -204,11 +206,9 @@ def GetTargets(src):
       "full-gcc", "gcc",
       deps=["binutils", "newlib", "libnacl_headers", "nc_threads"] + gcc_libs,
       configure_opts=common_gcc_options + [
-          "--disable-multilib", # See note for newlib.
           "--with-newlib",
           "--enable-threads=nacl",
           "--enable-tls",
-          "--disable-libgomp",
           "--enable-languages=c,c++"],
       configure_env=[
           "CC=gcc",
@@ -258,13 +258,14 @@ int main() {
       "readelf", os.path.join(top_dir, "install", "readelf"),
       treemappers.CreateAlias, [], args=["readelf", "%s-readelf" % arch]))
 
-  # libnacl_nocpp and newlib are dependencies for the "forced unwind
-  # support" autoconf check.
-  # TODO(mseaborn): Get glibc to build without having to build newlib first.
+  modules["dummy_libs"] = btarget.TreeMapper(
+      "dummy_libs",
+      os.path.join(top_dir, "install", "dummy_libs"),
+      treemappers.DummyLibs, [], args=[arch])
+
   AddAutoconfModule(
       "glibc", "glibc",
-      deps=["binutils", "full-gcc", "libnacl_nocpp", "newlib", "readelf"] +
-          gcc_libs,
+      deps=["binutils", "pre-gcc", "dummy_libs", "readelf"] + gcc_libs,
       explicitly_passed_deps=[src["linux_headers"]],
       configure_opts=[
           "--prefix=/%s" % arch,
@@ -275,6 +276,11 @@ int main() {
           ("--with-headers=%s" %
            os.path.join(src["linux_headers"].dest_path, "include")),
           "--enable-kernel=2.2.0"],
+      # We need these settings because a lack of a crt1.o in the build
+      # environment causes the "forced unwind support" autoconf check
+      # to fail.  The alternative is to build against full-gcc,
+      # libnacl_nocpp and newlib.
+      configure_env=["libc_cv_forced_unwind=yes", "libc_cv_c_cleanup=yes"],
       use_install_root=True)
 
   modules["wrappers"] = btarget.SourceTarget(
@@ -299,10 +305,6 @@ int main() {
       "installed_nacl_headers",
       os.path.join(top_dir, "install", "nacl_headers"),
       treemappers.SubsetNaClHeaders, [modules["nacl-headers"]], args=[arch])
-  modules["dummy_libs"] = btarget.TreeMapper(
-      "dummy_libs",
-      os.path.join(top_dir, "install", "dummy_libs"),
-      treemappers.DummyLibs, [], args=[arch])
 
   AddAutoconfModule(
       "full-gcc-glibc", "gcc",
