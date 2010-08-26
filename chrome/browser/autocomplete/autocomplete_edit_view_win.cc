@@ -691,7 +691,8 @@ void AutocompleteEditViewWin::UpdatePopup() {
   //   * The user is trying to compose something in an IME
   CHARRANGE sel;
   GetSel(sel);
-  model_->StartAutocomplete((sel.cpMax < GetTextLength()) || ime_composing);
+  model_->StartAutocomplete(sel.cpMax != sel.cpMin,
+                            (sel.cpMax < GetTextLength()) || ime_composing);
 }
 
 void AutocompleteEditViewWin::ClosePopup() {

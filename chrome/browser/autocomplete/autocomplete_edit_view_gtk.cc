@@ -479,7 +479,8 @@ void AutocompleteEditViewGtk::UpdatePopup() {
   // Don't inline autocomplete when the caret/selection isn't at the end of
   // the text.
   CharRange sel = GetSelection();
-  model_->StartAutocomplete(std::max(sel.cp_max, sel.cp_min) < GetTextLength());
+  model_->StartAutocomplete(sel.cp_min != sel.cp_max,
+                            std::max(sel.cp_max, sel.cp_min) < GetTextLength());
 }
 
 void AutocompleteEditViewGtk::ClosePopup() {

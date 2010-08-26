@@ -281,9 +281,11 @@ void AutocompleteEditModel::Revert() {
 }
 
 void AutocompleteEditModel::StartAutocomplete(
+    bool has_selected_text,
     bool prevent_inline_autocomplete) const {
   popup_->StartAutocomplete(user_text_, GetDesiredTLD(),
       prevent_inline_autocomplete || just_deleted_text_ ||
+      (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE), keyword_ui_state_ == KEYWORD);
 }
 

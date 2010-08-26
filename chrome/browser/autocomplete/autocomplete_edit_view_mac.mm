@@ -407,7 +407,8 @@ void AutocompleteEditViewMac::UpdatePopup() {
       prevent_inline_autocomplete = true;
   }
 
-  model_->StartAutocomplete(prevent_inline_autocomplete);
+  model_->StartAutocomplete([editor selectedRange].length != 0,
+                            prevent_inline_autocomplete);
 }
 
 void AutocompleteEditViewMac::ClosePopup() {

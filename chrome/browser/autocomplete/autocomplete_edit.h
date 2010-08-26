@@ -179,7 +179,8 @@ class AutocompleteEditModel : public NotificationObserver {
   void Revert();
 
   // Directs the popup to start autocomplete.
-  void StartAutocomplete(bool prevent_inline_autocomplete) const;
+  void StartAutocomplete(bool has_selected_text,
+                         bool prevent_inline_autocomplete) const;
 
   // Determines whether the user can "paste and go", given the specified text.
   // This also updates the internal paste-and-go-related state variables as
