@@ -213,6 +213,11 @@ class GrabWidget : public views::WidgetGtk {
 
   virtual void Show() {
     views::WidgetGtk::Show();
+    // Now steal all inputs.
+    TryGrabAllInputs();
+  }
+
+  void ClearGrab() {
     GtkWidget* current_grab_window;
     // Grab gtk input first so that the menu holding grab will close itself.
     gtk_grab_add(window_contents());
@@ -224,9 +229,6 @@ class GrabWidget : public views::WidgetGtk {
     // until it's empty.
     while ((current_grab_window = gtk_grab_get_current()) != NULL)
       gtk_grab_remove(current_grab_window);
-
-    // Now steal all inputs.
-    TryGrabAllInputs();
   }
 
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
@@ -263,6 +265,8 @@ class GrabWidget : public views::WidgetGtk {
 };
 
 void GrabWidget::TryGrabAllInputs() {
+  ClearGrab();
+
   if (kbd_grab_status_ != GDK_GRAB_SUCCESS) {
     kbd_grab_status_ = gdk_keyboard_grab(window_contents()->window, FALSE,
                                          GDK_CURRENT_TIME);
