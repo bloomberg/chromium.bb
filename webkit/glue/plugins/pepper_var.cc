@@ -503,11 +503,18 @@ void Release(PP_Var var) {
 }
 
 PP_Var VarFromUtf8(const char* data, uint32_t len) {
-  String* str = new String(data, len);
-  str->AddRef();  // This is for the caller, we return w/ a refcount of 1.
+  scoped_refptr<String> str = new String(data, len);
+
+  if (!str || !IsStringUTF8(str->value())) {
+    return PP_MakeNull();
+  }
+
   PP_Var ret;
   ret.type = PP_VARTYPE_STRING;
-  ret.value.as_id = reinterpret_cast<intptr_t>(str);
+
+  // The caller takes ownership now.
+  ret.value.as_id = reinterpret_cast<intptr_t>(str.release());
+
   return ret;
 }
 
