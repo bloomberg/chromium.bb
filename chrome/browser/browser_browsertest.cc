@@ -657,27 +657,18 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
   Profile* profile_;
 };
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 
-#define MAYBE_OpenTab OpenTab
-#define MAYBE_OpenPanel OpenPanel
-#define MAYBE_OpenWindow OpenWindow
-#define MAYBE_WindowBeforeTab WindowBeforeTab
-#define MAYBE_PanelBeforeTab PanelBeforeTab
-#define MAYBE_TabInFocusedWindow TabInFocusedWindow
+// Tests fail on Chrome OS:  http://crbug.com/43061
+#define MAYBE_OpenTab DISABLED_OpenTab
+#define MAYBE_OpenPanel DISABLED_OpenPanel
+#define MAYBE_PanelBeforeTab DISABLED_PanelBeforeTab
 
 #else
 
-// Crashes on mac involving app panels: http://crbug.com/42865
-
-// Tests fail on Chrome OS:  http://crbug.com/43061
-
-#define MAYBE_OpenTab DISABLED_OpenTab
-#define MAYBE_OpenPanel DISABLED_OpenPanel
-#define MAYBE_OpenWindow DISABLED_OpenWindow
-#define MAYBE_WindowBeforeTab DISABLED_WindowBeforeTab
-#define MAYBE_PanelBeforeTab DISABLED_PanelBeforeTab
-#define MAYBE_TabInFocusedWindow DISABLED_TabInFocusedWindow
+#define MAYBE_OpenTab OpenTab
+#define MAYBE_OpenPanel OpenPanel
+#define MAYBE_PanelBeforeTab PanelBeforeTab
 
 #endif
 
@@ -689,7 +680,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   ASSERT_EQ(NULL, Browser::FindAppTab(browser(), extension_app_));
 
   // Open a tab with the app.
-  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_,
+  TabContents* tab = Browser::OpenApplicationTab(profile_,
+                                                 extension_app_,
                                                  NULL);
   ASSERT_TRUE(WaitForTab(tab));
   ASSERT_EQ(2, browser()->tab_count());
@@ -749,64 +741,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
 
   // No new tab should have been created in the initial browser.
   ASSERT_EQ(1, browser()->tab_count());
-}
-
-// Test that launching an app refocuses a window running the app.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenWindow) {
-  SetUpExtensionApp();
-
-  ASSERT_EQ(1, browser()->tab_count());
-  ASSERT_EQ(NULL, Browser::FindAppWindowOrPanel(profile_, extension_app_));
-
-  // Open a window with the app.
-  Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_WINDOW, GURL(), NULL);
-  Browser* app_window = BrowserList::GetLastActive();
-  ASSERT_TRUE(app_window);
-  ASSERT_NE(app_window, browser()) << "New browser should have opened.";
-
-  // Focus the initial browser.
-  browser()->window()->Show();
-  ASSERT_EQ(browser(), BrowserList::GetLastActive());
-
-  // Open the app.
-  Browser::OpenApplication(profile_, extension_app_->id());
-
-  // Focus should move to the window.
-  ASSERT_EQ(app_window, BrowserList::GetLastActive());
-  ASSERT_EQ(app_window,
-            Browser::FindAppWindowOrPanel(profile_, extension_app_));
-  // No new tab should have been created in the initial browser.
-  ASSERT_EQ(1, browser()->tab_count());
-}
-
-// Test that if an app is opened while running in a window and a tab,
-// the window is focused.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_WindowBeforeTab) {
-  SetUpExtensionApp();
-
-  ASSERT_EQ(1, browser()->tab_count());
-
-  // Open a tab with the app.
-  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
-  ASSERT_EQ(2, browser()->tab_count());
-  int app_tab_index = browser()->selected_index();
-  ASSERT_EQ(0, app_tab_index) << "App tab should be the left most tab.";
-
-  // Open a window with the app.
-  Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_WINDOW, GURL(), NULL);
-  Browser* app_window = BrowserList::GetLastActive();
-  ASSERT_TRUE(app_window);
-  ASSERT_NE(app_window, browser()) << "New browser should have opened.";
-
-  // Focus the initial browser.
-  browser()->window()->Show();
-
-  // Open the app.  Focus should move to the window.
-  Browser::OpenApplication(profile_, extension_app_->id());
-  ASSERT_EQ(app_window, BrowserList::GetLastActive());
 }
 
 // Test that if an app is opened while running in a panel and a tab,
