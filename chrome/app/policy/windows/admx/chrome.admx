@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitions revision="1.0" schemaVersion="1.0">
   <policyNamespaces>
-    <target prefix="fullarmor" namespace="FullArmor.9a299da5-c137-4961-be67-d0354b8b3037" />
+    <target prefix="fullarmor" namespace="FullArmor.8081fe0d-e6b1-4b41-a574-7f4b644f3c33" />
     <using prefix="windows" namespace="Microsoft.Policies.Windows" />
   </policyNamespaces>
-  <supersededAdm fileName="D:\src\chromium\src\chrome\app\policy\windows\adm\en-US\chrome.adm" />
+  <supersededAdm fileName="chrome.adm" />
   <resources minRequiredRevision="1.0" />
   <supportedOn>
     <definitions>
@@ -36,6 +36,30 @@
           </item>
         </enum>
         <text id="HomepageLocation" valueName="HomepageLocation" />
+      </elements>
+    </policy>
+    <policy name="RestoreOnStartup" class="Machine" displayName="$(string.RestoreOnStartup)" explainText="$(string.RestoreOnStartup_Explain)" presentation="$(presentation.RestoreOnStartup)" key="Software\Policies\Google\Chrome\RestoreOnStartupURLs">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <elements>
+        <enum id="RestoreOnStartupMode" valueName="RestoreOnStartup">
+          <item displayName="$(string.RestoreOnStartupIsNone)">
+            <value>
+              <decimal value="0" />
+            </value>
+          </item>
+          <item displayName="$(string.RestoreOnStartupIsLastSession)">
+            <value>
+              <decimal value="1" />
+            </value>
+          </item>
+          <item displayName="$(string.RestoreOnStartupIsURLs)">
+            <value>
+              <decimal value="4" />
+            </value>
+          </item>
+        </enum>
+        <list id="RestoreOnStartupURLs" valuePrefix="" />
       </elements>
     </policy>
     <policy name="ApplicationLocale" class="Machine" displayName="$(string.ApplicationLocale)" explainText="$(string.ApplicationLocale_Explain)" presentation="$(presentation.ApplicationLocale)" key="Software\Policies\Google\Chrome" valueName="ApplicationLocale">

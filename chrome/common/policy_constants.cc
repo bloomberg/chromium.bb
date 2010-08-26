@@ -18,6 +18,8 @@ namespace key {
 
 const char kHomepageLocation[] = "HomepageLocation";
 const char kHomepageIsNewTabPage[] = "HomepageIsNewTabPage";
+const char kRestoreOnStartup[] = "RestoreOnStartup";
+const char kURLsToRestoreOnStartup[] = "RestoreOnStartupURLs";
 const char kProxyServerMode[] = "ProxyServerMode";
 const char kProxyServer[] = "ProxyServer";
 const char kProxyPacUrl[] = "ProxyPacUrl";

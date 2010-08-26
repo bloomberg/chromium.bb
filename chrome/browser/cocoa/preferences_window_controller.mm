@@ -421,6 +421,8 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 @synthesize showHomeButtonEnabled = showHomeButtonEnabled_;
 @synthesize autoFillSettingsButtonEnabled = autoFillSettingsButtonEnabled_;
 @synthesize proxiesConfigureButtonEnabled = proxiesConfigureButtonEnabled_;
+@synthesize restoreButtonsEnabled = restoreButtonsEnabled_;
+@synthesize restoreURLsEnabled = restoreURLsEnabled_;
 
 - (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage {
   DCHECK(profile);
@@ -498,8 +500,10 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
         PrefSetObserver::CreateProxyPrefSetObserver(prefs_, observer_.get()));
     [self setProxiesConfigureButtonEnabled:!proxyPrefs_->IsManaged()];
 
-    // Initialize show home button checkbox enabled state.
+    // Initialize the enabled state of the show home button and
+    // restore on startup elements.
     [self setShowHomeButtonEnabled:!showHomeButton_.IsManaged()];
+    [self setEnabledStateOfRestoreOnStartup];
   }
   return self;
 }
@@ -830,7 +834,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   if ([key isEqualToString:@"isHomepageURLEnabled"]) {
     paths = [paths setByAddingObject:@"newTabPageIsHomePageIndex"];
     paths = [paths setByAddingObject:@"homepageURL"];
-  } else if ([key isEqualToString:@"enableRestoreButtons"]) {
+  } else if ([key isEqualToString:@"restoreURLsEnabled"]) {
     paths = [paths setByAddingObject:@"restoreOnStartupIndex"];
   } else if ([key isEqualToString:@"isHomepageChoiceEnabled"]) {
     paths = [paths setByAddingObject:@"newTabPageIsHomePageIndex"];
@@ -891,10 +895,12 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     const SessionStartupPref startupPref =
         SessionStartupPref::GetStartupPref(prefs_);
     [self setRestoreOnStartupIndex:startupPref.type];
+    [self setEnabledStateOfRestoreOnStartup];
   }
 
   if (*prefName == prefs::kURLsToRestoreOnStartup) {
     [customPagesSource_ reloadURLs];
+    [self setEnabledStateOfRestoreOnStartup];
   }
 
   if (*prefName == prefs::kHomePageIsNewTabPage) {
@@ -950,10 +956,13 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   [self saveSessionStartupWithType:startupType];
 }
 
-// Returns whether or not the +/-/Current buttons should be enabled, based on
-// the current pref value for the startup urls.
-- (BOOL)enableRestoreButtons {
-  return [self restoreOnStartupIndex] == SessionStartupPref::URLS;
+// Enables or disables the restoreOnStartup elements
+- (void) setEnabledStateOfRestoreOnStartup {
+  const SessionStartupPref startupPref =
+      SessionStartupPref::GetStartupPref(prefs_);
+  [self setRestoreButtonsEnabled:!SessionStartupPref::TypeIsManaged(prefs_)];
+  [self setRestoreURLsEnabled:!SessionStartupPref::URLsAreManaged(prefs_) &&
+      [self restoreOnStartupIndex] == SessionStartupPref::URLS];
 }
 
 // Getter for the |customPagesSource| property for bindings.

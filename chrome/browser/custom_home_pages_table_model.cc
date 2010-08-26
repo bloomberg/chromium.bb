@@ -57,6 +57,8 @@ void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
   entries_.resize(urls.size());
   for (size_t i = 0; i < urls.size(); ++i) {
     entries_[i].url = urls[i];
+    entries_[i].title.erase();
+    entries_[i].icon.reset();
     LoadTitleAndFavIcon(&(entries_[i]));
   }
   // Complete change, so tell the view to just rebuild itself.

@@ -19,6 +19,17 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
       ConfigurationPolicyStore::PolicyType type,
       const char* policy_value);
 
+  // The following three methods test a policy which controls a preference
+  // that is a list of strings.
+  // Checks that by default, it's an empty list.
+  void TestListPolicyGetDefault(const char* pref_name);
+  // Checks that values can be set.
+  void TestListPolicySetValue(const char* pref_name,
+                              ConfigurationPolicyStore::PolicyType type);
+  // A wrapper that calls the above two methods.
+  void TestListPolicy(const char* pref_name,
+                      ConfigurationPolicyStore::PolicyType type);
+
   // The following three methods test a policy which controls a string
   // preference.
   // Checks that by default, it's an empty string.
@@ -58,6 +69,42 @@ void ConfigurationPolicyPrefStoreTest::ApplyStringPolicyValue(
     ConfigurationPolicyStore::PolicyType type,
     const char* policy_value) {
   store->Apply(type, Value::CreateStringValue(policy_value));
+}
+
+void ConfigurationPolicyPrefStoreTest::TestListPolicyGetDefault(
+    const char* pref_name) {
+  ConfigurationPolicyPrefStore store(NULL, NULL);
+  ListValue* list = NULL;
+  EXPECT_FALSE(store.prefs()->GetList(pref_name, &list));
+}
+
+void ConfigurationPolicyPrefStoreTest::TestListPolicySetValue(
+    const char* pref_name, ConfigurationPolicyStore::PolicyType type) {
+  ConfigurationPolicyPrefStore store(NULL, NULL);
+  ListValue* in_value = new ListValue();
+  in_value->Append(Value::CreateStringValue("test1"));
+  in_value->Append(Value::CreateStringValue("test2,"));
+  store.Apply(type, in_value);
+  ListValue* list = NULL;
+  EXPECT_TRUE(store.prefs()->GetList(pref_name, &list));
+  ListValue::const_iterator current(list->begin());
+  ListValue::const_iterator end(list->end());
+  ASSERT_TRUE(current != end);
+  std::string value;
+  (*current)->GetAsString(&value);
+  EXPECT_EQ("test1", value);
+  ++current;
+  ASSERT_TRUE(current != end);
+  (*current)->GetAsString(&value);
+  EXPECT_EQ("test2,", value);
+  ++current;
+  EXPECT_TRUE(current == end);
+}
+
+void ConfigurationPolicyPrefStoreTest::TestListPolicy(
+    const char* pref_name, ConfigurationPolicyStore::PolicyType type) {
+  TestListPolicyGetDefault(pref_name);
+  TestListPolicySetValue(pref_name, type);
 }
 
 void ConfigurationPolicyPrefStoreTest::TestStringPolicyGetDefault(
@@ -145,6 +192,13 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingHomePageDefault) {
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyHomepageIsNewTabPage) {
   TestBooleanPolicy(prefs::kHomePageIsNewTabPage,
       ConfigurationPolicyPrefStore::kPolicyHomepageIsNewTabPage);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyRestoreOnStartup) {
+  TestIntegerPolicy(prefs::kRestoreOnStartup,
+      ConfigurationPolicyPrefStore::kPolicyRestoreOnStartup);
+  TestListPolicy(prefs::kURLsToRestoreOnStartup,
+      ConfigurationPolicyPrefStore::kPolicyURLsToRestoreOnStartup);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyAlternateErrorPagesEnabled) {

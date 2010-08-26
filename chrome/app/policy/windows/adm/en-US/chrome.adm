@@ -33,6 +33,27 @@ CLASS MACHINE
            END PART
        END POLICY
 
+       POLICY !!RestoreOnStartup
+           #if version >= 4
+             SUPPORTED !!SUPPORTED_WINXPSP2
+           #endif
+           EXPLAIN !!RestoreOnStartup_Explain
+
+           PART !!RestoreOnStartupMode DROPDOWNLIST
+            VALUENAME "RestoreOnStartup"
+            ITEMLIST
+              NAME !!RestoreOnStartupIsNone VALUE NUMERIC 0
+              NAME !!RestoreOnStartupIsLastSession VALUE NUMERIC 1
+              NAME !!RestoreOnStartupIsURLs VALUE NUMERIC 4
+            END ITEMLIST
+           END PART
+
+           KEYNAME "Software\Policies\Google\Chrome\RestoreOnStartupURLs"
+           PART !!RestoreOnStartupURLs          LISTBOX
+              VALUEPREFIX ""
+           END PART
+       END POLICY
+
        POLICY !!ApplicationLocale
            #if version >= 4
              SUPPORTED !!SUPPORTED_WINXPSP2
@@ -211,7 +232,7 @@ CLASS MACHINE
 SUPPORTED_WINXPSP2="At least Microsoft Windows XP SP2"
 google="Google"
 googlechrome="Google Chrome"
-ApplicationLocale="Configures the application locale"
+ApplicationLocale="Configure the application locale"
 ApplicationLocale_Explain="Configures the application locale in Google Chrome and prevents users from changing the locale.\n\n\
 If you enable this setting, Google Chrome uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.\n\n\
 If this setting is disabled or not configured, Google Chrome uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'."
@@ -225,6 +246,16 @@ HomepageMode="Homepage type:"
 HomepageIsLocationURL="Always use homepage URL as homepage"
 HomepageIsNewTabPage="Always use New Tab Page as homepage"
 HomepageLocation="Homepage URL:"
+RestoreOnStartup="Configure the pages to be restored on startup"
+RestoreOnStartup_Explain="Configures the pages that will be automatically opened when Chrome starts.\n\n\
+RestoreOnStartup can be set to None, Last Session, or a list of URLs you specify.\n\n\
+If you specify the None or Last Session as the RestoreOnStartup, the list of URLs is ignored.\n\n\
+If you enable this setting, users cannot change their RestoreOnStartup settings in Google Chrome."
+RestoreOnStartupMode="At startup,"
+RestoreOnStartupIsNone="open the home page"
+RestoreOnStartupIsLastSession="restore the last opened pages"
+RestoreOnStartupIsURLs="open specific URLs"
+RestoreOnStartupURLs="URLs to be opened:"
 Proxy="Configure proxy server"
 Proxy_Explain="Allows you to specify the proxy server used by Google Chrome and prevents users from changing proxy settings.\n\n\
 If you choose to never use a proxy server and always connect directly, \

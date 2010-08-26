@@ -61,19 +61,23 @@ void SessionStartupPref::SetStartupPref(
 void SessionStartupPref::SetStartupPref(PrefService* prefs,
                                         const SessionStartupPref& pref) {
   DCHECK(prefs);
-  prefs->SetInteger(prefs::kRestoreOnStartup, TypeToPrefValue(pref.type));
 
-  // Always save the URLs, that way the UI can remain consistent even if the
-  // user changes the startup type pref.
-  // Ownership of the ListValue retains with the pref service.
-  ScopedPrefUpdate update(prefs, prefs::kURLsToRestoreOnStartup);
-  ListValue* url_pref_list =
-      prefs->GetMutableList(prefs::kURLsToRestoreOnStartup);
-  DCHECK(url_pref_list);
-  url_pref_list->Clear();
-  for (size_t i = 0; i < pref.urls.size(); ++i) {
-    url_pref_list->Set(static_cast<int>(i),
-                       new StringValue(pref.urls[i].spec()));
+  if (!SessionStartupPref::TypeIsManaged(prefs))
+    prefs->SetInteger(prefs::kRestoreOnStartup, TypeToPrefValue(pref.type));
+
+  if (!SessionStartupPref::URLsAreManaged(prefs)) {
+    // Always save the URLs, that way the UI can remain consistent even if the
+    // user changes the startup type pref.
+    // Ownership of the ListValue retains with the pref service.
+    ScopedPrefUpdate update(prefs, prefs::kURLsToRestoreOnStartup);
+    ListValue* url_pref_list =
+        prefs->GetMutableList(prefs::kURLsToRestoreOnStartup);
+    DCHECK(url_pref_list);
+    url_pref_list->Clear();
+    for (size_t i = 0; i < pref.urls.size(); ++i) {
+      url_pref_list->Set(static_cast<int>(i),
+                         new StringValue(pref.urls[i].spec()));
+    }
   }
 }
 
@@ -102,6 +106,24 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
         pref.urls.push_back(GURL(url_text));
     }
   }
-
   return pref;
 }
+
+// static
+bool SessionStartupPref::TypeIsManaged(PrefService* prefs) {
+  DCHECK(prefs);
+  const PrefService::Preference* pref_restore =
+      prefs->FindPreference(prefs::kRestoreOnStartup);
+  DCHECK(pref_restore);
+  return pref_restore->IsManaged();
+}
+
+// static
+bool SessionStartupPref::URLsAreManaged(PrefService* prefs) {
+  DCHECK(prefs);
+  const PrefService::Preference* pref_urls =
+      prefs->FindPreference(prefs::kURLsToRestoreOnStartup);
+  DCHECK(pref_urls);
+  return pref_urls->IsManaged();
+}
+

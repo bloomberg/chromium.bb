@@ -58,31 +58,29 @@ ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin() {
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
-    const string16& name, int index, string16* result) {
+    const string16& name, string16* result) {
+  string16 path = string16(policy::kRegistrySubKey);
+  RegKey policy_key;
+  // First try the global policy.
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str())) {
+    if (ReadRegistryStringValue(&policy_key, name, result))
+      return true;
+    policy_key.Close();
+  }
+  // Fall back on user-specific policy.
+  if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str()))
+    return false;
+  return ReadRegistryStringValue(&policy_key, name, result);
+}
+
+bool ConfigurationPolicyProviderWin::ReadRegistryStringValue(
+    RegKey* key, const string16& name, string16* result) {
   DWORD value_size = 0;
   DWORD key_type = 0;
   scoped_array<uint8> buffer;
-  RegKey policy_key;
-  string16 location = string16(policy::kRegistrySubKey);
-  string16 value_name = name;
 
-  if (index > 0) {
-    // This is a list value, treat |name| as a subkey.
-    location += ASCIIToUTF16("\\") + name;
-    value_name = base::IntToString16(index);
-  }
-
-  // First try the global policy.
-  if (!policy_key.Open(HKEY_LOCAL_MACHINE, location.c_str()) ||
-      !policy_key.ReadValue(value_name.c_str(), 0, &value_size, &key_type)) {
-    policy_key.Close();
-    // Fall back on user-specific policy.
-    if (!policy_key.Open(HKEY_CURRENT_USER, location.c_str()) ||
-        !policy_key.ReadValue(value_name.c_str(), 0, &value_size, &key_type)) {
-      return false;
-    }
-  }
-
+  if (!key->ReadValue(name.c_str(), 0, &value_size, &key_type))
+    return false;
   if (key_type != REG_SZ)
     return false;
 
@@ -92,18 +90,28 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
   // the 0-termination.
   buffer.reset(new uint8[value_size + 2]);
   memset(buffer.get(), 0, value_size + 2);
-  policy_key.ReadValue(value_name.c_str(), buffer.get(), &value_size);
+  key->ReadValue(name.c_str(), buffer.get(), &value_size);
   result->assign(reinterpret_cast<const wchar_t*>(buffer.get()));
   return true;
 }
 
-
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyStringList(
     const string16& key, ListValue* result) {
-  int index = 0;
+  string16 path = string16(policy::kRegistrySubKey);
+  path += ASCIIToUTF16("\\") + key;
+  RegKey policy_key;
+  if (!policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str())) {
+    policy_key.Close();
+    // Fall back on user-specific policy.
+    if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str()))
+      return false;
+  }
   string16 policy_string;
-  while (GetRegistryPolicyString(key, ++index,  &policy_string))
+  int index = 0;
+  while (ReadRegistryStringValue(&policy_key, base::IntToString16(++index),
+                                 &policy_string)) {
     result->Append(Value::CreateStringValue(policy_string));
+  }
   return true;
 }
 
@@ -151,7 +159,7 @@ bool ConfigurationPolicyProviderWin::Provide(
     switch (current->value_type) {
       case Value::TYPE_STRING: {
         std::wstring string_value;
-        if (GetRegistryPolicyString(name.c_str(), -1, &string_value)) {
+        if (GetRegistryPolicyString(name.c_str(), &string_value)) {
           store->Apply(current->policy_type,
                        Value::CreateStringValue(string_value));
         }

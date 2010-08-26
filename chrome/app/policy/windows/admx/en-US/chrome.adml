@@ -7,7 +7,7 @@
       <string id="SUPPORTED_WINXPSP2">At least Microsoft Windows XP SP2</string>
       <string id="google">Google</string>
       <string id="googlechrome">Google Chrome</string>
-      <string id="ApplicationLocale">Configures the application locale</string>
+      <string id="ApplicationLocale">Configure the application locale</string>
       <string id="ApplicationLocale_Explain">Configures the application locale in Google Chrome and prevents users from changing the locale.
 
 If you enable this setting, Google Chrome uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
@@ -26,6 +26,19 @@ If you enable this setting, users cannot change their homepage settings in Googl
       <string id="HomepageIsLocationURL">Always use homepage URL as homepage</string>
       <string id="HomepageIsNewTabPage">Always use New Tab Page as homepage</string>
       <string id="HomepageLocation">Homepage URL:</string>
+      <string id="RestoreOnStartup">Configure the pages to be restored on startup</string>
+      <string id="RestoreOnStartup_Explain">Configures the pages that will be automatically opened when Chrome starts.
+
+RestoreOnStartup can be set to None, Last Session, or a list of URLs you specify.
+
+If you specify the None or Last Session as the RestoreOnStartup, the list of URLs is ignored.
+
+If you enable this setting, users cannot change their RestoreOnStartup settings in Google Chrome.</string>
+      <string id="RestoreOnStartupMode">At startup,</string>
+      <string id="RestoreOnStartupIsNone">open the home page</string>
+      <string id="RestoreOnStartupIsLastSession">restore the last opened pages</string>
+      <string id="RestoreOnStartupIsURLs">open specific URLs</string>
+      <string id="RestoreOnStartupURLs">URLs to be opened:</string>
       <string id="Proxy">Configure proxy server</string>
       <string id="Proxy_Explain">Allows you to specify the proxy server used by Google Chrome and prevents users from changing proxy settings.
 
@@ -130,6 +143,10 @@ If you disable this setting, the button will be hidden.</string>
         <textBox refId="HomepageLocation">
           <label>Homepage URL:</label>
         </textBox>
+      </presentation>
+      <presentation id="RestoreOnStartup">
+        <dropdownList refId="RestoreOnStartupMode">At startup,</dropdownList>
+        <listBox refId="RestoreOnStartupURLs">URLs to be opened:</listBox>
       </presentation>
       <presentation id="ApplicationLocale">
         <textBox refId="ApplicationLocaleValue">

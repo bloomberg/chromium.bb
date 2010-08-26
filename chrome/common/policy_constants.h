@@ -20,6 +20,8 @@ namespace key {
 
 extern const char kHomepageLocation[];
 extern const char kHomepageIsNewTabPage[];
+extern const char kRestoreOnStartup[];
+extern const char kURLsToRestoreOnStartup[];
 extern const char kProxyServerMode[];
 extern const char kProxyServer[];
 extern const char kProxyPacUrl[];

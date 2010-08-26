@@ -12,6 +12,8 @@
 #include "chrome/browser/policy/configuration_policy_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
+class RegKey;
+
 // An implementation of |ConfigurationPolicyProvider| using the
 // mechanism provided by Windows Groups Policy. Policy decisions are
 // stored as values in a special section of the Windows Registry.
@@ -54,15 +56,12 @@ class ConfigurationPolicyProviderWin : public ConfigurationPolicyProvider {
   // Methods to perform type-specific policy lookups in the registry.
   // HKLM is checked first, then HKCU.
 
-  // Reads a string registry value |name| and puts the resulting string in
-  // |result|. If |index| > 0, |name| is the name of a subkey and the value
-  // read is named |index|. Note: A subkey is used for lists to work around
-  // a problem with the Group Policy Editor, where one list value overwrites
-  // another if they appear under the same key (even if they have different
-  // names).
-  bool GetRegistryPolicyString(const string16& name,
-                               int index,
+  // Reads a string registry value |name| at the specified |key| and puts the
+  // resulting string in |result|.
+  bool ReadRegistryStringValue(RegKey* key, const string16& name,
                                string16* result);
+
+  bool GetRegistryPolicyString(const string16& name, string16* result);
   // Gets a list value contained under |key| one level below the policy root.
   bool GetRegistryPolicyStringList(const string16& key, ListValue* result);
   bool GetRegistryPolicyBoolean(const string16& value_name, bool* result);

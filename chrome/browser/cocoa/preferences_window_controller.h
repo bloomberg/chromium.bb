@@ -129,6 +129,8 @@ class ProfileSyncService;
   IBOutlet NSButton* enableLoggingCheckbox_;
   scoped_ptr<PrefSetObserver> proxyPrefs_;
   BOOL proxiesConfigureButtonEnabled_;
+  BOOL restoreButtonsEnabled_;
+  BOOL restoreURLsEnabled_;
 }
 
 // Designated initializer. |profile| should not be NULL.
@@ -139,6 +141,9 @@ class ProfileSyncService;
 
 // Switch to the given preference page.
 - (void)switchToPage:(OptionsPage)page animate:(BOOL)animate;
+
+// Enables or disables the restoreOnStartup elements
+- (void) setEnabledStateOfRestoreOnStartup;
 
 // IBAction methods for responding to user actions.
 
@@ -179,7 +184,8 @@ class ProfileSyncService;
 @property (assign, nonatomic) BOOL showHomeButtonEnabled;
 @property (assign, nonatomic) BOOL autoFillSettingsButtonEnabled;
 @property (assign, nonatomic) BOOL proxiesConfigureButtonEnabled;
-
+@property (assign, nonatomic) BOOL restoreButtonsEnabled;
+@property (assign, nonatomic) BOOL restoreURLsEnabled;
 @end
 
 @interface PreferencesWindowController(Testing)

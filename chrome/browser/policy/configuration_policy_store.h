@@ -20,6 +20,8 @@ class ConfigurationPolicyStore {
   enum PolicyType {
     kPolicyHomePage,
     kPolicyHomepageIsNewTabPage,
+    kPolicyRestoreOnStartup,
+    kPolicyURLsToRestoreOnStartup,
     kPolicyProxyServerMode,
     kPolicyProxyServer,
     kPolicyProxyPacUrl,

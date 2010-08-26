@@ -13,6 +13,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="482"/>
+			<integer value="79"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -754,7 +755,7 @@
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 			<object class="NSCustomView" id="930668015">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1716,6 +1717,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 				</object>
 				<string key="NSFrameSize">{540, 445}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="393583039">
@@ -2464,54 +2466,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: enableRestoreButtons</string>
-						<reference key="source" ref="909713979"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="909713979"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: enableRestoreButtons</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">enableRestoreButtons</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">290</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: enableRestoreButtons</string>
-						<reference key="source" ref="810089388"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="810089388"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: enableRestoreButtons</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">enableRestoreButtons</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">294</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: enableRestoreButtons</string>
-						<reference key="source" ref="940065158"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="940065158"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: enableRestoreButtons</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">enableRestoreButtons</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">295</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">selectedIndex: newTabPageIsHomePageIndex</string>
 						<reference key="source" ref="743261621"/>
 						<reference key="destination" ref="1001"/>
@@ -2673,22 +2627,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 					</object>
 					<int key="connectionID">395</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: enableRestoreButtons</string>
-						<reference key="source" ref="165250101"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="165250101"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: enableRestoreButtons</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">enableRestoreButtons</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">397</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -3878,6 +3816,86 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 					</object>
 					<int key="connectionID">718</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: restoreURLsEnabled</string>
+						<reference key="source" ref="909713979"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="909713979"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: restoreURLsEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">restoreURLsEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">720</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: restoreURLsEnabled</string>
+						<reference key="source" ref="940065158"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="940065158"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: restoreURLsEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">restoreURLsEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">721</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: restoreURLsEnabled</string>
+						<reference key="source" ref="810089388"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="810089388"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: restoreURLsEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">restoreURLsEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">722</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: restoreButtonsEnabled</string>
+						<reference key="source" ref="1016627403"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1016627403"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: restoreButtonsEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">restoreButtonsEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">723</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: restoreButtonsEnabled</string>
+						<reference key="source" ref="165250101"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="165250101"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: restoreButtonsEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">restoreButtonsEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">724</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -5597,7 +5615,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">719</int>
+			<int key="maxID">724</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

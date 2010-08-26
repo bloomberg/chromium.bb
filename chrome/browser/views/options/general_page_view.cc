@@ -350,38 +350,33 @@ void GeneralPageView::InitControlLayout() {
 }
 
 void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
-  if (!pref_name || *pref_name == prefs::kRestoreOnStartup) {
+  if (!pref_name ||
+      *pref_name == prefs::kRestoreOnStartup ||
+      *pref_name == prefs::kURLsToRestoreOnStartup) {
     PrefService* prefs = profile()->GetPrefs();
     const SessionStartupPref startup_pref =
         SessionStartupPref::GetStartupPref(prefs);
+    bool radio_buttons_enabled = !SessionStartupPref::TypeIsManaged(prefs);
+    bool restore_urls_enabled = !SessionStartupPref::URLsAreManaged(prefs);
     switch (startup_pref.type) {
     case SessionStartupPref::DEFAULT:
       startup_homepage_radio_->SetChecked(true);
-      EnableCustomHomepagesControls(false);
+      restore_urls_enabled = false;
       break;
 
     case SessionStartupPref::LAST:
       startup_last_session_radio_->SetChecked(true);
-      EnableCustomHomepagesControls(false);
+      restore_urls_enabled = false;
       break;
 
     case SessionStartupPref::URLS:
       startup_custom_radio_->SetChecked(true);
-      EnableCustomHomepagesControls(true);
       break;
     }
-  }
-
-  // TODO(beng): Note that the kURLsToRestoreOnStartup pref is a mutable list,
-  //             and changes to mutable lists aren't broadcast through the
-  //             observer system, so the second half of this condition will
-  //             never match. Once support for broadcasting such updates is
-  //             added, this will automagically start to work, and this comment
-  //             can be removed.
-  if (!pref_name || *pref_name == prefs::kURLsToRestoreOnStartup) {
-    PrefService* prefs = profile()->GetPrefs();
-    const SessionStartupPref startup_pref =
-        SessionStartupPref::GetStartupPref(prefs);
+    startup_homepage_radio_->SetEnabled(radio_buttons_enabled);
+    startup_last_session_radio_->SetEnabled(radio_buttons_enabled);
+    startup_custom_radio_->SetEnabled(radio_buttons_enabled);
+    EnableCustomHomepagesControls(restore_urls_enabled);
     startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
   }
 
@@ -735,6 +730,11 @@ void GeneralPageView::EnableCustomHomepagesControls(bool enable) {
 void GeneralPageView::AddBookmark(UrlPicker* dialog,
                                   const std::wstring& title,
                                   const GURL& url) {
+  // The restore URLs policy might have become managed while the dialog is
+  // displayed.  While the model makes sure that no changes are made in this
+  // condition, we should still avoid changing the graphic elements.
+  if (SessionStartupPref::URLsAreManaged(profile()->GetPrefs()))
+    return;
   int index = startup_custom_pages_table_->FirstSelectedRow();
   if (index == -1)
     index = startup_custom_pages_table_model_->RowCount();
