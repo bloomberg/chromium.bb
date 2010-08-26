@@ -2963,7 +2963,9 @@ void Browser::ShowCollectedCookiesDialog(TabContents *tab_contents) {
   window()->ShowCollectedCookiesDialog(tab_contents);
 }
 
-bool Browser::ShouldAddNavigationsToHistory() const {
+bool Browser::ShouldAddNavigationToHistory(
+    const history::HistoryAddPageArgs& add_page_args,
+    NavigationType::Type navigation_type) {
   // Don't update history if running as app.
   return !IsApplication();
 }

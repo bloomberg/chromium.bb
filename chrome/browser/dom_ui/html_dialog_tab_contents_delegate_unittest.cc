@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/browser_with_test_window_test.h"
@@ -101,7 +102,12 @@ class HtmlDialogTabContentsDelegateTest : public BrowserWithTestWindowTest {
 TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
   // None of the following calls should do anything.
   EXPECT_TRUE(test_tab_contents_delegate_->IsPopup(NULL));
-  EXPECT_FALSE(test_tab_contents_delegate_->ShouldAddNavigationToHistory());
+  scoped_refptr<history::HistoryAddPageArgs> should_add_args(
+      new history::HistoryAddPageArgs(
+          GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
+          PageTransition::TYPED, history::SOURCE_SYNCED, false));
+  EXPECT_FALSE(test_tab_contents_delegate_->ShouldAddNavigationToHistory(
+                   *should_add_args, NavigationType::NEW_PAGE));
   test_tab_contents_delegate_->NavigationStateChanged(NULL, 0);
   test_tab_contents_delegate_->ActivateContents(NULL);
   test_tab_contents_delegate_->LoadingStateChanged(NULL);

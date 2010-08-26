@@ -48,15 +48,14 @@ class TypedUrlDataTypeController;
 }
 
 namespace history {
-
 class InMemoryHistoryBackend;
 class InMemoryURLIndex;
+class HistoryAddPageArgs;
 class HistoryBackend;
 class HistoryDatabase;
 struct HistoryDetails;
 class HistoryQueryTest;
 class URLDatabase;
-
 }  // namespace history
 
 
@@ -205,6 +204,9 @@ class HistoryService : public CancelableRequestProvider,
     AddPage(url, NULL, 0, GURL(), PageTransition::LINK,
             history::RedirectList(), visit_source, false);
   }
+
+  // All AddPage variants end up here.
+  void AddPage(const history::HistoryAddPageArgs& add_page_args);
 
   // Sets the title for the given page. The page should be in history. If it
   // is not, this operation is ignored. This call will not update the full

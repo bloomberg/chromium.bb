@@ -46,6 +46,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace history {
+class HistoryAddPageArgs;
+}
+
 namespace printing {
 class PrintViewManager;
 }
@@ -696,6 +700,15 @@ class TabContents : public PageNavigator,
   virtual Profile* GetProfileForPasswordManager();
   virtual bool DidLastPageLoadEncounterSSLErrors();
 
+  // Updates history with the specified navigation. This is called by
+  // OnMsgNavigate to update history state.
+  void UpdateHistoryForNavigation(
+      scoped_refptr<history::HistoryAddPageArgs> add_page_args);
+
+  // Sends the page title to the history service. This is called when we receive
+  // the page title and we know we want to update history.
+  void UpdateHistoryPageTitle(const NavigationEntry& entry);
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -722,7 +735,7 @@ class TabContents : public PageNavigator,
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;
 
-  // Used to access the UpdateHistoryForNavigation member function.
+  // Used to access the CreateHistoryAddPageArgs member function.
   friend class ExternalTabContainer;
 
   // Changes the IsLoading state and notifies delegate as needed
@@ -788,9 +801,10 @@ class TabContents : public PageNavigator,
   void UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
                                   RenderViewHost* rvh);
 
-  // Called by OnMsgNavigate to update history state. Overridden by subclasses
-  // that don't want to be added to history.
-  virtual void UpdateHistoryForNavigation(const GURL& virtual_url,
+  // Returns the history::HistoryAddPageArgs to use for adding a page to
+  // history.
+  scoped_refptr<history::HistoryAddPageArgs> CreateHistoryAddPageArgs(
+      const GURL& virtual_url,
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 

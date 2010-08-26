@@ -134,7 +134,9 @@ bool TabContentsDelegate::OnGoToEntryOffset(int offset) {
   return true;
 }
 
-bool TabContentsDelegate::ShouldAddNavigationsToHistory() const {
+bool TabContentsDelegate::ShouldAddNavigationToHistory(
+    const history::HistoryAddPageArgs& add_page_args,
+    NavigationType::Type navigation_type) {
   return true;
 }
 

@@ -37,6 +37,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/find_bar_state.h"
@@ -1449,6 +1450,26 @@ TabContents* TabContents::CloneAndMakePhantom() {
   return new_contents;
 }
 
+void TabContents::UpdateHistoryForNavigation(
+    scoped_refptr<history::HistoryAddPageArgs> add_page_args) {
+  if (profile()->IsOffTheRecord())
+    return;
+
+  // Add to history service.
+  HistoryService* hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
+  if (hs)
+    hs->AddPage(*add_page_args);
+}
+
+void TabContents::UpdateHistoryPageTitle(const NavigationEntry& entry) {
+  if (profile()->IsOffTheRecord())
+    return;
+
+  HistoryService* hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
+  if (hs)
+    hs->SetPageTitle(entry.virtual_url(), entry.title());
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void TabContents::SetIsLoading(bool is_loading,
@@ -1750,36 +1771,29 @@ void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
   }
 }
 
-void TabContents::UpdateHistoryForNavigation(
+scoped_refptr<history::HistoryAddPageArgs>
+TabContents::CreateHistoryAddPageArgs(
     const GURL& virtual_url,
     const NavigationController::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  if (profile()->IsOffTheRecord())
-    return;
-
-  // Add to history service.
-  HistoryService* hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-  if (hs) {
-    if (PageTransition::IsMainFrame(params.transition) &&
-        virtual_url != params.url) {
-      // Hack on the "virtual" URL so that it will appear in history. For some
-      // types of URLs, we will display a magic URL that is different from where
-      // the page is actually navigated. We want the user to see in history
-      // what they saw in the URL bar, so we add the virtual URL as a redirect.
-      // This only applies to the main frame, as the virtual URL doesn't apply
-      // to sub-frames.
-      std::vector<GURL> redirects = params.redirects;
-      if (!redirects.empty())
-        redirects.back() = virtual_url;
-      hs->AddPage(virtual_url, this, params.page_id, params.referrer,
-                  params.transition, redirects, history::SOURCE_BROWSED,
-                  details.did_replace_entry);
-    } else {
-      hs->AddPage(params.url, this, params.page_id, params.referrer,
-                  params.transition, params.redirects, history::SOURCE_BROWSED,
-                  details.did_replace_entry);
-    }
+  scoped_refptr<history::HistoryAddPageArgs> add_page_args(
+      new history::HistoryAddPageArgs(
+          params.url, base::Time::Now(), this, params.page_id, params.referrer,
+          params.redirects, params.transition, history::SOURCE_BROWSED,
+          details.did_replace_entry));
+  if (PageTransition::IsMainFrame(params.transition) &&
+      virtual_url != params.url) {
+    // Hack on the "virtual" URL so that it will appear in history. For some
+    // types of URLs, we will display a magic URL that is different from where
+    // the page is actually navigated. We want the user to see in history what
+    // they saw in the URL bar, so we add the virtual URL as a redirect.  This
+    // only applies to the main frame, as the virtual URL doesn't apply to
+    // sub-frames.
+    add_page_args->url = virtual_url;
+    if (!add_page_args->redirects.empty())
+      add_page_args->redirects.back() = virtual_url;
   }
+  return add_page_args;
 }
 
 bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
@@ -1802,14 +1816,8 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
 
   entry->set_title(final_title);
 
-  // Update the history system for this page.
-  if (!profile()->IsOffTheRecord() && !received_page_title_) {
-    HistoryService* hs =
-        profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-    if (hs)
-      hs->SetPageTitle(entry->virtual_url(), final_title);
-
-    // Don't allow the title to be saved again for explicitly set ones.
+  if (!received_page_title_) {
+    UpdateHistoryPageTitle(*entry);
     received_page_title_ = explicit_set;
   }
 
@@ -2414,13 +2422,18 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
 
   // Update history. Note that this needs to happen after the entry is complete,
   // which WillNavigate[Main,Sub]Frame will do before this function is called.
-  if (params.should_update_history &&
-      (!delegate() || delegate()->ShouldAddNavigationsToHistory())) {
+  if (params.should_update_history) {
     // Most of the time, the displayURL matches the loaded URL, but for about:
-    // URLs, we use a data: URL as the real value.  We actually want to save
-    // the about: URL to the history db and keep the data: URL hidden. This is
-    // what the TabContents' URL getter does.
-    UpdateHistoryForNavigation(GetURL(), details, params);
+    // URLs, we use a data: URL as the real value.  We actually want to save the
+    // about: URL to the history db and keep the data: URL hidden. This is what
+    // the TabContents' URL getter does.
+    scoped_refptr<history::HistoryAddPageArgs> add_page_args(
+        CreateHistoryAddPageArgs(GetURL(), details, params));
+    if (!delegate() ||
+        delegate()->ShouldAddNavigationToHistory(*add_page_args,
+                                                 details.type)) {
+      UpdateHistoryForNavigation(add_page_args);
+    }
   }
 
   if (!did_navigate)
@@ -2468,7 +2481,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
 
   DCHECK(rvh == render_view_host());
   NavigationEntry* entry = controller_.GetEntryWithPageID(GetSiteInstance(),
-                                                            page_id);
+                                                          page_id);
   if (!entry || !UpdateTitleForEntry(entry, title))
     return;
 

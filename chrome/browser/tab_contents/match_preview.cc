@@ -108,7 +108,11 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void ShowContentSettingsWindow(ContentSettingsType content_type) {}
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) {}
   virtual bool OnGoToEntryOffset(int offset) { return false; }
-  virtual bool ShouldAddNavigationsToHistory() const { return false; }
+  virtual bool ShouldAddNavigationToHistory(
+      const history::HistoryAddPageArgs& add_page_args,
+      NavigationType::Type navigation_type) {
+    return false;
+  }
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id) {}
   virtual gfx::NativeWindow GetFrameNativeWindow() {

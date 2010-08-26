@@ -107,7 +107,9 @@ void HtmlDialogTabContentsDelegate::UpdateTargetURL(TabContents* source,
   // Ignored.
 }
 
-bool HtmlDialogTabContentsDelegate::ShouldAddNavigationToHistory() const {
+bool HtmlDialogTabContentsDelegate::ShouldAddNavigationToHistory(
+    const history::HistoryAddPageArgs& add_page_args,
+    NavigationType::Type navigation_type) {
   return false;
 }
 

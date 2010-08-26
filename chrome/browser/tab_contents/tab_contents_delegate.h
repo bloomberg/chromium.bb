@@ -12,6 +12,7 @@
 #include "chrome/browser/automation/automation_resource_routing_delegate.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/navigation_types.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -20,6 +21,10 @@ namespace gfx {
 class Point;
 class Rect;
 class Size;
+}
+
+namespace history {
+class HistoryAddPageArgs;
 }
 
 class DownloadItem;
@@ -245,8 +250,11 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Returns true to allow TabContents to continue with the default processing.
   virtual bool OnGoToEntryOffset(int offset);
 
-  // Returns whether this tab contents should add navigations to history.
-  virtual bool ShouldAddNavigationsToHistory() const;
+  // Returns whether this tab contents should add the specified navigation to
+  // history.
+  virtual bool ShouldAddNavigationToHistory(
+      const history::HistoryAddPageArgs& add_page_args,
+      NavigationType::Type navigation_type);
 
   // Notification when web app info data is available
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,

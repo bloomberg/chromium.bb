@@ -43,7 +43,11 @@ class WebPageScreen : public TabContentsDelegate {
   virtual bool IsPopup(TabContents* source) { return false; }
   virtual void URLStarredChanged(TabContents* source, bool starred) {}
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
-  virtual bool ShouldAddNavigationToHistory() const { return false; }
+  virtual bool ShouldAddNavigationToHistory(
+      const history::HistoryAddPageArgs& add_page_args,
+      NavigationType::Type navigation_type) {
+    return false;
+  }
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   virtual bool HandleContextMenu(const ContextMenuParams& params);

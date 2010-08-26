@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
@@ -283,10 +284,10 @@ ExternalTabContainer*
 // ExternalTabContainer, TabContentsDelegate implementation:
 
 void ExternalTabContainer::OpenURLFromTab(TabContents* source,
-                           const GURL& url,
-                           const GURL& referrer,
-                           WindowOpenDisposition disposition,
-                           PageTransition::Type transition) {
+                                          const GURL& url,
+                                          const GURL& referrer,
+                                          WindowOpenDisposition disposition,
+                                          PageTransition::Type transition) {
   if (pending()) {
     PendingTopLevelNavigation url_request;
     url_request.disposition = disposition;
@@ -323,7 +324,9 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
         NavigationController::LoadCommittedDetails details;
         details.did_replace_entry = false;
 
-        tab_contents_->UpdateHistoryForNavigation(url, details, params);
+        scoped_refptr<history::HistoryAddPageArgs> add_page_args(
+            tab_contents_->CreateHistoryAddPageArgs(url, details, params));
+        tab_contents_->UpdateHistoryForNavigation(add_page_args);
       }
       break;
     default:

@@ -316,36 +316,43 @@ void HistoryService::AddPage(const GURL& url,
                              const history::RedirectList& redirects,
                              history::VisitSource visit_source,
                              bool did_replace_entry) {
+  scoped_refptr<history::HistoryAddPageArgs> request(
+      new history::HistoryAddPageArgs(url, time, id_scope, page_id, referrer,
+                                      redirects, transition, visit_source,
+                                      did_replace_entry));
+  AddPage(*request);
+}
+
+void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
   DCHECK(thread_) << "History service being called after cleanup";
 
   // Filter out unwanted URLs. We don't add auto-subframe URLs. They are a
   // large part of history (think iframes for ads) and we never display them in
   // history UI. We will still add manual subframes, which are ones the user
   // has clicked on to get.
-  if (!CanAddURL(url))
+  if (!CanAddURL(add_page_args.url))
     return;
 
   // Add link & all redirects to visited link list.
   VisitedLinkMaster* visited_links;
   if (profile_ && (visited_links = profile_->GetVisitedLinkMaster())) {
-    visited_links->AddURL(url);
+    visited_links->AddURL(add_page_args.url);
 
-    if (!redirects.empty()) {
+    if (!add_page_args.redirects.empty()) {
       // We should not be asked to add a page in the middle of a redirect chain.
-      DCHECK(redirects[redirects.size() - 1] == url);
+      DCHECK_EQ(add_page_args.url,
+                add_page_args.redirects[add_page_args.redirects.size() - 1]);
 
       // We need the !redirects.empty() condition above since size_t is unsigned
       // and will wrap around when we subtract one from a 0 size.
-      for (size_t i = 0; i < redirects.size() - 1; i++)
-        visited_links->AddURL(redirects[i]);
+      for (size_t i = 0; i < add_page_args.redirects.size() - 1; i++)
+        visited_links->AddURL(add_page_args.redirects[i]);
     }
   }
 
-  scoped_refptr<history::HistoryAddPageArgs> request(
-      new history::HistoryAddPageArgs(url, time, id_scope, page_id, referrer,
-                                      redirects, transition, visit_source,
-                                      did_replace_entry));
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::AddPage, request);
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::AddPage,
+                    scoped_refptr<history::HistoryAddPageArgs>(
+                        add_page_args.Clone()));
 }
 
 void HistoryService::SetPageTitle(const GURL& url,
