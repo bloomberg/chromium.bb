@@ -96,6 +96,8 @@ class HttpStreamHandle : public HttpStream {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest, WindowUpdateSent);
+
   scoped_ptr<ClientSocketHandle> connection_;
   scoped_ptr<HttpStream> stream_;
 
