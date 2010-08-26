@@ -18,6 +18,9 @@ ExtensionApiTest::ResultCatcher::ResultCatcher() {
                  NotificationService::AllSources());
 }
 
+ExtensionApiTest::ResultCatcher::~ResultCatcher() {
+}
+
 bool ExtensionApiTest::ResultCatcher::GetNextResult() {
   // Depending on the tests, multiple results can come in from a single call
   // to RunMessageLoop(), so we maintain a queue of results and just pull them

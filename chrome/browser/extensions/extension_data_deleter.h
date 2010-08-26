@@ -9,12 +9,15 @@
 #include "base/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/database/database_tracker.h"
+
+namespace webkit_database {
+class DatabaseTracker;
+}
 
 class Profile;
+class URLRequestContextGetter;
+class WebKitContext;
 
 // A helper class that takes care of removing local storage, databases and
 // cookies for a given extension. This is used by
@@ -24,6 +27,7 @@ class ExtensionDataDeleter
                                       ChromeThread::DeleteOnUIThread> {
  public:
   ExtensionDataDeleter(Profile* profile, const GURL& extension_url);
+  ~ExtensionDataDeleter();
 
   // Start removing data. The extension should not be running when this is
   // called. Cookies are deleted on the current thread, local storage and

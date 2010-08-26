@@ -16,8 +16,17 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/notification_service.h"
 
 namespace keys = extension_tabs_module_constants;
+
+ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
+    : execute_tab_id_(-1),
+      all_frames_(false) {
+}
+
+ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {
+}
 
 bool ExecuteCodeInTabFunction::RunImpl() {
   DictionaryValue* script_info;

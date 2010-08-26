@@ -10,11 +10,11 @@
 
 #include "base/ref_counted.h"
 #include "chrome/browser/renderer_host/resource_queue.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class Extension;
+class URLPattern;
 class URLRequest;
 struct GlobalRequestID;
 
@@ -48,7 +48,7 @@ class UserScriptListener
 
   typedef std::list<URLPattern> URLPatterns;
 
-  ~UserScriptListener() {}
+  ~UserScriptListener();
 
   // Resume any requests that we delayed in order to wait for user scripts.
   void StartDelayedRequests();

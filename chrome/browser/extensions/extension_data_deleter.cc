@@ -4,11 +4,14 @@
 
 #include "chrome/browser/extensions/extension_data_deleter.h"
 
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
 #include "webkit/database/database_util.h"
+#include "webkit/database/database_tracker.h"
 
 ExtensionDataDeleter::ExtensionDataDeleter(Profile* profile,
                                            const GURL& extension_url) {
@@ -19,6 +22,9 @@ ExtensionDataDeleter::ExtensionDataDeleter(Profile* profile,
   extension_url_ = extension_url;
   origin_id_ =
       webkit_database::DatabaseUtil::GetOriginIdentifier(extension_url_);
+}
+
+ExtensionDataDeleter::~ExtensionDataDeleter() {
 }
 
 void ExtensionDataDeleter::StartDeleting() {

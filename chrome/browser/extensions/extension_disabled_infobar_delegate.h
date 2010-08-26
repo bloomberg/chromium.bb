@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_INFOBAR_DELEGATE_H_
 #pragma once
 
-#include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/common/extensions/extension_resource.h"
-
 class Extension;
 class ExtensionsService;
 class Profile;

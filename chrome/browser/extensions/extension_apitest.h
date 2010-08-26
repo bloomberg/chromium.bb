@@ -33,6 +33,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   class ResultCatcher : public NotificationObserver {
    public:
     ResultCatcher();
+    ~ResultCatcher();
 
     // Pumps the UI loop until a notification is received that an API test
     // succeeded or failed. Returns true if the test succeeded, false otherwise.

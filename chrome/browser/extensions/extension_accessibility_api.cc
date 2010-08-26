@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_service.h"
 
 namespace keys = extension_accessibility_api_constants;
 

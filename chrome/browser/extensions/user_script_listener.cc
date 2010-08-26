@@ -10,6 +10,7 @@
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/notification_service.h"
 #include "net/url_request/url_request.h"
 
@@ -64,6 +65,9 @@ bool UserScriptListener::ShouldDelayRequest(
 void UserScriptListener::WillShutdownResourceQueue() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   resource_queue_ = NULL;
+}
+
+UserScriptListener::~UserScriptListener() {
 }
 
 void UserScriptListener::StartDelayedRequests() {
