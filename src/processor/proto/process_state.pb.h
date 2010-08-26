@@ -25,6 +25,8 @@
 #include <google/protobuf/generated_message_reflection.h>
 // @@protoc_insertion_point(includes)
 
+namespace google_breakpad {
+
 // Internal implementation detail -- do not call these.
 void  protobuf_AddDesc_process_5fstate_2eproto();
 void protobuf_AssignDesc_process_5fstate_2eproto();
@@ -109,7 +111,7 @@ class ProcessStateProto_Crash : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 address() const;
   inline void set_address(::google::protobuf::int64 value);
   
-  // @@protoc_insertion_point(class_scope:ProcessStateProto.Crash)
+  // @@protoc_insertion_point(class_scope:google_breakpad.ProcessStateProto.Crash)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
@@ -193,24 +195,24 @@ class ProcessStateProto_Thread : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // repeated .StackFrame frames = 1;
+  // repeated .google_breakpad.StackFrame frames = 1;
   inline int frames_size() const;
   inline void clear_frames();
   static const int kFramesFieldNumber = 1;
-  inline const ::StackFrame& frames(int index) const;
-  inline ::StackFrame* mutable_frames(int index);
-  inline ::StackFrame* add_frames();
-  inline const ::google::protobuf::RepeatedPtrField< ::StackFrame >&
+  inline const ::google_breakpad::StackFrame& frames(int index) const;
+  inline ::google_breakpad::StackFrame* mutable_frames(int index);
+  inline ::google_breakpad::StackFrame* add_frames();
+  inline const ::google::protobuf::RepeatedPtrField< ::google_breakpad::StackFrame >&
       frames() const;
-  inline ::google::protobuf::RepeatedPtrField< ::StackFrame >*
+  inline ::google::protobuf::RepeatedPtrField< ::google_breakpad::StackFrame >*
       mutable_frames();
   
-  // @@protoc_insertion_point(class_scope:ProcessStateProto.Thread)
+  // @@protoc_insertion_point(class_scope:google_breakpad.ProcessStateProto.Thread)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
-  ::google::protobuf::RepeatedPtrField< ::StackFrame > frames_;
+  ::google::protobuf::RepeatedPtrField< ::google_breakpad::StackFrame > frames_;
   friend void  protobuf_AddDesc_process_5fstate_2eproto();
   friend void protobuf_AssignDesc_process_5fstate_2eproto();
   friend void protobuf_ShutdownFile_process_5fstate_2eproto();
@@ -297,12 +299,12 @@ class ProcessStateProto : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 time_date_stamp() const;
   inline void set_time_date_stamp(::google::protobuf::int64 value);
   
-  // optional .ProcessStateProto.Crash crash = 2;
+  // optional .google_breakpad.ProcessStateProto.Crash crash = 2;
   inline bool has_crash() const;
   inline void clear_crash();
   static const int kCrashFieldNumber = 2;
-  inline const ::ProcessStateProto_Crash& crash() const;
-  inline ::ProcessStateProto_Crash* mutable_crash();
+  inline const ::google_breakpad::ProcessStateProto_Crash& crash() const;
+  inline ::google_breakpad::ProcessStateProto_Crash* mutable_crash();
   
   // optional string assertion = 3;
   inline bool has_assertion() const;
@@ -321,28 +323,28 @@ class ProcessStateProto : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 requesting_thread() const;
   inline void set_requesting_thread(::google::protobuf::int32 value);
   
-  // repeated .ProcessStateProto.Thread threads = 5;
+  // repeated .google_breakpad.ProcessStateProto.Thread threads = 5;
   inline int threads_size() const;
   inline void clear_threads();
   static const int kThreadsFieldNumber = 5;
-  inline const ::ProcessStateProto_Thread& threads(int index) const;
-  inline ::ProcessStateProto_Thread* mutable_threads(int index);
-  inline ::ProcessStateProto_Thread* add_threads();
-  inline const ::google::protobuf::RepeatedPtrField< ::ProcessStateProto_Thread >&
+  inline const ::google_breakpad::ProcessStateProto_Thread& threads(int index) const;
+  inline ::google_breakpad::ProcessStateProto_Thread* mutable_threads(int index);
+  inline ::google_breakpad::ProcessStateProto_Thread* add_threads();
+  inline const ::google::protobuf::RepeatedPtrField< ::google_breakpad::ProcessStateProto_Thread >&
       threads() const;
-  inline ::google::protobuf::RepeatedPtrField< ::ProcessStateProto_Thread >*
+  inline ::google::protobuf::RepeatedPtrField< ::google_breakpad::ProcessStateProto_Thread >*
       mutable_threads();
   
-  // repeated .CodeModule modules = 6;
+  // repeated .google_breakpad.CodeModule modules = 6;
   inline int modules_size() const;
   inline void clear_modules();
   static const int kModulesFieldNumber = 6;
-  inline const ::CodeModule& modules(int index) const;
-  inline ::CodeModule* mutable_modules(int index);
-  inline ::CodeModule* add_modules();
-  inline const ::google::protobuf::RepeatedPtrField< ::CodeModule >&
+  inline const ::google_breakpad::CodeModule& modules(int index) const;
+  inline ::google_breakpad::CodeModule* mutable_modules(int index);
+  inline ::google_breakpad::CodeModule* add_modules();
+  inline const ::google::protobuf::RepeatedPtrField< ::google_breakpad::CodeModule >&
       modules() const;
-  inline ::google::protobuf::RepeatedPtrField< ::CodeModule >*
+  inline ::google::protobuf::RepeatedPtrField< ::google_breakpad::CodeModule >*
       mutable_modules();
   
   // optional string os = 7;
@@ -402,18 +404,18 @@ class ProcessStateProto : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 cpu_count() const;
   inline void set_cpu_count(::google::protobuf::int32 value);
   
-  // @@protoc_insertion_point(class_scope:ProcessStateProto)
+  // @@protoc_insertion_point(class_scope:google_breakpad.ProcessStateProto)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
   ::google::protobuf::int64 time_date_stamp_;
-  ::ProcessStateProto_Crash* crash_;
+  ::google_breakpad::ProcessStateProto_Crash* crash_;
   ::std::string* assertion_;
   static const ::std::string _default_assertion_;
   ::google::protobuf::int32 requesting_thread_;
-  ::google::protobuf::RepeatedPtrField< ::ProcessStateProto_Thread > threads_;
-  ::google::protobuf::RepeatedPtrField< ::CodeModule > modules_;
+  ::google::protobuf::RepeatedPtrField< ::google_breakpad::ProcessStateProto_Thread > threads_;
+  ::google::protobuf::RepeatedPtrField< ::google_breakpad::CodeModule > modules_;
   ::std::string* os_;
   static const ::std::string _default_os_;
   ::std::string* os_short_;
@@ -508,12 +510,12 @@ class StackFrame : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 instruction() const;
   inline void set_instruction(::google::protobuf::int64 value);
   
-  // optional .CodeModule module = 2;
+  // optional .google_breakpad.CodeModule module = 2;
   inline bool has_module() const;
   inline void clear_module();
   static const int kModuleFieldNumber = 2;
-  inline const ::CodeModule& module() const;
-  inline ::CodeModule* mutable_module();
+  inline const ::google_breakpad::CodeModule& module() const;
+  inline ::google_breakpad::CodeModule* mutable_module();
   
   // optional string function_name = 3;
   inline bool has_function_name() const;
@@ -556,13 +558,13 @@ class StackFrame : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 source_line_base() const;
   inline void set_source_line_base(::google::protobuf::int64 value);
   
-  // @@protoc_insertion_point(class_scope:StackFrame)
+  // @@protoc_insertion_point(class_scope:google_breakpad.StackFrame)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
   ::google::protobuf::int64 instruction_;
-  ::CodeModule* module_;
+  ::google_breakpad::CodeModule* module_;
   ::std::string* function_name_;
   static const ::std::string _default_function_name_;
   ::google::protobuf::int64 function_base_;
@@ -710,7 +712,7 @@ class CodeModule : public ::google::protobuf::Message {
   inline void set_version(const char* value, size_t size);
   inline ::std::string* mutable_version();
   
-  // @@protoc_insertion_point(class_scope:CodeModule)
+  // @@protoc_insertion_point(class_scope:google_breakpad.CodeModule)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
@@ -816,27 +818,27 @@ inline void ProcessStateProto_Crash::set_address(::google::protobuf::int64 value
 
 // ProcessStateProto_Thread
 
-// repeated .StackFrame frames = 1;
+// repeated .google_breakpad.StackFrame frames = 1;
 inline int ProcessStateProto_Thread::frames_size() const {
   return frames_.size();
 }
 inline void ProcessStateProto_Thread::clear_frames() {
   frames_.Clear();
 }
-inline const ::StackFrame& ProcessStateProto_Thread::frames(int index) const {
+inline const ::google_breakpad::StackFrame& ProcessStateProto_Thread::frames(int index) const {
   return frames_.Get(index);
 }
-inline ::StackFrame* ProcessStateProto_Thread::mutable_frames(int index) {
+inline ::google_breakpad::StackFrame* ProcessStateProto_Thread::mutable_frames(int index) {
   return frames_.Mutable(index);
 }
-inline ::StackFrame* ProcessStateProto_Thread::add_frames() {
+inline ::google_breakpad::StackFrame* ProcessStateProto_Thread::add_frames() {
   return frames_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::StackFrame >&
+inline const ::google::protobuf::RepeatedPtrField< ::google_breakpad::StackFrame >&
 ProcessStateProto_Thread::frames() const {
   return frames_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::StackFrame >*
+inline ::google::protobuf::RepeatedPtrField< ::google_breakpad::StackFrame >*
 ProcessStateProto_Thread::mutable_frames() {
   return &frames_;
 }
@@ -861,20 +863,20 @@ inline void ProcessStateProto::set_time_date_stamp(::google::protobuf::int64 val
   time_date_stamp_ = value;
 }
 
-// optional .ProcessStateProto.Crash crash = 2;
+// optional .google_breakpad.ProcessStateProto.Crash crash = 2;
 inline bool ProcessStateProto::has_crash() const {
   return _has_bit(1);
 }
 inline void ProcessStateProto::clear_crash() {
-  if (crash_ != NULL) crash_->::ProcessStateProto_Crash::Clear();
+  if (crash_ != NULL) crash_->::google_breakpad::ProcessStateProto_Crash::Clear();
   _clear_bit(1);
 }
-inline const ::ProcessStateProto_Crash& ProcessStateProto::crash() const {
+inline const ::google_breakpad::ProcessStateProto_Crash& ProcessStateProto::crash() const {
   return crash_ != NULL ? *crash_ : *default_instance_->crash_;
 }
-inline ::ProcessStateProto_Crash* ProcessStateProto::mutable_crash() {
+inline ::google_breakpad::ProcessStateProto_Crash* ProcessStateProto::mutable_crash() {
   _set_bit(1);
-  if (crash_ == NULL) crash_ = new ::ProcessStateProto_Crash;
+  if (crash_ == NULL) crash_ = new ::google_breakpad::ProcessStateProto_Crash;
   return crash_;
 }
 
@@ -936,52 +938,52 @@ inline void ProcessStateProto::set_requesting_thread(::google::protobuf::int32 v
   requesting_thread_ = value;
 }
 
-// repeated .ProcessStateProto.Thread threads = 5;
+// repeated .google_breakpad.ProcessStateProto.Thread threads = 5;
 inline int ProcessStateProto::threads_size() const {
   return threads_.size();
 }
 inline void ProcessStateProto::clear_threads() {
   threads_.Clear();
 }
-inline const ::ProcessStateProto_Thread& ProcessStateProto::threads(int index) const {
+inline const ::google_breakpad::ProcessStateProto_Thread& ProcessStateProto::threads(int index) const {
   return threads_.Get(index);
 }
-inline ::ProcessStateProto_Thread* ProcessStateProto::mutable_threads(int index) {
+inline ::google_breakpad::ProcessStateProto_Thread* ProcessStateProto::mutable_threads(int index) {
   return threads_.Mutable(index);
 }
-inline ::ProcessStateProto_Thread* ProcessStateProto::add_threads() {
+inline ::google_breakpad::ProcessStateProto_Thread* ProcessStateProto::add_threads() {
   return threads_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::ProcessStateProto_Thread >&
+inline const ::google::protobuf::RepeatedPtrField< ::google_breakpad::ProcessStateProto_Thread >&
 ProcessStateProto::threads() const {
   return threads_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::ProcessStateProto_Thread >*
+inline ::google::protobuf::RepeatedPtrField< ::google_breakpad::ProcessStateProto_Thread >*
 ProcessStateProto::mutable_threads() {
   return &threads_;
 }
 
-// repeated .CodeModule modules = 6;
+// repeated .google_breakpad.CodeModule modules = 6;
 inline int ProcessStateProto::modules_size() const {
   return modules_.size();
 }
 inline void ProcessStateProto::clear_modules() {
   modules_.Clear();
 }
-inline const ::CodeModule& ProcessStateProto::modules(int index) const {
+inline const ::google_breakpad::CodeModule& ProcessStateProto::modules(int index) const {
   return modules_.Get(index);
 }
-inline ::CodeModule* ProcessStateProto::mutable_modules(int index) {
+inline ::google_breakpad::CodeModule* ProcessStateProto::mutable_modules(int index) {
   return modules_.Mutable(index);
 }
-inline ::CodeModule* ProcessStateProto::add_modules() {
+inline ::google_breakpad::CodeModule* ProcessStateProto::add_modules() {
   return modules_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::CodeModule >&
+inline const ::google::protobuf::RepeatedPtrField< ::google_breakpad::CodeModule >&
 ProcessStateProto::modules() const {
   return modules_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::CodeModule >*
+inline ::google::protobuf::RepeatedPtrField< ::google_breakpad::CodeModule >*
 ProcessStateProto::mutable_modules() {
   return &modules_;
 }
@@ -1232,20 +1234,20 @@ inline void StackFrame::set_instruction(::google::protobuf::int64 value) {
   instruction_ = value;
 }
 
-// optional .CodeModule module = 2;
+// optional .google_breakpad.CodeModule module = 2;
 inline bool StackFrame::has_module() const {
   return _has_bit(1);
 }
 inline void StackFrame::clear_module() {
-  if (module_ != NULL) module_->::CodeModule::Clear();
+  if (module_ != NULL) module_->::google_breakpad::CodeModule::Clear();
   _clear_bit(1);
 }
-inline const ::CodeModule& StackFrame::module() const {
+inline const ::google_breakpad::CodeModule& StackFrame::module() const {
   return module_ != NULL ? *module_ : *default_instance_->module_;
 }
-inline ::CodeModule* StackFrame::mutable_module() {
+inline ::google_breakpad::CodeModule* StackFrame::mutable_module() {
   _set_bit(1);
-  if (module_ == NULL) module_ = new ::CodeModule;
+  if (module_ == NULL) module_ = new ::google_breakpad::CodeModule;
   return module_;
 }
 
@@ -1629,6 +1631,8 @@ inline ::std::string* CodeModule::mutable_version() {
 
 
 // @@protoc_insertion_point(namespace_scope)
+
+}  // namespace google_breakpad
 
 #ifndef SWIG
 namespace google {

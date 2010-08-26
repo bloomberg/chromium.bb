@@ -39,6 +39,7 @@
 //
 // Author: Jess Gray
 
+package google_breakpad;
 
 // A proto representation of a process, in a fully-digested state.
 // See src/google_breakpad/processor/process_state.h

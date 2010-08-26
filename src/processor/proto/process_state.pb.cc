@@ -10,6 +10,8 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 
+namespace google_breakpad {
+
 namespace {
 
 const ::google::protobuf::Descriptor* ProcessStateProto_descriptor_ = NULL;
@@ -182,25 +184,28 @@ void protobuf_AddDesc_process_5fstate_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\023process_state.proto\"\202\003\n\021ProcessStatePr"
-    "oto\022\027\n\017time_date_stamp\030\001 \001(\003\022\'\n\005crash\030\002 "
-    "\001(\0132\030.ProcessStateProto.Crash\022\021\n\tasserti"
-    "on\030\003 \001(\t\022\031\n\021requesting_thread\030\004 \001(\005\022*\n\007t"
-    "hreads\030\005 \003(\0132\031.ProcessStateProto.Thread\022"
-    "\034\n\007modules\030\006 \003(\0132\013.CodeModule\022\n\n\002os\030\007 \001("
-    "\t\022\020\n\010os_short\030\010 \001(\t\022\022\n\nos_version\030\t \001(\t\022"
-    "\013\n\003cpu\030\n \001(\t\022\020\n\010cpu_info\030\013 \001(\t\022\021\n\tcpu_co"
-    "unt\030\014 \001(\005\032(\n\005Crash\022\016\n\006reason\030\001 \002(\t\022\017\n\007ad"
-    "dress\030\002 \002(\003\032%\n\006Thread\022\033\n\006frames\030\001 \003(\0132\013."
-    "StackFrame\"\265\001\n\nStackFrame\022\023\n\013instruction"
-    "\030\001 \002(\003\022\033\n\006module\030\002 \001(\0132\013.CodeModule\022\025\n\rf"
-    "unction_name\030\003 \001(\t\022\025\n\rfunction_base\030\004 \001("
-    "\003\022\030\n\020source_file_name\030\005 \001(\t\022\023\n\013source_li"
-    "ne\030\006 \001(\005\022\030\n\020source_line_base\030\007 \001(\003\"\233\001\n\nC"
-    "odeModule\022\024\n\014base_address\030\001 \001(\003\022\014\n\004size\030"
-    "\002 \001(\003\022\021\n\tcode_file\030\003 \001(\t\022\027\n\017code_identif"
-    "ier\030\004 \001(\t\022\022\n\ndebug_file\030\005 \001(\t\022\030\n\020debug_i"
-    "dentifier\030\006 \001(\t\022\017\n\007version\030\007 \001(\t", 752);
+    "\n\023process_state.proto\022\017google_breakpad\"\302"
+    "\003\n\021ProcessStateProto\022\027\n\017time_date_stamp\030"
+    "\001 \001(\003\0227\n\005crash\030\002 \001(\0132(.google_breakpad.P"
+    "rocessStateProto.Crash\022\021\n\tassertion\030\003 \001("
+    "\t\022\031\n\021requesting_thread\030\004 \001(\005\022:\n\007threads\030"
+    "\005 \003(\0132).google_breakpad.ProcessStateProt"
+    "o.Thread\022,\n\007modules\030\006 \003(\0132\033.google_break"
+    "pad.CodeModule\022\n\n\002os\030\007 \001(\t\022\020\n\010os_short\030\010"
+    " \001(\t\022\022\n\nos_version\030\t \001(\t\022\013\n\003cpu\030\n \001(\t\022\020\n"
+    "\010cpu_info\030\013 \001(\t\022\021\n\tcpu_count\030\014 \001(\005\032(\n\005Cr"
+    "ash\022\016\n\006reason\030\001 \002(\t\022\017\n\007address\030\002 \002(\003\0325\n\006"
+    "Thread\022+\n\006frames\030\001 \003(\0132\033.google_breakpad"
+    ".StackFrame\"\305\001\n\nStackFrame\022\023\n\013instructio"
+    "n\030\001 \002(\003\022+\n\006module\030\002 \001(\0132\033.google_breakpa"
+    "d.CodeModule\022\025\n\rfunction_name\030\003 \001(\t\022\025\n\rf"
+    "unction_base\030\004 \001(\003\022\030\n\020source_file_name\030\005"
+    " \001(\t\022\023\n\013source_line\030\006 \001(\005\022\030\n\020source_line"
+    "_base\030\007 \001(\003\"\233\001\n\nCodeModule\022\024\n\014base_addre"
+    "ss\030\001 \001(\003\022\014\n\004size\030\002 \001(\003\022\021\n\tcode_file\030\003 \001("
+    "\t\022\027\n\017code_identifier\030\004 \001(\t\022\022\n\ndebug_file"
+    "\030\005 \001(\t\022\030\n\020debug_identifier\030\006 \001(\t\022\017\n\007vers"
+    "ion\030\007 \001(\t", 849);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "process_state.proto", &protobuf_RegisterTypes);
   ProcessStateProto::default_instance_ = new ProcessStateProto();
@@ -556,7 +561,7 @@ bool ProcessStateProto_Thread::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .StackFrame frames = 1;
+      // repeated .google_breakpad.StackFrame frames = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -589,7 +594,7 @@ bool ProcessStateProto_Thread::MergePartialFromCodedStream(
 
 void ProcessStateProto_Thread::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated .StackFrame frames = 1;
+  // repeated .google_breakpad.StackFrame frames = 1;
   for (int i = 0; i < this->frames_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->frames(i), output);
@@ -603,7 +608,7 @@ void ProcessStateProto_Thread::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* ProcessStateProto_Thread::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // repeated .StackFrame frames = 1;
+  // repeated .google_breakpad.StackFrame frames = 1;
   for (int i = 0; i < this->frames_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -620,7 +625,7 @@ void ProcessStateProto_Thread::SerializeWithCachedSizes(
 int ProcessStateProto_Thread::ByteSize() const {
   int total_size = 0;
   
-  // repeated .StackFrame frames = 1;
+  // repeated .google_breakpad.StackFrame frames = 1;
   total_size += 1 * this->frames_size();
   for (int i = 0; i < this->frames_size(); i++) {
     total_size +=
@@ -724,7 +729,7 @@ ProcessStateProto::ProcessStateProto()
 }
 
 void ProcessStateProto::InitAsDefaultInstance() {
-  crash_ = const_cast< ::ProcessStateProto_Crash*>(&::ProcessStateProto_Crash::default_instance());
+  crash_ = const_cast< ::google_breakpad::ProcessStateProto_Crash*>(&::google_breakpad::ProcessStateProto_Crash::default_instance());
 }
 
 ProcessStateProto::ProcessStateProto(const ProcessStateProto& from)
@@ -800,7 +805,7 @@ void ProcessStateProto::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     time_date_stamp_ = GOOGLE_LONGLONG(0);
     if (_has_bit(1)) {
-      if (crash_ != NULL) crash_->::ProcessStateProto_Crash::Clear();
+      if (crash_ != NULL) crash_->::google_breakpad::ProcessStateProto_Crash::Clear();
     }
     if (_has_bit(2)) {
       if (assertion_ != &_default_assertion_) {
@@ -864,7 +869,7 @@ bool ProcessStateProto::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .ProcessStateProto.Crash crash = 2;
+      // optional .google_breakpad.ProcessStateProto.Crash crash = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -911,7 +916,7 @@ bool ProcessStateProto::MergePartialFromCodedStream(
         break;
       }
       
-      // repeated .ProcessStateProto.Thread threads = 5;
+      // repeated .google_breakpad.ProcessStateProto.Thread threads = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -926,7 +931,7 @@ bool ProcessStateProto::MergePartialFromCodedStream(
         break;
       }
       
-      // repeated .CodeModule modules = 6;
+      // repeated .google_breakpad.CodeModule modules = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -1065,7 +1070,7 @@ void ProcessStateProto::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->time_date_stamp(), output);
   }
   
-  // optional .ProcessStateProto.Crash crash = 2;
+  // optional .google_breakpad.ProcessStateProto.Crash crash = 2;
   if (_has_bit(1)) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->crash(), output);
@@ -1085,13 +1090,13 @@ void ProcessStateProto::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->requesting_thread(), output);
   }
   
-  // repeated .ProcessStateProto.Thread threads = 5;
+  // repeated .google_breakpad.ProcessStateProto.Thread threads = 5;
   for (int i = 0; i < this->threads_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       5, this->threads(i), output);
   }
   
-  // repeated .CodeModule modules = 6;
+  // repeated .google_breakpad.CodeModule modules = 6;
   for (int i = 0; i < this->modules_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       6, this->modules(i), output);
@@ -1160,7 +1165,7 @@ void ProcessStateProto::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->time_date_stamp(), target);
   }
   
-  // optional .ProcessStateProto.Crash crash = 2;
+  // optional .google_breakpad.ProcessStateProto.Crash crash = 2;
   if (_has_bit(1)) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -1182,14 +1187,14 @@ void ProcessStateProto::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->requesting_thread(), target);
   }
   
-  // repeated .ProcessStateProto.Thread threads = 5;
+  // repeated .google_breakpad.ProcessStateProto.Thread threads = 5;
   for (int i = 0; i < this->threads_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         5, this->threads(i), target);
   }
   
-  // repeated .CodeModule modules = 6;
+  // repeated .google_breakpad.CodeModule modules = 6;
   for (int i = 0; i < this->modules_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -1269,7 +1274,7 @@ int ProcessStateProto::ByteSize() const {
           this->time_date_stamp());
     }
     
-    // optional .ProcessStateProto.Crash crash = 2;
+    // optional .google_breakpad.ProcessStateProto.Crash crash = 2;
     if (has_crash()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -1335,7 +1340,7 @@ int ProcessStateProto::ByteSize() const {
     }
     
   }
-  // repeated .ProcessStateProto.Thread threads = 5;
+  // repeated .google_breakpad.ProcessStateProto.Thread threads = 5;
   total_size += 1 * this->threads_size();
   for (int i = 0; i < this->threads_size(); i++) {
     total_size +=
@@ -1343,7 +1348,7 @@ int ProcessStateProto::ByteSize() const {
         this->threads(i));
   }
   
-  // repeated .CodeModule modules = 6;
+  // repeated .google_breakpad.CodeModule modules = 6;
   total_size += 1 * this->modules_size();
   for (int i = 0; i < this->modules_size(); i++) {
     total_size +=
@@ -1383,7 +1388,7 @@ void ProcessStateProto::MergeFrom(const ProcessStateProto& from) {
       set_time_date_stamp(from.time_date_stamp());
     }
     if (from._has_bit(1)) {
-      mutable_crash()->::ProcessStateProto_Crash::MergeFrom(from.crash());
+      mutable_crash()->::google_breakpad::ProcessStateProto_Crash::MergeFrom(from.crash());
     }
     if (from._has_bit(2)) {
       set_assertion(from.assertion());
@@ -1487,7 +1492,7 @@ StackFrame::StackFrame()
 }
 
 void StackFrame::InitAsDefaultInstance() {
-  module_ = const_cast< ::CodeModule*>(&::CodeModule::default_instance());
+  module_ = const_cast< ::google_breakpad::CodeModule*>(&::google_breakpad::CodeModule::default_instance());
 }
 
 StackFrame::StackFrame(const StackFrame& from)
@@ -1548,7 +1553,7 @@ void StackFrame::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     instruction_ = GOOGLE_LONGLONG(0);
     if (_has_bit(1)) {
-      if (module_ != NULL) module_->::CodeModule::Clear();
+      if (module_ != NULL) module_->::google_breakpad::CodeModule::Clear();
     }
     if (_has_bit(2)) {
       if (function_name_ != &_default_function_name_) {
@@ -1589,7 +1594,7 @@ bool StackFrame::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .CodeModule module = 2;
+      // optional .google_breakpad.CodeModule module = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -1708,7 +1713,7 @@ void StackFrame::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->instruction(), output);
   }
   
-  // optional .CodeModule module = 2;
+  // optional .google_breakpad.CodeModule module = 2;
   if (_has_bit(1)) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->module(), output);
@@ -1760,7 +1765,7 @@ void StackFrame::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->instruction(), target);
   }
   
-  // optional .CodeModule module = 2;
+  // optional .google_breakpad.CodeModule module = 2;
   if (_has_bit(1)) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -1820,7 +1825,7 @@ int StackFrame::ByteSize() const {
           this->instruction());
     }
     
-    // optional .CodeModule module = 2;
+    // optional .google_breakpad.CodeModule module = 2;
     if (has_module()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -1893,7 +1898,7 @@ void StackFrame::MergeFrom(const StackFrame& from) {
       set_instruction(from.instruction());
     }
     if (from._has_bit(1)) {
-      mutable_module()->::CodeModule::MergeFrom(from.module());
+      mutable_module()->::google_breakpad::CodeModule::MergeFrom(from.module());
     }
     if (from._has_bit(2)) {
       set_function_name(from.function_name());
@@ -2494,5 +2499,7 @@ void CodeModule::Swap(CodeModule* other) {
 
 
 // @@protoc_insertion_point(namespace_scope)
+
+}  // namespace google_breakpad
 
 // @@protoc_insertion_point(global_scope)
