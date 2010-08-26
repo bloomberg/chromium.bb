@@ -33,10 +33,11 @@ Import('env')
 env.ComponentProgram('mmap_test.nexe',
                      'mmap_test.cc',
                      EXTRA_LIBS=['pthread'])
-node = env.CommandSelLdrTestNacl('mmap_test.out',
-                                 command=[env.File('mmap_test.nexe')],
-                                 stdout_golden=env.File('mmap_test.stdout'),
-                                 )
+node = env.CommandSelLdrTestNacl(
+    'mmap_test.out',
+    command=[env.File('mmap_test.nexe'), env.File('test-file')],
+    stdout_golden=env.File('mmap_test.stdout'),
+    osenv='NACL_DANGEROUS_ENABLE_FILE_ACCESS=1')
 
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],

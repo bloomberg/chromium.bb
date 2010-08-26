@@ -1027,6 +1027,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
   size_t                      alloc_rounded_length;
   nacl_off64_t                file_size;
   nacl_off64_t                file_bytes;
+  nacl_off64_t                host_rounded_file_bytes;
   size_t                      alloc_rounded_file_bytes;
   size_t                      start_of_inaccessible;
 
@@ -1116,6 +1117,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
      */
     file_size                = kMaxUsableFileSize;
     file_bytes               = kMaxUsableFileSize;
+    host_rounded_file_bytes  = kMaxUsableFileSize;
     alloc_rounded_file_bytes = kMaxUsableFileSize;
   } else {
     /*
@@ -1151,12 +1153,12 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
 
     file_bytes = file_size - offset;
     if ((nacl_off64_t) kMaxUsableFileSize < file_bytes) {
-      file_bytes = kMaxUsableFileSize;
+      host_rounded_file_bytes = kMaxUsableFileSize;
     } else {
-      file_bytes = NaClRoundHostAllocPage((size_t) (file_size - offset));
+      host_rounded_file_bytes = NaClRoundHostAllocPage((size_t) file_bytes);
     }
 
-    ASSERT(file_bytes <= (nacl_off64_t) kMaxUsableFileSize);
+    ASSERT(host_rounded_file_bytes <= (nacl_off64_t) kMaxUsableFileSize);
     /*
      * We need to deal with NaClRoundHostAllocPage rounding up to zero
      * from ~0u - n, where n < 4096 or 65536 (== 1 alloc page).
@@ -1165,27 +1167,29 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
      * smaller than SIZE_T_MAX, so it should never happen, but we
      * leave the explicit check below as defensive programming.
      */
-    alloc_rounded_file_bytes = NaClRoundAllocPage((size_t) file_bytes);
+    alloc_rounded_file_bytes =
+      NaClRoundAllocPage((size_t) host_rounded_file_bytes);
 
-    if (0 == alloc_rounded_file_bytes && 0 != file_bytes) {
+    if (0 == alloc_rounded_file_bytes && 0 != host_rounded_file_bytes) {
       map_result = -NACL_ABI_ENOMEM;
       goto cleanup;
     }
 
     /*
-     * NB: file_bytes and alloc_rounded_file_bytes can be zero.  Such
-     * an mmap just makes memory (offset relative to usraddr) in the
-     * range [0, alloc_rounded_length) inaccessible.
+     * NB: host_rounded_file_bytes and alloc_rounded_file_bytes can be
+     * zero.  Such an mmap just makes memory (offset relative to
+     * usraddr) in the range [0, alloc_rounded_length) inaccessible.
      */
   }
 
   /*
-   * file_bytes is how many bytes we can map from the file, given the
-   * user-supplied starting offset.  It is at least one page.  If it
-   * came from a real file, it is a multiple of host-OS allocation
-   * size.  it cannot be larger than kMaxUsableFileSize.
+   * host_rounded_file_bytes is how many bytes we can map from the
+   * file, given the user-supplied starting offset.  It is at least
+   * one page.  If it came from a real file, it is a multiple of
+   * host-OS allocation size.  it cannot be larger than
+   * kMaxUsableFileSize.
    */
-  length = size_min(alloc_rounded_length, (size_t) file_bytes);
+  length = size_min(alloc_rounded_length, (size_t) host_rounded_file_bytes);
   start_of_inaccessible = size_min(alloc_rounded_length,
                                    alloc_rounded_file_bytes);
 
@@ -1334,6 +1338,12 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
                                          flags,
                                          (off_t) offset);
     } else {
+      /*
+       * This is a fix for Windows, where we cannot pass a size that
+       * goes beyond the non-page-rounded end of the file.
+       */
+      size_t length_to_map = size_min(length, (size_t) file_bytes);
+
       NaClLog(4,
               ("NaClSysMmap: (*ndp->vtbl->Map)(,,0x%08"NACL_PRIxPTR","
                "0x%08"NACL_PRIxS",0x%x,0x%x,0x%08"NACL_PRIxPTR")\n"),
@@ -1342,7 +1352,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
       map_result = (*ndp->vtbl->Map)(ndp,
                                      natp->effp,
                                      (void *) sysaddr,
-                                     length,
+                                     length_to_map,
                                      prot,
                                      flags,
                                      (off_t) offset);

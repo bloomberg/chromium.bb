@@ -5,13 +5,17 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 #define PRINT_HEADER 0
 #define TEXT_LINE_SIZE 1024
+
+const char *example_file;
 
 /*
  * function failed(testname, msg)
@@ -146,6 +150,55 @@ bool test4() {
 }
 
 /*
+ *   Verify that the last page in a file can be mmapped when the file's
+ *   size is not a multiple of the page size.
+ *   Tests for http://code.google.com/p/nativeclient/issues/detail?id=836
+ */
+
+bool test_mmap_end_of_file() {
+  printf("test_mmap_end_of_file\n");
+  int fd = open(example_file, O_RDONLY);
+  if (fd < 0) {
+    printf("open() failed\n");
+    return false;
+  }
+  /*
+   * TODO(mseaborn): Extend from 4k to 64k when zero-fill works on Linux.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=824
+   */
+  size_t map_size = 0x1000;
+  char *alloc = (char *) mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  if (alloc == MAP_FAILED) {
+    printf("mmap() failed\n");
+    return false;
+  }
+  int rc = close(fd);
+  if (rc != 0) {
+    printf("close() failed\n");
+    return false;
+  }
+  /* To avoid line ending issues, this test file contains no newlines. */
+  const char *expected_data =
+    "Test file for mmapping, less than a page in size.";
+  if (memcmp(alloc, expected_data, strlen(expected_data)) != 0) {
+    printf("Unexpected contents: %s\n", alloc);
+    return false;
+  }
+  for (size_t i = strlen(expected_data); i < map_size; i++) {
+    if (alloc[i] != 0) {
+      printf("Unexpected padding byte: %i\n", alloc[i]);
+      return false;
+    }
+  }
+  rc = munmap(alloc, map_size);
+  if (rc != 0) {
+    printf("munmap() failed\n");
+    return false;
+  }
+  return true;
+}
+
+/*
  * function testSuite()
  *
  *   Run through a complete sequence of file tests.
@@ -160,6 +213,9 @@ bool testSuite() {
   ret &= test2();
   ret &= test3();
   ret &= test4();
+
+  ret &= test_mmap_end_of_file();
+
   return ret;
 }
 
@@ -173,6 +229,12 @@ bool testSuite() {
 
 int main(const int argc, const char *argv[]) {
   bool passed;
+
+  if (argc != 2) {
+    printf("Error: Expected test file arg\n");
+    return 1;
+  }
+  example_file = argv[1];
 
   // run the full test suite
   passed = testSuite();
