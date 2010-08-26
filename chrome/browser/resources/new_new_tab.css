@@ -18,9 +18,10 @@ html[mode=app-launcher] {
 #main {
   -webkit-box-sizing: border-box;
   -webkit-transition: width .15s;
+  background: url(chrome://theme/IDR_PRODUCT_LOGO) no-repeat 0 6px;
   margin: 0 auto;
   min-height: 100%;
-  padding:10px 0 20px;
+  padding-bottom: 25px; /* Make room for the bottom positioned footer. */
   position: relative;
   width: 920px;
 }
@@ -214,10 +215,6 @@ html[dir=rtl] .item {
   max-width: none !important;
 }
 
-#most-visited {
-  margin-bottom: 20px;
-}
-
 .nav > a {
   /* no icon */
   padding: 0;
@@ -246,6 +243,12 @@ html[dir=rtl] .item {
   text-overflow: ellipsis;
   font-size: 100%;
   margin: 0 10px;
+}
+
+#top-bar {
+  display: -webkit-box;
+  -webkit-box-align: center;
+  min-height: 56px;
 }
 
 .notification.hidden {
@@ -337,6 +340,11 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   font-family: inherit;
 }
 
+#apps-section {
+  padding: 10px 0px;
+  border-top: 0;
+}
+
 #apps-launch-control {
   margin-top: 10px;
 }
@@ -360,42 +368,38 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   display: none !important;
 }
 
+.section + :not(.hidden) {
+  border-top: 0;
+}
+
 .section > div {
   margin-bottom: 10px;
 }
 
 .section > h2 {
-  background-position: 0 center;
-  background-repeat: no-repeat;
-  -webkit-background-size: 100% 26px;
+  display: inline-block;
+  margin: 0;
+  font-size: 100%;
   cursor: pointer;
-  display: block;
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  font-weight: normal;
-  margin:10px 0;
-  -webkit-margin-collapse: separate;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
-.section > h2 > img {
-  margin-left:-13px;
-  padding-right:4px;
-}
-
-.section:not(.hidden) > h2 > img {
-  -webkit-transform:rotate(90deg);
-}
-
-.section > h2 > span {
-  padding-right: 4px;
+.section > h2:hover {
+  text-decoration: underline;
 }
 
 .section.hidden {
+  display: inline;
   border: 0;
 }
 
 .section.hidden > :not(h2) {
   display: none !important;
+}
+
+.section > h2 {
+  margin-right: 5px;
 }
 
 .section.hidden > h2 {
@@ -406,12 +410,20 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   border-right: 0;
 }
 
+.section.hidden + .hidden > h2 {
+  padding-left: 5px;
+}
+
 .section:last-child {
   border-bottom: 0;
 }
 
 .section .nav {
   display: inline-block;
+}
+
+#apps {
+  margin-top: 10px;
 }
 
 .section > * {
@@ -441,4 +453,23 @@ html[dir=rtl] #option-menu > [command=hide]:before {
     margin-left: 10px;
     margin-right: 10px;
   }
+}
+
+#footer {
+  bottom: 0;
+  padding-bottom: 5px;
+  position: absolute;
+  text-align: end;
+  width: 100%;
+}
+
+#footer hr {
+  border: 0;
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+#footer hr:after {
+  content: "|";
 }

@@ -71,8 +71,7 @@ var Section = {
   RECENT: 4,
   // TIPS is no longer used
   SYNC: 16,
-  DEBUG: 32,
-  APPS: 64
+  DEBUG: 32
 };
 
 var shownSections = templateData['shown_sections'];
@@ -126,6 +125,11 @@ if ('mode' in hashParams) {
 
 <div id="main">
 
+  <div id=top-bar>
+    <input type="button" id="option-button"
+        i18n-values="title:pagedisplaytooltip">
+  </div>
+
   <menu id="option-menu">
     <div command="hide" section="THUMB" i18n-content="mostvisited"></div>
     <div command="hide" section="RECENT" i18n-content="recentlyclosed"></div>
@@ -140,25 +144,20 @@ if ('mode' in hashParams) {
   </div>
 
   <div class="sections">
-    <div class="section" section="APPS" id="apps-section">
-      <h2><img src="ntp/ntp_disclosure_triangle.png"
-        ><span i18n-content="apps"></span></h2>
-      <div id="apps-section-content"></div>
-    </div>
+    <div class="section disabled" id="apps-section"></div>
 
     <div id="most-visited-section" class="section" section="THUMB">
-      <h2><img src="ntp/ntp_disclosure_triangle.png"
-        ><span i18n-content="mostvisited"></span></h2>
+      <h2 i18n-content="mostvisited"></h2>
       <div id="most-visited"></div>
     </div>
 
     <div id="recently-closed" class="section" section="RECENT">
-      <h2><span i18n-content="recentlyclosed"></span></h2>
+      <h2 i18n-content="recentlyclosed"></h2>
       <span class="nav"></span>
     </div>
 
     <div id="debug" class="section disabled" section="DEBUG">
-      <h2><span>Debug</span></h2>
+      <h2>Debug</h2>
       <div id="apps-launch-control">
         Open apps in:<label
         ><input type="radio" name="launch-container-type" value=""
@@ -176,7 +175,6 @@ if ('mode' in hashParams) {
   <script>
     updateSimpleSection('recently-closed', Section.RECENT);
     updateSimpleSection('most-visited-section', Section.THUMB);
-    updateSimpleSection('apps-section', Section.APPS);
     updateSimpleSection('debug', Section.DEBUG);
   </script>
 
@@ -188,6 +186,17 @@ if ('mode' in hashParams) {
   <div id="attribution" class="attribution">
     <div i18n-content="attributionintro"></div>
     <img id="attribution-img">
+  </div>
+
+  <div id="footer">
+    <a href="chrome://history"><span class="link-color"
+                                     i18n-content="history"></span></a>
+    <hr>
+    <a href="chrome://downloads"><span class="link-color"
+                                       i18n-content="downloads"></span></a>
+    <hr>
+    <a i18n-values="href:helpurl"><span class="link-color"
+                                        i18n-content="help"></span></a>
   </div>
 
 </div>  <!-- main -->

@@ -20,8 +20,7 @@ enum Section {
   RECENT = 4,
   TIPS = 8,
   SYNC = 16,
-  DEBUG = 32,
-  APPS = 64
+  DEBUG = 32
 };
 
 class ShownSectionsHandler : public DOMMessageHandler,

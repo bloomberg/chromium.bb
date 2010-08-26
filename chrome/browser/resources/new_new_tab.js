@@ -587,9 +587,6 @@ OptionMenu.prototype = {
   }
 };
 
-// TODO(aa): The 'clear-all-blacklisted' feature needs to move into a menu in
-// the most visited section.
-/*
 var optionMenu = new OptionMenu($('option-button'), $('option-menu'));
 optionMenu.commands = {
   'clear-all-blacklisted' : function() {
@@ -607,16 +604,10 @@ optionMenu.commands = {
     saveShownSections();
   }
 };
-*/
 
 $('main').addEventListener('click', function(e) {
-  var p = e.target;
-  while (p && p.tagName != 'H2') {
-    p = p.parentNode;
-  }
-
-  if (p) {
-    p = p.parentNode;
+  if (e.target.tagName == 'H2') {
+    var p = e.target.parentNode;
     var section = p.getAttribute('section');
     if (section) {
       if (shownSections & Section[section])
@@ -815,8 +806,7 @@ function callGetSyncMessageIfSyncIsPresent() {
 }
 
 function hideAllMenus() {
-  // TODO(aa): See comment in definition of optionMenu.
-  //optionMenu.hide();
+  optionMenu.hide();
 }
 
 window.addEventListener('blur', hideAllMenus);
