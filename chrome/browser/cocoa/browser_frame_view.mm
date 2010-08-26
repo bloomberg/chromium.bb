@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_nsautorelease_pool.h"
-#import "chrome/browser/cocoa/chrome_browser_window.h"
+#import "chrome/browser/cocoa/framed_browser_window.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/themes/browser_theme_provider.h"
 #include "grit/theme_resources.h"
@@ -116,7 +116,7 @@ static BOOL gCanGetCornerRadius = NO;
 - (void)drawRect:(NSRect)rect {
   // If this isn't the window class we expect, then pass it on to the
   // original implementation.
-  if (![[self window] isKindOfClass:[ChromeBrowserWindow class]]) {
+  if (![[self window] isKindOfClass:[FramedBrowserWindow class]]) {
     [self drawRectOriginal:rect];
     return;
   }
@@ -327,9 +327,9 @@ static BOOL gCanGetCornerRadius = NO;
 // Check to see if the mouse is currently in one of our window widgets.
 - (BOOL)_mouseInGroup:(NSButton*)widget {
   BOOL mouseInGroup = NO;
-  if ([[self window] isKindOfClass:[ChromeBrowserWindow class]]) {
-    ChromeBrowserWindow* window =
-        static_cast<ChromeBrowserWindow*>([self window]);
+  if ([[self window] isKindOfClass:[FramedBrowserWindow class]]) {
+    FramedBrowserWindow* window =
+        static_cast<FramedBrowserWindow*>([self window]);
     mouseInGroup = [window mouseInGroup:widget];
   } else if ([super respondsToSelector:@selector(_mouseInGroup:)]) {
     mouseInGroup = [super _mouseInGroup:widget];
@@ -340,9 +340,9 @@ static BOOL gCanGetCornerRadius = NO;
 // Let our window handle updating the window widget tracking area.
 - (void)updateTrackingAreas {
   [super updateTrackingAreas];
-  if ([[self window] isKindOfClass:[ChromeBrowserWindow class]]) {
-    ChromeBrowserWindow* window =
-        static_cast<ChromeBrowserWindow*>([self window]);
+  if ([[self window] isKindOfClass:[FramedBrowserWindow class]]) {
+    FramedBrowserWindow* window =
+        static_cast<FramedBrowserWindow*>([self window]);
     [window updateTrackingAreas];
   }
 }

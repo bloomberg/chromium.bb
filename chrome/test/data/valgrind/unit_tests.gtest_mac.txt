@@ -19,7 +19,7 @@ RenderViewTest.MacTestCmdUp
 
 # Folowing tests do not pass memcheck test.
 # See http://crbug.com/30384.
-ChromeBrowserWindowTest.DoesHideTitle
+FramedBrowserWindowTest.DoesHideTitle
 # See http://crbug.com/30386.
 ClearBrowsingDataControllerTest.*
 # See http://crbug.com/30393.

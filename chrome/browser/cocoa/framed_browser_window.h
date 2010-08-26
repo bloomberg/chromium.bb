@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COCOA_CHROME_BROWSER_WINDOW_H_
-#define CHROME_BROWSER_COCOA_CHROME_BROWSER_WINDOW_H_
+#ifndef CHROME_BROWSER_COCOA_FRAMED_BROWSER_WINDOW_H_
+#define CHROME_BROWSER_COCOA_FRAMED_BROWSER_WINDOW_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -13,24 +13,24 @@
 
 // Offset from the top of the window frame to the top of the window controls
 // (zoom, close, miniaturize) for a window with a tabstrip.
-const NSInteger kChromeWindowButtonsWithTabStripOffsetFromTop = 6;
+const NSInteger kFramedWindowButtonsWithTabStripOffsetFromTop = 6;
 
 // Offset from the top of the window frame to the top of the window controls
 // (zoom, close, miniaturize) for a window without a tabstrip.
-const NSInteger kChromeWindowButtonsWithoutTabStripOffsetFromTop = 4;
+const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromTop = 4;
 
 // Offset from the left of the window frame to the top of the window controls
 // (zoom, close, miniaturize).
-const NSInteger kChromeWindowButtonsOffsetFromLeft = 8;
+const NSInteger kFramedWindowButtonsOffsetFromLeft = 8;
 
 // Offset between the window controls (zoom, close, miniaturize).
-const NSInteger kChromeWindowButtonsInterButtonSpacing = 7;
+const NSInteger kFramedWindowButtonsInterButtonSpacing = 7;
 
-// Cocoa class representing a Chrome browser window.
+// Cocoa class representing a framed browser window.
 // We need to override NSWindow with our own class since we need access to all
 // unhandled keyboard events and subclassing NSWindow is the only method to do
 // this. We also handle our own window controls and custom window frame drawing.
-@interface ChromeBrowserWindow : ChromeEventProcessingWindow {
+@interface FramedBrowserWindow : ChromeEventProcessingWindow {
  @private
   BOOL shouldHideTitle_;
   NSButton* closeButton_;
@@ -68,4 +68,4 @@ const NSInteger kChromeWindowButtonsInterButtonSpacing = 7;
 
 @end
 
-#endif  // CHROME_BROWSER_COCOA_CHROME_BROWSER_WINDOW_H_
+#endif  // CHROME_BROWSER_COCOA_FRAMED_BROWSER_WINDOW_H_

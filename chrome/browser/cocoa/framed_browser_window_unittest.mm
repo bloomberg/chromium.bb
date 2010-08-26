@@ -6,23 +6,23 @@
 
 #include "base/scoped_nsobject.h"
 #include "chrome/app/chrome_dll_resource.h"
-#import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/browser_frame_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/framed_browser_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
-class ChromeBrowserWindowTest : public CocoaTest {
+class FramedBrowserWindowTest : public CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
     // Create a window.
     const NSUInteger mask = NSTitledWindowMask | NSClosableWindowMask |
         NSMiniaturizableWindowMask | NSResizableWindowMask;
-    window_ = [[ChromeBrowserWindow alloc]
+    window_ = [[FramedBrowserWindow alloc]
                initWithContentRect:NSMakeRect(0, 0, 800, 600)
                styleMask:mask
                backing:NSBackingStoreBuffered
@@ -52,17 +52,17 @@ class ChromeBrowserWindowTest : public CocoaTest {
     return [image TIFFRepresentation];
   }
 
-  ChromeBrowserWindow* window_;
+  FramedBrowserWindow* window_;
 };
 
 // Baseline test that the window creates, displays, closes, and
 // releases.
-TEST_F(ChromeBrowserWindowTest, ShowAndClose) {
+TEST_F(FramedBrowserWindowTest, ShowAndClose) {
   [window_ display];
 }
 
 // Test that undocumented title-hiding API we're using does the job.
-TEST_F(ChromeBrowserWindowTest, DoesHideTitle) {
+TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
   // The -display calls are not strictly necessary, but they do
   // make it easier to see what's happening when debugging (without
   // them the changes are never flushed to the screen).
@@ -93,7 +93,7 @@ TEST_F(ChromeBrowserWindowTest, DoesHideTitle) {
 }
 
 // Test to make sure that our window widgets are in the right place.
-TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
+TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   // First without tabstrip.
   NSCell* closeBoxCell = [window_ accessibilityAttributeValue:
                           NSAccessibilityCloseButtonAttribute];
@@ -104,8 +104,8 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
   windowBounds.origin = NSZeroPoint;
   EXPECT_EQ(NSMaxY(closeBoxFrame),
             NSMaxY(windowBounds) -
-            kChromeWindowButtonsWithoutTabStripOffsetFromTop);
-  EXPECT_EQ(NSMinX(closeBoxFrame), kChromeWindowButtonsOffsetFromLeft);
+            kFramedWindowButtonsWithoutTabStripOffsetFromTop);
+  EXPECT_EQ(NSMinX(closeBoxFrame), kFramedWindowButtonsOffsetFromLeft);
 
   NSCell* miniaturizeCell = [window_ accessibilityAttributeValue:
                              NSAccessibilityMinimizeButtonAttribute];
@@ -114,9 +114,9 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
   NSRect miniaturizeFrame = [miniaturizeControl frame];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
             NSMaxY(windowBounds) -
-            kChromeWindowButtonsWithoutTabStripOffsetFromTop);
+            kFramedWindowButtonsWithoutTabStripOffsetFromTop);
   EXPECT_EQ(NSMinX(miniaturizeFrame),
-            NSMaxX(closeBoxFrame) + kChromeWindowButtonsInterButtonSpacing);
+            NSMaxX(closeBoxFrame) + kFramedWindowButtonsInterButtonSpacing);
 
   // Then with a tabstrip.
   id controller = [OCMockObject mockForClass:[BrowserWindowController class]];
@@ -138,8 +138,8 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
   windowBounds.origin = NSZeroPoint;
   EXPECT_EQ(NSMaxY(closeBoxFrame),
             NSMaxY(windowBounds) -
-            kChromeWindowButtonsWithTabStripOffsetFromTop);
-  EXPECT_EQ(NSMinX(closeBoxFrame), kChromeWindowButtonsOffsetFromLeft);
+            kFramedWindowButtonsWithTabStripOffsetFromTop);
+  EXPECT_EQ(NSMinX(closeBoxFrame), kFramedWindowButtonsOffsetFromLeft);
 
   miniaturizeCell = [window_ accessibilityAttributeValue:
                      NSAccessibilityMinimizeButtonAttribute];
@@ -148,14 +148,14 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
   miniaturizeFrame = [miniaturizeControl frame];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
             NSMaxY(windowBounds) -
-            kChromeWindowButtonsWithTabStripOffsetFromTop);
+            kFramedWindowButtonsWithTabStripOffsetFromTop);
   EXPECT_EQ(NSMinX(miniaturizeFrame),
-            NSMaxX(closeBoxFrame) + kChromeWindowButtonsInterButtonSpacing);
+            NSMaxX(closeBoxFrame) + kFramedWindowButtonsInterButtonSpacing);
   [window_ setWindowController:nil];
 }
 
 // Test that we actually have a tracking area in place.
-TEST_F(ChromeBrowserWindowTest, WindowWidgetTrackingArea) {
+TEST_F(FramedBrowserWindowTest, WindowWidgetTrackingArea) {
   NSCell* closeBoxCell =
       [window_ accessibilityAttributeValue:NSAccessibilityCloseButtonAttribute];
   NSView* closeBoxControl = [closeBoxCell controlView];

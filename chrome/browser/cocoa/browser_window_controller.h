@@ -28,7 +28,6 @@
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
-@class ChromeBrowserWindow;
 class ConstrainedWindowMac;
 @class DownloadShelfController;
 @class FindBarCocoaController;

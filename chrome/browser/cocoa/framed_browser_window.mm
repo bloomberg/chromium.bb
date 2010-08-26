@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/chrome_browser_window.h"
+#import "chrome/browser/cocoa/framed_browser_window.h"
 
 #include "base/logging.h"
 #import "chrome/browser/cocoa/browser_frame_view.h"
@@ -27,12 +27,12 @@ namespace {
 // buttons (so that they highlight and activate correctly) as well as implement
 // the private method _mouseInGroup in our frame view class which is required
 // to get the rollover highlight drawing to draw correctly.
-@interface ChromeBrowserWindow(ChromeBrowserWindowPrivateMethods)
+@interface FramedBrowserWindow(PrivateMethods)
 // Return the view that does the "frame" drawing.
 - (NSView*)frameView;
 @end
 
-@implementation ChromeBrowserWindow
+@implementation FramedBrowserWindow
 
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
@@ -119,10 +119,10 @@ namespace {
                                      forStyleMask:aStyle];
     NSRect closeButtonFrame = [closeButton_ frame];
     CGFloat yOffset = [browserController hasTabStrip] ?
-        kChromeWindowButtonsWithTabStripOffsetFromTop :
-        kChromeWindowButtonsWithoutTabStripOffsetFromTop;
+        kFramedWindowButtonsWithTabStripOffsetFromTop :
+        kFramedWindowButtonsWithoutTabStripOffsetFromTop;
     closeButtonFrame.origin =
-        NSMakePoint(kChromeWindowButtonsOffsetFromLeft,
+        NSMakePoint(kFramedWindowButtonsOffsetFromLeft,
                     (NSHeight(frameViewBounds) -
                      NSHeight(closeButtonFrame) - yOffset));
 
@@ -137,7 +137,7 @@ namespace {
     NSRect miniaturizeButtonFrame = [miniaturizeButton_ frame];
     miniaturizeButtonFrame.origin =
         NSMakePoint((NSMaxX(closeButtonFrame) +
-                     kChromeWindowButtonsInterButtonSpacing),
+                     kFramedWindowButtonsInterButtonSpacing),
                     NSMinY(closeButtonFrame));
     [miniaturizeButton_ setFrame:miniaturizeButtonFrame];
     [miniaturizeButton_ setTarget:self];
@@ -150,7 +150,7 @@ namespace {
     NSRect zoomButtonFrame = [zoomButton_ frame];
     zoomButtonFrame.origin =
         NSMakePoint((NSMaxX(miniaturizeButtonFrame) +
-                     kChromeWindowButtonsInterButtonSpacing),
+                     kFramedWindowButtonsInterButtonSpacing),
                     NSMinY(miniaturizeButtonFrame));
     [zoomButton_ setFrame:zoomButtonFrame];
     [zoomButton_ setTarget:self];

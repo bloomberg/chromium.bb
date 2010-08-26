@@ -15,7 +15,7 @@
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
-#import "chrome/browser/cocoa/chrome_browser_window.h"
+#import "chrome/browser/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/collected_cookies_mac.h"
 #import "chrome/browser/cocoa/content_settings_dialog_controller.h"
