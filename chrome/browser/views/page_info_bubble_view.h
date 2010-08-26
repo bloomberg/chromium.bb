@@ -47,11 +47,11 @@ class PageInfoBubbleView : public views::View,
   // Layout the sections within the bubble.
   void LayoutSections();
 
-  // The parent window of the InfoBubble showing this view.
-  gfx::NativeWindow parent_window_;
-
   // The model providing the various section info.
   PageInfoModel model_;
+
+  // The parent window of the InfoBubble showing this view.
+  gfx::NativeWindow parent_window_;
 
   // The id of the certificate for this page.
   int cert_id_;
