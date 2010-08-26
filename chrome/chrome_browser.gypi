@@ -1131,6 +1131,8 @@
         'browser/default_encoding_combo_model.h',
         'browser/defaults.cc',
         'browser/defaults.h',
+        'browser/device_orientation/accelerometer_mac.cc',
+        'browser/device_orientation/accelerometer_mac.h',
         'browser/device_orientation/data_fetcher.h',
         'browser/device_orientation/dispatcher_host.cc',
         'browser/device_orientation/dispatcher_host.h',
@@ -3248,9 +3250,10 @@
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',
-              '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+              '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+              '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
             ],
             'mac_bundle_resources': [
               'browser/nacl_loader.sb',
