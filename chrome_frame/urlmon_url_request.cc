@@ -221,7 +221,9 @@ size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
     if (bytes_copied) {
       ++calling_delegate_;
       DCHECK_NE(id(), -1);
-      delegate_->OnReadComplete(id(), read_data);
+      // The delegate can go away in the middle of ReadStream
+      if (delegate_)
+        delegate_->OnReadComplete(id(), read_data);
       --calling_delegate_;
     }
   } else {
