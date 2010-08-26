@@ -564,6 +564,8 @@ void EventSendingController::keyDown(
       code = base::VKEY_LEFT;
     } else if (L"upArrow" == code_str) {
       code = base::VKEY_UP;
+    } else if (L"insert" == code_str) {
+      code = base::VKEY_INSERT;
     } else if (L"delete" == code_str) {
       code = base::VKEY_BACK;
     } else if (L"pageUp" == code_str) {
@@ -574,6 +576,8 @@ void EventSendingController::keyDown(
       code = base::VKEY_HOME;
     } else if (L"end" == code_str) {
       code = base::VKEY_END;
+    } else if (L"printScreen" == code_str) {
+      code = base::VKEY_SNAPSHOT;
     } else {
       // Compare the input string with the function-key names defined by the
       // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
