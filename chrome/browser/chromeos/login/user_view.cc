@@ -14,14 +14,16 @@
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/throbber.h"
+#include "views/controls/link.h"
 
 namespace {
 
 // Background color of the login status label and signout button.
 const SkColor kSignoutBackgroundColor = 0xFF007700;
 
-// Left margin to the "Active User" text.
-const int kSignoutLeftOffset = 10;
+// Horiz/Vert insets for Signout view.
+const int kSignoutViewHorizontalInsets = 10;
+const int kSignoutViewVerticalInsets = 5;
 
 // Padding between menu button and left right image corner.
 const int kMenuButtonPadding = 4;
@@ -34,14 +36,13 @@ const int kIdChangePhoto = 2;
 namespace chromeos {
 
 using login::kBackgroundColor;
-using login::kBorderSize;
 using login::kTextColor;
 using login::kUserImageSize;
 
 // The view that shows the Sign out button below the user's image.
 class SignoutView : public views::View {
  public:
-  explicit SignoutView(views::ButtonListener* listener) {
+  explicit SignoutView(views::LinkController* link_controller) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::Font& font = rb.GetFont(ResourceBundle::SmallFont);
 
@@ -50,16 +51,15 @@ class SignoutView : public views::View {
     active_user_label_->SetFont(font);
     active_user_label_->SetColor(kTextColor);
 
-    signout_button_ = new views::TextButton(
-        listener, l10n_util::GetString(IDS_SCREEN_LOCK_SIGN_OUT));
-    signout_button_->SetFont(font);
-    signout_button_->SetEnabledColor(kTextColor);
-    signout_button_->SetNormalHasBorder(false);
-    signout_button_->set_tag(login::SIGN_OUT);
-    signout_button_->SetFocusable(true);
+    signout_link_ = new views::Link(
+        l10n_util::GetString(IDS_SCREEN_LOCK_SIGN_OUT));
+    signout_link_->SetController(link_controller);
+    signout_link_->SetFont(font);
+    signout_link_->SetColor(kTextColor);
+    signout_link_->SetFocusable(true);
 
     AddChildView(active_user_label_);
-    AddChildView(signout_button_);
+    AddChildView(signout_link_);
 
     set_background(views::Background::CreateSolidBackground(
         kSignoutBackgroundColor));
@@ -68,29 +68,31 @@ class SignoutView : public views::View {
   // views::View overrides.
   virtual void Layout() {
     gfx::Size label = active_user_label_->GetPreferredSize();
-    gfx::Size button = signout_button_->GetPreferredSize();
-    active_user_label_->SetBounds(kSignoutLeftOffset,
-                                  (height() - label.height()) / 2,
-                                  label.width(), label.height());
-    signout_button_->SetBounds(
-        width() - button.width(), (height() - button.height()) / 2,
+    gfx::Size button = signout_link_->GetPreferredSize();
+    active_user_label_->SetBounds(
+        kSignoutViewHorizontalInsets, (height() - label.height()) / 2,
+        label.width(), label.height());
+    signout_link_->SetBounds(
+        width() - button.width() - kSignoutViewHorizontalInsets,
+        (height() - button.height()) / 2,
         button.width(), button.height());
   }
 
   virtual gfx::Size GetPreferredSize() {
     gfx::Size label = active_user_label_->GetPreferredSize();
-    gfx::Size button = signout_button_->GetPreferredSize();
+    gfx::Size button = signout_link_->GetPreferredSize();
     return gfx::Size(label.width() + button.width(),
-                     std::max(label.height(), button.height()));
+                     std::max(label.height(), button.height()) +
+                     kSignoutViewVerticalInsets * 2);
   }
 
-  views::Button* signout_button() { return signout_button_; }
+  views::Link* signout_link() { return signout_link_; }
 
  private:
   friend class UserView;
 
   views::Label* active_user_label_;
-  views::TextButton* signout_button_;
+  views::Link* signout_link_;
 
   DISALLOW_COPY_AND_ASSIGN(SignoutView);
 };
@@ -175,12 +177,13 @@ gfx::Size UserView::GetPreferredSize() {
 
 void UserView::SetSignoutEnabled(bool enabled) {
   DCHECK(signout_view_);
-  signout_view_->signout_button_->SetEnabled(enabled);
+  signout_view_->signout_link_->SetEnabled(enabled);
 }
 
-void UserView::ButtonPressed(views::Button* sender, const views::Event& event) {
+void UserView::LinkActivated(views::Link* source, int event_flags) {
   DCHECK(delegate_);
-  if (sender->tag() == login::SIGN_OUT)
+  DCHECK(signout_view_);
+  if (signout_view_->signout_link_ == source)
     delegate_->OnSignout();
 }
 

@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_view.h"
@@ -24,6 +25,8 @@
 namespace chromeos {
 
 namespace {
+
+const int kCornerRadius = 5;
 
 // A Textfield for password, which also sets focus to itself
 // when a mouse is clicked on it. This is necessary in screen locker
@@ -66,8 +69,23 @@ void ScreenLockView::Init() {
 
   user_view_ = new UserView(this, false);
   views::View* main = new views::View();
+
+  static const BorderDefinition border = {
+    0 /* no padding */,
+    SK_ColorBLACK,
+    0 /* no shadow */,
+    SK_ColorBLACK,
+    5,
+    login::kBackgroundColor,
+    login::kBackgroundColor,
+  };
+
+  // Use rounded rect background.
+  views::Painter* painter = CreateWizardPainter(&border);
+
   main->set_background(
-      views::Background::CreateSolidBackground(login::kBackgroundColor));
+      views::Background::CreateBackgroundPainter(true, painter));
+  main->set_border(CreateWizardBorder(&border));
 
   // Password field.
   password_field_ = new PasswordField();
