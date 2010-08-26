@@ -169,8 +169,13 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
+  scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;
+  scoped_ptr<NavigationControllerRestoredObserver> restore_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;
+
+  typedef ObserverList<NotificationObserver> NotificationObserverList;
+  NotificationObserverList notification_observer_list_;
 
   typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;
   LoginHandlerMap login_handler_map_;
@@ -216,51 +221,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void HandleFindRequest(int handle,
                          const AutomationMsg_Find_Params& params,
                          IPC::Message* reply_message);
-
-  // Responds to requests to open the FindInPage window.
-  void HandleOpenFindInPageRequest(const IPC::Message& message,
-                                   int handle);
-
-  // Get the visibility state of the Find window.
-  void GetFindWindowVisibility(int handle, bool* visible);
-
-  // Responds to requests to find the location of the Find window.
-  void HandleFindWindowLocationRequest(int handle, int* x, int* y);
-
-  // Get the visibility state of the Bookmark bar.
-  void GetBookmarkBarVisibility(int handle, bool* visible, bool* animating);
-
-  // Get the bookmarks as a JSON string.
-  void GetBookmarksAsJSON(int handle, std::string* bookmarks_as_json,
-                          bool *success);
-
-  // Wait for the bookmark model to load.
-  void WaitForBookmarkModelToLoad(int handle, IPC::Message* reply_message);
-
-  // Set |loaded| to true if the bookmark model has loaded, else false.
-  void BookmarkModelHasLoaded(int handle, bool* loaded);
-
-  // Editing, modification, and removal of bookmarks.
-  // Bookmarks are referenced by id.
-  void AddBookmarkGroup(int handle,
-                        int64 parent_id, int index, std::wstring title,
-                        bool* success);
-  void AddBookmarkURL(int handle,
-                      int64 parent_id, int index,
-                      std::wstring title, const GURL& url,
-                      bool* success);
-  void ReparentBookmark(int handle,
-                        int64 id, int64 new_parent_id, int index,
-                        bool* success);
-  void SetBookmarkTitle(int handle,
-                        int64 id, std::wstring title,
-                        bool* success);
-  void SetBookmarkURL(int handle,
-                      int64 id, const GURL& url,
-                      bool* success);
-  void RemoveBookmark(int handle,
-                      int64 id,
-                      bool* success);
 
   // Set window dimensions.
   // Uses the JSON interface for input/output.
@@ -522,24 +482,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                                   DictionaryValue*,
                                                   IPC::Message*);
 
-  void GetDownloadDirectory(int handle, FilePath* download_directory);
-
-  // Retrieves a Browser from a Window and vice-versa.
-  void GetWindowForBrowser(int window_handle, bool* success, int* handle);
-  void GetBrowserForWindow(int window_handle, bool* success,
-                           int* browser_handle);
-
-  // If |show| is true, call Show() on the new window after creating it.
-  void OpenNewBrowserWindow(bool show, IPC::Message* reply_message);
-  void OpenNewBrowserWindowOfType(int type,
-                                  bool show,
-                                  IPC::Message* reply_message);
-
-  void ShowInterstitialPage(int tab_handle,
-                            const std::string& html_text,
-                            IPC::Message* reply_message);
-  void HideInterstitialPage(int tab_handle, bool* success);
-
   void OnSetPageFontSize(int tab_handle, int font_size);
 
   // See browsing_data_remover.h for explanation of bitmap fields.
@@ -583,51 +525,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                             bool* success,
                             std::string* value);
 
-
-  // See comment in AutomationMsg_WaitForTabToBeRestored.
-  void WaitForTabToBeRestored(int tab_handle, IPC::Message* reply_message);
-
-  // Gets the security state for the tab associated to the specified |handle|.
-  void GetSecurityState(int handle, bool* success,
-                        SecurityStyle* security_style, int* ssl_cert_status,
-                        int* insecure_content_status);
-
-  // Gets the page type for the tab associated to the specified |handle|.
-  void GetPageType(int handle, bool* success,
-                   NavigationEntry::PageType* page_type);
-
-  // Gets the duration in ms of the last event matching |event_name|.
-  // |duration_ms| is -1 if the event hasn't occurred yet.
-  void GetMetricEventDuration(const std::string& event_name, int* duration_ms);
-
-  // Simulates an action on the SSL blocking page at the tab specified by
-  // |handle|. If |proceed| is true, it is equivalent to the user pressing the
-  // 'Proceed' button, if false the 'Get me out of there button'.
-  // Not that this fails if the tab is not displaying a SSL blocking page.
-  void ActionOnSSLBlockingPage(int handle,
-                               bool proceed,
-                               IPC::Message* reply_message);
-
-  // Brings the browser window to the front and activates it.
-  void BringBrowserToFront(int browser_handle, bool* success);
-
-  // Checks to see if a command on the browser's CommandController is enabled.
-  void IsMenuCommandEnabled(int browser_handle,
-                            int message_num,
-                            bool* menu_item_enabled);
-
-  // Prints the current tab immediately.
-  void PrintNow(int tab_handle, IPC::Message* reply_message);
-
   // Asynchronous request for printing the current tab.
   void PrintAsync(int tab_handle);
-
-  // Save the current web page.
-  void SavePage(int tab_handle,
-                const FilePath& file_name,
-                const FilePath& dir_path,
-                int type,
-                bool* success);
 
   // Retrieves the number of info-bars currently showing in |count|.
   void GetInfoBarCount(int handle, int* count);
@@ -805,7 +704,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   ExternalTabContainer* GetExternalTabForHandle(int handle);
 #endif  // defined(OS_WIN)
 
-  typedef ObserverList<NotificationObserver> NotificationObserverList;
   typedef std::map<int, ExtensionPortContainer*> PortContainerMap;
 
   scoped_ptr<IPC::ChannelProxy> channel_;
@@ -816,11 +714,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   scoped_ptr<NotificationObserver> dom_inspector_observer_;
   scoped_ptr<ExtensionTestResultNotificationObserver>
       extension_test_result_observer_;
-  scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
-  scoped_ptr<NavigationControllerRestoredObserver> restore_tracker_;
   PortContainerMap port_containers_;
-  NotificationObserverList notification_observer_list_;
   scoped_refptr<AutomationResourceMessageFilter>
       automation_resource_message_filter_;
 

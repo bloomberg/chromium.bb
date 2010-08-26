@@ -809,6 +809,7 @@ class Browser : public TabStripModelDelegate,
   // TODO(beng): remove, and provide AutomationProvider a better way to access
   //             the LocationBarView's edit.
   friend class AutomationProvider;
+  friend class TestingAutomationProvider;
 
   // Returns the StatusBubble from the current toolbar. It is possible for
   // this to return NULL if called before the toolbar has initialized.
