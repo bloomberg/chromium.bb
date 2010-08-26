@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -58,6 +59,9 @@ GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
       try_again_(true),
       checked_for_localaccount_(false) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
+  // If not already owned, this is a no-op.  If it is, this loads the owner's
+  // public key off of disk.
+  OwnershipService::GetSharedInstance()->StartLoadOwnerKeyAttempt();
 }
 
 GoogleAuthenticator::~GoogleAuthenticator() {}

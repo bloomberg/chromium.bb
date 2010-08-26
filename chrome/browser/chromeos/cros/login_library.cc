@@ -14,6 +14,8 @@ class LoginLibraryImpl : public LoginLibrary {
  public:
   LoginLibraryImpl()
       : set_owner_key_callback_(NULL) {
+    if (CrosLibrary::Get()->EnsureLoaded())
+      Init();
   }
   virtual ~LoginLibraryImpl() {
     if (session_connection_) {

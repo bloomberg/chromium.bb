@@ -105,8 +105,8 @@ bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(
   bool ok = false;
 
   std::vector<uint8> to_export;
-  if (pair->ExportPublicKey(&to_export)) {
-    LOG(ERROR) << "Formatting key for export failed!";
+  if (!pair->ExportPublicKey(&to_export)) {
+    LOG(ERROR) << "Formatting key for export via dbus failed!";
     return false;
   }
 

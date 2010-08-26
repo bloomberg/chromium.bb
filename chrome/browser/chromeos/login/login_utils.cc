@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/net/gaia/token_service.h"
@@ -164,6 +165,9 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   if (token_service->AreCredentialsValid()) {
     token_service->StartFetchingTokens();
   }
+
+  // Attempt to take ownership; this will fail if device is already owned.
+  OwnershipService::GetSharedInstance()->StartTakeOwnershipAttempt();
 
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is

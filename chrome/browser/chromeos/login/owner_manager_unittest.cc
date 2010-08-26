@@ -97,6 +97,24 @@ TEST_F(OwnerManagerTest, LoadOwnerKeyFail) {
   message_loop_.Run();
 }
 
+TEST_F(OwnerManagerTest, AlreadyLoadedOwnerKey) {
+  MockKeyLoadObserver loader;
+  loader.ExpectKeyFetchSuccess(true);
+  scoped_refptr<OwnerManager> manager(new OwnerManager);
+
+  EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
+      .WillRepeatedly(Return(tmpfile_));
+
+  InjectKeys(manager.get());
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(manager.get(),
+                        &OwnerManager::LoadOwnerKey));
+
+  message_loop_.Run();
+}
+
 TEST_F(OwnerManagerTest, LoadOwnerKey) {
   MockKeyLoadObserver loader;
   loader.ExpectKeyFetchSuccess(true);

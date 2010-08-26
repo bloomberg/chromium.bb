@@ -31,7 +31,7 @@ bool OwnershipService::IsAlreadyOwned() {
 
 bool OwnershipService::StartLoadOwnerKeyAttempt() {
   if (!IsAlreadyOwned()) {
-    LOG(ERROR) << "Device not yet owned";
+    LOG(WARNING) << "Device not yet owned";
     return false;
   }
   ChromeThread::PostTask(
