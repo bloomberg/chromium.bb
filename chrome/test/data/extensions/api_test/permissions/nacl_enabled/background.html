@@ -34,7 +34,10 @@ function OnNaClFail() {
   <embed name="nacl_module"
          id="pluginobj"
          width=0 height=0
-         src="bin/x86/srpc_hw.nexe"
+         nexes="
+x86-32:  /bin/x86/srpc_hw.nexe
+x86-64:  /bin/x64/srpc_hw.nexe
+ARM:     /bin/arm/srpc_hw.nexe"
          type="application/x-nacl-srpc"
          onload="OnNaClLoad()"
          onfail="OnNaClFail()"
