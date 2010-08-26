@@ -9243,6 +9243,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_LAYOUT_USA" desc="In the language menu button, this shows the input mode.">
         English (USA)
       </message>
+      <message name="IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL" desc="In the language menu button, this shows the input mode.">
+        English (USA international)
+      </message>
       <message name="IDS_STATUSBAR_LAYOUT_LITHUANIA" desc="In the language menu button, this shows the input mode.">
         Lithuanian
       </message>
@@ -9254,6 +9257,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_RUSSIA" desc="In the language menu button, this shows the input mode.">
         Russian
+      </message>
+      <message name="IDS_STATUSBAR_LAYOUT_RUSSIA_PHONETIC" desc="In the language menu button, this shows the input mode.">
+        Russian (Phonetic)
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_GREECE" desc="In the language menu button, this shows the input mode.">
         Greek
