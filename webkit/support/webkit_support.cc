@@ -47,6 +47,7 @@
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 using WebKit::WebCString;
+using WebKit::WebDevToolsAgentClient;
 using WebKit::WebFrame;
 using WebKit::WebMediaPlayerClient;
 using WebKit::WebPlugin;
@@ -159,6 +160,26 @@ FilePath GetWebKitRootDirFilePath() {
     return basePath.Append(FILE_PATH_LITERAL("../.."));
   }
 }
+
+class WebKitClientMessageLoopImpl
+    : public WebDevToolsAgentClient::WebKitClientMessageLoop {
+ public:
+  WebKitClientMessageLoopImpl() : message_loop_(MessageLoop::current()) {}
+  virtual ~WebKitClientMessageLoopImpl() {
+    message_loop_ = NULL;
+  }
+  virtual void run() {
+    bool old_state = message_loop_->NestableTasksAllowed();
+    message_loop_->SetNestableTasksAllowed(true);
+    message_loop_->Run();
+    message_loop_->SetNestableTasksAllowed(old_state);
+  }
+  virtual void quitNow() {
+    message_loop_->QuitNow();
+  }
+ private:
+  MessageLoop* message_loop_;
+};
 
 }  // namespace
 
@@ -327,6 +348,10 @@ void DispatchMessageLoop() {
   current->SetNestableTasksAllowed(true);
   current->RunAllPending();
   current->SetNestableTasksAllowed(old_state);
+}
+
+WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {
+  return new WebKitClientMessageLoopImpl();
 }
 
 void PostTaskFromHere(Task* task) {

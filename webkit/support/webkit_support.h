@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
 class Task;
 class WebURLLoaderMockFactory;
@@ -99,6 +100,8 @@ void RunMessageLoop();
 void QuitMessageLoop();
 void RunAllPendingMessages();
 void DispatchMessageLoop();
+WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
+    CreateDevToolsMessageLoop();
 void PostTaskFromHere(Task* task);  // TODO(tkent): Eliminate Task.
 void PostDelayedTaskFromHere(Task* task, int64 delay_ms);  // ditto.
 
