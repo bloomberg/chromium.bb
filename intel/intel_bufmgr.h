@@ -66,7 +66,11 @@ struct _drm_intel_bo {
 	 * Virtual address for accessing the buffer data.  Only valid while
 	 * mapped.
 	 */
+#ifdef __cplusplus
+	void *virt;
+#else
 	void *virtual;
+#endif
 
 	/** Buffer manager context associated with this buffer object */
 	drm_intel_bufmgr *bufmgr;
@@ -168,7 +172,7 @@ void drm_intel_bufmgr_fake_set_fence_callback(drm_intel_bufmgr *bufmgr,
 drm_intel_bo *drm_intel_bo_fake_alloc_static(drm_intel_bufmgr *bufmgr,
 					     const char *name,
 					     unsigned long offset,
-					     unsigned long size, void *virtual);
+					     unsigned long size, void *virt);
 void drm_intel_bo_fake_disable_backing_store(drm_intel_bo *bo,
 					     void (*invalidate_cb) (drm_intel_bo
 								    * bo,
