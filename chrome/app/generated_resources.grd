@@ -5659,7 +5659,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_LEARN_MORE_LABEL" desc="In the options dialog, we have links to the support web pages where the user can learn more about a feature.">
         Learn more
       </message>
-      
+
       <!-- The About page is now part of options. -->
       <message name="IDS_ABOUT_PAGE_TITLE" desc="Title used for about options panel">
       	About
@@ -5685,7 +5685,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_PAGE_CHECK_NOW" desc="Button title for checking for updates now.">
       	Check For Update
       </message>
-      
+
 
       <!-- Views displays group titles and their contents side-by-side -->
       <!-- and includes a colon as a result (Mac needs this too).  GTK -->
@@ -7111,7 +7111,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT" desc="The text displayed selected in the omnibox once the user clicked the 'Show Me' button on the omnibox search hint infobar.">
         Type your search query here
       </message>
-      
+
       <!-- Remoting strings -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_REMOTING_SETUP_LABEL" desc="The label that appears on the remoting setup menu.">
@@ -7126,7 +7126,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_REMOTING_SETUP_DIALOG_TITLE" desc="Title of the remoting setup dialog.">
         Set up remoting
       </message>
-      
+
 
       <!-- Sync strings -->
 
@@ -8286,6 +8286,36 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings internet options, the label for the auto-connect checkbox.">
         Auto-connect to this network
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USAGE" desc="In settings internet options, the tab header for mobile plan usage tab.">
+        Usage
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings internet options, the title for purchase more button.">
+        Purchase more...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING" desc="In settings internet options, the label for mobile plan remaining data info.">
+        Data remaining:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED" desc="In settings internet options, the label of data info for mobile unlimited data plan.">
+        Unlimited
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES" desc="In settings internet options, the label for mobile plan expiration time info.">
+        Expires:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION" desc="In settings internet options, the label for show mobile plan data notification checkbox.">
+        Show notifications when data is low or nearing expiration
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA" desc="In settings internet options, the label that tells user free data received.">
+        You received <ph name="DATA_AMOUNT">$1<ex>100MB</ex></ph> free usage on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA" desc="In settings internet options, the label that shows user has purchased a mobile data plan.">
+        You purchased <ph name="DATA_AMOUNT">$1<ex>3GB</ex></ph> of data on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA" desc="In settings internet options, the label that shows user has purchased an unliminted mobile data plan.">
+        You purchased unlimited data on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT" desc="In settings internet options, the text for customer support hyper link.">
+        Customer support
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DONE" desc="In settings internet options, the label for the button done.">
         Done
