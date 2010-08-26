@@ -105,6 +105,12 @@ class InterstitialPage : public NotificationObserver,
   }
   virtual int GetBrowserWindowID() const;
 
+  // See description above field.
+  void set_reload_on_dont_proceed(bool value) {
+    reload_on_dont_proceed_ = value;
+  }
+  bool reload_on_dont_proceed() const { return reload_on_dont_proceed_; }
+
  protected:
   // NotificationObserver method:
   virtual void Observe(NotificationType type,
@@ -184,6 +190,12 @@ class InterstitialPage : public NotificationObserver,
   // pending entry was created since this interstitial was shown and we should
   // not discard it.
   bool should_discard_pending_nav_entry_;
+
+  // If true and the user chooses not to proceed the target NavigationController
+  // is reloaded. This is used when two NavigationControllers are merged
+  // (CopyStateFromAndPrune).
+  // The default is false.
+  bool reload_on_dont_proceed_;
 
   // Whether this interstitial is enabled.  See Disable() for more info.
   bool enabled_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -474,7 +474,7 @@ void NavigationController::AddTransientEntry(NavigationEntry* entry) {
     index = last_committed_entry_index_ + 1;
   DiscardTransientEntry();
   entries_.insert(entries_.begin() + index, linked_ptr<NavigationEntry>(entry));
-  transient_entry_index_  = index;
+  transient_entry_index_ = index;
   tab_contents_->NotifyNavigationStateChanged(kInvalidateAllButShelves);
 }
 
@@ -930,20 +930,51 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
     return;  // Nothing new to do.
 
   needs_reload_ = true;
-  for (int i = 0; i < source.entry_count(); i++) {
-    // When cloning a tab, copy all entries except interstitial pages
-    if (source.entries_[i].get()->page_type() !=
-        NavigationEntry::INTERSTITIAL_PAGE) {
-      entries_.push_back(linked_ptr<NavigationEntry>(
-          new NavigationEntry(*source.entries_[i])));
-    }
-  }
+  InsertEntriesFrom(source, source.entry_count());
 
   session_storage_namespace_id_ =
       profile_->GetWebKitContext()->dom_storage_context()->CloneSessionStorage(
           source.session_storage_namespace_id_);
 
   FinishRestore(source.last_committed_entry_index_, false);
+}
+
+void NavigationController::CopyStateFromAndPrune(
+    const NavigationController& source) {
+  // This code is intended for use when the last entry is the active entry.
+  DCHECK((transient_entry_index_ != -1 &&
+          transient_entry_index_ == entry_count() - 1) ||
+         (pending_entry_ && (pending_entry_index_ == -1 ||
+                             pending_entry_index_ == entry_count() - 1)) ||
+         (!pending_entry_ && last_committed_entry_index_ == entry_count() - 1));
+
+  // Remove all the entries leaving the active entry.
+  PruneAllButActive();
+
+  // Insert the entries from source. Don't use source.GetCurrentEntryIndex as
+  // we don't want to copy over the transient entry.
+  int max_source_index = source.pending_entry_index_ != -1 ?
+      source.pending_entry_index_ : source.last_committed_entry_index_;
+  if (max_source_index == -1)
+    max_source_index = source.entry_count();
+  else
+    max_source_index++;
+  InsertEntriesFrom(source, max_source_index);
+
+  // Adjust indices such that the last entry and pending are at the end now.
+  last_committed_entry_index_ = entry_count() - 1;
+  if (pending_entry_index_ != -1)
+    pending_entry_index_ = entry_count() - 1;
+  if (transient_entry_index_ != -1) {
+    // There's a transient entry. In this case we want the last committed to
+    // point to the previous entry.
+    transient_entry_index_ = entry_count() - 1;
+    if (last_committed_entry_index_ != -1)
+      last_committed_entry_index_--;
+  }
+
+  // Take over the session id from source.
+  session_id_ = source.session_id_;
 }
 
 void NavigationController::DiscardNonCommittedEntries() {
@@ -1116,4 +1147,57 @@ NavigationEntry* NavigationController::GetTransientEntry() const {
   if (transient_entry_index_ == -1)
     return NULL;
   return entries_[transient_entry_index_].get();
+}
+
+void NavigationController::PruneAllButActive() {
+  int prune_count = entry_count();
+  if (transient_entry_index_ != -1) {
+    // There is a transient entry. Prune up to it.
+    DCHECK_EQ(entry_count() - 1, transient_entry_index_);
+    prune_count = transient_entry_index_;
+    transient_entry_index_ = 0;
+    last_committed_entry_index_ = -1;
+    pending_entry_index_ = -1;
+  } else if (!pending_entry_) {
+    // There's no pending entry. Leave the last entry (if there is one).
+    if (!prune_count)
+      return;
+
+    prune_count--;
+    last_committed_entry_index_ = 0;
+  } else if (pending_entry_index_ != -1) {
+    DCHECK_EQ(pending_entry_index_, prune_count - 1);
+    pending_entry_index_ = 0;
+    last_committed_entry_index_ = 0;
+    prune_count--;
+  } else {
+    // There is a pending_entry, but it's not in entries_.
+    pending_entry_index_ = -1;
+    last_committed_entry_index_ = -1;
+  }
+
+  if (tab_contents_->interstitial_page()) {
+    // Normally the interstitial page hides itself if the user doesn't proceeed.
+    // This would result in showing a NavigationEntry we just removed. Set this
+    // so the interstitial triggers a reload if the user doesn't proceed.
+    tab_contents_->interstitial_page()->set_reload_on_dont_proceed(true);
+  }
+
+  entries_.erase(entries_.begin(), entries_.begin() + prune_count);
+}
+
+void NavigationController::InsertEntriesFrom(
+    const NavigationController& source,
+    int max_index) {
+  DCHECK_LE(max_index, source.entry_count());
+  size_t insert_index = 0;
+  for (int i = 0; i < max_index; i++) {
+    // When cloning a tab, copy all entries except interstitial pages
+    if (source.entries_[i].get()->page_type() !=
+        NavigationEntry::INTERSTITIAL_PAGE) {
+      entries_.insert(entries_.begin() + insert_index++,
+                      linked_ptr<NavigationEntry>(
+                          new NavigationEntry(*source.entries_[i])));
+    }
+  }
 }

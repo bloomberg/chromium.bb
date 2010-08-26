@@ -143,6 +143,7 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       url_(url),
       new_navigation_(new_navigation),
       should_discard_pending_nav_entry_(new_navigation),
+      reload_on_dont_proceed_(false),
       enabled_(true),
       action_taken_(NO_ACTION),
       render_view_host_(NULL),
@@ -469,6 +470,9 @@ void InterstitialPage::DontProceed() {
     // cancelled.
     tab_->controller().DiscardNonCommittedEntries();
   }
+
+  if (reload_on_dont_proceed_)
+    tab_->controller().Reload(true);
 
   Hide();
   // WARNING: we are now deleted!

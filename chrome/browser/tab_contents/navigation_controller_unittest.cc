@@ -1716,6 +1716,95 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   EXPECT_EQ(url2, controller().GetActiveEntry()->url());
 }
 
+// Tests CopyStateFromAndPrune with 2 urls in source, 1 in dest.
+TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const GURL url3("http://foo3");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  NavigationController& other_controller = other_contents->controller();
+  other_contents->NavigateAndCommit(url3);
+  other_controller.CopyStateFromAndPrune(controller());
+
+  // other_controller should now contain the 3 urls: url1, url2 and url3.
+
+  ASSERT_EQ(3, other_controller.entry_count());
+
+  ASSERT_EQ(2, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->url());
+  EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->url());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(2)->url());
+
+  // And the session id should have been copied.
+  EXPECT_EQ(controller().session_id().id(), other_controller.session_id().id());
+}
+
+// Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
+// the target.
+TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const GURL url3("http://foo3");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  controller().GoBack();
+
+  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  NavigationController& other_controller = other_contents->controller();
+  other_controller.CopyStateFromAndPrune(controller());
+
+  // other_controller should now contain the 1 url: url1.
+
+  ASSERT_EQ(1, other_controller.entry_count());
+
+  ASSERT_EQ(0, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->url());
+
+  // And the session id should have been copied.
+  EXPECT_EQ(controller().session_id().id(), other_controller.session_id().id());
+}
+
+// Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
+// the target.
+TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const GURL url3("http://foo3");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  controller().GoBack();
+
+  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  NavigationController& other_controller = other_contents->controller();
+  other_controller.LoadURL(url3, GURL(), PageTransition::TYPED);
+  other_controller.CopyStateFromAndPrune(controller());
+
+  // other_controller should now contain 1 entry for url1, and a pending entry
+  // for url3.
+
+  ASSERT_EQ(1, other_controller.entry_count());
+
+  EXPECT_EQ(0, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->url());
+
+  // And there should be a pending entry for url3.
+  ASSERT_TRUE(other_controller.pending_entry());
+
+  EXPECT_EQ(url3, other_controller.pending_entry()->url());
+
+  // And the session id should have been copied.
+  EXPECT_EQ(controller().session_id().id(), other_controller.session_id().id());
+}
+
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.

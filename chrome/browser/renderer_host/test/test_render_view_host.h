@@ -250,9 +250,11 @@ class RenderViewHostTestHarness : public testing::Test {
   // Frees the current tab contents for tests that want to test destruction.
   void DeleteContents();
 
-  // Creates a pending navigation to the given URL with the default parameters
-  // and then commits the load with a page ID one larger than any seen. This
-  // emulates what happens on a new navigation.
+  // Creates a new TestTabContents. Ownership passes to the caller.
+  TestTabContents* CreateTestTabContents();
+
+  // Cover for |contents()->NavigateAndCommit(url)|. See
+  // TestTabContents::NavigateAndCommit for details.
   void NavigateAndCommit(const GURL& url);
 
   // Simulates a reload of the current page.

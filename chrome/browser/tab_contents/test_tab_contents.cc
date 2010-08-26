@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 
+#include "chrome/browser/browser_url_handler.h"
+#include "chrome/browser/renderer_host/mock_render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
@@ -60,4 +62,15 @@ TabContents* TestTabContents::Clone() {
       profile(), SiteInstance::CreateSiteInstance(profile()));
   tc->controller().CopyStateFrom(controller_);
   return tc;
+}
+
+void TestTabContents::NavigateAndCommit(const GURL& url) {
+  controller().LoadURL(url, GURL(), 0);
+  GURL loaded_url(url);
+  bool reverse_on_redirect = false;
+  BrowserURLHandler::RewriteURLIfNecessary(
+      &loaded_url, profile(), &reverse_on_redirect);
+  static_cast<TestRenderViewHost*>(render_view_host())->SendNavigate(
+      static_cast<MockRenderProcessHost*>(render_view_host()->process())->
+      max_page_id() + 1, loaded_url);
 }

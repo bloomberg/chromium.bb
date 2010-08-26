@@ -243,13 +243,19 @@ void RenderViewHostTestHarness::DeleteContents() {
   contents_.reset();
 }
 
+TestTabContents* RenderViewHostTestHarness::CreateTestTabContents() {
+  // See comment above profile_ decl for why we check for NULL here.
+  if (!profile_.get())
+    profile_.reset(new TestingProfile());
+
+  // This will be deleted when the TabContents goes away.
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
+
+  return new TestTabContents(profile_.get(), instance);
+}
+
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
-  controller().LoadURL(url, GURL(), 0);
-  GURL loaded_url(url);
-  bool reverse_on_redirect = false;
-  BrowserURLHandler::RewriteURLIfNecessary(
-      &loaded_url, profile(), &reverse_on_redirect);
-  rvh()->SendNavigate(process()->max_page_id() + 1, loaded_url);
+  contents()->NavigateAndCommit(url);
 }
 
 void RenderViewHostTestHarness::Reload() {
@@ -260,14 +266,7 @@ void RenderViewHostTestHarness::Reload() {
 }
 
 void RenderViewHostTestHarness::SetUp() {
-  // See comment above profile_ decl for why we check for NULL here.
-  if (!profile_.get())
-    profile_.reset(new TestingProfile());
-
-  // This will be deleted when the TabContents goes away.
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
-
-  contents_.reset(new TestTabContents(profile_.get(), instance));
+  contents_.reset(CreateTestTabContents());
 }
 
 void RenderViewHostTestHarness::TearDown() {

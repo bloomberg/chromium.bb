@@ -57,6 +57,11 @@ class TestTabContents : public TabContents {
   // TestTabContents. The caller owns the returned object.
   virtual TabContents* Clone();
 
+  // Creates a pending navigation to the given URL with the default parameters
+  // and then commits the load with a page ID one larger than any seen. This
+  // emulates what happens on a new navigation.
+  void NavigateAndCommit(const GURL& url);
+
   // Set by individual tests.
   bool transition_cross_site;
 

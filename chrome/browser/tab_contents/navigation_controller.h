@@ -359,6 +359,18 @@ class NavigationController {
   // one should be empty (just created).
   void CopyStateFrom(const NavigationController& source);
 
+  // A variant of CopyStateFrom. Removes all entries from this except the last
+  // entry, inserts all entries from |source| before and including the active
+  // entry and resets the |session_id_| of this to match |source|.  This is
+  // intended for use when you're going to throw away |source| and replace it
+  // with this. This method is intended for use when the last entry of |this|
+  // is the active entry. For example:
+  // source: A B *C* D
+  // this:   E F *G*   (last must be active or pending)
+  // result: A B *G*
+  // This ignores the transient index of the source and honors that of 'this'.
+  void CopyStateFromAndPrune(const NavigationController& source);
+
   // Random data ---------------------------------------------------------------
 
   // Returns the identifier used by session restore.
@@ -500,6 +512,16 @@ class NavigationController {
       const std::vector<TabNavigation>& navigations,
       std::vector<linked_ptr<NavigationEntry> >* entries);
 
+  // Removes all the entries except the active entry. If there is a new pending
+  // navigation it is preserved.
+  void PruneAllButActive();
+
+  // Inserts up to |max_index| entries from |source| into this. This does NOT
+  // adjust any of the members that reference entries_
+  // (last_committed_entry_index_, pending_entry_index_ or
+  // transient_entry_index_).
+  void InsertEntriesFrom(const NavigationController& source, int max_index);
+
   // ---------------------------------------------------------------------------
 
   // The user profile associated with this controller
@@ -528,7 +550,7 @@ class NavigationController {
   // The index for the entry that is shown until a navigation occurs.  This is
   // used for interstitial pages. -1 if there are no such entry.
   // Note that this entry really appears in the list of entries, but only
-  // temporarily (until the next navigation).  Any index poiting to an entry
+  // temporarily (until the next navigation).  Any index pointing to an entry
   // after the transient entry will become invalid if you navigate forward.
   int transient_entry_index_;
 
@@ -550,7 +572,7 @@ class NavigationController {
   // Unique identifier of this controller for session restore. This id is only
   // unique within the current session, and is not guaranteed to be unique
   // across sessions.
-  const SessionID session_id_;
+  SessionID session_id_;
 
   // Unique identifier of the window we're in. Used by session restore.
   SessionID window_id_;

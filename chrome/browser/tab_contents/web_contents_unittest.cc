@@ -1483,3 +1483,92 @@ TEST_F(TabContentsTest, NoJSMessageOnInterstitials) {
       &did_suppress_message);
   EXPECT_TRUE(did_suppress_message);
 }
+
+// Makes sure that if the source passed to CopyStateFromAndPrune has an
+// interstitial it isn't copied over to the destination.
+TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
+  // Navigate to a page.
+  GURL url1("http://www.google.com");
+  rvh()->SendNavigate(1, url1);
+  EXPECT_EQ(1, controller().entry_count());
+
+  // Initiate a browser navigation that will trigger the interstitial
+  controller().LoadURL(GURL("http://www.evil.com"), GURL(),
+                        PageTransition::TYPED);
+
+  // Show an interstitial.
+  TestInterstitialPage::InterstitialState state =
+      TestInterstitialPage::UNDECIDED;
+  bool deleted = false;
+  GURL url2("http://interstitial");
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(contents(), true, url2, &state, &deleted);
+  TestInterstitialPageStateGuard state_guard(interstitial);
+  interstitial->Show();
+  interstitial->TestDidNavigate(1, url2);
+  EXPECT_TRUE(interstitial->is_showing());
+  EXPECT_EQ(2, controller().entry_count());
+
+  // Create another NavigationController.
+  GURL url3("http://foo2");
+  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  NavigationController& other_controller = other_contents->controller();
+  other_contents->NavigateAndCommit(url3);
+  other_controller.CopyStateFromAndPrune(controller());
+
+  // The merged controller should only have two entries: url1 and url2.
+  ASSERT_EQ(2, other_controller.entry_count());
+  EXPECT_EQ(1, other_controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->url());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->url());
+
+  // And the merged controller shouldn't be showing an interstitial.
+  EXPECT_FALSE(other_contents->showing_interstitial_page());
+}
+
+// Makes sure that CopyStateFromAndPrune does the right thing if the object
+// CopyStateFromAndPrune is invoked on is showing an interstitial.
+TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
+  // Navigate to a page.
+  GURL url1("http://www.google.com");
+  contents()->NavigateAndCommit(url1);
+
+  // Create another NavigationController.
+  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  NavigationController& other_controller = other_contents->controller();
+
+  // Navigate it to url2.
+  GURL url2("http://foo2");
+  other_contents->NavigateAndCommit(url2);
+
+  // Show an interstitial.
+  TestInterstitialPage::InterstitialState state =
+      TestInterstitialPage::UNDECIDED;
+  bool deleted = false;
+  GURL url3("http://interstitial");
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(other_contents.get(), true, url3, &state,
+                               &deleted);
+  TestInterstitialPageStateGuard state_guard(interstitial);
+  interstitial->Show();
+  interstitial->TestDidNavigate(1, url3);
+  EXPECT_TRUE(interstitial->is_showing());
+  EXPECT_EQ(2, other_controller.entry_count());
+
+  other_controller.CopyStateFromAndPrune(controller());
+
+  // The merged controller should only have two entries: url1 and url2.
+  ASSERT_EQ(2, other_controller.entry_count());
+  EXPECT_EQ(1, other_controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->url());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->url());
+
+  // It should have a transient entry.
+  EXPECT_TRUE(other_controller.GetTransientEntry());
+
+  // And the interstitial should be showing.
+  EXPECT_TRUE(other_contents->showing_interstitial_page());
+
+  // And the interstitial should do a reload on don't proceed.
+  EXPECT_TRUE(other_contents->interstitial_page()->reload_on_dont_proceed());
+}
