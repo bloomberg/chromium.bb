@@ -6,6 +6,7 @@
 
 #if defined(OS_WIN)
 #include <shellapi.h>
+#include <shlobj.h>
 #endif  // defined(OS_WIN)
 
 #include <algorithm>

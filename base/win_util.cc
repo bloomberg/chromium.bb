@@ -4,8 +4,10 @@
 
 #include "base/win_util.h"
 
+#include <aclapi.h>
 #include <propvarutil.h>
 #include <sddl.h>
+#include <shlobj.h>
 
 #include "base/logging.h"
 #include "base/registry.h"

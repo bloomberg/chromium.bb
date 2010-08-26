@@ -11,6 +11,7 @@
 #include <mshtmcid.h>
 #include <shdeprecated.h>
 #include <shlguid.h>
+#include <shlobj.h>
 #include <shobjidl.h>
 #include <tlogstg.h>
 #include <urlmon.h>

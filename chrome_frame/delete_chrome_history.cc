@@ -5,9 +5,10 @@
 // Implementation of DeleteChromeHistory
 #include "chrome_frame/delete_chrome_history.h"
 
-#include "chrome_frame/chrome_frame_activex.h"
 #include "chrome/browser/browsing_data_remover.h"
-#include "utils.h"
+
+#include "chrome_frame/chrome_frame_activex.h"
+#include "chrome_frame/utils.h"
 
 // Below other header to avoid symbol pollution.
 #define INITGUID
@@ -57,6 +58,21 @@ STDMETHODIMP DeleteChromeHistory::DeleteBrowsingHistory(DWORD flags) {
   // in lieu of sending an IPC when it seems appropriate. Since we assume this
   // happens in one-off fashion, don't attempt to pack REMOVE_* arguments.
   // Instead, have the browser process clobber all history.
+  //
+  // IE8 on Vista launches us twice when the user asks to delete browsing data -
+  // once in low integrity and once in medium integrity. The low integrity
+  // instance will fail to connect to the automation server and restart it in an
+  // effort to connect. Thus, we detect if we are in that circumstance and exit
+  // silently.
+  base::IntegrityLevel integrity_level;
+  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&
+      !base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(),
+                                      &integrity_level)) {
+    return E_UNEXPECTED;
+  }
+  if (integrity_level == base::LOW_INTEGRITY) {
+    return S_OK;
+  }
   if (!InitializeAutomation(GetHostProcessName(false), L"", false, false,
                             GURL(), GURL())) {
     return E_UNEXPECTED;
