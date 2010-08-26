@@ -1674,17 +1674,21 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     }
 
     TBuiltInResource resources;
-    resources.maxVertexAttribs = group_->max_vertex_attribs();
-    resources.maxVertexUniformVectors =
+    ShInitBuiltInResource(&resources);
+    resources.MaxVertexAttribs = group_->max_vertex_attribs();
+    resources.MaxVertexUniformVectors =
         group_->max_vertex_uniform_vectors();
-    resources.maxVaryingVectors = group_->max_varying_vectors();
-    resources.maxVertexTextureImageUnits =
+    resources.MaxVaryingVectors = group_->max_varying_vectors();
+    resources.MaxVertexTextureImageUnits =
         group_->max_vertex_texture_image_units();
-    resources.maxCombinedTextureImageUnits = group_->max_texture_units();
-    resources.maxTextureImageUnits = group_->max_texture_image_units();
-    resources.maxFragmentUniformVectors =
+    resources.MaxCombinedTextureImageUnits = group_->max_texture_units();
+    resources.MaxTextureImageUnits = group_->max_texture_image_units();
+    resources.MaxFragmentUniformVectors =
         group_->max_fragment_uniform_vectors();
-    resources.maxDrawBuffers = 1;
+    resources.MaxDrawBuffers = 1;
+    // TODO(alokp): Figure out if OES_standard_derivatives extension is
+    // available.
+    resources.OES_standard_derivatives = 0;
     vertex_compiler_ = ShConstructCompiler(EShLangVertex, EShSpecGLES2,
         &resources);
     if (vertex_compiler_ == NULL) {
