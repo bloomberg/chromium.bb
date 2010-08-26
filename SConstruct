@@ -1613,6 +1613,8 @@ nacl_extra_sdk_env = pre_base_env.Clone(
       ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ],
       # This ensures that UINT32_MAX gets defined.
       ['__STDC_LIMIT_MACROS', '1'],
+      # This ensures that PRId64 etc. get defined.
+      ['__STDC_FORMAT_MACROS', '1'],
       ],
     ARFLAGS = 'rc'
 )

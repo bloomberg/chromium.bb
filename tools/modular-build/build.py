@@ -342,8 +342,6 @@ int main() {
   module_list.append(modules["hello_glibc"])
 
   # TODO(mseaborn): Add the following Scons targets when they work.
-  # Problem with uint32_t:
-  #   google_nacl_npruntime
   # This has a problem with PTHREAD_STACK_MIN:
   #   google_nacl_platform
   AddSconsModule(
@@ -353,6 +351,7 @@ int main() {
                   "gio",
                   "google_nacl_gpu",
                   "google_nacl_imc",
+                  "google_nacl_npruntime",
                   "google_nacl_pgl",
                   "libav",
                   "libsrpc"])
