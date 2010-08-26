@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -82,7 +82,7 @@ class DownloadItemView : public views::ButtonListener,
   void OnExtractIconComplete(IconManager::Handle handle, SkBitmap* icon_bitmap);
 
   // Returns the DownloadItem model object belonging to this item.
-  DownloadItem* get_download() { return download_; }
+  DownloadItem* download() const { return download_; }
 
  private:
   enum State {

@@ -56,6 +56,13 @@ static const int kNewItemAnimationDurationMs = 800;
 // Shelf show/hide speed.
 static const int kShelfAnimationDurationMs = 120;
 
+// Amount of time to delay if the mouse leaves the shelf by way of entering
+// another window. This is much larger than the normal delay as openning a
+// download is most likely going to trigger a new window to appear over the
+// button. Delay the time so that the user has a chance to quickly close the
+// other app and return to chrome with the download shelf still open.
+static const int kNotifyOnExitTimeMS = 5000;
+
 namespace {
 
 // Sets size->width() to view's preferred width + size->width().s
@@ -75,7 +82,10 @@ int CenterPosition(int size, int target_size) {
 
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     : browser_(browser),
-      parent_(parent) {
+      parent_(parent),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          mouse_watcher_(this, this, gfx::Insets())) {
+  mouse_watcher_.set_notify_on_exit_time_ms(kNotifyOnExitTimeMS);
   SetID(VIEW_ID_DOWNLOAD_SHELF);
   parent->AddChildView(this);
   Init();
@@ -115,6 +125,8 @@ void DownloadShelfView::Init() {
 }
 
 void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
+  mouse_watcher_.Stop();
+
   Show();
 
   DCHECK(view);
@@ -133,16 +145,22 @@ void DownloadShelfView::AddDownload(BaseDownloadItemModel* download_model) {
   AddDownloadView(view);
 }
 
+void DownloadShelfView::MouseMovedOutOfView() {
+  Close();
+}
+
 void DownloadShelfView::RemoveDownloadView(View* view) {
   DCHECK(view);
   std::vector<DownloadItemView*>::iterator i =
-    find(download_views_.begin(), download_views_.end(), view);
+      find(download_views_.begin(), download_views_.end(), view);
   DCHECK(i != download_views_.end());
   download_views_.erase(i);
   RemoveChildView(view);
   delete view;
   if (download_views_.empty())
     Close();
+  else if (CanAutoClose())
+    mouse_watcher_.Start();
   Layout();
   SchedulePaint();
 }
@@ -154,6 +172,11 @@ void DownloadShelfView::Paint(gfx::Canvas* canvas) {
 
 void DownloadShelfView::PaintBorder(gfx::Canvas* canvas) {
   canvas->FillRectInt(kBorderColor, 0, 0, width(), 1);
+}
+
+void DownloadShelfView::OpenedDownload(DownloadItemView* view) {
+  if (CanAutoClose())
+    mouse_watcher_.Start();
 }
 
 gfx::Size DownloadShelfView::GetPreferredSize() {
@@ -336,14 +359,25 @@ void DownloadShelfView::Closed() {
   // When the close animation is complete, remove all completed downloads.
   size_t i = 0;
   while (i < download_views_.size()) {
-    DownloadItem* download = download_views_[i]->get_download();
+    DownloadItem* download = download_views_[i]->download();
     bool is_transfer_done = download->state() == DownloadItem::COMPLETE ||
                             download->state() == DownloadItem::CANCELLED;
     if (is_transfer_done &&
         download->safety_state() != DownloadItem::DANGEROUS) {
       RemoveDownloadView(download_views_[i]);
     } else {
+      // Treat the item as opened when we close. This way if we get shown again
+      // the user need not open this item for the shelf to auto-close.
+      download->set_opened(true);
       ++i;
     }
   }
+}
+
+bool DownloadShelfView::CanAutoClose() {
+  for (size_t i = 0; i < download_views_.size(); ++i) {
+    if (!download_views_[i]->download()->opened())
+      return false;
+  }
+  return true;
 }

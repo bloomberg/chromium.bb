@@ -105,6 +105,10 @@ class DownloadItem {
   // complete if it is in progress).
   void OpenDownload();
 
+  // Callback from the DownloadManager when the item is opened. Sets opened_
+  // to true and notifies observers.
+  void Opened();
+
   // Show the download via the OS shell.
   void ShowDownloadInShell();
 
@@ -194,6 +198,8 @@ class DownloadItem {
   void set_need_final_rename(bool need_final_rename) {
     need_final_rename_ = need_final_rename;
   }
+  void set_opened(bool opened) { opened_ = opened; }
+  bool opened() const { return opened_; }
 
   // Returns the file-name that should be reported to the user, which is
   // file_name_ for safe downloads and original_name_ for dangerous ones with
@@ -303,6 +309,12 @@ class DownloadItem {
 
   // True if the file needs final rename.
   bool need_final_rename_;
+
+  // Did the user open the item either directly or indirectly (such as by
+  // setting always open files of this type)? The shelf also sets this field
+  // when the user closes the shelf before the item has been opened but should
+  // be treated as though the user opened it.
+  bool opened_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItem);
 };

@@ -165,8 +165,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Opens a download. For Chrome extensions call
   // ExtensionsServices::InstallExtension, for everything else call
   // OpenDownloadInShell.
-  void OpenDownload(const DownloadItem* download,
-                    gfx::NativeView parent_window);
+  void OpenDownload(DownloadItem* download, gfx::NativeView parent_window);
 
   // Show a download via the Windows shell.
   void ShowDownloadInShell(const DownloadItem* download);
@@ -238,7 +237,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   ~DownloadManager();
 
   // Opens a download via the Windows shell.
-  void OpenDownloadInShell(const DownloadItem* download,
+  void OpenDownloadInShell(DownloadItem* download,
                            gfx::NativeView parent_window);
 
   // Shutdown the download manager.  This call is needed only after Init.

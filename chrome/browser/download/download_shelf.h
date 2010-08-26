@@ -19,7 +19,7 @@ class DownloadItem;
 // DownloadShelf is an interface for platform-specific download shelf views.
 class DownloadShelf {
  public:
-  virtual ~DownloadShelf() { }
+  virtual ~DownloadShelf() {}
 
   // A new download has started, so add it to our shelf. This object will
   // take ownership of |download_model|. Also make the shelf visible.

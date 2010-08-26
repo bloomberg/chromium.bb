@@ -37,6 +37,10 @@ class MouseWatcher {
                const gfx::Insets& hot_zone_insets);
   ~MouseWatcher();
 
+  // Sets the amount to delay before notifying the listener when the mouse exits
+  // the view by way of going to another window.
+  void set_notify_on_exit_time_ms(int time) { notify_on_exit_time_ms_ = time; }
+
   // Starts watching mouse movements. When the mouse moves outside the bounds of
   // the view the listener is notified. |Start| may be invoked any number of
   // times. If the mouse moves outside the bounds of the view the listener is
@@ -56,7 +60,7 @@ class MouseWatcher {
   void NotifyListener();
 
   // View we're listening for events over.
-  views::View* host_;
+  View* host_;
 
   // Our listener.
   MouseWatcherListener* listener_;
@@ -66,6 +70,9 @@ class MouseWatcher {
 
   // Does the actual work of listening for mouse events.
   scoped_ptr<Observer> observer_;
+
+  // See description above setter.
+  int notify_on_exit_time_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseWatcher);
 };

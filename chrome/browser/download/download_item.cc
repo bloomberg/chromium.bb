@@ -63,7 +63,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_extension_install_(info.is_extension_install),
       name_finalized_(false),
       is_temporary_(false),
-      need_final_rename_(false) {
+      need_final_rename_(false),
+      opened_(false) {
   if (state_ == IN_PROGRESS)
     state_ = CANCELLED;
   Init(false /* don't start progress timer */);
@@ -99,7 +100,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_extension_install_(info.is_extension_install),
       name_finalized_(false),
       is_temporary_(!info.save_info.file_path.empty()),
-      need_final_rename_(false) {
+      need_final_rename_(false),
+      opened_(false) {
   Init(true /* start progress timer */);
 }
 
@@ -134,7 +136,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_extension_install_(false),
       name_finalized_(false),
       is_temporary_(false),
-      need_final_rename_(false) {
+      need_final_rename_(false),
+      opened_(false) {
   Init(true /* start progress timer */);
 }
 
@@ -180,9 +183,13 @@ void DownloadItem::OpenDownload() {
   if (state() == DownloadItem::IN_PROGRESS) {
     open_when_complete_ = !open_when_complete_;
   } else if (state() == DownloadItem::COMPLETE) {
-    FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
     download_manager_->OpenDownload(this, NULL);
   }
+}
+
+void DownloadItem::Opened() {
+  opened_ = true;
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
 }
 
 void DownloadItem::ShowDownloadInShell() {

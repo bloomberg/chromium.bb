@@ -9,6 +9,7 @@
 #include "base/task.h"
 #include "views/screen.h"
 #include "views/view.h"
+#include "views/window/window.h"
 
 namespace views {
 
@@ -47,9 +48,11 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
     //
   switch (msg.message) {
     case WM_MOUSEMOVE:
+      HandleGlobalMouseMoveEvent(false);
+      break;
     case WM_MOUSELEAVE:
     case WM_NCMOUSELEAVE:
-      HandleGlobalMouseMoveEvent();
+      HandleGlobalMouseMoveEvent(true);
       break;
   }
 }
@@ -60,8 +63,10 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
   void DidProcessEvent(GdkEvent* event) {
     switch (event->type) {
       case GDK_MOTION_NOTIFY:
+        HandleGlobalMouseMoveEvent(false);
+        break;
       case GDK_LEAVE_NOTIFY:
-        HandleGlobalMouseMoveEvent();
+        HandleGlobalMouseMoveEvent(true);
         break;
       default:
         break;
@@ -70,28 +75,35 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
 #endif
 
  private:
-  views::View* view() { return mouse_watcher_->host_; }
+  View* view() const { return mouse_watcher_->host_; }
 
   // Returns whether or not the cursor is currently in the view's "zone" which
   // is defined as a slightly larger region than the view.
   bool IsCursorInViewZone() {
     gfx::Rect bounds = view()->GetLocalBounds(true);
     gfx::Point view_topleft(bounds.origin());
-    views::View::ConvertPointToScreen(view(), &view_topleft);
+    View::ConvertPointToScreen(view(), &view_topleft);
     bounds.set_origin(view_topleft);
     bounds.SetRect(view_topleft.x() - mouse_watcher_->hot_zone_insets_.left(),
                    view_topleft.y() - mouse_watcher_->hot_zone_insets_.top(),
                    bounds.width() + mouse_watcher_->hot_zone_insets_.width(),
                    bounds.height() + mouse_watcher_->hot_zone_insets_.height());
 
-    gfx::Point cursor_point = views::Screen::GetCursorScreenPoint();
+    gfx::Point cursor_point = Screen::GetCursorScreenPoint();
 
     return bounds.Contains(cursor_point.x(), cursor_point.y());
   }
 
+  // Returns true if the mouse is over the view's window.
+  bool IsMouseOverWindow() {
+    return Screen::GetWindowAtCursorScreenPoint() ==
+        view()->GetWindow()->GetNativeWindow();
+  }
+
   // Called from the message loop observer when a mouse movement has occurred.
-  void HandleGlobalMouseMoveEvent() {
-    if (!IsCursorInViewZone()) {
+  void HandleGlobalMouseMoveEvent(bool check_window) {
+    bool in_view = IsCursorInViewZone();
+    if (!in_view || (check_window && !IsMouseOverWindow())) {
       // Mouse moved outside the view's zone, start a timer to notify the
       // listener.
       if (notify_listener_factory_.empty()) {
@@ -99,7 +111,8 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
             FROM_HERE,
             notify_listener_factory_.NewRunnableMethod(
                 &Observer::NotifyListener),
-            kNotifyListenerTimeMs);
+            !in_view ? kNotifyListenerTimeMs :
+                       mouse_watcher_->notify_on_exit_time_ms_);
       }
     } else {
       // Mouse moved quickly out of the view and then into it again, so cancel
@@ -125,12 +138,13 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
 MouseWatcherListener::~MouseWatcherListener() {
 }
 
-MouseWatcher::MouseWatcher(views::View* host,
+MouseWatcher::MouseWatcher(View* host,
                            MouseWatcherListener* listener,
                            const gfx::Insets& hot_zone_insets)
     : host_(host),
       listener_(listener),
-      hot_zone_insets_(hot_zone_insets) {
+      hot_zone_insets_(hot_zone_insets),
+      notify_on_exit_time_ms_(kNotifyListenerTimeMs) {
 }
 
 MouseWatcher::~MouseWatcher() {

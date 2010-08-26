@@ -393,6 +393,9 @@ void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
       FROM_HERE,
       reenable_method_factory_.NewRunnableMethod(&DownloadItemView::Reenable),
       kDisabledOnOpenDuration);
+
+  // Notify our parent.
+  parent_->OpenedDownload(this);
 }
 
 // View overrides

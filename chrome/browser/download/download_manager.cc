@@ -920,21 +920,23 @@ void DownloadManager::ShowDownloadInShell(const DownloadItem* download) {
 #endif
 }
 
-void DownloadManager::OpenDownload(const DownloadItem* download,
+void DownloadManager::OpenDownload(DownloadItem* download,
                                    gfx::NativeView parent_window) {
   // Open Chrome extensions with ExtensionsService. For everything else do shell
   // execute.
   if (download->is_extension_install()) {
+    download->Opened();
     download_util::OpenChromeExtension(profile_, this, *download);
   } else {
     OpenDownloadInShell(download, parent_window);
   }
 }
 
-void DownloadManager::OpenDownloadInShell(const DownloadItem* download,
+void DownloadManager::OpenDownloadInShell(DownloadItem* download,
                                           gfx::NativeView parent_window) {
   DCHECK(file_manager_);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  download->Opened();
 #if defined(OS_MACOSX)
   // Mac OS X requires opening downloads on the UI thread.
   platform_util::OpenItem(download->full_path());
