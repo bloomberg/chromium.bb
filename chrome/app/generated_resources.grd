@@ -3236,9 +3236,16 @@ each locale. -->
 
 
       <!-- Fullscreen mode -->
-      <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering fullscreen mode to tell users how to return to normal mode">
-        Exit full screen (<ph name="ACCELERATOR">$1<ex>F11</ex></ph>)
-      </message>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering fullscreen mode to tell users how to return to normal mode">
+          Exit full screen (<ph name="ACCELERATOR">$1<ex>F11</ex></ph>)
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering fullscreen mode to tell users how to return to normal mode (for Chrome OS, which has a dedicated fullscreen key on the top row in the F3 position)">
+          Exit full screen
+        </message>
+      </if>
 
 
       <!-- Task Manager Window -->

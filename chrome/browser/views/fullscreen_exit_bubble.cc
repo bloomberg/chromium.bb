@@ -49,7 +49,11 @@ FullscreenExitBubble::FullscreenExitView::FullscreenExitView(
     FullscreenExitBubble* bubble,
     const std::wstring& accelerator) {
   link_.set_parent_owned(false);
+#if !defined(OS_CHROMEOS)
   link_.SetText(l10n_util::GetStringF(IDS_EXIT_FULLSCREEN_MODE, accelerator));
+#else
+  link_.SetText(l10n_util::GetString(IDS_EXIT_FULLSCREEN_MODE));
+#endif
   link_.SetController(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::LargeFont));
