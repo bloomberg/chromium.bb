@@ -4110,18 +4110,6 @@
    fun:_ZN18CoreOptionsHandler18HandleObservePrefs*Value
 }
 {
-   bug_52387
-   Memcheck:Addr4
-   fun:_ZN12_GLOBAL__N_112CacheCreator10DoCallbackEi
-   fun:_ZN12_GLOBAL__N_112CacheCreator12OnIOCompleteEi
-   fun:_Z16DispatchToMethodIN12_GLOBAL__N_112CacheCreatorEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
-   ...
-   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
-   fun:_ZN10disk_cache17InFlightBackendIO19OnOperationCompleteEPNS_12BackgroundIOEb
-   fun:_ZN10disk_cache10InFlightIO14InvokeCallbackEPNS_12BackgroundIOEb
-   fun:_ZN10disk_cache12BackgroundIO13OnIOSignalledEv
-}
-{
    bug_52825
    Memcheck:Addr4
    fun:_ZNKSt8_Rb_treeIjSt4pairIKjP12ObserverListI20NotificationObserverLb0EEESt10_Select1stIS6_ESt4lessIjESaIS6_EE8_M_beginEv
