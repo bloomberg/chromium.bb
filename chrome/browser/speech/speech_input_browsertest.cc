@@ -29,48 +29,51 @@ const char* kTestResult = "Pictures of the moon";
 
 class FakeSpeechInputManager : public SpeechInputManager {
  public:
-  explicit FakeSpeechInputManager(Delegate* delegate)
-      : caller_id_(0, 0),
-        delegate_(delegate) {
+  explicit FakeSpeechInputManager()
+      : caller_id_(0),
+        delegate_(NULL) {
   }
 
   // SpeechInputManager methods.
-  void StartRecognition(const SpeechInputCallerId& caller_id) {
-    EXPECT_EQ(0, caller_id_.first);
+  void StartRecognition(Delegate* delegate, int caller_id) {
+    EXPECT_EQ(0, caller_id_);
+    EXPECT_EQ(NULL, delegate_);
     caller_id_ = caller_id;
+    delegate_ = delegate;
     // Give the fake result in a short while.
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
         &FakeSpeechInputManager::SetFakeRecognitionResult));
   }
-  void CancelRecognition(const SpeechInputCallerId& caller_id) {
-    EXPECT_EQ(caller_id_.first, caller_id.first);
-    EXPECT_EQ(caller_id_.second, caller_id.second);
-    caller_id_ = SpeechInputCallerId(0, 0);
+  void CancelRecognition(int caller_id) {
+    EXPECT_EQ(caller_id_, caller_id);
+    caller_id_ = 0;
+    delegate_ = NULL;
   }
-  void StopRecording(const SpeechInputCallerId& caller_id) {
-    EXPECT_EQ(caller_id_.first, caller_id.first);
-    EXPECT_EQ(caller_id_.second, caller_id.second);
+  void StopRecording(int caller_id) {
+    EXPECT_EQ(caller_id_, caller_id);
     // Nothing to do here since we aren't really recording.
   }
 
  private:
   void SetFakeRecognitionResult() {
-    if (caller_id_.first) {  // Do a check in case we were cancelled..
+    if (caller_id_) {  // Do a check in case we were cancelled..
       delegate_->DidCompleteRecording(caller_id_);
       delegate_->SetRecognitionResult(caller_id_,
                                       ASCIIToUTF16(kTestResult));
       delegate_->DidCompleteRecognition(caller_id_);
-      caller_id_ = SpeechInputCallerId(0, 0);
+      caller_id_ = 0;
+      delegate_ = NULL;
     }
   }
 
-  SpeechInputCallerId caller_id_;
+  int caller_id_;
   Delegate* delegate_;
 };
 
 // Factory method.
-SpeechInputManager* fakeManagerFactory(SpeechInputManager::Delegate* delegate) {
-  return new FakeSpeechInputManager(delegate);
+SpeechInputManager* fakeManagerAccessor() {
+  static FakeSpeechInputManager fake_speech_input_manager;
+  return &fake_speech_input_manager;
 }
 
 class SpeechInputBrowserTest : public InProcessBrowserTest {
@@ -89,7 +92,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, DISABLED_TestBasicRecognition) {
   // Inject the fake manager factory so that the test result is returned to the
   // web page.
-  SpeechInputDispatcherHost::set_manager_factory(&fakeManagerFactory);
+  SpeechInputDispatcherHost::set_manager_accessor(&fakeManagerAccessor);
 
   // The test page starts speech recognition and waits to receive the above
   // defined test string as the result. Once it receives the result it either

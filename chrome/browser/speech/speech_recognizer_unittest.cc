@@ -25,7 +25,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   SpeechRecognizerTest()
       : io_thread_(ChromeThread::IO, &message_loop_),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            recognizer_(new SpeechRecognizer(this, SpeechInputCallerId(1,1)))) {
+            recognizer_(new SpeechRecognizer(this, 1))) {
   }
 
   void StartTest() {
@@ -33,16 +33,17 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   }
 
   // SpeechRecognizer::Delegate methods.
-  virtual void SetRecognitionResult(const SpeechInputCallerId& caller_id,
-                                    bool error, const string16& result) {
+  virtual void SetRecognitionResult(int caller_id,
+                                    bool error,
+                                    const string16& result) {
     result_received_ = true;
   }
 
-  virtual void DidCompleteRecording(const SpeechInputCallerId& caller_id) {
+  virtual void DidCompleteRecording(int caller_id) {
     recording_complete_ = true;
   }
 
-  virtual void DidCompleteRecognition(const SpeechInputCallerId& caller_id) {
+  virtual void DidCompleteRecognition(int caller_id) {
     recognition_complete_ = true;
   }
 

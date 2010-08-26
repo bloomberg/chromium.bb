@@ -15,29 +15,36 @@ namespace speech_input {
 // handles requests received from various render views and makes sure only one
 // of them can use speech recognition at a time. It also sends recognition
 // results and status events to the render views when required.
+// This class is a singleton and accessed via the Get method.
 class SpeechInputManager {
  public:
   // Implemented by the dispatcher host to relay events to the render views.
   class Delegate {
-  public:
-    virtual void SetRecognitionResult(const SpeechInputCallerId& caller_id,
-                                      const string16& value) = 0;
-    virtual void DidCompleteRecording(const SpeechInputCallerId& caller_id) = 0;
-    virtual void DidCompleteRecognition(
-        const SpeechInputCallerId& caller_id) = 0;
+   public:
+    virtual void SetRecognitionResult(int caller_id, const string16& value) = 0;
+    virtual void DidCompleteRecording(int caller_id) = 0;
+    virtual void DidCompleteRecognition(int caller_id) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
-  // Factory method to create new instances.
-  static SpeechInputManager* Create(Delegate* delegate);
+  // Factory method to access the singleton. We have this method here instead of
+  // using Singleton<> directly in the calling code to aid tests in injection
+  // mocks.
+  static SpeechInputManager* Get();
   // Factory method definition useful for tests.
-  typedef SpeechInputManager* (FactoryMethod)(Delegate*);
+  typedef SpeechInputManager* (AccessorMethod)();
 
   virtual ~SpeechInputManager() {}
 
   // Handlers for requests from render views.
-  virtual void StartRecognition(const SpeechInputCallerId& caller_id)  = 0;
-  virtual void CancelRecognition(const SpeechInputCallerId& caller_id) = 0;
-  virtual void StopRecording(const SpeechInputCallerId& caller_id) = 0;
+
+  // |delegate| is a weak pointer and should remain valid until
+  // its |DidCompleteRecognition| method is called or recognition is cancelled.
+  virtual void StartRecognition(Delegate* delegate, int caller_id) = 0;
+  virtual void CancelRecognition(int caller_id) = 0;
+  virtual void StopRecording(int caller_id) = 0;
 };
 
 // This typedef is to workaround the issue with certain versions of

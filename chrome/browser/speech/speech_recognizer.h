@@ -17,11 +17,6 @@
 
 namespace speech_input {
 
-// Holds the details of a particular webkit element making a speech request.
-// SpeechInputCallerId::first holds the ID of the render view and
-// SpeechInputCallerId::second holds the request ID given by the element.
-typedef std::pair<int, int> SpeechInputCallerId;
-
 class SpeexEncoder;
 
 // Records audio, sends recorded audio to server and translates server response
@@ -34,7 +29,7 @@ class SpeechRecognizer
   // Implemented by the caller to receive recognition events.
   class Delegate {
    public:
-    virtual void SetRecognitionResult(const SpeechInputCallerId& caller_id,
+    virtual void SetRecognitionResult(int caller_id,
                                       bool error,
                                       const string16& value) = 0;
 
@@ -42,18 +37,17 @@ class SpeechRecognizer
     // detecting silence in user input or if |StopRecording| was called. The
     // delegate has to wait until |DidCompleteRecognition| is invoked before
     // destroying the |SpeechRecognizer| object.
-    virtual void DidCompleteRecording(const SpeechInputCallerId& caller_id) = 0;
+    virtual void DidCompleteRecording(int caller_id) = 0;
 
     // This is guaranteed to be the last method invoked in the recognition
     // sequence and the |SpeechRecognizer| object can be freed up if necessary.
-    virtual void DidCompleteRecognition(
-        const SpeechInputCallerId& caller_id) = 0;
+    virtual void DidCompleteRecognition(int caller_id) = 0;
 
    protected:
     virtual ~Delegate() {}
   };
 
-  SpeechRecognizer(Delegate* delegate, const SpeechInputCallerId& caller_id);
+  SpeechRecognizer(Delegate* delegate, int caller_id);
   ~SpeechRecognizer();
 
   // Starts audio recording and does recognition after recording ends. The same
@@ -88,7 +82,7 @@ class SpeechRecognizer
   void HandleOnData(std::string* data);
 
   Delegate* delegate_;
-  SpeechInputCallerId caller_id_;
+  int caller_id_;
 
   // Buffer holding the recorded audio. Owns the strings inside the list.
   typedef std::list<std::string*> AudioBufferQueue;

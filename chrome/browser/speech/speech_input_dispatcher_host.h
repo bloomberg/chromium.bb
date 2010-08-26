@@ -23,22 +23,23 @@ class SpeechInputDispatcherHost
   explicit SpeechInputDispatcherHost(int resource_message_filter_process_id);
 
   // SpeechInputManager::Delegate methods.
-  void SetRecognitionResult(const SpeechInputCallerId& caller_id,
-                            const string16& result);
-  void DidCompleteRecording(const SpeechInputCallerId& caller_id);
-  void DidCompleteRecognition(const SpeechInputCallerId& caller_id);
+  void SetRecognitionResult(int caller_id, const string16& result);
+  void DidCompleteRecording(int caller_id);
+  void DidCompleteRecognition(int caller_id);
 
   // Called to possibly handle the incoming IPC message. Returns true if
   // handled.
   bool OnMessageReceived(const IPC::Message& msg, bool* msg_was_ok);
 
-  // Factory setter useful for tests.
-  static void set_manager_factory(SpeechInputManager::FactoryMethod* factory) {
-    manager_factory_ = factory;
+  // Singleton accessor setter useful for tests.
+  static void set_manager_accessor(SpeechInputManager::AccessorMethod* method) {
+    manager_accessor_ = method;
   }
 
  private:
+  class SpeechInputCallers;
   friend class base::RefCountedThreadSafe<SpeechInputDispatcherHost>;
+
   virtual ~SpeechInputDispatcherHost();
   void SendMessageToRenderView(IPC::Message* message, int render_view_id);
 
@@ -51,10 +52,9 @@ class SpeechInputDispatcherHost
   SpeechInputManager* manager();
 
   int resource_message_filter_process_id_;
+  SpeechInputCallers* callers_;  // weak reference to a singleton.
 
-  scoped_ptr<SpeechInputManager> manager_;
-
-  static SpeechInputManager::FactoryMethod* manager_factory_;
+  static SpeechInputManager::AccessorMethod* manager_accessor_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechInputDispatcherHost);
 };

@@ -95,8 +95,7 @@ void SpeexEncoder::Encode(const short* samples,
   }
 }
 
-SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
-                                   const SpeechInputCallerId& caller_id)
+SpeechRecognizer::SpeechRecognizer(Delegate* delegate, int caller_id)
     : delegate_(delegate),
       caller_id_(caller_id),
       encoder_(new SpeexEncoder()),
