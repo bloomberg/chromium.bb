@@ -83,9 +83,7 @@ class TsanAnalyzer:
       TheAddressTable.Add(stack_trace_line.binary, stack_trace_line.address)
       self.stack_trace_line_ = stack_trace_line
 
-  # TODO(glider): merge Read*Section once TSan is fixed to print {{{ and }}}
-  # around all reports.
-  def ReadRaceSection(self):
+  def ReadSection(self):
     result = [self.line_]
     if re.search("{{{", self.line_):
       while not re.search('}}}', self.line_):
@@ -95,18 +93,6 @@ class TsanAnalyzer:
         else:
           result.append(self.stack_trace_line_)
     return result
-
-  def ReadWarningSection(self):
-    result = [self.line_]
-    self.ReadLine()
-    while TsanAnalyzer.TSAN_WARNING_LINE_RE.match(self.line_):
-      self.ReadLine()
-      if self.stack_trace_line_ is None:
-        result.append(self.line_)
-      else:
-        result.append(self.stack_trace_line_)
-    return result
-
 
   def ParseReportFile(self, filename):
     self.cur_fd_ = open(filename, 'r')
@@ -119,16 +105,14 @@ class TsanAnalyzer:
 
       tmp = []
       while re.search(TsanAnalyzer.THREAD_CREATION_STR, self.line_):
-        # TODO(glider): that's not really a race section but rather an {{{...}}}
-        # but use this wrong name to quick-fix the script.
-        tmp.extend(self.ReadRaceSection())
+        tmp.extend(self.ReadSection())
         self.ReadLine()
       if re.search(TsanAnalyzer.TSAN_RACE_DESCRIPTION, self.line_):
-        tmp.extend(self.ReadRaceSection())
+        tmp.extend(self.ReadSection())
         self.reports.append(tmp)
       if (re.search(TsanAnalyzer.TSAN_WARNING_DESCRIPTION, self.line_) and
           not common.IsWindows()): # workaround for http://crbug.com/53198
-        tmp.extend(self.ReadWarningSection())
+        tmp.extend(self.ReadSection())
         self.reports.append(tmp)
 
       match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", self.line_)
