@@ -353,6 +353,8 @@
         '../extensions/v8/gears_extension.h',
         '../extensions/v8/heap_profiler_extension.cc',
         '../extensions/v8/heap_profiler_extension.h',
+        '../extensions/v8/interval_extension.cc',
+        '../extensions/v8/interval_extension.h',
         '../extensions/v8/playback_extension.cc',
         '../extensions/v8/playback_extension.h',
         '../extensions/v8/profiler_extension.cc',
