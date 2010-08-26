@@ -201,7 +201,10 @@ void BrowserList::RemoveBrowser(Browser* browser) {
       (browser_shutdown::IsTryingToQuit() ||
        g_browser_process->IsShuttingDown())) {
     // Last browser has just closed, and this is a user-initiated quit or there
-    // is no module keeping the app alive, so send out our notification.
+    // is no module keeping the app alive, so send out our notification. No need
+    // to call ProfileManager::ShutdownSessionServices() as part of the
+    // shutdown, because Browser::WindowClosing() already makes sure that the
+    // SessionService is created and notified.
     NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
                                            NotificationService::AllSources(),
                                            NotificationService::NoDetails());
