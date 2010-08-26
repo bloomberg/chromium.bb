@@ -36,6 +36,7 @@ InitProxyResolver::~InitProxyResolver() {
 }
 
 int InitProxyResolver::Init(const ProxyConfig& config,
+                            const base::TimeDelta wait_delay,
                             CompletionCallback* callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(callback);
@@ -43,10 +44,15 @@ int InitProxyResolver::Init(const ProxyConfig& config,
 
   net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER, NULL);
 
+  // Save the |wait_delay| as a non-negative value.
+  wait_delay_ = wait_delay;
+  if (wait_delay_ < base::TimeDelta())
+    wait_delay_ = base::TimeDelta();
+
   pac_urls_ = BuildPacUrlsFallbackList(config);
   DCHECK(!pac_urls_.empty());
 
-  next_state_ = GetStartState();
+  next_state_ = STATE_WAIT;
 
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
@@ -86,6 +92,13 @@ int InitProxyResolver::DoLoop(int result) {
     State state = next_state_;
     next_state_ = STATE_NONE;
     switch (state) {
+      case STATE_WAIT:
+        DCHECK_EQ(OK, rv);
+        rv = DoWait();
+        break;
+      case STATE_WAIT_COMPLETE:
+        rv = DoWaitComplete(rv);
+        break;
       case STATE_FETCH_PAC_SCRIPT:
         DCHECK_EQ(OK, rv);
         rv = DoFetchPacScript();
@@ -113,6 +126,27 @@ void InitProxyResolver::DoCallback(int result) {
   DCHECK_NE(ERR_IO_PENDING, result);
   DCHECK(user_callback_);
   user_callback_->Run(result);
+}
+
+int InitProxyResolver::DoWait() {
+  next_state_ = STATE_WAIT_COMPLETE;
+
+  // If no waiting is required, continue on to the next state.
+  if (wait_delay_.ToInternalValue() == 0)
+    return OK;
+
+  // Otherwise wait the specified amount of time.
+  wait_timer_.Start(wait_delay_, this, &InitProxyResolver::OnWaitTimerFired);
+  net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_WAIT, NULL);
+  return ERR_IO_PENDING;
+}
+
+int InitProxyResolver::DoWaitComplete(int result) {
+  DCHECK_EQ(OK, result);
+  if (wait_delay_.ToInternalValue() != 0)
+    net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_WAIT, NULL);
+  next_state_ = GetStartState();
+  return OK;
 }
 
 int InitProxyResolver::DoFetchPacScript() {
@@ -217,6 +251,10 @@ const InitProxyResolver::PacURL& InitProxyResolver::current_pac_url() const {
   return pac_urls_[current_pac_url_index_];
 }
 
+void InitProxyResolver::OnWaitTimerFired() {
+  OnIOCompletion(OK);
+}
+
 void InitProxyResolver::DidCompleteInit() {
   net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER, NULL);
 }
@@ -227,6 +265,9 @@ void InitProxyResolver::Cancel() {
   net_log_.AddEvent(NetLog::TYPE_CANCELLED, NULL);
 
   switch (next_state_) {
+    case STATE_WAIT_COMPLETE:
+      wait_timer_.Stop();
+      break;
     case STATE_FETCH_PAC_SCRIPT_COMPLETE:
       proxy_script_fetcher_->Cancel();
       break;
