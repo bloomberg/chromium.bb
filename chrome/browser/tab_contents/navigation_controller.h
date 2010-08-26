@@ -388,7 +388,7 @@ class NavigationController {
 
   // Returns the largest restored page ID seen in this navigation controller,
   // if it was restored from a previous session.  (-1 otherwise)
-  int max_restored_page_id() const { return max_restored_page_id_; }
+  int32 max_restored_page_id() const { return max_restored_page_id_; }
 
   // The session storage namespace id that all child render views should use.
   int64 session_storage_namespace_id() const {
@@ -478,7 +478,9 @@ class NavigationController {
 
   // Sets the max restored page ID this NavigationController has seen, if it
   // was restored from a previous session.
-  void set_max_restored_page_id(int max_id) { max_restored_page_id_ = max_id; }
+  void set_max_restored_page_id(int32 max_id) {
+    max_restored_page_id_ = max_id;
+  }
 
   // Updates the virtual URL of an entry to match a new URL, for cases where
   // the real renderer URL is derived from the virtual URL, like view-source:
@@ -561,7 +563,7 @@ class NavigationController {
   // The max restored page ID in this controller, if it was restored.  We must
   // store this so that TabContents can tell any renderer in charge of one of
   // the restored entries to update its max page ID.
-  int max_restored_page_id_;
+  int32 max_restored_page_id_;
 
   // Manages the SSL security UI
   SSLManager ssl_manager_;
