@@ -194,7 +194,7 @@ Section::Section(PageInfoBubbleView* owner,
 
   if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY) {
     link_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
+        l10n_util::GetString(IDS_PAGEINFO_CERT_INFO_BUTTON));
     link_->SetController(this);
     AddChildView(link_);
   }
