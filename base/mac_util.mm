@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_cftyperef.h"
-#include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 
 namespace {
@@ -48,80 +47,6 @@ void SetUIMode() {
 
   if (current_mode != desired_mode)
     SetSystemUIMode(desired_mode, desired_options);
-}
-
-bool WasLaunchedAsLoginItem() {
-  ProcessSerialNumber psn = { 0, kCurrentProcess };
-
-  scoped_nsobject<const NSDictionary> process_info(
-      reinterpret_cast<const NSDictionary*>(
-          ProcessInformationCopyDictionary(&psn,
-              kProcessDictionaryIncludeAllInformationMask)));
-
-  long long temp = [[process_info objectForKey:@"ParentPSN"] longLongValue];
-  ProcessSerialNumber parent_psn =
-      { (temp >> 32) & 0x00000000FFFFFFFFLL, temp & 0x00000000FFFFFFFFLL };
-
-  scoped_nsobject<const NSDictionary> parent_info(
-      reinterpret_cast<const NSDictionary*>(
-          ProcessInformationCopyDictionary(&parent_psn,
-              kProcessDictionaryIncludeAllInformationMask)));
-
-  // Check that creator process code is that of loginwindow.
-  BOOL result =
-      [[parent_info objectForKey:@"FileCreator"] isEqualToString:@"lgnw"];
-
-  return result == YES;
-}
-
-// Looks into Shared File Lists corresponding to Login Items for the item
-// representing the current application. If such an item is found, returns
-// retained reference to it. Caller is responsibel for releasing the reference.
-LSSharedFileListItemRef GetLoginItemForApp() {
-  scoped_cftyperef<LSSharedFileListRef> login_items(LSSharedFileListCreate(
-      NULL, kLSSharedFileListSessionLoginItems, NULL));
-
-  if (!login_items.get()) {
-    LOG(ERROR) << "Couldn't get a Login Items list.";
-    return NULL;
-  }
-
-  scoped_nsobject<NSArray> login_items_array(reinterpret_cast<const NSArray*>(
-      LSSharedFileListCopySnapshot(login_items, NULL)));
-
-  NSURL* url = [NSURL fileURLWithPath: [[NSBundle mainBundle] bundlePath]];
-
-  LSSharedFileListItemRef result = NULL;
-
-  for (size_t i = 0; i < [login_items_array count]; ++i) {
-    LSSharedFileListItemRef item = reinterpret_cast<LSSharedFileListItemRef>(
-        [login_items_array objectAtIndex:i]);
-    CFURLRef item_url_ref = NULL;
-    if (LSSharedFileListItemResolve(item, 0, &item_url_ref, NULL) == noErr) {
-      scoped_cftyperef<CFURLRef> item_url(item_url_ref);
-      if (CFEqual(item_url, url)) {
-        result = item;
-        CFRetain(result);
-        break;
-      }
-    }
-  }
-
-  return result;
-}
-
-// kLSSharedFileListLoginItemHidden is supported on
-// 10.5, but missing from the 10.5 headers.
-// http://openradar.appspot.com/6482251
-static const NSString* kLSSharedFileListLoginItemHidden =
-    @"com.apple.loginitem.HideOnLaunch";
-
-bool IsHiddenLoginItem(LSSharedFileListItemRef item) {
-  scoped_cftyperef<CFBooleanRef> hidden(reinterpret_cast<CFBooleanRef>(
-      LSSharedFileListItemCopyProperty(item,
-          reinterpret_cast<CFStringRef>(kLSSharedFileListLoginItemHidden))));
-
-  return hidden && hidden == kCFBooleanTrue;
 }
 
 }  // end namespace
@@ -588,82 +513,6 @@ CGImageRef CopyNSImageToCGImage(NSImage* image) {
   [NSGraphicsContext restoreGraphicsState];
 
   return CGBitmapContextCreateImage(context);
-}
-
-bool CheckLoginItemStatus(bool* is_hidden) {
-  scoped_cftyperef<LSSharedFileListItemRef> item(GetLoginItemForApp());
-  if (!item.get())
-    return false;
-
-  if (is_hidden)
-    *is_hidden = IsHiddenLoginItem(item);
-
-  return true;
-}
-
-void AddToLoginItems(bool hide_on_startup) {
-  scoped_cftyperef<LSSharedFileListItemRef> item(GetLoginItemForApp());
-  if (item.get() && (IsHiddenLoginItem(item) == hide_on_startup)) {
-    return;  // Already is a login item with required hide flag.
-  }
-
-  scoped_cftyperef<LSSharedFileListRef> login_items(LSSharedFileListCreate(
-      NULL, kLSSharedFileListSessionLoginItems, NULL));
-
-  if (!login_items.get()) {
-    LOG(ERROR) << "Couldn't get a Login Items list.";
-    return;
-  }
-
-  // Remove the old item, it has wrong hide flag, we'll create a new one.
-  if (item.get()) {
-    LSSharedFileListItemRemove(login_items, item);
-  }
-
-  NSURL* url = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
-
-  BOOL hide = hide_on_startup ? YES : NO;
-  NSDictionary* properties =
-      [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:hide]
-                    forKey:kLSSharedFileListLoginItemHidden];
-
-  scoped_cftyperef<LSSharedFileListItemRef> new_item;
-  new_item.reset(LSSharedFileListInsertItemURL(
-      login_items, kLSSharedFileListItemLast, NULL, NULL,
-      reinterpret_cast<CFURLRef>(url),
-      reinterpret_cast<CFDictionaryRef>(properties), NULL));
-
-  if (!new_item.get()) {
-    LOG(ERROR) << "Couldn't insert current app into Login Items list.";
-  }
-}
-
-void RemoveFromLoginItems() {
-  scoped_cftyperef<LSSharedFileListItemRef> item(GetLoginItemForApp());
-  if (!item.get())
-    return;
-
-  scoped_cftyperef<LSSharedFileListRef> login_items(LSSharedFileListCreate(
-      NULL, kLSSharedFileListSessionLoginItems, NULL));
-
-  if (!login_items.get()) {
-      LOG(ERROR) << "Couldn't get a Login Items list.";
-      return;
-  }
-
-  LSSharedFileListItemRemove(login_items, item);
-}
-
-bool WasLaunchedAsHiddenLoginItem() {
-  if (!WasLaunchedAsLoginItem())
-    return false;
-
-  scoped_cftyperef<LSSharedFileListItemRef> item(GetLoginItemForApp());
-  if (!item.get()) {
-    LOG(ERROR) << "Process launched at Login but can't access Login Item List.";
-    return false;
-  }
-  return IsHiddenLoginItem(item);
 }
 
 }  // namespace mac_util
