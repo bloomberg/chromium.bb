@@ -73,6 +73,14 @@ void SetClientId(const std::string& client_id) {
   (set_client_id)(wstr.c_str());
 }
 
+std::string GetClientId() {
+  std::wstring wstr_client_id;
+  if (GoogleUpdateSettings::GetMetricsId(&wstr_client_id))
+    return WideToASCII(wstr_client_id);
+  else
+    return std::string();
+}
+
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   static MainSetExtensionID set_extension_id = NULL;
   if (!set_extension_id) {

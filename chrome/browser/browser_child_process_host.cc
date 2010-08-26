@@ -14,9 +14,9 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/app/breakpad_mac.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -79,16 +79,13 @@ void BrowserChildProcessHost::SetCrashReporterCommandLine(
     CommandLine* command_line) {
 #if defined(USE_LINUX_BREAKPAD)
   if (IsCrashReporterEnabled()) {
-    std::string client_id =
-        g_browser_process->local_state()->GetString(prefs::kMetricsClientID);
     command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-                                    client_id + "," + base::GetLinuxDistro());
+        child_process_logging::GetClientId() + "," + base::GetLinuxDistro());
   }
 #elif defined(OS_MACOSX)
   if (IsCrashReporterEnabled()) {
-    std::string client_id =
-        g_browser_process->local_state()->GetString(prefs::kMetricsClientID);
-    command_line->AppendSwitchASCII(switches::kEnableCrashReporter, client_id);
+    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
+                                    child_process_logging::GetClientId());
   }
 #endif  // OS_MACOSX
 }

@@ -22,6 +22,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/global_descriptors_posix.h"
+#include "base/linux_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
@@ -29,12 +30,12 @@
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/linux/linux_syscall_support.h"
 #include "breakpad/src/common/linux/memory.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/installer/util/google_update_settings.h"
 
 // Some versions of gcc are prone to warn about unused return values. In cases
 // where we either a) know the call cannot fail, or b) there is nothing we
@@ -579,19 +580,6 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   return child;
 }
 
-// This is defined in chrome/browser/google_update_settings_posix.cc, it's the
-// static string containing the user's unique GUID. We send this in the crash
-// report.
-namespace google_update {
-extern std::string posix_guid;
-}
-
-// This is defined in base/linux_util.cc, it's the static string containing the
-// user's distro info. We send this in the crash report.
-namespace base {
-extern std::string linux_distro;
-}
-
 static bool CrashDone(const char* dump_path,
                       const char* minidump_id,
                       const bool upload,
@@ -619,10 +607,10 @@ static bool CrashDone(const char* dump_path,
   info.process_type_length = 7;
   info.crash_url = NULL;
   info.crash_url_length = 0;
-  info.guid = google_update::posix_guid.data();
-  info.guid_length = google_update::posix_guid.length();
-  info.distro = base::linux_distro.data();
-  info.distro_length = base::linux_distro.length();
+  info.guid = child_process_logging::g_client_id;
+  info.guid_length = my_strlen(child_process_logging::g_client_id);
+  info.distro = base::g_linux_distro;
+  info.distro_length = my_strlen(base::g_linux_distro);
   info.upload = upload;
   HandleCrashDump(info);
 
@@ -659,13 +647,6 @@ void EnableCrashDumping(const bool unattended) {
   }
 }
 
-// This is defined in chrome/common/child_process_logging_linux.cc, it's the
-// static string containing the current active URL. We send this in the crash
-// report.
-namespace child_process_logging {
-extern std::string active_url;
-}
-
 // Currently Non-Browser = Renderer and Plugins
 static bool
 NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
@@ -680,15 +661,16 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   char guid[kGuidSize + 1] = {0};
   char crash_url[kMaxActiveURLSize + 1] = {0};
   char distro[kDistroSize + 1] = {0};
-  const size_t guid_len = std::min(google_update::posix_guid.size(),
-                                   kGuidSize);
+  const size_t guid_len =
+      std::min(my_strlen(child_process_logging::g_client_id), kGuidSize);
   const size_t crash_url_len =
-      std::min(child_process_logging::active_url.size(), kMaxActiveURLSize);
+      std::min(my_strlen(child_process_logging::g_active_url),
+               kMaxActiveURLSize);
   const size_t distro_len =
-      std::min(base::linux_distro.size(), kDistroSize);
-  memcpy(guid, google_update::posix_guid.data(), guid_len);
-  memcpy(crash_url, child_process_logging::active_url.data(), crash_url_len);
-  memcpy(distro, base::linux_distro.data(), distro_len);
+      std::min(my_strlen(base::g_linux_distro), kDistroSize);
+  memcpy(guid, child_process_logging::g_client_id, guid_len);
+  memcpy(crash_url, child_process_logging::g_active_url, crash_url_len);
+  memcpy(distro, base::g_linux_distro, distro_len);
 
   char b;  // Dummy variable for sys_read below.
   const char* b_addr = &b;  // Get the address of |b| so we can create the
@@ -776,10 +758,10 @@ void InitCrashReporter() {
         parsed_command_line.GetSwitchValueASCII(switches::kEnableCrashReporter);
     size_t separator = switch_value.find(",");
     if (separator != std::string::npos) {
-      google_update::posix_guid = switch_value.substr(0, separator);
-      base::linux_distro = switch_value.substr(separator + 1);
+      child_process_logging::SetClientId(switch_value.substr(0, separator));
+      base::SetLinuxDistro(switch_value.substr(separator + 1));
     } else {
-      google_update::posix_guid = switch_value;
+      child_process_logging::SetClientId(switch_value);
     }
     EnableNonBrowserCrashDumping();
   }

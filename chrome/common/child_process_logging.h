@@ -23,12 +23,23 @@ static const int kMaxReportedActiveExtensions = 10;
 
 namespace child_process_logging {
 
+#if defined(OS_LINUX)
+// These are declared here so the crash reporter can access them directly in
+// compromised context without going through the standard library.
+extern char g_active_url[];
+extern char g_client_id[];
+#endif
+
 // Sets the URL that is logged if the child process crashes. Use GURL() to clear
 // the URL.
 void SetActiveURL(const GURL& url);
 
 // Sets the Client ID that is used as GUID if a Chrome process crashes.
 void SetClientId(const std::string& client_id);
+
+// Gets the Client ID to be used as GUID for crash reporting. Returns the client
+// id in |client_id| if it's known, an empty string otherwise.
+std::string GetClientId();
 
 // Sets the list of "active" extensions in this process. We overload "active" to
 // mean different things depending on the process type:

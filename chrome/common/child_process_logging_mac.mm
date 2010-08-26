@@ -28,6 +28,10 @@ const char *kGPUVertexShaderVersionParamName = "vsver";
 static SetCrashKeyValueFuncPtr g_set_key_func;
 static ClearCrashKeyValueFuncPtr g_clear_key_func;
 
+// Account for the terminating null character.
+static const size_t kClientIdSize = 32 + 1;
+static char g_client_id[kClientIdSize];
+
 void SetCrashKeyFunctions(SetCrashKeyValueFuncPtr set_key_func,
                           ClearCrashKeyValueFuncPtr clear_key_func) {
   g_set_key_func = set_key_func;
@@ -93,11 +97,16 @@ void SetClientId(const std::string& client_id) {
   std::string str(client_id);
   ReplaceSubstringsAfterOffset(&str, 0, "-", "");
 
+  base::strlcpy(g_client_id, str.c_str(), kClientIdSize);
   if (g_set_key_func)
     SetClientIdImpl(str, g_set_key_func);
 
   std::wstring wstr = ASCIIToWide(str);
   GoogleUpdateSettings::SetMetricsId(wstr);
+}
+
+std::string GetClientId() {
+  return std::string(g_client_id);
 }
 
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
