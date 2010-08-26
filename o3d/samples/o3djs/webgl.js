@@ -77,9 +77,11 @@ o3djs.webgl.makeClients = function(callback,
       }
     }
     var objElem = o3djs.webgl.createClient(element, features, opt_debug);
-    if (objElem) {
-      clientElements.push(objElem);
+    if (!objElem) {
+      // If we couldn't create the client then we don't call the callback.
+      return;
     }
+    clientElements.push(objElem);
   }
 
   // Wait for the client elements to be fully initialized. This
@@ -145,25 +147,18 @@ o3djs.webgl.addDebuggingWrapper = function(context) {
  */
 o3djs.webgl.webGlCanvasError = function(parentNode, unavailableElement) {
   var background = document.createElement('div');
-  background.style.backgroundColor='#ccffff';
-  background.style.textAlign='center';
-  background.style.margin='10px';
+  background.style.backgroundColor = '#ccffff';
+  background.style.textAlign = 'center';
+  background.style.margin = '10px';
+  background.style.width = '100%';
+  background.style.height = '100%';
 
-  var message = document.createElement('p');
-  var messageText = document.createTextNode(
-      unavailableElement + ' unavailable.  ' +
-      'Make sure you are using a WebGL capable browser ' +
-      'and WebGL is enabled.  Click here for more information:');
-  message.appendChild(messageText);
+  var messageHTML = '<br/><br/><a href="http://get.webgl.org">' +
+      'Your browser does not appear to support WebGL.<br/><br/>' +
+      'Check that WebGL is enabled or click here to upgrade your browser:' +
+      '</a><br/>';
 
-  var url = 'http://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation';
-  var link = document.createElement('a');
-  link.appendChild(document.createTextNode(url));
-  link.href = url;
-
-  background.appendChild(message);
-  background.appendChild(link);
-  background.appendChild(document.createElement('br'));
+  background.innerHTML = messageHTML;
 
   parentNode.appendChild(background);
 };
@@ -192,13 +187,14 @@ o3djs.webgl.createClient = function(element, opt_features, opt_debug) {
   // element (div), and initialize its size correctly.
   var canvas;
   canvas = document.createElement('canvas');
-  canvas.style.width = "100%";
-  canvas.style.height = "100%";
 
-  if (!canvas) {
+  if (!canvas || !canvas.getContext) {
     o3djs.webgl.webGlCanvasError(element, 'HTMLCanvas');
     return null;
   }
+
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
 
   var client = new o3d.Client;
 
@@ -208,7 +204,9 @@ o3djs.webgl.createClient = function(element, opt_features, opt_debug) {
     canvas.width = width;
     canvas.height = height;
     canvas.sizeInitialized_ = true;
-    client.gl.displayInfo = {width: canvas.width, height: canvas.height};
+    if (client.gl) {
+      client.gl.displayInfo = {width: canvas.width, height: canvas.height};
+    }
   };
   window.addEventListener('resize', resizeHandler, false);
   setTimeout(resizeHandler, 0);
