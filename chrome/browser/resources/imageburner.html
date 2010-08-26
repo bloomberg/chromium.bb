@@ -79,7 +79,6 @@ html[dir='rtl'].burnicon {
 .devicerow:hover .burnicon:hover {
   opacity: 1;
   -webkit-transition: none;
-  cursor: pointer;
 }
 
 .devicerow {
@@ -96,6 +95,7 @@ html[dir='rtl'] .devicerow {
 
 .devicerow:hover {
   background-color: #ebeff9;
+  cursor: pointer;
 }
 
 .devicerow span.name {
@@ -117,8 +117,6 @@ h1.title {
 .columnlist {
   width: 100%;
   bottom: 0;
-  overflow-y: scroll;
-  overflow-x: hidden;
 }
 
 .fullcontainer {
@@ -127,13 +125,14 @@ h1.title {
   left: 0;
   bottom: 0;
   right: 600px;
-  overflow-y: hidden;
-  overflow-x: scroll;
+  border-right: 1px solid #7289E2;
 }
 
 html[dir='rtl'] .fullcontainer {
   left: 600px;
   right: 0;
+  border-right: auto;
+  border-left: 1px solid #7289E2;
 }
 
 progress {
@@ -159,11 +158,11 @@ progress {
   background-color: #fff;
 }
 
-#rootsColumn {
+#rootsColumn:not(.burningColumn) {
   height: 50%;
 }
 
-#statusColumn {
+#statusColumn:not(.burningColumn) {
   height: 50%; 
   border-top: 1px solid #7289E2;
 }
@@ -311,7 +310,7 @@ function setProgressElementValues(element, statuses, amountFinished,
     }
   }  
  
-  if (amountFinished <= 0) {
+  if (!(amountFinished > 0)) {
     amountFinished = 0; 
     statusTextDiv.textContent = statuses["start"];
     progressTextDiv.textContent = "";
@@ -322,7 +321,8 @@ function setProgressElementValues(element, statuses, amountFinished,
   if(amountFinished > amountTotal)
     amountFinished = amountTotal;
   progressBarDiv.value = amountFinished;
-  progressBarDiv.max = amountTotal;  
+  if (amountTotal)
+    progressBarDiv.max = amountTotal;  
   return element;
 }
 
@@ -352,6 +352,8 @@ function burnProgressUpdated(result) {
   if (!burnStarted) {
     $('rootsList').style.display = 'none';
     $('rootsListTitle').textContent = result.path;
+    $('rootsColumn').className = 'burningColumn columnList';
+    $('statusColumn').className = 'burningColumn columnList';
     burnStarted = true;
   }
   updateProgressElement('burn', result);
@@ -366,7 +368,7 @@ function createNewItem(title, path) {
   elementIdCounter++;
   var link;
   link = document.createElement('div');
-  link.onclick = function() { selectItem(element.id, path); };
+  link.onclick = function() { burnImage(element.id, path); };
   link.className = 'rowlink';
 
   var icon = document.createElement('div');
@@ -382,7 +384,7 @@ function createNewItem(title, path) {
 
   var burnicon = document.createElement('button');
   burnicon.className = 'burnicon';
-  burnicon.onclick = function() { burnImage(element.id, title); };
+  burnicon.onclick = function() { burnImage(element.id, path); };
   element.appendChild(burnicon);
 
   return element;

@@ -14,7 +14,6 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
@@ -153,6 +152,15 @@ void ImageBurnHandler::ProgressUpdated(chromeos::BurnLibrary* object,
                                        const ImageBurnStatus& status) {
     UpdateBurnProgress(status.amount_burnt, status.total_size,
                        status.target_path, evt);
+    if (evt == chromeos::BURN_COMPLETE) {
+      ImageBurnTaskProxy* task = new ImageBurnTaskProxy(AsWeakPtr());
+      task->AddRef();
+      task->FinalizeBurn(true);
+    } else if (evt == chromeos::BURN_CANCELED) {
+      ImageBurnTaskProxy* task = new ImageBurnTaskProxy(AsWeakPtr());
+      task->AddRef();
+      task->FinalizeBurn(false);
+    }
 }
 
 void ImageBurnHandler::OnDownloadUpdated(DownloadItem* download) {
@@ -263,9 +271,10 @@ void ImageBurnHandler::BurnImage() {
   if (burn_lib->DoBurn(local_image_file_path_, image_target_)) {
     DictionaryValue signal_value;
     signal_value.SetString("state", "IN_PROGRESS");
-    signal_value.SetInteger("amount_burnt", 0);
+    signal_value.SetString("path", image_target_.value());
+    signal_value.SetInteger("received", 0);
     signal_value.SetString("progress_status_text", "");
-    dom_ui_->CallJavascriptFunction(L"burnUpdated", signal_value);
+    dom_ui_->CallJavascriptFunction(L"burnProgressUpdated", signal_value);
   }
 }
 
