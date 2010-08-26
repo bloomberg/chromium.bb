@@ -260,7 +260,7 @@ def ApplyDirectoryRules(existing_rules, dir_name):
   global_scope = {"From": FromImpl, "Var": _VarImpl(local_scope).Lookup}
   deps_file = os.path.join(dir_name, "DEPS")
 
-  if os.path.exists(deps_file):
+  if os.path.isfile(deps_file):
     execfile(deps_file, global_scope, local_scope)
   elif VERBOSE:
     print "  No deps file found in", dir_name
