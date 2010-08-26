@@ -349,19 +349,41 @@ def CheckDoNotSubmit(input_api, output_api):
       )
 
 
-def CheckTreeIsOpen(input_api, output_api, url, closed):
-  """Checks that an url's content doesn't match a regexp that would mean that
-  the tree is closed."""
+def CheckTreeIsOpen(input_api, output_api,
+                    url=None, closed=None, json_url=None):
+  """Check whether to allow commit without prompt.
+
+  Supports two styles:
+    1. Checks that an url's content doesn't match a regexp that would mean that
+       the tree is closed. (old)
+    2. Check the json_url to decide whether to allow commit without prompt.
+  Args:
+    input_api: input related apis.
+    output_api: output related apis.
+    url: url to use for regex based tree status.
+    closed: regex to match for closed status.
+    json_url: url to download json style status.
+  """
   if not input_api.is_committing:
     return []
   try:
-    connection = input_api.urllib2.urlopen(url)
-    status = connection.read()
-    connection.close()
-    if input_api.re.match(closed, status, input_api.re.IGNORECASE):
-      long_text = status + '\n' + url
-      return [output_api.PresubmitError('The tree is closed dude!',
-                                        long_text=long_text)]
+    if json_url:
+      connection = input_api.urllib2.urlopen(json_url)
+      status = input_api.json.loads(connection.read())
+      connection.close()
+      if not status['can_commit_freely']:
+        short_text = 'Tree state is: ' + status['general_state']
+        long_text = status['message'] + '\n' + json_url
+        return [output_api.PresubmitError(short_text, long_text=long_text)]
+    else:
+      # TODO(bradnelson): drop this once all users are gone.
+      connection = input_api.urllib2.urlopen(url)
+      status = connection.read()
+      connection.close()
+      if input_api.re.match(closed, status):
+        long_text = status + '\n' + url
+        return [output_api.PresubmitError('The tree is closed.',
+                                          long_text=long_text)]
   except IOError:
     pass
   return []

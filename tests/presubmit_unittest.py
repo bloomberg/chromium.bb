@@ -71,8 +71,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
       'exceptions', 'fnmatch', 'gcl', 'gclient_utils', 'glob', 'json',
       'logging', 'marshal', 'normpath', 'optparse', 'os', 'pickle',
-      'presubmit_canned_checks', 'random', 're', 'scm', 'subprocess', 'sys',
-      'tempfile', 'time', 'traceback', 'types', 'unittest', 'urllib2',
+      'presubmit_canned_checks', 'random', 're', 'scm', 'subprocess',
+      'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest', 'urllib2',
       'warnings',
     ]
     # If this test fails, you should add the relevant test.
@@ -616,9 +616,8 @@ class InputApiUnittest(PresubmitTestsBase):
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
       'is_committing', 'json', 'marshal', 'os_path', 'pickle', 'platform',
-      'python_executable',
-      're', 'subprocess', 'tempfile', 'traceback', 'unittest', 'urllib2',
-      'version',
+      'python_executable', 're', 'subprocess', 'tempfile', 'traceback',
+      'unittest', 'urllib2', 'version',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.InputApi(None, './.', False), members)
@@ -1507,22 +1506,59 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi(None, True)
     connection = self.mox.CreateMockAnything()
     input_api.urllib2.urlopen('url_to_open').AndReturn(connection)
-    connection.read().AndReturn('1')
+    connection.read().AndReturn('The tree is open')
     connection.close()
     self.mox.ReplayAll()
     results = presubmit_canned_checks.CheckTreeIsOpen(
-        input_api, presubmit.OutputApi, url='url_to_open', closed='0')
+        input_api, presubmit.OutputApi, url='url_to_open', closed='.*closed.*')
     self.assertEquals(results, [])
 
   def testCannedCheckTreeIsOpenClosed(self):
     input_api = self.MockInputApi(None, True)
     connection = self.mox.CreateMockAnything()
     input_api.urllib2.urlopen('url_to_closed').AndReturn(connection)
-    connection.read().AndReturn('0')
+    connection.read().AndReturn('Tree is closed for maintenance')
     connection.close()
     self.mox.ReplayAll()
     results = presubmit_canned_checks.CheckTreeIsOpen(
-        input_api, presubmit.OutputApi, url='url_to_closed', closed='0')
+        input_api, presubmit.OutputApi,
+        url='url_to_closed', closed='.*closed.*')
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+                      presubmit.OutputApi.PresubmitError)
+
+  def testCannedCheckJsonTreeIsOpenOpen(self):
+    input_api = self.MockInputApi(None, True)
+    input_api.json = presubmit.json
+    connection = self.mox.CreateMockAnything()
+    input_api.urllib2.urlopen('url_to_open').AndReturn(connection)
+    status = {
+        'can_commit_freely': True,
+        'general_state': 'open',
+        'message': 'The tree is open'
+    }
+    connection.read().AndReturn(input_api.json.dumps(status))
+    connection.close()
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.CheckTreeIsOpen(
+        input_api, presubmit.OutputApi, json_url='url_to_open')
+    self.assertEquals(results, [])
+
+  def testCannedCheckJsonTreeIsOpenClosed(self):
+    input_api = self.MockInputApi(None, True)
+    input_api.json = presubmit.json
+    connection = self.mox.CreateMockAnything()
+    input_api.urllib2.urlopen('url_to_closed').AndReturn(connection)
+    status = {
+        'can_commit_freely': False,
+        'general_state': 'closed',
+        'message': 'The tree is close',
+    }
+    connection.read().AndReturn(input_api.json.dumps(status))
+    connection.close()
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.CheckTreeIsOpen(
+        input_api, presubmit.OutputApi, json_url='url_to_closed')
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitError)
