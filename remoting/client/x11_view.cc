@@ -43,7 +43,13 @@ bool X11View::Initialize() {
   XStoreName(display_, window_, "X11 Remoting");
 
   // Specifies what kind of messages we want to receive.
-  XSelectInput(display_, window_, ExposureMask | ButtonPressMask);
+  XSelectInput(display_,
+               window_,
+               ExposureMask
+               | KeyPressMask | KeyReleaseMask
+               | ButtonPressMask | ButtonReleaseMask
+               | PointerMotionMask);
+
   XMapWindow(display_, window_);
   return true;
 }

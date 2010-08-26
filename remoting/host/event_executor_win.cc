@@ -357,36 +357,15 @@ void EventExecutorWin::HandleInputEvents(ClientMessageList* messages) {
   for (size_t i = 0; i < messages->size(); ++i) {
     ChromotingClientMessage* msg = (*messages)[i];
     if (msg->has_mouse_set_position_event()) {
-      mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE,
-        static_cast<int>((msg->mouse_set_position_event().x() * 65535)),
-        static_cast<int>((msg->mouse_set_position_event().y() * 65535)),
-        0, 0);
+      // TODO(garykac) Updated Windows host mouse support in following cl.
     } else if (msg->has_mouse_move_event()) {
-      mouse_event(MOUSEEVENTF_MOVE,
-                  msg->mouse_move_event().offset_x(),
-                  msg->mouse_move_event().offset_y(), 0, 0);
+      // TODO(garykac) Updated Windows host mouse support in following cl.
     } else if (msg->has_mouse_wheel_event()) {
-      // TODO(hclam): Handle wheel events.
+      // TODO(garykac) Updated Windows host wheel support in following cl.
     } else if (msg->has_mouse_down_event()) {
-      if (msg->mouse_down_event().button() ==
-          MouseDownEvent::LEFT) {
-        mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-      } else if (msg->mouse_down_event().button() ==
-          MouseDownEvent::RIGHT) {
-        mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
-      } else {
-        // TODO(hclam): Handle other buttons.
-      }
+      // TODO(garykac) Updated Windows host mouse support in following cl.
     } else if (msg->has_mouse_up_event()) {
-      if (msg->mouse_up_event().button() ==
-          MouseUpEvent::LEFT) {
-        mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-      } else if (msg->mouse_up_event().button() ==
-          MouseUpEvent::RIGHT) {
-        mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
-      } else {
-        // TODO(hclam): Handle other buttons.
-      }
+      // TODO(garykac) Updated Windows host mouse support in following cl.
     } else if (msg->has_key_event()) {
       base::KeyboardCode key_code =
           WindowsKeyCodeForPosixKeyCode(msg->key_event().key());

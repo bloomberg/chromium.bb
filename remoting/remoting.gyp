@@ -247,6 +247,7 @@
         'client/client_util.cc',
         'client/client_util.h',
         'client/host_connection.h',
+        'client/input_handler.cc',
         'client/input_handler.h',
         'client/jingle_host_connection.cc',
         'client/jingle_host_connection.h',

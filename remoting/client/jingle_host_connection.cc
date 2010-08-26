@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/protocol_util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -30,6 +31,22 @@ void JingleHostConnection::Disconnect() {
   message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &JingleHostConnection::DoDisconnect));
+}
+
+void JingleHostConnection::SendEvent(const ChromotingClientMessage& msg) {
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &JingleHostConnection::SendEvent, msg));
+    return;
+  }
+
+  // Don't send messages if we're disconnected.
+  if (jingle_channel_ == NULL) {
+    return;
+  }
+
+  jingle_channel_->Write(SerializeAndFrameMessage(msg));
 }
 
 void JingleHostConnection::OnStateChange(JingleChannel* channel,

@@ -14,6 +14,14 @@ ChromotingView::ChromotingView()
       frame_height_(0) {
 }
 
+
+// TODO(garykac): This assumes a single screen. This will need to be adjusted
+// to add support for mulitple monitors.
+void ChromotingView::GetScreenSize(int* width, int* height) {
+  *width = frame_width_;
+  *height = frame_height_;
+}
+
 bool ChromotingView::SetupDecoder(UpdateStreamEncoding encoding) {
   if (encoding == EncodingInvalid) {
     LOG(ERROR) << "Cannot create encoder for EncodingInvalid";

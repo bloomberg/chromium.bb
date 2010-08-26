@@ -115,15 +115,23 @@ bool ChromotingInstance::CurrentlyOnPluginThread() const {
 bool ChromotingInstance::HandleEvent(const PP_Event& event) {
   DCHECK(CurrentlyOnPluginThread());
 
+  PepperInputHandler* pih
+      = static_cast<PepperInputHandler*>(input_handler_.get());
+
   switch (event.type) {
     case PP_EVENT_TYPE_MOUSEDOWN:
+      pih->HandleMouseButtonEvent(true, event.u.mouse);
+      break;
     case PP_EVENT_TYPE_MOUSEUP:
+      pih->HandleMouseButtonEvent(false, event.u.mouse);
+      break;
     case PP_EVENT_TYPE_MOUSEMOVE:
     case PP_EVENT_TYPE_MOUSEENTER:
     case PP_EVENT_TYPE_MOUSELEAVE:
-      // client_->handle_mouse_event(npevent);
+      pih->HandleMouseMoveEvent(event.u.mouse);
       break;
 
+    case PP_EVENT_TYPE_KEYDOWN:
     case PP_EVENT_TYPE_CHAR:
       // client_->handle_char_event(npevent);
       break;

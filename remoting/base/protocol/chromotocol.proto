@@ -114,13 +114,17 @@ message KeyEvent {
   required bool pressed = 2;
 }
 
-// Sets the position of the mouse cursor.
-// The coordinate value is between [0 .. 1] which is relative to the
+// Sets the absolute position of the mouse cursor.
 // dimension of the screen area.
 // NEXT ID: 3
 message MouseSetPositionEvent {
-  required float x = 1;
-  required float y = 2;
+  required int32 x = 1;
+  required int32 y = 2;
+
+  // Windows sets absolute mouse pointer positions as a relative value to
+  // the screen size. So pass the screen size to make this calculation easier.
+  optional int32 width = 3;
+  optional int32 height = 4;
 }
 
 // Adjust the position of the mouse cursor by an offset.
@@ -131,32 +135,31 @@ message MouseMoveEvent {
 }
 
 // Motion of the mouse wheel.
+// TODO(garykac): What are units here? How many units correspond to a single
+// wheel click? On Windows, one click (WHEEL_DELTA) is 120 wheel units.
 // NEXT ID: 3
 message MouseWheelEvent {
   required int32 offset_x = 1;
   required int32 offset_y = 2;
 }
 
+enum MouseButton {
+  MouseButtonUndefined = 0;
+  MouseButtonLeft = 1;
+  MouseButtonMiddle = 2;
+  MouseButtonRight = 3;
+}
+
 // Mouse button is pressed down.
 // NEXT ID: 2
 message MouseDownEvent {
-  enum Button {
-    LEFT = 0;
-    MIDDLE = 1;
-    RIGHT = 2;
-  }
-  required Button button = 1;
+  required MouseButton button = 1;
 }
 
 // Mouse button is released.
 // NEXT ID: 2
 message MouseUpEvent {
-  enum Button {
-    LEFT = 0;
-    MIDDLE = 1;
-    RIGHT = 2;
-  }
-  required Button button = 1;
+  required MouseButton button = 1;
 }
 
 // Defines the message that is sent from the client to the host.

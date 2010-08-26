@@ -46,6 +46,8 @@ class JingleHostConnection : public HostConnection,
                        HostEventCallback* event_callback);
   virtual void Disconnect();
 
+  virtual void SendEvent(const ChromotingClientMessage& msg);
+
   // JingleChannel::Callback interface.
   virtual void OnStateChange(JingleChannel* channel,
                              JingleChannel::State state);

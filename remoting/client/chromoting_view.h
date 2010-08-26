@@ -18,6 +18,10 @@ class ChromotingView {
   ChromotingView();
   virtual ~ChromotingView() {}
 
+  // Get screen dimensions.
+  // TODO(garykac): This will need to be extended to support multi-monitors.
+  void GetScreenSize(int* width, int* height);
+
   // Initialize the common structures for the view.
   virtual bool Initialize() = 0;
 

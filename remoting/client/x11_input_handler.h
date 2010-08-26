@@ -27,6 +27,9 @@ class X11InputHandler : public InputHandler {
 
   void ScheduleX11EventHandler();
 
+  void HandleMouseMoveEvent(int x, int y);
+  void HandleMouseButtonEvent(bool button_down, int xbutton_id);
+
   DISALLOW_COPY_AND_ASSIGN(X11InputHandler);
 };
 
