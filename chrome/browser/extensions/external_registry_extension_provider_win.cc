@@ -37,7 +37,7 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
     std::wstring key_path = ASCIIToWide(kRegistryExtensions);
     key_path.append(L"\\");
     key_path.append(iterator.Name());
-    if (key.Open(kRegRoot, key_path.c_str())) {
+    if (key.Open(kRegRoot, key_path.c_str(), KEY_READ)) {
       std::wstring extension_path;
       if (key.ReadValue(kRegistryExtensionPath, &extension_path)) {
         std::wstring extension_version;
@@ -77,7 +77,7 @@ Version* ExternalRegistryExtensionProvider::RegisteredVersion(
   key_path.append(L"\\");
   key_path.append(ASCIIToWide(id));
 
-  if (!key.Open(kRegRoot, key_path.c_str()))
+  if (!key.Open(kRegRoot, key_path.c_str(), KEY_READ))
     return NULL;
 
   std::wstring extension_version;

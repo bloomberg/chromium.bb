@@ -71,7 +71,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
 
   // Now make sure we recorded what was expected.  If the code in test.js
   // changes, need to make appropriate changes here.
-  key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\N");
+  key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\N",
+           KEY_READ);
   ASSERT_TRUE(key.Valid());
 
   DWORD value;
@@ -85,7 +86,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   ASSERT_TRUE(key.ReadValueDW(L"D4I", &value));
   ASSERT_EQ(1, value);
 
-  key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\D");
+  key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\D",
+           KEY_READ);
   ASSERT_FALSE(key.Valid());
 
   // Cleanup.
