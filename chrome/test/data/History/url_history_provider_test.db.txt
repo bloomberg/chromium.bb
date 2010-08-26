@@ -1,0 +1,46 @@
+CREATE TABLE urls(id INTEGER PRIMARY KEY,url LONGVARCHAR,title LONGVARCHAR,hidden INTEGER DEFAULT 0 NOT NULL,favicon_id INTEGER DEFAULT 0 NOT NULL,typed_count INTEGER DEFAULT 0 NOT NULL,visit_count INTEGER DEFAULT 0 NOT NULL,last_visit_time INTEGER NOT NULL);
+/*
+  The quick history autocomplete provider filters out history items that:
+    1) have not been visited in kLowQualityMatchAgeLimitInDays, AND
+    2) for which the URL was not explicitly typed at least
+       kLowQualityMatchTypedLimit + 1 times, AND
+    3) have not been visited at least kLowQualityMatchVisitLimit + 1 times.
+  So we create history items in all of those combinations.
+
+  Note that the last_visit_time column for this test table represents the
+  relative number of days prior to 'today' to which the final column
+  value will be set during test setup. Beware: Do not set this number
+  to be equal to kLowQualityMatchAgeLimitInDays.
+  
+  This test file contains 4 items which should not pass the quick history
+  provider filter: 1, 9-11.
+*/
+INSERT INTO "urls" VALUES(1,'http://www.reuters.com/article/idUSN0839880620100708','UPDATE 1-US 30-yr mortgage rate drops to new record low | Reuters',0,29,1,3,2);
+INSERT INTO "urls" VALUES(2,'http://www.golfweek.com/news/2010/jul/08/goydos-opens-john-deere-classic-59/','Goydos opens John Deere Classic with 59',0,27,1,3,4);
+INSERT INTO "urls" VALUES(3,'http://www.businessandmedia.org/articles/2010/20100708120415.aspx','LeBronomics: Could High Taxes Influence James'' Team Decision?',0,28,1,4,2);
+INSERT INTO "urls" VALUES(4,'http://www.realclearmarkets.com/articles/2010/07/08/diversity_in_the_financial_sector_98562.html','RealClearMarkets - Racial, Gender Quotas in the Financial Bill?',0,0,1,4,4);
+INSERT INTO "urls" VALUES(5,'http://drudgereport.com/','DRUDGE REPORT 2010®',0,0,2,3,2);
+INSERT INTO "urls" VALUES(6,'http://totalfinder.binaryage.com/','TotalFinder brings tabs to your native Finder and more!',0,26,2,3,4);
+INSERT INTO "urls" VALUES(7,'http://www.clickgamer.com/products/pid_5269/screenshots/j2me/large/ingame5.png','ingame5.png 176×208 pixels',0,21,2,4,2);
+INSERT INTO "urls" VALUES(8,'http://getsharekit.com/','ShareKit : Drop-in Share Features for all iOS Apps',0,20,2,4,4);
+INSERT INTO "urls" VALUES(9,'http://en.wikipedia.org/wiki/Control-Z','Control-Z - Wikipedia, the free encyclopedia',0,0,0,0,6);
+INSERT INTO "urls" VALUES(10,'http://vmware.com/info?id=724','VMware Account Management Login',0,0,0,1,6);
+INSERT INTO "urls" VALUES(11,'http://www.tech-recipes.com/rx/2621/os_x_change_path_environment_variable/','OS X: Change your PATH environment variable | Mac system administration | Tech-Recipes',0,14,1,0,6);
+INSERT INTO "urls" VALUES(12,'http://view.atdmt.com/PPJ/iview/194841301/direct;wi.160;hi.600/01?click=','',1,0,6,6,0);
+INSERT INTO "urls" VALUES(13,'http://www.itmedia.co.jp/news/','ITmedia News／ITの今が見える、明日が分かる',0,25,6,6,0);
+INSERT INTO "urls" VALUES(14,'http://www.nikkei.co.jp/','NIKKEI NET（日経ネット）は日本経済新聞 電子版に生まれ変わりました',0,73,6,6,0);
+INSERT INTO "urls" VALUES(15,'http://www.cnn.com/','CNN.com International - Breaking, World, Business, Sports, Entertainment and Video News',0,89,6,6,0);
+INSERT INTO "urls" VALUES(16,'http://www.zdnet.com/','Technology News, Analysis, Comments and Product Reviews for IT Professionals | ZDNet',0,652,6,6,0);
+INSERT INTO "urls" VALUES(17,'http://www.crash.net/','Crash.Net | Formula 1 & MotoGP | Motorsport News',0,239,6,6,0);
+INSERT INTO "urls" VALUES(18,'http://www.theinquirer.net/','THE INQUIRER - Microprocessor, Server, Memory, PCS, Graphics, Networking, Storage',0,79,6,6,0);
+INSERT INTO "urls" VALUES(19,'http://www.theregister.co.uk/','The Register: Sci/Tech News for the World',0,74,6,6,0);
+INSERT INTO "urls" VALUES(20,'http://blogs.technet.com/markrussinovich/','Mark''s Blog - Site Home - TechNet Blogs',0,685,6,6,0);
+INSERT INTO "urls" VALUES(21,'http://www.icu-project.org/','ICU Home Page (ICU - International Components for Unicode)',0,445,6,6,0);
+INSERT INTO "urls" VALUES(22,'http://site.icu-project.org/','ICU Home Page (ICU - International Components for Unicode)',0,445,6,6,0);
+INSERT INTO "urls" VALUES(23,'http://icu-project.org/apiref/icu4c/','ICU 4.2: Main Page',0,212,6,6,0);
+INSERT INTO "urls" VALUES(24,'http://www.danilatos.com/event-test/ExperimentTest.html','Experimentation Harness',0,0,6,6,0);
+INSERT INTO "urls" VALUES(25,'http://www.codeguru.com/','CodeGuru : codeguru',0,110,6,6,0);
+INSERT INTO "urls" VALUES(26,'http://www.codeproject.com/','Your Development Resource - CodeProject',0,369,6,6,0);
+INSERT INTO "urls" VALUES(27,'http://www.tomshardware.com/us/#redir','Tom''s Hardware: Hardware News, Tests and Reviews',0,65,6,6,0);
+INSERT INTO "urls" VALUES(28,'http://www.ddj.com/windows/184416623','Dr. Dobb''s | Avoiding the Visual C++ Runtime Library | 2 1, 2003',0,0,6,6,0);
+INSERT INTO "urls" VALUES(29,'http://svcs.cnn.com/weather/getForecast?time=34&mode=json_html&zipCode=336736767676&locCode=EGLL&celcius=true&csiID=csi2','',1,0,6,6,0);
