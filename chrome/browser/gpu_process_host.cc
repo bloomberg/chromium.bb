@@ -205,33 +205,84 @@ void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id, unsigned long* xid) {
 }
 
 #elif defined(OS_MACOSX)
+
+namespace {
+
+class SetIOSurfaceDispatcher : public Task {
+ public:
+  SetIOSurfaceDispatcher(
+      const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params)
+      : params_(params) {
+  }
+
+  void Run() {
+    RenderViewHost* host = RenderViewHost::FromID(params_.renderer_id,
+                                                  params_.render_view_id);
+    if (!host)
+      return;
+    RenderWidgetHostView* view = host->view();
+    if (!view)
+      return;
+    view->AcceleratedSurfaceSetIOSurface(params_.window,
+                                         params_.width,
+                                         params_.height,
+                                         params_.identifier);
+  }
+
+ private:
+  GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetIOSurfaceDispatcher);
+};
+
+}  // namespace
+
 void GpuProcessHost::OnAcceleratedSurfaceSetIOSurface(
     const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params) {
-  RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
-                                                params.render_view_id);
-  if (!host)
-    return;
-  RenderWidgetHostView* view = host->view();
-  if (!view)
-    return;
-  view->AcceleratedSurfaceSetIOSurface(params.window,
-                                       params.width,
-                                       params.height,
-                                       params.identifier);
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      new SetIOSurfaceDispatcher(params));
 }
+
+namespace {
+
+class BuffersSwappedDispatcher : public Task {
+ public:
+  BuffersSwappedDispatcher(
+      int32 renderer_id, int32 render_view_id, gfx::PluginWindowHandle window)
+      : renderer_id_(renderer_id),
+        render_view_id_(render_view_id),
+        window_(window) {
+  }
+
+  void Run() {
+    RenderViewHost* host = RenderViewHost::FromID(renderer_id_,
+                                                  render_view_id_);
+    if (!host)
+      return;
+    RenderWidgetHostView* view = host->view();
+    if (!view)
+      return;
+    view->AcceleratedSurfaceBuffersSwapped(window_);
+  }
+
+ private:
+  int32 renderer_id_;
+  int32 render_view_id_;
+  gfx::PluginWindowHandle window_;
+
+  DISALLOW_COPY_AND_ASSIGN(BuffersSwappedDispatcher);
+};
+
+}  // namespace
 
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     int32 renderer_id,
     int32 render_view_id,
     gfx::PluginWindowHandle window) {
-  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
-                                                render_view_id);
-  if (!host)
-    return;
-  RenderWidgetHostView* view = host->view();
-  if (!view)
-    return;
-  view->AcceleratedSurfaceBuffersSwapped(window);
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      new BuffersSwappedDispatcher(renderer_id, render_view_id, window));
 }
 #endif
 

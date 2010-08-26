@@ -6,6 +6,7 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
+#include "chrome/browser/chrome_thread.h"
 #include "app/surface/io_surface_support_mac.h"
 #import "base/chrome_application_mac.h"
 #include "base/command_line.h"
@@ -285,8 +286,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 
 - (void)renewGState {
   // Synchronize with window server to avoid flashes or corrupt drawing.
-  // Disabled for now, see http://crbug.com/52798
-  //[[self window] disableScreenUpdatesUntilFlush];
+  [[self window] disableScreenUpdatesUntilFlush];
   [self globalFrameDidChange:nil];
   [super renewGState];
 }
@@ -466,6 +466,7 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
 
 void RenderWidgetHostViewMac::MovePluginWindows(
     const std::vector<webkit_glue::WebPluginGeometry>& moves) {
+  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Handle movement of accelerated plugins, which are the only "windowed"
   // plugins that exist on the Mac.
   for (std::vector<webkit_glue::WebPluginGeometry>::const_iterator iter =
@@ -807,6 +808,7 @@ void RenderWidgetHostViewMac::KillSelf() {
 gfx::PluginWindowHandle
 RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque,
                                                         bool root) {
+  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Create an NSView to host the plugin's/compositor's pixels.
   gfx::PluginWindowHandle handle =
       plugin_container_manager_.AllocateFakePluginWindowHandle(opaque, root);
@@ -824,6 +826,7 @@ RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque,
 
 void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
+  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   PluginViewMap::iterator it = plugin_views_.find(window);
   DCHECK(plugin_views_.end() != it);
   if (plugin_views_.end() == it) {
@@ -839,6 +842,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
+  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   plugin_container_manager_.SetSizeAndIOSurface(window,
                                                 width,
                                                 height,
@@ -863,6 +867,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
+  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   plugin_container_manager_.SetSizeAndTransportDIB(window,
                                                    width,
                                                    height,
@@ -871,6 +876,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
+  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   PluginViewMap::iterator it = plugin_views_.find(window);
   DCHECK(plugin_views_.end() != it);
   if (plugin_views_.end() == it) {
@@ -888,6 +894,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
 }
 
 void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
+  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Plugins are destroyed on page navigate. The compositor layer on the other
   // hand is created on demand and then stays alive until its renderer process
   // dies (usually on cross-domain navigation). Instead, only a flag
