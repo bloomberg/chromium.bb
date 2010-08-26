@@ -49,8 +49,7 @@ void IndexedDBKeyUtilityClient::CreateIDBKeysFromSerializedValuesAndKeyPath(
   DCHECK(state_ == STATE_INITIALIZED);
 
   state_ = STATE_CREATING_KEYS;
-  utility_process_host_->StartIDBKeysFromValuesAndKeyPath(
-      0, values, key_path);
+  CallStartIDBKeyFromValueAndKeyPathFromIOThread(values, key_path);
   bool ret = waitable_event_.Wait();
   DCHECK(ret && state_ == STATE_INITIALIZED);
 
@@ -114,6 +113,24 @@ void IndexedDBKeyUtilityClient::EndUtilityProcessInternal() {
   client_ = NULL;
   state_ = STATE_SHUTDOWN;
   waitable_event_.Signal();
+}
+
+void IndexedDBKeyUtilityClient::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
+    const std::vector<SerializedScriptValue>& values,
+    const string16& key_path) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+            &IndexedDBKeyUtilityClient::
+                CallStartIDBKeyFromValueAndKeyPathFromIOThread,
+            values, key_path));
+    return;
+  }
+
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  utility_process_host_->StartIDBKeysFromValuesAndKeyPath(
+      0, values, key_path);
 }
 
 void IndexedDBKeyUtilityClient::SetKeys(const std::vector<IndexedDBKey>& keys) {

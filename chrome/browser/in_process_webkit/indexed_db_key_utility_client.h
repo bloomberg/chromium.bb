@@ -62,6 +62,9 @@ class IndexedDBKeyUtilityClient
   void GetRDHAndStartUtilityProcess();
   void StartUtilityProcessInternal(ResourceDispatcherHost* rdh);
   void EndUtilityProcessInternal();
+  void CallStartIDBKeyFromValueAndKeyPathFromIOThread(
+      const std::vector<SerializedScriptValue>& values,
+      const string16& key_path);
 
   void SetKeys(const std::vector<IndexedDBKey>& keys);
   void FinishCreatingKeys();
