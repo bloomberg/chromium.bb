@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/view_id_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 
@@ -58,15 +59,18 @@ static const int kMinWebHeight = 50;
 }
 
 - (void)willBecomeUnselectedTab {
+  // The RWHV is ripped out of the view hierarchy on tab switches, so it never
+  // formally resigns first responder status.  Handle this by explicitly sending
+  // a Blur() message to the renderer, but only if the RWHV currently has focus.
   RenderViewHost* rvh = contents_->render_view_host();
-  if (rvh)
+  if (rvh && rvh->view() && rvh->view()->HasFocus())
     rvh->Blur();
 }
 
 - (void)willBecomeSelectedTab {
-  RenderViewHost* rvh = contents_->render_view_host();
-  if (rvh)
-    rvh->Focus();
+  // Do not explicitly call Focus() here, as the RWHV may not actually have
+  // focus (for example, if the omnibox has focus instead).  The TabContents
+  // logic will restore focus to the appropriate view.
 }
 
 - (void)tabDidChange:(TabContents*)updatedContents {
