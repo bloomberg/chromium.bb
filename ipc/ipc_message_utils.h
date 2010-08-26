@@ -286,30 +286,6 @@ struct ParamTraits<double> {
 };
 
 template <>
-struct ParamTraits<wchar_t> {
-  typedef wchar_t param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteData(reinterpret_cast<const char*>(&p), sizeof(param_type));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    const char *data;
-    int data_size = 0;
-    bool result = m->ReadData(iter, &data, &data_size);
-    if (result && data_size == sizeof(param_type)) {
-      memcpy(r, data, sizeof(param_type));
-    } else {
-      result = false;
-      NOTREACHED();
-    }
-
-    return result;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append(StringPrintf("%lc", p));
-  }
-};
-
-template <>
 struct ParamTraits<base::Time> {
   typedef base::Time param_type;
   static void Write(Message* m, const param_type& p);
