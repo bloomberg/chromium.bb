@@ -462,7 +462,6 @@ string16 AutoFillProfile::ConstructInferredLabel(
   return label;
 }
 
-
 // So we can compare AutoFillProfiles with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {
   return os

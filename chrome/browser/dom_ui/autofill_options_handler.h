@@ -17,16 +17,23 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
+  virtual void RegisterMessages();
 
   // PersonalDataManager::Observer implementation.
   virtual void OnPersonalDataLoaded();
   virtual void OnPersonalDataChanged();
 
-  virtual void RegisterMessages();
-
  private:
+  // Loads the strings for the address and credit card overlays.
+  void SetAddressOverlayStrings(DictionaryValue* localized_strings);
+  void SetCreditCardOverlayStrings(DictionaryValue* localized_strings);
+
   // Loads AutoFill addresses and credit cards using the PersonalDataManager.
   void LoadAutoFillData();
+
+  // Adds an address to the WebDatabase.  Called from DOMUI.
+  // |args| - an associative array containing the address data.
+  void AddAddress(const ListValue* args);
 
   // Removes an address from the WebDatabase. Called from DOMUI.
   // |args| - an integer, the unique ID of the address to remove.

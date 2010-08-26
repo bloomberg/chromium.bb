@@ -575,61 +575,13 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
 
   MessageLoop::current()->Run();
 
-  AutoFillProfile expected(ASCIIToUTF16("Unlabeled"), 1);
-  autofill_unittest::SetProfileInfo(&expected, "Unlabeled", "George", NULL,
+  AutoFillProfile expected(string16(), 1);
+  autofill_unittest::SetProfileInfo(&expected, NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL, NULL);
   const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(expected, *results[0]);
-}
-
-TEST_F(PersonalDataManagerTest, SetUniqueProfileLabels) {
-  AutoFillProfile profile0(ASCIIToUTF16("Home"), 0);
-  profile0.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
-  AutoFillProfile profile1(ASCIIToUTF16("Home"), 0);
-  profile1.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Paul"));
-  AutoFillProfile profile2(ASCIIToUTF16("Home"), 0);
-  profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Ringo"));
-  AutoFillProfile profile3(ASCIIToUTF16("NotHome"), 0);
-  profile3.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Other"));
-  AutoFillProfile profile4(ASCIIToUTF16("Work"), 0);
-  profile4.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Ozzy"));
-  AutoFillProfile profile5(ASCIIToUTF16("Work"), 0);
-  profile5.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Dio"));
-
-  // This will verify that the web database has been loaded and the notification
-  // sent out.
-  EXPECT_CALL(personal_data_observer_,
-              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  // The message loop will exit when the mock observer is notified.
-  MessageLoop::current()->Run();
-
-  // Add the test profiles to the database.
-  std::vector<AutoFillProfile> update;
-  update.push_back(profile0);
-  update.push_back(profile1);
-  update.push_back(profile2);
-  update.push_back(profile3);
-  update.push_back(profile4);
-  update.push_back(profile5);
-  personal_data_->SetProfiles(&update);
-
-  // And wait for the refresh.
-  EXPECT_CALL(personal_data_observer_,
-      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  MessageLoop::current()->Run();
-
-  const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
-  ASSERT_EQ(6U, results.size());
-  EXPECT_EQ(ASCIIToUTF16("Home"), results[0]->Label());
-  EXPECT_EQ(ASCIIToUTF16("Home2"), results[1]->Label());
-  EXPECT_EQ(ASCIIToUTF16("Home3"), results[2]->Label());
-  EXPECT_EQ(ASCIIToUTF16("NotHome"), results[3]->Label());
-  EXPECT_EQ(ASCIIToUTF16("Work"), results[4]->Label());
-  EXPECT_EQ(ASCIIToUTF16("Work2"), results[5]->Label());
 }
 
 TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
@@ -701,8 +653,8 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   MessageLoop::current()->Run();
 
   scoped_ptr<AutoFillProfile> expected(
-      new AutoFillProfile(ASCIIToUTF16("Unlabeled"), 1));
-  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled", "George", NULL,
+      new AutoFillProfile(string16(), 1));
+  autofill_unittest::SetProfileInfo(expected.get(), NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL, NULL);
   const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
@@ -735,14 +687,14 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   const std::vector<AutoFillProfile*>& results2 = personal_data_->profiles();
   ASSERT_EQ(2U, results2.size());
 
-  expected.reset(new AutoFillProfile(ASCIIToUTF16("Unlabeled"), 1));
-  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled", "George", NULL,
+  expected.reset(new AutoFillProfile(string16(), 1));
+  autofill_unittest::SetProfileInfo(expected.get(), NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL, NULL);
   EXPECT_EQ(*expected, *results2[0]);
 
-  expected.reset(new AutoFillProfile(ASCIIToUTF16("Unlabeled2"), 2));
-  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled2", "John", NULL,
+  expected.reset(new AutoFillProfile(string16(), 2));
+  autofill_unittest::SetProfileInfo(expected.get(), NULL, "John", NULL,
       "Adams", "second@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL);
   EXPECT_EQ(*expected, *results2[1]);
@@ -782,14 +734,14 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   const std::vector<AutoFillProfile*>& results3 = personal_data_->profiles();
   ASSERT_EQ(2U, results3.size());
 
-  expected.reset(new AutoFillProfile(ASCIIToUTF16("Unlabeled"), 1));
-  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled", "George", NULL,
+  expected.reset(new AutoFillProfile(string16(), 1));
+  autofill_unittest::SetProfileInfo(expected.get(), NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL, NULL);
   EXPECT_EQ(*expected, *results3[0]);
 
-  expected.reset(new AutoFillProfile(ASCIIToUTF16("Unlabeled2"), 2));
-  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled2", "John", NULL,
+  expected.reset(new AutoFillProfile(string16(), 2));
+  autofill_unittest::SetProfileInfo(expected.get(), NULL, "John", NULL,
       "Adams", "second@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL);
   EXPECT_EQ(*expected, *results3[1]);

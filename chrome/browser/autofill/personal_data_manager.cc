@@ -246,8 +246,6 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
                      std::mem_fun_ref(&AutoFillProfile::IsEmpty)),
       profiles->end());
 
-  SetUniqueProfileLabels(profiles);
-
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!wds)
     return;
@@ -384,6 +382,44 @@ void PersonalDataManager::SetCreditCards(
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
+}
+
+// TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
+void PersonalDataManager::AddProfile(const AutoFillProfile& profile) {
+  // Set to true if |profile| is merged into the profile list.
+  bool merged = false;
+
+  // Don't save a web profile if the data in the profile is a subset of an
+  // auxiliary profile.
+  for (std::vector<AutoFillProfile*>::const_iterator iter =
+           auxiliary_profiles_.begin();
+       iter != auxiliary_profiles_.end(); ++iter) {
+    if (profile.IsSubsetOf(**iter))
+      return;
+  }
+
+  std::vector<AutoFillProfile> profiles;
+  for (std::vector<AutoFillProfile*>::const_iterator iter =
+           web_profiles_.begin();
+       iter != web_profiles_.end(); ++iter) {
+    if (profile.IsSubsetOf(**iter)) {
+      // In this case, the existing profile already contains all of the data
+      // in |profile|, so consider the profiles already merged.
+      merged = true;
+    } else if ((*iter)->IntersectionOfTypesHasEqualValues(profile)) {
+      // |profile| contains all of the data in this profile, plus
+      // more.
+      merged = true;
+      (*iter)->MergeWith(profile);
+    }
+
+    profiles.push_back(**iter);
+  }
+
+  if (!merged)
+    profiles.push_back(profile);
+
+  SetProfiles(&profiles);
 }
 
 void PersonalDataManager::RemoveProfile(int unique_id) {
@@ -617,28 +653,6 @@ void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
   *handle = 0;
 }
 
-void PersonalDataManager::SetUniqueProfileLabels(
-    std::vector<AutoFillProfile>* profiles) {
-  std::map<string16, std::vector<AutoFillProfile*> > label_map;
-  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
-       iter != profiles->end(); ++iter) {
-    label_map[iter->Label()].push_back(&(*iter));
-  }
-
-  for (std::map<string16, std::vector<AutoFillProfile*> >::iterator iter =
-           label_map.begin();
-       iter != label_map.end(); ++iter) {
-    // Start at the second element because the first label should not be
-    // renamed.  The appended label number starts at 2, because the first label
-    // has an implicit index of 1.
-    for (size_t i = 1; i < iter->second.size(); ++i) {
-      string16 newlabel = iter->second[i]->Label() +
-          base::UintToString16(static_cast<unsigned int>(i + 1));
-      iter->second[i]->set_label(newlabel);
-    }
-  }
-}
-
 void PersonalDataManager::SetUniqueCreditCardLabels(
     std::vector<CreditCard>* credit_cards) {
   std::map<string16, std::vector<CreditCard*> > label_map;
@@ -668,43 +682,7 @@ void PersonalDataManager::SaveImportedProfile() {
   if (!imported_profile_.get())
     return;
 
-  // Set to true if |imported_profile_| is merged into the profile list.
-  bool merged = false;
-
-  imported_profile_->set_label(ASCIIToUTF16(kUnlabeled));
-
-  // Don't save a web profile if the data in the profile is a subset of an
-  // auxiliary profile.
-  for (std::vector<AutoFillProfile*>::const_iterator iter =
-           auxiliary_profiles_.begin();
-       iter != auxiliary_profiles_.end(); ++iter) {
-    if (imported_profile_->IsSubsetOf(**iter))
-      return;
-  }
-
-  std::vector<AutoFillProfile> profiles;
-  for (std::vector<AutoFillProfile*>::const_iterator iter =
-           web_profiles_.begin();
-       iter != web_profiles_.end(); ++iter) {
-    if (imported_profile_->IsSubsetOf(**iter)) {
-      // In this case, the existing profile already contains all of the data
-      // in |imported_profile_|, so consider the profiles already merged.
-      merged = true;
-    } else if ((*iter)->IntersectionOfTypesHasEqualValues(
-        *imported_profile_)) {
-      // |imported_profile| contains all of the data in this profile, plus
-      // more.
-      merged = true;
-      (*iter)->MergeWith(*imported_profile_);
-    }
-
-    profiles.push_back(**iter);
-  }
-
-  if (!merged)
-    profiles.push_back(*imported_profile_);
-
-  SetProfiles(&profiles);
+  AddProfile(*imported_profile_);
 }
 
 // TODO(jhawkins): Refactor and merge this with SaveImportedProfile.

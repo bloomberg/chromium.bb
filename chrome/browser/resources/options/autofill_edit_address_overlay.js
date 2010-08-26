@@ -31,6 +31,10 @@ cr.define('options', function() {
       $('autoFillEditAddressCancelButton').onclick = function(event) {
         self.dismissOverlay_();
       }
+      $('autoFillEditAddressApplyButton').onclick = function(event) {
+        self.saveAddress_();
+        OptionsPage.clearOverlays();
+      }
 
       self.clearInputFields_();
       self.connectInputEvents_();
@@ -46,6 +50,27 @@ cr.define('options', function() {
     },
 
     /**
+     * Aggregates the values in the input fields into an associate array and
+     * sends the array to the AutoFill handler.
+     * @private
+     */
+    saveAddress_: function() {
+      var address = new Array();
+      address[0] = $('fullName').value;
+      address[1] = $('companyName').value;
+      address[2] = $('addrLine1').value;
+      address[3] = $('addrLine2').value;
+      address[4] = $('city').value;
+      address[5] = $('state').value;
+      address[6] = $('zipCode').value;
+      address[7] = $('country').value;
+      address[8] = $('phone').value;
+      address[9] = $('fax').value;
+      address[10] = $('email').value;
+      chrome.send('addAddress', address);
+    },
+
+    /**
      * Connects each input field to the inputFieldChanged_() method that enables
      * or disables the 'Ok' button based on whether all the fields are empty or
      * not.
@@ -55,8 +80,9 @@ cr.define('options', function() {
       var self = this;
       $('fullName').oninput = $('companyName').oninput =
       $('addrLine1').oninput = $('addrLine2').oninput = $('city').oninput =
-      $('state').oninput = $('zipCode').oninput = $('phone').oninput =
-      $('fax').oninput = $('email').oninput = function(event) {
+      $('state').oninput = $('country').oninput = $('zipCode').oninput =
+      $('phone').oninput = $('fax').oninput =
+      $('email').oninput = function(event) {
         self.inputFieldChanged_();
       }
     },
@@ -70,8 +96,8 @@ cr.define('options', function() {
       var disabled =
           !$('fullName').value && !$('companyName').value &&
           !$('addrLine1').value && !$('addrLine2').value && !$('city').value &&
-          !$('state').value && !$('zipCode').value && !$('phone').value &&
-          !$('fax').value && !$('email').value;
+          !$('state').value && !$('zipCode').value && !('country').value &&
+          !$('phone').value && !$('fax').value && !$('email').value;
       $('autoFillEditAddressApplyButton').disabled = disabled;
     },
 
@@ -87,6 +113,7 @@ cr.define('options', function() {
       $('city').value = '';
       $('state').value = '';
       $('zipCode').value = '';
+      $('country').value = '';
       $('phone').value = '';
       $('fax').value = '';
       $('email').value = '';

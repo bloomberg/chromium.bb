@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
+#include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
@@ -51,6 +52,9 @@ void AutoFillOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_ADDRESS_CAPTION));
   localized_strings->SetString("addCreditCardTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_CAPTION));
+
+  SetAddressOverlayStrings(localized_strings);
+  SetCreditCardOverlayStrings(localized_strings);
 }
 
 void AutoFillOptionsHandler::Initialize() {
@@ -59,6 +63,20 @@ void AutoFillOptionsHandler::Initialize() {
   personal_data_->SetObserver(this);
 
   LoadAutoFillData();
+}
+
+void AutoFillOptionsHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback(
+      "addAddress",
+      NewCallback(this, &AutoFillOptionsHandler::AddAddress));
+
+  dom_ui_->RegisterMessageCallback(
+      "removeAddress",
+      NewCallback(this, &AutoFillOptionsHandler::RemoveAddress));
+
+  dom_ui_->RegisterMessageCallback(
+      "removeCreditCard",
+      NewCallback(this, &AutoFillOptionsHandler::RemoveCreditCard));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -71,14 +89,54 @@ void AutoFillOptionsHandler::OnPersonalDataChanged() {
   LoadAutoFillData();
 }
 
-void AutoFillOptionsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
-      "removeAddress",
-      NewCallback(this, &AutoFillOptionsHandler::RemoveAddress));
+void AutoFillOptionsHandler::SetAddressOverlayStrings(
+    DictionaryValue* localized_strings) {
+  localized_strings->SetString("autoFillEditAddressTitle",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_ADDRESS_CAPTION));
+  localized_strings->SetString("fullNameLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FULL_NAME));
+  localized_strings->SetString("companyNameLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COMPANY_NAME));
+  localized_strings->SetString("addrLine1Label",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1));
+  localized_strings->SetString("addrLine2Label",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2));
+  localized_strings->SetString("cityLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CITY));
+  localized_strings->SetString("stateLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_STATE));
+  localized_strings->SetString("zipCodeLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ZIP_CODE));
+  localized_strings->SetString("countryLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COUNTRY));
+  localized_strings->SetString("countryLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COUNTRY));
+  localized_strings->SetString("phoneLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PHONE));
+  localized_strings->SetString("faxLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FAX));
+  localized_strings->SetString("emailLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
+  localized_strings->SetString("autoFillEditAddressApplyButton",
+      l10n_util::GetStringUTF16(IDS_OK));
+  localized_strings->SetString("autoFillEditAddressCancelButton",
+      l10n_util::GetStringUTF16(IDS_CANCEL));
+}
 
-  dom_ui_->RegisterMessageCallback(
-      "removeCreditCard",
-      NewCallback(this, &AutoFillOptionsHandler::RemoveCreditCard));
+void AutoFillOptionsHandler::SetCreditCardOverlayStrings(
+    DictionaryValue* localized_strings) {
+  localized_strings->SetString("autoFillEditCreditCardTitle",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION));
+  localized_strings->SetString("nameOnCardLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NAME_ON_CARD));
+  localized_strings->SetString("billingAddressLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_BILLING_ADDRESS));
+  localized_strings->SetString("chooseExistingAddress",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CHOOSE_EXISTING_ADDRESS));
+  localized_strings->SetString("creditCardNumberLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER));
+  localized_strings->SetString("creditCardExpirationDateLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EXPIRATION_DATE));
 }
 
 void AutoFillOptionsHandler::LoadAutoFillData() {
@@ -110,6 +168,38 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
 
   dom_ui_->CallJavascriptFunction(L"AutoFillOptions.updateCreditCards",
                                   credit_cards);
+}
+
+void AutoFillOptionsHandler::AddAddress(const ListValue* args) {
+  if (!personal_data_->IsDataLoaded())
+    return;
+
+  AutoFillProfile profile;
+  string16 value;
+  if (args->GetString(0, &value))
+    profile.SetInfo(AutoFillType(NAME_FULL), value);
+  if (args->GetString(1, &value))
+    profile.SetInfo(AutoFillType(COMPANY_NAME), value);
+  if (args->GetString(2, &value))
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1), value);
+  if (args->GetString(3, &value))
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2), value);
+  if (args->GetString(4, &value))
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY), value);
+  if (args->GetString(5, &value))
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), value);
+  if (args->GetString(6, &value))
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), value);
+  if (args->GetString(7, &value))
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), value);
+  if (args->GetString(8, &value))
+    profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), value);
+  if (args->GetString(9, &value))
+    profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), value);
+  if (args->GetString(10, &value))
+    profile.SetInfo(AutoFillType(EMAIL_ADDRESS), value);
+
+  personal_data_->AddProfile(profile);
 }
 
 void AutoFillOptionsHandler::RemoveAddress(const ListValue* args) {

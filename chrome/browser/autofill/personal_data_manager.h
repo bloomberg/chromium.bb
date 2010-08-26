@@ -100,6 +100,9 @@ class PersonalDataManager
   // ID of newly-added profiles.
   void SetCreditCards(std::vector<CreditCard>* credit_cards);
 
+  // Adds |profile| to the web database.
+  void AddProfile(const AutoFillProfile& profile);
+
   // Removes the profile represented by |unique_id|.
   void RemoveProfile(int unique_id);
 
@@ -203,7 +206,6 @@ class PersonalDataManager
   // to the end of non-unique labels.
   // TODO(jhawkins): Create a new interface for labeled entities and turn these
   // two methods into one.
-  void SetUniqueProfileLabels(std::vector<AutoFillProfile>* profiles);
   void SetUniqueCreditCardLabels(std::vector<CreditCard>* credit_cards);
 
   // Saves |imported_profile_| to the WebDB if it exists.
