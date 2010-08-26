@@ -327,8 +327,7 @@ bool SearchBookmarksFunction::RunImpl() {
 
   BookmarkModel* model = profile()->GetBookmarkModel();
   ListValue* json = new ListValue();
-  std::wstring lang =
-      UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  std::string lang = profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetBookmarksContainingText(model, query,
                                              std::numeric_limits<int>::max(),

@@ -27,27 +27,27 @@ TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
 
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetBookmarksContainingText(
-      &model, ASCIIToUTF16("foo"), 100, std::wstring(), &nodes);
+      &model, ASCIIToUTF16("foo"), 100, std::string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == n1);
   EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      n1, ASCIIToUTF16("foo"), std::wstring()));
+      n1, ASCIIToUTF16("foo"), std::string()));
   nodes.clear();
 
   bookmark_utils::GetBookmarksContainingText(
-      &model, ASCIIToUTF16("cnn"), 100, std::wstring(), &nodes);
+      &model, ASCIIToUTF16("cnn"), 100, std::string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == n2);
   EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      n2, ASCIIToUTF16("cnn"), std::wstring()));
+      n2, ASCIIToUTF16("cnn"), std::string()));
   nodes.clear();
 
   bookmark_utils::GetBookmarksContainingText(
-      &model, ASCIIToUTF16("foo bar"), 100, std::wstring(), &nodes);
+      &model, ASCIIToUTF16("foo bar"), 100, std::string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == n1);
   EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      n1, ASCIIToUTF16("foo bar"), std::wstring()));
+      n1, ASCIIToUTF16("foo bar"), std::string()));
   nodes.clear();
 }
 
@@ -58,13 +58,13 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
                                           GURL("http://www.google.com"));
   // Matches to the title.
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("ar"), std::wstring()));
+      node, ASCIIToUTF16("ar"), std::string()));
   // Matches to the URL
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("www"), std::wstring()));
+      node, ASCIIToUTF16("www"), std::string()));
   // No match.
   ASSERT_FALSE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("cnn"), std::wstring()));
+      node, ASCIIToUTF16("cnn"), std::string()));
 
   // Tests for a Japanese IDN.
   const string16 kDecodedIdn = WideToUTF16(L"\x30B0\x30FC\x30B0\x30EB");
@@ -72,29 +72,29 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
                       GURL("http://xn--qcka1pmc.jp"));
   // Unicode query doesn't match if languages have no "ja".
   ASSERT_FALSE(bookmark_utils::DoesBookmarkContainText(
-      node, kDecodedIdn, L"en"));
+      node, kDecodedIdn, "en"));
   // Unicode query matches if languages have "ja".
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, kDecodedIdn, L"ja"));
+      node, kDecodedIdn, "ja"));
   // Punycode query also matches as ever.
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("qcka1pmc"), L"ja"));
+      node, ASCIIToUTF16("qcka1pmc"), "ja"));
 
   // Tests with various lower/upper case characters.
   node = model.AddURL(model.other_node(), 0, ASCIIToUTF16("FOO bar"),
                       GURL("http://www.google.com/search?q=ABC"));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("foo"), std::wstring()));
+      node, ASCIIToUTF16("foo"), std::string()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("Foo"), std::wstring()));
+      node, ASCIIToUTF16("Foo"), std::string()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("FOO"), std::wstring()));
+      node, ASCIIToUTF16("FOO"), std::string()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("google abc"), std::wstring()));
+      node, ASCIIToUTF16("google abc"), std::string()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("google ABC"), std::wstring()));
+      node, ASCIIToUTF16("google ABC"), std::string()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, ASCIIToUTF16("http://www.google.com/search?q=A"), std::wstring()));
+      node, ASCIIToUTF16("http://www.google.com/search?q=A"), std::string()));
 }
 
 #if !defined(OS_MACOSX)

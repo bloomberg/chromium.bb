@@ -149,14 +149,14 @@ bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2);
 void GetBookmarksContainingText(BookmarkModel* model,
                                 const string16& text,
                                 size_t max_count,
-                                const std::wstring& languages,
+                                const std::string& languages,
                                 std::vector<const BookmarkNode*>* nodes);
 
 // Returns true if |node|'s url or title contains the string |text|.
 // |languages| is user's accept-language setting to decode IDN.
 bool DoesBookmarkContainText(const BookmarkNode* node,
                              const string16& text,
-                             const std::wstring& languages);
+                             const std::string& languages);
 
 // Modifies a bookmark node (assuming that there's no magic that needs to be
 // done regarding moving from one folder to another).  If a new node is

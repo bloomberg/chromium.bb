@@ -190,16 +190,15 @@ bool DoesBookmarkTextContainWords(const string16& text,
 // |languages| argument is user's accept-language setting to decode IDN.
 bool DoesBookmarkContainWords(const BookmarkNode* node,
                               const std::vector<string16>& words,
-                              const std::wstring& languages) {
+                              const std::string& languages) {
   return
       DoesBookmarkTextContainWords(
           l10n_util::ToLower(WideToUTF16(node->GetTitle())), words) ||
       DoesBookmarkTextContainWords(
           l10n_util::ToLower(UTF8ToUTF16(node->GetURL().spec())), words) ||
-      DoesBookmarkTextContainWords(l10n_util::ToLower(WideToUTF16(
-          net::FormatUrl(
-              node->GetURL(), languages, net::kFormatUrlOmitNothing,
-              UnescapeRule::NORMAL, NULL, NULL, NULL))), words);
+      DoesBookmarkTextContainWords(l10n_util::ToLower(
+          net::FormatUrl(node->GetURL(), languages, net::kFormatUrlOmitNothing,
+                         UnescapeRule::NORMAL, NULL, NULL, NULL)), words);
 }
 
 }  // namespace
@@ -503,7 +502,7 @@ bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2) {
 void GetBookmarksContainingText(BookmarkModel* model,
                                 const string16& text,
                                 size_t max_count,
-                                const std::wstring& languages,
+                                const std::string& languages,
                                 std::vector<const BookmarkNode*>* nodes) {
   std::vector<string16> words;
   QueryParser parser;
@@ -524,7 +523,7 @@ void GetBookmarksContainingText(BookmarkModel* model,
 
 bool DoesBookmarkContainText(const BookmarkNode* node,
                              const string16& text,
-                             const std::wstring& languages) {
+                             const std::string& languages) {
   std::vector<string16> words;
   QueryParser parser;
   parser.ExtractQueryWords(l10n_util::ToLower(text), &words);
