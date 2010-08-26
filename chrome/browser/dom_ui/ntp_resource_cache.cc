@@ -224,6 +224,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 void NTPResourceCache::CreateNewTabHTML() {
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
+  string16 apps = l10n_util::GetStringUTF16(IDS_NEW_TAB_APPS);
   string16 title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   string16 most_visited = l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED);
   DictionaryValue localized_strings;
@@ -233,6 +234,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("hasattribution",
       profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
       "true" : "false");
+  localized_strings.SetString("apps", apps);
   localized_strings.SetString("title", title);
   localized_strings.SetString("mostvisited", most_visited);
   localized_strings.SetString("restorethumbnails",
@@ -396,6 +398,10 @@ void NTPResourceCache::CreateNewTabCSS() {
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK);
   SkColor color_section_link_underline =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK_UNDERLINE);
+  SkColor color_section_header_text =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_TEXT);
+  SkColor color_section_header_text_hover =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_TEXT_HOVER);
 
   SkColor color_header =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER);
@@ -443,6 +449,9 @@ void NTPResourceCache::CreateNewTabCSS() {
       tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ? "block" : "none");  // $$5
   subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
+  subst2.push_back(SkColorToRGBAString(color_section_header_text)); // $$8
+  subst2.push_back(SkColorToRGBAString(
+      color_section_header_text_hover)); // $$9
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
@@ -450,12 +459,12 @@ void NTPResourceCache::CreateNewTabCSS() {
       IDR_NEW_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  const std::string css_string = ReplaceStringPlaceholders(
-      new_tab_theme_css, subst, NULL);
-  std::string full_css = ReplaceStringPlaceholders(css_string, subst2, NULL);
+  std::string css_string;
+  css_string = ReplaceStringPlaceholders(new_tab_theme_css, subst, NULL);
+  css_string = ReplaceStringPlaceholders(css_string, subst2, NULL);
 
   new_tab_css_ = new RefCountedBytes;
-  new_tab_css_->data.resize(full_css.size());
-  std::copy(full_css.begin(), full_css.end(),
+  new_tab_css_->data.resize(css_string.size());
+  std::copy(css_string.begin(), css_string.end(),
             new_tab_css_->data.begin());
 }

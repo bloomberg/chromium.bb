@@ -96,7 +96,7 @@ class NewTabUI : public DOMUI,
   NotificationRegistrar registrar_;
 
   // The preference version. This used for migrating prefs of the NTP.
-  static const int current_pref_version_ = 2;
+  static const int current_pref_version_ = 3;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabUI);
 };

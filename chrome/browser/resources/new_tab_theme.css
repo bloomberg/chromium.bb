@@ -16,10 +16,8 @@ body {
   overflow: auto;
 }
 
-#main {
-  background: url(chrome://theme/IDR_PRODUCT_LOGO?$1) no-repeat 0 8px;
-}
-
+/* TODO(aa): Is this still in use? The styling may be incorrect with M7 NTP
+   rework. */
 #notification.first-run {
   background-color: $$1; /* COLOR_NTP_SECTION */
   border-color: $$2; /* COLOR_NTP_SECTION_BORDER */
@@ -107,25 +105,22 @@ body {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
-#top-bar {
-  border-bottom: 1px solid $$2; /* COLOR_NTP_SECTION_BORDER */
-}
-
-.section {
-  border-top: 1px solid $$2; /* COLOR_NTP_SECTION_BORDER */
-  border-bottom: 1px solid $$2; /* COLOR_NTP_SECTION_BORDER */
-}
-
-.section.hidden + :not(.hidden) {
-  border-top: 1px solid $$2; /* COLOR_NTP_SECTION_BORDER */;
-}
-
-.section.hidden + .hidden > h2 {
-  border-left: 1px solid $$2; /* COLOR_NTP_SECTION_BORDER */
-}
-
 .section > h2 {
-  color: $8; /* COLOR_NTP_TEXT */
+  color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT */
+  background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND);
+}
+
+.section > h2:hover {
+  color: $$9;
+  background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND_H);
+}
+
+.section:not(.hidden) > h2 {
+  background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND_A);
+}
+
+.section > h2 > span {
+  background: $2; /* COLOR_NTP_BACKGROUND */
 }
 
 #apps-section a {
@@ -136,8 +131,4 @@ body {
 #apps-section .app > .back {
   color: $$3; /* COLOR_NTP_SECTION_TEXT */
   background-color: $$1; /* COLOR_NTP_SECTION */;
-}
-
-#footer hr {
-  color: $$2; /* COLOR_NTP_SECTION_BORDER */
 }

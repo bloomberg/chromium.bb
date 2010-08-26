@@ -6434,8 +6434,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- New Tab -->
+      <message name="IDS_NEW_TAB_APPS" desc="The 'Apps' heading on the new tab page">
+        Apps
+      </message>
       <message name="IDS_NEW_TAB_TITLE"
-               desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
+          desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
         New Tab
       </message>
       <message name="IDS_NEW_TAB_MOST_VISITED"
