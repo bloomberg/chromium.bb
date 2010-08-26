@@ -121,6 +121,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   PathService::Get(base::DIR_EXE, &dir);
   plugin_dirs->push_back(dir.Append("plugins"));
 
+  // Chrome OS only loads plugins from /opt/google/chrome/plugins.
+#if !defined(OS_CHROMEOS)
   // Mozilla code to reference:
   // http://mxr.mozilla.org/firefox/ident?i=NS_APP_PLUGINS_DIR_LIST
   // and tens of accompanying files (mxr is very helpful).
@@ -135,14 +137,12 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
       plugin_dirs->push_back(FilePath(paths[i]));
   }
 
-#if !defined(OS_CHROMEOS)
   // 2) NS_USER_PLUGINS_DIR: ~/.mozilla/plugins.
   // This is a de-facto standard, so even though we're not Mozilla, let's
   // look in there too.
   FilePath home = file_util::GetHomeDir();
   if (!home.empty())
     plugin_dirs->push_back(home.Append(".mozilla/plugins"));
-#endif
 
   // 3) NS_SYSTEM_PLUGINS_DIR:
   // This varies across different browsers and versions, so check 'em all.
@@ -158,7 +158,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   plugin_dirs->push_back(FilePath("/usr/lib64/mozilla/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib64/firefox/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib64/xulrunner-addons/plugins"));
-#endif
+#endif  // defined(ARCH_CPU_64_BITS)
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath& dir_path,

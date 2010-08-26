@@ -45,8 +45,11 @@ void PluginList::RefreshPlugins() {
 }
 
 void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
+  // Chrome OS only loads plugins from /opt/google/chrome/plugins.
+#if !defined(OS_CHROMEOS)
   AutoLock lock(lock_);
   extra_plugin_paths_.push_back(plugin_path);
+#endif
 }
 
 void PluginList::RemoveExtraPluginPath(const FilePath& plugin_path) {
@@ -59,8 +62,11 @@ void PluginList::RemoveExtraPluginPath(const FilePath& plugin_path) {
 }
 
 void PluginList::AddExtraPluginDir(const FilePath& plugin_dir) {
+  // Chrome OS only loads plugins from /opt/google/chrome/plugins.
+#if !defined(OS_CHROMEOS)
   AutoLock lock(lock_);
   extra_plugin_dirs_.push_back(plugin_dir);
+#endif
 }
 
 void PluginList::RegisterInternalPlugin(const PluginVersionInfo& info) {
