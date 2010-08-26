@@ -2042,7 +2042,13 @@ void RenderView::showContextMenu(
     if (spelled_right)
       params.misspelled_word.clear();
   }
-
+  // Serializing a GURL longer than chrome::kMaxURLChars will fail, so don't do
+  // it.  We replace it with an empty GURL so the appropriate items are disabled
+  // in the context menu.
+  // TODO(jcivelli): http://crbug.com/45160 This prevents us from saving large
+  //                 data encoded images.  We should have a way to save them.
+  if (params.src_url.spec().size() > chrome::kMaxURLChars)
+    params.src_url = GURL();
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
 }
 
