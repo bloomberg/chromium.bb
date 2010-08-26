@@ -391,6 +391,10 @@ void ProfileImpl::InitExtensions() {
   component_extensions.push_back(
       std::make_pair("bookmark_manager", IDR_BOOKMARKS_MANIFEST));
 
+  // Web Store.
+  component_extensions.push_back(
+      std::make_pair("web_store", IDR_WEBSTORE_MANIFEST));
+
   // Some sample apps to make our lives easier while we are developing extension
   // apps. This way we don't have to constantly install these over and over.
   if (Extension::AppsAreEnabled() && IncludeDefaultApps()) {
