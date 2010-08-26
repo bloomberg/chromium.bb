@@ -386,6 +386,7 @@ void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Write(Message* m,
   WriteParam(m, p.contents_mime_type);
   WriteParam(m, p.is_post);
   WriteParam(m, p.is_content_filtered);
+  WriteParam(m, p.was_within_same_page);
   WriteParam(m, p.http_status_code);
 }
 
@@ -407,6 +408,7 @@ bool ParamTraits<ViewHostMsg_FrameNavigate_Params>::Read(const Message* m,
       ReadParam(m, iter, &p->contents_mime_type) &&
       ReadParam(m, iter, &p->is_post) &&
       ReadParam(m, iter, &p->is_content_filtered) &&
+      ReadParam(m, iter, &p->was_within_same_page) &&
       ReadParam(m, iter, &p->http_status_code);
 }
 
@@ -440,6 +442,8 @@ void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Log(const param_type& p,
   LogParam(p.is_post, l);
   l->append(", ");
   LogParam(p.is_content_filtered, l);
+  l->append(", ");
+  LogParam(p.was_within_same_page, l);
   l->append(", ");
   LogParam(p.http_status_code, l);
   l->append(")");
