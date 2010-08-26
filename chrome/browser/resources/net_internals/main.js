@@ -31,6 +31,9 @@ function onLoaded() {
                                       'filterCount',
                                       'deleteSelected',
                                       'selectAll',
+                                      'sortById',
+                                      'sortBySource',
+                                      'sortByDescription',
 
                                       // IDs for the details view.
                                       "detailsTabHandles",
@@ -199,6 +202,9 @@ BrowserBridge.prototype.sendGetHttpCacheInfo = function() {
 //------------------------------------------------------------------------------
 
 BrowserBridge.prototype.receivedLogEntry = function(logEntry) {
+  // Silently drop entries received before ready to receive them.
+  if (!this.areLogTypesReady_())
+    return;
   if (!logEntry.wasPassivelyCaptured)
     this.activelyCapturedEvents_.push(logEntry);
   for (var i = 0; i < this.logObservers_.length; ++i)
@@ -289,6 +295,12 @@ BrowserBridge.prototype.receivedCompletedConnectionTestSuite = function() {
 BrowserBridge.prototype.receivedHttpCacheInfo = function(info) {
   this.httpCacheInfo_.update(info);
 };
+
+BrowserBridge.prototype.areLogTypesReady_ = function() {
+  return (LogEventType  != null &&
+          LogEventPhase != null &&
+          LogSourceType != null);
+}
 
 //------------------------------------------------------------------------------
 

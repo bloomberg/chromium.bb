@@ -9,12 +9,16 @@
  *
  * @constructor
  */
-function SourceEntry(parentView, id) {
+function SourceEntry(parentView, id, maxPreviousSourceId) {
   this.id_ = id;
+  this.maxPreviousSourceId_ = maxPreviousSourceId;
   this.entries_ = [];
   this.parentView_ = parentView;
   this.isSelected_ = false;
   this.isMatchedByFilter_ = false;
+  // If the first entry is a BEGIN_PHASE, set to true.
+  // Set to false when an END_PHASE matching the first entry is encountered.
+  this.isActive_ = false;
 }
 
 SourceEntry.prototype.isSelected = function() {
@@ -62,6 +66,16 @@ SourceEntry.prototype.setFilterStyles = function(isMatchedByFilter) {
 };
 
 SourceEntry.prototype.update = function(logEntry) {
+  if (logEntry.phase == LogEventPhase.PHASE_BEGIN &&
+      this.entries_.length == 0)
+    this.isActive_ = true;
+
+  // Only the last event should have the same type first event,
+  if (this.isActive_ &&
+      logEntry.phase == LogEventPhase.PHASE_END &&
+      logEntry.type == this.entries_[0].type)
+    this.isActive_ = false;
+
   var prevStartEntry = this.getStartEntry_();
   this.entries_.push(logEntry);
   var curStartEntry = this.getStartEntry_();
@@ -72,27 +86,36 @@ SourceEntry.prototype.update = function(logEntry) {
       this.createRow_();
     else
       this.updateDescription_();
-
-    // Only apply the filter during the first update.
-    // TODO(eroman): once filters use other data, apply it on each update.
-    var matchesFilter = this.matchesFilter(this.parentView_.currentFilter_);
-    this.setIsMatchedByFilter(matchesFilter);
   }
+
+  // Update filters.
+  var matchesFilter = this.matchesFilter(this.parentView_.currentFilter_);
+  this.setIsMatchedByFilter(matchesFilter);
 };
 
 SourceEntry.prototype.onCheckboxToggled_ = function() {
   this.setSelected(this.getSelectionCheckbox().checked);
 };
 
-SourceEntry.prototype.matchesFilter = function(filterText) {
+SourceEntry.prototype.matchesFilter = function(filter) {
   // TODO(eroman): Support more advanced filter syntax.
-  if (filterText == '')
+
+  // Safety check.
+  if (this.row_ == null)
+    return false;
+
+  if (filter.isActive && !this.isActive_)
+    return false;
+  if (filter.isInactive && this.isActive_)
+    return false;
+
+  if (filter.text == '')
     return true;
 
-  var filterText = filterText.toLowerCase();
+  var filterText = filter.text.toLowerCase();
+  var entryText = PrintSourceEntriesAsText(this.entries_).toLowerCase();
 
-  return this.getDescription().toLowerCase().indexOf(filterText) != -1 ||
-         this.getSourceTypeString().toLowerCase().indexOf(filterText) != -1;
+  return entryText.indexOf(filterText) != -1;
 };
 
 SourceEntry.prototype.setSelected = function(isSelected) {
@@ -122,11 +145,12 @@ SourceEntry.prototype.onMouseout_ = function() {
 SourceEntry.prototype.updateDescription_ = function() {
   this.descriptionCell_.innerHTML = '';
   addTextNode(this.descriptionCell_, this.getDescription());
-}
+};
 
 SourceEntry.prototype.createRow_ = function() {
   // Create a row.
   var tr = addNode(this.parentView_.tableBody_, 'tr');
+  tr._id = this.getSourceId();
   tr.style.display = 'none';
   this.row_ = tr;
 
@@ -230,6 +254,91 @@ SourceEntry.prototype.getSelectionCheckbox = function() {
 
 SourceEntry.prototype.getSourceId = function() {
   return this.id_;
+};
+
+/**
+ * Returns the largest source ID seen before this object was received.
+ * Used only for sorting SourceEntries without a source by source ID.
+ */
+SourceEntry.prototype.getMaxPreviousEntrySourceId = function() {
+  return this.maxPreviousSourceId_;
+};
+
+SourceEntry.prototype.isActive = function() {
+  return this.isActive_;
+};
+
+/**
+ * Returns time of last event if inactive.  Returns current time otherwise.
+ */
+SourceEntry.prototype.getEndTime = function() {
+  if (this.isActive_) {
+    return (new Date()).getTime();
+  }
+  else {
+    var endTicks = this.entries_[this.entries_.length - 1].time;
+    return g_browser.convertTimeTicksToDate(endTicks).getTime();
+  }
+};
+
+/**
+ * Returns the time between the first and last events with a matching
+ * source ID.  If source is still active, uses the current time for the
+ * last event.
+ */
+SourceEntry.prototype.getDuration = function() {
+  var startTicks = this.entries_[0].time;
+  var startTime = g_browser.convertTimeTicksToDate(startTicks).getTime();
+  var endTime = this.getEndTime();
+  return endTime - startTime;
+};
+
+/**
+ * Returns source ID of the entry whose row is currently above this one's.
+ * Returns null if no such node exists.
+ */
+SourceEntry.prototype.getPreviousNodeSourceId = function() {
+  if (!this.hasRow())
+    return null;
+  var prevNode = this.row_.previousSibling;
+  if (prevNode == null)
+    return null;
+  return prevNode._id;
+};
+
+/**
+ * Returns source ID of the entry whose row is currently below this one's.
+ * Returns null if no such node exists.
+ */
+SourceEntry.prototype.getNextNodeSourceId = function() {
+  if (!this.hasRow())
+    return null;
+  var nextNode = this.row_.nextSibling;
+  if (nextNode == null)
+    return null;
+  return nextNode._id;
+};
+
+SourceEntry.prototype.hasRow = function() {
+  return this.row_ != null;
+};
+
+/**
+ * Moves current object's row before |entry|'s row.
+ */
+SourceEntry.prototype.moveBefore = function(entry) {
+  if (this.hasRow() && entry.hasRow()) {
+    this.row_.parentNode.insertBefore(this.row_, entry.row_);
+  }
+};
+
+/**
+ * Moves current object's row after |entry|'s row.
+ */
+SourceEntry.prototype.moveAfter = function(entry) {
+  if (this.hasRow() && entry.hasRow()) {
+    this.row_.parentNode.insertBefore(this.row_, entry.row_.nextSibling);
+  }
 };
 
 SourceEntry.prototype.remove = function() {
