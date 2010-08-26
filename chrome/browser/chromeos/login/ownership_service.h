@@ -60,6 +60,8 @@ class OwnershipService {
                           const std::string& signature,
                           OwnerManager::Delegate* d);
 
+  bool CurrentUserIsOwner();
+
  private:
   friend struct DefaultSingletonTraits<OwnershipService>;
   friend class OwnershipServiceTest;

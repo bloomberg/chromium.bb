@@ -91,4 +91,10 @@ bool OwnershipService::StartVerifyAttempt(const std::string& data,
   return true;
 }
 
+bool OwnershipService::CurrentUserIsOwner() {
+  // If this user has the private key associated with the owner's
+  // public key, this user is the owner.
+  return manager_->EnsurePrivateKey();
+}
+
 }  // namespace chromeos
