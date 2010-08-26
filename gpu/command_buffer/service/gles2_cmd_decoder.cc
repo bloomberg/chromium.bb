@@ -2839,6 +2839,11 @@ void GLES2DecoderImpl::DoDrawArrays(
     SetGLError(GL_INVALID_ENUM, "glDrawArrays: first < 0");
     return;
   }
+
+  if (count == 0) {
+    return;
+  }
+
   if (IsDrawValid(first + count - 1)) {
     bool simulated_attrib_0 = SimulateAttrib0(first + count - 1);
     bool textures_set = SetBlackTextureForNonRenderableTextures();
@@ -3599,6 +3604,10 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
   }
   if (!validators_->index_type.IsValid(type)) {
     SetGLError(GL_INVALID_ENUM, "glDrawElements: type GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+
+  if (count == 0) {
     return error::kNoError;
   }
 

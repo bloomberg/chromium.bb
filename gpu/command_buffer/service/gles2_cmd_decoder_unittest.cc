@@ -131,6 +131,18 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysMissingAttributesFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_F(GLES2DecoderWithShaderTest,
+       DrawArraysMissingAttributesZeroCountSucceeds) {
+  DoEnableVertexAttribArray(1);
+
+  EXPECT_CALL(*gl_, DrawArrays(_, _, _))
+      .Times(0);
+  DrawArrays cmd;
+  cmd.Init(GL_TRIANGLES, 0, 0);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysValidAttributesSucceeds) {
   SetupTexture();
   SetupVertexBuffer();
@@ -254,6 +266,20 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsMissingAttributesFails) {
            kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderWithShaderTest,
+       DrawElementsMissingAttributesZeroCountSucceeds) {
+  SetupIndexBuffer();
+  DoEnableVertexAttribArray(1);
+
+  EXPECT_CALL(*gl_, DrawElements(_, _, _, _))
+      .Times(0);
+  DrawElements cmd;
+  cmd.Init(GL_TRIANGLES, 0, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderWithShaderTest, DrawElementsExtraAttributesFails) {
