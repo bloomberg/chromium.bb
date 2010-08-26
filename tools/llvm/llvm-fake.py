@@ -182,7 +182,8 @@ global_config_flags = {
       '-sfi-stack',
       '-sfi-branch',
       '-sfi-data',
-      '-no-inline-jumptables'
+      '-sfi-cp-disable-verify',
+      '-no-inline-jumptables',
       ],
     'x86-32': [
       '-march=x86',

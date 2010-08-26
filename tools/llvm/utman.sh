@@ -120,7 +120,7 @@ readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
 readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 
 # Current milestones in each repo
-readonly LLVM_REV=fc41e7d9b66f
+readonly LLVM_REV=823a231a2b45
 readonly LLVM_GCC_REV=6da5d51ee4ac
 readonly NEWLIB_REV=c74ed6d22b4f
 readonly BINUTILS_REV=0df89bf526ff
