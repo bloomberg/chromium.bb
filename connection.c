@@ -43,12 +43,94 @@ struct wl_buffer {
 	int head, tail;
 };
 
+#define MASK(i) ((i) & 4095)
+
 struct wl_connection {
 	struct wl_buffer in, out;
 	int fd;
 	void *data;
 	wl_connection_update_func_t update;
 };
+
+static void
+wl_buffer_put(struct wl_buffer *b, const void *data, size_t count)
+{
+	int head, size;
+
+	head = MASK(b->head);
+	if (head + count <= sizeof b->data) {
+		memcpy(b->data + head, data, count);
+	} else {
+		size = sizeof b->data - head;
+		memcpy(b->data + head, data, size);
+		memcpy(b->data, (const char *) data + size, count - size);
+	}
+
+	b->head += count;
+}
+
+static void
+wl_buffer_put_iov(struct wl_buffer *b, struct iovec *iov, int *count)
+{
+	int head, tail;
+
+	head = MASK(b->head);
+	tail = MASK(b->tail);
+	if (head < tail) {
+		iov[0].iov_base = b->data + head;
+		iov[0].iov_len = tail - head;
+		*count = 1;
+	} else if (tail == 0) {
+		iov[0].iov_base = b->data + head;
+		iov[0].iov_len = sizeof b->data - head;
+		*count = 1;
+	} else {
+		iov[0].iov_base = b->data + head;
+		iov[0].iov_len = sizeof b->data - head;
+		iov[1].iov_base = b->data;
+		iov[1].iov_len = tail;
+		*count = 2;
+	}
+}
+
+static void
+wl_buffer_get_iov(struct wl_buffer *b, struct iovec *iov, int *count)
+{
+	int head, tail;
+
+	head = MASK(b->head);
+	tail = MASK(b->tail);
+	if (tail < head) {
+		iov[0].iov_base = b->data + tail;
+		iov[0].iov_len = head - tail;
+		*count = 1;
+	} else if (head == 0) {
+		iov[0].iov_base = b->data + tail;
+		iov[0].iov_len = sizeof b->data - tail;
+		*count = 1;
+	} else {
+		iov[0].iov_base = b->data + tail;
+		iov[0].iov_len = sizeof b->data - tail;
+		iov[1].iov_base = b->data;
+		iov[1].iov_len = head;
+		*count = 2;
+	}
+}
+
+static void
+wl_buffer_copy(struct wl_buffer *b, void *data, size_t count)
+{
+	int tail, size;
+
+	tail = MASK(b->tail);
+	if (tail + count <= sizeof b->data) {
+		memcpy(data, b->data + tail, count);
+	} else {
+		size = sizeof b->data - tail;
+		memcpy(data, b->data + tail, size);
+		memcpy((char *) data + size, b->data, count - size);
+	}
+}
 
 struct wl_connection *
 wl_connection_create(int fd,
@@ -80,67 +162,35 @@ wl_connection_destroy(struct wl_connection *connection)
 void
 wl_connection_copy(struct wl_connection *connection, void *data, size_t size)
 {
-	struct wl_buffer *b;
-	int tail, rest;
-
-	b = &connection->in;
-	tail = b->tail;
-	if (tail + size <= ARRAY_LENGTH(b->data)) {
-		memcpy(data, b->data + tail, size);
-	} else { 
-		rest = ARRAY_LENGTH(b->data) - tail;
-		memcpy(data, b->data + tail, rest);
-		memcpy(data + rest, b->data, size - rest);
-	}
+	wl_buffer_copy(&connection->in, data, size);
 }
 
 void
 wl_connection_consume(struct wl_connection *connection, size_t size)
 {
-	struct wl_buffer *b;
-	int tail, rest;
-
-	b = &connection->in;
-	tail = b->tail;
-	if (tail + size <= ARRAY_LENGTH(b->data)) {
-		b->tail += size;
-	} else { 
-		rest = ARRAY_LENGTH(b->data) - tail;
-		b->tail = size - rest;
-	}
+	connection->in.tail += size;
 }
 
 int wl_connection_data(struct wl_connection *connection, uint32_t mask)
 {
-	struct wl_buffer *b;
 	struct iovec iov[2];
 	struct msghdr msg;
-	int len, head, tail, count, size, available;
+	int len, count;
 
 	if (mask & WL_CONNECTION_READABLE) {
-		b = &connection->in;
-		head = connection->in.head;
-		if (head < b->tail) {
-			iov[0].iov_base = b->data + head;
-			iov[0].iov_len = b->tail - head;
-			count = 1;
-		} else {
-			size = ARRAY_LENGTH(b->data) - head;
-			iov[0].iov_base = b->data + head;
-			iov[0].iov_len = size;
-			iov[1].iov_base = b->data;
-			iov[1].iov_len = b->tail;
-			count = 2;
-		}
+		wl_buffer_put_iov(&connection->in, iov, &count);
+
+		msg.msg_name = NULL;
+		msg.msg_namelen = 0;
+		msg.msg_iov = iov;
+		msg.msg_iovlen = count;
+		msg.msg_control = NULL;
+		msg.msg_controllen = 0;
+
 		do {
-			msg.msg_name = NULL;
-			msg.msg_namelen = 0;
-			msg.msg_iov = iov;
-			msg.msg_iovlen = count;
-			msg.msg_control = NULL;
-			msg.msg_controllen = 0;
 			len = recvmsg(connection->fd, &msg, 0);
 		} while (len < 0 && errno == EINTR);
+
 		if (len < 0) {
 			fprintf(stderr,
 				"read error from connection %p: %m (%d)\n",
@@ -149,90 +199,47 @@ int wl_connection_data(struct wl_connection *connection, uint32_t mask)
 		} else if (len == 0) {
 			/* FIXME: Handle this better? */
 			return -1;
-		} else if (head + len <= ARRAY_LENGTH(b->data)) {
-			b->head += len;
-		} else {
-			b->head = head + len - ARRAY_LENGTH(b->data);
 		}
 
-		/* We know we have data in the buffer at this point,
-		 * so if head equals tail, it means the buffer is
-		 * full. */
-
-		available = b->head - b->tail;
-		if (available == 0)
-			available = sizeof b->data;
-		else if (available < 0)
-			available += ARRAY_LENGTH(b->data);
-	} else {
-		available = 0;
+		connection->in.head += len;
 	}	
 
 	if (mask & WL_CONNECTION_WRITABLE) {
-		b = &connection->out;
-		tail = b->tail;
-		if (tail < b->head) {
-			iov[0].iov_base = b->data + tail;
-			iov[0].iov_len = b->head - tail;
-			count = 1;
-		} else {
-			size = ARRAY_LENGTH(b->data) - tail;
-			iov[0].iov_base = b->data + tail;
-			iov[0].iov_len = size;
-			iov[1].iov_base = b->data;
-			iov[1].iov_len = b->head;
-			count = 2;
-		}
+		wl_buffer_get_iov(&connection->out, iov, &count);
+
+		msg.msg_name = NULL;
+		msg.msg_namelen = 0;
+		msg.msg_iov = iov;
+		msg.msg_iovlen = count;
+		msg.msg_control = NULL;
+		msg.msg_controllen = 0;
+
 		do {
-			msg.msg_name = NULL;
-			msg.msg_namelen = 0;
-			msg.msg_iov = iov;
-			msg.msg_iovlen = count;
-			msg.msg_control = NULL;
-			msg.msg_controllen = 0;
 			len = sendmsg(connection->fd, &msg, 0);
 		} while (len < 0 && errno == EINTR);
+
 		if (len < 0) {
 			fprintf(stderr, "write error for connection %p: %m\n", connection);
 			return -1;
-		} else if (tail + len <= ARRAY_LENGTH(b->data)) {
-			b->tail += len;
-		} else {
-			b->tail = tail + len - ARRAY_LENGTH(b->data);
 		}
 
-		/* We just took data out of the buffer, so at this
-		 * point if head equals tail, the buffer is empty. */
-
-		if (b->tail == b->head)
+		connection->out.tail += len;
+		if (connection->out.tail == connection->out.head)
 			connection->update(connection,
 					   WL_CONNECTION_READABLE,
 					   connection->data);
 	}
 
-	return available;
+	return connection->in.head - connection->in.tail;
 }
 
 void
-wl_connection_write(struct wl_connection *connection, const void *data, size_t count)
+wl_connection_write(struct wl_connection *connection,
+		    const void *data, size_t count)
 {
-	struct wl_buffer *b;
-	size_t size;
-	int head;
+	wl_buffer_put(&connection->out, data, count);
 
-	b = &connection->out;
-	head = b->head;
-	if (head + count <= ARRAY_LENGTH(b->data)) {
-		memcpy(b->data + head, data, count);
-		b->head += count;
-	} else {
-		size = ARRAY_LENGTH(b->data) - head;
-		memcpy(b->data + head, data, size);
-		memcpy(b->data, data + size, count - size);
-		b->head = count - size;
-	}
-
-	if (b->tail == head)
+	if (connection->out.head - connection->out.tail == count)
 		connection->update(connection,
 				   WL_CONNECTION_READABLE |
 				   WL_CONNECTION_WRITABLE,
