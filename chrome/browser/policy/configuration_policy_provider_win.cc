@@ -62,7 +62,7 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
   string16 path = string16(policy::kRegistrySubKey);
   RegKey policy_key;
   // First try the global policy.
-  if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str(), KEY_READ)) {
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str())) {
     if (ReadRegistryStringValue(&policy_key, name, result))
       return true;
     policy_key.Close();

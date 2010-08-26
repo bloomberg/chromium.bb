@@ -113,7 +113,7 @@ void OpenExternal(const GURL& url) {
   RegKey key;
   std::wstring registry_path = ASCIIToWide(url.scheme()) +
                                L"\\shell\\open\\command";
-  key.Open(HKEY_CLASSES_ROOT, registry_path.c_str(), KEY_READ);
+  key.Open(HKEY_CLASSES_ROOT, registry_path.c_str());
   if (key.Valid()) {
     DWORD size = 0;
     key.ReadValue(NULL, NULL, &size);

@@ -29,7 +29,7 @@ class RegKey {
   bool CreateWithDisposition(HKEY rootkey, const wchar_t* subkey,
                              DWORD* disposition, REGSAM access);
 
-  bool Open(HKEY rootkey, const wchar_t* subkey, REGSAM access);
+  bool Open(HKEY rootkey, const wchar_t* subkey, REGSAM access = KEY_READ);
 
   // Creates a subkey or open it if it already exists.
   bool CreateKey(const wchar_t* name, REGSAM access);
