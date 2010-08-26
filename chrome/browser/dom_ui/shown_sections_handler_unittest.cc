@@ -15,7 +15,8 @@
 class ShownSectionsHandlerTest : public testing::Test {
 };
 
-TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
+// http://crbug.com/53405
+TEST_F(ShownSectionsHandlerTest, DISABLED_MigrateUserPrefs) {
   scoped_ptr<PrefService> pref(new TestingPrefService);
 
   // Set an *old* value
@@ -33,7 +34,8 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
   EXPECT_TRUE(shown_sections & SYNC);
 }
 
-TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
+// http://crbug.com/53405
+TEST_F(ShownSectionsHandlerTest, DISABLED_MigrateUserPrefs1To2) {
   scoped_ptr<PrefService> pref(new TestingPrefService);
 
   // Set an *old* value
