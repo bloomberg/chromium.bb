@@ -103,10 +103,6 @@
               'framework/plugin.rc',
             ],
           }],
-          ['OS=="linux"', {
-            # -gstabs, used in the official builds, causes an ICE. Remove it.
-            'cflags!': ['-gstabs'],
-          }],
           ['OS=="mac"', {
             'sources': [
               'framework/Plugin_Info.plist',
