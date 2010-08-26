@@ -61,14 +61,14 @@ nacl::string VarToString(const pp::Var& var) {
 // Translation from pp::Var to NaClSrpcArg
 //-----------------------------------------------------------------------------
 
+namespace {
 
 // Sets |array_length| and allocate |array_data| based on the length
 // represented by |var|. Sets |exception| on error.
-template<typename T> static void PPVarToAllocateArray(
-    const pp::Var& var,
-    nacl_abi_size_t* array_length,
-    T** array_data,
-    pp::Var* exception) {
+template<typename T> void PPVarToAllocateArray(const pp::Var& var,
+                                               nacl_abi_size_t* array_length,
+                                               T** array_data,
+                                               pp::Var* exception) {
   // Initialize result values for error cases.
   *array_length = 0;
   *array_data = NULL;
@@ -96,10 +96,10 @@ template<typename T> static void PPVarToAllocateArray(
 
 // Translates |var| into |array_length| and |array_data| for type |type|.
 // Sets |exception| on error.
-template<typename T> static void PPVarToArray(const pp::Var& var,
-                                              nacl_abi_size_t* array_length,
-                                              T** array_data,
-                                              pp::Var* exception) {
+template<typename T> void PPVarToArray(const pp::Var& var,
+                                       nacl_abi_size_t* array_length,
+                                       T** array_data,
+                                       pp::Var* exception) {
   if (!var.is_object()) {
     *exception = "incompatible argument: type is not array";
     return;
@@ -142,21 +142,15 @@ template<typename T> static void PPVarToArray(const pp::Var& var,
 
 
 // Returns NaClDesc* corresponding to |var|. Sets |exception| on error.
-static NaClDesc* PPVarToNaClDesc(const pp::Var& var, pp::Var* exception) {
+NaClDesc* PPVarToNaClDesc(const pp::Var& var, pp::Var* exception) {
   if (!var.is_object()) {
     *exception = "incompatible argument: type is not handle object";
     return NULL;
   }
 
-  // TODO(polina): According to brettw, PPAPI does not support pp:Var to
-  // ScriptableObject translation. "The object is encapsulated in the "id".
-  // To call functions on it, you must use the Var interface. The id
-  // is totally opaque."  Thus, to get desc() from ScriptableHandle/Object,
-  // we would need to support something like GetProperty(pp::Var("__desc")),
-  // which will call desc() and then encode the return NaClDesc* into
-  // a string to use with a pp::Var return. (Note that we cannot use
-  // int32_t because the value might be 64-bit.) Then we will decode it back
-  // to NaClDesc* here.
+  // TODO(polina): Extract the underlying object once the method is
+  // available in pp::Var:
+  //   http://code.google.com/p/chromium/issues/detail?id=53125
 
   // TODO(sehr): We need to be very careful in how we implement this,
   // as there are security implications.  We need a reliable way to ensure
@@ -192,8 +186,7 @@ char* PPVarToString(const pp::Var& var, pp::Var* exception) {
 
 // Returns a number corresponding to |var|. JavaScript might mix int and
 // double types, so use them interchangeably. Sets |exception| on error.
-template<typename T> static T PPVarToNumber(const pp::Var& var,
-                                     pp::Var* exception) {
+template<typename T> T PPVarToNumber(const pp::Var& var, pp::Var* exception) {
   T result = 0;
   if (!var.is_number())
     *exception = "incompatible argument: type is not numeric";
@@ -203,6 +196,8 @@ template<typename T> static T PPVarToNumber(const pp::Var& var,
     result = static_cast<T>(var.AsInt());
   return result;
 }
+
+}  // namespace
 
 
 // Allocates |arg| of the array length represented by |var|. No-op for scalars.
@@ -277,10 +272,10 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
           PPVarToNaClDesc(var, exception));
       break;
     case NACL_SRPC_ARG_TYPE_OBJECT:
-      // In NPAPI mode, an NPObject can be extracted from an NPVariant,
-      // but in PPAPI a ScriptableObject cannot be extracted from a pp::Var.
-      // We don't have a choice but to pass pp::Var pointer itself.
-      arg->u.oval = reinterpret_cast<void*>(const_cast<pp::Var*>(&var));
+      // TODO(polina): extract the underlying object once the method is
+      // available in pp::Var:
+      // http://code.google.com/p/chromium/issues/detail?id=53125
+      //
       // There are currently no predeclared PPAPI plugin methods that
       // take objects as input, so this will never be reached.
       NACL_NOTREACHED();
@@ -300,6 +295,7 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
 // Translation NaClSrpcArg to pp::Var
 //-----------------------------------------------------------------------------
 
+namespace {
 
 // Return a pp::Var constructed from |array_data|. Sets |exception| on error.
 template<typename T> pp::Var ArrayToPPVar(T* array_data,
@@ -321,7 +317,7 @@ template<typename T> pp::Var ArrayToPPVar(T* array_data,
 
 
 // Returns a pp::Var corresponding to |desc| or void. Sets |exception| on error.
-static pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
+pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
                                pp::Var* exception) {
   nacl::DescWrapper* wrapper = plugin->wrapper_factory()->MakeGeneric(desc);
 
@@ -345,7 +341,7 @@ static pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
 // Returns a pp::Var corresponding to |obj|. Only predeclared plugin methods
 // can return objects and they only return a ScriptableHandle that is actually
 // a ScriptableHandlePpapi.
-static pp::Var ObjectToPPVar(void* obj) {
+pp::Var ObjectToPPVar(void* obj) {
   ScriptableHandle* handle = reinterpret_cast<ScriptableHandle*>(obj);
   // This confirms that this this is indeed a valid SriptableHandle that was
   // created by us. In theory, a predeclared method could receive and return
@@ -357,6 +353,7 @@ static pp::Var ObjectToPPVar(void* obj) {
   return pp::Var(static_cast<ScriptableHandlePpapi*>(handle));
 }
 
+}  // namespace
 
 // Returns a pp::Var corresponding to |arg| or void. Sets |exception| on error.
 pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, PluginPpapi* plugin,

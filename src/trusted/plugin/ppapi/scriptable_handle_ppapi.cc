@@ -21,7 +21,9 @@
 
 namespace plugin {
 
-static pp::Var Error(nacl::string call_name, const char* caller,
+namespace {
+
+pp::Var Error(nacl::string call_name, const char* caller,
                      const char* error, pp::Var* exception) {
   nacl::stringstream error_stream;
   error_stream << call_name << ": " << error;
@@ -34,6 +36,7 @@ static pp::Var Error(nacl::string call_name, const char* caller,
   return pp::Var();
 }
 
+}  // namespace
 
 ScriptableHandlePpapi* ScriptableHandlePpapi::New(PortableHandle* handle) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::New (portable_handle=%p)\n",
@@ -199,14 +202,15 @@ void ScriptableHandlePpapi::RemoveProperty(const pp::Var& name,
         "property removal is not supported", exception);
 }
 
-
+// TODO(polina): should methods also be added?
+// This is currently never called and the exact semantics is not clear.
+// http://code.google.com/p/chromium/issues/detail?id=51089
 void ScriptableHandlePpapi::GetAllPropertyNames(
     std::vector<pp::Var>* properties,
     pp::Var* exception) {
   std::vector<uintptr_t>* ids = handle()->GetPropertyIdentifiers();
   PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
                  "(ids=%"NACL_PRIuS")\n", ids->size()));
-  // TODO(polina): should methods also be added?
   for (size_t i = 0; i < ids->size(); ++i) {
     nacl::string name =
         handle()->browser_interface()->IdentifierToString(ids->at(i));
