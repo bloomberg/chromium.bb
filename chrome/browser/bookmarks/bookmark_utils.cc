@@ -193,7 +193,7 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
                               const std::string& languages) {
   return
       DoesBookmarkTextContainWords(
-          l10n_util::ToLower(WideToUTF16(node->GetTitle())), words) ||
+          l10n_util::ToLower(node->GetTitleAsString16()), words) ||
       DoesBookmarkTextContainWords(
           l10n_util::ToLower(UTF8ToUTF16(node->GetURL().spec())), words) ||
       DoesBookmarkTextContainWords(l10n_util::ToLower(

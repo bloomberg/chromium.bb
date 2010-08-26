@@ -93,9 +93,10 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
     if (n1->type() == n2->type()) {
       // Types are the same, compare the names.
       if (!collator_)
-        return n1->GetTitle() < n2->GetTitle();
-      return l10n_util::CompareStringWithCollator(collator_, n1->GetTitle(),
-                                                  n2->GetTitle()) == UCOL_LESS;
+        return n1->GetTitleAsString16() < n2->GetTitleAsString16();
+      return l10n_util::CompareStringWithCollator(collator_,
+          UTF16ToWideHack(n1->GetTitleAsString16()),
+          UTF16ToWideHack(n2->GetTitleAsString16())) == UCOL_LESS;
     }
     // Types differ, sort such that folders come first.
     return n1->is_folder();

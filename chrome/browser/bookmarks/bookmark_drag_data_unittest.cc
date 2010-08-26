@@ -126,7 +126,8 @@ TEST_F(BookmarkDragDataTest, Group) {
   BookmarkDragData drag_data(g12);
   EXPECT_TRUE(drag_data.is_valid());
   ASSERT_EQ(1, drag_data.elements.size());
-  EXPECT_EQ(g12->GetTitle(), drag_data.elements[0].title);
+  EXPECT_EQ(g12->GetTitleAsString16(),
+            WideToUTF16Hack(drag_data.elements[0].title));
   EXPECT_FALSE(drag_data.elements[0].is_url);
 
   OSExchangeData data;
@@ -138,7 +139,8 @@ TEST_F(BookmarkDragDataTest, Group) {
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(1, read_data.elements.size());
-  EXPECT_EQ(g12->GetTitle(), read_data.elements[0].title);
+  EXPECT_EQ(g12->GetTitleAsString16(),
+            WideToUTF16Hack(read_data.elements[0].title));
   EXPECT_FALSE(read_data.elements[0].is_url);
 
   // We should get back the same node when asking for the same profile.
