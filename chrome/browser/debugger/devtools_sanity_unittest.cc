@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 }
 
 // Tests set breakpoint.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestSetBreakpoint) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
@@ -341,7 +341,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseOnException) {
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestPauseWhenLoadingDevTools) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       DISABLED_TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
@@ -379,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowStoragePanel) {
   RunTest("testShowStoragePanel", kDebuggerTestPage);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestMessageLoopReentrant) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestMessageLoopReentrant) {
   RunTest("testMessageLoopReentrant", kDebuggerTestPage);
 }
 
