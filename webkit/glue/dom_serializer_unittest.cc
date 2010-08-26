@@ -647,7 +647,7 @@ TEST_F(DomSerializerTests, DISABLED_SerializeHTMLDOMWithNonStandardEntities) {
   WebDocument doc = web_frame->document();
   ASSERT_TRUE(doc.isHTMLDocument());
   WebElement body_element = doc.body();
-  // Unescaped string for "&percnt;&nsup;&supl;&apos;".
+  // Unescaped string for "&percnt;&nsup;&sup1;&apos;".
   static const wchar_t parsed_value[] = {
     '%', 0x2285, 0x00b9, '\'', 0
   };
@@ -664,7 +664,7 @@ TEST_F(DomSerializerTests, DISABLED_SerializeHTMLDOMWithNonStandardEntities) {
   // Confirm that the serialized string has no non-standard HTML entities.
   ASSERT_EQ(std::string::npos, serialized_contents.find("&percnt;"));
   ASSERT_EQ(std::string::npos, serialized_contents.find("&nsup;"));
-  ASSERT_EQ(std::string::npos, serialized_contents.find("&supl;"));
+  ASSERT_EQ(std::string::npos, serialized_contents.find("&sup1;"));
   ASSERT_EQ(std::string::npos, serialized_contents.find("&apos;"));
 }
 
