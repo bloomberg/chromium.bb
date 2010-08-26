@@ -783,6 +783,8 @@
         'browser/cocoa/bug_report_window_controller.h',
         'browser/cocoa/bug_report_window_controller.mm',
         'browser/cocoa/certificate_viewer.mm',
+        'browser/cocoa/chrome_browser_window.h',
+        'browser/cocoa/chrome_browser_window.mm',
         'browser/cocoa/chrome_event_processing_window.h',
         'browser/cocoa/chrome_event_processing_window.mm',
         'browser/cocoa/clear_browsing_data_controller.h',

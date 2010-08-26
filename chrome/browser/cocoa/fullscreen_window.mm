@@ -82,25 +82,4 @@
   return [super validateUserInterfaceItem:item];
 }
 
-- (ThemeProvider*)themeProvider {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themeProvider)])
-    return NULL;
-  return [delegate themeProvider];
-}
-
-- (ThemedWindowStyle)themedWindowStyle {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themedWindowStyle)])
-    return THEMED_NORMAL;
-  return [delegate themedWindowStyle];
-}
-
-- (NSPoint)themePatternPhase {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themePatternPhase)])
-    return NSMakePoint(0, 0);
-  return [delegate themePatternPhase];
-}
-
 @end

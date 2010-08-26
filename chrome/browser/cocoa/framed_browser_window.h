@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/cocoa/chrome_event_processing_window.h"
+#include "chrome/browser/cocoa/chrome_browser_window.h"
 
 // Offset from the top of the window frame to the top of the window controls
 // (zoom, close, miniaturize) for a window with a tabstrip.
@@ -30,7 +30,7 @@ const NSInteger kFramedWindowButtonsInterButtonSpacing = 7;
 // We need to override NSWindow with our own class since we need access to all
 // unhandled keyboard events and subclassing NSWindow is the only method to do
 // this. We also handle our own window controls and custom window frame drawing.
-@interface FramedBrowserWindow : ChromeEventProcessingWindow {
+@interface FramedBrowserWindow : ChromeBrowserWindow {
  @private
   BOOL shouldHideTitle_;
   NSButton* closeButton_;
@@ -38,7 +38,6 @@ const NSInteger kFramedWindowButtonsInterButtonSpacing = 7;
   NSButton* zoomButton_;
   BOOL entered_;
   scoped_nsobject<NSTrackingArea> widgetTrackingArea_;
-  int underlaySurfaceCount_;
 }
 
 // Tells the window to suppress title drawing.
@@ -50,11 +49,6 @@ const NSInteger kFramedWindowButtonsInterButtonSpacing = 7;
 
 // Update the tracking areas for our window widgets as appropriate.
 - (void)updateTrackingAreas;
-
-// Informs the window that an underlay surface has been added/removed. The
-// window is non-opaque while underlay surfaces are present.
-- (void)underlaySurfaceAdded;
-- (void)underlaySurfaceRemoved;
 
 @end
 

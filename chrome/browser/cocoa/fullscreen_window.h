@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 #include <Cocoa/Cocoa.h>
-#import "chrome/browser/cocoa/chrome_event_processing_window.h"
+#import "chrome/browser/cocoa/chrome_browser_window.h"
 
-// A FullscreenWindow is a borderless window suitable for going
-// fullscreen.  The returned window is NOT release when closed and is
-// not initially visible.
-// FullscreenWindow derives from ChromeEventProcessingWindow to inherit
-// special event handling (e.g. handleExtraKeyboardShortcut).
-@interface FullscreenWindow : ChromeEventProcessingWindow
+// A FullscreenWindow is a borderless window suitable for going fullscreen.  The
+// returned window is NOT release when closed and is not initially visible.
+// FullscreenWindow derives from ChromeBrowserWindow to inherit hole punching,
+// theming methods, and special event handling
+// (e.g. handleExtraKeyboardShortcut).
+@interface FullscreenWindow : ChromeBrowserWindow
 
 // Initialize a FullscreenWindow for the given screen.
 // Designated initializer.

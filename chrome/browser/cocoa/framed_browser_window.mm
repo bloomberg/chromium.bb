@@ -243,24 +243,6 @@ namespace {
   }
 }
 
-- (void)underlaySurfaceAdded {
-  DCHECK_GE(underlaySurfaceCount_, 0);
-  ++underlaySurfaceCount_;
-
-  // We're having the OpenGL surface render under the window, so the window
-  // needs to be not opaque.
-  if (underlaySurfaceCount_ == 1)
-    [self setOpaque:NO];
-}
-
-- (void)underlaySurfaceRemoved {
-  --underlaySurfaceCount_;
-  DCHECK_GE(underlaySurfaceCount_, 0);
-
-  if (underlaySurfaceCount_ == 0)
-    [self setOpaque:YES];
-}
-
 - (void)windowMainStatusChanged {
   [closeButton_ setNeedsDisplay];
   [zoomButton_ setNeedsDisplay];
@@ -363,27 +345,6 @@ namespace {
     return frame;
 
   return [super constrainFrameRect:frame toScreen:screen];
-}
-
-- (ThemeProvider*)themeProvider {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themeProvider)])
-    return NULL;
-  return [delegate themeProvider];
-}
-
-- (ThemedWindowStyle)themedWindowStyle {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themedWindowStyle)])
-    return THEMED_NORMAL;
-  return [delegate themedWindowStyle];
-}
-
-- (NSPoint)themePatternPhase {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themePatternPhase)])
-    return NSMakePoint(0, 0);
-  return [delegate themePatternPhase];
 }
 
 @end

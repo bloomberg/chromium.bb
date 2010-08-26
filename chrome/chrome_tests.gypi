@@ -925,6 +925,7 @@
         'browser/cocoa/browser_window_controller_unittest.mm',
         'browser/cocoa/bubble_view_unittest.mm',
         'browser/cocoa/bug_report_window_controller_unittest.mm',
+        'browser/cocoa/chrome_browser_window_unittest.mm',
         'browser/cocoa/chrome_event_processing_window_unittest.mm',
         'browser/cocoa/clear_browsing_data_controller_unittest.mm',
         'browser/cocoa/clickhold_button_cell_unittest.mm',
