@@ -210,12 +210,6 @@ bool AddressField::ParseAddressLines(
         return false;
   }
 
-  // Some pages (e.g. expedia_checkout.html) have an apartment or
-  // suite number at this point.  The occasional page (e.g.
-  // Ticketmaster3.html) calls this a unit number.  We ignore this
-  // field since we can't fill it yet.
-  ParseText(iter, ASCIIToUTF16("suite|unit"));
-
   // Optionally parse more address lines, which may have empty labels.
   // Some pages have 3 address lines (eg SharperImageModifyAccount.html)
   // Some pages even have 4 address lines (e.g. uk/ShoesDirect2.html)!
@@ -225,7 +219,7 @@ bool AddressField::ParseAddressLines(
     if (!ParseEmptyText(iter, &address_field->address2_))
       ParseText(iter, pattern, &address_field->address2_);
   } else {
-    pattern = ASCIIToUTF16("address2|street|street_line2|addr2");
+    pattern = ASCIIToUTF16("address2|street|street_line2|addr2|suite|unit");
     string16 label_pattern = ASCIIToUTF16("address");
     if (!ParseEmptyText(iter, &address_field->address2_))
       if (!ParseText(iter, pattern, &address_field->address2_))
@@ -239,8 +233,11 @@ bool AddressField::ParseAddressLines(
                                kEcmlBillToAddress3, '|');
       ParseText(iter, pattern);
     } else {
-      pattern = ASCIIToUTF16("line3");
-      ParseLabelText(iter, pattern, NULL);
+      pattern = ASCIIToUTF16("address3|street|street_line3|addr3|line3");
+      string16 label_pattern = ASCIIToUTF16("address");
+      if (!ParseEmptyText(iter, NULL))
+        if (!ParseText(iter, pattern, NULL))
+          ParseLabelText(iter, label_pattern, NULL);
     }
   }
 
