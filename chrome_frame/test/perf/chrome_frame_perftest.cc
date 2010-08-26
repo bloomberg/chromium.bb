@@ -30,7 +30,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/test/chrome_process_util.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui/ui_perf_test.h"
 
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
@@ -275,7 +275,7 @@ class ChromeFrameActiveXContainerPerf : public ChromeFrameActiveXContainer {
 
 // This class provides common functionality which can be used for most of the
 // ChromeFrame/Tab performance tests.
-class ChromeFramePerfTestBase : public UITest {
+class ChromeFramePerfTestBase : public UIPerfTest {
  public:
   ChromeFramePerfTestBase() {}
  protected:
@@ -1312,8 +1312,8 @@ class MonitorTraceBetweenEventPair : public MonitorTraceBase,
   base::StringPiece event_end_;
 };
 
-// The very same as UITestBase::PrintResultXXXX without the need to
-// create an UITestBase instance.
+// The very same as UIPerfTest::PrintResultXXXX without the need to
+// create an UIPerfTest instance.
 void PrintResultsImpl(const std::string& measurement,
                       const std::string& modifier,
                       const std::string& trace,

@@ -311,6 +311,7 @@
         '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/chrome.gyp:common',
+        '../chrome/chrome.gyp:test_support_ui',
         '../chrome/chrome.gyp:utility',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

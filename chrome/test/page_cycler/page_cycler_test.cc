@@ -19,7 +19,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/test_switches.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -151,7 +151,7 @@ void PopulateBufferCache(const FilePath& test_dir) {
   LOG(INFO) << "Buffer cache should be primed with " << loaded << " files.";
 }
 
-class PageCyclerTest : public UITest {
+class PageCyclerTest : public UIPerfTest {
  protected:
   bool print_times_only_;
   int num_test_iterations_;

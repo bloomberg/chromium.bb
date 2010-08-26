@@ -170,6 +170,8 @@
         'test/ui/run_all_unittests.cc',
         'test/ui/ui_layout_test.cc',
         'test/ui/ui_layout_test.h',
+        'test/ui/ui_perf_test.cc',
+        'test/ui/ui_perf_test.h',
         'test/ui/ui_test.cc',
         'test/ui/ui_test.h',
         'test/ui/ui_test_suite.cc',

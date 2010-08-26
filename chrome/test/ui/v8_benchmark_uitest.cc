@@ -14,7 +14,7 @@
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/javascript_test_util.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -25,7 +25,7 @@ static const FilePath::CharType kStartFile[] =
 
 const char kRunV8Benchmark[] = "run-v8-benchmark";
 
-class V8BenchmarkTest : public UITest {
+class V8BenchmarkTest : public UIPerfTest {
  public:
   typedef std::map<std::string, std::string> ResultsMap;
 

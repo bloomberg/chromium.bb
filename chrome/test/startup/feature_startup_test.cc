@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui/ui_perf_test.h"
 #include "gfx/rect.h"
 #include "net/base/net_util.h"
 
@@ -20,7 +20,7 @@ using base::TimeDelta;
 
 namespace {
 
-class NewTabUIStartupTest : public UITest {
+class NewTabUIStartupTest : public UIPerfTest {
  public:
   NewTabUIStartupTest() {
     show_window_ = true;

@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui/ui_perf_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
 
@@ -25,7 +25,7 @@ using base::TimeTicks;
 
 namespace {
 
-class StartupTest : public UITest {
+class StartupTest : public UIPerfTest {
  public:
   StartupTest() {
     show_window_ = true;

@@ -18,7 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -31,7 +31,7 @@ namespace {
 // time taken for each switch. It then prints out the times on the console,
 // with the aim that the page cycler parser can interpret these numbers to
 // draw graphs for page cycler Tab Switching Performance.
-class TabSwitchingUITest : public UITest {
+class TabSwitchingUITest : public UIPerfTest {
  public:
   TabSwitchingUITest() {
     PathService::Get(base::DIR_SOURCE_ROOT, &path_prefix_);
