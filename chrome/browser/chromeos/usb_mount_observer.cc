@@ -53,7 +53,11 @@ void USBMountObserver::OpenFileBrowse(const std::string& url,
                                       bool small) {
   Browser* browser;
   Profile* profile;
-  profile = BrowserList::GetLastActive()->profile();
+  browser =  BrowserList::GetLastActive();
+  if (browser == NULL) {
+    return;
+  }
+  profile = browser->profile();
   PrefService* pref_service = profile->GetPrefs();
   if (!pref_service->GetBoolean(prefs::kLabsAdvancedFilesystemEnabled)) {
     return;

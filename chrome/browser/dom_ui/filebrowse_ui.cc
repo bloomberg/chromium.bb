@@ -999,7 +999,11 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
 Browser* FileBrowseUI::GetPopupForPath(const std::string& path) {
   std::string current_path = path;
   if (current_path.empty()) {
-    Profile* profile = BrowserList::GetLastActive()->profile();
+    Browser* browser = BrowserList::GetLastActive();
+    if (browser == NULL) {
+      return NULL;
+    }
+    Profile* profile = browser->profile();
     PrefService* pref_service = profile->GetPrefs();
     bool is_enabled = pref_service->GetBoolean(
         prefs::kLabsAdvancedFilesystemEnabled);
