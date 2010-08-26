@@ -8,13 +8,16 @@
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
@@ -166,6 +169,19 @@ void FirstRunDialog::ShowSearchEngineWindow() {
 }
 
 void FirstRunDialog::ShowDialog() {
+  // The purpose of the dialog is to ask the user to enable stats and crash
+  // reporting. This setting may be controlled through configuration management
+  // in enterprise scenarios. If that is the case, skip the dialog entirely,
+  // it's not worth bothering the user for only the default browser question
+  // (which is likely to be forced in enterprise deployments anyway).
+  const PrefService::Preference* metrics_reporting_pref =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kMetricsReportingEnabled);
+  if (metrics_reporting_pref && metrics_reporting_pref->IsManaged()) {
+    OnResponseDialog(NULL, GTK_RESPONSE_ACCEPT);
+    return;
+  }
+
 #if defined(GOOGLE_CHROME_BUILD)
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_TITLE).c_str(),
