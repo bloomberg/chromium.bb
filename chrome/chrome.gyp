@@ -619,11 +619,6 @@
       # end up using this module as well.
       'conditions': [
         ['OS=="win"', {
-          'defines': [
-            '__STD_C',
-            '_CRT_SECURE_NO_DEPRECATE',
-            '_SCL_SECURE_NO_DEPRECATE',
-          ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],

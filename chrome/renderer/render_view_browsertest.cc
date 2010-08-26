@@ -495,8 +495,7 @@ TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
 // Test that we can receive correct DOM events when we send input events
 // through the RenderWidget::OnHandleInputEvent() function.
 TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
-  // TODO(phajdan.jr): enable on Window when sprintf is removed.
-#if defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // Load an HTML page consisting of one <input> element and three
   // contentediable <div> elements.
   // The <input> element is used for sending keyboard events, and the <div>

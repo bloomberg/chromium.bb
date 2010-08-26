@@ -1501,11 +1501,6 @@
           ],
         }],
         ['OS=="win"', {
-          'defines': [
-            '__STD_C',
-            '_CRT_SECURE_NO_DEPRECATE',
-            '_SCL_SECURE_NO_DEPRECATE',
-          ],
           'dependencies': [
             'chrome_dll_version',
             'installer_util_strings',

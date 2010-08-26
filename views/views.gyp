@@ -360,11 +360,6 @@
           ],
         }],
         ['OS=="win"', {
-          'defines': [
-            '__STD_C',
-            '_CRT_SECURE_NO_DEPRECATE',
-            '_SCL_SECURE_NO_DEPRECATE',
-          ],
           'sources!': [
             'controls/slider/slider.cc',
             'controls/slider/slider.h',

@@ -35,9 +35,6 @@
         'conditions': [
           ['OS=="win"', {
             'defines': [
-              '__STD_C',
-              '_CRT_SECURE_NO_DEPRECATE',
-              '_SCL_SECURE_NO_DEPRECATE',
               '__STDC_LIMIT_MACROS=1',
             ],
             'include_dirs': [
