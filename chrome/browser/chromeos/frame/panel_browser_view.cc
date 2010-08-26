@@ -36,10 +36,12 @@ void PanelBrowserView::Init() {
 }
 
 void PanelBrowserView::Show() {
-  panel_controller_.reset(new PanelController(this, GetNativeHandle()));
-  panel_controller_->Init(
-      true /* focus when opened */, bounds(), creator_xid_,
-      WM_IPC_PANEL_USER_RESIZE_HORIZONTALLY_AND_VERTICALLY);
+  if (panel_controller_.get() == NULL) {
+    panel_controller_.reset(new PanelController(this, GetNativeHandle()));
+    panel_controller_->Init(
+        true /* focus when opened */, bounds(), creator_xid_,
+        WM_IPC_PANEL_USER_RESIZE_HORIZONTALLY_AND_VERTICALLY);
+  }
   BrowserView::Show();
 }
 
