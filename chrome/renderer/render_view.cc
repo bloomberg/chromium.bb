@@ -384,9 +384,6 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
 
 // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
 // if it failed.
-//
-// Note this only works on Windows at this time.  It always returns 'unknown'
-// on other platforms.
 static std::string DetermineTextLanguage(const string16& text) {
   std::string language = chrome::kUnknownLanguageCode;
   int num_languages = 0;
