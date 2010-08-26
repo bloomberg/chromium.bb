@@ -52,11 +52,13 @@ function addScreenshot(divId, screenshot) {
 
   var thumbnail = document.createElement('img');
   thumbnail.id = thumbnailDiv.id + '-image';
-  thumbnail.src = screenshot;
+  // We add the ?+timestamp to make sure the image URLs are unique
+  // and Chrome does not load the image from cache.
+  thumbnail.src = screenshot + "?" + Date.now();
   innerDiv.appendChild(thumbnail);
 
   var largeImage = document.createElement('img');
-  largeImage.src = screenshot;
+  largeImage.src = screenshot + "?" + Date.now();
 
   var popupDiv = document.createElement('div');
   popupDiv.appendChild(largeImage);

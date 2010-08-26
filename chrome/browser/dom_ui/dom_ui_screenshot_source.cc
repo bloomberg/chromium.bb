@@ -75,7 +75,10 @@ std::vector<unsigned char> GetSavedScreenshot(std::string filename) {
 #endif
 
 std::vector<unsigned char> DOMUIScreenshotSource::GetScreenshot(
-    const std::string& path) {
+    const std::string& full_path) {
+  // Strip the query param value - we only use it as a hack to ensure our
+  // image gets reloaded instead of being pulled from the browser cache
+  std::string path = full_path.substr(0, full_path.find_first_of("?"));
   if (path == kCurrentScreenshot) {
     return current_screenshot_;
 #if defined(OS_CHROMEOS)
