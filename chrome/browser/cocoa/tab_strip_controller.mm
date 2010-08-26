@@ -619,10 +619,17 @@ private:
     if (!isClosingLastTab) {
       // Limit the width available for laying out tabs so that tabs are not
       // resized until a later time (when the mouse leaves the tab strip).
+      // However, if the tab being closed is a pinned tab, break out of
+      // rapid-closure mode since the mouse is almost guaranteed not to be over
+      // the closebox of the adjacent tab (due to the difference in widths).
       // TODO(pinkerton): re-visit when handling tab overflow.
       // http://crbug.com/188
-      NSView* penultimateTab = [self viewAtIndex:numberOfOpenTabs - 2];
-      availableResizeWidth_ = NSMaxX([penultimateTab frame]);
+      if (tabStripModel_->IsTabPinned(index)) {
+        availableResizeWidth_ = kUseFullAvailableWidth;
+      } else {
+        NSView* penultimateTab = [self viewAtIndex:numberOfOpenTabs - 2];
+        availableResizeWidth_ = NSMaxX([penultimateTab frame]);
+      }
     } else {
       // If the rightmost tab is closed, change the available width so that
       // another tab's close button lands below the cursor (assuming the tabs
