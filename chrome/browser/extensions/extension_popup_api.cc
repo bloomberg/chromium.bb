@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"

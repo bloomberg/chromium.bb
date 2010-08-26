@@ -11,10 +11,11 @@
 
 #include "base/file_path.h"
 #include "base/string_piece.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
+#include "chrome/common/extensions/url_pattern.h"
 
 class Pickle;
+class URLPattern;
 
 // Represents a user script, either a standalone one, or one that is part of an
 // extension.
@@ -50,12 +51,9 @@ class UserScript {
   class File {
    public:
     File(const FilePath& extension_root, const FilePath& relative_path,
-         const GURL& url):
-        extension_root_(extension_root),
-        relative_path_(relative_path),
-        url_(url) {
-    }
-    File() {}
+         const GURL& url);
+    File();
+    ~File();
 
     const FilePath& extension_root() const { return extension_root_; }
     const FilePath& relative_path() const { return relative_path_; }
@@ -104,11 +102,8 @@ class UserScript {
 
   // Constructor. Default the run location to document end, which is like
   // Greasemonkey and probably more useful for typical scripts.
-  UserScript()
-    : run_location_(DOCUMENT_IDLE), emulate_greasemonkey_(false),
-      match_all_frames_(false), incognito_enabled_(false),
-      allow_file_access_(false) {
-  }
+  UserScript();
+  ~UserScript();
 
   const std::string& name_space() const { return name_space_; }
   void set_name_space(const std::string& name_space) {
@@ -156,10 +151,8 @@ class UserScript {
   // The URLPatterns, if any, that determine which pages this script runs
   // against.
   const PatternList& url_patterns() const { return url_patterns_; }
-  void add_url_pattern(const URLPattern& pattern) {
-    url_patterns_.push_back(pattern);
-  }
-  void clear_url_patterns() { url_patterns_.clear(); }
+  void add_url_pattern(const URLPattern& pattern);
+  void clear_url_patterns();
 
   // List of js scripts for this user script
   FileList& js_scripts() { return js_scripts_; }

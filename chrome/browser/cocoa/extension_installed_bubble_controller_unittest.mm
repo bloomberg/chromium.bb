@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/values.h"
 #import "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"

@@ -8,8 +8,9 @@
 #include "base/string_util.h"
 
 namespace {
-static bool UrlMatchesPatterns(const UserScript::PatternList* patterns,
-                               const GURL& url) {
+
+bool UrlMatchesPatterns(const UserScript::PatternList* patterns,
+                        const GURL& url) {
   for (UserScript::PatternList::const_iterator pattern = patterns->begin();
        pattern != patterns->end(); ++pattern) {
     if (pattern->MatchesUrl(url))
@@ -19,8 +20,8 @@ static bool UrlMatchesPatterns(const UserScript::PatternList* patterns,
   return false;
 }
 
-static bool UrlMatchesGlobs(const std::vector<std::string>* globs,
-                            const GURL& url) {
+bool UrlMatchesGlobs(const std::vector<std::string>* globs,
+                     const GURL& url) {
   for (std::vector<std::string>::const_iterator glob = globs->begin();
        glob != globs->end(); ++glob) {
     if (MatchPatternASCII(url.spec(), *glob))
@@ -29,7 +30,8 @@ static bool UrlMatchesGlobs(const std::vector<std::string>* globs,
 
   return false;
 }
-}
+
+}  // namespace
 
 // static
 const char UserScript::kFileExtension[] = ".user.js";
@@ -47,6 +49,34 @@ bool UserScript::HasUserScriptFileExtension(const FilePath& path) {
   static FilePath extension(FilePath().AppendASCII(kFileExtension));
   return EndsWith(path.BaseName().value(), extension.value(), false);
 }
+
+
+UserScript::File::File(const FilePath& extension_root,
+                       const FilePath& relative_path,
+                       const GURL& url)
+    : extension_root_(extension_root),
+      relative_path_(relative_path),
+      url_(url) {
+}
+
+UserScript::File::File() {}
+
+UserScript::File::~File() {}
+
+UserScript::UserScript()
+    : run_location_(DOCUMENT_IDLE), emulate_greasemonkey_(false),
+      match_all_frames_(false), incognito_enabled_(false),
+      allow_file_access_(false) {
+}
+
+UserScript::~UserScript() {
+}
+
+void UserScript::add_url_pattern(const URLPattern& pattern) {
+  url_patterns_.push_back(pattern);
+}
+
+void UserScript::clear_url_patterns() { url_patterns_.clear(); }
 
 bool UserScript::MatchesUrl(const GURL& url) const {
   if (url_patterns_.size() > 0) {

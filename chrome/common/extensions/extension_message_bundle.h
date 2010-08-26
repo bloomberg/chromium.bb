@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/linked_ptr.h"
-#include "base/string_util.h"
-#include "base/values.h"
+
+class DictionaryValue;
 
 // Contains localized extension messages for one locale. Any messages that the
 // locale does not provide are pulled from the default locale.
@@ -94,23 +94,12 @@ class ExtensionMessageBundle {
 
   // Allow only ascii 0-9, a-z, A-Z, and _ in the variable name.
   // Returns false if the input is empty or if it has illegal characters.
-  template<typename str>
-  static bool IsValidName(const str& name) {
-    if (name.empty())
-      return false;
-
-    typename str::const_iterator it = name.begin();
-    for (; it != name.end(); ++it) {
-      // Allow only ascii 0-9, a-z, A-Z, and _ in the name.
-      if (!IsAsciiAlpha(*it) && !IsAsciiDigit(*it) && *it != '_' && *it != '@')
-        return false;
-      }
-
-    return true;
-  }
+  static bool IsValidName(const std::string& name);
 
   // Getter for dictionary_.
   const SubstitutionMap* dictionary() const { return &dictionary_; }
+
+  ~ExtensionMessageBundle();
 
  private:
   // Testing friend.

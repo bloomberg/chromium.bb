@@ -8,6 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/task.h"
+#include "base/values.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"

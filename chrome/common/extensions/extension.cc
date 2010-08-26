@@ -20,6 +20,7 @@
 #include "base/third_party/nss/sha256.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -1771,4 +1772,19 @@ bool Extension::IsAPIPermission(const std::string& str) {
     }
   }
   return false;
+}
+
+ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
+                             const std::string& id,
+                             const FilePath& path,
+                             Extension::Location location)
+    : extension_id(id),
+      extension_path(path),
+      extension_location(location) {
+  if (manifest)
+    extension_manifest.reset(
+        static_cast<DictionaryValue*>(manifest->DeepCopy()));
+}
+
+ExtensionInfo::~ExtensionInfo() {
 }

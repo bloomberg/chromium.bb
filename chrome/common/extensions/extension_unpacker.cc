@@ -44,9 +44,7 @@ const char* kPathNamesMustBeAbsoluteOrLocalError =
 // A limit to stop us passing dangerously large canvases to the browser.
 const int kMaxImageCanvas = 4096 * 4096;
 
-}  // namespace
-
-static SkBitmap DecodeImage(const FilePath& path) {
+SkBitmap DecodeImage(const FilePath& path) {
   // Read the file from disk.
   std::string file_contents;
   if (!file_util::PathExists(path) ||
@@ -65,7 +63,7 @@ static SkBitmap DecodeImage(const FilePath& path) {
   return bitmap;
 }
 
-static bool PathContainsParentDirectory(const FilePath& path) {
+bool PathContainsParentDirectory(const FilePath& path) {
   const FilePath::StringType kSeparators(FilePath::kSeparators);
   const FilePath::StringType kParentDirectory(FilePath::kParentDirectory);
   const size_t npos = FilePath::StringType::npos;
@@ -83,6 +81,15 @@ static bool PathContainsParentDirectory(const FilePath& path) {
   }
 
   return false;
+}
+
+}  // namespace
+
+ExtensionUnpacker::ExtensionUnpacker(const FilePath& extension_path)
+    : extension_path_(extension_path) {
+}
+
+ExtensionUnpacker::~ExtensionUnpacker() {
 }
 
 DictionaryValue* ExtensionUnpacker::ReadManifest() {

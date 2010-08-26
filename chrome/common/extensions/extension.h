@@ -14,13 +14,13 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
-#include "base/values.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 
+class DictionaryValue;
 class ExtensionAction;
 class ExtensionResource;
 class SkBitmap;
@@ -599,14 +599,8 @@ struct ExtensionInfo {
   ExtensionInfo(const DictionaryValue* manifest,
                 const std::string& id,
                 const FilePath& path,
-                Extension::Location location)
-      : extension_id(id),
-        extension_path(path),
-        extension_location(location) {
-    if (manifest)
-      extension_manifest.reset(
-          static_cast<DictionaryValue*>(manifest->DeepCopy()));
-  }
+                Extension::Location location);
+  ~ExtensionInfo();
 
   scoped_ptr<DictionaryValue> extension_manifest;
   std::string extension_id;

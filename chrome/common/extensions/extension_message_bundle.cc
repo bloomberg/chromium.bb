@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -211,6 +212,9 @@ bool ExtensionMessageBundle::ReplaceMessages(std::string* text,
   return ReplaceMessagesWithExternalDictionary(dictionary_, text, error);
 }
 
+ExtensionMessageBundle::~ExtensionMessageBundle() {
+}
+
 // static
 bool ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
     const SubstitutionMap& dictionary, std::string* text, std::string* error) {
@@ -265,6 +269,21 @@ bool ExtensionMessageBundle::ReplaceVariables(
 
     // And position pointer to after the replacement.
     beg_index += value.size() - var_begin_delimiter_size;
+  }
+
+  return true;
+}
+
+// static
+bool ExtensionMessageBundle::IsValidName(const std::string& name) {
+  if (name.empty())
+    return false;
+
+  std::string::const_iterator it = name.begin();
+  for (; it != name.end(); ++it) {
+    // Allow only ascii 0-9, a-z, A-Z, and _ in the name.
+    if (!IsAsciiAlpha(*it) && !IsAsciiDigit(*it) && *it != '_' && *it != '@')
+      return false;
   }
 
   return true;

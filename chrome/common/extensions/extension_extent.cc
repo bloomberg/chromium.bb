@@ -4,6 +4,36 @@
 
 #include "chrome/common/extensions/extension_extent.h"
 
+#include "chrome/common/extensions/url_pattern.h"
+#include "googleurl/src/gurl.h"
+
+ExtensionExtent::ExtensionExtent() {
+}
+
+ExtensionExtent::ExtensionExtent(const ExtensionExtent& rhs)
+    : patterns_(rhs.patterns_) {
+}
+
+ExtensionExtent::~ExtensionExtent() {
+}
+
+ExtensionExtent& ExtensionExtent::operator=(const ExtensionExtent& rhs) {
+  patterns_ = rhs.patterns_;
+  return *this;
+}
+
+bool ExtensionExtent::is_empty() const {
+  return patterns_.empty();
+}
+
+void ExtensionExtent::AddPattern(const URLPattern& pattern) {
+  patterns_.push_back(pattern);
+}
+
+void ExtensionExtent::ClearPaths() {
+  patterns_.clear();
+}
+
 bool ExtensionExtent::ContainsURL(const GURL& url) const {
   for (PatternList::const_iterator pattern = patterns_.begin();
        pattern != patterns_.end(); ++pattern) {

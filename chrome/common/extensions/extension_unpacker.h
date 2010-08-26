@@ -24,8 +24,8 @@ class ExtensionUnpacker {
  public:
   typedef std::vector< Tuple2<SkBitmap, FilePath> > DecodedImages;
 
-  explicit ExtensionUnpacker(const FilePath& extension_path)
-      : extension_path_(extension_path) {}
+  explicit ExtensionUnpacker(const FilePath& extension_path);
+  ~ExtensionUnpacker();
 
   // Install the extension file at |extension_path|.  Returns true on success.
   // Otherwise, error_message will contain a string explaining what went wrong.

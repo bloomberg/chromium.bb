@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "googleurl/src/gurl.h"
+class GURL;
 
 // A pattern that can be used to match URLs. A URLPattern is a very restricted
 // subset of URL syntax:
@@ -96,6 +96,8 @@ class URLPattern {
   // to be a valid pattern. If the string is not known ahead of time, use
   // Parse() instead, which returns success or failure.
   URLPattern(int valid_schemes, const std::string& pattern);
+
+  ~URLPattern();
 
   // Gets the bitmask of valid schemes.
   int valid_schemes() const { return valid_schemes_; }

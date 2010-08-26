@@ -5,6 +5,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "googleurl/src/gurl.h"
 
 // See url_pattern.h for examples of valid and invalid patterns.
 

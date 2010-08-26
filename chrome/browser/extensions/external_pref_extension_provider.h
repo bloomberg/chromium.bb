@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/external_extension_provider.h"
 
 class DictionaryValue;
+class ValueSerializer;
 class Version;
 
 // A specialization of the ExternalExtensionProvider that uses a json file to

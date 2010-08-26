@@ -8,19 +8,24 @@
 
 #include <vector>
 
-#include "chrome/common/extensions/url_pattern.h"
-#include "googleurl/src/gurl.h"
+class GURL;
+class URLPattern;
 
 // Represents the set of URLs an extension uses for web content.
 class ExtensionExtent {
  public:
   typedef std::vector<URLPattern> PatternList;
 
-  bool is_empty() const { return patterns_.empty(); }
+  ExtensionExtent();
+  ExtensionExtent(const ExtensionExtent& rhs);
+  ~ExtensionExtent();
+  ExtensionExtent& operator=(const ExtensionExtent& rhs);
+
+  bool is_empty() const;
 
   const PatternList& patterns() const { return patterns_; }
-  void AddPattern(const URLPattern& pattern) { patterns_.push_back(pattern); }
-  void ClearPaths() { patterns_.clear(); }
+  void AddPattern(const URLPattern& pattern);
+  void ClearPaths();
 
   // Test if the extent contains a URL.
   bool ContainsURL(const GURL& url) const;

@@ -7,11 +7,12 @@
 #pragma once
 
 #include <string>
+#include <map>
 
-#include "chrome/common/extensions/extension.h"
-
+class Extension;
 class ExtensionMessageBundle;
 class FilePath;
+class GURL;
 
 // Utilties for manipulating the on-disk storage of extensions.
 namespace extension_file_util {

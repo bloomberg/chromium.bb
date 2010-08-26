@@ -7,6 +7,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 
 // TODO(aa): Consider adding chrome-extension? What about more obscure ones
 // like data: and javascript: ?
@@ -46,6 +47,9 @@ URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
       match_subdomains_(false) {
   if (!Parse(pattern))
     NOTREACHED() << "URLPattern is invalid: " << pattern;
+}
+
+URLPattern::~URLPattern() {
 }
 
 bool URLPattern::Parse(const std::string& pattern) {

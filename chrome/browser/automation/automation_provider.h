@@ -54,6 +54,7 @@ class ExtensionPortContainer;
 class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
 class InitialLoadObserver;
+class ListValue;
 class LoginHandler;
 class MetricEventDurationObserver;
 class NavigationController;
