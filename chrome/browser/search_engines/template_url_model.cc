@@ -19,6 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/search_engines/util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/extension.h"
@@ -466,8 +467,8 @@ void TemplateURLModel::Load() {
 }
 
 void TemplateURLModel::OnWebDataServiceRequestDone(
-                       WebDataService::Handle h,
-                       const WDTypedResult* result) {
+    WebDataService::Handle h,
+    const WDTypedResult* result) {
   // Reset the load_handle so that we don't try and cancel the load in
   // the destructor.
   load_handle_ = 0;
@@ -481,56 +482,46 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
     return;
   }
 
-  DCHECK(result->GetType() == KEYWORDS_RESULT);
-
-  WDKeywordsResult keyword_result = reinterpret_cast<
-      const WDResult<WDKeywordsResult>*>(result)->GetValue();
-
   // prefs_default_search_provider_ is only needed before we've finished
   // loading. Now that we've loaded we can nuke it.
   prefs_default_search_provider_.reset();
 
-  // Compiler won't implicitly convert std::vector<TemplateURL*> to
-  // std::vector<const TemplateURL*>, and reinterpret_cast is unsafe,
-  // so we just copy it.
-  std::vector<const TemplateURL*> template_urls(keyword_result.keywords.begin(),
-                                                keyword_result.keywords.end());
+  std::vector<TemplateURL*> template_urls;
+  int new_resource_keyword_version = 0;
+  const TemplateURL* default_search_provider = NULL;
+  GetSearchProvidersUsingKeywordResult(*result,
+                                       service_.get(),
+                                       GetPrefs(),
+                                       &template_urls,
+                                       &default_search_provider,
+                                       &new_resource_keyword_version);
 
-  const int resource_keyword_version =
-      TemplateURLPrepopulateData::GetDataVersion(GetPrefs());
-  if (keyword_result.builtin_keyword_version != resource_keyword_version) {
-    // There should never be duplicate TemplateURLs. We had a bug such that
-    // duplicate TemplateURLs existed for one locale. As such we invoke
-    // RemoveDuplicatePrepopulateIDs to nuke the duplicates.
-    RemoveDuplicatePrepopulateIDs(&template_urls);
+  // If the default search provider existed previously, then just
+  // set the member variable. Otherwise, we'll set it using the method
+  // to ensure that it is saved properly after its id is set.
+  if (default_search_provider && default_search_provider->id() != 0) {
+    default_search_provider_ = default_search_provider;
+    default_search_provider = NULL;
   }
   SetTemplateURLs(template_urls);
 
-  if (keyword_result.default_search_provider_id) {
-    // See if we can find the default search provider.
-    for (TemplateURLVector::iterator i = template_urls_.begin();
-         i != template_urls_.end(); ++i) {
-      if ((*i)->id() == keyword_result.default_search_provider_id) {
-        default_search_provider_ = *i;
-        break;
-      }
-    }
+  if (default_search_provider) {
+    // Note that this saves the default search provider to prefs.
+    SetDefaultSearchProvider(default_search_provider);
+  } else {
+    // Always save the default search provider to prefs. That way we don't
+    // have to worry about it being out of sync.
+    if (default_search_provider_)
+      SaveDefaultSearchProviderToPrefs(default_search_provider_);
   }
-
-  if (keyword_result.builtin_keyword_version != resource_keyword_version) {
-    MergeEnginesFromPrepopulateData();
-    service_->SetBuiltinKeywordVersion(resource_keyword_version);
-  }
-
-  // Always save the default search provider to prefs. That way we don't have to
-  // worry about it being out of sync.
-  if (default_search_provider_)
-    SaveDefaultSearchProviderToPrefs(default_search_provider_);
 
   // Index any visits that occurred before we finished loading.
   for (size_t i = 0; i < visits_to_add_.size(); ++i)
     UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
   visits_to_add_.clear();
+
+  if (new_resource_keyword_version && service_.get())
+    service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
 
   loaded_ = true;
 
@@ -538,28 +529,6 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
                     OnTemplateURLModelChanged());
 
   NotifyLoaded();
-}
-
-void TemplateURLModel::RemoveDuplicatePrepopulateIDs(
-    std::vector<const TemplateURL*>* urls) {
-  std::set<int> ids;
-  for (std::vector<const TemplateURL*>::iterator i = urls->begin();
-       i != urls->end(); ) {
-    int prepopulate_id = (*i)->prepopulate_id();
-    if (prepopulate_id) {
-      if (ids.find(prepopulate_id) != ids.end()) {
-        if (service_.get())
-          service_->RemoveKeyword(**i);
-        delete *i;
-        i = urls->erase(i);
-      } else {
-        ids.insert(prepopulate_id);
-        ++i;
-      }
-    } else {
-      ++i;
-    }
-  }
 }
 
 std::wstring TemplateURLModel::GetKeywordShortName(const std::wstring& keyword,
@@ -705,14 +674,28 @@ void TemplateURLModel::AddToMaps(const TemplateURL* template_url) {
     host_to_urls_map_[url.host()].insert(template_url);
 }
 
-void TemplateURLModel::SetTemplateURLs(
-      const std::vector<const TemplateURL*>& urls) {
+void TemplateURLModel::SetTemplateURLs(const std::vector<TemplateURL*>& urls) {
   // Add mappings for the new items.
-  for (TemplateURLVector::const_iterator i = urls.begin(); i != urls.end();
+
+  // First, add the items that already have id's, so that the next_id_
+  // gets properly set.
+  for (std::vector<TemplateURL*>::const_iterator i = urls.begin();
+       i != urls.end();
        ++i) {
+    if ((*i)->id() == 0)
+      continue;
     next_id_ = std::max(next_id_, (*i)->id());
     AddToMaps(*i);
     template_urls_.push_back(*i);
+  }
+
+  // Next add the new items that don't have id's.
+  for (std::vector<TemplateURL*>::const_iterator i = urls.begin();
+       i != urls.end();
+       ++i) {
+    if ((*i)->id() != 0)
+      continue;
+    Add(*i);
   }
 }
 
@@ -729,69 +712,6 @@ void TemplateURLModel::NotifyLoaded() {
       RegisterExtensionKeyword(extension);
   }
   pending_extension_ids_.clear();
-}
-
-void TemplateURLModel::MergeEnginesFromPrepopulateData() {
-  // Build a map from prepopulate id to TemplateURL of existing urls.
-  typedef std::map<int, const TemplateURL*> IDMap;
-  IDMap id_to_turl;
-  for (TemplateURLVector::const_iterator i(template_urls_.begin());
-       i != template_urls_.end(); ++i) {
-    int prepopulate_id = (*i)->prepopulate_id();
-    if (prepopulate_id > 0)
-      id_to_turl[prepopulate_id] = *i;
-  }
-
-  std::vector<TemplateURL*> loaded_urls;
-  size_t default_search_index;
-  TemplateURLPrepopulateData::GetPrepopulatedEngines(GetPrefs(),
-                                                     &loaded_urls,
-                                                     &default_search_index);
-
-  std::set<int> updated_ids;
-  for (size_t i = 0; i < loaded_urls.size(); ++i) {
-    // We take ownership of |t_url|.
-    scoped_ptr<TemplateURL> t_url(loaded_urls[i]);
-    int t_url_id = t_url->prepopulate_id();
-    if (!t_url_id || updated_ids.count(t_url_id)) {
-      // Prepopulate engines need a unique id.
-      NOTREACHED();
-      continue;
-    }
-
-    IDMap::iterator existing_url_iter(id_to_turl.find(t_url_id));
-    if (existing_url_iter != id_to_turl.end()) {
-      const TemplateURL* existing_url = existing_url_iter->second;
-      if (!existing_url->safe_for_autoreplace()) {
-        // User edited the entry, preserve the keyword and description.
-        t_url->set_safe_for_autoreplace(false);
-        t_url->set_keyword(existing_url->keyword());
-        t_url->set_autogenerate_keyword(
-            existing_url->autogenerate_keyword());
-        t_url->set_short_name(existing_url->short_name());
-      }
-      Update(existing_url, *t_url);
-      id_to_turl.erase(existing_url_iter);
-    } else {
-      Add(t_url.release());
-    }
-    if (i == default_search_index && !default_search_provider_)
-      SetDefaultSearchProvider(loaded_urls[i]);
-
-    updated_ids.insert(t_url_id);
-  }
-
-  // Remove any prepopulated engines which are no longer in the master list, as
-  // long as the user hasn't modified them or made them the default engine.
-  for (IDMap::iterator i(id_to_turl.begin()); i != id_to_turl.end(); ++i) {
-    const TemplateURL* template_url = i->second;
-    // We use default_search_provider_ instead of GetDefaultSearchProvider()
-    // because we're running before |loaded_| is set, and calling
-    // GetDefaultSearchProvider() will erroneously try to read the prefs.
-    if ((template_url->safe_for_autoreplace()) &&
-        (template_url != default_search_provider_))
-      Remove(template_url);
-  }
 }
 
 void TemplateURLModel::SaveDefaultSearchProviderToPrefs(

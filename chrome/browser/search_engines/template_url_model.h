@@ -193,12 +193,6 @@ class TemplateURLModel : public WebDataServiceConsumer,
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
 
-  // Removes (and deletes) TemplateURLs from |urls| that have duplicate
-  // prepopulate ids. Duplicate prepopulate ids are not allowed, but due to a
-  // bug it was possible get dups. This step is only called when the version
-  // number changes.
-  void RemoveDuplicatePrepopulateIDs(std::vector<const TemplateURL*>* urls);
-
   // Returns the locale-direction-adjusted short name for the given keyword.
   // Also sets the out param to indicate whether the keyword belongs to an
   // extension.
@@ -266,17 +260,13 @@ class TemplateURLModel : public WebDataServiceConsumer,
 
   // Sets the keywords. This is used once the keywords have been loaded.
   // This does NOT notify the delegate or the database.
-  void SetTemplateURLs(const std::vector<const TemplateURL*>& urls);
+  void SetTemplateURLs(const std::vector<TemplateURL*>& urls);
 
   void DeleteGeneratedKeywordsMatchingHost(const std::wstring& host);
 
   // If there is a notification service, sends TEMPLATE_URL_MODEL_LOADED
   // notification.
   void NotifyLoaded();
-
-  // Loads engines from prepopulate data and merges them in with the existing
-  // engines.  This is invoked when the version of the prepopulate data changes.
-  void MergeEnginesFromPrepopulateData();
 
   // Saves enough of url to preferences so that it can be loaded from
   // preferences on start up.

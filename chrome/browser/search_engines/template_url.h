@@ -15,6 +15,8 @@
 #include "googleurl/src/gurl.h"
 
 class TemplateURL;
+class WebDataService;
+struct WDKeywordsResult;
 
 // TemplateURL represents the relevant portions of the Open Search Description
 // Document (http://www.opensearch.org/Specifications/OpenSearch).
@@ -440,6 +442,11 @@ class TemplateURL {
   bool IsExtensionKeyword() const;
 
  private:
+  friend void MergeEnginesFromPrepopulateData(
+      PrefService* prefs,
+      WebDataService* service,
+      std::vector<TemplateURL*>* template_urls,
+      const TemplateURL** default_search_provider);
   friend class WebDatabaseTest;
   friend class WebDatabase;
   friend class TemplateURLModel;

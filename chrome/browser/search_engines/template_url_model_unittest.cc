@@ -5,18 +5,35 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 using base::TimeDelta;
+
+// Create an URL that appears to have been prepopulated, but won't be in the
+// current data. The caller owns the returned TemplateURL*.
+static TemplateURL* CreatePreloadedTemplateURL() {
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL("http://www.unittest.com/", 0, 0);
+  t_url->set_keyword(L"unittest");
+  t_url->set_short_name(L"unittest");
+  t_url->set_safe_for_autoreplace(true);
+  GURL favicon_url("http://favicon.url");
+  t_url->SetFavIconURL(favicon_url);
+  t_url->set_date_created(Time::FromTimeT(100));
+  t_url->set_prepopulate_id(999999);
+  return t_url;
+}
 
 // A Task used to coordinate when the database has finished processing
 // requests. See note in BlockTillServiceProcessesRequests for details.
@@ -173,7 +190,14 @@ class TemplateURLModelTest : public testing::Test,
     model_->Load();
     BlockTillServiceProcessesRequests();
     VerifyObserverCount(1);
-    changed_count_ = 0;
+  }
+
+  // Makes the model believe it has been loaded (without actually doing the
+  // load). Since this avoids setting the built-in keyword version, the next
+  // load will do a merge from prepopulated data.
+  void ChangeModelToLoadState() {
+    model_->service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+    model_->loaded_ = true;
   }
 
   // Creates a new TemplateURLModel.
@@ -206,6 +230,12 @@ class TemplateURLModelTest : public testing::Test,
     TemplateURLRef::google_base_url_ = new std::string(base_url);
   }
 
+  // Verifies the behavior of when a preloaded url later gets changed.
+  // Since the input is the offset from the default, when one passes in
+  // 0, it tests the default. Passing in a number > 0 will verify what
+  // happens when a preloaded url that is not the default gets updated.
+  void TestLoadUpdatingPreloadedUrl(size_t index_offset_from_default);
+
   MessageLoopForUI message_loop_;
   // Needed to make the DeleteOnUIThread trait of WebDataService work
   // properly.
@@ -214,6 +244,59 @@ class TemplateURLModelTest : public testing::Test,
   scoped_ptr<TestingTemplateURLModel> model_;
   int changed_count_;
 };
+
+void TemplateURLModelTest::TestLoadUpdatingPreloadedUrl(
+    size_t index_offset_from_default) {
+  // Create a TemplateURL with the same prepopulated id as
+  // a real prepopulated item.
+  TemplateURL* t_url = CreatePreloadedTemplateURL();
+  t_url->set_safe_for_autoreplace(false);
+  std::vector<TemplateURL*> prepopulated_urls;
+  size_t default_search_provider_index = 0;
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(
+      profile_->GetPrefs(),
+      &prepopulated_urls,
+      &default_search_provider_index);
+  ASSERT_LT(index_offset_from_default, prepopulated_urls.size());
+  size_t prepopulated_index =
+      (default_search_provider_index + index_offset_from_default) %
+      prepopulated_urls.size();
+  t_url->set_prepopulate_id(
+      prepopulated_urls[prepopulated_index]->prepopulate_id());
+
+  std::wstring original_url = t_url->url()->DisplayURL();
+  std::wstring prepopulated_url =
+      prepopulated_urls[prepopulated_index]->url()->DisplayURL();
+  ASSERT_STRNE(prepopulated_url.c_str(), original_url.c_str());
+  STLDeleteElements(&prepopulated_urls);
+  prepopulated_urls.clear();
+
+  // Then add it to the model and save it all.
+  ChangeModelToLoadState();
+  model_->Add(t_url);
+  const TemplateURL* keyword_url =
+      model_->GetTemplateURLForKeyword(L"unittest");
+  ASSERT_EQ(t_url, keyword_url);
+  ASSERT_STREQ(original_url.c_str(), keyword_url->url()->DisplayURL().c_str());
+  BlockTillServiceProcessesRequests();
+
+  // Now reload the model and verify that the merge updates the url.
+  ResetModel(true);
+  keyword_url = model_->GetTemplateURLForKeyword(L"unittest");
+  ASSERT_TRUE(keyword_url != NULL);
+  ASSERT_STREQ(prepopulated_url.c_str(),
+               keyword_url->url()->DisplayURL().c_str());
+
+  // Wait for any saves to finish.
+  BlockTillServiceProcessesRequests();
+
+  // Reload the model to verify that change was saved correctly.
+  ResetModel(true);
+  keyword_url = model_->GetTemplateURLForKeyword(L"unittest");
+  ASSERT_TRUE(keyword_url != NULL);
+  ASSERT_STREQ(prepopulated_url.c_str(),
+               keyword_url->url()->DisplayURL().c_str());
+}
 
 TEST_F(TemplateURLModelTest, Load) {
   VerifyLoad();
@@ -711,52 +794,134 @@ TEST_F(TemplateURLModelTest, GenerateVisitOnKeyword) {
             PageTransition::StripQualifier(callback.visits[0].transition));
 }
 
-// Make sure that MergeEnginesFromPrepopulateData() deletes prepopulated engines
-// that no longer exist in the prepopulate data.
-TEST_F(TemplateURLModelTest, MergeDeletesUnusedProviders) {
-  VerifyLoad();
-
-  // Create an URL that appears to have been prepopulated but won't be in the
-  // current data.
-  TemplateURL* t_url = new TemplateURL();
-  t_url->SetURL("http://www.unittest.com/", 0, 0);
-  t_url->set_keyword(L"unittest");
-  t_url->set_short_name(L"unittest");
-  t_url->set_safe_for_autoreplace(true);
-  GURL favicon_url("http://favicon.url");
-  t_url->SetFavIconURL(favicon_url);
-  t_url->set_date_created(Time::FromTimeT(100));
-  t_url->set_prepopulate_id(999999);
-
-  // Make a few copies now, since as we add each to the model it takes ownership
-  // of them and deletes them when finished.
-  TemplateURL* t_url2 = new TemplateURL(*t_url);
-  TemplateURL* t_url3 = new TemplateURL(*t_url);
+// Make sure that the load routine deletes prepopulated engines that no longer
+// exist in the prepopulate data.
+TEST_F(TemplateURLModelTest, LoadDeletesUnusedProvider) {
+  // Create a preloaded template url. Add it to a loaded model and wait for the
+  // saves to finish.
+  TemplateURL* t_url = CreatePreloadedTemplateURL();
+  ChangeModelToLoadState();
+  model_->Add(t_url);
+  ASSERT_TRUE(model_->GetTemplateURLForKeyword(L"unittest") != NULL);
+  BlockTillServiceProcessesRequests();
 
   // Ensure that merging clears this engine.
-  model_->Add(t_url);
-  EXPECT_EQ(t_url, model_->GetTemplateURLForKeyword(L"unittest"));
-  model_->MergeEnginesFromPrepopulateData();
+  ResetModel(true);
   ASSERT_TRUE(model_->GetTemplateURLForKeyword(L"unittest") == NULL);
 
-  // Ensure that merging won't clear it if the user has edited it.
-  t_url2->set_safe_for_autoreplace(false);
-  model_->Add(t_url2);
-  ASSERT_EQ(t_url2, model_->GetTemplateURLForKeyword(L"unittest"));
-  model_->MergeEnginesFromPrepopulateData();
-  ASSERT_FALSE(model_->GetTemplateURLForKeyword(L"unittest") == NULL);
-  model_->Remove(t_url2);
+  // Wait for any saves to finish.
+  BlockTillServiceProcessesRequests();
 
-  // Ensure that merging won't clear it if it's the default engine.
-  model_->Add(t_url3);
-  ASSERT_EQ(t_url3, model_->GetTemplateURLForKeyword(L"unittest"));
-  model_->SetDefaultSearchProvider(t_url3);
-  ASSERT_EQ(t_url3, model_->GetDefaultSearchProvider());
-  model_->MergeEnginesFromPrepopulateData();
-  ASSERT_EQ(t_url3, model_->GetTemplateURLForKeyword(L"unittest"));
-  ASSERT_EQ(t_url3, model_->GetDefaultSearchProvider());
-  // Don't remove |t_url3|; we'd need to make it non-default first, and why
-  // bother when the model shutdown will clean it up for us.
+  // Reload the model to verify that the database was updated as a result of the
+  // merge.
+  ResetModel(true);
+  ASSERT_TRUE(model_->GetTemplateURLForKeyword(L"unittest") == NULL);
+}
+
+// Make sure that load routine doesn't delete prepopulated engines that no
+// longer exist in the prepopulate data if it has been modified by the user.
+TEST_F(TemplateURLModelTest, LoadRetainsModifiedProvider) {
+  // Create a preloaded template url and add it to a loaded model.
+  TemplateURL* t_url = CreatePreloadedTemplateURL();
+  t_url->set_safe_for_autoreplace(false);
+  ChangeModelToLoadState();
+  model_->Add(t_url);
+
+  // Do the copy after t_url is added so that the id is set.
+  TemplateURL copy_t_url = *t_url;
+  ASSERT_EQ(t_url, model_->GetTemplateURLForKeyword(L"unittest"));
+
+  // Wait for any saves to finish.
+  BlockTillServiceProcessesRequests();
+
+  // Ensure that merging won't clear it if the user has edited it.
+  ResetModel(true);
+  const TemplateURL* url_for_unittest =
+      model_->GetTemplateURLForKeyword(L"unittest");
+  ASSERT_TRUE(url_for_unittest != NULL);
+  AssertEquals(copy_t_url, *url_for_unittest);
+
+  // Wait for any saves to finish.
+  BlockTillServiceProcessesRequests();
+
+  // Reload the model to verify that save/reload retains the item.
+  ResetModel(true);
+  ASSERT_TRUE(model_->GetTemplateURLForKeyword(L"unittest") != NULL);
+}
+
+// Make sure that load routine doesn't delete
+// prepopulated engines that no longer exist in the prepopulate data if
+// it has been modified by the user.
+TEST_F(TemplateURLModelTest, LoadSavesPrepopulatedDefaultSearchProvider) {
+  VerifyLoad();
+  // Verify that the default search provider is set to something.
+  ASSERT_TRUE(model_->GetDefaultSearchProvider() != NULL);
+  TemplateURL default_url = *model_->GetDefaultSearchProvider();
+
+  // Wait for any saves to finish.
+  BlockTillServiceProcessesRequests();
+
+  // Reload the model and check that the default search provider
+  // was properly saved.
+  ResetModel(true);
+  ASSERT_TRUE(model_->GetDefaultSearchProvider() != NULL);
+  AssertEquals(default_url, *model_->GetDefaultSearchProvider());
+}
+
+// Make sure that the load routine doesn't delete
+// prepopulated engines that no longer exist in the prepopulate data if
+// it is the default search provider.
+TEST_F(TemplateURLModelTest, LoadRetainsDefaultProvider) {
+  // Set the default search provider to a preloaded template url which
+  // is not in the current set of preloaded template urls and save
+  // the result.
+  TemplateURL* t_url = CreatePreloadedTemplateURL();
+  ChangeModelToLoadState();
+  model_->Add(t_url);
+  model_->SetDefaultSearchProvider(t_url);
+  // Do the copy after t_url is added and set as default so that its
+  // internal state is correct.
+  TemplateURL copy_t_url = *t_url;
+
+  ASSERT_EQ(t_url, model_->GetTemplateURLForKeyword(L"unittest"));
+  ASSERT_EQ(t_url, model_->GetDefaultSearchProvider());
+  BlockTillServiceProcessesRequests();
+
+  // Ensure that merging won't clear the prepopulated template url
+  // which is no longer present if it's the default engine.
+  ResetModel(true);
+  {
+    const TemplateURL* keyword_url =
+        model_->GetTemplateURLForKeyword(L"unittest");
+    ASSERT_TRUE(keyword_url != NULL);
+    AssertEquals(copy_t_url, *keyword_url);
+    ASSERT_EQ(keyword_url, model_->GetDefaultSearchProvider());
+  }
+
+  // Wait for any saves to finish.
+  BlockTillServiceProcessesRequests();
+
+  // Reload the model to verify that the update was saved.
+  ResetModel(true);
+  {
+    const TemplateURL* keyword_url =
+        model_->GetTemplateURLForKeyword(L"unittest");
+    ASSERT_TRUE(keyword_url != NULL);
+    AssertEquals(copy_t_url, *keyword_url);
+    ASSERT_EQ(keyword_url, model_->GetDefaultSearchProvider());
+  }
+}
+
+// Make sure that the load routine updates the url of a preexisting
+// default search engine provider and that the result is saved correctly.
+TEST_F(TemplateURLModelTest, LoadUpdatesDefaultSearchUrl) {
+  TestLoadUpdatingPreloadedUrl(0);
+}
+
+// Make sure that the load routine updates the url of a preexisting
+// non-default search engine provider and that the result is saved correctly.
+TEST_F(TemplateURLModelTest, LoadUpdatesSearchUrl) {
+  TestLoadUpdatingPreloadedUrl(1);
 }
 
 // Simulates failing to load the webdb and makes sure the default search
