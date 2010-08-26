@@ -55,6 +55,7 @@
 
 namespace google_breakpad {
 
+u_int32_t Stackwalker::max_frames_ = 1024;
 
 Stackwalker::Stackwalker(const SystemInfo *system_info,
                          MemoryRegion *memory,
@@ -120,6 +121,10 @@ bool Stackwalker::Walk(CallStack *stack) {
     // Add the frame to the call stack.  Relinquish the ownership claim
     // over the frame, because the stack now owns it.
     stack->frames_.push_back(frame.release());
+    if (stack->frames_.size() > max_frames_) {
+      BPLOG(ERROR) << "The stack is over " << max_frames_ << " frames.";
+      break;
+    }
 
     // Get the next frame and take ownership.
     frame.reset(GetCallerFrame(stack));
@@ -166,7 +171,7 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
                                              memory, modules, supplier,
                                              resolver);
       break;
-  
+
     case MD_CONTEXT_SPARC:
       cpu_stackwalker = new StackwalkerSPARC(system_info,
                                              context->GetContextSPARC(),

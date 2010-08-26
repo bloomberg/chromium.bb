@@ -48,7 +48,6 @@
 namespace google_breakpad {
 
 class CallStack;
-class CodeModule;
 class CodeModules;
 class MemoryRegion;
 class MinidumpContext;
@@ -79,6 +78,9 @@ class Stackwalker {
                                         const CodeModules *modules,
                                         SymbolSupplier *supplier,
                                         SourceLineResolverInterface *resolver);
+
+  static void set_max_frames(u_int32_t max_frames) { max_frames_ = max_frames; }
+  static u_int32_t max_frames() { return max_frames_; }
 
  protected:
   // system_info identifies the operating system, NULL or empty if unknown.
@@ -146,6 +148,10 @@ class Stackwalker {
   // this in order to avoid repeatedly looking them up again within
   // one minidump.
   set<std::string> no_symbol_modules_;
+
+  // The maximum number of frames Stackwalker will walk through.
+  // This defaults to 1024 to prevent infinite loops.
+  static u_int32_t max_frames_;
 };
 
 
