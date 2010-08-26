@@ -2149,9 +2149,16 @@ BookmarkService* HistoryBackend::GetBookmarkService() {
 }
 
 void HistoryBackend::MigrateThumbnailsDatabase() {
-  thumbnail_db_->RenameAndDropThumbnails(GetThumbnailFileName(),
-                                         GetFaviconsFileName());
-  db_->MigrationToTopSitesDone();
+  // If there is no History DB, we can't record that the migration was done.
+  // It will be recorded on the next run.
+  if (db_.get()) {
+    // If there is no thumbnail DB, we can still record a successful migration.
+    if (thumbnail_db_.get()) {
+      thumbnail_db_->RenameAndDropThumbnails(GetThumbnailFileName(),
+                                             GetFaviconsFileName());
+    }
+    db_->MigrationToTopSitesDone();
+  }
 }
 
 }  // namespace history
