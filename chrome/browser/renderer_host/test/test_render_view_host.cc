@@ -34,6 +34,7 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->password_form = PasswordForm();
   params->security_info = std::string();
   params->gesture = NavigationGestureUser;
+  params->was_within_same_page = false;
   params->is_post = false;
 }
 
@@ -92,6 +93,7 @@ void TestRenderViewHost::SendNavigateWithTransition(
   params.contents_mime_type = std::string();
   params.is_post = false;
   params.is_content_filtered = false;
+  params.was_within_same_page = false;
   params.http_status_code = 0;
 
   ViewHostMsg_FrameNavigate msg(1, params);

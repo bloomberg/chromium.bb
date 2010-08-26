@@ -44,6 +44,7 @@ static void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->password_form = PasswordForm();
   params->security_info = std::string();
   params->gesture = NavigationGestureUser;
+  params->was_within_same_page = false;
   params->is_post = false;
 }
 
