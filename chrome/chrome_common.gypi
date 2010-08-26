@@ -114,6 +114,8 @@
           'common/serialized_script_value.h',
           'common/time_format.cc',
           'common/time_format.h',
+          'common/chrome_version_info.h',
+          'common/chrome_version_info.cc',
           'common/win_safe_util.cc',
           'common/win_safe_util.h',
         ],
@@ -121,68 +123,6 @@
     ],
   },
   'targets': [
-    {
-      'target_name': 'chrome_version_info',
-      'type': '<(library)',
-      'sources': [
-        'common/chrome_version_info.cc',
-        'common/chrome_version_info.h',
-      ],
-      'include_dirs': [
-        '<(DEPTH)',
-      ],
-      'conditions': [
-        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)',
-          ],
-          'actions': [
-            {
-              'action_name': 'posix_version',
-              'variables': {
-                'lastchange_path':
-                  '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
-                'version_py_path': 'tools/build/version.py',
-                'version_path': 'VERSION',
-                'template_input_path': 'common/chrome_version_info_posix.h.version',
-              },
-              'conditions': [
-                [ 'branding == "Chrome"', {
-                  'variables': {
-                     'branding_path':
-                       'app/theme/google_chrome/BRANDING',
-                  },
-                }, { # else branding!="Chrome"
-                  'variables': {
-                     'branding_path':
-                       'app/theme/chromium/BRANDING',
-                  },
-                }],
-              ],
-              'inputs': [
-                '<(template_input_path)',
-                '<(version_path)',
-                '<(branding_path)',
-                '<(lastchange_path)',
-              ],
-              'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/chrome/common/chrome_version_info_posix.h',
-              ],
-              'action': [
-                'python',
-                '<(version_py_path)',
-                '-f', '<(version_path)',
-                '-f', '<(branding_path)',
-                '-f', '<(lastchange_path)',
-                '<(template_input_path)',
-                '<@(_outputs)',
-              ],
-              'message': 'Generating version information',
-            },
-          ],
-        }],
-      ]
-    },
     {
       'target_name': 'common',
       'type': '<(library)',
@@ -205,7 +145,6 @@
         'chrome_strings',
         'common_constants',
         'common_net',
-        'chrome_version_info',
         'default_plugin/default_plugin.gyp:default_plugin',
         'theme_resources',
         '../app/app.gyp:app_base',
@@ -388,6 +327,55 @@
             ],
           },
         },],
+        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)',
+          ],
+          'actions': [
+            {
+              'action_name': 'posix_version',
+              'variables': {
+                'lastchange_path':
+                  '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
+                'version_py_path': 'tools/build/version.py',
+                'version_path': 'VERSION',
+                'template_input_path': 'common/chrome_version_info_posix.h.version',
+              },
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                     'branding_path':
+                       'app/theme/google_chrome/BRANDING',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                     'branding_path':
+                       'app/theme/chromium/BRANDING',
+                  },
+                }],
+              ],
+              'inputs': [
+                '<(template_input_path)',
+                '<(version_path)',
+                '<(branding_path)',
+                '<(lastchange_path)',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/common/chrome_version_info_posix.h',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-f', '<(version_path)',
+                '-f', '<(branding_path)',
+                '-f', '<(lastchange_path)',
+                '<(template_input_path)',
+                '<@(_outputs)',
+              ],
+              'message': 'Generating version information',
+            },
+          ],
+        }],
         ['OS=="linux" and selinux==1', {
           'dependencies': [
             '../build/linux/system.gyp:selinux',

@@ -758,7 +758,6 @@
         'chrome_frame_utils',
         'xulrunner_sdk',
         'chrome_frame_launcher.gyp:chrome_launcher',
-        '../chrome/chrome.gyp:chrome_version_info',
         '../chrome/chrome.gyp:chrome_version_header',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',

@@ -130,9 +130,6 @@
       'variables': {
         'chrome_exe_target': 1,
       },
-      'dependencies': [
-        'chrome_version_info',
-      ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'actions': [

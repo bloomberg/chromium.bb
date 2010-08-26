@@ -45,7 +45,6 @@
       'msvs_guid': 'B7E540C1-49D9-4350-ACBC-FB8306316D16',
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
-        '../chrome/chrome.gyp:chrome_version_info',
         '../chrome/chrome.gyp:chrome_version_header',
       ],
       'resource_include_dirs': [
