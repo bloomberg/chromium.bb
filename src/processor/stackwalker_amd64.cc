@@ -130,7 +130,7 @@ StackFrameAMD64 *StackwalkerAMD64::GetCallerByCFIFrameInfo(
                            last_frame->context, last_frame->context_validity,
                            &frame->context, &frame->context_validity))
     return NULL;
-  
+
   // Make sure we recovered all the essentials.
   static const int essentials = (StackFrameAMD64::CONTEXT_VALID_RIP
                                  | StackFrameAMD64::CONTEXT_VALID_RSP);
@@ -151,17 +151,15 @@ StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack *stack) {
   scoped_ptr<StackFrameAMD64> new_frame;
 
   // If we have DWARF CFI information, use it.
-  if (!new_frame.get()) {
-    scoped_ptr<CFIFrameInfo> cfi_frame_info(resolver_
-                                            ->FindCFIFrameInfo(last_frame));
-    if (cfi_frame_info.get())
-      new_frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info.get()));
-  }
+  scoped_ptr<CFIFrameInfo> cfi_frame_info(
+      resolver_->FindCFIFrameInfo(last_frame));
+  if (cfi_frame_info.get())
+    new_frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info.get()));
 
   // If nothing worked, tell the caller.
   if (!new_frame.get())
     return NULL;
-  
+
   // Treat an instruction address of 0 as end-of-stack.
   if (new_frame->context.rip == 0)
     return NULL;
