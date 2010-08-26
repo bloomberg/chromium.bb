@@ -34,12 +34,25 @@ installing external extensions:
   <li> Using the Windows registry (Windows only) </li>
 </ul>
 
+<p>
+Both ways support installing an extension from a <code>.crx</code> extension
+file on the user's computer.  The preferences JSON file also supports installing
+an extension hosted at an
+<a href="autoupdate.html#H2-1">update URL</a>.
+See <a href="hosting.html">hosting</a> for details on hosting an extension.
+</p>
+
 <h2 id="prereqs">Before you begin</h2>
 
 <p>
 First, package a
 <a href="packaging.html"><code>.crx</code> file</a>
 and make sure that it installs successfully.
+</p>
+<p>
+If you wish to install from an
+ <a href="autoupdate.html#H2-1">update URL</a>, ensure that the extension
+is properly <a href="hosting.html">hosted</a>.
 </p>
 
 <p>
@@ -48,7 +61,8 @@ make a note of the following:
 </p>
 
 <ul>
- <li> The intended <b>location</b> of the extension's <code>.crx</code> file </li>
+ <li> The intended <b>location</b> of the extension's <code>.crx</code> file,
+        or the update URL from which it is served </li>
  <li> The extension's <b>version</b>
    (from the manifest file or the <b>chrome://extensions</b> page) </li>
  <li> The extension's <b>ID</b>
@@ -57,10 +71,7 @@ make a note of the following:
 </ul>
 
 <p>
-The following examples assume the location is
-<code>\\server\share\extension.crx</code>
-or <code>/home/share/extension.crx</code>,
-the version is <code>1.0</code>,
+The following examples assume the version is <code>1.0</code>
 and the ID is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.
 </p>
 
@@ -75,10 +86,10 @@ instead of the preferences file.
 </p>
 
 <ol>
-<li>Make the <code>.crx</code> extension file available
-to the machine you want to install the extension
-on. (Copy it to a local directory
-or to a network share &mdash; for example, <code>\\server\share\extension.crx</code>
+<li>If you are installing from a file, make the <code>.crx</code> extension
+file available to the machine you want to install the extension on.
+(Copy it to a local directory or to a network share for example,
+<code>\\server\share\extension.crx</code>
 or <code>/home/share/extension.crx</code>.)
 </li>
 <li>Locate the <code>external_extensions.json</code> file
@@ -102,10 +113,11 @@ or <code>/home/share/extension.crx</code>.)
   </dl>
 </li>
 <li> Add an entry to <code>external_extensions.json</code>
-  for your extension's ID,
-  specifying the extension's location and version
-  with fields named "external_crx" and "external_version".
-  Example:
+for your extension's ID.  If you are installing from a file, specify the
+extension's location and version with fields named "external_crx" and
+"external_version".
+
+Example:
 <pre>{
   "aaaaaaaaaabbbbbbbbbbcccccccccc": {
     "external_crx": "/home/share/extension.crx",
@@ -121,6 +133,16 @@ For example,
 <code>\\server\share\extension.crx</code> would be
 <code>"\\\\server\\share\\extension.crx"</code>.
 </p>
+<p>
+If you are installing from an update URL, specify the extension's update URL
+with field name "external_update_url".
+</p>
+Example:
+<pre>{
+  "aaaaaaaaaabbbbbbbbbbcccccccccc": {
+    "external_update_url": "http://myhost.com/mytestextension/updates.xml"
+  }
+}</pre>
 </li>
 
 <li>Save the JSON file. </li>
@@ -135,6 +157,7 @@ you should see the extension listed. </li>
 to the machine you want to install the extension on.
 (Copy it to a local directory or to a network share &mdash;
 for example, <code>\\server\share\extension.crx</code>.)
+</li>
 <li>Find or create the following key in the
 registry:
 <ul>
@@ -147,6 +170,7 @@ registry:
 under the <b>Extensions</b> key with the
 same name as the ID of your extension
 (for example, <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>).
+</li>
 <li>Create two string values (<code>REG_SZ</code>) named "path" and "version",
   and set them to the extension's location and version.
   For example:
@@ -186,24 +210,20 @@ This section answers common questions about external extensions.
 <br>
 
 <p><b>Can I specify a URL as a path to the external extension?</b> </p>
-<p>Not at this time.
-Google Chrome supports only absolute or relative local paths
-and UNC paths.
-Relative paths are relative
-to the <code>Extensions</code> directory
-(where the <code>external_extensions.json</code> file is located).
+<p>Yes, if you host the extension as explained in
+<a href="hosting.html">hosting</a>.
 </p>
 
 <br>
 
-<p><b>What are some common mistakes
-when installing with the preferences file?</b> </p>
+<p><b>What are some common mistakes when installing with the preferences
+file?</b></p>
 <ul>
   <li>
     Not specifying the same id/version
     as the one listed in the <code>.crx</code> </li>
   <li>
-    <code>external_extension.json</code> is in the wrong location </li>
+    <code>external_extensions.json</code> is in the wrong location </li>
   <li>
     Syntax error in JSON file
     (forgetting to separate entries with comma or
@@ -215,15 +235,15 @@ when installing with the preferences file?</b> </p>
     to the <code>.crx</code> (or path specified but no filename) </li>
   <li>
     Backslashes in UNC path not escaped
-    (for example, <code>\\server\share\file</code> is wrong;
-    it should be <code>\\\\server\\share\\extension</code>) </li>
+    (for example, <code>"\\server\share\file"</code> is wrong;
+    it should be <code>"\\\\server\\share\\extension"</code>) </li>
   <li>
     Permissions problems on a network share </li>
 </ul>
 
 <br>
 
-<p><b>What are some common mistakes when installing with the registry?</b>
+<p><b>What are some common mistakes when installing with the registry?</b> </p>
 <ul>
   <li>Not specifying the same id/version
     as the one listed in the <code>.crx</code> </li>
@@ -235,14 +255,14 @@ when installing with the preferences file?</b> </p>
 
 <br>
 
-<p><b>What if the user uninstalls the extension?</b>
+<p><b>What if the user uninstalls the extension?</b> </p>
 <p>If the user uninstalls the extension through the UI, it will no
 longer be installed or updated on each startup. In other words, the
 external extension is blacklisted. </p>
 
 <br>
 
-<p><b>How do I get off the blacklist?</b>
+<p><b>How do I get off the blacklist?</b> </p>
 <p>If the user uninstalls your extension, you should respect that
 decision. However, if you (the developer) accidentally uninstalled
 your extension through the UI,
