@@ -36,9 +36,6 @@
 #if !defined(CLONE_NEWNET)
 #define CLONE_NEWNET 0x40000000
 #endif
-#if !defined(CLONE_NEWNS)
-#define CLONE_NEWNS 0x00020000
-#endif
 
 #if !defined(BTRFS_SUPER_MAGIC)
 #define BTRFS_SUPER_MAGIC 0x9123683E
@@ -269,7 +266,6 @@ static bool SpawnChrootHelper() {
 static bool MoveToNewNamespaces() {
   // These are the sets of flags which we'll try, in order.
   const int kCloneExtraFlags[] = {
-    CLONE_NEWPID | CLONE_NEWNET | CLONE_NEWNS,
     CLONE_NEWPID | CLONE_NEWNET,
     CLONE_NEWPID,
   };
