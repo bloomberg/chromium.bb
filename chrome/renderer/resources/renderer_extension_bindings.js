@@ -256,6 +256,7 @@ var chrome = chrome || {};
       "experimental.extension",
       "experimental.infobars",
       "experimental.input",
+      "experimental.management",
       "experimental.metrics",
       "experimental.omnibox",
       "experimental.popup",

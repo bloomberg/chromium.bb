@@ -3901,5 +3901,173 @@
         "parameters": []
       }
     ]
+  },
+  {
+    "namespace":"experimental.management",
+    "types": [
+      {
+        "id": "IconInfo",
+        "description": "Information about an icon belonging to an extension or app.",
+        "type": "object",
+        "properties": {
+          "size": { "type": "integer", "description": "A number representing the width and height of the icon. Likely values include (but are not limited to) 128, 48, 24, and 16."  },
+          "url": { "type": "string", "description": "The url for this icon image." }
+        }
+      },
+      {
+        "id": "ExtensionInfo",
+        "description": "Information about an installed extension or app.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The extension's unique identifier.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of this extension or app.",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Whether it is currently enabled or disabled.",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Whether it is currently enabled or disabled.",
+            "type": "boolean"
+          },
+          "isApp": {
+            "description": "True if this is an app.",
+            "type": "boolean"
+          },
+          "appLaunchUrl": {
+            "description": "The launch url (only present for apps).",
+            "type": "string",
+            "optional": true
+          },
+          "optionsUrl": {
+            "description": "The url for the item's options page, if it has one.",
+            "type": "string",
+            "optional": true
+          },
+          "icons": {
+            "description": "A list of icon information. Note that this just reflects what was declared in the manifest, and the actual image at that url may be larger or smaller than what was declared, so you might consider using explicit width and height attributes on img tags referencing these images. See the <a href='manifest.html#icons'>manifest documentation on icons</a> for more details.",
+            "type": "array",
+            "optional": true,
+            "items": {
+              "$ref": "IconInfo"
+            }
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "getAll",
+        "description": "Returns a list of information about installed extensions and apps.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "type": "array",
+                "name": "result",
+                "items": {
+                  "$ref": "ExtensionInfo"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setEnabled",
+        "description": "Enable or disable an app or extension.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "This should be the id from an item of $ref:ExtensionInfo."
+          },
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "Whether this item should be enabled or disabled."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "install",
+        "description": "(FOR INTERNAL USE ONLY)",
+        "nodoc": true,
+        "parameters": [
+          {
+            "name": "expected_id",
+            "type": "string",
+            "description": "The id we expect the crx at |url| to have."
+          },
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The url to fetch the crx from."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "uninstall",
+        "description": "Uninstall a currently installed app or extension.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "This should be the id from an item of $ref:ExtensionInfo."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onInstalled",
+        "description": "(NOT YET IMPLEMENTED)",
+        "type": "function",
+        "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
+      },
+      {
+        "name": "onUninstalled",
+        "description": "(NOT YET IMPLEMENTED)",
+        "type": "function",
+        "parameters": [{"name": "id", "type": "string", "description": "The id of the extension that was uninstalled."}]
+      },
+      {
+        "name": "onEnabled",
+        "description": "(NOT YET IMPLEMENTED)",
+        "type": "function",
+        "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
+      },
+      {
+        "name": "onDisabled",
+        "description": "(NOT YET IMPLEMENTED)",
+        "type": "function",
+        "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
+      }
+    ]
   }
 ]

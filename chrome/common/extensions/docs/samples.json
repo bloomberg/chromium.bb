@@ -22,8 +22,10 @@
     "chrome.extension.sendRequest": "extension.html#method-sendRequest", 
     "chrome.windows.getAll": "windows.html#method-getAll", 
     "chrome.tabs.captureVisibleTab": "tabs.html#method-captureVisibleTab", 
+    "chrome.experimental.management.onUninstalled": "experimental.management.html#event-onUninstalled", 
     "chrome.idle.onStateChanged": "idle.html#event-onStateChanged", 
     "chrome.i18n.getMessage": "i18n.html#method-getMessage", 
+    "chrome.experimental.management.onEnabled": "experimental.management.html#event-onEnabled", 
     "chrome.bookmarks.import": "bookmarks.html#method-import", 
     "chrome.extension.onConnect": "extension.html#event-onConnect", 
     "chrome.bookmarks.removeTree": "bookmarks.html#method-removeTree", 
@@ -88,6 +90,7 @@
     "chrome.cookies.getAll": "cookies.html#method-getAll", 
     "chrome.extension.onRequestExternal": "extension.html#event-onRequestExternal", 
     "chrome.bookmarks.onRemoved": "bookmarks.html#event-onRemoved", 
+    "chrome.experimental.management.onDisabled": "experimental.management.html#event-onDisabled", 
     "chrome.contextMenus.update": "contextMenus.html#method-update", 
     "chrome.experimental.sidebar.setTitle": "experimental.sidebar.html#method-setTitle", 
     "chrome.bookmarks.export": "bookmarks.html#method-export", 
@@ -96,6 +99,7 @@
     "chrome.experimental.sidebar.show": "experimental.sidebar.html#method-show", 
     "chrome.tabs.onSelectionChanged": "tabs.html#event-onSelectionChanged", 
     "chrome.cookies.onChanged": "cookies.html#event-onChanged", 
+    "chrome.experimental.management.uninstall": "experimental.management.html#method-uninstall", 
     "chrome.windows.update": "windows.html#method-update", 
     "chrome.extension.getURL": "extension.html#method-getURL", 
     "chrome.idle.queryState": "idle.html#method-queryState", 
@@ -105,6 +109,7 @@
     "chrome.tabs.onMoved": "tabs.html#event-onMoved", 
     "chrome.experimental.omnibox.sendSuggestions": "experimental.omnibox.html#method-sendSuggestions", 
     "chrome.bookmarks.update": "bookmarks.html#method-update", 
+    "chrome.experimental.management.install": "experimental.management.html#method-install", 
     "chrome.contextMenus.removeAll": "contextMenus.html#method-removeAll", 
     "chrome.windows.remove": "windows.html#method-remove", 
     "chrome.tabs.sendRequest": "tabs.html#method-sendRequest", 
@@ -115,14 +120,17 @@
     "chrome.experimental.proxy.useCustomProxySettings": "experimental.proxy.html#method-useCustomProxySettings", 
     "chrome.browserAction.setPopup": "browserAction.html#method-setPopup", 
     "chrome.bookmarks.onChildrenReordered": "bookmarks.html#event-onChildrenReordered", 
+    "chrome.experimental.management.onInstalled": "experimental.management.html#event-onInstalled", 
     "chrome.experimental.webRequest.onRequestSent": "experimental.webRequest.html#event-onRequestSent", 
     "chrome.extension.getToolstrips": "extension.html#method-getToolstrips", 
     "chrome.history.onVisited": "history.html#event-onVisited", 
     "chrome.tabs.onUpdated": "tabs.html#event-onUpdated", 
+    "chrome.experimental.management.setEnabled": "experimental.management.html#method-setEnabled", 
     "chrome.history.deleteAll": "history.html#method-deleteAll", 
     "chrome.experimental.webNavigation.onDOMContentLoaded": "experimental.webNavigation.html#event-onDOMContentLoaded", 
     "chrome.tabs.getAllInWindow": "tabs.html#method-getAllInWindow", 
     "chrome.contextMenus.create": "contextMenus.html#method-create", 
+    "chrome.experimental.management.getAll": "experimental.management.html#method-getAll", 
     "chrome.tabs.getSelected": "tabs.html#method-getSelected", 
     "chrome.tabs.onAttached": "tabs.html#event-onAttached", 
     "chrome.tabs.remove": "tabs.html#method-remove", 
@@ -859,11 +867,11 @@
         "feed.html", 
         "manifest.json"
       ], 
-      "path": "examples\/extensions\/news\/", 
+      "path": "examples\/extensions\/news_a11y\/", 
       "api_calls": [
         "chrome.tabs.create"
       ], 
-      "id": "3aea027164cb9b732ba4a8c51cb93708891726ef", 
+      "id": "597015d3bcce3da693b02314afd607bec4f55291", 
       "protocols": [
         "http:\/\/"
       ], 
@@ -910,11 +918,11 @@
         "feed.html", 
         "manifest.json"
       ], 
-      "path": "examples\/extensions\/news_a11y\/", 
+      "path": "examples\/extensions\/news\/", 
       "api_calls": [
         "chrome.tabs.create"
       ], 
-      "id": "597015d3bcce3da693b02314afd607bec4f55291", 
+      "id": "3aea027164cb9b732ba4a8c51cb93708891726ef", 
       "protocols": [
         "http:\/\/"
       ], 

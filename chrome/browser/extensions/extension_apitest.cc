@@ -84,9 +84,11 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
 
   // If there is a subtest to load, navigate to the subtest page.
   if (!subtest_page.empty()) {
-    Extension* extension = GetSingleLoadedExtension();
+    ExtensionsService* service = browser()->profile()->GetExtensionsService();
+    Extension* extension =
+        service->GetExtensionById(last_loaded_extension_id_, false);
     if (!extension)
-      return false;  // message_ was set by GetSingleLoadedExtension().
+      return false;
 
     GURL url = extension->GetResourceURL(subtest_page);
     LOG(ERROR) << "Loading subtest page url: " << url.spec();

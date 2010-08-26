@@ -33,6 +33,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/extensions/extension_input_api.h"
 #endif
+#include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
@@ -272,6 +273,12 @@ void FactoryRegistry::ResetFunctions() {
   // Input.
   RegisterFunction<SendKeyboardEventInputFunction>();
 #endif
+
+  // Management.
+  RegisterFunction<GetAllExtensionsFunction>();
+  RegisterFunction<SetEnabledFunction>();
+  RegisterFunction<InstallFunction>();
+  RegisterFunction<UninstallFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

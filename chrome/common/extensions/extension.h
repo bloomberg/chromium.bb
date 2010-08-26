@@ -173,7 +173,7 @@ class Extension {
   // NOTE: Static so that it can be used from multiple threads.
   static GURL GetResourceURL(const GURL& extension_url,
                              const std::string& relative_path);
-  GURL GetResourceURL(const std::string& relative_path) {
+  GURL GetResourceURL(const std::string& relative_path) const {
     return GetResourceURL(url(), relative_path);
   }
 

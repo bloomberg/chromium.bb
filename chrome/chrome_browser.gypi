@@ -1398,6 +1398,8 @@
         'browser/extensions/extension_input_api.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
+        'browser/extensions/extension_management_api.cc',
+        'browser/extensions/extension_management_api.h',
         'browser/extensions/extension_menu_manager.cc',
         'browser/extensions/extension_menu_manager.h',
         'browser/extensions/extension_message_service.cc',
