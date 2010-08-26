@@ -37,18 +37,12 @@ nexe = env.ComponentProgram('voronoi.nexe',
                             ['voronoi.cc'],
                             EXTRA_LIBS=['av', 'srpc', 'm', 'pthread'])
 
-TESTS=['small_tests']
-# NOTE: currently there is a validation error on ARM
-# BUG=http://code.google.com/p/nativeclient/issues/detail?id=770
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  TESTS=[]
-
 node = env.CommandSelLdrTestNacl(
     'voronoi_test.out',
     command=[env.File('voronoi.nexe'), '-- -t -d'],
     stdout_golden=env.File('voronoi.stdout'),
     )
-env.AddNodeToTestSuite(node, TESTS, 'run_voronoi')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_voronoi')
 
 env.Publish('voronoi.nexe', 'run', ['voronoi.html',])
 
