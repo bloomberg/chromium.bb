@@ -5,26 +5,14 @@
 function getAppsCallback(data) {
   logEvent('recieved apps');
   var appsSection = $('apps-section');
-  var debugSection = $('debug');
-  appsSection.textContent = '';
+  var appsSectionContent = $('apps-section-content');
+  appsSectionContent.textContent = '';
 
   data.apps.forEach(function(app) {
-    appsSection.appendChild(apps.createElement(app));
+    appsSectionContent.appendChild(apps.createElement(app));
   });
 
-  // TODO(aa): Figure out what to do with the debug mode when we turn apps on
-  // for everyone.
-  if (appsSection.hasChildNodes()) {
-    appsSection.classList.remove('disabled');
-    if (data.showDebugLink) {
-      debugSection.classList.remove('disabled');
-    }
-
-    appsSection.appendChild(apps.createWebStoreElement());
-  } else {
-    appsSection.classList.add('disabled');
-    debugSection.classList.add('disabled');
-  }
+  appsSectionContent.appendChild(apps.createWebStoreElement());
 }
 
 var apps = {
