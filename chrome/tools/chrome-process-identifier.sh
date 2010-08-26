@@ -11,17 +11,26 @@
 
 # This script is likely to only work on Linux or systems that closely mimick
 # Linux's /proc filesystem.
-[ -d /proc ] || {
+[ -x /proc/self/exe ] || {
   echo "This script cannot be run on your system" >&2
   exit 1
 }
 
 # Find the browser's process id. If there are multiple active instances of
-# Chrome, the caller can provide a pid on the command line. Otherwise, the
-# script will randomly pick one of the instances.
+# Chrome, the caller can provide a pid on the command line. The provided pid
+# must match a process in the browser's process hierarchy. When using the
+# zygote inside of the setuid sandbox, renderers are in a process tree separate
+# from the browser process. You cannot use any of their pids.
+# If no pid is provided on the command line, the script will randomly pick
+# one of the running instances.
 if [ $# -eq 0 ]; then
   pid=$(ls -l /proc/*/exe 2>/dev/null |
-        sed '/\/chrome$/s,.*/proc/\([^/]*\)/exe.*,\1,;t1;d;:1;q')
+        sed '/\/chrome$/s,.*/proc/\([^/]*\)/exe.*,\1,;t;d' |
+        while read p; do
+          xargs -0 </proc/$p/cmdline 2>/dev/null|grep -q -- --type= && continue
+          echo "$p"
+          break
+        done)
 else
   pid="$1"
 fi
@@ -31,8 +40,11 @@ while :; do
   ppid="$(ps h --format ppid --pid "$pid" 2>/dev/null)"
   [ -n "$ppid" ] || {
     echo "Cannot find any running instance of Chrome" >&2; exit 1; }
-  ls "/proc/$ppid/exe" 2>/dev/null|egrep -q '/chrome$' && pid="$ppid" || break
+  ls -l "/proc/$ppid/exe" 2>/dev/null|egrep -q '/chrome$' &&
+    pid="$ppid" || break
 done
+xargs -0 </proc/$p/cmdline 2>/dev/null|grep -q -- --type= && {
+  echo "Cannot find any running instance of Chrome" >&2; exit 1; }
 
 # Iterate over child processes and try to identify them
 identify() {
@@ -62,7 +74,8 @@ identify() {
         if [ $(echo "$seccomp" | wc -w) -eq 1 ] &&
            [ $(ls /proc/$seccomp/task 2>/dev/null | wc -w) -eq 1 ] &&
            ls -l /proc/$seccomp/exe 2>/dev/null | egrep -q '/chrome$'; then
-          echo -n "Process $child is a renderer inside of the seccomp sandbox"
+          echo -n "Process $child is a sandboxed renderer (seccomp helper:" \
+                  "$seccomp)"
           [ -d /proc/$child/cwd/. ] || echo -n "; setuid sandbox is active"
           echo
         else
