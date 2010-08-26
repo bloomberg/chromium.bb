@@ -44,14 +44,13 @@ var OptionsPage = options.OptionsPage;
         OptionsPage.showOverlay('fontSettingsOverlay');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
-      $('optionsReset').onclick = function(event) {
-        AlertOverlay.show(localStrings.getString('optionsResetMessage'),
-            localStrings.getString('optionsResetOkLabel'),
-            localStrings.getString('optionsResetCancelLabel'),
-            function() { chrome.send('resetToDefaults'); });
-        }
-
       if (!cr.isChromeOS) {
+        $('optionsReset').onclick = function(event) {
+          AlertOverlay.show(localStrings.getString('optionsResetMessage'),
+              localStrings.getString('optionsResetOkLabel'),
+              localStrings.getString('optionsResetCancelLabel'),
+              function() { chrome.send('resetToDefaults'); });
+        }
         $('proxiesConfigureButton').onclick = function(event) {
           chrome.send('showNetworkProxySettings');
         };
