@@ -11,8 +11,9 @@
 // MUST be included first.
 #include "native_client/src/include/portability.h"
 
-#include "breakpad/src/client/windows/sender/crash_report_sender.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
+#include "breakpad/src/client/windows/sender/crash_report_sender.h"
+
 #include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
@@ -75,6 +76,12 @@ bool FilterCallback(void* pContext,
 // handler, but long before SEH kicks in.
 //
 LONG CALLBACK VectoredHandler(PEXCEPTION_POINTERS pExceptionPointers) {
+  // If the exception we caught was actually an MS "throw" then let the
+  // try-catch mechanism handle it.
+  if (pExceptionPointers->ExceptionRecord->ExceptionCode == 0xE06D7363) {
+    return EXCEPTION_CONTINUE_SEARCH;
+  }
+
   g_pBreakpadHandler->WriteMinidumpForException(pExceptionPointers);
   // At this point we do not want control to pass back to the OS exception
   // handling routine, because if the exception came from untrusted code, it

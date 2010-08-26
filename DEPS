@@ -38,6 +38,8 @@ deps = {
   "breakpad/src":
     "http://google-breakpad.googlecode.com/svn/trunk/src@" +
     Var("breakpad_rev"),
+  "gdb_utils/src":
+    "http://gdb-utils.googlecode.com/svn/trunk/src",
   "native_client/src/third_party/protobuf/src":
     "http://protobuf.googlecode.com/svn/trunk@" + Var("protobuf_rev"),
   "third_party/gcc":

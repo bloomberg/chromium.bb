@@ -8,6 +8,7 @@
       'type': 'none',
       # NOTE: Chrome-specific targets should not be part of this project
       'dependencies': [
+        '../../gdb_utils/src/gdb_rsp/gdb_rsp.gyp:*',
         '../../ppapi/ppapi.gyp:*',
         '../src/shared/gio/gio.gyp:*',
         '../src/shared/imc/imc.gyp:*',

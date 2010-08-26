@@ -102,6 +102,7 @@
           # For generated header files from the x86-64 validator,
           # e.g. nacl_disallows.h.
           '<(SHARED_INTERMEDIATE_DIR)',
+          '<(DEPTH)/gdb_utils/src',
         ],
         'sources!': [
            '<(syscall_handler)',
@@ -319,6 +320,7 @@
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
+            '<(DEPTH)/gdb_utils/src/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
           ],
           'conditions': [
             ['nacl_standalone==0 and OS=="win"', {
@@ -333,7 +335,7 @@
             }],
             ['nacl_debug_stub==1', {
               'dependencies': [
-              '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub',
+              '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub64',
               ],
             }],
           ],

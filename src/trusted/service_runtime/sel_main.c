@@ -37,6 +37,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
+#include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/outer_sandbox.h"
@@ -154,7 +155,8 @@ static void PrintUsage() {
           " -s safely stub out non-validating instructions\n"
           " -Q disable platform qualification (dangerous!)\n"
           " -I disable ELF ABI version number check (safe)\n"
-          " -l <file>  write log output to the given file\n");
+          " -l <file>  write log output to the given file\n"
+          " -g enable gdb debug stub.\n");
 }
 
 /*
@@ -253,12 +255,15 @@ int main(int  ac,
     exit(1);
   }
 
-  while ((opt = getopt(ac, av, "df:h:i:Il:mMP:Qr:svw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "df:gh:i:Il:mMP:Qr:svw:X:")) != -1) {
     switch (opt) {
       case 'd':
         fprintf(stderr, "DEBUG MODE ENABLED\n");
         NaClInsecurelyBypassAllAclChecks();
         debug_mode = 1;
+        break;
+      case 'g':
+        NaClDebugSetAllow(1);
         break;
       case 'h':
       case 'r':

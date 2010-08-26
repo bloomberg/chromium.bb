@@ -1,0 +1,38 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file needs to be in sync with $SOURCE_ROOT/ppapi/ppapi.gyp
+# at the revision specified in $SOURCE_ROOT/native_client/DEPS.
+
+Import('env')
+
+# this is needed for including gdb_utils files
+env.Append(CPPPATH=['${SOURCE_ROOT}/gdb_utils/src'])
+
+if env.Bit('windows'):
+  env.Append(CPPDEFINES=['WIN32'])
+  if env['TARGET_SUBARCH'] == '64':
+    env.Append(CPPDEFINES=['WIN64'])
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  env.Append(CPPDEFINES=['NACL_CPU_ARM'])
+
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  env.Append(CPPDEFINES=['NACL_CPU_X86'])
+  if env['TARGET_SUBARCH'] == '64':
+    env.Append(CPPDEFINES=['NACL_CPU_X86_64'])
+
+rsp_sources = [
+    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/abi.cc',
+    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/host.cc',
+    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/packet.cc',
+    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/session.cc',
+    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/target.cc',
+    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/util.cc',
+    ]
+
+# Build only for Win64
+if env.Bit('windows'):
+  if env['TARGET_SUBARCH'] == '64':
+    env.DualLibrary('gdb_rsp', rsp_sources)

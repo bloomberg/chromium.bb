@@ -1018,6 +1018,7 @@ base_env.Append(
     'src/trusted/sel_universal/build.scons',
     'src/trusted/service_runtime/build.scons',
     'src/trusted/base/build.scons',
+    'src/trusted/gdb_rsp/build.scons',
     'src/shared/gio/build.scons',
     'src/shared/imc/build.scons',
     'src/shared/npruntime/build.scons',

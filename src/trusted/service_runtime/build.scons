@@ -12,6 +12,17 @@ Import('env')
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 # this is needed for including gen/... files, see GENERATED below
 
+# this is needed for including gdb_utils files
+env.Append(CPPPATH=['${SOURCE_ROOT}/gdb_utils/src'])
+
+DEBUG_LIBS = []
+if env.Bit('windows'):
+  env.Append(CPPDEFINES=['WIN32'])
+  if env['TARGET_SUBARCH'] == '64':
+    env.Append(CPPDEFINES=['WIN64'])
+    DEBUG_LIBS += ['gdb_rsp']
+
+
 # normally comment out -- uncomment out to test the pedantic removal
 # check below.
 #if env.Bit('linux') or env.Bit('mac'):
@@ -328,7 +339,8 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                                       'platform_qual_lib',
                                                       'gio',
                                                       'expiration',
-                                                      ] + VALIDATOR_LIBS)
+                                                      ] + VALIDATOR_LIBS
+                                                      + DEBUG_LIBS)
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])
 
@@ -340,7 +352,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                      'gio_shm',
                                      'platform',
                                      'gio',
-                                     ])
+                                     ] + DEBUG_LIBS)
   env.Requires(SEL_LDR_NODE, crt)
   env.Requires(SEL_LDR_NODE, sdl_dll)
 
@@ -387,7 +399,8 @@ if (env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE'] and
                                                           'google_nacl_imc_c',
                                                           'platform',
                                                           'gio',
-                                                          ] + VALIDATOR_LIBS)
+                                                          ] + VALIDATOR_LIBS
+                                                          + DEBUG_LIBS)
   gtest_env.Requires(unit_tests_exe, crt)
   gtest_env.Requires(unit_tests_exe, sdl_dll)
 
@@ -432,7 +445,8 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
                                                        'google_nacl_imc_c',
                                                        'platform',
                                                        'gio',
-                                                       ] + VALIDATOR_LIBS)
+                                                       ] + VALIDATOR_LIBS
+                                                        + DEBUG_LIBS)
   sdl_env.Requires(mmap_test_exe, crt)
   sdl_env.Requires(mmap_test_exe, sdl_dll)
 
@@ -466,7 +480,8 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
                   'google_nacl_imc_c',
                   'platform',
                   'gio',
-                  ] + VALIDATOR_LIBS)
+                  ] + VALIDATOR_LIBS
+                   + DEBUG_LIBS)
   sdl_env.Requires(nacl_sync_cond_test_exe, crt)
   sdl_env.Requires(nacl_sync_cond_test_exe, sdl_dll)
 
@@ -490,7 +505,7 @@ env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',
                                              ['env_cleanser_test.c'],
                                              EXTRA_LIBS=['sel',
                                                          'gio_shm',
-                                                         ])
+                                                         ] + DEBUG_LIBS)
 node = env.CommandTest(
     'env_cleanser_test.out',
     command=[env_cleanser_test_exe])
@@ -510,7 +525,8 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                                           'google_nacl_imc_c',
                                                           'platform',
                                                           'gio',
-                                                          ] + VALIDATOR_LIBS)
+                                                          ] + VALIDATOR_LIBS
+                                                           + DEBUG_LIBS)
   if env['TARGET_ARCHITECTURE'] == 'arm':
     params = [ '-n', '512', '-m', '2']
   else:
@@ -535,7 +551,8 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                            'google_nacl_imc_c',
                                            'platform',
                                            'gio',
-                                           ] + VALIDATOR_LIBS))
+                                           ] + VALIDATOR_LIBS
+                                           + DEBUG_LIBS))
   node = env.CommandTest(
       'gio_shm_unbounded_test.out',
       command=[gio_shm_unbounded_test_exe,])
@@ -553,7 +570,7 @@ check_test_exe = env.ComponentProgram('nacl_check_test',
                                                   'gio_shm',
                                                   'platform',
                                                   'gio',
-                                                  ])
+                                                  ] + DEBUG_LIBS)
 node = env.CommandTest(
     'check_test.out',
     command=[check_test_exe, '-C'])
@@ -648,7 +665,8 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
                                                         'gio',
                                                         'nacl_xdr',
                                                         'container',
-                                                        ] + VALIDATOR_LIBS)
+                                                        ] + VALIDATOR_LIBS
+                                                        + DEBUG_LIBS)
 
 
   node = sdl_env.CommandTest(
@@ -771,7 +789,8 @@ if (env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE'] and
                   'google_nacl_imc_c',
                   'platform',
                   'gio',
-                  ] + VALIDATOR_LIBS)
+                  ] + VALIDATOR_LIBS
+                  + DEBUG_LIBS)
 
   node = sdl_env.CommandTest(
       'sel_ldr_thread_death_test.out',

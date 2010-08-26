@@ -21,8 +21,8 @@
  * the main thread.
  */
 
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_DEBUG_H__
-#define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_DEBUG_H__ 1
+#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_DEBUG_H_
+#define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_DEBUG_H_
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
@@ -31,6 +31,14 @@ EXTERN_C_BEGIN
 
 struct NaClApp;
 struct NaClAppThread;
+
+/*
+ * Allows debugging if the feature has been enabled by compile flags.
+ * The conditional compile means setting this to non-zero only signals
+ * that debugging is requested, NaClDebugIsEnabled will need to be called
+ * to determine if debugging is actually enabled.
+ */
+void NaClDebugSetAllow(int val) NO_THROW;
 
 /*
  * Returns non-zero if debugging is allowed.  This check is done via the
@@ -65,8 +73,8 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) NO_THROW;
 /*
  * This function notifies the debug stub that the provided thread
  * should no longer be debugged.  This is typically because the thread
- * is about to halt.  Unlike "Prep", this function can be called by any
- * thread.
+ * is about to halt.  TODO(noelallen) Unlike "Prep", this function can 
+ * be called by any thread.
  */
 void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) NO_THROW;
 
@@ -81,7 +89,7 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) NO_THROW;
  *   NACL_DEBUG_IP - IPv4 address on which to bind (default "127.0.0.1")
  *   NACL_DEBUG_PORT - Port(s) on which to listen (default "8000:8010")
  */
-int NaClDebugStart() NO_THROW;
+int NaClDebugStart(void) NO_THROW;
 
 
 /*
@@ -96,4 +104,4 @@ void NaClDebugStop(int exitCode) NO_THROW;
 
 EXTERN_C_END
 
-#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_DEBUG_H__ */
+#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_DEBUG_H_ */

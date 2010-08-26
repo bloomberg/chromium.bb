@@ -25,7 +25,13 @@
       }],
       ['OS=="win"', {
         'platform_sources': [
+          'event_common.cc',
+          'platform_common.cc',
+          'transport_common.cc',
           'win/debug_stub_win.cc',
+          'win/mutex_impl.cc',
+          'win/platform_impl.cc',
+          'win/thread_impl.cc',
         ],
       }],
     ],
@@ -42,6 +48,9 @@
         ],
       }],
       ['target_base=="debug_stub"', {
+        'include_dirs': [
+          '<(DEPTH)/gdb_utils/src',
+        ],
         'sources': [
           '<@(common_sources)',
           '<@(platform_sources)',
