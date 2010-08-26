@@ -266,7 +266,8 @@ TEST_F(DeviceOrientationProviderTest, ObserverNotRemoved) {
   // Note that checker is not removed. This should not be a problem.
 }
 
-TEST_F(DeviceOrientationProviderTest, StartFailing) {
+// Marked as disabled: http://crbug.com/53468
+TEST_F(DeviceOrientationProviderTest, DISABLED_StartFailing) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
   Init(MockOrientationFactory::CreateDataFetcher);
