@@ -1506,6 +1506,8 @@
         'browser/geolocation/device_data_provider.h',
         'browser/geolocation/empty_device_data_provider.cc',
         'browser/geolocation/empty_device_data_provider.h',
+        'browser/geolocation/gateway_data_provider_common.cc',
+        'browser/geolocation/gateway_data_provider_common.h',
         'browser/geolocation/geolocation_dispatcher_host.cc',
         'browser/geolocation/geolocation_dispatcher_host.h',
         'browser/geolocation/geolocation_permission_context.cc',
