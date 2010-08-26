@@ -975,8 +975,17 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
 
 bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
                                      const std::string& referrer) {
-  DCHECK(automation_client_.get() != NULL);
   DCHECK(!cf_url.gurl().is_empty());
+
+  if (!automation_client_.get()) {
+    // http://code.google.com/p/chromium/issues/detail?id=52894
+    // Still not sure how this happens.
+    DLOG(ERROR) << "No automation client!";
+    if (!Initialize()) {
+      NOTREACHED() << "...and failed to start a new one >:(";
+      return false;
+    }
+  }
 
   url_.Allocate(UTF8ToWide(cf_url.gurl().spec()).c_str());
   if (cf_url.attach_to_external_tab()) {
@@ -1020,6 +1029,7 @@ HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
     tab_proxy->ReloadAsync();
   } else {
     DLOG(ERROR) << "No automation proxy";
+    DCHECK(automation_client_.get() != NULL) << "how did it get freed?";
     // The current url request manager (url_fetcher_) has been switched to
     // a stopping state so we need to reset it and get a new one for the new
     // automation server.
