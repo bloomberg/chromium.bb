@@ -425,7 +425,8 @@ void ChromeFrameNPAPI::OnAcceleratorPressed(int tab_handle,
   // WM_KEYUP, etc, which will result in messages like WM_CHAR, WM_SYSCHAR, etc
   // being posted to the message queue. We don't post these messages here to
   // avoid these messages from getting handled twice.
-  if (accel_message.message != WM_CHAR &&
+  if (!is_privileged_ &&
+      accel_message.message != WM_CHAR &&
       accel_message.message != WM_DEADCHAR &&
       accel_message.message != WM_SYSCHAR &&
       accel_message.message != WM_SYSDEADCHAR) {
