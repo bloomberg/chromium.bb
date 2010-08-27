@@ -81,9 +81,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
   ASSERT_TRUE(LoadExtension(test_data_dir_
     .AppendASCII("origin_privileges").AppendASCII("extension")));
 
+  GURL origin_privileges_index(
+      test_server()->GetURL("files/extensions/origin_privileges/index.html"));
+
+  std::string host_a("a.com");
+  GURL::Replacements make_host_a_com;
+  make_host_a_com.SetHostStr(host_a);
+
+  std::string host_b("b.com");
+  GURL::Replacements make_host_b_com;
+  make_host_b_com.SetHostStr(host_b);
+
   // A web host that has permission.
-  ui_test_utils::NavigateToURL(browser(),
-      GURL("http://a.com:1337/files/extensions/origin_privileges/index.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), origin_privileges_index.ReplaceComponents(make_host_a_com));
   std::string result;
   ui_test_utils::ExecuteJavaScriptAndExtractString(
     browser()->GetSelectedTabContents()->render_view_host(), L"",
@@ -92,8 +103,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
   EXPECT_EQ(result, "Loaded");
 
   // A web host that does not have permission.
-  ui_test_utils::NavigateToURL(browser(),
-      GURL("http://b.com:1337/files/extensions/origin_privileges/index.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), origin_privileges_index.ReplaceComponents(make_host_b_com));
   ui_test_utils::ExecuteJavaScriptAndExtractString(
     browser()->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title)",
@@ -781,4 +792,75 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
 
   EXPECT_EQ(extension->GetResourceURL("options.html"),
             tab_strip->GetTabContentsAt(1)->GetURL());
+}
+
+// Test window.chrome.app.isInstalled .
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PropertyAppIsInstalled) {
+
+  std::string app_host("app.com");
+  std::string nonapp_host("nonapp.com");
+
+  host_resolver()->AddRule(app_host, "127.0.0.1");
+  host_resolver()->AddRule(nonapp_host, "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL test_file_url(test_server()->GetURL("files/extensions/test_file.html"));
+  GURL::Replacements replace_host;
+
+  replace_host.SetHostStr(app_host);
+  GURL app_url(test_file_url.ReplaceComponents(replace_host));
+
+  replace_host.SetHostStr(nonapp_host);
+  GURL non_app_url(test_file_url.ReplaceComponents(replace_host));
+
+
+  // Load an app which includes app.com in its extent.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("app_dot_com_app")));
+
+
+  // Test that a non-app page has chrome.app.isInstalled = false.
+  ui_test_utils::NavigateToURL(browser(), non_app_url);
+  std::wstring get_app_is_installed =
+      L"window.domAutomationController.send("
+      L"    JSON.stringify(window.chrome.app.isInstalled));";
+  std::string result;
+  ASSERT_TRUE(
+      ui_test_utils::ExecuteJavaScriptAndExtractString(
+          browser()->GetSelectedTabContents()->render_view_host(),
+          L"",
+          get_app_is_installed.c_str(),
+          &result));
+  EXPECT_EQ("false", result);
+
+
+  // Check that an app page has chrome.app.isInstalled = true.
+  ui_test_utils::NavigateToURL(browser(), app_url);
+  ASSERT_TRUE(
+      ui_test_utils::ExecuteJavaScriptAndExtractString(
+          browser()->GetSelectedTabContents()->render_view_host(),
+          L"",
+          get_app_is_installed.c_str(),
+          &result));
+  EXPECT_EQ("true", result);
+
+
+  // Test that trying to set window.chrome.app.isInstalled throws
+  // an exception.
+  ASSERT_TRUE(
+      ui_test_utils::ExecuteJavaScriptAndExtractString(
+          browser()->GetSelectedTabContents()->render_view_host(),
+          L"",
+          L"window.domAutomationController.send("
+          L"    function() {"
+          L"      try {"
+          L"        window.chrome.app.isInstalled = false;"
+          L"        return 'BAD: Should have thrown by now...';"
+          L"      } catch (e) {"
+          L"        return 'GOOD: Saw expected error.';"
+          L"      }"
+          L"    }()"
+          L");",
+          &result));
+  EXPECT_EQ("GOOD: Saw expected error.", result);
 }

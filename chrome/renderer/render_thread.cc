@@ -47,6 +47,7 @@
 #include "chrome/renderer/cookie_message_filter.h"
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/extension_groups.h"
+#include "chrome/renderer/extensions/chrome_app_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
@@ -854,6 +855,8 @@ void RenderThread::EnsureWebKitInitialized() {
 #endif
   WebScriptController::registerExtension(
       extensions_v8::LoadTimesExtension::Get());
+  WebScriptController::registerExtension(
+      extensions_v8::ChromeAppExtension::Get());
   WebScriptController::registerExtension(
       extensions_v8::ExternalExtension::Get());
 
