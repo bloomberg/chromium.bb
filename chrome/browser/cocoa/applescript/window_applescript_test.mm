@@ -167,7 +167,8 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, ActiveTab) {
 }
 
 // Order of windows.
-IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, WindowOrder) {
+// Failing on Chromium Mac: http://crbug/53584
+IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, FLAKY_WindowOrder) {
   scoped_nsobject<WindowAppleScript> window2(
       [[WindowAppleScript alloc] initWithBrowser:browser()]);
   scoped_nsobject<WindowAppleScript> window1(
