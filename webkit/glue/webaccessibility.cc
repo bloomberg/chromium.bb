@@ -269,6 +269,9 @@ WebAccessibility::WebAccessibility(const WebKit::WebAccessibilityObject& src,
   Init(src, cache);
 }
 
+WebAccessibility::~WebAccessibility() {
+}
+
 void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
                             WebKit::WebAccessibilityCache* cache) {
   name = src.title();

@@ -173,6 +173,10 @@ NPClass CppNPObject::np_class_ = {
   return obj->bound_class->SetProperty(ident, value);
 }
 
+CppBoundClass::CppBoundClass()
+    : bound_to_frame_(false) {
+}
+
 CppBoundClass::~CppBoundClass() {
   for (MethodList::iterator i = methods_.begin(); i != methods_.end(); ++i)
     delete i->second;

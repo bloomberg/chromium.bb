@@ -66,6 +66,9 @@ FormField::FormField(const string16& label,
     size_(size) {
 }
 
+FormField::~FormField() {
+}
+
 bool FormField::operator==(const FormField& field) const {
   // A FormField stores a value, but the value is not part of the identity of
   // the field, so we don't want to compare the values.

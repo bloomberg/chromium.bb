@@ -58,6 +58,9 @@ std::string WebClipboardImpl::URLToImageMarkup(const WebURL& url,
   return markup;
 }
 
+WebClipboardImpl::~WebClipboardImpl() {
+}
+
 bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   Clipboard::FormatType format_type;
   Clipboard::Buffer buffer_type;

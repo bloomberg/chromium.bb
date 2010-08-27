@@ -32,9 +32,9 @@ namespace webkit_glue {
 // about a particular "saved password entry" to our PasswordForm
 // representation.
 //
-// The field descriptions in the struct specification below are
-// intended to describe which fields are not strictly required when adding a saved
-// password entry to the database and how they can affect the matching process.
+// The field descriptions in the struct specification below are intended to
+// describe which fields are not strictly required when adding a saved password
+// entry to the database and how they can affect the matching process.
 
 struct PasswordForm {
   // Enum to differentiate between HTML form based authentication, and dialogs
@@ -135,29 +135,9 @@ struct PasswordForm {
   // When parsing an HTML form, this is not used.
   bool blacklisted_by_user;
 
-  PasswordForm()
-      : scheme(SCHEME_HTML),
-        ssl_valid(false),
-        preferred(false),
-        blacklisted_by_user(false) {
-  }
-
-  PasswordForm(const WebKit::WebPasswordFormData& web_password_form)
-      : scheme(SCHEME_HTML),
-        signon_realm(web_password_form.signonRealm.utf8()),
-        origin(web_password_form.origin),
-        action(web_password_form.action),
-        submit_element(web_password_form.submitElement),
-        username_element(web_password_form.userNameElement),
-        username_value(web_password_form.userNameValue),
-        password_element(web_password_form.passwordElement),
-        password_value(web_password_form.passwordValue),
-        old_password_element(web_password_form.oldPasswordElement),
-        old_password_value(web_password_form.oldPasswordValue),
-        ssl_valid(false),
-        preferred(false),
-        blacklisted_by_user(false) {
-  }
+  PasswordForm();
+  PasswordForm(const WebKit::WebPasswordFormData& web_password_form);
+  ~PasswordForm();
 };
 
 // Map username to PasswordForm* for convenience. See password_form_manager.h.

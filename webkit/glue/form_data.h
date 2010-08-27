@@ -28,17 +28,12 @@ struct FormData {
   // A vector of all the input fields in the form.
   std::vector<FormField> fields;
 
-  FormData() : user_submitted(false) {}
+  FormData();
+  FormData(const FormData& data);
+  ~FormData();
 
   // Used by FormStructureTest.
-  inline bool operator==(const FormData& form) const {
-    return (name == form.name &&
-            StringToLowerASCII(method) == StringToLowerASCII(form.method) &&
-            origin == form.origin &&
-            action == form.action &&
-            user_submitted == form.user_submitted &&
-            fields == form.fields);
-  }
+  bool operator==(const FormData& form) const;
 };
 
 }  // namespace webkit_glue

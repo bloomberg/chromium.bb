@@ -167,6 +167,9 @@ WebKitClientImpl::WebKitClientImpl()
       shared_timer_suspended_(0) {
 }
 
+WebKitClientImpl::~WebKitClientImpl() {
+}
+
 WebThemeEngine* WebKitClientImpl::themeEngine() {
 #if defined(OS_WIN)
   return &theme_engine_;

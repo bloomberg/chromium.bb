@@ -83,6 +83,9 @@ WebPasswordAutocompleteListenerImpl::WebPasswordAutocompleteListenerImpl(
       data_(data) {
 }
 
+WebPasswordAutocompleteListenerImpl::~WebPasswordAutocompleteListenerImpl() {
+}
+
 void WebPasswordAutocompleteListenerImpl::didBlurInputElement(
     const WebString& user_input) {
   // If this listener exists, its because the password manager had more than

@@ -13,7 +13,7 @@ namespace webkit_glue {
 class WebFileUtilitiesImpl : public WebKit::WebFileUtilities {
  public:
   WebFileUtilitiesImpl();
-  virtual ~WebFileUtilitiesImpl() { }
+  virtual ~WebFileUtilitiesImpl();
 
   // WebFileUtilities methods:
   virtual bool fileExists(const WebKit::WebString& path);

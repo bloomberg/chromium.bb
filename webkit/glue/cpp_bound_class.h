@@ -51,7 +51,7 @@ class CppBoundClass {
   // The constructor should call BindMethod, BindProperty, and
   // SetFallbackMethod as needed to set up the methods, properties, and
   // fallback method.
-  CppBoundClass() : bound_to_frame_(false) { }
+  CppBoundClass();
   virtual ~CppBoundClass();
 
   // Return a CppVariant representing this class, for use with BindProperty().

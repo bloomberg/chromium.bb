@@ -166,6 +166,8 @@ struct WebAccessibility {
   WebAccessibility(const WebKit::WebAccessibilityObject& src,
                    WebKit::WebAccessibilityCache* cache);
 
+  ~WebAccessibility();
+
   // Initialize an already-created struct, same as the constructor a
   void Init(const WebKit::WebAccessibilityObject& src,
             WebKit::WebAccessibilityCache* cache);

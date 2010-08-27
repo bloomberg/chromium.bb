@@ -21,6 +21,9 @@ WebFileUtilitiesImpl::WebFileUtilitiesImpl()
     : sandbox_enabled_(true) {
 }
 
+WebFileUtilitiesImpl::~WebFileUtilitiesImpl() {
+}
+
 bool WebFileUtilitiesImpl::fileExists(const WebString& path) {
   FilePath::StringType file_path = WebStringToFilePathString(path);
   return file_util::PathExists(FilePath(file_path));

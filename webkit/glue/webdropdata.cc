@@ -15,6 +15,10 @@ using WebKit::WebDragData;
 using WebKit::WebString;
 using WebKit::WebVector;
 
+WebDropData::WebDropData(int32 drag_identity)
+    : identity(drag_identity) {
+}
+
 WebDropData::WebDropData(const WebDragData& drag_data)
     : identity(0),
       url(drag_data.url()),
@@ -34,6 +38,13 @@ WebDropData::WebDropData(const WebDragData& drag_data)
   WebData contents = drag_data.fileContent();
   if (!contents.isEmpty())
     file_contents.assign(contents.data(), contents.size());
+}
+
+WebDropData::WebDropData()
+    : identity(0) {
+}
+
+WebDropData::~WebDropData() {
 }
 
 WebDragData WebDropData::ToDragData() const {

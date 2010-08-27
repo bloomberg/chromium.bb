@@ -22,6 +22,7 @@ class FormField {
             const string16& value,
             const string16& form_control_type,
             int size);
+  ~FormField();
 
   const string16& label() const { return label_; }
   const string16& name() const { return name_; }

@@ -49,8 +49,7 @@ class WebPasswordAutocompleteListenerImpl :
       WebInputElementDelegate* username_element,
       WebInputElementDelegate* password_element,
       const PasswordFormFillData& data);
-  ~WebPasswordAutocompleteListenerImpl() {
-  }
+  virtual ~WebPasswordAutocompleteListenerImpl();
 
   // WebKit::PasswordAutocompleteListener methods:
   virtual void didBlurInputElement(const WebString& user_input);

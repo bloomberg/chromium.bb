@@ -61,6 +61,8 @@ class FtpDirectoryListingResponseDelegate {
 
   // True if we got an error when parsing the response.
   bool had_parsing_error_;
+
+  DISALLOW_COPY_AND_ASSIGN(FtpDirectoryListingResponseDelegate);
 };
 
 }  // namespace webkit_glue
