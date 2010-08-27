@@ -539,7 +539,6 @@ bool Plugin::Load(nacl::string logical_url,
         logical_url + " does not come ""from a whitelisted source. "
         "See native_client/src/trusted/plugin/origin.cc for the list.";
     browser_interface->AddToConsole(instance_id(), message.c_str());
-    PLUGIN_PRINTF(("Plugin::Load (return 0)"));
     return false;
   }
   // Catch any bad accesses, etc., while loading.
@@ -550,25 +549,23 @@ bool Plugin::Load(nacl::string logical_url,
   }
 
   // Check ELF magic and ABI version compatibility.
-  bool success = false;
+  bool might_be_elf_exe = false;
   nacl::string error_string;
   if (NULL == shmbufp) {
-    success = browser_interface->MightBeElfExecutable(local_url_,
-                                                      &error_string);
+    might_be_elf_exe = browser_interface->MightBeElfExecutable(
+        local_url_, &error_string);
   } else {
     // Read out first chunk for MightBeElfExecutable; this suffices for
     // ELF headers etc.
     char elf_hdr_buf[kAbiHeaderBuffer];
-    ssize_t result;
-    result = shmbufp->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
+    ssize_t result = shmbufp->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
     if (sizeof elf_hdr_buf == result) {  // (const char*)(elf_hdr_buf)
-      success = browser_interface->MightBeElfExecutable(elf_hdr_buf,
-                                                        sizeof elf_hdr_buf,
-                                                        &error_string);
+      might_be_elf_exe = browser_interface->MightBeElfExecutable(
+          elf_hdr_buf, sizeof elf_hdr_buf, &error_string);
     }
   }
-  if (!success) {
-    PLUGIN_PRINTF(("Plugin::Load (error_string='%s')\n", error_string.c_str()));
+  PLUGIN_PRINTF(("Plugin::Load (might_be_elf_exe=%d)\n", might_be_elf_exe));
+  if (!might_be_elf_exe) {
     browser_interface->AddToConsole(instance_id(), error_string);
     return false;
   }
@@ -581,12 +578,14 @@ bool Plugin::Load(nacl::string logical_url,
 
   // Load a file via a forked sel_ldr process.
   service_runtime_ = new(std::nothrow) ServiceRuntime(browser_interface, this);
+  PLUGIN_PRINTF(("Plugin::Load (service_runtime=%p)\n",
+                 static_cast<void*>(service_runtime_)));
   if (NULL == service_runtime_) {
-    PLUGIN_PRINTF(("Plugin::Load (ServiceRuntime Ctor failed)\n"));
     browser_interface->AddToConsole(instance_id(),
-                                    "ServiceRuntime Ctor failed");
+                                    "Load: ServiceRuntime Ctor failed");
     return false;
   }
+
   bool service_runtime_started = false;
   if (NULL == shmbufp) {
     service_runtime_started = service_runtime_->Start(local_url_);
@@ -603,23 +602,27 @@ bool Plugin::Load(nacl::string logical_url,
         service_runtime_->StartUnderChromium(local_url_, wrapped_shm);
     // Start consumes the wrapped_shm.
   }
-  if (!service_runtime_started) {
-    PLUGIN_PRINTF(("Plugin::Load (failed to start service runtime)\n"));
-    browser_interface->AddToConsole(instance_id(),
-                                    "Load: FAILED to start service runtime");
-    return false;
-  }
-
-  PLUGIN_PRINTF(("Plugin::Load (started sel_ldr)\n"));
+  PLUGIN_PRINTF(("Plugin::Load (service_runtime_started=%d)\n",
+                 service_runtime_started));
   // Plugin takes ownership of socket_address_ from service_runtime_,
-  // so we do not need to call AddRef().
+  // so we do not need to call AddRef(). This must be done here because
+  // service_runtime start-up might fail after default_socket_address() was
+  // successfully created.
+  // TODO(mseaborn): change ServiceRuntime to honor refcounting, so we don't
+  // have to depend on Plugin doing this in the "right" spot.
   socket_address_ = service_runtime_->default_socket_address();
-  PLUGIN_PRINTF(("Plugin::Load (established socket address %p)\n",
-                 static_cast<void*>(socket_address_)));
-  if (!StartSrpcServices(&error_string)) {
-    browser_interface_->Alert(instance_id(), error_string);
+  if (!service_runtime_started) {
+    browser_interface->AddToConsole(instance_id(),
+                                    "Load: Failed to start service runtime");
     return false;
   }
+  if (!StartSrpcServices(&error_string)) {  // sets socket_
+    browser_interface_->AddToConsole(instance_id(), error_string);
+    return false;
+  }
+  PLUGIN_PRINTF(("Plugin::Load (socket_address=%p, socket=%p, return)\n",
+                 static_cast<void*>(socket_address_),
+                 static_cast<void*>(socket_)));
   return true;
 }
 
