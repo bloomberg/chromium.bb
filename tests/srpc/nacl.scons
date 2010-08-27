@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import platform
 
 Import('env')
+
 
 # In Chrome, we can share the nexe between the NPAPI (built-in) and
 # PPAPI (loaded with --register-pepper-plugins) versions of NaCl, but the html
@@ -179,17 +181,23 @@ node = env.BrowserTester(
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_shm_browser_test')
 
-node = env.BrowserTester(
-    'srpc_nrd_xfer_browser_test.out',
-     url='srpc_nrd_xfer.html',
-     files=[srpc_nrd_client_nexe,
-            srpc_nrd_server_nexe,
-            env.File('srpc_nrd_xfer.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     browser='*firefox',
-     )
-env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_nrd_xfer_browser_test')
+# TODO: This test currently fails on lucid + firefox 3.6 for x86-32.
+#     Disabling in that case. Renable when fixed.
+#     See http://code.google.com/p/nativeclient/issues/detail?id=364
+if not (env['TARGET_ARCHITECTURE'] == 'x86' and
+        env['TARGET_SUBARCH'] == '32' and
+        'lucid' in platform.platform()):
+  node = env.BrowserTester(
+      'srpc_nrd_xfer_browser_test.out',
+       url='srpc_nrd_xfer.html',
+       files=[srpc_nrd_client_nexe,
+              srpc_nrd_server_nexe,
+              env.File('srpc_nrd_xfer.html'),
+              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+              ],
+       browser='*firefox',
+       )
+  env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_nrd_xfer_browser_test')
 
 node = env.BrowserTester(
     'srpc_url_as_nacl_desc_test.out',
