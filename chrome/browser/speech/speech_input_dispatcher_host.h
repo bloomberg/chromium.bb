@@ -43,7 +43,8 @@ class SpeechInputDispatcherHost
   virtual ~SpeechInputDispatcherHost();
   void SendMessageToRenderView(IPC::Message* message, int render_view_id);
 
-  void OnStartRecognition(int render_view_id, int request_id);
+  void OnStartRecognition(int render_view_id, int request_id,
+                          const gfx::Rect& element_rect);
   void OnCancelRecognition(int render_view_id, int request_id);
   void OnStopRecording(int render_view_id, int request_id);
 

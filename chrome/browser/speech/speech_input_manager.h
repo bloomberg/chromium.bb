@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_MANAGER_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/speech/speech_recognizer.h"
+#include "gfx/rect.h"
 #include "ipc/ipc_message.h"
 
 namespace speech_input {
@@ -42,7 +42,15 @@ class SpeechInputManager {
 
   // |delegate| is a weak pointer and should remain valid until
   // its |DidCompleteRecognition| method is called or recognition is cancelled.
-  virtual void StartRecognition(Delegate* delegate, int caller_id) = 0;
+  // |render_process_id| is the ID of the renderer process initiating the
+  // request.
+  // |element_rect| is the display bounds of the html element requesting speech
+  // input (in page coordinates).
+  virtual void StartRecognition(Delegate* delegate,
+                                int caller_id,
+                                int render_process_id,
+                                int render_view_id,
+                                const gfx::Rect& element_rect)  = 0;
   virtual void CancelRecognition(int caller_id) = 0;
   virtual void StopRecording(int caller_id) = 0;
 };

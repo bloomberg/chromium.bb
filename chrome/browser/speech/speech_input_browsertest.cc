@@ -35,7 +35,11 @@ class FakeSpeechInputManager : public SpeechInputManager {
   }
 
   // SpeechInputManager methods.
-  void StartRecognition(Delegate* delegate, int caller_id) {
+  void StartRecognition(Delegate* delegate,
+                        int caller_id,
+                        int render_process_id,
+                        int render_view_id,
+                        const gfx::Rect& element_rect) {
     EXPECT_EQ(0, caller_id_);
     EXPECT_EQ(NULL, delegate_);
     caller_id_ = caller_id;

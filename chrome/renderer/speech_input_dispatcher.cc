@@ -8,6 +8,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputListener.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebFrame;
 
@@ -31,9 +33,13 @@ bool SpeechInputDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-bool SpeechInputDispatcher::startRecognition(int request_id) {
+bool SpeechInputDispatcher::startRecognition(
+    int request_id, const WebKit::WebRect& element_rect) {
+  gfx::Size scroll = render_view_->webview()->mainFrame()->scrollOffset();
+  gfx::Rect rect = element_rect;
+  rect.Offset(-scroll.width(), -scroll.height());
   render_view_->Send(new ViewHostMsg_SpeechInput_StartRecognition(
-      render_view_->routing_id(), request_id));
+      render_view_->routing_id(), request_id, rect));
   return true;
 }
 

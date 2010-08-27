@@ -1215,6 +1215,7 @@
         'browser/sessions/session_service_unittest.cc',
         'browser/shell_integration_unittest.cc',
         'browser/speech/endpointer/endpointer_unittest.cc',
+        'browser/speech/speech_input_bubble_controller_unittest.cc',
         'browser/speech/speech_recognition_request_unittest.cc',
         'browser/speech/speech_recognizer_unittest.cc',
         'browser/spellchecker_platform_engine_unittest.cc',

@@ -133,13 +133,17 @@ bool SpeechInputDispatcherHost::OnMessageReceived(
   return handled;
 }
 
-void SpeechInputDispatcherHost::OnStartRecognition(int render_view_id,
-                                                   int request_id) {
+void SpeechInputDispatcherHost::OnStartRecognition(
+    int render_view_id,
+    int request_id,
+    const gfx::Rect& element_rect) {
   LOG(INFO) << "SpeechInputDispatcherHost: start recognition"
             << render_view_id;
   int caller_id = callers_->CreateId(resource_message_filter_process_id_,
                                      render_view_id, request_id);
-  manager()->StartRecognition(this, caller_id);
+  manager()->StartRecognition(this, caller_id,
+                              resource_message_filter_process_id_,
+                              render_view_id, element_rect);
 }
 
 void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,

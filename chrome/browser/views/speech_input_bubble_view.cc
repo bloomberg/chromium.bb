@@ -250,7 +250,7 @@ bool SpeechInputBubbleImpl::FadeInOnShow() {
 
 }  // namespace
 
-SpeechInputBubble* SpeechInputBubble::Create(
+SpeechInputBubble* SpeechInputBubble::CreateNativeBubble(
     TabContents* tab_contents,
     SpeechInputBubble::Delegate* delegate,
     const gfx::Rect& element_rect) {

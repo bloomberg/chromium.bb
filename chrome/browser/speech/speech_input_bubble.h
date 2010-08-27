@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_H_
 #pragma once
 
-#include "gfx/rect.h"
-
+namespace gfx {
+class Rect;
+}
 class TabContents;
 
 // SpeechInputBubble displays a popup info bubble during speech recognition,
@@ -43,10 +44,32 @@ class SpeechInputBubble {
   static SpeechInputBubble* Create(TabContents* tab_contents,
                                    Delegate* delegate,
                                    const gfx::Rect& element_rect);
+
+  // This is implemented by platform specific code to create the underlying
+  // bubble window. Not to be called directly by users of this class.
+  static SpeechInputBubble* CreateNativeBubble(TabContents* tab_contents,
+                                               Delegate* delegate,
+                                               const gfx::Rect& element_rect);
+
+  // |Create| uses the currently registered FactoryMethod to create the
+  // SpeechInputBubble instances. FactoryMethod is intended for testing.
+  typedef SpeechInputBubble* (*FactoryMethod)(TabContents*,
+                                              Delegate*,
+                                              const gfx::Rect&);
+  // Sets the factory used by the static method Create. SpeechInputBubble does
+  // not take ownership of |factory|. A value of NULL results in a
+  // SpeechInputBubble being created directly.
+#if defined(UNIT_TEST)
+  static void set_factory(FactoryMethod factory) { factory_ = factory; }
+#endif
+
   virtual ~SpeechInputBubble() {}
 
   // Indicates to the user that recognition is in progress.
   virtual void SetRecognizingMode() = 0;
+
+ private:
+  static FactoryMethod factory_;
 };
 
 // This typedef is to workaround the issue with certain versions of

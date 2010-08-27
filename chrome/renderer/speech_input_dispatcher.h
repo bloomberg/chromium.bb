@@ -13,6 +13,7 @@ class GURL;
 class RenderView;
 
 namespace WebKit {
+struct WebRect;
 class WebSpeechInputListener;
 }
 
@@ -28,7 +29,7 @@ class SpeechInputDispatcher : public WebKit::WebSpeechInputController {
   bool OnMessageReceived(const IPC::Message& msg);
 
   // WebKit::WebSpeechInputController.
-  bool startRecognition(int request_id);
+  bool startRecognition(int request_id, const WebKit::WebRect& element_rect);
   void cancelRecognition(int request_id);
   void stopRecording(int request_id);
 
