@@ -422,14 +422,6 @@ void AutomationProvider::OnBrowserMoved(int tab_handle) {
   }
 }
 
-void AutomationProvider::GetWindowTitle(int handle, string16* text) {
-  gfx::NativeWindow window = window_tracker_->GetResource(handle);
-  std::wstring result;
-  int length = ::GetWindowTextLength(window) + 1;
-  ::GetWindowText(window, WriteInto(&result, length), length);
-  text->assign(WideToUTF16(result));
-}
-
 void AutomationProvider::OnMessageFromExternalHost(int handle,
                                                    const std::string& message,
                                                    const std::string& origin,

@@ -278,6 +278,74 @@ class TestingAutomationProvider : public AutomationProvider,
                       int64 id,
                       bool* success);
 
+  // Retrieves the number of info-bars currently showing in |count|.
+  void GetInfoBarCount(int handle, int* count);
+
+  // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
+  // If |wait_for_navigation| is true, it sends the reply after a navigation has
+  // occurred.
+  void ClickInfoBarAccept(int handle, int info_bar_index,
+                          bool wait_for_navigation,
+                          IPC::Message* reply_message);
+
+  // Retrieves the last time a navigation occurred for the tab.
+  void GetLastNavigationTime(int handle, int64* last_navigation_time);
+
+  // Waits for a new navigation in the tab if none has happened since
+  // |last_navigation_time|.
+  void WaitForNavigation(int handle,
+                         int64 last_navigation_time,
+                         IPC::Message* reply_message);
+
+  // Sets the int value for preference with name |name|.
+  void SetIntPreference(int handle,
+                        const std::string& name,
+                        int value,
+                        bool* success);
+
+  // Sets the string value for preference with name |name|.
+  void SetStringPreference(int handle,
+                           const std::string& name,
+                           const std::string& value,
+                           bool* success);
+
+  // Gets the bool value for preference with name |name|.
+  void GetBooleanPreference(int handle,
+                            const std::string& name,
+                            bool* success,
+                            bool* value);
+
+  // Sets the bool value for preference with name |name|.
+  void SetBooleanPreference(int handle,
+                            const std::string& name,
+                            bool value,
+                            bool* success);
+
+  void GetShowingAppModalDialog(bool* showing_dialog, int* dialog_button);
+  void ClickAppModalDialogButton(int button, bool* success);
+
+  void WaitForBrowserWindowCountToBecome(int target_count,
+                                         IPC::Message* reply_message);
+
+  void WaitForAppModalDialogToBeShown(IPC::Message* reply_message);
+
+  void GoBackBlockUntilNavigationsComplete(int handle,
+                                           int number_of_navigations,
+                                           IPC::Message* reply_message);
+
+  void GoForwardBlockUntilNavigationsComplete(int handle,
+                                              int number_of_navigations,
+                                              IPC::Message* reply_message);
+
+  void SavePackageShouldPromptUser(bool should_prompt);
+
+  void GetWindowTitle(int handle, string16* text);
+
+  void SetShelfVisibility(int handle, bool visible);
+
+  // Returns the number of blocked popups in the tab |handle|.
+  void GetBlockedPopupCount(int handle, int* count);
+
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
       HistoryService::Handle request_handle,

@@ -33,22 +33,3 @@ void AutomationProvider::WindowSimulateDrag(int handle,
   Send(reply_message);
 }
 
-void AutomationProvider::GetWindowTitle(int handle, string16* text) {
-  gfx::NativeWindow window = window_tracker_->GetResource(handle);
-  NSString* title = nil;
-  if ([[window delegate] isKindOfClass:[TabWindowController class]]) {
-    TabWindowController* delegate =
-        reinterpret_cast<TabWindowController*>([window delegate]);
-    title = [delegate selectedTabTitle];
-  } else {
-    title = [window title];
-  }
-  // If we don't yet have a title, use "Untitled".
-  if (![title length]) {
-    text->assign(l10n_util::GetStringUTF16(
-        IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED));
-    return;
-  }
-
-  text->assign(base::SysNSStringToUTF16(title));
-}

@@ -300,49 +300,15 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Find, HandleFindRequest)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SendJSONRequest,
                                     SendJSONRequest)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetInfoBarCount, GetInfoBarCount)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ClickInfoBarAccept,
-                                    ClickInfoBarAccept)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetLastNavigationTime,
-                        GetLastNavigationTime)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForNavigation,
-                                    WaitForNavigation)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetIntPreference, SetIntPreference)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ShowingAppModalDialog,
-                        GetShowingAppModalDialog)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ClickAppModalDialogButton,
-                        ClickAppModalDialogButton)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetStringPreference, SetStringPreference)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetBooleanPreference,
-                        GetBooleanPreference)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetBooleanPreference,
-                        SetBooleanPreference)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetPageCurrentEncoding,
                         GetPageCurrentEncoding)
     IPC_MESSAGE_HANDLER(AutomationMsg_OverrideEncoding, OverrideEncoding)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SavePackageShouldPromptUser,
-                        SavePackageShouldPromptUser)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowTitle, GetWindowTitle)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
-    IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_SelectAll, SelectAll)
     IPC_MESSAGE_HANDLER(AutomationMsg_Cut, Cut)
     IPC_MESSAGE_HANDLER(AutomationMsg_Copy, Copy)
     IPC_MESSAGE_HANDLER(AutomationMsg_Paste, Paste)
     IPC_MESSAGE_HANDLER(AutomationMsg_ReloadAsync, ReloadAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_StopAsync, StopAsync)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_WaitForBrowserWindowCountToBecome,
-        WaitForBrowserWindowCountToBecome)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_WaitForAppModalDialogToBeShown,
-        WaitForAppModalDialogToBeShown)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_GoBackBlockUntilNavigationsComplete,
-        GoBackBlockUntilNavigationsComplete)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_GoForwardBlockUntilNavigationsComplete,
-        GoForwardBlockUntilNavigationsComplete)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InstallExtension,
                                     InstallExtension)
@@ -403,38 +369,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void AutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
-                                                  int* dialog_button) {
-  AppModalDialog* dialog_delegate =
-      Singleton<AppModalDialogQueue>()->active_dialog();
-  *showing_dialog = (dialog_delegate != NULL);
-  if (*showing_dialog)
-    *dialog_button = dialog_delegate->GetDialogButtons();
-  else
-    *dialog_button = MessageBoxFlags::DIALOGBUTTON_NONE;
-}
-
-void AutomationProvider::ClickAppModalDialogButton(int button, bool* success) {
-  *success = false;
-
-  AppModalDialog* dialog_delegate =
-      Singleton<AppModalDialogQueue>()->active_dialog();
-  if (dialog_delegate &&
-      (dialog_delegate->GetDialogButtons() & button) == button) {
-    if ((button & MessageBoxFlags::DIALOGBUTTON_OK) ==
-        MessageBoxFlags::DIALOGBUTTON_OK) {
-      dialog_delegate->AcceptWindow();
-      *success =  true;
-    }
-    if ((button & MessageBoxFlags::DIALOGBUTTON_CANCEL) ==
-        MessageBoxFlags::DIALOGBUTTON_CANCEL) {
-      DCHECK(!*success) << "invalid param, OK and CANCEL specified";
-      dialog_delegate->CancelWindow();
-      *success =  true;
-    }
-  }
-}
-
 void AutomationProvider::ShutdownSessionService(int handle, bool* result) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
@@ -487,18 +421,6 @@ Browser* AutomationProvider::FindAndActivateTab(
     browser->SelectTabContentsAt(tab_index, true);
 
   return browser;
-}
-
-void AutomationProvider::SetShelfVisibility(int handle, bool visible) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      if (visible)
-        browser->window()->GetDownloadShelf()->Show();
-      else
-        browser->window()->GetDownloadShelf()->Close();
-    }
-  }
 }
 
 void AutomationProvider::HandleFindRequest(
@@ -2418,120 +2340,6 @@ TabContents* AutomationProvider::GetTabContentsForHandle(
   return NULL;
 }
 
-void AutomationProvider::GetInfoBarCount(int handle, int* count) {
-  *count = -1;  // -1 means error.
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-    if (nav_controller)
-      *count = nav_controller->tab_contents()->infobar_delegate_count();
-  }
-}
-
-void AutomationProvider::ClickInfoBarAccept(int handle,
-                                            int info_bar_index,
-                                            bool wait_for_navigation,
-                                            IPC::Message* reply_message) {
-  bool success = false;
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-    if (nav_controller) {
-      int count = nav_controller->tab_contents()->infobar_delegate_count();
-      if (info_bar_index >= 0 && info_bar_index < count) {
-        if (wait_for_navigation) {
-          AddNavigationStatusListener(nav_controller, reply_message, 1, false);
-        }
-        InfoBarDelegate* delegate =
-            nav_controller->tab_contents()->GetInfoBarDelegateAt(
-                info_bar_index);
-        if (delegate->AsConfirmInfoBarDelegate())
-          delegate->AsConfirmInfoBarDelegate()->Accept();
-        success = true;
-      }
-    }
-  }
-
-  // This "!wait_for_navigation || !success condition" logic looks suspicious.
-  // It will send a failure message when success is true but
-  // |wait_for_navigation| is false.
-  // TODO(phajdan.jr): investgate whether the reply param (currently
-  // AUTOMATION_MSG_NAVIGATION_ERROR) should depend on success.
-  if (!wait_for_navigation || !success)
-    AutomationMsg_ClickInfoBarAccept::WriteReplyParams(
-        reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-}
-
-void AutomationProvider::GetLastNavigationTime(int handle,
-                                               int64* last_navigation_time) {
-  Time time = tab_tracker_->GetLastNavigationTime(handle);
-  *last_navigation_time = time.ToInternalValue();
-}
-
-void AutomationProvider::WaitForNavigation(int handle,
-                                           int64 last_navigation_time,
-                                           IPC::Message* reply_message) {
-  NavigationController* controller = tab_tracker_->GetResource(handle);
-  Time time = tab_tracker_->GetLastNavigationTime(handle);
-
-  if (time.ToInternalValue() > last_navigation_time || !controller) {
-    AutomationMsg_WaitForNavigation::WriteReplyParams(reply_message,
-        controller == NULL ? AUTOMATION_MSG_NAVIGATION_ERROR :
-                             AUTOMATION_MSG_NAVIGATION_SUCCESS);
-    Send(reply_message);
-    return;
-  }
-
-  AddNavigationStatusListener(controller, reply_message, 1, true);
-}
-
-void AutomationProvider::SetIntPreference(int handle,
-                                          const std::string& name,
-                                          int value,
-                                          bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    browser->profile()->GetPrefs()->SetInteger(name.c_str(), value);
-    *success = true;
-  }
-}
-
-void AutomationProvider::SetStringPreference(int handle,
-                                             const std::string& name,
-                                             const std::string& value,
-                                             bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    browser->profile()->GetPrefs()->SetString(name.c_str(), value);
-    *success = true;
-  }
-}
-
-void AutomationProvider::GetBooleanPreference(int handle,
-                                              const std::string& name,
-                                              bool* success,
-                                              bool* value) {
-  *success = false;
-  *value = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    *value = browser->profile()->GetPrefs()->GetBoolean(name.c_str());
-    *success = true;
-  }
-}
-
-void AutomationProvider::SetBooleanPreference(int handle,
-                                              const std::string& name,
-                                              bool value,
-                                              bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    browser->profile()->GetPrefs()->SetBoolean(name.c_str(), value);
-    *success = true;
-  }
-}
-
 // Gets the current used encoding name of the page in the specified tab.
 void AutomationProvider::GetPageCurrentEncoding(
     int tab_handle, std::string* current_encoding) {
@@ -2578,29 +2386,6 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
         return;
       contents->SetOverrideEncoding(selected_encoding);
     }
-  }
-}
-
-void AutomationProvider::SavePackageShouldPromptUser(bool should_prompt) {
-  SavePackage::SetShouldPromptUser(should_prompt);
-}
-
-void AutomationProvider::GetBlockedPopupCount(int handle, int* count) {
-  *count = -1;  // -1 is the error code
-  if (tab_tracker_->ContainsHandle(handle)) {
-      NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-      TabContents* tab_contents = nav_controller->tab_contents();
-      if (tab_contents) {
-        BlockedPopupContainer* container =
-            tab_contents->blocked_popup_container();
-        if (container) {
-          *count = static_cast<int>(container->GetBlockedPopupCount());
-        } else {
-          // If we don't have a container, we don't have any blocked popups to
-          // contain!
-          *count = 0;
-        }
-      }
   }
 }
 
@@ -2699,68 +2484,6 @@ void AutomationProvider::RemoveBrowsingData(int remove_mask) {
       base::Time());
   remover->Remove(remove_mask);
   // BrowsingDataRemover deletes itself.
-}
-
-void AutomationProvider::WaitForBrowserWindowCountToBecome(
-    int target_count, IPC::Message* reply_message) {
-  if (static_cast<int>(BrowserList::size()) == target_count) {
-    AutomationMsg_WaitForBrowserWindowCountToBecome::WriteReplyParams(
-        reply_message, true);
-    Send(reply_message);
-    return;
-  }
-
-  // Set up an observer (it will delete itself).
-  new BrowserCountChangeNotificationObserver(target_count, this, reply_message);
-}
-
-void AutomationProvider::WaitForAppModalDialogToBeShown(
-    IPC::Message* reply_message) {
-  if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
-    AutomationMsg_WaitForAppModalDialogToBeShown::WriteReplyParams(
-        reply_message, true);
-    Send(reply_message);
-    return;
-  }
-
-  // Set up an observer (it will delete itself).
-  new AppModalDialogShownObserver(this, reply_message);
-}
-
-void AutomationProvider::GoBackBlockUntilNavigationsComplete(
-    int handle, int number_of_navigations, IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    Browser* browser = FindAndActivateTab(tab);
-    if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
-      AddNavigationStatusListener(tab, reply_message, number_of_navigations,
-                                  false);
-      browser->GoBack(CURRENT_TAB);
-      return;
-    }
-  }
-
-  AutomationMsg_GoBackBlockUntilNavigationsComplete::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-  Send(reply_message);
-}
-
-void AutomationProvider::GoForwardBlockUntilNavigationsComplete(
-    int handle, int number_of_navigations, IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    Browser* browser = FindAndActivateTab(tab);
-    if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
-      AddNavigationStatusListener(tab, reply_message, number_of_navigations,
-                                  false);
-      browser->GoForward(CURRENT_TAB);
-      return;
-    }
-  }
-
-  AutomationMsg_GoForwardBlockUntilNavigationsComplete::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-  Send(reply_message);
 }
 
 RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {

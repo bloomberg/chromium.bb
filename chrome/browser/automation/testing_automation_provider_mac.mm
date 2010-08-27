@@ -6,12 +6,16 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/logging.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/tab_window_controller.h"
 #include "chrome/browser/view_ids.h"
+#include "grit/generated_resources.h"
 
 void TestingAutomationProvider::ActivateWindow(int handle) {
   NOTIMPLEMENTED();
@@ -109,3 +113,22 @@ void TestingAutomationProvider::SetWindowVisible(int handle,
   }
 }
 
+void TestingAutomationProvider::GetWindowTitle(int handle, string16* text) {
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  NSString* title = nil;
+  if ([[window delegate] isKindOfClass:[TabWindowController class]]) {
+    TabWindowController* delegate =
+        reinterpret_cast<TabWindowController*>([window delegate]);
+    title = [delegate selectedTabTitle];
+  } else {
+    title = [window title];
+  }
+  // If we don't yet have a title, use "Untitled".
+  if (![title length]) {
+    text->assign(l10n_util::GetStringUTF16(
+        IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED));
+    return;
+  }
+
+  text->assign(base::SysNSStringToUTF16(title));
+}

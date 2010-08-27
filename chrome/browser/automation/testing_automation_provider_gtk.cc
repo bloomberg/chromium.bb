@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/view_id_util.h"
@@ -91,3 +92,8 @@ void TestingAutomationProvider::SetWindowVisible(int handle,
   }
 }
 
+void TestingAutomationProvider::GetWindowTitle(int handle, string16* text) {
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  const gchar* title = gtk_window_get_title(window);
+  text->assign(UTF8ToUTF16(title));
+}

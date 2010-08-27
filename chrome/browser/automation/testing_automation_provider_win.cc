@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/browser_window.h"
@@ -76,5 +78,13 @@ void TestingAutomationProvider::SetWindowVisible(int handle,
   } else {
     *result = false;
   }
+}
+
+void TestingAutomationProvider::GetWindowTitle(int handle, string16* text) {
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  std::wstring result;
+  int length = ::GetWindowTextLength(window) + 1;
+  ::GetWindowText(window, WriteInto(&result, length), length);
+  text->assign(WideToUTF16(result));
 }
 

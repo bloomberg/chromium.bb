@@ -192,8 +192,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
  private:
   // IPC Message callbacks.
-  void GetShowingAppModalDialog(bool* showing_dialog, int* dialog_button);
-  void ClickAppModalDialogButton(int button, bool* success);
   void ShutdownSessionService(int handle, bool* result);
   void WindowSimulateDrag(int handle,
                           std::vector<gfx::Point> drag_path,
@@ -206,7 +204,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetTabHWND(int handle, HWND* tab_hwnd);
 #endif  // defined(OS_WIN)
   void HandleUnused(const IPC::Message& message, int handle);
-  void SetShelfVisibility(int handle, bool visible);
   void SetFilteredInet(const IPC::Message& message, bool enabled);
   void GetFilteredInetHitCount(int* hit_count);
   void SetProxyConfig(const std::string& new_proxy_config);
@@ -528,49 +525,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Asynchronous request for printing the current tab.
   void PrintAsync(int tab_handle);
 
-  // Retrieves the number of info-bars currently showing in |count|.
-  void GetInfoBarCount(int handle, int* count);
-
-  // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
-  // If |wait_for_navigation| is true, it sends the reply after a navigation has
-  // occurred.
-  void ClickInfoBarAccept(int handle, int info_bar_index,
-                          bool wait_for_navigation,
-                          IPC::Message* reply_message);
-
-  // Retrieves the last time a navigation occurred for the tab.
-  void GetLastNavigationTime(int handle, int64* last_navigation_time);
-
-  // Waits for a new navigation in the tab if none has happened since
-  // |last_navigation_time|.
-  void WaitForNavigation(int handle,
-                         int64 last_navigation_time,
-                         IPC::Message* reply_message);
-
-  // Sets the int value for preference with name |name|.
-  void SetIntPreference(int handle,
-                        const std::string& name,
-                        int value,
-                        bool* success);
-
-  // Sets the string value for preference with name |name|.
-  void SetStringPreference(int handle,
-                           const std::string& name,
-                           const std::string& value,
-                           bool* success);
-
-  // Gets the bool value for preference with name |name|.
-  void GetBooleanPreference(int handle,
-                            const std::string& name,
-                            bool* success,
-                            bool* value);
-
-  // Sets the bool value for preference with name |name|.
-  void SetBooleanPreference(int handle,
-                            const std::string& name,
-                            bool value,
-                            bool* success);
-
   // Resets to the default theme.
   void ResetToDefaultTheme();
 
@@ -583,17 +537,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                         const std::string& encoding_name,
                         bool* success);
 
-  void SavePackageShouldPromptUser(bool should_prompt);
-
   // Enables extension automation (for e.g. UITests).
   void SetEnableExtensionAutomation(
       int tab_handle,
       const std::vector<std::string>& functions_enabled);
-
-  void GetWindowTitle(int handle, string16* text);
-
-  // Returns the number of blocked popups in the tab |handle|.
-  void GetBlockedPopupCount(int handle, int* count);
 
   // Selects all contents on the page.
   void SelectAll(int tab_handle);
@@ -606,19 +553,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void ReloadAsync(int tab_handle);
   void StopAsync(int tab_handle);
   void SaveAsAsync(int tab_handle);
-
-  void WaitForBrowserWindowCountToBecome(int target_count,
-                                         IPC::Message* reply_message);
-
-  void WaitForAppModalDialogToBeShown(IPC::Message* reply_message);
-
-  void GoBackBlockUntilNavigationsComplete(int handle,
-                                           int number_of_navigations,
-                                           IPC::Message* reply_message);
-
-  void GoForwardBlockUntilNavigationsComplete(int handle,
-                                              int number_of_navigations,
-                                              IPC::Message* reply_message);
 
 #if defined(OS_CHROMEOS)
   // Logs in through the Chrome OS Login Wizard with given |username| and
