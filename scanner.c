@@ -82,7 +82,8 @@ enum arg_type {
 	UNSIGNED,
 	STRING,
 	OBJECT,
-	ARRAY
+	ARRAY,
+	FD
 };
 
 struct arg {
@@ -189,6 +190,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			arg->type = STRING;
 		else if (strcmp(type, "array") == 0)
 			arg->type = ARRAY;
+		else if (strcmp(type, "fd") == 0)
+			arg->type = FD;
 		else if (strcmp(type, "new_id") == 0) {
 			if (interface_name == NULL) {
 				fprintf(stderr, "no interface name given\n");
@@ -236,7 +239,8 @@ emit_type(struct arg *a)
 	switch (a->type) {
 	default:
 	case INT:
-		printf("int32_t ");
+	case FD:
+		printf("int ");
 		break;
 	case NEW_ID:
 	case UNSIGNED:
@@ -535,6 +539,9 @@ emit_messages(struct wl_list *message_list,
 				break;
 			case ARRAY:
 				printf("a");
+				break;
+			case FD:
+				printf("h");
 				break;
 			}
 		}
