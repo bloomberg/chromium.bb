@@ -49,6 +49,12 @@ class BackgroundModeManager
                            BackgroundAppLoadUnload);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundAppInstallUninstall);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           BackgroundPrefDisabled);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           BackgroundPrefDynamicDisable);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           BackgroundPrefDynamicEnable);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -75,6 +81,9 @@ class BackgroundModeManager
   // Invoked when an extension is uninstalled so we can ensure that
   // launch-on-startup is disabled if appropriate.
   void OnBackgroundAppUninstalled();
+
+  // Invoked when the kBackgroundModeEnabled preference has changed.
+  void OnBackgroundModePrefChanged();
 
   // Returns true if the passed extension is a background app.
   bool IsBackgroundApp(Extension* extension);
@@ -114,6 +123,11 @@ class BackgroundModeManager
 
   // The number of background apps currently loaded.
   int background_app_count_;
+
+  // Set to true when we are running in background mode. Allows us to track our
+  // current background state so we can take the appropriate action when the
+  // user disables/enables background mode via preferences.
+  bool in_background_mode_;
 
   // Reference to our status tray (owned by our parent profile). If null, the
   // platform doesn't support status icons.
