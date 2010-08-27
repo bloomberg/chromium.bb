@@ -30,7 +30,6 @@
 #include "webkit/database/vfs_backend.h"
 #include "webkit/extensions/v8/gc_extension.h"
 #include "webkit/extensions/v8/gears_extension.h"
-#include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
@@ -67,8 +66,6 @@ TestWebKitClient::TestWebKitClient(bool unit_test_mode)
   WebScriptController::enableV8SingleThreadMode();
   WebScriptController::registerExtension(
       extensions_v8::GearsExtension::Get());
-  WebScriptController::registerExtension(
-      extensions_v8::IntervalExtension::Get());
   WebKit::WebRuntimeFeatures::enableSockets(true);
   WebKit::WebRuntimeFeatures::enableApplicationCache(true);
   WebKit::WebRuntimeFeatures::enableDatabase(true);
