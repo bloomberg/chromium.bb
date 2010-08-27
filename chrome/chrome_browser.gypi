@@ -1276,6 +1276,8 @@
         'browser/dom_ui/tips_handler.h',
         'browser/dom_ui/value_helper.cc',
         'browser/dom_ui/value_helper.h',
+        'browser/download/base_file.cc',
+        'browser/download/base_file.h',
         'browser/download/download_exe.cc',
         'browser/download/download_file.cc',
         'browser/download/download_file.h',

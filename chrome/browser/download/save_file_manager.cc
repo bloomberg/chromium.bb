@@ -220,6 +220,10 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   DCHECK(info);
   SaveFile* save_file = new SaveFile(info);
+
+  // TODO(phajdan.jr): We should check the return value and handle errors here.
+  save_file->Initialize();
+
   DCHECK(!LookupSaveFile(info->save_id));
   save_file_map_[info->save_id] = save_file;
   info->path = save_file->full_path();
@@ -486,7 +490,7 @@ void SaveFileManager::RenameAllFiles(
     if (it != save_file_map_.end()) {
       SaveFile* save_file = it->second;
       DCHECK(!save_file->in_progress());
-      save_file->Rename(i->second);
+      save_file->Rename(i->second, true);
       delete save_file;
       save_file_map_.erase(it);
     }

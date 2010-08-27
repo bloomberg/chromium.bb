@@ -1044,6 +1044,7 @@
         'browser/dom_ui/dom_ui_unittest.cc',
         'browser/dom_ui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/dom_ui/shown_sections_handler_unittest.cc',
+        'browser/download/base_file_unittest.cc',
         'browser/download/download_manager_unittest.cc',
         'browser/download/download_request_infobar_delegate_unittest.cc',
         'browser/download/download_request_limiter_unittest.cc',
