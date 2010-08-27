@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -40,20 +39,6 @@ const int kNavigationBarBorderThickness = 1;
 const double kAnimationSpeedPxPerMS = 1.5;
 
 const SkColor kBorderColor = SkColorSetRGB(205, 201, 201);
-
-// Command line switch for specifying url of the page.
-// TODO: nuke when we convert to the real app page. Also nuke code in
-// AddNewContents
-const char kURLSwitch[] = "main-menu-url";
-
-// Returns the URL of the menu.
-static GURL GetMenuURL() {
-  std::string url_string =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kURLSwitch);
-  if (!url_string.empty())
-    return GURL(url_string);
-  return GURL(chrome::kChromeUIAppLauncherURL);
-}
 
 // Returns the location bar view of |browser|.
 static views::View* GetBrowserLocationBar(Browser* browser) {
@@ -177,7 +162,7 @@ void InfoBubbleContentsView::ViewHierarchyChanged(
   // We make the AppLauncher the TabContents delegate so we get notifications
   // from the page to open links.
   dom_view_->tab_contents()->set_delegate(app_launcher_);
-  GURL url = GetMenuURL();
+  GURL url(chrome::kChromeUIAppLauncherURL);
   std::string ref = url.ref();
   if (!app_launcher_->hash_params().empty()) {
     if (!ref.empty())
@@ -323,15 +308,6 @@ void AppLauncher::AddNewContents(TabContents* source,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture) {
-#if defined(OS_CHROMEOS)
-  // ChromeOS uses the kURLSwitch to specify a page that opens popups. We need
-  // to do this so the popups are opened when the user clicks on the page.
-  // TODO: nuke when convert to the real app page.
-  new_contents->set_delegate(NULL);
-  browser_->GetSelectedTabContents()->AddNewContents(
-      new_contents, disposition, initial_pos, user_gesture);
-  Hide();
-#endif
 }
 
 void AppLauncher::UpdatePreferredSize(const gfx::Size& pref_size) {
