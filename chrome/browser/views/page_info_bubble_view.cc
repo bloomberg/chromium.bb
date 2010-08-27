@@ -62,6 +62,7 @@ class Section : public views::View,
 
   static SkBitmap* good_state_icon_;
   static SkBitmap* bad_state_icon_;
+  static SkBitmap* mixed_state_icon_;
 
   views::ImageView* status_image_;
   views::Label* headline_label_;
@@ -74,6 +75,7 @@ class Section : public views::View,
 // static
 SkBitmap* Section::good_state_icon_ = NULL;
 SkBitmap* Section::bad_state_icon_ = NULL;
+SkBitmap* Section::mixed_state_icon_ = NULL;
 
 }  // namespace
 
@@ -169,12 +171,26 @@ Section::Section(PageInfoBubbleView* owner,
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     good_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_GOOD);
     bad_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_BAD);
+    mixed_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_MIXED);
   }
 
   if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY ||
       info_.type == PageInfoModel::SECTION_INFO_CONNECTION) {
     status_image_ = new views::ImageView();
-    status_image_->SetImage(info_.state ? good_state_icon_ : bad_state_icon_);
+    switch (info_.state) {
+      case PageInfoModel::SECTION_STATE_OK:
+        status_image_->SetImage(good_state_icon_);
+        break;
+      case PageInfoModel::SECTION_STATE_WARNING:
+        DCHECK(info_.type == PageInfoModel::SECTION_INFO_CONNECTION);
+        status_image_->SetImage(mixed_state_icon_);
+        break;
+      case PageInfoModel::SECTION_STATE_ERROR:
+        status_image_->SetImage(bad_state_icon_);
+        break;
+      default:
+        NOTREACHED();  // Do you need to add a case here?
+    }
     AddChildView(status_image_);
   }
 

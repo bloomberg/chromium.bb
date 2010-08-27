@@ -35,8 +35,16 @@ class PageInfoModel {
     SECTION_INFO_FIRST_VISIT,
   };
 
+  enum SectionInfoState {
+    SECTION_STATE_OK = 0,
+    // If state is OK but contains mixed content.
+    SECTION_STATE_WARNING,
+    // For example, unverified identity over HTTPS.
+    SECTION_STATE_ERROR,
+  };
+
   struct SectionInfo {
-    SectionInfo(bool state,
+    SectionInfo(SectionInfoState state,
                 const string16& title,
                 const string16& headline,
                 const string16& description,
@@ -48,8 +56,8 @@ class PageInfoModel {
           type(type) {
     }
 
-    bool state;  // True if state is OK, false otherwise (ex of bad states:
-                 // unverified identity over HTTPS).
+    // The overall state of the connection (error, warning, ok).
+    SectionInfoState state;
 
     // The title of the section.
     string16 title;

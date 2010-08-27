@@ -28,8 +28,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
                              bool show_history,
                              PageInfoModelObserver* observer)
     : observer_(observer) {
-  bool state = true;
-  string16 head_line;
+  SectionInfoState state = SECTION_STATE_OK;
+  string16 headline;
   string16 description;
   scoped_refptr<net::X509Certificate> cert;
 
@@ -47,7 +47,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
     // OK HTTPS page.
     if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) != 0) {
       DCHECK(!cert->subject().organization_names.empty());
-      head_line =
+      headline =
           l10n_util::GetStringFUTF16(IDS_PAGE_INFO_EV_IDENTITY_TITLE,
               UTF8ToUTF16(cert->subject().organization_names[0]),
               UTF8ToUTF16(url.host()));
@@ -77,9 +77,9 @@ PageInfoModel::PageInfoModel(Profile* profile,
     } else {
       // Non EV OK HTTPS.
       if (empty_subject_name)
-        head_line.clear();  // Don't display any title.
+        headline.clear();  // Don't display any title.
       else
-        head_line.assign(subject_name);
+        headline.assign(subject_name);
       string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
         issuer_name.assign(l10n_util::GetStringUTF16(
@@ -93,12 +93,12 @@ PageInfoModel::PageInfoModel(Profile* profile,
     // HTTP or bad HTTPS.
     description.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
-    state = false;
+    state = SECTION_STATE_ERROR;
   }
   sections_.push_back(SectionInfo(
       state,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
-      head_line,
+      headline,
       description,
       SECTION_INFO_IDENTITY));
 
@@ -106,16 +106,16 @@ PageInfoModel::PageInfoModel(Profile* profile,
   // We consider anything less than 80 bits encryption to be weak encryption.
   // TODO(wtc): Bug 1198735: report mixed/unsafe content for unencrypted and
   // weakly encrypted connections.
-  state = true;
-  head_line.clear();
+  state = SECTION_STATE_OK;
+  headline.clear();
   description.clear();
   if (ssl.security_bits() <= 0) {
-    state = false;
+    state = SECTION_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
   } else if (ssl.security_bits() < 80) {
-    state = false;
+    state = SECTION_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
         subject_name));
@@ -125,7 +125,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
         subject_name,
         base::IntToString16(ssl.security_bits())));
     if (ssl.displayed_insecure_content() || ssl.ran_insecure_content()) {
-      state = false;
+      state = SECTION_STATE_ERROR;
       description.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
           description,
@@ -133,6 +133,13 @@ PageInfoModel::PageInfoModel(Profile* profile,
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR :
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
     }
+  }
+
+  if (state == SECTION_STATE_OK && ssl.displayed_insecure_content()) {
+    state = SECTION_STATE_WARNING;  // Mixed content warrants a warning.
+    headline.clear();
+    description.assign(l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_SECURITY_MIXED_CONTENT));
   }
 
   uint16 cipher_suite =
@@ -167,7 +174,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
 
     if (did_fallback) {
       // For now, only SSLv3 fallback will trigger a warning icon.
-      state = false;
+      state = SECTION_STATE_ERROR;
       description += ASCIIToUTF16("\n\n");
       description += l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE);
@@ -182,7 +189,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
   sections_.push_back(SectionInfo(
       state,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
-      head_line,
+      headline,
       description,
       SECTION_INFO_CONNECTION));
 
@@ -224,7 +231,7 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
 
   if (!visited_before_today) {
     sections_.push_back(SectionInfo(
-        false,
+        SECTION_STATE_ERROR,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
         string16(),
@@ -233,7 +240,7 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
         SECTION_INFO_FIRST_VISIT));
   } else {
     sections_.push_back(SectionInfo(
-        true,
+        SECTION_STATE_OK,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
         string16(),

@@ -19,7 +19,7 @@ namespace {
 
 class FakeModel : public PageInfoModel {
  public:
-  void AddSection(bool state,
+  void AddSection(SectionInfoState state,
                   const string16& title,
                   const string16& description,
                   SectionInfoType type) {
@@ -111,13 +111,13 @@ class PageInfoWindowMacTest : public CocoaTest {
 
 
 TEST_F(PageInfoWindowMacTest, NoHistoryNoSecurity) {
-  model_->AddSection(false,
+  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
           ASCIIToUTF16("google.com")),
       PageInfoModel::SECTION_INFO_IDENTITY);
-  model_->AddSection(false,
+  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -131,13 +131,13 @@ TEST_F(PageInfoWindowMacTest, NoHistoryNoSecurity) {
 
 
 TEST_F(PageInfoWindowMacTest, HistoryNoSecurity) {
-  model_->AddSection(false,
+  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
           ASCIIToUTF16("google.com")),
       PageInfoModel::SECTION_INFO_IDENTITY);
-  model_->AddSection(false,
+  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -148,7 +148,7 @@ TEST_F(PageInfoWindowMacTest, HistoryNoSecurity) {
   // asynchronously, so replicate the double-build here.
   bridge_->ModelChanged();
 
-  model_->AddSection(false,
+  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
       l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
       l10n_util::GetStringUTF16(
@@ -162,7 +162,7 @@ TEST_F(PageInfoWindowMacTest, HistoryNoSecurity) {
 
 
 TEST_F(PageInfoWindowMacTest, NoHistoryMixedSecurity) {
-  model_->AddSection(true,
+  model_->AddSection(PageInfoModel::SECTION_STATE_OK,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY,
@@ -173,7 +173,7 @@ TEST_F(PageInfoWindowMacTest, NoHistoryMixedSecurity) {
   // region (kImageSize).
   string16 title =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE);
-  model_->AddSection(true,
+  model_->AddSection(PageInfoModel::SECTION_STATE_OK,
       title,
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
