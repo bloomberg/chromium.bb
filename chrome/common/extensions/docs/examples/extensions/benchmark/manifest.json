@@ -1,6 +1,6 @@
 {
   "name": "Page Benchmarker",
-  "version": "1.0",
+  "version": "1.2",
   "description": "Chromium Page Benchmarker.",
   "background_page": "background.html",
   "browser_action": {

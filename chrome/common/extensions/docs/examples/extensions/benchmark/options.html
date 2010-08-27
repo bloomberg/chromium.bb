@@ -291,7 +291,6 @@ function jsinit() {
   document.getElementById("iterations").value = extension.iterations;
   document.getElementById("clearconns").checked = extension.clearConnections;
   document.getElementById("clearcache").checked = extension.clearCache;
-  document.getElementById("newtabs").checked = extension.useNewTabs;
   document.getElementById("enablespdy").checked = extension.enableSpdy;
   setUrl(extension.testUrl);
 
@@ -316,13 +315,11 @@ function config() {
   var iterations = parseInt(document.getElementById("iterations").value);
   var clearConnections = document.getElementById("clearconns").checked;
   var clearCache = document.getElementById("clearcache").checked;
-  var useNewTabs = document.getElementById("newtabs").checked;
   var enableSpdy = document.getElementById("enablespdy").checked;
   if (iterations > 0) {
     extension.iterations = iterations;
     extension.clearConnections = clearConnections;
     extension.clearCache = clearCache;
-    extension.useNewTabs = useNewTabs;
     extension.enableSpdy = enableSpdy;
   }
 }
@@ -380,7 +377,6 @@ function toggle(id) {
 <nb/>
 Clear Connections?<input id="clearconns" type="checkbox">
 Clear Cache?<input id="clearcache" type="checkbox">
-Use New Tabs Per Page?<input id="newtabs" type="checkbox">
 Enable Spdy?<input id="enablespdy" type="checkbox">
 <form onsubmit="config(); run()">
   URL to load <input type="text" id="testurl" size=100>

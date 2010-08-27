@@ -32,7 +32,6 @@ function formatNumber(str) {
 window.iterations = 10;
 window.clearConnections = true;
 window.clearCache = true;
-window.useNewTabs = true;
 window.enableSpdy = false;
 window.results = {};
 window.results.data = new Array();
@@ -213,8 +212,19 @@ function Benchmark() {
     initialSpdySessionCount_ = chrome.benchmarking.counter(kSpdySessionCount);
   }
 
-  // Run a single page in the benchmark
-  this.runPage = function() {
+  this.openNextPage = function() {
+    var benchmark = nextBenchmark();
+    benchmark.pageStart();
+    chrome.tabs.create({"url": benchmark.url() },
+                       function(tab) { benchmarkWindow = tab; });
+  }
+
+  this.prepareToOpenPage = function() {
+    // After the previous page is closed, this function will apply
+    // any settings needed to prepare for opening a new page.
+    // Note: the previous page must be closed, otherwie, the cache
+    // clearing and connection clearing may not be thorough.
+
     if (window.clearCache) {
       chrome.benchmarking.clearCache();
     }
@@ -229,21 +239,22 @@ function Benchmark() {
       chrome.benchmarking.enableSpdy(false);
     }
 
-    if (benchmarkWindow) {
-      var benchmark = nextBenchmark();
-      benchmark.pageStart();
+    // Go back to the browser so that tasks can run.
+    setTimeout(me_.openNextPage, 250);
+  }
 
-      if (window.useNewTabs) {
-        chrome.tabs.remove(benchmarkWindow.id);
-        chrome.tabs.create({"url": benchmark.url() },
-                           function(tab) { benchmarkWindow = tab; });
-      } else {
-        chrome.tabs.update(benchmarkWindow.id, {"url": benchmark.url() });
-      }
+  this.closePage = function() {
+    chrome.tabs.remove(benchmarkWindow.id, function() {
+      me_.prepareToOpenPage();
+    });
+  }
+
+  // Run a single page in the benchmark
+  this.runPage = function() {
+    if (benchmarkWindow) {
+      me_.closePage();
     } else {
-      this.pageStart();
-      chrome.tabs.create({"url": current_.url },
-                         function(tab) { benchmarkWindow = tab; });
+      me_.prepareToOpenPage();
     }
   }
 
@@ -336,6 +347,9 @@ function Benchmark() {
 chrome.extension.onConnect.addListener(function(port) {
   port.onMessage.addListener(function(data) {
     if (data.message == "load") {
+      if (data.url == "about:blank") {
+        alert("blank page loaded!");
+      }
       var benchmark = findBenchmark(data.url);
       if (benchmark != undefined && benchmark.isRunning()) {
         benchmark.pageFinished(data.values);
@@ -348,15 +362,12 @@ function run() {
   if (window.clearCache) {
     // Show a warning if we will try to clear the cache between runs
     // but will also be reusing the same WebKit instance (i.e. Chrome
-    // is in single-process mode, or 'Use New Tabs' is turned off)
-    // because the WebKit cache might not get completely cleared between runs.
+    // is in single-process mode) because the WebKit cache might not get
+    // completely cleared between runs.
     if (chrome.benchmarking.isSingleProcess()) {
       alert("Warning: the WebKit cache may not be cleared correctly " +
             "between runs because Chrome is running in single-process mode.");
-    } else if (!window.useNewTabs) {
-      alert("Warning: the WebKit cache may not be cleared correctly " +
-            "between runs because 'Use New Tabs Per Page' is turned off.");
-    }
+    } 
   }
 
   var urls = testUrl.split(",");
