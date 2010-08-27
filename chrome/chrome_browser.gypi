@@ -3165,9 +3165,11 @@
               ],
               'dependencies': [
                 '../breakpad/breakpad.gyp:breakpad_client',
+                # make sure file_version_info_linux.h is generated first.
+                'common',
               ],
               'include_dirs': [
-                # breakpad_linux.cc wants file_version_info_linux.h
+                # breakpad_linux.cc uses generated file_version_info_linux.h.
                 '<(SHARED_INTERMEDIATE_DIR)',
                 '../breakpad/src',
               ],
