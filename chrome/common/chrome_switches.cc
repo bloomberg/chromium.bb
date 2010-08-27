@@ -439,6 +439,9 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // (internally adds kInternalNaCl and lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
 
+// Enables debugging via RSP over a socket.
+const char kEnableNaClDebug[]               = "enable-nacl-debug";
+
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
@@ -711,6 +714,12 @@ const char kMessageLoopHistogrammer[]       = "message-loop-histogrammer";
 // the server. This is useful for finding issues in the metrics code during UI
 // and performance tests.
 const char kMetricsRecordingOnly[]          = "metrics-recording-only";
+
+// Sets the default IP address (interface) for the stub (normally 127.0.0.1).
+const char kNaClDebugIP[]                   = "nacl-debug-ip";
+
+// Sets the default port range for debugging.
+const char kNaClDebugPorts[]                = "nacl-debug-ports";
 
 // Causes the process to run as a NativeClient broker
 // (used for launching NaCl loader processes on 64-bit Windows).
