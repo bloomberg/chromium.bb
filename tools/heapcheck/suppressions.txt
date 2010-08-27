@@ -955,11 +955,6 @@
    bug_52834
    Heapcheck:Leak
    ...
-   fun:hashtable
-   fun:hash_map
-   fun:IDMap
-   fun:RenderProcessHost
-   fun:MockRenderProcessHost
    fun:MockRenderProcessHostFactory::CreateRenderProcessHost
    fun:SiteInstance::GetProcess
    fun:RenderViewHost
