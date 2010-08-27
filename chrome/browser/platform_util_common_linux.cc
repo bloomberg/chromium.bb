@@ -108,11 +108,11 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
   return g_dialog_response == GTK_RESPONSE_YES;
 }
 
-/* Warning: this may be either Linux or ChromeOS */
-string16 GetVersionStringModifier() {
+// Warning: this may be either Linux or ChromeOS.
+std::string GetVersionStringModifier() {
   char* env = getenv("CHROME_VERSION_EXTRA");
   if (!env)
-    return string16();
+    return std::string();
   std::string modifier(env);
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -128,7 +128,7 @@ string16 GetVersionStringModifier() {
   }
 #endif
 
-  return ASCIIToUTF16(modifier);
+  return modifier;
 }
 
 }  // namespace platform_util

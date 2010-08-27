@@ -38,7 +38,6 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
-#include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -506,25 +505,25 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  if (parsed_command_line.HasSwitch(switches::kProductVersion)) {
-    scoped_ptr<FileVersionInfo> version(chrome::GetChromeVersionInfo());
-    printf("%s\n", WideToASCII(version->product_version()).c_str());
-    return 0;
-  }
-#endif
+  const chrome::VersionInfo version_info;
 
 #if defined(OS_POSIX)
-  if (parsed_command_line.HasSwitch(switches::kVersion)) {
-    scoped_ptr<FileVersionInfo> version(chrome::GetChromeVersionInfo());
-    printf("%s %s %s\n",
-           WideToUTF8(version->product_name()).c_str(),
-           WideToASCII(version->product_version()).c_str(),
-           UTF16ToUTF8(platform_util::GetVersionStringModifier()).c_str());
+
+#if !defined(OS_MACOSX)
+  if (parsed_command_line.HasSwitch(switches::kProductVersion)) {
+    printf("%s\n", version_info.Version().c_str());
     return 0;
   }
 #endif
+
+  if (parsed_command_line.HasSwitch(switches::kVersion)) {
+    printf("%s %s %s\n",
+           version_info.Name().c_str(),
+           version_info.Version().c_str(),
+           platform_util::GetVersionStringModifier().c_str());
+    return 0;
+  }
+#endif  // OS_POSIX
 
   std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);

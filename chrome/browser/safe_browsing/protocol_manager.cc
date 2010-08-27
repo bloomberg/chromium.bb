@@ -8,7 +8,6 @@
 #include "base/base64.h"
 #endif
 #include "base/environment.h"
-#include "base/file_version_info.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -76,11 +75,11 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
   // The first update must happen between 1-5 minutes of start up.
   next_update_sec_ = base::RandInt(60, kSbTimerStartIntervalSec);
 
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
-  if (!version_info.get())
+  chrome::VersionInfo version_info;
+  if (!version_info.is_valid())
     version_ = "0.1";
   else
-    version_ = WideToASCII(version_info->product_version());
+    version_ = version_info.Version();
 }
 
 SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {

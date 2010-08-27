@@ -15,7 +15,6 @@
 #include "app/clipboard/clipboard.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
-#include "base/file_version_info.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -301,10 +300,10 @@ void ClearCache() {
 }
 
 std::string GetProductVersion() {
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
+  chrome::VersionInfo version_info;
   std::string product("Chrome/");
-  product += version_info.get() ? WideToASCII(version_info->product_version())
-                                : "0.0.0.0";
+  product += version_info.is_valid() ? version_info.Version()
+                                     : "0.0.0.0";
   return product;
 }
 

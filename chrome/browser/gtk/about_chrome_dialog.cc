@@ -11,7 +11,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/file_version_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
@@ -108,18 +107,16 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
 void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   static GdkPixbuf* background = rb.GetPixbufNamed(IDR_ABOUT_BACKGROUND);
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
-  std::wstring current_version = version_info->file_version();
+  chrome::VersionInfo version_info;
+  std::string current_version = version_info.Version();
 #if !defined(GOOGLE_CHROME_BUILD)
-  current_version += L" (";
-  current_version += version_info->last_change();
-  current_version += L")";
+  current_version += " (";
+  current_version += version_info.LastChange();
+  current_version += ")";
 #endif
-  string16 version_modifier = platform_util::GetVersionStringModifier();
-  if (version_modifier.length()) {
-    current_version += L" ";
-    current_version += UTF16ToWide(version_modifier);
-  }
+  std::string channel = platform_util::GetVersionStringModifier();
+  if (!channel.empty())
+    current_version += " " + channel;
 
   // Build the dialog.
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
@@ -159,7 +156,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_widget_modify_fg(product_label, GTK_STATE_NORMAL, &black);
   gtk_box_pack_start(GTK_BOX(text_vbox), product_label, FALSE, FALSE, 0);
 
-  GtkWidget* version_label = gtk_label_new(WideToUTF8(current_version).c_str());
+  GtkWidget* version_label = gtk_label_new(current_version.c_str());
   gtk_misc_set_alignment(GTK_MISC(version_label), 0.0, 0.5);
   gtk_label_set_selectable(GTK_LABEL(version_label), TRUE);
   gtk_widget_modify_fg(version_label, GTK_STATE_NORMAL, &black);

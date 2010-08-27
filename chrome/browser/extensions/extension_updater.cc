@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/file_util.h"
-#include "base/file_version_info.h"
 #include "base/histogram.h"
 #include "base/rand_util.h"
 #include "base/sha2.h"
@@ -768,11 +767,10 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
     if (update->browser_min_version.length() > 0) {
       // First determine the browser version if we haven't already.
       if (!browser_version.get()) {
-        scoped_ptr<FileVersionInfo> version_info(
-            chrome::GetChromeVersionInfo());
-        if (version_info.get()) {
+        chrome::VersionInfo version_info;
+        if (version_info.is_valid()) {
           browser_version.reset(Version::GetVersionFromString(
-              version_info->product_version()));
+                                    version_info.Version()));
         }
       }
       scoped_ptr<Version> browser_min_version(

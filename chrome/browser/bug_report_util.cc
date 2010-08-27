@@ -274,17 +274,14 @@ void BugReportUtil::SendReport(Profile* profile,
   web_data->set_url(page_url_text);
 
   // Add the Chrome version
-  std::string chrome_version;
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
-  if (version_info.get()) {
-    chrome_version = WideToUTF8(version_info->product_name()) + " - " +
-        WideToUTF8(version_info->file_version()) +
-        " (" + WideToUTF8(version_info->last_change()) + ")";
-  }
-
-  if (!chrome_version.empty())
+  chrome::VersionInfo version_info;
+  if (version_info.is_valid()) {
+    std::string chrome_version = version_info.Name() + " - " +
+        version_info.Version() +
+        " (" + version_info.LastChange() + ")";
     AddFeedbackData(&feedback_data, std::string(kChromeVersionTag),
                     chrome_version);
+  }
 
   // Add OS version (eg, for WinXP SP2: "5.1.2600 Service Pack 2").
   std::string os_version = "";

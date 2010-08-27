@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
@@ -121,10 +122,9 @@ void MemoryDetails::CollectProcessData(
       // Get Version Information.
       TCHAR name[MAX_PATH];
       if (index2 == CHROME_BROWSER || index2 == CHROME_NACL_PROCESS) {
-        scoped_ptr<FileVersionInfo> version_info(
-            chrome::GetChromeVersionInfo());
-        if (version_info != NULL)
-          info.version = version_info->file_version();
+        chrome::VersionInfo version_info;
+        if (version_info.is_valid())
+          info.version = ASCIIToWide(version_info.Version());
         // Check if this is one of the child processes whose data we collected
         // on the IO thread, and if so copy over that data.
         for (size_t child = 0; child < child_info.size(); child++) {

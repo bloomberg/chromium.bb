@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
@@ -1059,15 +1058,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       return false;
     }
 
-    scoped_ptr<FileVersionInfo> current_version_info(
-        chrome::GetChromeVersionInfo());
-    if (!current_version_info.get()) {
-      DCHECK(false);
+    chrome::VersionInfo current_version_info;
+    if (!current_version_info.is_valid()) {
+      NOTREACHED();
       return false;
     }
 
     scoped_ptr<Version> current_version(
-        Version::GetVersionFromString(current_version_info->file_version()));
+        Version::GetVersionFromString(current_version_info.Version()));
     if (!current_version.get()) {
       DCHECK(false);
       return false;

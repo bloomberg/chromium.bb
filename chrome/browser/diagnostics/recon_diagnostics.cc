@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/file_version_info.h"
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
@@ -116,26 +115,23 @@ class VersionTest : public DiagnosticTest {
   virtual int GetId() { return 0; }
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
-    scoped_ptr<FileVersionInfo> version_info(
-        chrome::GetChromeVersionInfo());
-    if (!version_info.get()) {
+    chrome::VersionInfo version_info;
+    if (!version_info.is_valid()) {
       RecordFailure(ASCIIToUTF16("No Version"));
       return true;
     }
-    string16 current_version = WideToUTF16(version_info->file_version());
+    std::string current_version = version_info.Version();
     if (current_version.empty()) {
       RecordFailure(ASCIIToUTF16("Empty Version"));
       return true;
     }
-    string16 version_modifier = platform_util::GetVersionStringModifier();
-    if (!version_modifier.empty()) {
-      current_version += ASCIIToUTF16(" ");
-      current_version += version_modifier;
-    }
+    std::string version_modifier = platform_util::GetVersionStringModifier();
+    if (!version_modifier.empty())
+      current_version += " " + version_modifier;
 #if defined(GOOGLE_CHROME_BUILD)
-    current_version += ASCIIToUTF16(" GCB");
+    current_version += " GCB";
 #endif  // defined(GOOGLE_CHROME_BUILD)
-    RecordSuccess(current_version);
+    RecordSuccess(ASCIIToUTF16(current_version));
     return true;
   }
 

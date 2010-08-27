@@ -158,20 +158,22 @@ class PageLoadTest : public UITest {
     g_test_log_path = FilePath(FILE_PATH_LITERAL("test_log.log"));
     test_log.open(g_test_log_path.value().c_str());
 
+    // Get the version of Chrome we're running.
+    std::string last_change;
+#if defined(OS_WIN)
     // Check file version info for chrome dll.
     scoped_ptr<FileVersionInfo> file_info;
-#if defined(OS_WIN)
     file_info.reset(FileVersionInfo::CreateFileVersionInfo(kChromeDll));
+    last_change = WideToASCII(file_info->last_change());
 #elif defined(OS_LINUX) || defined(OS_MACOSX)
     // TODO(fmeawad): On Mac, the version retrieved here belongs to the test
     // module and not the chrome binary, need to be changed to chrome binary
     // instead.
-    file_info.reset(chrome::GetChromeVersionInfo());
+    chrome::VersionInfo version_info;
+    last_change = version_info.LastChange();
 #endif  // !defined(OS_WIN)
-    std::wstring last_change = file_info->last_change();
     test_log << "Last Change: ";
     test_log << last_change << std::endl;
-
 
     // Log timestamp for test start.
     base::Time time_now = base::Time::Now();

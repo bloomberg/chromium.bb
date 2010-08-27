@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/file_version_info.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/task.h"
@@ -102,14 +101,13 @@ class DetectUpgradeTask : public Task {
 #endif
 
     // Get the version of the currently *running* instance of Chrome.
-    scoped_ptr<FileVersionInfo> version(chrome::GetChromeVersionInfo());
-    if (version.get() == NULL) {
+    chrome::VersionInfo version_info;
+    if (!version_info.is_valid()) {
       NOTREACHED() << "Failed to get current file version";
       return;
     }
-
     scoped_ptr<Version> running_version(
-        Version::GetVersionFromString(WideToUTF16(version->file_version())));
+        Version::GetVersionFromString(ASCIIToUTF16(version_info.Version())));
     if (running_version.get() == NULL) {
       NOTREACHED() << "Failed to parse version info";
       return;

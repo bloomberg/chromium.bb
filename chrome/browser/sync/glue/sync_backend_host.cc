@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/file_util.h"
-#include "base/file_version_info.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
@@ -393,15 +392,15 @@ std::string MakeUserAgentForSyncapi() {
 #elif defined(OS_MACOSX)
   user_agent += "MAC ";
 #endif
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
-  if (version_info == NULL) {
-    DLOG(ERROR) << "Unable to create FileVersionInfo object";
+  chrome::VersionInfo version_info;
+  if (!version_info.is_valid()) {
+    DLOG(ERROR) << "Unable to create chrome::VersionInfo object";
     return user_agent;
   }
 
-  user_agent += WideToUTF8(version_info->product_version());
-  user_agent += " (" + WideToUTF8(version_info->last_change()) + ")";
-  if (!version_info->is_official_build())
+  user_agent += version_info.Version();
+  user_agent += " (" + version_info.LastChange() + ")";
+  if (!version_info.IsOfficialBuild())
     user_agent += "-devel";
   return user_agent;
 }

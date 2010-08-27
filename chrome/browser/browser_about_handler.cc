@@ -12,7 +12,6 @@
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/file_version_info.h"
 #include "base/histogram.h"
 #include "base/i18n/number_formatting.h"
 #include "base/path_service.h"
@@ -611,11 +610,7 @@ std::string AboutSandbox() {
 std::string AboutVersion(DictionaryValue* localized_strings) {
   localized_strings->SetString("title",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_TITLE));
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
-  if (version_info == NULL) {
-    DLOG(ERROR) << "Unable to create FileVersionInfo object";
-    return std::string();
-  }
+  chrome::VersionInfo version_info;
 
   std::string webkit_version = webkit_glue::GetWebKitVersion();
 #ifdef CHROME_V8
@@ -628,10 +623,9 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
 
   localized_strings->SetString("name",
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  localized_strings->SetString("version",
-      WideToUTF16Hack(version_info->file_version()));
+  localized_strings->SetString("version", version_info.Version());
   localized_strings->SetString("version_modifier",
-      platform_util::GetVersionStringModifier());
+                               platform_util::GetVersionStringModifier());
   localized_strings->SetString("js_engine", js_engine);
   localized_strings->SetString("js_version", js_version);
   localized_strings->SetString("webkit_version", webkit_version);
@@ -639,15 +633,12 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMPANY_NAME));
   localized_strings->SetString("copyright",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT));
-  localized_strings->SetString("cl",
-      WideToUTF16Hack(version_info->last_change()));
-  if (version_info->is_official_build()) {
-    localized_strings->SetString("official",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OFFICIAL));
-  } else {
-    localized_strings->SetString("official",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_UNOFFICIAL));
-  }
+  localized_strings->SetString("cl", version_info.LastChange());
+  localized_strings->SetString("official",
+      l10n_util::GetStringUTF16(
+          version_info.IsOfficialBuild() ?
+              IDS_ABOUT_VERSION_OFFICIAL
+            : IDS_ABOUT_VERSION_UNOFFICIAL));
   localized_strings->SetString("user_agent_name",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_USER_AGENT));
   localized_strings->SetString("useragent", webkit_glue::GetUserAgent(GURL()));

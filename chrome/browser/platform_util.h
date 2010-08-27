@@ -55,7 +55,7 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
 // Return a human readable modifier for the version string.  For a
 // branded Chrome (not Chromium), this modifier is the channel (dev,
 // beta, but "" for stable).
-string16 GetVersionStringModifier();
+std::string GetVersionStringModifier();
 
 }
 

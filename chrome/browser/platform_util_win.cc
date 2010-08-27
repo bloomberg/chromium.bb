@@ -166,7 +166,7 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
       MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND) == IDYES;
 }
 
-string16 GetVersionStringModifier() {
+std::string GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
   FilePath module;
   string16 channel;
@@ -176,9 +176,9 @@ string16 GetVersionStringModifier() {
 
     GoogleUpdateSettings::GetChromeChannel(is_system_install, &channel);
   }
-  return channel;
+  return UTF16ToASCII(channel);
 #else
-  return string16();
+  return std::string();
 #endif
 }
 

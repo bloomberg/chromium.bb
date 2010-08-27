@@ -133,10 +133,10 @@ static BOOL recentShownUserActionFailedStatus = NO;
 
   NSString* versionModifier = @"";
   NSString* svnRevision = @"";
-  string16 modifier = platform_util::GetVersionStringModifier();
-  if (modifier.length())
+  std::string modifier = platform_util::GetVersionStringModifier();
+  if (!modifier.empty())
     versionModifier = [NSString stringWithFormat:@" %@",
-                                            base::SysUTF16ToNSString(modifier)];
+                                base::SysUTF8ToNSString(modifier)];
 
 #if !defined(GOOGLE_CHROME_BUILD)
   svnRevision = [NSString stringWithFormat:@" (%@)",

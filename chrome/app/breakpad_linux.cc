@@ -187,13 +187,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   mime_boundary[28 + 16] = 0;
   IGNORE_RET(sys_close(ufd));
 
-  // The define for the product version is a wide string, so we need to
-  // downconvert it.
-  static const wchar_t version[] = PRODUCT_VERSION;
-  static const unsigned version_len = sizeof(version) / sizeof(wchar_t);
-  char version_msg[version_len];
-  for (unsigned i = 0; i < version_len; ++i)
-    version_msg[i] = static_cast<char>(version[i]);
+  static const char version_msg[] = PRODUCT_VERSION;
 
   // The MIME block looks like this:
   //   BOUNDARY \r\n (0, 1)

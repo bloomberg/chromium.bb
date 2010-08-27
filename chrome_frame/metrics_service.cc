@@ -462,14 +462,13 @@ bool MetricsService::UploadData() {
 
 // static
 std::string MetricsService::GetVersionString() {
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome::GetChromeVersionInfo());
-  if (version_info.get()) {
-    std::string version = WideToUTF8(version_info->product_version());
+  chrome::VersionInfo version_info;
+  if (version_info.is_valid()) {
+    std::string version = version_info.Version();
     // Add the -F extensions to ensure that UMA data uploaded by ChromeFrame
     // lands in the ChromeFrame bucket.
     version += "-F";
-    if (!version_info->is_official_build())
+    if (!version_info.IsOfficialBuild())
       version.append("-devel");
     return version;
   } else {

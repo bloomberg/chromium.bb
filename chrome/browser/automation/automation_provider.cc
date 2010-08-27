@@ -9,7 +9,6 @@
 #include "app/message_box_flags.h"
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/file_version_info.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -160,14 +159,10 @@ void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
                            automation_resource_message_filter_,
                            g_browser_process->io_thread()->message_loop(),
                            true, g_browser_process->shutdown_event()));
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
-  std::string version_string;
-  if (version_info != NULL) {
-    version_string = WideToASCII(version_info->file_version());
-  }
+  chrome::VersionInfo version_info;
 
   // Send a hello message with our current automation protocol version.
-  channel_->Send(new AutomationMsg_Hello(0, version_string.c_str()));
+  channel_->Send(new AutomationMsg_Hello(0, version_info.Version().c_str()));
 
   TRACE_EVENT_END("AutomationProvider::ConnectToChannel", 0, "");
 }

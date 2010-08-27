@@ -11,7 +11,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
-#include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -142,23 +141,21 @@ void AboutChromeView::Init() {
   text_direction_is_rtl_ = base::i18n::IsRTL();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
-  if (version_info.get() == NULL) {
+  chrome::VersionInfo version_info;
+  if (!version_info.is_valid()) {
     NOTREACHED() << L"Failed to initialize about window";
     return;
   }
 
-  current_version_ = version_info->file_version();
+  current_version_ = ASCIIToWide(version_info.Version());
 
-  string16 version_modifier = platform_util::GetVersionStringModifier();
-  if (version_modifier.length()) {
-    version_details_ += L" ";
-    version_details_ += UTF16ToWide(version_modifier);
-  }
+  std::string version_modifier = platform_util::GetVersionStringModifier();
+  if (!version_modifier.empty())
+    version_details_ += L" " + ASCIIToWide(version_modifier);
 
 #if !defined(GOOGLE_CHROME_BUILD)
   version_details_ += L" (";
-  version_details_ += version_info->last_change();
+  version_details_ += ASCIIToWide(version_info.LastChange());
   version_details_ += L")";
 #endif
 

@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/file_version_info.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -136,21 +135,18 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   // browser version
 
-  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
-  DCHECK(version_info.get() != NULL);
+  chrome::VersionInfo version_info;
+  DCHECK(version_info.is_valid());
 
-  string16 browser_version = WideToUTF16Hack(version_info->file_version());
-
-  string16 version_modifier = platform_util::GetVersionStringModifier();
-  if (version_modifier.length()) {
-    browser_version += ASCIIToUTF16(" ");
-    browser_version += version_modifier;
-  }
+  std::string browser_version = version_info.Version();
+  std::string version_modifier = platform_util::GetVersionStringModifier();
+  if (!version_modifier.empty())
+    browser_version += " " + version_modifier;
 
 #if !defined(GOOGLE_CHROME_BUILD)
-  browser_version += ASCIIToUTF16(" (");
-  browser_version += WideToUTF16Hack(version_info->last_change());
-  browser_version += ASCIIToUTF16(")");
+  browser_version += " (";
+  browser_version += version_info.LastChange();
+  browser_version += ")";
 #endif
 
   localized_strings->SetString("browser_version", browser_version);

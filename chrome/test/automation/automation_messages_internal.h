@@ -40,7 +40,7 @@ IPC_BEGIN_MESSAGES(Automation)
   // in the app (the app is not fully up at this point). The parameter to this
   // message is the version string of the automation provider. This parameter
   // is defined to be the version string as returned by
-  // FileVersionInfo::file_version().
+  // chrome::VersionInfo::Version().
   // The client can choose to use this version string to decide whether or not
   // it can talk to the provider.
   IPC_MESSAGE_ROUTED1(AutomationMsg_Hello, std::string)

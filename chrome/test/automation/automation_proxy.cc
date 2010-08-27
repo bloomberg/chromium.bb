@@ -9,7 +9,6 @@
 #include <sstream>
 
 #include "base/basictypes.h"
-#include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
@@ -174,16 +173,13 @@ AutomationLaunchResult AutomationProxy::WaitForAppLaunch() {
     if (perform_version_check_) {
       // Obtain our own version number and compare it to what the automation
       // provider sent.
-      scoped_ptr<FileVersionInfo> file_version_info(
-          chrome::GetChromeVersionInfo());
-      DCHECK(file_version_info != NULL);
-      std::string version_string(
-          WideToASCII(file_version_info->file_version()));
+      chrome::VersionInfo version_info;
+      DCHECK(version_info.is_valid());
 
       // Note that we use a simple string comparison since we expect the version
       // to be a punctuated numeric string. Consider using base/Version if we
       // ever need something more complicated here.
-      if (server_version_ != version_string) {
+      if (server_version_ != version_info.Version()) {
         result = AUTOMATION_VERSION_MISMATCH;
       }
     }

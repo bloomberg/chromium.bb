@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/file_version_info.h"
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -70,20 +69,18 @@ std::string MetricsLog::GetInstallDate() const {
 
 // static
 std::string MetricsLog::GetVersionString() {
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome::GetChromeVersionInfo());
-  if (version_info.get()) {
-    std::string version = WideToUTF8(version_info->product_version());
-    if (!version_extension_.empty())
-      version += version_extension_;
-    if (!version_info->is_official_build())
-      version.append("-devel");
-    return version;
-  } else {
-    NOTREACHED() << "Unable to retrieve version string.";
+  chrome::VersionInfo version_info;
+  if (!version_info.is_valid()) {
+    NOTREACHED() << "Unable to retrieve version info.";
+    return std::string();
   }
 
-  return std::string();
+  std::string version = version_info.Version();
+  if (!version_extension_.empty())
+    version += version_extension_;
+  if (!version_info.IsOfficialBuild())
+    version.append("-devel");
+  return version;
 }
 
 void MetricsLog::RecordIncrementalStabilityElements() {

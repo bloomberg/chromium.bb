@@ -176,7 +176,7 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
   return result == NSAlertFirstButtonReturn;
 }
 
-string16 GetVersionStringModifier() {
+std::string GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
   // Use the main application bundle and not the framework bundle. Keystone
   // keys don't live in the framework.
@@ -196,9 +196,9 @@ string16 GetVersionStringModifier() {
     channel = @"unknown";
   }
 
-  return base::SysNSStringToUTF16(channel);
+  return base::SysNSStringToUTF8(channel);
 #else
-  return string16();
+  return std::string();
 #endif
 }
 

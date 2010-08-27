@@ -13,7 +13,6 @@
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/file_version_info.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
@@ -456,25 +455,21 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   {
     DictionaryValue* dict = new DictionaryValue();
 
-    scoped_ptr<FileVersionInfo> version_info(
-        chrome::GetChromeVersionInfo());
+    chrome::VersionInfo version_info;
 
-    if (version_info == NULL) {
-      DLOG(ERROR) << "Unable to create FileVersionInfo object";
-
+    if (version_info.is_valid()) {
+      DLOG(ERROR) << "Unable to create chrome::VersionInfo";
     } else {
       // We have everything we need to send the right values.
-      dict->SetString("version", WideToUTF16Hack(version_info->file_version()));
-      dict->SetString("cl", WideToUTF16Hack(version_info->last_change()));
-      dict->SetString("version_mod", platform_util::GetVersionStringModifier());
-
-      if (version_info->is_official_build()) {
-        dict->SetString("official",
-            l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OFFICIAL));
-      } else {
-        dict->SetString("official",
-            l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_UNOFFICIAL));
-      }
+      dict->SetString("version", version_info.Version());
+      dict->SetString("cl", version_info.LastChange());
+      dict->SetString("version_mod",
+                      platform_util::GetVersionStringModifier());
+      dict->SetString("official",
+          l10n_util::GetStringUTF16(
+              version_info.IsOfficialBuild() ?
+                IDS_ABOUT_VERSION_OFFICIAL
+              : IDS_ABOUT_VERSION_UNOFFICIAL));
 
       dict->SetString("command_line",
           CommandLine::ForCurrentProcess()->command_line_string());
