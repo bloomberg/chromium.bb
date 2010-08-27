@@ -10,3 +10,13 @@ diff -Naurb src/eon.cc src2/eon.cc
      times(&time_usage);
      float ustart_time = time_usage.tms_utime/clk_tck;
      float sstart_time = time_usage.tms_stime/clk_tck;
+--- src/ggRaster.h	2010-08-27 17:10:00.000000000 -0400
++++ src2/ggRaster.h	2010-08-27 16:59:48.000000000 -0400
+@@ -186,6 +186,7 @@
+                        const T& c1,
+                        const T& c2);
+ //#if defined( _WIN32 )
++#include <string.h>
+ #include "ggRaster.cc"
+ //#endif
+ #endif

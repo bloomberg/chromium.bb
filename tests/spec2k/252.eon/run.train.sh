@@ -32,7 +32,7 @@ ${PREFIX} $1 ${DASHDASH} chair.control.rushmeier chair.camera chair.surfaces  ch
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"
   for i in ${LIST} ; do
-    cmp  $i  data/train/output/$i
+    ../specdiff.sh -a 0.005  $i  data/train/output/$i
   done
 fi
 
