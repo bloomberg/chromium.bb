@@ -1,0 +1,12 @@
+# TODO(timurrrr): investigate these
+ClientSocketPoolBaseTest.*
+SSLClientSocketTest.*
+ProxyResolver*
+DiskCache*Test.*
+X509CertificateTest.*
+UrlToFilenameEncoderTest.*
+DirectoryListerTest.*
+WebSocketHandshake*
+HTTPSRequestTest.*
+NetUtilTest.*
+*HTTP*

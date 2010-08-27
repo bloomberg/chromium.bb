@@ -30,10 +30,36 @@ ntdll.dll!Rtl*
 ntdll.dll!Rtl*
 ntdll.dll!RtlFindActivationContextSectionString
 
-# http://code.google.com/p/drmemory/issues/detail?id=13
+# http://code.google.com/p/drmemory/issues/detail?id=14
 UNINITIALIZED READ
-system call NtCreateThread
-KERNEL32.dll!CreateThread
+...
+KERNEL32.dll!CreateProcess*
+
+# http://code.google.com/p/drmemory/issues/detail?id=15
+UNINITIALIZED READ
+...
+*!rand_s
+
+# http://code.google.com/p/drmemory/issues/detail?id=17
+UNINITIALIZED READ
+...
+*!CreateWindow*
+
+# http://code.google.com/p/drmemory/issues/detail?id=36
+UNINITIALIZED READ
+system call NtContinue
+*!DebuggerProbe
+*!DebuggerKnownHandle
+
+############################
+# TODO(timurrrr): investigate these
+UNINITIALIZED READ
+...
+*!win_util::GetLogonSessionOnlyDACL
+
+UNINITIALIZED READ
+...
+WINSPOOL.DRV!*
 
 ############################
 # Real issues in Chromium
