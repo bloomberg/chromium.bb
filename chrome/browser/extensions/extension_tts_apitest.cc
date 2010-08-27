@@ -7,20 +7,15 @@
 #include "chrome/common/chrome_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-// This extension API is currently only supported on Chrome OS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_Tts Tts
-#else
-#define MAYBE_Tts DISABLED_Tts
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tts) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tts) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
+  #if defined(OS_CHROMEOS)
   chromeos::CrosMock crosMock;
   crosMock.InitMockSpeechSynthesisLibrary();
   crosMock.SetSpeechSynthesisLibraryExpectations();
+  #endif
 
   ASSERT_TRUE(RunExtensionTest("tts")) << message_;
 }
