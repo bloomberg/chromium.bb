@@ -44,56 +44,6 @@ sys.path.append(os.path.join(NaclTopDir(), 'tools'))
 import code_hygiene
 
 
-def FindOnPage(input_api, url, regex):
-  """Given a url, download it and find the part matching a regex.
-  Arguments:
-    input_api: the limited set of input modules allowed in presubmit.
-    url: url to download.
-    regex: regex to match on.
-  Returns:
-    A string extracted from the match, or None if no match or error.
-  """
-  try:
-    connection = input_api.urllib2.urlopen(url)
-    text = connection.read()
-    connection.close()
-    match = input_api.re.search(regex, text)
-    if match:
-      return match.group(1)
-    else:
-      return None
-  except IOError, e:
-    print str(e)
-    return None
-
-
-def CheckTreeIsOpen(input_api, output_api, url, url_text):
-  """Similar to the one in presubmit_canned_checks except it shows an helpful
-  status text instead.
-  Arguments:
-    input_api: the limited set of input modules allowed in presubmit.
-    output_api: the limited set of output modules allowed in presubmit.
-    url: url to get numerical tree status from.
-    url_text: url to get human readable tree status from.
-  Returns:
-    A list of presubmit warnings.
-  """
-  assert(input_api.is_committing)
-  # Check if tree is open.
-  status = FindOnPage(input_api, url, '([0-9]+)')
-  if status and int(status):
-    return []
-  # Try to find out what failed.
-  message = FindOnPage(input_api, url_text,
-                       r'\<div class\="Notice"\>(.*)\<\/div\>')
-  if message:
-    return [output_api.PresubmitPromptWarning('The tree is closed.',
-                                              long_text=message.strip())]
-  # Report unknown reason.
-  return [output_api.PresubmitPromptWarning(
-      'The tree status cannot be checked.')]
-
-
 def CheckEolStyle(input_api, output_api, affected_files):
   """Verifies the svn:eol-style is set to LF.
   Canned checks implementation can be found in depot_tools.
@@ -132,8 +82,7 @@ def CheckChangeOnCommit(input_api, output_api):
   """
   report = []
   report.extend(CheckChangeOnUpload(input_api, output_api))
-  report.extend(CheckTreeIsOpen(
+  report.extend(input_api.canned_checks.CheckTreeIsOpen(
       input_api, output_api,
-      'http://nativeclient-status.appspot.com/status',
-      'http://nativeclient-status.appspot.com/current'))
+      json_url='http://nativeclient-status.appspot.com/current?format=json'))
   return report
