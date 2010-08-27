@@ -5667,9 +5667,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Options Window -->
-      <message name="IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE" desc="The label in the checkbox that enables background mode for installed web apps.">
-        Allow installed web apps to run in the background and launch on system start
-      </message>
+      <if expr="os != 'darwin'">
+        <message name="IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE" desc="The label in the checkbox that enables background mode for installed web apps.">
+          Allow installed web apps to run in the background and launch on system start
+        </message>
+      </if>
       <message name="IDS_OPTIONS_DIALOG_TITLE" desc="The title of the Options dialog box">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Options
       </message>

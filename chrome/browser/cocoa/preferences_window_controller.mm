@@ -347,6 +347,7 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setFileHandlerUIEnabled:(BOOL)value;
 - (void)setTranslateEnabled:(BOOL)value;
 - (void)setTabsToLinks:(BOOL)value;
+- (void)setBackgroundModeEnabled:(BOOL)value;
 - (void)displayPreferenceViewForPage:(OptionsPage)page
                              animate:(BOOL)animate;
 - (void)resetSubViews;
@@ -777,6 +778,8 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   autoOpenFiles_.Init(
       prefs::kDownloadExtensionsToOpen, prefs_, observer_.get());
   translateEnabled_.Init(prefs::kEnableTranslate, prefs_, observer_.get());
+  backgroundModeEnabled_.Init(prefs::kBackgroundModeEnabled, prefs_,
+                              observer_.get());
   tabsToLinks_.Init(prefs::kWebkitTabsToLinks, prefs_, observer_.get());
 
   // During unit tests, there is no local state object, so we fall back to
@@ -1412,6 +1415,10 @@ const int kDisabledIndex = 1;
   else if (*prefName == prefs::kEnableTranslate) {
     [self setTranslateEnabled:translateEnabled_.GetValue() ? YES : NO];
   }
+  else if (*prefName == prefs::kBackgroundModeEnabled) {
+    [self setBackgroundModeEnabled:backgroundModeEnabled_.GetValue() ?
+          YES : NO];
+  }
   else if (*prefName == prefs::kWebkitTabsToLinks) {
     [self setTabsToLinks:tabsToLinks_.GetValue() ? YES : NO];
   }
@@ -1473,6 +1480,14 @@ const int kDisabledIndex = 1;
   Browser* browser = Browser::Create(profile_);
   browser->OpenURL(GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_PRIVACY_URL)),
                    GURL(), NEW_WINDOW, PageTransition::LINK);
+}
+
+- (IBAction)backgroundModeLearnMore:(id)sender {
+  // We open a new browser window so the Options dialog doesn't get lost
+  // behind other windows.
+  Browser::Create(profile_)->OpenURL(
+      GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_BACKGROUND_MODE_URL)),
+      GURL(), NEW_WINDOW, PageTransition::LINK);
 }
 
 - (IBAction)resetAutoOpenFiles:(id)sender {
@@ -1687,6 +1702,19 @@ const int kDisabledIndex = 1;
     [self recordUserAction:UserMetricsAction("Options_Translate_Disable")];
   }
   translateEnabled_.SetValue(value);
+}
+
+- (BOOL)backgroundModeEnabled {
+  return backgroundModeEnabled_.GetValue();
+}
+
+- (void)setBackgroundModeEnabled:(BOOL)value {
+  if (value) {
+    [self recordUserAction:UserMetricsAction("Options_BackgroundMode_Enable")];
+  } else {
+    [self recordUserAction:UserMetricsAction("Options_BackgroundMode_Disable")];
+  }
+  backgroundModeEnabled_.SetValue(value);
 }
 
 - (BOOL)tabsToLinks {

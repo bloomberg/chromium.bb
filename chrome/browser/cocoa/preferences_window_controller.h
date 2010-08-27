@@ -131,6 +131,7 @@ class ProfileSyncService;
   BOOL proxiesConfigureButtonEnabled_;
   BOOL restoreButtonsEnabled_;
   BOOL restoreURLsEnabled_;
+  BooleanPrefMember backgroundModeEnabled_;
 }
 
 // Designated initializer. |profile| should not be NULL.
@@ -174,6 +175,7 @@ class ProfileSyncService;
 - (IBAction)changeFontAndLanguageSettings:(id)sender;
 - (IBAction)openProxyPreferences:(id)sender;
 - (IBAction)showCertificates:(id)sender;
+- (IBAction)backgroundModeLearnMore:(id)sender;
 - (IBAction)resetToDefaults:(id)sender;
 
 // When a toolbar button is clicked
