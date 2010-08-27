@@ -202,7 +202,7 @@ bool AddressField::ParseAddressLines(
       return false;
   } else {
     pattern =
-        ASCIIToUTF16("street|address line|address1|street_line1|addr1");
+        ASCIIToUTF16("address.?line|address1|addr1|street");
     string16 label_pattern = ASCIIToUTF16("address");
 
     if (!ParseText(iter, pattern, &address_field->address1_))
@@ -219,7 +219,7 @@ bool AddressField::ParseAddressLines(
     if (!ParseEmptyText(iter, &address_field->address2_))
       ParseText(iter, pattern, &address_field->address2_);
   } else {
-    pattern = ASCIIToUTF16("address2|street|street_line2|addr2|suite|unit");
+    pattern = ASCIIToUTF16("address.?line2|address2|addr2|street|suite|unit");
     string16 label_pattern = ASCIIToUTF16("address");
     if (!ParseEmptyText(iter, &address_field->address2_))
       if (!ParseText(iter, pattern, &address_field->address2_))
@@ -233,11 +233,9 @@ bool AddressField::ParseAddressLines(
                                kEcmlBillToAddress3, '|');
       ParseText(iter, pattern);
     } else {
-      pattern = ASCIIToUTF16("address3|street|street_line3|addr3|line3");
-      string16 label_pattern = ASCIIToUTF16("address");
+      pattern = ASCIIToUTF16("address.?line3|address3|addr3|street|line3");
       if (!ParseEmptyText(iter, NULL))
-        if (!ParseText(iter, pattern, NULL))
-          ParseLabelText(iter, label_pattern, NULL);
+        ParseText(iter, pattern, NULL);
     }
   }
 

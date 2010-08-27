@@ -421,7 +421,8 @@ TEST(FormStructureTest, HeuristicsSample8) {
   // Zip.
   EXPECT_EQ(ADDRESS_BILLING_ZIP, form_structure->field(6)->heuristic_type());
   // Country.
-  EXPECT_EQ(ADDRESS_BILLING_COUNTRY, form_structure->field(7)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_COUNTRY,
+      form_structure->field(7)->heuristic_type());
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(8)->heuristic_type());
@@ -740,6 +741,53 @@ TEST(FormStructureTest, ThreeAddressLines) {
   // City.
   EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(3)->heuristic_type());
 }
+
+// This test verifies that "addressLine1" and "addressLine2" matches heuristics.
+// This occured in https://www.gorillaclothing.com/.  http://crbug.com/52126.
+TEST(FormStructureTest, BillingAndShippingAddresses) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line1"),
+                             ASCIIToUTF16("shipping.address.addressLine1"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line2"),
+                             ASCIIToUTF16("shipping.address.addressLine2"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line1"),
+                             ASCIIToUTF16("billing.address.addressLine1"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line2"),
+                             ASCIIToUTF16("billing.address.addressLine2"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->IsAutoFillable());
+  ASSERT_EQ(4U, form_structure->field_count());
+  ASSERT_EQ(4U, form_structure->autofill_count());
+
+  // Address Line 1.
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
+  // Address Line 2.
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
+  // Address Line 1.
+  EXPECT_EQ(ADDRESS_BILLING_LINE1, form_structure->field(2)->heuristic_type());
+  // Address Line 2.
+  EXPECT_EQ(ADDRESS_BILLING_LINE2, form_structure->field(3)->heuristic_type());
+}
+
 
 // This example comes from expedia.com where they use a "Suite" label to
 // indicate a suite or apartment number.  We interpret this as address line 2.
