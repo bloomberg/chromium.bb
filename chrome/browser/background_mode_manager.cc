@@ -30,7 +30,6 @@
 BackgroundModeManager::BackgroundModeManager(Profile* profile)
     : profile_(profile),
       background_app_count_(0),
-      in_background_mode_(false),
       status_tray_(NULL),
       status_icon_(NULL) {
   // If background mode is disabled for unittests, just exit - don't listen for
@@ -70,18 +69,13 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile)
   registrar_.Add(this, NotificationType::APP_TERMINATING,
                  NotificationService::AllSources());
 
-  // Listen for changes to the background mode preference.
-  profile_->GetPrefs()->AddPrefObserver(prefs::kBackgroundModeEnabled, this);
+
 }
 
 BackgroundModeManager::~BackgroundModeManager() {
   // If we're going away, remove our status tray icon so we don't get any events
   // from it.
   RemoveStatusTrayIcon();
-  // Manually remove our pref observer so we don't get notified for prefs
-  // changes (have to do it manually because we can't use the registrar for
-  // prefs notifications).
-  profile_->GetPrefs()->RemovePrefObserver(prefs::kBackgroundModeEnabled, this);
 }
 
 bool BackgroundModeManager::IsBackgroundModeEnabled() {
@@ -121,11 +115,6 @@ void BackgroundModeManager::Observe(NotificationType type,
       // try to re-enter/exit background mode again.
       registrar_.RemoveAll();
       break;
-    case NotificationType::PREF_CHANGED:
-      DCHECK(0 == Details<std::string>(details).ptr()->compare(
-          prefs::kBackgroundModeEnabled));
-      OnBackgroundModePrefChanged();
-      break;
     default:
       NOTREACHED();
       break;
@@ -134,24 +123,6 @@ void BackgroundModeManager::Observe(NotificationType type,
 
 bool BackgroundModeManager::IsBackgroundApp(Extension* extension) {
   return extension->HasApiPermission(Extension::kBackgroundPermission);
-}
-
-
-void BackgroundModeManager::OnBackgroundModePrefChanged() {
-  // Background mode has been enabled/disabled in preferences, so update our
-  // state accordingly.
-  if (IsBackgroundModeEnabled() && !in_background_mode_ &&
-      background_app_count_ > 0) {
-    // We should be in background mode, but we're not, so switch to background
-    // mode.
-    EnableLaunchOnStartup(true);
-    StartBackgroundMode();
-  }
-  if (!IsBackgroundModeEnabled() && in_background_mode_) {
-    // We're in background mode, but we shouldn't be any longer.
-    EnableLaunchOnStartup(false);
-    EndBackgroundMode();
-  }
 }
 
 void BackgroundModeManager::OnBackgroundAppLoaded() {
@@ -163,13 +134,6 @@ void BackgroundModeManager::OnBackgroundAppLoaded() {
 }
 
 void BackgroundModeManager::StartBackgroundMode() {
-  // Don't bother putting ourselves in background mode if we're already there.
-  if (in_background_mode_)
-    return;
-
-  // Mark ourselves as running in background mode.
-  in_background_mode_ = true;
-
   // Put ourselves in KeepAlive mode and create a status tray icon.
   BrowserList::StartKeepAlive();
 
@@ -181,16 +145,12 @@ void BackgroundModeManager::OnBackgroundAppUnloaded() {
   // When a background app unloads, decrement our count and also end
   // KeepAlive mode if appropriate.
   background_app_count_--;
-  DCHECK(background_app_count_ >= 0);
+  DCHECK(background_app_count_ == 0);
   if (background_app_count_ == 0 && IsBackgroundModeEnabled())
     EndBackgroundMode();
 }
 
 void BackgroundModeManager::EndBackgroundMode() {
-  if (!in_background_mode_)
-    return;
-  in_background_mode_ = false;
-
   // End KeepAlive mode and blow away our status tray icon.
   BrowserList::EndKeepAlive();
   RemoveStatusTrayIcon();
