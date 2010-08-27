@@ -238,11 +238,6 @@ void BackgroundContentsService::ShutdownAssociatedBackgroundContents(
 
 void BackgroundContentsService::BackgroundContentsOpened(
     BackgroundContentsOpenedDetails* details) {
-  // If this is the first BackgroundContents loaded, kick ourselves into
-  // persistent mode.
-  if (contents_map_.empty())
-    BrowserList::StartKeepAlive();
-
   // Add the passed object to our list. Should not already be tracked.
   DCHECK(!IsTracked(details->contents));
   DCHECK(!details->application_id.empty());
@@ -263,10 +258,6 @@ void BackgroundContentsService::BackgroundContentsShutdown(
   DCHECK(IsTracked(background_contents));
   string16 appid = GetParentApplicationId(background_contents);
   contents_map_.erase(appid);
-  // If we have no more BackgroundContents active, then stop keeping the browser
-  // process alive.
-  if (contents_map_.empty())
-    BrowserList::EndKeepAlive();
 }
 
 BackgroundContents* BackgroundContentsService::GetAppBackgroundContents(

@@ -114,12 +114,9 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy) {
   BackgroundContentsService service(&profile, command_line_.get());
   MockBackgroundContents* contents = new MockBackgroundContents(&profile);
   EXPECT_FALSE(service.IsTracked(contents));
-  EXPECT_FALSE(BrowserList::WillKeepAlive());
   contents->SendOpenedNotification();
-  EXPECT_TRUE(BrowserList::WillKeepAlive());
   EXPECT_TRUE(service.IsTracked(contents));
   delete contents;
-  EXPECT_FALSE(BrowserList::WillKeepAlive());
   EXPECT_FALSE(service.IsTracked(contents));
 }
 
