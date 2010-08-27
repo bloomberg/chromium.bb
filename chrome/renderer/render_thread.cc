@@ -931,7 +931,7 @@ void RenderThread::EnsureWebKitInitialized() {
       command_line.HasSwitch(switches::kEnableDeviceMotion));
 
   WebRuntimeFeatures::enableDeviceOrientation(
-      command_line.HasSwitch(switches::kEnableDeviceOrientation));
+      !command_line.HasSwitch(switches::kDisableDeviceOrientation));
 
   WebRuntimeFeatures::enableSpeechInput(
       command_line.HasSwitch(switches::kEnableSpeechInput));

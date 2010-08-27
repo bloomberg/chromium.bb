@@ -38,7 +38,7 @@ class DeviceOrientationBrowserTest : public InProcessBrowserTest {
  public:
   // From InProcessBrowserTest.
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnableDeviceOrientation);
+    EXPECT_TRUE(!command_line->HasSwitch(switches::kDisableDeviceOrientation));
   }
 
   GURL testUrl(const FilePath::CharType* filename) {

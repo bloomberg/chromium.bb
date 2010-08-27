@@ -541,7 +541,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSessionStorage,
     switches::kDisableSharedWorkers,
     switches::kDisableApplicationCache,
-    switches::kEnableDeviceOrientation,
+    switches::kDisableDeviceOrientation,
     switches::kEnableIndexedDatabase,
     switches::kEnableSpeechInput,
     switches::kDisableGeolocation,

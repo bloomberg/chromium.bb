@@ -166,6 +166,9 @@ const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 // Browser flag to disable the web inspector for all renderers.
 const char kDisableDevTools[]               = "disable-dev-tools";
 
+// Disables device orientation events.
+const char kDisableDeviceOrientation[]      = "disable-device-orientation";
+
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
@@ -372,9 +375,6 @@ const char kEnableCookiePrompt[]            = "enable-cookie-prompt";
 
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
-
-// Enables device orientation events.
-const char kEnableDeviceOrientation[]       = "enable-device-orientation";
 
 const char kEnableDNSSECCerts[]             = "enable-dnssec-certs";
 
