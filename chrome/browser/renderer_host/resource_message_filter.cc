@@ -31,6 +31,7 @@
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
+#include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
 #include "chrome/browser/gpu_process_host.h"
@@ -254,11 +255,12 @@ ResourceMessageFilter::ResourceMessageFilter(
               new SearchProviderInstallStateDispatcherHost(this, profile))),
       ALLOW_THIS_IN_INITIALIZER_LIST(device_orientation_dispatcher_host_(
           new device_orientation::DispatcherHost(this->id()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
+          new BlobDispatcherHost(profile->GetBlobStorageContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
           new FileSystemDispatcherHost(this,
-              profile->GetHostContentSettingsMap()))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
-          new BlobDispatcherHost(profile->GetBlobStorageContext()))) {
+              profile->GetFileSystemHostContext(),
+              profile->GetHostContentSettingsMap()))) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
