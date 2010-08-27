@@ -455,6 +455,9 @@ o3d.Client.prototype.renderMode = o3d.Client.RENDERMODE_CONTINUOUS;
  * RENDERMODE_ON_DEMAND.
  */
 o3d.Client.prototype.render = function() {
+  if (!this.gl) {
+    return;
+  }
   // Synthesize a render event.
   var render_event = new o3d.RenderEvent;
   this.counter_manager_.advanceRenderFrameCounters();
@@ -648,13 +651,15 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
   if (!canvas || !canvas.getContext) {
     return false;
   }
-  try {
-    gl = canvas.getContext("experimental-webgl", standard_attributes)
-  } catch(e) { }
-  if (!gl) {
+
+  var names = ["webgl", "experimental-webgl", "moz-webgl"];
+  for (var ii = 0; ii < names.length; ++ii) {
     try {
-      gl = canvas.getContext("moz-webgl")
+      gl = canvas.getContext(names[ii], standard_attributes)
     } catch(e) { }
+    if (gl) {
+      break;
+    }
   }
 
   if (!gl) {
