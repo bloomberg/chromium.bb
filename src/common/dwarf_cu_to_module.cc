@@ -31,9 +31,15 @@
 
 // Implement the DwarfCUToModule class; see dwarf_cu_to_module.h.
 
+// For <inttypes.h> PRI* macros, before anything else might #include it.
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
+#endif  /* __STDC_FORMAT_MACROS */
+
 #include "common/dwarf_cu_to_module.h"
 
 #include <assert.h>
+#include <inttypes.h>
 
 #include <algorithm>
 #include <set>
@@ -532,7 +538,7 @@ void DwarfCUToModule::WarningReporter::UncoveredLine(const Module::Line &line) {
   if (!uncovered_warnings_enabled_)
     return;
   UncoveredHeading();
-  fprintf(stderr, "    line%s: %s:%d at 0x%llx\n",
+  fprintf(stderr, "    line%s: %s:%d at 0x%" PRIx64 "\n",
           (line.size == 0 ? " (zero-length)" : ""),
           line.file->name.c_str(), line.number, line.address);
 }
