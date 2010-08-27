@@ -12,6 +12,10 @@
 
 namespace chromeos {
 
+CoreChromeOSOptionsHandler::CoreChromeOSOptionsHandler()
+    : handling_change_(false) {
+}
+
 Value* CoreChromeOSOptionsHandler::FetchPref(const std::string& pref_name) {
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::CoreOptionsHandler::FetchPref(pref_name);
@@ -36,7 +40,7 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::CoreOptionsHandler::SetPref(pref_name, pref_type, value_string,
                                          metric);
-
+  handling_change_ = true;
   CrosSettings* cros_settings = CrosSettings::Get();
   switch (pref_type) {
     case Value::TYPE_BOOLEAN:
@@ -60,13 +64,25 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
       break;
     }
   }
+  handling_change_ = false;
 
   ProcessUserMetric(pref_type, value_string, metric);
+}
+
+void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
+  // Unregister this instance from observing prefs of chrome os settings.
+  if (CrosSettings::IsCrosSettings(path))
+    CrosSettings::Get()->RemoveSettingsObserver(path.c_str(), this);
+  else    // Call base class to handle regular preferences.
+    ::CoreOptionsHandler::StopObservingPref(path);
 }
 
 void CoreChromeOSOptionsHandler::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
+  // Ignore the notification if this instance had caused it.
+  if (handling_change_)
+    return;
   if (type == NotificationType::SYSTEM_SETTING_CHANGED) {
     NotifySettingsChanged(Details<std::string>(details).ptr());
     return;

@@ -191,6 +191,16 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
           make_scoped_refptr(theme)));
 }
 
+OptionsUI::~OptionsUI() {
+  // Uninitialize all registered handlers. The base class owns them and it will
+  // eventually delete them.
+  for (std::vector<DOMMessageHandler*>::iterator iter = handlers_.begin();
+       iter != handlers_.end();
+       ++iter) {
+    reinterpret_cast<OptionsPageUIHandler*>(*iter)->Uninitialize();
+  }
+}
+
 // static
 RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
 // TODO(csilv): uncomment this once we have a FAVICON

@@ -54,6 +54,9 @@ class OptionsPageUIHandler : public DOMMessageHandler,
   // Initialize the page.  Called once the DOM is available for manipulation.
   virtual void Initialize() {}
 
+  // Uninitializes the page.  Called just before the object is destructed.
+  virtual void Uninitialize() {}
+
   // DOMMessageHandler implementation.
   virtual void RegisterMessages() {}
 
@@ -75,7 +78,7 @@ class OptionsPageUIHandler : public DOMMessageHandler,
 class OptionsUI : public DOMUI {
  public:
   explicit OptionsUI(TabContents* contents);
-  virtual ~OptionsUI() {}
+  virtual ~OptionsUI();
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

@@ -13,6 +13,7 @@ namespace chromeos {
 // CoreChromeOSOptionsHandler handles ChromeOS settings.
 class CoreChromeOSOptionsHandler : public ::CoreOptionsHandler {
  public:
+  CoreChromeOSOptionsHandler();
 
  protected:
   // ::CoreOptionsHandler overrides
@@ -22,6 +23,7 @@ class CoreChromeOSOptionsHandler : public ::CoreOptionsHandler {
                        Value::ValueType pref_type,
                        const std::string& value_string,
                        const std::string& metric);
+  virtual void StopObservingPref(const std::string& path);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -31,6 +33,10 @@ class CoreChromeOSOptionsHandler : public ::CoreOptionsHandler {
  private:
   // Notifies registered JS callbacks on ChromeOS setting change.
   void NotifySettingsChanged(const std::string* setting_name);
+
+  // Keeps the track of change caused by the handler to make sure
+  // it does not signal itself again.
+  bool handling_change_;
 };
 
 }  // namespace chromeos

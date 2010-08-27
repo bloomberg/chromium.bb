@@ -17,10 +17,11 @@
 class CoreOptionsHandler : public OptionsPageUIHandler {
  public:
   CoreOptionsHandler();
-  virtual ~CoreOptionsHandler();
 
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void Uninitialize();
+
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -43,6 +44,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
                        Value::ValueType pref_type,
                        const std::string& value_string,
                        const std::string& metric);
+
+  // Stops observing given preference identified by |path|.
+  virtual void StopObservingPref(const std::string& path);
 
   // Records a user metric action for the given value.
   void ProcessUserMetric(Value::ValueType pref_type,

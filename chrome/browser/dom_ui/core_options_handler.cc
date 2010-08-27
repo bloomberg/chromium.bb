@@ -23,21 +23,6 @@
 CoreOptionsHandler::CoreOptionsHandler() {
 }
 
-CoreOptionsHandler::~CoreOptionsHandler() {
-  // Remove registered preference change notification observers.
-  DCHECK(dom_ui_);
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
-  std::string last_pref;
-  for (PreferenceCallbackMap::const_iterator iter = pref_callback_map_.begin();
-       iter != pref_callback_map_.end();
-       ++iter) {
-    if (last_pref != iter->first) {
-      pref_service->RemovePrefObserver(iter->first.c_str(), this);
-      last_pref = iter->first;
-    }
-  }
-}
-
 void CoreOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
@@ -87,6 +72,18 @@ void CoreOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CLOSE));
   localized_strings->SetString("done",
       l10n_util::GetStringUTF16(IDS_DONE));
+}
+
+void CoreOptionsHandler::Uninitialize() {
+  std::string last_pref;
+  for (PreferenceCallbackMap::const_iterator iter = pref_callback_map_.begin();
+       iter != pref_callback_map_.end();
+       ++iter) {
+    if (last_pref != iter->first) {
+      StopObservingPref(iter->first);
+      last_pref = iter->first;
+    }
+  }
 }
 
 void CoreOptionsHandler::Observe(NotificationType type,
@@ -182,6 +179,12 @@ void CoreOptionsHandler::ProcessUserMetric(Value::ValueType pref_type,
 
   UserMetricsRecordAction(UserMetricsAction(metric_string.c_str()),
                           dom_ui_->GetProfile()->GetPrefs());
+}
+
+void CoreOptionsHandler::StopObservingPref(const std::string& path) {
+  DCHECK(dom_ui_);
+  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+  pref_service->RemovePrefObserver(path.c_str(), this);
 }
 
 void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
