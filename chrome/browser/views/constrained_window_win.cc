@@ -563,8 +563,7 @@ views::NonClientFrameView* ConstrainedWindowWin::CreateFrameViewForWindow() {
 }
 
 void ConstrainedWindowWin::FocusConstrainedWindow() {
-  if (GetDelegate() && GetDelegate()->GetInitiallyFocusedView())
-    GetDelegate()->GetInitiallyFocusedView()->RequestFocus();
+  focused_view_->RequestFocus();
 }
 
 void ConstrainedWindowWin::ShowConstrainedWindow() {
@@ -612,6 +611,9 @@ ConstrainedWindowWin::ConstrainedWindowWin(
   set_focus_on_creation(false);
 
   WindowWin::Init(owner_->GetNativeView(), gfx::Rect());
+
+  focused_view_ = window_delegate->GetContentsView();
+  DCHECK(focused_view_);
 }
 
 void ConstrainedWindowWin::ActivateConstrainedWindow() {
