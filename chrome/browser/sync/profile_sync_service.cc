@@ -93,8 +93,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
   // For linux Chromium builds, this could be anything depending on the
   // distribution, so always direct those users to dev server urls.
   // If this is an official build, it will always be one of the above.
-  string16 channel = platform_util::GetVersionStringModifier();
-  if (channel.empty() || channel == ASCIIToUTF16("beta")) {
+  std::string channel = platform_util::GetVersionStringModifier();
+  if (channel.empty() || channel == "beta") {
     LOG(INFO) << "Detected official build, using official sync server.";
     sync_service_url_ = GURL(kSyncServerUrl);
   } else {

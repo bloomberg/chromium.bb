@@ -148,7 +148,7 @@ bool IsEnabled() {
   return false;
 #elif defined(GOOGLE_CHROME_BUILD)
   // Don't enable this on the stable channel.
-  return platform_util::GetVersionStringModifier() != string16();
+  return !platform_util::GetVersionStringModifier().empty();
 #else
   return true;
 #endif
