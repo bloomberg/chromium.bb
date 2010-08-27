@@ -31,10 +31,6 @@
 
 Import('env')
 
-# TODO(robertm): this triggers a compiler bug on ARM (constant pool trouble)
-if env['TARGET_ARCHITECTURE'] == 'arm':
-   Return()
-
 ######################################################################
 # Smoke Test
 ######################################################################
