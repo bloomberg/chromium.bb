@@ -13,6 +13,7 @@
 #include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/history2_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/dom_ui/labs_ui.h"
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/options_ui.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extensions_ui.h"
+#include "chrome/browser/labs.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -116,6 +118,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
     return &NewDOMUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHistory2Host)
     return &NewDOMUI<HistoryUI2>;
+  if (about_labs::IsEnabled() && url.host() == chrome::kChromeUILabsHost)
+    return &NewDOMUI<LabsUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewDOMUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
@@ -228,6 +232,9 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
 
   if (page_url.host() == chrome::kChromeUIHistory2Host)
     return HistoryUI2::GetFaviconResourceBytes();
+
+  if (about_labs::IsEnabled() && page_url.host() == chrome::kChromeUILabsHost)
+    return LabsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIOptionsHost)
     return OptionsUI::GetFaviconResourceBytes();

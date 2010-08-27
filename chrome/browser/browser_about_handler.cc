@@ -29,6 +29,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/labs.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -96,6 +97,7 @@ const char kCreditsPath[] = "credits";
 const char kCachePath[] = "view-http-cache";
 const char kDnsPath[] = "dns";
 const char kHistogramsPath[] = "histograms";
+const char kLabsPath[] = "labs";
 const char kMemoryRedirectPath[] = "memory-redirect";
 const char kMemoryPath[] = "memory";
 const char kStatsPath[] = "stats";
@@ -127,6 +129,7 @@ const char *kAllAboutPaths[] = {
   kCreditsPath,
   kDnsPath,
   kHistogramsPath,
+  kLabsPath,
   kMemoryPath,
   kNetInternalsPath,
   kPluginsPath,
@@ -250,13 +253,17 @@ std::string AboutAbout() {
   html.append("<html><head><title>About Pages</title></head><body>\n");
   html.append("<h2>List of About pages</h2><ul>\n");
   for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
-    if (kAllAboutPaths[i] == kNetInternalsPath ||
-        kAllAboutPaths[i] == kPluginsPath ||
+    if (kAllAboutPaths[i] == kLabsPath && !about_labs::IsEnabled())
+      continue;
+    if (kAllAboutPaths[i] == kAppCacheInternalsPath ||
         kAllAboutPaths[i] == kCachePath ||
-        kAllAboutPaths[i] == kAppCacheInternalsPath)
+        kAllAboutPaths[i] == kLabsPath ||
+        kAllAboutPaths[i] == kNetInternalsPath ||
+        kAllAboutPaths[i] == kPluginsPath) {
       html.append("<li><a href='chrome://");
-    else
+    } else {
       html.append("<li><a href='chrome://about/");
+    }
     html.append(kAllAboutPaths[i]);
     html.append("/'>about:");
     html.append(kAllAboutPaths[i]);
@@ -1123,6 +1130,15 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   if (StartsWithAboutSpecifier(*url, chrome::kAboutCacheURL)) {
     *url = RemapAboutURL(chrome::kNetworkViewCacheURL, *url);
     return true;
+  }
+
+  if (about_labs::IsEnabled()) {
+    // Rewrite about:labs and about:vaporware to chrome://labs/.
+    if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutLabsURL) ||
+        LowerCaseEqualsASCII(url->spec(), chrome::kAboutVaporwareURL)) {
+      *url = GURL(chrome::kChromeUILabsURL);
+      return true;
+    }
   }
 
   // Rewrite about:net-internals/* URLs to chrome://net-internals/*
