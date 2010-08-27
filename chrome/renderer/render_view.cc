@@ -5109,93 +5109,109 @@ void RenderView::DumpLoadHistograms() const {
         "PLT.BeginToFinishDoc_LinkLoad", "CacheSize"), begin_to_finish_doc);
   }
 
-
-  // Histograms to determine if SPDY has an impact for https traffic.
-  // TODO(mbelshe): After we've seen the difference between BeginToFinish
-  //                and StartToFinish, consider removing one or the other.
+  // For the SPDY field trials, we need to verify that the page loaded was
+  // the type we requested:
+  //   if we asked for a SPDY request, we got a SPDY request
+  //   if we asked for a HTTP request, we got a HTTP request
+  // Due to spdy version mismatches, it is possible that we ask for SPDY
+  // but didn't get SPDY.
   static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
       !FieldTrialList::Find("SpdyImpact")->group_name().empty());
-  if (use_spdy_histogram &&
-      scheme_type == URLPattern::SCHEME_HTTPS &&
-      navigation_state->was_npn_negotiated()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
-        abandoned_page ? 1 : 0, 2);
-    switch (load_type) {
-      case NavigationState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
-            begin_to_finish_all_loads);
-        PLT_HISTOGRAM(FieldTrial::MakeName(
-            "PLT.StartToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
-            start_to_finish_all_loads);
-        PLT_HISTOGRAM(FieldTrial::MakeName(
-            "PLT.StartToCommit_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
-            start_to_commit);
-        break;
-      case NavigationState::NORMAL_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
-            begin_to_finish_all_loads);
-        PLT_HISTOGRAM(FieldTrial::MakeName(
-            "PLT.StartToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
-            start_to_finish_all_loads);
-        PLT_HISTOGRAM(FieldTrial::MakeName(
-            "PLT.StartToCommit_NormalLoad_SpdyTrial", "SpdyImpact"),
-            start_to_commit);
-        break;
-      default:
-        break;
-    }
-  }
+  if (use_spdy_histogram) {
+    // We take extra effort to only compute these once.
+    static bool in_spdy_trial =
+        FieldTrialList::Find("SpdyImpact")->group_name() == "npn_with_spdy";
+    static bool in_http_trial =
+        FieldTrialList::Find("SpdyImpact")->group_name() == "npn_with_http";
 
-  // Histograms to compare the impact of alternate protocol over http traffic:
-  // when spdy is used vs. when http is used.
-  if (scheme_type == URLPattern::SCHEME_HTTP &&
-      navigation_state->was_alternate_protocol_available()) {
-    if (!navigation_state->was_npn_negotiated()) {
-      // This means that even there is alternate protocols for npn_http or
-      // npn_spdy, they are not taken (due to the fieldtrial).
-      switch (load_type) {
-        case NavigationState::LINK_LOAD_NORMAL:
-          PLT_HISTOGRAM(
-              "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_http",
-              start_to_finish_all_loads);
-          PLT_HISTOGRAM(
-              "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_http",
-              start_to_commit);
-          break;
-        case NavigationState::NORMAL_LOAD:
-          PLT_HISTOGRAM(
-              "PLT.StartToFinish_NormalLoad_AlternateProtocol_http",
-              start_to_finish_all_loads);
-          PLT_HISTOGRAM(
-              "PLT.StartToCommit_NormalLoad_AlternateProtocol_http",
-              start_to_commit);
-          break;
-        default:
-          break;
+    bool spdy_trial_success = navigation_state->was_fetched_via_spdy() ?
+        in_spdy_trial : in_http_trial;
+    if (spdy_trial_success) {
+      // Histograms to determine if SPDY has an impact for https traffic.
+      // TODO(mbelshe): After we've seen the difference between BeginToFinish
+      //                and StartToFinish, consider removing one or the other.
+      if (scheme_type == URLPattern::SCHEME_HTTPS &&
+          navigation_state->was_npn_negotiated()) {
+        UMA_HISTOGRAM_ENUMERATION(
+            FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
+            abandoned_page ? 1 : 0, 2);
+        switch (load_type) {
+          case NavigationState::LINK_LOAD_NORMAL:
+            PLT_HISTOGRAM(FieldTrial::MakeName(
+                "PLT.BeginToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+                begin_to_finish_all_loads);
+            PLT_HISTOGRAM(FieldTrial::MakeName(
+                "PLT.StartToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+                start_to_finish_all_loads);
+            PLT_HISTOGRAM(FieldTrial::MakeName(
+                "PLT.StartToCommit_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+                start_to_commit);
+            break;
+          case NavigationState::NORMAL_LOAD:
+            PLT_HISTOGRAM(FieldTrial::MakeName(
+                "PLT.BeginToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
+                begin_to_finish_all_loads);
+            PLT_HISTOGRAM(FieldTrial::MakeName(
+                "PLT.StartToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
+                start_to_finish_all_loads);
+            PLT_HISTOGRAM(FieldTrial::MakeName(
+                "PLT.StartToCommit_NormalLoad_SpdyTrial", "SpdyImpact"),
+                start_to_commit);
+            break;
+          default:
+            break;
+        }
       }
-    } else if (navigation_state->was_fetched_via_spdy()) {
-      switch (load_type) {
-        case NavigationState::LINK_LOAD_NORMAL:
-          PLT_HISTOGRAM(
-              "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_spdy",
-              start_to_finish_all_loads);
-          PLT_HISTOGRAM(
-              "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_spdy",
-              start_to_commit);
-          break;
-        case NavigationState::NORMAL_LOAD:
-          PLT_HISTOGRAM(
-              "PLT.StartToFinish_NormalLoad_AlternateProtocol_spdy",
-              start_to_finish_all_loads);
-          PLT_HISTOGRAM(
-              "PLT.StartToCommit_NormalLoad_AlternateProtocol_spdy",
-              start_to_commit);
-          break;
-        default:
-          break;
+
+      // Histograms to compare the impact of alternate protocol over http
+      // traffic: when spdy is used vs. when http is used.
+      if (scheme_type == URLPattern::SCHEME_HTTP &&
+          navigation_state->was_alternate_protocol_available()) {
+        if (!navigation_state->was_npn_negotiated()) {
+          // This means that even there is alternate protocols for npn_http or
+          // npn_spdy, they are not taken (due to the fieldtrial).
+          switch (load_type) {
+            case NavigationState::LINK_LOAD_NORMAL:
+              PLT_HISTOGRAM(
+                  "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_http",
+                  start_to_finish_all_loads);
+              PLT_HISTOGRAM(
+                  "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_http",
+                  start_to_commit);
+              break;
+            case NavigationState::NORMAL_LOAD:
+              PLT_HISTOGRAM(
+                  "PLT.StartToFinish_NormalLoad_AlternateProtocol_http",
+                  start_to_finish_all_loads);
+              PLT_HISTOGRAM(
+                  "PLT.StartToCommit_NormalLoad_AlternateProtocol_http",
+                  start_to_commit);
+              break;
+            default:
+              break;
+          }
+        } else if (navigation_state->was_fetched_via_spdy()) {
+          switch (load_type) {
+            case NavigationState::LINK_LOAD_NORMAL:
+              PLT_HISTOGRAM(
+                  "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_spdy",
+                  start_to_finish_all_loads);
+              PLT_HISTOGRAM(
+                  "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_spdy",
+                  start_to_commit);
+              break;
+            case NavigationState::NORMAL_LOAD:
+              PLT_HISTOGRAM(
+                  "PLT.StartToFinish_NormalLoad_AlternateProtocol_spdy",
+                  start_to_finish_all_loads);
+              PLT_HISTOGRAM(
+                  "PLT.StartToCommit_NormalLoad_AlternateProtocol_spdy",
+                  start_to_commit);
+              break;
+            default:
+              break;
+          }
+        }
       }
     }
   }
