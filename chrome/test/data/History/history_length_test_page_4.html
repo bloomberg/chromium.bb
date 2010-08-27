@@ -13,15 +13,15 @@ History Test Page 4....
 
 function onLoad() {
   if (readCookie(navigate_forward_cookie) != null) {
-    setTimeout(OnNavigateForward, 50);
+    setTimeout(OnNavigateForward, 0);
     return true;
   }
-  setTimeout(OnInitialLoad, 50);
+  setTimeout(OnInitialLoad, 0);
   return true;
 }
 
 function OnInitialLoad() {
-  if (window.history.length != 4) {
+  if (window.history.length != 5) {
     onFailure("History_Length_Test_3", 1,
               "History length mismatch on initial load at page 4: " +
               window.history.length);
@@ -34,7 +34,7 @@ function OnInitialLoad() {
 }
 
 function OnNavigateForward() {
-  if (window.history.length != 4) {
+  if (window.history.length != 5) {
     onFailure("History_Length_Test_3", 1,
               "History length mismatch on navigating forward at page 4: " +
               window.history.length);
