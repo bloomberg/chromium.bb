@@ -96,7 +96,7 @@ void SetEnabledLabs(
     return;
 
   experiments_list->Clear();
-  for (std::set<std::string>::iterator it = enabled_experiments.begin();
+  for (std::set<std::string>::const_iterator it = enabled_experiments.begin();
        it != enabled_experiments.end();
        ++it) {
     experiments_list->Append(new StringValue(*it));
@@ -200,7 +200,7 @@ ListValue* GetLabsExperimentsData(Profile* profile) {
                     l10n_util::GetStringUTF16(
                         experiment.visible_description_id));
     data->SetBoolean("enabled",
-                      enabled_experiments.count(experiment.internal_name));
+                      enabled_experiments.count(experiment.internal_name) > 0);
 
     experiments_data->Append(data);
   }
