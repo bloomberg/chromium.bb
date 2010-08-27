@@ -339,8 +339,10 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                                       'platform_qual_lib',
                                                       'gio',
                                                       'expiration',
+                                                      'nacl_perf_counter',
                                                       ] + VALIDATOR_LIBS
                                                       + DEBUG_LIBS)
+
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])
 

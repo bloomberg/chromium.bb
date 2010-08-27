@@ -292,6 +292,7 @@
         'expiration',
         'sel',
         'gio_shm',
+        '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:*',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
       ],
