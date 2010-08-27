@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,21 +23,13 @@ using WebKit::WebDevToolsMessageData;
 using WebKit::WebString;
 using WebKit::WebView;
 
-// Warning at call_method_factory_(this) treated as error and is switched off.
-
-#if defined(OS_WIN)
-#pragma warning(disable : 4355)
-#endif // defined(OS_WIN)
-
 TestShellDevToolsClient::TestShellDevToolsClient(TestShellDevToolsAgent *agent,
                                                  WebView* web_view)
-  : call_method_factory_(this),
-    dev_tools_agent_(agent),
-    web_view_(web_view) {
-  web_tools_frontend_.reset(
-    WebDevToolsFrontend::create(web_view_,
-                                this,
-                                WebString::fromUTF8("en-US")));
+    : ALLOW_THIS_IN_INITIALIZER_LIST(call_method_factory_(this)),
+      dev_tools_agent_(agent),
+      web_view_(web_view) {
+  web_tools_frontend_.reset(WebDevToolsFrontend::create(web_view_, this,
+      WebString::fromUTF8("en-US")));
   dev_tools_agent_->attach(this);
 }
 
@@ -82,11 +74,9 @@ void TestShellDevToolsClient::undockWindow() {
 }
 
 void TestShellDevToolsClient::AsyncCall(const TestShellDevToolsCallArgs &args) {
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
       call_method_factory_.NewRunnableMethod(&TestShellDevToolsClient::Call,
-                                             args),
-      0);
+                                             args), 0);
 }
 
 void TestShellDevToolsClient::Call(const TestShellDevToolsCallArgs &args) {
@@ -96,7 +86,7 @@ void TestShellDevToolsClient::Call(const TestShellDevToolsCallArgs &args) {
 }
 
 void TestShellDevToolsClient::all_messages_processed() {
-  web_view_->mainFrame()->executeScript(
-    WebKit::WebScriptSource(WebString::fromUTF8(
-      "if (window.WebInspector && WebInspector.queuesAreEmpty) WebInspector.queuesAreEmpty();")));
+  web_view_->mainFrame()->executeScript(WebKit::WebScriptSource(
+      WebString::fromUTF8("if (window.WebInspector && "
+      "WebInspector.queuesAreEmpty) WebInspector.queuesAreEmpty();")));
 }

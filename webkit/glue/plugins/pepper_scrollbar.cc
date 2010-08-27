@@ -74,9 +74,7 @@ void SetTickMarks(PP_Resource resource,
     scrollbar->SetTickMarks(tick_marks, count);
 }
 
-void ScrollBy(PP_Resource resource,
-              PP_ScrollBy unit,
-              int32_t multiplier) {
+void ScrollBy(PP_Resource resource, PP_ScrollBy unit, int32_t multiplier) {
   scoped_refptr<Scrollbar> scrollbar(Resource::GetAs<Scrollbar>(resource));
   if (scrollbar)
     scrollbar->ScrollBy(unit, multiplier);

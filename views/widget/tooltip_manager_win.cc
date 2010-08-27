@@ -76,8 +76,7 @@ TooltipManagerWin::TooltipManagerWin(Widget* widget)
       last_view_out_of_sync_(false),
       tooltip_width_(0),
       keyboard_tooltip_hwnd_(NULL),
-#pragma warning(suppress: 4355)
-      keyboard_tooltip_factory_(this) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(keyboard_tooltip_factory_(this)) {
   DCHECK(widget);
   DCHECK(widget->GetNativeView());
   Init();
