@@ -14,6 +14,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
 #include "chrome/browser/views/restart_message_box.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
@@ -1458,8 +1460,11 @@ void AdvancedContentsView::InitControlLayout() {
   layout->AddView(new WebContentSection(profile()));
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new SecuritySection(profile()));
-  layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new ChromeAppsSection(profile()));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundMode)) {
+    layout->StartRow(0, single_column_view_set_id);
+    layout->AddView(new ChromeAppsSection(profile()));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

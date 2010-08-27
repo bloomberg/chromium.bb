@@ -36,10 +36,10 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile)
       background_app_count_(0),
       status_tray_(NULL),
       status_icon_(NULL) {
-  // If background mode is disabled for unittests, just exit - don't listen for
+  // If background mode is globally disabled, just exit - don't listen for
   // any notifications.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBackgroundMode))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundMode))
     return;
 
   // If the -keep-alive-for-test flag is passed, then always keep chrome running

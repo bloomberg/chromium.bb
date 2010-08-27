@@ -14,6 +14,7 @@
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/process_watcher.h"
 #include "grit/chromium_strings.h"
@@ -1362,10 +1364,13 @@ void AdvancedContentsGtk::Init() {
       l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY),
       security_section_->get_page_widget(), false);
 
-  chrome_apps_section_.reset(new ChromeAppsSection(profile_));
-  options_builder->AddOptionGroup(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_CHROME_APPS),
-      chrome_apps_section_->get_page_widget(), false);
-
+  // Add ChromeApps preferences if background mode is runtime-enabled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundMode)) {
+    chrome_apps_section_.reset(new ChromeAppsSection(profile_));
+    options_builder->AddOptionGroup(l10n_util::GetStringUTF8(
+        IDS_OPTIONS_ADVANCED_SECTION_TITLE_CHROME_APPS),
+        chrome_apps_section_->get_page_widget(), false);
+  }
   page_ = options_builder->get_page_widget();
 }

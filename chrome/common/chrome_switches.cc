@@ -140,10 +140,6 @@ const char kDisableAudio[]                  = "disable-audio";
 const char kDisableAuthNegotiateCnameLookup[] =
     "disable-auth-negotiate-cname-lookup";
 
-// Disable background mode (background apps will not keep chrome running in the
-// background) - used when running tests involving background apps.
-const char kDisableBackgroundMode[] = "disable-background-mode";
-
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
@@ -349,6 +345,10 @@ const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 // in response to a Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN
 // for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
+
+// Enable background mode (background apps will keep chrome running in the
+// background and allow chrome to launch on startup).
+const char kEnableBackgroundMode[] = "enable-background-mode";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
