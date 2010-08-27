@@ -897,6 +897,7 @@
    fun:RenderViewHostManager::Init
    fun:TabContents
    fun:TestTabContents
+   fun:RenderViewHostTestHarness::CreateTestTabContents
    fun:RenderViewHostTestHarness::SetUp
 }
 {
@@ -950,21 +951,4 @@
    Heapcheck:Leak
    ...
    fun:GeolocationGatewayDataProviderCommonTest::SetUp
-}
-{
-   bug_52834
-   Heapcheck:Leak
-   ...
-   fun:MockRenderProcessHostFactory::CreateRenderProcessHost
-   fun:SiteInstance::GetProcess
-   fun:RenderViewHost
-   fun:TestRenderViewHost
-   fun:TestRenderViewHostFactory::CreateRenderViewHost
-   fun:RenderViewHostFactory::Create
-   fun:RenderViewHostManager::Init
-   fun:TabContents
-   fun:TestTabContents
-   fun:RenderViewHostTestHarness::CreateTestTabContents
-   fun:RenderViewHostTestHarness::SetUp
-   fun:testing::Test::Run
 }
