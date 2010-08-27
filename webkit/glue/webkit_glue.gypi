@@ -105,37 +105,6 @@
       ],
     },
     {
-      'target_name': 'webkit_user_agent',
-      'type': '<(library)',
-      'msvs_guid': 'DB162DE1-7D56-4C4A-8A9F-80D396CD7AA8',
-      'dependencies': [
-        '<(DEPTH)/app/app.gyp:app_base',
-        '<(DEPTH)/base/base.gyp:base_i18n',
-      ],
-      'actions': [
-        {
-          'action_name': 'webkit_version',
-          'inputs': [
-            '../build/webkit_version.py',
-            '<(webkit_src_dir)/WebCore/Configurations/Version.xcconfig',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/webkit_version.h',
-          ],
-          'action': ['python', '<@(_inputs)', '<(INTERMEDIATE_DIR)'],
-        },
-      ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-      ],
-      'sources': [
-        'user_agent.cc',
-        'user_agent.h',
-      ],
-      'conditions': [
-      ],
-    },
-    {
       'target_name': 'glue',
       'type': '<(library)',
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',
@@ -152,9 +121,19 @@
         '<(DEPTH)/third_party/ppapi/ppapi.gyp:ppapi_c',
         'webkit_resources',
         'webkit_strings',
-        'webkit_user_agent',
       ],
       'actions': [
+        {
+          'action_name': 'webkit_version',
+          'inputs': [
+            '../build/webkit_version.py',
+            '<(webkit_src_dir)/WebCore/Configurations/Version.xcconfig',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/webkit_version.h',
+          ],
+          'action': ['python', '<@(_inputs)', '<(INTERMEDIATE_DIR)'],
+        },
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
