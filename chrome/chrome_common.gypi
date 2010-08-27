@@ -334,6 +334,9 @@
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)',
           ],
+          # Because posix_version generates a header, we must set the
+          # hard_dependency flag.
+          'hard_dependency': 1,
           'actions': [
             {
               'action_name': 'posix_version',
