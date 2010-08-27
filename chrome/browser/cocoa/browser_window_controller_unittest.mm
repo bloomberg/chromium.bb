@@ -587,7 +587,8 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
 }
 
-TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
+// Failing on Chromium Mac: http://crbug/53586
+TEST_F(BrowserWindowFullScreenControllerTest, FLAKY_TestActivate) {
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
