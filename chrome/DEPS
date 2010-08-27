@@ -23,6 +23,9 @@ include_rules = [
   # Allow inclusion of the appcache library.
   "+webkit/appcache",
 
+  # Allow inclusion of the blob library.
+  "+webkit/blob",
+
   # Allow inclusion of the database library.
   "+webkit/database",
 

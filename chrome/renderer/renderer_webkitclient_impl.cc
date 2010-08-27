@@ -13,6 +13,7 @@
 #include "chrome/common/database_util.h"
 #include "chrome/common/file_system/webfilesystem_impl.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/webblobregistry_impl.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
@@ -26,6 +27,7 @@
 #include "chrome/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
@@ -60,6 +62,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+using WebKit::WebBlobRegistry;
 using WebKit::WebFileSystem;
 using WebKit::WebFrame;
 using WebKit::WebIDBFactory;
@@ -505,4 +508,12 @@ WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
       GURL(url),
       &signed_public_key));
   return WebString::fromUTF8(signed_public_key);
+}
+
+//------------------------------------------------------------------------------
+
+WebBlobRegistry* RendererWebKitClientImpl::blobRegistry() {
+  if (!blob_registry_.get())
+    blob_registry_.reset(new WebBlobRegistryImpl(RenderThread::current()));
+  return blob_registry_.get();
 }

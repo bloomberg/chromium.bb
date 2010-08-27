@@ -6,6 +6,7 @@
 #define CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
 #pragma once
 
+#include "base/scoped_ptr.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMimeRegistry.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
@@ -49,6 +50,8 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
   virtual long long databaseGetFileSize(
       const WebKit::WebString& vfs_file_name);
 
+  virtual WebKit::WebBlobRegistry* blobRegistry();
+
   // WebMimeRegistry methods:
   virtual WebKit::WebMimeRegistry::SupportsType supportsMIMEType(
       const WebKit::WebString&);
@@ -67,6 +70,8 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
 
  private:
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
+
+  scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 };
 
 #endif  // CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_

@@ -8,11 +8,14 @@
 #include "chrome/common/database_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/webblobregistry_impl.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/worker/worker_thread.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
+using WebKit::WebBlobRegistry;
 using WebKit::WebClipboard;
 using WebKit::WebKitClient;
 using WebKit::WebMessagePortChannel;
@@ -171,4 +174,10 @@ WebString WorkerWebKitClientImpl::preferredExtensionForMIMEType(
     const WebString&) {
   NOTREACHED();
   return WebString();
+}
+
+WebBlobRegistry* WorkerWebKitClientImpl::blobRegistry() {
+  if (!blob_registry_.get())
+    blob_registry_.reset(new WebBlobRegistryImpl(WorkerThread::current()));
+  return blob_registry_.get();
 }

@@ -32,6 +32,7 @@
 
 class AppCacheDispatcherHost;
 class AudioRendererHost;
+class BlobDispatcherHost;
 class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
@@ -482,6 +483,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Handles FileSystem API related messages
   scoped_refptr<FileSystemDispatcherHost> file_system_dispatcher_host_;
+
+  // Handles blob related messages.
+  scoped_ptr<BlobDispatcherHost> blob_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

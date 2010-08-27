@@ -253,6 +253,10 @@ class TestingProfile : public Profile {
   virtual ProfileSyncService* GetProfileSyncService();
   virtual CloudPrintProxyService* GetCloudPrintProxyService() { return NULL; }
 
+  virtual ChromeBlobStorageContext* GetBlobStorageContext() {
+    return NULL;
+  }
+
  protected:
   base::Time start_time_;
   scoped_ptr<TestingPrefService> prefs_;

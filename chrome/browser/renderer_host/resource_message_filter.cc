@@ -49,6 +49,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
+#include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
@@ -255,7 +256,9 @@ ResourceMessageFilter::ResourceMessageFilter(
           new device_orientation::DispatcherHost(this->id()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
           new FileSystemDispatcherHost(this,
-              profile->GetHostContentSettingsMap()))) {
+              profile->GetHostContentSettingsMap()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
+          new BlobDispatcherHost(profile->GetBlobStorageContext()))) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
@@ -287,6 +290,9 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 
   // Shut down the async file_system dispatcher host.
   file_system_dispatcher_host_->Shutdown();
+
+  // Shut down the blob dispatcher host.
+  blob_dispatcher_host_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -363,7 +369,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       search_provider_install_state_dispatcher_host_->OnMessageReceived(
           msg, &msg_is_ok) ||
       device_orientation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      file_system_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
+      file_system_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      blob_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

@@ -103,6 +103,7 @@ class ProfileImpl : public Profile,
   void InitSyncService();
   virtual CloudPrintProxyService* GetCloudPrintProxyService();
   void InitCloudPrintProxyService();
+  virtual ChromeBlobStorageContext* GetBlobStorageContext();
 
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
@@ -232,6 +233,8 @@ class ProfileImpl : public Profile,
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
+
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
 #if defined(OS_CHROMEOS)
   chromeos::Preferences chromeos_preferences_;

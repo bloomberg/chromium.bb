@@ -51,6 +51,10 @@ struct ChannelHandle;
 class Message;
 }
 
+namespace webkit_blob {
+class BlobData;
+}
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
@@ -2709,5 +2713,22 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int /* request_id */,
                        string16 /* src path */,
                        string16 /* dest path */)
+
+  //---------------------------------------------------------------------------
+  // Blob messages:
+
+  // Registers a blob URL referring to the specified blob data.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_RegisterBlobUrl,
+                       GURL /* url */,
+                       scoped_refptr<webkit_blob::BlobData> /* blob_data */)
+
+  // Registers a blob URL referring to the blob data identified by the specified
+  // source URL.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_RegisterBlobUrlFrom,
+                       GURL /* url */,
+                       GURL /* src_url */)
+
+  // Unregister a blob URL.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_UnregisterBlobUrl, GURL /* url */)
 
 IPC_END_MESSAGES(ViewHost)

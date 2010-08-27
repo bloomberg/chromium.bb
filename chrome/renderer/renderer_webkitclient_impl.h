@@ -68,6 +68,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
   virtual WebKit::WebGLES2Context* createGLES2Context();
 
+  virtual WebKit::WebBlobRegistry* blobRegistry();
+
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
@@ -98,6 +100,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   scoped_ptr<WebKit::WebIDBFactory> web_idb_factory_;
 
   scoped_ptr<WebFileSystemImpl> web_file_system_;
+
+  scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_

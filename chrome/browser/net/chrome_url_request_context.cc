@@ -907,6 +907,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   host_zoom_map_ = other->host_zoom_map_;
   is_media_ = other->is_media_;
   is_off_the_record_ = other->is_off_the_record_;
+  blob_storage_context_ = other->blob_storage_context_;
 }
 
 void ChromeURLRequestContext::OnAcceptLanguageChange(
@@ -989,6 +990,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   cookie_monster_delegate_ = new ChromeCookieMonsterDelegate(profile);
   appcache_service_ = profile->GetAppCacheService();
   database_tracker_ = profile->GetDatabaseTracker();
+  blob_storage_context_ = profile->GetBlobStorageContext();
 }
 
 ChromeURLRequestContextFactory::~ChromeURLRequestContextFactory() {
@@ -1013,6 +1015,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_ssl_config_service(ssl_config_service_);
   context->set_appcache_service(appcache_service_);
   context->set_database_tracker(database_tracker_);
+  context->set_blob_storage_context(blob_storage_context_);
 }
 
 // ----------------------------------------------------------------------------

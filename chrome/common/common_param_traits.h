@@ -49,6 +49,10 @@ namespace printing {
 struct PageRange;
 }  // namespace printing
 
+namespace webkit_blob {
+class BlobData;
+}
+
 namespace webkit_glue {
 struct PasswordForm;
 struct WebApplicationInfo;
@@ -267,6 +271,15 @@ struct ParamTraits<URLRequestStatus> {
 template <>
 struct ParamTraits<scoped_refptr<net::UploadData> > {
   typedef scoped_refptr<net::UploadData> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+// Traits for webkit_blob::BlobData.
+template <>
+struct ParamTraits<scoped_refptr<webkit_blob::BlobData> > {
+  typedef scoped_refptr<webkit_blob::BlobData> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -21,6 +21,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 #include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/blob/blob_data.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"

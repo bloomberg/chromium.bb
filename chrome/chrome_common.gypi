@@ -116,6 +116,8 @@
           'common/time_format.h',
           'common/chrome_version_info.h',
           'common/chrome_version_info.cc',
+          'common/webblobregistry_impl.cc',
+          'common/webblobregistry_impl.h',
           'common/win_safe_util.cc',
           'common/win_safe_util.h',
         ],
@@ -164,6 +166,7 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/support/webkit_support.gyp:appcache',
+        '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:glue',
       ],
       'sources': [

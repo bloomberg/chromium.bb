@@ -40,6 +40,7 @@ class BackgroundModeManager;
 class BookmarkModel;
 class BrowserThemeProvider;
 class ChromeAppCacheService;
+class ChromeBlobStorageContext;
 class ChromeURLRequestContextGetter;
 class DesktopNotificationService;
 class DownloadManager;
@@ -428,6 +429,10 @@ class Profile {
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual FilePath last_selected_directory() = 0;
   virtual void set_last_selected_directory(const FilePath& path) = 0;
+
+  // Returns a pointer to the ChromeBlobStorageContext instance for this
+  // profile.
+  virtual ChromeBlobStorageContext* GetBlobStorageContext() = 0;
 
 #if defined(OS_CHROMEOS)
   // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.

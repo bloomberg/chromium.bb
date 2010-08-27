@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/download/download_manager.h"
@@ -1218,6 +1219,17 @@ void ProfileImpl::InitSyncService() {
 void ProfileImpl::InitCloudPrintProxyService() {
   cloud_print_proxy_service_.reset(new CloudPrintProxyService(this));
   cloud_print_proxy_service_->Initialize();
+}
+
+ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
+  if (!blob_storage_context_) {
+    blob_storage_context_ = new ChromeBlobStorageContext();
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(blob_storage_context_.get(),
+                          &ChromeBlobStorageContext::InitializeOnIOThread));
+  }
+  return blob_storage_context_;
 }
 
 #if defined(OS_CHROMEOS)

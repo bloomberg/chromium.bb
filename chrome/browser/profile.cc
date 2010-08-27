@@ -14,6 +14,7 @@
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/find_bar_state.h"
@@ -515,6 +516,18 @@ class OffTheRecordProfileImpl : public Profile,
       ExitedOffTheRecordMode();
   }
 
+  virtual ChromeBlobStorageContext* GetBlobStorageContext() {
+    if (!blob_storage_context_) {
+      blob_storage_context_ = new ChromeBlobStorageContext();
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              blob_storage_context_.get(),
+              &ChromeBlobStorageContext::InitializeOnIOThread));
+    }
+    return blob_storage_context_;
+  }
+
  private:
   NotificationRegistrar registrar_;
 
@@ -565,6 +578,8 @@ class OffTheRecordProfileImpl : public Profile,
 
   // Tracks all BackgroundContents running under this profile.
   scoped_ptr<BackgroundContentsService> background_contents_service_;
+
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };
