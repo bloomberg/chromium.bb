@@ -1761,4 +1761,49 @@ TEST(CookieMonsterTest, UniqueCreationTime) {
   }
 }
 
+TEST(CookieMonsterTest, CookieOrdering) {
+  // Put a random set of cookies into a monster and make sure
+  // they're returned in the right order.
+  scoped_refptr<net::CookieMonster> cm = new CookieMonster(NULL, NULL);
+  EXPECT_TRUE(cm->SetCookie(GURL("http://d.c.b.a.google.com/aa/x.html"),
+                            "c=1"));
+  EXPECT_TRUE(cm->SetCookie(GURL("http://b.a.google.com/aa/bb/cc/x.html"),
+                            "d=1; domain=b.a.google.com"));
+  EXPECT_TRUE(cm->SetCookie(GURL("http://b.a.google.com/aa/bb/cc/x.html"),
+                            "a=4; domain=b.a.google.com"));
+  EXPECT_TRUE(cm->SetCookie(GURL("http://c.b.a.google.com/aa/bb/cc/x.html"),
+                            "e=1; domain=c.b.a.google.com"));
+  EXPECT_TRUE(cm->SetCookie(GURL("http://d.c.b.a.google.com/aa/bb/x.html"),
+                            "b=1"));
+  EXPECT_TRUE(cm->SetCookie(GURL("http://news.bbc.co.uk/midpath/x.html"),
+                            "g=10"));
+  EXPECT_EQ("d=1; a=4; e=1; b=1; c=1",
+            cm->GetCookiesWithOptions(
+                GURL("http://d.c.b.a.google.com/aa/bb/cc/dd"),
+                CookieOptions()));
+  {
+    unsigned int i = 0;
+    CookieMonster::CookieList cookies(cm->GetAllCookiesForURL(
+        GURL("http://d.c.b.a.google.com/aa/bb/cc/dd")));
+    ASSERT_EQ(5u, cookies.size());
+    EXPECT_EQ("d", cookies[i++].Name());
+    EXPECT_EQ("a", cookies[i++].Name());
+    EXPECT_EQ("e", cookies[i++].Name());
+    EXPECT_EQ("b", cookies[i++].Name());
+    EXPECT_EQ("c", cookies[i++].Name());
+  }
+
+  {
+    unsigned int i = 0;
+    CookieMonster::CookieList cookies(cm->GetAllCookies());
+    ASSERT_EQ(6u, cookies.size());
+    EXPECT_EQ("d", cookies[i++].Name());
+    EXPECT_EQ("a", cookies[i++].Name());
+    EXPECT_EQ("e", cookies[i++].Name());
+    EXPECT_EQ("g", cookies[i++].Name());
+    EXPECT_EQ("b", cookies[i++].Name());
+    EXPECT_EQ("c", cookies[i++].Name());
+  }
+}
+
 } // namespace

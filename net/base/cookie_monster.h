@@ -88,6 +88,8 @@ class CookieMonster : public CookieStore {
   virtual bool SetCookieWithOptions(const GURL& url,
                                     const std::string& cookie_line,
                                     const CookieOptions& options);
+  // The returned cookies are ordered by longest path, then earliest
+  // creation date.
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const CookieOptions& options);
   virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
@@ -109,11 +111,15 @@ class CookieMonster : public CookieStore {
 
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed.
+  // The returned cookies are ordered by longest path, then earliest
+  // creation date.
   CookieList GetAllCookies();
 
   // Returns all the cookies, for use in management UI, etc. Filters results
   // using given url scheme, host / domain and path. This does not mark the
   // cookies as having been accessed.
+  // The returned cookies are ordered by longest path, then earliest
+  // creation date.
   CookieList GetAllCookiesForURL(const GURL& url);
 
   // Delete all of the cookies.

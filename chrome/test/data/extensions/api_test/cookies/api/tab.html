@@ -249,8 +249,8 @@ chrome.test.runTests([
     chrome.cookies.getAll(
         {domain: TEST_DOMAIN}, pass(function(cookies) {
       chrome.test.assertEq(2, cookies.length);
-      chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
-      chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookies[1].name);
+      chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookies[0].name);
+      chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[1].name);
     }));
     chrome.cookies.getAll({
       name: TEST_BASIC_COOKIE.name

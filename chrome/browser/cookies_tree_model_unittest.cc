@@ -569,15 +569,15 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
 
   {
     SCOPED_TRACE("Initial State 8 cookies");
-    // D starts with a ., CookieMonster orders that lexicographically first
-    EXPECT_STREQ("D,E,A,C,F,B,G,H", GetMonsterCookies(monster).c_str());
+    // CookieMonster orders cookies by pathlength, then by creation time.
+    // All paths are length 1.
+    EXPECT_STREQ("A,B,C,D,E,F,G,H", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("F,E,C,B,A,G,D,H",
         GetDisplayedCookies(&cookies_model).c_str());
   }
   DeleteStoredObjects(cookies_model.GetRoot()->GetChild(1));  // Delete "E"
   {
-    SCOPED_TRACE("Second origin removed");
-    EXPECT_STREQ("D,A,C,F,B,G,H", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("A,B,C,D,F,G,H", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("F,C,B,A,G,D,H", GetDisplayedCookies(&cookies_model).c_str());
   }
 }

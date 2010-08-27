@@ -1013,7 +1013,8 @@ TEST_F(CookiesViewTest, FilterRemove) {
                "host1,_Local Storage,__http://host1:1/,"
                "host2,_Local Storage,__http://host2:2/",
                GetDisplayedCookies(cookies_view).c_str());
-  EXPECT_STREQ("D,A,E,C,B", GetMonsterCookies(monster).c_str());
+  // All default paths; order will be creation time.
+  EXPECT_STREQ("C,D,B,A,E", GetMonsterCookies(monster).c_str());
 
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
 
@@ -1053,7 +1054,7 @@ TEST_F(CookiesViewTest, FilterRemove) {
 
   {
     SCOPED_TRACE("First selection removed");
-    EXPECT_STREQ("D,E,C,B", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("C,D,B,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("bar0,_Cookies,__D,"
                  "bar1,+Cookies,++E",
                  GetDisplayedCookies(cookies_view).c_str());
@@ -1067,7 +1068,7 @@ TEST_F(CookiesViewTest, FilterRemove) {
 
   {
     SCOPED_TRACE("Second selection");
-    EXPECT_STREQ("D,C,B", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("C,D,B", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("bar0,_Cookies,__D",
                  GetDisplayedCookies(cookies_view).c_str());
     EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));

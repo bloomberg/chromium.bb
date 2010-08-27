@@ -155,14 +155,14 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/browserAction\/set_icon_path\/", 
+      "path": "examples/api/browserAction/set_icon_path/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.browserAction.setIcon"
       ], 
       "id": "0262260daf0c8f7b28feff2ef23b05e7abf9d1e0", 
       "protocols": [
-        "http:\/\/"
+        "http://"
       ], 
       "name": "A browser action which changes its icon when clicked."
     }, 
@@ -179,14 +179,14 @@
         "manifest.json", 
         "popup.html"
       ], 
-      "path": "examples\/api\/browserAction\/set_page_color\/", 
+      "path": "examples/api/browserAction/set_page_color/", 
       "api_calls": [
         "chrome.tabs.executeScript"
       ], 
       "id": "ea2894c41cb8e80a4433a3e6c5772dadce9be90d", 
       "protocols": [
-        "http:\/\/", 
-        "https:\/\/"
+        "http://", 
+        "https://"
       ], 
       "name": "A browser action with a popup that changes the page color."
     }, 
@@ -203,7 +203,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/browserAction\/make_page_red\/", 
+      "path": "examples/api/browserAction/make_page_red/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.browserAction.setBadgeBackgroundColor", 
@@ -212,7 +212,7 @@
       ], 
       "id": "ede3c47b7757245be42ec33fd5ca63df4b490066", 
       "protocols": [
-        "http:\/\/"
+        "http://"
       ], 
       "name": "A browser action with no icon that makes the page red"
     }, 
@@ -225,13 +225,13 @@
       "description": "Returns accept languages of the browser", 
       "search_string": "ACCEPTLANGUAGE RETURNS ACCEPT LANGUAGES OF THE BROWSER BROWSER_ACTION POPUP CHROME.I18N.GETACCEPTLANGUAGES CHROME.I18N.GETMESSAGE", 
       "source_files": [
-        "_locales\/en_US\/messages.json", 
-        "_locales\/es\/messages.json", 
-        "_locales\/sr\/messages.json", 
+        "_locales/en_US/messages.json", 
+        "_locales/es/messages.json", 
+        "_locales/sr/messages.json", 
         "manifest.json", 
         "popup.html"
       ], 
-      "path": "examples\/api\/i18n\/getMessage\/", 
+      "path": "examples/api/i18n/getMessage/", 
       "api_calls": [
         "chrome.i18n.getAcceptLanguages", 
         "chrome.i18n.getMessage"
@@ -253,7 +253,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/pageAction\/set_icon\/", 
+      "path": "examples/api/pageAction/set_icon/", 
       "api_calls": [
         "chrome.pageAction.hide", 
         "chrome.pageAction.onClicked", 
@@ -279,7 +279,7 @@
         "blank.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/override\/blank_ntp\/", 
+      "path": "examples/api/override/blank_ntp/", 
       "api_calls": [], 
       "id": "9747e3d6a3eab39bc7c17f11a80573c62d44c7e5", 
       "protocols": [], 
@@ -302,7 +302,7 @@
         "manifest.json", 
         "options.html"
       ], 
-      "path": "examples\/extensions\/fx\/", 
+      "path": "examples/extensions/fx/", 
       "api_calls": [
         "chrome.bookmarks.onCreated", 
         "chrome.bookmarks.onMoved", 
@@ -324,8 +324,8 @@
       ], 
       "id": "903e7277139e1e6caec123d3319cab295d8d1b3a", 
       "protocols": [
-        "http:\/\/", 
-        "https:\/\/"
+        "http://", 
+        "https://"
       ], 
       "name": "Chrome Sounds"
     }, 
@@ -343,7 +343,7 @@
         "manifest.json", 
         "popup.html"
       ], 
-      "path": "examples\/extensions\/buildbot\/", 
+      "path": "examples/extensions/buildbot/", 
       "api_calls": [
         "chrome.browserAction.setBadgeBackgroundColor", 
         "chrome.browserAction.setBadgeText", 
@@ -351,8 +351,8 @@
       ], 
       "id": "0e790e035a4a00b6f1def5ef9a7d7be1bce95ab5", 
       "protocols": [
-        "http:\/\/", 
-        "http:\/\/"
+        "http://", 
+        "http://"
       ], 
       "name": "Chromium Buildbot Monitor"
     }, 
@@ -369,7 +369,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/extensions\/chrome_search\/", 
+      "path": "examples/extensions/chrome_search/", 
       "api_calls": [
         "chrome.experimental.omnibox.onInputChanged", 
         "chrome.experimental.omnibox.onInputEntered", 
@@ -382,7 +382,7 @@
       ], 
       "id": "ac31228200b41a87982e386cc90d3a6eee4ad885", 
       "protocols": [
-        "http:\/\/"
+        "http://"
       ], 
       "name": "Chromium Search"
     }, 
@@ -399,7 +399,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/i18n\/cld\/", 
+      "path": "examples/api/i18n/cld/", 
       "api_calls": [
         "chrome.browserAction.setBadgeText", 
         "chrome.tabs.detectLanguage", 
@@ -425,7 +425,7 @@
         "manifest.json", 
         "sample.js"
       ], 
-      "path": "examples\/api\/contextMenus\/basic\/", 
+      "path": "examples/api/contextMenus/basic/", 
       "api_calls": [
         "chrome.contextMenus.create"
       ], 
@@ -448,7 +448,7 @@
         "manager.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/cookies\/", 
+      "path": "examples/api/cookies/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.cookies.get", 
@@ -463,8 +463,8 @@
       ], 
       "id": "4daa6becd0899a54776d9cf7f09613ed1a9f4d77", 
       "protocols": [
-        "http:\/\/", 
-        "https:\/\/"
+        "http://", 
+        "https://"
       ], 
       "name": "Cookie API Test Extension"
     }, 
@@ -473,21 +473,21 @@
         "background_page"
       ], 
       "icon": "sample-128.png", 
-      "description": "Demonstrates a method to make a cross-domain XMLHttpRequest fetch from a content script.  This extension fetches the current trending topics from Twitter and inserts them in an overlay at the top of Google News.  Visit http:\/\/news.google.com to test this extension.", 
-      "search_string": "CROSS-DOMAIN XMLHTTPREQUEST FROM A CONTENT SCRIPT DEMONSTRATES A METHOD TO MAKE A CROSS-DOMAIN XMLHTTPREQUEST FETCH FROM A CONTENT SCRIPT.  THIS EXTENSION FETCHES THE CURRENT TRENDING TOPICS FROM TWITTER AND INSERTS THEM IN AN OVERLAY AT THE TOP OF GOOGLE NEWS.  VISIT HTTP:\/\/NEWS.GOOGLE.COM TO TEST THIS EXTENSION. BACKGROUND_PAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST", 
+      "description": "Demonstrates a method to make a cross-domain XMLHttpRequest fetch from a content script.  This extension fetches the current trending topics from Twitter and inserts them in an overlay at the top of Google News.  Visit http://news.google.com to test this extension.", 
+      "search_string": "CROSS-DOMAIN XMLHTTPREQUEST FROM A CONTENT SCRIPT DEMONSTRATES A METHOD TO MAKE A CROSS-DOMAIN XMLHTTPREQUEST FETCH FROM A CONTENT SCRIPT.  THIS EXTENSION FETCHES THE CURRENT TRENDING TOPICS FROM TWITTER AND INSERTS THEM IN AN OVERLAY AT THE TOP OF GOOGLE NEWS.  VISIT HTTP://NEWS.GOOGLE.COM TO TEST THIS EXTENSION. BACKGROUND_PAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST", 
       "source_files": [
         "background.html", 
         "contentscript.js", 
         "manifest.json"
       ], 
-      "path": "examples\/howto\/contentscript_xhr\/", 
+      "path": "examples/howto/contentscript_xhr/", 
       "api_calls": [
         "chrome.extension.onRequest", 
         "chrome.extension.sendRequest"
       ], 
       "id": "6871d09f4a96bf9d4b6cc724d00e909cee0f3902", 
       "protocols": [
-        "http:\/\/"
+        "http://"
       ], 
       "name": "Cross-domain XMLHttpRequest from a content script"
     }, 
@@ -507,7 +507,7 @@
         "manifest.json", 
         "options.html"
       ], 
-      "path": "examples\/extensions\/email_this_page\/", 
+      "path": "examples/extensions/email_this_page/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.extension.connect", 
@@ -518,8 +518,8 @@
       ], 
       "id": "028eb5364924344029bcbe1d527f132fc72b34e5", 
       "protocols": [
-        "http:\/\/", 
-        "https:\/\/"
+        "http://", 
+        "https://"
       ], 
       "name": "Email this page (by Google)"
     }, 
@@ -538,7 +538,7 @@
         "manifest.json", 
         "popup.html"
       ], 
-      "path": "examples\/tutorials\/analytics\/", 
+      "path": "examples/tutorials/analytics/", 
       "api_calls": [], 
       "id": "763a08e9b06595d785568a8d392b95a2f3700258", 
       "protocols": [], 
@@ -552,7 +552,7 @@
         "popup", 
         "tabs"
       ], 
-      "icon": "img\/docs_spreadsheets-128.gif", 
+      "icon": "img/docs_spreadsheets-128.gif", 
       "description": "Demonstrates how to use OAuth to connect the Google Documents List Data API.", 
       "search_string": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE", 
       "source_files": [
@@ -560,12 +560,12 @@
         "chrome_ex_oauth.html", 
         "chrome_ex_oauth.js", 
         "chrome_ex_oauthsimple.js", 
-        "js\/jquery-1.4.1.min.js", 
+        "js/jquery-1.4.1.min.js", 
         "manifest.json", 
         "options.html", 
         "popup.html"
       ], 
-      "path": "examples\/extensions\/gdocs\/", 
+      "path": "examples/extensions/gdocs/", 
       "api_calls": [
         "chrome.browserAction.setBadgeText", 
         "chrome.extension.getBackgroundPage", 
@@ -578,10 +578,10 @@
       ], 
       "id": "4e35caa9742fb82dbd628892d23a781614f6eff6", 
       "protocols": [
-        "https:\/\/", 
-        "https:\/\/", 
-        "https:\/\/", 
-        "https:\/\/"
+        "https://", 
+        "https://", 
+        "https://", 
+        "https://"
       ], 
       "name": "Google Document List Viewer"
     }, 
@@ -596,53 +596,53 @@
       "description": "Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.", 
       "search_string": "GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE", 
       "source_files": [
-        "_locales\/ar\/messages.json", 
-        "_locales\/bg\/messages.json", 
-        "_locales\/ca\/messages.json", 
-        "_locales\/cs\/messages.json", 
-        "_locales\/da\/messages.json", 
-        "_locales\/de\/messages.json", 
-        "_locales\/el\/messages.json", 
-        "_locales\/en\/messages.json", 
-        "_locales\/en_GB\/messages.json", 
-        "_locales\/es\/messages.json", 
-        "_locales\/es_419\/messages.json", 
-        "_locales\/et\/messages.json", 
-        "_locales\/fi\/messages.json", 
-        "_locales\/fil\/messages.json", 
-        "_locales\/fr\/messages.json", 
-        "_locales\/he\/messages.json", 
-        "_locales\/hi\/messages.json", 
-        "_locales\/hr\/messages.json", 
-        "_locales\/hu\/messages.json", 
-        "_locales\/id\/messages.json", 
-        "_locales\/it\/messages.json", 
-        "_locales\/ja\/messages.json", 
-        "_locales\/ko\/messages.json", 
-        "_locales\/lt\/messages.json", 
-        "_locales\/lv\/messages.json", 
-        "_locales\/nb\/messages.json", 
-        "_locales\/nl\/messages.json", 
-        "_locales\/pl\/messages.json", 
-        "_locales\/pt_BR\/messages.json", 
-        "_locales\/pt_PT\/messages.json", 
-        "_locales\/ro\/messages.json", 
-        "_locales\/ru\/messages.json", 
-        "_locales\/sk\/messages.json", 
-        "_locales\/sl\/messages.json", 
-        "_locales\/sr\/messages.json", 
-        "_locales\/sv\/messages.json", 
-        "_locales\/th\/messages.json", 
-        "_locales\/tr\/messages.json", 
-        "_locales\/uk\/messages.json", 
-        "_locales\/vi\/messages.json", 
-        "_locales\/zh_CN\/messages.json", 
-        "_locales\/zh_TW\/messages.json", 
+        "_locales/ar/messages.json", 
+        "_locales/bg/messages.json", 
+        "_locales/ca/messages.json", 
+        "_locales/cs/messages.json", 
+        "_locales/da/messages.json", 
+        "_locales/de/messages.json", 
+        "_locales/el/messages.json", 
+        "_locales/en/messages.json", 
+        "_locales/en_GB/messages.json", 
+        "_locales/es/messages.json", 
+        "_locales/es_419/messages.json", 
+        "_locales/et/messages.json", 
+        "_locales/fi/messages.json", 
+        "_locales/fil/messages.json", 
+        "_locales/fr/messages.json", 
+        "_locales/he/messages.json", 
+        "_locales/hi/messages.json", 
+        "_locales/hr/messages.json", 
+        "_locales/hu/messages.json", 
+        "_locales/id/messages.json", 
+        "_locales/it/messages.json", 
+        "_locales/ja/messages.json", 
+        "_locales/ko/messages.json", 
+        "_locales/lt/messages.json", 
+        "_locales/lv/messages.json", 
+        "_locales/nb/messages.json", 
+        "_locales/nl/messages.json", 
+        "_locales/pl/messages.json", 
+        "_locales/pt_BR/messages.json", 
+        "_locales/pt_PT/messages.json", 
+        "_locales/ro/messages.json", 
+        "_locales/ru/messages.json", 
+        "_locales/sk/messages.json", 
+        "_locales/sl/messages.json", 
+        "_locales/sr/messages.json", 
+        "_locales/sv/messages.json", 
+        "_locales/th/messages.json", 
+        "_locales/tr/messages.json", 
+        "_locales/uk/messages.json", 
+        "_locales/vi/messages.json", 
+        "_locales/zh_CN/messages.json", 
+        "_locales/zh_TW/messages.json", 
         "background.html", 
         "manifest.json", 
         "options.html"
       ], 
-      "path": "examples\/extensions\/gmail\/", 
+      "path": "examples/extensions/gmail/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.browserAction.setBadgeBackgroundColor", 
@@ -658,8 +658,8 @@
       ], 
       "id": "bb57f7a0132cbeb36ad7e7bb0ab75c21704234ca", 
       "protocols": [
-        "http:\/\/", 
-        "https:\/\/"
+        "http://", 
+        "https://"
       ], 
       "name": "Google Mail Checker"
     }, 
@@ -684,7 +684,7 @@
         "popup.html", 
         "prettyload.js"
       ], 
-      "path": "examples\/extensions\/wave\/", 
+      "path": "examples/extensions/wave/", 
       "api_calls": [
         "chrome.extension.getBackgroundPage", 
         "chrome.extension.getURL", 
@@ -696,8 +696,8 @@
       ], 
       "id": "1682e05ea9a1bde985123b04f6f8ac50a8a64033", 
       "protocols": [
-        "https:\/\/", 
-        "http:\/\/"
+        "https://", 
+        "http://"
       ], 
       "name": "Google Wave Notifier"
     }, 
@@ -713,11 +713,11 @@
         "manifest.json", 
         "popup.html"
       ], 
-      "path": "examples\/tutorials\/getstarted\/", 
+      "path": "examples/tutorials/getstarted/", 
       "api_calls": [], 
       "id": "14b9651fda4e57b2a5914ba73a779812201b750a", 
       "protocols": [
-        "http:\/\/"
+        "http://"
       ], 
       "name": "Hello World"
     }, 
@@ -732,7 +732,7 @@
         "manifest.json", 
         "redirect.html"
       ], 
-      "path": "examples\/api\/override\/override_igoogle\/", 
+      "path": "examples/api/override/override_igoogle/", 
       "api_calls": [], 
       "id": "0ea1588bd07b20338fc21f725de1542a5fdf9726", 
       "protocols": [], 
@@ -754,7 +754,7 @@
         "mappy_content_script.js", 
         "popup.html"
       ], 
-      "path": "examples\/extensions\/mappy\/", 
+      "path": "examples/extensions/mappy/", 
       "api_calls": [
         "chrome.extension.getBackgroundPage", 
         "chrome.extension.onRequest", 
@@ -769,7 +769,7 @@
       ], 
       "id": "ec97ec20ca2f095d081e39f1565fc12af09ef067", 
       "protocols": [
-        "http:\/\/"
+        "http://"
       ], 
       "name": "Mappy"
     }, 
@@ -786,7 +786,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/windows\/merge_windows\/", 
+      "path": "examples/api/windows/merge_windows/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.tabs.get", 
@@ -814,7 +814,7 @@
         "page.js", 
         "popup.html"
       ], 
-      "path": "examples\/api\/messaging\/timer\/", 
+      "path": "examples/api/messaging/timer/", 
       "api_calls": [
         "chrome.extension.onConnect", 
         "chrome.extension.onRequest", 
@@ -841,7 +841,7 @@
         "manifest.json", 
         "popup.html"
       ], 
-      "path": "examples\/api\/bookmarks\/basic\/", 
+      "path": "examples/api/bookmarks/basic/", 
       "api_calls": [
         "chrome.bookmarks.create", 
         "chrome.bookmarks.get", 
@@ -867,41 +867,13 @@
         "feed.html", 
         "manifest.json"
       ], 
-      "path": "examples\/extensions\/news_a11y\/", 
+      "path": "examples/extensions/news_a11y/", 
       "api_calls": [
         "chrome.tabs.create"
       ], 
       "id": "597015d3bcce3da693b02314afd607bec4f55291", 
       "protocols": [
-        "http:\/\/"
-      ], 
-      "name": "News Reader"
-    }, 
-    {
-      "features": [
-        "browser_action", 
-        "popup", 
-        "tabs"
-      ], 
-      "icon": "news_icon.png", 
-      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
-      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE", 
-      "source_files": [
-        "_locales\/en\/messages.json", 
-        "_locales\/es\/messages.json", 
-        "_locales\/sr\/messages.json", 
-        "feed.html", 
-        "manifest.json"
-      ], 
-      "path": "examples\/extensions\/news_i18n\/", 
-      "api_calls": [
-        "chrome.i18n.getMessage", 
-        "chrome.tabs.create"
-      ], 
-      "id": "6444e5c8ae112a6a433909c5e770669cd16e2e5f", 
-      "protocols": [
-        "http:\/\/", 
-        "http:\/\/"
+        "http://"
       ], 
       "name": "News Reader"
     }, 
@@ -918,13 +890,41 @@
         "feed.html", 
         "manifest.json"
       ], 
-      "path": "examples\/extensions\/news\/", 
+      "path": "examples/extensions/news/", 
       "api_calls": [
         "chrome.tabs.create"
       ], 
       "id": "3aea027164cb9b732ba4a8c51cb93708891726ef", 
       "protocols": [
-        "http:\/\/"
+        "http://"
+      ], 
+      "name": "News Reader"
+    }, 
+    {
+      "features": [
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ], 
+      "icon": "news_icon.png", 
+      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
+      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE", 
+      "source_files": [
+        "_locales/en/messages.json", 
+        "_locales/es/messages.json", 
+        "_locales/sr/messages.json", 
+        "feed.html", 
+        "manifest.json"
+      ], 
+      "path": "examples/extensions/news_i18n/", 
+      "api_calls": [
+        "chrome.i18n.getMessage", 
+        "chrome.tabs.create"
+      ], 
+      "id": "6444e5c8ae112a6a433909c5e770669cd16e2e5f", 
+      "protocols": [
+        "http://", 
+        "http://"
       ], 
       "name": "News Reader"
     }, 
@@ -944,7 +944,7 @@
         "manifest.json", 
         "options.html"
       ], 
-      "path": "examples\/api\/notifications\/", 
+      "path": "examples/api/notifications/", 
       "api_calls": [
         "chrome.tabs.create"
       ], 
@@ -964,7 +964,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/omnibox\/", 
+      "path": "examples/api/omnibox/", 
       "api_calls": [
         "chrome.experimental.omnibox.onInputChanged", 
         "chrome.experimental.omnibox.onInputEntered"
@@ -986,7 +986,7 @@
         "contentscript.js", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/pageAction\/pageaction_by_content\/", 
+      "path": "examples/api/pageAction/pageaction_by_content/", 
       "api_calls": [
         "chrome.extension.onRequest", 
         "chrome.extension.sendRequest", 
@@ -1009,7 +1009,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/pageAction\/pageaction_by_url\/", 
+      "path": "examples/api/pageAction/pageaction_by_url/", 
       "api_calls": [
         "chrome.pageAction.show", 
         "chrome.tabs.onUpdated"
@@ -1030,15 +1030,15 @@
       "search_string": "PAGE BENCHMARKER CHROMIUM PAGE BENCHMARKER. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.CONNECT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETEXTENSIONTABS CHROME.EXTENSION.GETURL CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT", 
       "source_files": [
         "background.html", 
-        "jst\/jsevalcontext.js", 
-        "jst\/jstemplate.js", 
-        "jst\/jstemplate_test.js", 
-        "jst\/util.js", 
+        "jst/jsevalcontext.js", 
+        "jst/jstemplate.js", 
+        "jst/jstemplate_test.js", 
+        "jst/util.js", 
         "manifest.json", 
         "options.html", 
         "script.js"
       ], 
-      "path": "examples\/extensions\/benchmark\/", 
+      "path": "examples/extensions/benchmark/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.browserAction.setBadgeBackgroundColor", 
@@ -1075,15 +1075,15 @@
         "background.html", 
         "manifest.json"
       ], 
-      "path": "examples\/api\/browserAction\/print\/", 
+      "path": "examples/api/browserAction/print/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.tabs.update"
       ], 
       "id": "e6ae17ab4ccfd7e059c8c01f25760ca5d894c7fd", 
       "protocols": [
-        "http:\/\/", 
-        "https:\/\/"
+        "http://", 
+        "https://"
       ], 
       "name": "Print this page"
     }, 
@@ -1093,7 +1093,7 @@
         "browser_action", 
         "tabs"
       ], 
-      "icon": "img\/icon-128.png", 
+      "icon": "img/icon-128.png", 
       "description": "Uses OAuth to connect to Google's contacts service and display a list of your contacts.", 
       "search_string": "SAMPLE - OAUTH CONTACTS USES OAUTH TO CONNECT TO GOOGLES CONTACTS SERVICE AND DISPLAY A LIST OF YOUR CONTACTS. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE", 
       "source_files": [
@@ -1104,7 +1104,7 @@
         "contacts.html", 
         "manifest.json"
       ], 
-      "path": "examples\/extensions\/oauth_contacts\/", 
+      "path": "examples/extensions/oauth_contacts/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.browserAction.setIcon", 
@@ -1118,10 +1118,10 @@
       ], 
       "id": "56a8d2ac24ca7bba78fd88ad57f43fc13c784497", 
       "protocols": [
-        "http:\/\/", 
-        "https:\/\/", 
-        "https:\/\/", 
-        "https:\/\/"
+        "http://", 
+        "https://", 
+        "https://", 
+        "https://"
       ], 
       "name": "Sample - OAuth Contacts"
     }, 
@@ -1139,7 +1139,7 @@
         "manifest.json", 
         "popup.html"
       ], 
-      "path": "examples\/api\/processes\/show_tabs\/", 
+      "path": "examples/api/processes/show_tabs/", 
       "api_calls": [
         "chrome.experimental.processes.getProcessForTab", 
         "chrome.tabs.get", 
@@ -1169,7 +1169,7 @@
         "manifest.json", 
         "tabs_api.html"
       ], 
-      "path": "examples\/api\/tabs\/inspector\/", 
+      "path": "examples/api/tabs/inspector/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.extension.getURL", 
@@ -1217,7 +1217,7 @@
         "screenshot.html", 
         "screenshot.js"
       ], 
-      "path": "examples\/api\/tabs\/screenshot\/", 
+      "path": "examples/api/tabs/screenshot/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.extension.getURL", 
@@ -1244,7 +1244,7 @@
         "typedUrls.html", 
         "typedUrls.js"
       ], 
-      "path": "examples\/api\/history\/showHistory\/", 
+      "path": "examples/api/history/showHistory/", 
       "api_calls": [
         "chrome.history.getVisits", 
         "chrome.history.search", 

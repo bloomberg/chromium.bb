@@ -191,7 +191,8 @@ void GetCookieFunction::RespondOnUIThread() {
   net::CookieMonster::CookieList::iterator it;
   for (it = cookie_list_.begin(); it != cookie_list_.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
-    // CookieMonster retrieves them in reverse domain-length order.
+    // CookieMonster returns them in canonical order (longest path, then
+    // earliest creation time).
     if (it->Name() == name_) {
       result_.reset(
           extension_cookies_helpers::CreateCookieValue(*it, store_id_));

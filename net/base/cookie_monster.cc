@@ -1163,9 +1163,19 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
                         CookieMapItPair(cookies_.begin(), cookies_.end()),
                         NULL);
 
-  CookieList cookie_list;
+  // Copy the CanonicalCookie pointers from the map so that we can use the same
+  // sorter as elsewhere, then copy the result out.
+  std::vector<CanonicalCookie*> cookie_ptrs;
+  cookie_ptrs.reserve(cookies_.size());
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end(); ++it)
-    cookie_list.push_back(*it->second);
+    cookie_ptrs.push_back(it->second);
+  std::sort(cookie_ptrs.begin(), cookie_ptrs.end(), CookieSorter);
+
+  CookieList cookie_list;
+  cookie_list.reserve(cookie_ptrs.size());
+  for (std::vector<CanonicalCookie*>::const_iterator it = cookie_ptrs.begin();
+       it != cookie_ptrs.end(); ++it)
+    cookie_list.push_back(**it);
 
   return cookie_list;
 }
@@ -1179,6 +1189,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
 
   std::vector<CanonicalCookie*> cookie_ptrs;
   FindCookiesForHostAndDomain(url, options, false, &cookie_ptrs);
+  std::sort(cookie_ptrs.begin(), cookie_ptrs.end(), CookieSorter);
 
   CookieList cookies;
   for (std::vector<CanonicalCookie*>::const_iterator it = cookie_ptrs.begin();
