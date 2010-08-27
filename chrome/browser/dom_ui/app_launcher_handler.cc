@@ -87,7 +87,8 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
   value->SetString("options_url", extension->options_url().spec());
 
   FilePath relative_path =
-      extension->GetIconPath(Extension::EXTENSION_ICON_LARGE).relative_path();
+      extension->GetIconResource(
+          Extension::EXTENSION_ICON_LARGE).relative_path();
 
 #if defined(OS_POSIX)
   std::string path = relative_path.value();

@@ -651,7 +651,7 @@ void BrowserRenderProcessHost::SendUserScriptsUpdate(
   }
 }
 
-void BrowserRenderProcessHost::SendExtensionExtentsUpdate() {
+void BrowserRenderProcessHost::SendExtensionInfo() {
   // Check if the process is still starting and we don't have a handle for it
   // yet, in which case this will happen later when InitVisitedLinks is called.
   if (!run_renderer_in_process() &&
@@ -662,19 +662,19 @@ void BrowserRenderProcessHost::SendExtensionExtentsUpdate() {
   ExtensionsService* service = profile()->GetExtensionsService();
   if (!service)
     return;
-  ViewMsg_ExtensionExtentsUpdated_Params params;
+  ViewMsg_ExtensionsUpdated_Params params;
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
     Extension* extension = service->extensions()->at(i);
-    if (!extension->web_extent().is_empty()) {
-      ViewMsg_ExtensionExtentInfo info;
-      info.extension_id = extension->id();
-      info.web_extent = extension->web_extent();
-      info.browse_extent = extension->browse_extent();
-      params.extension_apps.push_back(info);
-    }
+    ViewMsg_ExtensionRendererInfo info;
+    info.id = extension->id();
+    info.web_extent = extension->web_extent();
+    info.name = extension->name();
+    info.icon_url =
+        extension->GetIconUrlAllowLargerSize(Extension::EXTENSION_ICON_MEDIUM);
+    params.extensions.push_back(info);
   }
 
-  Send(new ViewMsg_ExtensionExtentsUpdated(params));
+  Send(new ViewMsg_ExtensionsUpdated(params));
 }
 
 bool BrowserRenderProcessHost::FastShutdownIfPossible() {
@@ -944,9 +944,7 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
     }
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_UNLOADED: {
-      Extension* extension = Details<Extension>(details).ptr();
-      if (!extension->web_extent().is_empty())
-        SendExtensionExtentsUpdate();
+      SendExtensionInfo();
       break;
     }
     case NotificationType::SPELLCHECK_HOST_REINITIALIZED: {
@@ -981,7 +979,8 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   InitVisitedLinks();
   InitUserScripts();
   InitExtensions();
-  SendExtensionExtentsUpdate();
+  SendExtensionInfo();
+
   // We don't want to initialize the spellchecker unless SpellCheckHost has been
   // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL
   // then the spellchecker has been turned off, but here, we don't know if

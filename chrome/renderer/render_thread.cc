@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/db_message_filter.h"
 #include "chrome/common/dom_storage_common.h"
-#include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -48,6 +47,7 @@
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
+#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
@@ -206,15 +206,6 @@ class RenderViewZoomer : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
 }  // namespace
-
-// Contains extension-related data that the renderer needs to know about.
-// TODO(mpcomplete): this doesn't feel like it belongs here. Find a better
-// place.
-struct RenderThread::ExtensionInfo {
-  std::string extension_id;
-  ExtensionExtent web_extent;
-  ExtensionExtent browse_extent;
-};
 
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
@@ -520,15 +511,9 @@ void RenderThread::OnSetExtensionFunctionNames(
   ExtensionProcessBindings::SetFunctionNames(names);
 }
 
-void RenderThread::OnExtensionExtentsUpdated(
-    const ViewMsg_ExtensionExtentsUpdated_Params& params) {
-  extension_extents_.resize(params.extension_apps.size());
-  for (size_t i = 0; i < params.extension_apps.size(); ++i) {
-    extension_extents_[i].extension_id = params.extension_apps[i].extension_id;
-    extension_extents_[i].web_extent = params.extension_apps[i].web_extent;
-    extension_extents_[i].browse_extent =
-        params.extension_apps[i].browse_extent;
-  }
+void RenderThread::OnExtensionsUpdated(
+    const ViewMsg_ExtensionsUpdated_Params& params) {
+  ExtensionRendererInfo::UpdateExtensions(params);
 }
 
 void RenderThread::OnPageActionsUpdated(
@@ -607,8 +592,8 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetFunctionNames,
                         OnSetExtensionFunctionNames)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionExtentsUpdated,
-                        OnExtensionExtentsUpdated)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionsUpdated,
+                        OnExtensionsUpdated)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache,
                         OnPurgePluginListCache)
@@ -1083,27 +1068,6 @@ void RenderThread::OnGpuChannelEstablished(
     // Otherwise cancel the connection.
     gpu_channel_ = NULL;
   }
-}
-
-std::string RenderThread::GetExtensionIdByURL(const GURL& url) {
-  if (url.SchemeIs(chrome::kExtensionScheme))
-    return url.host();
-
-  for (size_t i = 0; i < extension_extents_.size(); ++i) {
-    if (extension_extents_[i].web_extent.ContainsURL(url))
-      return extension_extents_[i].extension_id;
-  }
-
-  return std::string();
-}
-
-std::string RenderThread::GetExtensionIdByBrowseExtent(const GURL& url) {
-  for (size_t i = 0; i < extension_extents_.size(); ++i) {
-    if (extension_extents_[i].browse_extent.ContainsURL(url))
-      return extension_extents_[i].extension_id;
-  }
-
-  return std::string();
 }
 
 scoped_refptr<base::MessageLoopProxy>

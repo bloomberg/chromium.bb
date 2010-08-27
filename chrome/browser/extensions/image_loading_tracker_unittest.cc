@@ -102,7 +102,7 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
-      extension->GetIconPath(Extension::EXTENSION_ICON_SMALLISH);
+      extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH);
   gfx::Size max_size(Extension::EXTENSION_ICON_SMALLISH,
                      Extension::EXTENSION_ICON_SMALLISH);
   ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
@@ -148,7 +148,7 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
-      extension->GetIconPath(Extension::EXTENSION_ICON_SMALLISH);
+      extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH);
   ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
   loader.LoadImage(extension.get(),
                    image_resource,

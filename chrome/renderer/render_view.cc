@@ -49,6 +49,7 @@
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
 #include "chrome/renderer/extension_groups.h"
+#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -368,18 +369,7 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
   if (old_url.is_empty() && frame->opener())
     old_url = frame->opener()->url();
 
-  std::string old_extension =
-      RenderThread::current()->GetExtensionIdByURL(old_url);
-  if (!old_extension.empty()) {
-    if (RenderThread::current()->GetExtensionIdByBrowseExtent(new_url) ==
-        old_extension) {
-      return false;
-    }
-  }
-
-  std::string new_extension =
-      RenderThread::current()->GetExtensionIdByURL(new_url);
-  return old_extension != new_extension;
+  return !ExtensionRendererInfo::InSameExtent(old_url, new_url);
 }
 
 // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
@@ -1512,19 +1502,30 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                                          const std::string& html,
                                          bool replace) {
   GURL failed_url = error.unreachableURL;
-
   std::string alt_html;
+  ExtensionRendererInfo* extension;
   if (html.empty()) {
     // Use a local error page.
     int resource_id;
     DictionaryValue error_strings;
-    if (error.reason == net::ERR_CACHE_MISS &&
-        EqualsASCII(failed_request.httpMethod(), "POST")) {
-      GetFormRepostErrorValues(failed_url, &error_strings);
-      resource_id = IDR_ERROR_NO_DETAILS_HTML;
+
+    if (failed_url.is_valid())
+      extension = ExtensionRendererInfo::GetByURL(failed_url);
+    if (extension) {
+      GetAppErrorValues(error, failed_url, extension, &error_strings);
+
+      // TODO(erikkay): Should we use a different template for different
+      // error messages?
+      resource_id = IDR_ERROR_APP_HTML;
     } else {
-      GetLocalizedErrorValues(error, &error_strings);
-      resource_id = IDR_NET_ERROR_HTML;
+      if (error.reason == net::ERR_CACHE_MISS &&
+          EqualsASCII(failed_request.httpMethod(), "POST")) {
+        GetFormRepostErrorValues(failed_url, &error_strings);
+        resource_id = IDR_ERROR_NO_DETAILS_HTML;
+      } else {
+        GetLocalizedErrorValues(error, &error_strings);
+        resource_id = IDR_NET_ERROR_HTML;
+      }
     }
 
     alt_html = GetAltHTMLForTemplate(error_strings, resource_id);
@@ -2580,23 +2581,35 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
       !url.SchemeIs(chrome::kAboutScheme)) {
     // When we received such unsolicited navigations, we sometimes want to
     // punt them up to the browser to handle.
-    if (CrossesExtensionExtents(frame, url) ||
-        BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
+    if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
         frame->isViewSourceModeEnabled() ||
         url.SchemeIs(chrome::kViewSourceScheme)) {
+      // We don't send referrer from these special pages.
       OpenURL(url, GURL(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
 
-    // We forward navigations from extensions to the browser if they are
-    // top-level events, even if the browser hasn't expressed interest.
-    //
-    // Note that we've already forwarded cross-extension extents navigations
-    // above.
+    // We forward non-local navigations from extensions to the browser if they
+    // are top-level events, even if the browser hasn't expressed interest.
     if (BindingsPolicy::is_extension_enabled(enabled_bindings_) &&
         IsNonLocalTopLevelNavigation(url, frame, type)) {
+        // We don't send referrer from extensions.
         OpenURL(url, GURL(), default_policy);
         return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+    }
+
+    // If the navigation would cross an app extent boundary, we also need
+    // to defer to the browser to ensure process isolation.
+    // TODO(erikkay) This is happening inside of a check to is_content_initiated
+    // which means that things like the back button won't trigger it.  Is that
+    // OK?
+    if (CrossesExtensionExtents(frame, url)) {
+      // Include the referrer in this case since we're going from a hosted web
+      // page. (the packaged case is handled previously by the extension
+      // navigation test)
+      GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
+      OpenURL(url, referrer, default_policy);
+      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
 
@@ -3476,14 +3489,14 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
 
     // TODO(cbiffle): need browser test for this before M7 (bug 45881)
     GURL main_frame_url(webview()->mainFrame()->url());
-    const std::string &extension_id =
-        RenderThread::current()->GetExtensionIdByURL(main_frame_url);
-    bool in_ext = extension_id != "";
+    ExtensionRendererInfo* extension =
+        ExtensionRendererInfo::GetByURL(main_frame_url);
+    bool in_ext = extension != NULL;
     bool explicit_enable =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl);
 
     if (in_ext) {
-      if (ExtensionProcessBindings::HasPermission(extension_id,
+      if (ExtensionProcessBindings::HasPermission(extension->id(),
               Extension::kNativeClientPermission)) {
         in_process_plugin = true;
         use_pepper_host = true;

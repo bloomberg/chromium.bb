@@ -72,7 +72,7 @@ AppLaunchedAnimationWin::AppLaunchedAnimationWin(Extension* extension,
   DCHECK(extension);
   app_icon_loader_.LoadImage(
       extension,
-      extension->GetIconPath(Extension::EXTENSION_ICON_LARGE),
+      extension->GetIconResource(Extension::EXTENSION_ICON_LARGE),
       rect_.size(),
       ImageLoadingTracker::DONT_CACHE);
 }

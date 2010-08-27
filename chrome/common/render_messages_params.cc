@@ -1263,43 +1263,45 @@ void ParamTraits<ViewHostMsg_RunFileChooser_Params>::Log(
   LogParam(p.default_file_name, l);
 }
 
-void ParamTraits<ViewMsg_ExtensionExtentInfo>::Write(Message* m,
-                                                     const param_type& p) {
-  WriteParam(m, p.extension_id);
+void ParamTraits<ViewMsg_ExtensionRendererInfo>::Write(Message* m,
+                                                       const param_type& p) {
+  WriteParam(m, p.id);
   WriteParam(m, p.web_extent);
-  WriteParam(m, p.browse_extent);
+  WriteParam(m, p.name);
+  WriteParam(m, p.icon_url);
 }
 
-bool ParamTraits<ViewMsg_ExtensionExtentInfo>::Read(const Message* m,
-                                                    void** iter,
-                                                    param_type* p) {
-  return ReadParam(m, iter, &p->extension_id) &&
+bool ParamTraits<ViewMsg_ExtensionRendererInfo>::Read(const Message* m,
+                                                      void** iter,
+                                                      param_type* p) {
+  return ReadParam(m, iter, &p->id) &&
       ReadParam(m, iter, &p->web_extent) &&
-      ReadParam(m, iter, &p->browse_extent);
+      ReadParam(m, iter, &p->name) &&
+      ReadParam(m, iter, &p->icon_url);
 }
 
-void ParamTraits<ViewMsg_ExtensionExtentInfo>::Log(const param_type& p,
-                                                   std::string* l) {
-  LogParam(p.extension_id, l);
+void ParamTraits<ViewMsg_ExtensionRendererInfo>::Log(const param_type& p,
+                                                     std::string* l) {
+  LogParam(p.id, l);
 }
 
-void ParamTraits<ViewMsg_ExtensionExtentsUpdated_Params>::Write(
+void ParamTraits<ViewMsg_ExtensionsUpdated_Params>::Write(
     Message* m,
     const param_type& p) {
-  WriteParam(m, p.extension_apps);
+  WriteParam(m, p.extensions);
 }
 
-bool ParamTraits<ViewMsg_ExtensionExtentsUpdated_Params>::Read(
+bool ParamTraits<ViewMsg_ExtensionsUpdated_Params>::Read(
     const Message* m,
     void** iter,
     param_type* p) {
-  return ReadParam(m, iter, &p->extension_apps);
+  return ReadParam(m, iter, &p->extensions);
 }
 
-void ParamTraits<ViewMsg_ExtensionExtentsUpdated_Params>::Log(
+void ParamTraits<ViewMsg_ExtensionsUpdated_Params>::Log(
     const param_type& p,
     std::string* l) {
-  LogParam(p.extension_apps, l);
+  LogParam(p.extensions, l);
 }
 
 void ParamTraits<ViewMsg_DeviceOrientationUpdated_Params>::Write(

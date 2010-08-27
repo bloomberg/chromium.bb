@@ -42,7 +42,7 @@ class WebDatabaseObserverImpl;
 struct ContentSettings;
 struct RendererPreferences;
 struct ViewMsg_DOMStorageEvent_Params;
-struct ViewMsg_ExtensionExtentsUpdated_Params;
+struct ViewMsg_ExtensionsUpdated_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;
 
@@ -224,14 +224,6 @@ class RenderThread : public RenderThreadBase,
   // has been lost.
   GpuChannelHost* GetGpuChannel();
 
-  // Returns the extension ID that the given URL is a part of, or empty if
-  // none. This includes web URLs that are part of an extension's web extent.
-  // TODO(mpcomplete): this doesn't feel like it belongs here. Find a better
-  // place.
-  std::string GetExtensionIdByURL(const GURL& url);
-
-  std::string GetExtensionIdByBrowseExtent(const GURL& url);
-
   // Returns a MessageLoopProxy instance corresponding to the message loop
   // of the thread on which file operations should be run. Must be called
   // on the renderer's main thread.
@@ -250,8 +242,8 @@ class RenderThread : public RenderThreadBase,
       const GURL& url, const ContentSettings& content_settings);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
-  void OnExtensionExtentsUpdated(
-      const ViewMsg_ExtensionExtentsUpdated_Params& params);
+  void OnExtensionsUpdated(
+      const ViewMsg_ExtensionsUpdated_Params& params);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
   void OnDOMStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);
@@ -369,11 +361,6 @@ class RenderThread : public RenderThreadBase,
 
   // The channel from the renderer process to the GPU process.
   scoped_refptr<GpuChannelHost> gpu_channel_;
-
-  // A list of extension web extents, which tells us which URLs belong to an
-  // installed app.
-  struct ExtensionInfo;
-  std::vector<ExtensionInfo> extension_extents_;
 
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;

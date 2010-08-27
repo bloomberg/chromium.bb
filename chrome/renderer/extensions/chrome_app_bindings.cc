@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
 
+#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/render_thread.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
@@ -47,9 +48,7 @@ class ChromeAppExtensionWrapper : public v8::Extension {
         !(url.SchemeIs("http") || url.SchemeIs("https")))
       return v8::Boolean::New(false);
 
-    bool has_web_extent =
-        !RenderThread::current()->GetExtensionIdByURL(url).empty();
-
+    bool has_web_extent = !ExtensionRendererInfo::GetByURL(url);
     return v8::Boolean::New(has_web_extent);
   }
 };

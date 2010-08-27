@@ -785,15 +785,16 @@ struct ViewHostMsg_RunFileChooser_Params {
   FilePath default_file_name;
 };
 
-struct ViewMsg_ExtensionExtentInfo {
-  std::string extension_id;
+struct ViewMsg_ExtensionRendererInfo {
+  std::string id;
   ExtensionExtent web_extent;
-  ExtensionExtent browse_extent;
+  std::string name;
+  GURL icon_url;
 };
 
-struct ViewMsg_ExtensionExtentsUpdated_Params {
+struct ViewMsg_ExtensionsUpdated_Params {
   // Describes the installed extension apps and the URLs they cover.
-  std::vector<ViewMsg_ExtensionExtentInfo> extension_apps;
+  std::vector<ViewMsg_ExtensionRendererInfo> extensions;
 };
 
 struct ViewMsg_DeviceOrientationUpdated_Params {
@@ -1058,16 +1059,16 @@ struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
 };
 
 template <>
-struct ParamTraits<ViewMsg_ExtensionExtentInfo> {
-  typedef ViewMsg_ExtensionExtentInfo param_type;
+struct ParamTraits<ViewMsg_ExtensionRendererInfo> {
+  typedef ViewMsg_ExtensionRendererInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
 template <>
-struct ParamTraits<ViewMsg_ExtensionExtentsUpdated_Params> {
-  typedef ViewMsg_ExtensionExtentsUpdated_Params param_type;
+struct ParamTraits<ViewMsg_ExtensionsUpdated_Params> {
+  typedef ViewMsg_ExtensionsUpdated_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

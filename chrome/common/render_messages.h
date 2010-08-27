@@ -103,8 +103,8 @@ struct ViewHostMsg_ShowNotification_Params;
 struct ViewMsg_New_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_RunFileChooser_Params;
-struct ViewMsg_ExtensionExtentInfo;
-struct ViewMsg_ExtensionExtentsUpdated_Params;
+struct ViewMsg_ExtensionRendererInfo;
+struct ViewMsg_ExtensionsUpdated_Params;
 struct ViewMsg_DeviceOrientationUpdated_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_OpenFileSystemRequest_Params;
@@ -710,6 +710,7 @@ struct ParamTraits<ExtensionExtent> {
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
+
 
 template<>
 struct ParamTraits<appcache::AppCacheResourceInfo> {

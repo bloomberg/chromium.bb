@@ -323,14 +323,18 @@ class Extension {
 
   // Returns an absolute path to the given icon inside of the extension. Returns
   // an empty FilePath if the extension does not have that icon.
-  ExtensionResource GetIconPath(Icons icon);
+  ExtensionResource GetIconResource(Icons icon);
 
   // Looks for an extension icon of dimension |icon|. If not found, checks if
   // the next larger size exists (until one is found or the end is reached). If
   // an icon is found, the path is returned in |resource| and the dimension
   // found is returned to the caller (as function return value).
   // NOTE: |resource| is not guaranteed to be non-empty.
-  Icons GetIconPathAllowLargerSize(ExtensionResource* resource, Icons icon);
+  Icons GetIconResourceAllowLargerSize(ExtensionResource* resource, Icons icon);
+
+  // See GetIconPathAllowLargerSize.  Returns a chrome-extension:// URL
+  // instead of an ExtensionResource.
+  GURL GetIconUrlAllowLargerSize(Icons icon);
 
   const DictionaryValue* manifest_value() const {
     return manifest_value_.get();
@@ -439,6 +443,11 @@ class Extension {
   // Returns true if the string is one of the known api permissions (see
   // kPermissionNames).
   bool IsAPIPermission(const std::string& permission);
+
+  // Utility functions to get the icon relative path used to create an
+  // ExtensionResource or URL.
+  std::string GetIconPath(Icons icon);
+  Icons GetIconPathAllowLargerSize(std::string* path, Icons icon);
 
   // The absolute path to the directory the extension is stored in.
   FilePath path_;

@@ -916,7 +916,7 @@ bool Extension::HasEffectiveBrowsingHistoryPermission() const {
 void Extension::DecodeIcon(Extension* extension,
                            Icons icon_size,
                            scoped_ptr<SkBitmap>* result) {
-  FilePath icon_path = extension->GetIconPath(icon_size).GetFilePath();
+  FilePath icon_path = extension->GetIconResource(icon_size).GetFilePath();
   DecodeIconFromPath(icon_path, icon_size, result);
 }
 
@@ -1667,26 +1667,49 @@ SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
   return NULL;
 }
 
-
-ExtensionResource Extension::GetIconPath(Icons icon) {
+std::string Extension::GetIconPath(Icons icon) {
   std::map<int, std::string>::const_iterator iter = icons_.find(icon);
   if (iter == icons_.end())
-    return ExtensionResource();
-  return GetResource(iter->second);
+    return std::string();
+  return iter->second;
 }
 
 Extension::Icons Extension::GetIconPathAllowLargerSize(
-    ExtensionResource* resource, Icons icon) {
-  *resource = GetIconPath(icon);
-  if (!resource->relative_path().empty())
+    std::string* path, Icons icon) {
+  *path = GetIconPath(icon);
+  if (!path->empty())
     return icon;
   if (icon == EXTENSION_ICON_BITTY)
-    return GetIconPathAllowLargerSize(resource, EXTENSION_ICON_SMALL);
+    return GetIconPathAllowLargerSize(path, EXTENSION_ICON_SMALL);
   if (icon == EXTENSION_ICON_SMALL)
-    return GetIconPathAllowLargerSize(resource, EXTENSION_ICON_MEDIUM);
+    return GetIconPathAllowLargerSize(path, EXTENSION_ICON_MEDIUM);
   if (icon == EXTENSION_ICON_MEDIUM)
-    return GetIconPathAllowLargerSize(resource, EXTENSION_ICON_LARGE);
+    return GetIconPathAllowLargerSize(path, EXTENSION_ICON_LARGE);
   return EXTENSION_ICON_LARGE;
+}
+
+ExtensionResource Extension::GetIconResource(Icons icon) {
+  std::string path = GetIconPath(icon);
+  if (path.empty())
+    return ExtensionResource();
+  return GetResource(path);
+}
+
+Extension::Icons Extension::GetIconResourceAllowLargerSize(
+    ExtensionResource* resource, Icons icon) {
+  std::string path;
+  Extension::Icons ret = GetIconPathAllowLargerSize(&path, icon);
+  if (path.empty())
+    *resource = ExtensionResource();
+  else
+    *resource = GetResource(path);
+  return ret;
+}
+
+GURL Extension::GetIconUrlAllowLargerSize(Icons icon) {
+  std::string path;
+  GetIconPathAllowLargerSize(&path, icon);
+  return GetResourceURL(path);
 }
 
 bool Extension::CanAccessURL(const URLPattern pattern) const {

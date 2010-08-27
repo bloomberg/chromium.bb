@@ -7,6 +7,7 @@
 #pragma once
 
 class DictionaryValue;
+class ExtensionRendererInfo;
 class GURL;
 
 namespace WebKit {
@@ -24,5 +25,14 @@ void GetLocalizedErrorValues(const WebKit::WebURLError& error,
 // enough strings localized to meaningfully fill the net error template.
 void GetFormRepostErrorValues(const GURL& display_url,
                               DictionaryValue* error_strings);
+
+// Fills |error_strings| with values to be used to build an error page used
+// on HTTP errors, like 404 or connection reset, but using information from
+// the associated |app| in order to make the error page look like it's more
+// part of the app.
+void GetAppErrorValues(const WebKit::WebURLError& error,
+                       const GURL& display_url,
+                       const ExtensionRendererInfo* app,
+                       DictionaryValue* error_strings);
 
 #endif  // CHROME_RENDERER_LOCALIZED_ERROR_H_

@@ -71,7 +71,7 @@ class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   void Init() {
     if (extension_) {
       ExtensionResource icon_resource =
-          extension_->GetIconPath(Extension::EXTENSION_ICON_BITTY);
+          extension_->GetIconResource(Extension::EXTENSION_ICON_BITTY);
 
       tracker_.LoadImage(extension_, icon_resource,
                          gfx::Size(kFavIconSize, kFavIconSize),

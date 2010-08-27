@@ -5325,6 +5325,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed. Press Reload to resend that data and display this page.
       </message>
 
+      <message name="IDS_ERRORPAGES_APP_WARNING" desc="The error message displayed when the browser can not reach the requested page from an app.">
+        The app is currently unreachable.
+      </message>
+
       <message name="IDS_SAVEAS_ALL_FILES" desc="Save As dialog box default text">
         All Files
       </message>

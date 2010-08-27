@@ -23,8 +23,8 @@ ExtensionIconManager::ExtensionIconManager()
 
 void ExtensionIconManager::LoadIcon(Extension* extension) {
   ExtensionResource icon_resource;
-  extension->GetIconPathAllowLargerSize(&icon_resource,
-                                        Extension::EXTENSION_ICON_BITTY);
+  extension->GetIconResourceAllowLargerSize(&icon_resource,
+                                            Extension::EXTENSION_ICON_BITTY);
   if (!icon_resource.extension_root().empty()) {
     image_tracker_.LoadImage(extension,
                              icon_resource,

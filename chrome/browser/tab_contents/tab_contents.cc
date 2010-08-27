@@ -3057,7 +3057,7 @@ void TabContents::UpdateExtensionAppIcon(Extension* extension) {
     extension_app_image_loader_.reset(new ImageLoadingTracker(this));
     extension_app_image_loader_->LoadImage(
         extension,
-        extension->GetIconPath(Extension::EXTENSION_ICON_SMALLISH),
+        extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH),
         gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
                   Extension::EXTENSION_ICON_SMALLISH),
         ImageLoadingTracker::CACHE);

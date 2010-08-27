@@ -1338,6 +1338,7 @@
         'gpu/gpu_info_unittest_win.cc',
         'renderer/audio_message_filter_unittest.cc',
         'renderer/extensions/extension_api_json_validity_unittest.cc',
+        'renderer/extensions/extension_renderer_info_unittest.cc',
         'renderer/extensions/json_schema_unittest.cc',
         'renderer/media/audio_renderer_impl_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',

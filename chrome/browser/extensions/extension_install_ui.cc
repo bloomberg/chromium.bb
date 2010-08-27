@@ -354,7 +354,7 @@ void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
   // Load the image asynchronously. For the response, check OnImageLoaded.
   prompt_type_ = prompt_type;
   ExtensionResource image =
-      extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE);
+      extension_->GetIconResource(Extension::EXTENSION_ICON_LARGE);
   tracker_.LoadImage(extension_, image,
                      gfx::Size(Extension::EXTENSION_ICON_LARGE,
                                Extension::EXTENSION_ICON_LARGE),

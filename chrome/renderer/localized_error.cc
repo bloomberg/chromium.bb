@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -259,4 +260,28 @@ void GetFormRepostErrorValues(const GURL& display_url,
   summary->SetString(
       "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_HTTP_POST_WARNING));
   error_strings->Set("summary", summary);
+}
+
+void GetAppErrorValues(const WebURLError& error,
+                       const GURL& display_url,
+                       const ExtensionRendererInfo* app,
+                       DictionaryValue* error_strings) {
+  DCHECK(app);
+
+  bool rtl = LocaleIsRTL();
+  error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
+
+  string16 failed_url(ASCIIToUTF16(display_url.spec()));
+  // URLs are always LTR.
+  if (rtl)
+    base::i18n::WrapStringWithLTRFormatting(&failed_url);
+  error_strings->SetString(
+     "url", l10n_util::GetStringFUTF16(IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
+                                       failed_url.c_str()));
+
+  error_strings->SetString("title", app->name());
+  error_strings->SetString("icon", app->icon_url().spec());
+  error_strings->SetString("name", app->name());
+  error_strings->SetString("msg",
+      l10n_util::GetStringUTF16(IDS_ERRORPAGES_APP_WARNING));
 }

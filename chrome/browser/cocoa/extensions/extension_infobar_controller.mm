@@ -66,9 +66,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
   void LoadIcon() {
     ExtensionResource icon_resource;
     Extension* extension = delegate_->extension_host()->extension();
-    Extension::Icons size =
-        extension->GetIconPathAllowLargerSize(&icon_resource,
-                                              Extension::EXTENSION_ICON_BITTY);
+    Extension::Icons size = extension->GetIconResourceAllowLargerSize(
+        &icon_resource, Extension::EXTENSION_ICON_BITTY);
     if (!icon_resource.relative_path().empty()) {
       tracker_.LoadImage(extension, icon_resource, gfx::Size(size, size),
                          ImageLoadingTracker::DONT_CACHE);
