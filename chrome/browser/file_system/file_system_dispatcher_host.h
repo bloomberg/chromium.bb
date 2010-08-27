@@ -11,7 +11,6 @@
 #include "base/ref_counted.h"
 #include "chrome/common/render_messages.h"
 
-class FileSystemHostContext;
 class HostContentSettingsMap;
 class Receiver;
 class ResourceMessageFilter;
@@ -20,7 +19,6 @@ class FileSystemDispatcherHost
     : public base::RefCountedThreadSafe<FileSystemDispatcherHost> {
  public:
   FileSystemDispatcherHost(IPC::Message::Sender* sender,
-                           FileSystemHostContext* file_system_host_context,
                            HostContentSettingsMap* host_content_settings_map);
   void Init(base::ProcessHandle process_handle);
   void Shutdown();
@@ -47,8 +45,6 @@ class FileSystemDispatcherHost
   base::ProcessHandle process_handle_;
 
   bool shutdown_;
-
-  scoped_refptr<FileSystemHostContext> context_;
 
   // Used to look up permissions.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
