@@ -50,24 +50,44 @@ void DeviceOrientationDispatcher::stopUpdating() {
 
 WebKit::WebDeviceOrientation DeviceOrientationDispatcher::lastOrientation()
     const {
-  if (!last_update_.get())
+  if (!last_orientation_.get())
     return WebKit::WebDeviceOrientation::nullOrientation();
 
-  return WebKit::WebDeviceOrientation(last_update_->can_provide_alpha,
-                                      last_update_->alpha,
-                                      last_update_->can_provide_beta,
-                                      last_update_->beta,
-                                      last_update_->can_provide_gamma,
-                                      last_update_->gamma);
+  return *last_orientation_;
 }
+
+namespace {
+bool OrientationsEqual(const ViewMsg_DeviceOrientationUpdated_Params& a,
+                       WebKit::WebDeviceOrientation* b) {
+  if (a.can_provide_alpha != b->canProvideAlpha())
+    return false;
+  if (a.can_provide_alpha && a.alpha != b->alpha())
+    return false;
+  if (a.can_provide_beta != b->canProvideBeta())
+    return false;
+  if (a.can_provide_beta && a.beta != b->beta())
+    return false;
+  if (a.can_provide_gamma != b->canProvideGamma())
+    return false;
+  if (a.can_provide_gamma && a.gamma != b->gamma())
+    return false;
+
+  return true;
+}
+}  // namespace
 
 void DeviceOrientationDispatcher::OnDeviceOrientationUpdated(
     const ViewMsg_DeviceOrientationUpdated_Params& p) {
-  last_update_.reset(new ViewMsg_DeviceOrientationUpdated_Params(p));
 
-  WebKit::WebDeviceOrientation orientation(p.can_provide_alpha, p.alpha,
-                                           p.can_provide_beta, p.beta,
-                                           p.can_provide_gamma, p.gamma);
+  if (last_orientation_.get() && OrientationsEqual(p, last_orientation_.get()))
+    return;
 
-  controller_->didChangeDeviceOrientation(orientation);
+  last_orientation_.reset(new WebKit::WebDeviceOrientation(p.can_provide_alpha,
+                                                           p.alpha,
+                                                           p.can_provide_beta,
+                                                           p.beta,
+                                                           p.can_provide_gamma,
+                                                           p.gamma));
+
+  controller_->didChangeDeviceOrientation(*last_orientation_);
 }

@@ -11,6 +11,7 @@
 
 class RenderView;
 namespace IPC { class Message; }
+namespace WebKit { class WebDeviceOrientation; }
 
 struct ViewMsg_DeviceOrientationUpdated_Params;
 
@@ -34,7 +35,7 @@ class DeviceOrientationDispatcher : public WebKit::WebDeviceOrientationClient {
 
   RenderView* render_view_;
   scoped_ptr<WebKit::WebDeviceOrientationController> controller_;
-  scoped_ptr<ViewMsg_DeviceOrientationUpdated_Params> last_update_;
+  scoped_ptr<WebKit::WebDeviceOrientation> last_orientation_;
   bool started_;
 };
 
