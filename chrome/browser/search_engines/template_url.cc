@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/url_constants.h"
@@ -246,6 +247,12 @@ std::string TemplateURLRef::ReplaceSearchTerms(
     const std::wstring& terms,
     int accepted_suggestion,
     const std::wstring& original_query_for_suggestion) const {
+  // GoogleBaseURLValue() enforces this, but this assert helps us catch bad
+  // behavior more frequently (instead of only when there is a GoogleBaseURL
+  // component in the passed in host).
+  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
+         ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   ParseIfNecessary();
   if (!valid_)
     return std::string();
@@ -481,6 +488,11 @@ void TemplateURLRef::InvalidateCachedValues() const {
 // Returns the value to use for replacements of type GOOGLE_BASE_URL.
 // static
 std::string TemplateURLRef::GoogleBaseURLValue() {
+  // Normally GoogleURLTracker::GoogleURL() enforces this, but this
+  // assert helps us catch bad behavior at unit tests time.
+  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
+         ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   return google_base_url_ ?
     (*google_base_url_) : GoogleURLTracker::GoogleURL().spec();
 }
@@ -488,6 +500,11 @@ std::string TemplateURLRef::GoogleBaseURLValue() {
 // Returns the value to use for replacements of type GOOGLE_BASE_SUGGEST_URL.
 // static
 std::string TemplateURLRef::GoogleBaseSuggestURLValue() {
+  // Normally GoogleURLTracker::GoogleURL() enforces this, but this
+  // assert helps us catch bad behavior at unit tests time.
+  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
+         ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   // The suggest base URL we want at the end is something like
   // "http://clients1.google.TLD/complete/".  The key bit we want from the
   // original Google base URL is the TLD.

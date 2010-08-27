@@ -230,6 +230,13 @@ class TemplateURLModelTest : public testing::Test,
     TemplateURLRef::google_base_url_ = new std::string(base_url);
   }
 
+  // Creates a TemplateURL with the same prepopluated id as a real prepopulated
+  // item. The input number determines which prepopulated item. The caller is
+  // responsible for owning the returned TemplateURL*.
+  TemplateURL* CreateReplaceablePreloadedTemplateURL(
+      size_t index_offset_from_default,
+      std::wstring* prepopulated_display_url);
+
   // Verifies the behavior of when a preloaded url later gets changed.
   // Since the input is the offset from the default, when one passes in
   // 0, it tests the default. Passing in a number > 0 will verify what
@@ -245,31 +252,39 @@ class TemplateURLModelTest : public testing::Test,
   int changed_count_;
 };
 
-void TemplateURLModelTest::TestLoadUpdatingPreloadedUrl(
-    size_t index_offset_from_default) {
-  // Create a TemplateURL with the same prepopulated id as
-  // a real prepopulated item.
+TemplateURL* TemplateURLModelTest::CreateReplaceablePreloadedTemplateURL(
+    size_t index_offset_from_default,
+    std::wstring* prepopulated_display_url) {
   TemplateURL* t_url = CreatePreloadedTemplateURL();
-  t_url->set_safe_for_autoreplace(false);
   std::vector<TemplateURL*> prepopulated_urls;
   size_t default_search_provider_index = 0;
   TemplateURLPrepopulateData::GetPrepopulatedEngines(
       profile_->GetPrefs(),
       &prepopulated_urls,
       &default_search_provider_index);
-  ASSERT_LT(index_offset_from_default, prepopulated_urls.size());
+  EXPECT_LT(index_offset_from_default, prepopulated_urls.size());
   size_t prepopulated_index =
       (default_search_provider_index + index_offset_from_default) %
       prepopulated_urls.size();
   t_url->set_prepopulate_id(
       prepopulated_urls[prepopulated_index]->prepopulate_id());
-
-  std::wstring original_url = t_url->url()->DisplayURL();
-  std::wstring prepopulated_url =
+  *prepopulated_display_url =
       prepopulated_urls[prepopulated_index]->url()->DisplayURL();
-  ASSERT_STRNE(prepopulated_url.c_str(), original_url.c_str());
   STLDeleteElements(&prepopulated_urls);
   prepopulated_urls.clear();
+
+  return t_url;
+}
+
+void TemplateURLModelTest::TestLoadUpdatingPreloadedUrl(
+    size_t index_offset_from_default) {
+  std::wstring prepopulated_url;
+  TemplateURL* t_url = CreateReplaceablePreloadedTemplateURL(
+      index_offset_from_default, &prepopulated_url);
+  t_url->set_safe_for_autoreplace(false);
+
+  std::wstring original_url = t_url->url()->DisplayURL();
+  ASSERT_STRNE(prepopulated_url.c_str(), original_url.c_str());
 
   // Then add it to the model and save it all.
   ChangeModelToLoadState();
@@ -922,6 +937,29 @@ TEST_F(TemplateURLModelTest, LoadUpdatesDefaultSearchUrl) {
 // non-default search engine provider and that the result is saved correctly.
 TEST_F(TemplateURLModelTest, LoadUpdatesSearchUrl) {
   TestLoadUpdatingPreloadedUrl(1);
+}
+
+// Make sure that the load does update of auto-keywords correctly.
+// This test basically verifies that no asserts or crashes occur
+// during this operation.
+TEST_F(TemplateURLModelTest, LoadDoesAutoKeywordUpdate) {
+  std::wstring prepopulated_url;
+  TemplateURL* t_url = CreateReplaceablePreloadedTemplateURL(
+      0, &prepopulated_url);
+  t_url->set_safe_for_autoreplace(false);
+  t_url->SetURL("{google:baseURL}?q={searchTerms}", 0, 0);
+  t_url->set_autogenerate_keyword(true);
+
+  // Then add it to the model and save it all.
+  ChangeModelToLoadState();
+  model_->Add(t_url);
+  BlockTillServiceProcessesRequests();
+
+  // Now reload the model and verify that the merge updates the url.
+  ResetModel(true);
+
+  // Wait for any saves to finish.
+  BlockTillServiceProcessesRequests();
 }
 
 // Simulates failing to load the webdb and makes sure the default search

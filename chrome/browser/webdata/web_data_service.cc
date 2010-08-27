@@ -92,6 +92,12 @@ WebDatabase* WebDataService::GetDatabase() {
 //////////////////////////////////////////////////////////////////////////////
 
 void WebDataService::AddKeyword(const TemplateURL& url) {
+  // Ensure that the keyword is already generated (and cached) before caching
+  // the TemplateURL for use on another keyword. (keyword generation may involve
+  // a call to GoogleURLTracker::GoogleURL(), which may only be done on the
+  // UI thread.)
+  if (url.autogenerate_keyword())
+    url.keyword();
   GenericRequest<TemplateURL>* request =
     new GenericRequest<TemplateURL>(this, GetNextRequestHandle(), NULL, url);
   RegisterRequest(request);
@@ -109,6 +115,12 @@ void WebDataService::RemoveKeyword(const TemplateURL& url) {
 }
 
 void WebDataService::UpdateKeyword(const TemplateURL& url) {
+  // Ensure that the keyword is already generated (and cached) before caching
+  // the TemplateURL for use on another keyword. (keyword generation may involve
+  // a call to GoogleURLTracker::GoogleURL(), which may only be done on the
+  // UI thread.)
+  if (url.autogenerate_keyword())
+    url.keyword();
   GenericRequest<TemplateURL>* request =
       new GenericRequest<TemplateURL>(this, GetNextRequestHandle(), NULL, url);
   RegisterRequest(request);
