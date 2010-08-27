@@ -60,6 +60,8 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bind_status_callback_impl.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
+#include "chrome_frame/html_utils.h"
+#include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/utils.h"
 #include "net/base/upload_data.h"
 #include "chrome_frame/urlmon_bind_status_callback.h"
@@ -174,11 +176,19 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
                                base::Int64ToString(upload_data_size_).c_str());
     new_headers += kMetricsType;
 
+    std::string user_agent_value = http_utils::GetDefaultUserAgent();
+    user_agent_value = http_utils::AddChromeFrameToUserAgentValue(
+        user_agent_value);
+
+    new_headers += "User-Agent: " + user_agent_value;
+    new_headers += "\r\n";
+
     *additional_headers = reinterpret_cast<wchar_t*>(
         CoTaskMemAlloc((new_headers.size() + 1) * sizeof(wchar_t)));
 
     lstrcpynW(*additional_headers, ASCIIToWide(new_headers).c_str(),
               new_headers.size());
+
     return BSCBImpl::BeginningTransaction(url, headers, reserved,
                                           additional_headers);
   }
