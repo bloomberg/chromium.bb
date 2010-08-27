@@ -19,7 +19,7 @@ readonly LIST_FP_C="177.mesa 179.art 183.equake 188.ammp"
 
 readonly LIST_INT_CPP="252.eon"
 
-SPEC2K_BENCHMARKS="${LIST_FP_C} ${LIST_INT_C}"
+SPEC2K_BENCHMARKS="${LIST_FP_C} ${LIST_INT_C} ${LIST_INT_CPP}"
 
 # One of {./run.train.sh, ./run.ref.sh}
 SPEC2K_SCRIPT="./run.train.sh"
