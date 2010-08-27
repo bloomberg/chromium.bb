@@ -478,6 +478,13 @@ TEST_F(BookmarkModelTest, GetBookmarksWithDups) {
   ASSERT_TRUE(urls[0] == url);
 }
 
+TEST_F(BookmarkModelTest, HasBookmarks) {
+  const GURL url("http://foo.com/");
+  model.AddURL(model.GetBookmarkBarNode(), 0, ASCIIToUTF16("bar"), url);
+
+  EXPECT_TRUE(model.HasBookmarks());
+}
+
 namespace {
 
 // NotificationObserver implementation used in verifying we've received the

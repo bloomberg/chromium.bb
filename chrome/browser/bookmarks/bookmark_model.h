@@ -249,6 +249,10 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // Returns all the bookmarked urls. This method is thread safe.
   virtual void GetBookmarks(std::vector<GURL>* urls);
 
+  // Returns true if there are bookmarks, otherwise returns false. This method
+  // is thread safe.
+  bool HasBookmarks();
+
   // Returns true if there is a bookmark for the specified URL. This method is
   // thread safe. See BookmarkService for more details on this.
   virtual bool IsBookmarked(const GURL& url);

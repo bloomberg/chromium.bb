@@ -343,6 +343,11 @@ void BookmarkModel::GetBookmarks(std::vector<GURL>* urls) {
   }
 }
 
+bool BookmarkModel::HasBookmarks() {
+  AutoLock url_lock(url_lock_);
+  return !nodes_ordered_by_url_set_.empty();
+}
+
 bool BookmarkModel::IsBookmarked(const GURL& url) {
   AutoLock url_lock(url_lock_);
   return IsBookmarkedNoLock(url);
