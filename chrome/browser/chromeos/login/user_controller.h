@@ -68,7 +68,7 @@ class UserController : public views::ButtonListener,
   // Initializes the UserController, creating the set of windows/controls.
   // |index| is the index of this user, and |total_user_count| the total
   // number of users.
-  void Init(int index, int total_user_count);
+  void Init(int index, int total_user_count, bool need_browse_without_signin);
 
   // Update border window parameters to notify window manager about new numbers.
   // |index| of this user and |total_user_count| of users.
@@ -153,7 +153,9 @@ class UserController : public views::ButtonListener,
                             const gfx::Rect& bounds,
                             chromeos::WmIpcWindowType type,
                             views::View* contents_view);
-  views::WidgetGtk* CreateControlsWindow(int index, int* height);
+  views::WidgetGtk* CreateControlsWindow(int index,
+                                         int* height,
+                                         bool need_browse_without_signin);
   views::WidgetGtk* CreateImageWindow(int index);
   views::WidgetGtk* CreateLabelWindow(int index, WmIpcWindowType type);
   void CreateBorderWindow(int index, int total_user_count, int controls_height);

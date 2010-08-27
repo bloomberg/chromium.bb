@@ -182,7 +182,48 @@ void RoundedRectBorder::GetInsets(gfx::Insets* insets) const {
   insets->Set(inset - shadow / 3, inset, inset + shadow / 3, inset);
 }
 
-}  //  namespace
+// Simple solid round background.
+class RoundedBackground : public views::Background {
+ public:
+  explicit RoundedBackground(int corner_radius,
+                             int stroke_width,
+                             const SkColor& background_color,
+                             const SkColor& stroke_color)
+      : corner_radius_(corner_radius),
+        stroke_width_(stroke_width),
+        stroke_color_(stroke_color) {
+    SetNativeControlColor(background_color);
+  }
+
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
+    SkRect rect;
+    rect.iset(0, 0, view->width(), view->height());
+    SkPath path;
+    path.addRoundRect(rect,
+                      SkIntToScalar(corner_radius_),
+                      SkIntToScalar(corner_radius_));
+    // Draw interior.
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(get_color());
+    canvas->AsCanvasSkia()->drawPath(path, paint);
+    // Redraw boundary region with correspoinding color.
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(SkIntToScalar(stroke_width_));
+    paint.setColor(stroke_color_);
+    canvas->AsCanvasSkia()->drawPath(path, paint);
+  }
+
+ private:
+  int corner_radius_;
+  int stroke_width_;
+  SkColor stroke_color_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedBackground);
+};
+
+}  // namespace
 
 // static
 const BorderDefinition BorderDefinition::kScreenBorder = {
@@ -201,6 +242,14 @@ views::Painter* CreateWizardPainter(const BorderDefinition* const border) {
 
 views::Border* CreateWizardBorder(const BorderDefinition* const border) {
   return new RoundedRectBorder(border);
+}
+
+views::Background* CreateRoundedBackground(int corner_radius,
+                                           int stroke_width,
+                                           SkColor background_color,
+                                           SkColor stroke_color) {
+  return new RoundedBackground(
+      corner_radius, stroke_width, background_color, stroke_color);
 }
 
 }  // namespace chromeos

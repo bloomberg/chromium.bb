@@ -10,11 +10,13 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "views/controls/button/button.h"
 #include "views/view.h"
 
 namespace views {
 class Widget;
 class Label;
+class TextButton;
 }
 
 class Profile;
@@ -26,8 +28,19 @@ class StatusAreaView;
 
 // View used to render the background during login. BackgroundView contains
 // StatusAreaView.
-class BackgroundView : public views::View, public StatusAreaHost {
+class BackgroundView : public views::View,
+                       public StatusAreaHost,
+                       public views::ButtonListener {
  public:
+  // Delegate class to handle notificatoin from the view.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Initializes incognito login.
+    virtual void OnGoIncognitoButton() = 0;
+  };
+
   enum LoginStep {
     SELECT_NETWORK,
 #if defined(OFFICIAL_BUILD)
@@ -54,8 +67,14 @@ class BackgroundView : public views::View, public StatusAreaHost {
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
   void SetOobeProgressBarVisible(bool visible);
 
+  // Gets progress bar visibility.
+  bool IsOobeProgressBarVisible();
+
   // Sets current step on OOBE progress bar.
   void SetOobeProgress(LoginStep step);
+
+  // Toggles GoIncognito button visibility.
+  void SetGoIncognitoButtonVisible(bool visible, Delegate *delegate);
 
  protected:
   // Overridden from views::View:
@@ -74,6 +93,9 @@ class BackgroundView : public views::View, public StatusAreaHost {
   virtual bool IsBrowserMode() const;
   virtual bool IsScreenLockerMode() const;
 
+  // Overridden from views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
  private:
   // Creates and adds the status_area.
   void InitStatusArea();
@@ -81,6 +103,11 @@ class BackgroundView : public views::View, public StatusAreaHost {
   void InitInfoLabels();
   // Creates and add OOBE progress bar.
   void InitProgressBar();
+  // Creates and add GoIncoginito button.
+  void InitGoIncognitoButton();
+
+  // Updates string from the resources.
+  void UpdateLocalizedStrings();
 
   // Invokes SetWindowType for the window. This is invoked during startup and
   // after we've painted.
@@ -96,6 +123,7 @@ class BackgroundView : public views::View, public StatusAreaHost {
   views::Label* os_version_label_;
   views::Label* boot_times_label_;
   OobeProgressBar* progress_bar_;
+  views::TextButton* go_incognito_button_;
 
   // Handles asynchronously loading the version.
   VersionLoader version_loader_;
@@ -111,6 +139,8 @@ class BackgroundView : public views::View, public StatusAreaHost {
   // manager.
   // TODO(sky): nuke this when the wm knows when chrome has painted.
   bool did_paint_;
+
+  Delegate *delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };

@@ -72,7 +72,9 @@ class UsernameField : public views::Textfield {
 
 namespace chromeos {
 
-NewUserView::NewUserView(Delegate* delegate, bool need_border)
+NewUserView::NewUserView(Delegate* delegate,
+                         bool need_border,
+                         bool need_browse_without_signin)
     : username_field_(NULL),
       password_field_(NULL),
       title_label_(NULL),
@@ -88,7 +90,8 @@ NewUserView::NewUserView(Delegate* delegate, bool need_border)
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       focus_delayed_(false),
       login_in_process_(false),
-      need_border_(need_border) {
+      need_border_(need_border),
+      need_browse_without_signin_(need_browse_without_signin) {
 }
 
 NewUserView::~NewUserView() {
@@ -127,7 +130,9 @@ void NewUserView::Init() {
 
   InitLink(&create_account_link_);
   InitLink(&cant_access_account_link_);
-  InitLink(&browse_without_signin_link_);
+  if (need_browse_without_signin_) {
+    InitLink(&browse_without_signin_link_);
+  }
 
   language_switch_menu_.InitLanguageMenu();
   languages_menubutton_ = new views::MenuButton(
@@ -188,8 +193,10 @@ void NewUserView::UpdateLocalizedStrings() {
       l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
   cant_access_account_link_->SetText(
       l10n_util::GetString(IDS_CANT_ACCESS_ACCOUNT_BUTTON));
-  browse_without_signin_link_->SetText(
-      l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
+  if (need_browse_without_signin_) {
+    browse_without_signin_link_->SetText(
+        l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
+  }
   delegate_->ClearErrors();
   languages_menubutton_->SetText(language_switch_menu_.GetCurrentLocaleName());
 }
@@ -274,13 +281,16 @@ void NewUserView::Layout() {
   int max_width = this->width() - x - insets.right();
   title_label_->SizeToFit(max_width);
 
+  int browse_without_signin_link_height = need_browse_without_signin_ ?
+      browse_without_signin_link_->GetPreferredSize().height() : 0;
+
   height = title_label_->GetPreferredSize().height() +
            username_field_->GetPreferredSize().height() +
            password_field_->GetPreferredSize().height() +
            sign_in_button_->GetPreferredSize().height() +
            create_account_link_->GetPreferredSize().height() +
            cant_access_account_link_->GetPreferredSize().height() +
-           browse_without_signin_link_->GetPreferredSize().height() +
+           browse_without_signin_link_height +
            4 * kRowPad;
   y = (this->height() - height) / 2;
 
@@ -297,8 +307,10 @@ void NewUserView::Layout() {
                 false);
   y += setViewBounds(create_account_link_, x, y, max_width, false);
   y += setViewBounds(cant_access_account_link_, x, y, max_width, false);
-  y += setViewBounds(browse_without_signin_link_, x, y, max_width, false);
 
+  if (need_browse_without_signin_) {
+    y += setViewBounds(browse_without_signin_link_, x, y, max_width, false);
+  }
   SchedulePaint();
 }
 
@@ -411,7 +423,9 @@ void NewUserView::EnableInputControls(bool enabled) {
   sign_in_button_->SetEnabled(enabled);
   create_account_link_->SetEnabled(enabled);
   cant_access_account_link_->SetEnabled(enabled);
-  browse_without_signin_link_->SetEnabled(enabled);
+  if (need_browse_without_signin_) {
+    browse_without_signin_link_->SetEnabled(enabled);
+  }
 }
 
 void NewUserView::InitLink(views::Link** link) {

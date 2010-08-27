@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace views {
+class Background;
 class Border;
 class Painter;
 }  // namespace views
@@ -33,6 +34,11 @@ views::Painter* CreateWizardPainter(const BorderDefinition* const border);
 // that actually draws both border and background.
 views::Border* CreateWizardBorder(const BorderDefinition* const border);
 
+// Creates simple round background.
+views::Background* CreateRoundedBackground(int corner_radius,
+                                           int stroke_width,
+                                           SkColor background_color,
+                                           SkColor stroke_color);
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_RECT_PAINTER_H_

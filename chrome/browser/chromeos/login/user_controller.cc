@@ -150,9 +150,12 @@ UserController::~UserController() {
   unselected_label_window_->Close();
 }
 
-void UserController::Init(int index, int total_user_count) {
+void UserController::Init(int index,
+                          int total_user_count,
+                          bool need_browse_without_signin) {
   int controls_height = 0;
-  controls_window_ = CreateControlsWindow(index, &controls_height);
+  controls_window_ =
+      CreateControlsWindow(index, &controls_height, need_browse_without_signin);
   image_window_ = CreateImageWindow(index);
   CreateBorderWindow(index, total_user_count, controls_height);
   label_window_ = CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_LABEL);
@@ -280,10 +283,14 @@ void UserController::ConfigureLoginWindow(WidgetGtk* window,
   window->Show();
 }
 
-WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
+WidgetGtk* UserController::CreateControlsWindow(
+    int index,
+    int* height,
+    bool need_browse_without_signin) {
   views::View* control_view;
   if (is_guest_) {
-    new_user_view_ = new NewUserView(this, false);
+    new_user_view_ =
+        new NewUserView(this, false, need_browse_without_signin);
     new_user_view_->Init();
     control_view = new_user_view_;
   } else {

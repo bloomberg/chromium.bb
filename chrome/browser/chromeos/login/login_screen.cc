@@ -43,7 +43,7 @@ LoginScreen::~LoginScreen() {
 }
 
 NewUserView* LoginScreen::AllocateView() {
-  return new NewUserView(this, true);
+  return new NewUserView(this, true, true);
 }
 
 void LoginScreen::OnLogin(const std::string& username,

@@ -58,7 +58,10 @@ class NewUserView : public views::View,
   };
 
   // If |need_border| is true, RoundedRect border and background are required.
-  NewUserView(Delegate* delegate, bool need_border);
+  NewUserView(Delegate* delegate,
+              bool need_border,
+              bool need_browse_without_signin);
+
   virtual ~NewUserView();
 
   // Initialize view layout.
@@ -162,6 +165,9 @@ class NewUserView : public views::View,
 
   // If true, this view needs RoundedRect border and background.
   bool need_border_;
+
+  // Whether browse without signin is needed.
+  bool need_browse_without_signin_;
 
   FRIEND_TEST_ALL_PREFIXES(LoginScreenTest, IncognitoLogin);
   friend class LoginScreenTest;

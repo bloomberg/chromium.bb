@@ -12,6 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
@@ -25,7 +26,6 @@
 namespace chromeos {
 
 class Authenticator;
-class BackgroundView;
 class MessageBubble;
 
 // ExistingUserController is used to handle login when someone has already
@@ -40,6 +40,7 @@ class MessageBubble;
 // the user logs in (or chooses to see other settings).
 class ExistingUserController : public WmMessageListener::Observer,
                                public UserController::Delegate,
+                               public BackgroundView::Delegate,
                                public LoginStatusConsumer,
                                public MessageBubbleDelegate,
                                public CaptchaView::Delegate,
@@ -84,6 +85,9 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void RemoveUser(UserController* source);
   virtual void AddStartUrl(const GURL& start_url) { start_url_ = start_url; }
   virtual void SelectUser(int index);
+
+  // BackgroundView::Delegate
+  virtual void OnGoIncognitoButton();
 
   // LoginStatusConsumer:
   virtual void OnLoginFailure(const LoginFailure& error);

@@ -113,12 +113,16 @@ void ExistingUserController::Init() {
     if (!WizardController::IsDeviceRegistered()) {
       background_view_->SetOobeProgressBarVisible(true);
       background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
+    } else {
+      background_view_->SetGoIncognitoButtonVisible(true, this);
     }
+
     background_window_->Show();
   }
   for (size_t i = 0; i < controllers_.size(); ++i) {
     (controllers_[i])->Init(static_cast<int>(i),
-                            static_cast<int>(controllers_.size()));
+                            static_cast<int>(controllers_.size()),
+                            background_view_->IsOobeProgressBarVisible());
   }
 
   EnableTooltipsIfNeeded(controllers_);
@@ -292,6 +296,10 @@ void ExistingUserController::SelectUser(int index) {
   }
 }
 
+void ExistingUserController::OnGoIncognitoButton() {
+  LoginOffTheRecord();
+}
+
 void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   LOG(INFO) << "OnLoginFailure";
   ClearCaptchaState();
@@ -306,7 +314,6 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   } else if (!network->Connected()) {
     ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
   } else {
-
     if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
         failure.error().state() == GoogleServiceAuthError::CAPTCHA_REQUIRED) {
       if (!failure.error().captcha().image_url.is_empty()) {
