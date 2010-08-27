@@ -37,7 +37,7 @@ namespace plugin {
 uintptr_t BrowserInterfacePpapi::StringToIdentifier(const nacl::string& str) {
   StringToIdentifierMap::iterator iter = string_to_identifier_map_.find(str);
   if (iter == string_to_identifier_map_.end()) {
-    uintptr_t id = reinterpret_cast<uintptr_t>(str.c_str());
+    uintptr_t id = next_identifier++;
     string_to_identifier_map_.insert(make_pair(str, id));
     identifier_to_string_map_.insert(make_pair(id, str));
     return id;

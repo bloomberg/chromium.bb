@@ -26,10 +26,10 @@ class ScriptableHandle;
 
 
 // Encapsulates an interface for communication with the browser
-// from a PPAPI plugin.
+// from a PPAPI NaCl plugin.
 class BrowserInterfacePpapi : public BrowserInterface {
  public:
-  BrowserInterfacePpapi() {}
+  BrowserInterfacePpapi() : next_identifier(0) {}
   virtual ~BrowserInterfacePpapi() {}
 
   // Convert a string to an identifier.
@@ -64,6 +64,7 @@ class BrowserInterfacePpapi : public BrowserInterface {
   typedef std::map<uintptr_t, nacl::string> IdentifierToStringMap;
   StringToIdentifierMap string_to_identifier_map_;
   IdentifierToStringMap identifier_to_string_map_;
+  uintptr_t next_identifier;  // will be incremented once used
 };
 
 // Convert from the API-independent instance identifier to the PPAPI
