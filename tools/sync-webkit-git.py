@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,10 +17,6 @@ import re
 import subprocess
 import sys
 
-# The name of the magic branch that lets us know that DEPS is managing
-# the update cycle.
-MAGIC_GCLIENT_BRANCH = 'refs/heads/gclient'
-
 def RunGit(command):
   """Run a git subcommand, returning its output."""
   # On Windows, use shell=True to get PATH interpretation.
@@ -28,6 +24,27 @@ def RunGit(command):
   proc = subprocess.Popen(['git'] + command, shell=shell,
                           stdout=subprocess.PIPE)
   return proc.communicate()[0].strip()
+
+def GetGClientBranchName():
+  """Returns the name of the magic branch that lets us know that DEPS is
+  managing the update cycle."""
+  # Is there an override branch specified?
+  overide_config_name = 'chromium.sync-branch'
+  override_branch_name = RunGit(['config', '--get', overide_config_name])
+  if not override_branch_name:
+    return 'refs/heads/gclient' # No override, so return the default branch.
+
+  # Verify that the branch from config exists.
+  ref_branch = 'refs/heads/' + override_branch_name
+  current_head = RunGit(['show-ref', '--hash', ref_branch])
+  if current_head:
+    return ref_branch
+
+  # Inform the user about the problem and how to fix it.
+  print ("The specified override branch ('%s') doesn't appear to exist." %
+         override_branch_name)
+  print "Please fix your git config value '%s'." % overide_config_name
+  sys.exit(1)
 
 def GetWebKitRev():
   """Extract the 'webkit_revision' variable out of DEPS."""
@@ -80,7 +97,7 @@ def FindSVNRev(target_rev):
   print "Something has likely gone horribly wrong."
   return None
 
-def UpdateGClientBranch(webkit_rev):
+def UpdateGClientBranch(webkit_rev, magic_gclient_branch):
   """Update the magic gclient branch to point at |webkit_rev|.
 
   Returns: true if the branch didn't need changes."""
@@ -93,19 +110,19 @@ def UpdateGClientBranch(webkit_rev):
     print "ERROR: Couldn't map r%s to a git revision." % webkit_rev
     sys.exit(1)
 
-  current = RunGit(['show-ref', '--hash', MAGIC_GCLIENT_BRANCH])
+  current = RunGit(['show-ref', '--hash', magic_gclient_branch])
   if current == target:
     return False  # No change necessary.
 
   subprocess.check_call(['git', 'update-ref', '-m', 'gclient sync',
-                         MAGIC_GCLIENT_BRANCH, target],
+                         magic_gclient_branch, target],
                          shell=(os.name == 'nt'))
   return True
 
-def UpdateCurrentCheckoutIfAppropriate():
+def UpdateCurrentCheckoutIfAppropriate(magic_gclient_branch):
   """Reset the current gclient branch if that's what we have checked out."""
   branch = RunGit(['symbolic-ref', '-q', 'HEAD'])
-  if branch != MAGIC_GCLIENT_BRANCH:
+  if branch != magic_gclient_branch:
     print "We have now updated the 'gclient' branch, but third_party/WebKit"
     print "has some other branch ('%s') checked out." % branch
     print "Run 'git checkout gclient' under third_party/WebKit if you want"
@@ -132,9 +149,10 @@ def main():
   webkit_rev = GetWebKitRev()
   print 'Desired revision: r%s.' % webkit_rev
   os.chdir('third_party/WebKit')
-  changed = UpdateGClientBranch(webkit_rev)
+  magic_gclient_branch = GetGClientBranchName()
+  changed = UpdateGClientBranch(webkit_rev, magic_gclient_branch)
   if changed:
-    return UpdateCurrentCheckoutIfAppropriate()
+    return UpdateCurrentCheckoutIfAppropriate(magic_gclient_branch)
   else:
     print "Already on correct revision."
   return 0
