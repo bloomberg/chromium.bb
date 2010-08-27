@@ -225,9 +225,11 @@ void ScriptableHandlePpapi::GetAllPropertyNames(
 pp::Var ScriptableHandlePpapi::Call(const pp::Var& name,
                                     const std::vector<pp::Var>& args,
                                     pp::Var* exception) {
-  assert(name.is_string());
   PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (name=%s, %"NACL_PRIuS
                  " args)\n", VarToString(name).c_str(), args.size()));
+  if (name.is_void())  // invoke default
+    return pp::Var();
+  assert(name.is_string());
   return Invoke(METHOD_CALL, name.AsString(), "Call", args, exception);
 }
 
