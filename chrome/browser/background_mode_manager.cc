@@ -23,10 +23,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#endif
-
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_util.h"
 #endif
@@ -86,27 +82,13 @@ bool BackgroundModeManager::IsBackgroundModeEnabled() {
   return profile_->GetPrefs()->GetBoolean(prefs::kBackgroundModeEnabled);
 }
 
-bool BackgroundModeManager::IsLaunchOnStartupResetAllowed() {
-  return profile_->GetPrefs()->GetBoolean(prefs::kLaunchOnStartupResetAllowed);
-}
-
-void BackgroundModeManager::SetLaunchOnStartupResetAllowed(bool allowed) {
-  profile_->GetPrefs()->SetBoolean(prefs::kLaunchOnStartupResetAllowed,
-                                   allowed);
-}
-
 void BackgroundModeManager::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSIONS_READY:
-    // On a Mac, we use 'login items' mechanism which has user-facing UI so we
-    // don't want to stomp on user choice every time we start and load
-    // registered extensions.
-#if !defined(OS_MACOSX)
       EnableLaunchOnStartup(IsBackgroundModeEnabled() &&
                             background_app_count_ > 0);
-#endif
       break;
     case NotificationType::EXTENSION_LOADED:
       if (IsBackgroundApp(Details<Extension>(details).ptr()))
@@ -189,38 +171,8 @@ void BackgroundModeManager::OnBackgroundAppUninstalled() {
 }
 
 void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
-  // TODO(BUG43382): Add code for other platforms to enable/disable launch on
+  // TODO(atwilson): Add platform-specific code to enable/disable launch on
   // startup.
-
-  // This functionality is only defined for default profile, currently.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
-    return;
-
-#if defined(OS_MACOSX)
-  if (should_launch) {
-    // Return if Chrome is already a Login Item (avoid overriding user choice).
-    if (mac_util::CheckLoginItemStatus(NULL))
-      return;
-
-    mac_util::AddToLoginItems(true);  // Hide on startup.
-
-    // Remember we set Login Item, not the user - so we can reset it later.
-    SetLaunchOnStartupResetAllowed(true);
-  } else {
-    // If we didn't set Login Item, don't mess with it.
-    if (!IsLaunchOnStartupResetAllowed())
-      return;
-    SetLaunchOnStartupResetAllowed(false);
-
-    // Check if Chrome is not a login Item, or is a Login Item but w/o 'hidden'
-    // flag - most likely user has modified the setting, don't override it.
-    bool is_hidden = false;
-    if (!mac_util::CheckLoginItemStatus(&is_hidden) || !is_hidden)
-      return;
-
-    mac_util::RemoveFromLoginItems();
-  }
-#endif
 }
 
 void BackgroundModeManager::CreateStatusTrayIcon() {
@@ -317,5 +269,4 @@ Browser* BackgroundModeManager::GetBrowserWindow() {
 // static
 void BackgroundModeManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kBackgroundModeEnabled, true);
-  prefs->RegisterBooleanPref(prefs::kLaunchOnStartupResetAllowed, false);
 }

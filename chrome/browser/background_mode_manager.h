@@ -82,12 +82,6 @@ class BackgroundModeManager
   // Returns true if the background mode preference is enabled
   bool IsBackgroundModeEnabled();
 
-  // Returns true if chrome has set "launch on startup" property for itself
-  // earlier and is allowed to reset it later, reducing likelihood of
-  // overriding user choices.
-  bool IsLaunchOnStartupResetAllowed();
-  void SetLaunchOnStartupResetAllowed(bool allowed);
-
   // Called to make sure that our launch-on-startup mode is properly set.
   // (virtual so we can override for tests).
   virtual void EnableLaunchOnStartup(bool should_launch);
