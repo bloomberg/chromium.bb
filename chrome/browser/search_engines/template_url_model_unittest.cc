@@ -21,6 +21,13 @@
 using base::Time;
 using base::TimeDelta;
 
+#if defined(OS_LINUX)
+// Timed out on Chromium Linux.  http://crbug.com/53607
+#define MAYBE_Load DISABLED_Load
+#else
+#define MAYBE_Load Load
+#endif
+
 // Create an URL that appears to have been prepopulated, but won't be in the
 // current data. The caller owns the returned TemplateURL*.
 static TemplateURL* CreatePreloadedTemplateURL() {
@@ -316,7 +323,7 @@ void TemplateURLModelTest::TestLoadUpdatingPreloadedUrl(
                keyword_url->url()->DisplayURL().c_str());
 }
 
-TEST_F(TemplateURLModelTest, Load) {
+TEST_F(TemplateURLModelTest, MAYBE_Load) {
   VerifyLoad();
 }
 
