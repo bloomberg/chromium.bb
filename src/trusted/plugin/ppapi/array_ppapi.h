@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "ppapi/cpp/instance.h"
@@ -44,7 +45,8 @@ class ArrayPpapi : public pp::ScriptableObject {
   }
   virtual pp::Var Call(const pp::Var& method_name,
                        const std::vector<pp::Var>& args, pp::Var* exception) {
-    size_t argc = args.size();
+    // Assuming the number of arguments will fit into 32 bits.
+    uint32_t argc = nacl::assert_cast<uint32_t>(args.size());
     pp::Var* argv = const_cast<pp::Var*>(&args[0]);  // elements are contiguous
     return js_array_.Call(method_name, argc, argv, exception);
   }

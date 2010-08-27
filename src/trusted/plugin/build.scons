@@ -281,7 +281,8 @@ if ppapi_env['SHARED_LIBS_SPECIAL']:
 else:
   ppapi_env.Append(LIBS=ppapi_libs + os_libs)
 
-if ppapi_env.Bit('linux') and not ppapi_env.Bit('chrome'):
+if ((ppapi_env.Bit('linux') or ppapi_env.Bit('windows')) and
+    not ppapi_env.Bit('chrome')):
   ppapi_plugin = ppapi_env.ComponentLibrary(
       ppNaClPlugin,
       common_inputs + ppapi_inputs,

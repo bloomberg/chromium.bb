@@ -86,7 +86,7 @@ template<typename T> void PPVarToAllocateArray(const pp::Var& var,
     return;
   }
 
-  *array_length = length;
+  *array_length = static_cast<nacl_abi_size_t>(length);
   *array_data = reinterpret_cast<T*>(malloc(sizeof(T) * length));
   if (array_data == NULL) {
     *exception = "incompatible argument: internal error";
