@@ -19,7 +19,7 @@ class ScopedTempDir {
   // No directory is owned/created initially.
   ScopedTempDir();
 
-  // Recursively delete path_
+  // Recursively delete path.
   ~ScopedTempDir();
 
   // Creates a unique directory in TempPath, and takes ownership of it.
@@ -32,6 +32,9 @@ class ScopedTempDir {
   // Takes ownership of directory at |path|, creating it if necessary.
   // Don't call multiple times unless Take() has been called first.
   bool Set(const FilePath& path);
+
+  // Deletes the temporary directory wrapped by this object.
+  void Delete();
 
   // Caller takes ownership of the temporary directory so it won't be destroyed
   // when this object goes out of scope.

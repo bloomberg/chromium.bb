@@ -8,6 +8,16 @@
 // directory and second process command line flags.  The second process then
 // exits.
 //
+// Because many networked filesystem implementations do not support unix domain
+// sockets, we create the socket in a temporary directory and create a symlink
+// in the profile. This temporary directory is no longer bound to the profile,
+// and may disappear across a reboot or login to a separate session. To bind
+// them, we store a unique cookie in the profile directory, which must also be
+// present in the remote directory to connect. The cookie is checked both before
+// and after the connection. /tmp is sticky, and different Chrome sessions use
+// different cookies. Thus, a matching cookie before and after means the
+// connection was to a directory with a valid cookie.
+//
 // We also have a lock file, which is a symlink to a non-existent destination.
 // The destination is a string containing the hostname and process id of
 // chrome's browser process, eg. "SingletonLock -> example.com-9156".  When the
@@ -55,6 +65,7 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
+#include "base/rand_util.h"
 #include "base/safe_strerror_posix.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
@@ -190,43 +201,56 @@ ssize_t ReadFromSocket(int fd, char *buf, size_t bufsize, int timeout) {
   return bytes_read;
 }
 
-// Set up a socket and sockaddr appropriate for messaging.
-void SetupSocket(const std::string& path, int* sock, struct sockaddr_un* addr) {
-  *sock = socket(PF_UNIX, SOCK_STREAM, 0);
-  PCHECK(*sock >= 0) << "socket() failed";
-
-  int rv = SetNonBlocking(*sock);
-  DCHECK_EQ(0, rv) << "Failed to make non-blocking socket.";
-  rv = SetCloseOnExec(*sock);
-  DCHECK_EQ(0, rv) << "Failed to set CLOEXEC on socket.";
-
+// Set up a sockaddr appropriate for messaging.
+void SetupSockAddr(const std::string& path, struct sockaddr_un* addr) {
   addr->sun_family = AF_UNIX;
   CHECK(path.length() < arraysize(addr->sun_path))
       << "Socket path too long: " << path;
   base::strlcpy(addr->sun_path, path.c_str(), arraysize(addr->sun_path));
 }
 
-// Read a symbol link, return empty string if given path is not a symbol link.
+// Set up a socket appropriate for messaging.
+int SetupSocketOnly() {
+  int sock = socket(PF_UNIX, SOCK_STREAM, 0);
+  PCHECK(sock >= 0) << "socket() failed";
+
+  int rv = SetNonBlocking(sock);
+  DCHECK_EQ(0, rv) << "Failed to make non-blocking socket.";
+  rv = SetCloseOnExec(sock);
+  DCHECK_EQ(0, rv) << "Failed to set CLOEXEC on socket.";
+
+  return sock;
+}
+
+// Set up a socket and sockaddr appropriate for messaging.
+void SetupSocket(const std::string& path, int* sock, struct sockaddr_un* addr) {
+  *sock = SetupSocketOnly();
+  SetupSockAddr(path, addr);
+}
+
+// Read a symbolic link, return empty string if given path is not a
+// symbol link. This version does not interpret the errno, leaving
+// the caller to do so.
+bool ReadLinkSilent(const std::string& path, std::string* output) {
+  char buf[PATH_MAX];
+  ssize_t len = readlink(path.c_str(), buf, PATH_MAX);
+  if (len >= 0) {
+    output->assign(buf, len);
+    return true;
+  }
+  output->clear();
+  return false;
+}
+
+// Read a symbolic link, return empty string if given path is not a symbol link.
 std::string ReadLink(const std::string& path) {
-  struct stat statbuf;
-
-  if (lstat(path.c_str(), &statbuf) < 0) {
-    DCHECK_EQ(errno, ENOENT);
-    return std::string();
-  }
-
-  if (S_ISLNK(statbuf.st_mode)) {
-    char buf[PATH_MAX + 1];
-    ssize_t len = readlink(path.c_str(), buf, PATH_MAX);
-    if (len > 0) {
-      buf[len] = '\0';
-      return std::string(buf);
-    } else {
+  std::string target;
+  if (!ReadLinkSilent(path, &target)) {
+    // The only errno that should occur is ENOENT.
+    if (errno != 0 && errno != ENOENT)
       PLOG(ERROR) << "readlink(" << path << ") failed";
-    }
   }
-
-  return std::string();
+  return target;
 }
 
 // Unlink a path. Return true on success.
@@ -238,6 +262,23 @@ bool UnlinkPath(const std::string& path) {
   return rv == 0;
 }
 
+// Create a symlink. Returns true on success.
+bool SymlinkPath(const std::string& target, const std::string& path) {
+  if (symlink(target.c_str(), path.c_str()) < 0) {
+    // Double check the value in case symlink suceeded but we got an incorrect
+    // failure due to NFS packet loss & retry.
+    int saved_errno = errno;
+    if (ReadLink(path) != target) {
+      // If we failed to create the lock, most likely another instance won the
+      // startup race.
+      errno = saved_errno;
+      PLOG(ERROR) << "Failed to create " << path;
+      return false;
+    }
+  }
+  return true;
+}
+
 // Extract the hostname and pid from the lock symlink.
 // Returns true if the lock existed.
 bool ParseLockPath(const std::string& path,
@@ -247,7 +288,7 @@ bool ParseLockPath(const std::string& path,
   if (real_path.empty())
     return false;
 
-  std::string::size_type pos = real_path.rfind('-');
+  std::string::size_type pos = real_path.rfind(kLockDelimiter);
 
   // If the path is not a symbolic link, or doesn't contain what we expect,
   // bail.
@@ -336,14 +377,82 @@ bool KillProcessByLockPath(const std::string& path) {
   return true;
 }
 
-// A helper class to close a socket automatically.
-class SocketCloser {
+// A helper class to hold onto a socket.
+class ScopedSocket {
  public:
-  explicit SocketCloser(int fd) : fd_(fd) { }
-  ~SocketCloser() { CloseSocket(fd_); }
+  ScopedSocket() : fd_(-1) { Reset(); }
+  ~ScopedSocket() { Close(); }
+  int fd() { return fd_; }
+  void Reset() {
+    Close();
+    fd_ = SetupSocketOnly();
+  }
+  void Close() {
+    if (fd_ >= 0)
+      CloseSocket(fd_);
+    fd_ = -1;
+  }
  private:
   int fd_;
 };
+
+// Returns a random string for uniquifying profile connections.
+std::string GenerateCookie() {
+  return base::Uint64ToString(base::RandUint64());
+}
+
+bool CheckCookie(const FilePath& path, const std::string& cookie) {
+  return (cookie == ReadLink(path.value()));
+}
+
+bool ConnectSocket(ScopedSocket* socket,
+                   const FilePath& socket_path,
+                   const FilePath& cookie_path) {
+  std::string socket_target;
+  if (ReadLinkSilent(socket_path.value(), &socket_target)) {
+    // It's a symlink. Read the cookie.
+    std::string cookie = ReadLink(cookie_path.value());
+    if (cookie.empty())
+      return false;
+    FilePath remote_cookie = FilePath(socket_target).DirName().
+        Append(chrome::kSingletonCookieFilename);
+    // Verify the cookie before connecting.
+    if (!CheckCookie(remote_cookie, cookie))
+      return false;
+    // Now we know the directory was (at that point) created by the profile
+    // owner. Try to connect.
+    sockaddr_un addr;
+    SetupSockAddr(socket_path.value(), &addr);
+    int ret = HANDLE_EINTR(connect(socket->fd(),
+                                   reinterpret_cast<sockaddr*>(&addr),
+                                   sizeof(addr)));
+    if (ret != 0)
+      return false;
+    // Check the cookie again. We only link in /tmp, which is sticky, so, if the
+    // directory is still correct, it must have been correct in-between when we
+    // connected. POSIX, sadly, lacks a connectat().
+    if (!CheckCookie(remote_cookie, cookie)) {
+      socket->Reset();
+      return false;
+    }
+    // Success!
+    return true;
+  } else if (errno == EINVAL) {
+    // It exists, but is not a symlink (or some other error we detect
+    // later). Just connect to it directly; this is an older version of Chrome.
+    sockaddr_un addr;
+    SetupSockAddr(socket_path.value(), &addr);
+    int ret = HANDLE_EINTR(connect(socket->fd(),
+                                   reinterpret_cast<sockaddr*>(&addr),
+                                   sizeof(addr)));
+    return (ret == 0);
+  } else {
+    // File is missing, or other error.
+    if (errno != ENOENT)
+      PLOG(ERROR) << "readlink failed";
+    return false;
+  }
+}
 
 }  // namespace
 
@@ -653,6 +762,7 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
       ALLOW_THIS_IN_INITIALIZER_LIST(watcher_(new LinuxWatcher(this))) {
   socket_path_ = user_data_dir.Append(chrome::kSingletonSocketFilename);
   lock_path_ = user_data_dir.Append(chrome::kSingletonLockFilename);
+  cookie_path_ = user_data_dir.Append(chrome::kSingletonCookieFilename);
 }
 
 ProcessSingleton::~ProcessSingleton() {
@@ -670,19 +780,10 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     bool kill_unresponsive) {
   DCHECK_GE(timeout_seconds, 0);
 
-  int socket;
-  sockaddr_un addr;
-  SetupSocket(socket_path_.value(), &socket, &addr);
-
-  // It'll close the socket automatically when exiting this method.
-  SocketCloser socket_closer(socket);
-
+  ScopedSocket socket;
   for (int retries = 0; retries <= timeout_seconds; ++retries) {
-    // Connecting to the socket
-    int ret = HANDLE_EINTR(connect(socket,
-                                   reinterpret_cast<sockaddr*>(&addr),
-                                   sizeof(addr)));
-    if (ret == 0)
+    // Try to connect to the socket.
+    if (ConnectSocket(&socket, socket_path_, cookie_path_))
       break;
 
     // If we're in a race with another process, they may be in Create() and have
@@ -733,7 +834,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   }
 
   timeval timeout = {timeout_seconds, 0};
-  setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  setsockopt(socket.fd(), SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
   // Found another process, prepare our command line
   // format is "START\0<current dir>\0<argv[0]>\0...\0<argv[n]>".
@@ -753,21 +854,21 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   }
 
   // Send the message
-  if (!WriteToSocket(socket, to_send.data(), to_send.length())) {
+  if (!WriteToSocket(socket.fd(), to_send.data(), to_send.length())) {
     // Try to kill the other process, because it might have been dead.
     if (!kill_unresponsive || !KillProcessByLockPath(lock_path_.value()))
       return PROFILE_IN_USE;
     return PROCESS_NONE;
   }
 
-  if (shutdown(socket, SHUT_WR) < 0)
+  if (shutdown(socket.fd(), SHUT_WR) < 0)
     PLOG(ERROR) << "shutdown() failed";
 
   // Read ACK message from the other process. It might be blocked for a certain
   // timeout, to make sure the other process has enough time to return ACK.
   char buf[kMaxACKMessageLength + 1];
   ssize_t len =
-      ReadFromSocket(socket, buf, kMaxACKMessageLength, timeout_seconds);
+      ReadFromSocket(socket.fd(), buf, kMaxACKMessageLength, timeout_seconds);
 
   // Failed to read ACK, the other process might have been frozen.
   if (len <= 0) {
@@ -834,25 +935,41 @@ bool ProcessSingleton::Create() {
 
   // Create symbol link before binding the socket, to ensure only one instance
   // can have the socket open.
-  if (symlink(symlink_content.c_str(), lock_path_.value().c_str()) < 0) {
-    // Double check the value in case symlink suceeded but we got an incorrect
-    // failure due to NFS packet loss & retry.
-    int saved_errno = errno;
-    if (ReadLink(lock_path_.value()) != symlink_content) {
+  if (!SymlinkPath(symlink_content, lock_path_.value())) {
       // If we failed to create the lock, most likely another instance won the
       // startup race.
-      errno = saved_errno;
-      PLOG(ERROR) << "Failed to create " << lock_path_.value();
       return false;
-    }
   }
 
-  SetupSocket(socket_path_.value(), &sock, &addr);
-
+  // Create the socket file somewhere in /tmp which is usually mounted as a
+  // normal filesystem. Some network filesystems (notably AFS) are screwy and
+  // do not support Unix domain sockets.
+  if (!socket_dir_.CreateUniqueTempDir()) {
+    LOG(ERROR) << "Failed to create socket directory.";
+    return false;
+  }
+  // Setup the socket symlink and the two cookies.
+  FilePath socket_target_path =
+      socket_dir_.path().Append(chrome::kSingletonSocketFilename);
+  std::string cookie = GenerateCookie();
+  FilePath remote_cookie_path =
+      socket_dir_.path().Append(chrome::kSingletonCookieFilename);
   UnlinkPath(socket_path_.value());
+  UnlinkPath(cookie_path_.value());
+  if (!SymlinkPath(socket_target_path.value(), socket_path_.value()) ||
+      !SymlinkPath(cookie, cookie_path_.value()) ||
+      !SymlinkPath(cookie, remote_cookie_path.value())) {
+    // We've already locked things, so we can't have lost the startup race,
+    // but something doesn't like us.
+    LOG(ERROR) << "Failed to create symlinks.";
+    socket_dir_.Delete();
+    return false;
+  }
+
+  SetupSocket(socket_target_path.value(), &sock, &addr);
 
   if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
-    PLOG(ERROR) << "Failed to bind() " << socket_path_.value();
+    PLOG(ERROR) << "Failed to bind() " << socket_target_path.value();
     CloseSocket(sock);
     return false;
   }
@@ -874,5 +991,7 @@ bool ProcessSingleton::Create() {
 }
 
 void ProcessSingleton::Cleanup() {
+  UnlinkPath(socket_path_.value());
+  UnlinkPath(cookie_path_.value());
   UnlinkPath(lock_path_.value());
 }

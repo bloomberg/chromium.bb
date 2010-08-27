@@ -11,8 +11,7 @@ ScopedTempDir::ScopedTempDir() {
 }
 
 ScopedTempDir::~ScopedTempDir() {
-  if (!path_.empty() && !file_util::Delete(path_, true))
-    LOG(ERROR) << "ScopedTempDir unable to delete " << path_.value();
+  Delete();
 }
 
 bool ScopedTempDir::CreateUniqueTempDir() {
@@ -48,6 +47,12 @@ bool ScopedTempDir::Set(const FilePath& path) {
   }
   path_ = path;
   return true;
+}
+
+void ScopedTempDir::Delete() {
+  if (!path_.empty() && !file_util::Delete(path_, true))
+    LOG(ERROR) << "ScopedTempDir unable to delete " << path_.value();
+  path_.clear();
 }
 
 FilePath ScopedTempDir::Take() {

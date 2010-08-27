@@ -20,6 +20,9 @@
 #include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 #include "gfx/native_widget_types.h"
+#if defined(USE_X11)
+#include "base/scoped_temp_dir.h"
+#endif
 
 class CommandLine;
 class FilePath;
@@ -138,6 +141,12 @@ class ProcessSingleton : public NonThreadSafe {
 
   // Path in file system to the lock.
   FilePath lock_path_;
+
+  // Path in file system to the cookie file.
+  FilePath cookie_path_;
+
+  // Temporary directory to hold the socket.
+  ScopedTempDir socket_dir_;
 
   // Helper class for linux specific messages.  LinuxWatcher is ref counted
   // because it posts messages between threads.

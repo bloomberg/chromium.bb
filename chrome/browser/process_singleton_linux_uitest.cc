@@ -35,6 +35,7 @@ class ProcessSingletonLinuxTest : public UITest {
     UITest::SetUp();
     lock_path_ = user_data_dir().Append(chrome::kSingletonLockFilename);
     socket_path_ = user_data_dir().Append(chrome::kSingletonSocketFilename);
+    cookie_path_ = user_data_dir().Append(chrome::kSingletonCookieFilename);
   }
 
   virtual void TearDown() {
@@ -53,6 +54,7 @@ class ProcessSingletonLinuxTest : public UITest {
 
   FilePath lock_path_;
   FilePath socket_path_;
+  FilePath cookie_path_;
 };
 
 ProcessSingleton* CreateProcessSingleton() {
@@ -106,13 +108,29 @@ TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
   struct stat statbuf;
   ASSERT_EQ(0, lstat(lock_path_.value().c_str(), &statbuf));
   ASSERT_TRUE(S_ISLNK(statbuf.st_mode));
-  char buf[PATH_MAX + 1];
+  char buf[PATH_MAX];
   ssize_t len = readlink(lock_path_.value().c_str(), buf, PATH_MAX);
   ASSERT_GT(len, 0);
-  buf[len] = '\0';
 
   ASSERT_EQ(0, lstat(socket_path_.value().c_str(), &statbuf));
+  ASSERT_TRUE(S_ISLNK(statbuf.st_mode));
+
+  len = readlink(socket_path_.value().c_str(), buf, PATH_MAX);
+  ASSERT_GT(len, 0);
+  FilePath socket_target_path = FilePath(std::string(buf, len));
+
+  ASSERT_EQ(0, lstat(socket_target_path.value().c_str(), &statbuf));
   ASSERT_TRUE(S_ISSOCK(statbuf.st_mode));
+
+  len = readlink(cookie_path_.value().c_str(), buf, PATH_MAX);
+  ASSERT_GT(len, 0);
+  std::string cookie(buf, len);
+
+  FilePath remote_cookie_path = socket_target_path.DirName().
+      Append(chrome::kSingletonCookieFilename);
+  len = readlink(remote_cookie_path.value().c_str(), buf, PATH_MAX);
+  ASSERT_GT(len, 0);
+  EXPECT_EQ(cookie, std::string(buf, len));
 }
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
@@ -246,4 +264,38 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_DifferingHost) {
 TEST_F(ProcessSingletonLinuxTest, CreateFailsWithExistingBrowser) {
   scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
   EXPECT_FALSE(process_singleton->Create());
+}
+
+// Test that Create fails when another browser is using the profile directory
+// but with the old socket location.
+TEST_F(ProcessSingletonLinuxTest, CreateChecksCompatibilitySocket) {
+  scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
+
+  // Do some surgery so as to look like the old configuration.
+  char buf[PATH_MAX];
+  ssize_t len = readlink(socket_path_.value().c_str(), buf, sizeof(buf));
+  ASSERT_GT(len, 0);
+  FilePath socket_target_path = FilePath(std::string(buf, len));
+  ASSERT_EQ(0, unlink(socket_path_.value().c_str()));
+  ASSERT_EQ(0, rename(socket_target_path.value().c_str(),
+                      socket_path_.value().c_str()));
+  ASSERT_EQ(0, unlink(cookie_path_.value().c_str()));
+
+  EXPECT_FALSE(process_singleton->Create());
+}
+
+// Test that we fail when lock says process is on another host and we can't
+// notify it over the socket before of a bad cookie.
+TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_BadCookie) {
+  // Change the cookie.
+  EXPECT_EQ(0, unlink(cookie_path_.value().c_str()));
+  EXPECT_EQ(0, symlink("INCORRECTCOOKIE", cookie_path_.value().c_str()));
+
+  // Also change the hostname, so the remote does not retry.
+  EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
+  EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
+
+  std::string url("about:blank");
+  EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
+            NotifyOtherProcessOrCreate(url, action_timeout_ms()));
 }
