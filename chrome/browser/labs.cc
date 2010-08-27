@@ -47,7 +47,7 @@ struct Experiment {
 
 const Experiment kExperiments[] = {
   {
-    "expose-for-tabs",
+    "expose-for-tabs",  // Do not change; see above.
     IDS_LABS_TABPOSE_NAME,
     IDS_LABS_TABPOSE_DESCRIPTION,
     kOsMac,
@@ -59,9 +59,9 @@ const Experiment kExperiments[] = {
 #endif
   },
   {
-    "vertical-tabs",
-    IDS_LABS_LEFTTABS_NAME,
-    IDS_LABS_LEFTTABS_DESCRIPTION,
+    "vertical-tabs",  // Do not change; see above.
+    IDS_LABS_SIDE_TABS_NAME,
+    IDS_LABS_SIDE_TABS_DESCRIPTION,
     kOsWin,
     switches::kEnableVerticalTabs
   }
