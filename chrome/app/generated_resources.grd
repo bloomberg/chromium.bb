@@ -2475,9 +2475,6 @@ each locale. -->
       <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS" desc="Details for being unable to check revocation status of an X509 certificate">
         Unable to check whether the server's certificate was revoked.
       </message>
-      <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_INFO_BAR" desc="Info bar for being unable to check revocation status of an X509 certificate">
-        Unable to check whether the server's certificate was revoked.
-      </message>
       <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DESCRIPTION" desc="Description for being unable to check revocation status of an X509 certificate">
         Server's certificate cannot be checked
       </message>
