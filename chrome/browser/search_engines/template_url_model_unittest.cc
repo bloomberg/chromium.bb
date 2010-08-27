@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -196,8 +197,10 @@ class TemplateURLModelTest : public testing::Test,
   // load). Since this avoids setting the built-in keyword version, the next
   // load will do a merge from prepopulated data.
   void ChangeModelToLoadState() {
+    model_->ChangeToLoadedState();
+    // Initialize the web data service so that the database gets updated with
+    // any changes made.
     model_->service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-    model_->loaded_ = true;
   }
 
   // Creates a new TemplateURLModel.
@@ -546,6 +549,7 @@ TEST_F(TemplateURLModelTest, TemplateURLWithNoKeyword) {
 }
 
 TEST_F(TemplateURLModelTest, CantReplaceWithSameKeyword) {
+  ChangeModelToLoadState();
   ASSERT_TRUE(model_->CanReplaceKeyword(L"foo", GURL(), NULL));
   TemplateURL* t_url = AddKeywordWithDate(L"foo", false, "http://foo1",
                                           L"name1", true, Time());
@@ -562,6 +566,7 @@ TEST_F(TemplateURLModelTest, CantReplaceWithSameKeyword) {
 }
 
 TEST_F(TemplateURLModelTest, CantReplaceWithSameHosts) {
+  ChangeModelToLoadState();
   ASSERT_TRUE(model_->CanReplaceKeyword(L"foo", GURL("http://foo.com"), NULL));
   TemplateURL* t_url = AddKeywordWithDate(L"foo", false, "http://foo.com",
                                           L"name1", true, Time());
@@ -692,6 +697,7 @@ TEST_F(TemplateURLModelTest, UpdateKeywordSearchTermsForURL) {
     { "http://x/foo?q=b&q=xx", L"" },
   };
 
+  ChangeModelToLoadState();
   AddKeywordWithDate(L"x", false, "http://x/foo?q={searchTerms}", L"name",
                      false, Time());
 
@@ -713,6 +719,7 @@ TEST_F(TemplateURLModelTest, DontUpdateKeywordSearchForNonReplaceable) {
     { "http://x/foo?y=xx" },
   };
 
+  ChangeModelToLoadState();
   AddKeywordWithDate(L"x", false, "http://x/foo", L"name", false, Time());
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
@@ -728,6 +735,7 @@ TEST_F(TemplateURLModelTest, ChangeGoogleBaseValue) {
   // NOTE: Do not do a VerifyLoad() here as it will load the prepopulate data,
   // which also has a {google:baseURL} keyword in it, which will confuse this
   // test.
+  ChangeModelToLoadState();
   SetGoogleBaseURL("http://google.com/");
   const TemplateURL* t_url = AddKeywordWithDate(std::wstring(), true,
       "{google:baseURL}?q={searchTerms}", L"name", false, Time());
@@ -736,8 +744,7 @@ TEST_F(TemplateURLModelTest, ChangeGoogleBaseValue) {
   EXPECT_EQ(L"google.com", t_url->keyword());
 
   // Change the Google base url.
-  model_->loaded_ = true;  // Hack to make sure we get notified of the base URL
-                           // changing.
+  changed_count_ = 0;
   SetGoogleBaseURL("http://foo.com/");
   model_->GoogleBaseURLChanged();
   VerifyObserverCount(1);

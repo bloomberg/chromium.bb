@@ -1205,6 +1205,7 @@
         'browser/safe_browsing/safe_browsing_store_unittest_helper.cc',
         'browser/safe_browsing/safe_browsing_util_unittest.cc',
         'browser/search_engines/keyword_editor_controller_unittest.cc',
+        'browser/search_engines/search_host_to_urls_map_unittest.cc',
         'browser/search_engines/template_url_model_unittest.cc',
         'browser/search_engines/template_url_parser_unittest.cc',
         'browser/search_engines/template_url_prepopulate_data_unittest.cc',

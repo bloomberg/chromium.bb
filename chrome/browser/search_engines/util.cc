@@ -116,8 +116,9 @@ void MergeEnginesFromPrepopulateData(
       t_url->set_id(current_t_url->id());
 
       *current_t_url = *t_url;
-      if (service)
+      if (service) {
         service->UpdateKeyword(*current_t_url);
+      }
       id_to_turl.erase(existing_url_iter);
     } else {
       template_urls->push_back(t_url.release());

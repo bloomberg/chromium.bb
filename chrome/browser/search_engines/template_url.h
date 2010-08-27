@@ -114,6 +114,7 @@ class TemplateURLRef {
   bool HasGoogleBaseURLs() const;
 
  private:
+  friend class SearchHostToURLsMapTest;
   friend class TemplateURL;
   friend class TemplateURLModelTest;
   friend class TemplateURLTest;
@@ -447,9 +448,10 @@ class TemplateURL {
       WebDataService* service,
       std::vector<TemplateURL*>* template_urls,
       const TemplateURL** default_search_provider);
+  friend class SearchHostToURLsMap;
+  friend class TemplateURLModel;
   friend class WebDatabaseTest;
   friend class WebDatabase;
-  friend class TemplateURLModel;
 
   // Invalidates cached values on this object and its child TemplateURLRefs.
   void InvalidateCachedValues() const;

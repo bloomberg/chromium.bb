@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,17 +16,11 @@
 class KeywordEditorControllerTest : public testing::Test,
                                     public TableModelObserver {
  public:
+  // Initializes all of the state.
+  void Init(bool simulate_load_failure);
+
   virtual void SetUp() {
-    model_changed_count_ = items_changed_count_ = added_count_ =
-        removed_count_ = 0;
-
-    profile_.reset(new TestingProfile());
-    profile_->CreateTemplateURLModel();
-
-    model_ = profile_->GetTemplateURLModel();
-
-    controller_.reset(new KeywordEditorController(profile_.get()));
-    controller_->table_model()->SetObserver(this);
+    Init(false);
   }
 
   virtual void OnModelChanged() {
@@ -74,6 +68,23 @@ class KeywordEditorControllerTest : public testing::Test,
   int added_count_;
   int removed_count_;
 };
+
+void KeywordEditorControllerTest::Init(bool simulate_load_failure) {
+  ClearChangeCount();
+
+  // If init is called twice, make sure that the controller is destroyed before
+  // the profile is.
+  controller_.reset();
+  profile_.reset(new TestingProfile());
+  profile_->CreateTemplateURLModel();
+
+  model_ = profile_->GetTemplateURLModel();
+  if (simulate_load_failure)
+    model_->OnWebDataServiceRequestDone(NULL, NULL);
+
+  controller_.reset(new KeywordEditorController(profile_.get()));
+  controller_->table_model()->SetObserver(this);
+}
 
 // Tests adding a TemplateURL.
 TEST_F(KeywordEditorControllerTest, Add) {
@@ -136,7 +147,7 @@ TEST_F(KeywordEditorControllerTest, MakeDefault) {
 
 TEST_F(KeywordEditorControllerTest, MakeDefaultNoWebData) {
   // Simulate a failure to load Web Data.
-  model_->OnWebDataServiceRequestDone(NULL, NULL);
+  Init(true);
 
   controller_->AddTemplateURL(L"a", L"b", "http://c{searchTerms}");
   ClearChangeCount();

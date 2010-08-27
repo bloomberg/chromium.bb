@@ -19,6 +19,7 @@ class GURL;
 class Extension;
 class PrefService;
 class Profile;
+class SearchHostToURLsMap;
 
 namespace history {
 struct URLVisitedDetails;
@@ -240,8 +241,6 @@ class TemplateURLModel : public WebDataServiceConsumer,
 
   typedef std::map<std::wstring, const TemplateURL*> KeywordToTemplateMap;
   typedef std::vector<const TemplateURL*> TemplateURLVector;
-  typedef std::set<const TemplateURL*> TemplateURLSet;
-  typedef std::map<std::string, TemplateURLSet> HostToURLsMap;
 
   // Helper functor for FindMatchingKeywords(), for finding the range of
   // keywords which begin with a prefix.
@@ -251,10 +250,10 @@ class TemplateURLModel : public WebDataServiceConsumer,
 
   void RemoveFromMaps(const TemplateURL* template_url);
 
-  // Removes the supplied template_url from the maps. This searches through all
-  // entries in the maps and does not generate the host or keyword.
-  // This is used when the cached content of the TemplateURL changes.
-  void RemoveFromMapsByPointer(const TemplateURL* template_url);
+  // Removes the supplied template_url from the keyword maps. This searches
+  // through all entries in the keyword map and does not generate the host or
+  // keyword. This is used when the cached content of the TemplateURL changes.
+  void RemoveFromKeywordMapByPointer(const TemplateURL* template_url);
 
   void AddToMaps(const TemplateURL* template_url);
 
@@ -262,7 +261,8 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // This does NOT notify the delegate or the database.
   void SetTemplateURLs(const std::vector<TemplateURL*>& urls);
 
-  void DeleteGeneratedKeywordsMatchingHost(const std::wstring& host);
+  // Transitions to the loaded state.
+  void ChangeToLoadedState();
 
   // If there is a notification service, sends TEMPLATE_URL_MODEL_LOADED
   // notification.
@@ -334,7 +334,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   ObserverList<TemplateURLModelObserver> model_observers_;
 
   // Maps from host to set of TemplateURLs whose search url host is host.
-  HostToURLsMap host_to_urls_map_;
+  scoped_refptr<SearchHostToURLsMap> provider_map_;
 
   // Used to obtain the WebDataService.
   // When Load is invoked, if we haven't yet loaded, the WebDataService is

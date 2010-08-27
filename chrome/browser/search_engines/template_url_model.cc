@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,6 +30,7 @@
 #include "net/base/net_util.h"
 
 using base::Time;
+typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
 
 // String in the URL that is replaced by the search term.
 static const char kSearchTermParameter[] = "{searchTerms}";
@@ -77,7 +79,7 @@ TemplateURLModel::TemplateURLModel(Profile* profile)
 TemplateURLModel::TemplateURLModel(const Initializer* initializers,
                                    const int count)
     : profile_(NULL),
-      loaded_(true),
+      loaded_(false),
       load_failed_(false),
       load_handle_(0),
       service_(NULL),
@@ -92,6 +94,7 @@ TemplateURLModel::~TemplateURLModel() {
     service_->CancelRequest(load_handle_);
   }
 
+  provider_map_->RemoveAll();
   STLDeleteElements(&template_urls_);
 }
 
@@ -221,10 +224,7 @@ const TemplateURL* TemplateURLModel::GetTemplateURLForKeyword(
 
 const TemplateURL* TemplateURLModel::GetTemplateURLForHost(
     const std::string& host) const {
-  HostToURLsMap::const_iterator iter = host_to_urls_map_.find(host);
-  if (iter == host_to_urls_map_.end() || iter->second.empty())
-    return NULL;
-  return *(iter->second.begin());  // Return the 1st element.
+  return provider_map_->GetTemplateURLForHost(host);
 }
 
 void TemplateURLModel::Add(TemplateURL* template_url) {
@@ -413,6 +413,7 @@ void TemplateURLModel::SetDefaultSearchProvider(const TemplateURL* url) {
     service_->SetDefaultSearchProvider(url);
 
   if (loaded_) {
+    provider_map_->SetDefault(url);
     FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
                       OnTemplateURLModelChanged());
   }
@@ -461,7 +462,7 @@ void TemplateURLModel::Load() {
   if (service_.get()) {
     load_handle_ = service_->GetKeywords(this);
   } else {
-    loaded_ = true;
+    ChangeToLoadedState();
     NotifyLoaded();
   }
 }
@@ -476,8 +477,8 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
   if (!result) {
     // Results are null if the database went away or (most likely) wasn't
     // loaded.
-    loaded_ = true;
     load_failed_ = true;
+    ChangeToLoadedState();
     NotifyLoaded();
     return;
   }
@@ -487,8 +488,8 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
   prefs_default_search_provider_.reset();
 
   std::vector<TemplateURL*> template_urls;
-  int new_resource_keyword_version = 0;
   const TemplateURL* default_search_provider = NULL;
+  int new_resource_keyword_version = 0;
   GetSearchProvidersUsingKeywordResult(*result,
                                        service_.get(),
                                        GetPrefs(),
@@ -515,6 +516,10 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
       SaveDefaultSearchProviderToPrefs(default_search_provider_);
   }
 
+  // This initializes provider_map_ which should be done before
+  // calling UpdateKeywordSearchTermsForURL.
+  ChangeToLoadedState();
+
   // Index any visits that occurred before we finished loading.
   for (size_t i = 0; i < visits_to_add_.size(); ++i)
     UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
@@ -522,8 +527,6 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
 
   if (new_resource_keyword_version && service_.get())
     service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
-
-  loaded_ = true;
 
   FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
                     OnTemplateURLModelChanged());
@@ -587,26 +590,33 @@ void TemplateURLModel::Init(const Initializer* initializers,
   }
   registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
                  NotificationService::AllSources());
+  provider_map_ = new SearchHostToURLsMap();
 
-  // Add specific initializers, if any.
-  for (int i(0); i < num_initializers; ++i) {
-    DCHECK(initializers[i].keyword);
-    DCHECK(initializers[i].url);
-    DCHECK(initializers[i].content);
+  if (num_initializers > 0) {
+    // This path is only hit by test code and is used to simulate a loaded
+    // TemplateURLModel.
+    ChangeToLoadedState();
 
-    size_t template_position =
-        std::string(initializers[i].url).find(kTemplateParameter);
-    DCHECK(template_position != std::wstring::npos);
-    std::string osd_url(initializers[i].url);
-    osd_url.replace(template_position, arraysize(kTemplateParameter) - 1,
-                    kSearchTermParameter);
+    // Add specific initializers, if any.
+    for (int i(0); i < num_initializers; ++i) {
+      DCHECK(initializers[i].keyword);
+      DCHECK(initializers[i].url);
+      DCHECK(initializers[i].content);
 
-    // TemplateURLModel ends up owning the TemplateURL, don't try and free it.
-    TemplateURL* template_url = new TemplateURL();
-    template_url->set_keyword(initializers[i].keyword);
-    template_url->set_short_name(initializers[i].content);
-    template_url->SetURL(osd_url, 0, 0);
-    Add(template_url);
+      size_t template_position =
+          std::string(initializers[i].url).find(kTemplateParameter);
+      DCHECK(template_position != std::wstring::npos);
+      std::string osd_url(initializers[i].url);
+      osd_url.replace(template_position, arraysize(kTemplateParameter) - 1,
+                      kSearchTermParameter);
+
+      // TemplateURLModel ends up owning the TemplateURL, don't try and free it.
+      TemplateURL* template_url = new TemplateURL();
+      template_url->set_keyword(initializers[i].keyword);
+      template_url->set_short_name(initializers[i].content);
+      template_url->SetURL(osd_url, 0, 0);
+      Add(template_url);
+    }
   }
 
   // Request a server check for the correct Google URL if Google is the default
@@ -622,23 +632,13 @@ void TemplateURLModel::Init(const Initializer* initializers,
 }
 
 void TemplateURLModel::RemoveFromMaps(const TemplateURL* template_url) {
-  if (!template_url->keyword().empty()) {
+  if (!template_url->keyword().empty())
     keyword_to_template_map_.erase(template_url->keyword());
-  }
-
-  const GURL url(GenerateSearchURL(template_url));
-  if (url.is_valid() && url.has_host()) {
-    const std::string host(url.host());
-    DCHECK(host_to_urls_map_.find(host) != host_to_urls_map_.end());
-    TemplateURLSet& urls = host_to_urls_map_[host];
-    DCHECK(urls.find(template_url) != urls.end());
-    urls.erase(urls.find(template_url));
-    if (urls.empty())
-      host_to_urls_map_.erase(host_to_urls_map_.find(host));
-  }
+  if (loaded_)
+    provider_map_->Remove(template_url);
 }
 
-void TemplateURLModel::RemoveFromMapsByPointer(
+void TemplateURLModel::RemoveFromKeywordMapByPointer(
     const TemplateURL* template_url) {
   DCHECK(template_url);
   for (KeywordToTemplateMap::iterator i = keyword_to_template_map_.begin();
@@ -650,28 +650,13 @@ void TemplateURLModel::RemoveFromMapsByPointer(
       break;
     }
   }
-
-  for (HostToURLsMap::iterator i = host_to_urls_map_.begin();
-       i != host_to_urls_map_.end(); ++i) {
-    TemplateURLSet::iterator url_set_iterator = i->second.find(template_url);
-    if (url_set_iterator != i->second.end()) {
-      i->second.erase(url_set_iterator);
-      if (i->second.empty())
-        host_to_urls_map_.erase(i);
-      // A given TemplateURL only occurs once in the map. As soon as we find the
-      // entry, stop.
-      return;
-    }
-  }
 }
 
 void TemplateURLModel::AddToMaps(const TemplateURL* template_url) {
   if (!template_url->keyword().empty())
     keyword_to_template_map_[template_url->keyword()] = template_url;
-
-  const GURL url(GenerateSearchURL(template_url));
-  if (url.is_valid() && url.has_host())
-    host_to_urls_map_[url.host()].insert(template_url);
+  if (loaded_)
+    provider_map_->Add(template_url);
 }
 
 void TemplateURLModel::SetTemplateURLs(const std::vector<TemplateURL*>& urls) {
@@ -697,6 +682,13 @@ void TemplateURLModel::SetTemplateURLs(const std::vector<TemplateURL*>& urls) {
       continue;
     Add(*i);
   }
+}
+
+void TemplateURLModel::ChangeToLoadedState() {
+  DCHECK(!loaded_);
+
+  provider_map_->Init(template_urls_, default_search_provider_);
+  loaded_ = true;
 }
 
 void TemplateURLModel::NotifyLoaded() {
@@ -811,11 +803,10 @@ void TemplateURLModel::RegisterPrefs(PrefService* prefs) {
 bool TemplateURLModel::CanReplaceKeywordForHost(
     const std::string& host,
     const TemplateURL** to_replace) {
-  const HostToURLsMap::iterator matching_urls = host_to_urls_map_.find(host);
-  const bool have_matching_urls = (matching_urls != host_to_urls_map_.end());
-  if (have_matching_urls) {
-    TemplateURLSet& urls = matching_urls->second;
-    for (TemplateURLSet::iterator i = urls.begin(); i != urls.end(); ++i) {
+  const TemplateURLSet* urls = provider_map_->GetURLsForHost(host);
+  if (urls) {
+    for (TemplateURLSet::const_iterator i = urls->begin();
+         i != urls->end(); ++i) {
       const TemplateURL* url = *i;
       if (CanReplace(url)) {
         if (to_replace)
@@ -827,7 +818,7 @@ bool TemplateURLModel::CanReplaceKeywordForHost(
 
   if (to_replace)
     *to_replace = NULL;
-  return !have_matching_urls;
+  return !urls;
 }
 
 bool TemplateURLModel::CanReplace(const TemplateURL* t_url) {
@@ -837,19 +828,19 @@ bool TemplateURLModel::CanReplace(const TemplateURL* t_url) {
 
 void TemplateURLModel::Update(const TemplateURL* existing_turl,
                               const TemplateURL& new_values) {
+  DCHECK(loaded_);
   DCHECK(existing_turl);
   DCHECK(find(template_urls_.begin(), template_urls_.end(), existing_turl) !=
          template_urls_.end());
 
-  RemoveFromMaps(existing_turl);
+  if (!existing_turl->keyword().empty())
+    keyword_to_template_map_.erase(existing_turl->keyword());
 
-  // Use the information from new_values but preserve existing_turl's id.
-  TemplateURL::IDType previous_id = existing_turl->id();
-  TemplateURL* modifiable_turl = const_cast<TemplateURL*>(existing_turl);
-  *modifiable_turl = new_values;
-  modifiable_turl->set_id(previous_id);
+  // This call handles copying over the values (while retaining the id).
+  provider_map_->Update(existing_turl, new_values);
 
-  AddToMaps(existing_turl);
+  if (!existing_turl->keyword().empty())
+    keyword_to_template_map_[existing_turl->keyword()] = existing_turl;
 
   if (service_.get())
     service_->UpdateKeyword(*existing_turl);
@@ -861,10 +852,8 @@ void TemplateURLModel::Update(const TemplateURL* existing_turl,
     SetDefaultSearchProvider(existing_turl);
   }
 
-  if (loaded_) {
-    FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
-                      OnTemplateURLModelChanged());
-  }
+  FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
+                    OnTemplateURLModelChanged());
 }
 
 PrefService* TemplateURLModel::GetPrefs() {
@@ -879,21 +868,18 @@ void TemplateURLModel::UpdateKeywordSearchTermsForURL(
     return;
   }
 
-  HostToURLsMap::const_iterator t_urls_for_host_iterator =
-      host_to_urls_map_.find(row.url().host());
-  if (t_urls_for_host_iterator == host_to_urls_map_.end() ||
-      t_urls_for_host_iterator->second.empty()) {
+  const TemplateURLSet* urls_for_host =
+      provider_map_->GetURLsForHost(row.url().host());
+  if (!urls_for_host)
     return;
-  }
 
-  const TemplateURLSet& urls_for_host = t_urls_for_host_iterator->second;
   QueryTerms query_terms;
   bool built_terms = false;  // Most URLs won't match a TemplateURLs host;
                              // so we lazily build the query_terms.
   const std::string path = row.url().path();
 
-  for (TemplateURLSet::const_iterator i = urls_for_host.begin();
-       i != urls_for_host.end(); ++i) {
+  for (TemplateURLSet::const_iterator i = urls_for_host->begin();
+       i != urls_for_host->end(); ++i) {
     const TemplateURLRef* search_ref = (*i)->url();
 
     // Count the URL against a TemplateURL if the host and path of the
@@ -1000,14 +986,16 @@ void TemplateURLModel::GoogleBaseURLChanged() {
     if ((t_url->url() && t_url->url()->HasGoogleBaseURLs()) ||
         (t_url->suggestions_url() &&
          t_url->suggestions_url()->HasGoogleBaseURLs())) {
-      RemoveFromMapsByPointer(t_url);
+      RemoveFromKeywordMapByPointer(t_url);
       t_url->InvalidateCachedValues();
-      AddToMaps(t_url);
+      if (!t_url->keyword().empty())
+        keyword_to_template_map_[t_url->keyword()] = t_url;
       something_changed = true;
     }
   }
 
   if (something_changed && loaded_) {
+    provider_map_->UpdateGoogleBaseURLs();
     FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
                       OnTemplateURLModelChanged());
   }
