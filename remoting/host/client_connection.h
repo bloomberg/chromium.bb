@@ -57,8 +57,8 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // a libjingle channel, these events are delegated to |handler|.
   // It is guranteed that |handler| is called only on the |message_loop|.
   ClientConnection(MessageLoop* message_loop,
-         ProtocolDecoder* decoder,
-         EventHandler* handler);
+                   ProtocolDecoder* decoder,
+                   EventHandler* handler);
 
   virtual ~ClientConnection();
 

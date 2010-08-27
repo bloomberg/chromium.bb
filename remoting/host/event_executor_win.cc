@@ -357,28 +357,123 @@ void EventExecutorWin::HandleInputEvents(ClientMessageList* messages) {
   for (size_t i = 0; i < messages->size(); ++i) {
     ChromotingClientMessage* msg = (*messages)[i];
     if (msg->has_mouse_set_position_event()) {
-      // TODO(garykac) Updated Windows host mouse support in following cl.
+      HandleMouseSetPosition(msg);
     } else if (msg->has_mouse_move_event()) {
-      // TODO(garykac) Updated Windows host mouse support in following cl.
+      HandleMouseMove(msg);
     } else if (msg->has_mouse_wheel_event()) {
-      // TODO(garykac) Updated Windows host wheel support in following cl.
+      HandleMouseWheel(msg);
     } else if (msg->has_mouse_down_event()) {
-      // TODO(garykac) Updated Windows host mouse support in following cl.
+      HandleMouseButtonDown(msg);
     } else if (msg->has_mouse_up_event()) {
-      // TODO(garykac) Updated Windows host mouse support in following cl.
+      HandleMouseButtonUp(msg);
     } else if (msg->has_key_event()) {
-      base::KeyboardCode key_code =
-          WindowsKeyCodeForPosixKeyCode(msg->key_event().key());
-      if (key_code != base::VKEY_UNKNOWN) {
-        keybd_event(key_code, MapVirtualKey(key_code, 0),
-                    msg->key_event().pressed() ? 0 : KEYEVENTF_KEYUP,
-                    NULL);
-      }
+      HandleKey(msg);
     }
   }
   // We simply delete all messages.
   // TODO(hclam): Delete messages processed.
   STLDeleteElements<ClientMessageList>(messages);
+}
+
+void EventExecutorWin::HandleMouseSetPosition(ChromotingClientMessage* msg) {
+  int x = msg->mouse_set_position_event().x();
+  int y = msg->mouse_set_position_event().y();
+  int width = msg->mouse_set_position_event().width();
+  int height = msg->mouse_set_position_event().height();
+
+  INPUT input;
+  input.type = INPUT_MOUSE;
+  input.mi.time = 0;
+  input.mi.dx = static_cast<int>((x * 65535) / width);
+  input.mi.dy = static_cast<int>((y * 65535) / height);
+  input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+  SendInput(1, &input, sizeof(INPUT));
+}
+
+void EventExecutorWin::HandleMouseMove(ChromotingClientMessage* msg) {
+  INPUT input;
+  input.type = INPUT_MOUSE;
+  input.mi.time = 0;
+  input.mi.dx = msg->mouse_move_event().offset_x();
+  input.mi.dy = msg->mouse_move_event().offset_y();
+  input.mi.dwFlags = MOUSEEVENTF_MOVE;
+  SendInput(1, &input, sizeof(INPUT));
+}
+
+void EventExecutorWin::HandleMouseWheel(ChromotingClientMessage* msg) {
+  INPUT input;
+  input.type = INPUT_MOUSE;
+  input.mi.time = 0;
+
+  int dx = msg->mouse_wheel_event().offset_x();
+  int dy = msg->mouse_wheel_event().offset_y();
+
+  if (dx != 0) {
+    input.mi.mouseData = dx;
+    input.mi.dwFlags = MOUSEEVENTF_HWHEEL;
+    SendInput(1, &input, sizeof(INPUT));
+  }
+  if (dy != 0) {
+    input.mi.mouseData = dy;
+    input.mi.dwFlags = MOUSEEVENTF_WHEEL;
+    SendInput(1, &input, sizeof(INPUT));
+  }
+}
+
+void EventExecutorWin::HandleMouseButtonDown(ChromotingClientMessage* msg) {
+  INPUT input;
+  input.type = INPUT_MOUSE;
+  input.mi.time = 0;
+  input.mi.dx = 0;
+  input.mi.dy = 0;
+
+  MouseButton button = msg->mouse_down_event().button();
+  if (button == MouseButtonLeft) {
+    input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+  } else if (button == MouseButtonMiddle) {
+    input.mi.dwFlags = MOUSEEVENTF_MIDDLEDOWN;
+  } else if (button == MouseButtonRight) {
+    input.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
+  } else {
+    input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+  }
+
+  SendInput(1, &input, sizeof(INPUT));
+}
+
+void EventExecutorWin::HandleMouseButtonUp(ChromotingClientMessage* msg) {
+  INPUT input;
+  input.type = INPUT_MOUSE;
+  input.mi.time = 0;
+  input.mi.dx = 0;
+  input.mi.dy = 0;
+
+  MouseButton button = msg->mouse_down_event().button();
+  if (button == MouseButtonLeft) {
+    input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+  } else if (button == MouseButtonMiddle) {
+    input.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
+  } else if (button == MouseButtonRight) {
+    input.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
+  } else {
+    input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+  }
+
+  SendInput(1, &input, sizeof(INPUT));
+}
+
+void EventExecutorWin::HandleKey(ChromotingClientMessage* msg) {
+  INPUT input;
+  input.type = INPUT_KEYBOARD;
+  input.ki.time = 0;
+  input.ki.wVk = 0;
+  input.ki.wScan = msg->key_event().key();
+  input.ki.dwFlags = KEYEVENTF_UNICODE;
+  if (!msg->key_event().pressed()) {
+    input.ki.dwFlags |= KEYEVENTF_KEYUP;
+  }
+
+  SendInput(1, &input, sizeof(INPUT));
 }
 
 }  // namespace remoting

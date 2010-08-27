@@ -33,10 +33,10 @@ class SessionManagerTest : public testing::Test {
     encoder_ = new MockEncoder();
     client_ = new MockClientConnection();
     record_ = new SessionManager(&message_loop_,
-                                &message_loop_,
-                                &message_loop_,
-                                capturer_,
-                                encoder_);
+                                 &message_loop_,
+                                 &message_loop_,
+                                 capturer_,
+                                 encoder_);
   }
 
   scoped_refptr<SessionManager> record_;

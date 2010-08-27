@@ -324,6 +324,7 @@ void SessionManager::DoSendUpdate(ChromotingHostMessage* message,
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // Create a data buffer in wire format from |message|.
+  // Note that this takes ownership of |message|.
   scoped_refptr<media::DataBuffer> data =
       ClientConnection::CreateWireFormatDataBuffer(message);
 

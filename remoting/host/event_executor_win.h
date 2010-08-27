@@ -20,6 +20,13 @@ class EventExecutorWin : public EventExecutor {
   virtual void HandleInputEvents(ClientMessageList* messages);
 
  private:
+  void HandleMouseSetPosition(ChromotingClientMessage* msg);
+  void HandleMouseMove(ChromotingClientMessage* msg);
+  void HandleMouseWheel(ChromotingClientMessage* msg);
+  void HandleMouseButtonDown(ChromotingClientMessage* msg);
+  void HandleMouseButtonUp(ChromotingClientMessage* msg);
+  void HandleKey(ChromotingClientMessage* msg);
+
   DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);
 };
 
