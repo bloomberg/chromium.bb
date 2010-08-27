@@ -138,7 +138,8 @@ TEST_F(GeolocationGatewayDataProviderCommonTest, StartThread) {
   SUCCEED();
 }
 
-TEST_F(GeolocationGatewayDataProviderCommonTest, IntermittentWifi){
+// Timed out at least once on Vista (dbg): http://crbug.com/53472
+TEST_F(GeolocationGatewayDataProviderCommonTest, DISABLED_IntermittentWifi){
   EXPECT_CALL(*polling_policy_, PollingInterval())
       .Times(AtLeast(1));
   EXPECT_CALL(*polling_policy_, NoRouterInterval())
