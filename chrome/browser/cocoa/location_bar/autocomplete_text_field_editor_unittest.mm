@@ -64,7 +64,12 @@ class AutocompleteTextFieldEditorTest : public CocoaTest {
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 };
 
+// Disabled because it crashes sometimes. http://crbug.com/49522
+// Can't rename DISABLED_ because the TEST_VIEW macro prepends.
+//     http://crbug.com/53621
+#if 0
 TEST_VIEW(AutocompleteTextFieldEditorTest, field_);
+#endif
 
 // Test that control characters are stripped from insertions.
 TEST_F(AutocompleteTextFieldEditorTest, InsertStripsControlChars) {
