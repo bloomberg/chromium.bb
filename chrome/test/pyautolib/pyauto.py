@@ -1282,6 +1282,22 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return self.InstallExtension(crx_file_path, True)
 
+  def WaitUntilDownloadedThemeSet(self, theme_name):
+    """Waits until the theme has been set.
+
+    This should not be called after SetTheme(). It only needs to be called after
+    downloading a theme file (which will automatically set the theme).
+
+    Uses WaitUntil so timeout is capped by automation timeout.
+
+    Args:
+      theme_name: The name that the theme will have once it is installed.
+    """
+    def _ReturnThemeSet(name):
+      theme_info = self.GetThemeInfo()
+      return theme_info and theme_info['name'] == name
+    return self.WaitUntil(_ReturnThemeSet, args=[theme_name])
+
   def ClearTheme(self):
     """Clear the theme.  Resets to default.
 
