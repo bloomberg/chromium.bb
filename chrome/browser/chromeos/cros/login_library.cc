@@ -61,8 +61,8 @@ class LoginLibraryImpl : public LoginLibrary {
         break;
       case WhitelistOpSuccess:
       case WhitelistOpFailure:
-      case SettingsOpSuccess:
-      case SettingsOpFailure:
+      case PropertyOpSuccess:
+      case PropertyOpFailure:
         NOTIMPLEMENTED();
         break;
       default:
