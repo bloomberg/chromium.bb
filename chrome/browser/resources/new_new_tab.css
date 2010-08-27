@@ -194,39 +194,8 @@ html[dir=rtl] .item {
   -webkit-box-orient: horizontal;
 }
 
-#recently-closed {
-  white-space: nowrap;
-  overflow-x: hidden;
-}
-
-#recently-closed > span > span  {
-  display: inline-block;
-  max-width: 114px; /* Selected so that we can fit 5 items in EN-US */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 100%;
-  margin: 0 10px;
-}
-
-#recently-closed > span,
-#recently-closed .nav {
-  max-width: none !important;
-}
-
 #most-visited {
   margin-bottom: 20px;
-}
-
-.nav > a {
-  /* no icon */
-  padding: 0;
-}
-
-.nav > a:after {
-  content: '\00bb'; /* raque gets flipped automatically in rtl */
-  font-size: 115%;
-  -webkit-padding-start: 2px;
 }
 
 #sync-status {
@@ -356,6 +325,10 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   margin: 0;
 }
 
+.section > * {
+  font-size: 12px;
+}
+
 .section.disabled {
   display: none !important;
 }
@@ -368,13 +341,16 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   background-position: 0 center;
   background-repeat: no-repeat;
   -webkit-background-size: 100% 26px;
-  cursor: pointer;
   display: block;
   font-family: Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: normal;
   margin:10px 0;
   -webkit-margin-collapse: separate;
+}
+
+.section:not([noexpand]) > h2 {
+  cursor: pointer;
 }
 
 .section > h2 > img {
@@ -390,32 +366,36 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   padding-right: 4px;
 }
 
-.section.hidden {
-  border: 0;
+.section > .miniview {
+  display: none;
 }
 
-.section.hidden > :not(h2) {
-  display: none !important;
+.section.hidden > * {
+  display: none;
+}
+
+.section.hidden > h2,
+.section.hidden > .miniview {
+  display: block;
 }
 
 .section.hidden > h2 {
   margin-right: 0px;
 }
 
-.section.hidden:last-child {
-  border-right: 0;
+.miniview {
+  white-space: nowrap;
+  overflow-x: hidden;
 }
 
-.section:last-child {
-  border-bottom: 0;
-}
-
-.section .nav {
+.miniview > span  {
   display: inline-block;
-}
-
-.section > * {
-  font-size: 12px;
+  max-width: 114px; /* Selected so that we can fit 5 items in EN-US */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 100%;
+  margin: 0 10px;
 }
 
 /* small */

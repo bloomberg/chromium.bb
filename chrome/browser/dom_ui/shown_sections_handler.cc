@@ -41,6 +41,17 @@ void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
 
 }  // namespace
 
+// static
+int ShownSectionsHandler::GetShownSections(PrefService* prefs) {
+  int sections = prefs->GetInteger(prefs::kNTPShownSections);
+
+  DCHECK(!(sections & RECENT)) << "Should be impossible to ever end up with "
+                               << "recent section visible.";
+  sections &= ~RECENT;
+
+  return sections;
+}
+
 ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
     : pref_service_(pref_service) {
   pref_service_->AddPrefObserver(prefs::kNTPShownSections, this);
@@ -70,7 +81,7 @@ void ShownSectionsHandler::Observe(NotificationType type,
 }
 
 void ShownSectionsHandler::HandleGetShownSections(const ListValue* args) {
-  int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
+  int sections = GetShownSections(pref_service_);
   FundamentalValue sections_value(sections);
   dom_ui_->CallJavascriptFunction(L"onShownSections", sections_value);
 }

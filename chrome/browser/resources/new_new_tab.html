@@ -152,9 +152,12 @@ if ('mode' in hashParams) {
       <div id="most-visited"></div>
     </div>
 
-    <div id="recently-closed" class="section" section="RECENT">
+    <!-- Start this section disabled because it might not have data, and looks
+         silly without any. -->
+    <div id="recently-closed" class="section hidden disabled" section="RECENT"
+        noexpand="true">
       <h2><span i18n-content="recentlyclosed"></span></h2>
-      <span class="nav"></span>
+      <div class="miniview"></div>
     </div>
 
     <div id="debug" class="section disabled" section="DEBUG">
@@ -174,9 +177,9 @@ if ('mode' in hashParams) {
   </div>
 
   <script>
-    updateSimpleSection('recently-closed', Section.RECENT);
-    updateSimpleSection('most-visited-section', Section.THUMB);
     updateSimpleSection('apps-section', Section.APPS);
+    updateSimpleSection('most-visited-section', Section.THUMB);
+    updateSimpleSection('recently-closed', Section.RECENT);
     updateSimpleSection('debug', Section.DEBUG);
   </script>
 

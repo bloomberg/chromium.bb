@@ -71,16 +71,16 @@ body {
   -webkit-mask-image: url(chrome://theme/IDR_NEWTAB_MENU_MASK);
 }
 
-#recently-closed {
+.miniview {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-#recently-closed > span > span {
+.miniview > span > span {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
   text-decoration: underline;
 }
 
-#recently-closed > span > span > .item {
+.miniview > span > span > .item {
   color: $9; /* COLOR_NTP_LINK */
   text-decoration: none;
 }
@@ -106,17 +106,18 @@ body {
 }
 
 .section > h2 {
+  color: $$9;
+  background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND_A);
+}
+
+.section.hidden > h2 {
   color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT */
   background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND);
 }
 
-.section > h2:hover {
+.section.hidden:not([noexpand]) > h2:hover {
   color: $$9;
   background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND_H);
-}
-
-.section:not(.hidden) > h2 {
-  background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND_A);
 }
 
 .section > h2 > span {

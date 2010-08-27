@@ -30,6 +30,9 @@ class ShownSectionsHandler : public DOMMessageHandler,
   explicit ShownSectionsHandler(PrefService* pref_service);
   virtual ~ShownSectionsHandler();
 
+  // Helper to get the current shown sections.
+  static int GetShownSections(PrefService* pref_service);
+
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 

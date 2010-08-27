@@ -111,9 +111,6 @@ function showSection(section) {
         mostVisited.visible = true;
         mostVisited.layout();
         break;
-      case Section.RECENT:
-        renderRecentlyClosed();
-        break;
     }
   }
 }
@@ -126,9 +123,6 @@ function hideSection(section) {
       case Section.THUMB:
         mostVisited.visible = false;
         mostVisited.layout();
-        break;
-      case Section.RECENT:
-        renderRecentlyClosed();
         break;
     }
 
@@ -154,26 +148,28 @@ function setShownSections(newShownSections) {
 // Recently closed
 
 function layoutRecentlyClosed() {
-  var recentShown = shownSections & Section.RECENT;
+  var recentElement = $('recently-closed');
+  // We cannot use clientWidth here since the width has a transition.
+  var availWidth = useSmallGrid() ? 692 : 920;
+  var parentEl = recentElement.lastElementChild;
 
-  if (recentShown) {
-    var recentElement = $('recently-closed');
-    // We cannot use clientWidth here since the width has a transition.
-    var availWidth = useSmallGrid() ? 692 : 920;
-    var parentEl = recentElement.lastElementChild;
-
-    // Now go backwards and hide as many elements as needed.
-    var elementsToHide = [];
-    for (var el = parentEl.lastElementChild; el;
-         el = el.previousElementSibling) {
-      if (el.offsetLeft + el.offsetWidth > availWidth) {
-        elementsToHide.push(el);
-      }
+  // Now go backwards and hide as many elements as needed.
+  var elementsToHide = [];
+  for (var el = parentEl.lastElementChild; el;
+       el = el.previousElementSibling) {
+    if (el.offsetLeft + el.offsetWidth > availWidth) {
+      elementsToHide.push(el);
     }
+  }
 
-    elementsToHide.forEach(function(el) {
-      parentEl.removeChild(el);
-    });
+  elementsToHide.forEach(function(el) {
+    parentEl.removeChild(el);
+  });
+
+  if (parentEl.hasChildNodes()) {
+    recentElement.classList.remove('disabled');
+  } else {
+    recentElement.classList.add('disabled');
   }
 }
 
@@ -615,16 +611,22 @@ $('main').addEventListener('click', function(e) {
     p = p.parentNode;
   }
 
-  if (p) {
-    p = p.parentNode;
-    var section = p.getAttribute('section');
-    if (section) {
-      if (shownSections & Section[section])
-        hideSection(Section[section]);
-      else
-        showSection(Section[section]);
-      saveShownSections();
-    }
+  if (!p) {
+    return;
+  }
+
+  p = p.parentNode;
+  if (p.noexpand) {
+    return;
+  }
+
+  var section = p.getAttribute('section');
+  if (section) {
+    if (shownSections & Section[section])
+      hideSection(Section[section]);
+    else
+      showSection(Section[section]);
+    saveShownSections();
   }
 });
 

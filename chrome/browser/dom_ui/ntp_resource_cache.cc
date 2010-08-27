@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -309,8 +310,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("has_3d", has_3d ? "true" : "false");
 
   // Pass the shown_sections pref early so that we can prevent flicker.
-  const int shown_sections = profile_->GetPrefs()->GetInteger(
-      prefs::kNTPShownSections);
+  const int shown_sections = ShownSectionsHandler::GetShownSections(
+      profile_->GetPrefs());
   localized_strings.SetInteger("shown_sections", shown_sections);
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
