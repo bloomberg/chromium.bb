@@ -1764,6 +1764,7 @@
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager_browsertest.cc',
         'browser/views/browser_actions_container_browsertest.cc',
+        'browser/views/dom_view_browsertest.cc',
         'browser/views/html_dialog_view_browsertest.cc',
         'renderer/form_autocomplete_browsertest.cc',
         'renderer/form_manager_browsertest.cc',
@@ -1903,6 +1904,7 @@
           'sources!': [
             'browser/extensions/browser_action_test_util_views.cc',
             'browser/views/browser_actions_container_browsertest.cc',
+            'browser/views/dom_view_browsertest.cc',
             'browser/views/html_dialog_view_browsertest.cc',
           ],
         }],

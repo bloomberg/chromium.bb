@@ -23,7 +23,9 @@ bool DOMView::Init(Profile* profile, SiteInstance* instance) {
 
   initialized_ = true;
   tab_contents_.reset(CreateTabContents(profile, instance));
-  views::NativeViewHost::Attach(tab_contents_->GetNativeView());
+  // Attach the native_view now if the view is already added to Widget.
+  if (GetWidget())
+    Attach(tab_contents_->GetNativeView());
   return true;
 }
 
@@ -46,4 +48,15 @@ bool DOMView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 
 void DOMView::Focus() {
   tab_contents_->Focus();
+}
+
+void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
+                                   views::View* child) {
+  // Attach the native_view when this is added to Widget if
+  // the native view has not been attached yet and tab_contents_ exists.
+  views::NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
+  if (is_add && GetWidget() && !native_view() && tab_contents_.get())
+    Attach(tab_contents_->GetNativeView());
+  else if (!is_add && child == this && native_view())
+    Detach();
 }
