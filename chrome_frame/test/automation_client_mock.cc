@@ -83,6 +83,10 @@ ACTION_P3(HandleCreateTab, tab_handle, external_tab_container, tab_wnd) {
   delete context;
 }
 
+ACTION_P4(InitiateNavigation, client, url, referrer, privileged) {
+  client->InitiateNavigation(url, referrer, privileged);
+}
+
 // We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
 TEST(CFACWithChrome, CreateTooFast) {
   MockCFDelegate cfd;
@@ -155,9 +159,8 @@ TEST(CFACWithChrome, NavigateOk) {
   client = new ChromeFrameAutomationClient;
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
-      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
-          client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
-          url, std::string(), false))));
+      .WillOnce(InitiateNavigation(client.get(),
+                                   url, std::string(), false));
 
   EXPECT_CALL(cfd, GetBounds(_)).Times(testing::AnyNumber());
 
@@ -410,3 +413,57 @@ TEST_F(CFACMockTest, OnChannelError) {
   client2 = NULL;
   client3 = NULL;
 }
+
+TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
+  int timeout = 500;
+  CreateTab();
+  SetAutomationServerOk(1);
+
+  EXPECT_CALL(mock_proxy_, server_version()).Times(testing::AnyNumber())
+      .WillRepeatedly(Return(""));
+
+  // We need some valid HWNDs, when responding to CreateExternalTab
+  HWND h1 = ::GetDesktopWindow();
+  HWND h2 = ::GetDesktopWindow();
+  EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
+      &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
+      testing::NotNull(), _))
+          .Times(1).WillOnce(HandleCreateTab(tab_handle_, h1, h2));
+
+  EXPECT_CALL(mock_proxy_, CreateTabProxy(testing::Eq(tab_handle_)))
+      .WillOnce(Return(tab_));
+
+  EXPECT_CALL(cfd_, OnAutomationServerReady())
+      .WillOnce(InitiateNavigation(client_.get(),
+                                   std::string("http://www.nonexistent.com"),
+                                   std::string(), false));
+
+  EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
+      &IPC::SyncMessage::type, AutomationMsg_NavigateInExternalTab__ID),
+      testing::NotNull(), _))
+          .Times(1).WillOnce(QUIT_LOOP(loop_));
+
+  EXPECT_CALL(mock_proxy_, CancelAsync(_)).Times(testing::AnyNumber());
+
+  EXPECT_CALL(mock_proxy_, Send(
+      testing::Property(&IPC::Message::type, AutomationMsg_TabReposition__ID)))
+          .Times(1)
+          .WillOnce(Return(true));
+
+  EXPECT_CALL(cfd_, GetBounds(_)).Times(1);
+
+  // Here we go!
+  GURL empty;
+  scoped_refptr<ChromeFrameLaunchParams> launch_params(
+      new ChromeFrameLaunchParams(
+          GURL("http://www.nonexistent.com"), empty, profile_path_,
+          profile_path_.BaseName().value(), L"", false, false));
+  launch_params->set_launch_timeout(timeout);
+  launch_params->set_version_check(false);
+  EXPECT_TRUE(client_->Initialize(&cfd_, launch_params));
+  loop_.RunFor(10);
+
+  EXPECT_CALL(mock_proxy_, ReleaseTabProxy(testing::Eq(tab_handle_))).Times(1);
+  client_->Uninitialize();
+}
+

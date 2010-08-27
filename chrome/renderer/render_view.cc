@@ -5617,6 +5617,10 @@ bool RenderView::IsNonLocalTopLevelNavigation(
     // top level navigation and routed back to the host.
     WebKit::WebFrame* opener = frame->opener();
     if (!opener) {
+      // Force link click navigations to always be routed to the host as they
+      // may update session state on the server.
+      if (type == WebKit::WebNavigationTypeLinkClicked)
+        return true;
       // If this is the first page being loaded by this RenderView instance then
       // it should stay here.
       if (page_id_ == -1) {

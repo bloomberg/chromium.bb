@@ -686,7 +686,11 @@ bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
     return false;
   }
 
-  if (!chrome_launch_params_ || parsed_url != chrome_launch_params_->url()) {
+  // If we are not yet initialized ignore attempts to navigate to the same url.
+  // Navigation attempts to the same URL could occur if the automation client
+  // was reused for a new active document instance.
+  if (!chrome_launch_params_ || is_initialized() ||
+      parsed_url != chrome_launch_params_->url()) {
     // Important: Since we will be using the referrer_ variable from a
     // different thread, we need to force a new std::string buffer instance for
     // the referrer_ GURL variable.  Otherwise we can run into strangeness when

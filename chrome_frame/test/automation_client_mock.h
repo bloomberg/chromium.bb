@@ -105,12 +105,12 @@ class MockAutomationProxy : public ChromeFrameAutomationProxy {
 };
 
 struct MockAutomationMessageSender : public AutomationMessageSender {
-  MOCK_METHOD1(Send, bool(IPC::Message*));
+  virtual bool Send(IPC::Message* msg) {
+    return proxy_->Send(msg);
+  }
 
   void ForwardTo(StrictMock<MockAutomationProxy> *p) {
     proxy_ = p;
-    ON_CALL(*this, Send(testing::_))
-        .WillByDefault(testing::Invoke(proxy_, &MockAutomationProxy::Send));
   }
 
   StrictMock<MockAutomationProxy>* proxy_;
