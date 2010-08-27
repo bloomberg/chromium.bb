@@ -351,6 +351,11 @@ class TemplateURL {
     return autogenerate_keyword_;
   }
 
+  // Ensures that the keyword is generated.  Most consumers should not need this
+  // because it is done automatically.  Use this method on the UI thread, so
+  // the keyword may be accessed on another thread.
+  void EnsureKeyword() const;
+
   // Whether this keyword is shown in the default list of search providers. This
   // is just a property and does not indicate whether this TemplateURL has
   // a TemplateURLRef that supports replacement. Use ShowInDefaultList to

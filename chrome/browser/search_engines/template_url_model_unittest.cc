@@ -5,7 +5,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/stl_util-inl.h"
+#include "base/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
@@ -266,11 +266,11 @@ TemplateURL* TemplateURLModelTest::CreateReplaceablePreloadedTemplateURL(
     size_t index_offset_from_default,
     std::wstring* prepopulated_display_url) {
   TemplateURL* t_url = CreatePreloadedTemplateURL();
-  std::vector<TemplateURL*> prepopulated_urls;
+  ScopedVector<TemplateURL> prepopulated_urls;
   size_t default_search_provider_index = 0;
   TemplateURLPrepopulateData::GetPrepopulatedEngines(
       profile_->GetPrefs(),
-      &prepopulated_urls,
+      &prepopulated_urls.get(),
       &default_search_provider_index);
   EXPECT_LT(index_offset_from_default, prepopulated_urls.size());
   size_t prepopulated_index =
@@ -280,9 +280,6 @@ TemplateURL* TemplateURLModelTest::CreateReplaceablePreloadedTemplateURL(
       prepopulated_urls[prepopulated_index]->prepopulate_id());
   *prepopulated_display_url =
       prepopulated_urls[prepopulated_index]->url()->DisplayURL();
-  STLDeleteElements(&prepopulated_urls);
-  prepopulated_urls.clear();
-
   return t_url;
 }
 

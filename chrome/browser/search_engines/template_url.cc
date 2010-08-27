@@ -583,13 +583,17 @@ void TemplateURL::set_keyword(const std::wstring& keyword) {
 }
 
 const std::wstring& TemplateURL::keyword() const {
+  EnsureKeyword();
+  return keyword_;
+}
+
+void TemplateURL::EnsureKeyword() const {
   if (autogenerate_keyword_ && !keyword_generated_) {
     // Generate a keyword and cache it.
     keyword_ = TemplateURLModel::GenerateKeyword(
         TemplateURLModel::GenerateSearchURL(this).GetWithEmptyPath(), true);
     keyword_generated_ = true;
   }
-  return keyword_;
 }
 
 bool TemplateURL::ShowInDefaultList() const {
