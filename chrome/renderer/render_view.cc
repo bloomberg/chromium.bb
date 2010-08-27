@@ -1503,7 +1503,7 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                                          bool replace) {
   GURL failed_url = error.unreachableURL;
   std::string alt_html;
-  ExtensionRendererInfo* extension;
+  ExtensionRendererInfo* extension = NULL;
   if (html.empty()) {
     // Use a local error page.
     int resource_id;
