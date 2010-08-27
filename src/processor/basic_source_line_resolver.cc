@@ -262,7 +262,9 @@ void BasicSourceLineResolver::UnloadModule(const CodeModule *module)
 
   ModuleMap::iterator iter = modules_->find(module->code_file());
   if (iter != modules_->end()) {
+    Module *basic_module = iter->second;
     modules_->erase(iter);
+    delete basic_module;
   }
 }
 
