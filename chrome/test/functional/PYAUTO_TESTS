@@ -32,6 +32,7 @@
     'crash_reporter',
     'downloads',
     'history',
+    'imports',
     'infobars',
     'navigation',
     'omnibox',
