@@ -7,6 +7,7 @@
 #pragma once
 
 #include "app/table_model.h"
+#include "base/string16.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 
 class ModelEntry;
@@ -53,8 +54,10 @@ class TemplateURLTableModel : public TableModel,
   void Add(int index, TemplateURL* template_url);
 
   // Update the entry at the specified index.
-  void ModifyTemplateURL(int index, const std::wstring& title,
-                         const std::wstring& keyword, const std::string& url);
+  void ModifyTemplateURL(int index,
+                         const string16& title,
+                         const string16& keyword,
+                         const std::string& url);
 
   // Reloads the icon at the specified index.
   void ReloadIcon(int index);

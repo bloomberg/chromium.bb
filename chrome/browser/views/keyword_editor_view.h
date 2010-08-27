@@ -8,6 +8,7 @@
 
 #include <Windows.h>
 
+#include "base/string16.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -56,8 +57,8 @@ class KeywordEditorView : public views::View,
   // Overridden from EditSearchEngineControllerDelegate.
   // Calls AddTemplateURL or ModifyTemplateURL as appropriate.
   virtual void OnEditedKeyword(const TemplateURL* template_url,
-                               const std::wstring& title,
-                               const std::wstring& keyword,
+                               const string16& title,
+                               const string16& keyword,
                                const std::string& url);
 
   // Overridden to invoke Layout.

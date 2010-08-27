@@ -272,13 +272,14 @@ void TemplateURLTableModel::Add(int index, TemplateURL* template_url) {
 }
 
 void TemplateURLTableModel::ModifyTemplateURL(int index,
-                                              const std::wstring& title,
-                                              const std::wstring& keyword,
+                                              const string16& title,
+                                              const string16& keyword,
                                               const std::string& url) {
   DCHECK(index >= 0 && index <= RowCount());
   const TemplateURL* template_url = &GetTemplateURL(index);
   template_url_model_->RemoveObserver(this);
-  template_url_model_->ResetTemplateURL(template_url, title, keyword, url);
+  template_url_model_->ResetTemplateURL(template_url, UTF16ToWideHack(title),
+                                        UTF16ToWideHack(keyword), url);
   if (template_url_model_->GetDefaultSearchProvider() == template_url &&
       !TemplateURL::SupportsReplacement(template_url)) {
     // The entry was the default search provider, but the url has been modified

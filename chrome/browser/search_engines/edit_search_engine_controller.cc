@@ -24,7 +24,7 @@ EditSearchEngineController::EditSearchEngineController(
 }
 
 bool EditSearchEngineController::IsTitleValid(
-    const std::wstring& title_input) const {
+    const string16& title_input) const {
   return !CollapseWhitespace(title_input, true).empty();
 }
 
@@ -56,25 +56,26 @@ bool EditSearchEngineController::IsURLValid(
 }
 
 bool EditSearchEngineController::IsKeywordValid(
-    const std::wstring& keyword_input) const {
-  std::wstring keyword_input_trimmed(CollapseWhitespace(keyword_input, true));
+    const string16& keyword_input) const {
+  string16 keyword_input_trimmed(CollapseWhitespace(keyword_input, true));
   if (keyword_input_trimmed.empty())
     return false;  // Do not allow empty keyword.
   const TemplateURL* turl_with_keyword =
       profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
-          keyword_input_trimmed);
+          UTF16ToWideHack(keyword_input_trimmed));
   return (turl_with_keyword == NULL || turl_with_keyword == template_url_);
 }
 
 void EditSearchEngineController::AcceptAddOrEdit(
-    const std::wstring& title_input,
-    const std::wstring& keyword_input,
+    const string16& title_input,
+    const string16& keyword_input,
     const std::string& url_input) {
   std::string url_string = GetFixedUpURL(url_input);
   DCHECK(!url_string.empty());
 
   const TemplateURL* existing =
-      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword_input);
+      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
+          UTF16ToWideHack(keyword_input));
   if (existing &&
       (!edit_keyword_delegate_ || existing != template_url_)) {
     // An entry may have been added with the same keyword string while the
@@ -95,8 +96,8 @@ void EditSearchEngineController::AcceptAddOrEdit(
     // does in a similar situation (updating an existing TemplateURL with
     // data from a new one).
     TemplateURL* modifiable_url = const_cast<TemplateURL*>(template_url_);
-    modifiable_url->set_short_name(title_input);
-    modifiable_url->set_keyword(keyword_input);
+    modifiable_url->set_short_name(UTF16ToWideHack(title_input));
+    modifiable_url->set_keyword(UTF16ToWideHack(keyword_input));
     modifiable_url->SetURL(url_string, 0, 0);
     // TemplateURLModel takes ownership of template_url_.
     profile_->GetTemplateURLModel()->Add(modifiable_url);

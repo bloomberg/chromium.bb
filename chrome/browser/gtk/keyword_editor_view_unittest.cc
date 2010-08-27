@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_tree.h"
@@ -106,7 +107,8 @@ TEST_F(KeywordEditorViewTest, Add) {
   EXPECT_STREQ("!,_,A1 (Default),_,@,_", GetDisplayedEngines(editor).c_str());
   EXPECT_EQ(-1, GetSelectedRowNum(editor));
 
-  editor.OnEditedKeyword(NULL, L"B", L"b", "example.com");
+  editor.OnEditedKeyword(NULL, ASCIIToUTF16("B"), ASCIIToUTF16("b"),
+                         "example.com");
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.edit_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.remove_button_));
@@ -114,7 +116,8 @@ TEST_F(KeywordEditorViewTest, Add) {
   EXPECT_STREQ("!,_,A1 (Default),_,@,_,B", GetDisplayedEngines(editor).c_str());
   EXPECT_EQ(6, GetSelectedRowNum(editor));
 
-  editor.OnEditedKeyword(NULL, L"C", L"c", "example.com/{searchTerms}");
+  editor.OnEditedKeyword(NULL, ASCIIToUTF16("C"), ASCIIToUTF16("c"),
+                         "example.com/{searchTerms}");
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.edit_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.remove_button_));
@@ -123,7 +126,8 @@ TEST_F(KeywordEditorViewTest, Add) {
                GetDisplayedEngines(editor).c_str());
   EXPECT_EQ(7, GetSelectedRowNum(editor));
 
-  editor.OnEditedKeyword(NULL, L"D", L"d", "example.com");
+  editor.OnEditedKeyword(NULL, ASCIIToUTF16("D"), ASCIIToUTF16("d"),
+                         "example.com");
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.edit_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.remove_button_));
@@ -240,23 +244,28 @@ TEST_F(KeywordEditorViewTest, Edit) {
   EXPECT_STREQ("!,_,A,B (Default),_,@,_,C,D",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(a, L"AA", L"a", "example.com/{searchTerms}");
+  editor.OnEditedKeyword(a, ASCIIToUTF16("AA"), ASCIIToUTF16("a"),
+                         "example.com/{searchTerms}");
   EXPECT_STREQ("!,_,AA,B (Default),_,@,_,C,D",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(b, L"BB", L"b", "foo.example.com/{searchTerms}");
+  editor.OnEditedKeyword(b, ASCIIToUTF16("BB"), ASCIIToUTF16("b"),
+                         "foo.example.com/{searchTerms}");
   EXPECT_STREQ("!,_,AA,BB (Default),_,@,_,C,D",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(b, L"BBB", L"b", "example.com");
+  editor.OnEditedKeyword(b, ASCIIToUTF16("BBB"), ASCIIToUTF16("b"),
+                         "example.com");
   EXPECT_STREQ("!,_,AA,BBB,_,@,_,C,D",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(d, L"DD", L"d", "example.com");
+  editor.OnEditedKeyword(d, ASCIIToUTF16("DD"), ASCIIToUTF16("d"),
+                         "example.com");
   EXPECT_STREQ("!,_,AA,BBB,_,@,_,C,DD",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(c, L"CC", L"cc", "example.com");
+  editor.OnEditedKeyword(c, ASCIIToUTF16("CC"), ASCIIToUTF16("cc"),
+                         "example.com");
   EXPECT_STREQ("!,_,AA,BBB,_,@,_,CC,DD",
                GetDisplayedEngines(editor).c_str());
 }

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "app/table_model_observer.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -10,6 +12,11 @@
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+static const string16 kA(ASCIIToUTF16("a"));
+static const string16 kA1(ASCIIToUTF16("a1"));
+static const string16 kB(ASCIIToUTF16("b"));
+static const string16 kB1(ASCIIToUTF16("b1"));
 
 // Base class for keyword editor tests. Creates a profile containing an
 // empty TemplateURLModel.
@@ -88,7 +95,7 @@ void KeywordEditorControllerTest::Init(bool simulate_load_failure) {
 
 // Tests adding a TemplateURL.
 TEST_F(KeywordEditorControllerTest, Add) {
-  controller_->AddTemplateURL(L"a", L"b", "http://c");
+  controller_->AddTemplateURL(kA, kB, "http://c");
 
   // Verify the observer was notified.
   VerifyChangeCount(0, 0, 1, 0);
@@ -111,12 +118,12 @@ TEST_F(KeywordEditorControllerTest, Add) {
 
 // Tests modifying a TemplateURL.
 TEST_F(KeywordEditorControllerTest, Modify) {
-  controller_->AddTemplateURL(L"a", L"b", "http://c");
+  controller_->AddTemplateURL(kA, kB, "http://c");
   ClearChangeCount();
 
   // Modify the entry.
   const TemplateURL* turl = model_->GetTemplateURLs()[0];
-  controller_->ModifyTemplateURL(turl, L"a1", L"b1", "http://c1");
+  controller_->ModifyTemplateURL(turl, kA1, kB1, "http://c1");
 
   // Make sure it was updated appropriately.
   VerifyChangeCount(0, 1, 0, 0);
@@ -128,7 +135,7 @@ TEST_F(KeywordEditorControllerTest, Modify) {
 
 // Tests making a TemplateURL the default search provider.
 TEST_F(KeywordEditorControllerTest, MakeDefault) {
-  controller_->AddTemplateURL(L"a", L"b", "http://c{searchTerms}");
+  controller_->AddTemplateURL(kA, kB, "http://c{searchTerms}");
   ClearChangeCount();
 
   const TemplateURL* turl = model_->GetTemplateURLs()[0];
@@ -149,7 +156,7 @@ TEST_F(KeywordEditorControllerTest, MakeDefaultNoWebData) {
   // Simulate a failure to load Web Data.
   Init(true);
 
-  controller_->AddTemplateURL(L"a", L"b", "http://c{searchTerms}");
+  controller_->AddTemplateURL(kA, kB, "http://c{searchTerms}");
   ClearChangeCount();
 
   // This should not result in a crash.
