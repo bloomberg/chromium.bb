@@ -136,7 +136,7 @@ const char* Extension::kNotificationPermission = "notifications";
 const char* Extension::kProxyPermission = "proxy";
 const char* Extension::kTabPermission = "tabs";
 const char* Extension::kUnlimitedStoragePermission = "unlimitedStorage";
-const char* Extension::kNativeClientPermission = "native_client";
+const char* Extension::kNativeClientPermission = "nativeClient";
 
 const char* Extension::kPermissionNames[] = {
   Extension::kBackgroundPermission,
