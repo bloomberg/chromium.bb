@@ -804,7 +804,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PropertyAppIsInstalled) {
   host_resolver()->AddRule(nonapp_host, "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
-  GURL test_file_url(test_server()->GetURL("files/extensions/test_file.html"));
+  GURL test_file_url(test_server()->GetURL("extensions/test_file.html"));
   GURL::Replacements replace_host;
 
   replace_host.SetHostStr(app_host);
