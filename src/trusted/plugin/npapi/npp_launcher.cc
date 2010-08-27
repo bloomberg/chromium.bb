@@ -128,7 +128,6 @@ NPError NPP_Destroy(NPP npp, NPSavedData** save) {
     npp->pdata = NULL;
     nperr = module->Destroy(save);  // module must delete itself.
   }
-  // TODO(sehr): we are leaking browser_interface, extension, and SRPC_Plugin.
   return nperr;
 }
 
