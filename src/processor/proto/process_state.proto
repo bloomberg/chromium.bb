@@ -39,6 +39,8 @@
 //
 // Author: Jess Gray
 
+syntax = "proto2";
+
 package google_breakpad;
 
 // A proto representation of a process, in a fully-digested state.
