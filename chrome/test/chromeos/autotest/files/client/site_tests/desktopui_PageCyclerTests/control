@@ -1,0 +1,28 @@
+# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+AUTHOR = "Chrome OS Team"
+NAME = "desktopui_PageCyclerTests"
+PURPOSE = "Benchmark page loading times of the Chrome web browser."
+CRITERIA = """
+No specific criteria.
+"""
+TIME = "LONG"
+TEST_CATEGORY = "Benchmark"
+TEST_CLASS = "desktopui"
+TEST_TYPE = "client"
+
+DOC = """
+The page cycler consists of the following tests:
+            'PageCyclerTest.Alexa_usFile', 'PageCyclerTest.MozFile',
+            'PageCyclerTest.Intl1File', 'PageCyclerTest.Intl2File',
+            'PageCyclerTest.DhtmlFile', 'PageCyclerTest.Moz2File',
+            'PageCyclerTest.BloatFile', 'PageCyclerTest.DomFile',
+            'PageCyclerTest.MorejsFile', 'PageCyclerTest.MorejsnpFile'
+
+At the end of the test, a message is printed with the median latency.
+
+"""
+
+job.run_test('desktopui_PageCyclerTests')
