@@ -163,7 +163,7 @@ bool SessionManager::Create(std::string* id) {
   CommandLine command_line(command);
 
   // setup the automation port to communicate on
-  command_line.AppendSwitchASCII(switches::kAutomationClientChannelID,
+  command_line.AppendSwitchASCII(switches::kTestingChannelID,
                                  session->proxy()->channel_id());
 
   // No first-run dialogs, please.
