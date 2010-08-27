@@ -281,37 +281,32 @@ void GoogleURLTracker::Observe(NotificationType type,
                                const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE:
+      registrar_.Remove(this,
+                        NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
+                        NotificationService::AllSources());
       request_context_available_ = true;
       StartFetchIfDesirable();
       break;
 
     case NotificationType::NAV_ENTRY_PENDING:
-      // If we've already received a notification for the same controller, we
-      // should reset infobar as that indicates that the page is being
-      // re-loaded
-      if (!infobar_ &&
-          controller_ == Source<NavigationController>(source).ptr()) {
-        infobar_ = NULL;
-      } else if (!controller_) {
-        controller_ = Source<NavigationController>(source).ptr();
-        NavigationEntry* entry = controller_->pending_entry();
-        DCHECK(entry);
-        search_url_ = entry->url();
-
-        // Start listening for the commit notification. We also need to listen
-        // for the tab close command since that means the load will never
-        // commit!
-        registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                       Source<NavigationController>(controller_));
-        registrar_.Add(this, NotificationType::TAB_CLOSED,
-                       Source<NavigationController>(controller_));
-      }
+      controller_ = Source<NavigationController>(source).ptr();
+      search_url_ = controller_->pending_entry()->url();
+      // We don't need to listen NAV_ENTRY_PENDING any more, until another
+      // search is committed.
+      registrar_.Remove(this, NotificationType::NAV_ENTRY_PENDING,
+                        NotificationService::AllSources());
+      // Start listening for the commit notification. We also need to listen
+      // for the tab close command since that means the load will never
+      // commit!
+      registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                     Source<NavigationController>(controller_));
+      registrar_.Add(this, NotificationType::TAB_CLOSED,
+                     Source<NavigationController>(controller_));
       break;
 
     case NotificationType::NAV_ENTRY_COMMITTED:
+      registrar_.RemoveAll();
       DCHECK(controller_);
-      registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
-                        Source<NavigationController>(controller_));
       ShowGoogleURLInfoBarIfNecessary(controller_->tab_contents());
       break;
 
@@ -332,6 +327,8 @@ void GoogleURLTracker::OnIPAddressChanged() {
 }
 
 void GoogleURLTracker::SearchCommitted() {
+  if (!registrar_.IsEmpty() || (!need_to_prompt_ && !fetcher_.get()))
+    return;
   registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
                  NotificationService::AllSources());
 }
@@ -339,8 +336,6 @@ void GoogleURLTracker::SearchCommitted() {
 void GoogleURLTracker::ShowGoogleURLInfoBarIfNecessary(
     TabContents* tab_contents) {
   if (!need_to_prompt_)
-    return;
-  if (infobar_)
     return;
   DCHECK(!fetched_google_url_.is_empty());
   DCHECK(infobar_factory_.get());
