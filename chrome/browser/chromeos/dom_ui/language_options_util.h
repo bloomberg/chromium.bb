@@ -19,28 +19,29 @@ namespace {
 
 // Returns an i18n-content value corresponding to |preference|.
 template <typename T>
-std::string GetI18nContentValue(const T& preference) {
-  return std::string(preference.ibus_config_name) + "Content";
+std::string GetI18nContentValue(const T& preference, const char* prefix) {
+  return std::string(prefix) + preference.ibus_config_name;
 }
 
 // Returns a property name of templateData corresponding to |preference|.
 template <typename T>
-std::string GetTemplateDataPropertyName(const T& preference) {
-  return std::string(preference.ibus_config_name) + "Value";
+std::string GetTemplateDataPropertyName(const T& preference,
+                                        const char* prefix) {
+  return std::string(prefix) + preference.ibus_config_name + "Value";
 }
 
 // Returns an property name of templateData corresponding the value of the min
 // attribute.
 template <typename T>
-std::string GetTemplateDataMinName(const T& preference) {
-  return std::string(preference.ibus_config_name) + "Min";
+std::string GetTemplateDataMinName(const T& preference, const char* prefix) {
+  return std::string(prefix) + preference.ibus_config_name + "Min";
 }
 
 // Returns an property name of templateData corresponding the value of the max
 // attribute.
 template <typename T>
-std::string GetTemplateDataMaxName(const T& preference) {
-  return std::string(preference.ibus_config_name) + "Max";
+std::string GetTemplateDataMaxName(const T& preference, const char* prefix) {
+  return std::string(prefix) + preference.ibus_config_name + "Max";
 }
 
 // Creates a Value object from the given value. Here we use function

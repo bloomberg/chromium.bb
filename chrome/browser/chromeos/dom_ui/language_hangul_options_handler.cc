@@ -22,10 +22,10 @@ void LanguageHangulOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Language Hangul page - ChromeOS
-  localized_strings->SetString("keyboard_layout",
+  localized_strings->SetString("hangul_keyboard_layout",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT));
 
-  localized_strings->Set("keyboardLayoutList", GetKeyboardLayoutList());
+  localized_strings->Set("HangulkeyboardLayoutList", GetKeyboardLayoutList());
 }
 
 ListValue* LanguageHangulOptionsHandler::GetKeyboardLayoutList() {

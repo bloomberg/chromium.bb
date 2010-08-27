@@ -12,6 +12,10 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 
+namespace {
+const char kI18nPrefix[] = "mozc_";
+}  // namespace
+
 namespace chromeos {
 
 LanguageMozcOptionsHandler::LanguageMozcOptionsHandler() {
@@ -26,7 +30,7 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
   // Language Mozc page - ChromeOS
   for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     localized_strings->SetString(
-        GetI18nContentValue(language_prefs::kMozcBooleanPrefs[i]),
+        GetI18nContentValue(language_prefs::kMozcBooleanPrefs[i], kI18nPrefix),
         l10n_util::GetStringUTF16(
             language_prefs::kMozcBooleanPrefs[i].message_id));
   }
@@ -35,9 +39,9 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
     const language_prefs::LanguageMultipleChoicePreference<const char*>&
         preference = language_prefs::kMozcMultipleChoicePrefs[i];
     localized_strings->SetString(
-        GetI18nContentValue(preference),
+        GetI18nContentValue(preference, kI18nPrefix),
         l10n_util::GetStringUTF16(preference.label_message_id));
-    localized_strings->Set(GetTemplateDataPropertyName(preference),
+    localized_strings->Set(GetTemplateDataPropertyName(preference, kI18nPrefix),
                            CreateMultipleChoiceList(preference));
   }
 
@@ -45,13 +49,13 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
     const language_prefs::LanguageIntegerRangePreference& preference =
         language_prefs::kMozcIntegerPrefs[i];
     localized_strings->SetString(
-        GetI18nContentValue(preference),
+        GetI18nContentValue(preference, kI18nPrefix),
         l10n_util::GetStringUTF16(preference.message_id));
     localized_strings->SetString(
-        GetTemplateDataMinName(preference),
+        GetTemplateDataMinName(preference, kI18nPrefix),
         base::IntToString(preference.min_pref_value));
     localized_strings->SetString(
-        GetTemplateDataMaxName(preference),
+        GetTemplateDataMaxName(preference, kI18nPrefix),
         base::IntToString(preference.max_pref_value));
   }
 }

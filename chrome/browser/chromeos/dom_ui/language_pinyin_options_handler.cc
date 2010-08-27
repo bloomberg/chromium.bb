@@ -10,8 +10,9 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 
-// TODO(kochi): Add prefix for each language (e.g. "Pinyin") for each i18n
-// identifier.
+namespace {
+const char kI18nPrefix[] = "Pinyin";
+}  // namespace
 
 namespace chromeos {
 
@@ -27,13 +28,15 @@ void LanguagePinyinOptionsHandler::GetLocalizedValues(
   // Language Pinyin page - ChromeOS
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     localized_strings->SetString(
-        GetI18nContentValue(language_prefs::kPinyinBooleanPrefs[i]),
+        GetI18nContentValue(language_prefs::kPinyinBooleanPrefs[i],
+                            kI18nPrefix),
         l10n_util::GetStringUTF16(
             language_prefs::kPinyinBooleanPrefs[i].message_id));
   }
 
   localized_strings->SetString(
-      GetI18nContentValue(language_prefs::kPinyinDoublePinyinSchema),
+      GetI18nContentValue(language_prefs::kPinyinDoublePinyinSchema,
+                          kI18nPrefix),
       l10n_util::GetStringUTF16(
           language_prefs::kPinyinDoublePinyinSchema.label_message_id));
   ListValue* list_value = new ListValue();
@@ -53,7 +56,8 @@ void LanguagePinyinOptionsHandler::GetLocalizedValues(
     list_value->Append(option);
   }
   localized_strings->Set(
-      GetTemplateDataPropertyName(language_prefs::kPinyinDoublePinyinSchema),
+      GetTemplateDataPropertyName(language_prefs::kPinyinDoublePinyinSchema,
+                                  kI18nPrefix),
       list_value);
 }
 

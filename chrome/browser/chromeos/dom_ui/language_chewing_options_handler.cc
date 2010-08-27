@@ -15,6 +15,10 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 
+namespace {
+const char kI18nPrefix[] = "Chewing_";
+}  // namespace
+
 namespace chromeos {
 
 LanguageChewingOptionsHandler::LanguageChewingOptionsHandler() {
@@ -29,7 +33,8 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
   // Language Chewing page - ChromeOS
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     localized_strings->SetString(
-        GetI18nContentValue(language_prefs::kChewingBooleanPrefs[i]),
+        GetI18nContentValue(language_prefs::kChewingBooleanPrefs[i],
+                            kI18nPrefix),
         l10n_util::GetStringUTF16(
             language_prefs::kChewingBooleanPrefs[i].message_id));
   }
@@ -38,13 +43,13 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
     const language_prefs::LanguageIntegerRangePreference& preference =
         language_prefs::kChewingIntegerPrefs[i];
     localized_strings->SetString(
-        GetI18nContentValue(preference),
+        GetI18nContentValue(preference, kI18nPrefix),
         l10n_util::GetStringUTF16(preference.message_id));
     localized_strings->SetString(
-        GetTemplateDataMinName(preference),
+        GetTemplateDataMinName(preference, kI18nPrefix),
         base::IntToString(preference.min_pref_value));
     localized_strings->SetString(
-        GetTemplateDataMaxName(preference),
+        GetTemplateDataMaxName(preference, kI18nPrefix),
         base::IntToString(preference.max_pref_value));
   }
 
@@ -53,19 +58,20 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
     const language_prefs::LanguageMultipleChoicePreference<const char*>&
         preference = language_prefs::kChewingMultipleChoicePrefs[i];
     localized_strings->SetString(
-        GetI18nContentValue(preference),
+        GetI18nContentValue(preference, kI18nPrefix),
         l10n_util::GetStringUTF16(preference.label_message_id));
     localized_strings->Set(
-        GetTemplateDataPropertyName(preference),
+        GetTemplateDataPropertyName(preference, kI18nPrefix),
         CreateMultipleChoiceList(preference));
   }
 
   localized_strings->SetString(
-      GetI18nContentValue(language_prefs::kChewingHsuSelKeyType),
+      GetI18nContentValue(language_prefs::kChewingHsuSelKeyType, kI18nPrefix),
       l10n_util::GetStringUTF16(
           language_prefs::kChewingHsuSelKeyType.label_message_id));
   localized_strings->Set(
-      GetTemplateDataPropertyName(language_prefs::kChewingHsuSelKeyType),
+      GetTemplateDataPropertyName(language_prefs::kChewingHsuSelKeyType,
+                                  kI18nPrefix),
       CreateMultipleChoiceList(language_prefs::kChewingHsuSelKeyType));
 }
 
