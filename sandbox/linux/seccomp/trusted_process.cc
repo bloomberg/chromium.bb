@@ -11,6 +11,8 @@
 
 namespace playground {
 
+struct SandboxPolicy g_policy;
+
 struct Thread {
   int              fdPub, fd;
   SecureMem::Args* mem;

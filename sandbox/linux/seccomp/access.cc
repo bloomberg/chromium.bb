@@ -62,6 +62,20 @@ bool Sandbox::process_access(int parentMapsFd, int sandboxFd, int threadFdPub,
     }
     return false;
   }
+
+  if (!g_policy.allow_file_namespace) {
+    // After locking the mutex, we can no longer abandon the system call. So,
+    // perform checks before clobbering the securely shared memory.
+    char tmp[access_req.path_length];
+    if (read(sys, sandboxFd, tmp, access_req.path_length) !=
+        (ssize_t)access_req.path_length) {
+      goto read_parm_failed;
+    }
+    Debug::message(("Denying access to \"" + std::string(tmp) + "\"").c_str());
+    SecureMem::abandonSystemCall(threadFd, -EACCES);
+    return false;
+  }
+
   SecureMem::lockSystemCall(parentMapsFd, mem);
   if (read(sys, sandboxFd, mem->pathname, access_req.path_length) !=
       (ssize_t)access_req.path_length) {

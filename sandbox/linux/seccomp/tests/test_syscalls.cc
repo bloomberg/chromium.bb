@@ -88,6 +88,7 @@ static void *thread_func(void *x) {
 }
 
 TEST(test_thread) {
+  playground::g_policy.allow_file_namespace = true;  // To allow count_fds()
   StartSeccompSandbox();
   int fd_count1 = count_fds();
   pthread_t tid;
@@ -135,6 +136,7 @@ static void *get_tls_base() {
 }
 
 TEST(test_clone) {
+  playground::g_policy.allow_file_namespace = true;  // To allow count_fds()
   StartSeccompSandbox();
   int fd_count1 = count_fds();
   int stack_size = 0x1000;
@@ -345,7 +347,21 @@ TEST(test_socket) {
   assert(errno == EINVAL || errno == ENOSYS);
 }
 
-TEST(test_open) {
+TEST(test_open_disabled) {
+  StartSeccompSandbox();
+  int fd = open("/dev/null", O_RDONLY);
+  assert(fd == -1);
+  assert(errno == EACCES);
+
+  // Writing to the policy flag does not change this.
+  playground::g_policy.allow_file_namespace = true;
+  fd = open("/dev/null", O_RDONLY);
+  assert(fd == -1);
+  assert(errno == EACCES);
+}
+
+TEST(test_open_enabled) {
+  playground::g_policy.allow_file_namespace = true;
   StartSeccompSandbox();
   int fd = open("/dev/null", O_RDONLY);
   assert(fd >= 0);
@@ -356,7 +372,15 @@ TEST(test_open) {
   assert(errno == EACCES);
 }
 
-TEST(test_access) {
+TEST(test_access_disabled) {
+  StartSeccompSandbox();
+  int rc = access("/dev/null", R_OK);
+  assert(rc == -1);
+  assert(errno == EACCES);
+}
+
+TEST(test_access_enabled) {
+  playground::g_policy.allow_file_namespace = true;
   StartSeccompSandbox();
   int rc = access("/dev/null", R_OK);
   assert(rc == 0);
@@ -365,16 +389,23 @@ TEST(test_access) {
   assert(errno == ENOENT);
 }
 
-TEST(test_stat) {
+TEST(test_stat_disabled) {
   StartSeccompSandbox();
   struct stat st;
-  // All file accesses are denied. TODO: Update if the sandbox gets a more
-  // fine-grained policy
   int rc = stat("/dev/null", &st);
   assert(rc == -1);
+  assert(errno == EACCES);
+}
+
+TEST(test_stat_enabled) {
+  playground::g_policy.allow_file_namespace = true;
+  StartSeccompSandbox();
+  struct stat st;
+  int rc = stat("/dev/null", &st);
+  assert(rc == 0);
   rc = stat("path-that-does-not-exist", &st);
   assert(rc == -1);
-  assert(errno == EACCES);
+  assert(errno == ENOENT);
 }
 
 static int g_value;

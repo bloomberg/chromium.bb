@@ -63,7 +63,8 @@ bool Sandbox::process_open(int parentMapsFd, int sandboxFd, int threadFdPub,
     return false;
   }
 
-  if ((open_req.flags & O_ACCMODE) != O_RDONLY) {
+  if ((open_req.flags & O_ACCMODE) != O_RDONLY ||
+      !g_policy.allow_file_namespace) {
     // After locking the mutex, we can no longer abandon the system call. So,
     // perform checks before clobbering the securely shared memory.
     char tmp[open_req.path_length];

@@ -696,6 +696,17 @@ class Sandbox {
   static std::vector<SecureMem::Args*> secureMemPool_;
 };
 
+// If this struct is extended to contain parameters that are read by
+// the trusted thread, we will have to mprotect() it to be read-only when
+// starting the sandbox.  However, currently it is read only by the
+// trusted process, and the sandboxed process cannot change the values
+// that the fork()'d trusted process sees.
+struct SandboxPolicy {
+  bool allow_file_namespace;  // Allow filename-based system calls.
+};
+
+extern struct SandboxPolicy g_policy;
+
 } // namespace
 
 using playground::Sandbox;

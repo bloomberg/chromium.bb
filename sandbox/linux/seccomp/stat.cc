@@ -151,17 +151,47 @@ bool Sandbox::process_stat(int parentMapsFd, int sandboxFd, int threadFdPub,
     }
     return false;
   }
+  if (stat_req.sysnum != __NR_stat && stat_req.sysnum != __NR_lstat
+    #ifdef __NR_stat64
+      && stat_req.sysnum != __NR_stat64
+    #endif
+    #ifdef __NR_lstat64
+      && stat_req.sysnum != __NR_lstat64
+    #endif
+     ) {
+    die("Corrupted stat() request");
+  }
 
-  // We implement a strict policy of denying all file accesses
-  char tmp[stat_req.path_length + 1];
-  if (read(sys, sandboxFd, tmp, stat_req.path_length) !=
+  if (!g_policy.allow_file_namespace) {
+    // After locking the mutex, we can no longer abandon the system call. So,
+    // perform checks before clobbering the securely shared memory.
+    char tmp[stat_req.path_length];
+    if (read(sys, sandboxFd, tmp, stat_req.path_length) !=
+        (ssize_t)stat_req.path_length) {
+      goto read_parm_failed;
+    }
+    Debug::message(("Denying access to \"" + std::string(tmp) + "\"").c_str());
+    SecureMem::abandonSystemCall(threadFd, -EACCES);
+    return false;
+  }
+
+  SecureMem::lockSystemCall(parentMapsFd, mem);
+  if (read(sys, sandboxFd, mem->pathname, stat_req.path_length) !=
       (ssize_t)stat_req.path_length) {
     goto read_parm_failed;
   }
-  tmp[stat_req.path_length] = '\000';
-  Debug::message(("Denying access to \"" + std::string(tmp) + "\"").c_str());
-  SecureMem::abandonSystemCall(threadFd, -EACCES);
-  return false;
+  mem->pathname[stat_req.path_length] = '\000';
+
+  // TODO(markus): Implement sandboxing policy
+  Debug::message(("Allowing access to \"" + std::string(mem->pathname) +
+                  "\"").c_str());
+
+  // Tell trusted thread to stat the file.
+  SecureMem::sendSystemCall(threadFdPub, true, parentMapsFd, mem,
+                            stat_req.sysnum,
+                            mem->pathname - (char*)mem + (char*)mem->self,
+                            stat_req.buf);
+  return true;
 }
 
 } // namespace
