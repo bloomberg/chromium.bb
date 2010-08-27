@@ -14,9 +14,8 @@
 
 namespace device_orientation {
 
-ProviderImpl::ProviderImpl(MessageLoop* message_loop,
-                           const DataFetcherFactory factories[])
-    : creator_loop_(message_loop),
+ProviderImpl::ProviderImpl(const DataFetcherFactory factories[])
+    : creator_loop_(MessageLoop::current()),
       ALLOW_THIS_IN_INITIALIZER_LIST(do_poll_method_factory_(this)) {
   for (const DataFetcherFactory* fp = factories; *fp; ++fp)
     factories_.push_back(*fp);

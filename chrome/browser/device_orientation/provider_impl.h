@@ -26,11 +26,9 @@ class ProviderImpl : public Provider {
  public:
   typedef DataFetcher* (*DataFetcherFactory)();
 
-  // Create a ProviderImpl that expects calls to AddObserver and RemoveObserver
-  // on message_loop, sends notifications to observers on message_loop,
-  // and uses the NULL-terminated factories array to find a DataFetcher
-  // that can provide orientation data.
-  ProviderImpl(MessageLoop* message_loop, const DataFetcherFactory factories[]);
+  // Create a ProviderImpl that uses the NULL-terminated factories array to find
+  // a DataFetcher that can provide orientation data.
+  ProviderImpl(const DataFetcherFactory factories[]);
 
   // From Provider.
   virtual void AddObserver(Observer* observer);

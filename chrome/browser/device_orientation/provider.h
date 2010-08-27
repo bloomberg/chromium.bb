@@ -33,6 +33,9 @@ class Provider : public base::RefCountedThreadSafe<Provider> {
   // injected object's reference count.
   static void SetInstanceForTests(Provider* provider);
 
+  // Get the current instance. Used for testing.
+  static Provider* GetInstanceForTests();
+
   // Note: AddObserver may call back synchronously to the observer with
   // orientation data.
   virtual void AddObserver(Observer* observer) = 0;

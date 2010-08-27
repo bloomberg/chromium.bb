@@ -26,7 +26,7 @@ Provider* Provider::GetInstance() {
       NULL
     };
 
-    instance_ = new ProviderImpl(MessageLoop::current(), default_factories);
+    instance_ = new ProviderImpl(default_factories);
   }
   return instance_;
 }
@@ -34,6 +34,10 @@ Provider* Provider::GetInstance() {
 void Provider::SetInstanceForTests(Provider* provider) {
   DCHECK(!instance_);
   instance_ = provider;
+}
+
+Provider* Provider::GetInstanceForTests() {
+  return instance_;
 }
 
 Provider* Provider::instance_ = NULL;
