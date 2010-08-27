@@ -33,7 +33,7 @@ PLATFORM_MAPPING = {
     'linux': [
         ['linux_x86', 'linux_x86'],  # Multilib toolchain
         ['linux_arm-trusted', 'linux_arm-trusted'],
-        ['linux_arm-untrusted', 'linux_arm-untrusted'],
+        ['linux_arm-untrusted_hardy64', 'linux_arm-untrusted'],
     ],
     'darwin': [
         ['mac_x86', 'mac_x86'], # Multilib toolchain
