@@ -10,7 +10,7 @@ PyAuto uses swig to expose Automation Proxy interfaces to Python.
 For complete documentation on the functionality available,
 run pydoc on this file.
 
-Ref: http://dev.chromium.org/developers/pyauto
+Ref: http://dev.chromium.org/developers/testing/pyauto
 
 
 Include the following in your PyAuto test script to make it run standalone.

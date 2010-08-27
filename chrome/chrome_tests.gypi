@@ -2631,7 +2631,7 @@
      'and (target_arch!="x64" or linux_fpic==1))', {
       'targets': [
         {
-          # Documentation: http://dev.chromium.org/developers/pyauto
+          # Documentation: http://dev.chromium.org/developers/testing/pyauto
           'target_name': 'pyautolib',
           'type': 'shared_library',
           'product_prefix': '_',
