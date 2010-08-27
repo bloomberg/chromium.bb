@@ -33,6 +33,7 @@ extern const char kAppsDebug[];
 extern const char kAppsPanel[];
 extern const char kAppsGalleryURL[];
 extern const char kAppsNoThrob[];
+extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kAuthSchemes[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutomationClientChannelID[];

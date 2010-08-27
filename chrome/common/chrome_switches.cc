@@ -63,14 +63,20 @@ const char kAppsNoThrob[]                   = "apps-no-throb";
 // Whether to display the "Debug" link for app launch behavior.
 const char kAppsDebug[]      = "apps-debug";
 
+// Whitelist of servers that Negotiate will generate delegated Kerberos tickets
+// for.
+const char kAuthNegotiateDelegateWhitelist[] =
+    "auth-negotiate-delegate-whitelist";
+
 // HTTP authentication schemes to enable. This is a comma separated list
 // of authentication schemes (basic, digest, ntlm, and negotiate). By default
 // all schemes are enabled. The primary use of this command line flag is to help
 // triage autentication-related issues reported by end-users.
 const char kAuthSchemes[]                   = "auth-schemes";
 
-// Authentication white list for servers.
-const char kAuthServerWhitelist[]           = "auth-server-whitelist";
+// Whitelist of servers which NTLM and Negotiate can automatically authenticate
+// with using the default credentials of the currently logged in user.
+const char kAuthServerWhitelist[] = "auth-server-whitelist";
 
 // The value of this switch tells the app to listen for and broadcast
 // automation-related messages on IPC channel with the given ID.

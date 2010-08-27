@@ -248,16 +248,20 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
 
   // Get the whitelist information from the command line, create an
   // HttpAuthFilterWhitelist, and attach it to the HttpAuthHandlerFactory.
-  net::HttpAuthFilterWhitelist* auth_filter = NULL;
+  net::HttpAuthFilterWhitelist* auth_filter_default_credentials = NULL;
   if (command_line.HasSwitch(switches::kAuthServerWhitelist)) {
-    std::string auth_server_whitelist =
-        command_line.GetSwitchValueASCII(switches::kAuthServerWhitelist);
-    // Create a whitelist filter.
-    auth_filter = new net::HttpAuthFilterWhitelist();
-    auth_filter->SetWhitelist(auth_server_whitelist);
+    auth_filter_default_credentials = new net::HttpAuthFilterWhitelist(
+        command_line.GetSwitchValueASCII(switches::kAuthServerWhitelist));
+  }
+  net::HttpAuthFilterWhitelist* auth_filter_delegate = NULL;
+  if (command_line.HasSwitch(switches::kAuthNegotiateDelegateWhitelist)) {
+    auth_filter_delegate = new net::HttpAuthFilterWhitelist(
+        command_line.GetSwitchValueASCII(
+            switches::kAuthNegotiateDelegateWhitelist));
   }
   globals_->url_security_manager.reset(
-      net::URLSecurityManager::Create(auth_filter));
+      net::URLSecurityManager::Create(auth_filter_default_credentials,
+                                      auth_filter_delegate));
 
   // Determine which schemes are supported.
   std::string csv_auth_schemes = "basic,digest,ntlm,negotiate";
