@@ -286,6 +286,11 @@ const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 const char kDisableTabCloseableStateWatcher[] =
     "disable-tab-closeable-state-watcher";
 
+// Allow disabling of translate from the command line to assist with
+// automated browser testing (e.g. Selenium/WebDriver).  Normal
+// browser users should disable translate with the preference.
+const char kDisableTranslate[] = "disable-translate";
+
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const char kDisableWebResources[]           = "disable-web-resources";

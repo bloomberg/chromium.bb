@@ -5,6 +5,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/histogram.h"
 #include "base/string_util.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
@@ -336,6 +338,11 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
                                            const std::string& page_lang) {
   PrefService* prefs = tab->profile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kEnableTranslate))
+    return;
+
+  // Allow disabling of translate from the command line to assist with
+  // automated browser testing.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableTranslate))
     return;
 
   NavigationEntry* entry = tab->controller().GetActiveEntry();

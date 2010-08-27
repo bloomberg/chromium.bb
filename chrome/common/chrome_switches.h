@@ -95,6 +95,7 @@ extern const char kDisableSyncThemes[];
 extern const char kDisableSyncTypedUrls[];
 extern const char kDisableSyncSessions[];
 extern const char kDisableTabCloseableStateWatcher[];
+extern const char kDisableTranslate[];
 extern const char kDisableWebResources[];
 extern const char kDisableWebSecurity[];
 extern const char kDisableWebSockets[];
