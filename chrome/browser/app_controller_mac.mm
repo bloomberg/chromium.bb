@@ -220,6 +220,10 @@ void RecordLastRunAppBundlePath() {
   if (parsed_command_line.HasSwitch(switches::kActivateOnLaunch)) {
     [NSApp activateIgnoringOtherApps:YES];
   }
+
+  if (!parsed_command_line.HasSwitch(switches::kEnableExposeForTabs)) {
+    [tabposeMenuItem_ setHidden:YES];
+  }
 }
 
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
@@ -496,11 +500,6 @@ void RecordLastRunAppBundlePath() {
   if (startupUrls_.size()) {
     [self openUrls:startupUrls_];
     [self clearStartupUrls];
-  }
-
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (!parsed_command_line.HasSwitch(switches::kEnableExposeForTabs)) {
-    [tabposeMenuItem_ setHidden:YES];
   }
 }
 

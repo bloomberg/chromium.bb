@@ -3778,47 +3778,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Priority:
       </message>
 
-      <!-- Labs -->
-      <message name="IDS_LABS_TITLE" desc="Title for the chrome://labs page. Should be translated like 'Labs' is at googlelabs.com.">
-        Labs
-      </message>
-      <message name="IDS_LABS_LONG_TITLE" desc="Long version of the title for the chrome://labs page.">
-        Labs: Some crazy experimental stuff.
-      </message>
-      <message name="IDS_LABS_TABLE_TITLE" desc="Title for the experiments table on the chrome://labs page.">
-        Labs Experiments
-      </message>
-      <message name="IDS_LABS_BLURB" desc="Text at the top of the about:labs page, warning users that the about:labs contents are volatile.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Labs is a testing ground for experimental features that aren't quite ready for primetime. They may change, break or disappear at any time.
-      </message>
-      <message name="IDS_LABS_NO_EXPERIMENTS_AVAILABLE" desc="Shown if no labs experiments are available">
-        Aww, it looks like there are currently no experiments available.
-      </message>
-      <message name="IDS_LABS_RESTART_NOTICE" desc="Notifies the user that he needs to restart chrome. Shown next to a button that says 'Restart Now'.">
-        Your changes will take effect the next time you restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-      </message>
-      <message name="IDS_LABS_RESTART_BUTTON" desc="Text on a button that restarts chrome when clicked. ">
-        Restart Now
-      </message>
-      <message name="IDS_LABS_DISABLE" desc="The link for disabling a labs experiment.">
-        Disable
-      </message>
-      <message name="IDS_LABS_ENABLE" desc="The link for enabling a labs experiment.">
-        Enable
-      </message>
-      <message name="IDS_LABS_TABPOSE_NAME" desc="Name of the 'Tab Overview' lab.">
-        Tab Overview
-      </message>
-      <message name="IDS_LABS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
-        Swipe down with three fingers on your trackpad to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
-      </message>
-      <message name="IDS_LABS_LEFTTABS_NAME" desc="Name of the 'Left Tabs' lab.">
-        Tabs on the left
-      </message>
-      <message name="IDS_LABS_LEFTTABS_DESCRIPTION" desc="Description of the 'Left Tabs' lab.">
-        Adds a "Use Side Tabs" entry to the tabstrip's context menu. Use this to toggle between tabs on top (default) and tabs on the left. Useful on widescreen monitors.
-      </message>
-
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in.">
         Run plug-in this time

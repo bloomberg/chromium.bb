@@ -41,23 +41,21 @@ const char* kSavableSchemes[] = {
   NULL
 };
 
-const char kAboutAboutURL[] = "about:about";
 const char kAboutAppCacheInternalsURL[] = "about:appcache-internals";
 const char kAboutBlankURL[] = "about:blank";
 const char kAboutCacheURL[] = "about:cache";
 const char kAboutCrashURL[] = "about:crash";
 const char kAboutCreditsURL[] = "about:credits";
-const char kAboutDNSURL[] = "about:dns";
 const char kAboutHangURL[] = "about:hang";
-const char kAboutHistogramsURL[] = "about:histograms";
-const char kAboutLabsURL[] = "about:labs";
 const char kAboutMemoryURL[] = "about:memory";
 const char kAboutNetInternalsURL[] = "about:net-internals";
 const char kAboutPluginsURL[] = "about:plugins";
 const char kAboutShorthangURL[] = "about:shorthang";
 const char kAboutSystemURL[] = "about:system";
 const char kAboutTermsURL[] = "about:terms";
-const char kAboutVaporwareURL[] = "about:vaporware";
+const char kAboutAboutURL[] = "about:about";
+const char kAboutDNSURL[] = "about:dns";
+const char kAboutHistogramsURL[] = "about:histograms";
 const char kAboutVersionURL[] = "about:version";
 
 // Use an obfuscated URL to make this nondiscoverable, we only want this
@@ -73,11 +71,10 @@ const char kChromeUIDownloadsURL[] = "chrome://downloads/";
 const char kChromeUIExtensionsURL[] = "chrome://extensions/";
 const char kChromeUIFavIconURL[] = "chrome://favicon/";
 const char kChromeUIFileBrowseURL[] = "chrome://filebrowse/";
-const char kChromeUIHistory2URL[] = "chrome://history2/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
+const char kChromeUIHistory2URL[] = "chrome://history2/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
 const char kChromeUIIPCURL[] = "chrome://about/ipc";
-const char kChromeUILabsURL[] = "chrome://labs/";
 const char kChromeUIMediaplayerURL[] = "chrome://mediaplayer/";
 const char kChromeUINewTabURL[] = "chrome://newtab";
 const char kChromeUIOptionsURL[] = "chrome://options/";
@@ -98,7 +95,6 @@ const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistory2Host[] = "history2";
 const char kChromeUIImageBurnerHost[] = "imageburner";
 const char kChromeUIInspectorHost[] = "inspector";
-const char kChromeUILabsHost[] = "labs";
 const char kChromeUIMediaplayerHost[] = "mediaplayer";
 const char kChromeUINetInternalsHost[] = "net-internals";
 const char kChromeUINewTabHost[] = "newtab";
