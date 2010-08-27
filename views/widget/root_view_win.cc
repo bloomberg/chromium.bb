@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
-#include "base/logging.h"
 #include "gfx/canvas_skia.h"
 
 namespace views {

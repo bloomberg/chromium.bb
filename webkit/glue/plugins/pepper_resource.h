@@ -5,7 +5,6 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_RESOURCE_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_RESOURCE_H_
 
-#include "base/logging.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "third_party/ppapi/c/pp_resource.h"
@@ -111,10 +110,7 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   // Called by the resource tracker when the last plugin reference has been
   // dropped.
   friend class ResourceTracker;
-  void StoppedTracking() {
-    DCHECK(resource_id_ != 0);
-    resource_id_ = 0;
-  }
+  void StoppedTracking();
 
   DISALLOW_COPY_AND_ASSIGN(Resource);
 };

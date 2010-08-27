@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/combobox/native_combobox_gtk.h"
 
@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "app/combobox_model.h"
-#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "views/controls/combobox/combobox.h"
 

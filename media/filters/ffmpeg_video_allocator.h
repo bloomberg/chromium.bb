@@ -5,6 +5,7 @@
 #ifndef MEDIA_FILTERS_FFMPEG_VIDEO_ALLOCATOR_H_
 #define MEDIA_FILTERS_FFMPEG_VIDEO_ALLOCATOR_H_
 
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "media/ffmpeg/ffmpeg_common.h"

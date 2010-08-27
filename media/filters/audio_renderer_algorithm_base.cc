@@ -4,6 +4,7 @@
 
 #include "media/filters/audio_renderer_algorithm_base.h"
 
+#include "base/logging.h"
 #include "media/base/buffers.h"
 
 namespace media {

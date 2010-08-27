@@ -7,7 +7,6 @@
 
 #include <map>
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -97,5 +96,3 @@ class FramebufferManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_FRAMEBUFFER_MANAGER_H_
-
-

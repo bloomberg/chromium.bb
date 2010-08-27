@@ -4,7 +4,6 @@
 
 #include "jingle/notifier/listener/send_update_task.h"
 
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "jingle/notifier/listener/xml_element_util.h"

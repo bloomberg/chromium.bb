@@ -4,6 +4,7 @@
 
 #include "remoting/base/protocol_decoder.h"
 
+#include "base/logging.h"
 #include "remoting/base/multiple_array_input_stream.h"
 #include "talk/base/byteorder.h"
 

@@ -5,6 +5,7 @@
 #include "webkit/support/weburl_loader_mock_factory.h"
 
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"

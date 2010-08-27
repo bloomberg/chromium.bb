@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "base/logging.h"
 #include "talk/base/byteorder.h"
 
 namespace remoting {

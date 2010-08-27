@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "remoting/client/plugin/chromoting_plugin.h"
 #include "testing/gtest/include/gtest/gtest.h"

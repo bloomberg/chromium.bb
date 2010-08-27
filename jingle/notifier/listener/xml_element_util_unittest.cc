@@ -7,7 +7,6 @@
 #include <sstream>
 #include <string>
 
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "talk/xmllite/qname.h"
 #include "talk/xmllite/xmlelement.h"

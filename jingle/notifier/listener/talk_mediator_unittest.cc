@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "jingle/notifier/listener/mediator_thread_mock.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"

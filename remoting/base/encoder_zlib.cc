@@ -4,6 +4,7 @@
 
 #include "remoting/base/encoder_zlib.h"
 
+#include "base/logging.h"
 #include "gfx/rect.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/capture_data.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include <windows.h>
 #include <oleauto.h>
 
-#include "base/basictypes.h"  // needed to pick up OS_WIN
-#include "base/logging.h"
+#include "base/basictypes.h"
+#include "build/build_config.h"
 
 // Scoped VARIANT class for automatically freeing a COM VARIANT at the
 // end of a scope.  Additionally provides a few functions to make the

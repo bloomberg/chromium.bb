@@ -16,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_util.h"
-#include "base/logging.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 // warning C4996: 'open': The POSIX name for this item is deprecated.

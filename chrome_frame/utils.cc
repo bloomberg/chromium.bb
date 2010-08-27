@@ -1392,4 +1392,3 @@ bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
 
   return true;
 }
-

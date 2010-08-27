@@ -4,6 +4,7 @@
 
 #include "media/filters/bitstream_converter.h"
 
+#include "base/logging.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 namespace media {

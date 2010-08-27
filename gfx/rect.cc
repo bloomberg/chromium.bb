@@ -14,7 +14,6 @@
 
 #include <ostream>
 
-#include "base/logging.h"
 #include "gfx/insets.h"
 
 namespace {

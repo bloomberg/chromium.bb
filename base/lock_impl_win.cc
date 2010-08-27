@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/lock_impl.h"
-#include "base/logging.h"
 
 LockImpl::LockImpl() {
   // The second parameter is the spin count, for short-held locks it avoid the
@@ -29,4 +28,3 @@ void LockImpl::Lock() {
 void LockImpl::Unlock() {
   ::LeaveCriticalSection(&os_lock_);
 }
-

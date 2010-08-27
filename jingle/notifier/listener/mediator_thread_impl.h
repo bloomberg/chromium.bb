@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"

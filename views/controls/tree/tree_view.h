@@ -14,7 +14,6 @@
 #include "app/tree_model.h"
 #include "base/basictypes.h"
 #include "base/keyboard_codes.h"
-#include "base/logging.h"
 #include "views/controls/native_control.h"
 
 namespace views {
@@ -243,17 +242,10 @@ class TreeView : public NativeControl, TreeModelObserver {
   void RecursivelyDelete(NodeDetails* node);
 
   // Returns the NodeDetails by node from the model.
-  NodeDetails* GetNodeDetails(TreeModelNode* node) {
-    DCHECK(node &&
-           node_to_details_map_.find(node) != node_to_details_map_.end());
-    return node_to_details_map_[node];
-  }
+  NodeDetails* GetNodeDetails(TreeModelNode* node);
 
   // Returns the NodeDetails by identifier (lparam of the HTREEITEM).
-  NodeDetails* GetNodeDetailsByID(int id) {
-    DCHECK(id_to_details_map_.find(id) != id_to_details_map_.end());
-    return id_to_details_map_[id];
-  }
+  NodeDetails* GetNodeDetailsByID(int id);
 
   // Returns the NodeDetails by HTREEITEM.
   NodeDetails* GetNodeDetailsByTreeItem(HTREEITEM tree_item);

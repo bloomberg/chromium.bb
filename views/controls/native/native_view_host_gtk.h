@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_NATIVE_HOST_VIEW_GTK_H_
-#define VIEWS_CONTROLS_NATIVE_HOST_VIEW_GTK_H_
+#ifndef VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_GTK_H_
+#define VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
 #include <string>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "gfx/rect.h"
 #include "views/controls/native/native_view_host_wrapper.h"
 
@@ -90,4 +90,4 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_NATIVE_HOST_VIEW_GTK_H_
+#endif  // VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_GTK_H_

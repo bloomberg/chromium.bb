@@ -5,7 +5,7 @@
 #ifndef WEBKIT_SUPPORT_WEBURL_LOADER_MOCK_H_
 #define WEBKIT_SUPPORT_WEBURL_LOADER_MOCK_H_
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
 

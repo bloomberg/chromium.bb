@@ -1,30 +1,21 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TEST_SHELL_DEVTOOLS_CALLARGS_H_
-#define TEST_SHELL_DEVTOOLS_CALLARGS_H_
+#ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_DEVTOOLS_CALLARGS_H_
+#define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_DEVTOOLS_CALLARGS_H_
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 class TestShellDevToolsCallArgs {
  public:
-  TestShellDevToolsCallArgs(const WebKit::WebString& data)
-      : data_(data) {
-    ++calls_count_;
-  }
+  explicit TestShellDevToolsCallArgs(const WebKit::WebString& data);
 
-  TestShellDevToolsCallArgs(const TestShellDevToolsCallArgs& args)
-      : data_(args.data_) {
-    ++calls_count_;
-  }
+  TestShellDevToolsCallArgs(const TestShellDevToolsCallArgs& args);
 
-  ~TestShellDevToolsCallArgs() {
-    --calls_count_;
-    DCHECK(calls_count_ >= 0);
-  }
+  ~TestShellDevToolsCallArgs();
 
   static int calls_count() { return calls_count_; }
 
@@ -34,4 +25,4 @@ class TestShellDevToolsCallArgs {
   static int calls_count_;
 };
 
-#endif  // TEST_SHELL_DEVTOOLS_CALLARGS_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_DEVTOOLS_CALLARGS_H_

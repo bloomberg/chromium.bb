@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "base/stl_util-inl.h"
 
 // ScopedVector wraps a vector deleting the elements from its

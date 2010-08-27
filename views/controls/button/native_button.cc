@@ -6,7 +6,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
-#include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
 
 #if defined(OS_WIN)

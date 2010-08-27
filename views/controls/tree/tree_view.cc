@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
+#include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/win_util.h"
 #include "gfx/canvas_skia.h"
@@ -601,6 +602,18 @@ void TreeView::RecursivelyDelete(NodeDetails* node) {
   id_to_details_map_.erase(node->id);
   node_to_details_map_.erase(node->node);
   delete node;
+}
+
+TreeView::NodeDetails* TreeView::GetNodeDetails(TreeModelNode* node) {
+  DCHECK(node &&
+         node_to_details_map_.find(node) != node_to_details_map_.end());
+  return node_to_details_map_[node];
+}
+
+// Returns the NodeDetails by identifier (lparam of the HTREEITEM).
+TreeView::NodeDetails* TreeView::GetNodeDetailsByID(int id) {
+  DCHECK(id_to_details_map_.find(id) != id_to_details_map_.end());
+  return id_to_details_map_[id];
 }
 
 TreeView::NodeDetails* TreeView::GetNodeDetailsByTreeItem(HTREEITEM tree_item) {

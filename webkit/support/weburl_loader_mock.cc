@@ -4,6 +4,7 @@
 
 #include "webkit/support/weburl_loader_mock.h"
 
+#include "base/logging.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/support/weburl_loader_mock_factory.h"

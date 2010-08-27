@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"

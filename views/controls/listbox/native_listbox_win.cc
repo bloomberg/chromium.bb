@@ -9,7 +9,6 @@
 
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
-#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 #include "views/controls/listbox/listbox.h"

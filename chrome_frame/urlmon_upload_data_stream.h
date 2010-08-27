@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "chrome_frame/stream_impl.h"
 #include "net/base/upload_data.h"

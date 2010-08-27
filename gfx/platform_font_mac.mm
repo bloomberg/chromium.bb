@@ -6,7 +6,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "gfx/canvas_skia.h"

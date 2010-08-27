@@ -4,6 +4,7 @@
 
 #include "media/filters/ffmpeg_video_allocator.h"
 
+#include "base/logging.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 // Because Chromium could be build with FFMPEG version other than FFMPEG-MT
@@ -176,4 +177,3 @@ void FFmpegVideoAllocator::InternalReleaseBuffer(
 }
 
 } // namespace media
-

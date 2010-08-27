@@ -5,7 +5,6 @@
 #include <atlbase.h>
 
 #include "base/environment.h"
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/crash_reporting/crash_dll.h"
