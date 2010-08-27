@@ -59,22 +59,32 @@
 
 namespace device_orientation {
 
-// Per-axis sensor data.
-struct AccelerometerMac::AxisData {
-  // Non-zero if the axis is valid in this sensor.
-  int enabled;
-
-  // Location in struct of first byte.
-  int index;
+struct AccelerometerMac::GenericMacbookSensor {
+  // Name of device to be read.
+  const char* service_name;
 
   // Number of bytes of the axis data.
-  int size;
+  int axis_size;
 
-  // Value meaning "zero g".
+  // Default calibration value for zero g.
   float zero_g;
 
-  // (can be negative if the sensor axis is reversed).
+  // Default calibration value for one g (negative when axis is inverted).
   float one_g;
+
+  // Kernel function index.
+  unsigned int function;
+
+  // Size of the sensor record to be sent/received.
+  unsigned int record_size;
+};
+
+struct AccelerometerMac::AxisData {
+  // Location of the first byte representing the axis in the sensor data.
+  int index;
+
+  // Axis inversion flag. The value changes often between models.
+  bool inverted;
 };
 
 // Sudden Motion Sensor descriptor.
@@ -82,17 +92,16 @@ struct AccelerometerMac::SensorDescriptor {
   // Prefix of model to be tested.
   const char* model_name;
 
-  // Name of device to be read.
-  const char* service_name;
+  // Axis-specific data (x,y,z order).
+  AxisData axis[3];
+};
 
-  // Kernel function index.
-  unsigned int function;
-
-  // Size of record to be sent/received.
-  unsigned int record_size;
-
-  // Description of three axes (x,y,z).
-  AxisData axes[3];
+// Typical sensor parameters in MacBook models.
+const AccelerometerMac::GenericMacbookSensor
+  AccelerometerMac::kGenericSensor = {
+  "SMCMotionSensor", 2,
+  0, 251,
+  5, 40
 };
 
 // Supported sensor descriptors. Add entries here to enhance compatibility.
@@ -100,26 +109,33 @@ struct AccelerometerMac::SensorDescriptor {
 const AccelerometerMac::SensorDescriptor
     AccelerometerMac::kSupportedSensors[] = {
   // Tested by leandrogracia on a 15'' MacBook Pro.
-  { "MacBookPro5,4", "SMCMotionSensor", 5, 40, {
-    { 1, 0, 2, 0,  251 },
-    { 1, 2, 2, 0,  251 },
-    { 1, 4, 2, 0,  251 }
-  } },
+  { "MacBookPro2,2", { { 0, true  }, { 2, true  }, { 4, false } } },
+
+  // Tested by leandrogracia on a 15'' MacBook Pro.
+  { "MacBookPro3,1", { { 0, false }, { 2, true  }, { 4, true  } } },
+
+  // Tested by leandrogracia on a 15'' MacBook Pro.
+  { "MacBookPro4,1", { { 0, true  }, { 2, true  }, { 4, false } } },
+
+  // Tested by leandrogracia on a 15'' MacBook Pro.
+  { "MacBookPro5,1", { { 0, false }, { 2, false }, { 4, false } } },
+
+  // Tested by leandrogracia on a 15'' MacBook Pro.
+  { "MacBookPro5,4", { { 0, false }, { 2, false }, { 4, false } } },
 
   // Tested by leandrogracia on a 13'' MacBook Pro.
-  { "MacBookPro5,5", "SMCMotionSensor", 5, 40, {
-    { 1, 0, 2, 0, -251 },
-    { 1, 2, 2, 0, -251 },
-    { 1, 4, 2, 0,  251 }
-  } },
+  { "MacBookPro5,5", { { 0, true  }, { 2, true  }, { 4, false } } },
+
+  // Tested by leandrogracia on a 15'' MacBook Pro.
+  { "MacBookPro6,2", { { 0, true  }, { 2, false }, { 4, true  } } },
+
+  // Tested by leandrogracia on a 13'' MacBook Pro.
+  { "MacBookPro7,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Generic MacBook accelerometer sensor data.
-  // Added for forward compatibility (there may be problems with inverted axes).
-  {"", "SMCMotionSensor", 5, 40, {
-    { 1, 0, 2, 0, -251 },
-    { 1, 2, 2, 0, -251 },
-    { 1, 4, 2, 0,  251 }
-  } }
+  // Added for compatibility with non-tested models
+  // Note: there may be problems with inverted axes.
+  { "", { { 0, true  }, { 2, true  }, { 4, false } } }
 };
 
 // Create a AccelerometerMac object and return NULL if no valid sensor found.
@@ -153,10 +169,10 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
   std::fill(output_record_.begin(), output_record_.end(), 0x00);
 
   // Read record data from memory.
-  const size_t kInputSize = sensor_->record_size;
-  size_t output_size = sensor_->record_size;
+  const size_t kInputSize = kGenericSensor.record_size;
+  size_t output_size = kGenericSensor.record_size;
 
-  if (IOConnectCallStructMethod(io_connection_, sensor_->function,
+  if (IOConnectCallStructMethod(io_connection_, kGenericSensor.function,
       static_cast<const char *>(&input_record_[0]), kInputSize,
       &output_record_[0], &output_size) != KERN_SUCCESS) {
     return false;
@@ -167,8 +183,8 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
 
   for (int i = 0; i < 3; ++i) {
     int sensor_value = 0;
-    int size  = sensor_->axes[i].size;
-    int index = sensor_->axes[i].index;
+    int size  = kGenericSensor.axis_size;
+    int index = sensor_->axis[i].index;
 
     // Important Note: little endian is assumed as this code is mac-only
     //                 and PowerPC is currently not supported.
@@ -177,8 +193,8 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
     sensor_value = ExtendSign(sensor_value, size);
 
     // Correct value using the current calibration.
-    axis_value[i] = static_cast<float>(sensor_value - sensor_->axes[i].zero_g) /
-                    sensor_->axes[i].one_g;
+    axis_value[i] = static_cast<float>(sensor_value - kGenericSensor.zero_g) /
+                    kGenericSensor.one_g;
 
     // Make sure we reject any NaN or infinite values.
     if (!isfinite(axis_value[i]))
@@ -189,6 +205,10 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
       axis_value[i] = -1.0;
     else if (axis_value[i] > 1.0)
       axis_value[i] = 1.0;
+
+    // Apply axis inversion.
+    if (sensor_->axis[i].inverted)
+      axis_value[i] = -axis_value[i];
   }
 
   // Transform the accelerometer values to W3C draft angles.
@@ -268,7 +288,7 @@ bool AccelerometerMac::Init() {
 
     // Get a dictionary of the services matching to the one in the sensor.
     CFMutableDictionaryRef dict =
-        IOServiceMatching(sensor_candidate->service_name);
+        IOServiceMatching(kGenericSensor.service_name);
     if (dict == NULL)
       continue;
 
@@ -299,8 +319,8 @@ bool AccelerometerMac::Init() {
     return false;
 
   // Allocate and initialize input/output records.
-  input_record_.resize(sensor_->record_size, 0x01);
-  output_record_.resize(sensor_->record_size, 0x00);
+  input_record_.resize(kGenericSensor.record_size, 0x01);
+  output_record_.resize(kGenericSensor.record_size, 0x00);
 
   // Try to retrieve the current orientation.
   Orientation test_orientation;

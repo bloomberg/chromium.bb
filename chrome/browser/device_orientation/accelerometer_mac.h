@@ -78,10 +78,12 @@ class AccelerometerMac : public DataFetcher {
   // Extend the sign of an integer of size bytes to a 32-bit one.
   static int ExtendSign(int value, size_t size);
 
+  struct GenericMacbookSensor;
   struct SensorDescriptor;
   struct AxisData;
 
-  // List of supported sensors.
+  // Generic sensor data and list of supported sensors.
+  static const GenericMacbookSensor kGenericSensor;
   static const SensorDescriptor kSupportedSensors[];
 
   // Local sensor if supported, else NULL.
