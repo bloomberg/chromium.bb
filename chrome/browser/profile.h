@@ -51,6 +51,7 @@ class ExtensionMessageService;
 class ExtensionsService;
 class FaviconService;
 class FilePath;
+class FileSystemHostContext;
 class FindBarState;
 class GeolocationContentSettingsMap;
 class GeolocationPermissionContext;
@@ -276,6 +277,9 @@ class Profile {
 
   // Returns the PersonalDataManager associated with this profile.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
+
+  // Returns the HTML5 FileSystemHostContext assigned to this profile.
+  virtual FileSystemHostContext* GetFileSystemHostContext() = 0;
 
   // Init our themes system.
   virtual void InitThemes() = 0;

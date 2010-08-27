@@ -59,6 +59,7 @@ class ProfileImpl : public Profile,
   virtual TemplateURLFetcher* GetTemplateURLFetcher();
   virtual DownloadManager* GetDownloadManager();
   virtual PersonalDataManager* GetPersonalDataManager();
+  virtual FileSystemHostContext* GetFileSystemHostContext();
   virtual void InitThemes();
   virtual void SetTheme(Extension* extension);
   virtual void SetNativeTheme();
@@ -196,6 +197,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<StatusTray> status_tray_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_ptr<PinnedTabService> pinned_tab_service_;
+  scoped_refptr<FileSystemHostContext> file_system_host_context_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

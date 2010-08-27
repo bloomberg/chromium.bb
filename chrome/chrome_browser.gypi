@@ -1494,6 +1494,8 @@
         'browser/file_path_watcher_win.cc',
         'browser/file_system/file_system_dispatcher_host.cc',
         'browser/file_system/file_system_dispatcher_host.h',
+        'browser/file_system/file_system_host_context.cc',
+        'browser/file_system/file_system_host_context.h',
         'browser/find_bar.h',
         'browser/find_bar_controller.cc',
         'browser/find_bar_controller.h',
