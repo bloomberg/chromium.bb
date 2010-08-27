@@ -306,10 +306,15 @@ int main() {
       os.path.join(top_dir, "install", "nacl_headers"),
       treemappers.SubsetNaClHeaders, [modules["nacl-headers"]], args=[arch])
 
+  modules["sys_include_alias"] = btarget.TreeMapper(
+      "sys_include_alias",
+      os.path.join(top_dir, "install", "sys_include_alias"),
+      treemappers.SysIncludeAlias, [modules["glibc"]], args=[arch])
+
   AddAutoconfModule(
       "full-gcc-glibc", "gcc",
-      deps=["binutils", "glibc", "installed_linux_headers", "dummy_libs"]
-          + gcc_libs,
+      deps=["binutils", "glibc", "installed_linux_headers", "dummy_libs",
+            "sys_include_alias"] + gcc_libs,
       configure_opts=[
           "--disable-libmudflap",
           "--disable-decimal-float",
@@ -341,9 +346,9 @@ int main() {
       compiler=["nacl-glibc-gcc"])
   module_list.append(modules["hello_glibc"])
 
-  # TODO(mseaborn): Add the following Scons targets when they work.
-  # This has a problem with PTHREAD_STACK_MIN:
-  #   google_nacl_platform
+  # TODO(mseaborn): Change the following to use "extra_sdk_update",
+  # instead of specifying individual libraries, once we omit stuff
+  # that we do not want such as libnacl.
   AddSconsModule(
       "nacl_libs_glibc",
       deps=glibc_toolchain_deps + ["libnacl_headers"],
@@ -353,6 +358,7 @@ int main() {
                   "google_nacl_imc",
                   "google_nacl_npruntime",
                   "google_nacl_pgl",
+                  "google_nacl_platform",
                   "libav",
                   "libsrpc"])
 

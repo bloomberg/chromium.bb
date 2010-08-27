@@ -161,6 +161,15 @@ def DummyLibs(arch):
                          "libcrt_platform.so": dummy_lib}}}
 
 
+# When gcc is built, it checks whether libc provides <limits.h> in
+# order to determine whether gcc's own <limits.h> should use libc's
+# version via #include_next.  Oddly, gcc looks in "sys-include" rather
+# than "include".  We work around this by creating "sys-include" as an
+# alias.  See http://code.google.com/p/nativeclient/issues/detail?id=854
+def SysIncludeAlias(tree, arch):
+  return {arch: {"sys-include": tree[arch]["include"]}}
+
+
 # The functions above are fairly cheap, so we could run them each
 # time, but they do require scanning their input directory trees, so
 # it would be better to avoid that if the function has not changed.
