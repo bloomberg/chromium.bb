@@ -56,9 +56,7 @@ TEST_F(HistoryTester, VerifyHistoryLength2) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 
-// VerifyHistoryLength3 consistently fails on Mac Valgrind (3).
-// http://crbug.com/50931
-TEST_F(HistoryTester, FAILS_VerifyHistoryLength3) {
+TEST_F(HistoryTester, VerifyHistoryLength3) {
   // Test the history length for the following page transitions.
   // -open-> Page 1 -> open Page 2 -redirect Page 3. open Page 4
   // -navigate_backward-> Page 3 -navigate_backward->Page 1
