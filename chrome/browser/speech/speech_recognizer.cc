@@ -231,6 +231,7 @@ void SpeechRecognizer::HandleOnError(int error_code) {
   if (!audio_controller_.get())
     return;
 
+  delegate_->OnRecognizerError(caller_id_);
   CancelRecognition();
   delegate_->DidCompleteRecording(caller_id_);
   delegate_->DidCompleteRecognition(caller_id_);

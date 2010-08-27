@@ -4,13 +4,17 @@
 
 #include "chrome/browser/speech/speech_input_manager.h"
 
+#include "app/l10n_util.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 #include "chrome/browser/speech/speech_recognizer.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "grit/generated_resources.h"
+#include "media/audio/audio_manager.h"
 #include <map>
 
 namespace speech_input {
@@ -33,12 +37,20 @@ class SpeechInputManagerImpl : public SpeechInputManager,
                                     const string16& value);
   virtual void DidCompleteRecording(int caller_id);
   virtual void DidCompleteRecognition(int caller_id);
+  virtual void OnRecognizerError(int caller_id);
 
   // SpeechInputBubbleController::Delegate methods.
   virtual void RecognitionCancelled(int caller_id);
   virtual void SpeechInputFocusChanged(int caller_id);
 
  private:
+  struct SpeechInputRequest {
+    SpeechInputManagerDelegate* delegate;
+    scoped_refptr<SpeechRecognizer> recognizer;
+    int render_process_id;
+    int render_view_id;
+  };
+
   // Private constructor to enforce singleton.
   friend struct DefaultSingletonTraits<SpeechInputManagerImpl>;
   SpeechInputManagerImpl();
@@ -50,9 +62,15 @@ class SpeechInputManagerImpl : public SpeechInputManager,
 
   void CancelRecognitionAndInformDelegate(int caller_id);
 
+  // Shows an error message string as a simple alert info bar for the tab
+  // identified by |render_process_id| and |render_view_id|.
+  void ShowErrorMessage(int render_process_id, int render_view_id,
+                        const string16& message);
+  static void ShowErrorMessageInUIThread(
+      int render_process_id, int render_view_id,
+      const string16& message);
+
   SpeechInputManagerDelegate* delegate_;
-  typedef std::pair<SpeechInputManagerDelegate*,
-                    scoped_refptr<SpeechRecognizer> > SpeechInputRequest;
   typedef std::map<int, SpeechInputRequest> SpeechRecognizerMap;
   SpeechRecognizerMap requests_;
   int recording_caller_id_;
@@ -80,11 +98,11 @@ bool SpeechInputManagerImpl::HasPendingRequest(int caller_id) const {
 
 SpeechInputManagerDelegate* SpeechInputManagerImpl::GetDelegate(
     int caller_id) const {
-  return requests_.find(caller_id)->second.first;
+  return requests_.find(caller_id)->second.delegate;
 }
 
 SpeechRecognizer* SpeechInputManagerImpl::GetRecognizer(int caller_id) const {
-  return requests_.find(caller_id)->second.second;
+  return requests_.find(caller_id)->second.recognizer;
 }
 
 void SpeechInputManagerImpl::StartRecognition(
@@ -99,14 +117,24 @@ void SpeechInputManagerImpl::StartRecognition(
   if (recording_caller_id_)
     CancelRecognitionAndInformDelegate(recording_caller_id_);
 
+  if (!AudioManager::GetAudioManager()->HasAudioInputDevices()) {
+    ShowErrorMessage(render_process_id, render_view_id,
+                     l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_NO_MIC));
+    delegate->DidCompleteRecognition(caller_id);
+    return;
+  }
+
   bubble_controller_->CreateBubble(caller_id, render_process_id,
                                    render_view_id, element_rect);
 
   recording_caller_id_ = caller_id;
-  scoped_refptr<SpeechRecognizer> recognizer(new SpeechRecognizer(this,
-                                                                  caller_id));
-  requests_[caller_id] = std::make_pair(delegate, recognizer);
-  recognizer->StartRecording();
+  SpeechInputRequest request;
+  request.delegate = delegate;
+  request.recognizer = new SpeechRecognizer(this, caller_id);
+  request.render_process_id = render_process_id;
+  request.render_view_id = render_view_id;
+  requests_[caller_id] = request;
+  request.recognizer->StartRecording();
 }
 
 void SpeechInputManagerImpl::CancelRecognition(int caller_id) {
@@ -145,6 +173,12 @@ void SpeechInputManagerImpl::DidCompleteRecognition(int caller_id) {
   bubble_controller_->CloseBubble(caller_id);
 }
 
+void SpeechInputManagerImpl::OnRecognizerError(int caller_id) {
+  const SpeechInputRequest& request = requests_.find(caller_id)->second;
+  ShowErrorMessage(request.render_process_id, request.render_view_id,
+                   l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_ERROR));
+}
+
 void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(int caller_id) {
   SpeechInputManagerDelegate* cur_delegate = GetDelegate(caller_id);
   CancelRecognition(caller_id);
@@ -173,6 +207,25 @@ void SpeechInputManagerImpl::SpeechInputFocusChanged(int caller_id) {
     if (recording_caller_id_ == caller_id)
       CancelRecognitionAndInformDelegate(caller_id);
   }
+}
+
+void SpeechInputManagerImpl::ShowErrorMessage(
+    int render_process_id, int render_view_id,
+    const string16& message) {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableFunction(&SpeechInputManagerImpl::ShowErrorMessageInUIThread,
+                          render_process_id, render_view_id, message));
+}
+
+void SpeechInputManagerImpl::ShowErrorMessageInUIThread(
+    int render_process_id, int render_view_id,
+    const string16& message) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  TabContents* tab = tab_util::GetTabContentsByID(render_process_id,
+                                                  render_view_id);
+  if (tab)  // Check in case the tab was closed before we got this request.
+    tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab, message, NULL, true));
 }
 
 }  // namespace speech_input

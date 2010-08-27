@@ -43,6 +43,11 @@ class SpeechRecognizer
     // sequence and the |SpeechRecognizer| object can be freed up if necessary.
     virtual void DidCompleteRecognition(int caller_id) = 0;
 
+    // Invoked if there was an error while recording or recognizing audio. The
+    // session may get terminated and the DidXxxx callbacks may be issued after
+    // this call.
+    virtual void OnRecognizerError(int caller_id) = 0;
+
    protected:
     virtual ~Delegate() {}
   };

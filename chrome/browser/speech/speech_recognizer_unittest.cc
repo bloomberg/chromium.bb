@@ -25,7 +25,11 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   SpeechRecognizerTest()
       : io_thread_(ChromeThread::IO, &message_loop_),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            recognizer_(new SpeechRecognizer(this, 1))) {
+            recognizer_(new SpeechRecognizer(this, 1))),
+        recording_complete_(false),
+        recognition_complete_(false),
+        result_received_(false),
+        error_(false) {
   }
 
   void StartTest() {
@@ -47,11 +51,12 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
     recognition_complete_ = true;
   }
 
+  virtual void OnRecognizerError(int caller_id) {
+    error_ = true;
+  }
+
   // testing::Test methods.
   virtual void SetUp() {
-    result_received_ = false;
-    recording_complete_ = false;
-    recognition_complete_ = false;
     URLFetcher::set_factory(&url_fetcher_factory_);
     AudioInputController::set_factory(&audio_input_controller_factory_);
   }
@@ -68,6 +73,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   bool recording_complete_;
   bool recognition_complete_;
   bool result_received_;
+  bool error_;
   TestURLFetcherFactory url_fetcher_factory_;
   TestAudioInputControllerFactory audio_input_controller_factory_;
 };
@@ -79,6 +85,7 @@ TEST_F(SpeechRecognizerTest, StopNoData) {
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
+  EXPECT_FALSE(error_);
 }
 
 TEST_F(SpeechRecognizerTest, CancelNoData) {
@@ -89,6 +96,7 @@ TEST_F(SpeechRecognizerTest, CancelNoData) {
   EXPECT_TRUE(recording_complete_);
   EXPECT_TRUE(recognition_complete_);
   EXPECT_FALSE(result_received_);
+  EXPECT_FALSE(error_);
 }
 
 TEST_F(SpeechRecognizerTest, StopWithData) {
@@ -108,6 +116,7 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   EXPECT_TRUE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
+  EXPECT_FALSE(error_);
 
   // Issue the network callback to complete the process.
   TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
@@ -118,6 +127,7 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
                                           status, 200, ResponseCookies(), "");
   EXPECT_TRUE(recognition_complete_);
   EXPECT_TRUE(result_received_);
+  EXPECT_FALSE(error_);
 }
 
 TEST_F(SpeechRecognizerTest, CancelWithData) {
@@ -136,6 +146,7 @@ TEST_F(SpeechRecognizerTest, CancelWithData) {
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
+  EXPECT_FALSE(error_);
 }
 
 TEST_F(SpeechRecognizerTest, AudioControllerErrorNoData) {
@@ -149,6 +160,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorNoData) {
   EXPECT_TRUE(recording_complete_);
   EXPECT_TRUE(recognition_complete_);
   EXPECT_FALSE(result_received_);
+  EXPECT_TRUE(error_);
 }
 
 TEST_F(SpeechRecognizerTest, AudioControllerErrorWithData) {
@@ -167,6 +179,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorWithData) {
   EXPECT_TRUE(recording_complete_);
   EXPECT_TRUE(recognition_complete_);
   EXPECT_FALSE(result_received_);
+  EXPECT_TRUE(error_);
 }
 
 }  // namespace speech_input
