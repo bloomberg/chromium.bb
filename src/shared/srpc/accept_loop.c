@@ -29,9 +29,19 @@ static pthread_mutex_t shutdown_wait_mu = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t shutdown_wait_cv = PTHREAD_COND_INITIALIZER;
 static int shutdown_done = 0;
 
+/*
+ * This is weak symbol and can be implemented in other places.
+ * posix_over_srpc library implements it since some internal actions
+ * of libposix_over_srpc should be performed when execution reaches __srpc_wait.
+ */
+extern void __srpc_wait_hook() __attribute__((weak));
+
 void __srpc_wait() {
   int       is_embedded;
 
+  if (__srpc_wait_hook) {
+    __srpc_wait_hook();
+  }
   is_embedded = (srpc_get_fd() != -1);
   if (is_embedded) {
     pthread_mutex_lock(&shutdown_wait_mu);
@@ -142,6 +152,18 @@ static void *srpc_default_acceptor(void *arg) {
 void __srpc_init() {
   pthread_t acceptor_tid;
   int       is_embedded;
+  static int init_done = 0;
+
+  /*
+   * In context of a browser __srpc_init() is invoked after _init() to make sure
+   * all global constructors have finished when we accept the first RPC. Other
+   * contexts may require SRPC be initialized before global constructors.
+   * Subsequent calls to __srpc_init() must execute as a noop.
+   */
+  if (init_done) {
+    return;
+  }
+  init_done = 1;
 
   is_embedded = (srpc_get_fd() != -1);
   if (is_embedded) {

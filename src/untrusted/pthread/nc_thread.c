@@ -511,6 +511,15 @@ int __pthread_shutdown() {
   return 0;
 }
 
+/*
+ * This is weak symbol and can be implemented in other places.
+ * posix_over_srpc library implements it since some internal actions
+ * of libposix_over_srpc should be performed when certain number of threads left
+ * and main thread of nacl module completed its execution.
+ */
+void __thread_exit_hook(int is_main_thread, int nthreads)
+    __attribute__((weak));
+
 void pthread_exit (void* retval) {
   /* get all we need from the tdb before releasing it */
   nc_thread_descriptor_t    *tdb = nc_get_tdb();
@@ -552,6 +561,16 @@ void pthread_exit (void* retval) {
 
   __newlib_thread_exit();
 
+  if (0 != thread_id) {
+    pthread_mutex_lock(&__nc_thread_management_lock);
+    --__nc_running_threads_counter;
+    pthread_mutex_unlock(&__nc_thread_management_lock);
+  }
+
+  if (__thread_exit_hook) {
+    __thread_exit_hook(0 == thread_id, __nc_running_threads_counter);
+  }
+
   if (0 == thread_id) {
     /* This is the main thread - wait for other threads to complete */
     __pthread_shutdown();
@@ -579,11 +598,6 @@ void pthread_exit (void* retval) {
 
   /* now add the stack to the list but keep it marked as used */
   nc_free_memory_block_mu(THREAD_STACK_MEMORY, stack_node);
-
-  --__nc_running_threads_counter;
-  /* TODO(gregoryd): is this synchronization enough? Main thread's
-   * pthread_exit can still complete before the last thread
-   */
 
   if (1 == __nc_running_threads_counter) {
     pthread_cond_signal(&__nc_last_thread_cond);
