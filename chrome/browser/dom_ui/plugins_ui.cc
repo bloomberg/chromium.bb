@@ -5,7 +5,6 @@
 #include "chrome/browser/dom_ui/plugins_ui.h"
 
 #include <algorithm>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -148,20 +147,6 @@ class PluginsDOMHandler : public DOMMessageHandler {
   void HandleShowTermsOfServiceMessage(const ListValue* args);
 
  private:
-  // Creates a dictionary containing all the information about the given plugin;
-  // this is put into the list to "return" for the "requestPluginsData" message.
-  DictionaryValue* CreatePluginDetailValue(
-      const WebPluginInfo& plugin,
-      const std::set<string16>& plugin_blacklist_set);
-
-  // Creates a dictionary containing the important parts of the information
-  // about the given plugin; this is put into a list and saved in prefs.
-  DictionaryValue* CreatePluginSummaryValue(const WebPluginInfo& plugin);
-
-  // Update the user preferences to reflect the current (user-selected) state of
-  // plugins.
-  void UpdatePreferences();
-
   DISALLOW_COPY_AND_ASSIGN(PluginsDOMHandler);
 };
 
@@ -175,10 +160,9 @@ void PluginsDOMHandler::RegisterMessages() {
 }
 
 void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
-  DictionaryValue* results = new DictionaryValue();
-  results->Set("plugins", plugin_updater::GetPluginGroupsData());
-
-  dom_ui_->CallJavascriptFunction(L"returnPluginsData", *results);
+  DictionaryValue results;
+  results.Set("plugins", plugin_updater::GetPluginGroupsData());
+  dom_ui_->CallJavascriptFunction(L"returnPluginsData", results);
 }
 
 void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {

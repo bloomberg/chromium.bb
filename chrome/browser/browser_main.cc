@@ -43,6 +43,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/jankometer.h"
+#include "chrome/browser/labs.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -1181,6 +1182,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
+
+  // Convert active labs into switches. Modifies the current command line.
+  about_labs::ConvertLabsToSwitches(profile, CommandLine::ForCurrentProcess());
 
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
