@@ -68,6 +68,15 @@ class BrowserMainPartsMac : public BrowserMainPartsPosix {
       : BrowserMainPartsPosix(parameters) {}
 
  protected:
+  virtual void PreEarlyInitialization() {
+    BrowserMainPartsPosix::PreEarlyInitialization();
+
+    if (mac_util::WasLaunchedAsHiddenLoginItem()) {
+      CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
+      singleton_command_line->AppendSwitch(switches::kNoStartupWindow);
+    }
+  }
+
   virtual void PreMainMessageLoopStart() {
     BrowserMainPartsPosix::PreMainMessageLoopStart();
 

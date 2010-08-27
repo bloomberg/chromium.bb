@@ -694,6 +694,11 @@ const char kMemoryCacheSize[] = "renderer.memory_cache.size";
 // apps are installed.
 const char kBackgroundModeEnabled[] = "background_mode.enabled";
 
+// Boolean that records if chrome has set "launch on startup" property for
+// itself earlier and is allowed to reset it later, reducing likelihood of
+// overriding user choices.
+const char kLaunchOnStartupResetAllowed[] = "launch_on_startup_reset_allowed";
+
 // String which specifies where to download files to by default.
 const char kDownloadDefaultDirectory[] = "download.default_directory";
 
