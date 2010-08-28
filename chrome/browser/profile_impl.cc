@@ -347,7 +347,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // ChromeOS because Chrome is always running (no need for special keep-alive
   // or launch-on-startup support).
 #if !defined(OS_CHROMEOS)
-  background_mode_manager_.reset(new BackgroundModeManager(this));
+  background_mode_manager_.reset(new BackgroundModeManager(this,
+      CommandLine::ForCurrentProcess()));
 #endif
 
   background_contents_service_.reset(
