@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/sha2.h"
+#include "base/string_util.h"
 #include "net/base/dns_util.h"
 
 // We don't have a location for the spec yet, so we'll include it here until it
@@ -595,6 +596,95 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::ReadCERTs(
   }
 
   return OK;
+}
+
+// static
+std::map<std::string, std::string>
+DNSSECChainVerifier::ParseTLSTXTRecord(base::StringPiece rrdata) {
+  std::map<std::string, std::string> ret;
+
+  if (rrdata.empty())
+    return ret;
+
+  std::string txt;
+  txt.reserve(rrdata.size());
+
+  // TXT records are a series of 8-bit length prefixed substrings that we
+  // concatenate into |txt|
+  while (!rrdata.empty()) {
+    unsigned len = rrdata[0];
+    if (len == 0 || len + 1 > rrdata.size())
+      return ret;
+    txt.append(rrdata.data() + 1, len);
+    rrdata.remove_prefix(len + 1);
+  }
+
+  // We append a space to |txt| to make the parsing code, below, cleaner.
+  txt.append(" ");
+
+  // RECORD = KV (' '+ KV)*
+  // KV = KEY '=' VALUE
+  // KEY = [a-zA-Z0-9]+
+  // VALUE = [^ \0]*
+
+  enum State {
+    STATE_KEY,
+    STATE_VALUE,
+    STATE_SPACE,
+  };
+
+  State state = STATE_KEY;
+
+  std::map<std::string, std::string> m;
+
+  unsigned start = 0;
+  std::string key;
+
+  for (unsigned i = 0; i < txt.size(); i++) {
+    char c = txt[i];
+    if (c == 0)
+      return ret;  // NUL values are never allowed.
+
+    switch (state) {
+      case STATE_KEY:
+        if (c == '=') {
+          if (i == start)
+            return ret;  // zero length keys are not allowed.
+          key = txt.substr(start, i - start);
+          start = i + 1;
+          state = STATE_VALUE;
+          continue;
+        }
+        if (!IsAsciiAlpha(c) && !IsAsciiDigit(c))
+          return ret;  // invalid key value
+        break;
+      case STATE_VALUE:
+        if (c == ' ') {
+          if (m.find(key) == m.end())
+            m.insert(make_pair(key, txt.substr(start, i - start)));
+          state = STATE_SPACE;
+          continue;
+        }
+        break;
+      case STATE_SPACE:
+        if (c != ' ') {
+          start = i;
+          i--;
+          state = STATE_KEY;
+          continue;
+        }
+        break;
+      default:
+        NOTREACHED();
+        return ret;
+    }
+  }
+
+  if (state != STATE_SPACE)
+    return ret;
+
+  ret.swap(m);
+  return ret;
 }
 
 // CountLabels returns the number of DNS labels in |a|, which must be in DNS,

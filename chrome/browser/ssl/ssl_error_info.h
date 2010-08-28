@@ -29,6 +29,7 @@ class SSLErrorInfo {
     CERT_REVOKED,
     CERT_INVALID,
     CERT_WEAK_SIGNATURE_ALGORITHM,
+    CERT_NOT_IN_DNS,
     UNKNOWN
   };
 

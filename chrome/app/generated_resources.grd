@@ -2525,6 +2525,19 @@ each locale. -->
         Server's certificate is signed using a weak signature algorithm
       </message>
 
+      <message name="IDS_CERT_ERROR_NOT_IN_DNS_TITLE" desc="Title of the error page for a certificate which was excluded by DNS data">
+        Unlisted Server Certificate
+      </message>
+      <message name="IDS_CERT_ERROR_NOT_IN_DNS_DESCRIPTION" desc="Description of the error for a certificate which was excluded by DNS data">
+        Server's certificate is not included in DNS
+      </message>
+      <message name="IDS_CERT_ERROR_NOT_IN_DNS_DETAILS" desc="Details of the error for a certificate which was excluded by DNS data">
+        This site lists all its valid certificates in DNS. However the server used one which isn't listed.
+      </message>
+      <message name="IDS_CERT_ERROR_NOT_IN_DNS_EXTRA_INFO" desc="Extra for when a certificate was excluded by DNS data">
+        This is an experimental scheme where by HTTPS certificates can be authenticated and rejected by (DNSSEC secured) DNS records. If you are seeing this message then you have enabled experiemental features using command line options. You can remove those command line options to ignore this error.
+      </message>
+
       <message name="IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE" desc="Title of the error page for an unknown ssl error">
         Unknown server certificate error
       </message>

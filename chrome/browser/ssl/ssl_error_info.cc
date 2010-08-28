@@ -167,6 +167,14 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           l10n_util::GetString(
               IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_EXTRA_INFO_2));
       break;
+    case CERT_NOT_IN_DNS:
+      title = l10n_util::GetString(IDS_CERT_ERROR_NOT_IN_DNS_TITLE);
+      details = l10n_util::GetString(IDS_CERT_ERROR_NOT_IN_DNS_DETAILS);
+      short_description = l10n_util::GetString(
+          IDS_CERT_ERROR_NOT_IN_DNS_DESCRIPTION);
+      extra_info.push_back(
+          l10n_util::GetString(IDS_CERT_ERROR_NOT_IN_DNS_EXTRA_INFO));
+      break;
     case UNKNOWN:
       title = l10n_util::GetString(IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE);
       details = l10n_util::GetString(IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS);
@@ -203,6 +211,8 @@ SSLErrorInfo::ErrorType SSLErrorInfo::NetErrorToErrorType(int net_error) {
       return CERT_INVALID;
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
       return CERT_WEAK_SIGNATURE_ALGORITHM;
+    case net::ERR_CERT_NOT_IN_DNS:
+      return CERT_NOT_IN_DNS;
     default:
       NOTREACHED();
       return UNKNOWN;

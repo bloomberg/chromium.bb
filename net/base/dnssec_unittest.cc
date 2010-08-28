@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
+#include "net/base/dns_util.h"
 #include "net/base/dnssec_chain_verifier.h"
 #include "net/base/dnssec_keyset.h"
-#include "net/base/dns_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -398,5 +400,90 @@ TEST(DNSSECChainVerifierTest, DISABLED_Fuzz) {
     net::DNSSECChainVerifier verifier(FromDNSName("dnssec-exp.org"), chain);
     verifier.IgnoreTimestamps();
     ASSERT_NE(net::DNSSECChainVerifier::OK, verifier.Verify());
+  }
+}
+
+// StringToTXTRecord takes a NUL terminated string and returns a valid TXT
+// RRDATA by prefixing an 8-bit length.
+static std::string StringToTXTRecord(const char* in) {
+  const unsigned len = strlen(in);
+  CHECK_LT(len, 256u);
+  std::string wrapped;
+  char l = len;
+  wrapped.append(&l, 1);
+  wrapped.append(in, len);
+  return wrapped;
+}
+
+TEST(DNSSECChainVerifierTest, BadTXT) {
+  static const char *const kBadTXTRecords[] = {
+    "",
+    " ",
+    " a=b",
+    "a=b \t",
+    "abc!=1",
+  };
+
+  for (unsigned i = 0; i < arraysize(kBadTXTRecords); i++) {
+    std::string wrapped(StringToTXTRecord(kBadTXTRecords[i]));
+    EXPECT_TRUE(net::DNSSECChainVerifier::ParseTLSTXTRecord(wrapped).empty());
+  }
+
+  EXPECT_TRUE(net::DNSSECChainVerifier::ParseTLSTXTRecord(
+        std::string("a=b\0", 4)).empty());
+}
+
+static bool MatchMap(const std::map<std::string, std::string>& m,
+                     const char* const* match) {
+  unsigned matched = 0;
+
+  for (unsigned i = 0; match[i]; i += 2) {
+    const char* key = match[i];
+    const char* value = match[i+1];
+    std::map<std::string, std::string>::const_iterator j;
+    j = m.find(key);
+    if (j == m.end())
+      return false;
+    if (j->second != value)
+      return false;
+    matched++;
+  }
+
+  if (m.size() != matched)
+    return false;
+  return true;
+}
+
+TEST(DNSSECChainVerifierTest, GoodTXT) {
+  // This array consists of a NULL terminated series of records. A record
+  // consists of a TXT string followed by a NULL terminated series of key,
+  // value pairs.
+  static const char *const kTXTRecords[] = {
+    "a=",
+    "a", "", NULL,
+
+    "a=b",
+    "a", "b", NULL,
+
+    "a=b c=",
+    "a", "b", "c", "", NULL,
+
+    "a=b a=c",
+    "a", "b", NULL,
+
+    "v=tls1 ha=sha1 h=<hexhash> sts=1",
+    "v", "tls1", "ha", "sha1", "h", "<hexhash>", "sts", "1", NULL,
+
+    NULL,
+  };
+
+  for (unsigned i = 0; kTXTRecords[i]; i++) {
+    std::string wrapped(StringToTXTRecord(kTXTRecords[i]));
+    std::map<std::string, std::string> m(
+        net::DNSSECChainVerifier::ParseTLSTXTRecord(wrapped));
+    ASSERT_FALSE(m.empty());
+    ASSERT_TRUE(MatchMap(m, &kTXTRecords[i+1]));
+    while (kTXTRecords[i])
+      i++;
   }
 }

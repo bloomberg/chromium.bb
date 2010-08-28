@@ -5,6 +5,7 @@
 #ifndef NET_BASE_DNSSEC_CHAIN_VERIFIER_H_
 #define NET_BASE_DNSSEC_CHAIN_VERIFIER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -53,6 +54,13 @@ class DNSSECChainVerifier {
   // rrdatas returns the contents of the proven resource records. Only call
   // this after Verify has returned OK.
   const std::vector<base::StringPiece>& rrdatas() const;
+
+  // ParseTLSTXTRecord parses a TXT record which should contain TLS fingerprint
+  // information.
+  //   rrdata: the raw TXT RRDATA from DNS
+  //   returns: an empty map on failure, or the result of the parse.
+  static std::map<std::string, std::string>
+  ParseTLSTXTRecord(base::StringPiece rrdata);
 
   // Exposed for testing only.
   static unsigned MatchingLabels(base::StringPiece a,
