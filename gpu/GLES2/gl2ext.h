@@ -896,6 +896,20 @@ typedef void* (GL_APIENTRYP PFNGLMAPTEXSUBIMAGE2D) (GLenum target, GLint level, 
 typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2D) (const void* mem);
 #endif
 
+/* GL_CHROMIUM_copy_texture_to_parent_texture */
+#ifndef GL_CHROMIUM_copy_texture_to_parent_texture
+#define GL_CHROMIUM_copy_texture_to_parent_texture 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glCopyTextureToParentTexture GLES2_GET_FUN(CopyTextureToParentTexture)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void* GL_APIENTRY glCopyTextureToParentTexture (GLuint id, GLuint id2);
+#endif
+#else
+typedef void* (GL_APIENTRYP PFNGLCOPYTEXTURETOPARENTTEXTURE) (GLuint id, GLuint id2);
+#endif
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif

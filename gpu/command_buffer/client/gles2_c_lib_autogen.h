@@ -550,6 +550,11 @@ void* GLES2MapTexSubImage2D(
 void GLES2UnmapTexSubImage2D(const void* mem) {
   gles2::GetGLContext()->UnmapTexSubImage2D(mem);
 }
+void GLES2CopyTextureToParentTexture(
+    GLuint client_child_id, GLuint client_parent_id) {
+  gles2::GetGLContext()->CopyTextureToParentTexture(
+      client_child_id, client_parent_id);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

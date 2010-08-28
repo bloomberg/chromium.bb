@@ -83,6 +83,9 @@ class Context : public base::SupportsWeakPtr<Context> {
     return parent_texture_id_;
   }
 
+  uint32 CreateParentTexture(const gfx::Size& size) const;
+  void DeleteParentTexture(uint32 texture) const;
+
   // Destroy all resources associated with the GGL context.
   void Destroy();
 
@@ -223,6 +226,48 @@ void Context::ResizeOffscreen(const gfx::Size& size) {
   command_buffer_->ResizeOffscreenFrameBuffer(size);
 }
 
+uint32 Context::CreateParentTexture(const gfx::Size& size) const {
+  // Allocate a texture ID with respect to the parent.
+  if (parent_.get()) {
+    if (!MakeCurrent(parent_.get()))
+      return 0;
+    uint32 texture_id = parent_->gles2_implementation_->MakeTextureId();
+    parent_->gles2_implementation_->BindTexture(GL_TEXTURE_2D, texture_id);
+    parent_->gles2_implementation_->TexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    parent_->gles2_implementation_->TexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    parent_->gles2_implementation_->TexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    parent_->gles2_implementation_->TexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    parent_->gles2_implementation_->TexImage2D(GL_TEXTURE_2D,
+        0,  // mip level
+        GL_RGBA,
+        size.width(),
+        size.height(),
+        0,  // border
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL);
+    // Make sure that the parent texture's storage is allocated before we let
+    // the caller attempt to use it.
+    int32 token = parent_->gles2_helper_->InsertToken();
+    parent_->gles2_helper_->WaitForToken(token);
+    return texture_id;
+  }
+  return 0;
+}
+
+void Context::DeleteParentTexture(uint32 texture) const {
+  if (parent_.get()) {
+    if (!MakeCurrent(parent_.get()))
+      return;
+    parent_->gles2_implementation_->DeleteTextures(1, &texture);
+  }
+}
+
 void Context::Destroy() {
   if (parent_.get() && parent_texture_id_ != 0)
     parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
@@ -345,6 +390,20 @@ uint32 GetParentTextureId(Context* context) {
   return context->parent_texture_id();
 #else
   return 0;
+#endif
+}
+
+uint32 CreateParentTexture(Context* context, const gfx::Size& size) {
+#if defined(ENABLE_GPU)
+  return context->CreateParentTexture(size);
+#else
+  return 0;
+#endif
+}
+
+void DeleteParentTexture(Context* context, uint32 texture) {
+#if defined(ENABLE_GPU)
+  context->DeleteParentTexture(texture);
 #endif
 }
 

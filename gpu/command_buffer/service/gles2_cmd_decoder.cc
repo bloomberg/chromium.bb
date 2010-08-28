@@ -1057,6 +1057,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glValidateProgram.
   void DoValidateProgram(GLuint program_client_id);
 
+  void DoCopyTextureToParentTexture(GLuint client_texture_id, GLuint parent_client_texture_id);
+
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
@@ -1259,6 +1261,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<RenderBuffer> offscreen_target_depth_render_buffer_;
   scoped_ptr<RenderBuffer> offscreen_target_stencil_render_buffer_;
 
+  GLuint copy_texture_to_parent_texture_fb_;
+
   // The copy that is saved when SwapBuffers is called.
   scoped_ptr<Texture> offscreen_saved_color_texture_;
 
@@ -1266,6 +1270,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // The last error message set.
   std::string last_error_;
+
+  // The current decoder error.
+  error::Error current_decoder_error_;
 
   bool use_shader_translator_;
   ShHandle vertex_compiler_;
@@ -1529,6 +1536,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       mask_depth_(true),
       enable_scissor_test_(false),
       anti_aliased_(false),
+      current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
       vertex_compiler_(NULL),
       fragment_compiler_(NULL),
@@ -1656,6 +1664,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     // Bind to the new default frame buffer (the offscreen target frame buffer).
     // This should now be associated with ID zero.
     DoBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glGenFramebuffersEXT(1, &copy_texture_to_parent_texture_fb_);
   }
 
   // OpenGL ES 2.0 implicitly enables the desktop GL capability
@@ -2108,6 +2118,8 @@ void GLES2DecoderImpl::Destroy() {
       if (parent_->texture_manager()->GetClientId(service_id, &client_id)) {
         parent_->texture_manager()->RemoveTextureInfo(client_id);
       }
+
+      glDeleteFramebuffersEXT(1, &copy_texture_to_parent_texture_fb_);
     }
 
     if (offscreen_target_frame_buffer_.get()) {
@@ -2150,6 +2162,33 @@ void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   // partial frame rendered into them and we don't want the tail end of that
   // rendered into the reallocated storage. Defer until the next SwapBuffers.
   pending_offscreen_size_ = size;
+}
+
+void GLES2DecoderImpl::DoCopyTextureToParentTexture(GLuint client_texture_id, GLuint parent_client_texture_id) {
+  if (parent_) {
+    TextureManager::TextureInfo* texture = texture_manager()->GetTextureInfo(client_texture_id);
+    TextureManager::TextureInfo* parent_texture = parent_->texture_manager()->GetTextureInfo(parent_client_texture_id);
+    if (!texture || !parent_texture) {
+      current_decoder_error_ = error::kInvalidArguments;
+      return;
+    }
+    ScopedFrameBufferBinder fb_binder(this, copy_texture_to_parent_texture_fb_);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
+                              GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D,
+                              texture->service_id(),
+                              0);
+    ScopedTexture2DBinder tex_binder(this, parent_texture->service_id());
+    GLsizei width, height;
+    parent_texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height);
+    glCopyTexImage2D(GL_TEXTURE_2D,
+                     0,  // level
+                     GL_RGBA,
+                     0, 0, // x, y
+                     width,
+                     height,
+                     0);  // border
+  }
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
@@ -2205,6 +2244,10 @@ error::Error GLES2DecoderImpl::DoCommand(
     }
   } else {
     result = DoCommonCommand(command, arg_count, cmd_data);
+  }
+  if (result == error::kNoError && current_decoder_error_ != error::kNoError) {
+      result = current_decoder_error_;
+      current_decoder_error_ = error::kNoError;
   }
   return result;
 }

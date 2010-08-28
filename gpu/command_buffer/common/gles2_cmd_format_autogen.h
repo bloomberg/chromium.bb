@@ -8755,6 +8755,44 @@ COMPILE_ASSERT(offsetof(CommandBufferEnable, result_shm_id) == 8,
 COMPILE_ASSERT(offsetof(CommandBufferEnable, result_shm_offset) == 12,
                OffsetOf_CommandBufferEnable_result_shm_offset_not_12);
 
+struct CopyTextureToParentTexture {
+  typedef CopyTextureToParentTexture ValueType;
+  static const CommandId kCmdId = kCopyTextureToParentTexture;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _client_child_id, GLuint _client_parent_id) {
+    SetHeader();
+    client_child_id = _client_child_id;
+    client_parent_id = _client_parent_id;
+  }
+
+  void* Set(void* cmd, GLuint _client_child_id, GLuint _client_parent_id) {
+    static_cast<ValueType*>(cmd)->Init(_client_child_id, _client_parent_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 client_child_id;
+  uint32 client_parent_id;
+};
+
+COMPILE_ASSERT(sizeof(CopyTextureToParentTexture) == 12,
+               Sizeof_CopyTextureToParentTexture_is_not_12);
+COMPILE_ASSERT(offsetof(CopyTextureToParentTexture, header) == 0,
+               OffsetOf_CopyTextureToParentTexture_header_not_0);
+COMPILE_ASSERT(offsetof(CopyTextureToParentTexture, client_child_id) == 4,
+               OffsetOf_CopyTextureToParentTexture_client_child_id_not_4);
+COMPILE_ASSERT(offsetof(CopyTextureToParentTexture, client_parent_id) == 8,
+               OffsetOf_CopyTextureToParentTexture_client_parent_id_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

@@ -1186,5 +1186,12 @@
     c.Init(bucket_id, result_shm_id, result_shm_offset);
   }
 
+  void CopyTextureToParentTexture(
+      GLuint client_child_id, GLuint client_parent_id) {
+    gles2::CopyTextureToParentTexture& c =
+        GetCmdSpace<gles2::CopyTextureToParentTexture>();
+    c.Init(client_child_id, client_parent_id);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

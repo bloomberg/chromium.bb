@@ -341,6 +341,11 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void synthesizeGLError(unsigned long error);
   virtual bool supportsBGRA();
 
+  virtual unsigned createCompositorTexture(unsigned width, unsigned height);
+  virtual void deleteCompositorTexture(unsigned parent_texture);
+  virtual void copyTextureToCompositor(unsigned texture,
+                                       unsigned parent_texture);
+
  private:
   // The GGL context we use for OpenGL rendering.
   ggl::Context* context_;

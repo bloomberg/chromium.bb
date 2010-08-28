@@ -2814,5 +2814,13 @@ error::Error GLES2DecoderImpl::HandleGetMaxValueInBuffer(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleCopyTextureToParentTexture(
+    uint32 immediate_data_size, const gles2::CopyTextureToParentTexture& c) {
+  GLuint client_child_id = c.client_child_id;
+  GLuint client_parent_id = c.client_parent_id;
+  DoCopyTextureToParentTexture(client_child_id, client_parent_id);
+  return error::kNoError;
+}
+
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

@@ -87,6 +87,13 @@ void ResizeOffscreenContext(Context* context, const gfx::Size& size);
 // parent.
 uint32 GetParentTextureId(Context* context);
 
+// Create a new texture in the parent's context.  Returns zero if context
+// does not have a parent.
+uint32 CreateParentTexture(Context* context, const gfx::Size& size);
+
+// Deletes a texture in the parent's context.
+void DeleteParentTexture(Context* context, uint32 texture);
+
 // Provides a callback that will be invoked when SwapBuffers has completed
 // service side.
 void SetSwapBuffersCallback(Context* context,

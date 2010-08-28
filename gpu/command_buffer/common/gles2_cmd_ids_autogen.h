@@ -199,6 +199,7 @@
   OP(CompressedTexSubImage2DBucket)                            /* 444 */ \
   OP(RenderbufferStorageMultisampleEXT)                        /* 445 */ \
   OP(BlitFramebufferEXT)                                       /* 446 */ \
+  OP(CopyTextureToParentTexture)                               /* 447 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

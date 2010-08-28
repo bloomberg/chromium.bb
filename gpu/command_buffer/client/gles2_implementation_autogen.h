@@ -832,5 +832,10 @@ void* MapTexSubImage2D(
 
 void UnmapTexSubImage2D(const void* mem);
 
+void CopyTextureToParentTexture(
+    GLuint client_child_id, GLuint client_parent_id) {
+  helper_->CopyTextureToParentTexture(client_child_id, client_parent_id);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

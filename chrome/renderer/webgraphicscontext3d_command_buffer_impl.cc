@@ -7,6 +7,10 @@
 #include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
 
 #include <GLES2/gl2.h>
+#ifndef GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES 1
+#endif
+#include <GLES2/gl2ext.h>
 
 #include <algorithm>
 
@@ -144,6 +148,18 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scanline_.reset(new uint8[width * 4]);
 #endif  // FLIP_FRAMEBUFFER_VERTICALLY
+}
+
+unsigned WebGraphicsContext3DCommandBufferImpl::createCompositorTexture(
+    unsigned width, unsigned height) {
+  makeContextCurrent();
+  return ggl::CreateParentTexture(context_, gfx::Size(width, height));
+}
+
+void WebGraphicsContext3DCommandBufferImpl::deleteCompositorTexture(
+    unsigned parent_texture) {
+  makeContextCurrent();
+  ggl::DeleteParentTexture(context_, parent_texture);
 }
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
@@ -869,6 +885,13 @@ void WebGraphicsContext3DCommandBufferImpl::deleteShader(unsigned shader) {
 void WebGraphicsContext3DCommandBufferImpl::deleteTexture(unsigned texture) {
   makeContextCurrent();
   glDeleteTextures(1, &texture);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::copyTextureToCompositor(
+    unsigned texture, unsigned parentTexture) {
+  makeContextCurrent();
+  glCopyTextureToParentTexture(texture, parentTexture);
+  glFlush();
 }
 
 #endif  // defined(ENABLE_GPU)
