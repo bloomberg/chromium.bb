@@ -62,7 +62,7 @@ class RegKey {
   bool ReadValueDW(const wchar_t* name, DWORD* value);
 
   bool WriteValue(const wchar_t* name, const void* data, DWORD dsize,
-                  DWORD dtype = REG_BINARY);
+                  DWORD dtype);
   bool WriteValue(const wchar_t* name, const wchar_t* value);
   bool WriteValue(const wchar_t* name, DWORD value);
 
