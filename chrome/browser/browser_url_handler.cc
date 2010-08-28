@@ -60,7 +60,7 @@ static bool ReverseViewSource(GURL* url, Profile* profile) {
 
 // Handles rewriting DOM UI URLs.
 static bool HandleDOMUI(GURL* url, Profile* profile) {
-  if (!DOMUIFactory::UseDOMUIForURL(profile, *url))
+  if (!DOMUIFactory::UseDOMUIForURL(*url))
     return false;
 
   // Special case the new tab page. In older versions of Chrome, the new tab

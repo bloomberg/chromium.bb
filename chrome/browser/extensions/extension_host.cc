@@ -513,8 +513,7 @@ void ExtensionHost::CreateNewWindow(
       route_id,
       render_view_host()->process()->profile(),
       site_instance(),
-      DOMUIFactory::GetDOMUIType(render_view_host()->process()->profile(),
-          url_),
+      DOMUIFactory::GetDOMUIType(url_),
       this,
       window_container_type,
       frame_name);

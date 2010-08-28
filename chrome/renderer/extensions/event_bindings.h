@@ -22,8 +22,6 @@ class WebFrame;
 class EventBindings {
  public:
   static const char* kName;  // The v8::Extension name, for dependencies.
-  static const char* kTestingExtensionId;
-
   static v8::Extension* Get();
 
   // Allow RenderThread to be mocked out.

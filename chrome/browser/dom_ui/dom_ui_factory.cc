@@ -55,14 +55,14 @@ DOMUI* NewDOMUI(TabContents* contents, const GURL& url) {
 // Special case for extensions.
 template<>
 DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
-  // Don't use a DOMUI for incognito tabs because we require extensions to run
-  // within a single process.
+  // Don't use a DOMUI for non-existent extensions or for incognito tabs. The
+  // latter restriction is because we require extensions to run within a single
+  // process.
   ExtensionsService* service = contents->profile()->GetExtensionsService();
-  if (service &&
-      service->ExtensionBindingsAllowed(url) &&
-      !contents->profile()->IsOffTheRecord()) {
+  bool valid_extension =
+      (service && service->GetExtensionById(url.host(), false));
+  if (valid_extension && !contents->profile()->IsOffTheRecord())
     return new ExtensionDOMUI(contents);
-  }
   return NULL;
 }
 
@@ -70,14 +70,12 @@ DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
 // tab, based on its URL. Returns NULL if the URL doesn't have DOMUI associated
 // with it. Even if the factory function is valid, it may yield a NULL DOMUI
 // when invoked for a particular tab - see NewDOMUI<ExtensionDOMUI>.
-static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
-    const GURL& url) {
+static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
   // Currently, any gears: URL means an HTML dialog.
   if (url.SchemeIs(chrome::kGearsScheme))
     return &NewDOMUI<HtmlDialogUI>;
 
-  ExtensionsService* service = profile->GetExtensionsService();
-  if (service && service->ExtensionBindingsAllowed(url))
+  if (url.SchemeIs(chrome::kExtensionScheme))
     return &NewDOMUI<ExtensionDOMUI>;
 
   // All platform builds of Chrome will need to have a cloud printing
@@ -161,8 +159,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
 }
 
 // static
-DOMUITypeID DOMUIFactory::GetDOMUIType(Profile* profile, const GURL& url) {
-  DOMUIFactoryFunction function = GetDOMUIFactoryFunction(profile, url);
+DOMUITypeID DOMUIFactory::GetDOMUIType(const GURL& url) {
+  DOMUIFactoryFunction function = GetDOMUIFactoryFunction(url);
   return function ? reinterpret_cast<DOMUITypeID>(function) : kNoDOMUI;
 }
 
@@ -174,15 +172,14 @@ bool DOMUIFactory::HasDOMUIScheme(const GURL& url) {
 }
 
 // static
-bool DOMUIFactory::UseDOMUIForURL(Profile* profile, const GURL& url) {
-  return GetDOMUIFactoryFunction(profile, url) != NULL;
+bool DOMUIFactory::UseDOMUIForURL(const GURL& url) {
+  return GetDOMUIFactoryFunction(url) != NULL;
 }
 
 // static
 DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
                                        const GURL& url) {
-  DOMUIFactoryFunction function = GetDOMUIFactoryFunction(
-      tab_contents->profile(), url);
+  DOMUIFactoryFunction function = GetDOMUIFactoryFunction(url);
   if (!function)
     return NULL;
   return (*function)(tab_contents, url);

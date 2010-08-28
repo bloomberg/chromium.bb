@@ -56,6 +56,7 @@ class MockRenderThread : public RenderThreadBase {
   virtual bool IsExtensionProcess() const { return is_extension_process_; }
   void SetExtensionProcess(bool value) { is_extension_process_ = value; }
 
+
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
 
