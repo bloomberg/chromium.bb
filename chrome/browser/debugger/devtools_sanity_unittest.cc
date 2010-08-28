@@ -360,7 +360,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests that scope can be expanded and contains expected variables.
 // TODO(japhet): Disabled during webkit landing per bug http://crbug.com/52085
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestExpandScope) {
+// Failing: http://crbug.com/53664
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestExpandScope) {
   RunTest("testExpandScope", kDebuggerClosurePage);
 }
 
