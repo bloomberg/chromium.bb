@@ -91,7 +91,7 @@ LocationBarView::LocationBarView(Profile* profile,
       star_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
-      bubble_type_(FirstRun::MINIMALBUBBLE),
+      bubble_type_(FirstRun::MINIMAL_BUBBLE),
       template_url_model_(NULL) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
