@@ -417,6 +417,12 @@ const struct {
    "application/x-tar",
    L"foo.tar.gz"},
 
+  // Issue=52250.
+  {"",
+   "http://www.example.com/foo.tgz",
+   "application/x-tar",
+   L"foo.tgz"},
+
   // Issue=7337.
   {"",
    "http://maged.lordaeron.org/blank.reg",
