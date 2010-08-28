@@ -47,6 +47,8 @@ struct dnd {
 
 	struct wl_buffer *buffer;
 	int hotspot_x, hotspot_y;
+	uint32_t tag;
+	const char *drag_type;
 };
 
 struct item {
@@ -221,9 +223,20 @@ drag_pointer_focus(void *data,
 		   uint32_t time, struct wl_surface *surface,
 		   int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
 {
+	struct dnd *dnd = data;
+
+	/* FIXME: We need the offered types before we get the
+	 * pointer_focus event so we know which one we want and can
+	 * send the accept request back. */
+
 	fprintf(stderr, "drag pointer focus %p\n", surface);
 
-	wl_drag_accept(drag, "text/plain");
+	if (surface) {
+		wl_drag_accept(drag, "text/plain");
+		dnd->drag_type = "text/plain";
+	} else {
+		dnd->drag_type = NULL;
+	}
 }
 
 static void
@@ -239,13 +252,14 @@ drag_motion(void *data,
 	    uint32_t time,
 	    int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
 {
-	fprintf(stderr, "drag motion %d,%d\n", surface_x, surface_y);
+	struct dnd *dnd = data;
 
 	/* FIXME: Need to correlate this with the offer event.
 	 * Problem is, we don't know when we've seen that last offer
 	 * event, and we might need to look at all of them before we
 	 * can decide which one to go with. */
 	wl_drag_accept(drag, "text/plain");
+	dnd->drag_type = "text/plain";
 }
 
 static void
@@ -256,32 +270,63 @@ drag_target(void *data,
 	struct input *input;
 	struct wl_input_device *device;
 
-	fprintf(stderr, "target %s\n", mime_type);
-
 	input = wl_drag_get_user_data(drag);
 	device = input_get_input_device(input);
 	wl_input_device_attach(device, dnd->buffer,
 			       dnd->hotspot_x, dnd->hotspot_y);
 }
 
-static void
-drag_finish(void *data, struct wl_drag *drag)
+static gboolean
+drop_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-	fprintf(stderr, "drag finish\n");
-	struct wl_array a;
-	char text[] = "[drop data]";
+	struct dnd *dnd = data;
+	char buffer[256];
+	int fd;
+	unsigned int len;
+	GError *err = NULL;
 
-	a.data = text;
-	a.size = sizeof text;
+	g_io_channel_read_chars(source, buffer, sizeof buffer, &len, &err);
+	fprintf(stderr, "read %d bytes: %s\n", len, buffer);
+	fd = g_io_channel_unix_get_fd(source);
+	close(fd);
+	g_source_remove(dnd->tag);
 
-	wl_drag_send(drag, &a);
+	g_io_channel_unref(source);
+
+	return TRUE;
 }
 
 static void
-drag_data(void *data,
-	  struct wl_drag *drag, struct wl_array *contents)
+drag_drop(void *data, struct wl_drag *drag)
 {
-	fprintf(stderr, "drag drop, data %s\n", (char *) contents->data);
+	struct dnd *dnd = data;
+	int p[2];
+	GIOChannel *channel;
+
+	if (!dnd->drag_type) {
+		fprintf(stderr, "got 'drop', but no target\n");
+		return;
+	}
+
+	fprintf(stderr, "got 'drop', sending write end of pipe\n");
+
+	pipe(p);
+	wl_drag_receive(drag, p[1]);
+	close(p[1]);
+
+	channel = g_io_channel_unix_new(p[0]);
+	dnd->tag = g_io_add_watch(channel, G_IO_IN, drop_io_func, dnd);
+}
+
+static void
+drag_finish(void *data, struct wl_drag *drag, int fd)
+{
+	char text[] = "[drop data]";
+
+	fprintf(stderr, "got 'finish', fd %d, sending message\n", fd);
+
+	write(fd, text, sizeof text);
+	close(fd);
 }
 
 static const struct wl_drag_listener drag_listener = {
@@ -290,8 +335,8 @@ static const struct wl_drag_listener drag_listener = {
 	drag_offer,
 	drag_motion,
 	drag_target,
-	drag_finish,
-	drag_data
+	drag_drop,
+	drag_finish
 };
 
 static void

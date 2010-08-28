@@ -115,15 +115,17 @@
     <!-- Cancel the drag. -->
     <request name="cancel"/>
 
-    <!-- Send the data to the target that accepted the offer -->
-    <request name="send">
-      <arg name="contents" type="array"/>
-    </request>
-
     <!-- Called by the drag target to accept the offer of the given
          type -->
     <request name="accept">
       <arg name="type" type="string"/>
+    </request>
+
+    <!-- Called by the drag target to initiate the drag finish
+         sequence.  Send the pipe fd to the compositor, which forwards
+         it to the source in the 'finish' event -->
+    <request name="receive">
+      <arg name="fd" type="fd"/>
     </request>
 
     <!-- Sent at connect time to announce the association -->
@@ -167,18 +169,23 @@
       <arg name="mime_type" type="string"/>
     </event>
 
-    <!-- Sent to drag originator when the drag is finished.  It's also
-	 sent in case an originator tries to activate a drag after the
-	 grab was released.  If the originator didn't receive a
-	 'target' event before receiving the 'finish' event, no drag
-	 target was found and the originator should not send data. -->
-    <event name="finish"/>
+    <!-- Sent to target, to indicate that the drag is finishing.  The
+         last motion/pointer_focus event gives the location of the
+         drop.  Target must respond with the 'receive' request, which
+         sends an fd to the source for writing the drag data. -->
+    <event name="drop"/>
 
-    <!-- Sent to target, contains dragged data.  Ends transaction on
-	 the target side. -->
-    <event name="drop">
-      <arg name="contents" type="array"/>
+    <!-- Sent to drag source when the drag is finished.  The final
+         mime type is that of the last target event.  If that was
+         NULL, no drag target was valid when the drag finished, fd is
+         undefined and the source should not send data.  The event is
+         also sent in case a drag source tries to activate a drag
+         after the grab was released, in which case mime_type will
+         also be NULL. -->
+    <event name="finish">
+      <arg name="fd" type="fd"/>
     </event>
+
   </interface>
 
   <interface name="surface" version="1">

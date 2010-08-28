@@ -823,9 +823,10 @@ wlsc_input_device_end_grab(struct wlsc_input_device *device, uint32_t time)
 
 	switch (device->grab) {
 	case WLSC_DEVICE_GRAB_DRAG:
+		if (drag->target)
+			wl_client_post_event(drag->target,
+					     &drag->base, WL_DRAG_DROP);
 		wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);
-		wl_surface_post_event(drag->source, &drag->base,
-				      WL_DRAG_FINISH);
 		wl_drag_reset(drag);
 		break;
 	default:
@@ -1030,6 +1031,7 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 
 
 	drag->pointer_focus = &surface->base;
+	drag->target = NULL;
 }
 
 static void
@@ -1043,12 +1045,12 @@ wl_drag_reset(struct wl_drag *drag)
 	wl_array_release(&drag->types);
 	wl_array_init(&drag->types);
 
-	drag->source = NULL;
-
 	/* FIXME: We need to reset drag->target too, but can't right
 	 * now because we need it for send/drop.
 	 *
-	 * drag->target = NULL; */
+	 * drag->target = NULL;
+	 * drag->source = NULL;
+	 */
 	drag->time = 0;
 	drag->pointer_focus = NULL;
 }
@@ -1132,14 +1134,6 @@ drag_cancel(struct wl_client *client, struct wl_drag *drag)
 }
 
 static void
-drag_send(struct wl_client *client,
-	  struct wl_drag *drag, struct wl_array *contents)
-{
-	wl_client_post_event(drag->target,
-			     &drag->base, WL_DRAG_DROP, contents);
-}
-
-static void
 drag_accept(struct wl_client *client,
 	    struct wl_drag *drag, const char *type)
 {
@@ -1181,13 +1175,21 @@ drag_accept(struct wl_client *client,
 			      WL_DRAG_TARGET, drag->type);
 }
 
+static void
+drag_receive(struct wl_client *client,
+	     struct wl_drag *drag, int fd)
+{
+	wl_surface_post_event(drag->source, &drag->base, WL_DRAG_FINISH, fd);
+	close(fd);
+}
+
 static const struct wl_drag_interface drag_interface = {
 	drag_prepare,
 	drag_offer,
 	drag_activate,
 	drag_cancel,
-	drag_send,
-	drag_accept
+	drag_accept,
+	drag_receive
 };
 
 static void

@@ -1120,13 +1120,12 @@ drag_target(void *data,
 }
 
 static void
-drag_finish(void *data, struct wl_drag *drag)
+drag_drop(void *data, struct wl_drag *drag)
 {
 }
 
 static void
-drag_data(void *data,
-	  struct wl_drag *drag, struct wl_array *contents)
+drag_finish(void *data, struct wl_drag *drag, int fd)
 {
 }
 
@@ -1136,8 +1135,8 @@ static const struct wl_drag_listener drag_listener = {
 	drag_offer,
 	drag_motion,
 	drag_target,
-	drag_finish,
-	drag_data
+	drag_drop,
+	drag_finish
 };
 
 static void
