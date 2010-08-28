@@ -50,7 +50,8 @@ function onLoaded() {
 
   // Create a view which will display info on the proxy setup.
   var proxyView = new ProxyView("proxyTabContent",
-                                "proxyCurrentConfig",
+                                "proxyOriginalSettings",
+                                "proxyEffectiveSettings",
                                 "proxyReloadSettings",
                                 "badProxiesTableBody",
                                 "clearBadProxies");
@@ -320,7 +321,17 @@ BrowserBridge.prototype.addLogObserver = function(observer) {
  *
  *   observer.onProxySettingsChanged(proxySettings)
  *
- * |proxySettings| is a formatted string describing the settings.
+ * |proxySettings| is a dictionary with (up to) two properties:
+ *
+ *   "original"  -- The settings that chrome was configured to use
+ *                  (i.e. system settings.)
+ *   "effective" -- The "effective" proxy settings that chrome is using.
+ *                  (decides between the manual/automatic modes of the
+ *                  fetched settings).
+ *
+ * Each of these two configurations is formatted as a string, and may be
+ * omitted if not yet initialized.
+ *
  * TODO(eroman): send a dictionary instead.
  */
 BrowserBridge.prototype.addProxySettingsObserver = function(observer) {

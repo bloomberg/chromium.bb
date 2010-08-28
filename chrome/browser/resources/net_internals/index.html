@@ -42,9 +42,25 @@ found in the LICENSE file.
     <div id=proxyTabContent>
       <h4>
         Current proxy settings
-        <input type=button value="Reload settings" id=proxyReloadSettings />
+        <input type=button value="Re-apply settings" id=proxyReloadSettings />
       </h4>
-      <pre id=proxyCurrentConfig></pre>
+
+      <table><tr>
+
+      <td valign=top>
+      <h3>Effective settings</h3>
+      <pre id=proxyEffectiveSettings></pre>
+      </pre>
+      </td>
+
+      <td style='width: 30px'>&nbsp;</td>
+
+      <td valign=top>
+      <h3>Original settings</h3>
+      <pre id=proxyOriginalSettings></pre>
+      </td>
+
+      </tr></table>
 
       <h4>
         Proxies which have failed recently, and are marked as bad

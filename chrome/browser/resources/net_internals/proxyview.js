@@ -13,14 +13,17 @@
  *  @constructor
  */
 function ProxyView(mainBoxId,
-                   currentConfigDivId,
+                   originalSettingsDivId,
+                   effectiveSettingsDivId,
                    reloadSettingsButtonId,
                    badProxiesTbodyId,
                    clearBadProxiesButtonId) {
   DivView.call(this, mainBoxId);
 
   // Hook up the UI components.
-  this.currentConfigDiv_ = document.getElementById(currentConfigDivId);
+  this.originalSettingsDiv_ = document.getElementById(originalSettingsDivId);
+  this.effectiveSettingsDiv_ =
+      document.getElementById(effectiveSettingsDivId);
   this.badProxiesTbody_ = document.getElementById(badProxiesTbodyId);
 
   var reloadSettingsButton = document.getElementById(reloadSettingsButtonId);
@@ -38,9 +41,16 @@ function ProxyView(mainBoxId,
 inherits(ProxyView, DivView);
 
 ProxyView.prototype.onProxySettingsChanged = function(proxySettings) {
-  // |proxySettings| is a formatted string describing the settings.
-  this.currentConfigDiv_.innerHTML = ''
-  addTextNode(this.currentConfigDiv_, proxySettings);
+  var original = proxySettings.original;
+  var effective = proxySettings.effective;
+
+  // Both |original| and |effective| are formatted strings describing the
+  // settings.
+  this.originalSettingsDiv_.innerHTML = ''
+  this.effectiveSettingsDiv_.innerHTML = ''
+
+  addTextNode(this.originalSettingsDiv_, original);
+  addTextNode(this.effectiveSettingsDiv_, effective);
 };
 
 ProxyView.prototype.onBadProxiesChanged = function(badProxies) {

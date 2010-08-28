@@ -177,7 +177,7 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   TestCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher, &log);
-  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), &callback));
+  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.text(), resolver.script_data()->utf16());
 
   // Check the NetLog was filled correctly.
@@ -211,7 +211,7 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(kFailedDownloading,
-            init.Init(config, base::TimeDelta(), &callback));
+            init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
 
   // Check the NetLog was filled correctly.
@@ -239,7 +239,8 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
-  EXPECT_EQ(kFailedParsing, init.Init(config, base::TimeDelta(), &callback));
+  EXPECT_EQ(kFailedParsing,
+            init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
 }
 
@@ -253,7 +254,8 @@ TEST(InitProxyResolverTest, HasNullProxyScriptFetcher) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, NULL, NULL);
-  EXPECT_EQ(ERR_UNEXPECTED, init.Init(config, base::TimeDelta(), &callback));
+  EXPECT_EQ(ERR_UNEXPECTED,
+            init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
 }
 
@@ -270,7 +272,7 @@ TEST(InitProxyResolverTest, AutodetectSuccess) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
-  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), &callback));
+  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.text(), resolver.script_data()->utf16());
 }
 
@@ -289,7 +291,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess1) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
-  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), &callback));
+  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.text(), resolver.script_data()->utf16());
 }
 
@@ -302,15 +304,24 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   ProxyConfig config;
   config.set_auto_detect(true);
   config.set_pac_url(GURL("http://custom/proxy.pac"));
+  config.proxy_rules().ParseFromString("unused-manual-proxy:99");
 
   rules.AddFailParsingRule("http://wpad/wpad.dat");
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
+
+  ProxyConfig effective_config;
   InitProxyResolver init(&resolver, &fetcher, &log);
-  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), &callback));
+  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(),
+                          &effective_config, &callback));
   EXPECT_EQ(rule.text(), resolver.script_data()->utf16());
+
+  // Verify that the effective configuration no longer contains auto detect or
+  // any of the manual settings.
+  EXPECT_TRUE(effective_config.Equals(
+      ProxyConfig::CreateFromCustomPacURL(GURL("http://custom/proxy.pac"))));
 
   // Check the NetLog was filled correctly.
   // (Note that the Fetch and Set states are repeated since both WPAD and custom
@@ -358,7 +369,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails1) {
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(kFailedDownloading,
-            init.Init(config, base::TimeDelta(), &callback));
+            init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
 }
 
@@ -377,7 +388,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails2) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
-  EXPECT_EQ(kFailedParsing, init.Init(config, base::TimeDelta(), &callback));
+  EXPECT_EQ(kFailedParsing,
+            init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
 }
 
@@ -398,7 +410,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2_NoFetch) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
-  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), &callback));
+  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.url, resolver.script_data()->url());
 }
 
@@ -420,7 +432,7 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithPositiveDelay) {
   InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(ERR_IO_PENDING,
             init.Init(config, base::TimeDelta::FromMilliseconds(1),
-                      &callback));
+                      NULL, &callback));
 
   EXPECT_EQ(kFailedDownloading, callback.WaitForResult());
   EXPECT_EQ(NULL, resolver.script_data());
@@ -458,7 +470,8 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithNegativeDelay) {
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(kFailedDownloading,
-            init.Init(config, base::TimeDelta::FromSeconds(-5), &callback));
+            init.Init(config, base::TimeDelta::FromSeconds(-5),
+                      NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
 
   // Check the NetLog was filled correctly.

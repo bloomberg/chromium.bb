@@ -16,6 +16,10 @@
 
 namespace net {
 
+// This is the hard-coded location used by the DNS portion of web proxy
+// auto-discovery.
+static const char kWpadUrl[] = "http://wpad/wpad.dat";
+
 InitProxyResolver::InitProxyResolver(ProxyResolver* resolver,
                                      ProxyScriptFetcher* proxy_script_fetcher,
                                      NetLog* net_log)
@@ -27,7 +31,8 @@ InitProxyResolver::InitProxyResolver(ProxyResolver* resolver,
       current_pac_url_index_(0u),
       next_state_(STATE_NONE),
       net_log_(BoundNetLog::Make(
-          net_log, NetLog::SOURCE_INIT_PROXY_RESOLVER)) {
+          net_log, NetLog::SOURCE_INIT_PROXY_RESOLVER)),
+      effective_config_(NULL) {
 }
 
 InitProxyResolver::~InitProxyResolver() {
@@ -37,6 +42,7 @@ InitProxyResolver::~InitProxyResolver() {
 
 int InitProxyResolver::Init(const ProxyConfig& config,
                             const base::TimeDelta wait_delay,
+                            ProxyConfig* effective_config,
                             CompletionCallback* callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(callback);
@@ -48,6 +54,8 @@ int InitProxyResolver::Init(const ProxyConfig& config,
   wait_delay_ = wait_delay;
   if (wait_delay_ < base::TimeDelta())
     wait_delay_ = base::TimeDelta();
+
+  effective_config_ = effective_config;
 
   pac_urls_ = BuildPacUrlsFallbackList(config);
   DCHECK(!pac_urls_.empty());
@@ -157,7 +165,7 @@ int InitProxyResolver::DoFetchPacScript() {
   const PacURL& pac_url = current_pac_url();
 
   const GURL effective_pac_url =
-      pac_url.auto_detect ? GURL("http://wpad/wpad.dat") : pac_url.url;
+      pac_url.auto_detect ? GURL(kWpadUrl) : pac_url.url;
 
   net_log_.BeginEvent(
       NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
@@ -216,6 +224,20 @@ int InitProxyResolver::DoSetPacScriptComplete(int result) {
         NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
         new NetLogIntegerParameter("net_error", result));
     return TryToFallbackPacUrl(result);
+  }
+
+  // Let the caller know which automatic setting we ended up initializing the
+  // resolver for (there may have been multiple fallbacks to choose from.)
+  if (effective_config_) {
+    if (current_pac_url().auto_detect && resolver_->expects_pac_bytes()) {
+      *effective_config_ =
+          ProxyConfig::CreateFromCustomPacURL(GURL(kWpadUrl));
+    } else if (current_pac_url().auto_detect) {
+      *effective_config_ = ProxyConfig::CreateAutoDetect();
+    } else {
+      *effective_config_ =
+          ProxyConfig::CreateFromCustomPacURL(current_pac_url().url);
+    }
   }
 
   net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT, NULL);

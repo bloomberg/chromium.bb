@@ -48,11 +48,18 @@ class InitProxyResolver {
   // Aborts any in-progress request.
   ~InitProxyResolver();
 
-  // Apply the PAC settings of |config| to |resolver_|.
+  // Applies the PAC settings of |config| to |resolver_|.
   // If |wait_delay| is positive, the initialization will pause for this
   // amount of time before getting started.
+  // If |effective_config| is non-NULL, then on successful initialization of
+  // |resolver_| the "effective" proxy settings we ended up using will be
+  // written out to |*effective_config|. Note that this may differ from
+  // |config| since we will have stripped any manual settings, and decided
+  // whether to use auto-detect or the custom PAC URL. Finally, if auto-detect
+  // was used we may now have resolved that to a specific script URL.
   int Init(const ProxyConfig& config,
            const base::TimeDelta wait_delay,
+           ProxyConfig* effective_config,
            CompletionCallback* callback);
 
  private:
@@ -126,6 +133,8 @@ class InitProxyResolver {
 
   base::TimeDelta wait_delay_;
   base::OneShotTimer<InitProxyResolver> wait_timer_;
+
+  ProxyConfig* effective_config_;
 
   DISALLOW_COPY_AND_ASSIGN(InitProxyResolver);
 };

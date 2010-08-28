@@ -83,14 +83,14 @@ void Preconnect::Connect(const GURL& url) {
   } else {
     // Currently we avoid all preconnects if there is a proxy configuration.
     net::ProxyService* proxy_service = context->proxy_service();
-    if (!proxy_service->config_has_been_initialized()) {
+    if (!proxy_service->fetched_config().is_valid()) {
       HistogramPreconnectStatus(PROXY_UNINITIALIZED);
     } else {
-      if (proxy_service->config().MayRequirePACResolver()) {
+      if (proxy_service->fetched_config().MayRequirePACResolver()) {
         HistogramPreconnectStatus(PROXY_PAC_RESOLVER);
         return;
       }
-      if (!proxy_service->config().proxy_rules().empty()) {
+      if (!proxy_service->fetched_config().proxy_rules().empty()) {
         HistogramPreconnectStatus(PROXY_HAS_RULES);
         return;
       }

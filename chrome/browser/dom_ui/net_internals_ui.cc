@@ -566,15 +566,13 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
   URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::ProxyService* proxy_service = context->proxy_service();
 
-  Value* settings_value = NULL;
-  if (proxy_service->config_has_been_initialized()) {
-    settings_value = proxy_service->config().ToValue();
-  } else {
-    settings_value = Value::CreateStringValue(std::string());
-  }
+  DictionaryValue* dict = new DictionaryValue();
+  if (proxy_service->fetched_config().is_valid())
+    dict->Set("original", proxy_service->fetched_config().ToValue());
+  if (proxy_service->config().is_valid())
+    dict->Set("effective", proxy_service->config().ToValue());
 
-  CallJavascriptFunction(L"g_browser.receivedProxySettings",
-                         settings_value);
+  CallJavascriptFunction(L"g_browser.receivedProxySettings", dict);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
