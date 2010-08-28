@@ -338,7 +338,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			break;
 		case 's':
 			s = va_arg(ap, const char *);
-			length = strlen(s);
+			length = s ? strlen(s) : 0;
 			*p++ = length;
 			memcpy(p, s, length);
 			p += DIV_ROUNDUP(length, sizeof(*p));
@@ -456,14 +456,18 @@ wl_connection_demarshal(struct wl_connection *connection,
 				goto out;
 			}
 
-			values[i].string = malloc(length + 1);
-			if (values[i].string == NULL) {
-				errno = ENOMEM;
-				ret = -1;
-				goto out;
+			if (length == 0) {
+				values[i].string = NULL;
+			} else {
+				values[i].string = malloc(length + 1);
+				if (values[i].string == NULL) {
+					errno = ENOMEM;
+					ret = -1;
+					goto out;
+				}
+				memcpy(values[i].string, p, length);
+				values[i].string[length] = '\0';
 			}
-			memcpy(values[i].string, p, length);
-			values[i].string[length] = '\0';
 			p = next;
 			break;
 		case 'o':
