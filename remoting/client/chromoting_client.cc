@@ -60,9 +60,6 @@ void ChromotingClient::Stop() {
   connection_->Disconnect();
 
   view_->TearDown();
-
-  // Quit the current message loop.
-  message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
 void ChromotingClient::ClientDone() {

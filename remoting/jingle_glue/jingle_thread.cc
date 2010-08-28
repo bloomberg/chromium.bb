@@ -4,13 +4,41 @@
 
 #include "remoting/jingle_glue/jingle_thread.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_pump.h"
+#include "base/time.h"
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
 
 namespace remoting {
 
-const int kRunTasksMessageId = 1;
+const uint32 kRunTasksMessageId = 1;
+const uint32 kStopMessageId = 2;
+
+class JingleThread::JingleMessagePump : public base::MessagePump {
+ public:
+  JingleMessagePump(JingleThread* thread) : thread_(thread) { }
+
+  virtual void Run(Delegate* delegate) { NOTIMPLEMENTED() ;}
+  virtual void Quit() { NOTIMPLEMENTED(); }
+  virtual void ScheduleWork() {
+    thread_->Post(thread_, kRunTasksMessageId);
+  }
+  virtual void ScheduleDelayedWork(const base::Time& time) {
+    NOTIMPLEMENTED();
+  }
+
+ private:
+  JingleThread* thread_;
+};
+
+class JingleThread::JingleMessageLoop : public MessageLoop {
+ public:
+  JingleMessageLoop(JingleThread* thread)
+      : MessageLoop(MessageLoop::TYPE_IO) {
+    pump_ = new JingleMessagePump(thread);
+  }
+};
 
 TaskPump::TaskPump() {
 }
@@ -30,6 +58,7 @@ void TaskPump::OnMessage(talk_base::Message* pmsg) {
 JingleThread::JingleThread()
     : task_pump_(NULL),
       started_event_(true, false),
+      stopped_event_(true, false),
       message_loop_(NULL) {
 }
 
@@ -41,7 +70,7 @@ void JingleThread::Start() {
 }
 
 void JingleThread::Run() {
-  MessageLoopForIO message_loop;
+  JingleMessageLoop message_loop(this);
   message_loop_ = &message_loop;
 
   TaskPump task_pump;
@@ -50,28 +79,51 @@ void JingleThread::Run() {
   // Signal after we've initialized |message_loop_| and |task_pump_|.
   started_event_.Signal();
 
-  Post(this, kRunTasksMessageId);
-
   Thread::Run();
 
-  message_loop.RunAllPending();
+  stopped_event_.Signal();
 
   task_pump_ = NULL;
   message_loop_ = NULL;
 }
 
-// This method is called every 20ms to process tasks from |message_loop_|
-// on this thread.
-// TODO(sergeyu): Remove it when JingleThread moved to Chromium's base::Thread.
-void JingleThread::PumpAuxiliaryLoops() {
-  MessageLoop::current()->RunAllPending();
+void JingleThread::Stop() {
+  // Shutdown gracefully: make sure that we excute all messages left in the
+  // queue before exiting. Thread::Stop() would not do that.
+  Post(this, kStopMessageId);
+  stopped_event_.Wait();
+}
 
-  // Schedule next execution 20ms from now.
-  PostDelayed(20, this, kRunTasksMessageId);
+MessageLoop* JingleThread::message_loop() {
+  return message_loop_;
+}
+
+  // Returns task pump if the thread is running, otherwise NULL is returned.
+TaskPump* JingleThread::task_pump() {
+  return task_pump_;
 }
 
 void JingleThread::OnMessage(talk_base::Message* msg) {
-  PumpAuxiliaryLoops();
+  if (msg->message_id == kRunTasksMessageId) {
+    // This code is executed whenever we get new message in |message_loop_|.
+    // JingleMessagePump posts new tasks in the jingle thread.
+    // TODO(sergeyu): Remove it when JingleThread moved on Chromium's
+    // base::Thread.
+    base::MessagePump::Delegate* delegate = message_loop_;
+    // Loop until we run out of work.
+    while (true) {
+      if (!delegate->DoWork())
+        break;
+    }
+  } else if (msg->message_id == kStopMessageId) {
+    // Stop the thread only if there are no more messages left in the queue,
+    // otherwise post another task to try again later.
+    if (msgq_.size() > 0 || fPeekKeep_) {
+      Post(this, kStopMessageId);
+    } else {
+      MessageQueue::Quit();
+    }
+  }
 }
 
 }  // namespace remoting

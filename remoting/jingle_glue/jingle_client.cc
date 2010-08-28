@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(ajwong): We assign and read from a few of the member variables on
-// two threads. We need to audit this for thread safety.
-
 #include "remoting/jingle_glue/jingle_client.h"
 
 #include "base/logging.h"
@@ -17,92 +14,64 @@
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
+#include "third_party/libjingle/source/talk/p2p/base/transport.h"
 #include "third_party/libjingle/source/talk/p2p/client/sessionmanagertask.h"
-#ifdef USE_SSL_TUNNEL
-#include "third_party/libjingle/source/talk/session/tunnel/securetunnelsessionclient.h"
-#endif
 #include "third_party/libjingle/source/talk/session/tunnel/tunnelsessionclient.h"
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
 #include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
 
 namespace remoting {
 
+namespace {
+// A TunnelSessionClient that allows local connections.
+class LocalTunnelSessionClient : public cricket::TunnelSessionClient {
+ public:
+  LocalTunnelSessionClient(const buzz::Jid& jid,
+                           cricket::SessionManager* manager)
+      : TunnelSessionClient(jid, manager) {
+  }
+
+ protected:
+  virtual cricket::TunnelSession* MakeTunnelSession(
+      cricket::Session* session, talk_base::Thread* stream_thread,
+      cricket::TunnelSessionRole role) {
+    session->transport()->set_allow_local_ips(true);
+    return new cricket::TunnelSession(this, session, stream_thread);
+  }
+};
+}  // namespace
+
 JingleClient::JingleClient(JingleThread* thread)
-    : client_(NULL),
-      thread_(thread),
-      state_(CREATED),
-      callback_(NULL) {
+    : thread_(thread),
+      callback_(NULL),
+      client_(NULL),
+      state_(START),
+      initialized_(false),
+      closed_(false) {
 }
 
 JingleClient::~JingleClient() {
-  // JingleClient can be destroyed only after it's closed.
-  DCHECK(state_ == CLOSED || state_ == CREATED);
+  AutoLock auto_lock(state_lock_);
+  DCHECK(!initialized_ || closed_);
 }
 
 void JingleClient::Init(
     const std::string& username, const std::string& auth_token,
     const std::string& auth_token_service, Callback* callback) {
   DCHECK_NE(username, "");
-  DCHECK(callback != NULL);
-  DCHECK(state_ == CREATED);
 
-  callback_ = callback;
+  {
+    AutoLock auto_lock(state_lock_);
+    DCHECK(!initialized_ && !closed_);
+    initialized_ = true;
+
+    DCHECK(callback != NULL);
+    callback_ = callback;
+  }
+
   message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleClient::DoInitialize,
                                    username, auth_token, auth_token_service));
-  state_ = INITIALIZED;
-}
-
-JingleChannel* JingleClient::Connect(const std::string& host_jid,
-                                     JingleChannel::Callback* callback) {
-  // Ownership if channel is given to DoConnect.
-  scoped_refptr<JingleChannel> channel = new JingleChannel(callback);
-  message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoConnect,
-                                   channel, host_jid, callback));
-  return channel;
-}
-
-void JingleClient::DoConnect(scoped_refptr<JingleChannel> channel,
-                             const std::string& host_jid,
-                             JingleChannel::Callback* callback) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  talk_base::StreamInterface* stream =
-      tunnel_session_client_->CreateTunnel(buzz::Jid(host_jid), "");
-  DCHECK(stream != NULL);
-
-  channel->Init(thread_, stream, host_jid);
-}
-
-void JingleClient::Close() {
-  // Once we are closed we really shouldn't talk to the callback again. In the
-  // case when JingleClient outlives the owner access the callback is not safe.
-  // TODO(hclam): We need to lock to reset callback.
-  callback_ = NULL;
-
-  message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoClose));
-}
-
-void JingleClient::DoClose() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  // If we have not yet initialized and the client is already closed then
-  // don't close again.
-  if (state_ == CLOSED)
-    return;
-
-  if (client_) {
-    client_->Disconnect();
-    // Client is deleted by TaskRunner.
-    client_ = NULL;
-  }
-  tunnel_session_client_.reset();
-  port_allocator_.reset();
-  session_manager_.reset();
-  network_manager_.reset();
-  UpdateState(CLOSED);
 }
 
 void JingleClient::DoInitialize(const std::string& username,
@@ -138,18 +107,10 @@ void JingleClient::DoInitialize(const std::string& username,
   port_allocator->SetJingleInfo(client_);
 
   session_manager_.reset(new cricket::SessionManager(port_allocator_.get()));
-#ifdef USE_SSL_TUNNEL
-  cricket::SecureTunnelSessionClient* session_client =
-      new cricket::SecureTunnelSessionClient(client_->jid(),
-                                             session_manager_.get());
-  if (!session_client->GenerateIdentity())
-    return false;
-  tunnel_session_client_.reset(session_client);
-#else  // !USE_SSL_TUNNEL
+
   tunnel_session_client_.reset(
-      new cricket::TunnelSessionClient(client_->jid(),
-                                       session_manager_.get()));
-#endif  // USE_SSL_TUNNEL
+      new LocalTunnelSessionClient(client_->jid(),
+                                   session_manager_.get()));
 
   cricket::SessionManagerTask* receiver =
       new cricket::SessionManagerTask(client_, session_manager_.get());
@@ -158,6 +119,72 @@ void JingleClient::DoInitialize(const std::string& username,
 
   tunnel_session_client_->SignalIncomingTunnel.connect(
       this, &JingleClient::OnIncomingTunnel);
+}
+
+JingleChannel* JingleClient::Connect(const std::string& host_jid,
+                                     JingleChannel::Callback* callback) {
+  DCHECK(initialized_ && !closed_);
+
+  // Ownership if channel is given to DoConnect.
+  scoped_refptr<JingleChannel> channel = new JingleChannel(callback);
+  message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoConnect,
+                                   channel, host_jid, callback));
+  return channel;
+}
+
+void JingleClient::DoConnect(scoped_refptr<JingleChannel> channel,
+                             const std::string& host_jid,
+                             JingleChannel::Callback* callback) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  talk_base::StreamInterface* stream =
+      tunnel_session_client_->CreateTunnel(buzz::Jid(host_jid), "");
+  DCHECK(stream != NULL);
+
+  channel->Init(thread_, stream, host_jid);
+}
+
+void JingleClient::Close() {
+  Close(NULL);
+}
+
+void JingleClient::Close(Task* closed_task) {
+  {
+    AutoLock auto_lock(state_lock_);
+    // If the client is already closed then don't close again.
+    if (closed_) {
+      if (closed_task)
+        thread_->message_loop()->PostTask(FROM_HERE, closed_task);
+      return;
+    }
+    closed_task_.reset(closed_task);
+    closed_ = true;
+  }
+
+  message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoClose));
+}
+
+void JingleClient::DoClose() {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK(closed_);
+
+  tunnel_session_client_.reset();
+  session_manager_.reset();
+  port_allocator_.reset();
+  network_manager_.reset();
+
+  if (client_) {
+    client_->Disconnect();
+    // Client is deleted by TaskRunner.
+    client_ = NULL;
+  }
+
+  if (closed_task_.get()) {
+    closed_task_->Run();
+    closed_task_.reset();
+  }
 }
 
 std::string JingleClient::GetFullJid() {
@@ -176,7 +203,7 @@ MessageLoop* JingleClient::message_loop() {
 void JingleClient::OnConnectionStateChanged(buzz::XmppEngine::State state) {
   switch (state) {
     case buzz::XmppEngine::STATE_START:
-      UpdateState(INITIALIZED);
+      UpdateState(START);
       break;
     case buzz::XmppEngine::STATE_OPENING:
       UpdateState(CONNECTING);
@@ -200,8 +227,11 @@ void JingleClient::OnConnectionStateChanged(buzz::XmppEngine::State state) {
 void JingleClient::OnIncomingTunnel(
     cricket::TunnelSessionClient* client, buzz::Jid jid,
     std::string description, cricket::Session* session) {
-  // Decline connection if we don't have callback.
-  if (!callback_) {
+  // Must always lock state and check closed_ when calling callback.
+  AutoLock auto_lock(state_lock_);
+
+  if (closed_) {
+    // Always reject connection if we are closed.
     client->DeclineTunnel(session);
     return;
   }
@@ -221,8 +251,11 @@ void JingleClient::OnIncomingTunnel(
 void JingleClient::UpdateState(State new_state) {
   if (new_state != state_) {
     state_ = new_state;
-    if (callback_)
-      callback_->OnStateChange(this, new_state);
+    {
+      AutoLock auto_lock(state_lock_);
+      if (!closed_)
+        callback_->OnStateChange(this, new_state);
+    }
   }
 }
 

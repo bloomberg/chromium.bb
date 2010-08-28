@@ -14,6 +14,8 @@ extern "C" {
 #include <list>
 
 #include "base/at_exit.h"
+#include "base/nss_util.h"
+#include "base/time.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_channel.h"
@@ -25,13 +27,17 @@ using remoting::JingleChannel;
 using remoting::kChromotingTokenServiceName;
 
 class JingleTestClient : public JingleChannel::Callback,
-                         public JingleClient::Callback {
+                         public JingleClient::Callback,
+                         public base::RefCountedThreadSafe<JingleTestClient> {
  public:
+  JingleTestClient()
+      : closed_event_(true, false) {
+  }
+
   virtual ~JingleTestClient() {}
 
   void Run(const std::string& username, const std::string& auth_token,
            const std::string& host_jid) {
-    // TODO(hclam): Fix the threading problem.
     remoting::JingleThread jingle_thread;
     jingle_thread.Start();
     client_ = new JingleClient(&jingle_thread);
@@ -63,7 +69,12 @@ class JingleTestClient : public JingleChannel::Callback,
     }
 
     while (!channels_.empty()) {
-      channels_.front()->Close();
+      closed_event_.Reset();
+      channels_.front()->Close(
+          NewRunnableMethod(this, &JingleTestClient::OnClosed));
+      // Wait until channel is closed. If it is not closed within 0.1 seconds
+      // continue closing everything else.
+      closed_event_.TimedWait(base::TimeDelta::FromMilliseconds(100));
       channels_.pop_front();
     }
 
@@ -106,12 +117,17 @@ class JingleTestClient : public JingleChannel::Callback,
     channels_.push_back(channel);
   }
 
+  void OnClosed() {
+    closed_event_.Signal();
+  }
+
  private:
   typedef std::list<scoped_refptr<JingleChannel> > ChannelsList;
 
   scoped_refptr<JingleClient> client_;
   ChannelsList channels_;
   Lock channels_lock_;
+  base::WaitableEvent closed_event_;
 };
 
 int main(int argc, char** argv) {
@@ -119,6 +135,9 @@ int main(int argc, char** argv) {
     std::cerr << "Usage: " << argv[0] << " [<host_jid>]" << std::endl;
 
   base::AtExitManager exit_manager;
+
+  base::EnsureNSPRInit();
+  base::EnsureNSSInit();
 
   std::string host_jid = argc == 2 ? argv[1] : "";
 
@@ -130,9 +149,9 @@ int main(int argc, char** argv) {
   std::cout << "Auth token: ";
   std::cin >> auth_token;
 
-  JingleTestClient client;
+  scoped_refptr<JingleTestClient> client = new JingleTestClient();
 
-  client.Run(username, auth_token, host_jid);
+  client->Run(username, auth_token, host_jid);
 
   return 0;
 }

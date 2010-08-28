@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/waitable_event.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
@@ -36,8 +37,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                      public sigslot::has_slots<> {
  public:
   enum State {
-    CREATED,  // Initial state.
-    INITIALIZED,
+    START,  // Initial state.
     CONNECTING,
     CONNECTED,
     CLOSED,
@@ -84,8 +84,10 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                          JingleChannel::Callback* callback);
 
   // Closes XMPP connection and stops the thread. Must be called before the
-  // object is destroyed.
+  // object is destroyed. If specified, |closed_task| is executed after the
+  // connection is successfully closed.
   void Close();
+  void Close(Task* closed_task);
 
   // Returns JID with resource ID. Empty string is returned if full JID is not
   // known yet, i.e. authentication hasn't finished.
@@ -95,7 +97,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // is transfered to the caller.
   virtual IqRequest* CreateIqRequest();
 
-  // Current state of the client.
+  // Current connection state of the client.
   State state() { return state_; }
 
   // Returns XmppClient object for the xmpp connection or NULL if not connected.
@@ -106,6 +108,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
 
  private:
   friend class HeartbeatSenderTest;
+  friend class JingleClientTest;
 
   void OnConnectionStateChanged(buzz::XmppEngine::State state);
 
@@ -131,13 +134,23 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   buzz::PreXmppAuth* CreatePreXmppAuth(
       const buzz::XmppClientSettings& settings);
 
-  buzz::XmppClient* client_;
+  // JingleThread used for the connection. Set in the constructor.
   JingleThread* thread_;
-  State state_;
+
+  // Callback for this object. Callback must not be called if closed_ == true.
   Callback* callback_;
 
+  // The XmppClient and its state and jid.
+  buzz::XmppClient* client_;
+  State state_;
   Lock full_jid_lock_;
   std::string full_jid_;
+
+  // Current state of the object.
+  Lock state_lock_;  // Must be locked when accessing initialized_ or closed_.
+  bool initialized_;
+  bool closed_;
+  scoped_ptr<Task> closed_task_;
 
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<cricket::BasicPortAllocator> port_allocator_;

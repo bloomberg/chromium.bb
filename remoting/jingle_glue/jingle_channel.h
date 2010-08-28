@@ -14,6 +14,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 
 namespace base {
@@ -59,8 +60,10 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
   // Puts data to the write buffer.
   virtual void Write(scoped_refptr<media::DataBuffer> data);
 
-  // Closes the tunnel.
+  // Closes the tunnel. If specified, |closed_task| is executed after the
+  // connection is successfully closed.
   virtual void Close();
+  virtual void Close(Task* closed_task);
 
   // Current state of the tunnel.
   State state() const { return state_; }
@@ -87,17 +90,12 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
   // caller. Ownership of |thread| is not.
   void Init(JingleThread* thread, talk_base::StreamInterface* stream,
             const std::string& jid);
-  void SetState(State state);
-
-  JingleThread* thread_;
-  scoped_ptr<talk_base::StreamInterface> stream_;
-  State state_;
 
  private:
+  friend class JingleChannelTest;
   FRIEND_TEST_ALL_PREFIXES(JingleChannelTest, Init);
   FRIEND_TEST_ALL_PREFIXES(JingleChannelTest, Write);
   FRIEND_TEST_ALL_PREFIXES(JingleChannelTest, Read);
-  FRIEND_TEST_ALL_PREFIXES(JingleChannelTest, Close);
 
   typedef std::deque<scoped_refptr<media::DataBuffer> > DataQueue;
 
@@ -132,10 +130,30 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
   // Called from OnStreamEvent() in the jingle thread.
   void DoRead();
 
-  void DoClose(base::WaitableEvent* done_event);
+  // Used by Close() to actually close the channel.
+  void DoClose();
+
+  // Updates state and calels |callback_| if neccessary.
+  void SetState(State new_state);
+
+  // The thread this channel runs on.
+  JingleThread* thread_;
+
+  // The stream of this channel.
+  scoped_ptr<talk_base::StreamInterface> stream_;
+
+  // Current state of the channel.
+  State state_;
 
   // Callback that is called on channel events. Initialized in the constructor.
+  // Must not be called if |closed_| is set to true.
   Callback* callback_;
+
+  // |closed_| must be set to true after Close() is called. |state_lock_| must
+  // be locked whenever closed_ is accessed.
+  Lock state_lock_;
+  bool closed_;
+  scoped_ptr<Task> closed_task_;
 
   // Event handler for stream events.
   EventHandler event_handler_;

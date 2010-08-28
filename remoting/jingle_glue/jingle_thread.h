@@ -5,13 +5,12 @@
 #ifndef REMOTING_JINGLE_GLUE_JINGLE_THREAD_H_
 #define REMOTING_JINGLE_GLUE_JINGLE_THREAD_H_
 
+#include "base/message_loop.h"
 #include "base/tracked_objects.h"
 #include "base/waitable_event.h"
 #include "third_party/libjingle/source/talk/base/messagequeue.h"
 #include "third_party/libjingle/source/talk/base/taskrunner.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
-
-class MessageLoop;
 
 namespace buzz {
 class XmppClient;
@@ -35,7 +34,7 @@ class TaskPump : public talk_base::MessageHandler,
 // TODO(sergeyu): This class should be changed to inherit from Chromiums
 // base::Thread instead of libjingle's thread.
 class JingleThread : public talk_base::Thread,
-                     private talk_base::MessageHandler {
+                     public talk_base::MessageHandler {
  public:
   JingleThread();
   virtual ~JingleThread();
@@ -45,23 +44,28 @@ class JingleThread : public talk_base::Thread,
   // Main function for the thread. Should not be called directly.
   void Run();
 
+  // Stop the thread.
+  void Stop();
+
   // Returns Chromiums message loop for this thread.
   // TODO(sergeyu): remove this method when we use base::Thread instead of
   // talk_base::Thread
-  MessageLoop* message_loop() { return message_loop_; }
+  MessageLoop* message_loop();
 
   // Returns task pump if the thread is running, otherwise NULL is returned.
-  TaskPump* task_pump() { return task_pump_; }
+  TaskPump* task_pump();
 
  private:
+  class JingleMessageLoop;
+  class JingleMessagePump;
+
   friend class HeartbeatSenderTest;
 
   virtual void OnMessage(talk_base::Message* msg);
 
-  void PumpAuxiliaryLoops();
-
   TaskPump* task_pump_;
   base::WaitableEvent started_event_;
+  base::WaitableEvent stopped_event_;
   MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleThread);

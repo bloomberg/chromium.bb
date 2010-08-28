@@ -22,6 +22,7 @@ const size_t kReadBufferSize = 4096;
 JingleChannel::JingleChannel(Callback* callback)
     : state_(INITIALIZING),
       callback_(callback),
+      closed_(false),
       event_handler_(this),
       write_buffer_size_(0),
       current_write_buf_pos_(0) {
@@ -31,12 +32,13 @@ JingleChannel::JingleChannel(Callback* callback)
 // This constructor is only used in unit test.
 JingleChannel::JingleChannel()
     : state_(CLOSED),
+      closed_(false),
       write_buffer_size_(0),
       current_write_buf_pos_(0) {
 }
 
 JingleChannel::~JingleChannel() {
-  DCHECK_EQ(CLOSED, state_);
+  DCHECK(closed_ || stream_ == NULL);
 }
 
 void JingleChannel::Init(JingleThread* thread,
@@ -101,7 +103,12 @@ void JingleChannel::DoRead() {
       case talk_base::SR_SUCCESS: {
         DCHECK_GT(bytes_read, 0U);
         buffer->SetDataSize(bytes_read);
-        callback_->OnPacketReceived(this, buffer);
+        {
+          AutoLock auto_lock(state_lock_);
+          // Drop received data if the channel is already closed.
+          if (!closed_)
+            callback_->OnPacketReceived(this, buffer);
+        }
         break;
       }
       case talk_base::SR_BLOCK: {
@@ -177,25 +184,53 @@ void JingleChannel::OnStreamEvent(talk_base::StreamInterface* stream,
     SetState(CLOSED);
 }
 
-void JingleChannel::SetState(State state) {
-  if (state == state_)
-    return;
-  state_ = state;
-  callback_->OnStateChange(this, state);
+void JingleChannel::SetState(State new_state) {
+  if (new_state != state_) {
+    state_ = new_state;
+    {
+      AutoLock auto_lock(state_lock_);
+      if (!closed_)
+        callback_->OnStateChange(this, new_state);
+    }
+  }
 }
 
 void JingleChannel::Close() {
-  base::WaitableEvent event(true, false);
-  thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleChannel::DoClose, &event));
-  event.Wait();
+  Close(NULL);
 }
 
-void JingleChannel::DoClose(base::WaitableEvent* done_event) {
-  if (stream_.get())
-    stream_->Close();
-  SetState(CLOSED);
-  done_event->Signal();
+void JingleChannel::Close(Task* closed_task) {
+  {
+    AutoLock auto_lock(state_lock_);
+    if (closed_) {
+      // We are already closed.
+      if (closed_task)
+        thread_->message_loop()->PostTask(FROM_HERE, closed_task);
+      return;
+    }
+    closed_ = true;
+    if (closed_task)
+      closed_task_.reset(closed_task);
+  }
+
+  thread_->message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &JingleChannel::DoClose));
+}
+
+
+void JingleChannel::DoClose() {
+  DCHECK(closed_);
+  stream_->Close();
+  stream_.reset();
+
+  // TODO(sergeyu): Even though we have called Close() for the stream, it
+  // doesn't mean that the p2p sessions has been closed. I.e. |closed_task_|
+  // is called too early. If the client is closed right after that the other
+  // side will not receive notification that the channel was closed.
+  if (closed_task_.get()) {
+    closed_task_->Run();
+    closed_task_.reset();
+  }
 }
 
 size_t JingleChannel::write_buffer_size() {
