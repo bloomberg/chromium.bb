@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="482"/>
-			<integer value="74"/>
 			<integer value="79"/>
+			<integer value="74"/>
+			<integer value="482"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3982,6 +3982,38 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 					<int key="connectionID">733</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">backgroundModeTitle_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="499998551"/>
+					</object>
+					<int key="connectionID">752</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">backgroundModeCheckbox_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="913950857"/>
+					</object>
+					<int key="connectionID">753</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">backgroundModeDescription_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="802144138"/>
+					</object>
+					<int key="connectionID">754</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">backgroundModeLearnMore_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="1011623445"/>
+					</object>
+					<int key="connectionID">756</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -5762,7 +5794,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">751</int>
+			<int key="maxID">756</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6254,6 +6286,10 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>autoFillSettingsButton_</string>
+							<string>backgroundModeCheckbox_</string>
+							<string>backgroundModeDescription_</string>
+							<string>backgroundModeLearnMore_</string>
+							<string>backgroundModeTitle_</string>
 							<string>basicsGroupDefaultBrowser_</string>
 							<string>basicsGroupHomePage_</string>
 							<string>basicsGroupSearchEngine_</string>
@@ -6288,6 +6324,10 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
 							<string>NSArray</string>
 							<string>NSArray</string>
 							<string>NSArray</string>
@@ -6325,6 +6365,10 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>autoFillSettingsButton_</string>
+							<string>backgroundModeCheckbox_</string>
+							<string>backgroundModeDescription_</string>
+							<string>backgroundModeLearnMore_</string>
+							<string>backgroundModeTitle_</string>
 							<string>basicsGroupDefaultBrowser_</string>
 							<string>basicsGroupHomePage_</string>
 							<string>basicsGroupSearchEngine_</string>
@@ -6361,6 +6405,22 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="IBToOneOutletInfo">
 								<string key="name">autoFillSettingsButton_</string>
 								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">backgroundModeCheckbox_</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">backgroundModeDescription_</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">backgroundModeLearnMore_</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">backgroundModeTitle_</string>
+								<string key="candidateClassName">NSTextField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">basicsGroupDefaultBrowser_</string>

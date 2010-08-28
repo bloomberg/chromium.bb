@@ -131,6 +131,10 @@ class ProfileSyncService;
   BOOL proxiesConfigureButtonEnabled_;
   BOOL restoreButtonsEnabled_;
   BOOL restoreURLsEnabled_;
+  IBOutlet NSTextField* backgroundModeTitle_;
+  IBOutlet NSButton* backgroundModeCheckbox_;
+  IBOutlet NSTextField* backgroundModeDescription_;
+  IBOutlet NSButton* backgroundModeLearnMore_;
   BooleanPrefMember backgroundModeEnabled_;
 }
 

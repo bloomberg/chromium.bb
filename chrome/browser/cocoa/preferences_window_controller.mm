@@ -534,6 +534,15 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   RemoveViewFromView(underTheHoodContentView_, enableLoggingCheckbox_);
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
+  // If BackgroundMode is not enabled, hide the related prefs UI.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundMode)) {
+    RemoveViewFromView(underTheHoodContentView_, backgroundModeTitle_);
+    RemoveViewFromView(underTheHoodContentView_, backgroundModeCheckbox_);
+    RemoveViewFromView(underTheHoodContentView_, backgroundModeDescription_);
+    RemoveViewFromView(underTheHoodContentView_, backgroundModeLearnMore_);
+  }
+
   // There are four problem children within the groups:
   //   Basics - Default Browser
   //   Personal Stuff - Sync
