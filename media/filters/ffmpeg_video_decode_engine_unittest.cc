@@ -79,7 +79,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
         .WillOnce(Return(&codec_));
     EXPECT_CALL(*MockFFmpeg::get(), AVCodecAllocFrame())
         .WillOnce(Return(&yuv_frame_));
-    EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 3))
+    EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 2))
         .WillOnce(Return(0));
     EXPECT_CALL(*MockFFmpeg::get(), AVCodecOpen(&codec_context_, &codec_))
         .WillOnce(Return(0));
@@ -154,7 +154,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_InitThreadFails) {
       .WillOnce(Return(&codec_));
   EXPECT_CALL(*MockFFmpeg::get(), AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 3))
+  EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 2))
       .WillOnce(Return(-1));
   EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
       .Times(1);
