@@ -240,6 +240,7 @@
                 'app/nibs/SaveAccessoryView.xib',
                 'app/nibs/SadTab.xib',
                 'app/nibs/SimpleContentExceptionsWindow.xib',
+                'app/nibs/SpeechInputBubble.xib',
                 'app/nibs/TabContents.xib',
                 'app/nibs/TabView.xib',
                 'app/nibs/TaskManager.xib',

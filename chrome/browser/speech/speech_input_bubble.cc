@@ -18,10 +18,10 @@ SpeechInputBubble* SpeechInputBubble::Create(TabContents* tab_contents,
   if (!tab_contents)
     return NULL;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   return CreateNativeBubble(tab_contents, delegate, element_rect);
 #else
-  // TODO(satish): Remove once the Mac and Linux implementations are ready.
+  // TODO(satish): Remove once Linux implementation is ready.
   return NULL;
 #endif
 }
