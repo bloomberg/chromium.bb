@@ -45,7 +45,8 @@ struct dnd {
 	uint32_t key;
 	struct item *items[16];
 
-	struct wl_buffer *buffer;
+	struct wl_buffer *translucent_buffer;
+	struct wl_buffer *opaque_buffer;
 	int hotspot_x, hotspot_y;
 	uint32_t tag;
 	const char *drag_type;
@@ -198,7 +199,13 @@ static struct item *
 dnd_get_item(struct dnd *dnd, int32_t x, int32_t y)
 {
 	struct item *item;
+	struct rectangle rectangle;
 	int i;
+
+	window_get_child_rectangle(dnd->window, &rectangle);
+
+	x -= rectangle.x;
+	y -= rectangle.y;
 
 	for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
 		item = dnd->items[i];
@@ -231,10 +238,16 @@ drag_pointer_focus(void *data,
 
 	fprintf(stderr, "drag pointer focus %p\n", surface);
 
-	if (surface) {
+	if (!surface) {
+		dnd->drag_type = NULL;
+		return;
+	}
+
+	if (!dnd_get_item(dnd, surface_x, surface_y)) {
 		wl_drag_accept(drag, "text/plain");
 		dnd->drag_type = "text/plain";
 	} else {
+		wl_drag_accept(drag, NULL);
 		dnd->drag_type = NULL;
 	}
 }
@@ -258,8 +271,13 @@ drag_motion(void *data,
 	 * Problem is, we don't know when we've seen that last offer
 	 * event, and we might need to look at all of them before we
 	 * can decide which one to go with. */
-	wl_drag_accept(drag, "text/plain");
-	dnd->drag_type = "text/plain";
+	if (!dnd_get_item(dnd, surface_x, surface_y)) {
+		wl_drag_accept(drag, "text/plain");
+		dnd->drag_type = "text/plain";
+	} else {
+		wl_drag_accept(drag, NULL);
+		dnd->drag_type = NULL;
+	}
 }
 
 static void
@@ -270,10 +288,15 @@ drag_target(void *data,
 	struct input *input;
 	struct wl_input_device *device;
 
+	fprintf(stderr, "target %s\n", mime_type);
 	input = wl_drag_get_user_data(drag);
 	device = input_get_input_device(input);
-	wl_input_device_attach(device, dnd->buffer,
-			       dnd->hotspot_x, dnd->hotspot_y);
+	if (mime_type)
+		wl_input_device_attach(device, dnd->opaque_buffer,
+				       dnd->hotspot_x, dnd->hotspot_y);
+	else
+		wl_input_device_attach(device, dnd->translucent_buffer,
+				       dnd->hotspot_x, dnd->hotspot_y);
 }
 
 static gboolean
@@ -305,6 +328,10 @@ drag_drop(void *data, struct wl_drag *drag)
 
 	if (!dnd->drag_type) {
 		fprintf(stderr, "got 'drop', but no target\n");
+		/* FIXME: Should send response so compositor and
+		 * source knows it's over. Can't send -1 to indicate
+		 * 'no target' though becauses of the way fd passing
+		 * currently works.  */
 		return;
 	}
 
@@ -339,61 +366,82 @@ static const struct wl_drag_listener drag_listener = {
 	drag_finish
 };
 
+static cairo_surface_t *
+create_drag_cursor(struct dnd *dnd, struct item *item, int32_t x, int32_t y,
+		   double opacity)
+{
+	cairo_surface_t *surface, *pointer;
+	int32_t pointer_width, pointer_height, hotspot_x, hotspot_y;
+	struct rectangle rectangle;
+	cairo_pattern_t *pattern;
+	cairo_t *cr;
+
+	pointer = display_get_pointer_surface(dnd->display,
+					      POINTER_DRAGGING,
+					      &pointer_width,
+					      &pointer_height,
+					      &hotspot_x,
+					      &hotspot_y);
+
+	rectangle.width = item_width + 2 * pointer_width;
+	rectangle.height = item_height + 2 * pointer_height;
+	surface = display_create_surface(dnd->display, &rectangle);
+
+	cr = cairo_create(surface);
+	cairo_translate(cr, pointer_width, pointer_height);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0);
+	cairo_paint(cr);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_source_surface(cr, item->surface, 0, 0);
+	pattern = cairo_pattern_create_rgba(0, 0, 0, opacity);
+	cairo_mask(cr, pattern);
+	cairo_pattern_destroy(pattern);
+
+	cairo_set_source_surface(cr, pointer,
+				 x - item->x - hotspot_x,
+				 y - item->y - hotspot_y);
+	cairo_surface_destroy(pointer);
+	cairo_paint(cr);
+	/* FIXME: more cairo-gl brokeness */
+	display_flush_cairo_device(dnd->display);
+	cairo_destroy(cr);
+
+	dnd->hotspot_x = pointer_width + x - item->x;
+	dnd->hotspot_y = pointer_height + y - item->y;
+
+	return surface;
+}
+
 static void
 dnd_button_handler(struct window *window,
 		   struct input *input, uint32_t time,
 		   int button, int state, void *data)
 {
 	struct dnd *dnd = data;
-	int32_t x, y, hotspot_x, hotspot_y, pointer_width, pointer_height;
-	struct rectangle rectangle;
+	int32_t x, y;
 	struct item *item;
-	cairo_surface_t *surface, *pointer;
-	cairo_t *cr;
+	cairo_surface_t *surface;
+	struct rectangle rectangle;
 
-	input_get_position(input, &x, &y);
 	window_get_child_rectangle(dnd->window, &rectangle);
-
+	input_get_position(input, &x, &y);
+	item = dnd_get_item(dnd, x, y);
 	x -= rectangle.x;
 	y -= rectangle.y;
-	item = dnd_get_item(dnd, x, y);
 
 	if (item && state == 1) {
 		fprintf(stderr, "start drag, item %p\n", item);
 
-		pointer = display_get_pointer_surface(dnd->display,
-						      POINTER_DRAGGING,
-						      &pointer_width,
-						      &pointer_height,
-						      &hotspot_x,
-						      &hotspot_y);
+		surface = create_drag_cursor(dnd, item, x, y, 1);
+		dnd->opaque_buffer =
+			display_get_buffer_for_surface(dnd->display, surface);
 
-		rectangle.width = item_width + 2 * pointer_width;
-		rectangle.height = item_height + 2 * pointer_height;
-		surface = display_create_surface(dnd->display, &rectangle);
-
-		cr = cairo_create(surface);
-		cairo_translate(cr, pointer_width, pointer_height);
-
-		cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-		cairo_set_source_rgba(cr, 0, 0, 0, 0);
-		cairo_paint(cr);
-
-		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-		cairo_set_source_surface(cr, item->surface, 0, 0);
-		cairo_paint(cr);
-
-		cairo_set_source_surface(cr, pointer,
-					 x - item->x - hotspot_x,
-					 y - item->y - hotspot_y);
-		cairo_surface_destroy(pointer);
-		cairo_paint(cr);
-		cairo_destroy(cr);
-
-		dnd->buffer = display_get_buffer_for_surface(dnd->display,
-							     surface);
-		dnd->hotspot_x = pointer_width + x - item->x;
-		dnd->hotspot_y = pointer_height + y - item->y;
+		surface = create_drag_cursor(dnd, item, x, y, 0.2);
+		dnd->translucent_buffer =
+			display_get_buffer_for_surface(dnd->display, surface);
 
 		window_start_drag(window, input, time);
 
@@ -410,10 +458,8 @@ dnd_motion_handler(struct window *window,
 {
 	struct dnd *dnd = data;
 	struct item *item;
-	struct rectangle rectangle;
 
-	window_get_child_rectangle(dnd->window, &rectangle);
-	item = dnd_get_item(dnd, sx - rectangle.x, sy - rectangle.y);
+	item = dnd_get_item(dnd, sx, sy);
 
 	if (item)
 		return POINTER_HAND1;

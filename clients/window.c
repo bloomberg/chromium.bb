@@ -407,6 +407,12 @@ window_draw_decorations(struct window *window)
 	cairo_device_flush (window->display->device);
 }
 
+void
+display_flush_cairo_device(struct display *display)
+{
+	cairo_device_flush (display->device);
+}
+
 static void
 window_draw_fullscreen(struct window *window)
 {
