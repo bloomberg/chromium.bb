@@ -9,6 +9,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "app/l10n_util_mac.h"
 #import "base/cocoa_protocols_mac.h"
@@ -63,14 +64,14 @@ class SelectFileDialogImpl : public SelectFileDialog {
                           void* params);
 
   // Callback from ObjC bridge.
-  void FileWasSelected(NSPanel* dialog,
+  void FileWasSelected(NSSavePanel* dialog,
                        NSWindow* parent_window,
                        bool was_cancelled,
                        bool is_multi,
                        const std::vector<FilePath>& files,
                        int index);
 
-  bool ShouldEnableFilename(NSPanel* dialog, NSString* filename);
+  bool ShouldEnableFilename(NSSavePanel* dialog, NSString* filename);
 
   struct SheetContext {
     Type type;
@@ -89,13 +90,13 @@ class SelectFileDialogImpl : public SelectFileDialog {
   scoped_nsobject<SelectFileDialogBridge> bridge_;
 
   // A map from file dialogs to the |params| user data associated with them.
-  std::map<NSPanel*, void*> params_map_;
+  std::map<NSSavePanel*, void*> params_map_;
 
   // The set of all parent windows for which we are currently running dialogs.
   std::set<NSWindow*> parents_;
 
   // A map from file dialogs to their types.
-  std::map<NSPanel*, Type> type_map_;
+  std::map<NSSavePanel*, Type> type_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
@@ -112,6 +113,19 @@ SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
+  // Walk through the open dialogs and close them all.  Use a temporary vector
+  // to hold the pointers, since we can't delete from the map as we're iterating
+  // through it.
+  std::vector<NSSavePanel*> panels;
+  for (std::map<NSSavePanel*, void*>::iterator it = params_map_.begin();
+       it != params_map_.end(); ++it) {
+    panels.push_back(it->first);
+  }
+
+  for (std::vector<NSSavePanel*>::iterator it = panels.begin();
+       it != panels.end(); ++it) {
+    [(*it) cancel:nil];
+  }
 }
 
 bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow parent_window) const {
@@ -230,7 +244,7 @@ void SelectFileDialogImpl::SelectFile(
   }
 }
 
-void SelectFileDialogImpl::FileWasSelected(NSPanel* dialog,
+void SelectFileDialogImpl::FileWasSelected(NSSavePanel* dialog,
                                            NSWindow* parent_window,
                                            bool was_cancelled,
                                            bool is_multi,
@@ -311,7 +325,7 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
   return accessory_view;
 }
 
-bool SelectFileDialogImpl::ShouldEnableFilename(NSPanel* dialog,
+bool SelectFileDialogImpl::ShouldEnableFilename(NSSavePanel* dialog,
                                                 NSString* filename) {
   // If this is a single open file dialog, disable selecting packages.
   if (type_map_[dialog] != SELECT_OPEN_FILE)
