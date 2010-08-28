@@ -4,7 +4,10 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/logging.h"
+#include "base/path_service.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_list.h"
@@ -29,6 +32,14 @@
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_util.h"
+#endif
+
+#if defined(OS_WIN)
+#include "base/registry.h"
+const HKEY kBackgroundModeRegistryRootKey = HKEY_CURRENT_USER;
+const wchar_t* kBackgroundModeRegistrySubkey =
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+const wchar_t* kBackgroundModeRegistryKeyName = L"chromium";
 #endif
 
 BackgroundModeManager::BackgroundModeManager(Profile* profile)
@@ -191,7 +202,6 @@ void BackgroundModeManager::OnBackgroundAppUninstalled() {
 void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   // TODO(BUG43382): Add code for other platforms to enable/disable launch on
   // startup.
-
   // This functionality is only defined for default profile, currently.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
     return;
@@ -219,6 +229,32 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
       return;
 
     mac_util::RemoveFromLoginItems();
+  }
+#elif defined(OS_WIN)
+  // TODO(BUG53597): Make RegKey mockable by adding virtual destructor and
+  //     factory method.
+  // TODO(BUG53600): Use distinct registry keys per flavor of chromium and
+  //     profile.
+  const wchar_t* key_name = kBackgroundModeRegistryKeyName;
+  RegKey read_key(kBackgroundModeRegistryRootKey,
+                  kBackgroundModeRegistrySubkey, KEY_READ);
+  RegKey write_key(kBackgroundModeRegistryRootKey,
+                   kBackgroundModeRegistrySubkey, KEY_WRITE);
+  if (should_launch) {
+    FilePath executable;
+    if (!PathService::Get(base::FILE_EXE, &executable))
+      return;
+    if (read_key.ValueExists(key_name)) {
+      std::wstring current_value;
+      if (read_key.ReadValue(key_name, &current_value) &&
+          (current_value == executable.value()))
+        return;
+    }
+    if (!write_key.WriteValue(key_name, executable.value().c_str()))
+      LOG(WARNING) << "Failed to register launch on login.";
+  } else {
+    if (read_key.ValueExists(key_name) && !write_key.DeleteValue(key_name))
+      LOG(WARNING) << "Failed to deregister launch on login.";
   }
 #endif
 }
