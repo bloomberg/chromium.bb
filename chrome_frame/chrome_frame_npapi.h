@@ -340,6 +340,9 @@ END_MSG_MAP()
   std::string src_;
   // Used to fetch network resources when host network stack is in use.
   NPAPIUrlRequestManager url_fetcher_;
+
+  // Set if we receive a navigation request before initializing Chrome.
+  bool navigate_after_initialization_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_NPAPI_H_

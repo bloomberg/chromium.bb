@@ -123,7 +123,8 @@ ChromeFrameNPAPI::ChromeFrameNPAPI()
     mode_(NP_EMBED),
     force_full_page_plugin_(false),
     ready_state_(READYSTATE_LOADING),
-    enabled_popups_(false) {
+    enabled_popups_(false),
+    navigate_after_initialization_(false) {
 }
 
 ChromeFrameNPAPI::~ChromeFrameNPAPI() {
@@ -839,7 +840,8 @@ void ChromeFrameNPAPI::OnAutomationServerReady() {
     automation_client_->SetProxySettings(proxy_settings);
   }
 
-  if (!src_.empty()) {
+  if (navigate_after_initialization_ && !src_.empty()) {
+    navigate_after_initialization_ = false;
     if (!automation_client_->InitiateNavigation(src_,
                                                 GetDocumentUrl(),
                                                 is_privileged_)) {
@@ -1125,6 +1127,8 @@ bool ChromeFrameNPAPI::NavigateToURL(const NPVariant* args, uint32_t arg_count,
       src_.clear();
       return false;
     }
+  } else {
+    navigate_after_initialization_ = true;
   }
   return true;
 }
