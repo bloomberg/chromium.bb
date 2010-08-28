@@ -14,6 +14,7 @@
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
+#include "third_party/ppapi/c/dev/pp_video_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
@@ -394,7 +395,7 @@ class PlatformVideoDecoderImpl
     memset(&flush_callback_, 0, sizeof(flush_callback_));
   }
 
-  virtual bool Init(const PP_VideoDecoderConfig& decoder_config) {
+  virtual bool Init(const PP_VideoDecoderConfig_Dev& decoder_config) {
     decoder_config_ = decoder_config;
     input_buffer_size_ = 1024 << 4;
 
@@ -409,7 +410,7 @@ class PlatformVideoDecoderImpl
     return true;
   }
 
-  virtual bool Decode(PP_VideoCompressedDataBuffer& input_buffer) {
+  virtual bool Decode(PP_VideoCompressedDataBuffer_Dev& input_buffer) {
     // TODO(wjia): Implement me!
     NOTIMPLEMENTED();
 
@@ -436,7 +437,7 @@ class PlatformVideoDecoderImpl
   }
 
   virtual bool ReturnUncompressedDataBuffer(
-      PP_VideoUncompressedDataBuffer& buffer) {
+      PP_VideoUncompressedDataBuffer_Dev& buffer) {
     // TODO(wjia): Implement me!
     NOTIMPLEMENTED();
 
@@ -461,8 +462,8 @@ class PlatformVideoDecoderImpl
   size_t input_buffer_size_;
   int next_dib_id_;
   scoped_ptr<TransportDIB> dib_;
-  PP_VideoDecoderConfig decoder_config_;
-  std::queue<PP_VideoCompressedDataBuffer*> input_buffers_;
+  PP_VideoDecoderConfig_Dev decoder_config_;
+  std::queue<PP_VideoCompressedDataBuffer_Dev*> input_buffers_;
   PP_CompletionCallback flush_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
@@ -570,7 +571,7 @@ pepper::PluginDelegate::PlatformContext3D*
 
 pepper::PluginDelegate::PlatformVideoDecoder*
 PepperPluginDelegateImpl::CreateVideoDecoder(
-    const PP_VideoDecoderConfig& decoder_config) {
+    const PP_VideoDecoderConfig_Dev& decoder_config) {
   scoped_ptr<PlatformVideoDecoderImpl> decoder(new PlatformVideoDecoderImpl());
 
   if (!decoder->Init(decoder_config))

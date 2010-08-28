@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/weak_ptr.h"
 #include "third_party/ppapi/c/pp_errors.h"
-#include "third_party/ppapi/c/pp_video.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
@@ -48,7 +47,7 @@ class PepperPluginDelegateImpl
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      const PP_VideoDecoderConfig& decoder_config);
+      const PP_VideoDecoderConfig_Dev& decoder_config);
   virtual void DidChangeNumberOfFindResults(int identifier,
                                             int total,
                                             bool final_result);

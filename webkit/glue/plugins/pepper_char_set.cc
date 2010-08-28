@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "base/i18n/icu_string_conversions.h"
-#include "third_party/ppapi/c/ppb_char_set.h"
+#include "third_party/ppapi/c/dev/ppb_char_set_dev.h"
 #include "unicode/ucnv.h"
 #include "unicode/ucnv_cb.h"
 #include "unicode/ucnv_err.h"
@@ -141,7 +141,7 @@ PP_Var GetDefaultCodePageForUILanguage() {
   return PP_MakeVoid();
 }
 
-const PPB_CharSetDev ppb_charset = {
+const PPB_CharSet_Dev ppb_charset = {
   &UTF16ToCharSet,
   &CharSetToUTF16,
   &GetDefaultCodePageForUILanguage
@@ -150,7 +150,7 @@ const PPB_CharSetDev ppb_charset = {
 }  // namespace
 
 // static
-const PPB_CharSetDev* CharSet::GetInterface() {
+const struct PPB_CharSet_Dev* CharSet::GetInterface() {
   return &ppb_charset;
 }
 

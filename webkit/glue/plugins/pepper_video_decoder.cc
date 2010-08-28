@@ -5,10 +5,10 @@
 #include "webkit/glue/plugins/pepper_video_decoder.h"
 
 #include "base/logging.h"
+#include "third_party/ppapi/c/dev/pp_video_dev.h"
+#include "third_party/ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
-#include "third_party/ppapi/c/pp_video.h"
-#include "third_party/ppapi/c/ppb_video_decoder.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
@@ -18,8 +18,8 @@ namespace pepper {
 namespace {
 
 bool GetConfig(PP_Instance instance_id,
-               PP_VideoCodecId codec,
-               PP_VideoConfig* configs,
+               PP_VideoCodecId_Dev codec,
+               PP_VideoConfig_Dev* configs,
                int32_t config_size,
                int32_t *num_config) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
@@ -39,7 +39,7 @@ bool GetConfig(PP_Instance instance_id,
 }
 
 PP_Resource Create(PP_Instance instance_id,
-                   const PP_VideoDecoderConfig* decoder_config) {
+                   const PP_VideoDecoderConfig_Dev* decoder_config) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return 0;
@@ -53,7 +53,7 @@ PP_Resource Create(PP_Instance instance_id,
 }
 
 bool Decode(PP_Resource decoder_id,
-            PP_VideoCompressedDataBuffer* input_buffer) {
+            PP_VideoCompressedDataBuffer_Dev* input_buffer) {
   scoped_refptr<VideoDecoder> decoder(
       Resource::GetAs<VideoDecoder>(decoder_id));
   if (!decoder)
@@ -73,7 +73,7 @@ int32_t Flush(PP_Resource decoder_id, PP_CompletionCallback callback) {
 }
 
 bool ReturnUncompressedDataBuffer(PP_Resource decoder_id,
-                                  PP_VideoUncompressedDataBuffer* buffer) {
+                                  PP_VideoUncompressedDataBuffer_Dev* buffer) {
   scoped_refptr<VideoDecoder> decoder(
       Resource::GetAs<VideoDecoder>(decoder_id));
   if (!decoder)
@@ -82,7 +82,7 @@ bool ReturnUncompressedDataBuffer(PP_Resource decoder_id,
   return decoder->ReturnUncompressedDataBuffer(*buffer);
 }
 
-const PPB_VideoDecoder ppb_videodecoder = {
+const PPB_VideoDecoder_Dev ppb_videodecoder = {
   &GetConfig,
   &Create,
   &Decode,
@@ -101,11 +101,11 @@ VideoDecoder::~VideoDecoder() {
 }
 
 // static
-const PPB_VideoDecoder* VideoDecoder::GetInterface() {
+const PPB_VideoDecoder_Dev* VideoDecoder::GetInterface() {
   return &ppb_videodecoder;
 }
 
-bool VideoDecoder::Init(const PP_VideoDecoderConfig& decoder_config) {
+bool VideoDecoder::Init(const PP_VideoDecoderConfig_Dev& decoder_config) {
   if (!instance())
     return false;
 
@@ -115,7 +115,7 @@ bool VideoDecoder::Init(const PP_VideoDecoderConfig& decoder_config) {
   return platform_video_decoder_.get()? true : false;
 }
 
-bool VideoDecoder::Decode(PP_VideoCompressedDataBuffer& input_buffer) {
+bool VideoDecoder::Decode(PP_VideoCompressedDataBuffer_Dev& input_buffer) {
   if (!platform_video_decoder_.get())
     return false;
 
@@ -130,7 +130,7 @@ int32_t VideoDecoder::Flush(PP_CompletionCallback& callback) {
 }
 
 bool VideoDecoder::ReturnUncompressedDataBuffer(
-    PP_VideoUncompressedDataBuffer& buffer) {
+    PP_VideoUncompressedDataBuffer_Dev& buffer) {
   if (!platform_video_decoder_.get())
     return false;
 

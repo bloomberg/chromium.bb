@@ -11,7 +11,6 @@
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/pp_stdint.h"
-#include "third_party/ppapi/c/pp_video.h"
 
 class AudioMessageFilter;
 
@@ -31,6 +30,10 @@ namespace WebKit {
 class WebFileChooserCompletion;
 struct WebFileChooserParams;
 }
+
+struct PP_VideoCompressedDataBuffer_Dev;
+struct PP_VideoDecoderConfig_Dev;
+struct PP_VideoUncompressedDataBuffer_Dev;
 
 namespace pepper {
 
@@ -102,10 +105,10 @@ class PluginDelegate {
     virtual ~PlatformVideoDecoder() {}
 
     // Returns false on failure.
-    virtual bool Decode(PP_VideoCompressedDataBuffer& input_buffer) = 0;
+    virtual bool Decode(PP_VideoCompressedDataBuffer_Dev& input_buffer) = 0;
     virtual int32_t Flush(PP_CompletionCallback& callback) = 0;
     virtual bool ReturnUncompressedDataBuffer(
-        PP_VideoUncompressedDataBuffer& buffer) = 0;
+        PP_VideoUncompressedDataBuffer_Dev& buffer) = 0;
   };
 
   // Indicates that the given instance has been created.
@@ -124,7 +127,7 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      const PP_VideoDecoderConfig& decoder_config) = 0;
+      const PP_VideoDecoderConfig_Dev& decoder_config) = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,

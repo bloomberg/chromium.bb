@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_CHAR_SET_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_CHAR_SET_H_
 
-typedef struct _ppb_CharSetDev PPB_CharSetDev;
+struct PPB_CharSet_Dev;
 
 namespace pepper {
 
@@ -13,7 +13,7 @@ class CharSet {
  public:
   // Returns a pointer to the interface implementing PPB_CharSet that is
   // exposed to the plugin.
-  static const PPB_CharSetDev* GetInterface();
+  static const PPB_CharSet_Dev* GetInterface();
 };
 
 }  // namespace pepper

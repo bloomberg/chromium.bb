@@ -322,7 +322,7 @@ bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
   return true;
 }
 
-bool PluginInstance::SetCursor(PP_CursorType type) {
+bool PluginInstance::SetCursor(PP_CursorType_Dev type) {
   cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
   return true;
 }

@@ -5,9 +5,8 @@
 #include "webkit/glue/plugins/pepper_audio.h"
 
 #include "base/logging.h"
-#include "third_party/ppapi/c/ppb_audio.h"
-#include "third_party/ppapi/c/ppb_audio_trusted.h"
-
+#include "third_party/ppapi/c/dev/ppb_audio_dev.h"
+#include "third_party/ppapi/c/dev/ppb_audio_trusted_dev.h"
 
 namespace pepper {
 
@@ -77,20 +76,20 @@ int GetOSDescriptor(PP_Resource audio_id) {
   return -1;
 }
 
-const PPB_AudioConfig ppb_audioconfig = {
+const PPB_AudioConfig_Dev ppb_audioconfig = {
   &CreateStereo16bit,
   &GetSampleRate,
   &GetSampleFrameCount
 };
 
-const PPB_Audio ppb_audio = {
+const PPB_Audio_Dev ppb_audio = {
   &Create,
   &GetCurrentConfiguration,
   &StartPlayback,
   &StopPlayback,
 };
 
-const PPB_AudioTrusted ppb_audiotrusted = {
+const PPB_AudioTrusted_Dev ppb_audiotrusted = {
   &GetBuffer,
   &GetOSDescriptor
 };
@@ -104,7 +103,7 @@ AudioConfig::AudioConfig(PluginModule* module, int32_t sample_rate,
       sample_frame_count_(sample_frame_count) {
 }
 
-const PPB_AudioConfig* AudioConfig::GetInterface() {
+const PPB_AudioConfig_Dev* AudioConfig::GetInterface() {
   return &ppb_audioconfig;
 }
 
@@ -134,11 +133,11 @@ Audio::~Audio() {
 }
 
 
-const PPB_Audio* Audio::GetInterface() {
+const PPB_Audio_Dev* Audio::GetInterface() {
   return &ppb_audio;
 }
 
-const PPB_AudioTrusted* Audio::GetTrustedInterface() {
+const PPB_AudioTrusted_Dev* Audio::GetTrustedInterface() {
   return &ppb_audiotrusted;
 }
 

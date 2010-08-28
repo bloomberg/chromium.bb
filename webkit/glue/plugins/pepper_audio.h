@@ -7,9 +7,9 @@
 #include "base/shared_memory.h"
 #include "base/simple_thread.h"
 #include "base/sync_socket.h"
-#include "third_party/ppapi/c/ppb_audio.h"
-#include "third_party/ppapi/c/ppb_audio_config.h"
-#include "third_party/ppapi/c/ppb_audio_trusted.h"
+#include "third_party/ppapi/c/dev/ppb_audio_dev.h"
+#include "third_party/ppapi/c/dev/ppb_audio_config_dev.h"
+#include "third_party/ppapi/c/dev/ppb_audio_trusted_dev.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
@@ -28,7 +28,7 @@ class AudioConfig : public Resource {
   AudioConfig(PluginModule* module, int32_t sample_rate,
               int32_t sample_frame_count);
 
-  static const PPB_AudioConfig* GetInterface();
+  static const PPB_AudioConfig_Dev* GetInterface();
 
   uint32_t sample_rate() { return sample_rate_; }
   uint32_t sample_frame_count() { return sample_frame_count_; }
@@ -48,8 +48,8 @@ class Audio : public Resource,
   explicit Audio(PluginModule* module);
   virtual ~Audio();
 
-  static const PPB_Audio* GetInterface();
-  static const PPB_AudioTrusted* GetTrustedInterface();
+  static const PPB_Audio_Dev* GetInterface();
+  static const PPB_AudioTrusted_Dev* GetTrustedInterface();
 
   bool Init(PluginDelegate* plugin_delegate, PP_Resource config_id,
             PPB_Audio_Callback callback, void* user_data);

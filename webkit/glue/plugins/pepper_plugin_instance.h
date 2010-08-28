@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "gfx/rect.h"
-#include "third_party/ppapi/c/pp_cursor_type.h"
+#include "third_party/ppapi/c/dev/pp_cursor_type_dev.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/ppp_printing.h"
@@ -92,7 +92,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PP_Var GetOwnerElementObject();
   bool BindGraphicsDeviceContext(PP_Resource device_id);
   bool full_frame() const { return full_frame_; }
-  bool SetCursor(PP_CursorType type);
+  bool SetCursor(PP_CursorType_Dev type);
 
   // PPP_Instance pass-through.
   void Delete();

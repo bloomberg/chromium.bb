@@ -12,8 +12,9 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "third_party/ppapi/c/dev/ppb_char_set_dev.h"
+#include "third_party/ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "third_party/ppapi/c/ppb_buffer.h"
-#include "third_party/ppapi/c/ppb_char_set.h"
 #include "third_party/ppapi/c/ppb_core.h"
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/ppapi/c/ppb_file_io.h"
@@ -31,7 +32,6 @@
 #include "third_party/ppapi/c/ppb_url_response_info.h"
 #include "third_party/ppapi/c/ppb_url_util.h"
 #include "third_party/ppapi/c/ppb_var.h"
-#include "third_party/ppapi/c/ppb_video_decoder.h"
 #include "third_party/ppapi/c/ppb_widget.h"
 #include "third_party/ppapi/c/ppp.h"
 #include "third_party/ppapi/c/ppp_instance.h"
@@ -174,11 +174,11 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetInterface();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
     return ImageData::GetInterface();
-  if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE) == 0)
+  if (strcmp(name, PPB_AUDIO_CONFIG_DEV_INTERFACE) == 0)
     return AudioConfig::GetInterface();
-  if (strcmp(name, PPB_AUDIO_INTERFACE) == 0)
+  if (strcmp(name, PPB_AUDIO_DEV_INTERFACE) == 0)
     return Audio::GetInterface();
-  if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
+  if (strcmp(name, PPB_AUDIO_TRUSTED_DEV_INTERFACE) == 0)
     return Audio::GetTrustedInterface();
   if (strcmp(name, PPB_DEVICECONTEXT2D_INTERFACE) == 0)
     return DeviceContext2D::GetInterface();
@@ -220,9 +220,9 @@ const void* GetInterface(const char* name) {
     return Private::GetInterface();
   if (strcmp(name, PPB_FILECHOOSER_INTERFACE) == 0)
     return FileChooser::GetInterface();
-  if (strcmp(name, PPB_VIDEODECODER_INTERFACE) == 0)
+  if (strcmp(name, PPB_VIDEODECODER_DEV_INTERFACE) == 0)
     return VideoDecoder::GetInterface();
-  if (strcmp(name, PPB_CHAR_SET_DEV) == 0)
+  if (strcmp(name, PPB_CHAR_SET_DEV_INTERFACE) == 0)
     return CharSet::GetInterface();
 
   // Only support the testing interface when the command line switch is
