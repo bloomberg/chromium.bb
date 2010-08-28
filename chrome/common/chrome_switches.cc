@@ -252,6 +252,9 @@ const char kDisableSharedWorkers[]          = "disable-shared-workers";
 // Disable site-specific tailoring to compatibility issues in WebKit.
 const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 
+// Disables speech input.
+const char kDisableSpeechInput[]            = "disable-speech-input";
+
 // Disable False Start in SSL and TLS connections.
 const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
 
