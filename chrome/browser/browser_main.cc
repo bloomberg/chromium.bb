@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/system_monitor.h"
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/field_trial.h"
 #include "base/file_path.h"
@@ -843,6 +844,10 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded();
 }
 
 DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
+  // Need an instance of AtExitManager to handle singleton creations and
+  // deletions.  We need this new instance because, the old instance created
+  // in ChromeMain() got destructed when the function returned.
+  base::AtExitManager exit_manager;
   Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
 }
 #endif
