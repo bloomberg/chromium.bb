@@ -33,9 +33,9 @@ class FirstRun {
  public:
   // There are three types of possible first run bubbles:
   typedef enum {
-    LARGEBUBBLE = 0,  // The normal bubble, with search engine choice
-    OEMBUBBLE,        // Smaller bubble for OEM builds
-    MINIMALBUBBLE     // Minimal bubble shown after search engine dialog
+    LARGE_BUBBLE,      // The normal bubble, with search engine choice
+    OEM_BUBBLE,        // Smaller bubble for OEM builds
+    MINIMAL_BUBBLE     // Minimal bubble shown after search engine dialog
   } BubbleType;
   // See ProcessMasterPreferences for more info about this structure.
   struct MasterPrefs {

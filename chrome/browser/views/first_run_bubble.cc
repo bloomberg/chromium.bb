@@ -467,13 +467,13 @@ FirstRunBubble* FirstRunBubble::Show(Profile* profile,
   FirstRunBubbleViewBase* view = NULL;
 
   switch (bubble_type) {
-    case FirstRun::OEMBUBBLE:
+    case FirstRun::OEM_BUBBLE:
       view = new FirstRunOEMBubbleView(window, profile);
       break;
-    case FirstRun::LARGEBUBBLE:
+    case FirstRun::LARGE_BUBBLE:
       view = new FirstRunBubbleView(window, profile);
       break;
-    case FirstRun::MINIMALBUBBLE:
+    case FirstRun::MINIMAL_BUBBLE:
       view = new FirstRunMinimalBubbleView(window, profile);
       break;
     default:

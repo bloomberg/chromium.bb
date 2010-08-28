@@ -380,15 +380,15 @@ void Browser::CreateBrowserWindow() {
     return;
   if (local_state->FindPreference(prefs::kShouldShowFirstRunBubble) &&
       local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
-    FirstRun::BubbleType bubble_type = FirstRun::LARGEBUBBLE;
+    FirstRun::BubbleType bubble_type = FirstRun::LARGE_BUBBLE;
     if (local_state->
         FindPreference(prefs::kShouldUseOEMFirstRunBubble) &&
         local_state->GetBoolean(prefs::kShouldUseOEMFirstRunBubble)) {
-      bubble_type = FirstRun::OEMBUBBLE;
+      bubble_type = FirstRun::OEM_BUBBLE;
     } else if (local_state->
         FindPreference(prefs::kShouldUseMinimalFirstRunBubble) &&
         local_state->GetBoolean(prefs::kShouldUseMinimalFirstRunBubble)) {
-      bubble_type = FirstRun::MINIMALBUBBLE;
+      bubble_type = FirstRun::MINIMAL_BUBBLE;
     }
     // Reset the preference so we don't show the bubble for subsequent windows.
     local_state->ClearPref(prefs::kShouldShowFirstRunBubble);

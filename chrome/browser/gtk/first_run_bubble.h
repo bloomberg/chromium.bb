@@ -44,8 +44,18 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
  private:
   FirstRunBubble(Profile* profile,
                  GtkWidget* anchor,
-                 const gfx::Rect& rect);
-  ~FirstRunBubble() { }
+                 const gfx::Rect& rect,
+                 FirstRun::BubbleType bubble_type);
+  virtual ~FirstRunBubble();
+
+  // Create and pack widgets for different bubble types.
+  void InitializeContentForLarge();
+  void InitializeContentForOEM();
+  void InitializeContentForMinimal();
+
+  // Contains some common set up for the labels in the bubble. |width| is a
+  // resource that holds the desired width for the labels.
+  void InitializeLabels(int width_resource);
 
   CHROMEGTK_CALLBACK_0(FirstRunBubble, void, HandleDestroy);
   CHROMEGTK_CALLBACK_0(FirstRunBubble, void, HandleKeepButton);
