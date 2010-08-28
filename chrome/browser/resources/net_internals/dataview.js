@@ -50,11 +50,19 @@ DataView.prototype.onExportToText_ = function() {
 
   text.push('');
   text.push('----------------------------------------------');
-  text.push(' Proxy settings');
+  text.push(' Proxy settings (effective)');
   text.push('----------------------------------------------');
   text.push('');
 
-  text.push(g_browser.proxySettings_.currentData_);
+  text.push(g_browser.proxySettings_.currentData_.effective);
+
+  text.push('');
+  text.push('----------------------------------------------');
+  text.push(' Proxy settings (original)');
+  text.push('----------------------------------------------');
+  text.push('');
+
+  text.push(g_browser.proxySettings_.currentData_.original);
 
   text.push('');
   text.push('----------------------------------------------');
