@@ -38,14 +38,12 @@ void FFmpegVideoDecodeEngine::Initialize(
   // continue processing. Although it'd be nice to have the option of a single
   // decoding thread, FFmpeg treats having one thread the same as having zero
   // threads (i.e., avcodec_decode_video() will execute on the calling thread).
-  // Yet another reason for having three threads :)
-  static const int kDecodeThreads = 3;
+  // Yet another reason for having two threads :)
+  static const int kDecodeThreads = 2;
   static const int kMaxDecodeThreads = 16;
-
 
   av_stream_ = static_cast<AVStream*>(config.opaque_context_);
   codec_context_ = av_stream_->codec;
-  codec_context_->flags2 |= CODEC_FLAG2_FAST;  // Enable faster H264 decode.
   // Enable motion vector search (potentially slow), strong deblocking filter
   // for damaged macroblocks, and set our error detection sensitivity.
   codec_context_->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;

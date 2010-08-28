@@ -330,6 +330,7 @@ int main(int argc, const char** argv) {
     codec_context->skip_frame = AVDISCARD_NONREF;
   }
   if (fast2) {
+    // Note this flag is no longer necessary for H264 multithreading.
     codec_context->flags2 |= CODEC_FLAG2_FAST;
   }
   if (error_correction) {
