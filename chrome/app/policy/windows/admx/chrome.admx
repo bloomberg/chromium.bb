@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitions revision="1.0" schemaVersion="1.0">
   <policyNamespaces>
-    <target prefix="fullarmor" namespace="FullArmor.8081fe0d-e6b1-4b41-a574-7f4b644f3c33" />
+    <target prefix="fullarmor" namespace="FullArmor.2aed224a-34bd-4068-b8b3-fc3ab6c12bcd" />
     <using prefix="windows" namespace="Microsoft.Policies.Windows" />
   </policyNamespaces>
-  <supersededAdm fileName="chrome.adm" />
+  <supersededAdm fileName="D:\chrome.adm" />
   <resources minRequiredRevision="1.0" />
   <supportedOn>
     <definitions>
@@ -139,7 +139,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="DisabledPlugins" class="Machine" displayName="$(string.DisabledPlugins)" explainText="$(string.DisabledPlugins_Explain)" presentation="$(presentation.DisabledPlugins)" key="Software\Policies\Google\Chrome" valueName="DisabledPlugins">
+    <policy name="DisabledPlugins" class="Machine" displayName="$(string.DisabledPlugins)" explainText="$(string.DisabledPlugins_Explain)" presentation="$(presentation.DisabledPlugins)" key="Software\Policies\Google\Chrome\DisabledPlugins">
       <parentCategory ref="googlechrome" />
       <supportedOn ref="SUPPORTED_WINXPSP2" />
       <elements>
