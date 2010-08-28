@@ -392,14 +392,13 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
                    G_CALLBACK(OnGripperButtonReleaseThunk), this);
   signals_.Connect(gripper, "button-press-event",
                    G_CALLBACK(OnGripperButtonPressThunk), this);
-  signals_.Connect(overflow_button_->widget(), "button-press-event",
+  signals_.Connect(chevron(), "button-press-event",
                    G_CALLBACK(OnOverflowButtonPressThunk), this);
 
   // |overflow_alignment| adds padding to the right of the browser action
   // buttons, but only appears when the overflow menu is showing.
   overflow_alignment_ = gtk_alignment_new(0, 0, 1, 1);
-  gtk_container_add(GTK_CONTAINER(overflow_alignment_),
-                    overflow_button_->widget());
+  gtk_container_add(GTK_CONTAINER(overflow_alignment_), chevron());
 
   // |overflow_area_| holds the overflow chevron and the separator, which
   // is only shown in GTK+ theme mode.
@@ -661,7 +660,7 @@ void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
   if (browser_action->HasPopup(tab_id)) {
     ExtensionPopupGtk::Show(
         browser_action->GetPopupUrl(tab_id), browser(),
-        overflow_button_->widget(),
+        chevron(),
         false);
   } else {
     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
@@ -709,7 +708,7 @@ void BrowserActionsToolbarGtk::UpdateChevronVisibility() {
         // take that much space away from |button_hbox_| to make the drag look
         // smoother.
         GtkRequisition req;
-        gtk_widget_size_request(overflow_button_->widget(), &req);
+        gtk_widget_size_request(chevron(), &req);
         gint overflow_width = req.width;
         gtk_widget_size_request(button_hbox_.get(), &req);
         gint button_hbox_width = req.width;
@@ -882,7 +881,7 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
                    G_CALLBACK(OnOverflowMenuButtonPressThunk), this);
 
   overflow_button_->SetPaintOverride(GTK_STATE_ACTIVE);
-  overflow_menu_->PopupAsFromKeyEvent(overflow_button_->widget());
+  overflow_menu_->PopupAsFromKeyEvent(chevron());
 
   return FALSE;
 }

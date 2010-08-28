@@ -80,6 +80,10 @@ class ExtensionInstalledBubbleGtk
   NotificationRegistrar registrar_;
   BubbleType type_;
 
+  // The number of times to retry showing the bubble if the browser action
+  // toolbar is animating.
+  int animation_wait_retries_;
+
   // The 'x' that the user can press to hide the info bubble shelf.
   scoped_ptr<CustomDrawButton> close_button_;
 

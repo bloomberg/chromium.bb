@@ -42,6 +42,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   virtual ~BrowserActionsToolbarGtk();
 
   GtkWidget* widget() { return hbox_.get(); }
+  GtkWidget* chevron() { return overflow_button_->widget(); }
 
   // Returns the widget in use by the BrowserActionButton corresponding to
   // |extension|. Used in positioning the ExtensionInstalledBubble for
@@ -62,6 +63,10 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details);
+
+  bool animating() {
+    return resize_animation_.is_animating();
+  }
 
  private:
   friend class BrowserActionButton;

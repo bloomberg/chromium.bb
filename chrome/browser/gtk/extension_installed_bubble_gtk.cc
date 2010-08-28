@@ -32,6 +32,12 @@ const int kIconSize = 43;
 const int kTextColumnVerticalSpacing = 7;
 const int kTextColumnWidth = 350;
 
+// When showing the bubble for a new browser action, we may have to wait for
+// the toolbar to finish animating to know where the item's final position
+// will be.
+const int kAnimationWaitRetries = 10;
+const int kAnimationWaitMS = 50;
+
 // Padding between content and edge of info bubble.
 const int kContentBorder = 7;
 
@@ -47,7 +53,8 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(Extension *extension,
                                                          SkBitmap icon)
     : extension_(extension),
       browser_(browser),
-      icon_(icon) {
+      icon_(icon),
+      animation_wait_retries_(kAnimationWaitRetries) {
   AddRef();  // Balanced in Close().
 
   if (extension_->browser_action()) {
@@ -91,16 +98,29 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   GtkWidget* reference_widget = NULL;
 
   if (type_ == BROWSER_ACTION) {
-    reference_widget = browser_window->GetToolbar()->GetBrowserActionsToolbar()
-        ->GetBrowserActionWidget(extension_);
+    BrowserActionsToolbarGtk* toolbar =
+        browser_window->GetToolbar()->GetBrowserActionsToolbar();
+
+    if (toolbar->animating() && animation_wait_retries_-- > 0) {
+      MessageLoopForUI::current()->PostDelayedTask(
+          FROM_HERE,
+          NewRunnableMethod(this, &ExtensionInstalledBubbleGtk::ShowInternal),
+          kAnimationWaitMS);
+      return;
+    }
+
+    reference_widget = toolbar->GetBrowserActionWidget(extension_);
     // glib delays recalculating layout, but we need reference_widget to know
     // its coordinates, so we force a check_resize here.
     gtk_container_check_resize(GTK_CONTAINER(
         browser_window->GetToolbar()->widget()));
     // If the widget is not visible then browser_window could be incognito
-    // with this extension disabled. Fall back to default position.
-    if (reference_widget && !GTK_WIDGET_VISIBLE(reference_widget))
-      reference_widget = NULL;
+    // with this extension disabled. Try showing it on the chevron.
+    // If that fails, fall back to default position.
+    if (reference_widget && !GTK_WIDGET_VISIBLE(reference_widget)) {
+      reference_widget = GTK_WIDGET_VISIBLE(toolbar->chevron()) ?
+          toolbar->chevron() : NULL;
+    }
   } else if (type_ == PAGE_ACTION) {
     LocationBarViewGtk* location_bar_view =
         browser_window->GetToolbar()->GetLocationBarView();
