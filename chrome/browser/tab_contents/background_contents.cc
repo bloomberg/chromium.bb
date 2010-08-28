@@ -166,13 +166,14 @@ void BackgroundContents::CreateNewWindow(
     int route_id,
     WindowContainerType window_container_type,
     const string16& frame_name) {
-  delegate_view_helper_.CreateNewWindow(route_id,
-                                        render_view_host_->process()->profile(),
-                                        render_view_host_->site_instance(),
-                                        DOMUIFactory::GetDOMUIType(url_),
-                                        this,
-                                        window_container_type,
-                                        frame_name);
+  delegate_view_helper_.CreateNewWindow(
+      route_id,
+      render_view_host_->process()->profile(),
+      render_view_host_->site_instance(),
+      DOMUIFactory::GetDOMUIType(render_view_host_->process()->profile(), url_),
+      this,
+      window_container_type,
+      frame_name);
 }
 
 void BackgroundContents::CreateNewWidget(int route_id,

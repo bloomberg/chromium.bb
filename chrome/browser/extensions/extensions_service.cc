@@ -533,7 +533,7 @@ void ExtensionsService::LoadComponentExtensions() {
     // In order for the --apps-gallery-url switch to work with the gallery
     // process isolation, we must insert any provided value into the component
     // app's launch url and web extent.
-    if (extension->id() == extension_misc::kWebStoreAppId ) {
+    if (extension->id() == extension_misc::kWebStoreAppId) {
       GURL gallery_url(CommandLine::ForCurrentProcess()
           ->GetSwitchValueASCII(switches::kAppsGalleryURL));
       if (gallery_url.is_valid()) {
@@ -1253,6 +1253,16 @@ Extension* ExtensionsService::GetExtensionByWebExtent(const GURL& url) {
       return extensions_[i];
   }
   return NULL;
+}
+
+bool ExtensionsService::ExtensionBindingsAllowed(const GURL& url) {
+  // Allow bindings for all packaged extension.
+  if (GetExtensionByURL(url))
+    return true;
+
+  // Allow bindings for all component, hosted apps.
+  Extension* extension = GetExtensionByWebExtent(url);
+  return (extension && extension->location() == Extension::COMPONENT);
 }
 
 Extension* ExtensionsService::GetExtensionByOverlappingWebExtent(

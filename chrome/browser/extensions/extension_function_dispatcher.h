@@ -114,7 +114,7 @@ class ExtensionFunctionDispatcher {
   const GURL& url() { return url_; }
 
   // Gets the ID for this extension.
-  const std::string extension_id() { return url_.host(); }
+  const std::string extension_id() { return extension_id_; }
 
   // The profile that this dispatcher is associated with.
   Profile* profile();
@@ -138,6 +138,8 @@ class ExtensionFunctionDispatcher {
   Delegate* delegate_;
 
   GURL url_;
+
+  std::string extension_id_;
 
   scoped_refptr<Peer> peer_;
 

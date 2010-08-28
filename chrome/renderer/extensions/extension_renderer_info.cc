@@ -29,6 +29,7 @@ void ExtensionRendererInfo::Update(const ViewMsg_ExtensionRendererInfo& info) {
   id_ = info.id;
   web_extent_ = info.web_extent;
   name_ = info.name;
+  location_ = info.location;
   icon_url_ = info.icon_url;
 }
 
@@ -43,6 +44,18 @@ void ExtensionRendererInfo::UpdateExtensions(
 
   for (size_t i = 0; i < count; ++i)
     extensions_->at(i).Update(params.extensions[i]);
+}
+
+// static
+std::string ExtensionRendererInfo::GetIdByURL(const GURL& url) {
+  if (url.SchemeIs(chrome::kExtensionScheme))
+    return url.host();
+
+  ExtensionRendererInfo* info = GetByURL(url);
+  if (!info)
+    return "";
+
+  return info->id();
 }
 
 // static
@@ -83,4 +96,22 @@ ExtensionRendererInfo* ExtensionRendererInfo::GetByID(
       return &(*i);
   }
   return NULL;
+}
+
+// static
+bool ExtensionRendererInfo::ExtensionBindingsAllowed(const GURL& url) {
+  if (url.SchemeIs(chrome::kExtensionScheme))
+    return true;
+
+  if (!extensions_)
+    return false;
+
+  std::vector<ExtensionRendererInfo>::iterator i = extensions_->begin();
+  for (; i != extensions_->end(); ++i) {
+    if (i->location_ == Extension::COMPONENT &&
+        i->web_extent_.ContainsURL(url))
+      return true;
+  }
+
+  return false;
 }

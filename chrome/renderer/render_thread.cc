@@ -853,32 +853,46 @@ void RenderThread::EnsureWebKitInitialized() {
   WebScriptController::registerExtension(
       extensions_v8::ExternalExtension::Get());
 
-  const WebKit::WebString kExtensionScheme =
-      WebKit::WebString::fromUTF8(chrome::kExtensionScheme);
+  // TODO(rafaelw). Note that extension-related v8 extensions are being
+  // bound currently based on is_extension_process_. This means that
+  // non-extension renderers that slip into an extension process (for example,
+  // an extension page opening an iframe) will be extension bindings setup.
+  // This should be relatively rare, and the offending page won't be able to
+  // make extension API requests because it'll be denied on both sides of
+  // the renderer by a permission check. However, this is still fairly lame
+  // and we should consider implementing a V8Proxy delegate that calls out
+  // to the render thread and makes a decision as to whether to bind these
+  // extensions based on the frame's url.
+  // See: crbug.com/53610.
 
-  WebScriptController::registerExtension(
-      ExtensionProcessBindings::Get(), kExtensionScheme);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(ExtensionProcessBindings::Get());
 
   WebScriptController::registerExtension(
       BaseJsV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
-  WebScriptController::registerExtension(
-      BaseJsV8Extension::Get(), kExtensionScheme);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(BaseJsV8Extension::Get());
+
   WebScriptController::registerExtension(
       JsonSchemaJsV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
-  WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get(),
-                                         kExtensionScheme);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());
+
   WebScriptController::registerExtension(
       EventBindings::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
-  WebScriptController::registerExtension(EventBindings::Get(),
-                                         kExtensionScheme);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(EventBindings::Get());
+
   WebScriptController::registerExtension(
       RendererExtensionBindings::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
-  WebScriptController::registerExtension(
-      RendererExtensionBindings::Get(), kExtensionScheme);
-  WebScriptController::registerExtension(
-      ExtensionApiTestV8Extension::Get(), kExtensionScheme);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(RendererExtensionBindings::Get());
+
   WebScriptController::registerExtension(
       ExtensionApiTestV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  if (is_extension_process_)
+      WebScriptController::registerExtension(
+          ExtensionApiTestV8Extension::Get());
 
   web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());

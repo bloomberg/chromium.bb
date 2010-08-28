@@ -10,6 +10,7 @@
 #include "base/process_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/url_constants.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "testing/gtest/include/gtest/gtest.h"

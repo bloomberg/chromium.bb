@@ -16,8 +16,11 @@ static void DispatchOnConnect(int source_port_id, const std::string& name,
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   args.Set(1, Value::CreateStringValue(name));
   args.Set(2, Value::CreateStringValue(tab_json));
-  args.Set(3, Value::CreateStringValue(""));  // extension ID is empty for tests
-  args.Set(4, Value::CreateStringValue(""));  // extension ID is empty for tests
+  // Testing extensionId. Set in EventBindings::HandleContextCreated.
+  // We use the same id for source & target to similute an extension "talking
+  // to itself".
+  args.Set(3, Value::CreateStringValue(EventBindings::kTestingExtensionId));
+  args.Set(4, Value::CreateStringValue(EventBindings::kTestingExtensionId));
   RendererExtensionBindings::Invoke(
       ExtensionMessageService::kDispatchOnConnect, args, NULL, false, GURL());
 }

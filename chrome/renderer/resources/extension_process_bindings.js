@@ -27,6 +27,9 @@ var chrome = chrome || {};
   // ensure we don't expose the APIs in that case.
   if (!IsExtensionProcess()) {
     chromeHidden.onLoad.addListener(function (extensionId) {
+      if (!extensionId) {
+        return;
+      }
       chrome.initExtension(extensionId, false);
     });
     return;
@@ -296,6 +299,9 @@ var chrome = chrome || {};
   }
 
   chromeHidden.onLoad.addListener(function (extensionId) {
+    if (!extensionId) {
+      return;
+    }
     chrome.initExtension(extensionId, false);
 
     // |apiFunctions| is a hash of name -> object that stores the

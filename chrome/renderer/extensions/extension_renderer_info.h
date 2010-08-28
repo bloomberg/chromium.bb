@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "googleurl/src/gurl.h"
 
@@ -34,6 +35,13 @@ class ExtensionRendererInfo {
 
   // Returns the extension ID that the given URL is a part of, or empty if
   // none. This includes web URLs that are part of an extension's web extent.
+  static std::string GetIdByURL(const GURL& url);
+
+  // Returns the ExtensionRendererInfo that the given URL is a part of, or NULL
+  // if none. This includes web URLs that are part of an extension's web extent.
+  // NOTE: This can return NULL if called before UpdateExtensions receives
+  // bulk extension data (e.g. if called from
+  // EventBindings::HandleContextCreated)
   static ExtensionRendererInfo* GetByURL(const GURL& url);
 
   // Returns true if |new_url| is in the extent of the same extension as
@@ -43,6 +51,11 @@ class ExtensionRendererInfo {
   // Look up an ExtensionInfo object by id.
   static ExtensionRendererInfo* GetByID(const std::string& id);
 
+  // Returns true if |url| should get extension api bindings and be permitted
+  // to make api calls. Note that this is independent of what extension
+  // permissions the given extension has been granted.
+  static bool ExtensionBindingsAllowed(const GURL& url);
+
  private:
   void Update(const ViewMsg_ExtensionRendererInfo& info);
 
@@ -51,6 +64,7 @@ class ExtensionRendererInfo {
   std::string id_;
   ExtensionExtent web_extent_;
   std::string name_;
+  Extension::Location location_;
   GURL icon_url_;
 
   // static
