@@ -175,7 +175,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
       .WillOnce(Return(&codec_));
   EXPECT_CALL(*MockFFmpeg::get(), AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 3))
+  EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 2))
       .WillOnce(Return(0));
   EXPECT_CALL(*MockFFmpeg::get(), AVCodecOpen(&codec_context_, &codec_))
       .WillOnce(Return(-1));
