@@ -51,7 +51,7 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
   { ConfigurationPolicyStore::kPolicyAutoFillEnabled,
       Value::TYPE_BOOLEAN, policy::key::kAutoFillEnabled },
   { ConfigurationPolicyStore::kPolicyDisabledPlugins,
-      Value::TYPE_STRING, policy::key::kDisabledPluginsList },
+      Value::TYPE_LIST, policy::key::kDisabledPlugins },
   { ConfigurationPolicyStore::kPolicyApplicationLocale,
       Value::TYPE_STRING, policy::key::kApplicationLocaleValue },
   { ConfigurationPolicyStore::kPolicySyncDisabled,

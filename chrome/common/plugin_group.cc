@@ -284,13 +284,8 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
   result->SetBoolean("critical", IsVulnerable());
 
   bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
-  if (group_disabled_by_policy) {
-    result->SetString("enabledMode", "disabledByPolicy");
-  } else {
-    result->SetString("enabledMode", enabled_ ? "enabled" : "disabledByUser");
-  }
-
   ListValue* plugin_files = new ListValue();
+  bool all_plugins_disabled_by_policy = true;
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
     const WebPluginInfo& web_plugin = web_plugin_infos_[i];
     int priority = web_plugin_positions_[i];
@@ -304,6 +299,7 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
     if (plugin_disabled_by_policy) {
       plugin_file->SetString("enabledMode", "disabledByPolicy");
     } else {
+      all_plugins_disabled_by_policy = false;
       plugin_file->SetString("enabledMode",
                              web_plugin.enabled ? "enabled" : "disabledByUser");
     }
@@ -332,6 +328,12 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
     plugin_file->Set("mimeTypes", mime_types);
 
     plugin_files->Append(plugin_file);
+  }
+
+  if (group_disabled_by_policy || all_plugins_disabled_by_policy) {
+    result->SetString("enabledMode", "disabledByPolicy");
+  } else {
+    result->SetString("enabledMode", enabled_ ? "enabled" : "disabledByUser");
   }
   result->Set("plugin_files", plugin_files);
 

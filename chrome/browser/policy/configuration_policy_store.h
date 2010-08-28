@@ -38,11 +38,6 @@ class ConfigurationPolicyStore {
     kPolicyExtensionInstallAllowList,
     kPolicyExtensionInstallDenyList,
     kPolicyShowHomeButton,
-
-    // A policy for allowing administrators to forcibly disable
-    // specific plugins. This policy is a comma-separated list of
-    // plugin names. Plugin names must not include the backslash
-    // character.
     kPolicyDisabledPlugins
   };
 

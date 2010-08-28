@@ -120,10 +120,10 @@ If you disable this setting, the AutoFill feature will not be available to users
 
 If you enable or do not configure this setting, users can turn on and configure AutoFill.</string>
       <string id="DisabledPlugins">Specify a list of plugins that are disabled</string>
-      <string id="DisabledPlugins_Explain">Specifies a list of plugins that are disabled in Google Chrome and prevents users from changing this setting. The value is a comma-separated list of the names of plugins to be disabled.
+      <string id="DisabledPlugins_Explain">Specifies a list of plugins that are disabled in Google Chrome and prevents users from changing this setting.
 
 If you enable this setting, the specified list of plugins is never used in Google Chrome. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them.</string>
-      <string id="DisabledPluginsList">Comma-separated list of disabled plugins:</string>
+      <string id="DisabledPluginsDesc">Specify plugins names and groups that are disabled.</string>
       <string id="Sync">Disallow synchronization of data with Google</string>
       <string id="Sync_Explain">Disallows data synchronization in Google Chrome using Google-hosted synchronization services and prevents users from changing this setting.
 
@@ -161,9 +161,7 @@ If you disable this setting, the button will be hidden.</string>
       <presentation id="PasswordManagerEnabled" />
       <presentation id="AutoFillEnabled" />
       <presentation id="DisabledPlugins">
-        <textBox refId="DisabledPluginsList">
-          <label>Comma-separated list of disabled plugins:</label>
-        </textBox>
+        <listBox refId="DisabledPluginsDesc">Specify plugins names and groups that are disabled.</listBox>
       </presentation>
       <presentation id="Sync" />
       <presentation id="Proxy">

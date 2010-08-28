@@ -41,8 +41,11 @@ class TestConfigurationPolicyProviderWin
   void SetBooleanPolicy(ConfigurationPolicyStore::PolicyType type,
                         HKEY hive, bool value);
   void SetCookiesMode(HKEY hive, uint32 value);
-  void AllowExtension(HKEY hive, int index, const wchar_t* id);
-  void DenyExtension(HKEY hive, int index, const wchar_t* id);
+
+  void AddToList(HKEY hive,
+                 const char* key,
+                 int index,
+                 const wchar_t* id);
 
   typedef std::vector<PolicyValueMapEntry> PolicyValueMap;
   static const PolicyValueMap* PolicyValueMapping() {
@@ -82,22 +85,13 @@ void TestConfigurationPolicyProviderWin::SetHomepageRegistryValueWrongType(
       5));
 }
 
-void TestConfigurationPolicyProviderWin::AllowExtension(HKEY hive,
-                                                        int index,
-                                                        const wchar_t* id) {
+void TestConfigurationPolicyProviderWin::AddToList(HKEY hive,
+                                                   const char* key_name,
+                                                   int index,
+                                                   const wchar_t* id) {
   RegKey key(hive,
              (string16(policy::kRegistrySubKey) + ASCIIToUTF16("\\") +
-                 ASCIIToUTF16(policy::key::kExtensionInstallAllowList)).c_str(),
-             KEY_ALL_ACCESS);
-  EXPECT_TRUE(key.WriteValue(base::IntToString16(index).c_str(), id));
-}
-
-void TestConfigurationPolicyProviderWin::DenyExtension(HKEY hive,
-                                                       int index,
-                                                       const wchar_t* id) {
-  RegKey key(hive,
-             (string16(policy::kRegistrySubKey) + ASCIIToUTF16("\\") +
-                 ASCIIToUTF16(policy::key::kExtensionInstallDenyList)).c_str(),
+              ASCIIToUTF16(key_name)).c_str(),
              KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(base::IntToString16(index).c_str(), id));
 }
@@ -134,6 +128,15 @@ class ConfigurationPolicyProviderWinTest : public testing::Test {
   void TestBooleanPolicyDefault(ConfigurationPolicyStore::PolicyType type);
   void TestBooleanPolicyHKLM(ConfigurationPolicyStore::PolicyType type);
   void TestBooleanPolicy(ConfigurationPolicyStore::PolicyType type);
+
+  void TestListPolicyHKLM(const char* key,
+                    ConfigurationPolicyStore::PolicyType type);
+  void TestListPolicyHKCU(const char* key,
+                    ConfigurationPolicyStore::PolicyType type);
+  void TestListPolicyHKLMOverHKCU(const char* key,
+                            ConfigurationPolicyStore::PolicyType type);
+  void TestListPolicy(const char* key,
+                      ConfigurationPolicyStore::PolicyType type);
 
  private:
   // A message loop must be declared and instantiated for these tests,
@@ -230,6 +233,85 @@ void ConfigurationPolicyProviderWinTest::TestBooleanPolicy(
   TestBooleanPolicyHKLM(type);
 }
 
+
+void ConfigurationPolicyProviderWinTest::TestListPolicyHKLM(
+    const char* key,
+    ConfigurationPolicyStore::PolicyType type) {
+  MockConfigurationPolicyStore store;
+  TestConfigurationPolicyProviderWin provider;
+  provider.AddToList(HKEY_LOCAL_MACHINE, key, 1, L"hklm1");
+  provider.AddToList(HKEY_LOCAL_MACHINE, key, 2, L"hklm2");
+  provider.Provide(&store);
+
+  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
+  MockConfigurationPolicyStore::PolicyMap::const_iterator i = map.find(type);
+  ASSERT_TRUE(i != map.end());
+  ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
+
+  ListValue* value = reinterpret_cast<ListValue*>(i->second);
+  std::string str_value;
+  ASSERT_EQ(2U, value->GetSize());
+  EXPECT_TRUE(value->GetString(0, &str_value));
+  EXPECT_STREQ("hklm1", str_value.c_str());
+  EXPECT_TRUE(value->GetString(1, &str_value));
+  EXPECT_STREQ("hklm2", str_value.c_str());
+}
+
+void ConfigurationPolicyProviderWinTest::TestListPolicyHKCU(
+    const char* key,
+    ConfigurationPolicyStore::PolicyType type) {
+  MockConfigurationPolicyStore store;
+  TestConfigurationPolicyProviderWin provider;
+  provider.AddToList(HKEY_CURRENT_USER, key, 1, L"hkcu1");
+  provider.AddToList(HKEY_CURRENT_USER, key, 2, L"hkcu2");
+  provider.Provide(&store);
+
+  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
+  MockConfigurationPolicyStore::PolicyMap::const_iterator i = map.find(type);
+  ASSERT_TRUE(i != map.end());
+  ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
+
+  ListValue* value = reinterpret_cast<ListValue*>(i->second);
+  std::string str_value;
+  ASSERT_EQ(2U, value->GetSize());
+  EXPECT_TRUE(value->GetString(0, &str_value));
+  EXPECT_STREQ("hkcu1", str_value.c_str());
+  EXPECT_TRUE(value->GetString(1, &str_value));
+  EXPECT_STREQ("hkcu2", str_value.c_str());
+}
+
+void ConfigurationPolicyProviderWinTest::TestListPolicyHKLMOverHKCU(
+    const char* key,
+    ConfigurationPolicyStore::PolicyType type) {
+  MockConfigurationPolicyStore store;
+  TestConfigurationPolicyProviderWin provider;
+  provider.AddToList(HKEY_CURRENT_USER, key, 1, L"hkcu_overridden");
+  provider.AddToList(HKEY_LOCAL_MACHINE, key, 1, L"hklm_override");
+  provider.Provide(&store);
+
+  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
+  MockConfigurationPolicyStore::PolicyMap::const_iterator i = map.find(type);
+  ASSERT_TRUE(i != map.end());
+  ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
+  ListValue* value = reinterpret_cast<ListValue*>(i->second);
+  std::string str_value;
+  ASSERT_EQ(1U, value->GetSize());
+  EXPECT_TRUE(value->GetString(0, &str_value));
+  EXPECT_STREQ("hklm_override", str_value.c_str());
+}
+
+void ConfigurationPolicyProviderWinTest::TestListPolicy(
+    const char* key,
+    ConfigurationPolicyStore::PolicyType type) {
+  TestListPolicyHKLM(key, type);
+  TearDown();
+  SetUp();
+  TestListPolicyHKCU(key, type);
+  TearDown();
+  SetUp();
+  TestListPolicyHKLMOverHKCU(key, type);
+}
+
 TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyDefault) {
   MockConfigurationPolicyStore store;
   TestConfigurationPolicyProviderWin provider;
@@ -304,92 +386,24 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKLMOverHKCU) {
   EXPECT_EQ(L"http://crbug.com", value);
 }
 
-TEST_F(ConfigurationPolicyProviderWinTest,
-    TestHomepageIsNewTabPagePolicy) {
+TEST_F(ConfigurationPolicyProviderWinTest, TestHomepageIsNewTabPagePolicy) {
   TestBooleanPolicy(ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage);
 }
 
-TEST_F(ConfigurationPolicyProviderWinTest, TestExtensionInstallWhitelistHKCU) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderWin provider;
-  provider.AllowExtension(HKEY_CURRENT_USER, 1, L"abc");
-  provider.AllowExtension(HKEY_CURRENT_USER, 2, L"def");
-  provider.Provide(&store);
-
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyExtensionInstallAllowList);
-  ASSERT_TRUE(i != map.end());
-  ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
-  ListValue* value = reinterpret_cast<ListValue*>(i->second);
-  std::string str_value;
-  ASSERT_EQ(2U, value->GetSize());
-  EXPECT_TRUE(value->GetString(0, &str_value));
-  EXPECT_STREQ("abc", str_value.c_str());
-  EXPECT_TRUE(value->GetString(1, &str_value));
-  EXPECT_STREQ("def", str_value.c_str());
-}
-
-TEST_F(ConfigurationPolicyProviderWinTest, TestExtensionInstallWhitelistHKLM) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderWin provider;
-  provider.AllowExtension(HKEY_LOCAL_MACHINE, 1, L"abc");
-  provider.AllowExtension(HKEY_LOCAL_MACHINE, 2, L"def");
-  provider.Provide(&store);
-
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyExtensionInstallAllowList);
-  ASSERT_TRUE(i != map.end());
-  ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
-  ListValue* value = reinterpret_cast<ListValue*>(i->second);
-  std::string str_value;
-  ASSERT_EQ(2U, value->GetSize());
-  EXPECT_TRUE(value->GetString(0, &str_value));
-  EXPECT_STREQ("abc", str_value.c_str());
-  EXPECT_TRUE(value->GetString(1, &str_value));
-  EXPECT_STREQ("def", str_value.c_str());
+TEST_F(ConfigurationPolicyProviderWinTest, TestPolicyDisabledPlugins) {
+  TestListPolicy(policy::key::kDisabledPlugins,
+                 ConfigurationPolicyStore::kPolicyDisabledPlugins);
 }
 
 TEST_F(ConfigurationPolicyProviderWinTest,
-       TestExtensionInstallWhitelistHKLMOverHKCU) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderWin provider;
-  provider.AllowExtension(HKEY_CURRENT_USER, 1, L"abc");
-  provider.AllowExtension(HKEY_LOCAL_MACHINE, 1, L"def");
-  provider.Provide(&store);
-
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyExtensionInstallAllowList);
-  ASSERT_TRUE(i != map.end());
-  ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
-  ListValue* value = reinterpret_cast<ListValue*>(i->second);
-  std::string str_value;
-  ASSERT_EQ(1U, value->GetSize());
-  EXPECT_TRUE(value->GetString(0, &str_value));
-  EXPECT_STREQ("def", str_value.c_str());
+       TestPolicyExtensionInstallAllowList) {
+  TestListPolicy(policy::key::kExtensionInstallAllowList,
+                 ConfigurationPolicyStore::kPolicyExtensionInstallAllowList);
 }
 
-TEST_F(ConfigurationPolicyProviderWinTest, TestExtensionInstallBlacklistHKLM) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderWin provider;
-  provider.DenyExtension(HKEY_LOCAL_MACHINE, 1, L"abc");
-  provider.DenyExtension(HKEY_LOCAL_MACHINE, 2, L"def");
-  provider.Provide(&store);
-
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyExtensionInstallDenyList);
-  ASSERT_TRUE(i != map.end());
-  ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
-  ListValue* value = reinterpret_cast<ListValue*>(i->second);
-  std::string str_value;
-  ASSERT_EQ(2U, value->GetSize());
-  EXPECT_TRUE(value->GetString(0, &str_value));
-  EXPECT_STREQ("abc", str_value.c_str());
-  EXPECT_TRUE(value->GetString(1, &str_value));
-  EXPECT_STREQ("def", str_value.c_str());
+TEST_F(ConfigurationPolicyProviderWinTest, TestPolicyExtensionInstallDenyList) {
+  TestListPolicy(policy::key::kExtensionInstallDenyList,
+                 ConfigurationPolicyStore::kPolicyExtensionInstallDenyList);
 }
 
 TEST_F(ConfigurationPolicyProviderWinTest,

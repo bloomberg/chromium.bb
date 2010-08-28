@@ -141,12 +141,10 @@ CLASS MACHINE
              SUPPORTED !!SUPPORTED_WINXPSP2
            #endif
            EXPLAIN !!DisabledPlugins_Explain
-           VALUENAME "DisabledPlugins"
-           VALUEON NUMERIC 1
-           VALUEOFF NUMERIC 0
+           KEYNAME "Software\Policies\Google\Chrome\DisabledPlugins"
 
-           PART !!DisabledPluginsList EDITTEXT
-              VALUENAME "DisabledPluginsList"
+           PART !!DisabledPluginsDesc LISTBOX
+              VALUEPREFIX ""
            END PART
        END POLICY
 
@@ -315,9 +313,9 @@ AutoFillEnabled_Explain="Enables the AutoFill feature.\n\n\
 If you disable this setting, the AutoFill feature will not be available to users.\n\n\
 If you enable or do not configure this setting, users can turn on and configure AutoFill."
 DisabledPlugins="Specify a list of plugins that are disabled"
-DisabledPlugins_Explain="Specifies a list of plugins that are disabled in Google Chrome and prevents users from changing this setting. The value is a comma-separated list of the names of plugins to be disabled.\n\n\
+DisabledPlugins_Explain="Specifies a list of plugins that are disabled in Google Chrome and prevents users from changing this setting.\n\n\
 If you enable this setting, the specified list of plugins is never used in Google Chrome. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them."
-DisabledPluginsList="Comma-separated list of disabled plugins:"
+DisabledPluginsDesc="Specify plugins names and groups that are disabled."
 Sync="Disallow synchronization of data with Google"
 Sync_Explain="Disallows data synchronization in Google Chrome using Google-hosted synchronization services and prevents users from changing this setting.\n\n\
 If you enable this setting, users cannot change or override this setting in Google Chrome."
