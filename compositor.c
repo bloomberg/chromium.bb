@@ -1166,10 +1166,14 @@ drag_accept(struct wl_client *client,
 	 * request with a pointer_focus/motion event. */
 	drag->target = client;
 
-	end = drag->types.data + drag->types.size;
-	for (p = drag->types.data; p < end; p++)
-		if (strcmp(*p, type) == 0)
-		    drag->type = *p;
+	if (type == NULL) {
+		drag->type = NULL;
+	} else {
+		end = drag->types.data + drag->types.size;
+		for (p = drag->types.data; p < end; p++)
+			if (strcmp(*p, type) == 0)
+				drag->type = *p;
+	}
 
 	wl_surface_post_event(drag->source, &drag->base,
 			      WL_DRAG_TARGET, drag->type);
