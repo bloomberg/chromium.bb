@@ -62,13 +62,13 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
   string16 path = string16(policy::kRegistrySubKey);
   RegKey policy_key;
   // First try the global policy.
-  if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str())) {
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str(), KEY_READ)) {
     if (ReadRegistryStringValue(&policy_key, name, result))
       return true;
     policy_key.Close();
   }
   // Fall back on user-specific policy.
-  if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str()))
+  if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str(), KEY_READ))
     return false;
   return ReadRegistryStringValue(&policy_key, name, result);
 }
@@ -100,10 +100,10 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyStringList(
   string16 path = string16(policy::kRegistrySubKey);
   path += ASCIIToUTF16("\\") + key;
   RegKey policy_key;
-  if (!policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str())) {
+  if (!policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str(), KEY_READ)) {
     policy_key.Close();
     // Fall back on user-specific policy.
-    if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str()))
+    if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str(), KEY_READ))
       return false;
   }
   string16 policy_string;
