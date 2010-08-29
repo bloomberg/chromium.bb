@@ -132,6 +132,10 @@ o3d.Primitive.prototype.render = function() {
         var field = stream.field;
         var buffer = field.buffer;
 
+        if (gl_index == undefined) {
+          this.gl.client.error_callback('uknown semantic');
+        }
+
         var stream_param = streams[semantic_index];
         while (!stream_param.owner_.updateStreams &&
                stream_param.inputConnection) {
@@ -147,6 +151,7 @@ o3d.Primitive.prototype.render = function() {
         enabled_attribs.push(gl_index);
 
         var kFloatSize = Float32Array.BYTES_PER_ELEMENT;
+
         this.gl.vertexAttribPointer(
             gl_index, field.numComponents, this.gl.FLOAT, false,
             buffer.totalComponents * kFloatSize, field.offset_ * kFloatSize);

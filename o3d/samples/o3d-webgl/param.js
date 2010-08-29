@@ -893,8 +893,12 @@ o3d.Param.texture_index_ = 0;
  * Called to specify the value of a uniform variable.
  * @param {WebGLContext} gl The current context.
  * @param {WebGLUniformLocation} location The location to which to apply.
+ * @param {boolean} opt_isCube Optional boolean indicating whether the Sampler
+ *     connects to a samplerCube type uniform.  If set to true, and there is an
+ *     error, we use the error cube map.
  */
-o3d.ParamSampler.prototype.applyToLocation = function(gl, location) {
+o3d.ParamSampler.prototype.applyToLocation =
+    function(gl, location, opt_isCube) {
   // When before the effect object assigns values to parameters,
   // it sets this variable to 0.
   var i = o3d.Param.texture_index_;
@@ -914,7 +918,7 @@ o3d.ParamSampler.prototype.applyToLocation = function(gl, location) {
     }
   }
 
-  sampler.bindAndSetParameters_();
+  sampler.bindAndSetParameters_(opt_isCube);
   gl.uniform1i(location, i);
   o3d.Param.texture_index_++;
 };

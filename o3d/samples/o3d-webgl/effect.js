@@ -229,7 +229,7 @@ o3d.Effect.prototype.loadVertexShaderFromString =
     function(shaderString) {
   var success =
       this.loadShaderFromString(shaderString, this.gl.VERTEX_SHADER);
-  this.vertexShaderLoaded_ = true;
+  this.vertexShaderLoaded_ = success;
   o3d.Effect.prototype.bindAttributesAndLinkIfReady();
   return success;
 };
@@ -244,7 +244,7 @@ o3d.Effect.prototype.loadPixelShaderFromString =
     function(shaderString) {
   var success =
       this.loadShaderFromString(shaderString, this.gl.FRAGMENT_SHADER);
-  this.fragmentShaderLoaded_ = true;
+  this.fragmentShaderLoaded_ = success;
   this.bindAttributesAndLinkIfReady();
   return success;
 };
@@ -260,8 +260,11 @@ o3d.Effect.prototype.loadPixelShaderFromString =
 o3d.Effect.prototype.loadFromFXString =
     function(shaderString) {
   var splitIndex = shaderString.indexOf('// #o3d SplitMarker');
-  return this.loadVertexShaderFromString(shaderString.substr(0, splitIndex)) &&
-      this.loadPixelShaderFromString(shaderString.substr(splitIndex));
+  var vertexShaderString = shaderString.substr(0, splitIndex);
+  var pixelShaderString = shaderString.substr(splitIndex);
+  var result = this.loadVertexShaderFromString(vertexShaderString) &&
+      this.loadPixelShaderFromString(pixelShaderString);
+  return result;
 };
 
 
@@ -409,6 +412,7 @@ o3d.Effect.reverseSemanticMap_ = [];
   }
 })();
 
+
 /**
  * For each of the effect's uniform parameters, creates corresponding
  * parameters on the given ParamObject. Skips SAS Parameters.
@@ -552,7 +556,11 @@ o3d.Effect.prototype.searchForParams_ = function(object_list) {
         if (uniformInfo.kind == o3d.Effect.ARRAY) {
           param.applyToLocations(this.gl, uniformInfo.locations);
         } else {
-          param.applyToLocation(this.gl, uniformInfo.location);
+          if (uniformInfo.info.type == this.gl.SAMPLER_CUBE) {
+            param.applyToLocation(this.gl, uniformInfo.location, true);
+          } else {
+            param.applyToLocation(this.gl, uniformInfo.location);
+          }
         }
         filled_map[name] = true;
       }
