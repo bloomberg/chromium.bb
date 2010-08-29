@@ -134,7 +134,6 @@ html[anim=false] *,
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-decoration: none;
   font-size: 100%;
 }
 
@@ -192,10 +191,6 @@ html[dir=rtl] .item {
 .hbox {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
-}
-
-#most-visited {
-  margin-bottom: 20px;
 }
 
 #sync-status {
@@ -334,7 +329,13 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 }
 
 .section > div {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+#apps-section-content {
+  /* This one is special because the app buttons already have a lot of empty
+  space around them. */
+  margin-bottom: 5px;
 }
 
 .section > h2 {
@@ -368,6 +369,9 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 
 .section > .miniview {
   display: none;
+  /* Because the items have 10px horizontal margins. */
+  margin-left:-10px;
+  margin-right:-10px;
 }
 
 .section.hidden > * {

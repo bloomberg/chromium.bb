@@ -41,8 +41,9 @@ var MostVisited = (function() {
     return Array.prototype.indexOf.call(nodes, el);
   }
 
-  function MostVisited(el, useSmallGrid, visible) {
+  function MostVisited(el, miniview, useSmallGrid, visible) {
     this.element = el;
+    this.miniview = miniview;
     this.useSmallGrid_ = useSmallGrid;
     this.visible_ = visible;
 
@@ -501,6 +502,7 @@ var MostVisited = (function() {
       // On setting we need to update the items
       this.data_ = data;
       this.updateMostVisited_();
+      this.updateMiniview_();
     },
 
     updateMostVisited_: function() {
@@ -552,6 +554,20 @@ var MostVisited = (function() {
         var faviconUrl = d.faviconUrl || 'chrome://favicon/' + d.url;
         titleDiv.style.backgroundImage = url(faviconUrl);
         titleDiv.dir = d.direction;
+      }
+    },
+
+    updateMiniview_: function() {
+      this.miniview.textContent = '';
+      var data = this.data.slice(0, MAX_MINIVIEW_ITEMS);
+      for (var i = 0, item; item = data[i]; i++) {
+        var span = document.createElement('span');
+        var a = span.appendChild(document.createElement('a'));
+        a.href = item.url;
+        a.textContent = item.title;
+        a.style.backgroundImage = url('chrome://favicon/' + item.url);
+        a.className = 'item';
+        this.miniview.appendChild(span);
       }
     },
 

@@ -332,9 +332,8 @@ class Extension {
   // NOTE: |resource| is not guaranteed to be non-empty.
   Icons GetIconResourceAllowLargerSize(ExtensionResource* resource, Icons icon);
 
-  // See GetIconPathAllowLargerSize.  Returns a chrome-extension:// URL
-  // instead of an ExtensionResource.
-  GURL GetIconUrlAllowLargerSize(Icons icon);
+  GURL GetIconURL(Icons icon);
+  GURL GetIconURLAllowLargerSize(Icons icon);
 
   const DictionaryValue* manifest_value() const {
     return manifest_value_.get();

@@ -6,13 +6,19 @@ function getAppsCallback(data) {
   logEvent('recieved apps');
   var appsSection = $('apps-section');
   var appsSectionContent = $('apps-section-content');
+  var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
   appsSectionContent.textContent = '';
+  appsMiniview.textContent = '';
 
   data.apps.forEach(function(app) {
     appsSectionContent.appendChild(apps.createElement(app));
   });
 
   appsSectionContent.appendChild(apps.createWebStoreElement());
+
+  data.apps.slice(0, MAX_MINIVIEW_ITEMS).forEach(function(app) {
+    appsMiniview.appendChild(apps.createMiniviewElement(app));
+  });
 }
 
 var apps = {
@@ -41,7 +47,7 @@ var apps = {
     var left = rect.left + ((rect.width - width) >> 1);  // Integer divide by 2.
     var top = rect.top + parseInt(cs.backgroundPositionY, 10);
 
-    chrome.send('launchApp', [this.id, launchType,
+    chrome.send('launchApp', [this.getAttribute("app_id"), launchType,
                               String(left), String(top),
                               String(width), String(height)]);
     return false;
@@ -55,7 +61,7 @@ var apps = {
     front.className = 'front';
 
     var a = front.appendChild(document.createElement('a'));
-    a.id = app['id'];
+    a.setAttribute('app_id', app['id']);
     a.xtitle = a.textContent = app['name'];
     a.href = app['launch_url'];
 
@@ -68,7 +74,7 @@ var apps = {
     var a = front.firstChild;
 
     a.onclick = apps.handleClick_;
-    a.style.backgroundImage = url(app['icon']);
+    a.style.backgroundImage = url(app['icon_big']);
     if (hashParams['app-id'] == app['id']) {
       div.setAttribute('new', 'new');
       // Delay changing the attribute a bit to let the page settle down a bit.
@@ -109,6 +115,20 @@ var apps = {
     };
 
     return div;
+  },
+
+  createMiniviewElement: function(app) {
+    var span = document.createElement('span');
+    var a = span.appendChild(document.createElement('a'));
+
+    a.setAttribute('app_id', app['id']);
+    a.textContent = app['name'];
+    a.href = app['launch_url'];
+    a.onclick = apps.handleClick_;
+    a.style.backgroundImage = url(app['icon_small']);
+    a.className = 'item';
+    span.appendChild(a);
+    return span;
   },
 
   createWebStoreElement: function() {

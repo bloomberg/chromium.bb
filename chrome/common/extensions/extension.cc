@@ -1704,7 +1704,15 @@ Extension::Icons Extension::GetIconResourceAllowLargerSize(
   return ret;
 }
 
-GURL Extension::GetIconUrlAllowLargerSize(Icons icon) {
+GURL Extension::GetIconURL(Icons icon) {
+  std::string path = GetIconPath(icon);
+  if (path.empty())
+    return GURL();
+  else
+    return GetResourceURL(path);
+}
+
+GURL Extension::GetIconURLAllowLargerSize(Icons icon) {
   std::string path;
   GetIconPathAllowLargerSize(&path, icon);
   return GetResourceURL(path);

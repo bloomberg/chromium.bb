@@ -39,6 +39,15 @@ bool ExtractInt(const ListValue* list, size_t index, int* out_int) {
   return false;
 }
 
+std::string GetIconURL(Extension* extension, Extension::Icons icon,
+                       const std::string& default_val) {
+  GURL url = extension->GetIconURL(icon);
+  if (!url.is_empty())
+    return url.spec();
+  else
+    return default_val;
+}
+
 }  // namespace
 
 AppLauncherHandler::AppLauncherHandler(ExtensionsService* extension_service)
@@ -86,18 +95,13 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
   value->SetString("launch_url", extension->GetFullLaunchURL().spec());
   value->SetString("options_url", extension->options_url().spec());
 
-  FilePath relative_path =
-      extension->GetIconResource(
-          Extension::EXTENSION_ICON_LARGE).relative_path();
-
-#if defined(OS_POSIX)
-  std::string path = relative_path.value();
-#elif defined(OS_WIN)
-  std::string path = WideToUTF8(relative_path.value());
-#endif  // OS_WIN
-
-  GURL icon_url = extension->GetResourceURL(path);
-  value->SetString("icon", icon_url.spec());
+  // TODO(aa): Need a better default icon for apps.
+  value->SetString("icon_big", GetIconURL(
+      extension, Extension::EXTENSION_ICON_LARGE,
+      "chrome://theme/IDR_EXTENSION_DEFAULT_ICON"));
+  value->SetString("icon_small", GetIconURL(
+      extension, Extension::EXTENSION_ICON_BITTY,
+      std::string("chrome://favicon/") + extension->GetFullLaunchURL().spec()));
 }
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {

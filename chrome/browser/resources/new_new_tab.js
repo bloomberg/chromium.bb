@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// To avoid creating tons of unnecessary nodes. We assume we cannot fit more
+// than this many items in the miniview.
+var MAX_MINIVIEW_ITEMS = 15;
+
 var loading = true;
 
 function updateSimpleSection(id, section) {
@@ -872,9 +876,11 @@ function fixLinkUnderline(el) {
 
 updateAttribution();
 
-var mostVisited = new MostVisited($('most-visited'),
-                                  useSmallGrid(),
-                                  shownSections & Section.THUMB);
+var mostVisited = new MostVisited(
+    $('most-visited'),
+    $('most-visited-section').getElementsByClassName('miniview')[0],
+    useSmallGrid(),
+    shownSections & Section.THUMB);
 
 function mostVisitedPages(data, firstRun) {
   logEvent('received most visited pages');

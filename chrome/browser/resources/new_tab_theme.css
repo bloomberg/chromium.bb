@@ -124,7 +124,7 @@ body {
   background: $2; /* COLOR_NTP_BACKGROUND */
 }
 
-#apps-section a {
+#apps-section .app a {
   color: $8; /* COLOR_NTP_TEXT */
 }
 

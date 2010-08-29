@@ -26,6 +26,11 @@ void DOMUIFavIconSource::StartDataRequest(const std::string& path,
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (favicon_service) {
     FaviconService::Handle handle;
+    if (path.empty()) {
+      SendDefaultResponse(request_id);
+      return;
+    }
+
     if (path.size() > 8 && path.substr(0, 8) == "iconurl/") {
       handle = favicon_service->GetFavicon(
           GURL(path.substr(8)),
@@ -65,12 +70,16 @@ void DOMUIFavIconSource::OnFavIconDataAvailable(
     // Forward the data along to the networking system.
     SendResponse(request_id, data);
   } else {
-    if (!default_favicon_.get()) {
-      default_favicon_ =
-          ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_DEFAULT_FAVICON);
-    }
-
-    SendResponse(request_id, default_favicon_);
+    SendDefaultResponse(request_id);
   }
+}
+
+void DOMUIFavIconSource::SendDefaultResponse(int request_id) {
+  if (!default_favicon_.get()) {
+    default_favicon_ =
+        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+            IDR_DEFAULT_FAVICON);
+  }
+
+  SendResponse(request_id, default_favicon_);
 }

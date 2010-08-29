@@ -65,7 +65,7 @@
 
 .app > .front > .flip:hover {
   -webkit-transition: none;
-  background-image: url(chrome://theme/IDR_BALLOON_WRENCH_HOVER);
+  background-image: url(chrome://theme/IDR_BALLOON_WRENCH_H);
 }
 
 .app:hover > .front > .flip,
@@ -122,7 +122,7 @@
   -webkit-transition: opacity .5s;
 }
 
-#web-store-entry {
+a[app_id=web-store-entry] {
   background-image: url("web_store_icon.png");
 }
 

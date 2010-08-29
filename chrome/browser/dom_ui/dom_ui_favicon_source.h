@@ -38,6 +38,9 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
                               GURL url);
 
  private:
+  // Sends the default favicon.
+  void SendDefaultResponse(int request_id);
+
   virtual ~DOMUIFavIconSource();
 
   Profile* profile_;

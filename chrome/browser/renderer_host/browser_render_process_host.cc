@@ -671,7 +671,7 @@ void BrowserRenderProcessHost::SendExtensionInfo() {
     info.web_extent = extension->web_extent();
     info.name = extension->name();
     info.icon_url =
-        extension->GetIconUrlAllowLargerSize(Extension::EXTENSION_ICON_MEDIUM);
+        extension->GetIconURLAllowLargerSize(Extension::EXTENSION_ICON_MEDIUM);
     params.extensions.push_back(info);
   }
 
