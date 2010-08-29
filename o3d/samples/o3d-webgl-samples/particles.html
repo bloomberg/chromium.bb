@@ -102,11 +102,6 @@ function init() {
   window.g_timeMult = 1;
   window.g_clock = 0;
 
-  // Comment out the line below to run the sample in the browser JavaScript
-  // engine. This may be helpful for debugging.
-  o3djs.util.setMainEngine(o3djs.util.Engine.V8);
-  o3djs.particles.setLanguage('glsl');
-
   o3djs.webgl.makeClients(initStep2);
 }
 

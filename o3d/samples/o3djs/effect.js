@@ -65,6 +65,7 @@ o3djs.effect.TWO_COLOR_CHECKER_EFFECT_NAME =
  * @namespace
  */
 o3djs.effect.o3d = {
+  LANGUAGE: 'o3d',
   FLOAT2: 'float2',
   FLOAT3: 'float3',
   FLOAT4: 'float4',
@@ -78,6 +79,7 @@ o3djs.effect.o3d = {
   VERTEX_VARYING_PREFIX: 'output.',
   PIXEL_VARYING_PREFIX: 'input.',
   TEXTURE: 'tex',
+  SAMPLER: 'sampler',
   BEGIN_IN_STRUCT: 'struct InVertex {\n',
   BEGIN_OUT_STRUCT: 'struct OutVertex {\n',
   END_STRUCT: '};\n'
@@ -92,6 +94,7 @@ o3djs.effect.o3d = {
  * @namespace
  */
 o3djs.effect.glsl = {
+    LANGUAGE: 'glsl',
     FLOAT2: 'vec2',
     FLOAT3: 'vec3',
     FLOAT4: 'vec4',
@@ -105,6 +108,7 @@ o3djs.effect.glsl = {
     VERTEX_VARYING_PREFIX: 'v_',
     PIXEL_VARYING_PREFIX: 'v_',
     TEXTURE: 'texture',
+    SAMPLER: 'sampler2D',
     BEGIN_IN_STRUCT: '',
     BEGIN_OUT_STRUCT: '',
     END_STRUCT: '',
@@ -383,7 +387,18 @@ o3djs.effect.setLanguage = function(language) {
 
   o3djs.effect.TWO_COLOR_CHECKER_FXSTRING =
       o3djs.effect.buildCheckerShaderString();
-}
+};
+
+/**
+ * Gets the language set in the function setLanguage.  Returns a string, either
+ * 'glsl' or 'o3d'.
+ */
+o3djs.effect.getLanguage = function() {
+  if (language_namespace == o3djs.effect.glsl) {
+    return 'glsl';
+  }
+  return 'o3d';
+};
 
 
 /**
@@ -393,23 +408,16 @@ o3djs.effect.setLanguage = function(language) {
  * @param {boolean} specular Whether to include stuff for diffuse
  *     calculations.
  * @param {boolean} bumpSampler Whether there is a bump sampler.
- * @param {boolean} skinning Whether this mesh has a skin.
  * @return {string} The code for the declarations.
  */
 o3djs.effect.buildAttributeDecls =
-    function(material, diffuse, specular, bumpSampler, skinning) {
+    function(material, diffuse, specular, bumpSampler) {
   var str = o3djs.effect.BEGIN_IN_STRUCT +
             o3djs.effect.ATTRIBUTE + o3djs.effect.FLOAT4 + ' ' + 'position' +
             o3djs.effect.semanticSuffix('POSITION') + ';\n';
   if (diffuse || specular) {
     str += o3djs.effect.ATTRIBUTE + o3djs.effect.FLOAT3 + ' ' + 'normal' +
     o3djs.effect.semanticSuffix('NORMAL') + ';\n';
-  }
-  if (skinning) {
-    str += o3djs.effect.ATTRIBUTE + o3djs.effect.FLOAT4 + ' influenceWeights' +
-        o3djs.effect.semanticSuffix('BLENDWEIGHT') + ';\n';
-    str += o3djs.effect.ATTRIBUTE + o3djs.effect.FLOAT4 + ' influenceIndices' +
-        o3djs.effect.semanticSuffix('BLENDINDICES') + ';\n';
   }
   str += o3djs.effect.buildTexCoords(material, false) +
          o3djs.effect.buildBumpInputCoords(bumpSampler) +
@@ -604,16 +612,13 @@ o3djs.effect.buildBumpInputCoords = function(bumpSampler) {
 o3djs.effect.buildBumpOutputCoords = function(bumpSampler) {
   var p = o3djs.effect;
   return bumpSampler ?
-      ('  ' + p.VARYING + p.FLOAT3 + ' ' +
-         p.VARYING_DECLARATION_PREFIX + 'tangent' +
+      ('  ' + p.FLOAT3 + ' tangent' +
           p.semanticSuffix(
               'TEXCOORD' + p.interpolant_++) + ';\n' +
-       '  ' + p.VARYING + p.FLOAT3 + ' ' +
-          p.VARYING_DECLARATION_PREFIX + 'binormal' +
-          p.semanticSuffix(
-              'TEXCOORD' + p.interpolant_++) + ';\n' +
-       '  ' + p.VARYING + p.FLOAT2 + ' ' +
-          p.VARYING_DECLARATION_PREFIX + 'bumpUV' +
+       '  ' + p.FLOAT3 + ' binormal' +
+          p.semanticSuffix('TEXCOORD' +
+              p.interpolant_++) + ';\n' +
+       '  ' + p.FLOAT2 + ' bumpUV' +
           p.semanticSuffix(
               'TEXCOORD' + p.interpolant_++) + ';\n') : '';
 };
@@ -641,7 +646,7 @@ o3djs.effect.buildCheckerShaderString = function() {
     p.END_STRUCT;
 
   return 'uniform ' + p.MATRIX4 + ' worldViewProjection' +
-  p.semanticSuffix('WORLDVIEWPROJECTION') + ';\n' +
+    p.semanticSuffix('WORLDVIEWPROJECTION') + ';\n' +
     'uniform ' + p.MATRIX4 + ' worldInverseTranspose' +
     p.semanticSuffix('WORLDINVERSETRANSPOSE') + ';\n' +
     'uniform ' + p.MATRIX4 + ' world' +
@@ -701,7 +706,8 @@ o3djs.effect.buildCheckerShaderString = function() {
     ' outColor = directionalIntensity * check;\n' +
     p.endPixelShaderMain(
         p.FLOAT4 + '(outColor.rgb, check.a)') +
-    '\n' + p.entryPoints() +
+    '\n' +
+    p.entryPoints() +
     p.matrixLoadOrder();
 };
 
@@ -831,21 +837,6 @@ o3djs.effect.buildStandardShaderString = function(material,
   var p = o3djs.effect;
   var bumpSampler = material.getParam('bumpSampler');
   var bumpUVInterpolant;
-  var skinning;
-
-  var maxSkinInfluences = 4;
-
-  // Hardcode reasonable maximum for number of skinning uniforms.
-  // glsl: Table 6.19: minimum MAX_VERTEX_UNIFORM_VECTORS is 128.
-  // (DX9 requires a minimum of 256, so not a problem in o3d).
-  var maxSkinUniforms = 36 * 3;
-  if (o3djs.base.o3d && o3djs.base.o3d.SkinEval &&
-      o3djs.base.o3d.SkinEval.getMaxNumBones) {
-    maxSkinUniforms = o3d.SkinEval.getMaxNumBones(material) * 3;
-    skinning = true;
-  } else {
-    skinning = false;
-  }
 
   /**
    * Extracts the texture type from a texture param.
@@ -914,17 +905,6 @@ o3djs.effect.buildStandardShaderString = function(material,
   };
 
   /**
-   * If skinning is enabled, builds the bone matrix uniform variables needed
-   * for skinning. Otherwise, returns the empty string.
-   * @return {string} The effect code for skinning uniforms.
-   */
-  var buildSkinningUniforms = function() {
-    return skinning ? 'uniform ' + p.FLOAT4 + ' boneToWorld3x4' +
-        '[' + maxSkinUniforms + '];\n' +
-        'uniform float usingSkinShader;\n' : '';
-  };
-
-  /**
    * Builds uniform parameters for a given color input.  If the material
    * has a sampler parameter, a sampler uniform is created, otherwise a
    * float4 color value is created.
@@ -986,7 +966,6 @@ o3djs.effect.buildStandardShaderString = function(material,
   var buildConstantShaderString = function(material, descriptions) {
     descriptions.push('constant');
     return buildCommonVertexUniforms() +
-           buildSkinningUniforms() +
            buildVertexDecls(material, false, false) +
            p.beginVertexShaderMain() +
            positionVertexShaderCode() +
@@ -1014,7 +993,6 @@ o3djs.effect.buildStandardShaderString = function(material,
     descriptions.push('lambert');
     return buildCommonVertexUniforms() +
            buildLightingUniforms() +
-           buildSkinningUniforms() +
            buildVertexDecls(material, true, false) +
            p.beginVertexShaderMain() +
            p.buildUVPassthroughs(material) +
@@ -1062,7 +1040,6 @@ o3djs.effect.buildStandardShaderString = function(material,
     descriptions.push('phong');
     return buildCommonVertexUniforms() +
         buildLightingUniforms() +
-        buildSkinningUniforms() +
         buildVertexDecls(material, true, true) +
         p.beginVertexShaderMain() +
         p.buildUVPassthroughs(material) +
@@ -1121,7 +1098,6 @@ o3djs.effect.buildStandardShaderString = function(material,
     descriptions.push('phong');
     return buildCommonVertexUniforms() +
         buildLightingUniforms() +
-        buildSkinningUniforms() +
         buildVertexDecls(material, true, true) +
         p.beginVertexShaderMain() +
         p.buildUVPassthroughs(material) +
@@ -1172,27 +1148,9 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @return {string} The code for the vertex shader.
    */
   var positionVertexShaderCode = function() {
-    var attribute_position = p.ATTRIBUTE_PREFIX + 'position';
-    if (skinning) {
-      return '  ' + p.FLOAT4 + ' weightedpos = ' + attribute_position + ';\n' +
-          '  for (int i = 0; i < ' + maxSkinInfluences + '; i++) {\n' +
-          '    ' + p.FLOAT4 + ' temp = ' + p.FLOAT4 + '(' +
-          'dot(boneToWorld3x4[int(influenceIndices[i] * 3.0)], ' +
-          attribute_position + '),\n' +
-          '    dot(boneToWorld3x4[int(influenceIndices[i] * 3.0 + 1.0)], ' +
-          attribute_position + '),\n' +
-          '    dot(boneToWorld3x4[int(influenceIndices[i] * 3.0 + 2.0)], ' +
-          attribute_position + '),\n' +
-          '    1.0);\n' +
-          '    weightedpos += usingSkinShader * influenceWeights[i] * ' +
-          '(temp - ' + attribute_position + ');\n' +
-          '  }\n' +
-          '  ' + p.VERTEX_VARYING_PREFIX + 'position = ' +
-          p.mul('weightedpos', 'worldViewProjection') + ';\n';
-    } else {
-      return '  ' + p.VERTEX_VARYING_PREFIX + 'position = ' +
-          p.mul(attribute_position, 'worldViewProjection') + ';\n';
-    }
+    return '  ' + p.VERTEX_VARYING_PREFIX + 'position = ' +
+        p.mul(p.ATTRIBUTE_PREFIX +
+        'position', 'worldViewProjection') + ';\n';
   };
 
   /**
@@ -1200,29 +1158,10 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @return {string} The code for the vertex shader.
    */
   var normalVertexShaderCode = function() {
-    var attribute_normal = p.ATTRIBUTE_PREFIX + 'normal';
-    if (skinning) {
-      return '  ' + p.FLOAT3 + ' weightednorm = ' + attribute_normal + ';\n' +
-          '  for (int i = 0; i < ' + maxSkinInfluences + '; i++) {\n' +
-          '    ' + p.FLOAT3 + ' temp = ' + p.FLOAT3 + '(' +
-          'dot(boneToWorld3x4[int(influenceIndices[i] * 3.0)].xyz, ' +
-          attribute_normal + '),\n' +
-          '    dot(boneToWorld3x4[int(influenceIndices[i] * 3.0 + 1.0)].xyz, ' +
-          attribute_normal + '),\n' +
-          '    dot(boneToWorld3x4[int(influenceIndices[i] * 3.0 + 2.0)].xyz, ' +
-          attribute_normal + '));\n' +
-          '    weightednorm += usingSkinShader * influenceWeights[i] * ' +
-          '(temp - ' + attribute_normal + ');\n' +
-          '  }\n' +
-          '  ' + p.VERTEX_VARYING_PREFIX + 'normal = ' +
-          p.mul(p.FLOAT4 + '(' + 'weightednorm' + ', 0)',
-                'worldInverseTranspose') + '.xyz;\n';
-    } else {
-      return '  ' + p.VERTEX_VARYING_PREFIX + 'normal = ' +
-          p.mul(p.FLOAT4 + '(' +
-          attribute_normal + ', 0)', 'worldInverseTranspose') +
-          '.xyz;\n';
-    }
+    return '  ' + p.VERTEX_VARYING_PREFIX + 'normal = ' +
+        p.mul(p.FLOAT4 + '(' +
+        p.ATTRIBUTE_PREFIX +
+        'normal, 0)', 'worldInverseTranspose') + '.xyz;\n';
   };
 
   /**
@@ -1249,9 +1188,11 @@ o3djs.effect.buildStandardShaderString = function(material,
 
   /**
    * Builds the normal map part of the vertex shader.
+   * @param {boolean} opt_bumpSampler Whether there is a bump
+   *     sampler. Default = false.
    * @return {string} The code for normal mapping in the vertex shader.
    */
-  var bumpVertexShaderCode = function() {
+  var bumpVertexShaderCode = function(opt_bumpSampler) {
     return bumpSampler ?
         ('  ' + p.VERTEX_VARYING_PREFIX + 'binormal = ' +
          p.mul(p.FLOAT4 + '(' +
@@ -1268,27 +1209,21 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @return {string} The code for normal computation in the pixel shader.
    */
   var getNormalShaderCode = function() {
-    if (bumpSampler) {
-      var type = getSamplerType(bumpSampler);
-      var tex2D = p.TEXTURE + type;
-      return (
-         p.MATRIX3 + ' tangentToWorld = ' + p.MATRIX3 +
-            '(' + p.PIXEL_VARYING_PREFIX + 'tangent,\n' +
+    return bumpSampler ?
+        (p.MATRIX3 + ' tangentToWorld = ' + p.MATRIX3 +
+            '(' + p.ATTRIBUTE_PREFIX + 'tangent,\n' +
          '                                   ' +
-         p.PIXEL_VARYING_PREFIX + 'binormal,\n' +
+         p.ATTRIBUTE_PREFIX + 'binormal,\n' +
          '                                   ' +
-         p.PIXEL_VARYING_PREFIX + 'normal);\n' +
-         p.FLOAT3 + ' tangentNormal = ' + tex2D + '(bumpSampler, ' +
-         p.PIXEL_VARYING_PREFIX + 'bumpUV.xy).xyz -\n' +
+         p.ATTRIBUTE_PREFIX + 'normal);\n' +
+         p.FLOAT3 + ' tangentNormal = ' + p.TEXTURE + '2D' + '(bumpSampler, ' +
+         p.ATTRIBUTE_PREFIX + 'bumpUV.xy).xyz -\n' +
          '                       ' + p.FLOAT3 +
          '(0.5, 0.5, 0.5);\n' + p.FLOAT3 + ' normal = ' +
          p.mul('tangentNormal', 'tangentToWorld') + ';\n' +
          'normal = normalize(' + p.PIXEL_VARYING_PREFIX +
-         'normal);\n');
-    } else {
-      return '  ' + p.FLOAT3 + ' normal = normalize(' +
+         'normal);\n') : '  ' + p.FLOAT3 + ' normal = normalize(' +
          p.PIXEL_VARYING_PREFIX + 'normal);\n';
-    }
   };
 
   /**
@@ -1302,7 +1237,7 @@ o3djs.effect.buildStandardShaderString = function(material,
    */
   var buildVertexDecls = function(material, diffuse, specular) {
     return p.buildAttributeDecls(
-        material, diffuse, specular, bumpSampler, skinning) +
+        material, diffuse, specular, bumpSampler) +
         p.buildVaryingDecls(
             material, diffuse, specular, bumpSampler);
   };

@@ -111,10 +111,15 @@ function initStep2(clientElements) {
                                             g_client.height,
                                             g_client.renderGraphRoot);
 
+  var shaderFilePath = 'shaders/vertex-color.shader';
+  if (g_client.clientInfo.glsl) {
+    shaderFilePath = 'shaders/vertex-color-glsl.shader'
+  }
+
   // Create a material.
   var myMaterial = o3djs.material.createMaterialFromFile(
       g_pack,
-      'shaders/vertex-color.shader',
+      shaderFilePath,
       g_viewInfo.performanceDrawList);
 
   // Draw a cube using the effect we have loaded.
