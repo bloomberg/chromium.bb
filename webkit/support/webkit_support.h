@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/keyboard_codes.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
 class Task;
@@ -150,6 +151,23 @@ WebKit::WebThemeEngine* GetThemeEngine();
 // - DevTools
 WebKit::WebCString GetDevToolsDebuggerScriptSource();
 WebKit::WebURL GetDevToolsPathAsURL();
+
+// -------- Keyboard code
+enum {
+    VKEY_LEFT = base::VKEY_LEFT,
+    VKEY_RIGHT = base::VKEY_RIGHT,
+    VKEY_UP = base::VKEY_UP,
+    VKEY_DOWN = base::VKEY_DOWN,
+    VKEY_RETURN = base::VKEY_RETURN,
+    VKEY_INSERT = base::VKEY_INSERT,
+    VKEY_DELETE = base::VKEY_DELETE,
+    VKEY_PRIOR = base::VKEY_PRIOR,
+    VKEY_NEXT = base::VKEY_NEXT,
+    VKEY_HOME = base::VKEY_HOME,
+    VKEY_END = base::VKEY_END,
+    VKEY_SNAPSHOT = base::VKEY_SNAPSHOT,
+    VKEY_F1 = base::VKEY_F1,
+};
 
 }  // namespace webkit_support
 
