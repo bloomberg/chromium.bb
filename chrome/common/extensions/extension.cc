@@ -155,9 +155,20 @@ const char* Extension::kPermissionNames[] = {
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
 
+const char* Extension::kHostedAppPermissionNames[] = {
+  Extension::kBackgroundPermission,
+  Extension::kGeolocationPermission,
+  Extension::kNotificationPermission,
+  Extension::kUnlimitedStoragePermission,
+  Extension::kNativeClientPermission
+};
+const size_t Extension::kNumHostedAppPermissions =
+    arraysize(Extension::kHostedAppPermissionNames);
+
 // We purposefully don't put this into kPermissionNames.
 const char* Extension::kOldUnlimitedStoragePermission = "unlimited_storage";
 
+// static
 const Extension::SimplePermissions& Extension::GetSimplePermissions() {
   static SimplePermissions permissions;
   if (permissions.empty()) {
@@ -169,6 +180,16 @@ const Extension::SimplePermissions& Extension::GetSimplePermissions() {
             IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION);
   }
   return permissions;
+}
+
+// static
+bool Extension::IsHostedAppPermission(const std::string& str) {
+  for (size_t i = 0; i < Extension::kNumHostedAppPermissions; ++i) {
+    if (str == Extension::kHostedAppPermissionNames[i]) {
+      return true;
+    }
+  }
+  return false;
 }
 
 Extension::~Extension() {
@@ -1387,6 +1408,17 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       return false;  // Failed to parse browser action definition.
   }
 
+  // Load App settings.
+  if (!LoadIsApp(manifest_value_.get(), error) ||
+      !LoadExtent(manifest_value_.get(), keys::kWebURLs, &web_extent_,
+                  errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
+      !EnsureNotHybridApp(manifest_value_.get(), error) ||
+      !LoadLaunchURL(manifest_value_.get(), error) ||
+      !LoadLaunchContainer(manifest_value_.get(), error) ||
+      !LoadLaunchFullscreen(manifest_value_.get(), error)) {
+    return false;
+  }
+
   // Initialize the permissions (optional).
   if (source.HasKey(keys::kPermissions)) {
     ListValue* permissions = NULL;
@@ -1408,10 +1440,18 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       if (permission_str == kOldUnlimitedStoragePermission)
         permission_str = kUnlimitedStoragePermission;
 
-      // Check if it's a module permission.  If so, enable that permission.
-      if (IsAPIPermission(permission_str)) {
-        api_permissions_.push_back(permission_str);
-        continue;
+      if (web_extent().is_empty()) {
+        // Check if it's a module permission.  If so, enable that permission.
+        if (IsAPIPermission(permission_str)) {
+          api_permissions_.push_back(permission_str);
+          continue;
+        }
+      } else {
+        // Hosted apps only get access to a subset of the valid permissions.
+        if (IsHostedAppPermission(permission_str)) {
+          api_permissions_.push_back(permission_str);
+          continue;
+        }
       }
 
       // Otherwise, it's a host pattern permission.
@@ -1502,16 +1542,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       return false;
     }
     devtools_url_ = GetResourceURL(devtools_str);
-  }
-
-  if (!LoadIsApp(manifest_value_.get(), error) ||
-      !LoadExtent(manifest_value_.get(), keys::kWebURLs, &web_extent_,
-                  errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
-      !EnsureNotHybridApp(manifest_value_.get(), error) ||
-      !LoadLaunchURL(manifest_value_.get(), error) ||
-      !LoadLaunchContainer(manifest_value_.get(), error) ||
-      !LoadLaunchFullscreen(manifest_value_.get(), error)) {
-    return false;
   }
 
   // Although |source| is passed in as a const, it's still possible to modify
