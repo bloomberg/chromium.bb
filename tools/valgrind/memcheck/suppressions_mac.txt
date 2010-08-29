@@ -1564,3 +1564,22 @@
    fun:_ZN14RunnableMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathE6Tuple1IS1_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_53742_a
+   Memcheck:Cond
+   ...
+   fun:_ZN16AudioQueueObject12ConvertInputEP9AQCommandRmb
+   fun:_ZN16AudioQueueObject12RunConverterEi
+   fun:_ZN18AQConverterManager17AQConverterThread3RunEv
+   fun:_ZN18AQConverterManager17AQConverterThread20ConverterThreadEntryEPv
+   fun:_ZN9CAPThread5EntryEPS_
+   fun:_pthread_start
+   fun:thread_start
+}
+{
+   bug_35742_b
+   Memcheck:Cond
+   fun:_ZN16AudioQueueObject12ConvertInputEP9AQCommandRmb
+   fun:_ZN16AudioQueueObject5ResetEv
+   fun:_ZN16AudioQueueObject4StopEb
+}
