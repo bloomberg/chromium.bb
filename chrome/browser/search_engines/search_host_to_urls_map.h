@@ -15,6 +15,7 @@
 #include "base/lock.h"
 #include "base/thread_checker.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/search_engines/search_provider_install_data.h"
 
 class FilePath;
 class GURL;
@@ -23,13 +24,12 @@ class TemplateURL;
 class WebDataService;
 
 // Holds the host to template url mappings for the search providers. All public
-// methods should happen from the same thread except for
-// GetSearchProviderInstallState which may be invoked on any thread.
-// WARNING: This class does not own any TemplateURLs passed to it and it is
-// up to the caller to ensure the right lifetime of them.
-// TODO(levin): Add GetSearchProviderInstallState.
+// methods should happen from the same thread except for GetInstallState which
+// may be invoked on any thread. WARNING: This class does not own any
+// TemplateURLs passed to it and it is up to the caller to ensure the right
+// lifetime of them.
 class SearchHostToURLsMap
-    : public base::RefCountedThreadSafe<SearchHostToURLsMap>,
+    : public SearchProviderInstallData,
       public ThreadChecker {
  public:
   typedef std::set<const TemplateURL*> TemplateURLSet;
@@ -70,13 +70,17 @@ class SearchHostToURLsMap
   // none.
   const TemplateURLSet* GetURLsForHost(const std::string& host) const;
 
+  // Returns the search provider install state for the given origin.
+  // This method may be called on any thread.
+  // TODO(levin): Make the above statement true about "any thread".
+  virtual State GetInstallState(const GURL& requested_origin);
+
  private:
-  friend class base::RefCountedThreadSafe<SearchHostToURLsMap>;
   friend class SearchHostToURLsMapTest;
 
   typedef std::map<std::string, TemplateURLSet> HostToURLsMap;
 
-  ~SearchHostToURLsMap();
+  virtual ~SearchHostToURLsMap();
 
   // Same as Add but the lock should already be taken.
   void AddNoLock(const TemplateURL* template_url);

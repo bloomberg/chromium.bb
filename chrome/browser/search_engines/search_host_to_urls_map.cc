@@ -10,6 +10,20 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 
+// Indicates if the two inputs have the same security origin.
+// |requested_origin| should only be a security origin (no path, etc.).
+// It is ok if |template_url| is NULL.
+static bool IsSameOrigin(const GURL& requested_origin,
+                         const TemplateURL* template_url) {
+  // TODO(levin): This isn't safe for the I/O thread yet.
+  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
+         ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  DCHECK(requested_origin == requested_origin.GetOrigin());
+  return template_url && requested_origin ==
+      TemplateURLModel::GenerateSearchURL(template_url).GetOrigin();
+}
+
 SearchHostToURLsMap::SearchHostToURLsMap()
     : initialized_(false) {
 }
@@ -132,6 +146,34 @@ const SearchHostToURLsMap::TemplateURLSet* SearchHostToURLsMap::GetURLsForHost(
   if (urls_for_host == host_to_urls_map_.end() || urls_for_host->second.empty())
     return NULL;
   return &urls_for_host->second;
+}
+
+SearchProviderInstallData::State SearchHostToURLsMap::GetInstallState(
+    const GURL& requested_origin) {
+  AutoLock locker(lock_);
+  if (!initialized_)
+    return NOT_READY;
+
+  // First check to see if the origin is the default search provider.
+  if (requested_origin.spec() == default_search_origin_)
+    return INSTALLED_AS_DEFAULT;
+
+  // Is the url any search provider?
+  HostToURLsMap::const_iterator urls_for_host =
+      host_to_urls_map_.find(requested_origin.host());
+  if (urls_for_host == host_to_urls_map_.end() ||
+      urls_for_host->second.empty()) {
+    return NOT_INSTALLED;
+  }
+
+  const TemplateURLSet& urls = urls_for_host->second;
+  for (TemplateURLSet::const_iterator i = urls.begin();
+       i != urls.end(); ++i) {
+    const TemplateURL* template_url = *i;
+    if (IsSameOrigin(requested_origin, template_url))
+      return INSTALLED_BUT_NOT_DEFAULT;
+  }
+  return NOT_INSTALLED;
 }
 
 SearchHostToURLsMap::~SearchHostToURLsMap() {

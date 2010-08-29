@@ -158,3 +158,38 @@ TEST_F(SearchHostToURLsMapTest, GetURLsForUnknownHost) {
   const TemplateURLSet* urls = provider_map_->GetURLsForHost("a" + host_);
   ASSERT_TRUE(urls == NULL);
 }
+
+TEST_F(SearchHostToURLsMapTest, GetInstallStateNotReady) {
+  scoped_refptr<SearchHostToURLsMap> not_init_map(new SearchHostToURLsMap);
+  ASSERT_EQ(SearchProviderInstallData::NOT_READY,
+            not_init_map->GetInstallState(GURL("http://" + host_ + "/")));
+}
+
+TEST_F(SearchHostToURLsMapTest, GetInstallStateNotDefault) {
+  ASSERT_EQ(SearchProviderInstallData::INSTALLED_BUT_NOT_DEFAULT,
+            provider_map_->GetInstallState(GURL("http://" + host_ + "/")));
+  ASSERT_EQ(SearchProviderInstallData::INSTALLED_BUT_NOT_DEFAULT,
+            provider_map_->GetInstallState(GURL("http://" + host_ + ":80/")));
+}
+
+TEST_F(SearchHostToURLsMapTest, GetInstallStateNotInstalledDifferentPort) {
+  ASSERT_EQ(SearchProviderInstallData::NOT_INSTALLED,
+            provider_map_->GetInstallState(GURL("http://" + host_ + ":96/")));
+}
+
+TEST_F(SearchHostToURLsMapTest, GetInstallStateNotInstalledDifferentScheme) {
+  ASSERT_EQ(SearchProviderInstallData::NOT_INSTALLED,
+            provider_map_->GetInstallState(GURL("https://" + host_ + "/")));
+}
+
+TEST_F(SearchHostToURLsMapTest, GetInstallStateNotInstalled) {
+  ASSERT_EQ(SearchProviderInstallData::NOT_INSTALLED,
+            provider_map_->GetInstallState(GURL("http://a" + host_ + "/")));
+}
+
+TEST_F(SearchHostToURLsMapTest, GetInstallStateDefault) {
+  provider_map_->SetDefault(&t_urls_[0]);
+  ASSERT_EQ(SearchProviderInstallData::INSTALLED_AS_DEFAULT,
+            provider_map_->GetInstallState(GURL("http://" + host_ + "/")));
+}
+
