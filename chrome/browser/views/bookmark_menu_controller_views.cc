@@ -319,13 +319,14 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
         icon = *ResourceBundle::GetSharedInstance().
             GetBitmapNamed(IDR_DEFAULT_FAVICON);
       }
-      menu->AppendMenuItemWithIcon(id, node->GetTitle(), icon);
+      menu->AppendMenuItemWithIcon(id, UTF16ToWide(node->GetTitleAsString16()),
+                                   icon);
       node_to_menu_id_map_[node] = id;
     } else if (node->is_folder()) {
       SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
           GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
-      MenuItemView* submenu =
-          menu->AppendSubMenuWithIcon(id, node->GetTitle(), *folder_icon);
+      MenuItemView* submenu = menu->AppendSubMenuWithIcon(id,
+          UTF16ToWide(node->GetTitleAsString16()), *folder_icon);
       node_to_menu_id_map_[node] = id;
       BuildMenu(node, 0, submenu, next_menu_id);
     } else {

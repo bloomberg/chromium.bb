@@ -1256,15 +1256,13 @@ void BookmarkBarView::ShowContextMenu(View* source,
 
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   if (node->is_url()) {
-    BookmarkButton* button = new BookmarkButton(this,
-                                                node->GetURL(),
-                                                node->GetTitle(),
-                                                GetProfile());
+    BookmarkButton* button = new BookmarkButton(this, node->GetURL(),
+        UTF16ToWide(node->GetTitleAsString16()), GetProfile());
     ConfigureButton(node, button);
     return button;
   } else {
-    views::MenuButton* button =
-        new BookmarkFolderButton(this, node->GetTitle(), this, false);
+    views::MenuButton* button = new BookmarkFolderButton(this,
+        UTF16ToWide(node->GetTitleAsString16()), this, false);
     button->SetIcon(GetGroupIcon());
     ConfigureButton(node, button);
     return button;
@@ -1273,8 +1271,8 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
 
 void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
                                       views::TextButton* button) {
-  button->SetText(node->GetTitle());
-  button->SetAccessibleName(node->GetTitle());
+  button->SetText(UTF16ToWide(node->GetTitleAsString16()));
+  button->SetAccessibleName(UTF16ToWide(node->GetTitleAsString16()));
   button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {

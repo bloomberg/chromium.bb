@@ -51,7 +51,7 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
     const BookmarkNode* src, BookmarkModel* model, sync_api::WriteNode* dst) {
   // Set the properties of the item.
   dst->SetIsFolder(src->is_folder());
-  dst->SetTitle(src->GetTitle());
+  dst->SetTitle(UTF16ToWideHack(src->GetTitleAsString16()));
   if (!src->is_folder())
     dst->SetURL(src->GetURL());
   SetSyncNodeFavicon(src, model, dst);

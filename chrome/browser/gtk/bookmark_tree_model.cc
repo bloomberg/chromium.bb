@@ -25,7 +25,8 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
   // differently).
   gtk_tree_store_set(store, iter,
       bookmark_utils::FOLDER_ICON, GtkThemeProvider::GetFolderIcon(true),
-      bookmark_utils::FOLDER_NAME, WideToUTF8(node->GetTitle()).c_str(),
+      bookmark_utils::FOLDER_NAME,
+      UTF16ToUTF8(node->GetTitleAsString16()).c_str(),
       bookmark_utils::ITEM_ID, node->id(),
       // We don't want to use node->is_folder() because that would let the
       // user edit "Bookmarks Bar" and "Other Bookmarks".

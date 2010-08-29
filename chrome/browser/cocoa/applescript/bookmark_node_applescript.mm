@@ -83,7 +83,7 @@
   if (!bookmarkNode_)
     return tempTitle_;
 
-  return base::SysWideToNSString(bookmarkNode_->GetTitle());
+  return base::SysUTF16ToNSString(bookmarkNode_->GetTitleAsString16());
 }
 
 - (void)setTitle:(NSString*)aTitle {

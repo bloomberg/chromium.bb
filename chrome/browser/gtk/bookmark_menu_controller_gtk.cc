@@ -146,10 +146,11 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
 
     // This breaks on word boundaries. Ideally we would break on character
     // boundaries.
-    std::wstring elided_name =
-        l10n_util::TruncateString(node->GetTitle(), kMaxChars);
+    std::string elided_name = WideToUTF8(
+        l10n_util::TruncateString(UTF16ToWideHack(node->GetTitleAsString16()),
+                                  kMaxChars));
     GtkWidget* menu_item =
-        gtk_image_menu_item_new_with_label(WideToUTF8(elided_name).c_str());
+        gtk_image_menu_item_new_with_label(elided_name.c_str());
     g_object_set_data(G_OBJECT(menu_item), "bookmark-node", AsVoid(node));
     SetImageMenuItem(menu_item, node, profile_->GetBookmarkModel());
     gtk_util::SetAlwaysShowImage(menu_item);

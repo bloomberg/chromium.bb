@@ -299,7 +299,7 @@ class ProfileSyncServiceTest : public testing::Test {
     // Non-root node titles and parents must match.
     if (bnode != model_->GetBookmarkBarNode() &&
         bnode != model_->other_node()) {
-      EXPECT_EQ(bnode->GetTitle(), gnode.GetTitle());
+      EXPECT_EQ(bnode->GetTitleAsString16(), WideToUTF16Hack(gnode.GetTitle()));
       EXPECT_EQ(associator()->GetChromeNodeFromSyncId(gnode.GetParentId()),
         bnode->GetParent());
     }
@@ -374,7 +374,7 @@ class ProfileSyncServiceTest : public testing::Test {
     const BookmarkNode* bnode =
         associator()->GetChromeNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
-    EXPECT_EQ(bnode->GetTitle(), title);
+    EXPECT_EQ(bnode->GetTitleAsString16(), WideToUTF16Hack(title));
   }
 
   void ExpectBrowserNodeURL(int64 sync_id, const std::string& url) {
@@ -996,11 +996,11 @@ void ProfileSyncServiceTestWithData::CompareWithTestData(
   for (int i = 0; i < size; ++i) {
     const BookmarkNode* child_node = node->GetChild(i);
     const TestData& item = data[i];
-    EXPECT_TRUE(child_node->GetTitle() == item.title);
+    EXPECT_EQ(child_node->GetTitleAsString16(), WideToUTF16Hack(item.title));
     if (item.url) {
       EXPECT_FALSE(child_node->is_folder());
       EXPECT_TRUE(child_node->is_url());
-      EXPECT_TRUE(child_node->GetURL() == GURL(item.url));
+      EXPECT_EQ(child_node->GetURL(), GURL(item.url));
     } else {
       EXPECT_TRUE(child_node->is_folder());
       EXPECT_FALSE(child_node->is_url());

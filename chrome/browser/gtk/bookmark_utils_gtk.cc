@@ -247,7 +247,7 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
 
 std::string BuildTooltipFor(const BookmarkNode* node) {
   const std::string& url = node->GetURL().possibly_invalid_spec();
-  const std::string& title = WideToUTF8(node->GetTitle());
+  const std::string& title = UTF16ToUTF8(node->GetTitleAsString16());
 
   std::string truncated_url = WideToUTF8(l10n_util::TruncateString(
       UTF8ToWide(url), kMaxTooltipURLLength));
@@ -261,7 +261,7 @@ std::string BuildTooltipFor(const BookmarkNode* node) {
     return escaped_url;
   } else {
     std::string truncated_title = WideToUTF8(l10n_util::TruncateString(
-      node->GetTitle(), kMaxTooltipTitleLength));
+        UTF16ToWideHack(node->GetTitleAsString16()), kMaxTooltipTitleLength));
     gchar* escaped_title_cstr = g_markup_escape_text(truncated_title.c_str(),
                                                      truncated_title.size());
     std::string escaped_title(escaped_title_cstr);

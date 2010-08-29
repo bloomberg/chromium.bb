@@ -305,7 +305,7 @@ std::string BookmarkBubbleGtk::GetTitle() {
     return std::string();
   }
 
-  return WideToUTF8(node->GetTitle());
+  return UTF16ToUTF8(node->GetTitleAsString16());
 }
 
 void BookmarkBubbleGtk::ShowEditor() {

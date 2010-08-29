@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
 #pragma once
 
+#include "base/string16.h"
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "gfx/rect.h"
@@ -74,7 +75,7 @@ class BookmarkBubbleView : public views::View,
   void Init();
 
   // Returns the title to display.
-  std::wstring GetTitle();
+  string16 GetTitle();
 
   // LinkController method, either unstars the item or shows the bookmark
   // editor (depending upon which link was clicked).

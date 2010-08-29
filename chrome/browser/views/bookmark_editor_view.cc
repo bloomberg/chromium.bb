@@ -488,8 +488,9 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
   for (int i = 0; i < bb_node->GetChildCount(); ++i) {
     const BookmarkNode* child_bb_node = bb_node->GetChild(i);
     if (child_bb_node->is_folder()) {
-      EditorNode* new_b_node = new EditorNode(child_bb_node->GetTitle(),
-                                              child_bb_node->id());
+      EditorNode* new_b_node =
+          new EditorNode(WideToUTF16(child_bb_node->GetTitleAsString16()),
+                                     child_bb_node->id());
       b_node->Add(b_node->GetChildCount(), new_b_node);
       CreateNodes(child_bb_node, new_b_node);
     }

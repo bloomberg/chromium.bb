@@ -246,7 +246,7 @@ void BookmarkBubbleView::Init() {
   layout->AddView(
       new Label(l10n_util::GetString(IDS_BOOMARK_BUBBLE_TITLE_TEXT)));
   title_tf_ = new views::Textfield();
-  title_tf_->SetText(WideToUTF16(GetTitle()));
+  title_tf_->SetText(GetTitle());
   layout->AddView(title_tf_);
 
   layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
@@ -261,15 +261,15 @@ void BookmarkBubbleView::Init() {
   layout->AddView(close_button_);
 }
 
-std::wstring BookmarkBubbleView::GetTitle() {
+string16 BookmarkBubbleView::GetTitle() {
   BookmarkModel* bookmark_model= profile_->GetBookmarkModel();
   const BookmarkNode* node =
       bookmark_model->GetMostRecentlyAddedNodeForURL(url_);
   if (node)
-    return node->GetTitle();
+    return node->GetTitleAsString16();
   else
     NOTREACHED();
-  return std::wstring();
+  return string16();
 }
 
 void BookmarkBubbleView::ButtonPressed(

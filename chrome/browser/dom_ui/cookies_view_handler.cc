@@ -59,7 +59,7 @@ bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
                                  DictionaryValue* dict) {
   // Use node's address as an id for DOMUI to look it up.
   dict->SetString(kKeyId, PointerToHexString(&node));
-  dict->SetString(kKeyTitle, WideToUTF8(node.GetTitle()));
+  dict->SetString(kKeyTitle, node.GetTitleAsString16());
 
   switch (node.GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_ORIGIN: {

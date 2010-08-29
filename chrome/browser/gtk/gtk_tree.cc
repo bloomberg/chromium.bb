@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,7 +202,7 @@ void TreeAdapter::FillRow(GtkTreeIter* iter, TreeModelNode* node) {
     pixbuf = GtkThemeProvider::GetFolderIcon(true);
   gtk_tree_store_set(tree_store_, iter,
                      COL_ICON, pixbuf,
-                     COL_TITLE, WideToUTF8(node->GetTitle()).c_str(),
+                     COL_TITLE, UTF16ToUTF8(node->GetTitleAsString16()).c_str(),
                      COL_NODE_PTR, node,
                      -1);
 }

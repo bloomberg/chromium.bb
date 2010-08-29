@@ -332,8 +332,9 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
   const BookmarkNode* new_child = new_node->GetChild(0);
   // Make sure the child url/title match.
   EXPECT_EQ(BookmarkNode::URL, new_child->type());
-  EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
-  EXPECT_TRUE(details.urls[0].first == new_child->GetURL());
+  EXPECT_EQ(WideToUTF16Hack(details.urls[0].second),
+            new_child->GetTitleAsString16());
+  EXPECT_EQ(details.urls[0].first, new_child->GetURL());
 }
 
 // Creates a new folder and selects a different folder for the folder to appear
@@ -361,6 +362,7 @@ TEST_F(BookmarkEditorViewTest, MoveFolder) {
   const BookmarkNode* new_child = new_node->GetChild(0);
   // Make sure the child url/title match.
   EXPECT_EQ(BookmarkNode::URL, new_child->type());
-  EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
-  EXPECT_TRUE(details.urls[0].first == new_child->GetURL());
+  EXPECT_EQ(WideToUTF16Hack(details.urls[0].second),
+            new_child->GetTitleAsString16());
+  EXPECT_EQ(details.urls[0].first, new_child->GetURL());
 }

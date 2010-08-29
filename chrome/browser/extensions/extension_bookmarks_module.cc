@@ -628,7 +628,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
     if (!parent)
       return;
 
-    std::string bucket_id = WideToUTF8(parent->GetTitle());
+    std::string bucket_id = UTF16ToUTF8(parent->GetTitleAsString16());
     std::string title;
     json->GetString(keys::kTitleKey, &title);
     std::string url_string;
@@ -664,8 +664,8 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
         return;
 
       std::string bucket_id;
-      bucket_id += WideToUTF8(node->GetParent()->GetTitle());
-      bucket_id += WideToUTF8(node->GetTitle());
+      bucket_id += UTF16ToUTF8(node->GetParent()->GetTitleAsString16());
+      bucket_id += UTF16ToUTF8(node->GetTitleAsString16());
       bucket_id += node->GetURL().spec();
       buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));
     }
