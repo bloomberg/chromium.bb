@@ -17,32 +17,32 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
-namespace keys = extension_manifest_keys;
 
 class ExtensionManifestTest : public testing::Test {
  public:
   ExtensionManifestTest() : enable_apps_(true) {}
 
  protected:
-  DictionaryValue* LoadManifestFile(const std::string& filename,
-                                    std::string* error) {
-    FilePath path;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("extensions")
-        .AppendASCII("manifest_tests")
-        .AppendASCII(filename.c_str());
-    EXPECT_TRUE(file_util::PathExists(path));
-
-    JSONFileValueSerializer serializer(path);
-    return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
+  Extension* LoadExtension(const std::string& name,
+                           std::string* error) {
+    return LoadExtensionWithLocation(name, Extension::INTERNAL, error);
   }
 
-  Extension* LoadExtensionWithLocation(DictionaryValue* value,
+  Extension* LoadExtensionWithLocation(const std::string& name,
                                        Extension::Location location,
                                        std::string* error) {
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
+    path = path.AppendASCII("extensions")
+        .AppendASCII("manifest_tests")
+        .AppendASCII(name.c_str());
+    EXPECT_TRUE(file_util::PathExists(path));
+
+    JSONFileValueSerializer serializer(path);
+    scoped_ptr<DictionaryValue> value(
+        static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error)));
+    if (!value.get())
+      return NULL;
 
     scoped_ptr<Extension> extension(new Extension(path.DirName()));
     extension->set_location(location);
@@ -54,66 +54,23 @@ class ExtensionManifestTest : public testing::Test {
     return extension.release();
   }
 
-  Extension* LoadExtension(const std::string& name,
-                           std::string* error) {
-    return LoadExtensionWithLocation(name, Extension::INTERNAL, error);
-  }
-
-  Extension* LoadExtension(DictionaryValue* value,
-                           std::string* error) {
-    return LoadExtensionWithLocation(value, Extension::INTERNAL, error);
-  }
-
-  Extension* LoadExtensionWithLocation(const std::string& name,
-                                       Extension::Location location,
-                                       std::string* error) {
-    scoped_ptr<DictionaryValue> value(LoadManifestFile(name, error));
-    if (!value.get())
-      return NULL;
-    return LoadExtensionWithLocation(value.get(), location, error);
-  }
-
   Extension* LoadAndExpectSuccess(const std::string& name) {
     std::string error;
     Extension* extension = LoadExtension(name, &error);
-    EXPECT_TRUE(extension) << name;
-    EXPECT_EQ("", error) << name;
+    EXPECT_TRUE(extension);
+    EXPECT_EQ("", error);
     return extension;
-  }
-
-  Extension* LoadAndExpectSuccess(DictionaryValue* manifest,
-                                  const std::string& name) {
-    std::string error;
-    Extension* extension = LoadExtension(manifest, &error);
-    EXPECT_TRUE(extension) << "Unexpected success for " << name;
-    EXPECT_EQ("", error) << "Unexpected no error for " << name;
-    return extension;
-  }
-
-  void VerifyExpectedError(Extension* extension,
-                           const std::string& name,
-                           const std::string& error,
-                           const std::string& expected_error) {
-    EXPECT_FALSE(extension) <<
-        "Expected failure loading extension '" << name <<
-        "', but didn't get one.";
-    EXPECT_TRUE(MatchPatternASCII(error, expected_error)) << name <<
-        " expected '" << expected_error << "' but got '" << error << "'";
   }
 
   void LoadAndExpectError(const std::string& name,
                           const std::string& expected_error) {
     std::string error;
     scoped_ptr<Extension> extension(LoadExtension(name, &error));
-    VerifyExpectedError(extension.get(), name, error, expected_error);
-  }
-
-  void LoadAndExpectError(DictionaryValue* manifest,
-                          const std::string& name,
-                          const std::string& expected_error) {
-    std::string error;
-    scoped_ptr<Extension> extension(LoadExtension(manifest, &error));
-    VerifyExpectedError(extension.get(), name, error, expected_error);
+    EXPECT_FALSE(extension.get()) <<
+        "Expected failure loading extension '" << name <<
+        "', but didn't get one.";
+    EXPECT_TRUE(MatchPatternASCII(error, expected_error)) << name <<
+        " expected '" << expected_error << "' but got '" << error << "'";
   }
 
   bool enable_apps_;
@@ -311,27 +268,4 @@ TEST_F(ExtensionManifestTest, DisallowHybridApps) {
                      errors::kHostedAppsCannotIncludeExtensionFeatures);
   LoadAndExpectError("disallow_hybrid_2.json",
                      errors::kHostedAppsCannotIncludeExtensionFeatures);
-}
-
-TEST_F(ExtensionManifestTest, DisallowExtensionPermissions) {
-  std::string error;
-  scoped_ptr<DictionaryValue> manifest(
-      LoadManifestFile("valid_app.json", &error));
-  ASSERT_TRUE(manifest.get());
-
-  ListValue *permissions = new ListValue();
-  manifest->Set(keys::kPermissions, permissions);
-  for (size_t i = 0; i < Extension::kNumPermissions; i++) {
-    const char* name = Extension::kPermissionNames[i];
-    StringValue* p = new StringValue(name);
-    permissions->Clear();
-    permissions->Append(p);
-    std::string message_name = StringPrintf("permission-%s", name);
-    if (Extension::IsHostedAppPermission(name)) {
-      LoadAndExpectSuccess(manifest.get(), message_name);
-    } else {
-      LoadAndExpectError(manifest.get(), message_name, 
-                         errors::kInvalidPermission);
-    }
-  }
 }
