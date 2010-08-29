@@ -275,7 +275,16 @@ o3d.Transform.prototype.removeShape =
  */
 o3d.Transform.prototype.createDrawElements =
     function(pack, material) {
-  o3d.notImplemented();
+  var children = this.children;
+  var shapes = this.shapes;
+
+  for (var i = 0; i < shapes.length; ++i) {
+    shapes[i].createDrawElements(pack, material);
+  }
+
+  for (var i = 0; i < children.length; ++i) {
+    children[i].createDrawElements(pack, material);
+  }
 };
 
 
@@ -1013,7 +1022,6 @@ o3d.Transform.flattenMatrix4 = function(m) {
  */
 o3d.Transform.prototype.traverse =
     function(drawListInfos, opt_parentWorldMatrix) {
-
   this.gl.client.render_stats_['transformsProcessed']++;
   if (drawListInfos.length == 0 || !this.visible) {
     return;
