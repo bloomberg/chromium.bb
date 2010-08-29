@@ -102,8 +102,15 @@ int main(int argc, char* argv[]) {
   bool layout_test_mode =
       parsed_command_line.HasSwitch(test_shell::kLayoutTests);
   bool ux_theme = parsed_command_line.HasSwitch(test_shell::kUxTheme);
+#if defined(OS_MACOSX)
+  // The "classic theme" flag is meaningless on OS X.  But there is a bunch
+  // of code that sets up the environment for running pixel tests that only
+  // runs if it's set to true.
+  bool classic_theme = true;
+#else
   bool classic_theme =
       parsed_command_line.HasSwitch(test_shell::kClassicTheme);
+#endif  // !OS_MACOSX
 #if defined(OS_WIN)
   bool generic_theme = (layout_test_mode && !ux_theme && !classic_theme) ||
       parsed_command_line.HasSwitch(test_shell::kGenericTheme);
