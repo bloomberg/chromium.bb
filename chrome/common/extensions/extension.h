@@ -113,6 +113,8 @@ class Extension {
 
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
+  static const char* kHostedAppPermissionNames[];
+  static const size_t kNumHostedAppPermissions;
 
   // The old name for the unlimited storage permission, which is deprecated but
   // still accepted as meaning the same thing as kUnlimitedStoragePermission.
@@ -124,6 +126,10 @@ class Extension {
   // several factors.
   typedef std::map<std::string, string16> SimplePermissions;
   static const SimplePermissions& GetSimplePermissions();
+
+  // Returns true if the string is one of the known hosted app permissions (see
+  // kHostedAppPermissionNames).
+  static bool IsHostedAppPermission(const std::string& permission);
 
   // An NPAPI plugin included in the extension.
   struct PluginInfo {
