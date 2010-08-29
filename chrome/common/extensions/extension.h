@@ -350,7 +350,6 @@ class Extension {
 
   bool is_app() const { return is_app_; }
   ExtensionExtent& web_extent() { return web_extent_; }
-  const ExtensionExtent& browse_extent() const { return browse_extent_; }
   const std::string& launch_local_path() const { return launch_local_path_; }
   const std::string& launch_web_url() const { return launch_web_url_; }
   void set_launch_web_url(const std::string& launch_web_url) {
@@ -556,11 +555,6 @@ class Extension {
 
   // Defines the set of URLs in the extension's web content.
   ExtensionExtent web_extent_;
-
-  // Defines an extra set of URLs beyond web_extent_ which will stay in the app
-  // if browsed to from a page that is already in the app, but which will not
-  // launch the app if browse to from outside.
-  ExtensionExtent browse_extent_;
 
   // The local path inside the extension to use with the launcher.
   std::string launch_local_path_;

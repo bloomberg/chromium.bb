@@ -1507,9 +1507,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   if (!LoadIsApp(manifest_value_.get(), error) ||
       !LoadExtent(manifest_value_.get(), keys::kWebURLs, &web_extent_,
                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
-      !LoadExtent(manifest_value_.get(), keys::kBrowseURLs, &browse_extent_,
-                  errors::kInvalidBrowseURLs, errors::kInvalidBrowseURL,
-                  error) ||
       !EnsureNotHybridApp(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
       !LoadLaunchContainer(manifest_value_.get(), error) ||

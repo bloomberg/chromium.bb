@@ -10,7 +10,6 @@ const char* kAllFrames = "all_frames";
 const char* kApp = "app";
 const char* kBackground = "background_page";
 const char* kBrowserAction = "browser_action";
-const char* kBrowseURLs = "app.browse_urls";
 const char* kChromeURLOverrides = "chrome_url_overrides";
 const char* kContentScripts = "content_scripts";
 const char* kConvertedFromUserScript = "converted_from_user_script";
@@ -103,10 +102,6 @@ const char* kInvalidBackground =
     "Invalid value for 'background_page'.";
 const char* kInvalidBrowserAction =
     "Invalid value for 'browser_action'.";
-const char* kInvalidBrowseURL =
-    "Invalid value for 'app.browse_urls[*]'.";
-const char* kInvalidBrowseURLs =
-    "Invalid value for 'app.browse_urls'.";
 const char* kInvalidChromeURLOverrides =
     "Invalid value for 'chrome_url_overrides'.";
 const char* kInvalidContentScript =
