@@ -25,6 +25,12 @@
 #define MAYBE_TabOnRemoved TabOnRemoved
 #endif
 
+// Tabs appears to timeout, or maybe crash on mac.
+// http://crbug.com/53779
+#if defined(OS_MAC)
+#define MAYBE_Tabs FAILS_Tabs
+#endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(test_server()->Start());
 
