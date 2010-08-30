@@ -191,6 +191,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   CancelableRequestConsumer consumer_;
 
  private:
+  void OnUnhandledMessage();
+
   // IPC Message callbacks.
   void ShutdownSessionService(int handle, bool* result);
   void WindowSimulateDrag(int handle,
