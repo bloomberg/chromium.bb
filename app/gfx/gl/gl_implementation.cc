@@ -10,6 +10,7 @@
 #include "app/app_switches.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 
 namespace gfx {
 namespace {

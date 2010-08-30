@@ -5,6 +5,7 @@
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

@@ -458,6 +458,7 @@
         '../base/base.gyp:test_support_base',
         '../chrome/chrome.gyp:browser',
         '../chrome/chrome.gyp:renderer',
+        '../chrome/chrome.gyp:test_support_common',
         '../testing/gtest.gyp:gtest',
         'base_noicu',
         'chrome_frame_ie',

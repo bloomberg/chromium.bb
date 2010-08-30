@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/sandbox_mac.h"
 

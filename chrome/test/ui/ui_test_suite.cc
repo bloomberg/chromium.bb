@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 
 // Timeout for the test in milliseconds.  UI tests only.

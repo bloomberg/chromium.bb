@@ -79,6 +79,17 @@ TemplateURLRef::TemplateURLRef() {
   Set(std::string(), 0, 0);
 }
 
+TemplateURLRef::TemplateURLRef(const std::string& url,
+                               int index_offset,
+                               int page_offset)
+    : url_(url),
+      index_offset_(index_offset),
+      page_offset_(page_offset),
+      parsed_(false),
+      valid_(false),
+      supports_replacements_(false) {
+}
+
 void TemplateURLRef::Set(const std::string& url,
                          int index_offset,
                          int page_offset) {
@@ -86,6 +97,9 @@ void TemplateURLRef::Set(const std::string& url,
   index_offset_ = index_offset;
   page_offset_ = page_offset;
   InvalidateCachedValues();
+}
+
+TemplateURLRef::~TemplateURLRef() {
 }
 
 bool TemplateURLRef::ParseParameter(size_t start,
@@ -553,6 +567,22 @@ GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
 // static
 bool TemplateURL::SupportsReplacement(const TemplateURL* turl) {
   return turl && turl->url() && turl->url()->SupportsReplacement();
+}
+
+TemplateURL::TemplateURL()
+    : autogenerate_keyword_(false),
+      keyword_generated_(false),
+      show_in_default_list_(false),
+      safe_for_autoreplace_(false),
+      id_(0),
+      date_created_(base::Time::Now()),
+      usage_count_(0),
+      search_engine_type_(TemplateURLPrepopulateData::SEARCH_ENGINE_OTHER),
+      logo_id_(0),
+      prepopulate_id_(0) {
+}
+
+TemplateURL::~TemplateURL() {
 }
 
 std::wstring TemplateURL::AdjustedShortNameForLocaleDirection() const {

@@ -49,14 +49,9 @@ class TemplateURLRef {
 
   TemplateURLRef();
 
-  TemplateURLRef(const std::string& url, int index_offset, int page_offset)
-      : url_(url),
-        index_offset_(index_offset),
-        page_offset_(page_offset),
-        parsed_(false),
-        valid_(false),
-        supports_replacements_(false) {
-  }
+  TemplateURLRef(const std::string& url, int index_offset, int page_offset);
+
+  ~TemplateURLRef();
 
   // Returns true if this URL supports replacement.
   bool SupportsReplacement() const;
@@ -270,18 +265,8 @@ class TemplateURL {
   // replacement.
   static bool SupportsReplacement(const TemplateURL* turl);
 
-  TemplateURL()
-      : autogenerate_keyword_(false),
-        keyword_generated_(false),
-        show_in_default_list_(false),
-        safe_for_autoreplace_(false),
-        id_(0),
-        date_created_(base::Time::Now()),
-        usage_count_(0),
-        search_engine_type_(TemplateURLPrepopulateData::SEARCH_ENGINE_OTHER),
-        logo_id_(0),
-        prepopulate_id_(0) {}
-  ~TemplateURL() {}
+  TemplateURL();
+  ~TemplateURL();
 
   // A short description of the template. This is the name we show to the user
   // in various places that use keywords. For example, the location bar shows

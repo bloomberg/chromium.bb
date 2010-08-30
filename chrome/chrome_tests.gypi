@@ -128,6 +128,8 @@
         'test/ui_test_utils_linux.cc',
         'test/ui_test_utils_mac.mm',
         'test/ui_test_utils_win.cc',
+        'test/unit/chrome_test_suite.cc',
+        'test/unit/chrome_test_suite.h',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -1787,7 +1789,6 @@
         'test/test_launcher/out_of_proc_test_runner.cc',
         'test/test_launcher/test_runner.cc',
         'test/test_launcher/test_runner.h',
-        'test/unit/chrome_test_suite.h',
       ],
       'conditions': [
         ['chromeos==0', {
