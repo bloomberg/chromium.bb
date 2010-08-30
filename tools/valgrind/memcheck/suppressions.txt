@@ -2396,7 +2396,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN5media18FFmpegVideoDecoder13CreateFactoryEv
-   fun:_ZN11webkit_glue18WebMediaPlayerImplC1EPN6WebKit20WebMediaPlayerClientEPN5media23FilterFactoryCollectionEPNS_30WebVideoRendererFactoryFactoryE
+   fun:_ZN11webkit_glue18WebMediaPlayerImpl*
    fun:_ZN19TestWebViewDelegate17createMediaPlayerEPN6WebKit8WebFrameEPNS0_20WebMediaPlayerClientE
    fun:_ZN6WebKit20createWebMediaPlayerEPNS_20WebMediaPlayerClientEPN7WebCore5FrameE
    fun:_ZN6WebKit24WebMediaPlayerClientImpl4loadERKN7WebCore6StringE
