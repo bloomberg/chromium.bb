@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
+#include "third_party/ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
-#include "third_party/ppapi/c/ppb_file_chooser.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace pepper {
@@ -20,12 +20,13 @@ class PluginInstance;
 
 class FileChooser : public Resource {
  public:
-  FileChooser(PluginInstance* instance, const PP_FileChooserOptions* options);
+  FileChooser(PluginInstance* instance,
+              const PP_FileChooserOptions_Dev* options);
   virtual ~FileChooser();
 
   // Returns a pointer to the interface implementing PPB_FileChooser that is
   // exposed to the plugin.
-  static const PPB_FileChooser* GetInterface();
+  static const PPB_FileChooser_Dev* GetInterface();
 
   // Resource overrides.
   FileChooser* AsFileChooser() { return this; }
@@ -39,10 +40,10 @@ class FileChooser : public Resource {
 
  private:
   PluginDelegate* delegate_;
-  PP_FileChooserMode mode_;
+  PP_FileChooserMode_Dev mode_;
   std::string accept_mime_types_;
   PP_CompletionCallback completion_callback_;
-  std::vector<scoped_refptr<FileRef> > chosen_files_;
+  std::vector< scoped_refptr<FileRef> > chosen_files_;
   size_t next_chosen_file_index_;
 };
 

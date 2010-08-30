@@ -13,7 +13,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
-typedef struct _ppb_URLLoader PPB_URLLoader;
+struct PPB_URLLoader_Dev;
 
 namespace pepper {
 
@@ -28,7 +28,7 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
 
   // Returns a pointer to the interface implementing PPB_URLLoader that is
   // exposed to the plugin.
-  static const PPB_URLLoader* GetInterface();
+  static const PPB_URLLoader_Dev* GetInterface();
 
   // Resource overrides.
   URLLoader* AsURLLoader() { return this; }

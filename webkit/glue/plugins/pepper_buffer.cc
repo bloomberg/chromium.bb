@@ -8,10 +8,10 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "third_party/ppapi/c/dev/ppb_buffer_dev.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_resource.h"
-#include "third_party/ppapi/c/ppb_buffer.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
@@ -57,7 +57,7 @@ void Unmap(PP_Resource resource) {
   return buffer->Unmap();
 }
 
-const PPB_Buffer ppb_buffer = {
+const PPB_Buffer_Dev ppb_buffer = {
   &Create,
   &IsBuffer,
   &Describe,
@@ -76,7 +76,7 @@ Buffer::~Buffer() {
 }
 
 // static
-const PPB_Buffer* Buffer::GetInterface() {
+const PPB_Buffer_Dev* Buffer::GetInterface() {
   return &ppb_buffer;
 }
 

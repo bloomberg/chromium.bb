@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "base/ref_counted.h"
-#include "third_party/ppapi/c/pp_cursor_type.h"
+#include "third_party/ppapi/c/dev/pp_cursor_type_dev.h"
+#include "third_party/ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "third_party/ppapi/c/pp_point.h"
 #include "third_party/ppapi/c/pp_resource.h"
-#include "third_party/ppapi/c/ppb_cursor_control.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource.h"
@@ -19,7 +19,7 @@ namespace pepper {
 namespace {
 
 bool SetCursor(PP_Instance instance_id,
-               PP_CursorType type,
+               PP_CursorType_Dev type,
                PP_Resource custom_image_id,
                const PP_Point* hot_spot) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
@@ -73,7 +73,7 @@ bool CanLockCursor(PP_Instance) {
   return false;
 }
 
-const PPB_CursorControl cursor_control_interface = {
+const PPB_CursorControl_Dev cursor_control_interface = {
   &SetCursor,
   &LockCursor,
   &UnlockCursor,
@@ -83,7 +83,7 @@ const PPB_CursorControl cursor_control_interface = {
 
 }  // namespace
 
-const PPB_CursorControl* GetCursorControlInterface() {
+const PPB_CursorControl_Dev* GetCursorControlInterface() {
   return &cursor_control_interface;
 }
 

@@ -7,7 +7,7 @@
 
 #include "webkit/glue/plugins/pepper_resource.h"
 
-typedef struct _ppb_Private PPB_Private;
+struct PPB_Private;
 
 namespace pepper {
 

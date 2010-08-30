@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/ref_counted.h"
-#include "third_party/ppapi/c/ppb_url_request_info.h"
+#include "third_party/ppapi/c/dev/ppb_url_request_info_dev.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
@@ -27,14 +27,14 @@ class URLRequestInfo : public Resource {
 
   // Returns a pointer to the interface implementing PPB_URLRequestInfo that is
   // exposed to the plugin.
-  static const PPB_URLRequestInfo* GetInterface();
+  static const PPB_URLRequestInfo_Dev* GetInterface();
 
   // Resource overrides.
   URLRequestInfo* AsURLRequestInfo() { return this; }
 
   // PPB_URLRequestInfo implementation.
-  bool SetBooleanProperty(PP_URLRequestProperty property, bool value);
-  bool SetStringProperty(PP_URLRequestProperty property,
+  bool SetBooleanProperty(PP_URLRequestProperty_Dev property, bool value);
+  bool SetStringProperty(PP_URLRequestProperty_Dev property,
                          const std::string& value);
   bool AppendDataToBody(const std::string& data);
   bool AppendFileToBody(FileRef* file_ref,

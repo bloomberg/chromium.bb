@@ -33,7 +33,7 @@ void TrimTrailingSlash(std::string* path) {
 }
 
 PP_Resource CreateFileRef(PP_Instance instance_id,
-                          PP_FileSystemType fs_type,
+                          PP_FileSystemType_Dev fs_type,
                           const char* path) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
@@ -65,11 +65,10 @@ bool IsFileRef(PP_Resource resource) {
   return !!Resource::GetAs<FileRef>(resource);
 }
 
-PP_FileSystemType GetFileSystemType(PP_Resource file_ref_id) {
+PP_FileSystemType_Dev GetFileSystemType(PP_Resource file_ref_id) {
   scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref)
     return PP_FILESYSTEMTYPE_EXTERNAL;
-
   return file_ref->file_system_type();
 }
 
@@ -77,7 +76,6 @@ PP_Var GetName(PP_Resource file_ref_id) {
   scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref)
     return PP_MakeVoid();
-
   return StringToPPVar(file_ref->GetName());
 }
 
@@ -107,7 +105,7 @@ PP_Resource GetParent(PP_Resource file_ref_id) {
   return parent_ref->GetReference();
 }
 
-const PPB_FileRef ppb_fileref = {
+const PPB_FileRef_Dev ppb_fileref = {
   &CreatePersistentFileRef,
   &CreateTemporaryFileRef,
   &IsFileRef,
@@ -120,7 +118,7 @@ const PPB_FileRef ppb_fileref = {
 }  // namespace
 
 FileRef::FileRef(PluginModule* module,
-                 PP_FileSystemType file_system_type,
+                 PP_FileSystemType_Dev file_system_type,
                  const std::string& validated_path,
                  const std::string& origin)
     : Resource(module),
@@ -141,7 +139,7 @@ FileRef::~FileRef() {
 }
 
 // static
-const PPB_FileRef* FileRef::GetInterface() {
+const PPB_FileRef_Dev* FileRef::GetInterface() {
   return &ppb_fileref;
 }
 

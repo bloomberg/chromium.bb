@@ -15,7 +15,7 @@
 
 class FilePath;
 
-typedef struct _ppb_Core PPB_Core;
+struct PPB_Core;
 
 namespace pepper {
 

@@ -5,13 +5,13 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_CURSOR_CONTROL_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_CURSOR_CONTROL_H_
 
-typedef struct _ppb_CursorControl PPB_CursorControl;
+struct PPB_CursorControl_Dev;
 
 namespace pepper {
 
 // There's no class implementing CursorControl so we just expose a getter for
 // the interface implemented in the .cc file here.
-const PPB_CursorControl* GetCursorControlInterface();
+const PPB_CursorControl_Dev* GetCursorControlInterface();
 
 }  // namespace pepper
 

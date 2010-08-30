@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
-#include "third_party/ppapi/cpp/device_context_2d.h"
+#include "third_party/ppapi/cpp/graphics_2d.h"
 #include "third_party/ppapi/cpp/image_data.h"
 #include "third_party/ppapi/cpp/point.h"
 #include "third_party/ppapi/cpp/size.h"
@@ -15,13 +15,13 @@
 namespace remoting {
 
 PepperView::PepperView(ChromotingInstance* instance)
-  : instance_(instance),
-    viewport_x_(0),
-    viewport_y_(0),
-    viewport_width_(0),
-    viewport_height_(0),
-    is_static_fill_(false),
-    static_fill_color_(0) {
+    : instance_(instance),
+      viewport_x_(0),
+      viewport_y_(0),
+      viewport_width_(0),
+      viewport_height_(0),
+      is_static_fill_(false),
+      static_fill_color_(0) {
 }
 
 PepperView::~PepperView() {
@@ -117,8 +117,8 @@ void PepperView::SetViewport(int x, int y, int width, int height) {
   viewport_height_ = height;
 
   device_context_ =
-      pp::DeviceContext2D(pp::Size(viewport_width_, viewport_height_), false);
-  if (!instance_->BindGraphicsDeviceContext(device_context_)) {
+      pp::Graphics2D(pp::Size(viewport_width_, viewport_height_), false);
+  if (!instance_->BindGraphics(device_context_)) {
     LOG(ERROR) << "Couldn't bind the device context.";
     return;
   }

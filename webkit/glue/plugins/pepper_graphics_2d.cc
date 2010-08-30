@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/plugins/pepper_device_context_2d.h"
+#include "webkit/glue/plugins/pepper_graphics_2d.h"
 
 #include <iterator>
 
@@ -17,7 +17,7 @@
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
-#include "third_party/ppapi/c/ppb_device_context_2d.h"
+#include "third_party/ppapi/c/ppb_graphics_2d.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
@@ -70,21 +70,21 @@ PP_Resource Create(PP_Module module_id,
   if (!module)
     return 0;
 
-  scoped_refptr<DeviceContext2D> context(new DeviceContext2D(module));
+  scoped_refptr<Graphics2D> context(new Graphics2D(module));
   if (!context->Init(size->width, size->height, is_always_opaque))
     return 0;
   return context->GetReference();
 }
 
-bool IsDeviceContext2D(PP_Resource resource) {
-  return !!Resource::GetAs<DeviceContext2D>(resource);
+bool IsGraphics2D(PP_Resource resource) {
+  return !!Resource::GetAs<Graphics2D>(resource);
 }
 
 bool Describe(PP_Resource device_context,
               PP_Size* size,
               bool* is_always_opaque) {
-  scoped_refptr<DeviceContext2D> context(
-      Resource::GetAs<DeviceContext2D>(device_context));
+  scoped_refptr<Graphics2D> context(
+      Resource::GetAs<Graphics2D>(device_context));
   if (!context)
     return false;
   return context->Describe(size, is_always_opaque);
@@ -94,8 +94,8 @@ bool PaintImageData(PP_Resource device_context,
                     PP_Resource image,
                     const PP_Point* top_left,
                     const PP_Rect* src_rect) {
-  scoped_refptr<DeviceContext2D> context(
-      Resource::GetAs<DeviceContext2D>(device_context));
+  scoped_refptr<Graphics2D> context(
+      Resource::GetAs<Graphics2D>(device_context));
   if (!context)
     return false;
   return context->PaintImageData(image, top_left, src_rect);
@@ -104,16 +104,16 @@ bool PaintImageData(PP_Resource device_context,
 bool Scroll(PP_Resource device_context,
             const PP_Rect* clip_rect,
             const PP_Point* amount) {
-  scoped_refptr<DeviceContext2D> context(
-      Resource::GetAs<DeviceContext2D>(device_context));
+  scoped_refptr<Graphics2D> context(
+      Resource::GetAs<Graphics2D>(device_context));
   if (!context)
     return false;
   return context->Scroll(clip_rect, amount);
 }
 
 bool ReplaceContents(PP_Resource device_context, PP_Resource image) {
-  scoped_refptr<DeviceContext2D> context(
-      Resource::GetAs<DeviceContext2D>(device_context));
+  scoped_refptr<Graphics2D> context(
+      Resource::GetAs<Graphics2D>(device_context));
   if (!context)
     return false;
   return context->ReplaceContents(image);
@@ -121,16 +121,16 @@ bool ReplaceContents(PP_Resource device_context, PP_Resource image) {
 
 int32_t Flush(PP_Resource device_context,
               PP_CompletionCallback callback) {
-  scoped_refptr<DeviceContext2D> context(
-      Resource::GetAs<DeviceContext2D>(device_context));
+  scoped_refptr<Graphics2D> context(
+      Resource::GetAs<Graphics2D>(device_context));
   if (!context)
     return PP_ERROR_BADRESOURCE;
   return context->Flush(callback);
 }
 
-const PPB_DeviceContext2D ppb_devicecontext2d = {
+const PPB_Graphics2D ppb_graphics_2d = {
   &Create,
-  &IsDeviceContext2D,
+  &IsGraphics2D,
   &Describe,
   &PaintImageData,
   &Scroll,
@@ -140,7 +140,7 @@ const PPB_DeviceContext2D ppb_devicecontext2d = {
 
 }  // namespace
 
-struct DeviceContext2D::QueuedOperation {
+struct Graphics2D::QueuedOperation {
   enum Type {
     PAINT,
     SCROLL,
@@ -170,22 +170,22 @@ struct DeviceContext2D::QueuedOperation {
   scoped_refptr<ImageData> replace_image;
 };
 
-DeviceContext2D::DeviceContext2D(PluginModule* module)
+Graphics2D::Graphics2D(PluginModule* module)
     : Resource(module),
       bound_instance_(NULL),
       flushed_any_data_(false),
       offscreen_flush_pending_(false) {
 }
 
-DeviceContext2D::~DeviceContext2D() {
+Graphics2D::~Graphics2D() {
 }
 
 // static
-const PPB_DeviceContext2D* DeviceContext2D::GetInterface() {
-  return &ppb_devicecontext2d;
+const PPB_Graphics2D* Graphics2D::GetInterface() {
+  return &ppb_graphics_2d;
 }
 
-bool DeviceContext2D::Init(int width, int height, bool is_always_opaque) {
+bool Graphics2D::Init(int width, int height, bool is_always_opaque) {
   // The underlying ImageData will validate the dimensions.
   image_data_ = new ImageData(module());
   if (!image_data_->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL, width, height, true) ||
@@ -197,16 +197,16 @@ bool DeviceContext2D::Init(int width, int height, bool is_always_opaque) {
   return true;
 }
 
-bool DeviceContext2D::Describe(PP_Size* size, bool* is_always_opaque) {
+bool Graphics2D::Describe(PP_Size* size, bool* is_always_opaque) {
   size->width = image_data_->width();
   size->height = image_data_->height();
   *is_always_opaque = false;  // TODO(brettw) implement this.
   return true;
 }
 
-bool DeviceContext2D::PaintImageData(PP_Resource image,
-                                     const PP_Point* top_left,
-                                     const PP_Rect* src_rect) {
+bool Graphics2D::PaintImageData(PP_Resource image,
+                                const PP_Point* top_left,
+                                const PP_Rect* src_rect) {
   if (!top_left)
     return false;
 
@@ -240,8 +240,7 @@ bool DeviceContext2D::PaintImageData(PP_Resource image,
   return true;
 }
 
-bool DeviceContext2D::Scroll(const PP_Rect* clip_rect,
-                             const PP_Point* amount) {
+bool Graphics2D::Scroll(const PP_Rect* clip_rect, const PP_Point* amount) {
   QueuedOperation operation(QueuedOperation::SCROLL);
   if (!ValidateAndConvertRect(clip_rect,
                               image_data_->width(),
@@ -264,7 +263,7 @@ bool DeviceContext2D::Scroll(const PP_Rect* clip_rect,
   return false;
 }
 
-bool DeviceContext2D::ReplaceContents(PP_Resource image) {
+bool Graphics2D::ReplaceContents(PP_Resource image) {
   scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
   if (!image_resource)
     return false;
@@ -282,7 +281,7 @@ bool DeviceContext2D::ReplaceContents(PP_Resource image) {
   return true;
 }
 
-int32_t DeviceContext2D::Flush(const PP_CompletionCallback& callback) {
+int32_t Graphics2D::Flush(const PP_CompletionCallback& callback) {
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
     return PP_ERROR_INPROGRESS;
@@ -336,8 +335,8 @@ int32_t DeviceContext2D::Flush(const PP_CompletionCallback& callback) {
   return PP_ERROR_WOULDBLOCK;
 }
 
-bool DeviceContext2D::ReadImageData(PP_Resource image,
-                                    const PP_Point* top_left) {
+bool Graphics2D::ReadImageData(PP_Resource image,
+                               const PP_Point* top_left) {
   // Get and validate the image object to paint into.
   scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
   if (!image_resource)
@@ -378,7 +377,7 @@ bool DeviceContext2D::ReadImageData(PP_Resource image,
   return true;
 }
 
-bool DeviceContext2D::BindToInstance(PluginInstance* new_instance) {
+bool Graphics2D::BindToInstance(PluginInstance* new_instance) {
   if (bound_instance_ == new_instance)
     return true;  // Rebinding the same device, nothing to do.
   if (bound_instance_ && new_instance)
@@ -412,9 +411,9 @@ bool DeviceContext2D::BindToInstance(PluginInstance* new_instance) {
   return true;
 }
 
-void DeviceContext2D::Paint(WebKit::WebCanvas* canvas,
-                            const gfx::Rect& plugin_rect,
-                            const gfx::Rect& paint_rect) {
+void Graphics2D::Paint(WebKit::WebCanvas* canvas,
+                       const gfx::Rect& plugin_rect,
+                       const gfx::Rect& paint_rect) {
   // We're guaranteed to have a mapped canvas since we mapped it in Init().
   const SkBitmap& backing_bitmap = *image_data_->GetMappedBitmap();
 
@@ -456,7 +455,7 @@ void DeviceContext2D::Paint(WebKit::WebCanvas* canvas,
 #endif
 }
 
-void DeviceContext2D::ViewInitiatedPaint() {
+void Graphics2D::ViewInitiatedPaint() {
   // Move any "unpainted" callback to the painted state. See
   // |unpainted_flush_callback_| in the header for more.
   if (!unpainted_flush_callback_.is_null()) {
@@ -465,7 +464,7 @@ void DeviceContext2D::ViewInitiatedPaint() {
   }
 }
 
-void DeviceContext2D::ViewFlushedPaint() {
+void Graphics2D::ViewFlushedPaint() {
   // Notify any "painted" callback. See |unpainted_flush_callback_| in the
   // header for more.
   if (!painted_flush_callback_.is_null()) {
@@ -478,10 +477,10 @@ void DeviceContext2D::ViewFlushedPaint() {
   }
 }
 
-void DeviceContext2D::ExecutePaintImageData(ImageData* image,
-                                            int x, int y,
-                                            const gfx::Rect& src_rect,
-                                            gfx::Rect* invalidated_rect) {
+void Graphics2D::ExecutePaintImageData(ImageData* image,
+                                       int x, int y,
+                                       const gfx::Rect& src_rect,
+                                       gfx::Rect* invalidated_rect) {
   // Ensure the source image is mapped to read from it.
   ImageDataAutoMapper auto_mapper(image);
   if (!auto_mapper.is_valid())
@@ -509,32 +508,31 @@ void DeviceContext2D::ExecutePaintImageData(ImageData* image,
                                  &src_irect, dest_rect, &paint);
 }
 
-void DeviceContext2D::ExecuteScroll(const gfx::Rect& clip, int dx, int dy,
-                                    gfx::Rect* invalidated_rect) {
+void Graphics2D::ExecuteScroll(const gfx::Rect& clip, int dx, int dy,
+                               gfx::Rect* invalidated_rect) {
   gfx::ScrollCanvas(image_data_->mapped_canvas(),
                     clip, gfx::Point(dx, dy));
   *invalidated_rect = clip;
 }
 
-void DeviceContext2D::ExecuteReplaceContents(ImageData* image,
-                                             gfx::Rect* invalidated_rect) {
+void Graphics2D::ExecuteReplaceContents(ImageData* image,
+                                        gfx::Rect* invalidated_rect) {
   image_data_->Swap(image);
   *invalidated_rect = gfx::Rect(0, 0,
                                 image_data_->width(), image_data_->height());
 }
 
-void DeviceContext2D::ScheduleOffscreenCallback(
-    const FlushCallbackData& callback) {
+void Graphics2D::ScheduleOffscreenCallback(const FlushCallbackData& callback) {
   DCHECK(!HasPendingFlush());
   offscreen_flush_pending_ = true;
   MessageLoop::current()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
-                        &DeviceContext2D::ExecuteOffscreenCallback,
+                        &Graphics2D::ExecuteOffscreenCallback,
                         callback));
 }
 
-void DeviceContext2D::ExecuteOffscreenCallback(FlushCallbackData data) {
+void Graphics2D::ExecuteOffscreenCallback(FlushCallbackData data) {
   DCHECK(offscreen_flush_pending_);
 
   // We must clear this flag before issuing the callback. It will be
@@ -544,7 +542,7 @@ void DeviceContext2D::ExecuteOffscreenCallback(FlushCallbackData data) {
   data.Execute(PP_OK);
 }
 
-bool DeviceContext2D::HasPendingFlush() const {
+bool Graphics2D::HasPendingFlush() const {
   return !unpainted_flush_callback_.is_null() ||
          !painted_flush_callback_.is_null() ||
          offscreen_flush_pending_;

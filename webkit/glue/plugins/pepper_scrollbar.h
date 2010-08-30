@@ -8,12 +8,10 @@
 #include <vector>
 
 #include "gfx/rect.h"
-#include "third_party/ppapi/c/ppb_scrollbar.h"
+#include "third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScrollbarClient.h"
 #include "webkit/glue/plugins/pepper_widget.h"
-
-typedef struct _ppb_Scrollbar PPB_Scrollbar;
 
 namespace pepper {
 
@@ -26,7 +24,7 @@ class Scrollbar : public Widget, public WebKit::WebScrollbarClient {
 
   // Returns a pointer to the interface implementing PPB_Scrollbar that is
   // exposed to the plugin.
-  static const PPB_Scrollbar* GetInterface();
+  static const PPB_Scrollbar_Dev* GetInterface();
 
   // Resource overrides.
   Scrollbar* AsScrollbar() { return this; }
@@ -36,7 +34,7 @@ class Scrollbar : public Widget, public WebKit::WebScrollbarClient {
   void SetValue(uint32_t value);
   void SetDocumentSize(uint32_t size);
   void SetTickMarks(const PP_Rect* tick_marks, uint32_t count);
-  void ScrollBy(PP_ScrollBy unit, int32_t multiplier);
+  void ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier);
 
   // PPB_Widget implementation.
   virtual bool Paint(const PP_Rect* rect, ImageData* image);

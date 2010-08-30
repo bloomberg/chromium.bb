@@ -14,19 +14,19 @@
 #include "base/string16.h"
 #include "gfx/rect.h"
 #include "third_party/ppapi/c/dev/pp_cursor_type_dev.h"
+#include "third_party/ppapi/c/dev/ppp_graphics_3d_dev.h"
+#include "third_party/ppapi/c/dev/ppp_printing_dev.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
-#include "third_party/ppapi/c/ppp_printing.h"
-#include "third_party/ppapi/c/ppp_graphics_3d.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 
-typedef struct _pp_Var PP_Var;
-typedef struct _ppb_Instance PPB_Instance;
-typedef struct _ppb_Find PPB_Find;
-typedef struct _ppp_Find PPP_Find;
-typedef struct _ppp_Instance PPP_Instance;
-typedef struct _ppp_Zoom PPP_Zoom;
+struct PP_Var;
+struct PPB_Instance;
+struct PPB_Find_Dev;
+struct PPP_Find_Dev;
+struct PPP_Instance;
+struct PPP_Zoom_Dev;
 
 class SkBitmap;
 
@@ -42,7 +42,7 @@ class WebPluginContainer;
 
 namespace pepper {
 
-class DeviceContext2D;
+class Graphics2D;
 class ImageData;
 class PluginDelegate;
 class PluginModule;
@@ -62,7 +62,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // Returns a pointer to the interface implementing PPB_Find that is
   // exposed to the plugin.
-  static const PPB_Find* GetFindInterface();
+  static const PPB_Find_Dev* GetFindInterface();
 
   PluginDelegate* delegate() const { return delegate_; }
   PluginModule* module() const { return module_.get(); }
@@ -90,7 +90,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // PPB_Instance implementation.
   PP_Var GetWindowObject();
   PP_Var GetOwnerElementObject();
-  bool BindGraphicsDeviceContext(PP_Resource device_id);
+  bool BindGraphics(PP_Resource device_id);
   bool full_frame() const { return full_frame_; }
   bool SetCursor(PP_CursorType_Dev type);
 
@@ -134,7 +134,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Queries the plugin for supported print formats and sets |format| to the
   // best format to use. Returns false if the plugin does not support any
   // print format that we can handle (we can handle raster and PDF).
-  bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat* format);
+  bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat_Dev* format);
   bool PrintPDFOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
   bool PrintRasterOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
 #if defined(OS_WIN)
@@ -170,18 +170,18 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   gfx::Rect clip_;
 
   // The current device context for painting in 2D.
-  scoped_refptr<DeviceContext2D> device_context_2d_;
+  scoped_refptr<Graphics2D> bound_graphics_2d_;
 
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
 
   // The plugin find and zoom interfaces.
-  const PPP_Find* plugin_find_interface_;
-  const PPP_Zoom* plugin_zoom_interface_;
+  const PPP_Find_Dev* plugin_find_interface_;
+  const PPP_Zoom_Dev* plugin_zoom_interface_;
 
   // This is only valid between a successful PrintBegin call and a PrintEnd
   // call.
-  PP_PrintSettings current_print_settings_;
+  PP_PrintSettings_Dev current_print_settings_;
 #if defined(OS_MACOSX)
   // On the Mac, when we draw the bitmap to the PDFContext, it seems necessary
   // to keep the pixels valid until CGContextEndPage is called. We use this
@@ -201,10 +201,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 #endif  // defined(OS_LINUX)
 
   // The plugin print interface.
-  const PPP_Printing* plugin_print_interface_;
+  const PPP_Printing_Dev* plugin_print_interface_;
 
   // The plugin 3D interface.
-  const PPP_Graphics3D* plugin_graphics_3d_interface_;
+  const PPP_Graphics3D_Dev* plugin_graphics_3d_interface_;
 
   // Containes the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;

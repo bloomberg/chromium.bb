@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "base/singleton.h"
 #include "base/thread_local.h"
+#include "third_party/ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
 namespace pepper {
@@ -104,7 +105,7 @@ uint32_t GetError() {
   return PP_GRAPHICS_3D_ERROR_SUCCESS;
 }
 
-const PPB_Graphics3D ppb_graphics3d = {
+const PPB_Graphics3D_Dev ppb_graphics3d = {
   &IsGraphics3D,
   &GetConfigs,
   &ChooseConfig,
@@ -118,7 +119,6 @@ const PPB_Graphics3D ppb_graphics3d = {
   &GetError
 };
 
-
 }  // namespace
 
 Graphics3D::Graphics3D(PluginModule* module)
@@ -128,7 +128,7 @@ Graphics3D::Graphics3D(PluginModule* module)
       method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
-const PPB_Graphics3D* Graphics3D::GetInterface() {
+const PPB_Graphics3D_Dev* Graphics3D::GetInterface() {
   return &ppb_graphics3d;
 }
 

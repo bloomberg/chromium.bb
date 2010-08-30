@@ -9,8 +9,8 @@
 #include "third_party/ppapi/c/pp_rect.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
-typedef struct _ppb_Widget PPB_Widget;
-typedef struct _pp_Event PP_Event;
+struct PPB_Widget_Dev;
+struct PP_Event;
 
 namespace pepper {
 
@@ -24,7 +24,7 @@ class Widget : public Resource  {
 
   // Returns a pointer to the interface implementing PPB_Widget that is
   // exposed to the plugin.
-  static const PPB_Widget* GetInterface();
+  static const PPB_Widget_Dev* GetInterface();
 
   // Resource overrides.
   Widget* AsWidget() { return this; }

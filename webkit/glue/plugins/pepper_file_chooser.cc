@@ -32,7 +32,7 @@ namespace pepper {
 namespace {
 
 PP_Resource Create(PP_Instance instance_id,
-                   const PP_FileChooserOptions* options) {
+                   const PP_FileChooserOptions_Dev* options) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return 0;
@@ -67,7 +67,7 @@ PP_Resource GetNextChosenFile(PP_Resource chooser_id) {
   return file_ref->GetReference();
 }
 
-const PPB_FileChooser ppb_filechooser = {
+const PPB_FileChooser_Dev ppb_filechooser = {
   &Create,
   &IsFileChooser,
   &Show,
@@ -98,7 +98,7 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
 }  // namespace
 
 FileChooser::FileChooser(PluginInstance* instance,
-                         const PP_FileChooserOptions* options)
+                         const PP_FileChooserOptions_Dev* options)
     : Resource(instance->module()),
       delegate_(instance->delegate()),
       mode_(options->mode),
@@ -110,7 +110,7 @@ FileChooser::~FileChooser() {
 }
 
 // static
-const PPB_FileChooser* FileChooser::GetInterface() {
+const PPB_FileChooser_Dev* FileChooser::GetInterface() {
   return &ppb_filechooser;
 }
 

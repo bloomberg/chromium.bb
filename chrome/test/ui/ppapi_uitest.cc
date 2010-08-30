@@ -87,8 +87,8 @@ class PPAPITest : public UITest {
   }
 };
 
-TEST_F(PPAPITest, DeviceContext2D) {
-  RunTest("DeviceContext2D");
+TEST_F(PPAPITest, Graphics2D) {
+  RunTest("Graphics2D");
 }
 
 // TODO(brettw) bug 51344: this is flaky on bots. Seems to timeout navigating.

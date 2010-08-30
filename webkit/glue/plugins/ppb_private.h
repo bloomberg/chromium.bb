@@ -10,22 +10,22 @@
 
 #define PPB_PRIVATE_INTERFACE "PPB_Private;1"
 
-typedef enum _pp_ResourceString {
+typedef enum {
   PP_RESOURCESTRING_PDFGETPASSWORD = 0,
 } PP_ResourceString;
 
-typedef enum _pp_PrivateFontPitch {
+typedef enum {
   PP_PRIVATEFONTPITCH_DEFAULT = 0,
   PP_PRIVATEFONTPITCH_FIXED = 1
 } PP_PrivateFontPitch;
 
-typedef enum _pp_PrivateFontFamily {
+typedef enum {
   PP_PRIVATEFONTFAMILY_DEFAULT = 0,
   PP_PRIVATEFONTFAMILY_ROMAN = 1,
   PP_PRIVATEFONTFAMILY_SCRIPT = 2
 } PP_PrivateFontFamily;
 
-typedef enum _pp_PrivateFontCharset {
+typedef enum {
   PP_PRIVATEFONTCHARSET_ANSI = 0,
   PP_PRIVATEFONTCHARSET_DEFAULT = 1,
   PP_PRIVATEFONTCHARSET_SYMBOL = 2,
@@ -47,16 +47,16 @@ typedef enum _pp_PrivateFontCharset {
   PP_PRIVATEFONTCHARSET_OEM = 255
 } PP_PrivateFontCharset;
 
-typedef struct _pp_PrivateFontFileDescription {
+struct PP_PrivateFontFileDescription {
   const char* face;
   uint32_t weight;
   bool italic;
   PP_PrivateFontPitch pitch;
   PP_PrivateFontFamily family;
   PP_PrivateFontCharset charset;
-} PP_PrivateFontFileDescription;
+};
 
-typedef struct _ppb_Private {
+struct PPB_Private {
   // Returns a localized string.
   PP_Var (*GetLocalizedString)(PP_ResourceString string_id);
 
@@ -72,6 +72,6 @@ typedef struct _ppb_Private {
                                          uint32_t table,
                                          void* output,
                                          uint32_t* output_length);
-} PPB_Private;
+};
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_

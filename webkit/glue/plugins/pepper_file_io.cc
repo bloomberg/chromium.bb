@@ -5,10 +5,10 @@
 #include "webkit/glue/plugins/pepper_file_io.h"
 
 #include "base/logging.h"
+#include "third_party/ppapi/c/dev/ppb_file_io_dev.h"
+#include "third_party/ppapi/c/dev/ppb_file_io_trusted_dev.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
-#include "third_party/ppapi/c/ppb_file_io.h"
-#include "third_party/ppapi/c/ppb_file_io_trusted.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
@@ -46,12 +46,11 @@ int32_t Open(PP_Resource file_io_id,
 }
 
 int32_t Query(PP_Resource file_io_id,
-              PP_FileInfo* info,
+              PP_FileInfo_Dev* info,
               PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->Query(info, callback);
 }
 
@@ -62,7 +61,6 @@ int32_t Touch(PP_Resource file_io_id,
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->Touch(last_access_time, last_modified_time, callback);
 }
 
@@ -74,7 +72,6 @@ int32_t Read(PP_Resource file_io_id,
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->Read(offset, buffer, bytes_to_read, callback);
 }
 
@@ -86,7 +83,6 @@ int32_t Write(PP_Resource file_io_id,
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->Write(offset, buffer, bytes_to_write, callback);
 }
 
@@ -96,7 +92,6 @@ int32_t SetLength(PP_Resource file_io_id,
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->SetLength(length, callback);
 }
 
@@ -105,7 +100,6 @@ int32_t Flush(PP_Resource file_io_id,
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->Flush(callback);
 }
 
@@ -113,11 +107,10 @@ void Close(PP_Resource file_io_id) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return;
-
   file_io->Close();
 }
 
-const PPB_FileIO ppb_fileio = {
+const PPB_FileIO_Dev ppb_fileio = {
   &Create,
   &IsFileIO,
   &Open,
@@ -134,7 +127,6 @@ int32_t GetOSFileDescriptor(PP_Resource file_io_id) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->GetOSFileDescriptor();
 }
 
@@ -145,7 +137,6 @@ int32_t WillWrite(PP_Resource file_io_id,
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->WillWrite(offset, bytes_to_write, callback);
 }
 
@@ -155,11 +146,10 @@ int32_t WillSetLength(PP_Resource file_io_id,
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
   if (!file_io)
     return PP_ERROR_BADRESOURCE;
-
   return file_io->WillSetLength(length, callback);
 }
 
-const PPB_FileIOTrusted ppb_fileiotrusted = {
+const PPB_FileIOTrusted_Dev ppb_fileiotrusted = {
   &GetOSFileDescriptor,
   &WillWrite,
   &WillSetLength
@@ -174,12 +164,12 @@ FileIO::~FileIO() {
 }
 
 // static
-const PPB_FileIO* FileIO::GetInterface() {
+const PPB_FileIO_Dev* FileIO::GetInterface() {
   return &ppb_fileio;
 }
 
 // static
-const PPB_FileIOTrusted* FileIO::GetTrustedInterface() {
+const PPB_FileIOTrusted_Dev* FileIO::GetTrustedInterface() {
   return &ppb_fileiotrusted;
 }
 
@@ -190,7 +180,7 @@ int32_t FileIO::Open(FileRef* file_ref,
   return PP_ERROR_FAILED;
 }
 
-int32_t FileIO::Query(PP_FileInfo* info,
+int32_t FileIO::Query(PP_FileInfo_Dev* info,
                       PP_CompletionCallback callback) {
   NOTIMPLEMENTED();  // TODO(darin): Implement me!
   return PP_ERROR_FAILED;

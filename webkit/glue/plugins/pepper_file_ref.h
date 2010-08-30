@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "third_party/ppapi/c/ppb_file_ref.h"
+#include "third_party/ppapi/c/dev/ppb_file_ref_dev.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace pepper {
@@ -18,7 +18,7 @@ class PluginModule;
 class FileRef : public Resource {
  public:
   FileRef(PluginModule* module,
-          PP_FileSystemType file_system_type,
+          PP_FileSystemType_Dev file_system_type,
           const std::string& validated_path,
           const std::string& origin);
   FileRef(PluginModule* module,
@@ -27,7 +27,7 @@ class FileRef : public Resource {
 
   // Returns a pointer to the interface implementing PPB_FileRef that is
   // exposed to the plugin.
-  static const PPB_FileRef* GetInterface();
+  static const PPB_FileRef_Dev* GetInterface();
 
   // Resource overrides.
   FileRef* AsFileRef() { return this; }
@@ -36,7 +36,7 @@ class FileRef : public Resource {
   std::string GetName() const;
   scoped_refptr<FileRef> GetParent();
 
-  PP_FileSystemType file_system_type() const { return fs_type_; }
+  PP_FileSystemType_Dev file_system_type() const { return fs_type_; }
 
   // Returns the virtual path (i.e., the path that the pepper plugin sees)
   // corresponding to this file.
@@ -47,7 +47,7 @@ class FileRef : public Resource {
 
  private:
   FilePath system_path_;
-  PP_FileSystemType fs_type_;
+  PP_FileSystemType_Dev fs_type_;
   std::string path_;  // UTF-8 encoded.
   std::string origin_;
 };

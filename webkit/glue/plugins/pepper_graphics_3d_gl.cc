@@ -7,7 +7,7 @@
 #include "webkit/glue/plugins/pepper_graphics_3d.h"
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "third_party/ppapi/c/ppb_opengles.h"
+#include "third_party/ppapi/c/dev/ppb_opengles_dev.h"
 
 namespace pepper {
 
@@ -551,7 +551,7 @@ void UnmapTexSubImage2D(const void* mem) {
   Graphics3D::GetCurrent()->impl()->UnmapTexSubImage2D(mem);
 }
 
-const PPB_OpenGLES ppb_opengles = {
+const PPB_OpenGLES_Dev ppb_opengles = {
   &ActiveTexture,
   &AttachShader,
   &BindAttribLocation,
@@ -708,7 +708,7 @@ const PPB_OpenGLES ppb_opengles = {
 
 }  // namespace
 
-const PPB_OpenGLES* Graphics3D::GetOpenGLESInterface() {
+const PPB_OpenGLES_Dev* Graphics3D::GetOpenGLESInterface() {
   return &ppb_opengles;
 }
 

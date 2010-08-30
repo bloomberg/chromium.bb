@@ -15,12 +15,12 @@ namespace pepper {
 class Buffer;
 class Audio;
 class AudioConfig;
-class DeviceContext2D;
 class DirectoryReader;
 class FileChooser;
 class FileIO;
 class FileRef;
 class Font;
+class Graphics2D;
 class Graphics3D;
 class ImageData;
 class PluginModule;
@@ -79,12 +79,12 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   virtual Audio* AsAudio() { return NULL; }
   virtual AudioConfig* AsAudioConfig() { return NULL; }
   virtual Buffer* AsBuffer() { return NULL; }
-  virtual DeviceContext2D* AsDeviceContext2D() { return NULL; }
   virtual DirectoryReader* AsDirectoryReader() { return NULL; }
   virtual FileChooser* AsFileChooser() { return NULL; }
   virtual FileIO* AsFileIO() { return NULL; }
   virtual FileRef* AsFileRef() { return NULL; }
   virtual Font* AsFont() { return NULL; }
+  virtual Graphics2D* AsGraphics2D() { return NULL; }
   virtual Graphics3D* AsGraphics3D() { return NULL; }
   virtual ImageData* AsImageData() { return NULL; }
   virtual PrivateFontFile* AsPrivateFontFile() { return NULL; }
@@ -124,12 +124,12 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
 DEFINE_RESOURCE_CAST(Audio)
 DEFINE_RESOURCE_CAST(AudioConfig)
 DEFINE_RESOURCE_CAST(Buffer)
-DEFINE_RESOURCE_CAST(DeviceContext2D)
 DEFINE_RESOURCE_CAST(DirectoryReader)
 DEFINE_RESOURCE_CAST(FileChooser)
 DEFINE_RESOURCE_CAST(FileIO)
 DEFINE_RESOURCE_CAST(FileRef)
 DEFINE_RESOURCE_CAST(Font)
+DEFINE_RESOURCE_CAST(Graphics2D)
 DEFINE_RESOURCE_CAST(Graphics3D)
 DEFINE_RESOURCE_CAST(ImageData)
 DEFINE_RESOURCE_CAST(PrivateFontFile)

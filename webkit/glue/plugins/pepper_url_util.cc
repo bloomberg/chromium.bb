@@ -5,7 +5,7 @@
 #include "webkit/glue/plugins/pepper_url_util.h"
 
 #include "googleurl/src/gurl.h"
-#include "third_party/ppapi/c/ppb_url_util.h"
+#include "third_party/ppapi/c/dev/ppb_url_util_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -22,7 +22,7 @@ namespace pepper {
 namespace {
 
 void ConvertComponent(const url_parse::Component& input,
-                      PP_UrlComponent* output) {
+                      PP_UrlComponent_Dev* output) {
   output->begin = input.begin;
   output->len = input.len;
 }
@@ -30,7 +30,7 @@ void ConvertComponent(const url_parse::Component& input,
 // Output can be NULL to specify "do nothing." This rule is followed by all the
 // url util functions, so we implement it once here.
 void ConvertComponents(const url_parse::Parsed& input,
-                       PP_UrlComponents* output) {
+                       PP_UrlComponents_Dev* output) {
   if (!output)
     return;
 
@@ -46,7 +46,7 @@ void ConvertComponents(const url_parse::Parsed& input,
 
 // Used for returning the given GURL from a PPAPI function, with an optional
 // out param indicating the components.
-PP_Var GenerateUrlReturn(const GURL& url, PP_UrlComponents* components) {
+PP_Var GenerateUrlReturn(const GURL& url, PP_UrlComponents_Dev* components) {
   if (!url.is_valid())
     return PP_MakeNull();
   ConvertComponents(url.parsed_for_possibly_invalid_spec(), components);
@@ -72,7 +72,7 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
   return true;
 }
 
-PP_Var Canonicalize(PP_Var url, PP_UrlComponents* components) {
+PP_Var Canonicalize(PP_Var url, PP_UrlComponents_Dev* components) {
   String* url_string = GetString(url);
   if (!url_string)
     return PP_MakeNull();
@@ -81,7 +81,7 @@ PP_Var Canonicalize(PP_Var url, PP_UrlComponents* components) {
 
 PP_Var ResolveRelativeToUrl(PP_Var base_url,
                             PP_Var relative,
-                            PP_UrlComponents* components) {
+                            PP_UrlComponents_Dev* components) {
   String* base_url_string = GetString(base_url);
   String* relative_string = GetString(relative);
   if (!base_url_string || !relative_string)
@@ -96,7 +96,7 @@ PP_Var ResolveRelativeToUrl(PP_Var base_url,
 
 PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
                                  PP_Var relative,
-                                 PP_UrlComponents* components) {
+                                 PP_UrlComponents_Dev* components) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return PP_MakeNull();
@@ -155,7 +155,7 @@ bool DocumentCanAccessDocument(PP_Instance active, PP_Instance target) {
 
 }  // namespace
 
-const PPB_UrlUtil ppb_url_util = {
+const PPB_UrlUtil_Dev ppb_url_util = {
   &Canonicalize,
   &ResolveRelativeToUrl,
   &ResolveRelativeToDocument,
@@ -164,7 +164,8 @@ const PPB_UrlUtil ppb_url_util = {
   &DocumentCanAccessDocument
 };
 
-const PPB_UrlUtil* GetUrlUtilInterface() {
+// static
+const PPB_UrlUtil_Dev* UrlUtil::GetInterface() {
   return &ppb_url_util;
 }
 

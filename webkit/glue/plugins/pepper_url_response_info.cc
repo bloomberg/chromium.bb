@@ -43,7 +43,7 @@ bool IsURLResponseInfo(PP_Resource resource) {
 }
 
 PP_Var GetProperty(PP_Resource response_id,
-                   PP_URLResponseProperty property) {
+                   PP_URLResponseProperty_Dev property) {
   scoped_refptr<URLResponseInfo> response(
       Resource::GetAs<URLResponseInfo>(response_id));
   if (!response)
@@ -66,7 +66,7 @@ PP_Resource GetBody(PP_Resource response_id) {
   return body->GetReference();
 }
 
-const PPB_URLResponseInfo ppb_urlresponseinfo = {
+const PPB_URLResponseInfo_Dev ppb_urlresponseinfo = {
   &IsURLResponseInfo,
   &GetProperty,
   &GetBody
@@ -83,11 +83,11 @@ URLResponseInfo::~URLResponseInfo() {
 }
 
 // static
-const PPB_URLResponseInfo* URLResponseInfo::GetInterface() {
+const PPB_URLResponseInfo_Dev* URLResponseInfo::GetInterface() {
   return &ppb_urlresponseinfo;
 }
 
-PP_Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) {
+PP_Var URLResponseInfo::GetProperty(PP_URLResponseProperty_Dev property) {
   switch (property) {
     case PP_URLRESPONSEPROPERTY_URL:
       return StringToPPVar(url_);

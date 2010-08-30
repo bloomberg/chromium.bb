@@ -4,9 +4,9 @@
 
 #include "webkit/glue/plugins/pepper_file_system.h"
 
+#include "third_party/ppapi/c/dev/ppb_file_system_dev.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
-#include "third_party/ppapi/c/ppb_file_system.h"
 
 namespace pepper {
 
@@ -19,7 +19,7 @@ int32_t MakeDirectory(PP_Resource directory_ref,
 }
 
 int32_t Query(PP_Resource file_ref,
-              PP_FileInfo* info,
+              PP_FileInfo_Dev* info,
               PP_CompletionCallback callback) {
   return PP_ERROR_FAILED;  // TODO(darin): Implement me!
 }
@@ -42,7 +42,7 @@ int32_t Rename(PP_Resource file_ref,
   return PP_ERROR_FAILED;  // TODO(darin): Implement me!
 }
 
-const PPB_FileSystem ppb_filesystem = {
+const PPB_FileSystem_Dev ppb_filesystem = {
   &MakeDirectory,
   &Query,
   &Touch,
@@ -52,7 +52,7 @@ const PPB_FileSystem ppb_filesystem = {
 
 }  // namespace
 
-const PPB_FileSystem* FileSystem::GetInterface() {
+const PPB_FileSystem_Dev* FileSystem::GetInterface() {
   return &ppb_filesystem;
 }
 

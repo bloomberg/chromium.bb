@@ -8,10 +8,10 @@
 #include "third_party/ppapi/c/pp_time.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
-typedef struct _pp_CompletionCallback PP_CompletionCallback;
-typedef struct _pp_FileInfo PP_FileInfo;
-typedef struct _ppb_FileIO PPB_FileIO;
-typedef struct _ppb_FileIOTrusted PPB_FileIOTrusted;
+struct PP_CompletionCallback;
+struct PP_FileInfo_Dev;
+struct PPB_FileIO_Dev;
+struct PPB_FileIOTrusted_Dev;
 
 namespace pepper {
 
@@ -24,11 +24,11 @@ class FileIO : public Resource {
 
   // Returns a pointer to the interface implementing PPB_FileIO that is exposed
   // to the plugin.
-  static const PPB_FileIO* GetInterface();
+  static const PPB_FileIO_Dev* GetInterface();
 
   // Returns a pointer to the interface implementing PPB_FileIOTrusted that is
   // exposed to the plugin.
-  static const PPB_FileIOTrusted* GetTrustedInterface();
+  static const PPB_FileIOTrusted_Dev* GetTrustedInterface();
 
   // Resource overrides.
   FileIO* AsFileIO() { return this; }
@@ -37,7 +37,7 @@ class FileIO : public Resource {
   int32_t Open(FileRef* file_ref,
                int32_t open_flags,
                PP_CompletionCallback callback);
-  int32_t Query(PP_FileInfo* info,
+  int32_t Query(PP_FileInfo_Dev* info,
                 PP_CompletionCallback callback);
   int32_t Touch(PP_Time last_access_time,
                 PP_Time last_modified_time,

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_2D_H_
-#define WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_2D_H_
+#ifndef WEBKIT_GLUE_PLUGINS_PEPPER_GRAPHICS_2D_H_
+#define WEBKIT_GLUE_PLUGINS_PEPPER_GRAPHICS_2D_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
-#include "third_party/ppapi/c/ppb_device_context_2d.h"
+#include "third_party/ppapi/c/ppb_graphics_2d.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
-typedef struct _ppb_DeviceContext2D PPB_DeviceContext2D;
+struct PPB_Graphics2D;
 
 namespace gfx {
 class Rect;
@@ -25,21 +25,21 @@ class ImageData;
 class PluginInstance;
 class PluginModule;
 
-class DeviceContext2D : public Resource {
+class Graphics2D : public Resource {
  public:
-  DeviceContext2D(PluginModule* module);
-  virtual ~DeviceContext2D();
+  Graphics2D(PluginModule* module);
+  virtual ~Graphics2D();
 
   // Returns a pointer to the interface implementing PPB_ImageData that is
   // exposed to the plugin.
-  static const PPB_DeviceContext2D* GetInterface();
+  static const PPB_Graphics2D* GetInterface();
 
   bool Init(int width, int height, bool is_always_opaque);
 
   // Resource override.
-  virtual DeviceContext2D* AsDeviceContext2D() { return this; }
+  virtual Graphics2D* AsGraphics2D() { return this; }
 
-  // PPB_DeviceContext2D functions.
+  // PPB_Graphics2D functions.
   bool Describe(PP_Size* size, bool* is_always_opaque);
   bool PaintImageData(PP_Resource image,
                       const PP_Point* top_left,
@@ -126,9 +126,8 @@ class DeviceContext2D : public Resource {
 
   scoped_refptr<ImageData> image_data_;
 
-  // Non-owning pointer to the plugin instance this device context is currently
-  // bound to, if any. If the device context is currently unbound, this will
-  // be NULL.
+  // Non-owning pointer to the plugin instance this context is currently bound
+  // to, if any. If the context is currently unbound, this will be NULL.
   PluginInstance* bound_instance_;
 
   // Keeps track of all drawing commands queued before a Flush call.
@@ -167,9 +166,9 @@ class DeviceContext2D : public Resource {
   // enforce the "only one pending flush at a time" constraint in the API.
   bool offscreen_flush_pending_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeviceContext2D);
+  DISALLOW_COPY_AND_ASSIGN(Graphics2D);
 };
 
 }  // namespace pepper
 
-#endif  // WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_2D_H_
+#endif  // WEBKIT_GLUE_PLUGINS_PEPPER_GRAPHICS_2D_H_

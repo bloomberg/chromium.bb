@@ -22,17 +22,17 @@
 #include "printing/units.h"
 #include "skia/ext/vector_platform_device.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/ppapi/c/pp_instance.h"
+#include "third_party/ppapi/c/dev/ppb_find_dev.h"
+#include "third_party/ppapi/c/dev/ppp_find_dev.h"
+#include "third_party/ppapi/c/dev/ppp_zoom_dev.h"
 #include "third_party/ppapi/c/pp_event.h"
+#include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/pp_var.h"
 #include "third_party/ppapi/c/ppb_core.h"
-#include "third_party/ppapi/c/ppb_find.h"
 #include "third_party/ppapi/c/ppb_instance.h"
-#include "third_party/ppapi/c/ppp_find.h"
 #include "third_party/ppapi/c/ppp_instance.h"
-#include "third_party/ppapi/c/ppp_zoom.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
@@ -41,7 +41,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
-#include "webkit/glue/plugins/pepper_device_context_2d.h"
+#include "webkit/glue/plugins/pepper_graphics_2d.h"
 #include "webkit/glue/plugins/pepper_event_conversion.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
@@ -146,11 +146,11 @@ PP_Var GetOwnerElementObject(PP_Instance instance_id) {
   return instance->GetOwnerElementObject();
 }
 
-bool BindGraphicsDeviceContext(PP_Instance instance_id, PP_Resource device_id) {
+bool BindGraphics(PP_Instance instance_id, PP_Resource device_id) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return false;
-  return instance->BindGraphicsDeviceContext(device_id);
+  return instance->BindGraphics(device_id);
 }
 
 bool IsFullFrame(PP_Instance instance_id) {
@@ -163,7 +163,7 @@ bool IsFullFrame(PP_Instance instance_id) {
 const PPB_Instance ppb_instance = {
   &GetWindowObject,
   &GetOwnerElementObject,
-  &BindGraphicsDeviceContext,
+  &BindGraphics,
   &IsFullFrame,
 };
 
@@ -190,7 +190,7 @@ void SelectedFindResultChanged(PP_Instance instance_id,
       instance->find_identifier(), index);
 }
 
-const PPB_Find ppb_find = {
+const PPB_Find_Dev ppb_find = {
   &NumberOfFindResultsChanged,
   &SelectedFindResultChanged,
 };
@@ -236,7 +236,7 @@ PluginInstance* PluginInstance::FromPPInstance(PP_Instance instance) {
 }
 
 // static
-const PPB_Find* PluginInstance::GetFindInterface() {
+const PPB_Find_Dev* PluginInstance::GetFindInterface() {
   return &ppb_find;
 }
 
@@ -247,8 +247,8 @@ PP_Instance PluginInstance::GetPPInstance() {
 void PluginInstance::Paint(WebCanvas* canvas,
                            const gfx::Rect& plugin_rect,
                            const gfx::Rect& paint_rect) {
-  if (device_context_2d_)
-    device_context_2d_->Paint(canvas, plugin_rect, paint_rect);
+  if (bound_graphics_2d_)
+    bound_graphics_2d_->Paint(canvas, plugin_rect, paint_rect);
 }
 
 void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
@@ -278,19 +278,18 @@ PP_Var PluginInstance::GetOwnerElementObject() {
   return NPObjectToPPVar(container_->scriptableObjectForElement());
 }
 
-bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
+bool PluginInstance::BindGraphics(PP_Resource device_id) {
   if (!device_id) {
     // Special-case clearing the current device.
-    if (device_context_2d_) {
-      device_context_2d_->BindToInstance(NULL);
-      device_context_2d_ = NULL;
+    if (bound_graphics_2d_) {
+      bound_graphics_2d_->BindToInstance(NULL);
+      bound_graphics_2d_ = NULL;
       InvalidateRect(gfx::Rect());
     }
     return true;
   }
 
-  scoped_refptr<DeviceContext2D> device_2d =
-      Resource::GetAs<DeviceContext2D>(device_id);
+  scoped_refptr<Graphics2D> device_2d = Resource::GetAs<Graphics2D>(device_id);
 
   if (device_2d) {
     if (!device_2d->BindToInstance(this))
@@ -298,11 +297,11 @@ bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
 
     // See http://crbug.com/49403: this can be further optimized by keeping the
     // old device around and painting from it.
-    if (device_context_2d_.get()) {
+    if (bound_graphics_2d_.get()) {
       // Start the new image with the content of the old image until the plugin
       // repaints.
       const SkBitmap* old_backing_bitmap =
-          device_context_2d_->image_data()->GetMappedBitmap();
+          bound_graphics_2d_->image_data()->GetMappedBitmap();
       SkRect old_size = SkRect::MakeWH(
           SkScalar(static_cast<float>(old_backing_bitmap->width())),
           SkScalar(static_cast<float>(old_backing_bitmap->height())));
@@ -315,7 +314,7 @@ bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
       canvas.drawARGB(255, 255, 255, 255);
     }
 
-    device_context_2d_ = device_2d;
+    bound_graphics_2d_ = device_2d;
     // BindToInstance will have invalidated the plugin if necessary.
   }
 
@@ -397,13 +396,13 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
 }
 
 void PluginInstance::ViewInitiatedPaint() {
-  if (device_context_2d_)
-    device_context_2d_->ViewInitiatedPaint();
+  if (bound_graphics_2d_)
+    bound_graphics_2d_->ViewInitiatedPaint();
 }
 
 void PluginInstance::ViewFlushedPaint() {
-  if (device_context_2d_)
-    device_context_2d_->ViewFlushedPaint();
+  if (bound_graphics_2d_)
+    bound_graphics_2d_->ViewFlushedPaint();
 }
 
 string16 PluginInstance::GetSelectedText(bool html) {
@@ -447,8 +446,8 @@ void PluginInstance::StopFind() {
 bool PluginInstance::LoadFindInterface() {
   if (!plugin_find_interface_) {
     plugin_find_interface_ =
-        reinterpret_cast<const PPP_Find*>(module_->GetPluginInterface(
-            PPP_FIND_INTERFACE));
+        reinterpret_cast<const PPP_Find_Dev*>(module_->GetPluginInterface(
+            PPP_FIND_DEV_INTERFACE));
   }
 
   return !!plugin_find_interface_;
@@ -457,24 +456,24 @@ bool PluginInstance::LoadFindInterface() {
 bool PluginInstance::LoadZoomInterface() {
   if (!plugin_zoom_interface_) {
     plugin_zoom_interface_ =
-        reinterpret_cast<const PPP_Zoom*>(module_->GetPluginInterface(
-            PPP_ZOOM_INTERFACE));
+        reinterpret_cast<const PPP_Zoom_Dev*>(module_->GetPluginInterface(
+            PPP_ZOOM_DEV_INTERFACE));
   }
 
   return !!plugin_zoom_interface_;
 }
 
 bool PluginInstance::GetPreferredPrintOutputFormat(
-    PP_PrintOutputFormat* format) {
+    PP_PrintOutputFormat_Dev* format) {
   if (!plugin_print_interface_) {
     plugin_print_interface_ =
-        reinterpret_cast<const PPP_Printing*>(module_->GetPluginInterface(
-            PPP_PRINTING_INTERFACE));
+        reinterpret_cast<const PPP_Printing_Dev*>(module_->GetPluginInterface(
+            PPP_PRINTING_DEV_INTERFACE));
   }
   if (!plugin_print_interface_)
     return false;
   uint32_t format_count = 0;
-  PP_PrintOutputFormat* supported_formats =
+  PP_PrintOutputFormat_Dev* supported_formats =
       plugin_print_interface_->QuerySupportedFormats(GetPPInstance(),
                                                      &format_count);
   if (!supported_formats)
@@ -498,13 +497,13 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
 }
 
 bool PluginInstance::SupportsPrintInterface() {
-  PP_PrintOutputFormat format;
+  PP_PrintOutputFormat_Dev format;
   return GetPreferredPrintOutputFormat(&format);
 }
 
 int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
                                int printer_dpi) {
-  PP_PrintOutputFormat format;
+  PP_PrintOutputFormat_Dev format;
   if (!GetPreferredPrintOutputFormat(&format)) {
     // PrintBegin should not have been called since SupportsPrintInterface
     // would have returned false;
@@ -512,7 +511,7 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
     return 0;
   }
 
-  PP_PrintSettings print_settings;
+  PP_PrintSettings_Dev print_settings;
   RectToPPRect(printable_area, &print_settings.printable_area);
   print_settings.dpi = printer_dpi;
   print_settings.orientation = PP_PRINTORIENTATION_NORMAL;
@@ -532,7 +531,7 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
 
 bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
   DCHECK(plugin_print_interface_);
-  PP_PrintPageNumberRange page_range;
+  PP_PrintPageNumberRange_Dev page_range;
 #if defined(OS_LINUX)
   if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF) {
     // On Linux we will try and output all pages as PDF in the first call to
@@ -583,8 +582,8 @@ void PluginInstance::PrintEnd() {
 void PluginInstance::Graphics3DContextLost() {
   if (!plugin_graphics_3d_interface_) {
     plugin_graphics_3d_interface_ =
-        reinterpret_cast<const PPP_Graphics3D*>(module_->GetPluginInterface(
-            PPP_GRAPHICS_3D_INTERFACE));
+        reinterpret_cast<const PPP_Graphics3D_Dev*>(module_->GetPluginInterface(
+            PPP_GRAPHICS_3D_DEV_INTERFACE));
   }
   if (plugin_graphics_3d_interface_)
     plugin_graphics_3d_interface_->Graphics3DContextLost(GetPPInstance());

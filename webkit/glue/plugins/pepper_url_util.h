@@ -5,11 +5,14 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_URL_UTIL_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_URL_UTIL_H_
 
-typedef struct _ppb_UrlUtil PPB_UrlUtil;
+struct PPB_UrlUtil_Dev;
 
 namespace pepper {
 
-const PPB_UrlUtil* GetUrlUtilInterface();
+class UrlUtil {
+ public:
+  static const PPB_UrlUtil_Dev* GetInterface();
+};
 
 }  // namespace pepper
 

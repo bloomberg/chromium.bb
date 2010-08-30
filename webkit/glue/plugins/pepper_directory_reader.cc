@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
+#include "third_party/ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
@@ -29,7 +30,7 @@ bool IsDirectoryReader(PP_Resource resource) {
 }
 
 int32_t GetNextEntry(PP_Resource reader_id,
-                     PP_DirectoryEntry* entry,
+                     PP_DirectoryEntry_Dev* entry,
                      PP_CompletionCallback callback) {
   scoped_refptr<DirectoryReader> reader(
       Resource::GetAs<DirectoryReader>(reader_id));
@@ -39,7 +40,7 @@ int32_t GetNextEntry(PP_Resource reader_id,
   return reader->GetNextEntry(entry, callback);
 }
 
-const PPB_DirectoryReader ppb_directoryreader = {
+const PPB_DirectoryReader_Dev ppb_directoryreader = {
   &Create,
   &IsDirectoryReader,
   &GetNextEntry
@@ -55,11 +56,11 @@ DirectoryReader::DirectoryReader(FileRef* directory_ref)
 DirectoryReader::~DirectoryReader() {
 }
 
-const PPB_DirectoryReader* DirectoryReader::GetInterface() {
+const PPB_DirectoryReader_Dev* DirectoryReader::GetInterface() {
   return &ppb_directoryreader;
 }
 
-int32_t DirectoryReader::GetNextEntry(PP_DirectoryEntry* entry,
+int32_t DirectoryReader::GetNextEntry(PP_DirectoryEntry_Dev* entry,
                                       PP_CompletionCallback callback) {
   NOTIMPLEMENTED();  // TODO(darin): Implement me!
   return PP_ERROR_FAILED;

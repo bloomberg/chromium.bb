@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_EVENT_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_EVENT_H_
 
-typedef struct _pp_Event PP_Event;
+struct PP_Event;
 
 namespace WebKit {
 class WebInputEvent;

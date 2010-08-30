@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/ppapi/c/ppp_scrollbar.h"
+#include "third_party/ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScrollbar.h"
@@ -74,13 +74,13 @@ void SetTickMarks(PP_Resource resource,
     scrollbar->SetTickMarks(tick_marks, count);
 }
 
-void ScrollBy(PP_Resource resource, PP_ScrollBy unit, int32_t multiplier) {
+void ScrollBy(PP_Resource resource, PP_ScrollBy_Dev unit, int32_t multiplier) {
   scoped_refptr<Scrollbar> scrollbar(Resource::GetAs<Scrollbar>(resource));
   if (scrollbar)
     scrollbar->ScrollBy(unit, multiplier);
 }
 
-const PPB_Scrollbar ppb_scrollbar = {
+const PPB_Scrollbar_Dev ppb_scrollbar = {
   &Create,
   &IsScrollbar,
   &GetThickness,
@@ -104,7 +104,7 @@ Scrollbar::~Scrollbar() {
 }
 
 // static
-const PPB_Scrollbar* Scrollbar::GetInterface() {
+const PPB_Scrollbar_Dev* Scrollbar::GetInterface() {
   return &ppb_scrollbar;
 }
 
@@ -132,7 +132,7 @@ void Scrollbar::SetTickMarks(const PP_Rect* tick_marks, uint32_t count) {
   Invalidate(&rect);
 }
 
-void Scrollbar::ScrollBy(PP_ScrollBy unit, int32_t multiplier) {
+void Scrollbar::ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) {
   WebScrollbar::ScrollDirection direction = multiplier >= 0 ?
       WebScrollbar::ScrollForward : WebScrollbar::ScrollBackward;
   float fmultiplier = 1.0;
@@ -189,8 +189,9 @@ void Scrollbar::SetLocationInternal(const PP_Rect* location) {
 }
 
 void Scrollbar::valueChanged(WebKit::WebScrollbar* scrollbar) {
-  const PPP_Scrollbar* ppp_scrollbar = static_cast<const PPP_Scrollbar*>(
-      module()->GetPluginInterface(PPP_SCROLLBAR_INTERFACE));
+  const PPP_Scrollbar_Dev* ppp_scrollbar =
+      static_cast<const PPP_Scrollbar_Dev*>(
+          module()->GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
   if (!ppp_scrollbar)
     return;
   ScopedResourceId resource(this);

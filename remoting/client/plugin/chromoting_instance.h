@@ -19,7 +19,6 @@
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/cpp/instance.h"
-#include "third_party/ppapi/cpp/device_context_2d.h"
 #include "third_party/ppapi/cpp/var.h"
 
 class MessageLoop;

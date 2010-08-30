@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
-#include "third_party/ppapi/c/ppb_url_loader.h"
+#include "third_party/ppapi/c/dev/ppb_url_loader_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -139,7 +139,7 @@ void Close(PP_Resource loader_id) {
   loader->Close();
 }
 
-const PPB_URLLoader ppb_urlloader = {
+const PPB_URLLoader_Dev ppb_urlloader = {
   &Create,
   &IsURLLoader,
   &Open,
@@ -171,7 +171,7 @@ URLLoader::~URLLoader() {
 }
 
 // static
-const PPB_URLLoader* URLLoader::GetInterface() {
+const PPB_URLLoader_Dev* URLLoader::GetInterface() {
   return &ppb_urlloader;
 }
 

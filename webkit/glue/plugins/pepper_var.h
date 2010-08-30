@@ -7,8 +7,8 @@
 
 #include <string>
 
-typedef struct _pp_Var PP_Var;
-typedef struct _ppb_Var PPB_Var;
+struct PP_Var;
+struct PPB_Var;
 typedef struct NPObject NPObject;
 typedef struct _NPVariant NPVariant;
 typedef void* NPIdentifier;

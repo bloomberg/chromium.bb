@@ -8,10 +8,9 @@
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "third_party/ppapi/c/ppb_graphics_3d.h"
+#include "third_party/ppapi/c/pp_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_resource.h"
-
 
 namespace gfx {
 class Rect;
@@ -21,7 +20,8 @@ namespace gpu {
 class CommandBuffer;
 }  // namespace gpu
 
-typedef struct _ppb_OpenGLES PPB_OpenGLES;
+struct PPB_Graphics3D_Dev;
+struct PPB_OpenGLES_Dev;
 
 namespace pepper {
 
@@ -31,9 +31,8 @@ class Graphics3D : public Resource {
 
   virtual ~Graphics3D();
 
-  static const PPB_Graphics3D* GetInterface();
-
-  static const PPB_OpenGLES* GetOpenGLESInterface();
+  static const PPB_Graphics3D_Dev* GetInterface();
+  static const PPB_OpenGLES_Dev* GetOpenGLESInterface();
 
   static bool Shutdown();
 

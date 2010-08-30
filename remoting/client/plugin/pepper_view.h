@@ -18,7 +18,7 @@
 #include "base/task.h"
 #include "media/base/video_frame.h"
 #include "remoting/client/chromoting_view.h"
-#include "third_party/ppapi/cpp/device_context_2d.h"
+#include "third_party/ppapi/cpp/graphics_2d.h"
 
 namespace remoting {
 
@@ -56,7 +56,7 @@ class PepperView : public ChromotingView {
   // object creation, and never change.
   ChromotingInstance* const instance_;
 
-  pp::DeviceContext2D device_context_;
+  pp::Graphics2D device_context_;
 
   int viewport_x_;
   int viewport_y_;

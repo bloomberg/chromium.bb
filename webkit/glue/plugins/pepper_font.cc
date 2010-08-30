@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/ppapi/c/dev/ppb_font_dev.h"
 #include "third_party/ppapi/c/pp_rect.h"
-#include "third_party/ppapi/c/ppb_font.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFont.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFontDescription.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
@@ -31,7 +31,7 @@ namespace pepper {
 
 namespace {
 
-bool IsPPFontDescriptionValid(const PP_FontDescription& desc) {
+bool IsPPFontDescriptionValid(const PP_FontDescription_Dev& desc) {
   // Check validity of UTF-8.
   if (desc.face.type != PP_VARTYPE_STRING && desc.face.type != PP_VARTYPE_VOID)
     return false;
@@ -59,7 +59,7 @@ bool IsPPFontDescriptionValid(const PP_FontDescription& desc) {
   static_cast<WebFontDescription::GenericFamily>(f + 1)
 
 // Assumes the given PP_FontDescription has been validated.
-WebFontDescription PPFontDescToWebFontDesc(const PP_FontDescription& font) {
+WebFontDescription PPFontDescToWebFontDesc(const PP_FontDescription_Dev& font) {
   // Verify that the enums match so we can just static cast.
   COMPILE_ASSERT(static_cast<int>(WebFontDescription::Weight100) ==
                  static_cast<int>(PP_FONTWEIGHT_100),
@@ -96,7 +96,7 @@ WebFontDescription PPFontDescToWebFontDesc(const PP_FontDescription& font) {
 
 // Converts the given PP_TextRun to a WebTextRun, returning true on success.
 // False means the input was invalid.
-bool PPTextRunToWebTextRun(const PP_TextRun* run, WebTextRun* output) {
+bool PPTextRunToWebTextRun(const PP_TextRun_Dev* run, WebTextRun* output) {
   String* text_string = GetString(run->text);
   if (!text_string)
     return false;
@@ -106,7 +106,7 @@ bool PPTextRunToWebTextRun(const PP_TextRun* run, WebTextRun* output) {
 }
 
 PP_Resource Create(PP_Module module_id,
-                   const PP_FontDescription* description) {
+                   const PP_FontDescription_Dev* description) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
     return 0;
@@ -123,8 +123,8 @@ bool IsFont(PP_Resource resource) {
 }
 
 bool Describe(PP_Resource font_id,
-              PP_FontDescription* description,
-              PP_FontMetrics* metrics) {
+              PP_FontDescription_Dev* description,
+              PP_FontMetrics_Dev* metrics) {
   scoped_refptr<Font> font(Resource::GetAs<Font>(font_id));
   if (!font.get())
     return false;
@@ -133,7 +133,7 @@ bool Describe(PP_Resource font_id,
 
 bool DrawTextAt(PP_Resource font_id,
                 PP_Resource image_data,
-                const PP_TextRun* text,
+                const PP_TextRun_Dev* text,
                 const PP_Point* position,
                 uint32_t color,
                 const PP_Rect* clip,
@@ -145,7 +145,7 @@ bool DrawTextAt(PP_Resource font_id,
                           image_data_is_opaque);
 }
 
-int32_t MeasureText(PP_Resource font_id, const PP_TextRun* text) {
+int32_t MeasureText(PP_Resource font_id, const PP_TextRun_Dev* text) {
   scoped_refptr<Font> font(Resource::GetAs<Font>(font_id));
   if (!font.get())
     return -1;
@@ -153,7 +153,7 @@ int32_t MeasureText(PP_Resource font_id, const PP_TextRun* text) {
 }
 
 uint32_t CharacterOffsetForPixel(PP_Resource font_id,
-                                 const PP_TextRun* text,
+                                 const PP_TextRun_Dev* text,
                                  int32_t pixel_position) {
   scoped_refptr<Font> font(Resource::GetAs<Font>(font_id));
   if (!font.get())
@@ -162,7 +162,7 @@ uint32_t CharacterOffsetForPixel(PP_Resource font_id,
 }
 
 int32_t PixelOffsetForCharacter(PP_Resource font_id,
-                                const PP_TextRun* text,
+                                const PP_TextRun_Dev* text,
                                 uint32_t char_offset) {
   scoped_refptr<Font> font(Resource::GetAs<Font>(font_id));
   if (!font.get())
@@ -170,7 +170,7 @@ int32_t PixelOffsetForCharacter(PP_Resource font_id,
   return font->PixelOffsetForCharacter(text, char_offset);
 }
 
-const PPB_Font ppb_font = {
+const PPB_Font_Dev ppb_font = {
   &Create,
   &IsFont,
   &Describe,
@@ -182,7 +182,7 @@ const PPB_Font ppb_font = {
 
 }  // namespace
 
-Font::Font(PluginModule* module, const PP_FontDescription& desc)
+Font::Font(PluginModule* module, const PP_FontDescription_Dev& desc)
     : Resource(module) {
   WebFontDescription web_font_desc = PPFontDescToWebFontDesc(desc);
   font_.reset(WebFont::create(web_font_desc));
@@ -192,12 +192,12 @@ Font::~Font() {
 }
 
 // static
-const PPB_Font* Font::GetInterface() {
+const PPB_Font_Dev* Font::GetInterface() {
   return &ppb_font;
 }
 
-bool Font::Describe(PP_FontDescription* description,
-                    PP_FontMetrics* metrics) {
+bool Font::Describe(PP_FontDescription_Dev* description,
+                    PP_FontMetrics_Dev* metrics) {
   if (description->face.type != PP_VARTYPE_VOID)
     return false;
 
@@ -206,9 +206,9 @@ bool Font::Describe(PP_FontDescription* description,
   // While converting the other way in PPFontDescToWebFontDesc we validated
   // that the enums can be casted.
   description->face = StringToPPVar(UTF16ToUTF8(web_desc.family));
-  description->family = static_cast<PP_FontFamily>(web_desc.genericFamily);
+  description->family = static_cast<PP_FontFamily_Dev>(web_desc.genericFamily);
   description->size = static_cast<uint32_t>(web_desc.size);
-  description->weight = static_cast<PP_FontWeight>(web_desc.weight);
+  description->weight = static_cast<PP_FontWeight_Dev>(web_desc.weight);
   description->italic = web_desc.italic;
   description->small_caps = web_desc.smallCaps;
 
@@ -222,7 +222,7 @@ bool Font::Describe(PP_FontDescription* description,
 }
 
 bool Font::DrawTextAt(PP_Resource image_data,
-                      const PP_TextRun* text,
+                      const PP_TextRun_Dev* text,
                       const PP_Point* position,
                       uint32_t color,
                       const PP_Rect* clip,
@@ -257,14 +257,14 @@ bool Font::DrawTextAt(PP_Resource image_data,
   return true;
 }
 
-int32_t Font::MeasureText(const PP_TextRun* text) {
+int32_t Font::MeasureText(const PP_TextRun_Dev* text) {
   WebTextRun run;
   if (!PPTextRunToWebTextRun(text, &run))
     return -1;
   return font_->calculateWidth(run);
 }
 
-uint32_t Font::CharacterOffsetForPixel(const PP_TextRun* text,
+uint32_t Font::CharacterOffsetForPixel(const PP_TextRun_Dev* text,
                                        int32_t pixel_position) {
   WebTextRun run;
   if (!PPTextRunToWebTextRun(text, &run))
@@ -274,7 +274,7 @@ uint32_t Font::CharacterOffsetForPixel(const PP_TextRun* text,
       run, static_cast<float>(pixel_position)));
 }
 
-int32_t Font::PixelOffsetForCharacter(const PP_TextRun* text,
+int32_t Font::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
                                       uint32_t char_offset) {
   WebTextRun run;
   if (!PPTextRunToWebTextRun(text, &run))

@@ -7,8 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "third_party/ppapi/c/ppb_buffer.h"
 #include "webkit/glue/plugins/pepper_resource.h"
+
+struct PPB_Buffer_Dev;
 
 namespace pepper {
 
@@ -28,7 +29,7 @@ class Buffer : public Resource {
 
   // Returns a pointer to the interface implementing PPB_Buffer that is
   // exposed to the plugin.
-  static const PPB_Buffer* GetInterface();
+  static const PPB_Buffer_Dev* GetInterface();
 
   // Resource overrides.
   Buffer* AsBuffer() { return this; }
