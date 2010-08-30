@@ -4,6 +4,7 @@
 
 #include "chrome/common/common_param_traits.h"
 
+#include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/geoposition.h"
@@ -685,6 +686,36 @@ bool ParamTraits<printing::NativeMetafile>::Read(
 void ParamTraits<printing::NativeMetafile>::Log(
     const param_type& p, std::string* l) {
   l->append("<printing::NativeMetafile>");
+}
+
+void ParamTraits<file_util::FileInfo>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.size);
+  WriteParam(m, p.is_directory);
+  WriteParam(m, p.last_modified.ToDoubleT());
+}
+
+bool ParamTraits<file_util::FileInfo>::Read(
+    const Message* m, void** iter, param_type* p) {
+  double last_modified;
+  bool result =
+      ReadParam(m, iter, &p->size) &&
+      ReadParam(m, iter, &p->is_directory) &&
+      ReadParam(m, iter, &last_modified);
+  if (result)
+    p->last_modified = base::Time::FromDoubleT(last_modified);
+  return result;
+}
+
+void ParamTraits<file_util::FileInfo>::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.size, l);
+  l->append(",");
+  LogParam(p.is_directory, l);
+  l->append(",");
+  LogParam(p.last_modified.ToDoubleT(), l);
+  l->append(")");
 }
 
 }  // namespace IPC

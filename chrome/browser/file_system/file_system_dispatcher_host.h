@@ -32,9 +32,28 @@ class FileSystemDispatcherHost
       int request_id,
       const string16& src_path,
       const string16& dest_path);
-
-  // TODO(kinuko): add more methods.
-
+  void OnCopy(
+      int request_id,
+      const string16& src_path,
+      const string16& dest_path);
+  void OnRemove(
+      int request_id,
+      const string16& path);
+  void OnReadMetadata(
+      int request_id,
+      const string16& path);
+  void OnCreate(
+      int request_id,
+      const string16& path,
+      bool exclusive,
+      bool is_directory);
+  void OnExists(
+      int request_id,
+      const string16& path,
+      bool is_directory);
+  void OnReadDirectory(
+      int request_id,
+      const string16& path);
   void Send(IPC::Message* message);
 
  private:

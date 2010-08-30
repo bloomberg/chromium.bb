@@ -55,6 +55,10 @@ namespace webkit_blob {
 class BlobData;
 }
 
+namespace file_util {
+struct FileInfo;
+}
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
@@ -1014,11 +1018,16 @@ IPC_BEGIN_MESSAGES(View)
                       string16 /* root_path */)
 
   // WebFileSystem response messages.
-  IPC_MESSAGE_CONTROL1(ViewMsg_FileSystem_Succeeded,
+  IPC_MESSAGE_CONTROL1(ViewMsg_FileSystem_DidSucceed,
                        int /* request_id */)
-  IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_Failed,
+  IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidReadMetadata,
                        int /* request_id */,
-                       int /* error_code */)
+                       file_util::FileInfo)
+  IPC_MESSAGE_CONTROL1(ViewMsg_FileSystem_DidReadDirectory,
+                       ViewMsg_FileSystem_DidReadDirectory_Params)
+  IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidFail,
+                       int /* request_id */,
+                       WebKit::WebFileError /* error_code */)
 
 IPC_END_MESSAGES(View)
 
@@ -2714,6 +2723,40 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int /* request_id */,
                        string16 /* src path */,
                        string16 /* dest path */)
+
+  // WebFileSystem::copy() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Copy,
+                       int /* request_id */,
+                       string16 /* src path */,
+                       string16 /* dest path */)
+
+  // WebFileSystem::remove() message.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_Remove,
+                       int /* request_id */,
+                       string16 /* path */)
+
+  // WebFileSystem::readMetadata() message.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_ReadMetadata,
+                       int /* request_id */,
+                       string16 /* path */)
+
+  // WebFileSystem::create() message.
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_FileSystem_Create,
+                       int /* request_id */,
+                       string16 /* path */,
+                       bool /* exclusive */,
+                       bool /* is_directory */)
+
+  // WebFileSystem::exists() messages.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Exists,
+                       int /* request_id */,
+                       string16 /* path */,
+                       bool /* is_directory */)
+
+  // WebFileSystem::readDirectory() message.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_ReadDirectory,
+                       int /* request_id */,
+                       string16 /* path */)
 
   //---------------------------------------------------------------------------
   // Blob messages:
