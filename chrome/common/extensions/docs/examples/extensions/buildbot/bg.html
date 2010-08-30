@@ -1,22 +1,37 @@
 <script>
-var statusURL = "http://chromium-status.appspot.com/current";
+var statusURL = "http://chromium-status.appspot.com/current?format=raw";
 
-function updateStatus(text) {
-  // Page outputs a line like this:
-  // <div class="Notice">Tree is open (issue -> person) </div>
-  // Although what's in the <div> is arbitrary and typed by a person.
-  var results = (new RegExp('"Notice"[^>]*>(.*)<', 'g')).exec(text);
-  if (!results || results.index < 0) {
-    throw new Error("couldn't find status div in " + text);
+if (!localStorage.prefs) {
+  // Default to notifications being on. 
+  localStorage.prefs = JSON.stringify({ "use_notifications": true });
+}
+
+var lastOpen = null;
+var lastNotification = null;
+function notifyIfStatusChange(open, status) {
+  var prefs = JSON.parse(localStorage.prefs);
+  if (lastOpen && lastOpen != open && prefs.use_notifications) {
+    if (lastNotification) {
+      lastNotification.cancel();
+    }
+    var notification = webkitNotifications.createNotification(
+        chrome.extension.getURL("icon.png"), "Tree is " + open, status);
+    lastNotification = notification;
+    notification.show();
   }
-  var status = results[1];
+  lastOpen = open;
+}
+
+function updateStatus(status) {
   chrome.browserAction.setTitle({title:status});
   var open = /open/i;
   if (open.exec(status)) {
+    notifyIfStatusChange("open", status);
     //chrome.browserAction.setBadgeText("\u263A");
     chrome.browserAction.setBadgeText({text:"\u2022"});
     chrome.browserAction.setBadgeBackgroundColor({color:[0,255,0,255]});
   } else {
+    notifyIfStatusChange("closed", status);
     //chrome.browserAction.setBadgeText("\u2639");
     chrome.browserAction.setBadgeText({text:"\u00D7"});
     chrome.browserAction.setBadgeBackgroundColor({color:[255,0,0,255]});
@@ -29,7 +44,7 @@ function requestStatus() {
 }
 
 function requestURL(url, callback) {
-  console.log("requestURL: " + url);
+  //console.log("requestURL: " + url);
   var xhr = new XMLHttpRequest();
   try {
     xhr.onreadystatechange = function(state) {
