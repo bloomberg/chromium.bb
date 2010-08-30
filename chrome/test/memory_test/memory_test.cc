@@ -137,8 +137,10 @@ class MemoryTest : public UIPerfTest {
 
     // Cycle through the URLs.
     scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+    ASSERT_TRUE(window.get());
     int active_window = 0;  // The index of the window we are currently using.
     scoped_refptr<TabProxy> tab(window->GetActiveTab());
+    ASSERT_TRUE(tab.get());
     int expected_tab_count = 1;
     for (unsigned counter = 0; counter < urls_length; ++counter) {
       std::string url = urls[counter];
@@ -160,12 +162,13 @@ class MemoryTest : public UIPerfTest {
           expected_tab_count++;
           WaitUntilTabCount(expected_tab_count);
           tab = window->GetActiveTab();
-          EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
+          ASSERT_TRUE(tab.get());
           continue;
         }
 
         int tab_index = counter % num_target_tabs;  // A pseudo-random tab.
         tab = window->GetTab(tab_index);
+        ASSERT_TRUE(tab.get());
       }
 
       if (url == "<NEXTTAB>") {  // Special command to select the next tab.
@@ -174,7 +177,7 @@ class MemoryTest : public UIPerfTest {
         EXPECT_TRUE(window->GetTabCount(&tab_count));
         tab_index = (tab_index + 1) % tab_count;
         tab = window->GetTab(tab_index);
-        EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
+        ASSERT_TRUE(tab.get());
         continue;
       }
 
@@ -198,8 +201,9 @@ class MemoryTest : public UIPerfTest {
 
         active_window = window_count - 1;
         window = automation()->GetBrowserWindow(active_window);
+        ASSERT_TRUE(window.get());
         tab = window->GetActiveTab();
-        EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
+        ASSERT_TRUE(tab.get());
         continue;
       }
 
@@ -208,8 +212,9 @@ class MemoryTest : public UIPerfTest {
         EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
         active_window = (active_window + 1) % window_count;
         window = automation()->GetBrowserWindow(active_window);
+        ASSERT_TRUE(window.get());
         tab = window->GetActiveTab();
-        EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
+        ASSERT_TRUE(tab.get());
         continue;
       }
 
