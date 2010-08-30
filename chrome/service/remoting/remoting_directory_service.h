@@ -31,7 +31,7 @@ class RemotingDirectoryService : public URLFetcher::Delegate {
     virtual void OnRemotingDirectoryError() {}
   };
 
-  RemotingDirectoryService(Client* client);
+  explicit RemotingDirectoryService(Client* client);
   ~RemotingDirectoryService();
 
   // Add this computer as host. Use the token for authentication.
@@ -59,9 +59,6 @@ class RemotingDirectoryService : public URLFetcher::Delegate {
   Client* client_;
   scoped_ptr<URLFetcher> fetcher_;
 
-  // True if a URL request has made and response is pending.
-  bool request_pending_;
-
   // Host key generated during host registration.
   scoped_ptr<remoting::HostKeyPair> host_key_pair_;
 
@@ -72,4 +69,4 @@ class RemotingDirectoryService : public URLFetcher::Delegate {
   DISALLOW_COPY_AND_ASSIGN(RemotingDirectoryService);
 };
 
-#endif // CHROME_SERVICE_REMOTING_REMOTING_DIRECTORY_SERVICE_H_
+#endif  // CHROME_SERVICE_REMOTING_REMOTING_DIRECTORY_SERVICE_H_
