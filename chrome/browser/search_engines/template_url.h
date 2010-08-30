@@ -14,6 +14,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "googleurl/src/gurl.h"
 
+class SearchTermsData;
 class TemplateURL;
 class WebDataService;
 struct WDKeywordsResult;
@@ -68,6 +69,16 @@ class TemplateURLRef {
       const std::wstring& terms,
       int accepted_suggestion,
       const std::wstring& original_query_for_suggestion) const;
+
+  // Just like ReplaceSearchTerms except that it takes SearchTermsData to supply
+  // the data for some search terms. Most of the time ReplaceSearchTerms should
+  // be called.
+  std::string ReplaceSearchTermsUsingTermsData(
+      const TemplateURL& host,
+      const std::wstring& terms,
+      int accepted_suggestion,
+      const std::wstring& original_query_for_suggestion,
+      const SearchTermsData& search_terms_data) const;
 
   // Returns the raw URL. None of the parameters will have been replaced.
   const std::string& url() const { return url_; }
@@ -183,11 +194,9 @@ class TemplateURLRef {
   // Extracts the query key and host from the url.
   void ParseHostAndSearchTermKey() const;
 
-  // Returns the value for the GOOGLE_BASE_URL term.
-  static std::string GoogleBaseURLValue();
-
-  // Returns the value for the GOOGLE_BASE_SUGGEST_URL term.
-  static std::string GoogleBaseSuggestURLValue();
+  // Used by tests to set the value for the Google base url. This takes
+  // ownership of the given std::string.
+  static void SetGoogleBaseURL(std::string* google_base_url);
 
   // The raw URL. Where as this contains all the terms (such as {searchTerms}),
   // parsed_url_ has them all stripped out.
@@ -221,10 +230,6 @@ class TemplateURLRef {
   mutable std::string host_;
   mutable std::string path_;
   mutable std::string search_term_key_;
-
-  // For testing. If non-null this is the replacement value for GOOGLE_BASE_URL
-  // terms.
-  static std::string* google_base_url_;
 };
 
 // Describes the relevant portions of a single OSD document.

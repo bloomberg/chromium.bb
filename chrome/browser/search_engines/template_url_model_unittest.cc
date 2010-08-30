@@ -147,8 +147,7 @@ class TemplateURLModelTest : public testing::Test,
 
   virtual void TearDown() {
     profile_->TearDown();
-    delete TemplateURLRef::google_base_url_;
-    TemplateURLRef::google_base_url_ = NULL;
+    TemplateURLRef::SetGoogleBaseURL(NULL);
 
     // Flush the message loop to make Purify happy.
     message_loop_.RunAllPending();
@@ -236,8 +235,7 @@ class TemplateURLModelTest : public testing::Test,
   }
 
   void SetGoogleBaseURL(const std::string& base_url) const {
-    delete TemplateURLRef::google_base_url_;
-    TemplateURLRef::google_base_url_ = new std::string(base_url);
+    TemplateURLRef::SetGoogleBaseURL(new std::string(base_url));
   }
 
   // Creates a TemplateURL with the same prepopluated id as a real prepopulated
@@ -251,7 +249,7 @@ class TemplateURLModelTest : public testing::Test,
   // Since the input is the offset from the default, when one passes in
   // 0, it tests the default. Passing in a number > 0 will verify what
   // happens when a preloaded url that is not the default gets updated.
-  void TestLoadUpdatingPreloadedUrl(size_t index_offset_from_default);
+  void TestLoadUpdatingPreloadedURL(size_t index_offset_from_default);
 
   MessageLoopForUI message_loop_;
   // Needed to make the DeleteOnUIThread trait of WebDataService work
@@ -283,7 +281,7 @@ TemplateURL* TemplateURLModelTest::CreateReplaceablePreloadedTemplateURL(
   return t_url;
 }
 
-void TemplateURLModelTest::TestLoadUpdatingPreloadedUrl(
+void TemplateURLModelTest::TestLoadUpdatingPreloadedURL(
     size_t index_offset_from_default) {
   std::wstring prepopulated_url;
   TemplateURL* t_url = CreateReplaceablePreloadedTemplateURL(
@@ -940,14 +938,14 @@ TEST_F(TemplateURLModelTest, LoadRetainsDefaultProvider) {
 
 // Make sure that the load routine updates the url of a preexisting
 // default search engine provider and that the result is saved correctly.
-TEST_F(TemplateURLModelTest, LoadUpdatesDefaultSearchUrl) {
-  TestLoadUpdatingPreloadedUrl(0);
+TEST_F(TemplateURLModelTest, LoadUpdatesDefaultSearchURL) {
+  TestLoadUpdatingPreloadedURL(0);
 }
 
 // Make sure that the load routine updates the url of a preexisting
 // non-default search engine provider and that the result is saved correctly.
-TEST_F(TemplateURLModelTest, LoadUpdatesSearchUrl) {
-  TestLoadUpdatingPreloadedUrl(1);
+TEST_F(TemplateURLModelTest, LoadUpdatesSearchURL) {
+  TestLoadUpdatingPreloadedURL(1);
 }
 
 // Make sure that the load does update of auto-keywords correctly.

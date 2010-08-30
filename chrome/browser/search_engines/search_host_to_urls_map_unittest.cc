@@ -16,14 +16,12 @@ class SearchHostToURLsMapTest : public testing::Test {
 
   virtual void SetUp();
   virtual void TearDown() {
-    delete TemplateURLRef::google_base_url_;
-    TemplateURLRef::google_base_url_ = NULL;
+    TemplateURLRef::SetGoogleBaseURL(NULL);
   }
 
  protected:
   void SetGoogleBaseURL(const std::string& base_url) const {
-    delete TemplateURLRef::google_base_url_;
-    TemplateURLRef::google_base_url_ = new std::string(base_url);
+    TemplateURLRef::SetGoogleBaseURL(new std::string(base_url));
   }
 
   void VerifyDefault(const std::string& origin) {

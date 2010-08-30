@@ -20,6 +20,7 @@ class Extension;
 class PrefService;
 class Profile;
 class SearchHostToURLsMap;
+class SearchTermsData;
 
 namespace history {
 struct URLVisitedDetails;
@@ -89,6 +90,13 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Returns the search url for t_url.  Returns an empty GURL if t_url has no
   // url().
   static GURL GenerateSearchURL(const TemplateURL* t_url);
+
+  // Just like GenerateSearchURL except that it takes SearchTermsData to supply
+  // the data for some search terms. Most of the time GenerateSearchURL should
+  // be called.
+  static GURL GenerateSearchURLWithTermsData(
+      const TemplateURL* t_url,
+      const SearchTermsData& search_terms_data);
 
   // Returns true if there is no TemplateURL that conflicts with the
   // keyword/url pair, or there is one but it can be replaced. If there is an

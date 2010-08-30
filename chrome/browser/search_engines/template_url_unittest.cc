@@ -7,22 +7,49 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// Simple implementation of SearchTermsData.
+class TestSearchTermsData : public SearchTermsData {
+ public:
+  explicit TestSearchTermsData(const char* google_base_url)
+      : google_base_url_(google_base_url)  {
+  }
+
+  virtual std::string GoogleBaseURLValue() const {
+    return google_base_url_;
+  }
+
+  virtual std::string GetApplicationLocale() const {
+    return "yy";
+  }
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  // Returns the value for the Chrome Omnibox rlz.
+  virtual std::wstring GetRlzParameterValue() const {
+    return "";
+  }
+#endif
+
+ private:
+  std::string google_base_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSearchTermsData);
+};
 
 class TemplateURLTest : public testing::Test {
  public:
   virtual void TearDown() {
-    delete TemplateURLRef::google_base_url_;
-    TemplateURLRef::google_base_url_ = NULL;
+    TemplateURLRef::SetGoogleBaseURL(NULL);
   }
 
   void CheckSuggestBaseURL(const char* base_url,
                            const char* base_suggest_url) const {
-    delete TemplateURLRef::google_base_url_;
-    TemplateURLRef::google_base_url_ = new std::string(base_url);
+    TestSearchTermsData search_terms_data(base_url);
     EXPECT_STREQ(base_suggest_url,
-                 TemplateURLRef::GoogleBaseSuggestURLValue().c_str());
+                 search_terms_data.GoogleBaseSuggestURLValue().c_str());
   }
 };
 
@@ -145,6 +172,35 @@ TEST_F(TemplateURLTest, URLRefTestEncoding2) {
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   ASSERT_EQ("http://fooxxutf-8yutf-8a/", result.spec());
+}
+
+TEST_F(TemplateURLTest, URLRefTestSearchTermsUsingTermsData) {
+  struct SearchTermsCase {
+    const char* url;
+    const wchar_t* terms;
+    const char* output;
+  } search_term_cases[] = {
+    { "{google:baseURL}{language}{searchTerms}", L"",
+      "http://example.com/e/yy" },
+    { "{google:baseSuggestURL}{searchTerms}", L"",
+      "http://clients1.example.com/complete/" }
+  };
+
+  TestSearchTermsData search_terms_data("http://example.com/e/");
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_term_cases); ++i) {
+    const SearchTermsCase& value = search_term_cases[i];
+    TemplateURL t_url;
+    TemplateURLRef ref(value.url, 0, 0);
+    ASSERT_TRUE(ref.IsValid());
+
+    ASSERT_TRUE(ref.SupportsReplacement());
+    GURL result = GURL(ref.ReplaceSearchTermsUsingTermsData(
+        t_url, value.terms,
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring(),
+        search_terms_data));
+    ASSERT_TRUE(result.is_valid());
+    ASSERT_EQ(value.output, result.spec());
+  }
 }
 
 TEST_F(TemplateURLTest, URLRefTermToWide) {

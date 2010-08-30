@@ -10,17 +10,11 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/google_url_tracker.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/favicon_size.h"
 #include "net/base/escape.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/rlz/rlz.h"
-#endif
 
 // The TemplateURLRef has any number of terms that need to be replaced. Each of
 // the terms is enclosed in braces. If the character preceeding the final
@@ -71,9 +65,6 @@ static const char kDefaultCount[] = "10";
 
 // Used if the parameter kOutputEncodingParameter is required.
 static const char kOutputEncodingType[] = "UTF-8";
-
-// static
-std::string* TemplateURLRef::google_base_url_ = NULL;
 
 TemplateURLRef::TemplateURLRef() {
   Set(std::string(), 0, 0);
@@ -221,13 +212,15 @@ void TemplateURLRef::ParseIfNecessary() const {
 }
 
 void TemplateURLRef::ParseHostAndSearchTermKey() const {
+  UIThreadSearchTermsData search_terms_data;
+
   std::string url_string = url_;
   ReplaceSubstringsAfterOffset(&url_string, 0,
                                kGoogleBaseURLParameterFull,
-                               GoogleBaseURLValue());
+                               search_terms_data.GoogleBaseURLValue());
   ReplaceSubstringsAfterOffset(&url_string, 0,
                                kGoogleBaseSuggestURLParameterFull,
-                               GoogleBaseSuggestURLValue());
+                               search_terms_data.GoogleBaseSuggestURLValue());
 
   GURL url(url_string);
   if (!url.is_valid())
@@ -256,17 +249,30 @@ void TemplateURLRef::ParseHostAndSearchTermKey() const {
   }
 }
 
+// static
+void TemplateURLRef::SetGoogleBaseURL(std::string* google_base_url) {
+  UIThreadSearchTermsData::SetGoogleBaseURL(google_base_url);
+}
+
 std::string TemplateURLRef::ReplaceSearchTerms(
     const TemplateURL& host,
     const std::wstring& terms,
     int accepted_suggestion,
     const std::wstring& original_query_for_suggestion) const {
-  // GoogleBaseURLValue() enforces this, but this assert helps us catch bad
-  // behavior more frequently (instead of only when there is a GoogleBaseURL
-  // component in the passed in host).
-  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
-         ChromeThread::CurrentlyOn(ChromeThread::UI));
+  UIThreadSearchTermsData search_terms_data;
+  return ReplaceSearchTermsUsingTermsData(host,
+                                          terms,
+                                          accepted_suggestion,
+                                          original_query_for_suggestion,
+                                          search_terms_data);
+}
 
+std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
+    const TemplateURL& host,
+    const std::wstring& terms,
+    int accepted_suggestion,
+    const std::wstring& original_query_for_suggestion,
+    const SearchTermsData& search_terms_data) const {
   ParseIfNecessary();
   if (!valid_)
     return std::string();
@@ -342,11 +348,11 @@ std::string TemplateURLRef::ReplaceSearchTerms(
         break;
 
       case GOOGLE_BASE_URL:
-        url.insert(i->index, GoogleBaseURLValue());
+        url.insert(i->index, search_terms_data.GoogleBaseURLValue());
         break;
 
       case GOOGLE_BASE_SUGGEST_URL:
-        url.insert(i->index, GoogleBaseSuggestURLValue());
+        url.insert(i->index, search_terms_data.GoogleBaseSuggestURLValue());
         break;
 
       case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
@@ -361,8 +367,7 @@ std::string TemplateURLRef::ReplaceSearchTerms(
         // empty string.  (If we don't handle this case, we hit a
         // NOTREACHED below.)
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-        std::wstring rlz_string;
-        RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
+        std::wstring rlz_string = search_terms_data.GetRlzParameterValue();
         if (!rlz_string.empty()) {
           rlz_string = L"rlz=" + rlz_string + L"&";
           url.insert(i->index, WideToUTF8(rlz_string));
@@ -382,7 +387,7 @@ std::string TemplateURLRef::ReplaceSearchTerms(
       }
 
       case LANGUAGE:
-        url.insert(i->index, g_browser_process->GetApplicationLocale());
+        url.insert(i->index, search_terms_data.GetApplicationLocale());
         break;
 
       case SEARCH_TERMS:
@@ -497,53 +502,6 @@ void TemplateURLRef::InvalidateCachedValues() const {
   path_.clear();
   search_term_key_.clear();
   replacements_.clear();
-}
-
-// Returns the value to use for replacements of type GOOGLE_BASE_URL.
-// static
-std::string TemplateURLRef::GoogleBaseURLValue() {
-  // Normally GoogleURLTracker::GoogleURL() enforces this, but this
-  // assert helps us catch bad behavior at unit tests time.
-  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
-         ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  return google_base_url_ ?
-    (*google_base_url_) : GoogleURLTracker::GoogleURL().spec();
-}
-
-// Returns the value to use for replacements of type GOOGLE_BASE_SUGGEST_URL.
-// static
-std::string TemplateURLRef::GoogleBaseSuggestURLValue() {
-  // Normally GoogleURLTracker::GoogleURL() enforces this, but this
-  // assert helps us catch bad behavior at unit tests time.
-  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
-         ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  // The suggest base URL we want at the end is something like
-  // "http://clients1.google.TLD/complete/".  The key bit we want from the
-  // original Google base URL is the TLD.
-
-  // Start with the Google base URL.
-  const GURL base_url(google_base_url_ ?
-      GURL(*google_base_url_) : GoogleURLTracker::GoogleURL());
-  DCHECK(base_url.is_valid());
-
-  // Change "www." to "clients1." in the hostname.  If no "www." was found, just
-  // prepend "clients1.".
-  const std::string base_host(base_url.host());
-  GURL::Replacements repl;
-  const std::string suggest_host("clients1." +
-      (base_host.compare(0, 4, "www.") ? base_host : base_host.substr(4)));
-  repl.SetHostStr(suggest_host);
-
-  // Replace any existing path with "/complete/".
-  static const std::string suggest_path("/complete/");
-  repl.SetPathStr(suggest_path);
-
-  // Clear the query and ref.
-  repl.ClearQuery();
-  repl.ClearRef();
-  return base_url.ReplaceComponents(repl).spec();
 }
 
 // TemplateURL ----------------------------------------------------------------
