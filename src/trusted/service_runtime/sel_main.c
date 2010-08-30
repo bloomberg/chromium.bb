@@ -151,7 +151,10 @@ static void PrintUsage() {
           "    main thread anyway\n"
           "\n"
           " (testing flags)\n"
-          " -d debug mode (allow access to files! dangerous!)\n"
+          /* TODO(robertm): retire -d */
+          " -d (debug mode) allow file access, ignore validator dangerous!\n"
+          " -a allow file access! dangerous!\n"
+          " -c ignore validator! dangerous!\n"
           " -s safely stub out non-validating instructions\n"
           " -Q disable platform qualification (dangerous!)\n"
           " -I disable ELF ABI version number check (safe)\n"
@@ -201,7 +204,8 @@ int main(int  ac,
   char                          *log_file = NULL;
   struct GioFile                *log_gio;
   int                           log_desc;
-  int                           debug_mode = 0;
+  int                           debug_mode_bypass_acl_checks = 0;
+  int                           debug_mode_ignore_validator = 0;
   int                           stub_out_mode = 0;
   int                           skip_qualification = 0;
 
@@ -255,12 +259,22 @@ int main(int  ac,
     exit(1);
   }
 
-  while ((opt = getopt(ac, av, "df:gh:i:Il:mMP:Qr:svw:X:")) != -1) {
+
+  while ((opt = getopt(ac, av, "acdf:gh:i:Il:mMP:Qr:svw:X:")) != -1) {
     switch (opt) {
+      /* TODO(robertm): retire -d */
       case 'd':
-        fprintf(stderr, "DEBUG MODE ENABLED\n");
-        NaClInsecurelyBypassAllAclChecks();
-        debug_mode = 1;
+        fprintf(stderr, "DEBUG MODE ENABLED (bypass acl, ignore validator)\n");
+        debug_mode_ignore_validator = 1;
+        debug_mode_bypass_acl_checks = 1;
+        break;
+      case 'c':
+        fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
+        debug_mode_ignore_validator = 1;
+        break;
+      case 'a':
+        fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
+        debug_mode_bypass_acl_checks = 1;
         break;
       case 'g':
         NaClDebugSetAllow(1);
@@ -352,12 +366,17 @@ int main(int  ac,
             " WARNING WARNING WARNING WARNING\n");
   }
 
+  if (debug_mode_bypass_acl_checks) {
+    NaClInsecurelyBypassAllAclChecks();
+  }
+
 #if NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
-  if (debug_mode == 0) {
+  if (debug_mode_bypass_acl_checks == 0 &&
+      debug_mode_ignore_validator == 0) {
     fprintf(stderr,
             "ERROR: dangerous debug version of sel_ldr can only "
-            "be invoked with -d option");
-    exit(-)1;
+            "be invoked with -d/-a/-c options");
+    exit(-1);
   }
 #endif
   /*
@@ -408,7 +427,7 @@ int main(int  ac,
   }
 
   state.restrict_to_main_thread = main_thread_only;
-  state.ignore_validator_result = debug_mode;
+  state.ignore_validator_result = debug_mode_ignore_validator;
   state.validator_stub_out_mode = stub_out_mode;
 
   nap = &state;
