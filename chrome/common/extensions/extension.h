@@ -362,7 +362,6 @@ class Extension {
     launch_web_url_ = launch_web_url;
   }
   LaunchContainer launch_container() const { return launch_container_; }
-  bool launch_fullscreen() const { return launch_fullscreen_; }
   int launch_width() const { return launch_width_; }
   int launch_height() const { return launch_height_; }
 
@@ -430,8 +429,6 @@ class Extension {
                   ExtensionExtent* extent, const char* list_error,
                   const char* value_error, std::string* error);
   bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);
-  bool LoadLaunchFullscreen(const DictionaryValue* manifest,
-                            std::string* error);
   bool LoadLaunchURL(const DictionaryValue* manifest, std::string* error);
   bool EnsureNotHybridApp(const DictionaryValue* manifest, std::string* error);
 
@@ -571,9 +568,6 @@ class Extension {
 
   // The type of container to launch into.
   LaunchContainer launch_container_;
-
-  // Launch full screen by default.
-  bool launch_fullscreen_;
 
   // The default size of the container when launching. Only respected for
   // containers like panels and windows.

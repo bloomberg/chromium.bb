@@ -27,7 +27,6 @@ namespace extension_manifest_keys {
   extern const char* kJs;
   extern const char* kLaunch;
   extern const char* kLaunchContainer;
-  extern const char* kLaunchFullscreen;
   extern const char* kLaunchHeight;
   extern const char* kLaunchLocalPath;
   extern const char* kLaunchWebURL;
@@ -110,7 +109,6 @@ namespace extension_manifest_errors {
   extern const char* kInvalidJsList;
   extern const char* kInvalidKey;
   extern const char* kInvalidLaunchContainer;
-  extern const char* kInvalidLaunchFullscreen;
   extern const char* kInvalidLaunchHeight;
   extern const char* kInvalidLaunchHeightContainer;
   extern const char* kInvalidLaunchLocalPath;

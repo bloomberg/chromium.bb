@@ -138,7 +138,6 @@ TEST_F(ExtensionManifestTest, ValidApp) {
   EXPECT_EQ("http://www.google.com/foobar/*",
             extension->web_extent().patterns()[1].GetAsString());
   EXPECT_EQ(Extension::LAUNCH_TAB, extension->launch_container());
-  EXPECT_EQ(false, extension->launch_fullscreen());
   EXPECT_EQ("http://www.google.com/mail/", extension->launch_web_url());
 }
 
@@ -174,9 +173,6 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
   extension.reset(LoadAndExpectSuccess("launch_default.json"));
   EXPECT_EQ(Extension::LAUNCH_TAB, extension->launch_container());
 
-  extension.reset(LoadAndExpectSuccess("launch_fullscreen.json"));
-  EXPECT_EQ(true, extension->launch_fullscreen());
-
   extension.reset(LoadAndExpectSuccess("launch_width.json"));
   EXPECT_EQ(640, extension->launch_width());
 
@@ -191,8 +187,6 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_without_launch_url.json",
                      errors::kLaunchURLRequired);
-  LoadAndExpectError("launch_fullscreen_invalid.json",
-                     errors::kInvalidLaunchFullscreen);
   LoadAndExpectError("launch_width_invalid.json",
                      errors::kInvalidLaunchWidthContainer);
   LoadAndExpectError("launch_width_negative.json",

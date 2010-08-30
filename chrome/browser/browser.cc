@@ -550,10 +550,6 @@ TabContents* Browser::OpenApplication(Profile* profile,
       NOTREACHED();
       break;
   }
-  if (tab) {
-    if (browser && extension && extension->launch_fullscreen())
-      browser->window()->SetFullscreen(true);
-  }
   return tab;
 }
 

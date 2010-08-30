@@ -24,7 +24,6 @@ const char* kIncludeGlobs = "include_globs";
 const char* kJs = "js";
 const char* kLaunch = "app.launch";
 const char* kLaunchContainer = "app.launch.container";
-const char* kLaunchFullscreen = "app.launch.fullscreen";
 const char* kLaunchHeight = "app.launch.height";
 const char* kLaunchLocalPath = "app.launch.local_path";
 const char* kLaunchWebURL = "app.launch.web_url";
@@ -134,8 +133,6 @@ const char* kInvalidKey =
     "Value 'key' is missing or invalid.";
 const char* kInvalidLaunchContainer =
     "Invalid value for 'app.launch.container'.";
-const char* kInvalidLaunchFullscreen =
-    "Invalid value for 'app.launch.fullscreen'.";
 const char* kInvalidLaunchHeight =
     "Invalid value for 'app.launch.height'.";
 const char* kInvalidLaunchHeightContainer =

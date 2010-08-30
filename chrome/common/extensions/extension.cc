@@ -726,20 +726,6 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
   return true;
 }
 
-bool Extension::LoadLaunchFullscreen(const DictionaryValue* manifest,
-                                    std::string* error) {
-  Value* temp = NULL;
-  if (!manifest->Get(keys::kLaunchFullscreen, &temp))
-    return true;
-
-  if (!temp->GetAsBoolean(&launch_fullscreen_)) {
-    *error = errors::kInvalidLaunchFullscreen;
-    return false;
-  }
-
-  return true;
-}
-
 bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
                                    std::string* error) {
   if (web_extent().is_empty())
@@ -762,7 +748,6 @@ Extension::Extension(const FilePath& path)
       is_theme_(false),
       is_app_(false),
       launch_container_(LAUNCH_TAB),
-      launch_fullscreen_(false),
       launch_width_(0),
       launch_height_(0),
       background_page_ready_(false),
@@ -1414,8 +1399,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
       !EnsureNotHybridApp(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
-      !LoadLaunchContainer(manifest_value_.get(), error) ||
-      !LoadLaunchFullscreen(manifest_value_.get(), error)) {
+      !LoadLaunchContainer(manifest_value_.get(), error)) {
     return false;
   }
 
