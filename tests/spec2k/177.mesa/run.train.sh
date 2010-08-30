@@ -19,7 +19,7 @@ ln -s  data/train/input/* .
 
 
 
-${PREFIX} $1 ${DASHDASH} -frames 500 -meshfile mesa.in -ppmfile mesa.ppm
+${PREFIX} $1 ${DASHDASH} -frames 500 -meshfile mesa.in -ppmfile mesa.ppm >mesa.out 2>mesa.err
 
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"

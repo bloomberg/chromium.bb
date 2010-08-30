@@ -17,7 +17,7 @@ rm -f  mesa.log mesa.ppm mesa.in numbers
 
 ln -s  data/ref/input/* .
 
-${PREFIX} $1 ${DASHDASH} -frames 1000 -meshfile mesa.in -ppmfile mesa.ppm
+${PREFIX} $1 ${DASHDASH} -frames 1000 -meshfile mesa.in -ppmfile mesa.ppm >mesa.out 2>mesa.err
 
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"
