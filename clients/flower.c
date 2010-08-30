@@ -62,6 +62,11 @@ draw_stuff(cairo_surface_t *surface, int width, int height)
 	double x1, y1, x2, y2, x3, y3;
 
 	cr = cairo_create(surface);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0);
+	cairo_paint(cr);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_translate(cr, width / 2, height / 2);
 	cairo_move_to(cr, cos(0) * r1, sin(0) * r1);
 	for (t = 0, i = 0; i < petal_count; i++, t += dt * 2) {
