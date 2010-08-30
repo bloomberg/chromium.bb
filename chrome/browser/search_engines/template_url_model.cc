@@ -11,7 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/net/url_fixer_upper.h"

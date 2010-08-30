@@ -26,7 +26,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/intranet_redirect_detector.h"

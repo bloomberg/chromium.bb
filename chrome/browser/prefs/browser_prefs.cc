@@ -22,7 +22,7 @@
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
-#include "chrome/browser/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/gtk/certificate_manager.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"

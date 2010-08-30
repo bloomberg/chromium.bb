@@ -17,7 +17,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/google_util.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"

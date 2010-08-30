@@ -70,7 +70,7 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& client_id) {
 }
 
 // GetLastRunTime and SetLastRunTime are not implemented for posix. Their
-// currebnt return values signal failure which the caller is designed to
+// current return values signal failure which the caller is designed to
 // handle.
 
 // static

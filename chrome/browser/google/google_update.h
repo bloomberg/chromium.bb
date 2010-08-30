@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_UPDATE_H_
-#define CHROME_BROWSER_GOOGLE_UPDATE_H_
+#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_H_
+#define CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_H_
 #pragma once
 
 #include <string>
@@ -141,4 +141,4 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   DISALLOW_COPY_AND_ASSIGN(GoogleUpdate);
 };
 
-#endif  // CHROME_BROWSER_GOOGLE_UPDATE_H_
+#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_H_

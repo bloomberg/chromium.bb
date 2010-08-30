@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/google_util.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "googleurl/src/gurl.h"

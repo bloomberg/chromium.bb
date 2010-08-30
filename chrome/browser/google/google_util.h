@@ -4,8 +4,8 @@
 //
 // Some Google related utility functions.
 
-#ifndef CHROME_BROWSER_GOOGLE_UTIL_H__
-#define CHROME_BROWSER_GOOGLE_UTIL_H__
+#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_UTIL_H__
+#define CHROME_BROWSER_GOOGLE_GOOGLE_UTIL_H__
 #pragma once
 
 class GURL;
@@ -24,4 +24,4 @@ GURL AppendGoogleTLDParam(const GURL& url);
 
 }  // namespace google_util
 
-#endif  // CHROME_BROWSER_GOOGLE_UTIL_H__
+#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UTIL_H__

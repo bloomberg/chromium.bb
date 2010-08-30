@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
-#include "chrome/browser/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"

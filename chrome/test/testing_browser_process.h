@@ -19,7 +19,7 @@
 #include "base/string_util.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_service.h"
 

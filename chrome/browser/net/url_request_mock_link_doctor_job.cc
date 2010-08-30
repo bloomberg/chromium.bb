@@ -5,7 +5,7 @@
 #include "chrome/browser/net/url_request_mock_link_doctor_job.h"
 
 #include "base/path_service.h"
-#include "chrome/browser/google_util.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_filter.h"

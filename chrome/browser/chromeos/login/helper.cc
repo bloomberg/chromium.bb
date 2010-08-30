@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 
 #include "app/resource_bundle.h"
-#include "chrome/browser/google_util.h"
+#include "chrome/browser/google/google_util.h"
 #include "gfx/canvas_skia.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"

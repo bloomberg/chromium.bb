@@ -42,7 +42,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/find_bar_state.h"
-#include "chrome/browser/google_util.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/hung_renderer_dialog.h"
 #include "chrome/browser/message_box_handler.h"

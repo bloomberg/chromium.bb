@@ -13,7 +13,7 @@
 #include "views/window/dialog_delegate.h"
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-#include "chrome/browser/google_update.h"
+#include "chrome/browser/google/google_update.h"
 #endif
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/version_loader.h"

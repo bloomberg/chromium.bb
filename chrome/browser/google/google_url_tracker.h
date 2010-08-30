@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_URL_TRACKER_H_
-#define CHROME_BROWSER_GOOGLE_URL_TRACKER_H_
+#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_H_
+#define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_H_
 #pragma once
 
 #include <string>
@@ -159,4 +159,4 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTracker);
 };
 
-#endif  // CHROME_BROWSER_GOOGLE_URL_TRACKER_H_
+#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_H_

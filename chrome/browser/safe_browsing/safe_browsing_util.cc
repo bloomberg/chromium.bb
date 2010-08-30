@@ -8,7 +8,7 @@
 #include "base/hmac.h"
 #include "base/sha2.h"
 #include "base/string_util.h"
-#include "chrome/browser/google_util.h"
+#include "chrome/browser/google/google_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
