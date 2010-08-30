@@ -18,6 +18,7 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"

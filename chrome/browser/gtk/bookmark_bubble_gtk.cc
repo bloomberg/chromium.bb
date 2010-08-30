@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -275,7 +276,7 @@ void BookmarkBubbleGtk::ApplyEdits() {
     const string16 new_title(
         UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(name_entry_))));
 
-    if (new_title != node->GetTitleAsString16()) {
+    if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),
@@ -305,7 +306,7 @@ std::string BookmarkBubbleGtk::GetTitle() {
     return std::string();
   }
 
-  return UTF16ToUTF8(node->GetTitleAsString16());
+  return UTF16ToUTF8(node->GetTitle());
 }
 
 void BookmarkBubbleGtk::ShowEditor() {

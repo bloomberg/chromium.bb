@@ -77,6 +77,6 @@ TEST_F(BookmarkAllTabsControllerTest, BookmarkAllTabs) {
   [controller_ ok:nil];
   EXPECT_EQ(4, group_a_->GetChildCount());
   const BookmarkNode* folderChild = group_a_->GetChild(3);
-  EXPECT_EQ(folderChild->GetTitleAsString16(), ASCIIToUTF16("ALL MY TABS"));
+  EXPECT_EQ(folderChild->GetTitle(), ASCIIToUTF16("ALL MY TABS"));
   EXPECT_EQ(3, folderChild->GetChildCount());
 }

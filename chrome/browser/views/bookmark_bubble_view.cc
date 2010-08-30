@@ -266,7 +266,7 @@ string16 BookmarkBubbleView::GetTitle() {
   const BookmarkNode* node =
       bookmark_model->GetMostRecentlyAddedNodeForURL(url_);
   if (node)
-    return node->GetTitleAsString16();
+    return node->GetTitle();
   else
     NOTREACHED();
   return string16();
@@ -392,7 +392,7 @@ void BookmarkBubbleView::ApplyEdits() {
   const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
   if (node) {
     const string16 new_title = title_tf_->text();
-    if (new_title != node->GetTitleAsString16()) {
+    if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),

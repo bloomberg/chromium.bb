@@ -346,7 +346,7 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
     if (node->CanCreateContentException()) {
       if (!last_domain_name.empty())
         multiple_domains_added = true;
-      last_domain_name = node->GetTitleAsString16();
+      last_domain_name = node->GetTitle();
       node->CreateContentException(
           tab_contents_->profile()->GetHostContentSettingsMap(), setting);
     }

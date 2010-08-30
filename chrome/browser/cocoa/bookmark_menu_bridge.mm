@@ -222,7 +222,7 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   // Add a tooltip
   std::string url_string = node->GetURL().possibly_invalid_spec();
   NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
-                          base::SysUTF16ToNSString(node->GetTitleAsString16()),
+                          base::SysUTF16ToNSString(node->GetTitle()),
                           url_string.c_str()];
   [item setToolTip:tooltip];
 

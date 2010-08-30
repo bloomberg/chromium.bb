@@ -54,8 +54,7 @@ class BookmarkIndexTest : public testing::Test {
     for (size_t i = 0; i < expected_titles.size(); ++i) {
       bool found = false;
       for (size_t j = 0; j < matches.size(); ++j) {
-        if (ASCIIToUTF16(expected_titles[i]) ==
-            matches[j].node->GetTitleAsString16()) {
+        if (ASCIIToUTF16(expected_titles[i]) == matches[j].node->GetTitle()) {
           matches.erase(matches.begin() + j);
           found = true;
           break;

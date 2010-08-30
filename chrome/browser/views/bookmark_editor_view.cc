@@ -489,7 +489,7 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
     const BookmarkNode* child_bb_node = bb_node->GetChild(i);
     if (child_bb_node->is_folder()) {
       EditorNode* new_b_node =
-          new EditorNode(WideToUTF16(child_bb_node->GetTitleAsString16()),
+          new EditorNode(WideToUTF16(child_bb_node->GetTitle()),
                                      child_bb_node->id());
       b_node->Add(b_node->GetChildCount(), new_b_node);
       CreateNodes(child_bb_node, new_b_node);
@@ -561,7 +561,7 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewGroups(
     if (child_b_node->value == 0) {
       // New group.
       child_bb_node = bb_model_->AddGroup(bb_node,
-          bb_node->GetChildCount(), child_b_node->GetTitleAsString16());
+          bb_node->GetChildCount(), child_b_node->GetTitle());
     } else {
       // Existing node, reset the title (BBModel ignores changes if the title
       // is the same).
@@ -573,7 +573,7 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewGroups(
         }
       }
       DCHECK(child_bb_node);
-      bb_model_->SetTitle(child_bb_node, child_b_node->GetTitleAsString16());
+      bb_model_->SetTitle(child_bb_node, child_b_node->GetTitle());
     }
     ApplyNameChangesAndCreateNewGroups(child_bb_node, child_b_node,
                                        parent_b_node, parent_bb_node);

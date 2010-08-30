@@ -101,7 +101,7 @@ void ProfileWriter::AddBookmarkEntry(
         const BookmarkNode* node = parent->GetChild(index);
         if ((node->type() == BookmarkNode::BOOKMARK_BAR ||
              node->type() == BookmarkNode::FOLDER) &&
-            node->GetTitleAsString16() == WideToUTF16Hack(folder_name)) {
+            node->GetTitle() == WideToUTF16Hack(folder_name)) {
           child = node;
           break;
         }
@@ -286,7 +286,7 @@ std::wstring ProfileWriter::GenerateUniqueFolderName(
   for (int i = 0, child_count = other->GetChildCount(); i < child_count; ++i) {
     const BookmarkNode* node = other->GetChild(i);
     if (node->is_folder())
-      other_folder_names.insert(UTF16ToWideHack(node->GetTitleAsString16()));
+      other_folder_names.insert(UTF16ToWideHack(node->GetTitle()));
   }
 
   if (other_folder_names.find(folder_name) == other_folder_names.end())
@@ -314,7 +314,7 @@ bool ProfileWriter::DoesBookmarkExist(
 
   for (size_t i = 0; i < nodes_with_same_url.size(); ++i) {
     const BookmarkNode* node = nodes_with_same_url[i];
-    if (WideToUTF16Hack(entry.title) != node->GetTitleAsString16())
+    if (WideToUTF16Hack(entry.title) != node->GetTitle())
       continue;
 
     // Does the path match?

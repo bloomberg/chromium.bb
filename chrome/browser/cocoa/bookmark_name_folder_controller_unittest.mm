@@ -46,7 +46,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNew) {
   [controller ok:nil];
   EXPECT_EQ(1, parent->GetChildCount());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
-  EXPECT_EQ(ASCIIToUTF16("Bozo"), parent->GetChild(0)->GetTitleAsString16());
+  EXPECT_EQ(ASCIIToUTF16("Bozo"), parent->GetChild(0)->GetTitle());
 }
 
 // Add new but specify a sibling.
@@ -76,7 +76,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
   // Confirm we now have 3, and that the new one is in the middle.
   EXPECT_EQ(3, parent->GetChildCount());
   EXPECT_TRUE(parent->GetChild(1)->is_folder());
-  EXPECT_EQ(ASCIIToUTF16("middle"), parent->GetChild(1)->GetTitleAsString16());
+  EXPECT_EQ(ASCIIToUTF16("middle"), parent->GetChild(1)->GetTitle());
 }
 
 // Make sure we are allowed to create a folder named "New Folder".
@@ -142,7 +142,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
   [controller ok:nil];
   EXPECT_EQ(1, parent->GetChildCount());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
-  EXPECT_EQ(ASCIIToUTF16("Zobo"), parent->GetChild(0)->GetTitleAsString16());
+  EXPECT_EQ(ASCIIToUTF16("Zobo"), parent->GetChild(0)->GetTitle());
 }
 
 TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {

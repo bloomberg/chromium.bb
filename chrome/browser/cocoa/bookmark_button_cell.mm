@@ -48,7 +48,7 @@
     [self setBookmarkNode:node];
 
     if (node) {
-      NSString* title = base::SysUTF16ToNSString(node->GetTitleAsString16());
+      NSString* title = base::SysUTF16ToNSString(node->GetTitle());
       [self setBookmarkCellText:title image:cellImage];
       [self setMenu:contextMenu];
     } else {

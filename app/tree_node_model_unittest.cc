@@ -287,5 +287,5 @@ TEST_F(TreeNodeModelTest, SetTitle) {
   const string16 title(ASCIIToUTF16("root2"));
   model.SetTitle(root, title);
   AssertObserverCount(0, 0, 1);
-  EXPECT_EQ(title, root->GetTitleAsString16());
+  EXPECT_EQ(title, root->GetTitle());
 }

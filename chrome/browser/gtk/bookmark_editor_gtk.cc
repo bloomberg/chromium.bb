@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/gtk/bookmark_tree_model.h"
@@ -131,10 +132,9 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   name_entry_ = gtk_entry_new();
   std::string title;
   if (details_.type == EditDetails::EXISTING_NODE) {
-    title = WideToUTF8(details_.existing_node->GetTitle());
+    title = UTF16ToUTF8(details_.existing_node->GetTitle());
   } else if (details_.type == EditDetails::NEW_FOLDER) {
-    title = WideToUTF8(
-        l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
+    title = l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
   }
   gtk_entry_set_text(GTK_ENTRY(name_entry_), title.c_str());
   g_signal_connect(name_entry_, "changed",

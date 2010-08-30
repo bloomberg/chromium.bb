@@ -7,7 +7,6 @@
 #pragma once
 
 #include <algorithm>
-#include <string>
 #include <vector>
 
 #include "app/tree_model.h"
@@ -17,7 +16,6 @@
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
 
 // TreeNodeModel and TreeNodes provide an implementation of TreeModel around
 // TreeNodes. TreeNodes form a directed acyclic graph.
@@ -71,11 +69,6 @@ class TreeNode : public TreeModelNode {
  public:
   TreeNode() : parent_(NULL) { }
 
-  // TODO(munjal): Remove wstring overload once all code is moved to string16.
-#if !defined(WCHAR_T_IS_UTF16)
-  explicit TreeNode(const std::wstring& title)
-      : title_(WideToUTF16(title)), parent_(NULL) {}
-#endif
   explicit TreeNode(const string16& title)
       : title_(title), parent_(NULL) {}
 
@@ -162,13 +155,8 @@ class TreeNode : public TreeModelNode {
     title_ = string;
   }
 
-  // TODO(munjal): Remove wstring version and rename GetTitleAsString16 to
-  // GetTitle once all code is moved to string16.
   // Returns the title of the node.
-  virtual std::wstring GetTitle() const {
-    return UTF16ToWide(title_);
-  }
-  virtual const string16& GetTitleAsString16() const {
+  virtual const string16& GetTitle() const {
     return title_;
   }
 

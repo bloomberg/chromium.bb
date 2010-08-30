@@ -17,6 +17,7 @@
 #include "base/string_number_conversions.h"
 #include "base/thread.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

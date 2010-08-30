@@ -984,7 +984,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     // Add a tooltip
     std::string url_string = child->GetURL().possibly_invalid_spec();
     NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
-                         base::SysUTF16ToNSString(child->GetTitleAsString16()),
+                         base::SysUTF16ToNSString(child->GetTitle()),
                          url_string.c_str()];
     [item setToolTip:tooltip];
   }
@@ -1013,7 +1013,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (NSMenu *)menuForFolderNode:(const BookmarkNode*)node {
   if (!node->is_folder())
     return nil;
-  NSString* title = base::SysUTF16ToNSString(node->GetTitleAsString16());
+  NSString* title = base::SysUTF16ToNSString(node->GetTitle());
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:title] autorelease];
   [self addFolderNode:node toMenu:menu];
 
@@ -1105,7 +1105,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     [button setTarget:self];
     [button setAction:@selector(openBookmark:)];
     // Add a tooltip.
-    NSString* title = base::SysUTF16ToNSString(node->GetTitleAsString16());
+    NSString* title = base::SysUTF16ToNSString(node->GetTitle());
     std::string url_string = node->GetURL().possibly_invalid_spec();
     NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
                          url_string.c_str()];

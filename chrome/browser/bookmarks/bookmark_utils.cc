@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #if defined(OS_MACOSX)
@@ -193,7 +194,7 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
                               const std::string& languages) {
   return
       DoesBookmarkTextContainWords(
-          l10n_util::ToLower(node->GetTitleAsString16()), words) ||
+          l10n_util::ToLower(node->GetTitle()), words) ||
       DoesBookmarkTextContainWords(
           l10n_util::ToLower(UTF8ToUTF16(node->GetURL().spec())), words) ||
       DoesBookmarkTextContainWords(l10n_util::ToLower(

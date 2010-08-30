@@ -169,6 +169,7 @@
 #include "base/md5.h"
 #include "base/string_number_conversions.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"

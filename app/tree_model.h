@@ -6,7 +6,6 @@
 #define APP_TREE_MODEL_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -22,9 +21,7 @@ class TreeModel;
 class TreeModelNode {
  public:
   // Returns the title for the node.
-  // TODO(viettrungluu): remove wstring version and rename string16 version.
-  virtual std::wstring GetTitle() const = 0;
-  virtual const string16& GetTitleAsString16() const = 0;
+  virtual const string16& GetTitle() const = 0;
 
  protected:
   virtual ~TreeModelNode() {}

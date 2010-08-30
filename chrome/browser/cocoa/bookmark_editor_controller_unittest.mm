@@ -52,7 +52,7 @@ TEST_F(BookmarkEditorControllerTest, NoEdit) {
   [controller_ cancel:nil];
   ASSERT_EQ(default_parent_->GetChildCount(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
-  EXPECT_EQ(child->GetTitleAsString16(), default_title_);
+  EXPECT_EQ(child->GetTitle(), default_title_);
   EXPECT_EQ(child->GetURL(), GURL(default_name_));
 }
 
@@ -61,7 +61,7 @@ TEST_F(BookmarkEditorControllerTest, EditTitle) {
   [controller_ ok:nil];
   ASSERT_EQ(default_parent_->GetChildCount(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
-  EXPECT_EQ(child->GetTitleAsString16(), ASCIIToUTF16("whamma jamma bamma"));
+  EXPECT_EQ(child->GetTitle(), ASCIIToUTF16("whamma jamma bamma"));
   EXPECT_EQ(child->GetURL(), GURL(default_name_));
 }
 
@@ -72,7 +72,7 @@ TEST_F(BookmarkEditorControllerTest, EditURL) {
   [controller_ ok:nil];
   ASSERT_EQ(default_parent_->GetChildCount(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
-  EXPECT_EQ(child->GetTitleAsString16(), default_title_);
+  EXPECT_EQ(child->GetTitle(), default_title_);
   EXPECT_EQ(child->GetURL(), GURL("http://yellow-sneakers.com/"));
 }
 
@@ -388,7 +388,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkGroup) {
   ASSERT_EQ(parent, group_c_);
   int childIndex = parent->IndexOfChild(bookmark_bb_3_);
   ASSERT_EQ(4, childIndex);
-  EXPECT_EQ(bookmark_bb_3_->GetTitleAsString16(), ASCIIToUTF16("NEW NAME"));
+  EXPECT_EQ(bookmark_bb_3_->GetTitle(), ASCIIToUTF16("NEW NAME"));
 }
 
 TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithGroupSelected) {
@@ -418,6 +418,6 @@ TEST_F(BookmarkEditorControllerTreeNoNodeTest, NewBookmarkNoNode) {
   [controller_ ok:nil];
   const BookmarkNode* new_node = group_bb_->GetChild(5);
   ASSERT_EQ(0, new_node->GetChildCount());
-  EXPECT_EQ(new_node->GetTitleAsString16(), ASCIIToUTF16("NEW BOOKMARK"));
+  EXPECT_EQ(new_node->GetTitle(), ASCIIToUTF16("NEW BOOKMARK"));
   EXPECT_EQ(new_node->GetURL(), GURL("http://NEWURL.com"));
 }

@@ -7,6 +7,7 @@
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -319,14 +320,13 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
         icon = *ResourceBundle::GetSharedInstance().
             GetBitmapNamed(IDR_DEFAULT_FAVICON);
       }
-      menu->AppendMenuItemWithIcon(id, UTF16ToWide(node->GetTitleAsString16()),
-                                   icon);
+      menu->AppendMenuItemWithIcon(id, UTF16ToWide(node->GetTitle()), icon);
       node_to_menu_id_map_[node] = id;
     } else if (node->is_folder()) {
       SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
           GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
       MenuItemView* submenu = menu->AppendSubMenuWithIcon(id,
-          UTF16ToWide(node->GetTitleAsString16()), *folder_icon);
+          UTF16ToWide(node->GetTitle()), *folder_icon);
       node_to_menu_id_map_[node] = id;
       BuildMenu(node, 0, submenu, next_menu_id);
     } else {

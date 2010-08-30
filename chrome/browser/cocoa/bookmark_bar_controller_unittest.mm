@@ -1044,8 +1044,7 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
       std::string my_string = parent->GetChild(i)->GetURL().spec();
       EXPECT_NE(gurl_string.find(my_string), std::string::npos);
     }
-    EXPECT_EQ(parent->GetChild(i)->GetTitleAsString16(),
-              ASCIIToUTF16(titles[i]));
+    EXPECT_EQ(parent->GetChild(i)->GetTitle(), ASCIIToUTF16(titles[i]));
   }
 }
 
@@ -1167,8 +1166,7 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_EQ(1, folder->GetChildCount());
   x = NSMidX([[[bar_ buttons] objectAtIndex:0] frame]);
   x += [[bar_ view] frame].origin.x;
-  string16 title =
-      [[[bar_ buttons] objectAtIndex:2] bookmarkNode]->GetTitleAsString16();
+  string16 title = [[[bar_ buttons] objectAtIndex:2] bookmarkNode]->GetTitle();
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
                 to:NSMakePoint(x, 0)
               copy:NO];
@@ -1177,7 +1175,7 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   // In the folder
   EXPECT_EQ(2, folder->GetChildCount());
   // At the end
-  EXPECT_EQ(title, folder->GetChild(1)->GetTitleAsString16());
+  EXPECT_EQ(title, folder->GetChild(1)->GetTitle());
 }
 
 TEST_F(BookmarkBarControllerTest, TestCopyButton) {
@@ -1948,7 +1946,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkData) {
   ASSERT_TRUE(targetButton);
   NSPoint targetPoint = [targetButton center];
   newNode = other->GetChild(2);  // Should be O4f.
-  EXPECT_EQ(newNode->GetTitleAsString16(), ASCIIToUTF16("O4f"));
+  EXPECT_EQ(newNode->GetTitle(), ASCIIToUTF16("O4f"));
   [bar_ setDragDataNode:newNode];
   [dragInfo setDropLocation:targetPoint];
   [bar_ dragBookmarkData:(id<NSDraggingInfo>)dragInfo.get()];

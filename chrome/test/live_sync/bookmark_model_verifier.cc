@@ -157,7 +157,7 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
     int random_int = base::RandInt(1, 100);
     // To create randomness in order, 60% of time add bookmarks
     if (random_int > 40) {
-      wstring child_bm_title(bm_folder->GetTitle());
+      wstring child_bm_title(UTF16ToWideHack(bm_folder->GetTitle()));
       child_bm_title.append(L"-ChildBM");
       child_bm_title.append(UTF8ToWide(base::IntToString(index)));
       string url("http://www.nofaviconurl");
@@ -168,7 +168,7 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
       EXPECT_TRUE(child_nofavicon_bm != NULL);
     } else {
       // Remaining % of time - Add Bookmark folders
-      wstring child_bmfolder_title(bm_folder->GetTitle());
+      wstring child_bmfolder_title(UTF16ToWideHack(bm_folder->GetTitle()));
       child_bmfolder_title.append(L"-ChildBMFolder");
       child_bmfolder_title.append(UTF8ToWide(base::IntToString(index)));
       const BookmarkNode* child_bm_folder =
@@ -251,9 +251,8 @@ const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
   FindNodeInVerifier(model, node, &v_node);
   const BookmarkNode* result = bookmark_utils::ApplyEditsWithNoGroupChange(
       model, node->GetParent(), BookmarkEditor::EditDetails(node),
-      node->GetTitleAsString16(), new_url);
+      node->GetTitle(), new_url);
   bookmark_utils::ApplyEditsWithNoGroupChange(model_, v_node->GetParent(),
-      BookmarkEditor::EditDetails(v_node), v_node->GetTitleAsString16(),
-      new_url);
+      BookmarkEditor::EditDetails(v_node), v_node->GetTitle(), new_url);
   return result;
 }

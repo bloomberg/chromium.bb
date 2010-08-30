@@ -86,7 +86,7 @@ void AddNodeToList(ListValue* list, const BookmarkNode& node) {
   if (node.is_url())
     dict->SetString(keys::kUrlKey, node.GetURL().spec());
 
-  dict->SetString(keys::kTitleKey, node.GetTitleAsString16());
+  dict->SetString(keys::kTitleKey, node.GetTitle());
 
   ListValue* children = new ListValue();
   for (int i = 0; i < node.GetChildCount(); ++i)

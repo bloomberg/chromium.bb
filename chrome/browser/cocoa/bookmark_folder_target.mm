@@ -79,7 +79,7 @@ NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
   } else {
     const std::string spec = node->GetURL().spec();
     NSString* url = base::SysUTF8ToNSString(spec);
-    NSString* title = base::SysUTF16ToNSString(node->GetTitleAsString16());
+    NSString* title = base::SysUTF16ToNSString(node->GetTitle());
     [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
                                               owner:nil];
     [pboard setDataForURL:url title:title];

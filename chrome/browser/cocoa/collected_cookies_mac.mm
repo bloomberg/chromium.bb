@@ -230,7 +230,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
         setting);
     if (!lastDomain.empty())
       multipleDomainsChanged = YES;
-    lastDomain = origin_node->GetTitleAsString16();
+    lastDomain = origin_node->GetTitle();
   }
   if (multipleDomainsChanged)
     [self showInfoBarForMultipleDomainsAndSetting:setting];

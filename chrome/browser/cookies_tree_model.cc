@@ -72,8 +72,8 @@ class OriginNodeComparator {
     // google.com, ad.google.com, www.google.com,
     // microsoft.com, ad.microsoft.com. CanonicalizeHost transforms the origins
     // into a form like google.com.www so that string comparisons work.
-    return (CanonicalizeHost(lhs->GetTitleAsString16()) <
-            CanonicalizeHost(rhs->GetTitleAsString16()));
+    return (CanonicalizeHost(lhs->GetTitle()) <
+            CanonicalizeHost(rhs->GetTitle()));
   }
 
  private:
@@ -196,7 +196,7 @@ CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
                   OriginNodeComparator());
 
   if (origin_node_iterator != children().end() &&
-      CookieTreeOriginNode::TitleForUrl(url) ==
+      WideToUTF16Hack(CookieTreeOriginNode::TitleForUrl(url)) ==
       (*origin_node_iterator)->GetTitle())
     return static_cast<CookieTreeOriginNode*>(*origin_node_iterator);
   // Node doesn't exist, create a new one and insert it into the (ordered)
@@ -327,7 +327,7 @@ bool CookieTreeNode::NodeTitleComparator::operator() (
       static_cast<const CookieTreeNode*>(lhs);
   const CookieTreeNode* right =
       static_cast<const CookieTreeNode*>(rhs);
-  return (left->GetTitleAsString16() < right->GetTitleAsString16());
+  return (left->GetTitle() < right->GetTitle());
 }
 
 void CookieTreeNode::AddChildSortedByTitle(CookieTreeNode* new_child) {

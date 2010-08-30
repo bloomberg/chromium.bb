@@ -87,7 +87,7 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
   DictionaryValue* value = new DictionaryValue();
   std::string id = base::Int64ToString(node->id());
   value->SetString(kIdKey, id);
-  const string16& title = node->GetTitleAsString16();
+  const string16& title = node->GetTitle();
   value->SetString(kNameKey, title);
   value->SetString(kDateAddedKey,
                    base::Int64ToString(node->date_added().ToInternalValue()));

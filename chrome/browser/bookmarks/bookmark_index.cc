@@ -27,7 +27,7 @@ BookmarkIndex::NodeSet::const_iterator BookmarkIndex::Match::nodes_end() const {
 void BookmarkIndex::Add(const BookmarkNode* node) {
   if (!node->is_url())
     return;
-  std::vector<string16> terms = ExtractQueryWords(node->GetTitleAsString16());
+  std::vector<string16> terms = ExtractQueryWords(node->GetTitle());
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
 }
@@ -36,7 +36,7 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
   if (!node->is_url())
     return;
 
-  std::vector<string16> terms = ExtractQueryWords(node->GetTitleAsString16());
+  std::vector<string16> terms = ExtractQueryWords(node->GetTitle());
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
 }
@@ -116,7 +116,7 @@ void BookmarkIndex::AddMatchToResults(
   // of QueryParser may filter it out.  For example, the query
   // ["thi"] will match the bookmark titled [Thinking], but since
   // ["thi"] is quoted we don't want to do a prefix match.
-  if (parser->DoesQueryMatch(node->GetTitleAsString16(), query_nodes,
+  if (parser->DoesQueryMatch(node->GetTitle(), query_nodes,
                              &(title_match.match_positions))) {
     title_match.node = node;
     results->push_back(title_match);

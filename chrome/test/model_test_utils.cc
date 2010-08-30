@@ -18,10 +18,10 @@ std::string ModelStringFromNode(const BookmarkNode* node) {
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
     if (child->is_folder()) {
-      child_string += UTF16ToUTF8(child->GetTitleAsString16()) + ":[ " +
+      child_string += UTF16ToUTF8(child->GetTitle()) + ":[ " +
           ModelStringFromNode(child) + "] ";
     } else {
-      child_string += UTF16ToUTF8(child->GetTitleAsString16()) + " ";
+      child_string += UTF16ToUTF8(child->GetTitle()) + " ";
     }
   }
   return child_string;

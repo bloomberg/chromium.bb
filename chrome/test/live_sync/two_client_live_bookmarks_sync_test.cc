@@ -1476,7 +1476,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     // Let's add some GetBookmarkModel(without favicon) to bm_folder.
     int child_count = base::RandInt(0, 10);
     for (int index = 0; index < child_count; index++) {
-      wstring title(bm_folder->GetTitle());
+      wstring title(UTF16ToWideHack(bm_folder->GetTitle()));
       title.append(L"-BM");
       string url("http://www.nofaviconurl-");
       title.append(IntToWStringHack(index));
@@ -1544,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     // Let's add some GetBookmarkModel(without favicon) to bm_folder.
     int child_count = base::RandInt(0, 10);
     for (int index = 0; index < child_count; index++) {
-      wstring title(bm_folder->GetTitle());
+      wstring title(UTF16ToWideHack(bm_folder->GetTitle()));
       title.append(L"-BM");
       string url("http://www.nofaviconurl-");
       title.append(IntToWStringHack(index));
@@ -1615,7 +1615,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     // Let's add some GetBookmarkModel(without favicon) to bm_folder.
     int child_count = base::RandInt(0, 10);
     for (int index = 0; index < child_count; index++) {
-      wstring title(bm_folder->GetTitle());
+      wstring title(UTF16ToWideHack(bm_folder->GetTitle()));
       title.append(L"-BM");
       string url("http://www.nofaviconurl-");
       title.append(IntToWStringHack(index));
@@ -1670,7 +1670,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     // Let's add some bookmarks (without favicon) to bm_folder.
     int child_count = base::RandInt(0, 10);
     for (int index = 0; index < child_count; index++) {
-      wstring title(bm_folder->GetTitle());
+      wstring title(UTF16ToWideHack(bm_folder->GetTitle()));
       title.append(L"-BM");
       string url("http://www.nofaviconurl-");
       title.append(IntToWStringHack(index));
@@ -1694,7 +1694,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       bm_bar0, bm_bar0->GetChildCount(), L"MyTest BMFolder");
   // Let's add few bookmarks to my_bm_folder.
   for (int index = 0; index < 10; index++) {
-    wstring title(bm_folder->GetTitle());
+    wstring title(UTF16ToWideHack(bm_folder->GetTitle()));
     title.append(L"-BM");
     string url("http://www.nofaviconurl-");
     title.append(IntToWStringHack(index));
@@ -1737,7 +1737,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     // Let's add some GetBookmarkModel(without favicon) to bm_folder.
     int child_count = base::RandInt(0, 10);
     for (int index = 0; index < child_count; index++) {
-      wstring title(bm_folder->GetTitle());
+      wstring title(UTF16ToWideHack(bm_folder->GetTitle()));
       title.append(L"-BM");
       string url("http://www.nofaviconurl-");
       title.append(IntToWStringHack(index));
@@ -1761,7 +1761,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       bm_folder_L5, bm_folder_L5->GetChildCount(), L"MyTest BMFolder");
   // Let's add few bookmarks to my_bm_folder.
   for (int index = 0; index < 10; index++) {
-    wstring title(bm_folder->GetTitle());
+    wstring title(UTF16ToWideHack(bm_folder->GetTitle()));
     title.append(L"-BM");
     string url("http://www.nofaviconurl-");
     title.append(IntToWStringHack(index));

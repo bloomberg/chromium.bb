@@ -10,6 +10,7 @@
 #include "base/pickle.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -223,8 +224,7 @@ GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
                                         BookmarkModel* model,
                                         GtkThemeProvider* provider) {
   GdkPixbuf* pixbuf = GetPixbufForNode(node, model, provider->UseGtkTheme());
-  GtkWidget* widget = GetDragRepresentation(pixbuf,
-      node->GetTitleAsString16(), provider);
+  GtkWidget* widget = GetDragRepresentation(pixbuf, node->GetTitle(), provider);
   g_object_unref(pixbuf);
   return widget;
 }
@@ -233,8 +233,8 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
                             GtkWidget* button, GtkThemeProvider* provider) {
   GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model,
                                                        provider->UseGtkTheme());
-  PackButton(pixbuf, node->GetTitleAsString16(), node != model->other_node(),
-             provider, button);
+  PackButton(pixbuf, node->GetTitle(), node != model->other_node(), provider,
+             button);
   g_object_unref(pixbuf);
 
   std::string tooltip = BuildTooltipFor(node);
@@ -247,7 +247,7 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
 
 std::string BuildTooltipFor(const BookmarkNode* node) {
   const std::string& url = node->GetURL().possibly_invalid_spec();
-  const std::string& title = UTF16ToUTF8(node->GetTitleAsString16());
+  const std::string& title = UTF16ToUTF8(node->GetTitle());
 
   std::string truncated_url = WideToUTF8(l10n_util::TruncateString(
       UTF8ToWide(url), kMaxTooltipURLLength));
@@ -261,7 +261,7 @@ std::string BuildTooltipFor(const BookmarkNode* node) {
     return escaped_url;
   } else {
     std::string truncated_title = WideToUTF8(l10n_util::TruncateString(
-        UTF16ToWideHack(node->GetTitleAsString16()), kMaxTooltipTitleLength));
+        UTF16ToWideHack(node->GetTitle()), kMaxTooltipTitleLength));
     gchar* escaped_title_cstr = g_markup_escape_text(truncated_title.c_str(),
                                                      truncated_title.size());
     std::string escaped_title(escaped_title_cstr);
@@ -329,8 +329,8 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
     }
     case gtk_dnd_util::NETSCAPE_URL: {
       // _NETSCAPE_URL format is URL + \n + title.
-      std::string utf8_text = nodes[0]->GetURL().spec() + "\n" + UTF16ToUTF8(
-          nodes[0]->GetTitleAsString16());
+      std::string utf8_text = nodes[0]->GetURL().spec() + "\n" +
+          UTF16ToUTF8(nodes[0]->GetTitle());
       gtk_selection_data_set(selection_data,
                              selection_data->target,
                              kBitsInAByte,

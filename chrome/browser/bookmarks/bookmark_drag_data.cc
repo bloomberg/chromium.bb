@@ -24,7 +24,7 @@ const char* BookmarkDragData::kClipboardFormatString =
 BookmarkDragData::Element::Element(const BookmarkNode* node)
     : is_url(node->is_url()),
       url(node->GetURL()),
-      title(node->GetTitleAsString16()),
+      title(node->GetTitle()),
       id_(node->id()) {
   for (int i = 0; i < node->GetChildCount(); ++i)
     children.push_back(Element(node->GetChild(i)));

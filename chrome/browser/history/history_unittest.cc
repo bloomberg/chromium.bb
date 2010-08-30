@@ -32,6 +32,7 @@
 #include "base/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/history/history.h"

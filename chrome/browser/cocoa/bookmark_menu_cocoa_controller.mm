@@ -31,8 +31,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   gfx::Font font(base::SysNSStringToWide([nsfont fontName]),
                  static_cast<int>([nsfont pointSize]));
-  std::wstring title = gfx::ElideText(UTF16ToWideHack(
-                                          node->GetTitleAsString16()),
+  std::wstring title = gfx::ElideText(UTF16ToWideHack(node->GetTitle()),
                                       font,
                                       kMaximumMenuPixelsWide,
                                       false);

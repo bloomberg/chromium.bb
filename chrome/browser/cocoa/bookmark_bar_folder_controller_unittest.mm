@@ -1311,7 +1311,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
   targetButton = [folderController buttonWithTitleEqualTo:@"2f2f"];
   ASSERT_TRUE(targetButton);
   newNode = other->GetChild(2);  // Should be O4f.
-  EXPECT_EQ(newNode->GetTitleAsString16(), ASCIIToUTF16("O4f"));
+  EXPECT_EQ(newNode->GetTitle(), ASCIIToUTF16("O4f"));
   [folderController setDragDataNode:newNode];
   [dragInfo setDropLocation:[targetButton center]];
   [folderController dragBookmarkData:(id<NSDraggingInfo>)dragInfo.get()];

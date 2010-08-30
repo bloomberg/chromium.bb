@@ -11,6 +11,7 @@
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

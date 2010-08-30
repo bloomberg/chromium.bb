@@ -15,6 +15,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/webdata/web_database.h"

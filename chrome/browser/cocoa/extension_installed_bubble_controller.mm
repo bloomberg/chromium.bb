@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"

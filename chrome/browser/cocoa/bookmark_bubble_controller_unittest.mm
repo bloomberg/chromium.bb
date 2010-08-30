@@ -276,8 +276,8 @@ TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
   [controller edit:controller];
 
   // Make sure bookmark has changed
-  EXPECT_EQ(node->GetTitleAsString16(), ASCIIToUTF16("oops"));
-  EXPECT_EQ(node->GetParent()->GetTitleAsString16(), ASCIIToUTF16("grandma"));
+  EXPECT_EQ(node->GetTitle(), ASCIIToUTF16("oops"));
+  EXPECT_EQ(node->GetParent()->GetTitle(), ASCIIToUTF16("grandma"));
 }
 
 // Confirm happiness with parent nodes that have the same name.

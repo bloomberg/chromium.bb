@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -26,7 +27,7 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
   gtk_tree_store_set(store, iter,
       bookmark_utils::FOLDER_ICON, GtkThemeProvider::GetFolderIcon(true),
       bookmark_utils::FOLDER_NAME,
-      UTF16ToUTF8(node->GetTitleAsString16()).c_str(),
+      UTF16ToUTF8(node->GetTitle()).c_str(),
       bookmark_utils::ITEM_ID, node->id(),
       // We don't want to use node->is_folder() because that would let the
       // user edit "Bookmarks Bar" and "Other Bookmarks".

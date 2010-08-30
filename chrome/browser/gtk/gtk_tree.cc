@@ -202,7 +202,7 @@ void TreeAdapter::FillRow(GtkTreeIter* iter, TreeModelNode* node) {
     pixbuf = GtkThemeProvider::GetFolderIcon(true);
   gtk_tree_store_set(tree_store_, iter,
                      COL_ICON, pixbuf,
-                     COL_TITLE, UTF16ToUTF8(node->GetTitleAsString16()).c_str(),
+                     COL_TITLE, UTF16ToUTF8(node->GetTitle()).c_str(),
                      COL_NODE_PTR, node,
                      -1);
 }

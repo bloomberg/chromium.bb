@@ -54,8 +54,7 @@ class BookmarkComparer {
     if (node1->is_folder() != node2->is_folder())
       return node1->is_folder();
 
-    int result =
-        node1->GetTitleAsString16().compare(node2->GetTitleAsString16());
+    int result = node1->GetTitle().compare(node2->GetTitle());
     if (result != 0)
       return result < 0;
 
@@ -258,7 +257,7 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 bool BookmarkModelAssociator::NodesMatch(const BookmarkNode* bookmark,
     const sync_api::BaseNode* sync_node) const {
-  if (bookmark->GetTitleAsString16() != WideToUTF16Hack(sync_node->GetTitle()))
+  if (bookmark->GetTitle() != WideToUTF16Hack(sync_node->GetTitle()))
     return false;
   if (bookmark->is_folder() != sync_node->GetIsFolder())
     return false;

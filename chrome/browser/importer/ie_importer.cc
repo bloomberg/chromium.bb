@@ -24,6 +24,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/importer_bridge.h"

@@ -15,6 +15,7 @@
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
@@ -1257,12 +1258,12 @@ void BookmarkBarView::ShowContextMenu(View* source,
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   if (node->is_url()) {
     BookmarkButton* button = new BookmarkButton(this, node->GetURL(),
-        UTF16ToWide(node->GetTitleAsString16()), GetProfile());
+        UTF16ToWide(node->GetTitle()), GetProfile());
     ConfigureButton(node, button);
     return button;
   } else {
     views::MenuButton* button = new BookmarkFolderButton(this,
-        UTF16ToWide(node->GetTitleAsString16()), this, false);
+        UTF16ToWide(node->GetTitle()), this, false);
     button->SetIcon(GetGroupIcon());
     ConfigureButton(node, button);
     return button;
@@ -1271,8 +1272,8 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
 
 void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
                                       views::TextButton* button) {
-  button->SetText(UTF16ToWide(node->GetTitleAsString16()));
-  button->SetAccessibleName(UTF16ToWide(node->GetTitleAsString16()));
+  button->SetText(UTF16ToWide(node->GetTitle()));
+  button->SetAccessibleName(UTF16ToWide(node->GetTitle()));
   button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {

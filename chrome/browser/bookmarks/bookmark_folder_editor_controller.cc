@@ -47,7 +47,7 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
       l10n_util::GetString(IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL);
   std::wstring contents = IsNew() ?
       l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
-      UTF16ToWide(node_->GetTitleAsString16());
+      UTF16ToWide(node_->GetTitle());
 
   dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);
   model_->AddObserver(this);
