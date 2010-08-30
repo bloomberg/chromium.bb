@@ -37,6 +37,29 @@
       # all our own includes are relative to src/
       '..',
     ],
+    'configurations': {
+      'Release_Base': {
+        # Set flags to unconditionally optimize chrome_frame_launcher.exe
+        # for release builds.
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'LinkTimeCodeGeneration': '1',
+          },
+          'VCCLCompilerTool': {
+            'Optimization': '3',
+            'InlineFunctionExpansion': '2',
+            'EnableIntrinsicFunctions': 'true',
+            'FavorSizeOrSpeed': '2',
+            'OmitFramePointers': 'true',
+            'EnableFiberSafeOptimizations': 'true',
+            'WholeProgramOptimization': 'true',
+          },
+          'VCLibrarianTool': {
+            'AdditionalOptions': ['/ltcg', '/expectedoutputsize:120000000'],
+          },
+        },
+      },
+    },
   },
   'targets': [
     {
@@ -67,28 +90,78 @@
             'shlwapi.lib',
           ],
         },
-      },
-      'configurations': {
-        'Release_Base': {
-          # Set flags to unconditionally optimize chrome_frame_launcher.exe
-          # for release builds.
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'LinkTimeCodeGeneration': '1',
-            },
-            'VCCLCompilerTool': {
-              'Optimization': '3',
-              'InlineFunctionExpansion': '2',
-              'EnableIntrinsicFunctions': 'true',
-              'FavorSizeOrSpeed': '2',
-              'OmitFramePointers': 'true',
-              'EnableFiberSafeOptimizations': 'true',
-              'WholeProgramOptimization': 'true',
-            },
-            'VCLibrarianTool': {
-              'AdditionalOptions': ['/ltcg', '/expectedoutputsize:120000000'],
-            },
-          },
+      },      
+    },
+    {
+      'target_name': 'chrome_frame_helper',
+      'type': 'executable',
+      'msvs_guid': 'BF4FFA36-2F66-4B65-9A91-AB7EC08D1042',
+      'dependencies': [
+        '../breakpad/breakpad.gyp:breakpad_handler',
+        '../chrome/chrome.gyp:chrome_version_header',
+        'chrome_frame_helper_dll',
+      ],
+      'resource_include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'include_dirs': [
+        # To allow including "chrome_tab.h"
+        '<(INTERMEDIATE_DIR)',
+        '<(INTERMEDIATE_DIR)/../chrome_frame',
+      ],
+      'sources': [
+        'chrome_frame_helper_main.cc',
+        'chrome_frame_helper_version.rc',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'OutputFile':
+              '$(OutDir)\\servers\\$(ProjectName).exe',
+          # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
+          'SubSystem': '2',
+        },
+      },      
+    },
+    {
+      'target_name': 'chrome_frame_helper_dll',
+      'type': 'shared_library',
+      'msvs_guid': '5E80032F-7033-4661-9016-D98268244783',
+      'dependencies': [
+        '../chrome/chrome.gyp:chrome_version_header',
+      ],
+      'resource_include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'include_dirs': [
+        # To allow including "chrome_tab.h"
+        '<(INTERMEDIATE_DIR)',
+        '<(INTERMEDIATE_DIR)/../chrome_frame',
+      ],
+      'sources': [
+        'bho_loader.cc',
+        'bho_loader.h',
+        'chrome_frame_helper_dll.cc',
+        'chrome_frame_helper_dll.def',
+        'chrome_frame_helper_util.cc',
+        'chrome_frame_helper_util.h',
+        'chrome_frame_helper_version.rc',
+        'chrome_tab.h',
+        'chrome_tab.idl',
+        'event_hooker.cc',
+        'event_hooker.h',
+        'iids.cc',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'OutputFile':
+              '$(OutDir)\\servers\\chrome_frame_helper.dll',
+          # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
+          'SubSystem': '2',
+          'AdditionalDependencies': [
+            'shlwapi.lib',
+          ],
         },
       },
     },

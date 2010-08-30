@@ -758,6 +758,8 @@
         'chrome_frame_utils',
         'xulrunner_sdk',
         'chrome_frame_launcher.gyp:chrome_launcher',
+        'chrome_frame_launcher.gyp:chrome_frame_helper',
+        'chrome_frame_launcher.gyp:chrome_frame_helper_dll',
         '../chrome/chrome.gyp:chrome_version_header',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
@@ -783,7 +785,7 @@
       'include_dirs': [
         # To allow including "chrome_tab.h"
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/../chrome_frame',
+        '<(INTERMEDIATE_DIR)/../npchrome_frame',
       ],
       'conditions': [
         ['OS=="win"', {

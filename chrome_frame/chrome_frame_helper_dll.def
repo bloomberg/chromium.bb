@@ -1,0 +1,5 @@
+LIBRARY  "chrome_frame_helper.dll"
+
+EXPORTS
+	StartUserModeBrowserInjection    PRIVATE
+	StopUserModeBrowserInjection     PRIVATE
