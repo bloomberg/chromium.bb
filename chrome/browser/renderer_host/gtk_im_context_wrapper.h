@@ -196,6 +196,11 @@ class GtkIMContextWrapper {
   // handler.
   string16 commit_text_;
 
+  // If it's true then the next "commit" signal will be suppressed.
+  // It's only used to workaround http://crbug.com/50485.
+  // TODO(suzhe): Remove it after input methods get fixed.
+  bool suppress_next_commit_;
+
   DISALLOW_COPY_AND_ASSIGN(GtkIMContextWrapper);
 };
 

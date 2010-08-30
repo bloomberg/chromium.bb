@@ -38,7 +38,8 @@ GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
       is_in_key_event_handler_(false),
       preedit_selection_start_(0),
       preedit_selection_end_(0),
-      is_preedit_changed_(false) {
+      is_preedit_changed_(false),
+      suppress_next_commit_(false) {
   DCHECK(context_);
   DCHECK(context_simple_);
 
@@ -85,6 +86,8 @@ GtkIMContextWrapper::~GtkIMContextWrapper() {
 }
 
 void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
+  suppress_next_commit_ = false;
+
   // Indicates preedit-changed and commit signal handlers that we are
   // processing a key event.
   is_in_key_event_handler_ = true;
@@ -174,6 +177,8 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
 
 void GtkIMContextWrapper::UpdateInputMethodState(WebKit::WebTextInputType type,
                                                  const gfx::Rect& caret_rect) {
+  suppress_next_commit_ = false;
+
   // The renderer has updated its IME status.
   // Control the GtkIMContext object according to this status.
   if (!context_ || !is_focused_)
@@ -281,6 +286,7 @@ void GtkIMContextWrapper::CancelComposition() {
 
   // To prevent any text from being committed when resetting the |context_|;
   is_in_key_event_handler_ = true;
+  suppress_next_commit_ = true;
 
   gtk_im_context_reset(context_);
   gtk_im_context_reset(context_simple_);
@@ -430,6 +436,11 @@ void GtkIMContextWrapper::ConfirmComposition() {
 }
 
 void GtkIMContextWrapper::HandleCommit(const string16& text) {
+  if (suppress_next_commit_) {
+    suppress_next_commit_ = false;
+    return;
+  }
+
   // Append the text to the buffer, because commit signal might be fired
   // multiple times when processing a key event.
   commit_text_.append(text);
@@ -450,6 +461,7 @@ void GtkIMContextWrapper::HandlePreeditStart() {
 void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
                                                PangoAttrList* attrs,
                                                int cursor_position) {
+  suppress_next_commit_ = false;
   // Don't set is_preedit_changed_ to false if there is no change, because
   // this handler might be called multiple times with the same data.
   is_preedit_changed_ = true;
