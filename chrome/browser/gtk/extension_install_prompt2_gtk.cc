@@ -21,7 +21,7 @@ class Profile;
 
 namespace {
 
-const int kRightColumnWidth = 290;
+const int kRightColumnMinWidth = 290;
 
 const int kImageSize = 69;
 
@@ -113,10 +113,19 @@ void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
     GtkWidget* warning_label = gtk_label_new(l10n_util::GetStringUTF8(
         label).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(warning_label), TRUE);
-    gtk_widget_set_size_request(warning_label, kRightColumnWidth, -1);
     gtk_misc_set_alignment(GTK_MISC(warning_label), 0.0, 0.5);
-    gtk_box_pack_start(GTK_BOX(right_column_area), warning_label,
-                       FALSE, FALSE, 0);
+
+    // We set the size request for the right column width here so that it will
+    // be overridden by the title if the title is long. We use the bin because
+    // if we set a size request on the label itself, GTK+ uses that when
+    // justifying the label. Older versions of GTK+ use the label's allocation,
+    // but newer versions use the size request. This can lead to alignment
+    // problems in RTL locales. See http://crbug.com/52857
+    GtkWidget* bin = gtk_event_box_new();
+    gtk_container_add(GTK_CONTAINER(bin), warning_label);
+    gtk_widget_set_size_request(bin, kRightColumnMinWidth, -1);
+
+    gtk_box_pack_start(GTK_BOX(right_column_area), bin, FALSE, FALSE, 0);
 
     GtkWidget* frame = gtk_frame_new(NULL);
     gtk_box_pack_start(GTK_BOX(right_column_area), frame, FALSE, FALSE, 0);
