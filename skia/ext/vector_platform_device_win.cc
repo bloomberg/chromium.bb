@@ -619,7 +619,20 @@ void VectorPlatformDevice::InternalDrawBitmap(const SkBitmap& bitmap,
     HBITMAP hbitmap = ::CreateDIBSection(
         bitmap_dc, reinterpret_cast<const BITMAPINFO*>(&hdr),
         DIB_RGB_COLORS, &bits, NULL, 0);
-    memcpy(bits, pixels, bitmap.getSize());
+
+    // static cast to a char so we can do byte ptr arithmatic to
+    // get the offset.
+    unsigned char* dest_buffer = static_cast<unsigned char *>(bits);
+
+    // We will copy row by row to avoid having to worry about
+    // the row strides being different.
+    const int dest_row_size = hdr.biBitCount / 8 * hdr.biWidth;
+    for (int row = 0; row < bitmap.height(); ++row) {
+      int dest_offset = row * dest_row_size;
+      // pixels_offset in terms of pixel count.
+      int src_offset = row * bitmap.rowBytesAsPixels();
+      memcpy(dest_buffer + dest_offset, pixels + src_offset, dest_row_size);
+    }
     SkASSERT(hbitmap);
     HGDIOBJ old_bitmap = ::SelectObject(bitmap_dc, hbitmap);
 
