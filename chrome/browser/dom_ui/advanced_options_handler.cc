@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/dom_ui/options_managed_banner_handler.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/options_window.h"
@@ -241,7 +242,8 @@ void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
                           NULL);
   DCHECK(dom_ui_);
   DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
-  if (manager) manager->ResetAutoOpenFiles();
+  if (manager)
+    manager->download_prefs()->ResetAutoOpen();
 }
 
 void AdvancedOptionsHandler::HandleResetToDefaults(const ListValue* args) {
@@ -302,7 +304,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   // We enable the button if the user has any auto-open file types registered.
   DCHECK(dom_ui_);
   DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
-  bool disabled = !(manager && manager->HasAutoOpenFileTypesRegistered());
+  bool disabled = !(manager && manager->download_prefs()->IsAutoOpenUsed());
   FundamentalValue value(disabled);
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);

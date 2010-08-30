@@ -22,6 +22,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/history/download_types.h"
@@ -55,39 +56,6 @@ bool CompareStartTime(DownloadItem* first, DownloadItem* second) {
 }
 
 }  // namespace
-
-// static
-void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kPromptForDownload, false);
-  prefs->RegisterStringPref(prefs::kDownloadExtensionsToOpen, "");
-  prefs->RegisterBooleanPref(prefs::kDownloadDirUpgraded, false);
-
-  // The default download path is userprofile\download.
-  const FilePath& default_download_path =
-      download_util::GetDefaultDownloadDirectory();
-  prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
-                              default_download_path);
-#if defined(OS_CHROMEOS)
-  // Ensure that the download directory specified in the preferences exists.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&file_util::CreateDirectory, default_download_path));
-#endif
-
-  // If the download path is dangerous we forcefully reset it. But if we do
-  // so we set a flag to make sure we only do it once, to avoid fighting
-  // the user if he really wants it on an unsafe place such as the desktop.
-
-  if (!prefs->GetBoolean(prefs::kDownloadDirUpgraded)) {
-    FilePath current_download_dir = prefs->GetFilePath(
-        prefs::kDownloadDefaultDirectory);
-    if (download_util::DownloadPathIsDangerous(current_download_dir)) {
-      prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
-                         default_download_path);
-    }
-    prefs->SetBoolean(prefs::kDownloadDirUpgraded, true);
-  }
-}
 
 DownloadManager::DownloadManager()
     : shutdown_needed_(false),
@@ -156,9 +124,6 @@ void DownloadManager::Shutdown() {
   STLDeleteValues(&downloads_);
 
   file_manager_ = NULL;
-
-  // Save our file extensions to auto open.
-  SaveAutoOpens();
 
   // Make sure the save as dialog doesn't notify us back if we're gone before
   // it returns.
@@ -249,6 +214,8 @@ bool DownloadManager::Init(Profile* profile) {
   download_history_->Load(
       NewCallback(this, &DownloadManager::OnQueryDownloadEntriesComplete));
 
+  download_prefs_.reset(new DownloadPrefs(profile_->GetPrefs()));
+
   // In test mode, there may be no ResourceDispatcherHost.  In this case it's
   // safe to avoid setting |file_manager_| because we only call a small set of
   // functions, none of which need it.
@@ -256,34 +223,6 @@ bool DownloadManager::Init(Profile* profile) {
   if (rdh) {
     file_manager_ = rdh->download_file_manager();
     DCHECK(file_manager_);
-  }
-
-  // Get our user preference state.
-  PrefService* prefs = profile_->GetPrefs();
-  DCHECK(prefs);
-  prompt_for_download_.Init(prefs::kPromptForDownload, prefs, NULL);
-
-  download_path_.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
-  // Ensure that the download directory specified in the preferences exists.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&file_util::CreateDirectory, download_path()));
-
-  // We store any file extension that should be opened automatically at
-  // download completion in this pref.
-  std::string extensions_to_open =
-      prefs->GetString(prefs::kDownloadExtensionsToOpen);
-  std::vector<std::string> extensions;
-  SplitString(extensions_to_open, ':', &extensions);
-
-  for (size_t i = 0; i < extensions.size(); ++i) {
-#if defined(OS_POSIX)
-    FilePath path(extensions[i]);
-#elif defined(OS_WIN)
-    FilePath path(UTF8ToWide(extensions[i]));
-#endif
-    if (!extensions[i].empty() && !IsExecutableFile(path))
-      auto_open_.insert(path.value());
   }
 
   other_download_manager_observer_.reset(
@@ -318,7 +257,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // Freeze the user's preference for showing a Save As dialog.  We're going
     // to bounce around a bunch of threads and we don't want to worry about race
     // conditions where the user changes this pref out from under us.
-    if (*prompt_for_download_) {
+    if (download_prefs_->prompt_for_download()) {
       // But ignore the user's preference for the following scenarios:
       // 1) Extension installation. Note that we only care here about the case
       //    where an extension is installed, not when one is downloaded with
@@ -336,7 +275,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     if (info->prompt_user_for_save_location && !last_download_path_.empty()){
       info->suggested_path = last_download_path_;
     } else {
-      info->suggested_path = download_path();
+      info->suggested_path = download_prefs_->download_path();
     }
     info->suggested_path = info->suggested_path.Append(generated_name);
   } else {
@@ -348,7 +287,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // Downloads can be marked as dangerous for two reasons:
     // a) They have a dangerous-looking filename
     // b) They are an extension that is not from the gallery
-    if (IsExecutableFile(info->suggested_path.BaseName()))
+    if (download_util::IsExecutableFile(info->suggested_path.BaseName()))
       info->is_dangerous = true;
     else if (info->is_extension_install &&
              !ExtensionsService::IsDownloadFromGallery(info->url,
@@ -949,20 +888,6 @@ void DownloadManager::OpenDownloadInShell(DownloadItem* download,
 #endif
 }
 
-void DownloadManager::OpenFilesBasedOnExtension(
-    const FilePath& path, bool open) {
-  FilePath::StringType extension = path.Extension();
-  if (extension.empty())
-    return;
-  DCHECK(extension[0] == FilePath::kExtensionSeparator);
-  extension.erase(0, 1);
-  if (open && !download_util::IsExecutableExtension(extension))
-    auto_open_.insert(extension);
-  else
-    auto_open_.erase(extension);
-  SaveAutoOpens();
-}
-
 bool DownloadManager::ShouldOpenFileBasedOnExtension(
     const FilePath& path) const {
   FilePath::StringType extension = path.Extension();
@@ -974,42 +899,7 @@ bool DownloadManager::ShouldOpenFileBasedOnExtension(
     return false;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);
-  if (auto_open_.find(extension) != auto_open_.end())
-    return true;
-  return false;
-}
-
-bool DownloadManager::IsExecutableFile(const FilePath& path) const {
-  return download_util::IsExecutableExtension(path.Extension());
-}
-
-void DownloadManager::ResetAutoOpenFiles() {
-  auto_open_.clear();
-  SaveAutoOpens();
-}
-
-bool DownloadManager::HasAutoOpenFileTypesRegistered() const {
-  return !auto_open_.empty();
-}
-
-void DownloadManager::SaveAutoOpens() {
-  PrefService* prefs = profile_->GetPrefs();
-  if (prefs) {
-    std::string extensions;
-    for (AutoOpenSet::iterator it = auto_open_.begin();
-         it != auto_open_.end(); ++it) {
-#if defined(OS_POSIX)
-      std::string this_extension = *it;
-#elif defined(OS_WIN)
-      std::string this_extension = base::SysWideToUTF8(*it);
-#endif
-      extensions += this_extension + ":";
-    }
-    if (!extensions.empty())
-      extensions.erase(extensions.size() - 1);
-
-    prefs->SetString(prefs::kDownloadExtensionsToOpen, extensions);
-  }
+  return download_prefs_->IsAutoOpenEnabledForExtension(extension);
 }
 
 void DownloadManager::FileSelected(const FilePath& path,

@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/gears_integration.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/options_util.h"
@@ -1103,7 +1104,7 @@ void DownloadSection::ButtonPressed(
     }
     ask_for_save_location_.SetValue(enabled);
   } else if (sender == reset_file_handlers_button_) {
-    profile()->GetDownloadManager()->ResetAutoOpenFiles();
+    profile()->GetDownloadManager()->download_prefs()->ResetAutoOpen();
     UserMetricsRecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"),
                             profile()->GetPrefs());
   }
@@ -1200,7 +1201,7 @@ void DownloadSection::NotifyPrefChanged(const std::string* pref_name) {
 
   if (!pref_name || *pref_name == prefs::kDownloadExtensionsToOpen) {
     bool enabled =
-        profile()->GetDownloadManager()->HasAutoOpenFileTypesRegistered();
+        profile()->GetDownloadManager()->download_prefs()->IsAutoOpenUsed();
     reset_file_handlers_label_->SetEnabled(enabled);
     reset_file_handlers_button_->SetEnabled(enabled);
   }

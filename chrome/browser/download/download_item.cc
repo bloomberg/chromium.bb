@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_types.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -168,7 +169,7 @@ bool DownloadItem::CanOpenDownload() {
     file_to_use = original_name();
 
   return !Extension::IsExtension(file_to_use) &&
-         !download_manager_->IsExecutableFile(file_to_use);
+      !download_util::IsExecutableFile(file_to_use);
 }
 
 bool DownloadItem::ShouldOpenFileBasedOnExtension() {
@@ -176,7 +177,11 @@ bool DownloadItem::ShouldOpenFileBasedOnExtension() {
 }
 
 void DownloadItem::OpenFilesBasedOnExtension(bool open) {
-  return download_manager_->OpenFilesBasedOnExtension(full_path(), open);
+  DownloadPrefs* prefs = download_manager_->download_prefs();
+  if (open)
+    prefs->EnableAutoOpenBasedOnExtension(full_path());
+  else
+    prefs->DisableAutoOpenBasedOnExtension(full_path());
 }
 
 void DownloadItem::OpenDownload() {

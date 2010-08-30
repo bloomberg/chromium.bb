@@ -32,6 +32,7 @@
 #import "chrome/browser/cocoa/vertical_gradient_view.h"
 #import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -1518,7 +1519,7 @@ const int kDisabledIndex = 1;
 }
 
 - (IBAction)resetAutoOpenFiles:(id)sender {
-  profile_->GetDownloadManager()->ResetAutoOpenFiles();
+  profile_->GetDownloadManager()->download_prefs()->ResetAutoOpen();
   [self recordUserAction:UserMetricsAction("Options_ResetAutoOpenFiles")];
 }
 
@@ -1688,7 +1689,7 @@ const int kDisabledIndex = 1;
 - (BOOL)fileHandlerUIEnabled {
   if (!profile_->GetDownloadManager())  // Not set in unit tests.
     return NO;
-  return profile_->GetDownloadManager()->HasAutoOpenFileTypesRegistered();
+  return profile_->GetDownloadManager()->download_prefs()->IsAutoOpenUsed();
 }
 
 - (void)setFileHandlerUIEnabled:(BOOL)value {

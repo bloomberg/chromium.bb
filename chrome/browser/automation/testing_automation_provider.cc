@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/location_bar.h"
@@ -1171,7 +1172,7 @@ void TestingAutomationProvider::GetDownloadDirectory(
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     DownloadManager* dlm = tab->profile()->GetDownloadManager();
-    *download_directory = dlm->download_path();
+    *download_directory = dlm->download_prefs()->download_path();
   }
 }
 

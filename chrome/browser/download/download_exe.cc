@@ -169,6 +169,10 @@ static const char* const g_executables[] = {
 #endif
 };
 
+bool IsExecutableFile(const FilePath& path) {
+  return IsExecutableExtension(path.Extension());
+}
+
 bool IsExecutableExtension(const FilePath::StringType& extension) {
   if (extension.empty())
     return false;

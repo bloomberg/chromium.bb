@@ -152,6 +152,9 @@ void DragDownload(const DownloadItem* download,
 
 // Executable file support -----------------------------------------------------
 
+// Tests if a file is considered executable, based on its type.
+bool IsExecutableFile(const FilePath& path);
+
 // Determine if the specified extension is an executable extension.
 bool IsExecutableExtension(const FilePath::StringType& extension);
 

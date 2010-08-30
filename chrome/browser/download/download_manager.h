@@ -39,14 +39,13 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/shell_dialogs.h"
 
 class DownloadFileManager;
 class DownloadHistory;
 class DownloadItem;
+class DownloadPrefs;
 class GURL;
-class PrefService;
 class Profile;
 class ResourceDispatcherHost;
 class URLRequestContextGetter;
@@ -63,8 +62,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
 
  public:
   DownloadManager();
-
-  static void RegisterUserPrefs(PrefService* prefs);
 
   // Interface to implement for observers that wish to be informed of changes
   // to the DownloadManager's collection of downloads.
@@ -175,32 +172,17 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
     return static_cast<int>(in_progress_.size());
   }
 
-  FilePath download_path() { return *download_path_; }
-
   Profile* profile() { return profile_; }
 
   DownloadHistory* download_history() { return download_history_.get(); }
 
+  DownloadPrefs* download_prefs() { return download_prefs_.get(); }
+
   // Clears the last download path, used to initialize "save as" dialogs.
   void ClearLastDownloadPath();
 
-  // Registers this file extension for automatic opening upon download
-  // completion if 'open' is true, or prevents the extension from automatic
-  // opening if 'open' is false.
-  void OpenFilesBasedOnExtension(const FilePath& path, bool open);
-
   // Tests if a file type should be opened automatically.
   bool ShouldOpenFileBasedOnExtension(const FilePath& path) const;
-
-  // Tests if a file is considered executable, based on its type.
-  bool IsExecutableFile(const FilePath& path) const;
-
-  // Resets the automatic open preference.
-  void ResetAutoOpenFiles();
-
-  // Returns true if there are automatic handlers registered for any file
-  // types.
-  bool HasAutoOpenFileTypesRegistered() const;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);
@@ -257,9 +239,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // the user in a Save As dialog box.
   void ContinueStartDownload(DownloadCreateInfo* info,
                              const FilePath& target_path);
-
-  // Persist the automatic opening preference.
-  void SaveAutoOpens();
 
   // Download cancel helper function.
   void DownloadCancelledInternal(int download_id,
@@ -341,26 +320,14 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
 
   scoped_ptr<DownloadHistory> download_history_;
 
+  scoped_ptr<DownloadPrefs> download_prefs_;
+
   // Non-owning pointer for handling file writing on the download_thread_.
   DownloadFileManager* file_manager_;
-
-  // User preferences
-  BooleanPrefMember prompt_for_download_;
-  FilePathPrefMember download_path_;
 
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.
   FilePath last_download_path_;
-
-  // Set of file extensions to open at download completion.
-  struct AutoOpenCompareFunctor {
-    inline bool operator()(const FilePath::StringType& a,
-                           const FilePath::StringType& b) const {
-      return FilePath::CompareLessIgnoreCase(a, b);
-    }
-  };
-  typedef std::set<FilePath::StringType, AutoOpenCompareFunctor> AutoOpenSet;
-  AutoOpenSet auto_open_;
 
   // Keep track of downloads that are completed before the user selects the
   // destination, so that observers are appropriately notified of completion

@@ -27,6 +27,7 @@
 #include "chrome/browser/download/save_item.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"

@@ -10,6 +10,7 @@
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_types.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -117,8 +118,8 @@ const struct {
 TEST_F(DownloadManagerTest, StartDownload) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
-  download_manager_->OpenFilesBasedOnExtension(
-      FilePath(FILE_PATH_LITERAL("example.pdf")), true);
+  download_manager_->download_prefs()->EnableAutoOpenBasedOnExtension(
+      FilePath(FILE_PATH_LITERAL("example.pdf")));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kStartDownloadCases); ++i) {
     prefs->SetBoolean(prefs::kPromptForDownload,

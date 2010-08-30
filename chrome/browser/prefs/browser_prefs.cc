@@ -15,7 +15,7 @@
 #include "chrome/browser/dom_ui/labs_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
-#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extensions_ui.h"
@@ -109,7 +109,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   Browser::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);
   chrome_browser_net::RegisterUserPrefs(user_prefs);
-  DownloadManager::RegisterUserPrefs(user_prefs);
+  DownloadPrefs::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
   TabContents::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);

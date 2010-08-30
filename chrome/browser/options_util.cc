@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
@@ -68,7 +69,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kWebKitSerifFontFamily,
     prefs::kWebkitTabsToLinks,
   };
-  profile->GetDownloadManager()->ResetAutoOpenFiles();
+  profile->GetDownloadManager()->download_prefs()->ResetToDefaults();
   profile->GetHostContentSettingsMap()->ResetToDefaults();
   profile->GetGeolocationContentSettingsMap()->ResetToDefault();
   profile->GetHostZoomMap()->ResetToDefaults();

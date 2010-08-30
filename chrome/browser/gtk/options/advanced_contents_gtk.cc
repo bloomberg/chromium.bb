@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
@@ -285,8 +286,8 @@ void DownloadSection::NotifyPrefChanged(const std::string* pref_name) {
   }
 
   if (!pref_name || *pref_name == prefs::kDownloadExtensionsToOpen) {
-    bool enabled =
-        profile()->GetDownloadManager()->HasAutoOpenFileTypesRegistered();
+    DownloadPrefs* prefs = profile()->GetDownloadManager()->download_prefs();
+    bool enabled = prefs->IsAutoOpenUsed();
     gtk_widget_set_sensitive(reset_file_handlers_label_, enabled);
     gtk_widget_set_sensitive(reset_file_handlers_button_, enabled);
   }
@@ -333,7 +334,7 @@ void DownloadSection::OnDownloadAskForSaveLocationChanged(
 // static
 void DownloadSection::OnResetFileHandlersClicked(GtkButton *button,
                                                  DownloadSection* section) {
-  section->profile()->GetDownloadManager()->ResetAutoOpenFiles();
+  section->profile()->GetDownloadManager()->download_prefs()->ResetAutoOpen();
   section->UserMetricsRecordAction(
       UserMetricsAction("Options_ResetAutoOpenFiles"),
       section->profile()->GetPrefs());
