@@ -342,7 +342,7 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setUseSuggest:(BOOL)value;
 - (void)setDnsPrefetch:(BOOL)value;
 - (void)setSafeBrowsing:(BOOL)value;
-- (void)setMetricsRecording:(BOOL)value;
+- (void)setMetricsReporting:(BOOL)value;
 - (void)setAskForSaveLocation:(BOOL)value;
 - (void)setFileHandlerUIEnabled:(BOOL)value;
 - (void)setTranslateEnabled:(BOOL)value;
@@ -419,13 +419,18 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 
 @implementation PreferencesWindowController
 
-@synthesize showHomeButtonEnabled = showHomeButtonEnabled_;
-@synthesize autoFillSettingsButtonEnabled = autoFillSettingsButtonEnabled_;
-@synthesize passwordManagerChoiceEnabled = passwordManagerChoiceEnabled_;
-@synthesize passwordManagerButtonEnabled = passwordManagerButtonEnabled_;
-@synthesize proxiesConfigureButtonEnabled = proxiesConfigureButtonEnabled_;
 @synthesize restoreButtonsEnabled = restoreButtonsEnabled_;
 @synthesize restoreURLsEnabled = restoreURLsEnabled_;
+@synthesize showHomeButtonEnabled = showHomeButtonEnabled_;
+@synthesize passwordManagerChoiceEnabled = passwordManagerChoiceEnabled_;
+@synthesize passwordManagerButtonEnabled = passwordManagerButtonEnabled_;
+@synthesize autoFillSettingsButtonEnabled = autoFillSettingsButtonEnabled_;
+@synthesize showAlternateErrorPagesEnabled = showAlternateErrorPagesEnabled_;
+@synthesize useSuggestEnabled = useSuggestEnabled_;
+@synthesize dnsPrefetchEnabled = dnsPrefetchEnabled_;
+@synthesize safeBrowsingEnabled = safeBrowsingEnabled_;
+@synthesize metricsReportingEnabled = metricsReportingEnabled_;
+@synthesize proxiesConfigureButtonEnabled = proxiesConfigureButtonEnabled_;
 
 - (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage {
   DCHECK(profile);
@@ -501,15 +506,20 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     [self setPasswordManagerButtonEnabled:
         !askSavePasswords_.IsManaged() || askSavePasswords_.GetValue()];
 
-    // Initialize the proxy pref set observer.
-    proxyPrefs_.reset(
-        PrefSetObserver::CreateProxyPrefSetObserver(prefs_, observer_.get()));
-    [self setProxiesConfigureButtonEnabled:!proxyPrefs_->IsManaged()];
-
     // Initialize the enabled state of the show home button and
     // restore on startup elements.
     [self setShowHomeButtonEnabled:!showHomeButton_.IsManaged()];
     [self setEnabledStateOfRestoreOnStartup];
+
+    // Initialize UI state for the advanced page.
+    [self setShowAlternateErrorPagesEnabled:!alternateErrorPages_.IsManaged()];
+    [self setUseSuggestEnabled:!useSuggest_.IsManaged()];
+    [self setDnsPrefetchEnabled:!dnsPrefetch_.IsManaged()];
+    [self setSafeBrowsingEnabled:!safeBrowsing_.IsManaged()];
+    [self setMetricsReportingEnabled:!metricsReporting_.IsManaged()];
+    proxyPrefs_.reset(
+        PrefSetObserver::CreateProxyPrefSetObserver(prefs_, observer_.get()));
+    [self setProxiesConfigureButtonEnabled:!proxyPrefs_->IsManaged()];
   }
   return self;
 }
@@ -802,7 +812,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   PrefService* local = g_browser_process->local_state();
   if (!local)
     local = prefs_;
-  metricsRecording_.Init(prefs::kMetricsReportingEnabled,
+  metricsReporting_.Init(prefs::kMetricsReportingEnabled,
                          local, observer_.get());
   defaultDownloadLocation_.Init(prefs::kDownloadDefaultDirectory, prefs_,
                                 observer_.get());
@@ -1150,7 +1160,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
   else
     [self recordUserAction:UserMetricsAction(
                            "Options_Homepage_HideHomeButton")];
-  showHomeButton_.SetValue(value ? true : false);
+  showHomeButton_.SetValueIfNotManaged(value ? true : false);
 }
 
 // Getter for the |searchEngineModel| property for bindings.
@@ -1403,18 +1413,23 @@ const int kDisabledIndex = 1;
   if (*prefName == prefs::kAlternateErrorPagesEnabled) {
     [self setShowAlternateErrorPages:
         alternateErrorPages_.GetValue() ? YES : NO];
+    [self setShowAlternateErrorPagesEnabled:!alternateErrorPages_.IsManaged()];
   }
   else if (*prefName == prefs::kSearchSuggestEnabled) {
     [self setUseSuggest:useSuggest_.GetValue() ? YES : NO];
+    [self setUseSuggestEnabled:!useSuggest_.IsManaged()];
   }
   else if (*prefName == prefs::kDnsPrefetchingEnabled) {
     [self setDnsPrefetch:dnsPrefetch_.GetValue() ? YES : NO];
+    [self setDnsPrefetchEnabled:!dnsPrefetch_.IsManaged()];
   }
   else if (*prefName == prefs::kSafeBrowsingEnabled) {
     [self setSafeBrowsing:safeBrowsing_.GetValue() ? YES : NO];
+    [self setSafeBrowsingEnabled:!safeBrowsing_.IsManaged()];
   }
   else if (*prefName == prefs::kMetricsReportingEnabled) {
-    [self setMetricsRecording:metricsRecording_.GetValue() ? YES : NO];
+    [self setMetricsReporting:metricsReporting_.GetValue() ? YES : NO];
+    [self setMetricsReportingEnabled:!metricsReporting_.IsManaged()];
   }
   else if (*prefName == prefs::kDownloadDefaultDirectory) {
     // Poke KVO.
@@ -1541,12 +1556,7 @@ const int kDisabledIndex = 1;
   else
     [self recordUserAction:UserMetricsAction(
                            "Options_LinkDoctorCheckbox_Disable")];
-  alternateErrorPages_.SetValue(value ? true : false);
-}
-
-// Returns whether the alternate error page checkbox should be enabled.
-- (BOOL)isAlternateErrorPagesEnabled {
-  return !alternateErrorPages_.IsManaged();
+  alternateErrorPages_.SetValueIfNotManaged(value ? true : false);
 }
 
 // Returns whether the suggest checkbox should be checked based on the
@@ -1564,12 +1574,7 @@ const int kDisabledIndex = 1;
   else
     [self recordUserAction:UserMetricsAction(
                            "Options_UseSuggestCheckbox_Disable")];
-  useSuggest_.SetValue(value ? true : false);
-}
-
-// Returns whether the suggest checkbox should be enabled.
-- (BOOL)isSuggestEnabled {
-  return !useSuggest_.IsManaged();
+  useSuggest_.SetValueIfNotManaged(value ? true : false);
 }
 
 // Returns whether the DNS prefetch checkbox should be checked based on the
@@ -1587,13 +1592,8 @@ const int kDisabledIndex = 1;
   else
     [self recordUserAction:UserMetricsAction(
                            "Options_DnsPrefetchCheckbox_Disable")];
-  dnsPrefetch_.SetValue(value ? true : false);
-  chrome_browser_net::EnablePredictor(value ? true : false);
-}
-
-// Returns whether the DNS prefetch checkbox should be enabled.
-- (BOOL)isDnsPrefetchEnabled {
-  return !dnsPrefetch_.IsManaged();
+  dnsPrefetch_.SetValueIfNotManaged(value ? true : false);
+  chrome_browser_net::EnablePredictor(dnsPrefetch_.GetValue());
 }
 
 // Returns whether the safe browsing checkbox should be checked based on the
@@ -1611,36 +1611,37 @@ const int kDisabledIndex = 1;
   else
     [self recordUserAction:UserMetricsAction(
                            "Options_SafeBrowsingCheckbox_Disable")];
-  bool enabled = value ? true : false;
-  safeBrowsing_.SetValue(enabled);
+  safeBrowsing_.SetValueIfNotManaged(value ? true : false);
   SafeBrowsingService* safeBrowsingService =
       g_browser_process->resource_dispatcher_host()->safe_browsing_service();
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      safeBrowsingService, &SafeBrowsingService::OnEnable, enabled));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(safeBrowsingService,
+                        &SafeBrowsingService::OnEnable,
+                        safeBrowsing_.GetValue()));
 }
 
-// Returns whether the safe browsing checkbox should be enabled.
-- (BOOL)isSafeBrowsingEnabled {
-  return !safeBrowsing_.IsManaged();
-}
-
-// Returns whether the metrics recording checkbox should be checked based on the
+// Returns whether the metrics reporting checkbox should be checked based on the
 // preference.
-- (BOOL)metricsRecording {
-  return metricsRecording_.GetValue() ? YES : NO;
+- (BOOL)metricsReporting {
+  return metricsReporting_.GetValue() ? YES : NO;
 }
 
-// Sets the backend pref for whether or not the metrics recording checkbox
+// Sets the backend pref for whether or not the metrics reporting checkbox
 // should be displayed based on |value|.
-- (void)setMetricsRecording:(BOOL)value {
+- (void)setMetricsReporting:(BOOL)value {
   if (value)
     [self recordUserAction:UserMetricsAction(
                            "Options_MetricsReportingCheckbox_Enable")];
   else
     [self recordUserAction:UserMetricsAction(
                            "Options_MetricsReportingCheckbox_Disable")];
-  bool enabled = value ? true : false;
 
+  // TODO(pinkerton): windows shows a dialog here telling the user they need to
+  // restart for this to take effect. http://crbug.com/34653
+  metricsReporting_.SetValueIfNotManaged(value ? true : false);
+
+  bool enabled = metricsReporting_.GetValue();
   GoogleUpdateSettings::SetCollectStatsConsent(enabled);
   bool update_pref = GoogleUpdateSettings::GetCollectStatsConsent();
   if (enabled != update_pref) {
@@ -1661,15 +1662,6 @@ const int kDisabledIndex = 1;
     else
       metrics->Stop();
   }
-
-  // TODO(pinkerton): windows shows a dialog here telling the user they need to
-  // restart for this to take effect. http://crbug.com/34653
-  metricsRecording_.SetValue(enabled);
-}
-
-// Returns whether the metrics recording checkbox should be enabled.
-- (BOOL)isMetricsRecordingEnabled {
-  return !metricsRecording_.IsManaged();
 }
 
 - (NSURL*)defaultDownloadLocation {

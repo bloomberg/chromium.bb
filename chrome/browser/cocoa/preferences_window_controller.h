@@ -90,6 +90,8 @@ class ProfileSyncService;
   scoped_nsobject<SearchEngineListModel> searchEngineModel_;
   // Used when creating a new home page url to make the new cell editable.
   BOOL pendingSelectForEdit_;
+  BOOL restoreButtonsEnabled_;
+  BOOL restoreURLsEnabled_;
   BOOL showHomeButtonEnabled_;
 
   // User Data panel
@@ -117,7 +119,7 @@ class ProfileSyncService;
   BooleanPrefMember useSuggest_;
   BooleanPrefMember dnsPrefetch_;
   BooleanPrefMember safeBrowsing_;
-  BooleanPrefMember metricsRecording_;
+  BooleanPrefMember metricsReporting_;
   IBOutlet NSPathControl* downloadLocationControl_;
   IBOutlet NSButton* downloadLocationButton_;
   StringPrefMember defaultDownloadLocation_;
@@ -130,9 +132,12 @@ class ProfileSyncService;
   StringPrefMember currentTheme_;
   IBOutlet NSButton* enableLoggingCheckbox_;
   scoped_ptr<PrefSetObserver> proxyPrefs_;
+  BOOL showAlternateErrorPagesEnabled_;
+  BOOL useSuggestEnabled_;
+  BOOL dnsPrefetchEnabled_;
+  BOOL safeBrowsingEnabled_;
+  BOOL metricsReportingEnabled_;
   BOOL proxiesConfigureButtonEnabled_;
-  BOOL restoreButtonsEnabled_;
-  BOOL restoreURLsEnabled_;
   IBOutlet NSTextField* backgroundModeTitle_;
   IBOutlet NSButton* backgroundModeCheckbox_;
   IBOutlet NSTextField* backgroundModeDescription_;
@@ -189,13 +194,21 @@ class ProfileSyncService;
 
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property (nonatomic, readonly) CustomHomePagesModel* customPagesSource;
-@property (assign, nonatomic) BOOL showHomeButtonEnabled;
+
+// Properties for the enabled state of various UI elements. Keep these ordered
+// by occurrence on the dialog.
+@property (nonatomic) BOOL restoreButtonsEnabled;
+@property (nonatomic) BOOL restoreURLsEnabled;
+@property (nonatomic) BOOL showHomeButtonEnabled;
 @property (nonatomic) BOOL passwordManagerChoiceEnabled;
 @property (nonatomic) BOOL passwordManagerButtonEnabled;
-@property (assign, nonatomic) BOOL autoFillSettingsButtonEnabled;
-@property (assign, nonatomic) BOOL proxiesConfigureButtonEnabled;
-@property (assign, nonatomic) BOOL restoreButtonsEnabled;
-@property (assign, nonatomic) BOOL restoreURLsEnabled;
+@property (nonatomic) BOOL autoFillSettingsButtonEnabled;
+@property (nonatomic) BOOL showAlternateErrorPagesEnabled;
+@property (nonatomic) BOOL useSuggestEnabled;
+@property (nonatomic) BOOL dnsPrefetchEnabled;
+@property (nonatomic) BOOL safeBrowsingEnabled;
+@property (nonatomic) BOOL metricsReportingEnabled;
+@property (nonatomic) BOOL proxiesConfigureButtonEnabled;
 @end
 
 @interface PreferencesWindowController(Testing)

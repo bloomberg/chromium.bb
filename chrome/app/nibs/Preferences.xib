@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="482"/>
 			<integer value="74"/>
 			<integer value="79"/>
+			<integer value="482"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2843,22 +2843,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<int key="connectionID">438</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: metricsRecording</string>
-						<reference key="source" ref="346222444"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="346222444"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: metricsRecording</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">metricsRecording</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">440</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">themesGallery:</string>
 						<reference key="source" ref="1001"/>
@@ -3663,86 +3647,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<int key="connectionID">681</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: isSuggestEnabled</string>
-						<reference key="source" ref="808321623"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="808321623"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: isSuggestEnabled</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">isSuggestEnabled</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">683</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: isAlternateErrorPagesEnabled</string>
-						<reference key="source" ref="480577047"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="480577047"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: isAlternateErrorPagesEnabled</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">isAlternateErrorPagesEnabled</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">685</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: isDnsPrefetchEnabled</string>
-						<reference key="source" ref="139965100"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="139965100"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: isDnsPrefetchEnabled</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">isDnsPrefetchEnabled</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">687</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: isSafeBrowsingEnabled</string>
-						<reference key="source" ref="217654608"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="217654608"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: isSafeBrowsingEnabled</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">isSafeBrowsingEnabled</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">689</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: isMetricsRecordingEnabled</string>
-						<reference key="source" ref="346222444"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="346222444"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: isMetricsRecordingEnabled</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">isMetricsRecordingEnabled</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">691</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">managedPrefsBannerView_</string>
 						<reference key="source" ref="1001"/>
@@ -4013,6 +3917,118 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 					</object>
 					<int key="connectionID">758</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: showAlternateErrorPagesEnabled</string>
+						<reference key="source" ref="480577047"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="480577047"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: showAlternateErrorPagesEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">showAlternateErrorPagesEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">759</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: useSuggestEnabled</string>
+						<reference key="source" ref="808321623"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="808321623"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: useSuggestEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">useSuggestEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">760</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: dnsPrefetchEnabled</string>
+						<reference key="source" ref="139965100"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="139965100"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: dnsPrefetchEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">dnsPrefetchEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">761</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: safeBrowsingEnabled</string>
+						<reference key="source" ref="217654608"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="217654608"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: safeBrowsingEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">safeBrowsingEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">762</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: metricsReportingEnabled</string>
+						<reference key="source" ref="346222444"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="346222444"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: metricsReportingEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">metricsReportingEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">763</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: metricsReporting</string>
+						<reference key="source" ref="346222444"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="346222444"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: metricsReporting</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">metricsReporting</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">764</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: restoreURLsEnabled</string>
+						<reference key="source" ref="165250101"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="165250101"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: restoreURLsEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">restoreURLsEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">766</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -5757,7 +5773,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{388, 361}, {443, 849}}</string>
+					<string>{{389, 361}, {443, 849}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>HyperlinkButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5794,7 +5810,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">758</int>
+			<int key="maxID">766</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6062,6 +6078,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/view_id_util.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/framed_browser_window.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
