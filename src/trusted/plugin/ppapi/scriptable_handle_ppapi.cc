@@ -14,6 +14,7 @@
 #include "native_client/src/trusted/plugin/method_map.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/portable_handle.h"
+#include "native_client/src/trusted/plugin/ppapi/array_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
@@ -105,7 +106,7 @@ pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
                  "srpc parameter initialization failed", exception);
   }
   uint32_t input_length = params.InputLength();
-  uint32_t output_length = params.OutputLength();
+  int32_t output_length = params.OutputLength();
   PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (initialized %"NACL_PRIu32" ins, %"
                  NACL_PRIu32" outs)\n", caller, input_length, output_length));
 
@@ -155,12 +156,22 @@ pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
 
   // Marshall output parameters.
   pp::Var retvar;
+  PluginPpapi* plugin_ppapi = static_cast<PluginPpapi*>(handle()->plugin());
   if (output_length > 0) {
     assert(call_type != PROPERTY_SET);  // expect no outputs for "set"
-    retvar = NaClSrpcArgToPPVar(
-        outputs[0], static_cast<PluginPpapi*>(handle()->plugin()), exception);
-    if (output_length > 1) {  // TODO(polina): use an array for multiple outputs
-      NACL_UNIMPLEMENTED();
+    retvar = NaClSrpcArgToPPVar(outputs[0], plugin_ppapi, exception);
+    if (output_length > 1) {
+      ArrayPpapi* array = new(std::nothrow) ArrayPpapi(plugin_ppapi);
+      if (array == NULL) {
+        *exception = pp::Var("failed to allocate output array");
+      } else {
+        array->SetProperty(pp::Var(0), retvar, exception);
+        for (int32_t i = 1; i < output_length; ++i) {
+          pp::Var v = NaClSrpcArgToPPVar(outputs[i], plugin_ppapi, exception);
+          array->SetProperty(pp::Var(i), v, exception);
+        }
+      }
+      retvar = pp::Var(array);
     }
     if (!exception->is_void()) {
       return Error(call_name, caller, "srpc output marshalling failed",
