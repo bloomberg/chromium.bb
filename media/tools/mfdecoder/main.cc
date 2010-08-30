@@ -336,8 +336,9 @@ IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
   // D3DCREATE_HARDWARE_VERTEXPROCESSING specifies hardware vertex processing.
   HRESULT hr = d3d->CreateDevice(D3DADAPTER_DEFAULT,
                                  D3DDEVTYPE_HAL,
-                                 NULL,
-                                 D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                                 video_window,
+                                 (D3DCREATE_HARDWARE_VERTEXPROCESSING |
+                                  D3DCREATE_MULTITHREADED),
                                  &present_params,
                                  temp_device.Receive());
   if (FAILED(hr)) {

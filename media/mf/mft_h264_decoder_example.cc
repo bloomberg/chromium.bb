@@ -315,8 +315,6 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
 
   mft->Initialize(MessageLoop::current(), handler.get(), config);
   scoped_ptr<WindowObserver> observer;
-
-  // If rendering, resize the window to fit the video frames.
   if (render) {
     observer.reset(new WindowObserver(reader.get(), mft.get()));
     MessageLoopForUI::current()->AddObserver(observer.get());

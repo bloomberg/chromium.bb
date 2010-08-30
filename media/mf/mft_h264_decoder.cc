@@ -354,7 +354,8 @@ bool MftH264Decoder::CreateD3DDevManager() {
   HRESULT hr = d3d9_->CreateDevice(D3DADAPTER_DEFAULT,
                                    D3DDEVTYPE_HAL,
                                    device_window_,
-                                   D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                                   (D3DCREATE_HARDWARE_VERTEXPROCESSING |
+                                    D3DCREATE_MULTITHREADED),
                                    &present_params,
                                    device_.Receive());
   if (FAILED(hr)) {
