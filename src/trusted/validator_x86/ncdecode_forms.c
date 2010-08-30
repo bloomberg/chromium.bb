@@ -50,6 +50,7 @@ const char* NaClInstCatName(NaClInstCat cat) {
   /* NOT REACHED */
   return "Unspecified";
 }
+
 /* Returns the operand flags for the destination argument of the instruction,
  * given the category of instruction.
  */
@@ -179,6 +180,79 @@ void NaClSetInstCat(NaClInstCat icat) {
     NaClRemoveOpFlags(0, NACL_OPFLAG(OpUse));
   }
   NaClAddMiscellaneousFlags();
+}
+
+/* Returns true if opcode sequence value is a SL (slash)
+ * value.
+ */
+static Bool IsSLValue(int16_t val) {
+  return val < 0;
+}
+
+/* Returns the opcode denoted by a SL (slash) value. */
+static NaClOpKind SLOpcode(int16_t val) {
+  return Opcode0 - val;
+}
+
+Bool NaClInInstructionSet(const NaClMnemonic* names,
+                          size_t names_size,
+                          const NaClNameOpcodeSeq* name_and_opcode_seq,
+                          size_t name_and_opcode_seq_size) {
+  size_t i;
+  NaClInst* inst = NaClGetDefInst();
+
+  /* First handle cases where all instances of an instruction
+   * mnemonic is in the set.
+   */
+  for (i = 0; i < names_size; ++i) {
+    if (inst->name == names[i]) {
+      return TRUE;
+    }
+  }
+
+  /* How handle cases where only a specific opcode sequence of
+   * an instruction mnemonic applies.
+   */
+  for (i = 0; i < name_and_opcode_seq_size; ++i) {
+    if (inst->name == name_and_opcode_seq[i].name) {
+      int j;
+      Bool is_good = TRUE;
+      /* First compare opcode bytes. */
+      for (j = 0; j < inst->num_opcode_bytes; ++j) {
+        if (inst->opcode[j] != name_and_opcode_seq[i].opcode_seq[j]) {
+          is_good = FALSE;
+          break;
+        }
+      }
+      if (is_good) {
+        /* Now compare any values that must by in modrm. */
+        for (j = inst->num_opcode_bytes; j < NACL_OPCODE_SEQ_SIZE; ++j) {
+          int16_t val = name_and_opcode_seq[i].opcode_seq[j];
+          if (END_OPCODE_SEQ == val) {
+            /* At end of descriptor, matched! */
+            return TRUE;
+          }
+          if (IsSLValue(val)) {
+            /* Compare to opcode in operand[0]. */
+            if ((inst->num_operands > 0) &&
+                (inst->operands[0].flags &&
+                 NACL_OPFLAG(OperandExtendsOpcode)) &&
+                (SLOpcode(val) ==  inst->operands[0].kind)) {
+              /* good, continue search. */
+            } else {
+              is_good = FALSE;
+              break;
+            }
+          }
+        }
+        if (is_good) {
+          return TRUE;
+        }
+      }
+    }
+  }
+  /* If reached, couldn't match, so not in instruction set. */
+  return FALSE;
 }
 
 void DEF_OPERAND(E__)(NaClInstCat icat, int operand_index) {

@@ -49,11 +49,11 @@ typedef enum NaClInstCat {
   Move,       /* Dest := f(Source) for some f. */
   Binary,     /* Dest := f(Dest, Source) for some f. */
   Compare,    /* Sets flag using f(Dest, Source). The value of Dest is not
-                 modified.
-              */
+               * modified.
+               */
   Exchange,   /* Dest := f(Dest, Source) for some f, and
-                 Source := g(Dest, Source) for some g.
-              */
+               * Source := g(Dest, Source) for some g.
+               */
   Push,       /* Implicit first (stack) argument is updated, and the
                * value of the Dest is not modified.
                */
@@ -84,6 +84,45 @@ NaClOpFlags NaClGetSourceFlags(NaClInstCat icat);
  * based on the given instruction categorization.
  */
 void NaClSetInstCat(NaClInstCat icat);
+
+/* Defines the maximum length of an opcode sequence descriptor (see
+ * comment for typedef NaClOpcodeSeq).
+ */
+#define NACL_OPCODE_SEQ_SIZE (NACL_MAX_OPCODE_BYTES + 1)
+
+/* Models an opcode sequence. Used by NaClInInstructionSet to describe
+ * an instruction implemented by a sequence of bytes. Macro SL(N) is used
+ * to describe an additional value N, which appears in the modrm mod field.
+ * Macro END_OPCODE_SEQ is an placeholder, ignore value, defining the end of the
+ * opcode sequence.
+ *
+ * 0..256         => Opcode byte.
+ * SL(N)          => /N
+ * END_OPCODE_SEQ => Not part of prefix.
+ */
+typedef int16_t NaClOpcodeSeq[NACL_OPCODE_SEQ_SIZE];
+
+/* Value denoting the end of an opcode sequence (descriptor). */
+#define END_OPCODE_SEQ 512
+
+/* Define value in modrm (i.e. /n in opcode sequence). */
+#define SL(n) (-(n))
+
+/* Model an instruction by its mnemonic and opcode sequence. */
+typedef struct NaClNameOpcodeSeq {
+  NaClMnemonic name;
+  NaClOpcodeSeq opcode_seq;
+} NaClNameOpcodeSeq;
+
+/* Returns true iff the current instruction has one of the given mnemonic names,
+ * or is defined by one of the name and opcode sequences. Note: It is safe to
+ * pass NULL for names or name_and_opcode_seq, if the corresponding size
+ * parameter is zero.
+ */
+Bool NaClInInstructionSet(const NaClMnemonic* names,
+                          size_t names_size,
+                          const NaClNameOpcodeSeq* name_and_opcode_seq,
+                          size_t name_and_opcode_seq_size);
 
 /*
  * Operands are encoded using up to 3 characters. Each character defines

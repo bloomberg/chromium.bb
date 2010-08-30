@@ -17,6 +17,7 @@
 #include "native_client/src/trusted/validator_x86/lock_insts.h"
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
 /* List of instruction nmemonics that can be locked. */
@@ -29,7 +30,7 @@ static const NaClMnemonic kLockableOp[] = {
   InstBts,
   InstCmpxchg,
   /* Note: The following two instructions are not implemented as separate
-   * instructions from Cmpxchg, but are separated in the ADM manual.
+   * instructions from Cmpxchg, but are separated in the AMD manual.
    */
   /* InstCmpxchg8b, */
   /* InstCmpxchg16b, */
@@ -45,13 +46,8 @@ static const NaClMnemonic kLockableOp[] = {
 };
 
 void NaClLockableFlagIfApplicable() {
-  int i;
-  NaClInst* inst = NaClGetDefInst();
-
-  for (i = 0; i < NACL_ARRAY_SIZE(kLockableOp); ++i) {
-    if (inst->name == kLockableOp[i]) {
-      NaClAddIFlags(NACL_IFLAG(OpcodeLockable));
-      return;
-    }
+  if (NaClInInstructionSet(kLockableOp, NACL_ARRAY_SIZE(kLockableOp),
+                           NULL, 0)) {
+    NaClAddIFlags(NACL_IFLAG(OpcodeLockable));
   }
 }

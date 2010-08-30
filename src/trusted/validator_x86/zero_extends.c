@@ -17,37 +17,8 @@
 #include "native_client/src/trusted/validator_x86/zero_extends.h"
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
-
-/* 0..256    => Opcode byte.
- * SL(N)     => /N
- * IGN       => Not part of prefix.
- */
-typedef int16_t OpcodeSeq[NACL_MAX_OPCODE_BYTES];
-
-/* Value out of range to denote no opcode entry. */
-#define IGN 512
-
-/* Define value in modrm (i.e. /n in opcode sequence). */
-#define SL(n) (-(n))
-
-/* Returns true if opcode sequence value is a SL (slash)
- * value.
- */
-static Bool IsSLValue(int16_t val) {
-  return val < 0;
-}
-
-/* Returns the opcode denoted by a SL (slash) value. */
-static NaClOpKind SLOpcode(int16_t val) {
-  return Opcode0 - val;
-}
-
-/* Model instruction that zero etends 32 bit values. */
-typedef struct ZeroExtendOpcodeSeq {
-  NaClMnemonic name;
-  OpcodeSeq opcode_seq;
-} ZeroExtendOpcodeSeq;
 
 /* List of instruction nmemonics that zero extend 32 bit results.
  *
@@ -131,9 +102,9 @@ static const NaClMnemonic kZeroExtend32Op[] = {
 /* List of instruction nmemonics, for specific opcode sequences, that zero
  * extend 32 bit results.
  */
-static const ZeroExtendOpcodeSeq kZeroExtend32Opseq[] = {
-  { InstDec , { 0xFF , SL(1) } },
-  { InstInc , { 0xFF , SL(0) } },
+static const NaClNameOpcodeSeq kZeroExtend32Opseq[] = {
+  { InstDec , { 0xFF , SL(1) , END_OPCODE_SEQ } },
+  { InstInc , { 0xFF , SL(0) , END_OPCODE_SEQ } },
 };
 
 /* Add OperandZeroExtends_v to instruction, if it can hold
@@ -152,59 +123,10 @@ static void AddZeroExtendToOpDestArgs(NaClInst* inst) {
 
 /* Add OperandZeroExtends_v instruction flag if applicable. */
 void NaClAddZeroExtend32FlagIfApplicable() {
-  int i;
-  NaClInst* inst = NaClGetDefInst();
-
-  /* First handle cases where all instances of an operation should
-   * zero extend.
-   */
-  for (i = 0; i < NACL_ARRAY_SIZE(kZeroExtend32Op); ++i) {
-    if (inst->name == kZeroExtend32Op[i]) {
-      AddZeroExtendToOpDestArgs(inst);
-      return;
-    }
-  }
-
-  /* Now handle cases where only specific operand sequences of
-   * an operation should update.
-   */
-  for (i = 0; i < NACL_ARRAY_SIZE(kZeroExtend32Opseq); ++i) {
-    if (inst->name == kZeroExtend32Opseq[i].name) {
-      int j;
-      Bool is_good = TRUE;
-      /* First compare opcode bytes. */
-      for (j = 0; j < inst->num_opcode_bytes; ++j) {
-        if (inst->opcode[j] != kZeroExtend32Opseq[i].opcode_seq[j]) {
-          is_good = FALSE;
-          break;
-        }
-      }
-      if (is_good) {
-        /* Now compare any values that must by in modrm. */
-        for (j = inst->num_opcode_bytes; j < NACL_MAX_OPCODE_BYTES; ++j) {
-          int16_t val = kZeroExtend32Opseq[i].opcode_seq[j];
-          if (val == IGN) {
-            /* At end of descriptor, matched! */
-            break;
-          }
-          if (IsSLValue(val)) {
-            /* Compare to opcode in operand[0]. */
-            if ((inst->num_operands > 0) &&
-                (inst->operands[0].flags &&
-                 NACL_OPFLAG(OperandExtendsOpcode)) &&
-                (SLOpcode(val) ==  inst->operands[0].kind)) {
-              /* good, continue search. */
-            } else {
-              is_good = FALSE;
-              break;
-            }
-          }
-        }
-        if (is_good) {
-          AddZeroExtendToOpDestArgs(inst);
-          return;
-        }
-      }
-    }
+  if (NaClInInstructionSet(kZeroExtend32Op,
+                           NACL_ARRAY_SIZE(kZeroExtend32Op),
+                           kZeroExtend32Opseq,
+                           NACL_ARRAY_SIZE(kZeroExtend32Opseq))) {
+    AddZeroExtendToOpDestArgs(NaClGetDefInst());
   }
 }
