@@ -36,6 +36,10 @@ class TabContentsViewGtk : public TabContentsView,
   void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
   void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
+  // Override the stored focus widget. This call only makes sense when the
+  // tab contents is not focused.
+  void SetFocusedWidget(GtkWidget* widget);
+
   // TabContentsView implementation --------------------------------------------
 
   virtual void CreateView(const gfx::Size& initial_size);
@@ -78,6 +82,9 @@ class TabContentsViewGtk : public TabContentsView,
   void InsertIntoContentArea(GtkWidget* widget);
 
   void CancelDragIfAny();
+
+  // Handle focus traversal on the render widget native view.
+  CHROMEGTK_CALLBACK_1(TabContentsViewGtk, gboolean, OnFocus, GtkDirectionType);
 
   // We keep track of the timestamp of the latest mousedown event.
   CHROMEGTK_CALLBACK_1(TabContentsViewGtk, gboolean, OnMouseDown,
