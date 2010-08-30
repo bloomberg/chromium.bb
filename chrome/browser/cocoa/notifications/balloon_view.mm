@@ -12,7 +12,7 @@
 
 namespace {
 
-const int kRoundedCornerSize = 8;
+const int kRoundedCornerSize = 6;
 
 }  // namespace
 

@@ -63,6 +63,7 @@ const int kRightMargin = 2;
   [optionsButton_ setHoverOpacity:0.9];
   [optionsButton_ setPressedImage:image];
   [optionsButton_ setPressedOpacity:1.0];
+  [[optionsButton_ cell] setHighlightsBy:NSNoCellMask];
 
   NSString* sourceLabelText = l10n_util::GetNSStringF(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
@@ -160,9 +161,8 @@ const int kRightMargin = 2;
   if (htmlContents_.get())
     htmlContents_->UpdateActualSize(balloon_->content_size());
 
-  [[self window] setFrame:NSMakeRect(x, y, w, h)
-                  display:YES
-                  animate:YES];
+  [[[self window] animator] setFrame:NSMakeRect(x, y, w, h)
+                             display:YES];
 }
 
 // Returns the total width the view should be to accommodate the balloon.
