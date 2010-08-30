@@ -113,8 +113,8 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertTrue(os.path.exists(downloaded_pkg))
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
 
-  def testDownloadDangerousFiles(self):
-    """Verify that we can download and save dangerous files."""
+  def testSaveDangerousFile(self):
+    """Verify that we can download and save a dangerous file."""
     file_path = self._GetDangerousDownload()
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
@@ -130,6 +130,21 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertTrue(os.path.exists(downloaded_pkg))
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+
+  def testDeclineDangerousDownload(self):
+    """Verify that we can decline dangerous downloads"""
+    file_path = self._GetDangerousDownload()
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  os.path.basename(file_path))
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+
+    self.DownloadAndWaitForStart(file_url)
+    self.PerformActionOnDownload(self._GetDownloadId(),
+                                 'decline_dangerous_download')
+    self.assertFalse(os.path.exists(downloaded_pkg))
+    self.assertFalse(self.GetDownloadsInfo().Downloads())
+    self.assertFalse(self.IsDownloadShelfVisible())
 
   def testRemoveDownload(self):
     """Verify that we can remove a download."""
