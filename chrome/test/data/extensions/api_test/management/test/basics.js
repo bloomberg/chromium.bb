@@ -17,8 +17,7 @@ function checkIcon(item, size, path) {
 
 var tests = [
   function simple() {
-    chrome.management.getAll(function(items) {
-      assertNoLastError();
+    chrome.management.getAll(callback(function(items) {
       chrome.test.assertEq(5, items.length);
 
       checkItem(items, "Extension Management API Test", true, false);
@@ -36,33 +35,35 @@ var tests = [
       checkIcon(extension, 128, "icon_128.png");
       checkIcon(extension, 48, "icon_48.png");
       checkIcon(extension, 16, "icon_16.png");
-
-      succeed();
-    });
+    }));
   },
 
   // Disables an enabled app.
   function disable() {
-    chrome.management.getAll(function(items) {
-      assertNoLastError();
+    listenOnce(chrome.management.onDisabled, function(info) {
+      assertEq(info.name, "enabled_app");
+    });
+
+    chrome.management.getAll(callback(function(items) {
       checkItem(items, "enabled_app", true, true);
       var enabled_app = getItemNamed(items, "enabled_app");
       chrome.management.setEnabled(enabled_app.id, false, function() {
         assertNoLastError();
         chrome.management.getAll(function(items2) {
           assertNoLastError();
-          chrome.test.log("re-checking enabled_app");
           checkItem(items2, "enabled_app", false, true);
-          succeed();
+          assertTrue(event_fired);
         });
       });
-    });
+    }));
   },
 
   // Enables a disabled extension.
   function enable() {
-    chrome.management.getAll(function(items) {
-      assertNoLastError();
+    listenOnce(chrome.management.onEnabled, function(info) {
+      assertEq(info.name, "disabled_extension");
+    });
+    chrome.management.getAll(callback(function(items) {
       checkItem(items, "disabled_extension", false, false);
       var disabled = getItemNamed(items, "disabled_extension");
       chrome.management.setEnabled(disabled.id, true, function() {
@@ -70,10 +71,10 @@ var tests = [
         chrome.management.getAll(function(items2) {
           assertNoLastError();
           checkItem(items2, "disabled_extension", true, false);
-          succeed();
+          assertTrue(event_fired);
         });
       });
-    });
+    }));
   }
 ];
 

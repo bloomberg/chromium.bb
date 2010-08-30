@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 function uninstall(name) {
-  chrome.management.getAll(function(items) {
-    assertNoLastError();
+  listenOnce(chrome.management.onUninstalled, function(info) {
+    assertEq(info.name, name);
+  });
+
+  chrome.management.getAll(callback(function(items) {
     var old_count = items.length;
     var item = getItemNamed(items, name);
     chrome.management.uninstall(item.id, function() {
@@ -15,10 +18,10 @@ function uninstall(name) {
         for (var i = 0; i < items2.length; i++) {
           assertFalse(items2[i].name == name);
         }
-        succeed();
+        assertTrue(event_fired);
       });
     });
-  });
+  }));
 }
 
 var tests = [

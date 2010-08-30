@@ -3998,6 +3998,7 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "true",
             "parameters": []
           }
         ]
@@ -4046,25 +4047,25 @@
     "events": [
       {
         "name": "onInstalled",
-        "description": "(NOT YET IMPLEMENTED)",
+        "description": "Fired when an app or extension has been installed.",
         "type": "function",
         "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
       },
       {
         "name": "onUninstalled",
-        "description": "(NOT YET IMPLEMENTED)",
+        "description": "Fired when an app or extension has been uninstalled.",
         "type": "function",
-        "parameters": [{"name": "id", "type": "string", "description": "The id of the extension that was uninstalled."}]
+        "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
       },
       {
         "name": "onEnabled",
-        "description": "(NOT YET IMPLEMENTED)",
+        "description": "Fired when an app or extension has been enabled.",
         "type": "function",
         "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
       },
       {
         "name": "onDisabled",
-        "description": "(NOT YET IMPLEMENTED)",
+        "description": "Fired when an app or extension has been disabled",
         "type": "function",
         "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
       }

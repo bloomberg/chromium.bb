@@ -10,6 +10,7 @@
 
 namespace extension_event_names {
 
+// Tabs.
 extern const char kOnTabAttached[];
 extern const char kOnTabCreated[];
 extern const char kOnTabDetached[];
@@ -17,11 +18,19 @@ extern const char kOnTabMoved[];
 extern const char kOnTabRemoved[];
 extern const char kOnTabSelectionChanged[];
 extern const char kOnTabUpdated[];
+
+// Windows.
 extern const char kOnWindowCreated[];
 extern const char kOnWindowFocusedChanged[];
 extern const char kOnWindowRemoved[];
 
+// Management.
+extern const char kOnExtensionInstalled[];
+extern const char kOnExtensionUninstalled[];
+extern const char kOnExtensionEnabled[];
+extern const char kOnExtensionDisabled[];
+
+
 };  // namespace extension_event_names
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_
-

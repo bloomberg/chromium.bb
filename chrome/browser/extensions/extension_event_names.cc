@@ -13,9 +13,14 @@ const char kOnTabMoved[] = "tabs.onMoved";
 const char kOnTabRemoved[] = "tabs.onRemoved";
 const char kOnTabSelectionChanged[] = "tabs.onSelectionChanged";
 const char kOnTabUpdated[] = "tabs.onUpdated";
+
 const char kOnWindowCreated[] = "windows.onCreated";
 const char kOnWindowFocusedChanged[] = "windows.onFocusChanged";
 const char kOnWindowRemoved[] = "windows.onRemoved";
 
-}  // namespace extension_event_names
+const char kOnExtensionInstalled[] = "experimental.management.onInstalled";
+const char kOnExtensionUninstalled[] = "experimental.management.onUninstalled";
+const char kOnExtensionEnabled[] = "experimental.management.onEnabled";
+const char kOnExtensionDisabled[] = "experimental.management.onDisabled";
 
+}  // namespace extension_event_names

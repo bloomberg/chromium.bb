@@ -12,6 +12,8 @@ var assertNoLastError = chrome.test.assertNoLastError;
 var assertTrue = chrome.test.assertTrue;
 var fail = chrome.test.fail;
 var succeed = chrome.test.succeed;
+var listenOnce = chrome.test.listenOnce;
+var callback = chrome.test.callback;
 
 function getItemNamed(list, name) {
   for (var i = 0; i < list.length; i++) {

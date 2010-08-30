@@ -7,12 +7,19 @@
 #include <map>
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/extensions/extension_event_names.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 
 using base::IntToString;
+namespace events = extension_event_names;
 
 const char kAppLaunchUrlKey[] = "appLaunchUrl";
 const char kEnabledKey[] = "enabled";
@@ -25,7 +32,6 @@ const char kSizeKey[] = "size";
 const char kUrlKey[] = "url";
 
 const char kNoExtensionError[] = "No extension with id *";
-
 
 ExtensionsService* ExtensionManagementFunction::service() {
   return profile()->GetExtensionsService();
@@ -127,4 +133,73 @@ bool UninstallFunction::RunImpl() {
 
   service()->UninstallExtension(extension_id, false /* external_uninstall */);
   return true;
+}
+
+
+// static
+ExtensionManagementEventRouter* ExtensionManagementEventRouter::GetInstance() {
+  return Singleton<ExtensionManagementEventRouter>::get();
+}
+
+ExtensionManagementEventRouter::ExtensionManagementEventRouter() {}
+
+ExtensionManagementEventRouter::~ExtensionManagementEventRouter() {}
+
+void ExtensionManagementEventRouter::Init() {
+  NotificationType::Type types[] = {
+    NotificationType::EXTENSION_INSTALLED,
+    NotificationType::EXTENSION_UNINSTALLED,
+    NotificationType::EXTENSION_LOADED,
+    NotificationType::EXTENSION_UNLOADED
+  };
+
+  for (size_t i = 0; i < arraysize(types); i++) {
+    registrar_.Add(this,
+                   types[i],
+                   NotificationService::AllSources());
+  }
+}
+
+void ExtensionManagementEventRouter::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  const char* event_name = NULL;
+  switch (type.value) {
+    case NotificationType::EXTENSION_INSTALLED:
+      event_name = events::kOnExtensionInstalled;
+      break;
+    case NotificationType::EXTENSION_UNINSTALLED:
+      event_name = events::kOnExtensionUninstalled;
+      break;
+    case NotificationType::EXTENSION_LOADED:
+      event_name = events::kOnExtensionEnabled;
+      break;
+    case NotificationType::EXTENSION_UNLOADED:
+      event_name = events::kOnExtensionDisabled;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  Profile* profile = Source<Profile>(source).ptr();
+  Extension* extension = Details<Extension>(details).ptr();
+  CHECK(profile);
+  CHECK(extension);
+
+  ExtensionsService* service = profile->GetExtensionsService();
+  bool enabled = service->GetExtensionById(extension->id(), false) != NULL;
+  ListValue args;
+  args.Append(CreateExtensionInfo(*extension, enabled));
+
+  std::string args_json;
+  base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
+
+  ExtensionMessageService* message_service =
+      profile->GetExtensionMessageService();
+  message_service->DispatchEventToRenderers(event_name,
+                                            args_json,
+                                            profile->IsOffTheRecord(),
+                                            GURL());
 }

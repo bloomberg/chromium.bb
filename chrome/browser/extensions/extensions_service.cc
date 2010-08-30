@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
@@ -238,6 +239,7 @@ void ExtensionsService::InitEventRouters() {
   ExtensionBookmarkEventRouter::GetSingleton()->Observe(
       profile_->GetBookmarkModel());
   ExtensionCookiesEventRouter::GetInstance()->Init();
+  ExtensionManagementEventRouter::GetInstance()->Init();
 }
 
 void ExtensionsService::Init() {
@@ -533,7 +535,7 @@ void ExtensionsService::LoadComponentExtensions() {
     // In order for the --apps-gallery-url switch to work with the gallery
     // process isolation, we must insert any provided value into the component
     // app's launch url and web extent.
-    if (extension->id() == extension_misc::kWebStoreAppId ) {
+    if (extension->id() == extension_misc::kWebStoreAppId) {
       GURL gallery_url(CommandLine::ForCurrentProcess()
           ->GetSwitchValueASCII(switches::kAppsGalleryURL));
       if (gallery_url.is_valid()) {
