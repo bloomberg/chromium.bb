@@ -13,6 +13,10 @@
 // http://crbug.com/48920
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_Tabs FLAKY_Tabs
+#elif defined(OS_MACOSX)
+// Tabs appears to timeout, or maybe crash on mac.
+// http://crbug.com/53779
+#define MAYBE_Tabs FAILS_Tabs
 #else
 #define MAYBE_Tabs Tabs
 #endif
@@ -23,12 +27,6 @@
 #define MAYBE_TabOnRemoved FLAKY_TabOnRemoved
 #else
 #define MAYBE_TabOnRemoved TabOnRemoved
-#endif
-
-// Tabs appears to timeout, or maybe crash on mac.
-// http://crbug.com/53779
-#if defined(OS_MAC)
-#define MAYBE_Tabs FAILS_Tabs
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
