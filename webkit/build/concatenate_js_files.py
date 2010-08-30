@@ -52,7 +52,8 @@ def main(argv):
     return 1
 
   output_file_name = argv.pop()
-  extractor = OrderedJSFilesExtractor(argv[1])
+  input_order_file_name = argv[1]
+  extractor = OrderedJSFilesExtractor(input_order_file_name)
   expander = PathExpander(argv[2:])
   output = StringIO()
 
@@ -61,7 +62,7 @@ def main(argv):
     if (full_path is None):
       raise Exception('File %s referenced in %s not found on any source paths, '
                       'check source tree for consistency' %
-                      (input_file_name, input_file_name))
+                      (input_file_name, input_order_file_name))
     output.write('/* %s */\n\n' % input_file_name)
     input_file = open(full_path, 'r')
     output.write(input_file.read())
