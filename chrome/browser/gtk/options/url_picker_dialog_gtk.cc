@@ -196,15 +196,14 @@ std::string UrlPickerDialogGtk::GetURLForPath(GtkTreePath* path) const {
     NOTREACHED();
     return std::string();
   }
-  std::wstring languages =
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  std::string languages =
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
   // trailing slash, and unescape most characters, but we need to not drop any
   // username/password, or unescape anything that changes the meaning.
-  std::wstring formatted = net::FormatUrl(url_table_model_->GetURL(row),
+  return UTF16ToUTF8(net::FormatUrl(url_table_model_->GetURL(row),
       languages, net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
-      UnescapeRule::SPACES, NULL, NULL, NULL);
-  return WideToUTF8(formatted);
+      UnescapeRule::SPACES, NULL, NULL, NULL));
 }
 
 void UrlPickerDialogGtk::SetColumnValues(int row, GtkTreeIter* iter) {

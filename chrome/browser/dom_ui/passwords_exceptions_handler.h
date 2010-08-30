@@ -83,7 +83,7 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
 
     // Send the password store's reply back to the handler.
     virtual void OnPasswordStoreRequestDone(
-        int handle, const std::vector<webkit_glue::PasswordForm*>& result); 
+        int handle, const std::vector<webkit_glue::PasswordForm*>& result);
   };
 
   // A short class to mediate requests to the password store for exceptions.
@@ -112,7 +112,7 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   Profile* profile_;
 
   // User's pref
-  std::wstring languages_;
+  std::string languages_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsExceptionsHandler);
 };

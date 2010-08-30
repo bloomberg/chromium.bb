@@ -233,9 +233,9 @@ CustomHomePagesTableModel::Entry*
 }
 
 std::wstring CustomHomePagesTableModel::FormattedURL(int row) const {
-  std::wstring languages =
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  string16 url = WideToUTF16(net::FormatUrl(entries_[row].url, languages));
+  std::string languages =
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  string16 url = net::FormatUrl(entries_[row].url, languages);
   url = base::i18n::GetDisplayStringInLTRDirectionality(url);
   return UTF16ToWide(url);
 }

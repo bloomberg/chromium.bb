@@ -81,14 +81,13 @@ PasswordStore* PasswordsExceptionsHandler::GetPasswordStore() {
 }
 
 void PasswordsExceptionsHandler::LoadLists(const ListValue* args) {
-  languages_ = UTF8ToWide(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  languages_ = profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   populater_.Populate();
   exception_populater_.Populate();
 }
 
 void PasswordsExceptionsHandler::RemoveSavedPassword(const ListValue* args) {
-  std::string string_value = WideToUTF8(ExtractStringValue(args));;
+  std::string string_value = WideToUTF8(ExtractStringValue(args));
   int index;
   base::StringToInt(string_value, &index);
 
@@ -98,8 +97,9 @@ void PasswordsExceptionsHandler::RemoveSavedPassword(const ListValue* args) {
   SetPasswordList();
 }
 
-void PasswordsExceptionsHandler::RemovePasswordException(const ListValue* args) {
-  std::string string_value = WideToUTF8(ExtractStringValue(args));;
+void PasswordsExceptionsHandler::RemovePasswordException(
+    const ListValue* args) {
+  std::string string_value = WideToUTF8(ExtractStringValue(args));
   int index;
   base::StringToInt(string_value, &index);
 
@@ -128,7 +128,7 @@ void PasswordsExceptionsHandler::RemoveAllPasswordExceptions(
 }
 
 void PasswordsExceptionsHandler::ShowSelectedPassword(const ListValue* args) {
-  std::string string_value = WideToUTF8(ExtractStringValue(args));;
+  std::string string_value = WideToUTF8(ExtractStringValue(args));
   int index;
   base::StringToInt(string_value, &index);
 
@@ -142,10 +142,9 @@ void PasswordsExceptionsHandler::SetPasswordList() {
   ListValue entries;
   for (size_t i = 0; i < password_list_.size(); ++i) {
     ListValue* entry = new ListValue();
-    entry->Append(new StringValue(
-        WideToUTF8(net::FormatUrl(password_list_[i]->origin, languages_))));
-    entry->Append(new StringValue(
-        UTF16ToUTF8(password_list_[i]->username_value)));
+    entry->Append(new StringValue(net::FormatUrl(password_list_[i]->origin,
+                                                 languages_)));
+    entry->Append(new StringValue(password_list_[i]->username_value));
     entries.Append(entry);
   }
 
@@ -157,8 +156,7 @@ void PasswordsExceptionsHandler::SetPasswordExceptionList() {
   ListValue entries;
   for (size_t i = 0; i < password_exception_list_.size(); ++i) {
     entries.Append(new StringValue(
-        WideToUTF8(net::FormatUrl(
-            password_exception_list_[i]->origin, languages_))));
+        net::FormatUrl(password_exception_list_[i]->origin, languages_)));
   }
 
   dom_ui_->CallJavascriptFunction(

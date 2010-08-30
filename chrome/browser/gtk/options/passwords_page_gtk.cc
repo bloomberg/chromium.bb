@@ -142,8 +142,8 @@ PasswordStore* PasswordsPageGtk::GetPasswordStore() {
 
 void PasswordsPageGtk::SetPasswordList(
     const std::vector<webkit_glue::PasswordForm*>& result) {
-  std::wstring languages =
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  std::string languages =
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   gtk_list_store_clear(password_list_store_);
   STLDeleteElements(&password_list_);
   password_list_ = result;
@@ -151,7 +151,7 @@ void PasswordsPageGtk::SetPasswordList(
     GtkTreeIter iter;
     gtk_list_store_insert_with_values(password_list_store_, &iter, (gint) i,
         COL_SITE,
-        WideToUTF8(net::FormatUrl(result[i]->origin, languages)).c_str(),
+        UTF16ToUTF8(net::FormatUrl(result[i]->origin, languages)).c_str(),
         COL_USERNAME, UTF16ToUTF8(result[i]->username_value).c_str(), -1);
   }
   gtk_widget_set_sensitive(remove_all_button_, result.size() > 0);

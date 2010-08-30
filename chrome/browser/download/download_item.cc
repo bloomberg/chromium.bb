@@ -327,9 +327,8 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   //   L"/\x4f60\x597d\x4f60\x597d",
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
   PrefService* prefs = download_manager_->profile()->GetPrefs();
-  std::wstring languages(UTF8ToWide(prefs->GetString(prefs::kAcceptLanguages)));
-  string16 url_formatted(
-      l10n_util::ToLower(WideToUTF16(net::FormatUrl(url_, languages))));
+  std::string languages(prefs->GetString(prefs::kAcceptLanguages));
+  string16 url_formatted(l10n_util::ToLower(net::FormatUrl(url_, languages)));
   if (url_formatted.find(query) != string16::npos)
     return true;
 

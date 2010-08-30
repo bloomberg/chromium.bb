@@ -57,18 +57,16 @@ void AddStartupPageHandler::UpdateFieldWithRecentPage(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  std::wstring languages = UTF8ToWide(
-      dom_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  std::string languages =
+      dom_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
   // trailing slash, and unescape most characters, but we need to not drop any
   // username/password, or unescape anything that changes the meaning.
-  std::wstring url_string = net::FormatUrl(
-      url_table_model_->GetURL(index), languages,
-      net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
+  string16 url_string = net::FormatUrl(url_table_model_->GetURL(index),
+      languages, net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
       UnescapeRule::SPACES, NULL, NULL, NULL);
 
-  scoped_ptr<Value> url_value(
-      Value::CreateStringValue(WideToUTF16Hack(url_string)));
+  scoped_ptr<Value> url_value(Value::CreateStringValue(url_string));
   dom_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.setInputFieldValue",
                                   *url_value.get());
 }
