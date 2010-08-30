@@ -1279,7 +1279,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   current_tab_id_ = contents ? ExtensionTabUtil::GetTabId(contents) : -1;
   current_url_ = url;
 
-  bool visible = (contents &&
+  bool visible = contents &&
       (preview_enabled_ || page_action_->GetIsVisible(current_tab_id_));
   if (visible) {
     // Set the tooltip.

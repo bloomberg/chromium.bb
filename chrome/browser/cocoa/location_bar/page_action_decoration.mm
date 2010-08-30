@@ -128,7 +128,7 @@ void PageActionDecoration::UpdateVisibility(TabContents* contents,
   current_tab_id_ = contents ? ExtensionTabUtil::GetTabId(contents) : -1;
   current_url_ = url;
 
-  bool visible = (contents &&
+  bool visible = contents &&
       (preview_enabled_ || page_action_->GetIsVisible(current_tab_id_));
   if (visible) {
     SetToolTip(page_action_->GetTitle(current_tab_id_));
