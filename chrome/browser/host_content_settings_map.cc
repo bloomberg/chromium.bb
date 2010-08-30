@@ -212,6 +212,8 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // Read misc. global settings.
   block_third_party_cookies_ =
       prefs->GetBoolean(prefs::kBlockThirdPartyCookies);
+  block_nonsandboxed_plugins_ =
+      prefs->GetBoolean(prefs::kBlockNonsandboxedPlugins);
 
   // Verify preferences version.
   if (!prefs->HasPrefPath(prefs::kContentSettingsVersion)) {
@@ -241,6 +243,7 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
                              kContentSettingsPatternVersion);
   prefs->RegisterDictionaryPref(prefs::kContentSettingsPatterns);
   prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies, false);
+  prefs->RegisterBooleanPref(prefs::kBlockNonsandboxedPlugins, false);
   prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
 
   // Obsolete prefs, for migration:
@@ -682,6 +685,28 @@ void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
     prefs->ClearPref(prefs::kBlockThirdPartyCookies);
 }
 
+void HostContentSettingsMap::SetBlockNonsandboxedPlugins(bool block) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // This setting may not be directly modified for OTR sessions.  Instead, it
+  // is synced to the main profile's setting.
+  if (is_off_the_record_) {
+    NOTREACHED();
+    return;
+  }
+
+  {
+    AutoLock auto_lock(lock_);
+    block_nonsandboxed_plugins_ = block;
+  }
+
+  PrefService* prefs = profile_->GetPrefs();
+  if (block)
+    prefs->SetBoolean(prefs::kBlockNonsandboxedPlugins, true);
+  else
+    prefs->ClearPref(prefs::kBlockNonsandboxedPlugins);
+}
+
 void HostContentSettingsMap::ResetToDefaults() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
@@ -692,6 +717,7 @@ void HostContentSettingsMap::ResetToDefaults() {
     host_content_settings_.clear();
     off_the_record_settings_.clear();
     block_third_party_cookies_ = false;
+    block_nonsandboxed_plugins_ = false;
   }
 
   if (!is_off_the_record_) {
@@ -700,6 +726,7 @@ void HostContentSettingsMap::ResetToDefaults() {
     prefs->ClearPref(prefs::kDefaultContentSettings);
     prefs->ClearPref(prefs::kContentSettingsPatterns);
     prefs->ClearPref(prefs::kBlockThirdPartyCookies);
+    prefs->ClearPref(prefs::kBlockNonsandboxedPlugins);
     updating_preferences_ = false;
     NotifyObservers(
         ContentSettingsDetails(Pattern(), CONTENT_SETTINGS_TYPE_DEFAULT, ""));

@@ -2364,9 +2364,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
         PepperPluginRegistry::GetInstance()->GetModule(info.path);
     if (pepper_module)
       return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kBlockNonSandboxedPlugins) &&
-        setting != CONTENT_SETTING_ALLOW) {
+    if (setting != CONTENT_SETTING_ALLOW) {
+      // If the host is not whitelisted for this plugin, block it.
       Send(new ViewHostMsg_NonSandboxedPluginBlocked(routing_id_,
                                                      resource,
                                                      group->GetGroupName()));

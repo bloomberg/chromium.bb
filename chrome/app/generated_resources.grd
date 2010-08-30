@@ -4617,7 +4617,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Plug-in Settings:
       </message>
       <message name="IDS_PLUGIN_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
-        Allow all sites to use plug-ins (recommended)
+        Allow all sites to use all plug-ins (recommended)
+      </message>
+      <message name="IDS_PLUGIN_LOAD_SANDBOXED_RADIO" desc="A radio button in the Content Settings dialog for allowing sandboxed plug-ins on any site.">
+        Allow only sandboxed plug-ins
       </message>
       <message name="IDS_PLUGIN_NOLOAD_RADIO" desc="A radio button in the Content Settings dialog for preventing plug-ins use on any site.">
         Do not allow any site to use plug-ins

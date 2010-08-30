@@ -219,6 +219,12 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void SetBlockThirdPartyCookies(bool block);
 
+  bool GetBlockNonsandboxedPlugins() const {
+    return block_nonsandboxed_plugins_;
+  }
+
+  void SetBlockNonsandboxedPlugins(bool block);
+
   // Resets all settings levels.
   //
   // This should only be called on the UI thread.
@@ -293,6 +299,7 @@ class HostContentSettingsMap
 
   // Misc global settings.
   bool block_third_party_cookies_;
+  bool block_nonsandboxed_plugins_;
 
   // Used around accesses to the settings objects to guarantee thread safety.
   mutable Lock lock_;
