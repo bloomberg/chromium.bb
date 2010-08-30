@@ -44,7 +44,7 @@ const char *RendererAccessibilityBrowserTest::GetAttr(
 #if defined(OS_WIN)
 // http://crbug.com/53853
 #define MAYBE_TestCrossPlatformAccessibilityTree \
-    FAILS_TestCrossPlatformAccessibilityTree
+    DISABLED_TestCrossPlatformAccessibilityTree
 #else
 #define MAYBE_TestCrossPlatformAccessibilityTree \
     TestCrossPlatformAccessibilityTree
