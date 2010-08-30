@@ -6,10 +6,12 @@
 
 #include <algorithm>
 #include <map>
+#include <vector>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
+#include "base/rand_util.h"
 #include "base/time.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
@@ -221,10 +223,9 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
 
   // Randomize order of logos if option has been set.
   if (randomize_) {
-    int seed = static_cast<int>(Time::Now().ToInternalValue());
-    srand(seed);
     std::random_shuffle(search_engine_choices_.begin(),
-                        search_engine_choices_.end());
+                        search_engine_choices_.end(),
+                        base::RandGenerator);
     // Assign to each choice the position in which it is shown on the screen.
     std::vector<SearchEngineChoice*>::iterator it;
     int slot = 0;

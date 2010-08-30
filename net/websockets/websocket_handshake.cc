@@ -70,7 +70,7 @@ std::string WebSocketHandshake::CreateClientHandshakeMessage() {
   fields.push_back("Sec-WebSocket-Key1: " + parameter_->GetSecWebSocketKey1());
   fields.push_back("Sec-WebSocket-Key2: " + parameter_->GetSecWebSocketKey2());
 
-  std::random_shuffle(fields.begin(), fields.end());
+  std::random_shuffle(fields.begin(), fields.end(), base::RandGenerator);
 
   for (size_t i = 0; i < fields.size(); i++) {
     msg += fields[i] + "\r\n";
