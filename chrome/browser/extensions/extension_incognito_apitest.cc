@@ -97,7 +97,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 
 // Tests that the APIs in an incognito-disabled extension don't see incognito
 // events or callbacks.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
+// Hangy, http://crbug.com/53869.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoDisabled) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
