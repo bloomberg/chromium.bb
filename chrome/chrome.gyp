@@ -755,6 +755,26 @@
                 '<(PRODUCT_DIR)',
               ],
             },
+            {
+              'action_name': 'extract_d3dcompiler',
+              'variables': {
+                'input': 'Aug2009_D3DCompiler_42_x86.cab',
+                'output': 'D3DCompiler_42.dll',
+              },
+              'inputs': [
+                '../third_party/directxsdk/files/Redist/<(input)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/<(output)',
+              ],
+              'action': [
+                'python',
+                '../build/extract_from_cab.py',
+                '..\\third_party\\directxsdk\\files\\Redist\\<(input)',
+                '<(output)',
+                '<(PRODUCT_DIR)',
+              ],
+            },
           ],
         }],
         ['OS=="linux" and target_arch!="arm"', {

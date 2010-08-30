@@ -49,6 +49,7 @@ Extensions\*.*: %(VersionDir)s\Extensions\
 av*.dll: %(VersionDir)s\
 pdf.dll: %(VersionDir)s\
 d3dx9_42.dll: %(VersionDir)s\
+D3DCompiler_42.dll: %(VersionDir)s\
 libEGL.dll: %(VersionDir)s\
 libGLESv2.dll: %(VersionDir)s\
 
