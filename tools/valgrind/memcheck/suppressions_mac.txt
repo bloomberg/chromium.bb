@@ -1556,6 +1556,7 @@
    bug_52681_b
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN16ChildProcessHost13CreateChannelEv
    fun:_ZN18UtilityProcessHost12StartProcessERK8FilePath
    fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
