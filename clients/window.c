@@ -115,6 +115,20 @@ struct input {
 	struct wl_list link;
 };
 
+const char *option_xkb_layout = "us";
+const char *option_xkb_variant = "";
+const char *option_xkb_options = "";
+
+static const GOptionEntry xkb_option_entries[] = {
+	{ "xkb-layout", 0, 0, G_OPTION_ARG_STRING,
+	  &option_xkb_layout, "XKB Layout" },
+	{ "xkb-variant", 0, 0, G_OPTION_ARG_STRING,
+	  &option_xkb_variant, "XKB Variant" },
+	{ "xkb-options", 0, 0, G_OPTION_ARG_STRING,
+	  &option_xkb_options, "XKB Options" },
+	{ NULL }
+};
+
 static void
 rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 {
@@ -1215,9 +1229,9 @@ init_xkb(struct display *d)
 
 	names.rules = "evdev";
 	names.model = "pc105";
-	names.layout = "us";
-	names.variant = "";
-	names.options = "";
+	names.layout = option_xkb_layout;
+	names.variant = option_xkb_variant;
+	names.options = option_xkb_options;
 
 	d->xkb = xkb_compile_keymap_from_rules(&names);
 	if (!d->xkb) {
@@ -1233,19 +1247,28 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	EGLint major, minor;
 	int fd;
 	GOptionContext *context;
+	GOptionGroup *xkb_option_group;
 	GError *error;
 	drm_magic_t magic;
 
 	g_type_init();
 
 	context = g_option_context_new(NULL);
-	if (option_entries) {
+	if (option_entries)
 		g_option_context_add_main_entries(context, option_entries, "Wayland View");
-		if (!g_option_context_parse(context, argc, argv, &error)) {
-			fprintf(stderr, "option parsing failed: %s\n", error->message);
-			exit(EXIT_FAILURE);
-		}
+
+	xkb_option_group = g_option_group_new("xkb",
+					      "Keyboard options",
+					      "Show all XKB options",
+					      NULL, NULL);
+	g_option_group_add_entries(xkb_option_group, xkb_option_entries);
+	g_option_context_add_group (context, xkb_option_group);
+
+	if (!g_option_context_parse(context, argc, argv, &error)) {
+		fprintf(stderr, "option parsing failed: %s\n", error->message);
+		exit(EXIT_FAILURE);
 	}
+
 
 	d = malloc(sizeof *d);
 	if (d == NULL)
