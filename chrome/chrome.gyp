@@ -515,6 +515,16 @@
             }
           ],
         }],
+        ['OS=="linux" and chromeos==1', {
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/extensions',
+              'files': [
+                'browser/extensions/default_extensions/chromeos/external_extensions.json'
+              ]
+            }
+          ],
+        }],
       ],
     },
     {
