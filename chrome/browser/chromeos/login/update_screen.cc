@@ -30,9 +30,8 @@ namespace chromeos {
 
 UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
     : DefaultViewScreen<chromeos::UpdateView>(delegate),
-      proceed_with_oobe_(false),
       checking_for_update_(true),
-      minimal_update_time_(0),
+      maximal_curtain_time_(0),
       reboot_check_delay_(0) {
 }
 
@@ -60,6 +59,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       break;
     case UPDATE_STATUS_DOWNLOADING:
       {
+        view()->ShowCurtain(false);
         int download_progress = static_cast<int>(
             library->status().download_progress * kDownloadProgressIncrement);
         view()->SetProgress(kBeforeDownloadProgress + download_progress);
@@ -73,6 +73,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       break;
     case UPDATE_STATUS_UPDATED_NEED_REBOOT:
       view()->SetProgress(kProgressComplete);
+      view()->ShowCurtain(false);
       CrosLibrary::Get()->GetUpdateLibrary()->RebootAfterUpdate();
       LOG(INFO) << "Reboot API was called. Waiting for reboot.";
       reboot_timer_.Start(base::TimeDelta::FromSeconds(reboot_check_delay_),
@@ -82,10 +83,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
     case UPDATE_STATUS_IDLE:
     case UPDATE_STATUS_ERROR:
     case UPDATE_STATUS_REPORTING_ERROR_EVENT:
-      if (MinimalUpdateTimeElapsed()) {
-        ExitUpdate();
-      }
-      proceed_with_oobe_ = true;
+      ExitUpdate();
       break;
     default:
       NOTREACHED();
@@ -98,12 +96,14 @@ void UpdateScreen::StartUpdate() {
   view()->Reset();
   view()->set_controller(this);
 
-  // Start the minimal update time timer.
-  if (minimal_update_time_ > 0) {
-    minimal_update_time_timer_.Start(
-        base::TimeDelta::FromSeconds(minimal_update_time_),
+  // Start the maximal curtain time timer.
+  if (maximal_curtain_time_ > 0) {
+    maximal_curtain_time_timer_.Start(
+        base::TimeDelta::FromSeconds(maximal_curtain_time_),
         this,
-        &UpdateScreen::OnMinimalUpdateTimeElapsed);
+        &UpdateScreen::OnMaximalCurtainTimeElapsed);
+  } else {
+    view()->ShowCurtain(false);
   }
 
   view()->SetProgress(kBeforeUpdateCheckProgress);
@@ -126,7 +126,7 @@ void UpdateScreen::CancelUpdate() {
 }
 
 void UpdateScreen::ExitUpdate() {
-  minimal_update_time_timer_.Stop();
+  maximal_curtain_time_timer_.Stop();
   ScreenObserver* observer = delegate()->GetObserver(this);
 
   if (!CrosLibrary::Get()->EnsureLoaded()) {
@@ -150,13 +150,8 @@ void UpdateScreen::ExitUpdate() {
   }
 }
 
-bool UpdateScreen::MinimalUpdateTimeElapsed() {
-  return !minimal_update_time_timer_.IsRunning();
-}
-
-void UpdateScreen::OnMinimalUpdateTimeElapsed() {
-  if (proceed_with_oobe_)
-    ExitUpdate();
+void UpdateScreen::OnMaximalCurtainTimeElapsed() {
+  view()->ShowCurtain(false);
 }
 
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
@@ -164,11 +159,11 @@ void UpdateScreen::OnWaitForRebootTimeElapsed() {
   view()->ShowManualRebootInfo();
 }
 
-void UpdateScreen::SetMinimalUpdateTime(int seconds) {
+void UpdateScreen::SetMaximalCurtainTime(int seconds) {
   if (seconds <= 0)
-    minimal_update_time_timer_.Stop();
-  DCHECK(!minimal_update_time_timer_.IsRunning());
-  minimal_update_time_ = seconds;
+    maximal_curtain_time_timer_.Stop();
+  DCHECK(!maximal_curtain_time_timer_.IsRunning());
+  maximal_curtain_time_ = seconds;
 }
 
 void UpdateScreen::SetRebootCheckDelay(int seconds) {

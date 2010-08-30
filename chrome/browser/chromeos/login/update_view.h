@@ -11,6 +11,7 @@
 namespace views {
 class Label;
 class ProgressBar;
+class Throbber;
 }  // namespace views
 
 namespace chromeos {
@@ -43,6 +44,10 @@ class UpdateView : public views::View {
   // Usually is not called since we rely on API that will reboot after update.
   void ShowManualRebootInfo();
 
+  // Whether curtain window with throbber and label in the center should
+  // be shown.
+  void ShowCurtain(bool show_curtain);
+
   // views::View implementation:
   virtual void Layout();
   virtual bool AcceleratorPressed(const views::Accelerator& a);
@@ -50,6 +55,9 @@ class UpdateView : public views::View {
  private:
   // Creates Label control and adds it as a child.
   void InitLabel(views::Label** label);
+
+  // Updates visibility of the elements.
+  void UpdateVisibility();
 
   // Keyboard accelerator to allow cancelling update by hitting escape.
   views::Accelerator escape_accelerator_;
@@ -60,6 +68,16 @@ class UpdateView : public views::View {
   views::Label* manual_reboot_label_;
   views::Label* escape_to_skip_label_;
   views::ProgressBar* progress_bar_;
+
+  // Curtain views.
+  views::Label* checking_label_;
+  views::Throbber* throbber_;
+
+  // Show curtain view?
+  bool show_curtain_;
+
+  // Show manual reboot label?
+  bool show_manual_reboot_label_;
 
   // Notifications receiver.
   chromeos::ScreenObserver* observer_;

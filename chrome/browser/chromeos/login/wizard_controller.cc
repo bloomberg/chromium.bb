@@ -70,8 +70,8 @@ const char kOobeCompleteFlagFilePath[] =
 const int kWizardScreenWidth = 700;
 const int kWizardScreenHeight = 416;
 
-// Update window should appear for at least kMinimalUpdateTimeSec seconds.
-const int kMinimalUpdateTimeSec = 3;
+// Upadate window will be behind the curtain at most |kMaximalCurtainTimeSec|.
+const int kMaximalCurtainTimeSec = 15;
 
 // Time in seconds that we wait for the device to reboot.
 // If reboot didn't happen, ask user to reboot device manually.
@@ -361,7 +361,7 @@ chromeos::AccountScreen* WizardController::GetAccountScreen() {
 chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
   if (!update_screen_.get()) {
     update_screen_.reset(new chromeos::UpdateScreen(this));
-    update_screen_->SetMinimalUpdateTime(kMinimalUpdateTimeSec);
+    update_screen_->SetMaximalCurtainTime(kMaximalCurtainTimeSec);
     update_screen_->SetRebootCheckDelay(kWaitForRebootTimeSec);
   }
   return update_screen_.get();
@@ -452,7 +452,11 @@ void WizardController::ShowUpdateScreen() {
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUpdateScreen());
   // There is no special step for update.
+#if defined(OFFICIAL_BUILD)
+  background_view_->SetOobeProgress(chromeos::BackgroundView::EULA);
+#else
   background_view_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
+#endif
 }
 
 void WizardController::ShowUserImageScreen() {

@@ -80,7 +80,6 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestNoUpdate) {
   UpdateScreen* update_screen = controller()->GetUpdateScreen();
   ASSERT_TRUE(update_screen != NULL);
   ASSERT_EQ(controller()->current_screen(), update_screen);
-  update_screen->SetMinimalUpdateTime(0);
 
   UpdateLibrary::Status status;
   status.status = UPDATE_STATUS_IDLE;
@@ -101,7 +100,6 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   UpdateScreen* update_screen = controller()->GetUpdateScreen();
   ASSERT_TRUE(update_screen != NULL);
   ASSERT_EQ(controller()->current_screen(), update_screen);
-  update_screen->SetMinimalUpdateTime(0);
 
   UpdateLibrary::Status status;
 
@@ -161,7 +159,6 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
   UpdateScreen* update_screen = controller()->GetUpdateScreen();
   ASSERT_TRUE(update_screen != NULL);
   ASSERT_EQ(controller()->current_screen(), update_screen);
-  update_screen->SetMinimalUpdateTime(0);
 
   UpdateLibrary::Status status;
 
@@ -200,7 +197,6 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
   UpdateScreen* update_screen = controller()->GetUpdateScreen();
   ASSERT_TRUE(update_screen != NULL);
   ASSERT_EQ(controller()->current_screen(), update_screen);
-  update_screen->SetMinimalUpdateTime(0);
 
   UpdateLibrary::Status status;
   status.status = UPDATE_STATUS_ERROR;
@@ -222,7 +218,6 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
   UpdateScreen* update_screen = controller()->GetUpdateScreen();
   ASSERT_TRUE(update_screen != NULL);
   ASSERT_EQ(controller()->current_screen(), update_screen);
-  update_screen->SetMinimalUpdateTime(0);
 
   UpdateLibrary::Status status;
 

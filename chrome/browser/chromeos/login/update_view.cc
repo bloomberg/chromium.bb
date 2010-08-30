@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "grit/chromium_strings.h"
@@ -15,6 +16,7 @@
 #include "views/border.h"
 #include "views/controls/label.h"
 #include "views/controls/progress_bar.h"
+#include "views/controls/throbber.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
@@ -41,6 +43,8 @@ const int kProgressBarWidth = 550;
 const int kProgressBarHeight = 18;
 // Horizontal spacing (ex. min left and right margins for label on the screen).
 const int kHorizontalSpacing = 75;
+// Horizontal spacing between spinner and label on the curtain screen.
+const int kBetweenSpacing = 25;
 
 // Label color.
 const SkColor kLabelColor = 0xFF000000;
@@ -57,6 +61,8 @@ UpdateView::UpdateView(chromeos::ScreenObserver* observer)
       reboot_label_(NULL),
       manual_reboot_label_(NULL),
       progress_bar_(NULL),
+      show_curtain_(true),
+      show_manual_reboot_label_(false),
       observer_(observer) {
 }
 
@@ -78,7 +84,10 @@ void UpdateView::Init() {
   progress_bar_ = new views::ProgressBar();
   AddChildView(progress_bar_);
 
-  UpdateLocalizedStrings();
+  // Curtain view.
+  InitLabel(&checking_label_);
+  throbber_ = CreateDefaultThrobber();
+  AddChildView(throbber_);
 
 #if !defined(OFFICIAL_BUILD)
   InitLabel(&escape_to_skip_label_);
@@ -86,6 +95,9 @@ void UpdateView::Init() {
   escape_to_skip_label_->SetText(
       L"Press ESCAPE to skip (Non-official builds only)");
 #endif
+
+  UpdateLocalizedStrings();
+  UpdateVisibility();
 }
 
 void UpdateView::Reset() {
@@ -102,6 +114,7 @@ void UpdateView::UpdateLocalizedStrings() {
                             l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
   reboot_label_->SetText(l10n_util::GetString(IDS_INSTALLING_UPDATE_DESC));
   manual_reboot_label_->SetText(l10n_util::GetString(IDS_UPDATE_COMPLETED));
+  checking_label_->SetText(l10n_util::GetString(IDS_CHECKING_FOR_UPDATES));
 }
 
 void UpdateView::AddProgress(int ticks) {
@@ -113,9 +126,27 @@ void UpdateView::SetProgress(int progress) {
 }
 
 void UpdateView::ShowManualRebootInfo() {
-  installing_updates_label_->SetVisible(false);
-  reboot_label_->SetVisible(false);
-  manual_reboot_label_->SetVisible(true);
+  show_manual_reboot_label_ = true;
+  UpdateVisibility();
+}
+
+void UpdateView::ShowCurtain(bool show_curtain) {
+  if (show_curtain_ != show_curtain) {
+    show_curtain_ = show_curtain;
+    UpdateVisibility();
+  }
+}
+
+// Sets the bounds of the view, placing center of the view at the given
+// coordinates (|x| and |y|).
+static void setViewBounds(views::View* view, int x, int y) {
+  int preferred_width = view->GetPreferredSize().width();
+  int preferred_height = view->GetPreferredSize().height();
+  view->SetBounds(
+      x - preferred_width / 2,
+      y - preferred_height / 2,
+      preferred_width,
+      preferred_height);
 }
 
 void UpdateView::Layout() {
@@ -145,6 +176,18 @@ void UpdateView::Layout() {
       kRebootLabelYFromProgressBar);
   manual_reboot_label_->SetX(reboot_label_->x());
   manual_reboot_label_->SetY(reboot_label_->y());
+  // Curtain layout is independed.
+  int x_center = width() / 2;
+  int throbber_width = throbber_->GetPreferredSize().width();
+  checking_label_->SizeToFit(max_width - throbber_width - kBetweenSpacing);
+  int checking_label_width = checking_label_->GetPreferredSize().width();
+  int space_half = (kBetweenSpacing + 1) / 2;
+  setViewBounds(
+      throbber_, x_center - checking_label_width / 2 - space_half,
+      vertical_center);
+  setViewBounds(
+      checking_label_, x_center + (throbber_width + 1) / 2 + space_half,
+      vertical_center);
 #if !defined(OFFICIAL_BUILD)
   escape_to_skip_label_->SizeToFit(max_width);
   escape_to_skip_label_->SetX(right_margin);
@@ -177,6 +220,22 @@ void UpdateView::InitLabel(views::Label** label) {
   (*label)->SetFont(label_font);
 
   AddChildView(*label);
+}
+
+void UpdateView::UpdateVisibility() {
+  installing_updates_label_->SetVisible(
+      !show_curtain_&& !show_manual_reboot_label_);
+  reboot_label_->SetVisible(!show_curtain_&& !show_manual_reboot_label_);
+  manual_reboot_label_->SetVisible(!show_curtain_ && show_manual_reboot_label_);
+  progress_bar_->SetVisible(!show_curtain_);
+
+  checking_label_->SetVisible(show_curtain_);
+  throbber_->SetVisible(show_curtain_);
+  if (show_curtain_) {
+    throbber_->Start();
+  } else {
+    throbber_->Stop();
+  }
 }
 
 }  // namespace chromeos
