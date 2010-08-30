@@ -22,6 +22,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
+#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class FilePath;
@@ -475,7 +476,16 @@ class RenderViewHost : public RenderWidgetHost {
   void EnablePreferredSizeChangedMode(int flags);
 
 #if defined(UNIT_TEST)
-  // This shouldn't be necessary outside of testing.
+  // These functions shouldn't be necessary outside of testing.
+
+  void set_save_accessibility_tree_for_testing(bool save) {
+    save_accessibility_tree_for_testing_ = save;
+  }
+
+  const webkit_glue::WebAccessibility& accessibility_tree() {
+    return accessibility_tree_;
+  }
+
   bool is_waiting_for_unload_ack() { return is_waiting_for_unload_ack_; }
 #endif
 
@@ -743,6 +753,12 @@ class RenderViewHost : public RenderWidgetHost {
   std::vector<string16> autofill_labels_;
   std::vector<string16> autofill_icons_;
   std::vector<int> autofill_unique_ids_;
+
+  // Whether the accessibility tree should be saved, for unit testing.
+  bool save_accessibility_tree_for_testing_;
+
+  // The most recently received accessibility tree - for unit testing only.
+  webkit_glue::WebAccessibility accessibility_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);
 };
