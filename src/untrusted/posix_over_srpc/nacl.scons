@@ -1,0 +1,27 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+    Return()
+
+sources = [
+           'closedir.c',
+           'getcwd.c',
+           'getpagesize.c',
+           'getwd.c',
+           'open.c',
+           'opendir.c',
+           'pathconf.c',
+           'pipe.c',
+           'posix_over_srpc.c',
+           'readdir.c',
+           'times.c',
+          ]
+
+env.ComponentLibrary('libposix_over_srpc', sources,)
+
+env.AddLibraryToSdk(['libposix_over_srpc'])

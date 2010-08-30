@@ -1,0 +1,21 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if env['TARGET_PLATFORM'] != 'LINUX':
+    Return()
+
+launcher = env.ComponentProgram(
+    'posix_over_srpc_launcher', ['launcher_main.cc', 'launcher.cc'],
+    EXTRA_LIBS=[
+        'posix_over_srpc_linux',
+        'nonnacl_srpc',
+        'nonnacl_util',
+        'nrd_xfer',
+        'platform',
+        'google_nacl_imc_c',
+        'gio',
+        'dl'])
