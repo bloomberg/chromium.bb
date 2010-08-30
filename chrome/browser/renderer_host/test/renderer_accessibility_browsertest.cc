@@ -41,8 +41,17 @@ const char *RendererAccessibilityBrowserTest::GetAttr(
     return "";
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/53853
+#define MAYBE_TestCrossPlatformAccessibilityTree \
+    FAILS_TestCrossPlatformAccessibilityTree
+#else
+#define MAYBE_TestCrossPlatformAccessibilityTree \
+    TestCrossPlatformAccessibilityTree
+#endif
+
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
-                       TestCrossPlatformAccessibilityTree) {
+                       MAYBE_TestCrossPlatformAccessibilityTree) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
