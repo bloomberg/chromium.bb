@@ -16,7 +16,7 @@ import urllib2
 import random
 import sys
 
-DEFAULT_DIRECTORY_SERVER = 'www-googleapis-test.sandbox.google.com'
+DEFAULT_DIRECTORY_SERVER = 'www.googleapis.com'
 
 auth_filepath = os.path.join(os.path.expanduser('~'),
                              '.chromotingDirectoryAuthToken')
@@ -58,7 +58,7 @@ class HostDirectory:
     self._auth_token = auth_token
     self._base_url = '/chromoting/v1/@me/hosts'
 
-    self._http = httplib.HTTPConnection(server)
+    self._http = httplib.HTTPSConnection(server)
     self._headers = {"Authorization": "GoogleLogin auth=" + self._auth_token,
                      "Content-Type": "application/json" }
 

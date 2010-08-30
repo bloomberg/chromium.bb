@@ -9,7 +9,8 @@ function initParams() {
 
   // Prepopulate via cookies first.
   document.getElementById('xmpp_auth').value = getCookie('xmpp_auth');
-  document.getElementById('chromoting_auth').value = getCookie('chromoting_auth');
+  document.getElementById('chromoting_auth').value =
+      getCookie('chromoting_auth');
   document.getElementById('username').value = getCookie('username');
 
   for(var i = 0; i < hashes.length; i++)
@@ -77,7 +78,8 @@ function doGaiaLogin(username, password, service, done) {
   };
 
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  xhr.send('accountType=HOSTED_OR_GOOGLE&Email=' + username + '&Passwd=' + password + '&service=' + service + '&source=chromoclient');
+  xhr.send('accountType=HOSTED_OR_GOOGLE&Email=' + username + '&Passwd=' +
+           password + '&service=' + service + '&source=chromoclient');
 }
 
 function doLogin(username, password, done) {
@@ -125,20 +127,22 @@ function doListHosts() {
       hostlist_div.appendChild(document.createElement('br'));
       appendHostLinks(parsed_response.data.items);
     } else {
-      console.log('bad status on host list query: "' + xhr.status + ' ' + xhr.statusText);
+      console.log('bad status on host list query: "' + xhr.status + ' ' +
+                  xhr.statusText);
       hostlist_div.appendChild(document.createTextNode('!! Failed !!.  :\'('));
     }
   };
 
-  xhr.open('GET', 'http://www-googleapis-test.sandbox.google.com/chromoting/v1/@me/hosts');
+  xhr.open('GET', 'https://www.googleapis.com/chromoting/v1/@me/hosts');
   xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
   xhr.setRequestHeader('Authorization', 'GoogleLogin auth=' + token);
   xhr.send(null);
 }
 
 function appendHostLinks(hostlist) {
-// A host link entry should look like:
-// - Host: <a onclick="openChromotingTab(host_jid); return false;">NAME (JID)</a> <br />
+  // A host link entry should look like:
+  //   - Host: <a onclick="openChromotingTab(host_jid); return false;">
+  //   NAME (JID) </a> <br />
   var host;
   var host_link;
   var hostlist_div = document.getElementById('hostlist_div');

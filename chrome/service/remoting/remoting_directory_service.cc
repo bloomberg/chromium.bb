@@ -15,7 +15,7 @@
 #include "remoting/host/host_key_pair.h"
 
 static const char kRemotingDirectoryUrl[] =
-    "http://www-googleapis-test.sandbox.google.com/chromoting/v1/@me/hosts";
+    "https://www.googleapis.com/chromoting/v1/@me/hosts";
 
 RemotingDirectoryService::RemotingDirectoryService(Client* client)
     : client_(client) {

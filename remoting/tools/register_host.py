@@ -22,8 +22,8 @@ def random_uuid():
   return ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x" %
     tuple(map(lambda x: random.randrange(0,65536), range(8))))
 
-server = 'www-googleapis-test.sandbox.google.com'
-url = 'http://' + server + '/chromoting/v1/@me/hosts'
+server = 'www.googleapis.com'
+url = 'https://' + server + '/chromoting/v1/@me/hosts'
 
 settings_filepath = os.path.join(os.path.expanduser('~'),
                                  '.ChromotingConfig.json')
