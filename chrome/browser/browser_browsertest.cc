@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
       ExecuteJavascriptInWebFrame(L"", L"onbeforeunload=null;");
 }
 
-// Crashy on mac.  http://crbug.com/40150
+// Crashy on mac.  http://crbug.com/38522
 #if defined(OS_MACOSX)
 #define MAYBE_SingleBeforeUnloadAfterWindowClose \
         DISABLED_SingleBeforeUnloadAfterWindowClose
