@@ -15,10 +15,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationServiceMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
@@ -41,15 +38,10 @@
 using std::string;
 using std::wstring;
 
-using WebKit::WebBindings;
 using WebKit::WebConsoleMessage;
-using WebKit::WebGeolocationServiceMock;
-using WebKit::WebElement;
 using WebKit::WebScriptSource;
 using WebKit::WebSecurityPolicy;
-using WebKit::WebSize;
 using WebKit::WebString;
-using WebKit::WebURL;
 
 TestShell* LayoutTestController::shell_ = NULL;
 // Most of these flags need to be cleared in Reset() so that they get turned
@@ -185,8 +177,6 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setGeolocationPermission", &LayoutTestController::setGeolocationPermission);
   BindMethod("setMockGeolocationPosition", &LayoutTestController::setMockGeolocationPosition);
   BindMethod("setMockGeolocationError", &LayoutTestController::setMockGeolocationError);
-
-  BindMethod("markerTextForListItem", &LayoutTestController::markerTextForListItem);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -900,7 +890,7 @@ void LayoutTestController::dumpSelectionRect(
 void LayoutTestController::display(
     const CppArgumentList& args, CppVariant* result) {
   WebViewHost* view_host = shell_->webViewHost();
-  const WebSize& size = view_host->webview()->size();
+  const WebKit::WebSize& size = view_host->webview()->size();
   gfx::Rect rect(size.width, size.height);
   view_host->UpdatePaintRect(rect);
   view_host->Paint();
@@ -1139,7 +1129,7 @@ void LayoutTestController::addOriginAccessWhitelistEntry(
       !args[2].isString() || !args[3].isBool())
     return;
 
-  WebURL url(GURL(args[0].ToString()));
+  WebKit::WebURL url(GURL(args[0].ToString()));
   if (!url.isValid())
     return;
 
@@ -1158,7 +1148,7 @@ void LayoutTestController::removeOriginAccessWhitelistEntry(
       !args[2].isString() || !args[3].isBool())
     return;
 
-  WebURL url(GURL(args[0].ToString()));
+  WebKit::WebURL url(GURL(args[0].ToString()));
   if (!url.isValid())
     return;
 
@@ -1329,7 +1319,7 @@ void LayoutTestController::setMockGeolocationPosition(
   if (args.size() < 3 ||
       !args[0].isNumber() || !args[1].isNumber() || !args[2].isNumber())
     return;
-  WebGeolocationServiceMock::setMockGeolocationPosition(
+  WebKit::WebGeolocationServiceMock::setMockGeolocationPosition(
       args[0].ToDouble(), args[1].ToDouble(), args[2].ToDouble());
 }
 
@@ -1338,16 +1328,6 @@ void LayoutTestController::setMockGeolocationError(const CppArgumentList& args,
   if (args.size() < 2 ||
       !args[0].isInt32() || !args[1].isString())
     return;
-  WebGeolocationServiceMock::setMockGeolocationError(
+  WebKit::WebGeolocationServiceMock::setMockGeolocationError(
       args[0].ToInt32(), WebString::fromUTF8(args[1].ToString()));
-}
-
-void LayoutTestController::markerTextForListItem(const CppArgumentList& args,
-                                                 CppVariant* result) {
-  WebElement element;
-  if (!WebBindings::getElement(args[0].value.objectValue, &element))
-    result->SetNull();
-  else
-    result->Set(
-        element.document().frame()->markerTextForListItem(element).utf8());
 }
