@@ -306,7 +306,7 @@ bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
 // function. For more information see bug 50796.
 bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
   // TODO(cpu): Lock down the job level more.
-  policy->SetJobLevel(sandbox::JOB_INTERACTIVE, 0);
+  policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
   if (win_util::GetWinVersion() > win_util::WINVERSION_XP)
@@ -315,7 +315,7 @@ bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
 
   policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
 
-  // TODO(cpu): Proxy registry access and remove this policies.
+  // TODO(cpu): Proxy registry access and remove these policies.
   if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\ADOBE",
                         sandbox::TargetPolicy::REG_ALLOW_ANY,
                         policy))
@@ -326,13 +326,13 @@ bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
                         policy))
     return false;
 
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
-    if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\AppDataLow",
-                          sandbox::TargetPolicy::REG_ALLOW_ANY,
-                          policy))
-      return false;
-  }
-
+  // Use a different data folder for flash data. This needs to be
+  // reverted once we stop the experiments.
+  FilePath flash_path;
+  PathService::Get(chrome::DIR_USER_DATA, &flash_path);
+  flash_path = flash_path.AppendASCII("swflash");
+  ::SetEnvironmentVariableW(L"CHROME_FLASH_ROOT",
+                            flash_path.ToWStringHack().c_str());
   return true;
 }
 
