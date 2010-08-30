@@ -28,6 +28,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/labs.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -42,6 +43,7 @@
 #include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
@@ -95,6 +97,7 @@ const char kAppCacheInternalsPath[] = "appcache-internals";
 const char kCreditsPath[] = "credits";
 const char kCachePath[] = "view-http-cache";
 const char kDnsPath[] = "dns";
+const char kGpuPath[] = "gpu";
 const char kHistogramsPath[] = "histograms";
 const char kLabsPath[] = "labs";
 const char kMemoryRedirectPath[] = "memory-redirect";
@@ -127,6 +130,7 @@ const char *kAllAboutPaths[] = {
   kCachePath,
   kCreditsPath,
   kDnsPath,
+  kGpuPath,
   kHistogramsPath,
   kLabsPath,
   kMemoryPath,
@@ -824,6 +828,35 @@ std::string AboutSys(const std::string& query) {
 }
 #endif
 
+std::string VersionNumberToString(uint32 value) {
+  int hi = (value >> 8) & 0xff;
+  int low = value & 0xff;
+  return base::IntToString(hi) + "." + base::IntToString(low);
+}
+
+std::string AboutGpu() {
+  GPUInfo gpu_info = GpuProcessHost::Get()->gpu_info();
+
+  std::string html;
+  html.append("<html><head><title>About GPU</title></head><body>\n");
+  html.append("<h2>GPU Information</h2><ul>\n");
+
+  html.append("<li><strong>Vendor ID:</strong> ");
+  html.append(base::IntToString(gpu_info.vendor_id()));
+  html.append("<li><strong>Device ID:</strong> ");
+  html.append(base::IntToString(gpu_info.device_id()));
+  html.append("<li><strong>Driver Version:</strong> ");
+  html.append(WideToASCII(gpu_info.driver_version()).c_str());
+  html.append("<li><strong>Pixel Shader Version:</strong> ");
+  html.append(VersionNumberToString(gpu_info.pixel_shader_version()).c_str());
+  html.append("<li><strong>Vertex Shader Version:</strong> ");
+  html.append(VersionNumberToString(gpu_info.vertex_shader_version()).c_str());
+  html.append("<li><strong>GL Version:</strong> ");
+  html.append(VersionNumberToString(gpu_info.gl_version()).c_str());
+  html.append("</ul></body></html> ");
+  return html;
+}
+
 // AboutSource -----------------------------------------------------------------
 
 AboutSource::AboutSource()
@@ -912,6 +945,8 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
   } else if (path == kSysPath) {
     response = AboutSys(info);
 #endif
+  } else if (path == kGpuPath) {
+    response = AboutGpu();
   }
 
   FinishDataRequest(response, request_id);
