@@ -340,6 +340,8 @@ handle_event(struct wl_display *display,
 	uint32_t p[32];
 	struct wl_listener *listener;
 	struct wl_proxy *proxy;
+	struct wl_closure *closure;
+	struct wl_message *message;
 
 	wl_connection_copy(display->connection, p, size);
 	if (id == 1)
@@ -347,17 +349,21 @@ handle_event(struct wl_display *display,
 	else
 		proxy = wl_hash_table_lookup(display->objects, id);
 
-	if (proxy != NULL)
-		wl_list_for_each(listener, &proxy->listener_list, link)
-			wl_connection_demarshal(display->connection,
-						size,
-						display->objects,
-						listener->implementation[opcode],
-						listener->data,
-						&proxy->base, 
-						&proxy->base.interface->events[opcode]);
+	if (proxy == NULL) {
+		wl_connection_consume(display->connection, size);
+		return;
+	}
 
-	wl_connection_consume(display->connection, size);
+	message = &proxy->base.interface->events[opcode];
+	closure = wl_connection_demarshal(display->connection,
+					  size, display->objects, message);
+
+	wl_list_for_each(listener, &proxy->listener_list, link)
+		wl_closure_invoke(closure, &proxy->base,
+				  listener->implementation[opcode],
+				  listener->data);
+
+	wl_closure_destroy(closure);
 }
 
 WL_EXPORT void

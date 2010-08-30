@@ -1,5 +1,9 @@
 Core wayland protocol
 
+ - The message format has to include information about number of fds
+   in the message so we can skip a message correctly.  Or we should
+   just give up on trying to recover from unknown messages.
+
  - generate pointer_focus (and drag focus) on raise/lower, move
    windows, all kinds of changes in surface stacking.
 

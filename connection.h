@@ -27,6 +27,7 @@
 #include "wayland-util.h"
 
 struct wl_connection;
+struct wl_closure;
 
 #define WL_CONNECTION_READABLE 0x01
 #define WL_CONNECTION_WRITABLE 0x02
@@ -48,11 +49,15 @@ void wl_connection_vmarshal(struct wl_connection *connection,
 			    uint32_t opcode, va_list ap,
 			    const struct wl_message *message);
 
-int wl_connection_demarshal(struct wl_connection *connection,
-			    uint32_t size,
-			    struct wl_hash_table *objects,
-			    void (*func)(void),
-			    void *data, struct wl_object *target,
-			    const struct wl_message *message);
+struct wl_closure *
+wl_connection_demarshal(struct wl_connection *connection,
+			uint32_t size,
+			struct wl_hash_table *objects,
+			const struct wl_message *message);
+void
+wl_closure_invoke(struct wl_closure *closure,
+		  struct wl_object *target, void (*func)(void), void *data);
+void
+wl_closure_destroy(struct wl_closure *closure);
 
 #endif
