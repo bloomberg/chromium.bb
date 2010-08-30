@@ -1,6 +1,7 @@
 Name: MesaLib
 Current version: 7.7
 URL: http://www.mesa3d.org/
+License File: MesaLib/docs/COPYING
 
 This directory contains a copy of these MesaLib components:
 
