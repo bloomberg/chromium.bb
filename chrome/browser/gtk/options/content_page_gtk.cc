@@ -162,6 +162,14 @@ void ContentPageGtk::NotifyPrefChanged(const std::string* pref_name) {
       gtk_toggle_button_set_active(
           GTK_TOGGLE_BUTTON(passwords_neversave_radio_), TRUE);
     }
+    bool isPasswordManagerEnabled = !ask_to_save_passwords_.IsManaged();
+    gtk_widget_set_sensitive(passwords_asktosave_radio_,
+                             isPasswordManagerEnabled);
+    gtk_widget_set_sensitive(passwords_neversave_radio_,
+                             isPasswordManagerEnabled);
+    gtk_widget_set_sensitive(show_passwords_button_,
+                             isPasswordManagerEnabled ||
+                             ask_to_save_passwords_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kAutoFillEnabled) {
     bool disabled_by_policy = form_autofill_enabled_.IsManaged() &&
@@ -229,20 +237,12 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   // depend on the spacing above.
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
-  GtkWidget* show_passwords_button = gtk_button_new_with_label(
+  show_passwords_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS).c_str());
-  g_signal_connect(show_passwords_button, "clicked",
+  g_signal_connect(show_passwords_button_, "clicked",
                    G_CALLBACK(OnShowPasswordsButtonClickedThunk), this);
-  gtk_box_pack_start(GTK_BOX(button_hbox), show_passwords_button, FALSE,
+  gtk_box_pack_start(GTK_BOX(button_hbox), show_passwords_button_, FALSE,
                      FALSE, 0);
-
-  bool isPasswordManagerEnabled = !ask_to_save_passwords_.IsManaged();
-  gtk_widget_set_sensitive(passwords_asktosave_radio_,
-                           isPasswordManagerEnabled);
-  gtk_widget_set_sensitive(passwords_neversave_radio_,
-                           isPasswordManagerEnabled);
-  gtk_widget_set_sensitive(show_passwords_button,
-                           isPasswordManagerEnabled);
 
   return vbox;
 }

@@ -68,6 +68,7 @@ class ContentPageGtk : public OptionsPageBase,
   // Widgets for the Password saving group.
   GtkWidget* passwords_asktosave_radio_;
   GtkWidget* passwords_neversave_radio_;
+  GtkWidget* show_passwords_button_;
 
   // Widgets for the AutoFill group.
   GtkWidget* autofill_button_;

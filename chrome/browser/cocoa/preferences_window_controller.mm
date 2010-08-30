@@ -421,6 +421,8 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 
 @synthesize showHomeButtonEnabled = showHomeButtonEnabled_;
 @synthesize autoFillSettingsButtonEnabled = autoFillSettingsButtonEnabled_;
+@synthesize passwordManagerChoiceEnabled = passwordManagerChoiceEnabled_;
+@synthesize passwordManagerButtonEnabled = passwordManagerButtonEnabled_;
 @synthesize proxiesConfigureButtonEnabled = proxiesConfigureButtonEnabled_;
 @synthesize restoreButtonsEnabled = restoreButtonsEnabled_;
 @synthesize restoreURLsEnabled = restoreURLsEnabled_;
@@ -495,6 +497,9 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     bool autofill_disabled_by_policy =
         autoFillEnabled_.IsManaged() && !autoFillEnabled_.GetValue();
     [self setAutoFillSettingsButtonEnabled:!autofill_disabled_by_policy];
+    [self setPasswordManagerChoiceEnabled:!askSavePasswords_.IsManaged()];
+    [self setPasswordManagerButtonEnabled:
+        !askSavePasswords_.IsManaged() || askSavePasswords_.GetValue()];
 
     // Initialize the proxy pref set observer.
     proxyPrefs_.reset(
@@ -1237,6 +1242,9 @@ const int kDisabledIndex = 1;
   if (*prefName == prefs::kPasswordManagerEnabled) {
     [self setPasswordManagerEnabledIndex:askSavePasswords_.GetValue() ?
         kEnabledIndex : kDisabledIndex];
+    [self setPasswordManagerChoiceEnabled:!askSavePasswords_.IsManaged()];
+    [self setPasswordManagerButtonEnabled:
+        !askSavePasswords_.IsManaged() || askSavePasswords_.GetValue()];
   }
   if (*prefName == prefs::kAutoFillEnabled) {
     bool autofill_disabled_by_policy =
@@ -1364,16 +1372,11 @@ const int kDisabledIndex = 1;
   else
     [self recordUserAction:UserMetricsAction(
                            "Options_PasswordManager_Disable")];
-  askSavePasswords_.SetValue(value == kEnabledIndex ? true : false);
+  askSavePasswords_.SetValueIfNotManaged(value == kEnabledIndex ? true : false);
 }
 
 - (NSInteger)passwordManagerEnabledIndex {
   return askSavePasswords_.GetValue() ? kEnabledIndex : kDisabledIndex;
-}
-
-// Returns whether the password manager buttons should be enabled.
-- (BOOL)isPasswordManagerEnabled {
-  return !askSavePasswords_.IsManaged();
 }
 
 - (void)setIsUsingDefaultTheme:(BOOL)value {

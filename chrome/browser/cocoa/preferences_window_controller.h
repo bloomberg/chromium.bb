@@ -104,6 +104,8 @@ class ProfileSyncService;
   scoped_nsobject<NSColor> syncStatusNoErrorBackgroundColor_;
   scoped_nsobject<NSColor> syncLinkNoErrorBackgroundColor_;
   scoped_nsobject<NSColor> syncErrorBackgroundColor_;
+  BOOL passwordManagerChoiceEnabled_;
+  BOOL passwordManagerButtonEnabled_;
   BOOL autoFillSettingsButtonEnabled_;
 
   // Under the hood panel
@@ -188,6 +190,8 @@ class ProfileSyncService;
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property (nonatomic, readonly) CustomHomePagesModel* customPagesSource;
 @property (assign, nonatomic) BOOL showHomeButtonEnabled;
+@property (nonatomic) BOOL passwordManagerChoiceEnabled;
+@property (nonatomic) BOOL passwordManagerButtonEnabled;
 @property (assign, nonatomic) BOOL autoFillSettingsButtonEnabled;
 @property (assign, nonatomic) BOOL proxiesConfigureButtonEnabled;
 @property (assign, nonatomic) BOOL restoreButtonsEnabled;
