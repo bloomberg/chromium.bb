@@ -13,4 +13,4 @@ NewTabUITest.NTPHasThumbnails
 # http://crbug.com/45574   Unhappy on ChromeOS valgrind
 LayoutPluginTester.UnloadNoCrash
 # http://crbug.com/53825 Times out on CrOS valgrind.
-MediaTest.VideoBearWebm
+MediaTest.VideoBear*
