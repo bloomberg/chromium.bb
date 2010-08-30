@@ -1090,7 +1090,6 @@ drag_handle_device(void *data,
 		   struct wl_drag *drag, struct wl_input_device *device)
 {
 	struct input *input;
-	fprintf(stderr, "device for drag %p: %p\n", drag, device);
 
 	input = wl_input_device_get_user_data(device);
 	input->drag = drag;
