@@ -560,21 +560,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
-  def WaitForAlwaysOpenDownloadTypeToOpen(self, id):
-    """Wait for the given download to open.
-
-    Note: This method should not be used after PerformActionOnDownload('open').
-          It is used for files that are auto-downloaded based on the file type.
-
-    Args:
-      id: The id of the download.
-    """
-    cmd_dict = {  # Prepare command for the json interface
-      'command': 'WaitForAlwaysOpenDownloadTypeToOpen',
-      'id': id
-    }
-    self._GetResultFromJSONRequest(cmd_dict)
-
   def DownloadAndWaitForStart(self, file_url):
     """Trigger download for the given url and wait for downloads to start.
 
@@ -636,7 +621,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'count': count,
       'tab_index': tab_index,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    # TODO(phajdan.jr): We need a solid automation infrastructure to handle
+    # these cases. See crbug.com/53647.
+    return self.WaitUntil(
+        lambda(count): len(self.GetBrowserInfo()\
+            ['windows'][windex]['tabs'][tab_index]['infobars']) == count,
+        args=[count])
 
   def PerformActionOnInfobar(
       self, action, infobar_index, windex=0, tab_index=0):
@@ -957,8 +947,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'WaitUntilTranslateComplete',
       'tab_index': tab_index
     }
-    return self._GetResultFromJSONRequest(
-        cmd_dict, windex=window_index)['translation_success']
+    # TODO(phajdan.jr): We need a solid automation infrastructure to handle
+    # these cases. See crbug.com/53647.
+    return self.WaitUntil(
+        lambda tab_index, window_index: self.GetTranslateInfo(
+            tab_index=tab_index, window_index=window_index)['page_translated'],
+        args=[tab_index, window_index])
 
   def FillAutoFillProfile(self, profiles=None, credit_cards=None,
                           tab_index=0, window_index=0):

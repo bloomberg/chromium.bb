@@ -782,28 +782,4 @@ class SavePackageNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(SavePackageNotificationObserver);
 };
 
-// Allows the automation provider to wait for a given number of infobars.
-class WaitForInfobarCountObserver : public NotificationObserver {
- public:
-  WaitForInfobarCountObserver(AutomationProvider* automation,
-                              IPC::Message* reply_message,
-                              TabContents* tab_contents,
-                              int count);
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
- private:
-  void ConditionMet();
-
-  NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
-  TabContents* tab_contents_;
-  int count_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaitForInfobarCountObserver);
-};
-
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

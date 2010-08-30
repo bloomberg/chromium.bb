@@ -231,12 +231,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Caller owns the returned object.
   ListValue* GetInfobarsInfo(TabContents* tc);
 
-  // Wait for infobar count in a given tab to become a certain value.
-  // Uses the JSON interface for input/output.
-  void WaitForInfobarCount(Browser* browser,
-                           DictionaryValue* args,
-                           IPC::Message* reply_message);
-
   // Perform actions on an infobar like dismiss, accept, cancel.
   // Uses the JSON interface for input/output.
   void PerformActionOnInfobar(Browser* browser,
@@ -268,12 +262,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void PerformActionOnDownload(Browser* browser,
                                DictionaryValue* args,
                                IPC::Message* reply_message);
-
-  // Waits until the given download has been opened to reply.
-  // Uses the JSON interface for input/output.
-  void WaitForAlwaysOpenDownloadTypeToOpen(Browser* browser,
-                                           DictionaryValue* args,
-                                           IPC::Message* reply_message);
 
   // Get info about history.
   // Uses the JSON interface for input/output.
@@ -423,12 +411,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SelectTranslateOption(Browser* browser,
                              DictionaryValue* args,
                              IPC::Message* reply_message);
-
-  // Waits until an attempted page translation has completed to reply.
-  // Uses the JSON interface for input/output.
-  void WaitUntilTranslateComplete(Browser* browser,
-                                  DictionaryValue* args,
-                                  IPC::Message* reply_message);
 
   // Get the profiles that are currently saved to the DB.
   // Uses the JSON interface for input/output.

@@ -522,27 +522,6 @@ ListValue* AutomationProvider::GetInfobarsInfo(TabContents* tc) {
   return infobars;
 }
 
-// Sample json input: { "command": "WaitForInfobarCount",
-//                      "count": COUNT,
-//                      "tab_index": INDEX }
-// Sample output: {}
-void AutomationProvider::WaitForInfobarCount(Browser* browser,
-                                        DictionaryValue* args,
-                                        IPC::Message* reply_message) {
-  int tab_index;
-  int count;
-  if (!args->GetInteger("count", &count) || count < 0 ||
-      !args->GetInteger("tab_index", &tab_index) || tab_index < 0) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Missing or invalid args: 'count', 'tab_index'.");
-    return;
-  }
-
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-  // Observer deletes itself.
-  new WaitForInfobarCountObserver(this, reply_message, tab_contents, count);
-}
-
 // Sample json input: { "command": "PerformActionOnInfobar",
 //                      "action": "dismiss",
 //                      "infobar_index": 0,
@@ -1002,40 +981,6 @@ void AutomationProvider::PerformActionOnDownload(Browser* browser,
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("Invalid action '%s' given.", action.c_str()));
   }
-}
-
-// See WaitForAlwaysOpenDownloadTypeToOpen() in chrome/test/pyautolib/pyauto.py
-// for sample json input.
-// Sample json output: {}
-void AutomationProvider::WaitForAlwaysOpenDownloadTypeToOpen(
-    Browser* browser, DictionaryValue* args, IPC::Message* reply_message) {
-  int id;
-
-  if (!profile_->HasCreatedDownloadManager()) {
-    AutomationJSONReply(this, reply_message).SendError("No download manager.");
-    return;
-  }
-  if (!args->GetInteger("id", &id)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Must include int id.");
-    return;
-  }
-
-  DownloadItem* selected_item = GetDownloadItemFromId(
-      id, profile_->GetDownloadManager());
-  if (!selected_item) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("No download with an id of %d\n", id));
-    return;
-  }
-
-  if (selected_item->auto_opened()) {
-    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-    return;
-  }
-  // The observer will reply after the download is opened.
-  selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
-      this, reply_message, true));
 }
 
 // Sample json input: { "command": "GetPrefsInfo" }
@@ -1776,42 +1721,6 @@ void AutomationProvider::SelectTranslateOption(Browser* browser,
   }
 }
 
-// See WaitUntilTranslateComplete() in chrome/test/pyautolib/pyauto.py for
-// sample json input and output.
-void AutomationProvider::WaitUntilTranslateComplete(
-    Browser* browser, DictionaryValue* args, IPC::Message* reply_message) {
-  std::string error_message;
-  TabContents* tab_contents = GetTabContentsFromDict(browser, args,
-                                                     &error_message);
-  if (!tab_contents) {
-    AutomationJSONReply(this, reply_message).SendError(error_message);
-    return;
-  }
-
-  TranslateInfoBarDelegate* translate_bar =
-      GetTranslateInfoBarDelegate(tab_contents);
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-
-  if (!translate_bar) {
-    return_value->SetBoolean("translation_success", false);
-    AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
-    return;
-  }
-
-  // If the translation is still pending, the observer will wait
-  // for it to finish and then reply.
-  if (translate_bar->type() == TranslateInfoBarDelegate::TRANSLATING) {
-    new PageTranslatedObserver(this, reply_message, tab_contents);
-    return;
-  }
-
-  // Otherwise send back the success or failure of the attempted translation.
-  return_value->SetBoolean(
-      "translation_success",
-      translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE);
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
-}
-
 // Sample json input: { "command": "GetThemeInfo" }
 // Refer GetThemeInfo() in chrome/test/pyautolib/pyauto.py for sample output.
 void AutomationProvider::GetThemeInfo(Browser* browser,
@@ -2176,7 +2085,6 @@ void AutomationProvider::SendJSONRequest(int handle,
 
   handler_map["GetBrowserInfo"] = &AutomationProvider::GetBrowserInfo;
 
-  handler_map["WaitForInfobarCount"] = &AutomationProvider::WaitForInfobarCount;
   handler_map["PerformActionOnInfobar"] =
       &AutomationProvider::PerformActionOnInfobar;
 
@@ -2199,8 +2107,6 @@ void AutomationProvider::SendJSONRequest(int handle,
       &AutomationProvider::WaitForDownloadsToComplete;
   handler_map["PerformActionOnDownload"] =
       &AutomationProvider::PerformActionOnDownload;
-  handler_map["WaitForAlwaysOpenDownloadTypeToOpen"] =
-      &AutomationProvider::WaitForAlwaysOpenDownloadTypeToOpen;
 
   handler_map["GetInitialLoadTimes"] = &AutomationProvider::GetInitialLoadTimes;
 
@@ -2226,8 +2132,6 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["SelectTranslateOption"] =
       &AutomationProvider::SelectTranslateOption;
   handler_map["GetTranslateInfo"] =  &AutomationProvider::GetTranslateInfo;
-  handler_map["WaitUntilTranslateComplete"] =
-      &AutomationProvider::WaitUntilTranslateComplete;
 
   handler_map["GetAutoFillProfile"] = &AutomationProvider::GetAutoFillProfile;
   handler_map["FillAutoFillProfile"] = &AutomationProvider::FillAutoFillProfile;

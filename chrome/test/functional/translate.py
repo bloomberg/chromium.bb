@@ -43,7 +43,8 @@ class TranslateTest(pyauto.PyUITest):
 
   def _NavigateAndWaitForBar(self, url, window_index=0, tab_index=0):
     self.NavigateToURL(url, window_index, tab_index)
-    self.WaitForInfobarCount(1, windex=window_index, tab_index=tab_index)
+    self.assertTrue(self.WaitForInfobarCount(
+        1, windex=window_index, tab_index=tab_index))
 
   def _ClickTranslateUntilSuccess(self, window_index=0, tab_index=0):
     """Since the translate can fail due to server error, continue trying until
@@ -172,7 +173,7 @@ class TranslateTest(pyauto.PyUITest):
     self.assertTrue(translate_info['can_translate_page'])
     # This page is an ssl error page.
     self.NavigateToURL('https://www.sourceforge.net')
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     translate_info = self.GetTranslateInfo()
     self.assertFalse('translate_bar' in translate_info)
 
@@ -184,7 +185,7 @@ class TranslateTest(pyauto.PyUITest):
     self.assertTrue(translate_info['can_translate_page'])
     # With the translate bar visible in same tab open an English page.
     self.NavigateToURL(self._GetDefaultEnglishURL())
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     translate_info = self.GetTranslateInfo()
     self.assertFalse('translate_bar' in translate_info)
 
@@ -201,7 +202,7 @@ class TranslateTest(pyauto.PyUITest):
     self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
     self.NavigateToURL(self._GetURLForDataDirFile(
           os.path.join('translate', 'notranslate_meta_tag.html')))
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     translate_info = self.GetTranslateInfo()
     self.assertFalse('translate_bar' in translate_info)
 
@@ -219,7 +220,7 @@ class TranslateTest(pyauto.PyUITest):
     self.assertTrue(translate_info['page_translated'])
     # Reload the tab and confirm the page was translated.
     self.GetBrowserWindow(0).GetTab(0).Reload()
-    self.WaitForInfobarCount(1)
+    self.assertTrue(self.WaitForInfobarCount(1))
     success = self.WaitUntilTranslateComplete()
     # Sometimes the translation fails. Continue clicking until it succeeds.
     if not success:
@@ -243,15 +244,15 @@ class TranslateTest(pyauto.PyUITest):
     # Due to crbug.com/51439, we must open two tabs here.
     self.NavigateToURL("http://www.news.google.com")
     self.AppendTab(pyauto.GURL("http://www.google.com/webhp?hl=es"))
-    self.WaitForInfobarCount(1, tab_index=1)
+    self.assertTrue(self.WaitForInfobarCount(1, tab_index=1))
     translate_info = self.GetTranslateInfo(tab_index=1)
     self.assertTrue('translate_bar' in translate_info)
     self.SelectTranslateOption('toggle_always_translate', tab_index=1)
     self._ClickTranslateUntilSuccess(tab_index=1)
     self.SetPrefs(pyauto.kRestoreOnStartup, 1)
     self.RestartBrowser(clear_profile=False)
-    self.WaitForInfobarCount(1, tab_index=1)
-    self.WaitUntilTranslateComplete()
+    self.assertTrue(self.WaitForInfobarCount(1, tab_index=1))
+    self.WaitUntilTranslateComplete(tab_index=1)
     translate_info = self.GetTranslateInfo(tab_index=1)
     self.assertTrue('translate_bar' in translate_info)
     # Sometimes translation fails. We don't really care whether it succeededs,
@@ -269,12 +270,12 @@ class TranslateTest(pyauto.PyUITest):
     translate_info = self.GetTranslateInfo()
     self.assertTrue('translate_bar' in translate_info)
     self.NavigateToURL(no_trans_url)
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse('translate_bar' in self.GetTranslateInfo())
     # Go back to the page that should be translated and assert that the
     # translate bar re-appears.
     self.GetBrowserWindow(0).GetTab(0).GoBack()
-    self.WaitForInfobarCount(1)
+    self.assertTrue(self.WaitForInfobarCount(1))
     self.assertTrue('translate_bar' in self.GetTranslateInfo())
 
     # Now test going forward.
@@ -283,11 +284,11 @@ class TranslateTest(pyauto.PyUITest):
     self.assertFalse('translate_bar' in translate_info)
     self._AssertTranslateWorks(trans_url, self.spanish)
     self.GetBrowserWindow(0).GetTab(0).GoBack()
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     translate_info = self.GetTranslateInfo()
     self.assertFalse('translate_bar' in translate_info)
     self.GetBrowserWindow(0).GetTab(0).GoForward()
-    self.WaitForInfobarCount(1)
+    self.assertTrue(self.WaitForInfobarCount(1))
     translate_info = self.GetTranslateInfo()
     self.assertTrue(translate_info['can_translate_page'])
     self.assertTrue('translate_bar' in translate_info)
@@ -299,7 +300,7 @@ class TranslateTest(pyauto.PyUITest):
     translate_info = self.GetTranslateInfo()
     self.assertTrue('translate_bar' in translate_info)
     self.NavigateToURL(crash_url)
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse('translate_bar' in self.GetTranslateInfo())
 
   def testTranslatePrefs(self):
@@ -359,7 +360,7 @@ class TranslateTest(pyauto.PyUITest):
     # and wait for bar to go away.
     self._NavigateAndWaitForBar('http://www.google.com/webhp?hl=fr')
     self.NavigateToURL('http://www.google.com/webhp?hl=es')
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse(self.GetTranslateInfo()['can_translate_page'])
 
   def testChangeTargetLanguageAlwaysTranslate(self):
@@ -455,7 +456,7 @@ class TranslateTest(pyauto.PyUITest):
     # it disappears on the history page.
     self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
     self.NavigateToURL('chrome://history/')
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse('translate_bar' in self.GetTranslateInfo())
 
   def testDownloadsNotTranslated(self):
@@ -466,7 +467,7 @@ class TranslateTest(pyauto.PyUITest):
     # it disappears on the downloads page.
     self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
     self.NavigateToURL('chrome://downloads/')
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse('translate_bar' in self.GetTranslateInfo())
 
   def testAlwaysTranslateInIncognito(self):
@@ -494,8 +495,8 @@ class TranslateTest(pyauto.PyUITest):
       """Navigate to a Spanish page in the given window/tab and verify that the
          translate bar shows up.
       """
-      self.NavigateToURL(url, window_index, tab_index)
-      self.WaitForInfobarCount(1, windex=window_index, tab_index=tab_index)
+      self._NavigateAndWaitForBar(
+          url, window_index=window_index, tab_index=tab_index)
       info_before_translate = self.GetTranslateInfo(window_index=window_index,
                                                     tab_index=tab_index)
       self.assertTrue('translate_bar' in info_before_translate)

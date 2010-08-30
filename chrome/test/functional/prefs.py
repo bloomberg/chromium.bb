@@ -150,14 +150,14 @@ class PrefsTest(pyauto.PyUITest):
     self.assertEqual(3,  # default state
         self.GetPrefsInfo().Prefs(pyauto.kGeolocationDefaultContentSetting))
     self.NavigateToURL(url)
-    self.WaitForInfobarCount(1)
+    self.assertTrue(self.WaitForInfobarCount(1))
     self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
     # Disable geolocation
     self.SetPrefs(pyauto.kGeolocationDefaultContentSetting, 2)
     self.assertEqual(2,
         self.GetPrefsInfo().Prefs(pyauto.kGeolocationDefaultContentSetting))
     self.GetBrowserWindow(0).GetTab(0).Reload()
-    self.WaitForInfobarCount(0)
+    self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
 
 

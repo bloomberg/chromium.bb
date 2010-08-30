@@ -50,7 +50,7 @@ class InfobarTest(pyauto.PyUITest):
     self.assertTrue(flash)
     logging.info('Killing flash plugin. pid %d' % flash['pid'])
     self.Kill(flash['pid'])
-    self.WaitForInfobarCount(1)
+    self.assertTrue(self.WaitForInfobarCount(1))
     crash_infobar = self._GetTabInfo()['infobars']
     self.assertTrue(crash_infobar)
     self.assertEqual(1, len(crash_infobar))
@@ -83,7 +83,7 @@ class InfobarTest(pyauto.PyUITest):
         self.DataDir(), 'geolocation', 'geolocation_on_load.html'))
     match_text='file:/// wants to track your physical location'
     self.NavigateToURL(url)
-    self.WaitForInfobarCount(1)
+    self.assertTrue(self.WaitForInfobarCount(1))
     self._VerifyGeolocationInfobar(windex=0, tab_index=0, match_text=match_text)
     # Accept, and verify that the infobar went away
     self.PerformActionOnInfobar('accept', infobar_index=0)
@@ -96,18 +96,19 @@ class InfobarTest(pyauto.PyUITest):
     match_text='file:/// wants to track your physical location'
     for tab_index in range(1, 2):
       self.AppendTab(pyauto.GURL(url))
-      self.WaitForInfobarCount(1, windex=0, tab_index=tab_index)
+      self.assertTrue(
+          self.WaitForInfobarCount(1, windex=0, tab_index=tab_index))
       self._VerifyGeolocationInfobar(windex=0, tab_index=tab_index,
                                      match_text=match_text)
     # Try in a new window
     self.OpenNewBrowserWindow(True)
     self.NavigateToURL(url, 1, 0)
-    self.WaitForInfobarCount(1, windex=1, tab_index=0)
+    self.assertTrue(self.WaitForInfobarCount(1, windex=1, tab_index=0))
     self._VerifyGeolocationInfobar(windex=1, tab_index=0, match_text=match_text)
     # Incognito window
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(url, 2, 0)
-    self.WaitForInfobarCount(1, windex=2, tab_index=0)
+    self.assertTrue(self.WaitForInfobarCount(1, windex=2, tab_index=0))
     self._VerifyGeolocationInfobar(windex=2, tab_index=0, match_text=match_text)
 
   def testMultipleDownloadsInfobar(self):
@@ -125,7 +126,7 @@ class InfobarTest(pyauto.PyUITest):
     self.DownloadAndWaitForStart(file_url)
     # trigger page reload, which triggers the download infobar
     self.GetBrowserWindow(0).GetTab(0).Reload()
-    self.WaitForInfobarCount(1)
+    self.assertTrue(self.WaitForInfobarCount(1))
     tab_info = self._GetTabInfo(0, 0)
     infobars = tab_info['infobars']
     self.assertTrue(infobars, 'Expected the multiple downloads infobar')
