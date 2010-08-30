@@ -657,7 +657,7 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
   Profile* profile_;
 };
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(OS_WIN)
 
 // Tests fail on Chrome OS:  http://crbug.com/43061
 #define MAYBE_OpenTab DISABLED_OpenTab
