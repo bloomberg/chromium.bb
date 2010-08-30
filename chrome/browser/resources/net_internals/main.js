@@ -77,6 +77,10 @@ function onLoaded() {
   var httpCacheView = new HttpCacheView("httpCacheTabContent",
                                         "httpCacheStats");
 
+  var socketsView = new SocketsView("socketsTabContent",
+                                    "socketTabTbody",
+                                    "socketPoolGroupsDiv");
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher =
       new TabSwitcherView(new DivView('categoryTabHandles'));
@@ -85,8 +89,7 @@ function onLoaded() {
   categoryTabSwitcher.addTab('requestsTab', requestsView, false);
   categoryTabSwitcher.addTab('proxyTab', proxyView, false);
   categoryTabSwitcher.addTab('dnsTab', dnsView, false);
-  categoryTabSwitcher.addTab('socketsTab', new DivView('socketsTabContent'),
-                             false);
+  categoryTabSwitcher.addTab('socketsTab', socketsView, false);
   categoryTabSwitcher.addTab('httpCacheTab', httpCacheView, false);
   categoryTabSwitcher.addTab('dataTab', dataView, false);
   categoryTabSwitcher.addTab('testTab', testView, false);
@@ -136,6 +139,7 @@ function BrowserBridge() {
   this.httpCacheInfo_ = new PollableDataHelper('onHttpCacheInfoChanged');
   this.hostResolverCache_ =
       new PollableDataHelper('onHostResolverCacheChanged');
+  this.socketPoolInfo_ = new PollableDataHelper('onSocketPoolInfoChanged');
 
   // Cache of the data received.
   // TODO(eroman): the controls to clear data in the "Requests" tab should be
@@ -198,6 +202,10 @@ BrowserBridge.prototype.sendGetHttpCacheInfo = function() {
   chrome.send('getHttpCacheInfo');
 };
 
+BrowserBridge.prototype.sendGetSocketPoolInfo = function() {
+  chrome.send('getSocketPoolInfo');
+};
+
 //------------------------------------------------------------------------------
 // Messages received from the browser
 //------------------------------------------------------------------------------
@@ -254,6 +262,10 @@ BrowserBridge.prototype.receivedBadProxies = function(badProxies) {
 BrowserBridge.prototype.receivedHostResolverCache =
 function(hostResolverCache) {
   this.hostResolverCache_.update(hostResolverCache);
+};
+
+BrowserBridge.prototype.receivedSocketPoolInfo = function(socketPoolInfo) {
+  this.socketPoolInfo_.update(socketPoolInfo);
 };
 
 BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
@@ -364,6 +376,16 @@ BrowserBridge.prototype.addHostResolverCacheObserver = function(observer) {
 };
 
 /**
+ * Adds a listener of the socket pool. |observer| will be called back
+ * when data is received, through:
+ *
+ *   observer.onSocketPoolInfoChanged(socketPoolInfo)
+ */
+BrowserBridge.prototype.addSocketPoolInfoObserver = function(observer) {
+  this.socketPoolInfo_.addObserver(observer);
+};
+
+/**
  * Adds a listener for the progress of the connection tests.
  * The observer will be called back with:
  *
@@ -426,6 +448,7 @@ BrowserBridge.prototype.doPolling_ = function() {
   this.sendGetBadProxies();
   this.sendGetHostResolverCache();
   this.sendGetHttpCacheInfo();
+  this.sendGetSocketPoolInfo();
 };
 
 /**

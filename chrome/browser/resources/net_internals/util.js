@@ -66,12 +66,23 @@ function addNode(parentNode, tagName) {
 }
 
 /**
- * Adds text to node |parentNode|.
+ * Adds |text| to node |parentNode|.
  */
 function addTextNode(parentNode, text) {
   var textNode = parentNode.ownerDocument.createTextNode(text);
   parentNode.appendChild(textNode);
   return textNode;
+}
+
+/**
+ * Adds a node to |parentNode|, of type |tagName|.  Then adds
+ * |text| to the new node.
+ */
+function addNodeWithText(parentNode, tagName, text) {
+  var elem = parentNode.ownerDocument.createElement(tagName);
+  parentNode.appendChild(elem);
+  addTextNode(elem, text);
+  return elem;
 }
 
 /**

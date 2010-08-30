@@ -23,6 +23,7 @@ found in the LICENSE file.
     <script src="logviewpainter.js"></script>
     <script src="loggrouper.js"></script>
     <script src="proxyview.js"></script>
+    <script src="socketsview.js"></script>
   </head>
   <body onload="onLoaded()">
     <!-- Tab switcher for main categories. -->
@@ -103,8 +104,26 @@ found in the LICENSE file.
         </tbody>
       </table>
     </div>
-    <!-- Sections TODO -->
-    <div id=socketsTabContent>TODO: display socket information (outstanding connect jobs)</div>
+    <div id=socketsTabContent>
+      <h4>Socket pools</h4>
+      <table class="styledTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Handed Out</th>
+            <th>Connecting</th>
+            <th>Idle</th>
+            <th>Max</th>
+            <th>Max Per Group</th>
+            <th>Generation Number</th>
+          </tr>
+        </thead>
+        <tbody id=socketTabTbody>
+        </tbody>
+      </table>
+      <div id=socketPoolGroupsDiv>
+      </div>
+    </div>
     <div id=httpCacheTabContent>
       <h4>Entries</h4>
       <a href="chrome://view-http-cache" target=_blank>Explore cache entries</a>

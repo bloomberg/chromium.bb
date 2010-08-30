@@ -43,7 +43,13 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_proxy_client_socket_pool.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket/socks_client_socket_pool.h"
+#include "net/socket/ssl_client_socket_pool.h"
+#include "net/socket/tcp_client_socket_pool.h"
 #include "net/url_request/url_request_context.h"
 
 namespace {
@@ -75,6 +81,15 @@ disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
     return NULL;
 
   return http_cache->GetCurrentBackend();
+}
+
+// Returns the http network session for |context| if there is one.
+// Otherwise, returns NULL.
+net::HttpNetworkSession* GetHttpNetworkSession(URLRequestContext* context) {
+  if (!context->http_transaction_factory())
+    return NULL;
+
+  return context->http_transaction_factory()->GetSession();
 }
 
 Value* ExperimentToValue(const ConnectionTester::Experiment& experiment) {
@@ -194,6 +209,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnGetPassiveLogEntries(const ListValue* list);
   void OnStartConnectionTests(const ListValue* list);
   void OnGetHttpCacheInfo(const ListValue* list);
+  void OnGetSocketPoolInfo(const ListValue* list);
 
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
@@ -374,6 +390,9 @@ void NetInternalsMessageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "getHttpCacheInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetHttpCacheInfo));
+  dom_ui_->RegisterMessageCallback(
+      "getSocketPoolInfo",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetSocketPoolInfo));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -559,6 +578,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   OnGetBadProxies(NULL);
   OnGetHostResolverCache(NULL);
   OnGetHttpCacheInfo(NULL);
+  OnGetSocketPoolInfo(NULL);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
@@ -744,6 +764,18 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
   info_dict->Set("stats", stats_dict);
 
   CallJavascriptFunction(L"g_browser.receivedHttpCacheInfo", info_dict);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
+    const ListValue* list) {
+  net::HttpNetworkSession *http_network_session =
+      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+
+  Value *socket_pool_info = NULL;
+  if (http_network_session)
+    socket_pool_info = http_network_session->SocketPoolInfoToValue();
+
+  CallJavascriptFunction(L"g_browser.receivedSocketPoolInfo", socket_pool_info);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
