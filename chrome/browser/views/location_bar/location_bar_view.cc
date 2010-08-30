@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -190,7 +189,7 @@ void LocationBarView::Init() {
   }
 
   // The star is not visible in popups and in the app launcher.
-  if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
+  if (mode_ == NORMAL) {
     star_view_ = new StarView(command_updater_);
     AddChildView(star_view_);
     star_view_->SetVisible(true);
@@ -261,10 +260,6 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
 }
 
 void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
-  bool star_enabled = star_view_ && !model_->input_in_progress();
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  if (star_view_)
-    star_view_->SetVisible(star_enabled);
   RefreshContentSettingViews();
   RefreshPageActionViews();
   // Don't Update in app launcher mode so that the location entry does not show
@@ -434,7 +429,7 @@ void LocationBarView::Layout() {
         kItemEditPadding);
   }
 
-  if (star_view_ && star_view_->IsVisible())
+  if (star_view_)
     entry_width -= star_view_->GetPreferredSize().width() + kItemPadding;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
@@ -502,7 +497,7 @@ void LocationBarView::Layout() {
 
   // Lay out items to the right of the edit field.
   int offset = width() - kEdgeThickness - kEdgeItemPadding;
-  if (star_view_ && star_view_->IsVisible()) {
+  if (star_view_) {
     int star_width = star_view_->GetPreferredSize().width();
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
@@ -846,8 +841,7 @@ void LocationBarView::RefreshPageActionViews() {
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {
-      (*i)->UpdateVisibility(model_->input_in_progress() ? NULL : contents,
-                             url);
+      (*i)->UpdateVisibility(contents, url);
 
       // Check if the visibility of the action changed and notify if it did.
       ExtensionAction* action = (*i)->image_view()->page_action();

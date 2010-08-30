@@ -33,7 +33,6 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/content_setting_bubble_model.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -184,10 +183,6 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
-  bool star_enabled = browser_defaults::bookmarks_enabled &&
-      [field_ isEditable] && !toolbar_model_->input_in_progress();
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  star_decoration_->SetVisible(star_enabled);
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   // AutocompleteEditView restores state if the tab is non-NULL.
@@ -376,8 +371,7 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
 
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
-  star_decoration_->SetVisible(browser_defaults::bookmarks_enabled &&
-      editable && !toolbar_model_->input_in_progress());
+  star_decoration_->SetVisible(editable);
   UpdatePageActions();
   Layout();
 }
@@ -496,10 +490,8 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     return;
 
   GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    page_action_decorations_[i]->UpdateVisibility(
-        toolbar_model_->input_in_progress() ? NULL : contents, url);
-  }
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i)
+    page_action_decorations_[i]->UpdateVisibility(contents, url);
 }
 
 // TODO(shess): This function should over time grow to closely match
