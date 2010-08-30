@@ -46,6 +46,31 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   return LOAD_OK;
 }
 
+int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
+                                uint8_t *data_old, uint8_t *data_new,
+                                size_t size) {
+  struct NCValidatorState *vstate;
+  int validator_result;
+
+  if (nap->validator_stub_out_mode) {
+    NaClLog(1, "NaClValidateCodeReplacement:  "
+               "stub_out_mode not supported for code replacement\n");
+    return LOAD_BAD_FILE;
+  }
+
+  vstate = NCValidateInit(guest_addr, guest_addr + size, nap->bundle_size);
+  if (vstate == NULL) {
+    return LOAD_BAD_FILE;
+  }
+  NCValidateSegmentPair(data_old, data_new, guest_addr, size, vstate);
+  validator_result = NCValidateFinish(vstate);
+  NCValidateFreeState(&vstate);
+  if (validator_result != 0) {
+    return LOAD_VALIDATION_FAILED;
+  }
+  return LOAD_OK;
+}
+
 # else
 
 #  include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
@@ -70,6 +95,19 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   return LOAD_OK;
 }
 
+int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
+                                uint8_t *data_old, uint8_t *data_new,
+                                size_t size) {
+  UNREFERENCED_PARAMETER(nap);
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(data_old);
+  UNREFERENCED_PARAMETER(data_new);
+  UNREFERENCED_PARAMETER(size);
+  NaClLog(1, "NaClValidateCodeReplacement: "
+             "code replacement not yet supported on x86_64\n");
+  return LOAD_BAD_FILE;
+}
+
 # endif
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
@@ -87,6 +125,20 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     return LOAD_VALIDATION_FAILED;
   }
 }
+
+int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
+                                uint8_t *data_old, uint8_t *data_new,
+                                size_t size) {
+  UNREFERENCED_PARAMETER(nap);
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(data_old);
+  UNREFERENCED_PARAMETER(data_new);
+  UNREFERENCED_PARAMETER(size);
+  NaClLog(1, "NaClValidateCodeReplacement: "
+             "code replacement not yet supported on ARM\n");
+  return LOAD_BAD_FILE;
+}
+
 
 #endif
 

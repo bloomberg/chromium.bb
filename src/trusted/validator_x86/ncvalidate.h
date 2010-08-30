@@ -66,6 +66,15 @@ void NCValidateSetStubOutMode(struct NCValidatorState *vstate,
 void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate);
 
+/* Validate a segment for dynamic code replacement */
+/* This routine checks that the code found at mbase_old
+ * can be dynamically replaced with the code at mbase_new
+ * safely.
+ */
+void NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
+                           NaClPcAddress vbase, size_t sz,
+                           struct NCValidatorState *vstate);
+
 /* Check targets and alignment. Returns non-zero if there are */
 /* safety issues, else returns 1                              */
 /* BEWARE: vstate is invalid after this call                  */

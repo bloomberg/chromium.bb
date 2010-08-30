@@ -7,6 +7,10 @@
 
 extern char template_func;
 extern char template_func_end;
+extern char template_func_replacement;
+extern char template_func_replacement_end;
+extern char template_func_nonreplacement;
+extern char template_func_nonreplacement_end;
 extern char hlts;
 extern char hlts_end;
 extern char invalid_code;

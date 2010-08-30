@@ -13,6 +13,27 @@ template_func:
         bx  lr
 template_func_end:
 
+        .global template_func_replacement
+        .global template_func_replacement_end
+        .p2align 4
+template_func_replacement:
+        mov r0, #4321 & 0xff
+        orr r0, #4321 & 0xff00
+        bic lr, lr, #0xf000000f
+        bx  lr
+template_func_replacement_end:
+
+        .global template_func_nonreplacement
+        .global template_func_nonreplacement_end
+        .p2align 4
+template_func_nonreplacement:
+        mov r0, #1234 & 0xff
+        orr r0, #1234 & 0xff00
+        mov r1, #1234 & 0xff
+        orr r1, #1234 & 0xff00
+        bic lr, lr, #0xf000000f
+        bx  lr
+template_func_nonreplacement_end:
 
         .global hlts
         .global hlts_end

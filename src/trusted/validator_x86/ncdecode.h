@@ -19,6 +19,8 @@ struct NCDecoderState;
 struct NCValidatorState;
 /* Function type for a decoder action */
 typedef void (*NCDecoderAction)(const struct NCDecoderState *mstate);
+typedef void (*NCDecoderPairAction)(const struct NCDecoderState *mstate_old,
+                                    const struct NCDecoderState *mstate_new);
 typedef void (*NCDecoderStats)(struct NCValidatorState *vstate);
 
 /* Using a bit mask here. Hopefully nobody will be offended.
@@ -290,6 +292,14 @@ extern void NCDecodeRegisterCallbacks(NCDecoderAction decoderaction,
 
 extern void NCDecodeSegment(uint8_t *mbase, NaClPcAddress vbase,
                             NaClMemorySize sz, struct NCValidatorState *vstate);
+
+/* Walk two instruction segments at once, requires identical instruction
+ * boundaries.
+ */
+extern void NCDecodeSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
+                         NaClPcAddress vbase, NaClMemorySize size,
+                         struct NCValidatorState* vstate,
+                         NCDecoderPairAction action);
 
 extern struct NCDecoderState *PreviousInst(const struct NCDecoderState *mstate,
                                            int nindex);

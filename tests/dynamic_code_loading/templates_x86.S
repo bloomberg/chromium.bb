@@ -20,6 +20,41 @@ template_func:
 #endif
 template_func_end:
 
+        .global template_func_replacement
+        .global template_func_replacement_end
+        .p2align 5
+template_func_replacement:
+#if defined(__i386__)
+        movl $4321, %eax
+        popl %ecx
+        nacljmp %ecx
+#elif defined(__x86_64__)
+        movq $4321, %rax
+        popq %r11
+        nacljmp %r11d, %r15
+#else
+# error "Unsupported architecture"
+#endif
+template_func_replacement_end:
+
+        .global template_func_nonreplacement
+        .global template_func_nonreplacement_end
+        .p2align 5
+template_func_nonreplacement:
+#if defined(__i386__)
+        movl $4132, %eax
+        popl %edx
+        nacljmp %edx
+#elif defined(__x86_64__)
+        movq $4132, %rax
+        popq %r12
+        nacljmp %r12d, %r15
+#else
+# error "Unsupported architecture"
+#endif
+template_func_nonreplacement_end:
+
+
 
         .global hlts
         .global hlts_end

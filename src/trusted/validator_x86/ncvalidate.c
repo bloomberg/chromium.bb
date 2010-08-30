@@ -241,8 +241,10 @@ static const uint8_t iadrmasks[8] = {0x01, 0x02, 0x04, 0x08,
 #define GetAdrTable(__IOFF, __TABLE) \
   ((__TABLE)[IATOffset(__IOFF)] & IATMask(__IOFF))
 
-/* forward declaration, for registration */
+/* forward declarations, needed for registration */
 void ValidateInst(const struct NCDecoderState *mstate);
+void ValidateInstReplacement(const struct NCDecoderState *mstate_old,
+                             const struct NCDecoderState *mstate_new);
 
 /* In general we are quite paranoid about what prefixes can     */
 /* be used and where. For one-byte opcodes, prefixes are        */
@@ -710,6 +712,57 @@ void ValidateInst(const struct NCDecoderState *mstate) {
   if (squashme) memset(mstate->inst.maddr, kNaClFullStop, mstate->inst.length);
 }
 
+/*
+ * Validate that two nacljmps are byte-for-byte identical.  Note that
+ * one of the individual jumps must be validated in isolation with
+ * ValidateIndirect5() before this is called.
+ */
+void ValidateIndirect5Replacement(const struct NCDecoderState *mstate_old,
+                                  const struct NCDecoderState *mstate_new) {
+  do {
+    /* check that the and-guard is 3 bytes and bit-for-bit identical */
+    struct NCDecoderState *andinst_old = PreviousInst(mstate_old, -1);
+    struct NCDecoderState *andinst_new = PreviousInst(mstate_new, -1);
+    if (andinst_old->inst.length != 3) break;
+    if (andinst_new->inst.length != 3) break;
+    if (memcmp(andinst_old->inst.maddr, andinst_new->inst.maddr, 3) != 0) break;
+
+    /* check that the indirect-jmp is 2 bytes and bit-for-bit identical */
+    if (mstate_old->inst.length != 2) break;
+    if (mstate_new->inst.length != 2) break;
+    if (memcmp(mstate_old->inst.maddr, mstate_new->inst.maddr, 2) != 0) break;
+
+    return;
+  } while (0);
+  BadInstructionError(mstate_new,
+                      "Replacement indirect jump must match original");
+  Stats_UnsafeIndirect(mstate_new->vstate);
+}
+
+/*
+ * Check that mstate_new is a valid replacement instruction for mstate_old.
+ * Note that mstate_old was validated when it was inserted originally.
+ */
+void ValidateInstReplacement(const struct NCDecoderState *mstate_old,
+                             const struct NCDecoderState *mstate_new) {
+  /* Call single instruction validator first, will call ValidateIndirect5() */
+  ValidateInst(mstate_new);
+
+  /* Location/length must match */
+  if (mstate_old->inst.length != mstate_new->inst.length
+    || mstate_old->vpc != mstate_new->vpc) {
+    BadInstructionError(mstate_new,
+                        "New instruction does not match old instruction size");
+    Stats_BadInstLength(mstate_new->vstate);
+  }
+
+  if (mstate_old->opinfo->insttype == NACLi_INDIRECT
+    || mstate_new->opinfo->insttype == NACLi_INDIRECT) {
+    /* Verify that nacljmps never change */
+    ValidateIndirect5Replacement(mstate_old, mstate_new);
+  }
+}
+
 void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate) {
   if (sz == 0) {
@@ -738,3 +791,29 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
   NCDecodeSegment(mbase, vbase, sz, vstate);
   g_print_diagnostics = 1;
 }
+
+/*
+ * (Same as NCValidateSegment, but operates on a pair of instructions.)
+ * Validates that instructions at mbase_new may replace mbase_old.
+ */
+void NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
+                           NaClPcAddress vbase, size_t sz,
+                           struct NCValidatorState *vstate) {
+  if (sz == 0) {
+    ValidatePrintError(0, "Bad text segment (zero size)");
+    Stats_SegFault(vstate);
+    return;
+  }
+  GetCPUFeatures(&(vstate->cpufeatures));
+  /* The name of the flag is misleading; f_386 requires not just    */
+  /* 386 instructions but also the CPUID instruction is supported.  */
+  if (!vstate->cpufeatures.f_386) {
+    ValidatePrintError(0, "CPU does not support CPUID");
+    Stats_BadCPU(vstate);
+    return;
+  }
+
+  NCDecodeSegmentPair(mbase_old, mbase_new, vbase, sz,
+                      vstate, ValidateInstReplacement);
+}
+

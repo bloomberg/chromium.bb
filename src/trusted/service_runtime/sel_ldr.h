@@ -199,6 +199,7 @@ struct NaClApp {
   int                       restrict_to_main_thread;
   int                       ignore_validator_result;
   int                       validator_stub_out_mode;
+  int                       allow_dyncode_replacement;
   /* all threads enqueue the "special" syscalls to the work queue */
   struct NaClSyncQueue      work_queue;
 
@@ -279,6 +280,17 @@ int NaClValidateCode(struct NaClApp *nap,
                      uintptr_t      guest_addr,
                      uint8_t        *data,
                      size_t         size) NACL_WUR;
+
+/*
+ * Validates that the code found at data_old can safely be replaced with
+ * the code found at data_new.
+ */
+int NaClValidateCodeReplacement(struct    NaClApp *nap,
+                                uintptr_t guest_addr,
+                                uint8_t   *data_old,
+                                uint8_t   *data_new,
+                                size_t    size);
+
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) NACL_WUR;
 
 

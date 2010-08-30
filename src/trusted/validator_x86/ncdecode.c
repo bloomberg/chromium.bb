@@ -420,6 +420,66 @@ struct NCDecoderState *PreviousInst(const struct NCDecoderState* mstate,
   return &mstate->decodebuffer[index];
 }
 
+/* Initialize the ring buffer used to store decoded instructions
+ *
+ * mbase: The actual address in memory of the instructions being iterated.
+ * vbase: The virtual address instructions will be executed from.
+ * decodebuffer: Ring buffer containing kDecodeBufferSize elements (output)
+ * mstate: Current instruction pointer into the ring buffer (output)
+ */
+static void InitDecodeBuffer(uint8_t *mbase, NaClPcAddress vbase,
+                             struct NCValidatorState* vstate,
+                             struct NCDecoderState* decodebuffer,
+                             struct NCDecoderState** mstate) {
+  int dbindex;
+  for (dbindex = 0; dbindex < kDecodeBufferSize; ++dbindex) {
+    decodebuffer[dbindex].vstate       = vstate;
+    decodebuffer[dbindex].decodebuffer = decodebuffer;
+    decodebuffer[dbindex].dbindex      = dbindex;
+    decodebuffer[dbindex].inst.length  = 0;  /* indicates no instruction */
+    decodebuffer[dbindex].vpc          = 0;
+    decodebuffer[dbindex].mpc          = 0;
+  }
+  (*mstate)           = &decodebuffer[0];
+  (*mstate)->mpc      = (uint8_t *)mbase;
+  (*mstate)->nextbyte = mbase;
+  (*mstate)->vpc      = vbase;
+}
+
+/* Modify the current instruction pointer to point to the next instruction
+ * in the ring buffer.  Reset the state of that next instruction.
+ */
+static void IncrementDecodeBuffer(struct NCDecoderState** mstate) {
+  /* giving PreviousInst a positive number will get NextInst
+   * better to keep the buffer switching logic in one place
+   */
+  struct NCDecoderState* mnextstate = PreviousInst(*mstate, 1);
+  mnextstate->vpc      = (*mstate)->vpc + (*mstate)->inst.length;
+  mnextstate->mpc      = (*mstate)->mpc + (*mstate)->inst.length;
+  mnextstate->nextbyte = (*mstate)->nextbyte;
+  *mstate = mnextstate;
+}
+
+/* All of the actions needed to read one additional instruction into mstate.
+ * Returns the vpc of the next,next instruction.
+ */
+static NaClPcAddress ConsumeNextInstruction(struct NCDecoderState* mstate) {
+  NaClPcAddress newpc;
+  DEBUG( printf("Decoding instruction at %"NACL_PRIxNaClPcAddress":\n",
+                mstate->vpc) );
+  InitDecoder(mstate);
+  ConsumePrefixBytes(mstate);
+  ConsumeOpcodeBytes(mstate);
+  ConsumeModRM(mstate);
+  ConsumeSIB(mstate);
+  ConsumeID(mstate);
+  MaybeGet3ByteOpInfo(mstate);
+  /* now scrutinize this instruction */
+  newpc = mstate->vpc + mstate->inst.length;
+  DEBUG( printf("new pc = %"NACL_PRIxNaClPcAddress"\n", newpc) );
+  return newpc;
+}
+
 /* The actual decoder */
 void NCDecodeSegment(uint8_t *mbase, NaClPcAddress vbase,
                      NaClMemorySize size,
@@ -427,38 +487,14 @@ void NCDecodeSegment(uint8_t *mbase, NaClPcAddress vbase,
   const NaClPcAddress vlimit = vbase + size;
   struct NCDecoderState decodebuffer[kDecodeBufferSize];
   struct NCDecoderState *mstate;
-  int dbindex;
-  for (dbindex = 0; dbindex < kDecodeBufferSize; ++dbindex) {
-    decodebuffer[dbindex].vstate = vstate;
-    decodebuffer[dbindex].decodebuffer = decodebuffer;
-    decodebuffer[dbindex].dbindex = dbindex;
-    decodebuffer[dbindex].inst.length = 0;  /* indicates no instruction */
-    decodebuffer[dbindex].vpc = 0;
-    decodebuffer[dbindex].mpc = 0;
-  }
-  mstate = &decodebuffer[0];
-  mstate->mpc = (uint8_t *)mbase;
-  mstate->nextbyte = mbase;
-  mstate->vpc = vbase;
+  InitDecodeBuffer(mbase, vbase, vstate, decodebuffer, &mstate);
 
   DEBUG( printf("DecodeSegment(%"NACL_PRIxNaClPcAddress
                 "-%"NACL_PRIxNaClPcAddress")\n",
                 vbase, vlimit) );
   g_NewSegment(mstate->vstate);
   while (mstate->vpc < vlimit) {
-    NaClPcAddress newpc;
-    DEBUG( printf("Decoding instruction at %"NACL_PRIxNaClPcAddress":\n",
-                  mstate->vpc) );
-    InitDecoder(mstate);
-    ConsumePrefixBytes(mstate);
-    ConsumeOpcodeBytes(mstate);
-    ConsumeModRM(mstate);
-    ConsumeSIB(mstate);
-    ConsumeID(mstate);
-    MaybeGet3ByteOpInfo(mstate);
-    /* now scrutinize this instruction */
-    newpc = mstate->vpc + mstate->inst.length;
-    DEBUG( printf("new pc = %"NACL_PRIxNaClPcAddress"\n", newpc) );
+    NaClPcAddress newpc = ConsumeNextInstruction(mstate);
     if (newpc > vlimit) {
       fprintf(stdout, "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress"\n",
               newpc, vlimit);
@@ -466,11 +502,52 @@ void NCDecodeSegment(uint8_t *mbase, NaClPcAddress vbase,
       break;
     }
     g_DecoderAction(mstate);
-    /* get read for next round */
-    dbindex = (dbindex + 1) & (kDecodeBufferSize - 1);
-    decodebuffer[dbindex].vpc = newpc;
-    decodebuffer[dbindex].mpc = mstate->mpc + mstate->inst.length;
-    decodebuffer[dbindex].nextbyte = mstate->nextbyte;
-    mstate = &decodebuffer[dbindex];
+    /* get ready for next round */
+    IncrementDecodeBuffer(&mstate);
   }
 }
+
+/* The actual decoder -- decodes two instruction segments in parallel */
+void NCDecodeSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
+                         NaClPcAddress vbase, NaClMemorySize size,
+                         struct NCValidatorState* vstate,
+                         NCDecoderPairAction action) {
+  const NaClPcAddress vlimit = vbase + size;
+  struct NCDecoderState decodebuffer_old[kDecodeBufferSize];
+  struct NCDecoderState decodebuffer_new[kDecodeBufferSize];
+  struct NCDecoderState *mstate_old;
+  struct NCDecoderState *mstate_new;
+  InitDecodeBuffer(mbase_old, vbase, vstate, decodebuffer_old, &mstate_old);
+  InitDecodeBuffer(mbase_new, vbase, vstate, decodebuffer_new, &mstate_new);
+
+  DEBUG( printf("DecodeSegmentPair(%"NACL_PRIxNaClPcAddress
+                "-%"NACL_PRIxNaClPcAddress")\n",
+                vbase, vlimit) );
+  g_NewSegment(mstate_new->vstate);
+  while (mstate_old->vpc < vlimit && mstate_new->vpc < vlimit) {
+    NaClPcAddress newpc_old = ConsumeNextInstruction(mstate_old);
+    NaClPcAddress newpc_new = ConsumeNextInstruction(mstate_new);
+
+    if (newpc_old != newpc_new) {
+      fprintf(stdout, "misaligned replacement code "
+              "%"NACL_PRIxNaClPcAddress" != %"NACL_PRIxNaClPcAddress"\n",
+              newpc_old, newpc_new);
+      ErrorSegmentation(vstate);
+      break;
+    }
+
+    if (newpc_new > vlimit) {
+      fprintf(stdout, "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress"\n",
+              newpc_new, vlimit);
+      ErrorSegmentation(vstate);
+      break;
+    }
+
+    action(mstate_old, mstate_new);
+
+    /* get ready for next round */
+    IncrementDecodeBuffer(&mstate_old);
+    IncrementDecodeBuffer(&mstate_new);
+  }
+}
+

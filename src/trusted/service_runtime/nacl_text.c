@@ -482,20 +482,49 @@ int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
     retval = -NACL_ABI_EINVAL;
     goto cleanup_unlock;
   }
+
   if (!CodeRangeIsUnused(mapped_addr, size)) {
+    if (!nap->allow_dyncode_replacement) {
+        /*
+         * We cannot safely overwrite this memory because other
+         * threads could be executing code from it.
+         */
+        NaClLog(1, "NaClTextSysDyncode_Copy: Code range already allocated\n");
+        retval = -NACL_ABI_EINVAL;
+        goto cleanup_unlock;
+    }
+
     /*
-     * We cannot safely overwrite this memory because other
-     * threads could be executing code from it.
+     * target addr is in use... lets see if this is a valid replacement
      */
-    NaClLog(1, "NaClTextSysDyncode_Copy: Code range already allocated\n");
-    retval = -NACL_ABI_EINVAL;
-    goto cleanup_unlock;
+    validator_result = NaClValidateCodeReplacement(nap, dest,
+                                                   mapped_addr, code_copy,
+                                                   size);
+
+    if (validator_result != LOAD_OK && nap->ignore_validator_result) {
+      NaClLog(LOG_ERROR, "VALIDATION FAILED for dynamically-loaded code: "
+              "continuing anyway...\n");
+      validator_result = LOAD_OK;
+    }
+
+    if (validator_result != LOAD_OK) {
+      NaClLog(1, "NaClTextSysDyncode_Copy: (REWRITE) "
+              "Validation of dynamic code failed\n");
+
+      retval = -NACL_ABI_EINVAL;
+      goto cleanup_unlock;
+    }
+
+    /*
+     * TODO(jansel): this is NOT thread safe, we must dock all threads
+     *               before replacing code
+     */
+    memcpy(mapped_addr, code_copy, size);
+    retval = 0;
+  } else {
+    CopyCodeSafely(mapped_addr, code_copy, size, nap->bundle_size);
+    retval = 0;
   }
-
-  /* yay! passed all checks */
-
-  CopyCodeSafely(mapped_addr, code_copy, size, nap->bundle_size);
-  retval = 0;
 
 cleanup_unlock:
   NaClMutexUnlock(&nap->dynamic_load_mutex);
