@@ -42,7 +42,6 @@ class ToolbarModel;
   BOOL verticalLayout_;
 
  @private
-  TabContents* currentTab_;   // weak, tab for which we're showing state
   scoped_nsobject<TabStripView> tabStripView_;
   NSView* switchView_;  // weak
   scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server drags

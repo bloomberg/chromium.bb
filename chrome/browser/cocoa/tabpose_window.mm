@@ -8,12 +8,24 @@
 
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
+#include "base/scoped_callback_factory.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
+#import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
+#import "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/renderer_host/backing_store_mac.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/utils/mac/SkCGUtils.h"
 
 const int kTopGradientHeight  = 15;
 
@@ -23,6 +35,7 @@ NSString* const kAnimationIdFadeOut = @"FadeOut";
 
 const CGFloat kDefaultAnimationDuration = 0.25;  // In seconds.
 const CGFloat kSlomoFactor = 4;
+const CGFloat kObserverChangeAnimationDuration = 0.75;  // In seconds.
 
 // CAGradientLayer is 10.6-only -- roll our own.
 @interface DarkGradientLayer : CALayer
@@ -40,6 +53,247 @@ const CGFloat kSlomoFactor = 4;
   CGPoint topLeft = CGPointMake(0.0, kTopGradientHeight);
   CGContextDrawLinearGradient(context, gradient.get(), topLeft, CGPointZero, 0);
 }
+@end
+
+namespace tabpose {
+class ThumbnailLoader;
+}
+
+// A CALayer that draws a thumbnail for a TabContents object. The layer tries
+// to draw the TabContents's backing store directly if possible, and requests
+// a thumbnail bitmap from the TabContents's renderer process if not.
+@interface ThumbnailLayer : CALayer {
+  // The TabContents the thumbnail is for.
+  TabContents* contents_;  // weak
+
+  // The size the thumbnail is drawn at when zoomed in.
+  NSSize fullSize_;
+
+  // Used to load a thumbnail, if required.
+  scoped_refptr<tabpose::ThumbnailLoader> loader_;
+
+  // If the backing store couldn't be used and a thumbnail was returned from a
+  // renderer process, it's stored in |thumbnail_|.
+  scoped_cftyperef<CGImageRef> thumbnail_;
+
+  // True if the layer already sent a thumbnail request to a renderer.
+  BOOL didSendLoad_;
+}
+- (id)initWithTabContents:(TabContents*)contents fullSize:(NSSize)fullSize;
+- (void)drawInContext:(CGContextRef)context;
+- (void)setThumbnail:(const SkBitmap&)bitmap;
+@end
+
+namespace tabpose {
+
+// ThumbnailLoader talks to the renderer process to load a thumbnail of a given
+// RenderWidgetHost, and sends the thumbnail back to a ThumbnailLayer once it
+// comes back from the renderer.
+class ThumbnailLoader : public base::RefCountedThreadSafe<ThumbnailLoader> {
+ public:
+  ThumbnailLoader(gfx::Size size, RenderWidgetHost* rwh, ThumbnailLayer* layer)
+      : size_(size), rwh_(rwh), layer_(layer), factory_(this) {}
+
+  // Starts the fetch.
+  void LoadThumbnail();
+
+ private:
+  friend class base::RefCountedThreadSafe<ThumbnailLoader>;
+  ~ThumbnailLoader() {
+    ResetPaintingObserver();
+  }
+
+  void DidReceiveBitmap(const SkBitmap& bitmap) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    ResetPaintingObserver();
+    [layer_ setThumbnail:bitmap];
+  }
+
+  void ResetPaintingObserver() {
+    if (rwh_->painting_observer() != NULL) {
+      DCHECK(rwh_->painting_observer() ==
+             g_browser_process->GetThumbnailGenerator());
+      rwh_->set_painting_observer(NULL);
+    }
+  }
+
+  gfx::Size size_;
+  RenderWidgetHost* rwh_;  // weak
+  ThumbnailLayer* layer_;  // weak, owns us
+  base::ScopedCallbackFactory<ThumbnailLoader> factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThumbnailLoader);
+};
+
+void ThumbnailLoader::LoadThumbnail() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
+  if (!generator)  // In unit tests.
+    return;
+
+  // As mentioned in ThumbnailLayer's -drawInContext:, it's sufficient to have
+  // thumbnails at the zoomed-out pixel size for all but the thumbnail the user
+  // clicks on in the end. But we don't don't which thumbnail that will be, so
+  // keep it simple and request full thumbnails for everything.
+  // TODO(thakis): Request smaller thumbnails for users with many tabs.
+  gfx::Size page_size(size_);  // Logical size the renderer renders at.
+  gfx::Size pixel_size(size_);  // Physical pixel size the image is rendered at.
+
+  DCHECK(rwh_->painting_observer() == NULL ||
+         rwh_->painting_observer() == generator);
+  rwh_->set_painting_observer(generator);
+
+  // Will send an IPC to the renderer on the IO thread.
+  generator->AskForSnapshot(
+      rwh_,
+      /*prefer_backing_store=*/false,
+      factory_.NewCallback(&ThumbnailLoader::DidReceiveBitmap),
+      page_size,
+      pixel_size);
+}
+
+}  // namespace tabpose
+
+@implementation ThumbnailLayer
+
+- (id)initWithTabContents:(TabContents*)contents fullSize:(NSSize)fullSize {
+  CHECK(contents);
+  if ((self = [super init])) {
+    contents_ = contents;
+    fullSize_ = fullSize;
+  }
+  return self;
+}
+
+- (void)setTabContents:(TabContents*)contents {
+  contents_ = contents;
+}
+
+- (void)setThumbnail:(const SkBitmap&)bitmap {
+  // SkCreateCGImageRef() holds on to |bitmaps|'s memory, so this doesn't
+  // create a copy.
+  thumbnail_.reset(SkCreateCGImageRef(bitmap));
+  loader_ = NULL;
+  [self setNeedsDisplay];
+}
+
+- (int)topOffset {
+  int topOffset = 0;
+
+  // Medium term, we want to show thumbs of the actual info bar views, which
+  // means I need to create InfoBarControllers here. At that point, we can get
+  // the height from that controller. Until then, hardcode. :-/
+  const int kInfoBarHeight = 31;
+  topOffset += contents_->infobar_delegate_count() * kInfoBarHeight;
+
+  bool always_show_bookmark_bar =
+      contents_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  bool has_detached_bookmark_bar =
+      contents_->ShouldShowBookmarkBar() && !always_show_bookmark_bar;
+  if (has_detached_bookmark_bar)
+    topOffset += bookmarks::kNTPBookmarkBarHeight;
+
+  return topOffset;
+}
+
+- (int)bottomOffset {
+  int bottomOffset = 0;
+  TabContents* devToolsContents =
+      DevToolsWindow::GetDevToolsContents(contents_);
+  if (devToolsContents && devToolsContents->render_view_host() &&
+      devToolsContents->render_view_host()->view()) {
+    // The devtool's size might not be up-to-date, but since its height doesn't
+    // change on window resize, and since most users don't use devtools, this is
+    // good enough.
+    bottomOffset +=
+        devToolsContents->render_view_host()->view()->GetViewBounds().height();
+    bottomOffset += 1;  // :-( Divider line between web contents and devtools.
+  }
+  return bottomOffset;
+}
+
+- (void)drawBackingStore:(BackingStoreMac*)backing_store
+                  inRect:(CGRect)destRect
+                 context:(CGContextRef)context {
+  // TODO(thakis): Add a sublayer for each accelerated surface in the rwhv.
+  // Until then, accelerated layers (CoreAnimation NPAPI plugins, compositor)
+  // won't show up in tabpose.
+  if (backing_store->cg_layer()) {
+    CGContextDrawLayerInRect(context, destRect, backing_store->cg_layer());
+  } else {
+    scoped_cftyperef<CGImageRef> image(
+        CGBitmapContextCreateImage(backing_store->cg_bitmap()));
+    CGContextDrawImage(context, destRect, image);
+  }
+}
+
+- (void)drawInContext:(CGContextRef)context {
+  RenderWidgetHost* rwh = contents_->render_view_host();
+  RenderWidgetHostView* rwhv = rwh->view();  // NULL if renderer crashed.
+  if (!rwhv) {
+    // TODO(thakis): Maybe draw a sad tab layer?
+    [super drawInContext:context];
+    return;
+  }
+
+  // The size of the TabContent's RenderWidgetHost might not fit to the
+  // current browser window at all, for example if the window was resized while
+  // this TabContents object was not an active tab.
+  // Compute the required size ourselves. Leave room for eventual infobars and
+  // a detached bookmarks bar on the top, and for the devtools on the bottom.
+  // Download shelf is not included in the |fullSize| rect, so no need to
+  // correct for it here.
+  // TODO(thakis): This is not resolution-independent.
+  int topOffset = [self topOffset];
+  int bottomOffset = [self bottomOffset];
+  gfx::Size desiredThumbSize(fullSize_.width,
+                             fullSize_.height - topOffset - bottomOffset);
+
+  // We need to ask the renderer for a thumbnail if
+  // a) there's no backing store or
+  // b) the backing store's size doesn't match our required size and
+  // c) we didn't already send a thumbnail request to the renderer.
+  BackingStoreMac* backing_store =
+      (BackingStoreMac*)rwh->GetBackingStore(/*force_create=*/false);
+  bool draw_backing_store =
+      backing_store && backing_store->size() == desiredThumbSize;
+
+  // Next weirdness: The destination rect. If the layer is |fullSize_| big, the
+  // destination rect is (0, bottomOffset), (fullSize_.width, topOffset). But we
+  // might be amidst an animation, so interpolate that rect.
+  CGRect destRect = [self bounds];
+  CGFloat scale = destRect.size.width / fullSize_.width;
+  destRect.origin.y += bottomOffset * scale;
+  destRect.size.height -= (bottomOffset + topOffset) * scale;
+
+  // TODO(thakis): Draw infobars, detached bookmark bar as well.
+
+  // If we haven't already, sent a thumbnail request to the renderer.
+  if (!draw_backing_store && !didSendLoad_) {
+    // Either the tab was never visible, or its backing store got evicted, or
+    // the size of the backing store is wrong.
+
+    // We only need a thumbnail the size of the zoomed-out layer for all
+    // layers except the one the user clicks on. But since we can't know which
+    // layer that is, request full-resolution layers for all tabs. This is
+    // simple and seems to work in practice.
+    loader_ = new tabpose::ThumbnailLoader(desiredThumbSize, rwh, self);
+    loader_->LoadThumbnail();
+    didSendLoad_ = YES;
+
+    // Fill with bg color.
+    [super drawInContext:context];
+  }
+
+  if (draw_backing_store) {
+    // Backing store 'cache' hit!
+    [self drawBackingStore:backing_store inRect:destRect context:context];
+  } else if (thumbnail_) {
+    // No cache hit, but the renderer returned a thumbnail to us.
+    CGContextDrawImage(context, destRect, thumbnail_.get());
+  }
+}
+
 @end
 
 namespace {
@@ -106,9 +360,10 @@ namespace tabpose {
 
 // A tile is what is shown for a single tab in tabpose mode. It consists of a
 // title, favicon, thumbnail image, and pre- and postanimation rects.
-// TODO(thakis): Right now, it only consists of a thumb rect.
 class Tile {
  public:
+  Tile() {}
+
   // Returns the rectangle this thumbnail is at at the beginning of the zoom-in
   // animation. |tile| is the rectangle that's covering the whole tab area when
   // the animation starts.
@@ -133,6 +388,10 @@ class Tile {
 
   // Returns an unelided title. The view logic is responsible for eliding.
   const string16& title() const { return contents_->GetTitle(); }
+
+  TabContents* tab_contents() const { return contents_; }
+  void set_tab_contents(TabContents* new_contents) { contents_ = new_contents; }
+
  private:
   friend class TileSet;
 
@@ -147,6 +406,8 @@ class Tile {
   NSRect title_rect_;
 
   TabContents* contents_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(Tile);
 };
 
 NSRect Tile::GetStartRectRelativeTo(const Tile& tile) const {
@@ -185,6 +446,8 @@ void Tile::set_font_metrics(CGFloat ascender, CGFloat descender) {
 // tabpose window.
 class TileSet {
  public:
+  TileSet() {}
+
   // Fills in |tiles_|.
   void Build(TabStripModel* source_model);
 
@@ -193,21 +456,33 @@ class TileSet {
 
   int selected_index() const { return selected_index_; }
   void set_selected_index(int index);
-  void ResetSelectedIndex() { selected_index_ = initial_index_; }
 
   const Tile& selected_tile() const { return *tiles_[selected_index()]; }
   Tile& tile_at(int index) { return *tiles_[index]; }
   const Tile& tile_at(int index) const { return *tiles_[index]; }
 
+  // Inserts a new Tile object containing |contents| at |index|. Does no
+  // relayout.
+  void InsertTileAt(int index, TabContents* contents);
+
+  // Removes the Tile object at |index|. Does no relayout.
+  void RemoveTileAt(int index);
+
+  // Moves the Tile object at |from_index| to |to_index|. Since this doesn't
+  // change the number of tiles, relayout can be done just by swapping the
+  // tile rectangles in the index interval [from_index, to_index], so this does
+  // layout.
+  void MoveTileFromTo(int from_index, int to_index);
+
  private:
   ScopedVector<Tile> tiles_;
-
   int selected_index_;
-  int initial_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(TileSet);
 };
 
 void TileSet::Build(TabStripModel* source_model) {
-  selected_index_ = initial_index_ = source_model->selected_index();
+  selected_index_ =  source_model->selected_index();
   tiles_.resize(source_model->count());
   for (size_t i = 0; i < tiles_.size(); ++i) {
     tiles_[i] = new Tile;
@@ -217,6 +492,8 @@ void TileSet::Build(TabStripModel* source_model) {
 
 void TileSet::Layout(NSRect containing_rect) {
   int tile_count = tiles_.size();
+  if (tile_count == 0)  // Happens e.g. during test shutdown.
+    return;
 
   // Room around the tiles insde of |containing_rect|.
   const int kSmallPaddingTop = 30;
@@ -370,6 +647,41 @@ void TileSet::set_selected_index(int index) {
   selected_index_ = index;
 }
 
+void TileSet::InsertTileAt(int index, TabContents* contents) {
+  tiles_.insert(tiles_.begin() + index, new Tile);
+  tiles_[index]->contents_ = contents;
+}
+
+void TileSet::RemoveTileAt(int index) {
+  tiles_.erase(tiles_.begin() + index);
+}
+
+// Moves the Tile object at |from_index| to |to_index|. Also updates rectangles
+// so that the tiles stay in a left-to-right, top-to-bottom layout when walked
+// in sequential order.
+void TileSet::MoveTileFromTo(int from_index, int to_index) {
+  NSRect thumb = tiles_[from_index]->thumb_rect_;
+  NSRect start_thumb = tiles_[from_index]->start_thumb_rect_;
+  NSRect favicon = tiles_[from_index]->favicon_rect_;
+  NSRect title = tiles_[from_index]->title_rect_;
+
+  scoped_ptr<Tile> tile(tiles_[from_index]);
+  tiles_.weak_erase(tiles_.begin() + from_index);
+  tiles_.insert(tiles_.begin() + to_index, tile.release());
+
+  int step = from_index < to_index ? -1 : 1;
+  for (int i = to_index; (i - from_index) * step < 0; i += step) {
+    tiles_[i]->thumb_rect_ = tiles_[i + step]->thumb_rect_;
+    tiles_[i]->start_thumb_rect_ = tiles_[i + step]->start_thumb_rect_;
+    tiles_[i]->favicon_rect_ = tiles_[i + step]->favicon_rect_;
+    tiles_[i]->title_rect_ = tiles_[i + step]->title_rect_;
+  }
+  tiles_[from_index]->thumb_rect_ = thumb;
+  tiles_[from_index]->start_thumb_rect_ = start_thumb;
+  tiles_[from_index]->favicon_rect_ = favicon;
+  tiles_[from_index]->title_rect_ = title;
+}
+
 }  // namespace tabpose
 
 void AnimateCALayerFrameFromTo(
@@ -423,7 +735,7 @@ void AnimateCALayerFrameFromTo(
                rect:(NSRect)rect
               slomo:(BOOL)slomo
       tabStripModel:(TabStripModel*)tabStripModel;
-- (void)setUpLayers:(NSRect)bgLayerRect slomo:(BOOL)slomo;
+- (void)setUpLayersInSlomo:(BOOL)slomo;
 - (void)fadeAway:(BOOL)slomo;
 - (void)selectTileAtIndex:(int)newIndex;
 @end
@@ -448,14 +760,16 @@ void AnimateCALayerFrameFromTo(
                                styleMask:NSBorderlessWindowMask
                                  backing:NSBackingStoreBuffered
                                    defer:NO])) {
-    // TODO(thakis): Add a TabStripModelObserver to |tabStripModel_|.
+    containingRect_ = rect;
     tabStripModel_ = tabStripModel;
     state_ = tabpose::kFadingIn;
     tileSet_.reset(new tabpose::TileSet);
+    tabStripModelObserverBridge_.reset(
+        new TabStripModelObserverBridge(tabStripModel_, self));
     [self setReleasedWhenClosed:YES];
     [self setOpaque:NO];
     [self setBackgroundColor:[NSColor clearColor]];
-    [self setUpLayers:rect slomo:slomo];
+    [self setUpLayersInSlomo:slomo];
     [self setAcceptsMouseMovedEvents:YES];
     [parent addChildWindow:self ordered:NSWindowAbove];
     [self makeKeyAndOrderFront:self];
@@ -468,120 +782,152 @@ void AnimateCALayerFrameFromTo(
 }
 
 - (void)selectTileAtIndex:(int)newIndex {
-  ScopedCAActionDisabler disabler;
   const tabpose::Tile& tile = tileSet_->tile_at(newIndex);
   selectionHighlight_.frame =
       NSRectToCGRect(NSInsetRect(tile.thumb_rect(), -5, -5));
-
   tileSet_->set_selected_index(newIndex);
 }
 
-- (void)setUpLayers:(NSRect)bgLayerRect slomo:(BOOL)slomo {
+- (void)selectTileAtIndexWithoutAnimation:(int)newIndex {
+  ScopedCAActionDisabler disabler;
+  [self selectTileAtIndex:newIndex];
+}
+
+- (void)addLayersForTile:(tabpose::Tile&)tile
+                showZoom:(BOOL)showZoom
+                   slomo:(BOOL)slomo
+       animationDelegate:(id)animationDelegate {
+  scoped_nsobject<CALayer> layer([[ThumbnailLayer alloc]
+      initWithTabContents:tile.tab_contents()
+                 fullSize:tile.GetStartRectRelativeTo(
+                     tileSet_->selected_tile()).size]);
+  [layer setNeedsDisplay];
+
+  // Background color as placeholder for now.
+  layer.get().backgroundColor = CGColorGetConstantColor(kCGColorWhite);
+  if (showZoom) {
+    AnimateCALayerFrameFromTo(
+        layer,
+        tile.GetStartRectRelativeTo(tileSet_->selected_tile()),
+        tile.thumb_rect(),
+        kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1),
+        animationDelegate);
+  } else {
+    layer.get().frame = NSRectToCGRect(tile.thumb_rect());
+  }
+
+  layer.get().shadowRadius = 10;
+  layer.get().shadowOffset = CGSizeMake(0, -10);
+  if (state_ == tabpose::kFadedIn)
+    layer.get().shadowOpacity = 0.5;
+
+  [bgLayer_ addSublayer:layer];
+  [allThumbnailLayers_ addObject:layer];
+
+  // Favicon and title.
+  NSFont* font = [NSFont systemFontOfSize:tile.title_font_size()];
+  tile.set_font_metrics([font ascender], -[font descender]);
+
+  NSImage* nsFavicon = gfx::SkBitmapToNSImage(tile.favicon());
+  // Either we don't have a valid favicon or there was some issue converting
+  // it from an SkBitmap. Either way, just show the default.
+  if (!nsFavicon) {
+    NSImage* defaultFavIcon =
+        ResourceBundle::GetSharedInstance().GetNSImageNamed(
+            IDR_DEFAULT_FAVICON);
+    nsFavicon = defaultFavIcon;
+  }
+  scoped_cftyperef<CGImageRef> favicon(
+      mac_util::CopyNSImageToCGImage(nsFavicon));
+
+  CALayer* faviconLayer = [CALayer layer];
+  faviconLayer.frame = NSRectToCGRect(tile.favicon_rect());
+  faviconLayer.contents = (id)favicon.get();
+  faviconLayer.zPosition = 1;  // On top of the thumb shadow.
+  if (state_ == tabpose::kFadingIn)
+    faviconLayer.hidden = YES;
+  [bgLayer_ addSublayer:faviconLayer];
+  [allFaviconLayers_ addObject:faviconLayer];
+
+  CATextLayer* titleLayer = [CATextLayer layer];
+  titleLayer.frame = NSRectToCGRect(tile.title_rect());
+  titleLayer.string = base::SysUTF16ToNSString(tile.title());
+  titleLayer.fontSize = [font pointSize];
+  titleLayer.truncationMode = kCATruncationEnd;
+  titleLayer.font = font;
+  titleLayer.zPosition = 1;  // On top of the thumb shadow.
+  if (state_ == tabpose::kFadingIn)
+    titleLayer.hidden = YES;
+  [bgLayer_ addSublayer:titleLayer];
+  [allTitleLayers_ addObject:titleLayer];
+}
+
+- (void)setUpLayersInSlomo:(BOOL)slomo {
   // Root layer -- covers whole window.
   rootLayer_ = [CALayer layer];
-  [[self contentView] setLayer:rootLayer_];
-  [[self contentView] setWantsLayer:YES];
 
-  // Background layer -- the visible part of the window.
-  gray_.reset(CGColorCreateGenericGray(0.39, 1.0));
-  bgLayer_ = [CALayer layer];
-  bgLayer_.backgroundColor = gray_;
-  bgLayer_.frame = NSRectToCGRect(bgLayerRect);
-  bgLayer_.masksToBounds = YES;
-  [rootLayer_ addSublayer:bgLayer_];
+  // In a block so that the layers don't fade in.
+  {
+    ScopedCAActionDisabler disabler;
+    // Background layer -- the visible part of the window.
+    gray_.reset(CGColorCreateGenericGray(0.39, 1.0));
+    bgLayer_ = [CALayer layer];
+    bgLayer_.backgroundColor = gray_;
+    bgLayer_.frame = NSRectToCGRect(containingRect_);
+    bgLayer_.masksToBounds = YES;
+    [rootLayer_ addSublayer:bgLayer_];
 
-  // Selection highlight layer.
-  darkBlue_.reset(CGColorCreateGenericRGB(0.25, 0.34, 0.86, 1.0));
-  selectionHighlight_ = [CALayer layer];
-  selectionHighlight_.backgroundColor = darkBlue_;
-  selectionHighlight_.cornerRadius = 5.0;
-  selectionHighlight_.zPosition = -1;  // Behind other layers.
-  selectionHighlight_.hidden = YES;
-  [bgLayer_ addSublayer:selectionHighlight_];
+    // Selection highlight layer.
+    darkBlue_.reset(CGColorCreateGenericRGB(0.25, 0.34, 0.86, 1.0));
+    selectionHighlight_ = [CALayer layer];
+    selectionHighlight_.backgroundColor = darkBlue_;
+    selectionHighlight_.cornerRadius = 5.0;
+    selectionHighlight_.zPosition = -1;  // Behind other layers.
+    selectionHighlight_.hidden = YES;
+    [bgLayer_ addSublayer:selectionHighlight_];
 
-  // Top gradient.
-  CALayer* gradientLayer = [DarkGradientLayer layer];
-  gradientLayer.frame = CGRectMake(
-      0,
-      NSHeight(bgLayerRect) - kTopGradientHeight,
-      NSWidth(bgLayerRect),
-      kTopGradientHeight);
-  [gradientLayer setNeedsDisplay];  // Draw once.
-  [bgLayer_ addSublayer:gradientLayer];
+    // Top gradient.
+    CALayer* gradientLayer = [DarkGradientLayer layer];
+    gradientLayer.frame = CGRectMake(
+        0,
+        NSHeight(containingRect_) - kTopGradientHeight,
+        NSWidth(containingRect_),
+        kTopGradientHeight);
+    [gradientLayer setNeedsDisplay];  // Draw once.
+    [bgLayer_ addSublayer:gradientLayer];
+  }
 
   // Layers for the tab thumbnails.
   tileSet_->Build(tabStripModel_);
-  tileSet_->Layout(bgLayerRect);
-
-  NSImage* defaultFavIcon = ResourceBundle::GetSharedInstance().GetNSImageNamed(
-      IDR_DEFAULT_FAVICON);
-
+  tileSet_->Layout(containingRect_);
   allThumbnailLayers_.reset(
       [[NSMutableArray alloc] initWithCapacity:tabStripModel_->count()]);
   allFaviconLayers_.reset(
       [[NSMutableArray alloc] initWithCapacity:tabStripModel_->count()]);
   allTitleLayers_.reset(
       [[NSMutableArray alloc] initWithCapacity:tabStripModel_->count()]);
+
   for (int i = 0; i < tabStripModel_->count(); ++i) {
-    const tabpose::Tile& tile = tileSet_->tile_at(i);
-    CALayer* layer = [CALayer layer];
-
-    // Background color as placeholder for now.
-    layer.backgroundColor = CGColorGetConstantColor(kCGColorWhite);
-
-    AnimateCALayerFrameFromTo(
-        layer,
-        tile.GetStartRectRelativeTo(tileSet_->selected_tile()),
-        tile.thumb_rect(),
-        kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1),
-        i == tileSet_->selected_index() ? self : nil);
-
     // Add a delegate to one of the animations to get a notification once the
     // animations are done.
+    [self  addLayersForTile:tileSet_->tile_at(i)
+                 showZoom:YES
+                    slomo:slomo
+        animationDelegate:i == tileSet_->selected_index() ? self : nil];
     if (i == tileSet_->selected_index()) {
+      CALayer* layer = [allThumbnailLayers_ objectAtIndex:i];
       CAAnimation* animation = [layer animationForKey:@"bounds"];
       DCHECK(animation);
       [animation setValue:kAnimationIdFadeIn forKey:kAnimationIdKey];
     }
-
-    layer.shadowRadius = 10;
-    layer.shadowOffset = CGSizeMake(0, -10);
-
-    [bgLayer_ addSublayer:layer];
-    [allThumbnailLayers_ addObject:layer];
-
-    // Favicon and title.
-    NSFont* font = [NSFont systemFontOfSize:tile.title_font_size()];
-    tileSet_->tile_at(i).set_font_metrics([font ascender], -[font descender]);
-
-    NSImage* ns_favicon = gfx::SkBitmapToNSImage(tile.favicon());
-    // Either we don't have a valid favicon or there was some issue converting
-    // it from an SkBitmap. Either way, just show the default.
-    if (!ns_favicon)
-      ns_favicon = defaultFavIcon;
-    scoped_cftyperef<CGImageRef> favicon(
-        mac_util::CopyNSImageToCGImage(ns_favicon));
-
-    CALayer* faviconLayer = [CALayer layer];
-    faviconLayer.frame = NSRectToCGRect(tile.favicon_rect());
-    faviconLayer.contents = (id)favicon.get();
-    faviconLayer.zPosition = 1;  // On top of the thumb shadow.
-    faviconLayer.hidden = YES;
-    [bgLayer_ addSublayer:faviconLayer];
-    [allFaviconLayers_ addObject:faviconLayer];
-
-    CATextLayer* titleLayer = [CATextLayer layer];
-    titleLayer.frame = NSRectToCGRect(tile.title_rect());
-    titleLayer.string = base::SysUTF16ToNSString(tile.title());
-    titleLayer.fontSize = [font pointSize];
-    titleLayer.truncationMode = kCATruncationEnd;
-    titleLayer.font = font;
-    titleLayer.zPosition = 1;  // On top of the thumb shadow.
-    titleLayer.hidden = YES;
-    [bgLayer_ addSublayer:titleLayer];
-    [allTitleLayers_ addObject:titleLayer];
   }
-  [self selectTileAtIndex:tileSet_->selected_index()];
+  [self selectTileAtIndexWithoutAnimation:tileSet_->selected_index()];
+
+  // Needs to happen after all layers have been added to |rootLayer_|, else
+  // there's a one frame flash of grey at the beginning of the animation
+  // (|bgLayer_| showing through with none of its children visible yet).
+  [[self contentView] setLayer:rootLayer_];
+  [[self contentView] setWantsLayer:YES];
 }
 
 - (BOOL)canBecomeKeyWindow {
@@ -609,7 +955,7 @@ void AnimateCALayerFrameFromTo(
       [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
       break;
     case '\e':  // Escape
-      tileSet_->ResetSelectedIndex();
+      tileSet_->set_selected_index(tabStripModel_->selected_index());
       [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
       break;
     // TODO(thakis): Support moving the selection via arrow keys.
@@ -626,7 +972,7 @@ void AnimateCALayerFrameFromTo(
       newIndex = i;
   }
   if (newIndex >= 0)
-    [self selectTileAtIndex:newIndex];
+    [self selectTileAtIndexWithoutAnimation:newIndex];
 }
 
 - (void)mouseDown:(NSEvent*)event {
@@ -661,8 +1007,12 @@ void AnimateCALayerFrameFromTo(
   [self setAcceptsMouseMovedEvents:NO];
 
   // Select chosen tab.
-  tabStripModel_->SelectTabContentsAt(tileSet_->selected_index(),
-                                      /*user_gesture=*/true);
+  if (tileSet_->selected_index() < tabStripModel_->count()) {
+    tabStripModel_->SelectTabContentsAt(tileSet_->selected_index(),
+                                        /*user_gesture=*/true);
+  } else {
+    DCHECK_EQ(tileSet_->selected_index(), 0);
+  }
 
   {
     ScopedCAActionDisabler disableCAActions;
@@ -683,13 +1033,13 @@ void AnimateCALayerFrameFromTo(
   }
 
   // Animate layers out, all in one transaction.
-  CGFloat duration = kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1);
+  CGFloat duration = 2 * kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1);
   ScopedCAActionSetDuration durationSetter(duration);
   for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
     CALayer* layer = [allThumbnailLayers_ objectAtIndex:i];
-    // |start_thumb_rect_| was relative to |initial_index_|, now this needs to
+    // |start_thumb_rect_| was relative to the initial index, now this needs to
     // be relative to |selectedIndex_| (whose start rect was relative to
-    // |initial_index_| too)
+    // the initial index, too).
     CGRect newFrame = NSRectToCGRect(
         tileSet_->tile_at(i).GetStartRectRelativeTo(tileSet_->selected_tile()));
 
@@ -703,6 +1053,11 @@ void AnimateCALayerFrameFromTo(
     }
 
     layer.frame = newFrame;
+
+    if (static_cast<int>(i) == tileSet_->selected_index()) {
+      // Redraw layer at big resolution, so that zoom-in isn't blocky.
+      [layer setNeedsDisplay];
+    }
   }
 }
 
@@ -731,6 +1086,167 @@ void AnimateCALayerFrameFromTo(
     DCHECK_EQ(tabpose::kFadingOut, state_);
     [self close];
   }
+}
+
+- (NSUInteger)thumbnailLayerCount {
+  return [allThumbnailLayers_ count];
+}
+
+- (int)selectedIndex {
+  return tileSet_->selected_index();
+}
+
+#pragma mark TabStripModelBridge
+
+- (void)refreshLayerFramesAtIndex:(int)i {
+  const tabpose::Tile& tile = tileSet_->tile_at(i);
+
+  CALayer* faviconLayer = [allFaviconLayers_ objectAtIndex:i];
+  faviconLayer.frame = NSRectToCGRect(tile.favicon_rect());
+  CALayer* titleLayer = [allTitleLayers_ objectAtIndex:i];
+  titleLayer.frame = NSRectToCGRect(tile.title_rect());
+  CALayer* thumbLayer = [allThumbnailLayers_ objectAtIndex:i];
+  thumbLayer.frame = NSRectToCGRect(tile.thumb_rect());
+}
+
+- (void)insertTabWithContents:(TabContents*)contents
+                      atIndex:(NSInteger)index
+                 inForeground:(bool)inForeground {
+  // This happens if you cmd-click a link and then immediately open tabpose
+  // on a slowish machine.
+  ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
+
+  // Insert new layer and relayout.
+  tileSet_->InsertTileAt(index, contents);
+  tileSet_->Layout(containingRect_);
+  [self  addLayersForTile:tileSet_->tile_at(index)
+                 showZoom:NO
+                    slomo:NO
+        animationDelegate:nil];
+
+  // Update old layers.
+  DCHECK_EQ(tabStripModel_->count(),
+            static_cast<int>([allThumbnailLayers_ count]));
+  DCHECK_EQ(tabStripModel_->count(),
+            static_cast<int>([allTitleLayers_ count]));
+  DCHECK_EQ(tabStripModel_->count(),
+            static_cast<int>([allFaviconLayers_ count]));
+
+  for (int i = 0; i < tabStripModel_->count(); ++i) {
+    if (i == index)  // The new layer.
+      continue;
+    [self refreshLayerFramesAtIndex:i];
+  }
+
+  // Update selection.
+  int selectedIndex = tileSet_->selected_index();
+  if (selectedIndex >= index)
+    selectedIndex++;
+  [self selectTileAtIndex:selectedIndex];
+}
+
+- (void)tabClosingWithContents:(TabContents*)contents
+                       atIndex:(NSInteger)index {
+  // We will also get a -tabDetachedWithContents:atIndex: notification for
+  // closing tabs, so do nothing here.
+}
+
+- (void)tabDetachedWithContents:(TabContents*)contents
+                        atIndex:(NSInteger)index {
+  ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
+
+  // Remove layer and relayout.
+  tileSet_->RemoveTileAt(index);
+  tileSet_->Layout(containingRect_);
+
+  [[allThumbnailLayers_ objectAtIndex:index] removeFromSuperlayer];
+  [allThumbnailLayers_ removeObjectAtIndex:index];
+  [[allTitleLayers_ objectAtIndex:index] removeFromSuperlayer];
+  [allTitleLayers_ removeObjectAtIndex:index];
+  [[allFaviconLayers_ objectAtIndex:index] removeFromSuperlayer];
+  [allFaviconLayers_ removeObjectAtIndex:index];
+
+  // Update old layers.
+  DCHECK_EQ(tabStripModel_->count(),
+            static_cast<int>([allThumbnailLayers_ count]));
+  DCHECK_EQ(tabStripModel_->count(),
+            static_cast<int>([allTitleLayers_ count]));
+  DCHECK_EQ(tabStripModel_->count(),
+            static_cast<int>([allFaviconLayers_ count]));
+
+  if (tabStripModel_->count() == 0)
+    [self close];
+
+  for (int i = 0; i < tabStripModel_->count(); ++i)
+    [self refreshLayerFramesAtIndex:i];
+
+  // Update selection.
+  int selectedIndex = tileSet_->selected_index();
+  if (selectedIndex >= index)
+    selectedIndex--;
+  if (selectedIndex >= 0)
+    [self selectTileAtIndex:selectedIndex];
+}
+
+- (void)tabMovedWithContents:(TabContents*)contents
+                    fromIndex:(NSInteger)from
+                      toIndex:(NSInteger)to {
+  ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
+
+  // Move tile from |from| to |to|.
+  tileSet_->MoveTileFromTo(from, to);
+
+  // Move corresponding layers from |from| to |to|.
+  scoped_nsobject<CALayer> thumbLayer(
+      [[allThumbnailLayers_ objectAtIndex:from] retain]);
+  [allThumbnailLayers_ removeObjectAtIndex:from];
+  [allThumbnailLayers_ insertObject:thumbLayer.get() atIndex:to];
+  scoped_nsobject<CALayer> faviconLayer(
+      [[allFaviconLayers_ objectAtIndex:from] retain]);
+  [allFaviconLayers_ removeObjectAtIndex:from];
+  [allFaviconLayers_ insertObject:faviconLayer.get() atIndex:to];
+  scoped_nsobject<CALayer> titleLayer(
+      [[allTitleLayers_ objectAtIndex:from] retain]);
+  [allTitleLayers_ removeObjectAtIndex:from];
+  [allTitleLayers_ insertObject:titleLayer.get() atIndex:to];
+
+  // Update frames of the layers.
+  for (int i = std::min(from, to); i <= std::max(from, to); ++i)
+    [self refreshLayerFramesAtIndex:i];
+
+  // Update selection.
+  int selectedIndex = tileSet_->selected_index();
+  if (from == selectedIndex)
+    selectedIndex = to;
+  else if (from < selectedIndex && selectedIndex <= to)
+    selectedIndex--;
+  else if (to <= selectedIndex && selectedIndex < from)
+    selectedIndex++;
+  [self selectTileAtIndex:selectedIndex];
+}
+
+- (void)tabChangedWithContents:(TabContents*)contents
+                       atIndex:(NSInteger)index
+                    changeType:(TabStripModelObserver::TabChangeType)change {
+  // Tell the window to update text, title, and thumb layers at |index| to get
+  // their data from |contents|. |contents| can be different from the old
+  // contents at that index!
+  // While a tab is loading, this is unfortunately called quite often for
+  // both the "loading" and the "all" change types, so we don't really want to
+  // send thumb requests to the corresponding renderer when this is called.
+  // For now, just make sure that we don't hold on to an invalid TabContents
+  // object.
+  tabpose::Tile& tile = tileSet_->tile_at(index);
+  if (contents == tile.tab_contents()) {
+    // TODO(thakis): Install a timer to send a thumb request/update title/update
+    // favicon after 20ms or so, and reset the timer every time this is called
+    // to make sure we get an updated thumb, without requesting them all over.
+    return;
+  }
+
+  tile.set_tab_contents(contents);
+  ThumbnailLayer* thumbLayer = [allThumbnailLayers_ objectAtIndex:index];
+  [thumbLayer setTabContents:contents];
 }
 
 @end

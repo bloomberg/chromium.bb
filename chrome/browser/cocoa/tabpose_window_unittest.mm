@@ -13,12 +13,24 @@
 
 class TabposeWindowTest : public CocoaTest {
  public:
+  TabposeWindowTest() {
+    site_instance_ =
+        SiteInstance::CreateSiteInstance(browser_helper_.profile());
+  }
+
+  void AppendTabToStrip() {
+    TabContents* tab_contents = new TabContents(
+        browser_helper_.profile(), site_instance_, MSG_ROUTING_NONE, NULL);
+    browser_helper_.browser()->tabstrip_model()->AppendTabContents(
+        tab_contents, /*foreground=*/true);
+  }
+
   BrowserTestHelper browser_helper_;
+  scoped_refptr<SiteInstance> site_instance_;
 };
 
 // Check that this doesn't leak.
 TEST_F(TabposeWindowTest, TestShow) {
-  Browser* browser = browser_helper_.browser();
   BrowserWindow* browser_window = browser_helper_.CreateBrowserWindow();
   NSWindow* parent = browser_window->GetNativeHandle();
 
@@ -26,22 +38,76 @@ TEST_F(TabposeWindowTest, TestShow) {
   EXPECT_TRUE([parent isVisible]);
 
   // Add a few tabs to the tab strip model.
-  TabStripModel* model = browser->tabstrip_model();
-  SiteInstance* instance =
-      SiteInstance::CreateSiteInstance(browser_helper_.profile());
-  for (int i = 0; i < 3; ++i) {
-    TabContents* tab_contents =
-        new TabContents(browser_helper_.profile(), instance, MSG_ROUTING_NONE,
-                        NULL);
-    model->AppendTabContents(tab_contents, /*foreground=*/true);
-  }
+  for (int i = 0; i < 3; ++i)
+    AppendTabToStrip();
 
   base::ScopedNSAutoreleasePool pool;
   TabposeWindow* window =
       [TabposeWindow openTabposeFor:parent
                                rect:NSMakeRect(10, 20, 250, 160)
                               slomo:NO
-                      tabStripModel:model];
+                     tabStripModel:browser_helper_.browser()->tabstrip_model()];
+
+  // Should release the window.
+  [window mouseDown:nil];
+
+  browser_helper_.CloseBrowserWindow();
+}
+
+TEST_F(TabposeWindowTest, TestModelObserver) {
+  BrowserWindow* browser_window = browser_helper_.CreateBrowserWindow();
+  NSWindow* parent = browser_window->GetNativeHandle();
+  [parent orderFront:nil];
+
+  // Add a few tabs to the tab strip model.
+  for (int i = 0; i < 3; ++i)
+    AppendTabToStrip();
+
+  base::ScopedNSAutoreleasePool pool;
+  TabposeWindow* window =
+      [TabposeWindow openTabposeFor:parent
+                               rect:NSMakeRect(10, 20, 250, 160)
+                              slomo:NO
+                     tabStripModel:browser_helper_.browser()->tabstrip_model()];
+
+  // Exercise all the model change events.
+  TabStripModel* model = browser_helper_.browser()->tabstrip_model();
+  DCHECK_EQ([window thumbnailLayerCount], 3u);
+  DCHECK_EQ([window selectedIndex], 2);
+
+  model->MoveTabContentsAt(0, 2, /*select_after_move=*/false);
+  DCHECK_EQ([window thumbnailLayerCount], 3u);
+  DCHECK_EQ([window selectedIndex], 1);
+
+  model->MoveTabContentsAt(2, 0, /*select_after_move=*/false);
+  DCHECK_EQ([window thumbnailLayerCount], 3u);
+  DCHECK_EQ([window selectedIndex], 2);
+
+  [window selectTileAtIndexWithoutAnimation:0];
+  DCHECK_EQ([window selectedIndex], 0);
+
+  model->MoveTabContentsAt(0, 2, /*select_after_move=*/false);
+  DCHECK_EQ([window selectedIndex], 2);
+
+  model->MoveTabContentsAt(2, 0, /*select_after_move=*/false);
+  DCHECK_EQ([window selectedIndex], 0);
+
+  delete model->DetachTabContentsAt(0);
+  DCHECK_EQ([window thumbnailLayerCount], 2u);
+  DCHECK_EQ([window selectedIndex], 0);
+
+  AppendTabToStrip();
+  DCHECK_EQ([window thumbnailLayerCount], 3u);
+  DCHECK_EQ([window selectedIndex], 0);
+
+  model->CloseTabContentsAt(0, TabStripModel::CLOSE_NONE);
+  DCHECK_EQ([window thumbnailLayerCount], 2u);
+  DCHECK_EQ([window selectedIndex], 0);
+
+  [window selectTileAtIndexWithoutAnimation:1];
+  model->CloseTabContentsAt(0, TabStripModel::CLOSE_NONE);
+  DCHECK_EQ([window thumbnailLayerCount], 1u);
+  DCHECK_EQ([window selectedIndex], 0);
 
   // Should release the window.
   [window mouseDown:nil];

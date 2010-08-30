@@ -56,6 +56,30 @@ class ScopedVector {
   void reset() { STLDeleteElements(&v); }
   void resize(size_t new_size) { v.resize(new_size); }
 
+  // Lets the ScopedVector take ownership of |x|.
+  iterator insert(iterator position, T* x) {
+    return v.insert(position, x);
+  }
+
+  iterator erase(iterator position) {
+    delete *position;
+    return v.erase(position);
+  }
+
+  iterator erase(iterator first, iterator last) {
+    STLDeleteContainerPointers(first, last);
+    return v.erase(first, last);
+  }
+
+  // Like |erase()|, but doesn't delete the element at |position|.
+  iterator weak_erase(iterator position) {
+    return v.erase(position);
+  }
+
+  // Like |erase()|, but doesn't delete the elements in [first, last).
+  iterator weak_erase(iterator first, iterator last) {
+    return v.erase(first, last);
+  }
  private:
   std::vector<T*> v;
 

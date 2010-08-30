@@ -32,6 +32,7 @@ enum WindowState {
 }  // namespace tabpose
 
 class TabStripModel;
+class TabStripModelObserverBridge;
 
 // A TabposeWindow shows an overview of open tabs and lets the user select a new
 // active tab. The window blocks clicks on the tab strip and the download
@@ -65,6 +66,13 @@ class TabStripModel;
 
   // Manages the state of all layers.
   scoped_ptr<tabpose::TileSet> tileSet_;
+
+  // The rectangle of the window that contains all layers. This is the
+  // rectangle occupied by |bgLayer_|.
+  NSRect containingRect_;
+
+  // Informs us of added/removed/updated tabs.
+  scoped_ptr<TabStripModelObserverBridge> tabStripModelObserverBridge_;
 }
 
 // Shows a TabposeWindow on top of |parent|, with |rect| being the active area.
@@ -75,6 +83,12 @@ class TabStripModel;
                 rect:(NSRect)rect
                slomo:(BOOL)slomo
        tabStripModel:(TabStripModel*)tabStripModel;
+@end
+
+@interface TabposeWindow (TestingAPI)
+- (void)selectTileAtIndexWithoutAnimation:(int)newIndex;
+- (NSUInteger)thumbnailLayerCount;
+- (int)selectedIndex;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TABPOSE_WINDOW_H_
