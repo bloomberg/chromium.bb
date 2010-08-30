@@ -50,12 +50,7 @@ bool FileSystemDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_EX(FileSystemDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenFileSystemRequest, OnOpenFileSystem)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Move, OnMove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Copy, OnCopy)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Remove, OnRemove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_ReadMetadata, OnReadMetadata)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Create, OnCreate)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Exists, OnExists)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_ReadDirectory, OnReadDirectory)
+    // TODO(kinuko): add more.
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -104,59 +99,8 @@ void FileSystemDispatcherHost::OnMove(
   }
 
   // TODO(kinuko): not implemented yet.
-  Send(new ViewMsg_FileSystem_DidFail(
-      request_id, WebKit::WebFileErrorAbort));
-}
 
-void FileSystemDispatcherHost::OnCopy(
-    int request_id,
-    const string16& src_path,
-    const string16& dest_path) {
-  // TODO(kinuko): not implemented yet.
-  Send(new ViewMsg_FileSystem_DidFail(
-      request_id, WebKit::WebFileErrorAbort));
-}
-
-void FileSystemDispatcherHost::OnRemove(
-    int request_id,
-    const string16& path) {
-  // TODO(kinuko): not implemented yet.
-  Send(new ViewMsg_FileSystem_DidFail(
-      request_id, WebKit::WebFileErrorAbort));
-}
-
-void FileSystemDispatcherHost::OnReadMetadata(
-    int request_id,
-    const string16& path) {
-  // TODO(kinuko): not implemented yet.
-  Send(new ViewMsg_FileSystem_DidFail(
-      request_id, WebKit::WebFileErrorAbort));
-}
-
-void FileSystemDispatcherHost::OnCreate(
-    int request_id,
-    const string16& path,
-    bool exclusive,
-    bool is_directory) {
-  // TODO(kinuko): not implemented yet.
-  Send(new ViewMsg_FileSystem_DidFail(
-      request_id, WebKit::WebFileErrorAbort));
-}
-
-void FileSystemDispatcherHost::OnExists(
-    int request_id,
-    const string16& path,
-    bool is_directory) {
-  // TODO(kinuko): not implemented yet.
-  Send(new ViewMsg_FileSystem_DidFail(
-      request_id, WebKit::WebFileErrorAbort));
-}
-
-void FileSystemDispatcherHost::OnReadDirectory(
-    int request_id,
-    const string16& path) {
-  // TODO(kinuko): not implemented yet.
-  Send(new ViewMsg_FileSystem_DidFail(
+  Send(new ViewMsg_FileSystem_Failed(
       request_id, WebKit::WebFileErrorAbort));
 }
 

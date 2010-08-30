@@ -13,19 +13,10 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 
 namespace WebKit {
-struct WebFileInfo;
 class WebFileSystemCallbacks;
-struct WebFileSystemEntry;
 }
-
-namespace file_util {
-struct FileInfo;
-}
-
-struct ViewMsg_FileSystem_DidReadDirectory_Params;
 
 // Dispatches and sends file system related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
@@ -41,39 +32,13 @@ class FileSystemDispatcher {
       const string16& src_path,
       const string16& dest_path,
       WebKit::WebFileSystemCallbacks* callbacks);
-  void Copy(
-      const string16& src_path,
-      const string16& dest_path,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void Remove(
-      const string16& path,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void ReadMetadata(
-      const string16& path,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void Create(
-      const string16& path,
-      bool exclusive,
-      bool for_directory,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void Exists(
-      const string16& path,
-      bool for_directory,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void ReadDirectory(
-      const string16& path,
-      WebKit::WebFileSystemCallbacks* callbacks);
+
+  // TODO(kinuko): add more implementation.
 
  private:
-  void DidSucceed(int request_id);
-  void DidReadMetadata(
-      int request_id,
-      const file_util::FileInfo& file_info);
-  void DidReadDirectory(
-      const ViewMsg_FileSystem_DidReadDirectory_Params& params);
-  void DidFail(
-      int request_id,
-      WebKit::WebFileError);
+  void DidSucceed(int32 callbacks_id);
+  void DidFail(int32 callbacks_id, int code);
+  // TODO(kinuko): add more callbacks.
 
   IDMap<WebKit::WebFileSystemCallbacks> callbacks_;
 
