@@ -49,7 +49,6 @@ class SettingsPageSection : public OptionsPageView {
 
   int single_column_view_set_id() const { return single_column_view_set_id_; }
   int double_column_view_set_id() const { return double_column_view_set_id_; }
-  int quad_column_view_set_id() const { return quad_column_view_set_id_; }
 
  private:
   // The message id for the title of this section.
@@ -57,7 +56,6 @@ class SettingsPageSection : public OptionsPageView {
 
   int single_column_view_set_id_;
   int double_column_view_set_id_;
-  int quad_column_view_set_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPageSection);
 };

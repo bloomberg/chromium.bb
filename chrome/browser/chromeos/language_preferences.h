@@ -152,8 +152,10 @@ enum RemapType {
 extern const LanguageMultipleChoicePreference<int>
     kXkbModifierMultipleChoicePrefs;
 
-extern const LanguageIntegerRangePreference kXkbAutoRepeatDelayPref;
-extern const LanguageIntegerRangePreference kXkbAutoRepeatIntervalPref;
+// A delay between the first and the start of the rest.
+extern const int kXkbAutoRepeatDelayInMs;
+// An interval between the repeated keys.
+extern const int kXkbAutoRepeatIntervalInMs;
 
 // A string Chrome preference (Local State) of the preferred keyboard layout in
 // the login screen.

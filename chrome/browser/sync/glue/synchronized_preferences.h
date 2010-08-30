@@ -173,12 +173,15 @@ static const char* kSynchronizedPreferences[] = {
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod.
 
   // Keyboard prefs
-  prefs::kLanguageXkbAutoRepeatDelay,
-  prefs::kLanguageXkbAutoRepeatEnabled,
-  prefs::kLanguageXkbAutoRepeatInterval,
   prefs::kLanguageXkbRemapAltKeyTo,
   prefs::kLanguageXkbRemapControlKeyTo,
   prefs::kLanguageXkbRemapSearchKeyTo,
+
+  // We don't sync the following keyboard prefs since they are not user-
+  // configurable:
+  //   prefs::kLanguageXkbAutoRepeatDelay,
+  //   prefs::kLanguageXkbAutoRepeatEnabled,
+  //   prefs::kLanguageXkbAutoRepeatInterval,
 #endif
 };
 

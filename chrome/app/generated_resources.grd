@@ -8242,9 +8242,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE">
         Language
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_KEYBOARD">
-        Keyboard
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY">
         Accessibility
       </message>
@@ -8894,34 +8891,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_CTRL_ALT"
                desc="The label for 'Configure modifier keys' drop-down">
         Swap Left Control and Left Alt keys
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_ENABLED"
-               desc="The label for the Chrome OS configuration dialog">
-        Repeat keys
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY"
-               desc="The label for the Chrome OS configuration dialog">
-        Key repeat delay:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY_SHORT"
-               desc="The label for the Chrome OS configuration dialog">
-        short
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY_LONG"
-               desc="The label for the Chrome OS configuration dialog">
-        long
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED"
-               desc="The label for the Chrome OS configuration dialog">
-        Key repeat speed:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
-               desc="The label for the Chrome OS configuration dialog">
-        fast
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_SLOW"
-               desc="The label for the Chrome OS configuration dialog">
-        slow
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_SEARCH_CTRL"
                desc="The label for 'Configure modifier keys' drop-down">

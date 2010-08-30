@@ -97,12 +97,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              kLeftControlKey);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapAltKeyTo, kLeftAltKey);
   prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled, true);
-  prefs->RegisterIntegerPref(
-      language_prefs::kXkbAutoRepeatDelayPref.pref_name,
-      language_prefs::kXkbAutoRepeatDelayPref.default_pref_value);
-  prefs->RegisterIntegerPref(
-      language_prefs::kXkbAutoRepeatIntervalPref.pref_name,
-      language_prefs::kXkbAutoRepeatIntervalPref.default_pref_value);
+  prefs->RegisterIntegerPref(prefs::kLanguageXkbAutoRepeatDelay,
+                             language_prefs::kXkbAutoRepeatDelayInMs);
+  prefs->RegisterIntegerPref(prefs::kLanguageXkbAutoRepeatInterval,
+                             language_prefs::kXkbAutoRepeatIntervalInMs);
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -166,9 +164,9 @@ void Preferences::Init(PrefService* prefs) {
   language_xkb_auto_repeat_enabled_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, prefs, this);
   language_xkb_auto_repeat_delay_pref_.Init(
-      language_prefs::kXkbAutoRepeatDelayPref.pref_name, prefs, this);
+      prefs::kLanguageXkbAutoRepeatDelay, prefs, this);
   language_xkb_auto_repeat_interval_pref_.Init(
-      language_prefs::kXkbAutoRepeatIntervalPref.pref_name, prefs, this);
+      prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
 
   std::string locale(g_browser_process->GetApplicationLocale());
   // Add input methods based on the application locale when the user first

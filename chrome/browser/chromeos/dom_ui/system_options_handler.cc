@@ -61,42 +61,6 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_MODIFIER_KEYS_CUSTOMIZE));
 
-  localized_strings->SetString("keyboard",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_KEYBOARD));
-  localized_strings->SetString("repeat_keys",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_ENABLED));
-  localized_strings->SetString("repeat_delay",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY));
-  localized_strings->SetString("repeat_delay_short",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY_SHORT));
-  localized_strings->SetString("repeat_delay_long",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY_LONG));
-  localized_strings->SetString("repeat_delay_min",
-      base::IntToString(
-          chromeos::language_prefs::kXkbAutoRepeatDelayPref.min_pref_value));
-  localized_strings->SetString("repeat_delay_max",
-      base::IntToString(
-          chromeos::language_prefs::kXkbAutoRepeatDelayPref.max_pref_value));
-  localized_strings->SetString("repeat_speed",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED));
-  localized_strings->SetString("repeat_speed_fast",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST));
-  localized_strings->SetString("repeat_speed_slow",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_SLOW));
-  localized_strings->SetString("repeat_speed_min",
-      base::IntToString(
-          chromeos::language_prefs::kXkbAutoRepeatIntervalPref.min_pref_value));
-  localized_strings->SetString("repeat_speed_max",
-      base::IntToString(
-          chromeos::language_prefs::kXkbAutoRepeatIntervalPref.max_pref_value));
-
   localized_strings->SetString("accessibility_title",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY));

@@ -389,17 +389,8 @@ const LanguageMultipleChoicePreference<int> kXkbModifierMultipleChoicePrefs = {
   0,  // does not use the label.
 };
 
-const LanguageIntegerRangePreference kXkbAutoRepeatDelayPref = {
-  prefs::kLanguageXkbAutoRepeatDelay, 500, 100, 2000,
-  NULL,  // does not use the ibus configuration service.
-  IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY,
-};
-const LanguageIntegerRangePreference kXkbAutoRepeatIntervalPref = {
-  prefs::kLanguageXkbAutoRepeatInterval, 33, 9, 100,
-  NULL,  // does not use the ibus configuration service.
-  IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED,
-};
-
+const int kXkbAutoRepeatDelayInMs = 500;
+const int kXkbAutoRepeatIntervalInMs = 50;
 const char kPreferredKeyboardLayout[] = "PreferredKeyboardLayout";
 const char kHardwareKeyboardLayout[] = "xkb:us::eng";
 

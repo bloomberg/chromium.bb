@@ -340,13 +340,15 @@ const char kLanguageXkbRemapAltKeyTo[] =
 
 // A boolean pref which determines whether key repeat is enabled.
 const char kLanguageXkbAutoRepeatEnabled[] =
-    "settings.language.xkb_auto_repeat_enabled";
+    "settings.language.xkb_auto_repeat_enabled_r2";
 // A integer pref which determines key repeat delay (in ms).
 const char kLanguageXkbAutoRepeatDelay[] =
-    "settings.language.xkb_auto_repeat_delay";
+    "settings.language.xkb_auto_repeat_delay_r2";
 // A integer pref which determines key repeat interval (in ms).
 const char kLanguageXkbAutoRepeatInterval[] =
-    "settings.language.xkb_auto_repeat_interval";
+    "settings.language.xkb_auto_repeat_interval_r2";
+// "_r2" suffixes are added to the three prefs above when we change the
+// preferences not user-configurable, not to sync them with cloud.
 
 // A boolean pref which determines whether accessibility is enabled.
 const char kAccessibilityEnabled[] = "settings.accessibility";
