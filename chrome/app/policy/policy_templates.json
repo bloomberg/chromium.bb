@@ -147,6 +147,13 @@
       }]
     },
     {
+      'name' : 'AutoFillEnabled',
+      'policies': [{
+        'name': 'AutoFillEnabled',
+	'type': 'main',
+      }]
+    },
+    {
       'name': 'DisabledPlugins',
       'policies': [{
         'name': 'DisabledPluginsList',
@@ -200,7 +207,14 @@
         'name': 'ExtensionInstallWhitelist',
         'type': 'list',
       }]
-    }
+    },
+    {
+      'name': 'ShowHomeButton',
+      'policies': [{
+        'name': 'ShowHomeButton',
+        'type': 'main',
+      }]
+    },
   ],
   'placeholders': [
     {

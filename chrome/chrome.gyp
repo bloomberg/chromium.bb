@@ -1802,7 +1802,7 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['OS=="win" or OS=="mac"',
+    ['OS=="win" or OS=="mac" or OS=="linux"',
       { 'targets': [
         {
           # policy_templates has different inputs and outputs, so it can't use
@@ -1863,7 +1863,7 @@
           ],
         },
       ]},  # 'targets'
-    ],  # OS=="win" or OS=="mac"
+    ],  # OS=="win" or OS=="mac" or OS=="linux"
     ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
       'targets': [{
         'target_name': 'packed_resources',
