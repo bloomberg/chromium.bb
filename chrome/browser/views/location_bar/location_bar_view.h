@@ -31,7 +31,6 @@
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #endif
 
-class Browser;
 class CommandUpdater;
 class ContentSettingImageView;
 class EVBubbleView;
@@ -284,9 +283,6 @@ class LocationBarView : public LocationBar,
 
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
-
-  // Current browser. Not owned by us.
-  Browser* browser_;
 
   // Current profile. Not owned by us.
   Profile* profile_;
