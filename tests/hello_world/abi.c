@@ -11,6 +11,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sys/nacl_imc_api.h>
 #include <sys/stat.h>
@@ -113,9 +114,65 @@ int CheckAlignment() {
   return nerror;
 }
 
+
+int AssertMemcmp(char* name, unsigned char* p1, unsigned char* p2, int n) {
+  int i;
+  if (0 ==  memcmp(p1, p2, n)) {
+    return 0;
+  }
+
+  printf("ERROR: bad bitfield contents for %s\n", name);
+  printf("%-10s: ", "actual");
+  for (i = 0; i < n; ++i) {
+    printf(" %02x", p1[i]);
+  }
+  printf("\n");
+
+  printf("%-10s: ", "expected");
+  for (i = 0; i < n; ++i) {
+    printf(" %02x", p2[i]);
+  }
+  printf("\n");
+
+  return 1;
+}
+
+#define CHECK_BITFIELD(s1, s2, s3, v1, v2, v3, n, s) do { \
+    typedef struct { unsigned f1: s1; unsigned f2:  s2; unsigned f3: s3; } BF; \
+    char* name = #s1 ":" #s2 ":" #s3 "::" #v1 ":" #v2 ":" #v3; \
+    BF bf;                          \
+    memset(&bf, 0, sizeof(BF)); \
+    bf.f1 = v1; bf.f2 = v2; bf.f3 = v3; \
+    nerror += Assert(sizeof(bf), n, "unexpected bitfield size"); \
+    nerror += AssertMemcmp(name, (unsigned char *)&bf, (unsigned char *)s, n); \
+  } while(0)
+
+
+int CheckBitfields() {
+  int nerror = 0;
+  CHECK_BITFIELD(1, 1, 1,  0, 0, 1,  4,
+                 "\x04\0\0\0");
+  CHECK_BITFIELD(2, 2, 2,  1, 2, 3,  4,
+                 "\x39\0\0\0");
+  CHECK_BITFIELD(3, 3, 3,  1, 2, 7,  4,
+                 "\xd1\x01\0\0");
+  CHECK_BITFIELD(7, 7, 7,  1, 2, 3,  4,
+                 "\x01\xc1\0\0");
+  CHECK_BITFIELD(11, 11, 11,  1, 2, 3,  8,
+                 "\x01\x10\x00\x00\x03\x00\x00\x00");
+/* this seems to trigger a seg-fault on ARM */
+/* c.f.: http://code.google.com/p/nativeclient/issues/detail?id=859 */
+#if 0
+  CHECK_BITFIELD(31, 31, 31,  1, 2, 3,  12,
+                 "\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00");
+#endif
+  return nerror;
+}
+
 int main(int argc, char* argv[]) {
   int nerror = 0;
   nerror += CheckSizes();
   nerror += CheckAlignment();
+  nerror += CheckBitfields();
   return nerror;
 }
