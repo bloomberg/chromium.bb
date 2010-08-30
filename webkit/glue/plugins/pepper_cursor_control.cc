@@ -37,7 +37,7 @@ bool SetCursor(PP_Instance instance_id,
   return instance->SetCursor(type);
 }
 
-bool LockCursor(PP_Instance) {
+bool LockCursor(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return false;
@@ -46,7 +46,7 @@ bool LockCursor(PP_Instance) {
   return false;
 }
 
-bool UnlockCursor(PP_Instance) {
+bool UnlockCursor(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return false;
@@ -55,7 +55,7 @@ bool UnlockCursor(PP_Instance) {
   return false;
 }
 
-bool HasCursorLock(PP_Instance) {
+bool HasCursorLock(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return false;
@@ -64,7 +64,7 @@ bool HasCursorLock(PP_Instance) {
   return false;
 }
 
-bool CanLockCursor(PP_Instance) {
+bool CanLockCursor(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return false;

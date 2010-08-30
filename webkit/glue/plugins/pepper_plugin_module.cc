@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "third_party/ppapi/c/dev/ppb_buffer_dev.h"
 #include "third_party/ppapi/c/dev/ppb_char_set_dev.h"
+#include "third_party/ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "third_party/ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "third_party/ppapi/c/dev/ppb_file_io_dev.h"
 #include "third_party/ppapi/c/dev/ppb_file_io_trusted_dev.h"
@@ -43,6 +44,7 @@
 #include "webkit/glue/plugins/pepper_audio.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_char_set.h"
+#include "webkit/glue/plugins/pepper_cursor_control.h"
 #include "webkit/glue/plugins/pepper_directory_reader.h"
 #include "webkit/glue/plugins/pepper_file_chooser.h"
 #include "webkit/glue/plugins/pepper_file_io.h"
@@ -226,6 +228,8 @@ const void* GetInterface(const char* name) {
     return VideoDecoder::GetInterface();
   if (strcmp(name, PPB_CHAR_SET_DEV_INTERFACE) == 0)
     return CharSet::GetInterface();
+  if (strcmp(name, PPB_CURSOR_CONTROL_DEV_INTERFACE) == 0)
+    return GetCursorControlInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
