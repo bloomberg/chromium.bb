@@ -19,8 +19,9 @@
 static const int kDefaultContentsSplitOffset = 400;
 
 // Never make the web part of the tab contents smaller than this (needed if the
-// window is only a few pixels high).
-static const int kMinWebHeight = 50;
+// window is only a few pixels high/wide).
+const int kMinWebHeight = 50;
+const int kMinWebWidth = 50;
 
 
 @implementation TabContentsController
@@ -31,6 +32,7 @@ static const int kMinWebHeight = 50;
                               bundle:mac_util::MainAppBundle()])) {
     contents_ = contents;
   }
+  sidebarContents_ = NULL;
   return self;
 }
 
@@ -84,7 +86,7 @@ static const int kMinWebHeight = 50;
 }
 
 - (void)showDevToolsContents:(TabContents*)devToolsContents {
-  NSArray* subviews = [contentsContainer_ subviews];
+  NSArray* subviews = [devToolsContainer_ subviews];
   if (devToolsContents) {
     DCHECK_GE([subviews count], 1u);
 
@@ -103,10 +105,10 @@ static const int kMinWebHeight = 50;
     NSView* devtoolsView = devToolsContents->GetNativeView();
     view_id_util::SetID(devtoolsView, VIEW_ID_DEV_TOOLS_DOCKED);
     if ([subviews count] == 1) {
-      [contentsContainer_ addSubview:devtoolsView];
+      [devToolsContainer_ addSubview:devtoolsView];
     } else {
       DCHECK_EQ([subviews count], 2u);
-      [contentsContainer_ replaceSubview:[subviews objectAtIndex:1]
+      [devToolsContainer_ replaceSubview:[subviews objectAtIndex:1]
                                     with:devToolsContents->GetNativeView()];
       // If devtools are already visible, keep the current size.
       splitOffset = NSHeight([devtoolsView frame]);
@@ -114,7 +116,7 @@ static const int kMinWebHeight = 50;
 
     // Make sure |splitOffset| isn't too large or too small.
     splitOffset = MIN(splitOffset,
-                      NSHeight([contentsContainer_ frame]) - kMinWebHeight);
+                      NSHeight([devToolsContainer_ frame]) - kMinWebHeight);
     DCHECK_GE(splitOffset, 0) << "kMinWebHeight needs to be smaller than "
                               << "smallest available tab contents space.";
     splitOffset = MAX(0, splitOffset);
@@ -126,11 +128,11 @@ static const int kMinWebHeight = 50;
     [devtoolsView setFrame:devtoolsFrame];
 
     NSRect webFrame = [[subviews objectAtIndex:0] frame];
-    webFrame.size.height = NSHeight([contentsContainer_ frame]) -
+    webFrame.size.height = NSHeight([devToolsContainer_ frame]) -
                            [self devToolsHeight];
     [[subviews objectAtIndex:0] setFrame:webFrame];
 
-    [contentsContainer_ adjustSubviews];
+    [devToolsContainer_ adjustSubviews];
   } else {
     if ([subviews count] > 1) {
       NSView* oldDevToolsContentsView = [subviews objectAtIndex:1];
@@ -144,11 +146,77 @@ static const int kMinWebHeight = 50;
 }
 
 - (CGFloat)devToolsHeight {
-  NSArray* subviews = [contentsContainer_ subviews];
+  NSArray* subviews = [devToolsContainer_ subviews];
   if ([subviews count] < 2)
     return 0;
   return NSHeight([[subviews objectAtIndex:1] frame]) +
-         [contentsContainer_ dividerThickness];
+         [devToolsContainer_ dividerThickness];
+}
+
+// This function is very similar to showDevToolsContents.
+// TODO(alekseys): refactor and move both to browser window.
+// I (alekseys) intend to do it very soon.
+- (void)showSidebarContents:(TabContents*)sidebarContents {
+  sidebarContents_ = sidebarContents;
+  NSArray* subviews = [contentsContainer_ subviews];
+  if (sidebarContents) {
+    DCHECK_GE([subviews count], 1u);
+
+    // Load the default split offset.
+    CGFloat sidebarWidth = g_browser_process->local_state()->GetInteger(
+        prefs::kExtensionSidebarWidth);
+    if (sidebarWidth == -1) {
+      // Initial load, set to default value.
+      sidebarWidth = NSWidth([contentsContainer_ frame]) / 7;
+    }
+
+    // |sidebarView| is a TabContentsViewCocoa object, whose ViewID was
+    // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
+    // VIEW_ID_SIDE_BAR_CONTAINER here.
+    NSView* sidebarView = sidebarContents->GetNativeView();
+    view_id_util::SetID(sidebarView, VIEW_ID_SIDE_BAR_CONTAINER);
+    if ([subviews count] == 1) {
+      [contentsContainer_ addSubview:sidebarView];
+    } else {
+      DCHECK_EQ([subviews count], 2u);
+      sidebarWidth = NSWidth([[subviews objectAtIndex:1] frame]);
+      [contentsContainer_ replaceSubview:[subviews objectAtIndex:1]
+                                    with:sidebarContents->GetNativeView()];
+    }
+
+    // Make sure |sidebarWidth| isn't too large or too small.
+    sidebarWidth = MIN(sidebarWidth,
+                       NSWidth([contentsContainer_ frame]) - kMinWebWidth);
+    DCHECK_GE(sidebarWidth, 0) << "kMinWebWidth needs to be smaller than "
+                               << "smallest available tab contents space.";
+    sidebarWidth = MAX(0, sidebarWidth);
+
+    // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
+    // but I can't figure out how to use it. Manually resize web and sidebar.
+    NSRect sidebarFrame = [sidebarView frame];
+    sidebarFrame.size.width = sidebarWidth;
+    [sidebarView setFrame:sidebarFrame];
+
+    NSRect webFrame = [[subviews objectAtIndex:0] frame];
+    webFrame.size.width = NSWidth([contentsContainer_ frame]) -
+    ([contentsContainer_ dividerThickness] + sidebarWidth);
+    [[subviews objectAtIndex:0] setFrame:webFrame];
+
+    [contentsContainer_ adjustSubviews];
+  } else {
+    if ([subviews count] > 1) {
+      NSView* oldSidebarContentsView = [subviews objectAtIndex:1];
+      // Store split offset when hiding sidebar window only.
+      int sidebarWidth = NSWidth([oldSidebarContentsView frame]);
+      g_browser_process->local_state()->SetInteger(
+          prefs::kExtensionSidebarWidth, sidebarWidth);
+      [oldSidebarContentsView removeFromSuperview];
+    }
+  }
+}
+
+- (TabContents*)sidebarContents {
+  return sidebarContents_;
 }
 
 @end

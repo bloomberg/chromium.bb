@@ -235,6 +235,10 @@ class TabStripModelObserverBridge;
 // Shows or hides the docked web inspector depending on |contents|'s state.
 - (void)updateDevToolsForContents:(TabContents*)contents;
 
+// Displays the active sidebar linked to the |contents| or hides sidebar UI,
+// if there's no such sidebar.
+- (void)updateSidebarForContents:(TabContents*)contents;
+
 // Gets the current theme provider.
 - (ThemeProvider*)themeProvider;
 

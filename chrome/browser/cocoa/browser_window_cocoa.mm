@@ -37,6 +37,8 @@
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sidebar/sidebar_container.h"
+#include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -54,6 +56,8 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
     confirm_close_factory_(browser) {
   // This pref applies to all windows, so all must watch for it.
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::SIDEBAR_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -569,6 +573,10 @@ void BrowserWindowCocoa::Observe(NotificationType type,
     case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
       [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
       break;
+    case NotificationType::SIDEBAR_CHANGED:
+      UpdateSidebarForContents(
+          Details<SidebarContainer>(details)->tab_contents());
+      break;
     default:
       NOTREACHED();  // we don't ask for anything else!
       break;
@@ -584,4 +592,10 @@ void BrowserWindowCocoa::DestroyBrowser() {
 
 NSWindow* BrowserWindowCocoa::window() const {
   return [controller_ window];
+}
+
+void BrowserWindowCocoa::UpdateSidebarForContents(TabContents* tab_contents) {
+  if (tab_contents == browser_->tabstrip_model()->GetSelectedTabContents()) {
+    [controller_ updateSidebarForContents:tab_contents];
+  }
 }

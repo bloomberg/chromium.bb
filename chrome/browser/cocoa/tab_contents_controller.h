@@ -24,8 +24,10 @@ class TabStripModel;
  @private
   TabContentsCommandObserver* observer_;  // nil if |commands_| is nil
   TabContents* contents_;  // weak
+  TabContents* sidebarContents_;  // weak
 
   IBOutlet NSSplitView* contentsContainer_;
+  IBOutlet NSSplitView* devToolsContainer_;
 }
 
 // Create the contents of a tab represented by |contents| and loaded from the
@@ -60,6 +62,17 @@ class TabStripModel;
 // Returns the height required by devtools and divider, or 0 if no devtools are
 // docked to the tab.
 - (CGFloat)devToolsHeight;
+
+// Shows |sidebarContents| in a split view, or removes the right view in the
+// split view if |sidebarContents| is NULL.
+// TODO(thakis): Either move this to tab_window or move infobar handling to here
+// too -- http://crbug.com/31633 .
+- (void)showSidebarContents:(TabContents*)sidebarContents;
+
+// Returns contents of the currently displayed sidebar; returns NULL if there
+// isn't any.
+- (TabContents*)sidebarContents;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_CONTENTS_CONTROLLER_H_

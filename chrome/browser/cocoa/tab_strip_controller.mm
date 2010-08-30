@@ -31,6 +31,8 @@
 #import "chrome/browser/cocoa/throbber_view.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/sidebar/sidebar_container.h"
+#include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -1046,6 +1048,7 @@ private:
 
   // Swap in the contents for the new tab.
   [self swapInTabAtIndex:modelIndex];
+  [self updateSidebarForContents:newContents];
   [self updateDevToolsForContents:newContents];
 
   if (newContents) {
@@ -1153,6 +1156,7 @@ private:
   }
 
   // Does nothing, purely for consistency with the windows/linux code.
+  [self updateSidebarForContents:NULL];
   [self updateDevToolsForContents:NULL];
 
   // Send a broadcast that the number of tabs have changed.
@@ -1788,11 +1792,12 @@ private:
   // NSView  -- switchView, same for all tabs
   // +-  NSView  -- TabContentsController's view
   //     +- NSSplitView
-  //        +- TabContentsViewCocoa
+  //        +- NSSplitView
+  //           +- TabContentsViewCocoa
   // We use the TabContentsController's view in |swapInTabAtIndex|, so we have
   // to pass it to the sheet controller here.
   NSView* tabContentsView =
-      [[window->owner()->GetNativeView() superview] superview];
+      [[[window->owner()->GetNativeView() superview] superview] superview];
   window->delegate()->RunSheet([self sheetController], tabContentsView);
 
   // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
@@ -1811,7 +1816,7 @@ private:
 
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
   NSView* tabContentsView =
-      [[window->owner()->GetNativeView() superview] superview];
+      [[[window->owner()->GetNativeView() superview] superview] superview];
 
   // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
   // between windows. Until then, we have to prevent having to move a tabsheet
@@ -1844,6 +1849,40 @@ private:
   TabContents* devtoolsContents = contents ?
       DevToolsWindow::GetDevToolsContents(contents) : NULL;
   [tabController showDevToolsContents:devtoolsContents];
+}
+
+// This function is very similar to updateDevToolsContents.
+// TODO(alekseys): refactor and move both to browser window.
+// I (alekseys) intend to do it very soon.
+- (void)updateSidebarForContents:(TabContents*)contents {
+  if (SidebarManager::GetInstance() == NULL)  // Happens in tests.
+    return;
+
+  int modelIndex = tabStripModel_->GetIndexOfTabContents(contents);
+
+  // This happens e.g. if one hits cmd-q with sidebar expanded.
+  if (modelIndex == TabStripModel::kNoTab)
+    return;
+
+  NSInteger index = [self indexFromModelIndex:modelIndex];
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, (NSInteger)[tabContentsArray_ count]);
+  if (index < 0 || index >= (NSInteger)[tabContentsArray_ count])
+    return;
+
+  TabContentsController* tabController =
+      [tabContentsArray_ objectAtIndex:index];
+  TabContents* sidebar_contents = NULL;
+  if (contents && SidebarManager::IsSidebarAllowed()) {
+    SidebarContainer* active_sidebar =
+        SidebarManager::GetInstance()->GetActiveSidebarContainerFor(contents);
+    if (active_sidebar)
+      sidebar_contents = active_sidebar->sidebar_contents();
+  }
+  TabContents* old_sidebar_contents = [tabController sidebarContents];
+  [tabController showSidebarContents:sidebar_contents];
+  SidebarManager::GetInstance()->NotifyStateChanges(
+      old_sidebar_contents, sidebar_contents);
 }
 
 @end

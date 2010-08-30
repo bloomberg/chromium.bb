@@ -399,6 +399,10 @@
   [tabStripController_ updateDevToolsForContents:contents];
 }
 
+- (void)updateSidebarForContents:(TabContents*)contents {
+  [tabStripController_ updateSidebarForContents:contents];
+}
+
 // Called when the user wants to close a window or from the shutdown process.
 // The Browser object is in control of whether or not we're allowed to close. It
 // may defer closing due to several states, such as onUnload handlers needing to

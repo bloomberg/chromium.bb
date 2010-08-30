@@ -125,6 +125,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   int GetCommandId(const NativeWebKeyboardEvent& event);
   bool HandleKeyboardEventInternal(NSEvent* event);
   NSWindow* window() const;  // Accessor for the (current) |NSWindow|.
+  void UpdateSidebarForContents(TabContents* tab_contents);
 
   NotificationRegistrar registrar_;
   Browser* browser_;  // weak, owned by controller

@@ -223,6 +223,7 @@ class ToolbarModel;
 - (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
 - (void)updateDevToolsForContents:(TabContents*)contents;
+- (void)updateSidebarForContents:(TabContents*)contents;
 
 @end
 
