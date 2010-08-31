@@ -8,8 +8,10 @@
  *               the old net-internals is replaced.
  */
 
+// TODO(eroman): these functions should use lower-case names.
 var PaintLogView;
 var PrintSourceEntriesAsText;
+var proxySettingsToString;
 
 // Start of anonymous namespace.
 (function() {
@@ -258,15 +260,17 @@ function getTextForProxyConfigChangedExtraParam(entry) {
   var indentation = '        ';
 
   if (params.old_config) {
+    var oldConfigString = proxySettingsToString(params.old_config);
     // The previous configuration may not be present in the case of
     // the initial proxy settings fetch.
     out += ' --> old_config =\n' +
-           indentLines(indentation, params.old_config.split('\n'));
+           indentLines(indentation, oldConfigString.split('\n'));
     out += '\n';
   }
 
+  var newConfigString = proxySettingsToString(params.new_config);
   out += ' --> new_config =\n' +
-         indentLines(indentation, params.new_config.split('\n'));
+         indentLines(indentation, newConfigString.split('\n'));
 
   return out;
 }
@@ -288,6 +292,72 @@ function getTextForEvent(entry) {
   text += getKeyWithValue(LogEventType, entry.orig.type);
   return text;
 }
+
+proxySettingsToString = function(config) {
+  if (!config)
+    return '';
+
+  // The proxy settings specify up to three major fallback choices
+  // (auto-detect, custom pac url, or manual settings).
+  // We enumerate these to a list so we can later number them.
+  var modes = [];
+
+  // Output any automatic settings.
+  if (config.auto_detect)
+    modes.push(['Auto-detect']);
+  if (config.pac_url)
+    modes.push(['PAC script: ' + config.pac_url]);
+
+  // Output any manual settings.
+  if (config.single_proxy || config.proxy_per_scheme) {
+    var lines = [];
+
+    if (config.single_proxy) {
+      lines.push('Proxy server: ' + config.single_proxy);
+    } else if (config.proxy_per_scheme) {
+      for (var urlScheme in config.proxy_per_scheme) {
+        if (urlScheme != 'fallback') {
+          lines.push('Proxy server for ' + urlScheme.toUpperCase() + ': ' +
+                     config.proxy_per_scheme[urlScheme]);
+        }
+      }
+      if (config.proxy_per_scheme.fallback) {
+        lines.push('Proxy server for everything else: ' +
+                   config.proxy_per_scheme.fallback);
+      }
+    }
+
+    // Output any proxy bypass rules.
+    if (config.bypass_list) {
+      if (config.reverse_bypass) {
+        lines.push('Reversed bypass list: ');
+      } else {
+        lines.push('Bypass list: ');
+      }
+
+      for (var i = 0; i < config.bypass_list.length; ++i)
+        lines.push('  ' + config.bypass_list[i]);
+    }
+
+    modes.push(lines);
+  }
+
+  // If we didn't find any proxy settings modes, we are using DIRECT.
+  if (modes.length < 1)
+    return 'Use DIRECT connections.';
+
+  // If there was just one mode, don't bother numbering it.
+  if (modes.length == 1)
+    return modes[0].join('\n');
+
+  // Otherwise concatenate all of the modes into a numbered list
+  // (which correspond with the fallback order).
+  var result = [];
+  for (var i = 0; i < modes.length; ++i)
+    result.push(indentLines('(' + (i + 1) + ') ', modes[i]));
+
+  return result.join('\n');
+};
 
 // End of anonymous namespace.
 })();

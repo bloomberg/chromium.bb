@@ -44,13 +44,12 @@ ProxyView.prototype.onProxySettingsChanged = function(proxySettings) {
   var original = proxySettings.original;
   var effective = proxySettings.effective;
 
-  // Both |original| and |effective| are formatted strings describing the
-  // settings.
+  // Both |original| and |effective| are dictionaries describing the settings.
   this.originalSettingsDiv_.innerHTML = ''
   this.effectiveSettingsDiv_.innerHTML = ''
 
-  addTextNode(this.originalSettingsDiv_, original);
-  addTextNode(this.effectiveSettingsDiv_, effective);
+  addTextNode(this.originalSettingsDiv_, proxySettingsToString(original));
+  addTextNode(this.effectiveSettingsDiv_, proxySettingsToString(effective));
 };
 
 ProxyView.prototype.onBadProxiesChanged = function(badProxies) {

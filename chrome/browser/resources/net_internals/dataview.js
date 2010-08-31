@@ -54,7 +54,8 @@ DataView.prototype.onExportToText_ = function() {
   text.push('----------------------------------------------');
   text.push('');
 
-  text.push(g_browser.proxySettings_.currentData_.effective);
+  text.push(proxySettingsToString(
+        g_browser.proxySettings_.currentData_.effective));
 
   text.push('');
   text.push('----------------------------------------------');
@@ -62,7 +63,8 @@ DataView.prototype.onExportToText_ = function() {
   text.push('----------------------------------------------');
   text.push('');
 
-  text.push(g_browser.proxySettings_.currentData_.original);
+  text.push(proxySettingsToString(
+        g_browser.proxySettings_.currentData_.original));
 
   text.push('');
   text.push('----------------------------------------------');

@@ -54,21 +54,15 @@ TEST_F(FirefoxProxySettingsTest, TestParse) {
   net::ProxyConfig config;
   EXPECT_TRUE(settings.ToProxyConfig(&config));
 
-  EXPECT_EQ(
-      "Automatic settings:\n"
-      "  Auto-detect: No\n"
-      "  Custom PAC script: [None]\n"
-      "Manual settings:\n"
-      "  Proxy server: \n"
-      "    HTTP: http_proxy:1111\n"
-      "    HTTPS: ssl_proxy:2222\n"
-      "    FTP: ftp_proxy:3333\n"
-      "    (fallback): socks4://socks_host:5555\n"
-      "  Bypass list: \n"
-      "    *localhost\n"
-      "    127.0.0.1\n"
-      "    *noproxy.com",
-      config.ToString());
+  {
+    net::ProxyConfig expected_config;
+    expected_config.proxy_rules().ParseFromString("http=http_proxy:1111; "
+                                                  "https=ssl_proxy:2222; "
+                                                  "ftp=ftp_proxy:3333; "
+                                                  "socks=socks_host:5555");
+    expected_config.proxy_rules().bypass_rules.ParseFromString(
+        "*localhost,  127.0.0.1, *noproxy.com");
+  }
 }
 
 TEST_F(FirefoxProxySettingsTest, TestParseAutoConfigUrl) {
@@ -101,12 +95,6 @@ TEST_F(FirefoxProxySettingsTest, TestParseAutoConfigUrl) {
   net::ProxyConfig config;
   EXPECT_TRUE(settings.ToProxyConfig(&config));
 
-  EXPECT_EQ(
-      "Automatic settings:\n"
-      "  Auto-detect: No\n"
-      "  Custom PAC script: http://custom-pac-url/\n"
-      "Manual settings:\n"
-      "  Proxy server: [None]\n"
-      "  Bypass list: [None]",
-      config.ToString());
+  EXPECT_TRUE(config.Equals(net::ProxyConfig::CreateFromCustomPacURL(
+      GURL("http://custom-pac-url/"))));
 }
