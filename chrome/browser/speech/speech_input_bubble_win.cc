@@ -27,6 +27,8 @@
 
 namespace {
 
+// The speech bubble's arrow is so many pixels from the left of html element.
+const int kBubbleTargetOffsetX = 5;
 const int kBubbleHorizMargin = 40;
 const int kBubbleVertMargin = 0;
 
