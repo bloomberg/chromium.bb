@@ -26,12 +26,16 @@
  * simultaneously.  This is a NaCl architectural limitation.
  * On ARM the limit is 4k.
  * Note that some thread related memory is never freed.
- * On ARM this is quite substantial (about 4kB) and since this test
- * creates quite a few threads, g_num_test_loops cannot be much bigger than 1k.
+ * On ARM this is quite substantial (about 4kB).
+ *
+ * Due to a bug either in pthreads, or newlib, or even in the TCB,
+ * g_num_test_loops cannot be much bigger than 100 without making
+ * the test unreliable on multiple platforms.
+ *
  * The number of rounds can be changed on the commandline.
  */
 
-int g_num_test_loops  = 10000;
+int g_num_test_loops  = 100;
 int g_run_intrinsic   = 0;
 
 /* Macros so we can use it for array dimensions in ISO C90 */
@@ -87,14 +91,33 @@ void* FastThread(void *userdata) {
   return 0;
 }
 
+/* Dispatches to pthread_create while allowing for a large, but
+ * finite number of attempts to get past EAGAIN by busylooping.
+ */
+
+int pthread_create_check_eagain(pthread_t *thread_id,
+                                pthread_attr_t *attr,
+                                void *(*func) (void *),
+                                void *state) {
+  int64_t loop_c = 0;
+  int p = 0;
+
+  while (EAGAIN == (p = pthread_create(thread_id, attr, func, state))) {
+    /* Busyloop. The comparison slows things down a little. */
+    /* The 6000 is an arbitrary cut-off point for the busyloop */
+    EXPECT_LE(loop_c, 6000);
+    loop_c++;
+  }
+
+  return p;
+}
 
 /* creates and waits via pthread_join() for thread to exit */
 void CreateWithJoin(ThreadFunction func, void *state) {
   pthread_t thread_id;
   void* thread_ret;
-  int p = pthread_create(&thread_id, NULL, func, state);
+  int p = pthread_create_check_eagain(&thread_id, NULL, func, state);
   EXPECT_EQ(0, p);
-
   /* wait for thread to exit */
   p = pthread_join(thread_id, &thread_ret);
   EXPECT_EQ(0, p);
@@ -117,7 +140,7 @@ void CreateDetached() {
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-  p = pthread_create(&thread_id, &attr, FastThread, NULL);
+  p = pthread_create_check_eagain(&thread_id, &attr, FastThread, NULL);
   EXPECT_EQ(0, p);
   /* cannot join on detached thread */
 }
@@ -150,7 +173,7 @@ void TestTlsAndSync() {
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-  i = pthread_create(&thread_id, &attr, TlsThread, &sync_data);
+  i = pthread_create_check_eagain(&thread_id, &attr, TlsThread, &sync_data);
   EXPECT_EQ(0, i);
 
   EXPECT_EQ(5, tls_var);
@@ -221,7 +244,7 @@ void TestSemaphores() {
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-  i = pthread_create(&thread_id, &attr, SemaphoresThread, sem);
+  i = pthread_create_check_eagain(&thread_id, &attr, SemaphoresThread, sem);
   EXPECT_EQ(0, i);
 
   for (i = 0; i < g_num_test_loops; i++) {
@@ -287,7 +310,7 @@ void TestPthreadOnce() {
     }
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    p = pthread_create(&thread_id, &attr, OnceThread, NULL);
+    p = pthread_create_check_eagain(&thread_id, &attr, OnceThread, NULL);
     EXPECT_EQ(0, p);
   }
   TEST_FUNCTION_END;
@@ -321,7 +344,7 @@ void TestRecursiveMutex() {
 
   PRINT(g_verbose, ("starting threads\n"));
   for (i = 0; i < NUM_THREADS; ++i) {
-    int rv = pthread_create(&tid[i], NULL, RecursiveLockThread, &mutex);
+    int rv = pthread_create_check_eagain(&tid[i], NULL, RecursiveLockThread, &mutex);
     EXPECT_EQ(0, rv);
   }
 
@@ -353,7 +376,7 @@ void TestRecursiveMutex() {
 
   PRINT(g_verbose, ("starting threads\n"));
   for (i = 0; i < NUM_THREADS; ++i) {
-    int rv = pthread_create(&tid[i], NULL, RecursiveLockThread, &mutex);
+    int rv = pthread_create_check_eagain(&tid[i], NULL, RecursiveLockThread, &mutex);
     EXPECT_EQ(0, rv);
   }
 
@@ -449,7 +472,7 @@ void TestMalloc() {
 
   PRINT(g_verbose, ("starting threads\n"));
   for (i = 0; i < NUM_THREADS; ++i) {
-    int rv = pthread_create(&tid[i], NULL, MallocThread, NULL);
+    int rv = pthread_create_check_eagain(&tid[i], NULL, MallocThread, NULL);
     EXPECT_EQ(0, rv);
   }
 
@@ -490,7 +513,7 @@ void TestRealloc() {
   int i = 0;
   TEST_FUNCTION_START;
   for (i = 0; i < NUM_THREADS; ++i) {
-    int rv = pthread_create(&tid[i], NULL, ReallocThread, NULL);
+    int rv = pthread_create_check_eagain(&tid[i], NULL, ReallocThread, NULL);
     EXPECT_EQ(0, rv);
   }
 
@@ -579,8 +602,8 @@ static void CheckAtomicityUnderConcurrency() {
 
   workers_begin = 0; /* Hold on... */
   for (ii = 0; ii < ARRAY_SIZE(threads); ++ii)
-    EXPECT_EQ(0, pthread_create(&threads[ii], NULL, &WorkerThread,
-                                (void*) &counter));
+    EXPECT_EQ(0, pthread_create_check_eagain(&threads[ii], NULL, &WorkerThread,
+                                             (void*) &counter));
 
   ANNOTATE_HAPPENS_BEFORE(&workers_begin);
   ANNOTATE_IGNORE_WRITES_BEGIN();
