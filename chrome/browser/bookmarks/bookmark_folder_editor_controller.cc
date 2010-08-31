@@ -5,6 +5,7 @@
 #include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
 
 #include "app/l10n_util.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profile.h"
@@ -40,16 +41,20 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
       details_(details) {
   DCHECK(IsNew() || node);
 
-  std::wstring title = IsNew() ?
-      l10n_util::GetString(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW) :
-      l10n_util::GetString(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE);
-  std::wstring label =
-      l10n_util::GetString(IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL);
-  std::wstring contents = IsNew() ?
-      l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
-      UTF16ToWide(node_->GetTitle());
+  string16 title = IsNew() ?
+      l10n_util::GetStringUTF16(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW) :
+      l10n_util::GetStringUTF16(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE);
+  string16 label =
+      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL);
+  string16 contents = IsNew() ?
+      l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
+      node_->GetTitle();
 
-  dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);
+  dialog_ = InputWindowDialog::Create(wnd,
+                                      UTF16ToWideHack(title),
+                                      UTF16ToWideHack(label),
+                                      UTF16ToWideHack(contents),
+                                      this);
   model_->AddObserver(this);
 }
 

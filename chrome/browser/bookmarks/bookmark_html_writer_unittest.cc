@@ -53,40 +53,41 @@ class BookmarkHTMLWriterTest : public testing::Test {
   }
 
   // Converts a BookmarkEntry to a string suitable for assertion testing.
-  std::wstring BookmarkEntryToString(
+  string16 BookmarkEntryToString(
       const ProfileWriter::BookmarkEntry& entry) {
-    std::wstring result;
-    result.append(L"on_toolbar=");
+    string16 result;
+    result.append(ASCIIToUTF16("on_toolbar="));
     if (entry.in_toolbar)
-      result.append(L"false");
+      result.append(ASCIIToUTF16("false"));
     else
-      result.append(L"true");
+      result.append(ASCIIToUTF16("true"));
 
-    result.append(L" url=" + UTF8ToWide(entry.url.spec()));
+    result.append(ASCIIToUTF16(" url=") + UTF8ToUTF16(entry.url.spec()));
 
-    result.append(L" path=");
+    result.append(ASCIIToUTF16(" path="));
     for (size_t i = 0; i < entry.path.size(); ++i) {
       if (i != 0)
-        result.append(L"/");
-      result.append(entry.path[i]);
+        result.append(ASCIIToUTF16("/"));
+      result.append(WideToUTF16Hack(entry.path[i]));
     }
 
-    result.append(L" title=");
-    result.append(entry.title);
+    result.append(ASCIIToUTF16(" title="));
+    result.append(WideToUTF16Hack(entry.title));
 
-    result.append(L" time=");
-    result.append(base::TimeFormatFriendlyDateAndTime(entry.creation_time));
+    result.append(ASCIIToUTF16(" time="));
+    result.append(WideToUTF16Hack(
+        base::TimeFormatFriendlyDateAndTime(entry.creation_time)));
     return result;
   }
 
   // Creates a set of bookmark values to a string for assertion testing.
-  std::wstring BookmarkValuesToString(bool on_toolbar,
-                                      const GURL& url,
-                                      const string16& title,
-                                      base::Time creation_time,
-                                      const string16& f1,
-                                      const string16& f2,
-                                      const string16& f3) {
+  string16 BookmarkValuesToString(bool on_toolbar,
+                                  const GURL& url,
+                                  const string16& title,
+                                  base::Time creation_time,
+                                  const string16& f1,
+                                  const string16& f2,
+                                  const string16& f3) {
     ProfileWriter::BookmarkEntry entry;
     entry.in_toolbar = on_toolbar;
     entry.url = url;

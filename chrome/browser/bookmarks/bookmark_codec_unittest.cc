@@ -202,9 +202,9 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
   // Change something in the encoded value before decoding it.
   DictionaryValue* child1_value;
   GetBookmarksBarChildValue(value.get(), 0, &child1_value);
-  std::wstring title;
+  std::string title;
   ASSERT_TRUE(child1_value->GetString(BookmarkCodec::kNameKey, &title));
-  child1_value->SetString(BookmarkCodec::kNameKey, title + L"1");
+  child1_value->SetString(BookmarkCodec::kNameKey, title + "1");
 
   std::string dec_checksum;
   scoped_ptr<BookmarkModel> decoded_model1(DecodeHelper(
