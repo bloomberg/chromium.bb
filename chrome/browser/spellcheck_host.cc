@@ -164,9 +164,10 @@ void SpellCheckHost::InitializeInternal() {
   if (!observer_)
     return;
 
-  file_ = base::CreatePlatformFile(bdict_file_path_,
+  file_ = base::CreatePlatformFile(
+      bdict_file_path_,
       base::PLATFORM_FILE_READ | base::PLATFORM_FILE_OPEN,
-      NULL);
+      NULL, NULL);
 
   // File didn't exist. Download it.
   if (file_ == base::kInvalidPlatformFileValue && !tried_to_download_ &&

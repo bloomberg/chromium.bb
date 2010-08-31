@@ -159,7 +159,7 @@ int FileStream::Open(const FilePath& path, int open_flags) {
   }
 
   open_flags_ = open_flags;
-  file_ = base::CreatePlatformFile(path.value(), open_flags_, NULL);
+  file_ = base::CreatePlatformFile(path, open_flags_, NULL, NULL);
   if (file_ == INVALID_HANDLE_VALUE) {
     DWORD error = GetLastError();
     LOG(WARNING) << "Failed to open file: " << error;

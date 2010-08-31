@@ -45,7 +45,7 @@ class SpellCheckTest : public testing::Test {
     EXPECT_FALSE(hunspell_directory.empty());
     base::PlatformFile file = base::CreatePlatformFile(
         SpellCheckCommon::GetVersionedFileName(language, hunspell_directory),
-        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL);
+        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL, NULL);
     spell_check_->Init(
         file, std::vector<std::string>(), language);
   }

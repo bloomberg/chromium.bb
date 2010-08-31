@@ -1548,7 +1548,7 @@ void ResourceMessageFilter::OnOpenFileOnFileThread(const FilePath& path,
       (mode == 0) ? (base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ)
                   : (base::PLATFORM_FILE_CREATE_ALWAYS |
                         base::PLATFORM_FILE_WRITE),
-      NULL);
+      NULL, NULL);
 
   base::PlatformFile target_file_handle;
 #if defined(OS_WIN)

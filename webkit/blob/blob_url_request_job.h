@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BLOB_BLOB_URL_REQUEST_JOB_H_
 #define WEBKIT_BLOB_BLOB_URL_REQUEST_JOB_H_
 
+#include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
@@ -56,7 +57,8 @@ class BlobURLRequestJob : public URLRequestJob {
   void NotifySuccess();
   void NotifyFailure(int);
 
-  void DidResolve(bool exists, const file_util::FileInfo& file_info);
+  void DidResolve(base::PlatformFileError rv,
+                  const file_util::FileInfo& file_info);
   void DidRead(int result);
 
   base::ScopedCallbackFactory<BlobURLRequestJob> callback_factory_;

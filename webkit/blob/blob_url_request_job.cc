@@ -106,18 +106,23 @@ void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
 
   // Continue asynchronously.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &BlobURLRequestJob::DidResolve, exists, file_info));
+      this, &BlobURLRequestJob::DidResolve,
+      (exists ? base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_NOT_FOUND),
+      file_info));
 }
 
-void BlobURLRequestJob::DidResolve(
-    bool exists, const file_util::FileInfo& file_info) {
+void BlobURLRequestJob::DidResolve(base::PlatformFileError rv,
+                                   const file_util::FileInfo& file_info) {
   // We may have been orphaned...
   if (!request_)
     return;
 
-  // If the file does not exist, bail out.
-  if (!exists) {
+  // If an error occured, bail out.
+  if (rv == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
+    return;
+  } else if (rv != base::PLATFORM_FILE_OK) {
+    NotifyFailure(net::ERR_FAILED);
     return;
   }
 

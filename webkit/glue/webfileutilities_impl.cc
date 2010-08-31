@@ -107,8 +107,8 @@ base::PlatformFile WebFileUtilitiesImpl::openFile(const WebString& path,
       WebStringToFilePath(path),
       (mode == 0) ? (base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ)
                   : (base::PLATFORM_FILE_CREATE_ALWAYS |
-                        base::PLATFORM_FILE_WRITE),
-      NULL);
+                     base::PLATFORM_FILE_WRITE),
+      NULL, NULL);
 }
 
 void WebFileUtilitiesImpl::closeFile(base::PlatformFile& handle) {

@@ -345,7 +345,7 @@ int FileStream::Open(const FilePath& path, int open_flags) {
   }
 
   open_flags_ = open_flags;
-  file_ = base::CreatePlatformFile(path, open_flags_, NULL);
+  file_ = base::CreatePlatformFile(path, open_flags_, NULL, NULL);
   if (file_ == base::kInvalidPlatformFileValue) {
     LOG(WARNING) << "Failed to open file: " << errno
           << " (" << path.ToWStringHack() << ")";

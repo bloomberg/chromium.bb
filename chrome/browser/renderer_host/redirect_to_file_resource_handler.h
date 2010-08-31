@@ -46,7 +46,7 @@ class RedirectToFileResourceHandler : public ResourceHandler {
 
  private:
   virtual ~RedirectToFileResourceHandler();
-  void DidCreateTemporaryFile(int error_code,
+  void DidCreateTemporaryFile(base::PlatformFileError error_code,
                               base::PassPlatformFile file_handle,
                               FilePath file_path);
   void DidWriteToFile(int result);
