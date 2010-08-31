@@ -89,7 +89,15 @@ const int kRightMargin = 2;
   [shelf_ addSubview:closeButton_];
   [self updateTrackingRect];
 
-  [self repositionToBalloon];
+  // Set the initial position without animating (the balloon should not
+  // yet be visible).
+  DCHECK(![[self window] isVisible]);
+  NSRect balloon_frame = NSMakeRect(balloon_->GetPosition().x(),
+                                    balloon_->GetPosition().y(),
+                                    [self desiredTotalWidth],
+                                    [self desiredTotalHeight]);
+  [[self window] setFrame:balloon_frame
+                  display:NO];
 }
 
 - (void)updateTrackingRect {

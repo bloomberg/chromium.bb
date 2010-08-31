@@ -62,7 +62,6 @@ void BalloonCollectionImpl::Add(const Notification& notification,
   if (balloons_.size() > 0)
     new_balloon->set_offset(balloons_[balloons_.size() - 1]->offset());
 #endif
-
   balloons_.push_back(new_balloon);
   PositionBalloons(false);
 
@@ -151,7 +150,7 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
     space_change_listener_->OnBalloonSpaceChanged();
 }
 
-void BalloonCollectionImpl::PositionBalloons(bool reposition) {
+void BalloonCollectionImpl::PositionBalloonsInternal(bool reposition) {
   layout_.RefreshSystemMetrics();
   gfx::Point origin = layout_.GetLayoutOrigin();
   for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it) {

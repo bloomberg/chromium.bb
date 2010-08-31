@@ -29,6 +29,10 @@ int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
   return 0;
 }
 
+void BalloonCollectionImpl::PositionBalloons(bool reposition) {
+  PositionBalloonsInternal(reposition);
+}
+
 void BalloonCollectionImpl::DidProcessMessage(const MSG& msg) {
   switch (msg.message) {
     case WM_MOUSEMOVE:

@@ -30,6 +30,10 @@ int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
   return 5;
 }
 
+void BalloonCollectionImpl::PositionBalloons(bool reposition) {
+  PositionBalloonsInternal(reposition);
+}
+
 void BalloonCollectionImpl::DidProcessEvent(GdkEvent* event) {
   switch (event->type) {
     case GDK_MOTION_NOTIFY:

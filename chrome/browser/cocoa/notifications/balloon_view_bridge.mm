@@ -31,7 +31,7 @@ void BalloonViewBridge::RepositionToBalloon() {
 
 void BalloonViewBridge::Show(Balloon* balloon) {
   controller_ = [[BalloonController alloc] initWithBalloon:balloon];
-  [controller_ repositionToBalloon];
+  [controller_ setShouldCascadeWindows:NO];
   [controller_ showWindow:nil];
 }
 
