@@ -221,7 +221,8 @@ void PageInfoWindowMac::LayoutSections() {
     scoped_nsobject<NSImageView> image_view(
         [[NSImageView alloc] initWithFrame:image_view_rect]);
     [image_view setImageFrameStyle:NSImageFrameNone];
-    [image_view setImage:(info.state) ? good_image_.get() : bad_image_.get()];
+    [image_view setImage:(info.state != PageInfoModel::SECTION_STATE_ERROR) ?
+        good_image_.get() : bad_image_.get()];
 
     // Add the box to the list of new subviews.
     [box addSubview:image_view.get()];
