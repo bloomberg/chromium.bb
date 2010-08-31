@@ -34,10 +34,6 @@
 #     buttons of the group, and if it is set to Disabled then other policies of
 #     the group will not be visible to Chrome.
 #  'list' - a list of string values
-#     Currently a 'list' policy has to be alone in a group for technical
-#     reasons.
-#     TODO(gfeher): investigate the possibility of having different KEYNAMEs
-#                   for different parts of an ADM policy
 #
 # Policy group descriptions, policy captions and similar texts are localized
 # strings taken from the <message> nodes of the .grd file. Their name

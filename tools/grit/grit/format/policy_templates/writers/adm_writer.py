@@ -41,7 +41,10 @@ class AdmWriter(template_writer.TemplateWriter):
     indent_diff *= 2
     if indent_diff < 0:
       self.indent = self.indent[(-indent_diff):]
-    self.policy_list.append(self.indent + string)
+    if string != '':
+      self.policy_list.append(self.indent + string)
+    else:
+      self.policy_list.append('')
     if indent_diff > 0:
       self.indent += ''.ljust(indent_diff)
 
@@ -63,13 +66,14 @@ class AdmWriter(template_writer.TemplateWriter):
     self._AddGuiString(policy_part_name, policy['caption'])
 
     self._PrintLine()
-    if policy_type == 'list':
-      self._PrintLine('KEYNAME "%s\\%s"' % (self._key_name, policy_name))
     # Print the PART ... END PART section:
     self._PrintLine(
         'PART !!%s  %s' % (policy_part_name, self.TYPE_TO_INPUT[policy_type]),
         1)
     if policy_type == 'list':
+      # Note that the following line causes FullArmor ADMX Migrator to create
+      # corrupt ADMX files. Please use admx_writer to get ADMX files.
+      self._PrintLine('KEYNAME "%s\\%s"' % (self._key_name, policy_name))
       self._PrintLine('VALUEPREFIX ""')
     else:
       self._PrintLine('VALUENAME "%s"' % policy_name)

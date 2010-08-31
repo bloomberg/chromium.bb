@@ -35,40 +35,54 @@ class DummyOutput(object):
 class WriterUnittestCommon(unittest.TestCase):
   '''Common class for unittesting writers.'''
 
-  def prepareTest(self, policy_json, grd_text):
-    '''Parses a grit tree along with a data structure of policies.
+  def PrepareTest(self, policy_json, grd_messages_text):
+    '''Prepares and parses a grit tree along with a data structure of policies.
 
     Args:
       policy_json: The policy data structure in JSON format.
-      grd_text: The grit tree in text form.
+      grd_messages_text: The messages node of the grit tree in text form.
     '''
+    # First create a temporary file that contains the JSON policy list.
     tmp_file_name = 'test.json'
     tmp_dir_name = tempfile.gettempdir()
     json_file_path = tmp_dir_name + '/' + tmp_file_name
     f = open(json_file_path, 'w')
     f.write(policy_json.strip())
     f.close()
-    grd = grd_reader.Parse(
-        StringIO.StringIO(grd_text % json_file_path), dir=tmp_dir_name)
+    # Then assemble the grit tree.
+    grd_begin_text = '''
+    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
+      <release seq="1">
+        <structures>
+          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
+        </structures>''' % json_file_path
+    grd_end_text = '''
+      </release>
+    </grit>'''
+    grd_text = grd_begin_text + grd_messages_text + grd_end_text
+    grd_string_io = StringIO.StringIO(grd_text)
+    # Parse the grit tree and load the policies' JSON with a gatherer.
+    grd = grd_reader.Parse(grd_string_io, dir=tmp_dir_name)
     grd.RunGatherers(recursive=True)
+    # Remove the policies' JSON.
     os.unlink(json_file_path)
     return grd
 
-  def CompareResult(self, grd, env_lang, env_defs, out_type, out_lang,
-                    expected_output):
-    '''Generates an output of the writer and compares it with the expected
-    result. Fails if they differ.
+  def GetOutput(self, grd, env_lang, env_defs, out_type, out_lang):
+    '''Generates an output of a writer.
 
     Args:
       grd: The root of the grit tree.
       env_lang: The environment language.
       env_defs: Environment definitions.
       out_type: Type of the output node for which output will be generated.
+        This selects the writer.
       out_lang: Language of the output node for which output will be generated.
-      expected_output: The expected output of the writer.
+
+    Returns:
+      The string of the tamplete created by the writer.
     '''
     grd.SetOutputContext(env_lang, env_defs)
     buf = StringIO.StringIO()
     build.RcBuilder.ProcessNode(grd, DummyOutput(out_type, out_lang), buf)
-    output = buf.getvalue()
-    self.assertEquals(output.strip(), expected_output.strip())
+    return buf.getvalue()

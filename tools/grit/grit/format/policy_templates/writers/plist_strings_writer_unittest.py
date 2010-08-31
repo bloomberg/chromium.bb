@@ -22,40 +22,34 @@ from grit.tool import build
 
 
 class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
-  '''Unit tests for PListWriter.'''
+  '''Unit tests for PListStringsWriter.'''
 
   def testEmpty(self):
-    # Test PListWriter in case of empty polices.
-    grd = self.prepareTest('''
+    # Test PListStringsWriter in case of empty polices.
+    grd = self.PrepareTest('''
       {
         'policy_groups': [],
         'placeholders': [],
       }''', '''
-    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
-      <release seq="1">
-        <structures>
-          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>
         <messages>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferen"ces</message>
         </messages>
-      </release>
-      </grit>
       ''' )
-
-    self.CompareResult(
+    output = self.GetOutput(
         grd,
         'fr',
         {'_chromium': '1', 'mac_bundle_id': 'com.example.Test'},
         'plist_strings',
-        'en',
-        '''Chromium.pfm_title = "Chromium";
+        'en')
+    expected_output = \
+'''Chromium.pfm_title = "Chromium";
 Chromium.pfm_description = "Chromium preferen\\"ces";
-        ''')
+'''
+    self.assertEquals(output.strip(), expected_output.strip())
 
   def testMainPolicy(self):
     # Tests a policy group with a single policy of type 'main'.
-    grd = self.prepareTest('''
+    grd = self.PrepareTest('''
       {
         'policy_groups': [
           {
@@ -68,35 +62,30 @@ Chromium.pfm_description = "Chromium preferen\\"ces";
         ],
         'placeholders': [],
       }''', '''
-    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
-      <release seq="1">
-        <structures>
-          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>
         <messages>
           <message name="IDS_POLICY_GROUP_MAINGROUP_CAPTION">Caption of main.</message>
           <message name="IDS_POLICY_GROUP_MAINGROUP_DESC">Title of main.</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">Preferences of $1</message>
         </messages>
-      </release>
-      </grit>
       ''' )
-    self.CompareResult(
+    output = self.GetOutput(
         grd,
         'fr',
         {'_google_chrome' : '1', 'mac_bundle_id': 'com.example.Test'},
         'plist_strings',
-        'en',
-        '''Google Chrome.pfm_title = "Google Chrome";
+        'en')
+    expected_output = \
+'''Google Chrome.pfm_title = "Google Chrome";
 Google Chrome.pfm_description = "Preferences of Google Chrome";
 MainPolicy.pfm_title = "Caption of main.";
 MainPolicy.pfm_description = "Title of main.";
-''')
+'''
+    self.assertEquals(output.strip(), expected_output.strip())
 
   def testStringPolicy(self):
     # Tests a policy group with a single policy of type 'string'. Also test
     # inheriting group description to policy description.
-    grd = self.prepareTest('''
+    grd = self.PrepareTest('''
       {
         'policy_groups': [
           {
@@ -109,11 +98,6 @@ MainPolicy.pfm_description = "Title of main.";
         ],
         'placeholders': [],
       }''', '''
-    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
-      <release seq="1">
-        <structures>
-          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>
         <messages>
           <message name="IDS_POLICY_GROUP_STRINGGROUP_CAPTION">Caption of group.</message>
           <message name="IDS_POLICY_GROUP_STRINGGROUP_DESC">Description of group.
@@ -121,24 +105,24 @@ With a newline.</message>
           <message name="IDS_POLICY_STRINGPOLICY_CAPTION">Caption of policy.</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">Preferences Of $1</message>
         </messages>
-      </release>
-      </grit>
       ''' )
-    self.CompareResult(
+    output = self.GetOutput(
         grd,
         'fr',
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
         'plist_strings',
-        'en',
-        '''Chromium.pfm_title = "Chromium";
+        'en')
+    expected_output = \
+'''Chromium.pfm_title = "Chromium";
 Chromium.pfm_description = "Preferences Of Chromium";
 StringPolicy.pfm_title = "Caption of policy.";
 StringPolicy.pfm_description = "Description of group.\\nWith a newline.";
-        ''')
+        '''
+    self.assertEquals(output.strip(), expected_output.strip())
 
   def testEnumPolicy(self):
     # Tests a policy group with a single policy of type 'enum'.
-    grd = self.prepareTest('''
+    grd = self.PrepareTest('''
       {
         'policy_groups': [
           {
@@ -155,11 +139,6 @@ StringPolicy.pfm_description = "Description of group.\\nWith a newline.";
         ],
         'placeholders': [],
       }''', '''
-    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
-      <release seq="1">
-        <structures>
-          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>
         <messages>
           <message name="IDS_POLICY_GROUP_ENUMGROUP_CAPTION">Caption of group.</message>
           <message name="IDS_POLICY_GROUP_ENUMGROUP_DESC">Description of group.</message>
@@ -169,22 +148,21 @@ StringPolicy.pfm_description = "Description of group.\\nWith a newline.";
           <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
         </messages>
-      </release>
-      </grit>
       ''' )
-    self.CompareResult(
+    output = self.GetOutput(
         grd,
         'fr',
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
         'plist_strings',
-        'en',
-        '''Google Chrome.pfm_title = "Google Chrome";
+        'en')
+    expected_output = \
+'''Google Chrome.pfm_title = "Google Chrome";
 Google Chrome.pfm_description = "Google Chrome preferences";
 EnumPolicy.pfm_title = "Caption of policy.";
 EnumPolicy.pfm_description = "0 - Option1\\n1 - Option2\\nDescription of policy.";
-        ''')
+        '''
+    self.assertEquals(output.strip(), expected_output.strip())
 
 
 if __name__ == '__main__':
   unittest.main()
-

@@ -26,7 +26,7 @@ from grit.tool import build
 class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
   '''Unit tests for PListWriter.'''
 
-  def _GetExpectedResults(self, product_name, bundle_id, policies):
+  def _GetExpectedOutputs(self, product_name, bundle_id, policies):
     '''Substitutes the variable parts into a plist template. The result
     of this function can be used as an expected result to test the output
     of PListWriter.
@@ -61,32 +61,25 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testEmpty(self):
     # Test PListWriter in case of empty polices.
-    grd = self.prepareTest('''
+    grd = self.PrepareTest('''
       {
         'policy_groups': [],
         'placeholders': [],
-      }''', '''
-    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
-      <release seq="1">
-        <structures>
-          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>
-        <messages />
-      </release>
-      </grit>
-      ''' )
+      }''', '''<messages />''' )
 
-    self.CompareResult(
+    output = self.GetOutput(
         grd,
         'fr',
         {'_chromium': '1', 'mac_bundle_id': 'com.example.Test'},
         'plist',
-        'en',
-        self._GetExpectedResults('Chromium', 'com.example.Test', '<array/>'))
+        'en')
+    expected_output = \
+        self._GetExpectedOutputs('Chromium', 'com.example.Test', '<array/>')
+    self.assertEquals(output.strip(), expected_output.strip())
 
   def testMainPolicy(self):
     # Tests a policy group with a single policy of type 'main'.
-    grd = self.prepareTest('''
+    grd = self.PrepareTest('''
       {
         'policy_groups': [
           {
@@ -99,25 +92,19 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
       }''', '''
-    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
-      <release seq="1">
-        <structures>
-          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>
         <messages>
           <message name="IDS_POLICY_GROUP_MAINGROUP_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_GROUP_MAINGROUP_DESC">This is not tested here.</message>
         </messages>
-      </release>
-      </grit>
       ''' )
-    self.CompareResult(
+    output = self.GetOutput(
         grd,
         'fr',
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
         'plist',
-        'en',
-        self._GetExpectedResults('Chromium', 'com.example.Test', '''<array>
+        'en')
+    expected_output = \
+        self._GetExpectedOutputs('Chromium', 'com.example.Test', '''<array>
       <dict>
         <key>pfm_name</key>
         <string>MainPolicy</string>
@@ -132,11 +119,12 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         <key>pfm_type</key>
         <string>boolean</string>
       </dict>
-    </array>'''))
+    </array>''')
+    self.assertEquals(output.strip(), expected_output.strip())
 
   def testStringPolicy(self):
     # Tests a policy group with a single policy of type 'string'.
-    grd = self.prepareTest('''
+    grd = self.PrepareTest('''
       {
         'policy_groups': [
           {
@@ -149,27 +137,21 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
       }''', '''
-    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
-      <release seq="1">
-        <structures>
-          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>
         <messages>
           <message name="IDS_POLICY_GROUP_STRINGGROUP_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_GROUP_STRINGGROUP_DESC">This is not tested here.</message>
           <message name="IDS_POLICY_STRINGPOLICY_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_STRINGPOLICY_DESC">This is not tested here.</message>
         </messages>
-      </release>
-      </grit>
       ''' )
-    self.CompareResult(
+    output = self.GetOutput(
         grd,
         'fr',
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
         'plist',
-        'en',
-        self._GetExpectedResults('Chromium', 'com.example.Test', '''<array>
+        'en')
+    expected_output = \
+        self._GetExpectedOutputs('Chromium', 'com.example.Test', '''<array>
       <dict>
         <key>pfm_name</key>
         <string>StringPolicy</string>
@@ -184,11 +166,12 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         <key>pfm_type</key>
         <string>string</string>
       </dict>
-    </array>'''))
+    </array>''')
+    self.assertEquals(output.strip(), expected_output.strip())
 
   def testEnumPolicy(self):
     # Tests a policy group with a single policy of type 'enum'.
-    grd = self.prepareTest('''
+    grd = self.PrepareTest('''
       {
         'policy_groups': [
           {
@@ -205,11 +188,6 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
       }''', '''
-    <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
-      <release seq="1">
-        <structures>
-          <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>
         <messages>
           <message name="IDS_POLICY_GROUP_ENUMGROUP_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_GROUP_ENUMGROUP_DESC">This is not tested here.</message>
@@ -218,16 +196,15 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">This is not tested here.</message>
         </messages>
-      </release>
-      </grit>
       ''' )
-    self.CompareResult(
+    output = self.GetOutput(
         grd,
         'fr',
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
         'plist',
-        'en',
-        self._GetExpectedResults('Google Chrome', 'com.example.Test2', '''<array>
+        'en')
+    expected_output = \
+        self._GetExpectedOutputs('Google Chrome', 'com.example.Test2', '''<array>
       <dict>
         <key>pfm_name</key>
         <string>EnumPolicy</string>
@@ -247,9 +224,9 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           <integer>1</integer>
         </array>
       </dict>
-    </array>'''))
+    </array>''')
+    self.assertEquals(output.strip(), expected_output.strip())
 
 
 if __name__ == '__main__':
   unittest.main()
-
