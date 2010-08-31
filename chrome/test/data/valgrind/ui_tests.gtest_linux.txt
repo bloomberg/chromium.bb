@@ -14,3 +14,5 @@ NewTabUITest.NTPHasThumbnails
 LayoutPluginTester.UnloadNoCrash
 # http://crbug.com/53825 Times out on CrOS valgrind.
 MediaTest.VideoBear*
+# http://crbug.com/53937 Fails on CrOS valgrind
+UILayoutTest.MediaUILayoutTest
