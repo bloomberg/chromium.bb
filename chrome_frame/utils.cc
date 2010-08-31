@@ -21,6 +21,7 @@
 #include "base/string_util.h"
 #include "base/thread_local.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome_frame/extra_system_apis.h"
@@ -45,13 +46,14 @@ const char kGCFProtocol[] = "gcf";
 const wchar_t kChromeProtocolPrefix[] = L"gcf:";
 const wchar_t kChromeMimeType[] = L"application/chromepage";
 const wchar_t kPatchProtocols[] = L"PatchProtocols";
+const wchar_t kChromeFrameConfigKey[] = L"Software\\Google\\ChromeFrame";
+const wchar_t kRenderInGCFUrlList[] = L"RenderInGcfUrls";
+const wchar_t kRenderInHostUrlList[] = L"RenderInHostUrls";
+const wchar_t kEnableGCFRendererByDefault[] = L"IsDefaultRenderer";
+const wchar_t kIexploreProfileName[] = L"iexplore";
+const wchar_t kRundllProfileName[] = L"rundll32";
 
-static const wchar_t kChromeFrameConfigKey[] =
-    L"Software\\Google\\ChromeFrame";
-static const wchar_t kRenderInGCFUrlList[] = L"RenderInGcfUrls";
-static const wchar_t kRenderInHostUrlList[] = L"RenderInHostUrls";
 static const wchar_t kAllowUnsafeURLs[] = L"AllowUnsafeURLs";
-static const wchar_t kEnableGCFRendererByDefault[] = L"IsDefaultRenderer";
 static const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
 
 static const wchar_t kChromeFrameNPAPIKey[] =
@@ -539,23 +541,6 @@ bool GetModuleVersion(HMODULE module, uint32* high, uint32* low) {
   return ok;
 }
 
-bool ParseVersion(const std::wstring& version, uint32* high, uint32* low) {
-  DCHECK(high);
-  if (!isdigit(version[0]))
-    return false;
-
-  *high = _wtoi(version.c_str());
-  if (low) {
-    *low = 0;
-    size_t i = version.find(L'.');
-    if (i != std::wstring::npos) {
-      *low = _wtoi(version.c_str() + i + 1);
-    }
-  }
-
-  return true;
-}
-
 HMODULE GetModuleFromAddress(void* address) {
   MEMORY_BASIC_INFORMATION info = {0};
   ::VirtualQuery(address, &info, sizeof(info));
@@ -695,6 +680,18 @@ bool DeleteConfigValue(const wchar_t* value_name) {
     return config_key.DeleteValue(value_name);
   }
   return false;
+}
+
+bool IsGcfDefaultRenderer() {
+  // TODO(tommi): Implement caching for this config value as it gets
+  // checked frequently.
+  DWORD is_default = 0;  // NOLINT
+  RegKey config_key;
+  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ)) {
+    config_key.ReadValueDW(kEnableGCFRendererByDefault, &is_default);
+  }
+
+  return is_default != 0;
 }
 
 bool IsOptInUrl(const wchar_t* url) {
@@ -1392,3 +1389,4 @@ bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
 
   return true;
 }
+

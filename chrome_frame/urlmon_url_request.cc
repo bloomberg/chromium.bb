@@ -560,7 +560,12 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   }
 
   // In the rare case if "User-Agent" string is already in |current_headers|.
-  new_headers += AppendCFUserAgentString(current_headers, NULL);
+  if (IsGcfDefaultRenderer()) {
+    new_headers += ReplaceOrAddUserAgent(current_headers,
+                                         http_utils::GetChromeUserAgent());
+  } else {
+    new_headers += AppendCFUserAgentString(current_headers, NULL);
+  }
 
   if (!new_headers.empty()) {
     *additional_headers = reinterpret_cast<wchar_t*>(

@@ -33,6 +33,12 @@ extern const wchar_t kAllowUnsafeURLs[];
 extern const wchar_t kEnableBuggyBhoIntercept[];
 extern const wchar_t kChromeMimeType[];
 extern const wchar_t kChromeFrameAttachTabPattern[];
+extern const wchar_t kChromeFrameConfigKey[];
+extern const wchar_t kRenderInGCFUrlList[];
+extern const wchar_t kRenderInHostUrlList[];
+extern const wchar_t kEnableGCFRendererByDefault[];
+extern const wchar_t kIexploreProfileName[];
+extern const wchar_t kRundllProfileName[];
 
 typedef enum ProtocolPatchMethod {
   PATCH_METHOD_IBROWSER = 0,
@@ -109,11 +115,11 @@ void DisplayVersionMismatchWarning(HWND parent,
 // This class provides a base implementation for ATL modules which want to
 // perform all their registration under HKCU. This class overrides the
 // RegisterServer and UnregisterServer methods and registers the type libraries
-// under HKCU (the rest of the registation is made under HKCU by changing the
+// under HKCU (the rest of the registration is made under HKCU by changing the
 // appropriate .RGS files)
 template < class BaseAtlModule >
 class AtlPerUserModule : public BaseAtlModule {
-  public:
+ public:
   HRESULT RegisterServer(BOOL reg_typelib = FALSE,
                          const CLSID* clsid = NULL) throw() {
     HRESULT hr = BaseAtlModule::RegisterServer(FALSE, clsid);
@@ -193,10 +199,6 @@ FilePath GetIETemporaryFilesFolder();
 // @returns true if the version info was successfully retrieved.
 bool GetModuleVersion(HMODULE module, uint32* high, uint32* low);
 
-// Parses a version string and returns the major, minor versions or 0 if not
-// present in the string.  The rest of the version string is ignored.
-bool ParseVersion(const std::wstring& version, uint32* high, uint32* low);
-
 // @returns the module handle to which an address belongs.
 HMODULE GetModuleFromAddress(void* address);
 
@@ -240,6 +242,9 @@ bool IsHeadlessMode();
 // Returns true if we are running in unpinned mode in which case DLL
 // eviction should be possible.
 bool IsUnpinnedMode();
+
+// Returns true if all HTML pages should be rendered in GCF by default.
+bool IsGcfDefaultRenderer();
 
 // Check if this url is opting into Chrome Frame based on static settings.
 bool IsOptInUrl(const wchar_t* url);
@@ -475,7 +480,7 @@ std::string Bscf2Str(DWORD flags);
 // Reads data from a stream into a string.
 HRESULT ReadStream(IStream* stream, size_t size, std::string* data);
 
-// Parses urls targetted at ChromeFrame. This class maintains state like
+// Parses urls targeted at ChromeFrame. This class maintains state like
 // whether a url is prefixed with the gcf: prefix, whether it is being
 // attached to an existing external tab, etc.
 class ChromeFrameUrl {

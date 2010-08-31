@@ -25,6 +25,7 @@
 #include "net/http/http_util.h"
 
 const char kUACompatibleHttpHeader[] = "x-ua-compatible";
+const char kLowerCaseUserAgent[] = "user-agent";
 
 // From the latest urlmon.h. Symbol name prepended with LOCAL_ to
 // avoid conflict (and therefore build errors) for those building with
@@ -98,7 +99,6 @@ class SimpleBindStatusCallback : public CComObjectRootEx<CComSingleThreadModel>,
 
 std::string AppendCFUserAgentString(LPCWSTR headers,
                                     LPCWSTR additional_headers) {
-  static const char kLowerCaseUserAgent[] = "user-agent";
   using net::HttpUtil;
 
   std::string ascii_headers;
@@ -106,7 +106,7 @@ std::string AppendCFUserAgentString(LPCWSTR headers,
     ascii_headers = WideToASCII(additional_headers);
   }
 
-  // Extract "User-Agent" from |additiona_headers| or |headers|.
+  // Extract "User-Agent" from |additional_headers| or |headers|.
   HttpUtil::HeadersIterator headers_iterator(ascii_headers.begin(),
                                              ascii_headers.end(), "\r\n");
   std::string user_agent_value;
@@ -116,7 +116,7 @@ std::string AppendCFUserAgentString(LPCWSTR headers,
     // See if there's a user-agent header specified in the original headers.
     std::string original_headers(WideToASCII(headers));
     HttpUtil::HeadersIterator original_it(original_headers.begin(),
-      original_headers.end(), "\r\n");
+        original_headers.end(), "\r\n");
     if (original_it.AdvanceTo(kLowerCaseUserAgent))
       user_agent_value = original_it.values();
   }
@@ -133,6 +133,32 @@ std::string AppendCFUserAgentString(LPCWSTR headers,
   // existing headers.
   std::string new_headers;
   headers_iterator.Reset();
+  while (headers_iterator.GetNext()) {
+    std::string name(headers_iterator.name());
+    if (!LowerCaseEqualsASCII(name, kLowerCaseUserAgent)) {
+      new_headers += name + ": " + headers_iterator.values() + "\r\n";
+    }
+  }
+
+  new_headers += "User-Agent: " + user_agent_value;
+  new_headers += "\r\n";
+  return new_headers;
+}
+
+std::string ReplaceOrAddUserAgent(LPCWSTR headers,
+                                  const std::string& user_agent_value) {
+  DCHECK(headers);
+  using net::HttpUtil;
+
+  std::string ascii_headers(WideToASCII(headers));
+
+  // Extract "User-Agent" from the headers.
+  HttpUtil::HeadersIterator headers_iterator(ascii_headers.begin(),
+                                             ascii_headers.end(), "\r\n");
+
+  // Build new headers, skip the existing user agent value from
+  // existing headers.
+  std::string new_headers;
   while (headers_iterator.GetNext()) {
     std::string name(headers_iterator.name());
     if (!LowerCaseEqualsASCII(name, kLowerCaseUserAgent)) {
@@ -278,7 +304,7 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
     DLOG(INFO) << "No NavigationManager";
   }
 
-  std::string updated = AppendCFUserAgentString(headers, *additional_headers);
+  std::string updated(AppendCFUserAgentString(headers, *additional_headers));
   *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemRealloc(
       *additional_headers, (updated.length() + 1) * sizeof(wchar_t)));
   lstrcpyW(*additional_headers, ASCIIToWide(updated).c_str());
@@ -416,9 +442,16 @@ STDMETHODIMP UserAgentAddOn::BeginningTransaction(LPCWSTR url, LPCWSTR headers,
   }
 
   if (hr == S_OK) {
-    // Add "chromeframe" user-agent string.
-    std::string updated_headers = AppendCFUserAgentString(headers,
-                                                          *additional_headers);
+    std::string updated_headers;
+    if (IsGcfDefaultRenderer() && IsOptInUrl(url)) {
+      // Replace the user-agent header with Chrome's.
+      updated_headers = ReplaceOrAddUserAgent(*additional_headers,
+                                              http_utils::GetChromeUserAgent());
+    } else {
+      // Add "chromeframe" user-agent string.
+      updated_headers = AppendCFUserAgentString(headers, *additional_headers);
+    }
+
     *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemRealloc(
         *additional_headers, (updated_headers.length() + 1) * sizeof(wchar_t)));
     lstrcpyW(*additional_headers, ASCIIToWide(updated_headers).c_str());

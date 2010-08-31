@@ -130,6 +130,9 @@ std::string AddChromeFrameToUserAgentValue(const std::string& value);
 // NOTE: The returned string includes the "User-Agent: " header name.
 std::string GetDefaultUserAgentHeaderWithCFTag();
 
+// Returns the User-Agent header as would be used by Chrome itself.
+const char* GetChromeUserAgent();
+
 // Fetches the default user agent string from urlmon.
 // This value does not include the "User-Agent:" header name.
 std::string GetDefaultUserAgent();

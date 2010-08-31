@@ -209,8 +209,11 @@ AutomationProxyCacheEntry::AutomationProxyCacheEntry(
   DCHECK(delegate);
   thread_.reset(new base::Thread(WideToASCII(profile_name).c_str()));
   thread_->Start();
+  // Use scoped_refptr so that the params will get released when the task
+  // has been run.
+  scoped_refptr<ChromeFrameLaunchParams> ref_params(params);
   thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &AutomationProxyCacheEntry::CreateProxy, params, delegate));
+      &AutomationProxyCacheEntry::CreateProxy, ref_params, delegate));
 }
 
 AutomationProxyCacheEntry::~AutomationProxyCacheEntry() {
@@ -408,7 +411,7 @@ void AutomationProxyCacheEntry::SendUMAData() {
   }
 
   if (!proxy_.get()) {
-    NOTREACHED() << __FUNCTION__ << " Invalid proxy entry";
+    DLOG(WARNING) << __FUNCTION__ << " NULL proxy, can't send UMA data";
   } else {
     ChromeFrameHistogramSnapshots::HistogramPickledList histograms =
         snapshots_->GatherAllHistograms();

@@ -19,11 +19,12 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 
+#include "chrome/browser/automation/url_request_automation_job.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/html_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "chrome/browser/automation/url_request_automation_job.h"
+#include "webkit/glue/user_agent.h"
 
 const char kChromeFrameUserAgent[] = "chromeframe";
 
@@ -295,6 +296,14 @@ TEST_F(HtmlUtilUnittest, GetDefaultUserAgentHeaderWithCFTag) {
   EXPECT_NE(0u, ua.length());
   EXPECT_NE(std::string::npos, ua.find("Mozilla"));
   EXPECT_NE(std::string::npos, ua.find(kChromeFrameUserAgent));
+}
+
+TEST_F(HtmlUtilUnittest, GetChromeUserAgent) {
+  std::string chrome_ua;
+  webkit_glue::BuildUserAgent(false, &chrome_ua);
+  EXPECT_FALSE(chrome_ua.empty());
+  const char* ua = http_utils::GetChromeUserAgent();
+  EXPECT_EQ(0, chrome_ua.compare(ua));
 }
 
 TEST_F(HtmlUtilUnittest, GetDefaultUserAgent) {

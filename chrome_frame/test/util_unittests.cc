@@ -5,6 +5,7 @@
 #include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
+#include "base/registry.h"
 #include "chrome_frame/utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -276,12 +277,65 @@ TEST(UtilTests, CanNavigateTest) {
   SetConfigBool(kAllowUnsafeURLs, enable_gcf);
 }
 
-TEST(UtilTests, ParseVersionTest) {
-  uint32 high = 0, low = 0;
-  EXPECT_FALSE(ParseVersion(L"", &high, &low));
-  EXPECT_TRUE(ParseVersion(L"1", &high, &low) && high == 1 && low == 0);
-  EXPECT_TRUE(ParseVersion(L"1.", &high, &low) && high == 1 && low == 0);
-  EXPECT_TRUE(ParseVersion(L"1.2", &high, &low) && high == 1 && low == 2);
-  EXPECT_TRUE(ParseVersion(L"1.2.3.4", &high, &low) && high == 1 && low == 2);
-  EXPECT_TRUE(ParseVersion(L"10.20", &high, &low) && high == 10 && low == 20);
+TEST(UtilTests, IsDefaultRendererTest) {
+  RegKey config_key(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_ALL_ACCESS);
+  EXPECT_TRUE(config_key.Valid());
+
+  DWORD saved_default_renderer = 0;  // NOLINT
+  config_key.ReadValueDW(kEnableGCFRendererByDefault, &saved_default_renderer);
+
+  config_key.DeleteValue(kEnableGCFRendererByDefault);
+  EXPECT_FALSE(IsGcfDefaultRenderer());
+
+  config_key.WriteValue(kEnableGCFRendererByDefault, static_cast<DWORD>(0));
+  EXPECT_FALSE(IsGcfDefaultRenderer());
+
+  config_key.WriteValue(kEnableGCFRendererByDefault, static_cast<DWORD>(1));
+  EXPECT_TRUE(IsGcfDefaultRenderer());
+
+  config_key.WriteValue(kEnableGCFRendererByDefault, saved_default_renderer);
 }
+
+TEST(UtilTests, IsOptInUrlTest) {
+  // Open all the keys we need.
+  RegKey config_key(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_ALL_ACCESS);
+  EXPECT_TRUE(config_key.Valid());
+  RegKey opt_for_gcf(config_key.Handle(), kRenderInGCFUrlList, KEY_ALL_ACCESS);
+  EXPECT_TRUE(opt_for_gcf.Valid());
+  RegKey opt_for_host(config_key.Handle(), kRenderInHostUrlList,
+                      KEY_ALL_ACCESS);
+  EXPECT_TRUE(opt_for_host.Valid());
+  if (!config_key.Valid() || !opt_for_gcf.Valid() || !opt_for_host.Valid())
+    return;
+
+  const wchar_t kTestFilter[] = L"*.testing.chromium.org";
+  const wchar_t kTestUrl[] = L"www.testing.chromium.org";
+
+  // Save the current state of the registry.
+  DWORD saved_default_renderer = 0;
+  config_key.ReadValueDW(kEnableGCFRendererByDefault, &saved_default_renderer);
+
+  // Make sure the host is the default renderer.
+  config_key.WriteValue(kEnableGCFRendererByDefault, static_cast<DWORD>(0));
+  EXPECT_FALSE(IsGcfDefaultRenderer());
+
+  opt_for_gcf.DeleteValue(kTestFilter);  // Just in case this exists
+  EXPECT_FALSE(IsOptInUrl(kTestUrl));
+  opt_for_gcf.WriteValue(kTestFilter, L"");
+  EXPECT_TRUE(IsOptInUrl(kTestUrl));
+
+  // Now set GCF as the default renderer.
+  config_key.WriteValue(kEnableGCFRendererByDefault, static_cast<DWORD>(1));
+  EXPECT_TRUE(IsGcfDefaultRenderer());
+
+  opt_for_host.DeleteValue(kTestFilter);  // Just in case this exists
+  EXPECT_TRUE(IsOptInUrl(kTestUrl));
+  opt_for_host.WriteValue(kTestFilter, L"");
+  EXPECT_FALSE(IsOptInUrl(kTestUrl));
+
+  // Cleanup.
+  opt_for_gcf.DeleteValue(kTestFilter);
+  opt_for_host.DeleteValue(kTestFilter);
+  config_key.WriteValue(kEnableGCFRendererByDefault, saved_default_renderer);
+}
+

@@ -76,6 +76,7 @@ class ChromeFrameAutomationProxyImpl
 
   virtual scoped_refptr<TabProxy> CreateTabProxy(int handle);
   virtual void ReleaseTabProxy(AutomationHandle handle);
+
   virtual std::string server_version() {
     return AutomationProxy::server_version();
   }
@@ -103,7 +104,7 @@ class ChromeFrameAutomationProxyImpl
 
 // This class contains information used for launching chrome.
 class ChromeFrameLaunchParams :  // NOLINT
-    public base::RefCounted<ChromeFrameLaunchParams> {
+    public base::RefCountedThreadSafe<ChromeFrameLaunchParams> {
  public:
   ChromeFrameLaunchParams(const GURL& url, const GURL& referrer,
                           const FilePath& profile_path,

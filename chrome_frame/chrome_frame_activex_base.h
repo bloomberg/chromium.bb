@@ -37,9 +37,6 @@
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
 
-static const wchar_t kIexploreProfileName[] = L"iexplore";
-static const wchar_t kRundllProfileName[] = L"rundll32";
-
 // Connection point class to support firing IChromeFrameEvents (dispinterface).
 template<class T>
 class ATL_NO_VTABLE ProxyDIChromeFrameEvents

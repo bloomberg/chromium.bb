@@ -86,9 +86,14 @@ extern const int LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE;
 // The function is a public since we want to use it from
 // UrlmonUrlRequest::BeginningTransaction for the unusual but yet possible case
 // when |headers| contains an User-Agent string.
-// TODO(stoyan): Add unit test.
 std::string AppendCFUserAgentString(LPCWSTR headers,
                                     LPCWSTR additional_headers);
+
+// Adds or replaces the User-Agent header in a set of HTTP headers.
+// Arguments are the same as with AppendCFUserAgentString.
+std::string ReplaceOrAddUserAgent(LPCWSTR headers,
+                                  const std::string& user_agent_value);
+
 // Simple class that wraps IHttpNegotiate interface and adds "chromeframe"
 // to User-agent Http header.
 class UserAgentAddOn : public IHttpNegotiate {

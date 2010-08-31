@@ -11,6 +11,7 @@
 #include "base/string_tokenizer.h"
 #include "chrome_frame/utils.h"
 #include "net/base/net_util.h"
+#include "webkit/glue/user_agent.h"
 
 const wchar_t kQuotes[] = L"\"'";
 const char kXFrameOptionsHeader[] = "X-Frame-Options";
@@ -289,22 +290,23 @@ bool HTMLScanner::NextTag(StringRange* html_string, StringRange* tag) {
 namespace http_utils {
 
 const char kChromeFrameUserAgent[] = "chromeframe";
+static char g_cf_user_agent[100] = {0};
+static char g_chrome_user_agent[255] = {0};
 
 const char* GetChromeFrameUserAgent() {
-  static char cf_user_agent[100] = {0};
-  if (!cf_user_agent[0]) {
+  if (!g_cf_user_agent[0]) {
     _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
-    if (!cf_user_agent[0]) {
+    if (!g_cf_user_agent[0]) {
       uint32 high_version = 0, low_version = 0;
       GetModuleVersion(reinterpret_cast<HMODULE>(&__ImageBase), &high_version,
                        &low_version);
-      wsprintfA(cf_user_agent, "%s/%i.%i.%i.%i", kChromeFrameUserAgent,
+      wsprintfA(g_cf_user_agent, "%s/%i.%i.%i.%i", kChromeFrameUserAgent,
                 HIWORD(high_version), LOWORD(high_version),
                 HIWORD(low_version), LOWORD(low_version));
     }
     _pAtlModule->m_csStaticDataInitAndTypeInfo.Unlock();
   }
-  return cf_user_agent;
+  return g_cf_user_agent;
 }
 
 std::string AddChromeFrameToUserAgentValue(const std::string& value) {
@@ -330,6 +332,21 @@ std::string AddChromeFrameToUserAgentValue(const std::string& value) {
 std::string GetDefaultUserAgentHeaderWithCFTag() {
   std::string ua(GetDefaultUserAgent());
   return "User-Agent: " + AddChromeFrameToUserAgentValue(ua);
+}
+
+const char* GetChromeUserAgent() {
+  if (!g_chrome_user_agent[0]) {
+    _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
+    if (!g_chrome_user_agent[0]) {
+      std::string ua;
+      webkit_glue::BuildUserAgent(false, &ua);
+      DCHECK(ua.length() < arraysize(g_chrome_user_agent));
+      lstrcpynA(g_chrome_user_agent, ua.c_str(),
+                arraysize(g_chrome_user_agent) - 1);
+    }
+    _pAtlModule->m_csStaticDataInitAndTypeInfo.Unlock();
+  }
+  return g_chrome_user_agent;
 }
 
 std::string GetDefaultUserAgent() {
