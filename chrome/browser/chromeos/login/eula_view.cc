@@ -292,10 +292,11 @@ void EulaView::OnLocaleChanged() {
 void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == continue_button_) {
     if (usage_statistics_checkbox_) {
-      const bool enable_reporting = usage_statistics_checkbox_->checked();
+      bool enable_reporting = usage_statistics_checkbox_->checked();
       if (metrics_reporting_enabled_.GetValue() != enable_reporting) {
+        enable_reporting =
+            OptionsUtil::ResolveMetricsReportingEnabled(enable_reporting);
         metrics_reporting_enabled_.SetValueIfNotManaged(enable_reporting);
-        OptionsUtil::ResolveMetricsReportingEnabled(enable_reporting);
 #if defined(USE_LINUX_BREAKPAD)
         if (enable_reporting)
           InitCrashReporter();
