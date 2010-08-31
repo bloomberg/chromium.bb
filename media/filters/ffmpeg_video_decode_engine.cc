@@ -52,7 +52,9 @@ void FFmpegVideoDecodeEngine::Initialize(
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
 
   // TODO(fbarchard): Improve thread logic based on size / codec.
-  int decode_threads = kDecodeThreads;
+  // TODO(fbarchard): Fix bug affecting video-cookie.html
+  int decode_threads = (codec_context_->codec_id == CODEC_ID_THEORA) ?
+    1 : kDecodeThreads;
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
