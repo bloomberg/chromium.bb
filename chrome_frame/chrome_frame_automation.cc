@@ -613,7 +613,12 @@ bool ChromeFrameAutomationClient::Initialize(
   // InitializeComplete is called successfully.
   init_state_ = INITIALIZING;
 
-  HRESULT hr = security_manager_.CreateInstance(CLSID_InternetSecurityManager);
+  HRESULT hr = S_OK;
+  // If chrome crashed and is being restarted, the security_manager_ object
+  // might already be valid.
+  if (security_manager_.get() == NULL)
+    hr = security_manager_.CreateInstance(CLSID_InternetSecurityManager);
+
   if (FAILED(hr)) {
     NOTREACHED() << __FUNCTION__
                  << " Failed to create InternetSecurityManager. Error: 0x%x"

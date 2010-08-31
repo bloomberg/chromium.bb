@@ -1010,8 +1010,12 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
     return true;
 
   automation_client_->SetUrlFetcher(url_fetcher_.get());
-  return InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate(),
-                              false, cf_url.gurl(), GURL(referrer));
+  if (launch_params_) {
+    return automation_client_->Initialize(this, launch_params_);
+  } else {
+    return InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate(),
+                                false, cf_url.gurl(), GURL(referrer));
+  }
 }
 
 
