@@ -23,40 +23,56 @@ void WebFileSystemImpl::move(const WebString& src_path,
 void WebFileSystemImpl::copy(const WebKit::WebString& src_path,
     const WebKit::WebString& dest_path,
     WebKit::WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): not implemented yet.
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->Copy(src_path, dest_path, callbacks);
 }
 
 void WebFileSystemImpl::remove(const WebString& path,
     WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): not implemented yet.
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->Remove(path, callbacks);
 }
 
 void WebFileSystemImpl::readMetadata(const WebString& path,
     WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): not implemented yet.
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->ReadMetadata(path, callbacks);
 }
 
 void WebFileSystemImpl::createFile(const WebString& path,
     bool exclusive, WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): not implemented yet.
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->Create(path, exclusive, false, callbacks);
 }
 
 void WebFileSystemImpl::createDirectory(const WebString& path,
     bool exclusive, WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): not implemented yet.
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->Create(path, exclusive, true, callbacks);
 }
 
 void WebFileSystemImpl::fileExists(const WebString& path,
     WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): not implemented yet.
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->Exists(path, false, callbacks);
 }
 
 void WebFileSystemImpl::directoryExists(const WebString& path,
     WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): not implemented yet.
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->Exists(path, true, callbacks);
 }
 
 void WebFileSystemImpl::readDirectory(const WebString& path,
     WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): not implemented yet.
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->ReadDirectory(path, callbacks);
 }

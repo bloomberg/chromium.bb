@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "app/surface/transport_dib.h"
+#include "base/file_util.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/page_zoom.h"
@@ -320,6 +321,14 @@ struct ParamTraits<printing::PageRange> {
 template <>
 struct ParamTraits<printing::NativeMetafile> {
   typedef printing::NativeMetafile param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<file_util::FileInfo> {
+  typedef file_util::FileInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

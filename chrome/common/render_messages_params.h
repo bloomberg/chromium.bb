@@ -847,6 +847,27 @@ struct ViewHostMsg_OpenFileSystemRequest_Params {
   int64 requested_size;
 };
 
+struct ViewMsg_FileSystem_DidReadDirectory_Params {
+  // The response should have this id.
+  int request_id;
+
+  // TODO(kinuko): replace this with file_util_proxy's entry structure
+  // once it's defined.
+  struct Entry {
+    // Name of the entry.
+    FilePath name;
+
+    // Indicates if the entry is directory or not.
+    bool is_directory;
+  };
+
+  // A vector of directory entries.
+  std::vector<Entry> entries;
+
+  // Indicates if there will be more entries.
+  bool has_more;
+};
+
 namespace IPC {
 
 class Message;
@@ -1095,6 +1116,22 @@ struct ParamTraits<ViewHostMsg_DomMessage_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_OpenFileSystemRequest_Params> {
   typedef ViewHostMsg_OpenFileSystemRequest_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params> {
+  typedef ViewMsg_FileSystem_DidReadDirectory_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry> {
+  typedef ViewMsg_FileSystem_DidReadDirectory_Params::Entry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

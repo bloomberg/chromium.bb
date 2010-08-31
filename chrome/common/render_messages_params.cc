@@ -1447,4 +1447,60 @@ void ParamTraits<ViewHostMsg_OpenFileSystemRequest_Params>::Log(
   l->append(")");
 }
 
+void ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, p.request_id);
+  WriteParam(m, p.entries);
+  WriteParam(m, p.has_more);
+}
+
+bool ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params>::Read(
+    const Message* m,
+    void** iter,
+    param_type* p) {
+  return
+      ReadParam(m, iter, &p->request_id) &&
+      ReadParam(m, iter, &p->entries) &&
+      ReadParam(m, iter, &p->has_more);
+}
+
+void ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("(");
+  LogParam(p.request_id, l);
+  l->append(", ");
+  LogParam(p.entries, l);
+  l->append(", ");
+  LogParam(p.has_more, l);
+  l->append(")");
+}
+
+void ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry>::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, p.name);
+  WriteParam(m, p.is_directory);
+}
+
+bool ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry>::Read(
+    const Message* m,
+    void** iter,
+    param_type* p) {
+  return
+      ReadParam(m, iter, &p->name) &&
+      ReadParam(m, iter, &p->is_directory);
+}
+
+void ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("(");
+  LogParam(p.name, l);
+  l->append(", ");
+  LogParam(p.is_directory, l);
+  l->append(")");
+}
+
 }  // namespace IPC
