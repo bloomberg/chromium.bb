@@ -754,6 +754,10 @@ void ChromeActiveDocument::UpdateNavigationState(
     if (web_browser_events_svc) {
       VARIANT_BOOL should_cancel = VARIANT_FALSE;
       web_browser_events_svc->FireBeforeNavigate2Event(&should_cancel);
+    } else if (doc_object_svc) {
+      BOOL should_cancel = FALSE;
+      doc_object_svc->FireBeforeNavigate2(NULL, url_, 0, NULL, NULL, 0,
+                                          NULL, FALSE, &should_cancel);
     }
 
     // We need to tell IE that we support navigation so that IE will query us
