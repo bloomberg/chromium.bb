@@ -4254,14 +4254,3 @@
    fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
 }
-{
-   bug_53740
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15AutoFillManager10ParseFormsERKSt6vectorIN11webkit_glue8FormDataESaIS2_EE
-   fun:_ZN15AutoFillManager9FormsSeenERKSt6vectorIN11webkit_glue8FormDataESaIS2_EE
-   fun:_ZN14RenderViewHost14OnMsgFormsSeenERKSt6vectorIN11webkit_glue8FormDataESaIS2_EE
-   fun:_Z16DispatchToMethodI14RenderViewHostMS0_FvRKSt6vectorIN11webkit_glue8FormDataESaIS3_EEES5_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN3IPC16MessageWithTupleI6Tuple1ISt6vectorIN11webkit_glue8FormDataESaIS4_EEEE8DispatchI14RenderViewHostMSA_FvRKS6_EEEbPKNS_7MessageEPT_T0_
-   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
-}
