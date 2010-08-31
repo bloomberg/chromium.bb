@@ -122,20 +122,21 @@ class BlobURLRequestJobTest : public testing::Test {
     Method method_;
   };
 
-  static void SetUpTestCase() {
-    temp_dir_.reset(new ScopedTempDir());
-    ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
+  void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    temp_file1_ = temp_dir_->path().AppendASCII("BlobFile1.dat");
-    file_util::WriteFile(temp_file1_, kTestFileData1,
-                         arraysize(kTestFileData1) - 1);
+    temp_file1_ = temp_dir_.path().AppendASCII("BlobFile1.dat");
+    ASSERT_EQ(static_cast<int>(arraysize(kTestFileData1) - 1),
+              file_util::WriteFile(temp_file1_, kTestFileData1,
+                                   arraysize(kTestFileData1) - 1));
     file_util::FileInfo file_info1;
     file_util::GetFileInfo(temp_file1_, &file_info1);
     temp_file_modification_time1_ = file_info1.last_modified;
 
-    temp_file2_ = temp_dir_->path().AppendASCII("BlobFile2.dat");
-    file_util::WriteFile(temp_file2_, kTestFileData2,
-                         arraysize(kTestFileData2) - 1);
+    temp_file2_ = temp_dir_.path().AppendASCII("BlobFile2.dat");
+    ASSERT_EQ(static_cast<int>(arraysize(kTestFileData2) - 1),
+              file_util::WriteFile(temp_file2_, kTestFileData2,
+                                   arraysize(kTestFileData2) - 1));
     file_util::FileInfo file_info2;
     file_util::GetFileInfo(temp_file2_, &file_info2);
     temp_file_modification_time2_ = file_info2.last_modified;
@@ -145,9 +146,8 @@ class BlobURLRequestJobTest : public testing::Test {
     io_thread_->StartWithOptions(options);
   }
 
-  static void TearDownTestCase() {
+  void TearDown() {
     io_thread_.reset(NULL);
-    temp_dir_.reset(NULL);
   }
 
   static URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
@@ -381,12 +381,12 @@ class BlobURLRequestJobTest : public testing::Test {
   }
 
  private:
-  static scoped_ptr<ScopedTempDir> temp_dir_;
-  static FilePath temp_file1_;
-  static FilePath temp_file2_;
-  static base::Time temp_file_modification_time1_;
-  static base::Time temp_file_modification_time2_;
-  static scoped_ptr<base::Thread> io_thread_;
+  ScopedTempDir temp_dir_;
+  FilePath temp_file1_;
+  FilePath temp_file2_;
+  base::Time temp_file_modification_time1_;
+  base::Time temp_file_modification_time2_;
+  scoped_ptr<base::Thread> io_thread_;
   static BlobURLRequestJob* blob_url_request_job_;
 
   scoped_ptr<base::WaitableEvent> test_finished_event_;
@@ -398,12 +398,6 @@ class BlobURLRequestJobTest : public testing::Test {
 };
 
 // static
-scoped_ptr<ScopedTempDir> BlobURLRequestJobTest::temp_dir_;
-FilePath BlobURLRequestJobTest::temp_file1_;
-FilePath BlobURLRequestJobTest::temp_file2_;
-base::Time BlobURLRequestJobTest::temp_file_modification_time1_;
-base::Time BlobURLRequestJobTest::temp_file_modification_time2_;
-scoped_ptr<base::Thread> BlobURLRequestJobTest::io_thread_;
 BlobURLRequestJob* BlobURLRequestJobTest::blob_url_request_job_ = NULL;
 
 TEST_F(BlobURLRequestJobTest, TestGetSimpleDataRequest) {
