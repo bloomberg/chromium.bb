@@ -6,6 +6,32 @@
 
 <!-- TODO(zelidrag) need a better icon here -->
 <link rel="icon" href="../../app/theme/history_favicon.png">
+<link rel="stylesheet" href="chrome://resources/css/list.css">
+<link rel="stylesheet" href="chrome://resources/css/tree.css">
+<link rel="stylesheet" href="dom_ui.css">
+<link rel="stylesheet" href="options/options_page.css">
+<link rel="stylesheet" href="options/add_startup_page_overlay.css">
+<link rel="stylesheet" href="options/alert_overlay.css">
+<link rel="stylesheet" href="options/autofill_edit_address_overlay.css">
+<link rel="stylesheet" href="options/autofill_edit_creditcard_overlay.css">
+<link rel="stylesheet" href="options/autofill_options_page.css">
+<link rel="stylesheet" href="options/browser_options_page.css">
+<link rel="stylesheet" href="options/clear_browser_data_overlay.css">
+<link rel="stylesheet" href="options/content_settings.css">
+<link rel="stylesheet" href="options/content_settings_exceptions_area.css">
+<link rel="stylesheet" href="options/cookies_view.css">
+<link rel="stylesheet" href="options/passwords_exceptions_list.css">
+<link rel="stylesheet" href="options/import_data_overlay.css">
+<link rel="stylesheet" href="options/search_engine_manager.css">
+<link rel="stylesheet" href="options/subpages_tab_controls.css">
+<if expr="pp_ifdef('chromeos')">
+  <link rel="stylesheet" href="options/about_page.css">
+  <link rel="stylesheet" href="options/chromeos_accounts_options_page.css">
+  <link rel="stylesheet" href="options/chromeos_internet_options_page.css">
+  <link rel="stylesheet" href="options/chromeos_language_options.css">
+</if>
+
+<script src="chrome://resources/css/tree.css.js"></script>
 
 <script src="chrome://resources/js/class_list.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
@@ -94,6 +120,8 @@ var PasswordsRemoveAllOverlay = options.PasswordsRemoveAllOverlay;
  * Window onload handler, sets up the page.
  */
 function load() {
+  var start = new Date();
+
   localStrings = new LocalStrings();
 
   if (cr.isChromeOS) {
@@ -181,6 +209,9 @@ function load() {
       OptionsPage.showTab(event.srcElement);
     }
   }
+  var end = new Date();
+  var total = end - start;
+  console.log('time took to run load():'+ total);
 }
 
 document.addEventListener('DOMContentLoaded', load);
@@ -189,32 +220,6 @@ window.onpopstate = function(e) {
   options.OptionsPage.setState(e.state);
 };
 </script>
-<link rel="stylesheet" href="chrome://resources/css/list.css">
-<link rel="stylesheet" href="chrome://resources/css/tree.css">
-<link rel="stylesheet" href="dom_ui.css">
-<link rel="stylesheet" href="options/options_page.css">
-<link rel="stylesheet" href="options/add_startup_page_overlay.css">
-<link rel="stylesheet" href="options/alert_overlay.css">
-<link rel="stylesheet" href="options/autofill_edit_address_overlay.css">
-<link rel="stylesheet" href="options/autofill_edit_creditcard_overlay.css">
-<link rel="stylesheet" href="options/autofill_options_page.css">
-<link rel="stylesheet" href="options/browser_options_page.css">
-<link rel="stylesheet" href="options/clear_browser_data_overlay.css">
-<link rel="stylesheet" href="options/content_settings.css">
-<link rel="stylesheet" href="options/content_settings_exceptions_area.css">
-<link rel="stylesheet" href="options/cookies_view.css">
-<link rel="stylesheet" href="options/passwords_exceptions_list.css">
-<link rel="stylesheet" href="options/import_data_overlay.css">
-<link rel="stylesheet" href="options/search_engine_manager.css">
-<link rel="stylesheet" href="options/subpages_tab_controls.css">
-<if expr="pp_ifdef('chromeos')">
-  <link rel="stylesheet" href="options/about_page.css">
-  <link rel="stylesheet" href="options/chromeos_accounts_options_page.css">
-  <link rel="stylesheet" href="options/chromeos_internet_options_page.css">
-  <link rel="stylesheet" href="options/chromeos_language_options.css">
-</if>
-
-<script src="chrome://resources/css/tree.css.js"></script>
 
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
@@ -287,6 +292,7 @@ cr.ui.decorate('select[pref]', options.PrefSelect);
 cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
 cr.ui.decorate('#contentSettingsPage input[type=radio]',
     options.ContentSettingsRadio);
+console.log('in bottom script');
 </script>
 </body>
 </html>
