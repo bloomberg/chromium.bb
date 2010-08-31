@@ -786,9 +786,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
-// FocusOnReloadCrashedTab times out often on chromium os debug build.
-// http://crbug.com/50025
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if (defined(OS_CHROMEOS) || defined(OS_LINUX)) && !defined(NDEBUG)
+// Hangy, http://crbug.com/50025.
 #define MAYBE_FocusOnReloadCrashedTab DISABLED_FocusOnReloadCrashedTab
 #else
 #define MAYBE_FocusOnReloadCrashedTab FocusOnReloadCrashedTab
