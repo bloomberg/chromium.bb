@@ -26,6 +26,7 @@
 #include "base/nss_util.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
+#include "remoting/base/encoder_verbatim.h"
 #include "remoting/base/encoder_zlib.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
@@ -59,6 +60,7 @@ void ShutdownTask(MessageLoop* message_loop) {
 
 const std::string kFakeSwitchName = "fake";
 const std::string kConfigSwitchName = "config";
+const std::string kVerbatimSwitchName = "verbatim";
 
 int main(int argc, char** argv) {
   // Needed for the Mac, so we don't leak objects when threads are created.
@@ -73,21 +75,22 @@ int main(int argc, char** argv) {
 
   scoped_ptr<remoting::Capturer> capturer;
   scoped_ptr<remoting::Encoder> encoder;
-  scoped_ptr<remoting::EventExecutor> executor;
+  scoped_ptr<remoting::EventExecutor> event_handler;
 #if defined(OS_WIN)
   capturer.reset(new remoting::CapturerGdi());
-  executor.reset(new remoting::EventExecutorWin());
+  event_handler.reset(new remoting::EventExecutorWin(capturer.get()));
 #elif defined(OS_LINUX)
   capturer.reset(new remoting::CapturerLinux());
-  executor.reset(new remoting::EventExecutorLinux());
+  event_handler.reset(new remoting::EventExecutorLinux(capturer.get()));
 #elif defined(OS_MACOSX)
   capturer.reset(new remoting::CapturerMac());
-  executor.reset(new remoting::EventExecutorMac());
+  event_handler.reset(new remoting::EventExecutorMac(capturer.get()));
 #endif
   encoder.reset(new remoting::EncoderZlib());
 
   // Check the argument to see if we should use a fake capturer and encoder.
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);
+  bool verbatim = cmd_line->HasSwitch(kVerbatimSwitchName);
 
 #if defined(OS_WIN)
   std::wstring path = GetEnvironmentVar(kHomeDrive);
@@ -105,6 +108,11 @@ int main(int argc, char** argv) {
     // Inject a fake capturer.
     LOG(INFO) << "Using a fake capturer.";
     capturer.reset(new remoting::CapturerFake());
+  }
+
+  if (verbatim) {
+    LOG(INFO) << "Using the verbatim encoder.";
+    encoder.reset(new remoting::EncoderVerbatim());
   }
 
   base::Thread file_io_thread("FileIO");
@@ -129,7 +137,7 @@ int main(int argc, char** argv) {
                                    config,
                                    capturer.release(),
                                    encoder.release(),
-                                   executor.release());
+                                   event_handler.release());
 
   // Let the chromoting host run until the shutdown task is executed.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
