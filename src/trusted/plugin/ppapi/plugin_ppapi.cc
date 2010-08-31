@@ -43,7 +43,6 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   }
   ScriptableHandle* handle = browser_interface->NewScriptableHandle(this);
   if (handle == NULL) {
-    PLUGIN_PRINTF(("PluginPpapi::Init (scriptable handle creation failed)\n"));
     return false;
   }
   set_scriptable_handle(handle);
@@ -76,18 +75,28 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
 
 
 PluginPpapi::~PluginPpapi() {
-  PLUGIN_PRINTF(("PluginPpapi::~PluginPpapi (this=%p)\n",
-                 static_cast<void*>(this)));
+  PLUGIN_PRINTF(("PluginPpapi::~PluginPpapi (this=%p, scriptable_handle=%p)\n",
+                 static_cast<void*>(this),
+                 static_cast<void*>(scriptable_handle())));
+
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+  NaClHandlePassBrowserDtor();
+#endif
+
+  ScriptableHandle* scriptable_handle_ = scriptable_handle();
+  UnrefScriptableHandle(&scriptable_handle_);
 }
 
 
 pp::Var PluginPpapi::GetInstanceObject() {
+  PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (this=%p)\n",
+                 static_cast<void*>(this)));
   ScriptableHandlePpapi* handle =
-      static_cast<ScriptableHandlePpapi*>(scriptable_handle());
-  PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject "
-                 "(this=%p, scriptable_handle=%p)\n",
-                 static_cast<void*>(this), static_cast<void*>(handle)));
-  return handle;
+      static_cast<ScriptableHandlePpapi*>(scriptable_handle()->AddRef());
+  pp::Var* handle_var = handle->var();
+  PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (handle=%p, handle_var=%p)\n",
+                 static_cast<void*>(handle), static_cast<void*>(handle_var)));
+  return *handle_var;  // make a copy
 }
 
 

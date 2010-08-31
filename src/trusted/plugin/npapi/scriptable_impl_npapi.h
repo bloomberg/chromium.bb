@@ -42,7 +42,7 @@ class ScriptableImplNpapi: public NPObject, public plugin::ScriptableHandle {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ScriptableImplNpapi);
   explicit ScriptableImplNpapi(PortableHandle* handle);
-  virtual ~ScriptableImplNpapi() { }
+  virtual ~ScriptableImplNpapi();
   // We need an allocator "helper" to allow construction from the NPAPI
   // class table while making the constructor private.
   static NPObject* Allocate(NPP npp, NPClass* npapi_class);

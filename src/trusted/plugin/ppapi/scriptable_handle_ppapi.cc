@@ -11,6 +11,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/plugin/method_map.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/portable_handle.h"
@@ -254,16 +255,71 @@ pp::Var ScriptableHandlePpapi::Construct(const std::vector<pp::Var>& args,
 }
 
 
+ScriptableHandle* ScriptableHandlePpapi::AddRef() {
+  // This is called when we are about to share this object with the browser,
+  // and we need to make sure we have an internal plugin reference, so this
+  // object doesn't get deallocated when the browser discards its references.
+  if (var_ == NULL) {
+    var_ = new(std::nothrow) pp::Var(this);
+    CHECK(var_ != NULL);
+  }
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::AddRef (this=%p, var=%p)\n",
+                 static_cast<void*>(this), static_cast<void*>(var_)));
+  return this;
+}
+
+
+void ScriptableHandlePpapi::Unref() {
+  // We should have no more than one internal owner of this object, so this
+  // should be called no more than once.
+  CHECK(++num_unref_calls_ == 1);
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::Unref (this=%p, var=%p)\n",
+                 static_cast<void*>(this), static_cast<void*>(var_)));
+  if (var_ != NULL) {
+    // We have shared this with the browser while keeping our own var
+    // reference, but we no longer need ours. If the browser has copies,
+    // it will clean things up later, otherwise this object will get
+    // deallocated right away.
+    PLUGIN_PRINTF(("ScriptableHandlePpapi::Unref (delete var)\n"));
+    pp::Var* var = var_;
+    var_ = NULL;
+    delete var;
+  } else {
+    // Neither the browser nor plugin ever var referenced this object,
+    // so it can safely discarded.
+    PLUGIN_PRINTF(("ScriptableHandlePpapi::Unref (delete this)\n"));
+    CHECK(var_ == NULL);
+    delete this;
+  }
+}
+
+
 ScriptableHandlePpapi::ScriptableHandlePpapi(PortableHandle* handle)
-  : ScriptableHandle(handle) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::ScriptableHandlePpapi (this=%p, "
-                 "handle=%p)\n",
+    : ScriptableHandle(handle), var_(NULL), num_unref_calls_(0) {
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::ScriptableHandlePpapi "
+                 "(this=%p, handle=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(handle)));
+  handle_is_plugin_ = (handle == handle->plugin());
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::ScriptableHandlePpapi "
+                 "(this=%p, handle_is_plugin=%d)\n",
+                 static_cast<void*>(this), handle_is_plugin_));
 }
 
 
 ScriptableHandlePpapi::~ScriptableHandlePpapi() {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi (this=%p)\n",
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi "
+                 "(this=%p, handle_is_plugin=%d)\n",
+                 static_cast<void*>(this), handle_is_plugin_));
+  // If handle is a plugin, the browser is deleting it. Otherwise, delete here.
+  if (!handle_is_plugin_) {
+    PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi "
+                   "(this=%p, delete handle=%p)\n",
+                   static_cast<void*>(this), static_cast<void*>(handle())));
+    handle()->Delete();
+    set_handle(NULL);
+  }
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi "
+                 "(this=%p, return)\n",
                  static_cast<void*>(this)));
 }
 

@@ -318,7 +318,7 @@ template<typename T> pp::Var ArrayToPPVar(T* array_data,
 
 // Returns a pp::Var corresponding to |desc| or void. Sets |exception| on error.
 pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
-                               pp::Var* exception) {
+                        pp::Var* exception) {
   nacl::DescWrapper* wrapper = plugin->wrapper_factory()->MakeGeneric(desc);
 
   DescBasedHandle* desc_handle = NULL;
@@ -350,7 +350,12 @@ pp::Var ObjectToPPVar(void* obj) {
   // this CHECK will fail and remind the author to update this code to handle
   // arbitrary objects.
   CHECK(plugin::ScriptableHandle::is_valid(handle));
-  return pp::Var(static_cast<ScriptableHandlePpapi*>(handle));
+  ScriptableHandlePpapi* handle_ppapi =
+      static_cast<ScriptableHandlePpapi*>(handle);
+  if (handle_ppapi->var() != NULL)
+    return *handle_ppapi->var();  // make a copy
+  else
+    return pp::Var(handle_ppapi);
 }
 
 }  // namespace

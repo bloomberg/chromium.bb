@@ -21,6 +21,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -75,10 +76,9 @@ bool DefaultSocketAddress(void* obj, plugin::SrpcParams* params) {
     params->set_exception_string("no socket address");
     return false;
   }
-  plugin->socket_address()->AddRef();
   // Plug the scriptable object into the return values.
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->u.oval = plugin->socket_address();
+  params->outs()[0]->u.oval = plugin->socket_address()->AddRef();
   return true;
 }
 
@@ -430,6 +430,8 @@ bool Plugin::Init(BrowserInterface* browser_interface,
 Plugin::Plugin()
   : service_runtime_(NULL),
     receive_thread_running_(false),
+    browser_interface_(NULL),
+    scriptable_handle_(NULL),
     argc_(-1),
     argn_(NULL),
     argv_(NULL),
@@ -445,31 +447,44 @@ Plugin::Plugin()
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p)\n", static_cast<void*>(this)));
 }
 
+// TODO(polina): move this to PluginNpapi.
 void Plugin::Invalidate() {
+  PLUGIN_PRINTF(("Plugin::Invalidate (this=%p)\n", static_cast<void*>(this)));
   socket_address_ = NULL;
   socket_ = NULL;
 }
 
 void Plugin::ShutDownSubprocess() {
-  if (socket_address_ != NULL) {
-    socket_address_->Unref();
-    socket_address_ = NULL;
-  }
-  if (socket_ != NULL) {
-    socket_->Unref();
-    socket_ = NULL;
-  }
+  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (this=%p)\n",
+                 static_cast<void*>(this)));
+  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess "
+                 "(socket_address=%p, socket=%p)\n",
+                 static_cast<void*>(socket_address_),
+                 static_cast<void*>(socket_)));
+  UnrefScriptableHandle(&socket_address_);
+  UnrefScriptableHandle(&socket_);
+  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (service_runtime=%p)\n",
+                 static_cast<void*>(service_runtime_)));
+  // Shutdown service runtime. This must be done before all other calls so
+  // they don't block forever when waiting for the upcall thread to exit.
   if (service_runtime_ != NULL) {
     service_runtime_->Shutdown();
     delete service_runtime_;
     service_runtime_ = NULL;
   }
-  // This waits for the upcall thread to exit so it must come after we
-  // terminate the subprocess.
   ShutdownMultimedia();
   if (receive_thread_running_) {
     NaClThreadJoin(&receive_thread_);
     receive_thread_running_ = false;
+  }
+  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (this=%p, return)\n",
+                 static_cast<void*>(this)));
+}
+
+void Plugin::UnrefScriptableHandle(ScriptableHandle** handle) {
+  if (*handle != NULL) {
+    (*handle)->Unref();
+    *handle = NULL;
   }
 }
 
@@ -485,13 +500,14 @@ Plugin::~Plugin() {
   // NPP_Destroy().
   ShutDownSubprocess();
 
-  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p)\n", static_cast<void*>(this)));
   free(local_url_);
   free(logical_url_);
   delete wrapper_factory_;
   delete browser_interface_;
   delete[] argv_;
   delete[] argn_;
+  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p, return)\n",
+                 static_cast<void*>(this)));
 }
 
 void Plugin::set_local_url(const char* url) {
@@ -604,18 +620,16 @@ bool Plugin::Load(nacl::string logical_url,
   }
   PLUGIN_PRINTF(("Plugin::Load (service_runtime_started=%d)\n",
                  service_runtime_started));
-  // Plugin takes ownership of socket_address_ from service_runtime_,
-  // so we do not need to call AddRef(). This must be done here because
-  // service_runtime start-up might fail after default_socket_address() was
-  // successfully created.
-  // TODO(mseaborn): change ServiceRuntime to honor refcounting, so we don't
-  // have to depend on Plugin doing this in the "right" spot.
+  // Plugin takes ownership of socket_address_ from service_runtime_ and will
+  // Unref it at deletion. This must be done here because service_runtime_
+  // start-up might fail after default_socket_address() was already created.
   socket_address_ = service_runtime_->default_socket_address();
   if (!service_runtime_started) {
     browser_interface->AddToConsole(instance_id(),
                                     "Load: Failed to start service runtime");
     return false;
   }
+  CHECK(socket_address_ != NULL);
   if (!StartSrpcServices(&error_string)) {  // sets socket_
     browser_interface_->AddToConsole(instance_id(), error_string);
     return false;
@@ -627,10 +641,7 @@ bool Plugin::Load(nacl::string logical_url,
 }
 
 bool Plugin::StartSrpcServices(nacl::string* error) {
-  if (socket_ != NULL) {
-    socket_->Unref();
-    socket_ = NULL;
-  }
+  UnrefScriptableHandle(&socket_);
   socket_ = socket_address_->handle()->Connect();
   if (socket_ == NULL) {
     *error = "Load: Failed to connect using SRPC";

@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-// PPAPI-based implementation of the interface for a plugin instance.
+// PPAPI-based implementation of the interface for a NaCl plugin instance.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
@@ -20,7 +20,7 @@ struct NaClSrpcChannel;
 
 namespace plugin {
 
-// Encapsulates a PPAPI plugin.
+// Encapsulates a PPAPI NaCl plugin.
 class PluginPpapi : public pp::Instance, public Plugin {
  public:
   // Factory method for creation.
@@ -49,8 +49,10 @@ class PluginPpapi : public pp::Instance, public Plugin {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
   // Prevent construction and destruction from outside the class:
-  // must use factory New() and base's Delete() methods instead.
+  // must use factory New() method instead.
   explicit PluginPpapi(PP_Instance instance);
+  // The browser will invoke the destructor via the pp::Instance
+  // pointer to this object, not from base's Delete().
   virtual ~PluginPpapi();
 };
 

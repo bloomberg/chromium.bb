@@ -17,7 +17,7 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include  "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/npapi_native.h"
@@ -543,7 +543,8 @@ void Invalidate(NPObject* obj) {
   plugin::ScriptableImplNpapi* scriptable_handle =
       static_cast<plugin::ScriptableImplNpapi*>(obj);
 
-  PLUGIN_PRINTF(("Invalidate(%p)\n", static_cast<void*>(scriptable_handle)));
+  PLUGIN_PRINTF(("Invalidate (scriptable_handle=%p)\n",
+                 static_cast<void*>(scriptable_handle)));
   scriptable_handle->handle()->Invalidate();
 
   // After invalidation, the browser does not respect reference counting,
@@ -647,7 +648,8 @@ void ScriptableImplNpapi::Deallocate(NPObject* obj) {
   plugin::ScriptableImplNpapi* scriptable_handle =
       static_cast<plugin::ScriptableImplNpapi*>(obj);
 
-  PLUGIN_PRINTF(("Deallocate(%p)\n", static_cast<void*>(obj)));
+  PLUGIN_PRINTF(("ScriptableImplNpapi::Deallocate (obj=%p)\n",
+                 static_cast<void*>(obj)));
 
   // Release the contained descriptor.
   scriptable_handle->handle()->Delete();
@@ -673,7 +675,7 @@ ScriptableImplNpapi* ScriptableImplNpapi::New(PortableHandle* handle) {
     Construct
   };
 
-  PLUGIN_PRINTF(("ScriptableImplNpapi::New(%p)\n",
+  PLUGIN_PRINTF(("ScriptableImplNpapi::New (handle=%p)\n",
                  static_cast<void*>(handle)));
 
   // Do not wrap NULL as a portable handle.
@@ -708,9 +710,19 @@ void ScriptableImplNpapi::Unref() {
 
 ScriptableImplNpapi::ScriptableImplNpapi(PortableHandle* handle)
   : ScriptableHandle(handle) {
-  PLUGIN_PRINTF(("ScriptableImplNpapi::ScriptableImplNpapi(%p, %p)\n",
-                 static_cast<void*>(this),
-                 static_cast<void*>(handle)));
+  PLUGIN_PRINTF(("ScriptableImplNpapi::ScriptableImplNpapi "
+                 "(this=%p, handle=%p)\n",
+                 static_cast<void*>(this), static_cast<void*>(handle)));
+}
+
+ScriptableImplNpapi::~ScriptableImplNpapi() {
+  PLUGIN_PRINTF(("ScriptableImplNpapi::!ScriptableImplNpapi "
+                 "(this=%p, handle=%p)\n",
+                 static_cast<void*>(this), static_cast<void*>(handle())));
+  handle()->Delete();
+  set_handle(NULL);
+  PLUGIN_PRINTF(("ScriptableImplNpapi::~ScriptableImplNpapi "
+                 "(this=%p, return)\n", static_cast<void*>(this)));
 }
 
 }  // namespace plugin

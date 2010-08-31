@@ -60,10 +60,9 @@ ScriptableHandle::~ScriptableHandle() {
   }
   // Remove the scriptable handle from the set of valid handles.
   g_ValidHandles->erase(this);
-  // Free the portable handle.
-  handle_->Delete();
-  // Avoid a possible source of ref-after-delete issues.
-  handle_ = NULL;
+  // Handle deletion has been moved into derived classes.
+  PLUGIN_PRINTF(("ScriptableHandle::~ScriptableHandle (this=%p, return)\n",
+                  static_cast<void*>(this)));
 }
 
 // Check that an object is a validly created ScriptableHandle.

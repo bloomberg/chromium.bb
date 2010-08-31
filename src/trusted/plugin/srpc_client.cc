@@ -59,11 +59,11 @@ bool SrpcClient::Init(BrowserInterface* browser_interface,
 }
 
 SrpcClient::~SrpcClient() {
-  PLUGIN_PRINTF(("SrpcClient::~SrpcClient (this=%p)\n",
-                 static_cast<void*>(this)));
-  PLUGIN_PRINTF(("SrpcClient::~SrpcClient (destroying the channel)\n"));
+  PLUGIN_PRINTF(("SrpcClient::~SrpcClient (this=%p, has_srpc_channel=%d)\n",
+                 static_cast<void*>(this), srpc_channel_initialised_));
   // And delete the connection.
   if (srpc_channel_initialised_) {
+    PLUGIN_PRINTF(("SrpcClient::~SrpcClient (destroying srpc_channel)\n"));
     NaClSrpcDtor(&srpc_channel_);
   }
   for (Methods::iterator iter = methods_.begin();

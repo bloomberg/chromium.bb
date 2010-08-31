@@ -72,10 +72,6 @@ class Plugin : public PortableHandle {
     return browser_interface_;
   }
   virtual Plugin* plugin() const { return const_cast<Plugin*>(this); }
-  ScriptableHandle* scriptable_handle() const { return scriptable_handle_; }
-  void set_scriptable_handle(ScriptableHandle* scriptable_handle) {
-    scriptable_handle_ = scriptable_handle;
-  }
 
   // Returns the URL of the locally-cached copy of the downloaded NaCl
   // module, if any.  May be NULL, e.g. in Chrome.
@@ -151,7 +147,17 @@ class Plugin : public PortableHandle {
             char* argn[],
             char* argv[]);
   void LoadMethods();
+  // Shuts down socket connection, service runtime, multimedia and
+  // receive thread, in this order.
   void ShutDownSubprocess();
+
+  static void UnrefScriptableHandle(ScriptableHandle** handle);
+
+  ScriptableHandle* scriptable_handle() const { return scriptable_handle_; }
+  void set_scriptable_handle(ScriptableHandle* scriptable_handle) {
+    scriptable_handle_ = scriptable_handle;
+  }
+
   ServiceRuntime* service_runtime_;
 
   bool receive_thread_running_;
@@ -167,8 +173,10 @@ class Plugin : public PortableHandle {
   char** argn_;
   char** argv_;
 
+  // These will be taken over from service_runtime_ on load.
   ScriptableHandle* socket_address_;
   ScriptableHandle* socket_;
+
   char* local_url_;  // (from malloc)
   char* logical_url_;  // (from malloc)
 

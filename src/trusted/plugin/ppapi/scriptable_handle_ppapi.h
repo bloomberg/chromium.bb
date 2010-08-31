@@ -29,6 +29,9 @@ class ScriptableHandlePpapi : public pp::ScriptableObject,
   // Factory method for creation.
   static ScriptableHandlePpapi* New(PortableHandle* handle);
 
+  // If not NULL, this var should be reused to pass this object to the browser.
+  pp::Var* var() { return var_; }
+
   // ------ Methods inherited from pp::ScriptableObject:
 
   // Returns true for preloaded NaCl Plugin properties.
@@ -63,16 +66,21 @@ class ScriptableHandlePpapi : public pp::ScriptableObject,
 
   // ----- Methods inherited from ScriptableHandle:
 
-  // Reference counting is handled by pp::Var that wraps this ScriptableObject,
-  // so there is nothing to implement here.
-  virtual ScriptableHandle* AddRef() { return this; }
-  virtual void Unref() { }
+  // This function is called when we are about to share the object owned by the
+  // plugin with the browser. Since reference counting on the browser side is
+  // handled via pp::Var's, we create the var() here if not created already.
+  virtual ScriptableHandle* AddRef();
+  // If var() is set, we delete it. Otherwise, we delete the object itself.
+  // Therefore, this cannot be called more than once.
+  virtual void Unref();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ScriptableHandlePpapi);
   // Prevent construction from outside the class:
   // must use factory New() method instead.
   explicit ScriptableHandlePpapi(PortableHandle* handle);
+  // This will be called when both the plugin and the browser clear all
+  // references to this object.
   virtual ~ScriptableHandlePpapi();
 
   // Helper functionality common to HasProperty and HasMethod.
@@ -84,6 +92,23 @@ class ScriptableHandlePpapi : public pp::ScriptableObject,
   // Sets |exception| on failure.
   pp::Var Invoke(CallType call_type, nacl::string call_name, const char* caller,
                  const std::vector<pp::Var>& args, pp::Var* exception);
+
+  // When we pass the object owned by the plugin to the browser, we need to wrap
+  // it in a pp::Var, which also registers the object with the browser for
+  // refcounting. It must be registered only once with all other var references
+  // being copies of the original one. Thus, we record the pp::Var here and
+  // reuse it when satisfiying additional browser requests. This way we also
+  // ensure that when the browser clears its references, this object does not
+  // get deallocated while we still hold ours. This is never set for objects
+  // that are not shared with the browser nor for objects created during SRPC
+  // calls as they are taken over by the browser on return.
+  pp::Var* var_;
+
+  // We should have no more than one internal plugin owner for this object,
+  // and only that owner should call Unref(). To CHECK for that keep a counter.
+  int num_unref_calls_;
+
+  bool handle_is_plugin_;  // Whether handle() is a plugin.
 };
 
 }  // namespace plugin
