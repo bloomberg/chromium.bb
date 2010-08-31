@@ -87,14 +87,14 @@ class ExtensionMessageService
   // event is only sent to extension with host permissions for this url.
   virtual void DispatchEventToRenderers(
       const std::string& event_name, const std::string& event_args,
-      bool has_incognito_data, const GURL& event_url);
+      Profile* source_profile, const GURL& event_url);
 
   // Same as above, except use the extension-specific naming scheme for the
   // event. This is used by events that are per-extension.
   void DispatchEventToExtension(
       const std::string& extension_id,
       const std::string& event_name, const std::string& event_args,
-      bool has_incognito_data, const GURL& event_url);
+      Profile* source_profile, const GURL& event_url);
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is

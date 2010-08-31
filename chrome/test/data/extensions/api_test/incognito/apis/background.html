@@ -76,8 +76,7 @@ chrome.test.runTests([
   // Tests content script injection to verify that the script can tell its
   // in incongnito.
   function contentScriptTestIncognito() {
-    // The property is undefined outside of content scripts.
-    assertEq(undefined, chrome.extension.inIncognitoTab);
+    assertTrue(!chrome.extension.inIncognitoContext);
 
     var testUrl = "http://localhost:1337/files/extensions/test_file.html";
 
@@ -85,7 +84,7 @@ chrome.test.runTests([
     chrome.tabs.create({windowId: incognitoWindow.id, url: testUrl},
       pass(function(tab) {
         chrome.tabs.executeScript(tab.id,
-          {code: 'document.title = chrome.extension.inIncognitoTab'},
+          {code: 'document.title = chrome.extension.inIncognitoContext'},
           pass(function() {
             assertEq(undefined, chrome.extension.lastError);
             chrome.tabs.get(tab.id, pass(function(tab) {
@@ -98,7 +97,7 @@ chrome.test.runTests([
     chrome.tabs.create({windowId: normalWindow.id, url: testUrl},
       pass(function(tab) {
         chrome.tabs.executeScript(tab.id,
-          {code: 'document.title = chrome.extension.inIncognitoTab'},
+          {code: 'document.title = chrome.extension.inIncognitoContext'},
           pass(function() {
             assertEq(undefined, chrome.extension.lastError);
             chrome.tabs.get(tab.id, pass(function(tab) {

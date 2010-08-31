@@ -149,7 +149,10 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
   // of this call.
   bool has_callback_;
 
-  // True if this callback should include information from incognito contexts.
+  // True if this callback should include information from incognito contexts
+  // even if our profile_ is non-incognito. Note that in the case of a "split"
+  // mode extension, this will always be false, and we will limit access to
+  // data from within the same profile_ (either incognito or not).
   bool include_incognito_;
 
   // True if the call was made in response of user gesture.

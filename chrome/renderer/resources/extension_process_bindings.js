@@ -19,6 +19,7 @@ var chrome = chrome || {};
   native function GetPopupView();
   native function SetIconCommon();
   native function IsExtensionProcess();
+  native function IsIncognitoProcess();
 
   var chromeHidden = GetChromeHidden();
 
@@ -302,7 +303,7 @@ var chrome = chrome || {};
     if (!extensionId) {
       return;
     }
-    chrome.initExtension(extensionId, false);
+    chrome.initExtension(extensionId, false, IsIncognitoProcess());
 
     // |apiFunctions| is a hash of name -> object that stores the
     // name & definition of the apiFunction. Custom handling of api functions

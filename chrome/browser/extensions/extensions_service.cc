@@ -204,7 +204,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
   registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
-                 Source<Profile>(profile_));
+                 NotificationService::AllSources());
   prefs->AddPrefObserver(prefs::kExtensionInstallAllowList, this);
   prefs->AddPrefObserver(prefs::kExtensionInstallDenyList, this);
 
@@ -1368,7 +1368,8 @@ void ExtensionsService::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_PROCESS_TERMINATED: {
-      DCHECK_EQ(profile_, Source<Profile>(source).ptr());
+      if (profile_ != Source<Profile>(source).ptr()->GetOriginalProfile())
+        break;
 
       ExtensionHost* host = Details<ExtensionHost>(details).ptr();
 
@@ -1387,7 +1388,11 @@ void ExtensionsService::Observe(NotificationType type,
 
       // Unload the entire extension. We want it to be in a consistent state:
       // either fully working or not loaded at all, but never half-crashed.
-      UnloadExtension(host->extension()->id());
+      // We do it in a PostTask so that other handlers of this notification will
+      // still have access to the Extension and ExtensionHost.
+      MessageLoop::current()->PostTask(FROM_HERE,
+          NewRunnableMethod(this, &ExtensionsService::UnloadExtension,
+                            host->extension()->id()));
       break;
     }
 

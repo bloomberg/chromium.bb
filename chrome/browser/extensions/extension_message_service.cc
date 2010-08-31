@@ -204,15 +204,15 @@ void ExtensionMessageService::OpenChannelToExtension(
     const std::string& source_extension_id,
     const std::string& target_extension_id,
     const std::string& channel_name) {
-  if (!profile_)
-    return;
-
   RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
   if (!source)
     return;
 
+  // Note: we use the source's profile here. If the source is an incognito
+  // process, we will use the incognito EPM to find the right extension process,
+  // which depends on whether the extension uses spanning or split mode.
   MessagePort receiver(
-      profile_->GetExtensionProcessManager()->GetExtensionProcess(
+      source->profile()->GetExtensionProcessManager()->GetExtensionProcess(
           target_extension_id),
       MSG_ROUTING_CONTROL);
   TabContents* source_contents = tab_util::GetTabContentsByID(
@@ -321,8 +321,7 @@ int ExtensionMessageService::OpenSpecialChannelToExtension(
   AllocatePortIdPair(&port1_id, &port2_id);
 
   MessagePort receiver(
-      profile_->GetExtensionProcessManager()->
-          GetExtensionProcess(extension_id),
+      profile_->GetExtensionProcessManager()->GetExtensionProcess(extension_id),
       MSG_ROUTING_CONTROL);
   if (!OpenChannelImpl(source, tab_json, receiver, port2_id,
                        extension_id, extension_id, channel_name))
@@ -393,7 +392,13 @@ void ExtensionMessageService::PostMessageFromRenderer(
 
 void ExtensionMessageService::DispatchEventToRenderers(
     const std::string& event_name, const std::string& event_args,
-    bool has_incognito_data, const GURL& event_url) {
+    Profile* source_profile, const GURL& event_url) {
+  if (!profile_)
+    return;
+
+  // We don't expect to get events from a completely different profile.
+  DCHECK(!source_profile || profile_->IsSameProfile(source_profile));
+
   ListenerMap::iterator it = listeners_.find(event_name);
   if (it == listeners_.end())
     return;
@@ -411,17 +416,20 @@ void ExtensionMessageService::DispatchEventToRenderers(
       continue;
     }
 
-    DispatchEvent(
-        renderer, event_name, event_args, has_incognito_data, event_url);
+    // Is this event from a different profile than the renderer (ie, an
+    // incognito tab event sent to a normal process, or vice versa).
+    bool cross_profile =
+        source_profile && renderer->profile() != source_profile;
+    DispatchEvent(renderer, event_name, event_args, cross_profile, event_url);
   }
 }
 
 void ExtensionMessageService::DispatchEventToExtension(
     const std::string& extension_id,
     const std::string& event_name, const std::string& event_args,
-    bool has_incognito_data, const GURL& event_url) {
+    Profile* source_profile, const GURL& event_url) {
   DispatchEventToRenderers(GetPerExtensionEventName(event_name, extension_id),
-                           event_args, has_incognito_data, event_url);
+                           event_args, source_profile, event_url);
 }
 
 void ExtensionMessageService::Observe(NotificationType type,

@@ -153,8 +153,5 @@ void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
   base::JSONWriter::Write(&args, false, &json_args);
 
   profile->GetExtensionMessageService()->DispatchEventToRenderers(
-      keys::kOnStateChanged,
-      json_args,
-      profile->IsOffTheRecord(),
-      GURL());
+      keys::kOnStateChanged, json_args, profile, GURL());
 }

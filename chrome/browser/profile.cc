@@ -18,6 +18,8 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/file_system/file_system_host_context.h"
+#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -119,6 +121,7 @@ class OffTheRecordProfileImpl : public Profile,
       : profile_(real_profile),
         start_time_(Time::Now()) {
     request_context_ = ChromeURLRequestContextGetter::CreateOffTheRecord(this);
+    extension_process_manager_.reset(ExtensionProcessManager::Create(this));
 
     // Register for browser close notifications so we can detect when the last
     // off-the-record window is closed, in which case we can clean our states
@@ -134,6 +137,7 @@ class OffTheRecordProfileImpl : public Profile,
                                            Source<Profile>(this),
                                            NotificationService::NoDetails());
     CleanupRequestContext(request_context_);
+    CleanupRequestContext(extensions_request_context_);
 
     // Clean up all DB files/directories
     ChromeThread::PostTask(
@@ -220,7 +224,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
-    return GetOriginalProfile()->GetExtensionProcessManager();
+    return extension_process_manager_.get();
   }
 
   virtual ExtensionMessageService* GetExtensionMessageService() {
@@ -357,7 +361,12 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   URLRequestContextGetter* GetRequestContextForExtensions() {
-    return GetOriginalProfile()->GetRequestContextForExtensions();
+    if (!extensions_request_context_) {
+      extensions_request_context_ =
+          ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(this);
+    }
+
+    return extensions_request_context_;
   }
 
   virtual net::SSLConfigService* GetSSLConfigService() {
@@ -543,8 +552,13 @@ class OffTheRecordProfileImpl : public Profile,
   // The real underlying profile.
   Profile* profile_;
 
+  scoped_ptr<ExtensionProcessManager> extension_process_manager_;
+
   // The context to use for requests made from this OTR session.
   scoped_refptr<ChromeURLRequestContextGetter> request_context_;
+
+  // The context to use for requests made by an extension while in OTR mode.
+  scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;

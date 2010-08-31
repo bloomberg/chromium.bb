@@ -76,7 +76,7 @@ void ExtensionCookiesEventRouter::DispatchEvent(Profile* profile,
                                                 GURL& cookie_domain) {
   if (profile && profile->GetExtensionMessageService()) {
     profile->GetExtensionMessageService()->DispatchEventToRenderers(
-        event_name, json_args, profile->IsOffTheRecord(), cookie_domain);
+        event_name, json_args, profile, cookie_domain);
   }
 }
 
@@ -405,7 +405,7 @@ bool RemoveCookieFunction::RunImpl() {
 }
 
 bool GetAllCookieStoresFunction::RunImpl() {
-  Profile* original_profile = profile()->GetOriginalProfile();
+  Profile* original_profile = profile();
   DCHECK(original_profile);
   scoped_ptr<ListValue> original_tab_ids(new ListValue());
   Profile* incognito_profile = NULL;
@@ -415,6 +415,8 @@ bool GetAllCookieStoresFunction::RunImpl() {
     if (incognito_profile)
       incognito_tab_ids.reset(new ListValue());
   }
+  DCHECK(original_profile != incognito_profile);
+
   // Iterate through all browser instances, and for each browser,
   // add its tab IDs to either the regular or incognito tab ID list depending
   // whether the browser is regular or incognito.

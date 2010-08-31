@@ -366,6 +366,7 @@ class Extension {
   LaunchContainer launch_container() const { return launch_container_; }
   int launch_width() const { return launch_width_; }
   int launch_height() const { return launch_height_; }
+  bool incognito_split_mode() const { return incognito_split_mode_; }
 
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
@@ -581,6 +582,10 @@ class Extension {
 
   // The omnibox keyword for this extension, or empty if there is none.
   std::string omnibox_keyword_;
+
+  // If true, a separate process will be used for the extension in incognito
+  // mode.
+  bool incognito_split_mode_;
 
   // Runtime data:
 

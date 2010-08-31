@@ -59,8 +59,7 @@ DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
   // within a single process.
   ExtensionsService* service = contents->profile()->GetExtensionsService();
   if (service &&
-      service->ExtensionBindingsAllowed(url) &&
-      !contents->profile()->IsOffTheRecord()) {
+      service->ExtensionBindingsAllowed(url)) {
     return new ExtensionDOMUI(contents, url);
   }
   return NULL;

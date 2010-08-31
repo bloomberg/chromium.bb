@@ -24,7 +24,7 @@ class ExtensionTestingProfile : public TestingProfile {
     DCHECK(!GetExtensionProcessManager());
     DCHECK(!GetExtensionsService());
 
-    manager_.reset(new ExtensionProcessManager(this));
+    manager_.reset(ExtensionProcessManager::Create(this));
     service_ = new ExtensionsService(this,
                                      CommandLine::ForCurrentProcess(),
                                      GetPrefs(),

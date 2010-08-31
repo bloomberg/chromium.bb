@@ -161,7 +161,7 @@ void ExtensionBookmarkManagerEventRouter::DispatchEvent(const char* event_name,
   std::string json_args;
   base::JSONWriter::Write(args, false, &json_args);
   profile_->GetExtensionMessageService()->DispatchEventToRenderers(
-      event_name, json_args, profile_->IsOffTheRecord(), GURL());
+      event_name, json_args, profile_, GURL());
 }
 
 void ExtensionBookmarkManagerEventRouter::DispatchDragEvent(

@@ -3322,6 +3322,15 @@ each locale. -->
       <message name="IDS_TASK_MANAGER_EXTENSION_PREFIX" desc="The prefix for a Task Manager extension row (always visible if the extension has a view)">
         Extension: <ph name="EXTENSION_NAME">$1<ex>Sample Extension</ex></ph>
       </message>
+      <message name="IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito extension row (may not be visible if incognito is not open)">
+        Incognito Extension: <ph name="EXTENSION_NAME">$1<ex>Sample Extension</ex></ph>
+      </message>
+      <message name="IDS_TASK_MANAGER_APP_PREFIX" desc="The prefix for a Task Manager app row (always visible if the app has a view)">
+        App: <ph name="APP_NAME">$1<ex>Sample App</ex></ph>
+      </message>
+      <message name="IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito app row (may not be visible if the app is not open in incognito)">
+        Incognito App: <ph name="APP_NAME">$1<ex>Sample App</ex></ph>
+      </message>
       <message name="IDS_TASK_MANAGER_TAB_PREFIX" desc="The prefix for a Task Manager Tab row">
         Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
       </message>
@@ -3614,6 +3623,9 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSIONS_IN_DEVELOPMENT" desc="Text that signifies that the extension is currently in development.">
         (Unpacked)
+      </message>
+      <message name="IDS_EXTENSIONS_VIEW_INCOGNITO" desc="Text that signifies that the extension view is in an incognito process.">
+        (Incognito)
       </message>
       <message name="IDS_EXTENSIONS_ID" desc="The ID label in front if the extension ID.">
         ID:

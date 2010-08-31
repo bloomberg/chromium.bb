@@ -172,6 +172,7 @@ void PostExtensionLoadedToContextGetter(ChromeURLRequestContextGetter* getter,
                         extension->name(),
                         extension->path(),
                         extension->default_locale(),
+                        extension->incognito_split_mode(),
                         extension->web_extent(),
                         extension->GetEffectiveHostPermissions(),
                         extension->api_permissions())));
@@ -369,7 +370,7 @@ void ProfileImpl::InitExtensions() {
     extension_devtools_manager_ = new ExtensionDevToolsManager(this);
   }
 
-  extension_process_manager_.reset(new ExtensionProcessManager(this));
+  extension_process_manager_.reset(ExtensionProcessManager::Create(this));
   extension_message_service_ = new ExtensionMessageService(this);
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
@@ -737,6 +738,9 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   return extensions_request_context_;
 }
 
+// TODO(mpcomplete): This is lame. 5+ copies of the extension data on the IO
+// thread. We should have 1 shared data object that all the contexts get access
+// to. Fix by M8.
 void ProfileImpl::RegisterExtensionWithRequestContexts(
     Extension* extension) {
   // Notify the default, extension and media contexts on the IO thread.
@@ -751,6 +755,19 @@ void ProfileImpl::RegisterExtensionWithRequestContexts(
       static_cast<ChromeURLRequestContextGetter*>(
           GetRequestContextForMedia()),
       extension);
+
+  // Ditto for OTR if it's active, except for the media context which is the
+  // same as the regular context.
+  if (off_the_record_profile_.get()) {
+    PostExtensionLoadedToContextGetter(
+        static_cast<ChromeURLRequestContextGetter*>(
+            off_the_record_profile_->GetRequestContext()),
+        extension);
+    PostExtensionLoadedToContextGetter(
+        static_cast<ChromeURLRequestContextGetter*>(
+            off_the_record_profile_->GetRequestContextForExtensions()),
+        extension);
+  }
 }
 
 void ProfileImpl::UnregisterExtensionWithRequestContexts(
@@ -767,6 +784,19 @@ void ProfileImpl::UnregisterExtensionWithRequestContexts(
       static_cast<ChromeURLRequestContextGetter*>(
           GetRequestContextForMedia()),
       extension);
+
+  // Ditto for OTR if it's active, except for the media context which is the
+  // same as the regular context.
+  if (off_the_record_profile_.get()) {
+    PostExtensionUnloadedToContextGetter(
+        static_cast<ChromeURLRequestContextGetter*>(
+            off_the_record_profile_->GetRequestContext()),
+        extension);
+    PostExtensionUnloadedToContextGetter(
+        static_cast<ChromeURLRequestContextGetter*>(
+            off_the_record_profile_->GetRequestContextForExtensions()),
+        extension);
+  }
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {

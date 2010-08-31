@@ -20,6 +20,7 @@ const char* kDescription = "description";
 const char* kDevToolsPage = "devtools_page";
 const char* kExcludeGlobs = "exclude_globs";
 const char* kIcons = "icons";
+const char* kIncognito = "incognito";
 const char* kIncludeGlobs = "include_globs";
 const char* kJs = "js";
 const char* kLaunch = "app.launch";
@@ -64,6 +65,8 @@ const char* kWebURLs = "app.urls";
 }  // namespace extension_manifest_keys
 
 namespace extension_manifest_values {
+const char* kIncognitoSplit = "split";
+const char* kIncognitoSpanning = "spanning";
 const char* kRunAtDocumentStart = "document_start";
 const char* kRunAtDocumentEnd = "document_end";
 const char* kRunAtDocumentIdle = "document_idle";
@@ -125,6 +128,8 @@ const char* kInvalidIconPath =
     "Invalid value for 'icons[\"*\"]'.";
 const char* kInvalidIcons =
     "Invalid value for 'icons'.";
+const char* kInvalidIncognitoBehavior =
+    "Invalid value for 'incognito'.";
 const char* kInvalidJs =
     "Invalid value for 'content_scripts[*].js[*]'.";
 const char* kInvalidJsList =

@@ -441,8 +441,7 @@ void ExtensionMenuManager::ExecuteCommand(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
   std::string event_name = "contextMenus/" + item->extension_id();
-  service->DispatchEventToRenderers(event_name, json_args,
-                                    profile->IsOffTheRecord(), GURL());
+  service->DispatchEventToRenderers(event_name, json_args, profile, GURL());
 }
 
 void ExtensionMenuManager::Observe(NotificationType type,

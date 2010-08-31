@@ -1,0 +1,8 @@
+{
+  "name": "incognito split-mode apitest",
+  "version": "0.1",
+  "description": "test that an incognito extension in split mode behaves properly",
+  "background_page": "background.html",
+  "incognito": "split",
+  "permissions": ["tabs", "http://*/*"]
+}

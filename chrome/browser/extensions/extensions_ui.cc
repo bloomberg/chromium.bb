@@ -15,6 +15,7 @@
 #include "base/thread.h"
 #include "base/version.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
@@ -115,6 +116,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLED_EXTENSION));
   localized_strings.SetString("inDevelopment",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_IN_DEVELOPMENT));
+  localized_strings.SetString("viewIncognito",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INCOGNITO));
   localized_strings.SetString("extensionId",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
   localized_strings.SetString("extensionVersion",
@@ -317,18 +320,14 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
   std::vector<ExtensionResource>* extension_icons =
       new std::vector<ExtensionResource>();
 
-  ExtensionProcessManager* process_manager =
-      extensions_service_->profile()->GetExtensionProcessManager();
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
-      RenderProcessHost* process =
-          process_manager->GetExtensionProcess((*extension)->url());
       extensions_list->Append(CreateExtensionDetailValue(
           extensions_service_.get(),
           *extension,
-          GetActivePagesForExtension(process, *extension),
+          GetActivePagesForExtension(*extension),
           true));  // enabled
       extension_icons->push_back(PickExtensionIcon(*extension));
     }
@@ -337,12 +336,10 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
-      RenderProcessHost* process =
-          process_manager->GetExtensionProcess((*extension)->url());
       extensions_list->Append(CreateExtensionDetailValue(
           extensions_service_.get(),
           *extension,
-          GetActivePagesForExtension(process, *extension),
+          GetActivePagesForExtension(*extension),
           false));  // enabled
       extension_icons->push_back(PickExtensionIcon(*extension));
     }
@@ -836,6 +833,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
     }
     view_value->SetInteger("renderViewId", iter->render_view_id);
     view_value->SetInteger("renderProcessId", iter->render_process_id);
+    view_value->SetBoolean("incognito", iter->incognito);
     views->Append(view_value);
   }
   extension_data->Set("views", views);
@@ -847,11 +845,36 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
 }
 
 std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
-    RenderProcessHost* process,
     Extension* extension) {
   std::vector<ExtensionPage> result;
+
+  // Get the extension process's active views.
+  ExtensionProcessManager* process_manager =
+      extensions_service_->profile()->GetExtensionProcessManager();
+  GetActivePagesForExtensionProcess(
+      process_manager->GetExtensionProcess(extension->url()),
+      extension, &result);
+
+  // Repeat for the incognito process, if applicable.
+  if (extensions_service_->profile()->HasOffTheRecordProfile() &&
+      extension->incognito_split_mode()) {
+    ExtensionProcessManager* process_manager =
+        extensions_service_->profile()->GetOffTheRecordProfile()->
+            GetExtensionProcessManager();
+    GetActivePagesForExtensionProcess(
+        process_manager->GetExtensionProcess(extension->url()),
+        extension, &result);
+  }
+
+  return result;
+}
+
+void ExtensionsDOMHandler::GetActivePagesForExtensionProcess(
+    RenderProcessHost* process,
+    Extension* extension,
+    std::vector<ExtensionPage> *result) {
   if (!process)
-    return result;
+    return;
 
   RenderProcessHost::listeners_iterator iter = process->ListenersIterator();
   for (; !iter.IsAtEnd(); iter.Advance()) {
@@ -873,10 +896,9 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
       continue;
     }
 
-    result.push_back(ExtensionPage(url, process->id(), host->routing_id()));
+    result->push_back(ExtensionPage(url, process->id(), host->routing_id(),
+                                    process->profile()->IsOffTheRecord()));
   }
-
-  return result;
 }
 
 ExtensionsDOMHandler::~ExtensionsDOMHandler() {

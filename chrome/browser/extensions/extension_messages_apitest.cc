@@ -28,19 +28,19 @@ class MessageSender : public NotificationObserver {
     // from the origin http://b.com/ are supposed to arrive.
     message_service->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"no restriction\"}]",
-        Source<Profile>(source).ptr()->IsOffTheRecord(),
+        Source<Profile>(source).ptr(),
         GURL());
     message_service->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://a.com/\"}]",
-        Source<Profile>(source).ptr()->IsOffTheRecord(),
+        Source<Profile>(source).ptr(),
         GURL("http://a.com/"));
     message_service->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://b.com/\"}]",
-        Source<Profile>(source).ptr()->IsOffTheRecord(),
+        Source<Profile>(source).ptr(),
         GURL("http://b.com/"));
     message_service->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":true,\"data\":\"last message\"}]",
-        Source<Profile>(source).ptr()->IsOffTheRecord(),
+        Source<Profile>(source).ptr(),
         GURL());
   }
 

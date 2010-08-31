@@ -25,12 +25,14 @@
     {
       "path": "bar.html",
       "renderProcessId": 42,
-      "renderViewId": 88
+      "renderViewId": 88,
+      "incognito": false
     },
     {
       "path": "dog.html",
       "renderProcessId": 0,
-      "renderViewId": 0
+      "renderViewId": 0,
+      "incognito": false
     }
   ],
   "hasPopupAction": false,

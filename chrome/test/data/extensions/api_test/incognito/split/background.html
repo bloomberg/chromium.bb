@@ -1,0 +1,89 @@
+<script>
+var pass = chrome.test.callbackPass;
+var assertEq = chrome.test.assertEq;
+var assertTrue = chrome.test.assertTrue;
+
+var win, tab;
+var inIncognitoContext = chrome.extension.inIncognitoContext;
+
+// Listen to some events to make sure we don't get events from the other
+// profile.
+
+chrome.tabs.onUpdated.addListener(function(id, info, tab) {
+  if (inIncognitoContext != tab.incognito) {
+    chrome.test.notifyFail(
+        "[FAIL] Split-mode incognito test received an event for " +
+        (tab.incognito ? "an incognito" : "a normal") +
+        " tab in the wrong profile.");
+  }
+});
+
+chrome.extension.onRequest.addListener(
+    function(request, sender, sendResponse) {
+  if (inIncognitoContext != sender.tab.incognito) {
+    chrome.test.notifyFail(
+        "[FAIL] Split-mode incognito test received a message from " +
+        (sender.tab.incognito ? "an incognito" : "a normal") +
+        " tab in the wrong profile.");
+  }
+});
+
+chrome.test.runTests([
+  function setupWindows() {
+    // The test harness should have set us up with 2 windows: 1 incognito
+    // and 1 regular. Since we are in split mode, we should only see the
+    // window for our profile.
+    chrome.windows.getAll({populate: true}, pass(function(windows) {
+      assertEq(1, windows.length);
+
+      win = windows[0];
+      tab = win.tabs[0];
+      assertEq(inIncognitoContext, win.incognito);
+    }));
+  },
+
+  // Tests that we can update an incognito tab and get the event for it.
+  function tabUpdate() {
+    var newUrl = "about:blank";
+
+    // Prepare the event listeners first.
+    var done = chrome.test.listenForever(chrome.tabs.onUpdated,
+      function(id, info, tab) {
+        assertEq(tab.id, id);
+        assertEq(inIncognitoContext, tab.incognito);
+        assertEq(newUrl, tab.url);
+        if (info.status == "complete")
+          done();
+      });
+
+    // Update our tab.
+    chrome.tabs.update(tab.id, {"url": newUrl}, pass());
+  },
+
+  // Tests content script injection to verify that the script can tell its
+  // in incongnito.
+  function contentScriptTestIncognito() {
+    var testUrl = "http://localhost:1337/files/extensions/test_file.html";
+
+    // Test that chrome.extension.inIncognitoContext is true for incognito
+    // tabs.
+    chrome.tabs.create({windowId: win.id, url: testUrl},
+      pass(function(tab) {
+        chrome.tabs.executeScript(tab.id,
+          {code: 'chrome.extension.sendRequest({' +
+                 '  inIncognitoContext: chrome.extension.inIncognitoContext' +
+                 '});'},
+          pass(function() {
+            assertEq(undefined, chrome.extension.lastError);
+          }));
+      }));
+
+    var done = chrome.test.listenForever(chrome.extension.onRequest,
+      function(request, sender, sendResponse) {
+        assertEq(inIncognitoContext, request.inIncognitoContext);
+        sendResponse();
+        done();
+      });
+  }
+]);
+</script>

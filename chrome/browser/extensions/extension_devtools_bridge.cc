@@ -65,7 +65,7 @@ void ExtensionDevToolsBridge::InspectedTabClosing() {
   // event in extensions.
   std::string json("[{}]");
   profile_->GetExtensionMessageService()->DispatchEventToRenderers(
-      on_tab_close_event_name_, json, profile_->IsOffTheRecord(), GURL());
+      on_tab_close_event_name_, json, profile_, GURL());
 
   // This may result in this object being destroyed.
   extension_devtools_manager_->BridgeClosingForTab(tab_id_);
@@ -83,6 +83,6 @@ void ExtensionDevToolsBridge::OnDispatchToAPU(const std::string& data) {
 
   std::string json = StringPrintf("[%s]", data.c_str());
   profile_->GetExtensionMessageService()->DispatchEventToRenderers(
-      on_page_event_name_, json, profile_->IsOffTheRecord(), GURL());
+      on_page_event_name_, json, profile_, GURL());
 }
 

@@ -109,6 +109,9 @@ class RenderThreadBase {
 
   // True if this process should be treated as an extension process.
   virtual bool IsExtensionProcess() const = 0;
+
+  // True if this process is running in an incognito profile.
+  virtual bool IsIncognitoProcess() const = 0;
 };
 
 // The RenderThread class represents a background thread where RenderView
@@ -149,6 +152,8 @@ class RenderThread : public RenderThreadBase,
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
   virtual void WidgetHidden();
   virtual void WidgetRestored();
+  virtual bool IsExtensionProcess() const { return is_extension_process_; }
+  virtual bool IsIncognitoProcess() const { return is_incognito_process_; }
 
   // These methods modify how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend
@@ -179,10 +184,6 @@ class RenderThread : public RenderThreadBase,
   }
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
-
-  virtual bool IsExtensionProcess() const { return is_extension_process_; }
-
-  bool is_incognito_process() const { return is_incognito_process_; }
 
   // Do DNS prefetch resolution of a hostname.
   void Resolve(const char* name, size_t length);
@@ -255,7 +256,8 @@ class RenderThread : public RenderThreadBase,
       const std::vector<URLPattern>& permissions);
   void OnExtensionSetIncognitoEnabled(
       const std::string& extension_id,
-      bool enabled);
+      bool enabled,
+      bool incognito_split_mode);
   void OnSetNextPageID(int32 next_page_id);
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);

@@ -76,7 +76,7 @@ void UserScriptSlave::GetActiveExtensions(std::set<std::string>* extension_ids) 
 bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   scripts_.clear();
 
-  bool only_inject_incognito = RenderThread::current()->is_incognito_process();
+  bool only_inject_incognito = RenderThread::current()->IsIncognitoProcess();
 
   // Create the shared memory object (read only).
   shared_memory_.reset(new base::SharedMemory(shared_memory, true));
@@ -176,7 +176,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
 void UserScriptSlave::InsertInitExtensionCode(
     std::vector<WebScriptSource>* sources, const std::string& extension_id) {
   DCHECK(sources);
-  bool incognito = RenderThread::current()->is_incognito_process();
+  bool incognito = RenderThread::current()->IsIncognitoProcess();
   sources->insert(sources->begin(), WebScriptSource(WebString::fromUTF8(
       StringPrintf(kInitExtension, extension_id.c_str(),
                    incognito ? "true" : "false"))));

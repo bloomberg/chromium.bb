@@ -249,7 +249,7 @@
                       <li>
                         <a href="#property-lastError">lastError</a>
                       </li><li>
-                        <a href="#property-inIncognitoTab">inIncognitoTab</a>
+                        <a href="#property-inIncognitoContext">inIncognitoContext</a>
                       </li>
                     </ol>
                   </li>
@@ -490,15 +490,15 @@ For details, see
 
         </div>
             </div><div>
-              <a name="property-inIncognitoTab"></a>
-              <h4>inIncognitoTab</h4>
+              <a name="property-inIncognitoContext"></a>
+              <h4>inIncognitoContext</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension.</span><span>inIncognitoTab</span>
+                <span>chrome.extension.</span><span>inIncognitoContext</span>
               </div>
               <div>
           <dt>
-            <var>inIncognitoTab</var>
+            <var>inIncognitoContext</var>
               <em>
 
                 <!-- TYPE -->
@@ -526,7 +526,7 @@ For details, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>True for content scripts running inside incognito tabs. Will be undefined for non-content scripts.</dd>
+          <dd>True for content scripts running inside incognito tabs, and for extension pages running inside an incognito process. The latter only applies to extensions with 'split' incognito_behavior.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -571,7 +571,7 @@ For details, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>True if the script is in an incongito tab.</dd>
+          <dd>True if the page or script is in an incongito process.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

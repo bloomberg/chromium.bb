@@ -99,7 +99,8 @@ bool AllowExtensionResourceLoad(URLRequest* request,
   // This is because an extension must run in a single process, and an
   // incognito tab prevents that.
   if (context->is_off_the_record() &&
-      info->resource_type() == ResourceType::MAIN_FRAME) {
+      info->resource_type() == ResourceType::MAIN_FRAME &&
+      !context->ExtensionCanLoadInIncognito(request->url().host())) {
     LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
                << "incognito tab.";
     return false;

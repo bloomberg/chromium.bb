@@ -43,6 +43,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="#permissions">permissions</a>": [...],
   "<a href="npapi.html">plugins</a>": [...],
   "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml"
+  "<a href="#incognito">incognito</a>": "<em>split</em> or <em>spanning</em>",
 }
 </pre>
 
@@ -366,6 +367,36 @@ For example, 1.1.9.9999 is newer than 1.1.
 <p>
 For more information, see
 <a href="autoupdate.html">Autoupdating</a>.
+</p>
+
+<h3 id="incognito">incognito</h3>
+
+<p>
+Either <em>split</em> or <em>spanning</em>, to specify how this extension will
+behave if allowed to run in incognito.
+</p>
+
+<p>
+<em>spanning</em> is the default for extensions, and means that the extension
+will run in a single shared process.  Any events or messages from an incognito
+tab will be sent to the shared process, with an <em>incognito</em> flag
+indicating where it came from.
+</p>
+
+<p>
+<em>split</em> is the default for apps, and it means that all app pages in
+an incognito window will run in their own incognito process. If the app or extension contains a background page, that will also run in the incognito process.
+This incognito process runs along side the regular process, but has a separate
+memory-only cookie store. Each process sees events and messages only from its
+own context (e.g. the incognito process will only see incognito tab updates).
+The processes are unable to communicate with each other.
+</p>
+
+<p>
+As a rule of thumb, if your extension or app needs to load a tab in an incognito browser, use
+<em>split</em> incognito behavior. If your extension or app needs to be logged
+into a remote server or persist settings locally, use <em>spanning</em>
+incognito behavior.
 </p>
 
 <!-- [PENDING: Possibly: point to the gallery and make a big deal of the fact that autoupdating is free if you use the gallery.] -->

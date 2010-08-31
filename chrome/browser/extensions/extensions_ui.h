@@ -32,12 +32,14 @@ class UserScript;
 // Information about a page running in an extension, for example a toolstrip,
 // a background page, or a tab contents.
 struct ExtensionPage {
-  ExtensionPage(const GURL& url, int render_process_id, int render_view_id)
+  ExtensionPage(const GURL& url, int render_process_id, int render_view_id,
+                bool incognito)
     : url(url), render_process_id(render_process_id),
-      render_view_id(render_view_id) {}
+      render_view_id(render_view_id), incognito(incognito) {}
   GURL url;
   int render_process_id;
   int render_view_id;
+  bool incognito;
 };
 
 class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
@@ -196,9 +198,11 @@ class ExtensionsDOMHandler
                        const NotificationDetails& details);
 
   // Helper that lists the current active html pages for an extension.
-  std::vector<ExtensionPage> GetActivePagesForExtension(
+  std::vector<ExtensionPage> GetActivePagesForExtension(Extension* extension);
+  void GetActivePagesForExtensionProcess(
       RenderProcessHost* process,
-      Extension* extension);
+      Extension* extension,
+      std::vector<ExtensionPage> *result);
 
   // Returns the best icon to display in the UI for an extension, or an empty
   // ExtensionResource if no good icon exists.

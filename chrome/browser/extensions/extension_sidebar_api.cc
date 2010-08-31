@@ -90,8 +90,7 @@ void ExtensionSidebarEventRouter::OnStateChanged(
 
   const std::string& extension_id(content_id);
   profile->GetExtensionMessageService()->DispatchEventToExtension(
-      extension_id, kOnStateChanged, json_args,
-      profile->IsOffTheRecord(), GURL());
+      extension_id, kOnStateChanged, json_args, profile, GURL());
 }
 
 

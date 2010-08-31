@@ -36,8 +36,7 @@ const char kDescriptionStylesOffset[] = "offset";
 void ExtensionOmniboxEventRouter::OnInputStarted(
     Profile* profile, const std::string& extension_id) {
   profile->GetExtensionMessageService()->DispatchEventToExtension(
-      extension_id, events::kOnInputStarted, "[]", profile->IsOffTheRecord(),
-      GURL());
+      extension_id, events::kOnInputStarted, "[]", profile, GURL());
 }
 
 // static
@@ -56,8 +55,7 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
   base::JSONWriter::Write(&args, false, &json_args);
 
   profile->GetExtensionMessageService()->DispatchEventToExtension(
-      extension_id, events::kOnInputChanged, json_args,
-      profile->IsOffTheRecord(), GURL());
+      extension_id, events::kOnInputChanged, json_args, profile, GURL());
   return true;
 }
 
@@ -73,8 +71,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   base::JSONWriter::Write(&args, false, &json_args);
 
   profile->GetExtensionMessageService()->DispatchEventToExtension(
-      extension_id, events::kOnInputEntered, json_args,
-      profile->IsOffTheRecord(), GURL());
+      extension_id, events::kOnInputEntered, json_args, profile, GURL());
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_OMNIBOX_INPUT_ENTERED,
@@ -85,8 +82,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 void ExtensionOmniboxEventRouter::OnInputCancelled(
     Profile* profile, const std::string& extension_id) {
   profile->GetExtensionMessageService()->DispatchEventToExtension(
-      extension_id, events::kOnInputCancelled, "[]", profile->IsOffTheRecord(),
-      GURL());
+      extension_id, events::kOnInputCancelled, "[]", profile, GURL());
 }
 
 bool OmniboxSendSuggestionsFunction::RunImpl() {

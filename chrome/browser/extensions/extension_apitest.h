@@ -39,6 +39,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     // succeeded or failed. Returns true if the test succeeded, false otherwise.
     bool GetNextResult();
 
+    void RestrictToProfile(Profile* profile) { profile_restriction_ = profile; }
+
     const std::string& message() { return message_; }
 
    private:
@@ -54,6 +56,9 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     // If it failed, what was the error message?
     std::deque<std::string> messages_;
     std::string message_;
+
+    // If non-NULL, we will listen to events from this profile only.
+    Profile* profile_restriction_;
   };
 
   // Load |extension_name| and wait for pass / fail notification.

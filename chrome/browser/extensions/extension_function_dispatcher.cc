@@ -391,7 +391,7 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   render_view_host->Send(new ViewMsg_Extension_SetHostPermissions(
       extension->url(), extension->host_permissions()));
   render_view_host->Send(new ViewMsg_Extension_ExtensionSetIncognitoEnabled(
-      extension->id(), incognito_enabled));
+      extension->id(), incognito_enabled, extension->incognito_split_mode()));
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED,
@@ -412,20 +412,16 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
     bool include_incognito) {
   Browser* browser = delegate_->GetBrowser();
 
-  // If the delegate has an associated browser and that browser is in the right
-  // incognito state, we can return it.
-  if (browser) {
-    if (include_incognito || !browser->profile()->IsOffTheRecord())
-      return browser;
-  }
+  // If the delegate has an associated browser, that is always the right answer.
+  if (browser)
+    return browser;
 
-  // Otherwise, try to default to a reasonable browser.
+  // Otherwise, try to default to a reasonable browser. If |include_incognito|
+  // is true, we will also search browsers in the incognito version of this
+  // profile. Note that the profile may already be incognito, in which case
+  // we will search the incognito version only, regardless of the value of
+  // |include_incognito|.
   Profile* profile = render_view_host()->process()->profile();
-
-  // Make sure we don't return an incognito browser without proper access.
-  if (!include_incognito)
-    profile = profile->GetOriginalProfile();
-
   browser = BrowserList::FindBrowserWithType(profile, Browser::TYPE_NORMAL,
                                              include_incognito);
 
@@ -454,7 +450,8 @@ void ExtensionFunctionDispatcher::HandleRequest(
   DCHECK(service);
   Extension* extension = service->GetExtensionById(extension_id(), false);
   DCHECK(extension);
-  function->set_include_incognito(service->IsIncognitoEnabled(extension));
+  function->set_include_incognito(service->IsIncognitoEnabled(extension) &&
+                                  !extension->incognito_split_mode());
 
   std::string permission_name = function->name();
   size_t separator = permission_name.find_first_of("./");

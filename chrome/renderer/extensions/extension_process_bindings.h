@@ -49,10 +49,12 @@ class ExtensionProcessBindings {
 
   // Sets whether incognito is enabled for a particular extension.
   static void SetIncognitoEnabled(const std::string& extension_id,
-                                  bool enabled);
+                                  bool enabled,
+                                  bool incognito_split_mode);
 
-  // Checks whether incognito is enabled for a particular extension.
-  static bool HasIncognitoEnabled(const std::string& extension_id);
+  // Checks whether the given extension can see events/data from another
+  // profile (normal to incognito or vice versa).
+  static bool AllowCrossProfile(const std::string& extension_id);
 
   // Check if the extension in the currently running context has permission to
   // access the given extension function. Must be called with a valid V8

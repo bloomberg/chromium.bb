@@ -54,6 +54,7 @@ class MockRenderThread : public RenderThreadBase {
   virtual void WidgetRestored() { }
 
   virtual bool IsExtensionProcess() const { return is_extension_process_; }
+  virtual bool IsIncognitoProcess() const { return false; }
   void SetExtensionProcess(bool value) { is_extension_process_ = value; }
 
   //////////////////////////////////////////////////////////////////////////

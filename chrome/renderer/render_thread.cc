@@ -548,8 +548,9 @@ void RenderThread::OnExtensionSetHostPermissions(
 }
 
 void RenderThread::OnExtensionSetIncognitoEnabled(
-    const std::string& extension_id, bool enabled) {
-  ExtensionProcessBindings::SetIncognitoEnabled(extension_id, enabled);
+    const std::string& extension_id, bool enabled, bool incognito_split_mode) {
+  ExtensionProcessBindings::SetIncognitoEnabled(extension_id, enabled,
+                                                incognito_split_mode);
 }
 
 void RenderThread::OnDOMStorageEvent(

@@ -51,13 +51,13 @@
           "message": { "type": "string", "description": "Description of the error that has taken place." }
         }
       },
-      "inIncognitoTab": {
+      "inIncognitoContext": {
         "type": "object",
         "optional": true,
         "unprivileged": true,
-        "description": "True for content scripts running inside incognito tabs. Will be undefined for non-content scripts.",
+        "description": "True for content scripts running inside incognito tabs, and for extension pages running inside an incognito process. The latter only applies to extensions with 'split' incognito_behavior.",
         "properties": {
-          "message": { "type": "boolean", "description": "True if the script is in an incongito tab." }
+          "message": { "type": "boolean", "description": "True if the page or script is in an incongito process." }
         }
       }
     },

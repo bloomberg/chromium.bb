@@ -25,6 +25,7 @@ namespace extension_manifest_keys {
   extern const char* kDevToolsPage;
   extern const char* kExcludeGlobs;
   extern const char* kIcons;
+  extern const char* kIncognito;
   extern const char* kIncludeGlobs;
   extern const char* kJs;
   extern const char* kLaunch;
@@ -71,6 +72,8 @@ namespace extension_manifest_keys {
 
 // Some values expected in manifests.
 namespace extension_manifest_values {
+  extern const char* kIncognitoSplit;
+  extern const char* kIncognitoSpanning;
   extern const char* kLaunchContainerPanel;
   extern const char* kLaunchContainerTab;
   extern const char* kLaunchContainerWindow;
@@ -107,6 +110,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidGlobList;
   extern const char* kInvalidIconPath;
   extern const char* kInvalidIcons;
+  extern const char* kInvalidIncognitoBehavior;
   extern const char* kInvalidJs;
   extern const char* kInvalidJsList;
   extern const char* kInvalidKey;

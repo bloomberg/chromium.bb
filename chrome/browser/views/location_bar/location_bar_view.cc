@@ -48,6 +48,7 @@ using views::View;
 const int LocationBarView::kNormalHorizontalEdgeThickness = 1;
 const int LocationBarView::kVerticalEdgeThickness = 2;
 const int LocationBarView::kItemPadding = 3;
+const int LocationBarView::kExtensionItemPadding = 5;
 const int LocationBarView::kEdgeItemPadding = kItemPadding;
 const int LocationBarView::kBubblePadding = 1;
 const char LocationBarView::kViewClassName[] =
@@ -490,9 +491,11 @@ void LocationBarView::Layout() {
         const SkBitmap& bitmap = profile_->GetExtensionsService()->
             GetOmniboxIcon(template_url->GetExtensionId());
         selected_keyword_view_->SetImage(bitmap);
+        selected_keyword_view_->SetItemPadding(kExtensionItemPadding);
       } else {
         selected_keyword_view_->SetImage(*ResourceBundle::GetSharedInstance().
             GetBitmapNamed(IDR_OMNIBOX_SEARCH));
+        selected_keyword_view_->SetItemPadding(kItemPadding);
       }
     }
   } else if (show_keyword_hint) {

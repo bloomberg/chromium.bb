@@ -338,7 +338,7 @@ class MockExtensionMessageService : public ExtensionMessageService {
 
   MOCK_METHOD4(DispatchEventToRenderers, void(const std::string& event_name,
                                               const std::string& event_args,
-                                              bool has_incognito_data,
+                                              Profile* source_profile,
                                               const GURL& event_url));
 
  private:
@@ -413,17 +413,13 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
       .Times(1)
       .WillOnce(Return(mock_message_service.get()));
 
-  EXPECT_CALL(profile, IsOffTheRecord())
-      .Times(AtLeast(1))
-      .WillRepeatedly(Return(false));
-
   // Use the magic of googlemock to save a parameter to our mock's
   // DispatchEventToRenderers method into event_args.
   std::string event_args;
   std::string expected_event_name = "contextMenus/" + item->extension_id();
   EXPECT_CALL(*mock_message_service.get(),
               DispatchEventToRenderers(expected_event_name, _,
-                                       profile.IsOffTheRecord(),
+                                       &profile,
                                        GURL()))
       .Times(1)
       .WillOnce(SaveArg<1>(&event_args));

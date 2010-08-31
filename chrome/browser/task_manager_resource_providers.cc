@@ -529,8 +529,16 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   pid_ = base::GetProcId(process_handle_);
   std::wstring extension_name(UTF8ToWide(GetExtension()->name()));
   DCHECK(!extension_name.empty());
-  title_ = l10n_util::GetStringF(IDS_TASK_MANAGER_EXTENSION_PREFIX,
-                                 extension_name);
+
+  int message_id =
+      GetExtension()->is_app() ?
+          (extension_host_->profile()->IsOffTheRecord() ?
+              IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX :
+              IDS_TASK_MANAGER_APP_PREFIX) :
+          (extension_host_->profile()->IsOffTheRecord() ?
+              IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX :
+              IDS_TASK_MANAGER_EXTENSION_PREFIX);
+  title_ = l10n_util::GetStringF(message_id, extension_name);
 }
 
 TaskManagerExtensionProcessResource::~TaskManagerExtensionProcessResource() {
@@ -586,13 +594,25 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   for (ProfileManager::const_iterator it = profile_manager->begin();
        it != profile_manager->end(); ++it) {
-      ExtensionProcessManager* process_manager =
-          (*it)->GetExtensionProcessManager();
-      if (!process_manager)
-        continue;
+    ExtensionProcessManager* process_manager =
+        (*it)->GetExtensionProcessManager();
+    if (process_manager) {
       ExtensionProcessManager::const_iterator jt;
       for (jt = process_manager->begin(); jt != process_manager->end(); ++jt)
         AddToTaskManager(*jt);
+    }
+
+    // If we have an incognito profile active, include the split-mode incognito
+    // extensions.
+    if (BrowserList::IsOffTheRecordSessionActive()) {
+      ExtensionProcessManager* process_manager =
+          (*it)->GetOffTheRecordProfile()->GetExtensionProcessManager();
+      if (process_manager) {
+      ExtensionProcessManager::const_iterator jt;
+      for (jt = process_manager->begin(); jt != process_manager->end(); ++jt)
+        AddToTaskManager(*jt);
+      }
+    }
   }
 
   // Register for notifications about extension process changes.

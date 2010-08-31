@@ -24,17 +24,18 @@ class Profile;
 class RenderProcessHost;
 class SiteInstance;
 
-// Manages dynamic state of running Chromium extensions.  There is one instance
-// of this class per Profile (including OTR).
+// Manages dynamic state of running Chromium extensions. There is one instance
+// of this class per Profile. OTR Profiles have a separate instance that keeps
+// track of split-mode extensions only.
 class ExtensionProcessManager : public NotificationObserver {
  public:
-  explicit ExtensionProcessManager(Profile* profile);
-  ~ExtensionProcessManager();
+  static ExtensionProcessManager* Create(Profile* profile);
+  virtual ~ExtensionProcessManager();
 
   // Creates a new ExtensionHost with its associated view, grouping it in the
   // appropriate SiteInstance (and therefore process) based on the URL and
   // profile.
-  ExtensionHost* CreateView(Extension* extension,
+  virtual ExtensionHost* CreateView(Extension* extension,
                             const GURL& url,
                             Browser* browser,
                             ViewType::Type view_type);
@@ -51,19 +52,19 @@ class ExtensionProcessManager : public NotificationObserver {
   ExtensionHost* CreateInfobar(const GURL& url,
                                Browser* browser);
 
-  // Creates a new UI-less extension instance.  Like CreateView, but not
-  // displayed anywhere.
-  ExtensionHost* CreateBackgroundHost(Extension* extension, const GURL& url);
-
   // Open the extension's options page.
   void OpenOptionsPage(Extension* extension, Browser* browser);
+
+  // Creates a new UI-less extension instance.  Like CreateView, but not
+  // displayed anywhere.
+  virtual void CreateBackgroundHost(Extension* extension, const GURL& url);
 
   // Gets the ExtensionHost for the background page for an extension, or NULL if
   // the extension isn't running or doesn't have a background page.
   ExtensionHost* GetBackgroundHostForExtension(Extension* extension);
 
   // Returns the SiteInstance that the given URL belongs to.
-  SiteInstance* GetSiteInstanceForURL(const GURL& url);
+  virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
   // Registers an extension process by |extension_id| and specifying which
   // |process_id| it belongs to.
@@ -74,32 +75,32 @@ class ExtensionProcessManager : public NotificationObserver {
   void UnregisterExtensionProcess(int process_id);
 
   // Returns the extension process that |url| is associated with if it exists.
-  RenderProcessHost* GetExtensionProcess(const GURL& url);
+  virtual RenderProcessHost* GetExtensionProcess(const GURL& url);
 
   // Returns the process that the extension with the given ID is running in.
-  // NOTE: This does not currently handle app processes with no
-  // ExtensionFunctionDispatcher objects.
   RenderProcessHost* GetExtensionProcess(const std::string& extension_id);
 
   // Returns true if |host| is managed by this process manager.
   bool HasExtensionHost(ExtensionHost* host) const;
-
-  // NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
   typedef std::set<ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
   const_iterator begin() const { return all_hosts_.begin(); }
   const_iterator end() const { return all_hosts_.end(); }
 
- private:
+ protected:
+  explicit ExtensionProcessManager(Profile* profile);
+
   // Called just after |host| is created so it can be registered in our lists.
   void OnExtensionHostCreated(ExtensionHost* host, bool is_background);
 
   // Called on browser shutdown to close our extension hosts.
   void CloseBackgroundHosts();
+
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   NotificationRegistrar registrar_;
 

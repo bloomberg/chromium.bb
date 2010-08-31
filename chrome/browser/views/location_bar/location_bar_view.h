@@ -231,6 +231,9 @@ class LocationBarView : public LocationBar,
   static const int kVerticalEdgeThickness;
   // Space between items in the location bar.
   static const int kItemPadding;
+  // Space between items in the location bar when an extension keyword is
+  // showing.
+  static const int kExtensionItemPadding;
   // Space between the edges and the items next to them.
   static const int kEdgeItemPadding;
   // Space between the edge and a bubble.

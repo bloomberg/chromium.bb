@@ -200,6 +200,6 @@ void ExtensionManagementEventRouter::Observe(
       profile->GetExtensionMessageService();
   message_service->DispatchEventToRenderers(event_name,
                                             args_json,
-                                            profile->IsOffTheRecord(),
+                                            profile,
                                             GURL());
 }

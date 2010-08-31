@@ -144,9 +144,9 @@ static bool HasSufficientPermissions(ContextInfo* context,
                                      const GURL& event_url) {
   v8::Context::Scope context_scope(context->context);
 
-  bool incognito_permissions_ok = (!requires_incognito_access ||
-      ExtensionProcessBindings::HasIncognitoEnabled(context->extension_id));
-  if (!incognito_permissions_ok)
+  bool cross_profile_ok = (!requires_incognito_access ||
+      ExtensionProcessBindings::AllowCrossProfile(context->extension_id));
+  if (!cross_profile_ok)
     return false;
 
   // During unit tests, we might be invoked without a v8 context. In these

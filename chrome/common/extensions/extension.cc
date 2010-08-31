@@ -774,6 +774,7 @@ Extension::Extension(const FilePath& path)
       launch_container_(LAUNCH_TAB),
       launch_width_(0),
       launch_height_(0),
+      incognito_split_mode_(true),
       background_page_ready_(false),
       being_upgraded_(false) {
   DCHECK(path.IsAbsolute());
@@ -1550,6 +1551,25 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       return false;
     }
     devtools_url_ = GetResourceURL(devtools_str);
+  }
+
+  // Initialize incognito behavior. Apps default to split mode, extensions
+  // default to spanning.
+  incognito_split_mode_ = is_app_;
+  if (source.HasKey(keys::kIncognito)) {
+    std::string value;
+    if (!source.GetString(keys::kIncognito, &value)) {
+      *error = errors::kInvalidIncognitoBehavior;
+      return false;
+    }
+    if (value == values::kIncognitoSpanning) {
+      incognito_split_mode_ = false;
+    } else if (value == values::kIncognitoSplit) {
+      incognito_split_mode_ = true;
+    } else {
+      *error = errors::kInvalidIncognitoBehavior;
+      return false;
+    }
   }
 
   // Although |source| is passed in as a const, it's still possible to modify

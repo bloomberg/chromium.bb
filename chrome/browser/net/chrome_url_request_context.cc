@@ -325,15 +325,18 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 // Factory that creates the ChromeURLRequestContext for extensions.
 class FactoryForExtensions : public ChromeURLRequestContextFactory {
  public:
-  FactoryForExtensions(Profile* profile, const FilePath& cookie_store_path)
+  FactoryForExtensions(Profile* profile, const FilePath& cookie_store_path,
+                       bool incognito)
       : ChromeURLRequestContextFactory(profile),
-        cookie_store_path_(cookie_store_path) {
+        cookie_store_path_(cookie_store_path),
+        incognito_(incognito) {
   }
 
   virtual ChromeURLRequestContext* Create();
 
  private:
   FilePath cookie_store_path_;
+  bool incognito_;
 };
 
 ChromeURLRequestContext* FactoryForExtensions::Create() {
@@ -342,11 +345,14 @@ ChromeURLRequestContext* FactoryForExtensions::Create() {
 
   IOThread::Globals* io_thread_globals = io_thread()->globals();
 
-  // All we care about for extensions is the cookie store.
-  DCHECK(!cookie_store_path_.empty());
+  // All we care about for extensions is the cookie store. For incognito, we
+  // use a non-persistent cookie store.
+  scoped_refptr<SQLitePersistentCookieStore> cookie_db = NULL;
+  if (!incognito_) {
+    DCHECK(!cookie_store_path_.empty());
+    cookie_db = new SQLitePersistentCookieStore(cookie_store_path_);
+  }
 
-  scoped_refptr<SQLitePersistentCookieStore> cookie_db =
-      new SQLitePersistentCookieStore(cookie_store_path_);
   net::CookieMonster* cookie_monster =
       new net::CookieMonster(cookie_db.get(), NULL);
 
@@ -624,7 +630,7 @@ ChromeURLRequestContextGetter::CreateOriginalForExtensions(
   DCHECK(!profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       profile,
-      new FactoryForExtensions(profile, cookie_store_path));
+      new FactoryForExtensions(profile, cookie_store_path, false));
 }
 
 // static
@@ -633,6 +639,15 @@ ChromeURLRequestContextGetter::CreateOffTheRecord(Profile* profile) {
   DCHECK(profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       profile, new FactoryForOffTheRecord(profile));
+}
+
+// static
+ChromeURLRequestContextGetter*
+ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
+    Profile* profile) {
+  DCHECK(profile->IsOffTheRecord());
+  return new ChromeURLRequestContextGetter(
+      profile, new FactoryForExtensions(profile, FilePath(), true));
 }
 
 void ChromeURLRequestContextGetter::CleanupOnUIThread() {
@@ -798,6 +813,13 @@ bool ChromeURLRequestContext::ExtensionHasWebExtent(const std::string& id) {
   return iter != extension_info_.end() && !iter->second->extent.is_empty();
 }
 
+bool ChromeURLRequestContext::ExtensionCanLoadInIncognito(
+    const std::string& id) {
+  ExtensionInfoMap::iterator iter = extension_info_.find(id);
+  // Only split-mode extensions can load in incognito profiles.
+  return iter != extension_info_.end() && iter->second->incognito_split_mode;
+}
+
 std::string ChromeURLRequestContext::GetDefaultLocaleForExtension(
     const std::string& id) {
   ExtensionInfoMap::iterator iter = extension_info_.find(id);
@@ -852,14 +874,11 @@ const std::string& ChromeURLRequestContext::GetUserAgent(
 
 void ChromeURLRequestContext::OnNewExtensions(const std::string& id,
                                               ExtensionInfo* info) {
-  if (!is_off_the_record_)
-    extension_info_[id] = linked_ptr<ExtensionInfo>(info);
+  extension_info_[id] = linked_ptr<ExtensionInfo>(info);
 }
 
 void ChromeURLRequestContext::OnUnloadedExtension(const std::string& id) {
   CheckCurrentlyOnIOThread();
-  if (is_off_the_record_)
-    return;
   ExtensionInfoMap::iterator iter = extension_info_.find(id);
   if (iter != extension_info_.end()) {
     extension_info_.erase(iter);
@@ -976,6 +995,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
                   (*iter)->name(),
                   (*iter)->path(),
                   (*iter)->default_locale(),
+                  (*iter)->incognito_split_mode(),
                   (*iter)->web_extent(),
                   (*iter)->GetEffectiveHostPermissions(),
                   (*iter)->api_permissions()));

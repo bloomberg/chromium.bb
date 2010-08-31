@@ -498,8 +498,5 @@ void PopupEventRouter::OnPopupClosed(Profile* profile,
       routing_id);
 
   profile->GetExtensionMessageService()->DispatchEventToRenderers(
-      full_event_name,
-      base::JSONWriter::kEmptyArray,
-      profile->IsOffTheRecord(),
-      GURL());
+      full_event_name, base::JSONWriter::kEmptyArray, profile, GURL());
 }

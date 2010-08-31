@@ -3052,13 +3052,14 @@ void Browser::Observe(NotificationType type,
     case NotificationType::EXTENSION_UPDATE_DISABLED: {
       // Show the UI if the extension was disabled for escalated permissions.
       Profile* profile = Source<Profile>(source).ptr();
-      DCHECK_EQ(profile_, profile);
-      ExtensionsService* service = profile->GetExtensionsService();
-      DCHECK(service);
-      Extension* extension = Details<Extension>(details).ptr();
-      if (service->extension_prefs()->DidExtensionEscalatePermissions(
-              extension->id()))
-        ShowExtensionDisabledUI(service, profile_, extension);
+      if (profile_->IsSameProfile(profile)) {
+        ExtensionsService* service = profile->GetExtensionsService();
+        DCHECK(service);
+        Extension* extension = Details<Extension>(details).ptr();
+        if (service->extension_prefs()->DidExtensionEscalatePermissions(
+                extension->id()))
+          ShowExtensionDisabledUI(service, profile_, extension);
+      }
       break;
     }
 

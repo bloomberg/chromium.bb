@@ -83,16 +83,16 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
 
   EXPECT_EQ(std::string("1"),
             extension_cookies_helpers::GetStoreIdFromProfile(&otrProfile));
-  EXPECT_EQ(&profile,
+  EXPECT_EQ(NULL,
             extension_cookies_helpers::ChooseProfileFromStoreId(
                 "0", &otrProfile, true));
-  EXPECT_EQ(&profile,
+  EXPECT_EQ(NULL,
             extension_cookies_helpers::ChooseProfileFromStoreId(
                 "0", &otrProfile, false));
   EXPECT_EQ(&otrProfile,
             extension_cookies_helpers::ChooseProfileFromStoreId(
                 "1", &otrProfile, true));
-  EXPECT_EQ(NULL,
+  EXPECT_EQ(&otrProfile,
             extension_cookies_helpers::ChooseProfileFromStoreId(
                 "1", &otrProfile, false));
 }

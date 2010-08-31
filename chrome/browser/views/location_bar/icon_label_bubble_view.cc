@@ -20,7 +20,8 @@ static const int kLabelPadding = 5;
 IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
                                          int contained_image,
                                          const SkColor& color)
-    : background_painter_(background_images) {
+    : background_painter_(background_images),
+      item_padding_(LocationBarView::kItemPadding) {
   image_ = new views::ImageView();
   AddChildView(image_);
   image_->SetImage(
@@ -60,7 +61,7 @@ void IconLabelBubbleView::Layout() {
                     height());
   const int label_height = label_->GetPreferredSize().height();
   label_->SetBounds(image_->x() + image_->width() +
-      LocationBarView::kItemPadding, (height() - label_height) / 2,
+      item_padding_ , (height() - label_height) / 2,
       width() - GetNonLabelWidth(), label_height);
 }
 
@@ -74,5 +75,5 @@ gfx::Size IconLabelBubbleView::GetNonLabelSize() {
 
 int IconLabelBubbleView::GetNonLabelWidth() {
   return kBubbleOuterPadding + image_->GetPreferredSize().width() +
-      LocationBarView::kItemPadding + kBubbleOuterPadding;
+      item_padding_ + kBubbleOuterPadding;
 }

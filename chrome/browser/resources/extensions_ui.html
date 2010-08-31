@@ -378,12 +378,14 @@ var extensionDataFormat = {
         {
           'path': 'toolstrip.html',
           'renderViewId': 1,
-          'renderProcessId': 1
+          'renderProcessId': 1,
+          'incognito': false
         },
         {
           'path': 'background.html',
           'renderViewId': 2,
-          'renderProcessId': 1
+          'renderProcessId': 1,
+          'incognito': false
         }
       ]
     },
@@ -415,7 +417,8 @@ var extensionDataFormat = {
         {
           'path': 'foo/bar/toolstrip.html',
           'renderViewId': 3,
-          'renderProcessId': 1
+          'renderProcessId': 1,
+          'incognito': false
         }
       ],
       "hasPopupAction": false
@@ -856,10 +859,13 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                 </span>
                 <ul class="extension-views">
                   <li jsselect="views">
-                    <a jsvalues=".extensionView:$this" href="#"
-                       onclick="sendInspectMessage(this.extensionView); return false;">
-                       <span jscontent="path"></span>
-                    </a>
+                    <span jsvalues=".extensionView:$this">
+                      <a jsvalues=".extensionView:$this" href="#"
+                         onclick="sendInspectMessage(this.extensionView); return false;">
+                        <span jscontent="path"></span></a>
+                      <span jsdisplay="incognito"
+                            i18n-content="viewIncognito">(INCOGNITO)</span>
+                    </span>
                   </li>
                   <li i18n-content="inspectPopupsInstructions" 
                       class="inspectPopupNote" jsdisplay="hasPopupAction">

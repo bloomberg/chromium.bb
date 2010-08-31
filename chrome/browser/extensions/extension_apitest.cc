@@ -11,7 +11,8 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/test/ui_test_utils.h"
 
-ExtensionApiTest::ResultCatcher::ResultCatcher() {
+ExtensionApiTest::ResultCatcher::ResultCatcher()
+    : profile_restriction_(NULL) {
   registrar_.Add(this, NotificationType::EXTENSION_TEST_PASSED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_TEST_FAILED,
@@ -44,6 +45,11 @@ bool ExtensionApiTest::ResultCatcher::GetNextResult() {
 void ExtensionApiTest::ResultCatcher::Observe(
     NotificationType type, const NotificationSource& source,
     const NotificationDetails& details) {
+  if (profile_restriction_ &&
+      Source<Profile>(source).ptr() != profile_restriction_) {
+    return;
+  }
+
   switch (type.value) {
     case NotificationType::EXTENSION_TEST_PASSED:
       std::cout << "Got EXTENSION_TEST_PASSED notification.\n";

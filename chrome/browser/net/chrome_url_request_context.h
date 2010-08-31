@@ -51,12 +51,17 @@ class ChromeURLRequestContext : public URLRequestContext {
   // could be immutable and ref-counted so that we could use them directly from
   // both threads. There is only a small amount of mutable state in Extension.
   struct ExtensionInfo {
-    ExtensionInfo(const std::string& name, const FilePath& path,
+    ExtensionInfo(const std::string& name,
+                  const FilePath& path,
                   const std::string& default_locale,
+                  bool incognito_split_mode,
                   const ExtensionExtent& extent,
                   const ExtensionExtent& effective_host_permissions,
                   const std::vector<std::string>& api_permissions)
-        : name(name), path(path), default_locale(default_locale),
+        : name(name),
+          path(path),
+          default_locale(default_locale),
+          incognito_split_mode(incognito_split_mode),
           extent(extent),
           effective_host_permissions(effective_host_permissions),
           api_permissions(api_permissions) {
@@ -64,6 +69,7 @@ class ChromeURLRequestContext : public URLRequestContext {
     const std::string name;
     const FilePath path;
     const std::string default_locale;
+    const bool incognito_split_mode;
     const ExtensionExtent extent;
     const ExtensionExtent effective_host_permissions;
     std::vector<std::string> api_permissions;
@@ -83,6 +89,10 @@ class ChromeURLRequestContext : public URLRequestContext {
   // Returns true if the specified extension exists and has a non-empty web
   // extent.
   bool ExtensionHasWebExtent(const std::string& id);
+
+  // Returns true if the specified extension exists and can load in incognito
+  // contexts.
+  bool ExtensionCanLoadInIncognito(const std::string& id);
 
   // Returns an empty string if the extension with |id| doesn't have a default
   // locale.
@@ -311,6 +321,11 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // Create an instance for use with an OTR profile. This is expected to get
   // called on the UI thread.
   static ChromeURLRequestContextGetter* CreateOffTheRecord(Profile* profile);
+
+  // Create an instance for an OTR profile for extensions. This is expected
+  // to get called on UI thread.
+  static ChromeURLRequestContextGetter* CreateOffTheRecordForExtensions(
+      Profile* profile);
 
   // Clean up UI thread resources. This is expected to get called on the UI
   // thread before the instance is deleted on the IO thread.
