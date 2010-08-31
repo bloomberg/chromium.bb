@@ -994,8 +994,14 @@
    fun:BookmarkBarGtkUnittest
 }
 {
-   bug_53995
+   bug_53995_a
    Heapcheck:Leak
    ...
    fun:net::::ClientSocketPoolBaseTest_AbortAllRequestsOnFlush_Test::TestBody
+}
+{
+   bug_53995_b
+   Heapcheck:Leak
+   ...
+   fun:ClientSocketPoolBaseTest_AbortAllRequestsOnFlush_Test
 }
