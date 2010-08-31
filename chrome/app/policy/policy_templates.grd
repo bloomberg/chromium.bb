@@ -435,7 +435,7 @@ templates and will be translated for each locale. -->
 
       If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them.
     </message>
-    <message name="IDS_POLICY_DISABLEDPLUGINSLIST_CAPTION" desc="Label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
+    <message name="IDS_POLICY_DISABLEDPLUGINS_CAPTION" desc="Label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
       Comma-separated list of disabled plugins
     </message>
 
@@ -471,7 +471,47 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_MAC_CHROME_PREFERENCES" desc="A text indicating in Mac OS X Workgroup Manager, that currently the preferences of Chrome are being edited">
       <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> preferences
     </message>
-    </messages>
 
+    <message name="IDS_POLICY_GROUP_RESTOREONSTARTUP_CAPTION" desc="Caption of
+      the 'restore on startup' policy settings page">
+      Configure startup pages
+    </message>
+    <message name="IDS_POLICY_GROUP_RESTOREONSTARTUP_DESC" desc="Description of
+      the 'restore on startup' policy settings page.">
+      Allows you to configure the pages that are loaded on startup.
+
+      If you choose 'open home page on startup' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 
+
+      If you choose 'Reopen the URLs that were open last', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopend.
+
+      If you choose 'Open a list of URLs on startup', the list of 'URLs to open on startup' will be opened when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is started.
+
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+    </message>   
+   
+    <message name="IDS_POLICY_RESTOREONSTARTUPMODE_CAPTION" desc="Caption of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'.">
+      Action on Startup 
+    </message>
+    <message name="IDS_POLICY_RESTOREONSTARTUPMODE_DESC" desc="Description of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'">
+      Allows you to specify the behavior on startup.
+    </message>
+
+    <message name="IDS_POLICY_ENUM_RESTOREONSTARTUPISNONE_CAPTION" desc="Label in the dropdown menu 'restore on startup mode' for opening the home page on startup.">
+      Open home page
+    </message>
+    <message name="IDS_POLICY_ENUM_RESTOREONSTARTUPISLASTSESSION_CAPTION" desc="Label in the dropdown menu 'restore on startup mode' for opening the URLs that were open last.">
+      Reopen the URLs that were open last
+    </message>
+    <message name="IDS_POLICY_ENUM_RESTOREONSTARTUPISURLS_CAPTION" desc="Label in the dropdown menu 'restore on startup mode' for opening a list of URLs on startup.">
+      Open a list of URLs
+    </message>
+
+    <message name="IDS_POLICY_RESTOREONSTARTUPURLS_CAPTION" desc="Label of the list editor 'restore startup urls' of the policy settings page 'restore on startup'.">
+      URLs to open on startup
+    </message>
+    <message name="IDS_POLICY_RESTOREONSTARTUPURLS_DESC" desc="Description of the list editor 'restore startup urls' of the policy settings page 'restore on startup'.">
+      If 'Open a list of URLs' is selected as action on startup, this allows you to specify the list of URLs that are opened on startup.
+    </message>
+    </messages>
   </release>
 </grit>
