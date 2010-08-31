@@ -47,6 +47,7 @@ class HeapcheckWrapper(object):
     self.PutEnvAndLog('GTEST_DEATH_TEST_USE_FORK', '1')
     self.PutEnvAndLog('HEAPCHECK', self._mode)
     self.PutEnvAndLog('HEAP_CHECK_MAX_LEAKS', '-1')
+    self.PutEnvAndLog('KEEP_SHADOW_STACKS', '1')
     self.PutEnvAndLog('PPROF_PATH',
         path_utils.ScriptDir() +
         '/../../third_party/tcmalloc/chromium/src/pprof')

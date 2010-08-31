@@ -1,12 +1,6 @@
 # http://crbug.com/31129 -- forking Python servers may break heapchecker's
 # symbolization.
 URLRequestTestHTTP.*
-# http://crbug.com/51988, http://crbug.com/51332, http://crbug.com/51330,
-# http://crbug.com/51328 -- leaks in NSS PKCS #12 import/export.  Due to lack
-# of stacks in NSS leaks on the heapcheck bot we can't add reasonable
-# suppressions.  So just skip the tests until we can figure out how to get
-# stacks, or a fixed release of NSS.
-CertDatabaseNSSTest.ImportFromPKCS12*
 # Exclude tests that simulate a crash: they leak a lot of stuff.
 # Note that *InvalidEntry* is too general.
 DiskCacheBackendTest.AppCacheInvalidEntry
