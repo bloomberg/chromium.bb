@@ -936,3 +936,34 @@
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
 }
+{
+   bug_53936_a
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:std::string::append
+   fun:FilePath::Append
+   fun:chrome::GetUserDownloadsDirectory
+   fun:chrome::PathProvider
+   fun:PathService::Get
+   fun:DefaultDownloadDirectory
+   fun:DefaultSingletonTraits::New
+   fun:Singleton::get
+   fun:download_util::GetDefaultDownloadDirectory
+   fun:DownloadPrefs::RegisterUserPrefs
+   fun:browser::RegisterUserPrefs
+   fun:browser::RegisterAllPrefs
+}
+{
+   bug_53936_b
+   Heapcheck:Leak
+   fun:CancelableTask* NewRunnableFunction
+   fun:DownloadPrefs::RegisterUserPrefs
+   fun:browser::RegisterUserPrefs
+   fun:browser::RegisterAllPrefs
+   fun:TestingProfile::GetPrefs
+   fun:Browser
+   fun:BookmarkBarGtkUnittest
+}
