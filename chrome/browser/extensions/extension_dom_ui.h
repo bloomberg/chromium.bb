@@ -15,6 +15,7 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/common/extensions/extension.h"
 
+class GURL;
 class ListValue;
 class PrefService;
 class Profile;
@@ -32,7 +33,7 @@ class ExtensionDOMUI
  public:
   static const char kExtensionURLOverrides[];
 
-  explicit ExtensionDOMUI(TabContents* tab_contents);
+  explicit ExtensionDOMUI(TabContents* tab_contents, GURL url);
 
   ExtensionFunctionDispatcher* extension_function_dispatcher() const {
     return extension_function_dispatcher_.get();

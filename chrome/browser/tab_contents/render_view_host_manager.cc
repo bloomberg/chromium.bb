@@ -309,8 +309,9 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
 
   // For security, we should transition between processes when one is a DOM UI
   // page and one isn't.
-  if (DOMUIFactory::UseDOMUIForURL(cur_entry->url()) !=
-      DOMUIFactory::UseDOMUIForURL(new_entry->url()))
+  Profile* profile = delegate_->GetControllerForRenderManager().profile();
+  if (DOMUIFactory::UseDOMUIForURL(profile, cur_entry->url()) !=
+      DOMUIFactory::UseDOMUIForURL(profile, new_entry->url()))
     return true;
 
   // Also, we must switch if one is an extension and the other is not the exact
@@ -472,14 +473,8 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
 
   // Tell the RenderView whether it will be used for an extension process.
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  bool is_extension_process = false;
-  if (entry.url().SchemeIs(chrome::kExtensionScheme)) {
-    is_extension_process = true;
-  } else if (profile->GetExtensionsService() &&
-             profile->GetExtensionsService()->
-                 GetExtensionByWebExtent(entry.url())) {
-    is_extension_process = true;
-  }
+  bool is_extension_process = profile->GetExtensionsService() &&
+      profile->GetExtensionsService()->ExtensionBindingsAllowed(entry.url());
   render_view_host->set_is_extension_process(is_extension_process);
 
   return delegate_->CreateRenderViewForRenderManager(render_view_host);

@@ -86,10 +86,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
 
   // The extension should have opened 3 new tabs. Including the original blank
   // tab, we now have 4 tabs. Two should be part of the extension app, and
-  // grouped in the extension process.
+  // grouped in the same process.
   ASSERT_EQ(4, browser()->tab_count());
   RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
-  EXPECT_TRUE(host->is_extension_process());
 
   EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(2)->render_view_host()->process());

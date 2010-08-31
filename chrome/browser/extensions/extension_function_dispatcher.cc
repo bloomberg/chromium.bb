@@ -333,7 +333,13 @@ ExtensionFunctionDispatcher* ExtensionFunctionDispatcher::Create(
       render_view_host->process()->profile()->GetExtensionsService();
   DCHECK(service);
 
+  if (!service->ExtensionBindingsAllowed(url))
+    return NULL;
+
   Extension* extension = service->GetExtensionByURL(url);
+  if (!extension)
+    extension = service->GetExtensionByWebExtent(url);
+
   if (extension)
     return new ExtensionFunctionDispatcher(render_view_host, delegate,
                                            extension, url);
@@ -350,10 +356,12 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     render_view_host_(render_view_host),
     delegate_(delegate),
     url_(url),
+    extension_id_(extension->id()),
     ALLOW_THIS_IN_INITIALIZER_LIST(peer_(new Peer(this))) {
   // TODO(erikkay) should we do something for these errors in Release?
-  DCHECK(url.SchemeIs(chrome::kExtensionScheme));
   DCHECK(extension);
+  DCHECK(url.SchemeIs(chrome::kExtensionScheme) ||
+         extension->location() == Extension::COMPONENT);
 
   // Notify the ExtensionProcessManager that the view was created.
   ExtensionProcessManager* epm = profile()->GetExtensionProcessManager();
@@ -447,6 +455,17 @@ void ExtensionFunctionDispatcher::HandleRequest(
   Extension* extension = service->GetExtensionById(extension_id(), false);
   DCHECK(extension);
   function->set_include_incognito(service->IsIncognitoEnabled(extension));
+
+  std::string permission_name = function->name();
+  size_t separator = permission_name.find_first_of("./");
+  if (separator != std::string::npos)
+    permission_name = permission_name.substr(0, separator);
+
+  if (!service->ExtensionBindingsAllowed(function->source_url()) ||
+      !extension->HasApiPermission(permission_name)) {
+    render_view_host_->BlockExtensionRequest(function->request_id());
+    return;
+  }
 
   ExtensionsQuotaService* quota = service->quota_service();
   if (quota->Assess(extension_id(), function, &params.arguments,

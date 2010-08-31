@@ -23,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/user_script_slave.h"
@@ -56,11 +57,11 @@ namespace {
 // A map of extension ID to vector of page action ids.
 typedef std::map< std::string, std::vector<std::string> > PageActionIdMap;
 
-// A map of permission name to whether its enabled for this extension.
-typedef std::map<std::string, bool> PermissionsMap;
+// A list of permissions that are enabled for this extension.
+typedef std::vector<std::string> PermissionsList;
 
 // A map of extension ID to permissions map.
-typedef std::map<std::string, PermissionsMap> ExtensionPermissionsMap;
+typedef std::map<std::string, PermissionsList> ExtensionPermissionsList;
 
 // A map of extension ID to whether this extension was enabled in incognito.
 typedef std::map<std::string, bool> IncognitoEnabledMap;
@@ -74,26 +75,10 @@ const char* kExtensionDeps[] = {
   ExtensionApiTestV8Extension::kName,
 };
 
-// A list of the API packages which have no associated permission.
-// TODO(erikkay) It might be nice if for consistency we could merge these with
-// the permissions list, or at least have them in one place.
-const char* kNonPermissionExtensionPackages[] = {
-  "extension",
-  // TODO(erikkay): We're inconsistent about the the package name in the events
-  // for pageAction and browserAction.
-  "pageAction",
-  "pageActions",
-  "browserAction",
-  "browserActions",
-  "i18n",
-  "devtools",
-  "test"
-};
-
 struct SingletonData {
   std::set<std::string> function_names_;
   PageActionIdMap page_action_ids_;
-  ExtensionPermissionsMap permissions_;
+  ExtensionPermissionsList permissions_;
   IncognitoEnabledMap incognito_enabled_map_;
 };
 
@@ -105,7 +90,7 @@ static PageActionIdMap* GetPageActionMap() {
   return &Singleton<SingletonData>()->page_action_ids_;
 }
 
-static PermissionsMap* GetPermissionsMap(const std::string& extension_id) {
+static PermissionsList* GetPermissionsList(const std::string& extension_id) {
   return &Singleton<SingletonData>()->permissions_[extension_id];
 }
 
@@ -114,10 +99,10 @@ static IncognitoEnabledMap* GetIncognitoEnabledMap() {
 }
 
 static void GetActiveExtensionIDs(std::set<std::string>* extension_ids) {
-  ExtensionPermissionsMap& permissions =
+  ExtensionPermissionsList& permissions =
       Singleton<SingletonData>()->permissions_;
 
-  for (ExtensionPermissionsMap::iterator iter = permissions.begin();
+  for (ExtensionPermissionsList::iterator iter = permissions.begin();
        iter != permissions.end(); ++iter) {
     extension_ids->insert(iter->first);
   }
@@ -234,10 +219,10 @@ class ExtensionImpl : public ExtensionBase {
       return std::string();  // this can happen as a tab is closing.
 
     GURL url = renderview->webview()->mainFrame()->url();
-    if (!url.SchemeIs(chrome::kExtensionScheme))
+    if (!ExtensionRendererInfo::ExtensionBindingsAllowed(url))
       return std::string();
 
-    return url.host();
+    return ExtensionRendererInfo::GetIdByURL(url);
   }
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -641,13 +626,8 @@ void ExtensionProcessBindings::SetPageActions(
 void ExtensionProcessBindings::SetAPIPermissions(
     const std::string& extension_id,
     const std::vector<std::string>& permissions) {
-  PermissionsMap& permissions_map = *GetPermissionsMap(extension_id);
-
-  // Default all the API permissions to off. We will reset them below.
-  for (size_t i = 0; i < Extension::kNumPermissions; ++i)
-    permissions_map[Extension::kPermissionNames[i]] = false;
-  for (size_t i = 0; i < permissions.size(); ++i)
-    permissions_map[permissions[i]] = true;
+  PermissionsList& permissions_list = *GetPermissionsList(extension_id);
+  permissions_list.assign(permissions.begin(), permissions.end());
 }
 
 // static
@@ -692,17 +672,8 @@ bool ExtensionProcessBindings::HasPermission(const std::string& extension_id,
   if (separator != std::string::npos)
     permission_name = permission.substr(0, separator);
 
-  // windows and tabs are the same permission.
-  if (permission_name == "windows")
-    permission_name = Extension::kTabPermission;
-
-  for (size_t i = 0; i < arraysize(kNonPermissionExtensionPackages); ++i)
-    if (permission_name == kNonPermissionExtensionPackages[i])
-      return true;
-
-  PermissionsMap& permissions_map = *GetPermissionsMap(extension_id);
-  PermissionsMap::iterator it = permissions_map.find(permission_name);
-  return (it != permissions_map.end() && it->second);
+  PermissionsList& permissions_list = *GetPermissionsList(extension_id);
+  return Extension::HasApiPermission(permissions_list, permission_name);
 }
 
 // static

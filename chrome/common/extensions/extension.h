@@ -278,9 +278,11 @@ class Extension {
   }
 
   // Returns true if the extension has the specified API permission.
+  static bool HasApiPermission(const std::vector<std::string>& api_permissions,
+                               const std::string& permission);
+
   bool HasApiPermission(const std::string& permission) const {
-    return std::find(api_permissions_.begin(), api_permissions_.end(),
-                     permission) != api_permissions_.end();
+    return HasApiPermission(this->api_permissions(), permission);
   }
 
   // Returns the set of hosts that the extension effectively has access to. This

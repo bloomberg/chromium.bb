@@ -212,6 +212,28 @@ struct ParamTraits<WindowContainerType> {
   }
 };
 
+template <>
+struct ParamTraits<Extension::Location> {
+  typedef Extension::Location param_type;
+  static void Write(Message* m, const param_type& p) {
+    int val = static_cast<int>(p);
+    WriteParam(m, val);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int val = 0;
+    if (!ReadParam(m, iter, &val) ||
+        val < Extension::INVALID ||
+        val >= Extension::EXTERNAL_PREF_DOWNLOAD)
+      return false;
+    *p = static_cast<param_type>(val);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    ParamTraits<int>::Log(static_cast<int>(p), l);
+  }
+};
+
+
 void ParamTraits<ViewMsg_Navigate_Params>::Write(Message* m,
                                                  const param_type& p) {
   WriteParam(m, p.page_id);
@@ -1269,6 +1291,7 @@ void ParamTraits<ViewMsg_ExtensionRendererInfo>::Write(Message* m,
   WriteParam(m, p.web_extent);
   WriteParam(m, p.name);
   WriteParam(m, p.icon_url);
+  WriteParam(m, p.location);
 }
 
 bool ParamTraits<ViewMsg_ExtensionRendererInfo>::Read(const Message* m,
@@ -1277,7 +1300,8 @@ bool ParamTraits<ViewMsg_ExtensionRendererInfo>::Read(const Message* m,
   return ReadParam(m, iter, &p->id) &&
       ReadParam(m, iter, &p->web_extent) &&
       ReadParam(m, iter, &p->name) &&
-      ReadParam(m, iter, &p->icon_url);
+      ReadParam(m, iter, &p->icon_url) &&
+      ReadParam(m, iter, &p->location);
 }
 
 void ParamTraits<ViewMsg_ExtensionRendererInfo>::Log(const param_type& p,

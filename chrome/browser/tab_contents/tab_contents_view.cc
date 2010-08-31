@@ -34,7 +34,8 @@ void TabContentsView::CreateNewWindow(
       route_id,
       tab_contents_->profile(),
       tab_contents_->GetSiteInstance(),
-      DOMUIFactory::GetDOMUIType(tab_contents_->GetURL()),
+      DOMUIFactory::GetDOMUIType(tab_contents_->profile(),
+          tab_contents_->GetURL()),
       tab_contents_,
       window_container_type,
       frame_name);

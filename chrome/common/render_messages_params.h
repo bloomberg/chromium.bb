@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/common/dom_storage_common.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/indexed_db_key.h"
@@ -790,6 +791,7 @@ struct ViewMsg_ExtensionRendererInfo {
   ExtensionExtent web_extent;
   std::string name;
   GURL icon_url;
+  Extension::Location location;
 };
 
 struct ViewMsg_ExtensionsUpdated_Params {

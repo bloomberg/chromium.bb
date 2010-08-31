@@ -288,6 +288,11 @@ class ExtensionsService
   // extent, if one exists.
   Extension* GetExtensionByOverlappingWebExtent(const ExtensionExtent& extent);
 
+  // Returns true if |url| should get extension api bindings and be permitted
+  // to make api calls. Note that this is independent of what extension
+  // permissions the given extension has been granted.
+  bool ExtensionBindingsAllowed(const GURL& url);
+
   // Returns the icon to display in the omnibox for the given extension.
   const SkBitmap& GetOmniboxIcon(const std::string& extension_id);
 

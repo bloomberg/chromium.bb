@@ -27,7 +27,7 @@ class DOMUIFactory {
   // Returns a type identifier indicating what DOMUI we would use for the
   // given URL. This is useful for comparing the potential DOMUIs for two URLs.
   // Returns kNoDOMUI if the given URL will not use the DOM UI system.
-  static DOMUITypeID GetDOMUIType(const GURL& url);
+  static DOMUITypeID GetDOMUIType(Profile* profile, const GURL& url);
 
   // Returns true if the given URL's scheme would trigger the DOM UI system.
   // This is a less precise test than UseDONUIForURL, which tells you whether
@@ -36,7 +36,7 @@ class DOMUIFactory {
   static bool HasDOMUIScheme(const GURL& url);
 
   // Returns true if the given URL will use the DOM UI system.
-  static bool UseDOMUIForURL(const GURL& url);
+  static bool UseDOMUIForURL(Profile* profile, const GURL& url);
 
   // Allocates a new DOMUI object for the given URL, and returns it. If the URL
   // is not a DOM UI URL, then it will return NULL. When non-NULL, ownership of

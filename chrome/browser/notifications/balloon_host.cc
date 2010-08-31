@@ -94,7 +94,8 @@ void BalloonHost::CreateNewWindow(
       route_id,
       balloon_->profile(),
       site_instance_.get(),
-      DOMUIFactory::GetDOMUIType(balloon_->notification().content_url()),
+      DOMUIFactory::GetDOMUIType(balloon_->profile(),
+          balloon_->notification().content_url()),
       this,
       window_container_type,
       frame_name);

@@ -93,6 +93,29 @@ bool IsBaseCrxKey(const std::string& key) {
   return false;
 }
 
+// Names of API modules that do not require a permission.
+const char kBrowserActionModuleName[] = "browserAction";
+const char kBrowserActionsModuleName[] = "browserActions";
+const char kDevToolsModuleName[] = "devtools";
+const char kExtensionModuleName[] = "extension";
+const char kI18NModuleName[] = "i18n";
+const char kPageActionModuleName[] = "pageAction";
+const char kPageActionsModuleName[] = "pageActions";
+const char kTestModuleName[] = "test";
+
+const char* kNonPermissionModuleNames[] = {
+    kBrowserActionModuleName,
+    kBrowserActionsModuleName,
+    kDevToolsModuleName,
+    kExtensionModuleName,
+    kI18NModuleName,
+    kPageActionModuleName,
+    kPageActionsModuleName,
+    kTestModuleName
+};
+const size_t kNumNonPermissionModuleNames =
+    arraysize(kNonPermissionModuleNames);
+
 }  // namespace
 
 const FilePath::CharType Extension::kManifestFilename[] =
@@ -123,6 +146,7 @@ const int Extension::kIconSizes[] = {
 const int Extension::kPageActionIconMaxSize = 19;
 const int Extension::kBrowserActionIconMaxSize = 19;
 
+// Explicit permissions -- permission declaration required.
 const char* Extension::kBackgroundPermission = "background";
 const char* Extension::kContextMenusPermission = "contextMenus";
 const char* Extension::kBookmarkPermission = "bookmarks";
@@ -1739,6 +1763,29 @@ bool Extension::CanAccessURL(const URLPattern pattern) const {
 
   // Otherwise, the valid schemes were handled by URLPattern.
   return true;
+}
+
+// static.
+bool Extension::HasApiPermission(
+    const std::vector<std::string>& api_permissions,
+    const std::string& permission) {
+  std::string permission_name = permission;
+
+  // windows and tabs are the same permission.
+  if (permission_name == "windows")
+    permission_name = Extension::kTabPermission;
+
+  if (std::find(api_permissions.begin(), api_permissions.end(),
+                permission_name) != api_permissions.end())
+    return true;
+
+  for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
+    if (permission_name == kNonPermissionModuleNames[i]) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool Extension::HasHostPermission(const GURL& url) const {

@@ -120,18 +120,26 @@ class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
 const char ExtensionDOMUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
-ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents)
+ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, GURL url)
     : DOMUI(tab_contents) {
-  should_hide_url_ = true;
+  ExtensionsService* service = tab_contents->profile()->GetExtensionsService();
+  Extension* extension = service->GetExtensionByURL(url);
+  if (!extension)
+    extension = service->GetExtensionByWebExtent(url);
+  DCHECK(extension);
+  // Only hide the url for internal pages (e.g. chrome-extension or packaged
+  // component apps like bookmark manager.
+  should_hide_url_ = !extension->is_app();
+
   bindings_ = BindingsPolicy::EXTENSION;
   // Bind externalHost to Extension DOMUI loaded in Chrome Frame.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     bindings_ |= BindingsPolicy::EXTERNAL_HOST;
   // For chrome:// overrides, some of the defaults are a little different.
-  GURL url = tab_contents->GetURL();
-  if (url.SchemeIs(chrome::kChromeUIScheme) &&
-      url.host() == chrome::kChromeUINewTabHost) {
+  GURL effective_url = tab_contents->GetURL();
+  if (effective_url.SchemeIs(chrome::kChromeUIScheme) &&
+      effective_url.host() == chrome::kChromeUINewTabHost) {
     focus_location_bar_by_default_ = true;
   }
 }

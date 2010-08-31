@@ -742,7 +742,7 @@ class RenderViewHost : public RenderWidgetHost {
   // The session storage namespace id to be used by the associated render view.
   int64 session_storage_namespace_id_;
 
-  // Whether this render view will be used for extensions. This controls
+  // Whether this render view will get extension api bindings. This controls
   // what process type we use.
   bool is_extension_process_;
 

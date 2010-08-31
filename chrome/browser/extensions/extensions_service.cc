@@ -1257,6 +1257,16 @@ Extension* ExtensionsService::GetExtensionByWebExtent(const GURL& url) {
   return NULL;
 }
 
+bool ExtensionsService::ExtensionBindingsAllowed(const GURL& url) {
+  // Allow bindings for all packaged extension.
+  if (GetExtensionByURL(url))
+    return true;
+
+  // Allow bindings for all component, hosted apps.
+  Extension* extension = GetExtensionByWebExtent(url);
+  return (extension && extension->location() == Extension::COMPONENT);
+}
+
 Extension* ExtensionsService::GetExtensionByOverlappingWebExtent(
     const ExtensionExtent& extent) {
   for (size_t i = 0; i < extensions_.size(); ++i) {

@@ -858,7 +858,7 @@ bool TabContents::NavigateToPendingEntry(
   // to a DOM UI renderer.  Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
   bool is_allowed_in_dom_ui_renderer =
-      DOMUIFactory::UseDOMUIForURL(entry.url()) ||
+      DOMUIFactory::UseDOMUIForURL(profile(), entry.url()) ||
       entry.url() == GURL(chrome::kAboutBlankURL);
   CHECK(!BindingsPolicy::is_dom_ui_enabled(enabled_bindings) ||
         is_allowed_in_dom_ui_renderer);
@@ -1604,7 +1604,8 @@ void TabContents::DidNavigateMainFramePostCommit(
     // If this is a window.open navigation, use the same DOMUI as the renderer
     // that opened the window, as long as both renderers have the same
     // privileges.
-    if (opener_dom_ui_type_ == DOMUIFactory::GetDOMUIType(GetURL())) {
+    if (opener_dom_ui_type_ ==
+        DOMUIFactory::GetDOMUIType(profile(), GetURL())) {
       DOMUI* dom_ui = DOMUIFactory::CreateDOMUIForURL(this, GetURL());
       // dom_ui might be NULL if the URL refers to a non-existent extension.
       if (dom_ui) {
