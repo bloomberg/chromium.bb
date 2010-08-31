@@ -29,7 +29,7 @@ class TestSearchTermsData : public SearchTermsData {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // Returns the value for the Chrome Omnibox rlz.
   virtual std::wstring GetRlzParameterValue() const {
-    return "";
+    return L"";
   }
 #endif
 
