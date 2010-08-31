@@ -102,7 +102,7 @@ TEST(LanguageMenuButtonTest, GetTextForMenuTest) {
               LanguageMenuButton::GetTextForMenu(desc));
   }
 
-  // For Arabic, Dutch, French, German, Hebrew and Hindi,
+  // For Arabic, Dutch, French, German and Hindi,
   // "language - keyboard layout" pair is returned.
   {
     InputMethodDescriptor desc("m17n:ar:kbd", "kbd (m17n)", "us", "ar");
@@ -137,11 +137,6 @@ TEST(LanguageMenuButtonTest, GetTextForMenuTest) {
   {
     InputMethodDescriptor desc("xkb:be::ger", "Belgium", "be", "ger");
     EXPECT_EQ(L"German - Belgian keyboard layout",
-              LanguageMenuButton::GetTextForMenu(desc));
-  }
-  {
-    InputMethodDescriptor desc("m17n:he:kbd", "kbd (m17n)", "us", "he");
-    EXPECT_EQ(L"Hebrew - Standard input method",
               LanguageMenuButton::GetTextForMenu(desc));
   }
   {

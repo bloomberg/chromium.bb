@@ -215,6 +215,7 @@ const struct EnglishToResouceId {
   { "Latvia", IDS_STATUSBAR_LAYOUT_LATVIA },
   { "Canada", IDS_STATUSBAR_LAYOUT_CANADA },
   { "Canada - English", IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH },
+  { "Israel", IDS_STATUSBAR_LAYOUT_ISRAEL },
 };
 const size_t kNumEntries = arraysize(kEnglishToResourceIdArray);
 
