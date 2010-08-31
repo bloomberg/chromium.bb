@@ -8,11 +8,11 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
-namespace {
 
 TEST(CryptographerTest, EmptyCantDecrypt) {
   Cryptographer cryptographer;
@@ -130,5 +130,31 @@ TEST(CryptographerTest, EncryptExportDecrypt) {
   }
 }
 
-}  // anonymous namespace
+TEST(CryptographerTest, PackUnpack) {
+#if defined(OS_MACOSX)
+  Encryptor::UseMockKeychain(true);
+#endif
+
+  Nigori nigori;
+  ASSERT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
+  std::string expected_user, expected_encryption, expected_mac;
+  ASSERT_TRUE(nigori.ExportKeys(&expected_user, &expected_encryption,
+                                &expected_mac));
+
+  Cryptographer cryptographer;
+  std::string token;
+  EXPECT_TRUE(cryptographer.PackBootstrapToken(&nigori, &token));
+  EXPECT_TRUE(IsStringUTF8(token));
+
+  scoped_ptr<Nigori> unpacked(cryptographer.UnpackBootstrapToken(token));
+  EXPECT_NE(static_cast<Nigori*>(NULL), unpacked.get());
+
+  std::string user_key, encryption_key, mac_key;
+  ASSERT_TRUE(unpacked->ExportKeys(&user_key, &encryption_key, &mac_key));
+
+  EXPECT_EQ(expected_user, user_key);
+  EXPECT_EQ(expected_encryption, encryption_key);
+  EXPECT_EQ(expected_mac, mac_key);
+}
+
 }  // namespace browser_sync

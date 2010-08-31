@@ -256,12 +256,14 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kKeepEverythingSynced,
       enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncManaged, false);
+  pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken, "");
 }
 
 void ProfileSyncService::ClearPreferences() {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service->ClearPref(prefs::kSyncHasSetupCompleted);
+  pref_service->ClearPref(prefs::kEncryptionBootstrapToken);
   // TODO(nick): The current behavior does not clear e.g. prefs::kSyncBookmarks.
   // Is that really what we want?
   pref_service->ScheduleSavePersistentPrefs();

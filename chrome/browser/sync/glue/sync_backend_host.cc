@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -22,6 +23,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "webkit/glue/webkit_glue.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
@@ -117,7 +119,22 @@ void SyncBackendHost::Initialize(
       invalidate_sync_xmpp_login,
       use_chrome_async_socket,
       try_ssltcp_first,
-      notification_method));
+      notification_method,
+      RestoreEncryptionBootstrapToken()));
+}
+
+void SyncBackendHost::PersistEncryptionBootstrapToken(
+    const std::string& token) {
+  PrefService* prefs = profile_->GetPrefs();
+
+  prefs->SetString(prefs::kEncryptionBootstrapToken, token);
+  prefs->ScheduleSavePersistentPrefs();
+}
+
+std::string SyncBackendHost::RestoreEncryptionBootstrapToken() {
+  PrefService* prefs = profile_->GetPrefs();
+  std::string token = prefs->GetString(prefs::kEncryptionBootstrapToken);
+  return token;
 }
 
 sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
@@ -315,7 +332,9 @@ void SyncBackendHost::Core::NotifyPassphraseRequired() {
       NotificationService::NoDetails());
 }
 
-void SyncBackendHost::Core::NotifyPassphraseAccepted() {
+void SyncBackendHost::Core::NotifyPassphraseAccepted(
+    const std::string& bootstrap_token) {
+  host_->PersistEncryptionBootstrapToken(bootstrap_token);
   NotificationService::current()->Notify(
       NotificationType::SYNC_PASSPHRASE_ACCEPTED,
       NotificationService::AllSources(),
@@ -436,7 +455,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.lsid.c_str(),
       options.use_chrome_async_socket,
       options.try_ssltcp_first,
-      options.notification_method);
+      options.notification_method,
+      options.restored_key_for_bootstrapping);
   DCHECK(success) << "Syncapi initialization failed!";
 }
 
@@ -613,9 +633,11 @@ void SyncBackendHost::Core::OnPassphraseRequired() {
       NewRunnableMethod(this, &Core::NotifyPassphraseRequired));
 }
 
-void SyncBackendHost::Core::OnPassphraseAccepted() {
+void SyncBackendHost::Core::OnPassphraseAccepted(
+    const std::string& bootstrap_token) {
   host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPassphraseAccepted));
+      NewRunnableMethod(this, &Core::NotifyPassphraseAccepted,
+          bootstrap_token));
 }
 
 void SyncBackendHost::Core::OnPaused() {

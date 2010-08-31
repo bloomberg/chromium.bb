@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
@@ -42,6 +43,17 @@ struct KeyParams {
 class Cryptographer {
  public:
   Cryptographer();
+
+  // |restored_bootstrap_token| can be provided via this method to bootstrap
+  // Cryptographer instance into the ready state (is_ready will be true).
+  // It must be a string that was previously built by the
+  // GetSerializedBootstrapToken function.  It is possible that the token is no
+  // longer valid (due to server key change), in which case the normal
+  // decryption code paths will fail and the user will need to provide a new
+  // passphrase.
+  // It is an error to call this if is_ready() == true, though it is fair to
+  // never call Bootstrap at all.
+  void Bootstrap(const std::string& restored_bootstrap_token);
 
   // Returns whether we can decrypt |encrypted| using the keys we currently know
   // about.
@@ -88,14 +100,27 @@ class Cryptographer {
   // Returns whether there is a pending set of keys that needs to be decrypted.
   bool has_pending_keys() const { return NULL != pending_keys_.get(); }
 
+  // Obtain a token that can be provided on construction to a future
+  // Cryptographer instance to bootstrap itself.  Returns false if such a token
+  // can't be created (i.e. if this Cryptograhper doesn't have valid keys).
+  bool GetBootstrapToken(std::string* token) const;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(CryptographerTest, PackUnpack);
   typedef std::map<std::string, linked_ptr<const Nigori> > NigoriMap;
 
-  // Helper method to instancitate Nigori instances for each set of key
+  // Helper method to instantiate Nigori instances for each set of key
   // parameters in |bag| and setting the default encryption key to
   // |default_key_name|.
   void InstallKeys(const std::string& default_key_name,
                    const sync_pb::NigoriKeyBag& bag);
+
+  bool AddKeyImpl(Nigori* nigori);
+
+  // Functions to serialize + encrypt a Nigori object in an opaque format for
+  // persistence by sync infrastructure.
+  bool PackBootstrapToken(const Nigori* nigori, std::string* pack_into) const;
+  Nigori* UnpackBootstrapToken(const std::string& token) const;
 
   NigoriMap nigoris_;  // The Nigoris we know about, mapped by key name.
   NigoriMap::value_type* default_nigori_;  // The Nigori used for encryption.

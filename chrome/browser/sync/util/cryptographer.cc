@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "chrome/browser/sync/util/cryptographer.h"
+#include "chrome/browser/password_manager/encryptor.h"
 
 namespace browser_sync {
 
@@ -15,6 +17,17 @@ const char kNigoriTag[] = "google_chrome_nigori";
 const char kNigoriKeyName[] = "nigori-key";
 
 Cryptographer::Cryptographer() : default_nigori_(NULL) {
+}
+
+void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
+  if (is_ready()) {
+    NOTREACHED();
+    return;
+  }
+
+  scoped_ptr<Nigori> nigori(UnpackBootstrapToken(restored_bootstrap_token));
+  if (nigori.get())
+    AddKeyImpl(nigori.release());
 }
 
 bool Cryptographer::CanDecrypt(const sync_pb::EncryptedData& data) const {
@@ -90,6 +103,11 @@ bool Cryptographer::AddKey(const KeyParams& params) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
+  return AddKeyImpl(nigori.release());
+}
+
+bool Cryptographer::AddKeyImpl(Nigori* initialized_nigori) {
+  scoped_ptr<Nigori> nigori(initialized_nigori);
   std::string name;
   if (!nigori->Permute(Nigori::Password, kNigoriKeyName, &name)) {
     NOTREACHED();
@@ -137,6 +155,78 @@ bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
   InstallKeys(pending_keys_->key_name(), bag);
   pending_keys_.reset();
   return true;
+}
+
+bool Cryptographer::GetBootstrapToken(std::string* token) const {
+  DCHECK(token);
+  if (!is_ready())
+    return false;
+
+  return PackBootstrapToken(default_nigori_->second.get(), token);
+}
+
+bool Cryptographer::PackBootstrapToken(const Nigori* nigori,
+                                       std::string* pack_into) const {
+  DCHECK(pack_into);
+  DCHECK(nigori);
+
+  sync_pb::NigoriKey key;
+  if (!nigori->ExportKeys(key.mutable_user_key(),
+                          key.mutable_encryption_key(),
+                          key.mutable_mac_key())) {
+    NOTREACHED();
+    return false;
+  }
+
+  std::string unencrypted_token;
+  if (!key.SerializeToString(&unencrypted_token)) {
+    NOTREACHED();
+    return false;
+  }
+
+  std::string encrypted_token;
+  if (!Encryptor::EncryptString(unencrypted_token, &encrypted_token)) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (!base::Base64Encode(encrypted_token, pack_into)) {
+    NOTREACHED();
+    return false;
+  }
+  return true;
+}
+
+Nigori* Cryptographer::UnpackBootstrapToken(const std::string& token) const {
+  if (token.empty())
+    return NULL;
+
+  std::string encrypted_data;
+  if (!base::Base64Decode(token, &encrypted_data)){
+    DLOG(WARNING) << "Could not decode token.";
+    return NULL;
+  }
+
+  std::string unencrypted_token;
+  if (!Encryptor::DecryptString(encrypted_data, &unencrypted_token)) {
+    DLOG(WARNING) << "Decryption of bootstrap token failed.";
+    return NULL;
+  }
+
+  sync_pb::NigoriKey key;
+  if (!key.ParseFromString(unencrypted_token)) {
+    DLOG(WARNING) << "Parsing of bootstrap token failed.";
+    return NULL;
+  }
+
+  scoped_ptr<Nigori> nigori(new Nigori);
+  if (!nigori->InitByImport(key.user_key(), key.encryption_key(),
+                            key.mac_key())) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  return nigori.release();
 }
 
 void Cryptographer::InstallKeys(const std::string& default_key_name,

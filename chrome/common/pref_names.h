@@ -341,6 +341,7 @@ extern const char kSyncTypedUrls[];
 extern const char kSyncExtensions[];
 extern const char kSyncManaged[];
 extern const char kSyncSuppressStart[];
+extern const char kEncryptionBootstrapToken[];
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];

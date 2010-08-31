@@ -918,6 +918,10 @@ const char kSyncManaged[] = "sync.managed";
 // used when sync is disabled by the user via the privacy dashboard.
 const char kSyncSuppressStart[] = "sync.suppress_start";
 
+// A string that can be used to restore sync encryption infrastructure on
+// startup so that the user doesn't need to provide credentials on each start.
+const char kEncryptionBootstrapToken[] = "sync.encryption_bootstrap_token";
+
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";
 const char kWebAppCreateInAppsMenu[] = "browser.web_app.create_in_apps_menu";

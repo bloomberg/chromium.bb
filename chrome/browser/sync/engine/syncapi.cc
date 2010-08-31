@@ -942,7 +942,8 @@ class SyncManager::SyncInternal
             const std::string& lsid,
             const bool use_chrome_async_socket,
             const bool try_ssltcp_first,
-            browser_sync::NotificationMethod notification_method);
+            browser_sync::NotificationMethod notification_method,
+            const std::string& restored_key_for_bootstrapping);
 
   // Tell sync engine to submit credentials to GAIA for verification.
   // Successful GAIA authentication will kick off the following chain of events:
@@ -1273,7 +1274,8 @@ bool SyncManager::Init(const FilePath& database_location,
                        const char* lsid,
                        bool use_chrome_async_socket,
                        bool try_ssltcp_first,
-                       browser_sync::NotificationMethod notification_method) {
+                       browser_sync::NotificationMethod notification_method,
+                       const std::string& restored_key_for_bootstrapping) {
   DCHECK(post_factory);
   LOG(INFO) << "SyncManager starting Init...";
   string server_string(sync_server_and_path);
@@ -1293,7 +1295,8 @@ bool SyncManager::Init(const FilePath& database_location,
                      lsid,
                      use_chrome_async_socket,
                      try_ssltcp_first,
-                     notification_method);
+                     notification_method,
+                     restored_key_for_bootstrapping);
 }
 
 void SyncManager::Authenticate(const char* username, const char* password,
@@ -1348,7 +1351,8 @@ bool SyncManager::SyncInternal::Init(
     const std::string& lsid,
     bool use_chrome_async_socket,
     bool try_ssltcp_first,
-    browser_sync::NotificationMethod notification_method) {
+    browser_sync::NotificationMethod notification_method,
+    const std::string& restored_key_for_bootstrapping) {
 
   LOG(INFO) << "Starting SyncInternal initialization.";
 
@@ -1371,6 +1375,8 @@ bool SyncManager::SyncInternal::Init(
   directory_manager_hookup_.reset(NewEventListenerHookup(
       share_.dir_manager->channel(), this,
           &SyncInternal::HandleDirectoryManagerEvent));
+  share_.dir_manager->cryptographer()->Bootstrap(
+      restored_key_for_bootstrapping);
 
   string client_id = user_settings_->GetClientId();
   connection_manager_.reset(new SyncAPIServerConnectionManager(
@@ -1605,7 +1611,10 @@ void SyncManager::SyncInternal::SetPassphrase(
     cryptographer->GetKeys(specifics.mutable_encrypted());
     node.SetNigoriSpecifics(specifics);
   }
-  observer_->OnPassphraseAccepted();
+
+  std::string bootstrap_token;
+  cryptographer->GetBootstrapToken(&bootstrap_token);
+  observer_->OnPassphraseAccepted(bootstrap_token);
 }
 
 SyncManager::~SyncManager() {
@@ -1925,16 +1934,14 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
         }
         const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
         if (!nigori.encrypted().blob().empty()) {
-          if (cryptographer->CanDecrypt(nigori.encrypted())) {
-            cryptographer->SetKeys(nigori.encrypted());
-          } else {
-            cryptographer->SetPendingKeys(nigori.encrypted());
-          }
+          DCHECK(!cryptographer->CanDecrypt(nigori.encrypted()));
+          cryptographer->SetPendingKeys(nigori.encrypted());
         }
       }
+
       // If we've completed a sync cycle and the cryptographer isn't ready yet,
       // prompt the user for a passphrase.
-      if (!cryptographer->is_ready()) {
+      if (!cryptographer->is_ready() || cryptographer->has_pending_keys()) {
         observer_->OnPassphraseRequired();
       }
     }
