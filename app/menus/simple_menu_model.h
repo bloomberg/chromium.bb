@@ -26,6 +26,7 @@ class SimpleMenuModel : public MenuModel {
     // Methods for determining the state of specific command ids.
     virtual bool IsCommandIdChecked(int command_id) const = 0;
     virtual bool IsCommandIdEnabled(int command_id) const = 0;
+    virtual bool IsCommandIdVisible(int command_id) const;
 
     // Gets the accelerator for the specified command id. Returns true if the
     // command id has a valid accelerator, false otherwise.
@@ -107,6 +108,7 @@ class SimpleMenuModel : public MenuModel {
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
   virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
+  virtual bool IsVisibleAt(int index) const;
   virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
   virtual MenuModel* GetSubmenuModelAt(int index) const;
@@ -117,7 +119,7 @@ class SimpleMenuModel : public MenuModel {
   // forcing customers to insert things backwards, we return the indices
   // backwards instead. That's what this method is for. By default, it just
   // returns what it's passed.
-  virtual int FlipIndex(int index) const { return index; }
+  virtual int FlipIndex(int index) const;
 
   Delegate* delegate() { return delegate_; }
 

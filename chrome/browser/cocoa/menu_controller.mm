@@ -143,6 +143,7 @@
     BOOL checked = model->IsItemCheckedAt(modelIndex);
     DCHECK([(id)item isKindOfClass:[NSMenuItem class]]);
     [(id)item setState:(checked ? NSOnState : NSOffState)];
+    [(id)item setHidden:(!model->IsVisibleAt(modelIndex))];
     if (model->IsLabelDynamicAt(modelIndex)) {
       NSString* label =
           l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(modelIndex));

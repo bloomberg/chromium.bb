@@ -63,7 +63,8 @@ class MenuGtk {
                                           const std::string& label);
   GtkWidget* AppendSeparator();
   GtkWidget* AppendMenuItem(int command_id, GtkWidget* menu_item);
-  GtkWidget* AppendMenuItemToMenu(int command_id,
+  GtkWidget* AppendMenuItemToMenu(int index,
+                                  menus::MenuModel* model,
                                   GtkWidget* menu_item,
                                   GtkWidget* menu,
                                   bool connect_to_activate);

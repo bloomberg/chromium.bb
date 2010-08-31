@@ -2168,12 +2168,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_VIEW_PASSWORDS:        OpenPasswordManager();            break;
     case IDC_CLEAR_BROWSING_DATA:   OpenClearBrowsingDataDialog();    break;
     case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();       break;
-    case IDC_ABOUT:
-      if (Singleton<UpgradeDetector>::get()->notify_upgrade())
-        OpenUpdateChromeDialog();
-      else
-        OpenAboutChromeDialog();
-      break;
+    case IDC_ABOUT:                 OpenAboutChromeDialog();          break;
+    case IDC_UPGRADE_DIALOG:        OpenUpdateChromeDialog();         break;
     case IDC_HELP_PAGE:             OpenHelpTab();                    break;
 #if defined(OS_CHROMEOS)
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;
@@ -3325,6 +3321,10 @@ void Browser::InitCommandState() {
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
+
+  // The upgrade entry should always be enabled. Whether it is visible is a
+  // separate matter determined on menu show.
+  command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);
 
   // Initialize other commands whose state changes based on fullscreen mode.
   UpdateCommandsForFullscreenMode(false);

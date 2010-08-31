@@ -83,6 +83,7 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id);
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool IsCommandIdVisible(int command_id) const;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       menus::Accelerator* accelerator);
@@ -123,7 +124,6 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   double GetZoom(bool* enable_increment, bool* enable_decrement);
 
   string16 GetSyncMenuLabel() const;
-  string16 GetAboutEntryMenuLabel() const;
 
   // Models for the special menu items with buttons.
   scoped_ptr<menus::ButtonMenuItemModel> edit_menu_item_model_;

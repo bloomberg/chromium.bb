@@ -214,22 +214,31 @@ GtkWidget* MenuGtk::AppendSeparator() {
 }
 
 GtkWidget* MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
-  return AppendMenuItemToMenu(command_id, menu_item, menu_, true);
+  return AppendMenuItemToMenu(command_id, NULL, menu_item, menu_, true);
 }
 
-GtkWidget* MenuGtk::AppendMenuItemToMenu(int command_id,
+GtkWidget* MenuGtk::AppendMenuItemToMenu(int index,
+                                         menus::MenuModel* model,
                                          GtkWidget* menu_item,
                                          GtkWidget* menu,
                                          bool connect_to_activate) {
   // Native menu items do their own thing, so only selectively listen for the
   // activate signal.
   if (connect_to_activate) {
-    SetMenuItemID(menu_item, command_id);
+    SetMenuItemID(menu_item, index);
     g_signal_connect(menu_item, "activate",
                      G_CALLBACK(OnMenuItemActivated), this);
   }
 
-  gtk_widget_show(menu_item);
+  // AppendMenuItemToMenu is used both internally when we control menu creation
+  // from a model (where the model can choose to hide certain menu items), and
+  // with immediate commands which don't provide the option.
+  if (model) {
+    if (model->IsVisibleAt(index))
+      gtk_widget_show(menu_item);
+  } else {
+    gtk_widget_show(menu_item);
+  }
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
   return menu_item;
 }
@@ -361,7 +370,7 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
     }
 
     g_object_set_data(G_OBJECT(menu_item), "model", model);
-    AppendMenuItemToMenu(i, menu_item, menu, connect_to_activate);
+    AppendMenuItemToMenu(i, model, menu_item, menu, connect_to_activate);
 
     if (model->IsLabelDynamicAt(i)) {
       g_signal_connect(menu, "show", G_CALLBACK(OnSubmenuShow),
@@ -602,6 +611,11 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
 
   if (GTK_IS_MENU_ITEM(widget)) {
     gtk_widget_set_sensitive(widget, model->IsEnabledAt(id));
+
+    if (model->IsVisibleAt(id))
+      gtk_widget_show(widget);
+    else
+      gtk_widget_hide(widget);
 
     GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
     if (submenu) {

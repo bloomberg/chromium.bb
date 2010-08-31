@@ -6,6 +6,10 @@
 
 namespace menus {
 
+bool MenuModel::IsVisibleAt(int index) const {
+  return true;
+}
+
 bool MenuModel::GetModelAndIndexForCommandId(int command_id,
                                              MenuModel** model, int* index) {
   int item_count = (*model)->GetItemCount();

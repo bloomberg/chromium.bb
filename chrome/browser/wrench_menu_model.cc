@@ -194,17 +194,14 @@ WrenchMenuModel::~WrenchMenuModel() {
 
 bool WrenchMenuModel::IsLabelForCommandIdDynamic(int command_id) const {
   return command_id == IDC_ZOOM_PERCENT_DISPLAY ||
-         command_id == IDC_SYNC_BOOKMARKS ||
 #if defined(OS_MACOSX)
          command_id == IDC_FULLSCREEN ||
 #endif
-         command_id == IDC_ABOUT;
+         command_id == IDC_SYNC_BOOKMARKS;
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
-    case IDC_ABOUT:
-      return GetAboutEntryMenuLabel();
     case IDC_SYNC_BOOKMARKS:
       return GetSyncMenuLabel();
     case IDC_ZOOM_PERCENT_DISPLAY:
@@ -244,6 +241,12 @@ bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
 
 bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
   return browser_->command_updater()->IsCommandEnabled(command_id);
+}
+
+bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
+  if (command_id == IDC_UPGRADE_DIALOG)
+    return Singleton<UpgradeDetector>::get()->notify_upgrade();
+  return true;
 }
 
 bool WrenchMenuModel::GetAcceleratorForCommandId(
@@ -366,24 +369,18 @@ void WrenchMenuModel::Build() {
                            IDS_TAB_CXMENU_USE_VERTICAL_TABS);
 #endif
 
-  // TODO(erg): This entire section needs to be reworked and is out of scope of
-  // the first cleanup patch I'm doing. Part 1 (crbug.com/47320) is moving most
-  // of the logic from each platform specific UI code into the model here. Part
-  // 2 (crbug.com/46221) is normalizing the about menu item/hidden update menu
-  // item behaviour across the three platforms.
-
-  // On Mac, there is no About item unless it is replaced with the update
-  // available notification.
-  if (browser_defaults::kShowAboutMenuItem ||
-      Singleton<UpgradeDetector>::get()->notify_upgrade()) {
-    AddItem(IDC_ABOUT,
-            l10n_util::GetStringFUTF16(
-                IDS_ABOUT,
-                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-    // ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    // SetIcon(GetIndexOfCommandId(IDC_ABOUT),
-    //                *rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE));
+  // On Mac, there is no About item.
+  if (browser_defaults::kShowAboutMenuItem) {
+    AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(
+        IDS_ABOUT, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   }
+
+  AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringFUTF16(
+      IDS_UPDATE_NOW, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SetIcon(GetIndexOfCommandId(IDC_UPGRADE_DIALOG),
+          *rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE));
+
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator();
@@ -442,13 +439,4 @@ double WrenchMenuModel::GetZoom(bool* enable_increment,
 string16 WrenchMenuModel::GetSyncMenuLabel() const {
   return sync_ui_util::GetSyncMenuLabel(
       browser_->profile()->GetOriginalProfile()->GetProfileSyncService());
-}
-
-string16 WrenchMenuModel::GetAboutEntryMenuLabel() const {
-  if (Singleton<UpgradeDetector>::get()->notify_upgrade()) {
-    return l10n_util::GetStringFUTF16(
-        IDS_UPDATE_NOW, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  }
-  return l10n_util::GetStringFUTF16(
-      IDS_ABOUT, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }

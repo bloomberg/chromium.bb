@@ -24,6 +24,10 @@ struct SimpleMenuModel::Item {
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel::Delegate, public:
 
+bool SimpleMenuModel::Delegate::IsCommandIdVisible(int command_id) const {
+  return true;
+}
+
 bool SimpleMenuModel::Delegate::IsLabelForCommandIdDynamic(
     int command_id) const {
   return false;
@@ -250,6 +254,14 @@ bool SimpleMenuModel::IsEnabledAt(int index) const {
   return delegate_->IsCommandIdEnabled(command_id);
 }
 
+bool SimpleMenuModel::IsVisibleAt(int index) const {
+  int command_id = GetCommandIdAt(index);
+  if (!delegate_ || command_id == kSeparatorId ||
+      items_.at(FlipIndex(index)).button_model)
+    return true;
+  return delegate_->IsCommandIdVisible(command_id);
+}
+
 void SimpleMenuModel::HighlightChangedTo(int index) {
   if (delegate_)
     delegate_->CommandIdHighlighted(GetCommandIdAt(index));
@@ -262,6 +274,10 @@ void SimpleMenuModel::ActivatedAt(int index) {
 
 MenuModel* SimpleMenuModel::GetSubmenuModelAt(int index) const {
   return items_.at(FlipIndex(index)).submenu;
+}
+
+int SimpleMenuModel::FlipIndex(int index) const {
+  return index;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
