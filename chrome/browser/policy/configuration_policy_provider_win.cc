@@ -20,41 +20,123 @@
 #include "base/values.h"
 #include "chrome/common/policy_constants.h"
 
+namespace {
+
+// Period at which to run the reload task in case the group policy change
+// watchers fail.
+const int kReloadIntervalMinutes = 15;
+
+}
+
 ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
-    GroupPolicyChangeWatcher(ConfigurationPolicyProvider* provider)
+    GroupPolicyChangeWatcher(
+        base::WeakPtr<ConfigurationPolicyProviderWin> provider,
+        int reload_interval_minutes)
         : provider_(provider),
           user_policy_changed_event_(false, false),
-          machine_policy_changed_event_(false, false) {
-  CHECK(RegisterGPNotification(user_policy_changed_event_.handle(), false));
-  CHECK(RegisterGPNotification(machine_policy_changed_event_.handle(), true));
-  user_policy_watcher_.StartWatching(
-      user_policy_changed_event_.handle(),
-      this);
-  machine_policy_watcher_.StartWatching(
-      machine_policy_changed_event_.handle(),
-      this);
+          machine_policy_changed_event_(false, false),
+          user_policy_watcher_failed_(false),
+          machine_policy_watcher_failed_(false),
+          reload_interval_minutes_(reload_interval_minutes),
+          reload_task_(NULL) {
+  if (!RegisterGPNotification(user_policy_changed_event_.handle(), false)) {
+    PLOG(WARNING) << "Failed to register user group policy notification";
+    user_policy_watcher_failed_ = true;
+  }
+  if (!RegisterGPNotification(machine_policy_changed_event_.handle(), true)) {
+    PLOG(WARNING) << "Failed to register machine group policy notification.";
+    machine_policy_watcher_failed_ = true;
+  }
+}
+
+ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
+    ~GroupPolicyChangeWatcher() {
+  if (MessageLoop::current())
+    MessageLoop::current()->RemoveDestructionObserver(this);
+  DCHECK(!reload_task_);
+}
+
+void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::Start() {
+  MessageLoop::current()->AddDestructionObserver(this);
+  SetupWatches();
+}
+
+void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::Stop() {
+  user_policy_watcher_.StopWatching();
+  machine_policy_watcher_.StopWatching();
+  if (reload_task_) {
+    reload_task_->Cancel();
+    reload_task_ = NULL;
+  }
+}
+
+void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::SetupWatches() {
+  if (reload_task_) {
+    reload_task_->Cancel();
+    reload_task_ = NULL;
+  }
+
+  if (!user_policy_watcher_failed_) {
+    if (!user_policy_watcher_.GetWatchedObject() &&
+        !user_policy_watcher_.StartWatching(
+            user_policy_changed_event_.handle(), this)) {
+      LOG(WARNING) << "Failed to start watch for user policy change event";
+      user_policy_watcher_failed_ = true;
+    }
+  }
+  if (!machine_policy_watcher_failed_) {
+    if (!machine_policy_watcher_.GetWatchedObject() &&
+        !machine_policy_watcher_.StartWatching(
+            machine_policy_changed_event_.handle(), this)) {
+      LOG(WARNING) << "Failed to start watch for machine policy change event";
+      machine_policy_watcher_failed_ = true;
+    }
+  }
+
+  if (user_policy_watcher_failed_ || machine_policy_watcher_failed_) {
+    reload_task_ =
+        NewRunnableMethod(this, &GroupPolicyChangeWatcher::ReloadFromTask);
+    int64 delay =
+        base::TimeDelta::FromMinutes(reload_interval_minutes_).InMilliseconds();
+    MessageLoop::current()->PostDelayedTask(FROM_HERE, reload_task_, delay);
+  }
+}
+
+void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::Reload() {
+  if (provider_.get())
+    provider_->NotifyStoreOfPolicyChange();
+  SetupWatches();
+}
+
+void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
+    ReloadFromTask() {
+  // Make sure to not call Cancel() on the task, since it might hold the last
+  // reference that keeps this object alive.
+  reload_task_ = NULL;
+  Reload();
 }
 
 void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
     OnObjectSignaled(HANDLE object) {
-  provider_->NotifyStoreOfPolicyChange();
-  if (object == user_policy_changed_event_.handle()) {
-    user_policy_watcher_.StartWatching(
-        user_policy_changed_event_.handle(),
-        this);
-  } else if (object == machine_policy_changed_event_.handle()) {
-    machine_policy_watcher_.StartWatching(
-        machine_policy_changed_event_.handle(),
-        this);
-  } else {
-    // This method should only be called as a result of signals
-    // to the user- and machine-policy handle watchers.
-    NOTREACHED();
-  }
+  DCHECK(object == user_policy_changed_event_.handle() ||
+         object == machine_policy_changed_event_.handle());
+  Reload();
+}
+
+void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
+    WillDestroyCurrentMessageLoop() {
+  reload_task_ = NULL;
+  MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin() {
-  watcher_.reset(new GroupPolicyChangeWatcher(this));
+  watcher_ = new GroupPolicyChangeWatcher(this->AsWeakPtr(),
+                                          kReloadIntervalMinutes);
+  watcher_->Start();
+}
+
+ConfigurationPolicyProviderWin::~ConfigurationPolicyProviderWin() {
+  watcher_->Stop();
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
