@@ -113,6 +113,7 @@ AudioConfig* AudioConfig::AsAudioConfig() {
 
 Audio::Audio(PluginModule* module)
     : Resource(module),
+      playing_(false),
       socket_(NULL),
       shared_memory_(NULL),
       shared_memory_size_(0),
@@ -160,6 +161,35 @@ bool Audio::Init(PluginDelegate* plugin_delegate, PP_Resource config_id,
   return audio_.get() != NULL;
 }
 
+bool Audio::StartPlayback() {
+  if (playing_)
+    return true;
+
+  CHECK(!audio_thread_.get());
+  if (callback_ && socket_.get()) {
+    audio_thread_.reset(new base::DelegateSimpleThread(this,
+                                                       "plugin_audio_thread"));
+    audio_thread_->Start();
+  }
+  playing_ = true;
+  return audio_->StartPlayback();
+}
+
+bool Audio::StopPlayback() {
+  if (!playing_)
+    return true;
+
+  if (!audio_->StopPlayback())
+    return false;
+
+  if (audio_thread_.get()) {
+    audio_thread_->Join();
+    audio_thread_.reset();
+  }
+  playing_ = false;
+  return true;
+}
+
 void Audio::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
                           size_t shared_memory_size,
                           base::SyncSocket::Handle socket_handle) {
@@ -169,9 +199,12 @@ void Audio::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
 
   if (callback_) {
     shared_memory_->Map(shared_memory_size_);
-    audio_thread_.reset(new base::DelegateSimpleThread(this,
-                                                       "plugin_audio_thread"));
-    audio_thread_->Start();
+    // In common case StartPlayback() was called before StreamCreated().
+    if (playing_) {
+      audio_thread_.reset(new base::DelegateSimpleThread(this,
+          "plugin_audio_thread"));
+      audio_thread_->Start();
+    }
   }
 }
 
@@ -182,6 +215,9 @@ void Audio::Run() {
   while (sizeof(pending_data) ==
       socket_->Receive(&pending_data, sizeof(pending_data)) &&
       pending_data >= 0) {
+    // Exit the thread on pause.
+    if (pending_data < 0)
+      return;
     callback_(buffer, user_data_);
   }
 }

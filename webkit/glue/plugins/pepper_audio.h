@@ -58,15 +58,9 @@ class Audio : public Resource,
     return config_->GetReference();
   }
 
-  bool StartPlayback() {
-    // TODO(neb): Make this synchronous.
-    return audio_->StartPlayback();
-  }
+  bool StartPlayback();
 
-  bool StopPlayback() {
-    // TODO(neb): Make this synchronous.
-    return audio_->StopPlayback();
-  }
+  bool StopPlayback();
 
   // Resource override.
   virtual Audio* AsAudio();
@@ -81,6 +75,9 @@ class Audio : public Resource,
   // Audio thread. DelegateSimpleThread::Delegate implementation.
   virtual void Run();
   // End of DelegateSimpleThread::Delegate implementation.
+
+  // True if playing the stream.
+  bool playing_;
 
   // AudioConfig used for creating this Audio object.
   scoped_refptr<AudioConfig> config_;
