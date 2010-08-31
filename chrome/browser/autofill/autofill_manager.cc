@@ -762,12 +762,12 @@ void AutoFillManager::ParseForms(
   for (std::vector<FormData>::const_iterator iter =
            forms.begin();
        iter != forms.end(); ++iter) {
-    FormStructure* form_structure = new FormStructure(*iter);
+    scoped_ptr<FormStructure> form_structure(new FormStructure(*iter));
     if (!form_structure->ShouldBeParsed())
       continue;
 
-    DeterminePossibleFieldTypes(form_structure);
-    form_structures_.push_back(form_structure);
+    DeterminePossibleFieldTypes(form_structure.get());
+    form_structures_.push_back(form_structure.release());
   }
 
   // If none of the forms were parsed, no use querying the server.
