@@ -78,6 +78,14 @@ void RendererWebIDBDatabaseImpl::removeObjectStore(
       name, callbacks, idb_database_id_);
 }
 
+void RendererWebIDBDatabaseImpl::setVersion(
+    const WebString& version, WebIDBCallbacks* callbacks) {
+  IndexedDBDispatcher* dispatcher =
+      RenderThread::current()->indexed_db_dispatcher();
+  dispatcher->RequestIDBDatabaseSetVersion(
+      version, callbacks, idb_database_id_);
+}
+
 WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
     const WebDOMStringList& names, unsigned short mode,
     unsigned long timeout) {

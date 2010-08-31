@@ -106,6 +106,9 @@ class IndexedDBDispatcherHost
                        IPC::Message* reply_msg);
     void OnRemoveObjectStore(int32 idb_database_id, int32 response_id,
                              const string16& name);
+    void OnSetVersion(int32 idb_database_id,
+                      int32 response_id,
+                      const string16& version);
     void OnTransaction(int32 idb_database_id,
                        const std::vector<string16>& names,
                        int32 mode, int32 timeout, IPC::Message* reply_msg);

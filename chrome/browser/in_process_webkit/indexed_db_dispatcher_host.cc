@@ -107,6 +107,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBDatabaseCreateObjectStore::ID:
     case ViewHostMsg_IDBDatabaseObjectStore::ID:
     case ViewHostMsg_IDBDatabaseRemoveObjectStore::ID:
+    case ViewHostMsg_IDBDatabaseSetVersion::ID:
     case ViewHostMsg_IDBDatabaseTransaction::ID:
     case ViewHostMsg_IDBDatabaseDestroyed::ID:
     case ViewHostMsg_IDBIndexName::ID:
@@ -304,6 +305,8 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                                     OnObjectStore)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBDatabaseRemoveObjectStore,
                         OnRemoveObjectStore)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBDatabaseSetVersion,
+                        OnSetVersion)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseTransaction,
                                     OnTransaction)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBDatabaseDestroyed, OnDestroyed)
@@ -395,6 +398,18 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRemoveObjectStore(
     return;
   idb_database->removeObjectStore(
       name, new IndexedDBCallbacks<void>(parent_, response_id));
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetVersion(
+    int32 idb_database_id, int32 response_id, const string16& version) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
+      &map_, idb_database_id, NULL,
+      ViewHostMsg_IDBDatabaseSetVersion::ID);
+  if (!idb_database)
+    return;
+  idb_database->setVersion(
+      version, new IndexedDBCallbacks<void>(parent_, response_id));
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(

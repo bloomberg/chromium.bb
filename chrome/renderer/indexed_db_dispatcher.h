@@ -45,6 +45,11 @@ class IndexedDBDispatcher {
       const string16& name, WebKit::WebIDBCallbacks* callbacks,
       int32 idb_database_id);
 
+  void RequestIDBDatabaseSetVersion(
+      const string16& version,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_database_id);
+
   void RequestIDBObjectStoreGet(
       const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id);

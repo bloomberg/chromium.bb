@@ -2369,6 +2369,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32, /* response_id */
                        string16 /* name */)
 
+  // WebIDBDatabase::setVersion() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBDatabaseSetVersion,
+                       int32, /* idb_database_id */
+                       int32, /* response_id */
+                       string16 /* version */)
+
   // WebIDBDatabase::transaction() message.
   // TODO: make this message async. Have the renderer create a
   // temporary ID and keep a map in the browser process of real
