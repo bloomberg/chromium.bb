@@ -764,11 +764,25 @@ bool PDBSourceLineWriter::GetModuleInfo(PDBModuleInfo *info) {
     return false;
   }
 
-  // All CPUs in CV_CPU_TYPE_e (cvconst.h) below 0x10 are x86.  There's no
-  // single specific constant to use.
-  DWORD platform;
-  if (SUCCEEDED(global->get_platform(&platform)) && platform < 0x10) {
-    info->cpu = L"x86";
+  DWORD machine_type;
+  // get_machineType can return S_FALSE.
+  if (global->get_machineType(&machine_type) == S_OK) {
+    // The documentation claims that get_machineType returns a value from
+    // the CV_CPU_TYPE_e enumeration, but that's not the case.
+    // Instead, it returns one of the IMAGE_FILE_MACHINE values as
+    // defined here:
+    // http://msdn.microsoft.com/en-us/library/ms680313%28VS.85%29.aspx
+    switch (machine_type) {
+      case IMAGE_FILE_MACHINE_I386:
+        info->cpu = L"x86";
+        break;
+      case IMAGE_FILE_MACHINE_AMD64:
+        info->cpu = L"x86_64";
+        break;
+      default:
+        info->cpu = L"unknown";
+        break;
+    }
   } else {
     // Unexpected, but handle gracefully.
     info->cpu = L"unknown";
