@@ -246,6 +246,13 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                       DictionaryValue* args,
                       IPC::Message* reply_message);
 
+  // Get info about the state of navigation in a given tab.
+  // This includes ssl info.
+  // Uses the JSON interface for input/output.
+  void GetNavigationInfo(Browser* browser,
+                         DictionaryValue* args,
+                         IPC::Message* reply_message);
+
   // Get info about downloads. This includes only ones that have been
   // registered by the history system.
   // Uses the JSON interface for input/output.

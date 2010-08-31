@@ -728,6 +728,40 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
+  def GetNavigationInfo(self, tab_index=0, windex=0):
+    """Get info about the navigation state of a given tab.
+
+    Args:
+      tab_index: The tab index, default is 0.
+      window_index: The window index, default is 0.
+
+    Returns:
+      a dictionary.
+      Sample:
+
+      { u'favicon_url': u'https://www.google.com/favicon.ico',
+        u'page_type': u'NORMAL_PAGE',
+        u'ssl': { u'displayed_insecure_content': False,
+                  u'ran_insecure_content': False,
+                  u'security_style': u'SECURITY_STYLE_AUTHENTICATED'}}
+
+      Values for security_style can be:
+        SECURITY_STYLE_UNKNOWN
+        SECURITY_STYLE_UNAUTHENTICATED
+        SECURITY_STYLE_AUTHENTICATION_BROKEN
+        SECURITY_STYLE_AUTHENTICATED
+
+      Values for page_type can be:
+        NORMAL_PAGE
+        ERROR_PAGE
+        INTERSTITIAL_PAGE
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetNavigationInfo',
+      'tab_index': tab_index,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
   def GetHistoryInfo(self, search_text=''):
     """Return info about browsing history.
 
