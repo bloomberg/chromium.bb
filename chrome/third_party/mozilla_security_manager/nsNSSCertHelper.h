@@ -46,6 +46,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "net/base/cert_database.h"
 
 class FreePRArenaPool {
  public:
@@ -56,17 +57,6 @@ class FreePRArenaPool {
 typedef scoped_ptr_malloc<PRArenaPool, FreePRArenaPool> ScopedPRArenaPool;
 
 namespace mozilla_security_manager {
-
-// Constants to classify the type of a certificate. (In Mozilla this is actually
-// defined in nsIX509Cert.idl)
-enum CertType {
-  UNKNOWN_CERT,
-  CA_CERT,
-  USER_CERT,
-  EMAIL_CERT,
-  SERVER_CERT,
-  NUM_CERT_TYPES
-};
 
 extern SECOidTag ms_cert_ext_certtype;
 extern SECOidTag ms_certsrv_ca_version;
@@ -110,7 +100,7 @@ std::string ProcessExtKeyUsage(SECItem* extension_data);
 std::string ProcessExtensionData(SECOidTag oid_tag, SECItem* extension_data);
 std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki);
 
-CertType GetCertType(CERTCertificate *cert);
+net::CertType GetCertType(CERTCertificate *cert);
 
 }  // namespace mozilla_security_manager
 

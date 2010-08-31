@@ -5,6 +5,8 @@
 #include <cert.h>
 #include <pk11pub.h>
 
+#include <algorithm>
+
 #include "base/crypto/scoped_nss_types.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -17,7 +19,11 @@
 #include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
+#include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
+#include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace psm = mozilla_security_manager;
 
 namespace net {
 
@@ -48,7 +54,21 @@ CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
             X509Certificate::OSCertHandles()));
   }
   CERT_DestroyCertList(cert_list);
+
+  // Sort the result so that test comparisons can be deterministic.
+  std::sort(result.begin(), result.end(), X509Certificate::LessThan());
   return result;
+}
+
+bool CleanupSlotContents(PK11SlotInfo* slot) {
+  CertDatabase cert_db;
+  bool ok = true;
+  CertificateList certs = ListCertsInSlot(slot);
+  for (size_t i = 0; i < certs.size(); ++i) {
+    if (!cert_db.DeleteCertAndKey(certs[i]))
+      ok = false;
+  }
+  return ok;
 }
 
 std::string ReadTestFile(const std::string& name) {
@@ -58,21 +78,51 @@ std::string ReadTestFile(const std::string& name) {
   return result;
 }
 
+bool ReadCertIntoList(const std::string& name, CertificateList* certs) {
+  std::string cert_data = ReadTestFile(name);
+  if (cert_data.empty())
+    return false;
+
+  X509Certificate* cert = X509Certificate::CreateFromBytes(
+      cert_data.data(), cert_data.size());
+  if (!cert)
+    return false;
+
+  certs->push_back(cert);
+  return true;
+}
+
 }  // namespace
 
+// TODO(mattm): when https://bugzilla.mozilla.org/show_bug.cgi?id=588269 is
+// fixed, switch back to using a separate userdb for each test.
+// (When doing so, remember to add some standalone tests of DeleteCert since it
+// won't be tested by TearDown anymore.)
 class CertDatabaseNSSTest : public testing::Test {
  public:
   virtual void SetUp() {
-    ASSERT_TRUE(temp_db_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(
-        base::OpenTestNSSDB(temp_db_dir_.path(), "CertDatabaseNSSTest db"));
+    if (!temp_db_initialized_) {
+      ScopedTempDir* temp_db_dir = Singleton<
+          ScopedTempDir,
+          DefaultSingletonTraits<ScopedTempDir>,
+          CertDatabaseNSSTest>::get();
+      ASSERT_TRUE(temp_db_dir->CreateUniqueTempDir());
+      ASSERT_TRUE(
+          base::OpenTestNSSDB(temp_db_dir->path(), "CertDatabaseNSSTest db"));
+      temp_db_initialized_ = true;
+    }
     slot_.reset(base::GetDefaultNSSKeySlot());
 
     // Test db should be empty at start of test.
     EXPECT_EQ(0U, ListCertsInSlot(slot_.get()).size());
   }
   virtual void TearDown() {
-    base::CloseTestNSSDB();
+    // Don't try to cleanup if the setup failed.
+    ASSERT_TRUE(temp_db_initialized_);
+    ASSERT_TRUE(slot_.get());
+
+    EXPECT_TRUE(CleanupSlotContents(slot_.get()));
+    EXPECT_EQ(0U, ListCertsInSlot(slot_.get()).size());
   }
 
  protected:
@@ -80,8 +130,11 @@ class CertDatabaseNSSTest : public testing::Test {
   CertDatabase cert_db_;
 
  private:
-  ScopedTempDir temp_db_dir_;
+  static bool temp_db_initialized_;
 };
+
+// static
+bool CertDatabaseNSSTest::temp_db_initialized_ = false;
 
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12WrongPassword) {
   std::string pkcs12_data = ReadTestFile("client.p12");
@@ -112,5 +165,247 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AndExportAgain) {
   ASSERT_LT(0U, exported_data.size());
   // TODO(mattm): further verification of exported data?
 }
+
+TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
+  std::string cert_data = ReadTestFile("root_ca_cert.crt");
+
+  CertificateList certs =
+      X509Certificate::CreateCertificateListFromBytes(
+          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+  EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
+
+  // Import it.
+  CertDatabase::ImportCertResultList failed;
+  EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_SSL,
+                                         &failed));
+
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(1U, cert_list.size());
+  scoped_refptr<X509Certificate> cert(cert_list[0]);
+  EXPECT_EQ("Test CA", cert->subject().common_name);
+
+  psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
+  EXPECT_TRUE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
+  EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_TRUE, PR_FALSE));
+  EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_FALSE, PR_TRUE));
+  EXPECT_FALSE(trust.HasTrustedCA(PR_TRUE, PR_TRUE, PR_TRUE));
+  EXPECT_TRUE(trust.HasCA(PR_TRUE, PR_TRUE, PR_TRUE));
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
+  std::string cert_data = ReadTestFile("root_ca_cert.crt");
+
+  CertificateList certs =
+      X509Certificate::CreateCertificateListFromBytes(
+          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+  EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
+
+  // Import it.
+  CertDatabase::ImportCertResultList failed;
+  EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_EMAIL,
+                                         &failed));
+
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(1U, cert_list.size());
+  scoped_refptr<X509Certificate> cert(cert_list[0]);
+  EXPECT_EQ("Test CA", cert->subject().common_name);
+
+  psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
+  EXPECT_FALSE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
+  EXPECT_TRUE(trust.HasTrustedCA(PR_FALSE, PR_TRUE, PR_FALSE));
+  EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_FALSE, PR_TRUE));
+  EXPECT_TRUE(trust.HasCA(PR_TRUE, PR_TRUE, PR_TRUE));
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
+  std::string cert_data = ReadTestFile("root_ca_cert.crt");
+
+  CertificateList certs =
+      X509Certificate::CreateCertificateListFromBytes(
+          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+  EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
+
+  // Import it.
+  CertDatabase::ImportCertResultList failed;
+  EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_OBJ_SIGN,
+                                         &failed));
+
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(1U, cert_list.size());
+  scoped_refptr<X509Certificate> cert(cert_list[0]);
+  EXPECT_EQ("Test CA", cert->subject().common_name);
+
+  psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
+  EXPECT_FALSE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
+  EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_TRUE, PR_FALSE));
+  EXPECT_TRUE(trust.HasTrustedCA(PR_FALSE, PR_FALSE, PR_TRUE));
+  EXPECT_TRUE(trust.HasCA(PR_TRUE, PR_TRUE, PR_TRUE));
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
+  std::string cert_data = ReadTestFile("google.single.pem");
+
+  CertificateList certs =
+      X509Certificate::CreateCertificateListFromBytes(
+          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+  EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
+
+  // Import it.
+  CertDatabase::ImportCertResultList failed;
+  EXPECT_EQ(true,
+            cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_SSL, &failed));
+  ASSERT_EQ(1U, failed.size());
+  // Note: this compares pointers directly.  It's okay in this case because
+  // ImportCACerts returns the same pointers that were passed in.  In the
+  // general case IsSameOSCert should be used.
+  EXPECT_EQ(certs[0], failed[0].certificate);
+  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[0].net_error);
+
+  EXPECT_EQ(0U, ListCertsInSlot(slot_.get()).size());
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
+  CertificateList certs;
+  ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
+  ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
+  ASSERT_TRUE(ReadCertIntoList("www_us_army_mil_cert.der", &certs));
+
+  // Import it.
+  CertDatabase::ImportCertResultList failed;
+  // Have to specify email trust for the cert verification of the child cert to
+  // work (see
+  // http://mxr.mozilla.org/mozilla/source/security/nss/lib/certhigh/certvfy.c#752
+  // "XXX This choice of trustType seems arbitrary.")
+  EXPECT_EQ(true, cert_db_.ImportCACerts(
+      certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
+      &failed));
+
+  ASSERT_EQ(1U, failed.size());
+  EXPECT_EQ("www.us.army.mil", failed[0].certificate->subject().common_name);
+  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[0].net_error);
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(2U, cert_list.size());
+  EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
+  EXPECT_EQ("DOD CA-17", cert_list[1]->subject().common_name);
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
+  CertificateList certs;
+  ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
+
+  // First import just the root.
+  CertDatabase::ImportCertResultList failed;
+  EXPECT_EQ(true, cert_db_.ImportCACerts(
+      certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
+      &failed));
+
+  EXPECT_EQ(0U, failed.size());
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(1U, cert_list.size());
+  EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
+
+  ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
+  ASSERT_TRUE(ReadCertIntoList("www_us_army_mil_cert.der", &certs));
+
+  // Now import with the other certs in the list too.  Even though the root is
+  // already present, we should still import the rest.
+  failed.clear();
+  EXPECT_EQ(true, cert_db_.ImportCACerts(
+      certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
+      &failed));
+
+  ASSERT_EQ(2U, failed.size());
+  EXPECT_EQ("DoD Root CA 2", failed[0].certificate->subject().common_name);
+  EXPECT_EQ(ERR_IMPORT_CERT_ALREADY_EXISTS, failed[0].net_error);
+  EXPECT_EQ("www.us.army.mil", failed[1].certificate->subject().common_name);
+  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[1].net_error);
+
+  cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(2U, cert_list.size());
+  EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
+  EXPECT_EQ("DOD CA-17", cert_list[1]->subject().common_name);
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
+  CertificateList certs;
+  ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
+  ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
+
+  // Import it.
+  CertDatabase::ImportCertResultList failed;
+  EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::UNTRUSTED,
+                                         &failed));
+
+  ASSERT_EQ(1U, failed.size());
+  EXPECT_EQ("DOD CA-17", failed[0].certificate->subject().common_name);
+  // TODO(mattm): should check for net error equivalent of
+  // SEC_ERROR_UNTRUSTED_ISSUER
+  EXPECT_EQ(ERR_FAILED, failed[0].net_error);
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(1U, cert_list.size());
+  EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
+  CertificateList certs;
+  ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
+  ASSERT_TRUE(ReadCertIntoList("dod_ca_13_cert.der", &certs));
+  ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
+
+  // Import it.
+  CertDatabase::ImportCertResultList failed;
+  EXPECT_EQ(true, cert_db_.ImportCACerts(
+      certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
+      &failed));
+
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(3U, cert_list.size());
+  EXPECT_EQ("DOD CA-13", cert_list[0]->subject().common_name);
+  EXPECT_EQ("DoD Root CA 2", cert_list[1]->subject().common_name);
+  EXPECT_EQ("DOD CA-17", cert_list[2]->subject().common_name);
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
+  std::string cert_data = ReadTestFile("root_ca_cert.crt");
+  CertificateList certs =
+      X509Certificate::CreateCertificateListFromBytes(
+          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+  ASSERT_TRUE(ReadCertIntoList("dod_ca_13_cert.der", &certs));
+  ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
+
+  // Import it.
+  CertDatabase::ImportCertResultList failed;
+  EXPECT_EQ(true, cert_db_.ImportCACerts(
+      certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL |
+      CertDatabase::TRUSTED_OBJ_SIGN, &failed));
+
+  ASSERT_EQ(2U, failed.size());
+  // TODO(mattm): should check for net error equivalent of
+  // SEC_ERROR_UNKNOWN_ISSUER
+  EXPECT_EQ("DOD CA-13", failed[0].certificate->subject().common_name);
+  EXPECT_EQ(ERR_FAILED, failed[0].net_error);
+  EXPECT_EQ("DOD CA-17", failed[1].certificate->subject().common_name);
+  EXPECT_EQ(ERR_FAILED, failed[1].net_error);
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(1U, cert_list.size());
+  EXPECT_EQ("Test CA", cert_list[0]->subject().common_name);
+}
+
 
 }  // namespace net

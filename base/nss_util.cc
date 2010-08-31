@@ -254,7 +254,9 @@ class NSSInitSingleton {
 
   void CloseTestNSSDB() {
     if (test_db_slot_) {
-      SECMOD_CloseUserDB(test_db_slot_);
+      SECStatus status = SECMOD_CloseUserDB(test_db_slot_);
+      if (status != SECSuccess)
+        LOG(ERROR) << "SECMOD_CloseUserDB failed: " << PORT_GetError();
       PK11_FreeSlot(test_db_slot_);
       test_db_slot_ = NULL;
     }
