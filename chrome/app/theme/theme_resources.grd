@@ -216,9 +216,6 @@
       <include name="IDR_NEWTAB_OPTION" file="ntp_option.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION_H" file="ntp_option_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION_P" file="ntp_option_p.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_SECTION_HEADER_BACKGROUND" file="ntp_header_background.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_SECTION_HEADER_BACKGROUND_H" file="ntp_header_background_hover.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_SECTION_HEADER_BACKGROUND_A" file="ntp_header_background_active.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_FAVICON" file="ntp_themes_gallery_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL" file="ntp_themes_gallery_thumb.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" type="BINDATA" />

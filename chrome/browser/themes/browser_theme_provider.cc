@@ -80,6 +80,9 @@ const SkColor kDefaultColorNTPSection = SkColorSetRGB(229, 239, 254);
 const SkColor kDefaultColorNTPSectionText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(6, 55, 116);
 const SkColor kDefaultColorNTPSectionHeaderText = SkColorSetRGB(76, 76, 76);
+const SkColor kDefaultColorNTPSectionHeaderRule = SkColorSetRGB(179, 179, 179);
+const SkColor kDefaultColorNTPSectionHeaderRuleLight =
+    SkColorSetRGB(220, 220, 220);
 const SkColor kDefaultColorControlBackground = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
 #if defined(OS_MACOSX)
@@ -449,6 +452,10 @@ SkColor BrowserThemeProvider::GetDefaultColor(int id) {
       return kDefaultColorNTPSectionHeaderText;
     case COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
       return kDefaultColorNTPText;
+    case COLOR_NTP_SECTION_HEADER_RULE:
+      return kDefaultColorNTPSectionHeaderRule;
+    case COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
+      return kDefaultColorNTPSectionHeaderRuleLight;
     case COLOR_CONTROL_BACKGROUND:
       return kDefaultColorControlBackground;
     case COLOR_BUTTON_BACKGROUND:

@@ -3,7 +3,6 @@ html {
   background-color: $2; /* COLOR_NTP_BACKGROUND */
   background-position: $3;
   background-repeat: $5;
-  overflow: hidden;
 }
 
 html[bookmarkbarattached='true'] {
@@ -66,11 +65,6 @@ body {
   background-color: $$1; /* COLOR_NTP_SECTION */
 }
 
-#option-button {
-  background-color: $7; /* color_header_gradient_light */
-  -webkit-mask-image: url(chrome://theme/IDR_NEWTAB_MENU_MASK);
-}
-
 .miniview {
   color: $8; /* COLOR_NTP_TEXT */
 }
@@ -106,21 +100,55 @@ body {
 }
 
 .section > h2 {
-  color: $$9;
-  background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND_A);
+  background-color: $2; /* COLOR_NTP_BACKGROUND */
+  color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT */
 }
 
-.section.hidden > h2 {
-  color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT */
-  background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND);
+.section:not(.hidden) > h2 {
+  background-color: transparent;
+  background-image:
+      -webkit-gradient(linear, 0% 0%, 0% 100%, from($2), to($2)),
+      -webkit-gradient(linear, 0% 0%, 0% 100%, from($2), to($$$1));
+  color: $$9;
+}
+
+.section:not(.hidden) + .section > h2 {
+  background-color: transparent;
+  background-image:
+      -webkit-gradient(linear, 0% 0%, 0% 100%, from($$$1), to($2)),
+      -webkit-gradient(linear, 0% 0%, 0% 100%, from($2), to($2));
 }
 
 .section.hidden:not([noexpand]) > h2:hover {
   color: $$9;
-  background-image: url(chrome://theme/IDR_NEWTAB_SECTION_HEADER_BACKGROUND_H);
 }
 
 .section > h2 > span {
+  background: $2; /* COLOR_NTP_BACKGROUND */
+}
+
+.section > h2 > .back {
+  background-image:
+      -webkit-gradient(radial, 50% -1753, 1750, 50% -1753, 1770,
+                       from($$$2), to($$$1));
+  border-top: 1px solid $$$2; /* COLOR_NTP_SECTION_HEADER_RULE */
+}
+
+.section.hidden > h2 > .back {
+  background: none;
+  border-color-top: $$$3; /* COLOR_NTP_SECTION_HEADER_RULE_LIGHT */
+}
+
+.section.hidden:hover > h2 > .back {
+  border-color-top: $$$2; /* COLOR_NTP_SECTION_HEADER_RULE */
+}
+
+.section > h2 > .settings {
+  background-color: $2; /* COLOR_NTP_BACKGROUND */
+  border-color: $2; /* COLOR_NTP_BACKGROUND */
+}
+
+.section > .miniview {
   background: $2; /* COLOR_NTP_BACKGROUND */
 }
 

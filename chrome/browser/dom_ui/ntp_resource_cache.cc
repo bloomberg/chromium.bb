@@ -403,6 +403,10 @@ void NTPResourceCache::CreateNewTabCSS() {
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_TEXT);
   SkColor color_section_header_text_hover =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_TEXT_HOVER);
+  SkColor color_section_header_rule =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_RULE);
+  SkColor color_section_header_rule_light =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_RULE_LIGHT);
 
   SkColor color_header =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER);
@@ -427,6 +431,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   // A second list of replacements, each of which must be in $$x format,
   // where x is a digit from 1-9.
   std::vector<std::string> subst2;
+  std::vector<std::string> subst3;
 
   // Cache-buster for background.
   subst.push_back(
@@ -454,6 +459,16 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst2.push_back(SkColorToRGBAString(
       color_section_header_text_hover)); // $$9
 
+  // A fully transparent version of the background color --- used for gradients.
+  subst3.push_back(SkColorToRGBAString(
+      SkColorSetA(color_background, 0)));  // $$$1
+
+  // TODO(aa): It seems we could generate sensible defaults for all these colors
+  // for better backward compat with old themes.
+  subst3.push_back(SkColorToRGBAString(color_section_header_rule));  // $$$2
+  subst3.push_back(SkColorToRGBAString(
+      color_section_header_rule_light));  // $$$3
+
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -463,6 +478,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   std::string css_string;
   css_string = ReplaceStringPlaceholders(new_tab_theme_css, subst, NULL);
   css_string = ReplaceStringPlaceholders(css_string, subst2, NULL);
+  css_string = ReplaceStringPlaceholders(css_string, subst3, NULL);
 
   new_tab_css_ = new RefCountedBytes;
   new_tab_css_->data.resize(css_string.size());

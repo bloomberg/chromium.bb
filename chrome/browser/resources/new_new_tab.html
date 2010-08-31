@@ -90,13 +90,6 @@ function isRtl() {
   return templateData['textdirection'] == 'rtl';
 }
 
-// This will get overridden in new_new_tab.js
-function updateSimpleSection(id, section) {
-  // All sections start off shown.
-  if (!(shownSections & section))
-    document.getElementById(id).className += ' hidden';
-}
-
 // Parse any name value pairs passed through the URL hash.
 var hashParams = (function() {
   var result = {};
@@ -127,9 +120,6 @@ if ('mode' in hashParams) {
 <div id="main">
 
   <menu id="option-menu">
-    <div command="hide" section="THUMB" i18n-content="mostvisited"></div>
-    <div command="hide" section="RECENT" i18n-content="recentlyclosed"></div>
-    <hr>
     <div command="clear-all-blacklisted"
          i18n-content="restorethumbnails"></div>
   </menu>
@@ -141,16 +131,17 @@ if ('mode' in hashParams) {
 
   <div class="sections">
     <div class="section" section="APPS" id="apps-section">
-      <h2><img src="ntp/ntp_disclosure_triangle.png"
-        ><span i18n-content="apps"></span></h2>
-      <div id="apps-section-content"></div>
+      <h2><img class="disclosure" img src="ntp/ntp_disclosure_triangle.png"
+        ><span i18n-content="apps"></span><div class="back"></div></h2>
+      <div class="maxiview" id="apps-section-content"></div>
       <div class="miniview"></div>
     </div>
 
     <div id="most-visited-section" class="section" section="THUMB">
-      <h2><img src="ntp/ntp_disclosure_triangle.png"
-        ><span i18n-content="mostvisited"></span></h2>
-      <div id="most-visited"></div>
+      <h2><img class="disclosure" src="ntp/ntp_disclosure_triangle.png"
+        ><span i18n-content="mostvisited"></span
+        ><div class="settings"></div><div class="back"></div></h2>
+      <div class="maxiview" id="most-visited"></div>
       <div class="miniview"></div>
     </div>
 
@@ -158,10 +149,12 @@ if ('mode' in hashParams) {
          silly without any. -->
     <div id="recently-closed" class="section hidden disabled" section="RECENT"
         noexpand="true">
-      <h2><span i18n-content="recentlyclosed"></span></h2>
+      <h2><span i18n-content="recentlyclosed"></span
+        ><div class="back"></div></h2>
       <div class="miniview"></div>
     </div>
 
+    <!-- TODO(aa): Remove this -- we don't use it anymore. -->
     <div id="debug" class="section disabled" section="DEBUG">
       <h2><span>Debug</span></h2>
       <div id="apps-launch-control">
@@ -177,13 +170,6 @@ if ('mode' in hashParams) {
       </div>
     </div>
   </div>
-
-  <script>
-    updateSimpleSection('apps-section', Section.APPS);
-    updateSimpleSection('most-visited-section', Section.THUMB);
-    updateSimpleSection('recently-closed', Section.RECENT);
-    updateSimpleSection('debug', Section.DEBUG);
-  </script>
 
   <div id="sync-status">
     <h2></h2>
@@ -212,4 +198,13 @@ i18nTemplate.process(document, templateData);
 <script src="ntp/most_visited.js"></script>
 <script src="new_new_tab.js"></script>
 <script src="ntp/apps.js"></script>
+
+<script>
+  updateSimpleSection('apps-section', Section.APPS);
+  updateSimpleSection('most-visited-section', Section.THUMB);
+  updateSimpleSection('recently-closed', Section.RECENT);
+  updateSimpleSection('debug', Section.DEBUG);
+
+  layoutSections();
+</script>
 </html>

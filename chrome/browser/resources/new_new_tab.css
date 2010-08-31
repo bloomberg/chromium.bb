@@ -20,8 +20,6 @@ html[mode=app-launcher] {
   -webkit-transition: width .15s;
   margin: 0 auto;
   min-height: 100%;
-  padding:10px 0 20px;
-  position: relative;
   width: 920px;
 }
 
@@ -217,38 +215,11 @@ html[dir=rtl] .item {
   pointer-events: none;
 }
 
-#option-button {
-  -webkit-appearance: none;
-  background-color: transparent;
-  width: 19px;
-  height: 17px;
-  position: absolute;
-  right: 0;
-  left: auto;
-  top: 20px;
-  border: 0;
-  padding: 0;
-  vertical-align: top;
-  -webkit-margin-start: 10px;
-  /* Do not show focus outline */
-  outline: none;
-  background-image: url(chrome://theme/IDR_NEWTAB_OPTION);
-}
-
-#option-button:hover,
-#option-button:focus {
-  background-image: url(chrome://theme/IDR_NEWTAB_OPTION_H);
-}
-
-#option-button:active,
-#option-button.open {
-  background-image: url(chrome://theme/IDR_NEWTAB_OPTION_P);
-}
-
 #option-menu {
   right: 0;
   left: auto;
   min-width: 175px;
+  z-index: 3;
 }
 
 html[dir=rtl] #option-button,
@@ -322,6 +293,7 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 
 .section > * {
   font-size: 12px;
+  width: 920px;
 }
 
 .section.disabled {
@@ -329,49 +301,104 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 }
 
 .section > div {
-  margin-bottom: 15px;
+  padding-bottom: 20px;
 }
 
 #apps-section-content {
   /* This one is special because the app buttons already have a lot of empty
   space around them. */
-  margin-bottom: 5px;
+  margin-top: -5px;
+  padding-bottom: 5px;
 }
 
 .section > h2 {
-  background-position: 0 center;
-  background-repeat: no-repeat;
-  -webkit-background-size: 100% 26px;
   display: block;
   font-family: Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: normal;
-  margin:10px 0;
-  -webkit-margin-collapse: separate;
+  margin: 0;
+  padding: 15px 0;
+  position: fixed;
+  z-index: 2;
+}
+
+.section:not(.hidden) > h2 {
+  background-position: 0 0, 0 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 39px, 100% 10px;
+}
+
+.section:not(.hidden) + .section > h2 {
+  background-position: 0 0, 0 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 10px, 100% 39px;
 }
 
 .section:not([noexpand]) > h2 {
   cursor: pointer;
 }
 
-.section > h2 > img {
-  margin-left:-13px;
-  padding-right:4px;
+/* The first one is special because we want a little extra space at the top of
+the layout. */
+.section:first-child > h2 {
+  padding-top: 20px;
+  background-size: 100% 44px, 100% 10px;
 }
 
-.section:not(.hidden) > h2 > img {
+.section > h2 > .disclosure {
+  margin-left: -13px;
+  padding-right: 4px;
+}
+
+.section:not(.hidden) > h2 > .disclosure {
   -webkit-transform:rotate(90deg);
 }
 
+.section > h2 > .back {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  width: 100%;
+  height: 19px;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
 .section > h2 > span {
-  padding-right: 4px;
+  padding-right: 5px;
+  position: relative;
+  z-index: 2;
+}
+
+.section > h2 > .settings {
+  position: absolute;
+  top: 18px;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  /* TODO(aa): Need a better image. This one is semi-transparent. Also, I think
+  a gear would be better. */
+  background-image: url(chrome://theme/IDR_BALLOON_WRENCH);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  border-style: solid;
+  border-width: 0 5px 0 6px;
+  z-index: 2;
+}
+
+.section.hidden > h2 > .settings {
+  display: none;
+}
+
+.section > .maxiview {
+  position: absolute;
 }
 
 .section > .miniview {
   display: none;
-  /* Because the items have 10px horizontal margins. */
-  margin-left:-10px;
-  margin-right:-10px;
+  position: fixed;
+  z-index: 2;
 }
 
 .section.hidden > * {
@@ -402,11 +429,20 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   margin: 0 10px;
 }
 
+.miniview > span:first-child {
+  margin-left: 0;
+}
+
+.miniview > span:last-child {
+  margin-right: 0;
+}
+
 /* small */
 
 @media (max-width: 940px) {
 
-  #main {
+  #main,
+  .section > * {
     width: 692px;
   }
 

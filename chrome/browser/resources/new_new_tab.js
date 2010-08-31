@@ -20,6 +20,7 @@ function recentlyClosedTabs(data) {
   // We need to store the recent items so we can update the layout on a resize.
   recentItems = data;
   renderRecentlyClosed();
+  layoutSections();
 }
 
 var recentItems = [];
@@ -87,6 +88,141 @@ function handleWindowResize() {
     mostVisited.layout();
     renderRecentlyClosed();
   }
+
+  layoutSections();
+}
+
+// Stores some information about each section necessary to layout. A new
+// instance is constructed for each section on each layout.
+function SectionLayoutInfo(section) {
+  this.section = section;
+  this.header = section.getElementsByTagName('h2')[0];
+  this.miniview = section.getElementsByClassName('miniview')[0];
+  this.maxiview = section.getElementsByClassName('maxiview')[0];
+  this.expanded = !section.classList.contains('hidden');
+  this.fixedHeight = this.header.offsetHeight;
+  this.scrollingHeight = 0;
+
+  if (this.expanded) {
+    this.scrollingHeight = this.maxiview.offsetHeight;
+  } else if (this.miniview) {
+    this.fixedHeight += this.miniview.offsetHeight;
+  }
+}
+
+// Get all sections to be layed out.
+SectionLayoutInfo.getAll = function() {
+  var sections = document.querySelectorAll('.section:not(.disabled)');
+  var result = [];
+  for (var i = 0, section; section = sections[i]; i++) {
+    result.push(new SectionLayoutInfo(section));
+  }
+  return result;
+};
+
+// Layout the sections in a modified accordian. The header and miniview, if
+// visible are fixed within the viewport. If there is an expanded section, its
+// it scrolls.
+//
+// =============================
+// | collapsed section         |  <- Any collapsed sections are fixed position.
+// | and miniview              |
+// |---------------------------|
+// | expanded section          |
+// |                           |  <- There can be one expanded section and it
+// | and maxiview              |     is absolutely positioned so that it can
+// |                           |     scroll "underneath" the fixed elements.
+// |                           |
+// |---------------------------|
+// | another collapsed section |
+// |---------------------------|
+//
+// We want the main frame scrollbar to be the one that scrolls the expanded
+// region. To get this effect, we make the fixed elements position:fixed and the
+// scrollable element position:absolute. We also artificially increase the
+// height of the document so that it is possible to scroll down enough to
+// display the end of the document, even with any fixed elements at the bottom
+// of the viewport.
+//
+// There is a final twist: If the intrinsic height of the expanded section is
+// less than the available height (because the window is tall), any collapsed
+// sections sinch up and sit below the expanded section. This is so that we
+// don't have a bunch of dead whitespace in the case of expanded sections that
+// aren't very tall.
+function layoutSections() {
+  var sections = SectionLayoutInfo.getAll();
+  var expandedSection = null;
+  var headerHeight = 0;
+  var footerHeight = 0;
+
+  // Calculate the height of the fixed elements above the expanded section. Also
+  // take note of the expanded section, if there is one.
+  var i;
+  var section;
+  for (i = 0; section = sections[i]; i++) {
+    headerHeight += section.fixedHeight;
+    if (section.expanded) {
+      expandedSection = section;
+      i++;
+      break;
+    }
+  }
+
+  // Calculate the height of the fixed elements below the expanded section, if
+  // any.
+  for (; section = sections[i]; i++) {
+    footerHeight += section.fixedHeight;
+  }
+
+  // Determine the height to use for the expanded section. If there isn't enough
+  // space to show the expanded section completely, this will be the available
+  // height. Otherwise, we use the intrinsic height of the expanded section.
+  var expandedSectionHeight;
+  if (expandedSection) {
+    var flexHeight = window.innerHeight - headerHeight - footerHeight;
+    if (flexHeight < expandedSection.scrollingHeight) {
+      expandedSectionHeight = flexHeight;
+
+      // Also, artificially expand the height of the document so that we can see
+      // the entire expanded section.
+      //
+      // TODO(aa): Where does this come from? It is the difference between what
+      // we set document.body.style.height to and what
+      // document.body.scrollHeight measures afterward. I expect them to be the
+      // same if document.body has no margins.
+      var fudge = 44;
+      document.body.style.height =
+          headerHeight +
+          expandedSection.scrollingHeight +
+          footerHeight +
+          fudge +
+          'px';
+    } else {
+      expandedSectionHeight = expandedSection.scrollingHeight;
+      document.body.style.height = '';
+    }
+  }
+
+  // Now position all the elements.
+  var y = 0;
+  for (i = 0, section; section = sections[i]; i++) {
+    section.header.style.top = y + 'px';
+    y += section.header.offsetHeight;
+
+    if (section.miniview) {
+      section.miniview.style.top = y + 'px';
+      if (section != expandedSection) {
+        y += section.miniview.offsetHeight;
+      }
+    }
+
+    if (section.maxiview) {
+      section.maxiview.style.top = y + 'px';
+      if (section == expandedSection) {
+        y += expandedSectionHeight;
+      }
+    }
+  }
 }
 
 window.addEventListener('resize', handleWindowResize);
@@ -147,6 +283,7 @@ function setShownSections(newShownSections) {
     else
       hideSection(Section[key]);
   }
+  layoutSections();
 }
 
 // Recently closed
@@ -303,20 +440,6 @@ function viewLog() {
   console.log(lines.join('\n'));
 }
 
-// Updates the visibility of the menu items.
-function updateOptionMenu() {
-  var menuItems = $('option-menu').children;
-  for (var i = 0; i < menuItems.length; i++) {
-    var item = menuItems[i];
-    var command = item.getAttribute('command');
-    if (command == 'show' || command == 'hide') {
-      var section = Section[item.getAttribute('section')];
-      var visible = shownSections & section;
-      item.setAttribute('command', visible ? 'hide' : 'show');
-    }
-  }
-}
-
 // We apply the size class here so that we don't trigger layout animations
 // onload.
 
@@ -416,6 +539,7 @@ function showFirstRunNotification() {
 function OptionMenu(button, menu) {
   this.button = button;
   this.menu = menu;
+  this.button.onclick = bind(this.handleClick, this);
   this.button.onmousedown = bind(this.handleMouseDown, this);
   this.button.onkeydown = bind(this.handleKeyDown, this);
   this.boundHideMenu_ = bind(this.hide, this);
@@ -427,7 +551,6 @@ function OptionMenu(button, menu) {
 
 OptionMenu.prototype = {
   show: function() {
-    updateOptionMenu();
     this.positionMenu_();
     this.menu.style.display = 'block';
     this.button.classList.add('open');
@@ -440,7 +563,9 @@ OptionMenu.prototype = {
   },
 
   positionMenu_: function() {
-    this.menu.style.top = this.button.getBoundingClientRect().bottom + 'px';
+    var rect = this.button.getBoundingClientRect();
+    this.menu.style.top = rect.bottom + 'px';
+    this.menu.style.right = (document.body.clientWidth - rect.right) + 'px'
   },
 
   hide: function() {
@@ -474,6 +599,10 @@ OptionMenu.prototype = {
     } else {
       this.show();
     }
+  },
+
+  handleClick: function(e) {
+    e.stopPropagation();
   },
 
   handleMouseOver: function(e) {
@@ -587,27 +716,15 @@ OptionMenu.prototype = {
   }
 };
 
-// TODO(aa): The 'clear-all-blacklisted' feature needs to move into a menu in
-// the most visited section.
-/*
-var optionMenu = new OptionMenu($('option-button'), $('option-menu'));
+var optionMenu = new OptionMenu(
+    document.querySelector('#most-visited-section h2 .settings'),
+    $('option-menu'));
 optionMenu.commands = {
   'clear-all-blacklisted' : function() {
     mostVisited.clearAllBlacklisted();
     chrome.send('getMostVisited');
-  },
-  'show': function(item) {
-    var section = Section[item.getAttribute('section')];
-    showSection(section);
-    saveShownSections();
-  },
-  'hide': function(item) {
-    var section = Section[item.getAttribute('section')];
-    hideSection(section);
-    saveShownSections();
   }
 };
-*/
 
 $('main').addEventListener('click', function(e) {
   var p = e.target;
@@ -626,10 +743,17 @@ $('main').addEventListener('click', function(e) {
 
   var section = p.getAttribute('section');
   if (section) {
-    if (shownSections & Section[section])
+    if (shownSections & Section[section]) {
       hideSection(Section[section]);
-    else
-      showSection(Section[section]);
+    } else {
+      for (var p in Section) {
+        if (p == section)
+          showSection(Section[p]);
+        else
+          hideSection(Section[p]);
+      }
+    }
+    layoutSections();
     saveShownSections();
   }
 });
@@ -821,8 +945,7 @@ function callGetSyncMessageIfSyncIsPresent() {
 }
 
 function hideAllMenus() {
-  // TODO(aa): See comment in definition of optionMenu.
-  //optionMenu.hide();
+  optionMenu.hide();
 }
 
 window.addEventListener('blur', hideAllMenus);
@@ -878,7 +1001,7 @@ updateAttribution();
 
 var mostVisited = new MostVisited(
     $('most-visited'),
-    $('most-visited-section').getElementsByClassName('miniview')[0],
+    document.querySelector('#most-visited-section .miniview'),
     useSmallGrid(),
     shownSections & Section.THUMB);
 
@@ -887,6 +1010,7 @@ function mostVisitedPages(data, firstRun) {
 
   mostVisited.data = data;
   mostVisited.layout();
+  layoutSections();
 
   loading = false;
 

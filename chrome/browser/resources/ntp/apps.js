@@ -19,6 +19,8 @@ function getAppsCallback(data) {
   data.apps.slice(0, MAX_MINIVIEW_ITEMS).forEach(function(app) {
     appsMiniview.appendChild(apps.createMiniviewElement(app));
   });
+
+  layoutSections();
 }
 
 var apps = {

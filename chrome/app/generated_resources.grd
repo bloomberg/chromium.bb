@@ -3723,7 +3723,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allow
       </message>
       <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
-        Chrome Web Store
+        Get More Apps
       </message>
 
       <!-- Plugins -->
