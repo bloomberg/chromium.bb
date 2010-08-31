@@ -46,7 +46,7 @@ typedef char utf8char_t;
 #if defined( __cplusplus)
 extern "C"
 #endif
-size_t strnlen(const char* string, size_t max);
+size_t strnlen(const char* str, size_t max);
 #endif
 
 #if NACL_WINDOWS

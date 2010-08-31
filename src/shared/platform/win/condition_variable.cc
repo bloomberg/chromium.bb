@@ -76,7 +76,7 @@ int NaCl::ConditionVariable::TimedWaitRel(Lock& user_lock, TimeDelta max_time) {
     // Release internal_lack_
   }  // Re-Acquire callers lock to depth at entry.
   if (WAIT_OBJECT_0 == result)
-    return 1; // the object was signaled
+    return 1;  // the object was signaled
   return 0;
 }
 

@@ -250,7 +250,7 @@ def ProcessOptions(argv):
   try:
     opts, args = getopt.getopt(argv, '', [x + '='  for x in GlobalSettings])
   except getopt.GetoptError, err:
-    Print(str(err))  # will print something like 'option -a not recognized'
+    print '%s' % str(err)  # Something like 'option -a not recognized'.
     sys.exit(-1)
 
   for o, a in opts:
@@ -287,7 +287,7 @@ def main(argv):
   for test in TESTS:
     try:
       # Don't run the test if the [test, platform] combination is in EXCEPTIONS
-      i = EXCEPTIONS.index([test[0], GlobalSettings['platform']])
+      EXCEPTIONS.index([test[0], GlobalSettings['platform']])
     except ValueError:
       # Run only tests of the right size
       if not GlobalSettings['size'] or test[3] == GlobalSettings['size']:

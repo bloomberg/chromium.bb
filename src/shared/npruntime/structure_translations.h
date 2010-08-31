@@ -103,7 +103,7 @@ NPObject* WireFormatToNPObject(NPP npp,
  * If successful, *length contains the number of bytes used to serialize,
  * and the buffer address is returned.  Otherwise, it returns NULL.
  */
-char* NPStringToWireFormat(NPString* string,
+char* NPStringToWireFormat(NPString* str,
                            char* bytes,
                            nacl_abi_size_t* length);
 

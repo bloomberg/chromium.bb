@@ -132,13 +132,10 @@ namespace std {
 }  // namespace std
 
 int TestCheckedCastUDT() {
-
   int32_t i32 = 0xf0000000;
   uint32_t u32 = 0xffffffff;
 
-
   int errors = 0;
-
 
   int28_t i28 = int28_t(0xffffffff);
   CHECK(i28.Overflow(), false);
@@ -146,7 +143,7 @@ int TestCheckedCastUDT() {
   i28 = int28_t(0x80000000);
   CHECK(i28.Overflow(), true);
 
-  CHECK(can_cast<int28_t>(i32),false);
+  CHECK(can_cast<int28_t>(i32), false);
   i28 = saturate_cast<int28_t>(i32);
   CHECK(i28.Overflow(), false);
   CHECK(i28, static_cast<int>(0xf8000000));
