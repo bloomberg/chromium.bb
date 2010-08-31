@@ -58,9 +58,19 @@ SDKNAME=nacl-sdk
 SDKROOT=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
+MULTILIB_CFGOPT=$(if $(filter no,$(MULTILIB)),--disable-multilib,)
 
 # Convert CROSSARCH (nacl or nacl64) to (32 or 64).
 BITSPLATFORM=$(subst 3264,64,$(subst nacl,32,$(CROSSARCH)))
+
+LINUX_HEADERS="$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
+HPREFIX=../src/trusted/service_runtime/include
+NACL_SYS_HEADERS= \
+      "$(HPREFIX)/sys/nacl_imc_api.h" \
+      "$(HPREFIX)/sys/nacl_syscalls.h" \
+      "$(HPREFIX)/sys/audio_video.h"
+NACL_BITS_HEADERS="$(HPREFIX)/bits/nacl_imc_api.h"
+NACL_MACHINE_HEADERS="$(HPREFIX)/machine/_types.h"
 
 ifeq ($(shell uname -s), Darwin)
  PLATFORM=osx
@@ -370,6 +380,7 @@ BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 	      $(GCC_CONFIGURE_FLAGS) \
 	      --disable-threads \
 	      --enable-languages="c" \
+	      $(MULTILIB_CFGOPT) \
 	      --without-headers
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
@@ -459,6 +470,82 @@ BUILD/stamp-newlib: SRC/stamp-newlib | BUILD
 
 .PHONY: newlib
 newlib: BUILD/stamp-newlib
+
+##################################################################
+# glibc:
+##################################################################
+BUILD/stamp-glibc:
+	rm -rf BUILD/build-glibc-$(CROSSARCH)
+	mkdir -p BUILD/build-glibc-$(CROSSARCH)/lib
+	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
+	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
+	cd BUILD/build-glibc-$(CROSSARCH) && \
+	  PATH=$(BUILDPATH) \
+	  BUILD_CC="gcc -O2" \
+	    libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes ../../SRC/glibc/configure \
+	      CFLAGS="-march=i486 -pipe -fno-strict-aliasing -O2 -mno-tls-direct-seg-refs -g" \
+	      CC=$(CROSSARCH)-gcc \
+	      --prefix=$(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
+	      --host=i486-linux-gnu \
+	      --with-headers=$(LINUX_HEADERS) \
+	      --enable-kernel=2.2.0
+	PATH=$(BUILDPATH) \
+	  $(MAKE) -C BUILD/build-glibc-$(CROSSARCH)
+	PATH=$(BUILDPATH) \
+	  $(MAKE) -C BUILD/build-glibc-$(CROSSARCH) \
+	    DESTDIR=$(DESTDIR)$(SDKROOT)/$(CROSSARCH) install
+	touch $@
+
+##################################################################
+# Ad hoc linker scripts and a selection of NaCl headers for GCC.
+##################################################################
+BUILD/stamp-glibc-adhoc-files:
+	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/ldscripts/
+	cp -rf $(LINUX_HEADERS)/* $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include
+	mkdir -p $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/{sys,machine}
+	cp -f $(NACL_BITS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/bits
+	cp -f $(NACL_SYS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/sys
+	cp -f $(NACL_MACHINE_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine
+	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine/_default_types.h
+	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
+	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
+	cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) && rm -rf lib32 && ln -s lib lib32
+	touch $@
+
+##################################################################
+# gcc:
+#   Builds GCC with glibc as a C library.
+##################################################################
+BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
+	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
+	mkdir BUILD/build-full-gcc-$(CROSSARCH)
+	cd BUILD/build-full-gcc-$(CROSSARCH) && \
+	  PATH=$(BUILDPATH) CC="gcc" \
+	  CFLAGS="-m32 -Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
+	    ../../SRC/gcc/configure \
+		--disable-libmudflap \
+		--disable-decimal-float \
+		--disable-libssp \
+		--disable-libstdcxx-pch \
+		--enable-shared \
+		--target=$(CROSSARCH) \
+		$(MULTILIB_CFGOPT) \
+		--enable-threads=nacl \
+		--enable-tls \
+		--disable-libgomp \
+		--prefix=$(DESTDIR)$(SDKROOT) \
+		--enable-languages="c,c++"
+	PATH=$(BUILDPATH) \
+	  $(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) \
+		  CFLAGS_FOR_TARGET="-O2 -g" \
+		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+	    all
+	PATH=$(BUILDPATH) \
+	  $(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) \
+		  CFLAGS_FOR_TARGET="-O2 -g" \
+		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+	    DESTDIR= install
+	touch $@
 
 ##################################################################
 # gcc:
@@ -675,6 +762,14 @@ endif
 ##################################################################
 # Build the entire toolchain.
 ##################################################################
+
+build-with-glibc: ALWAYS
+	$(MAKE) -f $(THISMAKEFILE) sdkdirs
+	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-binutils
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-full-gcc
 
 build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
