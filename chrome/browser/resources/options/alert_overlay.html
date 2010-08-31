@@ -2,14 +2,11 @@
   <div id="alertOverlayMessage"></div>
   <div class="button-strip">
     <if expr="os != 'darwin'">
-      <button type="submit" id="alertOverlayOk"
-          onclick="AlertOverlay.handleOk();"></button>
+      <button type="submit" id="alertOverlayOk"></button>
     </if>
-    <button type="reset" id="alertOverlayCancel"
-        onclick="AlertOverlay.handleCancel();"></button>
+    <button type="reset" id="alertOverlayCancel"></button>
     <if expr="os == 'darwin'">
-      <button type="submit" id="alertOverlayOk"
-          onclick="AlertOverlay.handleOk();"></button>
+      <button type="submit" id="alertOverlayOk"></button>
     </if>
   </div>
 </div>

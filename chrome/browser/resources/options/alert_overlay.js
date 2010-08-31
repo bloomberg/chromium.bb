@@ -27,6 +27,39 @@ cr.define('options', function() {
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
+
+      var self = this;
+      $('alertOverlayOk').onclick = function(event) {
+        self.handleOK_();
+      };
+
+      $('alertOverlayCancel').onclick = function(event) {
+        self.handleCancel_();
+      };
+    },
+
+    /**
+     * Handle the 'ok' button.  Clear the overlay and call the ok callback if
+     * available.
+     * @private
+     */
+    handleOK_: function() {
+      OptionsPage.clearOverlays();
+      if (this.okCallback != undefined) {
+        this.okCallback.call();
+      }
+    },
+
+    /**
+     * Handle the 'cancel' button.  Clear the overlay and call the cancel
+     * callback if available.
+     * @private
+     */
+    handleCancel_: function() {
+      OptionsPage.clearOverlays();
+      if (this.cancelCallback != undefined) {
+        this.cancelCallback.call();
+      }
     }
   };
 
@@ -58,28 +91,6 @@ cr.define('options', function() {
     AlertOverlay.getInstance().cancelCallback = cancelCallback;
 
     OptionsPage.showOverlay('alertOverlay');
-  }
-
-  /**
-   * Handle the 'ok' button.  Clear the overlay and call the ok callback if
-   * available.
-   */
-  AlertOverlay.handleOk = function() {
-    OptionsPage.clearOverlays();
-    if (AlertOverlay.getInstance().okCallback != undefined) {
-      AlertOverlay.getInstance().okCallback.call();
-    }
-  }
-
-  /**
-   * Handle the 'cancel' button.  Clear the overlay and call the cancel callback
-   * if available.
-   */
-  AlertOverlay.handleCancel = function() {
-    OptionsPage.clearOverlays();
-    if (AlertOverlay.getInstance().cancelCallback != undefined) {
-      AlertOverlay.getInstance().cancelCallback.call();
-    }
   }
 
   // Export
