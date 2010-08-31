@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/location_bar.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
@@ -42,6 +42,7 @@ class PageActionWithBadgeView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
+class TemplateURLModel;
 
 namespace views {
 class HorizontalPainter;

@@ -74,7 +74,7 @@ void SearchHostToURLsMap::Update(const TemplateURL* existing_turl,
   RemoveNoLock(existing_turl);
 
   // Use the information from new_values but preserve existing_turl's id.
-  TemplateURL::IDType previous_id = existing_turl->id();
+  TemplateURLID previous_id = existing_turl->id();
   TemplateURL* modifiable_turl = const_cast<TemplateURL*>(existing_turl);
   *modifiable_turl = new_values;
   modifiable_turl->set_id(previous_id);

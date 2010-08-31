@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "gfx/size.h"
 #include "views/controls/button/native_button.h"
 #include "views/view.h"

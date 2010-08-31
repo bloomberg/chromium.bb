@@ -15,6 +15,7 @@
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"

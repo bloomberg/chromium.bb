@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -21,6 +22,7 @@ class PrefService;
 class Profile;
 class SearchHostToURLsMap;
 class SearchTermsData;
+class TemplateURLModelObserver;
 
 namespace history {
 struct URLVisitedDetails;
@@ -46,17 +48,6 @@ struct URLVisitedDetails;
 // TemplateURLModel takes ownership of any TemplateURL passed to it. If there
 // is a WebDataService, deletion is handled by WebDataService, otherwise
 // TemplateURLModel handles deletion.
-
-// TemplateURLModelObserver is notified whenever the set of TemplateURLs
-// are modified.
-class TemplateURLModelObserver {
- public:
-  // Notification that the template url model has changed in some way.
-  virtual void OnTemplateURLModelChanged() = 0;
-
- protected:
-  virtual ~TemplateURLModelObserver() {}
-};
 
 class TemplateURLModel : public WebDataServiceConsumer,
                          public NotificationObserver {
@@ -378,7 +369,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
 
   // ID assigned to next TemplateURL added to this model. This is an ever
   // increasing integer that is initialized from the database.
-  TemplateURL::IDType next_id_;
+  TemplateURLID next_id_;
 
   // List of extension IDs waiting for Load to have keywords registered.
   std::vector<std::string> pending_extension_ids_;

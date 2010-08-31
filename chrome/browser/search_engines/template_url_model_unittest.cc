@@ -12,7 +12,9 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/test/testing_profile.h"
@@ -606,7 +608,7 @@ TEST_F(TemplateURLModelTest, DefaultSearchProviderLoadedFromPrefs) {
 
   model_->Add(template_url);
 
-  const TemplateURL::IDType id = template_url->id();
+  const TemplateURLID id = template_url->id();
 
   model_->SetDefaultSearchProvider(template_url);
 

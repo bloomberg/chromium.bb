@@ -10,6 +10,7 @@
 #include "base/thread.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -103,9 +104,9 @@ void WebDataService::AddKeyword(const TemplateURL& url) {
 }
 
 void WebDataService::RemoveKeyword(const TemplateURL& url) {
-  GenericRequest<TemplateURL::IDType>* request =
-      new GenericRequest<TemplateURL::IDType>(this, GetNextRequestHandle(),
-                                              NULL, url.id());
+  GenericRequest<TemplateURLID>* request =
+      new GenericRequest<TemplateURLID>(this, GetNextRequestHandle(),
+                                        NULL, url.id());
   RegisterRequest(request);
   ScheduleTask(
       NewRunnableMethod(this, &WebDataService::RemoveKeywordImpl, request));
@@ -135,11 +136,11 @@ WebDataService::Handle WebDataService::GetKeywords(
 }
 
 void WebDataService::SetDefaultSearchProvider(const TemplateURL* url) {
-  GenericRequest<TemplateURL::IDType>* request =
-    new GenericRequest<TemplateURL::IDType>(this,
-                                            GetNextRequestHandle(),
-                                            NULL,
-                                            url ? url->id() : 0);
+  GenericRequest<TemplateURLID>* request =
+    new GenericRequest<TemplateURLID>(this,
+                                      GetNextRequestHandle(),
+                                      NULL,
+                                      url ? url->id() : 0);
   RegisterRequest(request);
   ScheduleTask(
       NewRunnableMethod(this, &WebDataService::SetDefaultSearchProviderImpl,
@@ -635,7 +636,7 @@ void WebDataService::AddKeywordImpl(GenericRequest<TemplateURL>* request) {
 }
 
 void WebDataService::RemoveKeywordImpl(
-    GenericRequest<TemplateURL::IDType>* request) {
+    GenericRequest<TemplateURLID>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     DCHECK(request->GetArgument());
@@ -669,7 +670,7 @@ void WebDataService::GetKeywordsImpl(WebDataRequest* request) {
 }
 
 void WebDataService::SetDefaultSearchProviderImpl(
-    GenericRequest<TemplateURL::IDType>* request) {
+    GenericRequest<TemplateURLID>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (!db_->SetDefaultSearchProviderID(request->GetArgument()))

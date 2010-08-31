@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "chrome/browser/autofill/autofill_dialog.h"

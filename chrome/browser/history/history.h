@@ -18,7 +18,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/ref_counted_util.h"
@@ -480,11 +480,11 @@ class HistoryService : public CancelableRequestProvider,
   // Sets the search terms for the specified url and keyword. url_id gives the
   // id of the url, keyword_id the id of the keyword and term the search term.
   void SetKeywordSearchTermsForURL(const GURL& url,
-                                   TemplateURL::IDType keyword_id,
+                                   TemplateURLID keyword_id,
                                    const string16& term);
 
   // Deletes all search terms for the specified keyword.
-  void DeleteAllSearchTermsForKeyword(TemplateURL::IDType keyword_id);
+  void DeleteAllSearchTermsForKeyword(TemplateURLID keyword_id);
 
   typedef Callback2<Handle, std::vector<history::KeywordSearchTermVisit>*>::Type
       GetMostRecentKeywordSearchTermsCallback;
@@ -494,7 +494,7 @@ class HistoryService : public CancelableRequestProvider,
   // in descending order up to |max_count| with the most recent search term
   // first.
   Handle GetMostRecentKeywordSearchTerms(
-      TemplateURL::IDType keyword_id,
+      TemplateURLID keyword_id,
       const string16& prefix,
       int max_count,
       CancelableRequestConsumerBase* consumer,

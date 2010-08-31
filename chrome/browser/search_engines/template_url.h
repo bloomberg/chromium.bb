@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "googleurl/src/gurl.h"
 
@@ -235,8 +236,6 @@ class TemplateURLRef {
 // Describes the relevant portions of a single OSD document.
 class TemplateURL {
  public:
-  typedef int64 IDType;
-
   // Describes a single image reference. Each TemplateURL may have
   // any number (including 0) of ImageRefs.
   //
@@ -428,7 +427,7 @@ class TemplateURL {
 
   // Returns the unique identifier of this TemplateURL. The unique ID is set
   // by the TemplateURLModel when the TemplateURL is added to it.
-  IDType id() const { return id_; }
+  TemplateURLID id() const { return id_; }
 
   // If this TemplateURL comes from prepopulated data the prepopulate_id is > 0.
   void set_prepopulate_id(int id) { prepopulate_id_ = id; }
@@ -452,7 +451,7 @@ class TemplateURL {
   void InvalidateCachedValues() const;
 
   // Unique identifier, used when archived to the database.
-  void set_id(IDType id) { id_ = id;}
+  void set_id(TemplateURLID id) { id_ = id;}
 
   std::wstring short_name_;
   std::wstring description_;
@@ -471,7 +470,7 @@ class TemplateURL {
   std::vector<std::wstring> languages_;
   // List of supported input encodings.
   std::vector<std::string> input_encodings_;
-  IDType id_;
+  TemplateURLID id_;
   base::Time date_created_;
   int usage_count_;
   TemplateURLPrepopulateData::SearchEngineType search_engine_type_;

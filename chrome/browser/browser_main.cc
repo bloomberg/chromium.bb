@@ -60,6 +60,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -1321,7 +1322,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RegisterBlobURLRequestJobFactory();
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
-  // the global GoogleURLTracker and IntranetRedirectDetector instances, which  
+  // the global GoogleURLTracker and IntranetRedirectDetector instances, which
   // will promptly go to sleep for five and seven seconds, respectively (to
   // avoid slowing startup), and wake up afterwards to see if they should do
   // anything else.

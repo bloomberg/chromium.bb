@@ -11,6 +11,8 @@
 #include "base/values.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"

@@ -25,6 +25,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/net/url_fetcher.h"
 
 class Profile;
@@ -185,7 +186,7 @@ class SearchProvider : public AutocompleteProvider,
 
   // Schedules a history query requesting past searches against the engine
   // whose id is |search_id| and whose text starts with |text|.
-  void ScheduleHistoryQuery(TemplateURL::IDType search_id,
+  void ScheduleHistoryQuery(TemplateURLID search_id,
                             const std::wstring& text);
 
   // Called back by the history system to return searches that begin with the
@@ -283,7 +284,7 @@ class SearchProvider : public AutocompleteProvider,
   // corresponds to the id of the search engine and is used in the callback to
   // determine whether the request corresponds to the keyword of default
   // provider.
-  CancelableRequestConsumerTSimple<TemplateURL::IDType>
+  CancelableRequestConsumerTSimple<TemplateURLID>
       history_request_consumer_;
 
   // Searches in the user's history that begin with the input text.

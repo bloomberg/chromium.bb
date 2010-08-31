@@ -333,7 +333,7 @@ void SearchProvider::StopSuggest() {
   have_suggest_results_ = false;
 }
 
-void SearchProvider::ScheduleHistoryQuery(TemplateURL::IDType search_id,
+void SearchProvider::ScheduleHistoryQuery(TemplateURLID search_id,
                                           const std::wstring& text) {
   DCHECK(!text.empty());
   HistoryService* const history_service =

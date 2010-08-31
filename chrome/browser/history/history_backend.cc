@@ -1026,7 +1026,7 @@ void HistoryBackend::QuerySegmentUsage(
 // Keyword visits --------------------------------------------------------------
 
 void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
-                                                 TemplateURL::IDType keyword_id,
+                                                 TemplateURLID keyword_id,
                                                  const string16& term) {
   if (!db_.get())
     return;
@@ -1044,7 +1044,7 @@ void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
 }
 
 void HistoryBackend::DeleteAllSearchTermsForKeyword(
-    TemplateURL::IDType keyword_id) {
+    TemplateURLID keyword_id) {
   if (!db_.get())
     return;
 
@@ -1055,7 +1055,7 @@ void HistoryBackend::DeleteAllSearchTermsForKeyword(
 
 void HistoryBackend::GetMostRecentKeywordSearchTerms(
     scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
-    TemplateURL::IDType keyword_id,
+    TemplateURLID keyword_id,
     const string16& prefix,
     int max_count) {
   if (request->canceled())

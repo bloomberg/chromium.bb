@@ -6,10 +6,11 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
+#include "base/logging.h"
 #import "base/mac_util.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

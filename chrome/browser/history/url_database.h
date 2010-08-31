@@ -9,7 +9,7 @@
 #include "app/sql/statement.h"
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 
 class GURL;
 
@@ -160,17 +160,17 @@ class URLDatabase {
 
   // Sets the search terms for the specified url/keyword pair.
   bool SetKeywordSearchTermsForURL(URLID url_id,
-                                   TemplateURL::IDType keyword_id,
+                                   TemplateURLID keyword_id,
                                    const string16& term);
 
   // Deletes all search terms for the specified keyword that have been added by
   // way of SetKeywordSearchTermsForURL.
-  void DeleteAllSearchTermsForKeyword(TemplateURL::IDType keyword_id);
+  void DeleteAllSearchTermsForKeyword(TemplateURLID keyword_id);
 
   // Returns up to max_count of the most recent search terms for the specified
   // keyword.
   void GetMostRecentKeywordSearchTerms(
-      TemplateURL::IDType keyword_id,
+      TemplateURLID keyword_id,
       const string16& prefix,
       int max_count,
       std::vector<KeywordSearchTermVisit>* matches);

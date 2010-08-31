@@ -14,18 +14,20 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "webkit/glue/form_field.h"
 
 class AutofillChange;
 class AutoFillProfile;
 class CreditCard;
+class GURL;
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
 #endif
 class MessageLoop;
 class SkBitmap;
 class Task;
+class TemplateURL;
 class WebDatabase;
 
 namespace base {
@@ -529,10 +531,10 @@ class WebDataService
   //
   //////////////////////////////////////////////////////////////////////////////
   void AddKeywordImpl(GenericRequest<TemplateURL>* request);
-  void RemoveKeywordImpl(GenericRequest<TemplateURL::IDType>* request);
+  void RemoveKeywordImpl(GenericRequest<TemplateURLID>* request);
   void UpdateKeywordImpl(GenericRequest<TemplateURL>* request);
   void GetKeywordsImpl(WebDataRequest* request);
-  void SetDefaultSearchProviderImpl(GenericRequest<TemplateURL::IDType>* r);
+  void SetDefaultSearchProviderImpl(GenericRequest<TemplateURLID>* r);
   void SetBuiltinKeywordVersionImpl(GenericRequest<int>* r);
 
   //////////////////////////////////////////////////////////////////////////////

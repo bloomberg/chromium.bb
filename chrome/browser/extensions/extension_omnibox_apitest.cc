@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"

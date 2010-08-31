@@ -8,11 +8,12 @@
 
 #include "app/table_model_observer.h"
 #include "chrome/browser/dom_ui/options_ui.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/shell_integration.h"
 
 class CustomHomePagesTableModel;
 class OptionsManagedBannerHandler;
+class TemplateURLModel;
 
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler : public OptionsPageUIHandler,

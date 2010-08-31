@@ -8,13 +8,12 @@
 
 #include "app/table_model.h"
 #include "base/string16.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_model_observer.h"
 
 class ModelEntry;
 class SkBitmap;
 class TemplateURL;
 class TemplateURLModel;
-class TemplateURLTableModel;
 
 // TemplateURLTableModel is the TableModel implementation used by
 // KeywordEditorView to show the keywords in a TableView.

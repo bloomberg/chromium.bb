@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"

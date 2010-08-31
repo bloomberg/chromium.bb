@@ -345,7 +345,7 @@ bool URLDatabase::DropKeywordSearchTermsTable() {
 }
 
 bool URLDatabase::SetKeywordSearchTermsForURL(URLID url_id,
-                                              TemplateURL::IDType keyword_id,
+                                              TemplateURLID keyword_id,
                                               const string16& term) {
   DCHECK(url_id && keyword_id && !term.empty());
 
@@ -373,7 +373,7 @@ bool URLDatabase::SetKeywordSearchTermsForURL(URLID url_id,
 }
 
 void URLDatabase::DeleteAllSearchTermsForKeyword(
-    TemplateURL::IDType keyword_id) {
+    TemplateURLID keyword_id) {
   DCHECK(keyword_id);
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM keyword_search_terms WHERE keyword_id=?"));
@@ -385,7 +385,7 @@ void URLDatabase::DeleteAllSearchTermsForKeyword(
 }
 
 void URLDatabase::GetMostRecentKeywordSearchTerms(
-    TemplateURL::IDType keyword_id,
+    TemplateURLID keyword_id,
     const string16& prefix,
     int max_count,
     std::vector<KeywordSearchTermVisit>* matches) {

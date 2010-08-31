@@ -20,6 +20,8 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

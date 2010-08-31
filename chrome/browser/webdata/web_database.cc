@@ -19,6 +19,7 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/codec/png_codec.h"
@@ -853,7 +854,7 @@ bool WebDatabase::AddKeyword(const TemplateURL& url) {
   return true;
 }
 
-bool WebDatabase::RemoveKeyword(TemplateURL::IDType id) {
+bool WebDatabase::RemoveKeyword(TemplateURLID id) {
   DCHECK(id);
   sql::Statement s(db_.GetUniqueStatement("DELETE FROM keywords WHERE id = ?"));
   if (!s) {

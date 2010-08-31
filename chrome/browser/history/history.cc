@@ -239,7 +239,7 @@ void HistoryService::SetSegmentPresentationIndex(int64 segment_id, int index) {
 }
 
 void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
-                                                 TemplateURL::IDType keyword_id,
+                                                 TemplateURLID keyword_id,
                                                  const string16& term) {
   ScheduleAndForget(PRIORITY_UI,
                     &HistoryBackend::SetKeywordSearchTermsForURL,
@@ -247,14 +247,14 @@ void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
 }
 
 void HistoryService::DeleteAllSearchTermsForKeyword(
-    TemplateURL::IDType keyword_id) {
+    TemplateURLID keyword_id) {
   ScheduleAndForget(PRIORITY_UI,
                     &HistoryBackend::DeleteAllSearchTermsForKeyword,
                     keyword_id);
 }
 
 HistoryService::Handle HistoryService::GetMostRecentKeywordSearchTerms(
-    TemplateURL::IDType keyword_id,
+    TemplateURLID keyword_id,
     const string16& prefix,
     int max_count,
     CancelableRequestConsumerBase* consumer,

@@ -20,6 +20,7 @@
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/mru_cache.h"
 
 class BookmarkService;
@@ -237,14 +238,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Keyword search terms ------------------------------------------------------
 
   void SetKeywordSearchTermsForURL(const GURL& url,
-                                   TemplateURL::IDType keyword_id,
+                                   TemplateURLID keyword_id,
                                    const string16& term);
 
-  void DeleteAllSearchTermsForKeyword(TemplateURL::IDType keyword_id);
+  void DeleteAllSearchTermsForKeyword(TemplateURLID keyword_id);
 
   void GetMostRecentKeywordSearchTerms(
       scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
-      TemplateURL::IDType keyword_id,
+      TemplateURLID keyword_id,
       const string16& prefix,
       int max_count);
 

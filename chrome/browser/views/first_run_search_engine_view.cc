@@ -16,6 +16,7 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"

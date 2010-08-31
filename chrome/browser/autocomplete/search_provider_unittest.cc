@@ -100,7 +100,7 @@ void SearchProviderTest::SetUp() {
   default_t_url_->SetSuggestionsURL("http://defaultturl2/{searchTerms}", 0, 0);
   turl_model->Add(default_t_url_);
   turl_model->SetDefaultSearchProvider(default_t_url_);
-  TemplateURL::IDType default_provider_id = default_t_url_->id();
+  TemplateURLID default_provider_id = default_t_url_->id();
   ASSERT_NE(0, default_provider_id);
 
   // Add url1, with search term term1_.
