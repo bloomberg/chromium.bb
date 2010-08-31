@@ -513,7 +513,7 @@ TEST_F(DownloadTest, DISABLED_DontCloseNewWindow) {
 }
 
 // http://crbug.com/50060
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_NewWindow DISABLED_NewWindow
 #else
 #define MAYBE_NewWindow NewWindow
