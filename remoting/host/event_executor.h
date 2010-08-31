@@ -11,19 +11,26 @@
 
 namespace remoting {
 
+class Capturer;
+
 // An interface that defines the behavior of an event executor object.
 // An event executor is to perform actions on the host machine. For example
 // moving the mouse cursor, generating keyboard events and manipulating
 // clipboards.
 class EventExecutor {
  public:
-  EventExecutor() {}
+  EventExecutor(Capturer* capturer)
+    : capturer_(capturer) {
+  }
   virtual ~EventExecutor() {}
 
   // Handles input events from ClientMessageList and removes them from the
   // list.
   virtual void HandleInputEvents(ClientMessageList* messages) = 0;
   // TODO(hclam): Define actions for clipboards.
+
+ protected:
+  Capturer* capturer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventExecutor);

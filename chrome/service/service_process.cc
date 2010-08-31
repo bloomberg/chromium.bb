@@ -72,7 +72,7 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
 
   // Check if remoting host is already enabled.
   if (values->GetBoolean(prefs::kRemotingHostEnabled, &remoting_host_enabled) &&
-	  remoting_host_enabled) {
+    remoting_host_enabled) {
     // If true then we start the host.
     StartChromotingHost();
   }
@@ -170,13 +170,13 @@ bool ServiceProcess::StartChromotingHost() {
 
 #if defined(OS_WIN)
   capturer.reset(new remoting::CapturerGdi());
-  executor.reset(new remoting::EventExecutorWin());
+  executor.reset(new remoting::EventExecutorWin(capturer.get()));
 #elif defined(OS_LINUX)
   capturer.reset(new remoting::CapturerFake());
-  executor.reset(new remoting::EventExecutorLinux());
+  executor.reset(new remoting::EventExecutorLinux(capturer.get()));
 #elif defined(OS_MACOSX)
   capturer.reset(new remoting::CapturerMac());
-  executor.reset(new remoting::EventExecutorMac());
+  executor.reset(new remoting::EventExecutorMac(capturer.get()));
 #endif
   encoder.reset(new remoting::EncoderZlib());
 

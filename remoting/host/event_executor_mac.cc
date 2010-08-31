@@ -6,7 +6,8 @@
 
 namespace remoting {
 
-EventExecutorMac::EventExecutorMac() {
+EventExecutorMac::EventExecutorMac(Capturer* capturer)
+  : EventExecutor(capturer) {
 }
 
 EventExecutorMac::~EventExecutorMac() {

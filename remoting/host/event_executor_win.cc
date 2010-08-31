@@ -7,6 +7,7 @@
 #include <windows.h>
 #include "base/keyboard_codes.h"
 #include "base/stl_util-inl.h"
+#include "remoting/host/capturer.h"
 
 namespace remoting {
 
@@ -347,7 +348,8 @@ static base::KeyboardCode WindowsKeyCodeForPosixKeyCode(int keycode) {
   }
 }
 
-EventExecutorWin::EventExecutorWin() {
+EventExecutorWin::EventExecutorWin(Capturer* capturer)
+  : EventExecutor(capturer) {
 }
 
 EventExecutorWin::~EventExecutorWin() {
@@ -380,6 +382,17 @@ void EventExecutorWin::HandleMouseSetPosition(ChromotingClientMessage* msg) {
   int y = msg->mouse_set_position_event().y();
   int width = msg->mouse_set_position_event().width();
   int height = msg->mouse_set_position_event().height();
+
+  // Get width and height from the capturer if they are missing from the
+  // message.
+  if (width == 0 || height == 0) {
+    width = capturer_->width();
+    height = capturer_->height();
+  }
+  if (width == 0 || height == 0) {
+    return;
+  }
+
 
   INPUT input;
   input.type = INPUT_MOUSE;

@@ -6,7 +6,8 @@
 
 namespace remoting {
 
-EventExecutorLinux::EventExecutorLinux() {
+EventExecutorLinux::EventExecutorLinux(Capturer* capturer)
+  : EventExecutor(capturer) {
 }
 
 EventExecutorLinux::~EventExecutorLinux() {

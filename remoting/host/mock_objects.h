@@ -34,7 +34,7 @@ class MockCapturer : public Capturer {
 
 class MockEventExecutor : public EventExecutor {
  public:
-  MockEventExecutor() {}
+   MockEventExecutor(Capturer* capturer) : EventExecutor(capturer) {}
 
   MOCK_METHOD1(HandleInputEvents, void(ClientMessageList* messages));
 

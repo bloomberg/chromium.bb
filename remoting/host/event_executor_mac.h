@@ -14,7 +14,7 @@ namespace remoting {
 // A class to generate events on Mac.
 class EventExecutorMac : public EventExecutor {
  public:
-  EventExecutorMac();
+  EventExecutorMac(Capturer* capturer);
   virtual ~EventExecutorMac();
 
   virtual void HandleInputEvents(ClientMessageList* messages);

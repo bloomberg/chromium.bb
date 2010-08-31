@@ -14,7 +14,7 @@ namespace remoting {
 // A class to generate events on Linux.
 class EventExecutorLinux : public EventExecutor {
  public:
-  EventExecutorLinux();
+  EventExecutorLinux(Capturer* capturer);
   virtual ~EventExecutorLinux();
 
   virtual void HandleInputEvents(ClientMessageList* messages);

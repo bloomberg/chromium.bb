@@ -14,7 +14,7 @@ namespace remoting {
 // A class to generate events on Windows.
 class EventExecutorWin : public EventExecutor {
  public:
-  EventExecutorWin();
+  EventExecutorWin(Capturer* capturer);
   virtual ~EventExecutorWin();
 
   virtual void HandleInputEvents(ClientMessageList* messages);
