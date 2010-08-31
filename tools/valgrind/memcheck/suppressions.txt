@@ -4254,3 +4254,10 @@
    fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
 }
+{
+   bug_53995
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net75_GLOBAL__N_net_socket_client_socket_pool_base_unittest.cc_00000000_C5335E4653ClientSocketPoolBaseTest_AbortAllRequestsOnFlush_Test8TestBodyEv
+}
