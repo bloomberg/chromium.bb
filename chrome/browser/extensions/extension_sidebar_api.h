@@ -24,7 +24,7 @@ class ExtensionSidebarEventRouter {
  public:
   // Sidebar state changed.
   static void OnStateChanged(
-      Profile* profile, int tab_id, const std::string& content_id,
+      Profile* profile, TabContents* tab, const std::string& content_id,
       const std::string& state);
 
  private:

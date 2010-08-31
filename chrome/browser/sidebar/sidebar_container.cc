@@ -36,10 +36,6 @@ void SidebarContainer::SidebarClosing() {
   delegate_->UpdateSidebar(this);
 }
 
-int SidebarContainer::GetTabId() const {
-  return tab_->controller().session_id().id();
-}
-
 void SidebarContainer::Show() {
   delegate_->UpdateSidebar(this);
 }

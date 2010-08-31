@@ -83,14 +83,14 @@ void SidebarManager::NotifyStateChanges(
   if (was_active_host != NULL) {
     ExtensionSidebarEventRouter::OnStateChanged(
         was_active_sidebar_contents->profile(),
-        was_active_host->GetTabId(), was_active_host->content_id(),
+        was_active_host->tab_contents(), was_active_host->content_id(),
         extension_sidebar_constants::kShownState);
   }
 
   if (active_host != NULL) {
     ExtensionSidebarEventRouter::OnStateChanged(
         active_sidebar_contents->profile(),
-        active_host->GetTabId(), active_host->content_id(),
+        active_host->tab_contents(), active_host->content_id(),
         extension_sidebar_constants::kActiveState);
   }
 }
@@ -107,7 +107,7 @@ void SidebarManager::ShowSidebar(TabContents* tab,
   host->Show();
 
   ExtensionSidebarEventRouter::OnStateChanged(
-      tab->profile(), host->GetTabId(), content_id,
+      tab->profile(), tab, content_id,
       extension_sidebar_constants::kShownState);
 }
 
@@ -160,12 +160,11 @@ void SidebarManager::HideSidebar(TabContents* tab,
 
   SidebarContainer* host = GetSidebarContainerFor(tab, content_id);
   DCHECK(host);
-  int tab_id = host->GetTabId();
 
   UnregisterSidebarContainerFor(tab, content_id);
 
   ExtensionSidebarEventRouter::OnStateChanged(
-      tab->profile(), tab_id, content_id,
+      tab->profile(), tab, content_id,
       extension_sidebar_constants::kHiddenState);
 }
 

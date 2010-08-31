@@ -45,9 +45,6 @@ class SidebarContainer
   // Does all the necessary cleanup.
   void SidebarClosing();
 
-  // Returns id of the tab this sidebar is linked to.
-  int GetTabId() const;
-
   // Returns sidebar's content id.
   const std::string& content_id() const { return content_id_; }
 
