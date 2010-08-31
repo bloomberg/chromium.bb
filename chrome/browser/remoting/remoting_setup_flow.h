@@ -17,11 +17,27 @@
 #include "grit/generated_resources.h"
 
 class GaiaAuthenticator2;
+class RemotingServiceProcessHelper;
 class RemotingSetupMessageHandler;
 class ServiceProcessControl;
 class GoogleServiceAuthError;
 
-// The state machine used by Remoting for setup wizard.
+// This class is responsible for showing a remoting setup dialog and perform
+// operations to fill the content of the dialog and handle user actions
+// in the dialog.
+//
+// It is responsible for:
+// 1. Showing the setup dialog.
+// 2. Providing the URL for the content of the dialog.
+// 3. Providing a data source to provide the content HTML files.
+// 4. Providing a message handler to handle user actions in the DOM UI.
+// 5. Responding to actions received in the message handler.
+//
+// The architecture for DOMUI is designed such that only the message handler
+// can access the DOMUI. This splits the flow control across the message
+// handler and this class. In order to centralize all the flow control and
+// content in the DOMUI, the DOMUI object is given to this object by the
+// message handler through the Attach(DOMUI*) method.
 class RemotingSetupFlow : public HtmlDialogUIDelegate,
                           public GaiaAuthConsumer {
  public:
@@ -30,44 +46,22 @@ class RemotingSetupFlow : public HtmlDialogUIDelegate,
   // Runs a flow from |start| to |end|, and does the work of actually showing
   // the HTML dialog.  |container| is kept up-to-date with the lifetime of the
   // flow (e.g it is emptied on dialog close).
-  static RemotingSetupFlow* Run(Profile* service);
-
-  // Fills |args| with "user" and "error" arguments by querying |service|.
-  static void GetArgsForGaiaLogin(DictionaryValue* args);
+  static RemotingSetupFlow* OpenDialog(Profile* service);
 
   // Focuses the dialog.  This is useful in cases where the dialog has been
   // obscured by a browser window.
   void Focus();
 
   // HtmlDialogUIDelegate implementation.
-  // Get the HTML file path for the content to load in the dialog.
-  virtual GURL GetDialogContentURL() const {
-    return GURL("chrome://remotingresources/setup");
-  }
-
-  // HtmlDialogUIDelegate implementation.
+  virtual GURL GetDialogContentURL() const;
   virtual void GetDOMMessageHandlers(
       std::vector<DOMMessageHandler*>* handlers) const;
-
-  // HtmlDialogUIDelegate implementation.
-  // Get the size of the dialog.
   virtual void GetDialogSize(gfx::Size* size) const;
-
-  // HtmlDialogUIDelegate implementation.
-  // Gets the JSON string input to use when opening the dialog.
-  virtual std::string GetDialogArgs() const {
-    return dialog_start_args_;
-  }
-
-  // HtmlDialogUIDelegate implementation.
+  virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) { }
-  virtual std::wstring GetDialogTitle() const {
-    return l10n_util::GetString(IDS_REMOTING_SETUP_DIALOG_TITLE);
-  }
-  virtual bool IsDialogModal() const {
-    return true;
-  }
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
+  virtual std::wstring GetDialogTitle() const;
+  virtual bool IsDialogModal() const;
 
   // GaiaAuthConsumer implementation.
   virtual void OnClientLoginFailure(
@@ -79,19 +73,38 @@ class RemotingSetupFlow : public HtmlDialogUIDelegate,
   virtual void OnIssueAuthTokenFailure(const std::string& service,
                                        const GoogleServiceAuthError& error);
 
-  // Called by RemotingSetupMessageHandler.
+ private:
+  friend class RemotingServiceProcessHelper;
+  friend class RemotingSetupMessageHandler;
+
+  // Use static Run method to get an instance.
+  RemotingSetupFlow(const std::string& args, Profile* profile);
+
+  // Called RemotingSetupMessageHandler when a DOM is attached. This method
+  // is called when the HTML page is fully loaded. We then operate on this
+  // DOMUI object directly.
+  void Attach(DOMUI* dom_ui);
+
+  // Called by RemotingSetupMessageHandler when user authentication is
+  // registered.
   void OnUserSubmittedAuth(const std::string& user,
                            const std::string& password,
                            const std::string& captcha);
 
- private:
-  // Use static Run method to get an instance.
-  RemotingSetupFlow(const std::string& args, Profile* profile);
-
   // Event triggered when the service process was launched.
   void OnProcessLaunched();
 
-  RemotingSetupMessageHandler* message_handler_;
+  // The following methods control which iframe is visible.
+  void ShowGaiaLogin(const DictionaryValue& args);
+  void ShowGaiaSuccessAndSettingUp();
+  void ShowGaiaFailed(const GoogleServiceAuthError& error);
+  void ShowSetupDone();
+  void ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
+                                 const std::wstring& js);
+
+  // Pointer to the DOM UI. This is provided by RemotingSetupMessageHandler
+  // when attached.
+  DOMUI* dom_ui_;
 
   // The args to pass to the initial page.
   std::string dialog_start_args_;
@@ -105,12 +118,9 @@ class RemotingSetupFlow : public HtmlDialogUIDelegate,
 
   // Handle to the ServiceProcessControl which talks to the service process.
   ServiceProcessControl* process_control_;
+  scoped_refptr<RemotingServiceProcessHelper> service_process_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingSetupFlow);
 };
-
-// Open the appropriate setup dialog for the given profile (which can be
-// incognito).
-void OpenRemotingSetupDialog(Profile* profile);
 
 #endif  // CHROME_BROWSER_REMOTING_REMOTING_SETUP_FLOW_H_

@@ -1827,7 +1827,7 @@ void Browser::OpenSyncMyBookmarksDialog() {
 
 #if defined(ENABLE_REMOTING)
 void Browser::OpenRemotingSetupDialog() {
-  ::OpenRemotingSetupDialog(profile_);
+  RemotingSetupFlow::OpenDialog(profile_);
 }
 #endif
 

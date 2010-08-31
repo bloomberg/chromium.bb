@@ -9,11 +9,12 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/remoting/remoting_setup_flow.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 
-static const wchar_t kLoginIFrameXPath[] = L"//iframe[@id='login']";
-static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='done']";
+DOMMessageHandler* RemotingSetupMessageHandler::Attach(DOMUI* dom_ui) {
+  // Pass the DOMUI object to the setup flow.
+  flow_->Attach(dom_ui);
+  return DOMMessageHandler::Attach(dom_ui);
+}
 
 void RemotingSetupMessageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("SubmitAuth",
@@ -43,32 +44,4 @@ void RemotingSetupMessageHandler::HandleSubmitAuth(const ListValue* args) {
   // Pass the information to the flow.
   if (flow_)
     flow_->OnUserSubmittedAuth(username, password, captcha);
-}
-
-void RemotingSetupMessageHandler::ShowGaiaSuccessAndSettingUp() {
-  ExecuteJavascriptInIFrame(kLoginIFrameXPath,
-                            L"showGaiaSuccessAndSettingUp();");
-}
-
-void RemotingSetupMessageHandler::ShowGaiaFailed() {
-  // TODO(hclam): Implement this.
-}
-
-void RemotingSetupMessageHandler::ShowSetupDone() {
-   std::wstring javascript = L"setMessage('You are all set!');";
-   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
-
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showSetupDone");
-
-   ExecuteJavascriptInIFrame(kDoneIframeXPath, L"onPageShown();");
-}
-
-void RemotingSetupMessageHandler::ExecuteJavascriptInIFrame(
-    const std::wstring& iframe_xpath,
-    const std::wstring& js) {
-  if (dom_ui_) {
-    RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
-    rvh->ExecuteJavascriptInWebFrame(iframe_xpath, js);
-  }
 }
