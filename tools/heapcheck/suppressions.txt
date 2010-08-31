@@ -993,3 +993,9 @@
    fun:Browser
    fun:BookmarkBarGtkUnittest
 }
+{
+   bug_53995
+   Heapcheck:Leak
+   ...
+   fun:net::::ClientSocketPoolBaseTest_AbortAllRequestsOnFlush_Test::TestBody
+}
