@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +29,7 @@ class SearchHostToURLsMapTest : public testing::Test {
     ASSERT_STREQ(origin.c_str(), provider_map_->default_search_origin_.c_str());
   }
 
-  scoped_refptr<SearchHostToURLsMap> provider_map_;
+  scoped_ptr<SearchHostToURLsMap> provider_map_;
   TemplateURL t_urls_[2];
   std::string host_;
 
@@ -45,8 +46,8 @@ void SearchHostToURLsMapTest::SetUp() {
   template_urls.push_back(&t_urls_[0]);
   template_urls.push_back(&t_urls_[1]);
 
-  provider_map_ = new SearchHostToURLsMap;
-  provider_map_->Init(template_urls, NULL);
+  provider_map_.reset(new SearchHostToURLsMap);
+  provider_map_->Init(template_urls);
 }
 
 TEST_F(SearchHostToURLsMapTest, Add) {
@@ -76,16 +77,6 @@ TEST_F(SearchHostToURLsMapTest, Remove) {
   ASSERT_EQ(1, url_count);
 }
 
-TEST_F(SearchHostToURLsMapTest, RemoveAll) {
-  provider_map_->RemoveAll();
-
-  const TemplateURL* found_url = provider_map_->GetTemplateURLForHost(host_);
-  ASSERT_TRUE(found_url == NULL);
-
-  const TemplateURLSet* urls = provider_map_->GetURLsForHost(host_);
-  ASSERT_TRUE(urls == NULL);
-}
-
 TEST_F(SearchHostToURLsMapTest, Update) {
   std::string new_host = "example.com";
   TemplateURL new_values;
@@ -113,11 +104,6 @@ TEST_F(SearchHostToURLsMapTest, UpdateGoogleBaseURLs) {
   provider_map_->UpdateGoogleBaseURLs();
   ASSERT_EQ(&new_t_url, provider_map_->GetTemplateURLForHost(
       new_google_base_url));
-}
-
-TEST_F(SearchHostToURLsMapTest, SetDefault) {
-  provider_map_->SetDefault(&t_urls_[0]);
-  VerifyDefault("http://" + host_ + "/");
 }
 
 TEST_F(SearchHostToURLsMapTest, GetTemplateURLForKnownHost) {
@@ -156,38 +142,3 @@ TEST_F(SearchHostToURLsMapTest, GetURLsForUnknownHost) {
   const TemplateURLSet* urls = provider_map_->GetURLsForHost("a" + host_);
   ASSERT_TRUE(urls == NULL);
 }
-
-TEST_F(SearchHostToURLsMapTest, GetInstallStateNotReady) {
-  scoped_refptr<SearchHostToURLsMap> not_init_map(new SearchHostToURLsMap);
-  ASSERT_EQ(SearchProviderInstallData::NOT_READY,
-            not_init_map->GetInstallState(GURL("http://" + host_ + "/")));
-}
-
-TEST_F(SearchHostToURLsMapTest, GetInstallStateNotDefault) {
-  ASSERT_EQ(SearchProviderInstallData::INSTALLED_BUT_NOT_DEFAULT,
-            provider_map_->GetInstallState(GURL("http://" + host_ + "/")));
-  ASSERT_EQ(SearchProviderInstallData::INSTALLED_BUT_NOT_DEFAULT,
-            provider_map_->GetInstallState(GURL("http://" + host_ + ":80/")));
-}
-
-TEST_F(SearchHostToURLsMapTest, GetInstallStateNotInstalledDifferentPort) {
-  ASSERT_EQ(SearchProviderInstallData::NOT_INSTALLED,
-            provider_map_->GetInstallState(GURL("http://" + host_ + ":96/")));
-}
-
-TEST_F(SearchHostToURLsMapTest, GetInstallStateNotInstalledDifferentScheme) {
-  ASSERT_EQ(SearchProviderInstallData::NOT_INSTALLED,
-            provider_map_->GetInstallState(GURL("https://" + host_ + "/")));
-}
-
-TEST_F(SearchHostToURLsMapTest, GetInstallStateNotInstalled) {
-  ASSERT_EQ(SearchProviderInstallData::NOT_INSTALLED,
-            provider_map_->GetInstallState(GURL("http://a" + host_ + "/")));
-}
-
-TEST_F(SearchHostToURLsMapTest, GetInstallStateDefault) {
-  provider_map_->SetDefault(&t_urls_[0]);
-  ASSERT_EQ(SearchProviderInstallData::INSTALLED_AS_DEFAULT,
-            provider_map_->GetInstallState(GURL("http://" + host_ + "/")));
-}
-

@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -333,7 +334,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   ObserverList<TemplateURLModelObserver> model_observers_;
 
   // Maps from host to set of TemplateURLs whose search url host is host.
-  scoped_refptr<SearchHostToURLsMap> provider_map_;
+  SearchHostToURLsMap provider_map_;
 
   // Used to obtain the WebDataService.
   // When Load is invoked, if we haven't yet loaded, the WebDataService is
