@@ -2401,7 +2401,7 @@ each locale. -->
         Run all plug-ins this time
       </message>
       <message name="IDS_BLOCKED_PLUGINS_UNBLOCK_SHORT" desc="Button to unblock nonsandboxed plug-ins on a site">
-        Always allow
+        Always on this site
       </message>
 
       <!-- SSL error strings -->
@@ -3830,14 +3830,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Click-to-load -->
-      <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in.">
-        Run plug-in this time
+      <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">
+        Click to run this blocked plug-in
       </message>
-      <message name="IDS_PLUGIN_LOAD_SHORT" desc="The link for loading a blocked plug-in.">
-        Run this time
+      <message name="IDS_PLUGIN_LOAD_SHORT" desc="The link for loading all blocked plug-ins, displayed in the infobar.">
+        Allow
       </message>
       <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plug-in.">
-        Update plug-in
+        Update plug-in...
       </message>
 
       <!-- Session Crashed Info Bar-->
@@ -6766,13 +6766,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Problems installing?
       </message>
       <message name="IDS_PLUGIN_BLOCKED_PROMPT" desc="Info Bar message when a non-sandboxed plugin was blocked">
-        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in was blocked on this site because it could access your computer directly.
+        This website uses the <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in; allow this plug-in to run?
       </message>
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Info Bar message when an outdated plugin was disabled">
-        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in was disabled on this site because it is outdated and could access your computer directly.
+        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in was disabled because it is out of date.
       </message>
       <message name="IDS_PLUGIN_ENABLE_TEMPORARILY" desc="Info Bar button to temporarily re-enable a disabled plugin">
-        Re-enable for this session
+        Re-enable...
       </message>
       <message name="IDS_PLUGIN_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed plugin">
         The following plug-in has crashed: <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex></ph>
