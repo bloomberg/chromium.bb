@@ -46,7 +46,7 @@ int InitProxyResolver::Init(const ProxyConfig& config,
                             CompletionCallback* callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(callback);
-  DCHECK(config.MayRequirePACResolver());
+  DCHECK(config.HasAutomaticSettings());
 
   net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER, NULL);
 

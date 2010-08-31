@@ -86,7 +86,7 @@ void Preconnect::Connect(const GURL& url) {
     if (!proxy_service->fetched_config().is_valid()) {
       HistogramPreconnectStatus(PROXY_UNINITIALIZED);
     } else {
-      if (proxy_service->fetched_config().MayRequirePACResolver()) {
+      if (proxy_service->fetched_config().HasAutomaticSettings()) {
         HistogramPreconnectStatus(PROXY_PAC_RESOLVER);
         return;
       }
