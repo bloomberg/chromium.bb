@@ -394,6 +394,7 @@ o3djs.effect.setLanguage = function(language) {
  * 'glsl' or 'o3d'.
  */
 o3djs.effect.getLanguage = function() {
+  var language_namespace = o3djs.effect.o3d;
   if (language_namespace == o3djs.effect.glsl) {
     return 'glsl';
   }

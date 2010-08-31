@@ -112,7 +112,7 @@ o3djs.canvas.create = function(pack, root, viewInfo) {
  *   1. Transforms the shape to screen space via the worldViewProjection matrix.
  *   2. Performs a texture lookup to display the contents of the texture
  *      bound to texSampler0.
- * @type {string}
+ * @return {string} The shader used canvas quads.
  */
 o3djs.canvas.buildShaderString = function() {
   var p = o3djs.effect;

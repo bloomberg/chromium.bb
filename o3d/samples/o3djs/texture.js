@@ -287,7 +287,7 @@ o3djs.texture.createCubeTextureFrom6Bitmaps = function(
       edgeLength, bitmaps[0].format, numMips, false);
   for (var ii = 0; ii < 6; ++ii) {
     var bitmap = bitmaps[ii];
-    texture.setFromBitmap(ii, bitmap);
+    texture.setFromBitmap(/** @type{o3d.TextureCUBE.CubeFace} */ (ii), bitmap);
   }
   texture.generateMips(0, numMips - 1);
   return texture;
