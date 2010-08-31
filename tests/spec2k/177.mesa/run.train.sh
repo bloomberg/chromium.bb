@@ -18,8 +18,9 @@ rm -f  mesa.log mesa.ppm mesa.in numbers
 ln -s  data/train/input/* .
 
 
-
-${PREFIX} $1 ${DASHDASH} -frames 500 -meshfile mesa.in -ppmfile mesa.ppm >mesa.out 2>mesa.err
+# TODO(robertm): remove -c option
+# c.f.: http://code.google.com/p/nativeclient/issues/detail?id=717
+${PREFIX} $1 -c ${DASHDASH} -frames 500 -meshfile mesa.in -ppmfile mesa.ppm >mesa.out 2>mesa.err
 
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"

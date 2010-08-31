@@ -97,7 +97,7 @@ SetupNaclX8632Common() {
     exit -1
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
-  PREFIX="${SEL_LDR} -d -f"
+  PREFIX="${SEL_LDR} -a -f"
 }
 
 #@
@@ -123,7 +123,7 @@ SetupNaclX8664Common() {
     exit -1
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
-  PREFIX="${SEL_LDR} -d -f"
+  PREFIX="${SEL_LDR} -a -f"
 }
 
 #@
@@ -151,7 +151,7 @@ SetupPnaclX8664Common() {
     exit -1
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
-  PREFIX="${SEL_LDR} -d -f"
+  PREFIX="${SEL_LDR} -a -f"
 }
 
 #@
@@ -193,7 +193,7 @@ SetupPnaclX8632Common() {
     exit -1
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
-  PREFIX="${SEL_LDR} -d -f"
+  PREFIX="${SEL_LDR} -a -f"
 }
 
 #@
@@ -247,7 +247,7 @@ SetupPnaclArmCommon() {
     exit -1
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
-  PREFIX="${QEMU} run ${SEL_LDR} -d -Q -f"
+  PREFIX="${QEMU} run ${SEL_LDR} -a -Q -f"
   SUFFIX=pnacl.arm
 }
 

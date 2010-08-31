@@ -20,7 +20,9 @@ if [[ "${EMU_HACK}" != "no" ]] ; then
   touch cp-decl.s
 fi
 
-${PREFIX} $1 ${DASHDASH} data/train/input/cp-decl.i -o cp-decl.s > stdout.out 2> stderr.out
+# TODO(robertm): remove -c option
+# c.f.: http://code.google.com/p/nativeclient/issues/detail?id=717
+${PREFIX} $1 -c ${DASHDASH} data/train/input/cp-decl.i -o cp-decl.s > stdout.out 2> stderr.out
 
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"
