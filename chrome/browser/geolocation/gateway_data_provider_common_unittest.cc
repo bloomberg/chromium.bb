@@ -50,7 +50,7 @@ class MessageLoopQuitListener
     // Provider should call back on client's thread.
     EXPECT_EQ(MessageLoop::current(), message_loop_to_quit_);
     provider_ = provider;
-    message_loop_to_quit_->Quit();
+    message_loop_to_quit_->QuitNow();
   }
 
   MessageLoop* message_loop_to_quit_;
@@ -138,16 +138,15 @@ TEST_F(GeolocationGatewayDataProviderCommonTest, StartThread) {
   SUCCEED();
 }
 
-// Timed out at least once on Vista (dbg): http://crbug.com/53472
-TEST_F(GeolocationGatewayDataProviderCommonTest, DISABLED_IntermittentWifi){
+TEST_F(GeolocationGatewayDataProviderCommonTest, ConnectToDifferentRouter){
   EXPECT_CALL(*polling_policy_, PollingInterval())
       .Times(AtLeast(1));
   EXPECT_CALL(*polling_policy_, NoRouterInterval())
       .Times(1);
   EXPECT_CALL(*gateway_api_, GetRouterData(_))
-      .WillOnce(Return(true))
-      .WillOnce(Return(false))
-      .WillRepeatedly(DoDefault());
+      .WillOnce(Return(true)) // Connected to router.
+      .WillOnce(Return(false)) // Disconnected from router.
+      .WillRepeatedly(DoDefault()); // Connected to a different router.
 
   // Set MAC address for output.
   RouterData single_router;

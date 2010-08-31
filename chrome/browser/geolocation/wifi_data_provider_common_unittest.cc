@@ -70,7 +70,7 @@ class MessageLoopQuitListener
     // Provider should call back on client's thread.
     EXPECT_EQ(MessageLoop::current(), message_loop_to_quit_);
     provider_ = provider;
-    message_loop_to_quit_->Quit();
+    message_loop_to_quit_->QuitNow();
   }
   MessageLoop* message_loop_to_quit_;
   DeviceDataProvider<WifiData>* provider_;
