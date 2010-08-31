@@ -50,13 +50,7 @@ class ServiceProcessControl::Launcher
   }
 
   void DoDetectLaunched(Task* task) {
-    // TODO(hclam): We need to improve the method we are using to connect to
-    // the service process. The approach we are using here is to check for
-    // the existence of the service process lock file created after the service
-    // process is fully launched.
     if (CheckServiceProcessRunning(kServiceProcessCloudPrint)) {
-      // After the process is launched we listen on the file system for the
-      // service process lock file to detect the service process has launched.
       ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
           NewRunnableMethod(this, &Launcher::Notify, task));
       return;

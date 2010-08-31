@@ -72,7 +72,7 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
 
   // Check if remoting host is already enabled.
   if (values->GetBoolean(prefs::kRemotingHostEnabled, &remoting_host_enabled) &&
-    remoting_host_enabled) {
+      remoting_host_enabled) {
     // If true then we start the host.
     StartChromotingHost();
   }
@@ -85,11 +85,10 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
       GetServiceProcessChannelName(kServiceProcessCloudPrint)));
   ipc_server_->Init();
 
-  // After the IPC server has started we can create the lock file to indicate
-  // that we have started.
-  bool ret = CreateServiceProcessLockFile(kServiceProcessCloudPrint);
-  DCHECK(ret) << "Failed to create service process lock file.";
-  return ret;
+  // After the IPC server has started we signal that the service process is
+  // running.
+  SignalServiceProcessRunning(kServiceProcessCloudPrint);
+  return true;
 }
 
 bool ServiceProcess::Teardown() {
@@ -114,9 +113,8 @@ bool ServiceProcess::Teardown() {
   network_change_notifier_.reset();
 
   // Delete the service process lock file when it shuts down.
-  bool ret = DeleteServiceProcessLockFile(kServiceProcessCloudPrint);
-  DCHECK(ret) << "Failed to delete service process lock file.";
-  return ret;
+  SignalServiceProcessStopped(kServiceProcessCloudPrint);
+  return true;
 }
 
 void ServiceProcess::Shutdown() {
