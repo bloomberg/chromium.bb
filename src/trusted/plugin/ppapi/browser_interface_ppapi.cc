@@ -21,18 +21,16 @@
 
 using nacl::assert_cast;
 
+namespace plugin {
+
 namespace {
 
-// TODO(polina): this function should return pp::Var
-bool GetWindow(plugin::InstanceIdentifier instance_id, pp::Var* window) {
-  pp::Instance* instance = plugin::InstanceIdentifierToPPInstance(instance_id);
-  *window = instance->GetWindowObject();
-  return !window->is_void();
+pp::Var GetWindow(plugin::InstanceIdentifier instance_id) {
+  pp::Instance* instance = InstanceIdentifierToPPInstance(instance_id);
+  return instance->GetWindowObject();
 }
 
 }  // namespace
-
-namespace plugin {
 
 uintptr_t BrowserInterfacePpapi::StringToIdentifier(const nacl::string& str) {
   StringToIdentifierMap::iterator iter = string_to_identifier_map_.find(str);
@@ -55,34 +53,23 @@ nacl::string BrowserInterfacePpapi::IdentifierToString(uintptr_t ident) {
 
 bool BrowserInterfacePpapi::Alert(InstanceIdentifier instance_id,
                                   const nacl::string& text) {
-  pp::Var window;
-  if (!GetWindow(instance_id, &window)) {
-    return false;
-  }
   pp::Var exception;
-  window.Call("alert", text, &exception);
+  GetWindow(instance_id).Call("alert", text, &exception);
   return exception.is_void();
 }
 
 bool BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
                                          const nacl::string& text) {
-  pp::Var window;
-  if (!GetWindow(instance_id, &window)) {
-    return false;
-  }
   pp::Var exception;
+  pp::Var window = GetWindow(instance_id);
   window.GetProperty("console", &exception).Call("log", text, &exception);
   return exception.is_void();
 }
 
 bool BrowserInterfacePpapi::EvalString(InstanceIdentifier instance_id,
                                        const nacl::string& expression) {
-  pp::Var window;
-  if (!GetWindow(instance_id, &window)) {
-    return false;
-  }
   pp::Var exception;
-  window.Call("eval", expression, &exception);
+  GetWindow(instance_id).Call("eval", expression, &exception);
   return exception.is_void();
 }
 
@@ -90,21 +77,14 @@ bool BrowserInterfacePpapi::EvalString(InstanceIdentifier instance_id,
 bool BrowserInterfacePpapi::GetFullURL(InstanceIdentifier instance_id,
                                        nacl::string* full_url) {
   *full_url = kUnknownURL;
-  pp::Var window;
-  if (!GetWindow(instance_id, &window)) {
-    PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (get window failed)\n"));
-    return false;
-  }
-  pp::Var location = window.GetProperty("location");
+  pp::Var location = GetWindow(instance_id).GetProperty("location");
   PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (location=%s)\n",
                  VarToString(location).c_str()));
-  if (location.is_object()) {
-    pp::Var href = location.GetProperty("href");
-    PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (href=%s)\n",
-                   VarToString(href).c_str()));
-    if (href.is_string()) {
-      *full_url = href.AsString();
-    }
+  pp::Var href = location.GetProperty("href");
+  PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (href=%s)\n",
+                 VarToString(href).c_str()));
+  if (href.is_string()) {
+    *full_url = href.AsString();
   }
   PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (full_url='%s')\n",
                  full_url->c_str()));
