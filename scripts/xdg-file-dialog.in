@@ -259,7 +259,7 @@ case $1 in
   savefilename)
     action=savefilename
     ;;
-    
+
   directory)
     action=directory
     ;;

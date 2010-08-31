@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #---------------------------------------------
 #   xdg-open
 #
@@ -27,10 +27,25 @@ _USAGE
 
 #@xdg-utils-common@
 
+# This handles backslashes but not quote marks.
+first_word()
+{
+    read first rest
+    echo "$first"
+}
+
 open_kde()
 {
-    kfmclient exec "$1"
-    kfmclient_fix_exit_code $?
+    if kde-open -v 2>/dev/null 1>&2; then
+        kde-open "$1"
+    else
+        if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
+            kfmclient openURL "$1"
+        else
+            kfmclient exec "$1"
+            kfmclient_fix_exit_code $?
+        fi
+    fi
 
     if [ $? -eq 0 ]; then
         exit_success
@@ -41,7 +56,11 @@ open_kde()
 
 open_gnome()
 {
-    gnome-open "$1"
+    if gvfs-open --help 2>/dev/null 1>&2; then
+        gvfs-open "$1"
+    else
+        gnome-open "$1"
+    fi
 
     if [ $? -eq 0 ]; then
         exit_success
@@ -61,23 +80,61 @@ open_xfce()
     fi
 }
 
+open_generic_xdg_mime()
+{
+    filetype=`xdg-mime query filetype "$1" | sed "s/;.*//"`
+    default=`xdg-mime query default "$filetype"`
+    if [ -n "$default" ] ; then
+        xdg_user_dir="$XDG_DATA_HOME"
+        [ -n "$xdg_user_dir" ] || xdg_user_dir="$HOME/.local/share"
+
+        xdg_system_dirs="$XDG_DATA_DIRS"
+        [ -n "$xdg_system_dirs" ] || xdg_system_dirs=/usr/local/share/:/usr/share/
+
+        for x in `echo "$xdg_user_dir:$xdg_system_dirs" | sed 's/:/ /g'`; do
+            file="$x/applications/$default"
+            if [ -r "$file" ] ; then
+                command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
+                command_exec=`which $command 2>/dev/null`
+                if [ -x "$command_exec" ] ; then
+                    $command_exec "$1"
+                    if [ $? -eq 0 ]; then
+                        exit_success
+                    fi
+                fi
+            fi
+        done
+    fi
+}
+
 open_generic()
 {
-    if mimeopen -v 2>/dev/null 1>&2; then
-        mimeopen -n "$1"
-        if [ $? -eq 0 ]; then
-            exit_success
-        fi
-    fi
-
-    if which run-mailcap 2>/dev/null 1>&2 &&
-       (echo "$1" | grep -q '^file://' ||
+    # Paths or file:// URLs
+    if (echo "$1" | grep -q '^file://' ||
         ! echo "$1" | egrep -q '^[a-zA-Z+\.\-]+:'); then
 
         local file=$(echo "$1" | sed 's%^file://%%')
-        run-mailcap --action=view "$file"
-        if [ $? -eq 0 ]; then
-            exit_success
+
+        # Decode URLs
+        # TODO
+
+        check_input_file "$file"
+
+        open_generic_xdg_mime "$file"
+
+        if [ -f /etc/debian_version ] &&
+            which run-mailcap 2>/dev/null 1>&2; then
+            run-mailcap --action=view "$file"
+            if [ $? -eq 0 ]; then
+                exit_success
+            fi
+        fi
+
+        if mimeopen -v 2>/dev/null 1>&2; then
+            mimeopen -L -n "$file"
+            if [ $? -eq 0 ]; then
+                exit_success
+            fi
         fi
     fi
 
@@ -85,14 +142,18 @@ open_generic()
     for browser in $BROWSER; do
         if [ x"$browser" != x"" ]; then
 
-            IFS=' '
-            browser_with_arg=${browser//'%s'/"$1"}
-
-            if [ x"$browser_with_arg" = x"$browser" ]; then "$browser" "$1";
-            else $browser_with_arg;
+            browser_with_arg=`printf "$browser" "$1" 2>/dev/null`
+            if [ $? -ne 0 ]; then
+                browser_with_arg=$browser;
             fi
 
-            if [ $? -eq 0 ]; then exit_success;
+            if [ x"$browser_with_arg" = x"$browser" ]; then
+                "$browser" "$1";
+            else eval '$browser_with_arg'$xdg_redirect_output;
+            fi
+
+            if [ $? -eq 0 ]; then
+                exit_success;
             fi
         fi
     done
@@ -128,11 +189,15 @@ fi
 detectDE
 
 if [ x"$DE" = x"" ]; then
-    # if BROWSER variable is not set, check some well known browsers instead
-    if [ x"$BROWSER" = x"" ]; then
-        BROWSER=firefox:mozilla:netscape
-    fi
     DE=generic
+fi
+
+# if BROWSER variable is not set, check some well known browsers instead
+if [ x"$BROWSER" = x"" ]; then
+    BROWSER=links2:links:lynx:w3m
+    if [ -n "$DISPLAY" ]; then
+        BROWSER=firefox:mozilla:epiphany:konqueror:chromium-browser:google-chrome:$BROWSER
+    fi
 fi
 
 case "$DE" in

@@ -210,7 +210,7 @@ exit_failure_file_permission_read()
 }
 
 #------------------------------------------------------------
-# Exit script on insufficient permission to read a specified file
+# Exit script on insufficient permission to write a specified file
 
 exit_failure_file_permission_write()
 {
@@ -313,7 +313,8 @@ detectDE()
 {
     if [ x"$KDE_FULL_SESSION" = x"true" ]; then DE=kde;
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
-    elif xprop -root _DT_SAVE_MODE | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
+    elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
     fi
 }
 
@@ -526,7 +527,8 @@ read_kde_browser()
     fi
     # kreadconfig in KDE 4 may not notice Key[$*]=... localized settings, so check
     # by hand if it didn't find anything (oddly kwriteconfig works fine though).
-    kdeglobals="${KDE_HOME:-$HOME/.kde}/share/config/kdeglobals"
+    kdeglobals_dir=`kde${KDE_SESSION_VERSION}-config --path config  | cut -d ':' -f 1`
+    kdeglobals="$kdeglobals_dir/kdeglobals"
     [ ! -f "$kdeglobals" ] && return
     # This will only take the first value if there is more than one.
     grep '^BrowserApplication\[$[^]=]*\]=' "$kdeglobals" | head -n 1 | cut -d= -f 2-

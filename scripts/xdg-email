@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #---------------------------------------------
 #   xdg-email
 #
@@ -253,7 +253,7 @@ exit_failure_file_permission_read()
 }
 
 #------------------------------------------------------------
-# Exit script on insufficient permission to read a specified file
+# Exit script on insufficient permission to write a specified file
 
 exit_failure_file_permission_write()
 {
@@ -330,7 +330,7 @@ check_common_commands()
             ;;
 
             --version)
-            echo "xdg-email 1.0.1"
+            echo "xdg-email 1.0.2"
             exit_success
             ;;
         esac
@@ -356,7 +356,8 @@ detectDE()
 {
     if [ x"$KDE_FULL_SESSION" = x"true" ]; then DE=kde;
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
-    elif xprop -root _DT_SAVE_MODE | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
+    elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
     fi
 }
 
@@ -377,14 +378,71 @@ kfmclient_fix_exit_code()
     return 0
 }
 
+run_thunderbird()
+{
+    local THUNDERBIRD MAILTO NEWMAILTO TO CC BCC SUBJECT BODY ATTACH
+    THUNDERBIRD="$1"
+    MAILTO=$(echo "$2" | sed 's/^mailto://')
+    echo "$MAILTO" | grep -qs "^?"
+    if [ "$?" = "0" ] ; then
+        MAILTO=$(echo "$MAILTO" | sed 's/^?//')
+    else
+        MAILTO=$(echo "$MAILTO" | sed 's/^/to=/' | sed 's/?/\&/')
+    fi
+
+    MAILTO=$(echo "$MAILTO" | sed 's/&/\n/g')
+    TO=$(echo "$MAILTO" | grep '^to=' | sed 's/^to=//' | awk '{ printf "%s,",$0 }')
+    CC=$(echo "$MAILTO" | grep '^cc=' | sed 's/^cc=//' | awk '{ printf "%s,",$0 }')
+    BCC=$(echo "$MAILTO" | grep '^bcc=' | sed 's/^bcc=//' | awk '{ printf "%s,",$0 }')
+    SUBJECT=$(echo "$MAILTO" | grep '^subject=' | tail -n 1)
+    BODY=$(echo "$MAILTO" | grep '^body=' | tail -n 1)
+    ATTACH=$(echo "$MAILTO" | sed 's/^attach=/\n\nfile:\/\//g' | awk '/^file:/ { printf "%s,",$0 }')
+
+    if [ -z "$TO" ] ; then
+        NEWMAILTO=
+    else
+        NEWMAILTO="to='$TO'"
+    fi
+    if [ -n "$CC" ] ; then
+        NEWMAILTO="${NEWMAILTO},cc='$CC'"
+    fi
+    if [ -n "$BCC" ] ; then
+        NEWMAILTO="${NEWMAILTO},bcc='$BCC'"
+    fi
+    if [ -n "$SUBJECT" ] ; then
+        NEWMAILTO="${NEWMAILTO},$SUBJECT"
+    fi
+    if [ -n "$BODY" ] ; then
+        NEWMAILTO="${NEWMAILTO},$BODY"
+    fi
+
+    if [ -n "$ATTACH" ] ; then
+        NEWMAILTO="${NEWMAILTO},attachment='${ATTACH}'"
+    fi
+
+    NEWMAILTO=$(echo "$NEWMAILTO" | sed 's/^,//')
+    DEBUG 1 "Running $THUNDERBIRD -compose \"$NEWMAILTO\""
+    "$THUNDERBIRD" -compose "$NEWMAILTO"
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
+}
+
 open_kde()
 {
     local client
+    client=`kreadconfig --file emaildefaults --group PROFILE_Default --key EmailClient | cut -d ' ' -f 1`
+    echo $client | grep thunderbird > /dev/null 2>&1
+    if [ $? -eq 0 ] ; then
+        run_thunderbird "$client" "$1"
+    fi
+
     if [ -f /etc/SuSE-release ] ; then
         # Workaround for SUSE 10.0
-        client=`kreadconfig --file emaildefaults --group PROFILE_Default --key EmailClient| cut -d ' ' -f 1`
-        [ -z $client ] && client="kmail"
-        if ! which $client > /dev/null 2> /dev/null; then
+        [ -z "$client" ] && client="kmail"
+        if ! which "$client" > /dev/null 2> /dev/null; then
             DEBUG 3 "KDE has $client configured as email client which isn't installed"
             if which gnome-open > /dev/null 2> /dev/null && which evolution > /dev/null 2> /dev/null; then
                DEBUG 3 "Try gnome-open instead"
@@ -411,8 +469,20 @@ open_kde()
 
 open_gnome()
 {
-    DEBUG 1 "Running gnome-open \"$1\""
-    gnome-open "$1"
+    local client
+    client=`gconftool-2 --get /desktop/gnome/url-handlers/mailto/command | cut -d ' ' -f 1` || ""
+    echo $client | grep thunderbird > /dev/null 2>&1
+    if [ $? -eq 0 ] ; then
+        run_thunderbird "$client" "$1"
+    fi
+
+    if gvfs-open --help 2>/dev/null 1>&2; then
+        DEBUG 1 "Running gvfs-open \"$1\""
+        gvfs-open "$1"
+    else
+        DEBUG 1 "Running gnome-open \"$1\""
+        gnome-open "$1"
+    fi
 
     if [ $? -eq 0 ]; then
         exit_success
@@ -440,8 +510,9 @@ open_generic()
     for browser in $BROWSER; do
         if [ x"$browser" != x"" ]; then
 
-            IFS=' '
-            browser_with_arg=${browser//'%s'/"$1"}
+            browser_with_arg=`printf "$browser" "$1" 2>/dev/null`
+            if [ $? -ne 0 ]; then browser_with_arg=$browser;
+            fi
 
             if [ x"$browser_with_arg" = x"$browser" ]; then "$browser" "$1";
             else $browser_with_arg;
@@ -471,7 +542,7 @@ result=$(echo "$1" | $utf8 | awk '
             c = substr ($0, i, 1)
             if ( ord [c] > 127 ) {
                 e = e "%" sprintf("%02X", ord [c])
-            } else if ( c ~ /[@a-zA-Z0-9.-]/ ) {
+            } else if ( c ~ /[@a-zA-Z0-9.-\\/]/ ) {
                 e = e c
             } else {
                 e = e "%" sprintf("%02X", ord [c])
@@ -616,11 +687,15 @@ fi
 detectDE
 
 if [ x"$DE" = x"" ]; then
-    # if BROWSER variable is not set, check some well known browsers instead
-    if [ x"$BROWSER" = x"" ]; then
-        BROWSER=firefox:mozilla:netscape
-    fi
     DE=generic
+fi
+
+# if BROWSER variable is not set, check some well known browsers instead
+if [ x"$BROWSER" = x"" ]; then
+    BROWSER=links2:links:lynx:w3m
+    if [ -n "$DISPLAY" ]; then
+        BROWSER=firefox:mozilla:epiphany:konqueror:chromium-browser:google-chrome:$BROWSER
+    fi
 fi
 
 case "$DE" in

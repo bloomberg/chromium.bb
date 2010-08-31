@@ -33,8 +33,8 @@ GTK_UPDATE_ICON_CACHE=
 find_gtk_update_icon_cache()
 {
     [ -n "$GTK_UPDATE_ICON_CACHE" ] && return;
- 
-    GTK_UPDATE_ICON_CACHE="-"   
+
+    GTK_UPDATE_ICON_CACHE="-"
     for x in `echo "$PATH:/opt/gnome/bin" | sed 's/:/ /g'`; do
         DEBUG 3 "Checking $x for gtk-update-icon-cache"
         if [ -x "$x/gtk-update-icon-cache" ] ; then
@@ -52,7 +52,7 @@ need_dot_icon_path()
   # The availability of gtk-update-icon-cache is used as indication
   # of whether the system is using GTK 2.6 or later
   find_gtk_update_icon_cache
-  [ "$GTK_UPDATE_ICON_CACHE" != "-" ] && return 1; 
+  [ "$GTK_UPDATE_ICON_CACHE" != "-" ] && return 1;
   return 0;
 }
 
@@ -65,7 +65,7 @@ update_icon_database()
    # Don't create a cache if there wan't one already
    if [ -f "$1/icon-theme.cache" ] ; then
       find_gtk_update_icon_cache
-      if [ "$GTK_UPDATE_ICON_CACHE" != "-" ] ; then 
+      if [ "$GTK_UPDATE_ICON_CACHE" != "-" ] ; then
          DEBUG 1 "Running $GTK_UPDATE_ICON_CACHE -f -t \"$1\""
          eval '$GTK_UPDATE_ICON_CACHE -f -t "$1"'$xdg_redirect_output
          return
@@ -126,7 +126,7 @@ while [ $# -gt 0 ] ; do
           system)
             mode="system"
             ;;
-            
+
           *)
             exit_failure_syntax "unknown mode '$1'"
             ;;
@@ -344,9 +344,10 @@ if [ x"$mode" = x"user" ] ; then
     xdg_dir="$xdg_base_dir/$xdg_size_name/$context"
     #KDE 3.x doesn't support XDG_DATA_HOME for icons
     #Check if xdg_dir prefix is listed by kde-config --path icon
-    #If not, install additional symlink to kdedir 
+    #If not, install additional symlink to kdedir
     if need_kde_icon_path "$xdg_user_prefix" ; then
-        kde_user_dir="$HOME/.kde/share/icons/$theme"
+        kde_user_icon_dir=`kde${KDE_SESSION_VERSION}-config --path icon | cut -d ':' -f 1`
+        kde_user_dir="$kde_user_icon_dir/$theme"
         kde_dir="$kde_user_dir/$xdg_size_name/$context"
     fi
     #Gnome 2.8 supports ~/.icons but not XDG_DATA_HOME
@@ -367,7 +368,7 @@ else
     xdg_dir="$xdg_base_dir/$xdg_size_name/$context"
     #KDE 3.x doesn't support XDG_DATA_DIRS for icons
     #Check if xdg_dir prefix is listed by kde-config --path icon
-    #If not, install additional symlink to kdedir 
+    #If not, install additional symlink to kdedir
     if need_kde_icon_path "$xdg_global_prefix" ; then
         kde_global_dir="$kde_global_prefix/$theme"
         kde_dir="$kde_global_dir/$xdg_size_name/$context"
@@ -378,7 +379,7 @@ fi
 
 # Start GNOME legacy workaround section
 need_gnome_mime=
-[ $context = "mimetypes" ] && need_gnome_mime=true 
+[ $context = "mimetypes" ] && need_gnome_mime=true
 # End GNOME legacy workaround section
 
 [ -n "$icon_name" ] || icon_name=`basename "$icon_file" | sed 's/\.[a-z][a-z][a-z]$//'`
@@ -424,8 +425,8 @@ case $action in
             rm -f "$icon_dir/$icon_name.xpm" "$icon_dir/$icon_name.png"
             rm -f "$icon_dir/$icon_icon_name"
             if [ -n "$need_gnome_mime" ] ; then
-                rm -f "$icon_dir/gnome-mime-$icon_name.xpm" 
-                rm -f "$icon_dir/gnome-mime-$icon_name.png" 
+                rm -f "$icon_dir/gnome-mime-$icon_name.xpm"
+                rm -f "$icon_dir/gnome-mime-$icon_name.png"
             fi
         done
         if [ -n "$kde_dir" ] ; then

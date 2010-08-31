@@ -34,7 +34,11 @@ update_mime_database()
       detectDE
       if [ x"$DE" = x"kde" ] ; then
          DEBUG 1 "Running kbuildsycoca"
-         eval 'kbuildsycoca'$xdg_redirect_output
+         if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
+             eval 'kbuildsycoca4'$xdg_redirect_output
+         else
+             eval 'kbuildsycoca'$xdg_redirect_output
+         fi
       fi
    fi
    for x in `echo "$PATH:/opt/gnome/bin" | sed 's/:/ /g'`; do
@@ -48,67 +52,170 @@ update_mime_database()
 
 info_kde()
 {
-    if which "kmimetypefinder" > /dev/null 2>/dev/null; then
+    if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
         DEBUG 1 "Running kmimetypefinder \"$1\""
-        kmimetypefinder "$1" 2>/dev/null | head -n 1
+        KMIMETYPEFINDER=`which kmimetypefinder 2>/dev/null`
+        $KMIMETYPEFINDER "$1" 2>/dev/null | head -n 1
     else
         DEBUG 1 "Running kfile \"$1\""
-        kfile "$1" 2> /dev/null | head -n 1 | cut -d "(" -f 2 | cut -d ")" -f 1
+        KFILE=`which kfile 2>/dev/null`
+        $KFILE "$1" 2> /dev/null | head -n 1 | cut -d "(" -f 2 | cut -d ")" -f 1
     fi
 
-    exit_success
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
 }
 
 info_gnome()
 {
     file=`readlink -f "$1"` # Normalize path
-    DEBUG 1 "Running gnomevfs-info \"$file\""
-    gnomevfs-info "$file" 2> /dev/null | grep MIME | cut -d ":" -f 2 | sed s/"^ "//
 
-    exit_success
+    if gvfs-info --help 2>/dev/null 1>&2; then
+        DEBUG 1 "Running gvfs-info \"$file\""
+        gvfs-info "$file" 2> /dev/null | grep standard::content-type | cut -d' ' -f4
+    else
+       DEBUG 1 "Running gnomevfs-info \"$file\""
+       gnomevfs-info --slow-mime "$file" 2> /dev/null | grep "^MIME" | cut -d ":" -f 2 | sed s/"^ "//
+    fi
+
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
 }
 
 info_generic()
 {
-    DEBUG 1 "Running /usr/bin/file -i \"$1\"" 
+    DEBUG 1 "Running file -i \"$1\""
     /usr/bin/file -i "$1" 2> /dev/null | cut -d ":" -f 2 | sed s/"^ "//
 
-    exit_success
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
 }
 
 make_default_kde()
 {
     # $1 is vendor-name.desktop
-    # $2 is mime/type 
-    # Add to $KDE_HOME/share/config/profilerc:
+    # $2 is mime/type
+    #
+    # On KDE 3, add to $KDE_CONFIG_PATH/profilerc:
     # [$2 - 1]
     # Application=$1
     #
     # Remove all [$2 - *] sections, or even better,
     # renumber [$2 - *] sections and remove duplicate
-    
-    default_file="$HOME/.kde/share/config/profilerc"
-    DEBUG 2 "make_default_kde $1 $2"
+    #
+    # On KDE 4, add $2=$1 to $XDG_DATA_APPS/mimeapps.list
+    #
+    # Example file:
+    #
+    # [Added Associations]
+    # text/plain=kde4-kate.desktop;kde4-kwrite.desktop;
+    #
+    # [Removed Associations]
+    # text/plain=gnome-gedit.desktop;gnu-emacs.desktop;
+    vendor="$1"
+    mimetype="$2"
+    if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
+        default_dir=`kde4-config --path xdgdata-apps 2> /dev/null | cut -d ':' -f 1`
+        default_file="$default_dir/mimeapps.list"
+    else
+        default_dir=`kde-config --path config 2> /dev/null | cut -d ':' -f 1`
+        default_file="$default_dir/profilerc"
+    fi
+    if [ -z "$default_dir" ]; then
+        DEBUG 2 "make_default_kde: No kde runtime detected"
+        return
+    fi
+    DEBUG 2 "make_default_kde $vendor $mimetype"
     DEBUG 1 "Updating $default_file"
-    mkdir -p "$HOME/.kde/share/config"
+    mkdir -p "$default_dir"
     [ -f $default_file ] || touch $default_file
-    awk -v application="$1" -v mimetype="$2" '
+    if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
+        [ -f $default_file ] || touch $default_file
+        awk -v application="$vendor" -v mimetype="$mimetype" '
     BEGIN {
-        header_start="[" mimetype " - "
-        supress=0
+        prefix=mimetype "="
+        associations=0
+        found=0
+        blanks=0
     }
-    {  
-        if (index($0, header_start) == 1 )
-            supress=1
-        else
-            if (/^\[/) { supress=0 }
-
-        if (!supress) {
+    {
+        suppress=0
+        if (index($0, "[Added Associations]") == 1) {
+            associations=1
+        } else if (index($0, "[") == 1) {
+            if (associations && !found) {
+                print prefix application
+                found=1
+            }
+            associations=0
+        } else if ($0 == "") {
+            blanks++
+            suppress=1
+        } else if (associations && index($0, prefix) == 1) {
+            value=substr($0, length(prefix) + 1, length)
+            split(value, apps, ";")
+            value=application ";"
+            count=0
+            for (i in apps) {
+              count++
+            }
+            for (i=0; i < count; i++) {
+                if (apps[i] != application && apps[i] != "") {
+                    value=value apps[i] ";"
+                }
+            }
+            $0=prefix value
+            found=1
+        }
+        if (!suppress) {
+            while (blanks > 0) {
+                print ""
+                blanks--
+            }
             print $0
         }
     }
     END {
-        print "" 
+        if (!found) {
+            if (!associations) {
+                print "[Added Associations]"
+            }
+            print prefix application
+        }
+        while (blanks > 0) {
+            print ""
+            blanks--
+        }
+    }
+' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
+        eval 'kbuildsycoca4'$xdg_redirect_output
+    else
+        awk -v application="$vendor" -v mimetype="$mimetype" '
+    BEGIN {
+        header_start="[" mimetype " - "
+        suppress=0
+    }
+    {
+        if (index($0, header_start) == 1 )
+            suppress=1
+        else
+            if (/^\[/) { suppress=0 }
+
+        if (!suppress) {
+            print $0
+        }
+    }
+    END {
+        print ""
         print "[" mimetype " - 1]"
         print "Application=" application
         print "AllowAsDefault=true"
@@ -117,12 +224,13 @@ make_default_kde()
         print "ServiceType=" mimetype
     }
 ' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
+    fi
 }
 
 make_default_generic()
 {
     # $1 is vendor-name.desktop
-    # $2 is mime/type 
+    # $2 is mime/type
     # Add $2=$1 to XDG_DATA_HOME/applications/defaults.list
     xdg_user_dir="$XDG_DATA_HOME"
     [ -n "$xdg_user_dir" ] || xdg_user_dir="$HOME/.local/share"
@@ -160,11 +268,17 @@ defapp_generic()
 defapp_kde()
 {
     MIME="$1"
-    ktradertest=`which ktradertest 2> /dev/null`
-    if [ -n "$ktradertest" ] ; then
-        DEBUG 1 "Running ktradertest \"$MIME\" Application"
-        trader_result=`ktradertest "$MIME" Application 2>/dev/null | grep DesktopEntryPath \
-            | head -n 1 | cut -d ':' -f 2 | cut -d \' -f 2`
+    if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
+        KTRADER=`which ktraderclient 2> /dev/null`
+        MIMETYPE="--mimetype"
+        SERVICETYPE="--servicetype"
+    else
+        KTRADER=`which ktradertest 2> /dev/null`
+    fi
+    if [ -n "$KTRADER" ] ; then
+        DEBUG 1 "Running KDE trader query \"$MIME\" mimetype and \"Application\" servicetype"
+        trader_result=`$KTRADER $MIMETYPE "$MIME" $SERVICETYPE Application 2>/dev/null \
+            | grep DesktopEntryPath | head -n 1 | cut -d ':' -f 2 | cut -d \' -f 2`
         if [ -n "$trader_result" ] ; then
             basename "$trader_result"
             exit_success
@@ -195,16 +309,16 @@ case $1 in
   query)
     shift
 
-    if [ -z "$1" ] ; then 
+    if [ -z "$1" ] ; then
         exit_failure_syntax "query type argument missing"
     fi
-    
+
     case $1 in
       filetype)
         action=info
 
         filename="$2"
-        if [ -z "$filename" ] ; then 
+        if [ -z "$filename" ] ; then
             exit_failure_syntax "FILE argument missing"
         fi
         case $filename in
@@ -218,7 +332,7 @@ case $1 in
       default)
         action=defapp
         mimetype="$2"
-        if [ -z "$mimetype" ] ; then 
+        if [ -z "$mimetype" ] ; then
             exit_failure_syntax "mimetype argument missing"
         fi
         case $mimetype in
@@ -246,7 +360,7 @@ case $1 in
     action=makedefault
     shift
 
-    if [ -z "$1" ] ; then 
+    if [ -z "$1" ] ; then
         exit_failure_syntax "application argument missing"
     fi
     case $1 in
@@ -273,7 +387,7 @@ shift
 
 
 if [ "$action" = "makedefault" ]; then
-    if [ -z "$1" ] ; then 
+    if [ -z "$1" ] ; then
         exit_failure_syntax "mimetype argument missing"
     fi
 
@@ -285,7 +399,7 @@ if [ "$action" = "makedefault" ]; then
         esac
         mimetype="$1"
         shift
-        
+
         make_default_kde "$filename" "$mimetype"
         make_default_generic "$filename" "$mimetype"
     done
@@ -350,7 +464,7 @@ while [ $# -gt 0 ] ; do
           system)
             mode="system"
             ;;
-            
+
           *)
             exit_failure_syntax "unknown mode '$1'"
             ;;
@@ -481,14 +595,14 @@ if [ -n "$kde_dir" ] ; then
     mimetypes=`awk < "$filename" '
 # Strip XML comments
 BEGIN {
- supress=0
+ suppress=0
 }
 {
- do 
-    if (supress) {
+ do
+    if (suppress) {
        if (match($0,/-->/)) {
            $0=substr($0,RSTART+RLENGTH)
-           supress=0
+           suppress=0
        }
        else {
            break
@@ -498,7 +612,7 @@ BEGIN {
        if (match($0,/<!--/)) {
            if (RSTART>1) print substr($0,0,RSTART)
            $0=substr($0,RSTART+RLENGTH)
-           supress=1
+           suppress=1
        }
        else {
            if ($0) print $0
@@ -519,7 +633,7 @@ BEGIN {
     }
   }
 }'`
-fi  
+fi
 
 DEBUG 1 "$action mimetype in $xdg_dir"
 
@@ -535,20 +649,20 @@ case $action in
 
         if [ -n "$mimetypes" ] ; then
             # No quotes around $mimetypes
-            for x in $mimetypes ; do 
+            for x in $mimetypes ; do
                 DEBUG 1 "Installing $kde_dir/$x.desktop (KDE 3.x support)"
                 mkdir -p `dirname $kde_dir/$x.desktop`
                 awk < "$filename" '
 # Strip XML comments
 BEGIN {
- supress=0
+ suppress=0
 }
 {
- do 
-    if (supress) {
+ do
+    if (suppress) {
        if (match($0,/-->/)) {
            $0=substr($0,RSTART+RLENGTH)
-           supress=0
+           suppress=0
        }
        else {
            break
@@ -558,7 +672,7 @@ BEGIN {
        if (match($0,/<!--/)) {
            if (RSTART>1) print substr($0,0,RSTART)
            $0=substr($0,RSTART+RLENGTH)
-           supress=1
+           suppress=1
        }
        else {
            if ($0) print $0
@@ -569,7 +683,7 @@ BEGIN {
 }
 ' | awk > $kde_dir/$x.desktop '
 # Extract mimetype $x from the XML file $filename
-# Note that bash requires us to escape a single quote as '"'"' 
+# Note that bash requires us to escape a single quote as '"'"'
 BEGIN {
   the_type=ARGV[1]
   the_source=ARGV[2]
@@ -589,7 +703,7 @@ BEGIN {
         print "MimeType=" the_type
         the_icon=the_type
         sub("/", "-", the_icon)
-        print "Icon=" the_icon 
+        print "Icon=" the_icon
       }
     }
   }
@@ -601,25 +715,25 @@ BEGIN {
     }
 
     if (match($0,/^sub-class-of/)) {
-      if (match($0,/type="[^"]*/) || match($0,/type='"'"'[^'"'"']*/)) {    
+      if (match($0,/type="[^"]*/) || match($0,/type='"'"'[^'"'"']*/)) {
         print "X-KDE-IsAlso=" substr($0,RSTART+6,RLENGTH-6)
       }
       else {
         print "Error: '"'"'type'"'"' argument missing in " RS $0
-        exit 1 
+        exit 1
       }
     }
     if (match($0,/^glob/)) {
-      if (match($0,/pattern="[^"]*/) || match($0,/pattern='"'"'[^'"'"']*/)) {    
+      if (match($0,/pattern="[^"]*/) || match($0,/pattern='"'"'[^'"'"']*/)) {
         glob_patterns = glob_patterns substr($0,RSTART+9,RLENGTH-9) ";"
       }
       else {
         print "Error: '"'"'pattern'"'"' argument missing in " RS $0
-        exit 1 
+        exit 1
       }
     }
     if (match($0,/^comment/)) {
-      if (match($0,/xml:lang="[^"]*/) || match($0,/xml:lang='"'"'[^'"'"']*/)) {    
+      if (match($0,/xml:lang="[^"]*/) || match($0,/xml:lang='"'"'[^'"'"']*/)) {
         lang=substr($0,RSTART+10,RLENGTH-10)
       }
       else {
@@ -648,7 +762,7 @@ END {
                 if [ "$?" = "1" ] ; then
                     grep -A 10 "^Error:" $kde_dir/$x.desktop >&2
                     rm $kde_dir/$x.desktop
-                    exit 1  
+                    exit 1
                 fi
             done
         fi
@@ -662,7 +776,7 @@ END {
         done
 
         # No quotes around $mimetypes
-        for x in $mimetypes ; do 
+        for x in $mimetypes ; do
             if grep '^# Installed by xdg-mime' $kde_dir/$x.desktop >/dev/null 2>&1; then
                 DEBUG 1 "Removing $kde_dir/$x.desktop (KDE 3.x support)"
                 rm -f $kde_dir/$x.desktop

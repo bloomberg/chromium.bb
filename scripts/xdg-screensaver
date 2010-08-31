@@ -230,7 +230,7 @@ exit_failure_file_permission_read()
 }
 
 #------------------------------------------------------------
-# Exit script on insufficient permission to read a specified file
+# Exit script on insufficient permission to write a specified file
 
 exit_failure_file_permission_write()
 {
@@ -307,7 +307,7 @@ check_common_commands()
             ;;
 
             --version)
-            echo "xdg-screensaver 1.0.1"
+            echo "xdg-screensaver 1.0.2"
             exit_success
             ;;
         esac
@@ -333,7 +333,8 @@ detectDE()
 {
     if [ x"$KDE_FULL_SESSION" = x"true" ]; then DE=kde;
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
-    elif xprop -root _DT_SAVE_MODE | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
+    elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
     fi
 }
 
@@ -354,7 +355,7 @@ kfmclient_fix_exit_code()
     return 0
 }
 
-# Check if we can use "mv -T" 
+# Check if we can use "mv -T"
 if mv -T ... ... 2>&1 | grep '\.\.\.' > /dev/null ; then
    # We can securely move files in /tmp with mv -T
    DEBUG 1 "mv -T available"
@@ -381,7 +382,7 @@ lockfile()
      do
         sleep 1
         try=$(($try+1))
-        if [ $try -eq 3 ] ; then 
+        if [ $try -eq 3 ] ; then
             rm -f "$screensaver_file".lock || return # Can't remove lockfile
             try=0
         fi
@@ -414,11 +415,15 @@ perform_action()
 
   case "$DE" in
     kde)
-      screensaver_kde "$1"
+      if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
+          screensaver_freedesktop "$1"
+      else
+          screensaver_kde "$1"
+      fi
       ;;
 
-    gnome)
-      screensaver_gnome "$1"
+    gnome_screensaver)
+      screensaver_gnome_screensaver "$1"
       ;;
 
     xscreensaver)
@@ -460,13 +465,13 @@ do_resume()
 {
   lockfile # Obtain lockfile
   # Find the PID of the trackingprocess
-  xprop_pid=`grep "$window_id:" "$screensaver_file" 2> /dev/null | cut -d ':' -f 2` 
+  xprop_pid=`grep "$window_id:" "$screensaver_file" 2> /dev/null | cut -d ':' -f 2`
   unlockfile # Free lockfile
   if [ -n "$xprop_pid" ] && ps -p "$xprop_pid" 2> /dev/null | grep xprop > /dev/null; then
-     # Kill the tracking process 
+     # Kill the tracking process
      kill -s TERM $xprop_pid
   fi
-  cleanup_suspend  
+  cleanup_suspend
 }
 
 XPROP=`which xprop 2> /dev/null`
@@ -476,7 +481,7 @@ check_window_id()
   if [ -z "$XPROP" ]; then
      DEBUG 3 "xprop not found"
      return
-  fi 
+  fi
   DEBUG 2 "Running $XPROP -id $window_id"
   if $XPROP -id $window_id > /dev/null 2> /dev/null; then
      DEBUG 3 Window $window_id exists
@@ -507,7 +512,7 @@ track_window()
         echo "$wid:$pid"
         if [ $wid = $window_id ] ; then
           already_tracked=0
-        fi   
+        fi
       fi
     done
     IFS="$IFS_save"
@@ -535,37 +540,83 @@ track_window()
   cleanup_suspend
 }
 
-screensaver_freedesktop()                                                                                  
-{                                                                                                          
-    case "$1" in                                                                                           
-        suspend)                                                                                           
-        #FIXME (get/store cookie)                                                                          
-        qdbus org.freedesktop.ScreenSaver /ScreenSaver org.freedesktop.ScreenSaver.Inhibit $window_id xdg-screensaver  > /dev/null                                                                                           
-        result=$?                                                                                             
-        ;;                                                                                                    
-                                                                                                              
-        resume)                                                                                               
-        qdbus org.freedesktop.ScreenSaver /ScreenSaver org.freedesktop.ScreenSaver.SetActive true > /dev/null 
-        result=$?                                                                                             
-        ;;                                                                                                    
-                                                                                                              
-        activate)                                                                                             
-        qdbus org.freedesktop.ScreenSaver /ScreenSaver org.freedesktop.ScreenSaver.SetActive true > /dev/null 
-        result=$?                                                                                             
-        ;;                                                                                                    
-                                                                                                              
-        lock)                                                                                                 
-        qdbus org.freedesktop.ScreenSaver /ScreenSaver org.freedesktop.ScreenSaver.Lock > /dev/null           
-        ;;                                                                                                    
-                                                                                                              
-        reset)                                                                                                
-        #FIXME (cookies?)                                                                                     
-        qdbus org.freedesktop.ScreenSaver /ScreenSaver org.freedesktop.ScreenSaver.UnInhibit $window_id > /dev/null                                                                                                          
-        result=$?                                                                                             
-        ;;                                                                                                    
-                                                                                                              
-        status)                                                                                               
-        status=`qdbus org.freedesktop.ScreenSaver /ScreenSaver org.freedesktop.ScreenSaver.GetActive`
+screensaver_freedesktop()
+{
+    case "$1" in
+        suspend)
+        dbus-send --session \
+                  --dest=org.freedesktop.ScreenSaver \
+                  --type=method_call \
+                  --print-reply \
+                  --reply-timeout=2000 \
+                  /ScreenSaver \
+                  org.freedesktop.ScreenSaver.Inhibit \
+                  string:$window_id \
+                  string:xdg-screensaver \
+                  | grep uint32 | cut -d ' ' -f 5 >| "$screensaver_file.cookie" \
+                  2> /dev/null
+        result=$?
+        ;;
+
+        resume)
+        if [ -f "$screensaver_file.cookie" ] ; then
+            value=`cat "$screensaver_file.cookie"`
+            dbus-send --session \
+                      --dest=org.freedesktop.ScreenSaver \
+                      --type=method_call \
+                      /ScreenSaver \
+                      org.freedesktop.ScreenSaver.UnInhibit \
+                      uint32:$value \
+                      2> /dev/null
+            rm -f "$screensaver_file.cookie"
+        fi
+        result=$?
+        ;;
+
+        activate)
+        dbus-send --session \
+                  --dest=org.freedesktop.ScreenSaver \
+                  --type=method_call \
+                  /ScreenSaver \
+                  org.freedesktop.ScreenSaver.SetActive \
+                  boolean:true \
+                  2> /dev/null
+        result=$?
+        ;;
+
+        lock)
+        dbus-send --session \
+                  --dest=org.freedesktop.ScreenSaver \
+                  --type=method_call \
+                  /ScreenSaver \
+                  org.freedesktop.ScreenSaver.Lock \
+                  2> /dev/null
+        ;;
+
+        reset)
+        if [ -f "$screensaver_file.cookie" ] ; then
+            value=`cat "$screensaver_file.cookie"`
+            dbus-send --session \
+                      --dest=org.freedesktop.ScreenSaver \
+                      --type=method_call \
+                      /ScreenSaver \
+                      org.freedesktop.ScreenSaver.UnInhibit \
+                      uint32:$value \
+                      2> /dev/null
+            rm -f "$screensaver_file.cookie"
+        fi
+        result=$?
+        ;;
+
+        status)
+        status=`dbus-send --session \
+                          --dest=org.freedesktop.ScreenSaver \
+                          --type=method_call \
+                          --print-reply \
+                          --reply-timeout=2000 \
+                          /ScreenSaver \
+                          org.freedesktop.ScreenSaver.GetActive \
+                          | grep boolean | cut -d ' ' -f 5`
         result=$?
         if [ x"$status" = "xtrue" ]; then
             echo "enabled"
@@ -587,7 +638,7 @@ screensaver_freedesktop()
 screensaver_kde()
 {
     case "$1" in
-        suspend) 
+        suspend)
         dcop kdesktop KScreensaverIface enable false > /dev/null
         result=$?
         ;;
@@ -596,7 +647,7 @@ screensaver_kde()
         dcop kdesktop KScreensaverIface configure > /dev/null
         result=$?
         ;;
-        
+
         activate)
         dcop kdesktop KScreensaverIface save > /dev/null
         result=$?
@@ -606,7 +657,7 @@ screensaver_kde()
         dcop kdesktop KScreensaverIface lock > /dev/null
         result=$?
         ;;
-        
+
         reset)
         # Turns the screensaver off right now
         dcop kdesktop KScreensaverIface quit > /dev/null
@@ -653,14 +704,14 @@ screensaver_suspend_loop()
     # Suspend pending, don't do a thing
     $MV "$tmpfile" "$screensaver_file"
     unlockfile
-    return  
+    return
   fi
   $MV "$tmpfile" "$screensaver_file"
   unlockfile
   (while [ -f "$screensaver_file" ]; do $*; sleep 50; done) > /dev/null 2> /dev/null &
 }
 
-screensaver_gnome()
+screensaver_gnome_screensaver()
 {
 # TODO
 # There seems to be a DBUS interface for gnome-screensaver
@@ -669,7 +720,7 @@ screensaver_gnome()
 # A problem seems to be that Inhibit is tied to the lifetime of the DBUS appname and
 # this can not be used from a script
     case "$1" in
-        suspend) 
+        suspend)
         screensaver_suspend_loop gnome-screensaver-command --poke
         result=0
         ;;
@@ -678,17 +729,17 @@ screensaver_gnome()
         # Automatic resume when $screensaver_file disappears
         result=0
         ;;
-        
+
         activate)
         gnome-screensaver-command --activate > /dev/null 2> /dev/null
         result=$?
         ;;
-        
+
         lock)
         gnome-screensaver-command --lock > /dev/null 2> /dev/null
         result=$?
         ;;
-        
+
         reset)
         # Turns the screensaver off right now
         gnome-screensaver-command --deactivate > /dev/null 2> /dev/null
@@ -717,7 +768,7 @@ screensaver_gnome()
 screensaver_xscreensaver()
 {
     case "$1" in
-        suspend) 
+        suspend)
         screensaver_suspend_loop xscreensaver-command -deactivate
         result=0
         ;;
@@ -726,7 +777,7 @@ screensaver_xscreensaver()
         # Automatic resume when $screensaver_file disappears
         result=0
         ;;
-        
+
         activate)
         xscreensaver-command -activate > /dev/null 2> /dev/null
         result=$?
@@ -736,7 +787,7 @@ screensaver_xscreensaver()
         xscreensaver-command -lock > /dev/null 2> /dev/null
         result=$?
         ;;
-        
+
         reset)
         # Turns the screensaver off right now
         xscreensaver-command -deactivate > /dev/null 2> /dev/null
@@ -767,26 +818,26 @@ window_id=
 case $1 in
   suspend)
     action="$1"
-    
+
     shift
 
-    if [ -z "$1" ] ; then 
+    if [ -z "$1" ] ; then
         exit_failure_syntax "WindowID argument missing"
     fi
-    
+
     window_id="$1"
     check_window_id
     ;;
 
   resume)
     action="$1"
-    
+
     shift
 
-    if [ -z "$1" ] ; then 
+    if [ -z "$1" ] ; then
         exit_failure_syntax "WindowID argument missing"
     fi
-    
+
     window_id="$1"
     check_window_id
     ;;
@@ -806,7 +857,7 @@ case $1 in
   status)
     action="$1"
     ;;
-    
+
   *)
     exit_failure_syntax "unknown command '$1'"
     ;;
@@ -815,6 +866,8 @@ esac
 detectDE
 # Consider "xscreensaver" a separate DE
 xscreensaver-command -version 2> /dev/null | grep XScreenSaver > /dev/null && DE="xscreensaver"
+# Consider "gnome-screensaver" a separate DE 
+gnome-screensaver-command -q > /dev/null 2>&1 && DE="gnome_screensaver"
 
 if [ "$action" = "resume" ] ; then
     do_resume
@@ -826,7 +879,7 @@ perform_action "$action"
 if [ "$action" = "suspend" ] ; then
     # Start tracking $window_id and resume the screensaver once it disappears
     ( track_window  ) 2> /dev/null > /dev/null &
-fi        
+fi
 
 if [ $result -eq 0 ]; then
     exit_success

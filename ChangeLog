@@ -1,21 +1,162 @@
-=== xdg-utils 1.x.x ====
+=== xdg-utils 1.x.x ===
 
-2009-07-27 Fathi Boudra <fabo@debian.org>
+2010-07-09 Rex Dieter <rdieter@fedoraproject.org> 
+    * xdg-screensaver: consider gnome-screensaver a separate DE (BR20027)
+
+2010-07-09 Rex Dieter <rdieter@fedoraproject.org>
+    * xdg-mime : use 'gnomevfs-info --slow-mime' (BR 13939)
+
+2010-07-09 Rex Dieter <rdieter@fedoraproject.org> 
+    * xdg-desktop-icon :  use localized desktop folder name (BR19011)
+
+2010-07-09 Rex Dieter <rdieter@fedoraproject.org>
+    * xdg-open : use mimeopen -L (follow symlinks)
+
+2010-07-09 Rex Dieter <rdieter@fedoraproject.org> 
+    * xdg-open.1 : add FILES, SEE ALSO sections
+
+2010-05-16 Rex Dieter <rdieter@fedoraproject.org>
+    * xdg-open: Spaces in filename (BR27959)
+
+2010-04-22 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-email and xdg-open: perform BROWSER check in any case.
+      Thanks to Andrea Florio. (BR27551)
+
+2010-04-22 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-email: try console mode browsers and update the browser list.
+
+2010-02-28 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-utils-common: fix the comment of exit_failure_file_permission_write
+      function. (BR12821)
+
+2010-02-28 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-open: fix regression in open_generic as xdg-mime doesn't handle
+      URLs (mimeopen and run-mailcap as well). Move xdg-mime call into
+      a new function (open_generic_xdg_mime). Check input file before
+      trying to open them with non-browsers.
+
+2010-02-28 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-open: fix failure if $BROWSER has arguments. (BR14374)
+      Thanks to Johannes Wegener.
+
+2010-02-28 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-open: try console mode browsers and update the browser list.
+      Thanks to Ville Skyttä and Pablo Castellano. (BR14361)
+
+2010-02-24 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-screensaver: use dbus-send instead of qdbus for freedesktop
+      screensaver.
+
+2010-02-23 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-mime: improve MIME string check when using gnomevfs-info. (BR12818)
+
+2010-02-23 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-mime: report error on failure.
+
+2010-02-21 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-open: in open_generic, use xdg-mime to lookup mime type and
+      association before the alternatives methods (mimeopen and run-mailcap).
+      (BR23280)
+
+2010-02-20 Fathi Boudra <fabo@freedesktop.org>
+    * Add gvfs-copy and gvfs-info support. (BR15828)
+
+2010-01-27 Rex Dieter <rdieter@fedoraproject.org>
+    * xdg-settings: Add %s to the command in the Gnome url handlers (BR26284)
+
+2010-01-18 Rex Dieter <rdieter@fedoraproject.org>
+    * xdg-screensaver resume activates the screensaver on KDE4 (BR26085)
+
+2009-10-16 Rex Dieter <rdieter@fedoraproject.org>
+    * prefer gvfs-open over gnome-open
+    * DE=gnome, if org.gnome.SessionManager exists on dbus
+
+2009-10-12 Fathi Boudra <fabo@freedesktop.org>
+    * Fix xdg-email --attach failure with Evolution. (BR23007)
+      Thanks to Dwayne Bailey <dwayne@translate.org.za>
+
+2009-10-12 Fathi Boudra <fabo@freedesktop.org>
+    * Add an extra check in xdg-open and call kfmclient openURL as a fallback
+	  on KDE 4. Thanks to Nicolas Lécureil <neoclust@mandriva.org>
+
+2009-10-12 Fathi Boudra <fabo@freedesktop.org>
+    * Add email attachments support to Thunderbird from xdg-email. (BR13435)
+      Thanks to Lei Zhang <thestig@google.com>
+
+2009-10-12 Fathi Boudra <fabo@freedesktop.org>
+    * Fix xdg-open to handle URL with '#' symbol. (BR23319, BR24375)
+
+2009-10-12 Fathi Boudra <fabo@freedesktop.org>
+    * Remove bash requirement to xdg-open and xdg-email. (BR20015)
+
+2009-10-12 Fathi Boudra <fabo@freedesktop.org>
+    * Update xdg-settings - Thanks to Mike Mammarella:
+      This fixes some issues where user-generated icons would be detected as
+      the official .desktop file for a binary, rather than the actual version.
+      (It resolves forward and compares binaries rather than resolving backward
+      to a .desktop file from a binary)
+
+2009-09-28 Rex Dieter <rdieter@fedoraproject.org>
+    * Use kde-open, if available (ie, KDE 4)
+
+2009-09-13 Rex Dieter <rdieter@fedoraproject.org> 
+    * detect_de: suppress xprop stderr.
+
+2009-08-25 Rex Dieter <rdieter@fedoraproject.org>
+    * fix build for missing manpages (eg. xdg-settings)
+
+2009-08-25 Fathi Boudra <fabo@freedesktop.org>
+    * Fix hardcoded KDE home directory. Use kde(4)-config to get path.
+
+2009-08-25 Fathi Boudra <fabo@freedesktop.org>
+    * Apply patch from Mike Mammarella <mdm@chromium.org> to fix 2 issues:
+      - skip invisible desktop files when looking up the default web browser in
+        GNOME. (http://codereview.chromium.org/159738)
+      - check for localized settings by hand in xdg-settings if kreadconfig
+        fails. (http://codereview.chromium.org/160376)
+
+2009-08-10 Fathi Boudra <fabo@freedesktop.org>
+    * Replace kfmclient by kioclient usage under KDE 4.
+      Thanks to Nicolas Lécureil <neoclust@mandriva.org>
+
+2009-08-03 Fathi Boudra <fabo@freedesktop.org>
+    * Remove fixup_mandriva_categories() function. It is not needed anymore
+      since a year. Thanks to Nicolas Lécureil <neoclust@mandriva.org>
+
+2009-07-29 Fathi Boudra <fabo@freedesktop.org>
+    * Merge xdg-settings utility: a script to get various settings from
+      the desktop environment. Thanks to Dan Kegel and Google Inc.
+
+2009-07-29 Fathi Boudra <fabo@freedesktop.org>
+    * Fix hardcoded path in make_default_kde() in xdg-mime unde KDE 3.
+      Add initial KDE 4 support to the function.
+
+2009-07-28 Fathi Boudra <fabo@freedesktop.org>
+    * Use kbuildsycoca4 under KDE 4 and kbuildsycoca under KDE 3.
+
+2009-07-28 Fathi Boudra <fabo@freedesktop.org>
+    * Use kmimetypefinder under KDE 4 and kfile under KDE 3.
+
+2009-07-28 Fathi Boudra <fabo@freedesktop.org>
+    * Add KDE 4 support to xdg-mime. kdetradertest was replaced by
+      ktraderclient under KDE 4. (BR22975)
+
+2009-07-27 Fathi Boudra <fabo@freedesktop.org>
     * Remove -u option from su. It doesn't have it.
 
-2009-07-27 Fathi Boudra <fabo@debian.org>
+2009-07-27 Fathi Boudra <fabo@freedesktop.org>
     * Add KDE 4 support to xdg-email (BR17268)
 
-2009-07-26 Fathi Boudra <fabo@debian.org>
+2009-07-26 Fathi Boudra <fabo@freedesktop.org>
     * Sleep for 50s instead of 59s to avoid to froze the seesion (BR19414)
 
-2009-07-26 Fathi Boudra <fabo@debian.org>
+2009-07-26 Fathi Boudra <fabo@freedesktop.org>
     * Fix a race condition in xdg-screensaver (BR19382)
 
-2009-07-26 Fathi Boudra <fabo@debian.org>
+2009-07-26 Fathi Boudra <fabo@freedesktop.org>
     * Fix basename usage when filename contains spaces (BR18567)
 
-2009-07-26 Fathi Boudra <fabo@debian.org>
+2009-07-26 Fathi Boudra <fabo@freedesktop.org>
     * Fix bashisms used in xdg-mime and xdg-screensaver (BR15827)
 
 2008-08-11 Rex Dieter <rdieter@fedoraproject.org>

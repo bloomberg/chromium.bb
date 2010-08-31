@@ -1,15 +1,21 @@
 Name: xdg-utils
 URL: http://portland.freedesktop.org/wiki/
 
-This directory contains a copy of xdg-utils obtained from CVS on 2009-07-27,
+This directory contains a copy of xdg-utils obtained from CVS on 2010-08-30,
 with this command:
 
 cvs -d:pserver:anoncvs@anoncvs.freedesktop.org:/cvs/portland co -d xdg-utils portland/xdg-utils
 
 The .cvsignore files were converted to svn:ignore properties to check it in.
 
-It has been modified to add the xdg-settings command for getting and, in some
-cases, setting various GNU/Linux desktop environment settings like the default
-web browser and proxy configuration.
+Originally, it had been modified to add the xdg-settings command for getting
+and, in some cases, setting various GNU/Linux desktop environment settings like
+the default web browser and proxy configuration.
+
+This change has since been incorporated upstream.
+
+We now have this copy only to allow us to ship our own copy of xdg-settings (and
+xdg-mime, because we need a newer version than some distributions include). When
+these are standard, we can delete our copy.
 
 The license for xdg-utils is in the LICENSE file and is similar to BSD-style.

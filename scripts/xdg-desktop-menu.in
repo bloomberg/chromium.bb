@@ -40,42 +40,6 @@ update_desktop_database()
     fi
 }
 
-fixup_mandriva_categories()
-{
-    DEBUG 1 "fixup_mandriva_categories $1"
-    awk '
-BEGIN {
-    xlat["AudioVideo"]="X-Mandrakelinux-Multimedia;X-MandrivaLinux-Multimedia"
-    xlat["Development"]="X-Mandrakelinux-MoreApplications-Development;X-MandrivaLinux-MoreApplications-Development"
-    xlat["Education"]="X-Mandrakelinux-MoreApplications;X-MandrivaLinux-MoreApplications-Education"
-    xlat["Game"]="X-Mandrakelinux-MoreApplications;X-MandrivaLinux-MoreApplications-Games"
-    xlat["Graphics"]="X-Mandrakelinux-Multimedia-Graphics"
-    xlat["Network"]="X-Mandrakelinux-Internet;X-MandrivaLinux-Internet"
-    xlat["Office"]="X-Mandrakelinux-Office;X-MandrivaLinux-Office"
-    xlat["System"]="X-Mandrakelinux-System;X-MandrivaLinux-System"
-    xlat["Utility"]="X-Mandrakelinux-Office-Accessories;X-MandrivaLinux-Office-Accessories"
-}
-{
-    if (match($0,/Categories=/)) {
-        split(substr($0,RSTART+11),categories,";")
-        result=""
-        for (n in categories)
-        {
-               if (categories[n] in xlat)
-                 categories[n]=categories[n] ";" xlat[categories[n]]
-               if (categories[n])
-                 result=result categories[n] ";"
-        }
-        print "Categories=" result
-    }
-    else
-    {
-        print $0
-    }
-}' $1 > $1.new
-    mv $1.new $1
-}
-
 # Make application $1/$2 the default for all the mimetypes it support,
 # iff such mimetype didn't had a default application already.
 # $1 Install dir for desktop file
@@ -85,7 +49,7 @@ make_lazy_default()
     local mimetypes
     local xdg_user_dir
     local xdg_default_dirs
-    
+
     DEBUG 1 "make_lazy_default $1/$2"
     mimetypes=`awk '
 {
@@ -98,7 +62,7 @@ make_lazy_default()
         }
     }
 }' "$1/$2" 2> /dev/null`
-    
+
     for MIME in $mimetypes ; do
         xdg_default_dirs="$XDG_DATA_DIRS"
         [ -n "$xdg_default_dirs" ] || xdg_default_dirs=/usr/local/share/:/usr/share/
@@ -155,7 +119,7 @@ update_submenu()
     xdg_user_dir="$xdg_user_dir/applications-merged"
     xdg_global_dir="$xdg_global_dir/applications-merged"
 
-    DEBUG 3 "Install locations for *.menu file:" 
+    DEBUG 3 "Install locations for *.menu file:"
     DEBUG 3 "xdg_user_dir: $xdg_user_dir"
     DEBUG 3 "xdg_global_dir: $xdg_global_dir"
     DEBUG 3 "kde_user_dir: $kde_user_dir"
@@ -218,7 +182,7 @@ update_submenu()
             mkdir -p `dirname "$kde_xdg_dir"`
             eval 'ln -s "applications-merged" "$kde_xdg_dir"'$xdg_redirect_output
         fi
-    fi        
+    fi
     if [ $action = "install" -a x"$mode" = x"system" -a -d "/etc/xdg/menus/kde-applications-merged" -a ! -d "/etc/xdg/menus/applications-merged" ] ; then
         # Work around for Kubuntu 6.06
         kde_xdg_dir=`echo "$xdg_dir" | sed -e 's^/applications-merged^/kde-applications-merged^'`
@@ -273,9 +237,9 @@ BEGIN {
         done
     fi
     rm -f "$tmpfile"
-    
+
     DEBUG 3 "Files to list in $menu_file: $new_desktop_files"
-    
+
     if [ -n "$new_desktop_files" ] ; then
         # Install/update
         test "${TMPDIR+set}" = set || TMPDIR=/tmp
@@ -305,10 +269,10 @@ BEGIN {
                 echo "</Menu>"
             done
 
-            echo '</Menu>'                        
+            echo '</Menu>'
         ) > $tmpfile
         chmod $my_chmod $tmpfile
-    
+
         save_umask=`umask`
         umask $my_umask
 
@@ -321,7 +285,7 @@ BEGIN {
         # Uninstall
         rm -f $xdg_dir/$menu_file
     fi
-    
+
     # Uninstall .directory files only if no longer referenced
     if [ $action = "uninstall" ] ; then
         test "${TMPDIR+set}" = set || TMPDIR=/tmp
@@ -339,7 +303,7 @@ BEGIN {
   }
 }' $menu_file >> $tmpfile
             fi
-        done 
+        done
         orig_directory_files="$directory_files"
         directory_files=
         for desktop_file in $orig_directory_files; do
@@ -403,7 +367,7 @@ while [ $# -gt 0 ] ; do
           system)
             mode="system"
             ;;
-            
+
           *)
             exit_failure_syntax "unknown mode '$1'"
             ;;
@@ -516,7 +480,7 @@ for x in `echo $xdg_system_dirs | sed 's/:/ /g'` ; do
     fi
 done
 
-DEBUG 3 "Install locations for *.directory files:" 
+DEBUG 3 "Install locations for *.directory files:"
 DEBUG 3 "xdg_user_dir: $xdg_user_dir"
 DEBUG 3 "xdg_global_dir: $xdg_global_dir"
 DEBUG 3 "kde_user_dir: $kde_user_dir"
@@ -583,18 +547,15 @@ for x in `echo $xdg_system_dirs | sed 's/:/ /g'` ; do
     fi
 done
 
-kde_user_dir="$HOME/.kde/share/applnk"
-kde_global_dir="/usr/share/applnk"
+kde_user_dir=`kde${KDE_SESSION_VERSION}-config --path apps 2> /dev/null | cut -d ':' -f 1`
+kde_global_dir=`kde${KDE_SESSION_VERSION}-config --path apps 2> /dev/null | cut -d ':' -f 2`
 [ -w $kde_global_dir ] || kde_global_dir=
 
 gnome_user_dir="$HOME/.gnome/apps"
 gnome_global_dir="/usr/share/gnome/apps"
 [ -w $gnome_global_dir ] || gnome_global_dir=
 
-[ -f /etc/mandriva-release ] && need_mandriva_fix=true
-[ -n "$need_mandriva_fix" ] && DEBUG 1 "Fixing up .desktop categories (Mandriva work around)"
-
-DEBUG 3 "Install locations for *.desktop files:" 
+DEBUG 3 "Install locations for *.desktop files:"
 DEBUG 3 "xdg_user_dir: $xdg_user_dir"
 DEBUG 3 "xdg_global_dir: $xdg_global_dir"
 DEBUG 3 "kde_user_dir: $kde_user_dir"
@@ -636,10 +597,6 @@ for desktop_file in $desktop_files; do
                 eval 'cp $desktop_file $x/$basefile'$xdg_redirect_output
             done
 
-            if [ -n "$need_mandriva_fix" ] ; then
-            	fixup_mandriva_categories $xdg_dir/$basefile
-            fi
-
             if [ -f $kde_dir/$basefile ] ; then
                 echo "OnlyShowIn=Old;" >> $kde_dir/$basefile
             fi
@@ -647,7 +604,7 @@ for desktop_file in $desktop_files; do
             if [ -f $gnome_dir/$basefile ] ; then
                 echo "OnlyShowIn=Old;" >> $gnome_dir/$basefile
             fi
-            
+
             make_lazy_default "$xdg_dir" "$basefile"
 
             umask $save_umask
