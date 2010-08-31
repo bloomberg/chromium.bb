@@ -37,6 +37,8 @@ class ImportsTest(pyauto.PyUITest):
   Mac/Prefs     Y          Y            Y             Y          N
   """
   def setUp(self):
+    self._to_import = ['ALL']
+
     if pyauto.PyUITest.IsMac():
       self._firefox_profiles_path = os.path.join(
           os.environ['HOME'], 'Library','Application Support','Firefox')
@@ -44,6 +46,15 @@ class ImportsTest(pyauto.PyUITest):
           pyauto.PyUITest.DataDir(), 'import', 'firefox', 'macwin.zip')
       self._safari_profiles_path = os.path.join(
           os.environ['HOME'], 'Library', 'Safari')
+      # Set the path here since it can't get set on the browser side and it is
+      # necessary for importing passwords on Mac.
+      self._old_path = None
+      if 'DYLD_FALLBACK_LIBRARY_PATH' in os.environ:
+        self._old_path = os.environ['DYLD_FALLBACK_LIBRARY_PATH']
+      os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = os.path.join(
+          self.DataDir(), 'firefox3_nss_mac')
+      # Don't import passwords to avoid Keychain popups. See crbug.com/49378.
+      self._to_import = ['HISTORY', 'FAVORITES', 'SEARCH_ENGINES', 'HOME_PAGE']
     elif pyauto.PyUITest.IsWin():
       self._firefox_profiles_path = os.path.join(
           os.getenv('APPDATA'), 'Mozilla', 'Firefox')
@@ -69,6 +80,12 @@ class ImportsTest(pyauto.PyUITest):
 
   def tearDown(self):
     pyauto.PyUITest.tearDown(self)
+    # Re-set the path to its state before the test.
+    if self.IsMac():
+      if self._old_path:
+        os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = self._old_path
+      else:
+        os.environ.pop('DYLD_FALLBACK_LIBRARY_PATH')
     # Delete any replacers to restore the original profiles.
     if self._safari_replacer:
       del self._safari_replacer
@@ -191,7 +208,7 @@ class ImportsTest(pyauto.PyUITest):
   def testFirefoxImportFromPrefs(self):
     """Verify importing Firefox data through preferences."""
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', False, ['ALL'])
+    self.ImportSettings('Mozilla Firefox', False, self._to_import)
     self._CheckDefaults(bookmarks=True, history=True, passwords=True,
                         home_page=False, search_engines=True)
 
@@ -202,7 +219,7 @@ class ImportsTest(pyauto.PyUITest):
     Mac and Linux can import history, homepage, and bookmarks.
     """
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', True, ['ALL'])
+    self.ImportSettings('Mozilla Firefox', True, self._to_import)
     non_win = not self.IsWin()
     self._CheckDefaults(bookmarks=non_win, history=True, passwords=True,
                         home_page=non_win, search_engines=True)
@@ -213,12 +230,12 @@ class ImportsTest(pyauto.PyUITest):
     Bookmarks should be duplicated, but history and passwords should not.
     """
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', False, ['ALL'])
+    self.ImportSettings('Mozilla Firefox', False, self._to_import)
     num_history_orig = len(self.GetHistoryInfo().History())
     num_passwords_orig = len(self.GetSavedPasswords())
 
     # Re-import and check for duplicates.
-    self.ImportSettings('Mozilla Firefox', False, ['ALL'])
+    self.ImportSettings('Mozilla Firefox', False, self._to_import)
     self.assertTrue(self._BookmarkDuplicatesExist(
         self._bookmark_bar_items + self._bookmark_folder_items))
     self.assertEqual(num_history_orig, len(self.GetHistoryInfo().History()))
@@ -232,8 +249,8 @@ class ImportsTest(pyauto.PyUITest):
 
     self._SwapSafariProfile()
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', False, ['ALL'])
-    self.ImportSettings('Safari', False, ['ALL'])
+    self.ImportSettings('Mozilla Firefox', False, self._to_import)
+    self.ImportSettings('Safari', False, self._to_import)
 
     self._CheckDefaults(bookmarks=True, history=True, passwords=True,
                         home_page=False, search_engines=True)
@@ -246,7 +263,7 @@ class ImportsTest(pyauto.PyUITest):
     if not self.IsMac():
       return
     self._SwapSafariProfile()
-    self.ImportSettings('Safari', False, ['ALL'])
+    self.ImportSettings('Safari', False, self._to_import)
     self._CheckDefaults(bookmarks=True, history=True, passwords=False,
                         home_page=False, search_engines=True)
 
@@ -256,7 +273,7 @@ class ImportsTest(pyauto.PyUITest):
     if not self.IsMac():
       return
     self._SwapSafariProfile()
-    self.ImportSettings('Safari', False, ['ALL'])
+    self.ImportSettings('Safari', False, self._to_import)
     self._CheckDefaults(bookmarks=True, history=True, passwords=False,
                         home_page=False, search_engines=False)
 
@@ -268,12 +285,12 @@ class ImportsTest(pyauto.PyUITest):
     if not self.IsMac():
       return
     self._SwapSafariProfile()
-    self.ImportSettings('Safari', False, ['ALL'])
+    self.ImportSettings('Safari', False, self._to_import)
     num_history_orig = len(self.GetHistoryInfo().History())
     num_passwords_orig = len(self.GetSavedPasswords())
 
     # Re-import and check for duplicates.
-    self.ImportSettings('Safari', False, ['ALL'])
+    self.ImportSettings('Safari', False, self._to_import)
     self.assertTrue(self._BookmarkDuplicatesExist(
         self._bookmark_bar_items + self._bookmark_folder_items))
     self.assertEqual(num_history_orig, len(self.GetHistoryInfo().History()))
