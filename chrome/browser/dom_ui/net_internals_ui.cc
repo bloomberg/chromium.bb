@@ -416,7 +416,8 @@ NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
     const base::WeakPtr<NetInternalsMessageHandler>& handler,
     IOThread* io_thread,
     URLRequestContextGetter* context_getter)
-    : handler_(handler),
+    : Observer(net::NetLog::LOG_ALL),
+      handler_(handler),
       io_thread_(io_thread),
       context_getter_(context_getter),
       is_observing_log_(false) {

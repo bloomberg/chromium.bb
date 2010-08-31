@@ -39,7 +39,7 @@ class ForwardingNetLog : public NetLog {
                         EventPhase phase,
                         EventParameters* params);
   virtual uint32 NextID();
-  virtual bool HasListener() const;
+  virtual LogLevel GetLogLevel() const;
 
  private:
   class Core;

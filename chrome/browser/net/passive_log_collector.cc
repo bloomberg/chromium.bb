@@ -42,7 +42,8 @@ bool SortByOrderComparator(const PassiveLogCollector::Entry& a,
 //----------------------------------------------------------------------------
 
 PassiveLogCollector::PassiveLogCollector()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(connect_job_tracker_(this)),
+    : Observer(net::NetLog::LOG_BASIC),
+      ALLOW_THIS_IN_INITIALIZER_LIST(connect_job_tracker_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(url_request_tracker_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(socket_stream_tracker_(this)),
       num_events_seen_(0) {

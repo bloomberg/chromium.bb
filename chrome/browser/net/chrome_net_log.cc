@@ -15,6 +15,8 @@
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/common/chrome_switches.h"
 
+ChromeNetLog::Observer::Observer(LogLevel log_level) : log_level_(log_level) {}
+
 ChromeNetLog::ChromeNetLog()
     : next_id_(1),
       passive_collector_(new PassiveLogCollector),
@@ -56,10 +58,18 @@ uint32 ChromeNetLog::NextID() {
   return next_id_++;
 }
 
-bool ChromeNetLog::HasListener() const {
+net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  // (Don't count the PassiveLogCollector observer).
-  return observers_.size() > 1;
+
+  // Look through all the observers and find the finest granularity
+  // log level (higher values of the enum imply *lower* log levels).
+  LogLevel log_level = LOG_BASIC;
+  ObserverListBase<Observer>::Iterator it(observers_);
+  Observer* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    log_level = std::min(log_level, observer->log_level());
+  }
+  return log_level;
 }
 
 void ChromeNetLog::AddObserver(Observer* observer) {

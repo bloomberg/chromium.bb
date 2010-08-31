@@ -28,12 +28,26 @@ class ChromeNetLog : public net::NetLog {
   // Interface for observing the events logged by the network stack.
   class Observer {
    public:
+    // Constructs an observer that wants to see network events, with
+    // the specified minimum event granularity.
+    //
+    // Typical observers should specify LOG_BASIC.
+    //
+    // Observers that need to see the full granularity of events can
+    // specify LOG_ALL. However doing so will have performance consequences,
+    // and may cause PassiveLogCollector to use more memory than anticiapted.
+    explicit Observer(LogLevel log_level);
+
     virtual ~Observer() {}
     virtual void OnAddEntry(EventType type,
                             const base::TimeTicks& time,
                             const Source& source,
                             EventPhase phase,
                             EventParameters* params) = 0;
+    LogLevel log_level() const { return log_level_; }
+   private:
+    LogLevel log_level_;
+    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   ChromeNetLog();
@@ -46,7 +60,7 @@ class ChromeNetLog : public net::NetLog {
                         EventPhase phase,
                         EventParameters* params);
   virtual uint32 NextID();
-  virtual bool HasListener() const;
+  virtual LogLevel GetLogLevel() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -64,7 +78,10 @@ class ChromeNetLog : public net::NetLog {
   scoped_ptr<PassiveLogCollector> passive_collector_;
   scoped_ptr<LoadTimingObserver> load_timing_observer_;
   scoped_ptr<NetLogLogger> net_log_logger_;
-  ObserverList<Observer, true> observers_;
+
+  // Note that this needs to be "mutable" so we can iterate over the observer
+  // list in GetLogLevel().
+  mutable ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLog);
 };

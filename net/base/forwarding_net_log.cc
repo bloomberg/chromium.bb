@@ -86,10 +86,10 @@ uint32 ForwardingNetLog::NextID() {
   return 0;
 }
 
-bool ForwardingNetLog::HasListener() const {
+NetLog::LogLevel ForwardingNetLog::GetLogLevel() const {
   // Can't forward a synchronous API.
   CHECK(false) << "Not supported";
-  return false;
+  return LOG_ALL;
 }
 
 }  // namespace net

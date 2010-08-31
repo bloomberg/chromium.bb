@@ -49,7 +49,8 @@ LoadTimingObserver::URLRequestRecord::URLRequestRecord()
 }
 
 LoadTimingObserver::LoadTimingObserver()
-    : last_connect_job_id_(net::NetLog::Source::kInvalidId) {
+    : Observer(net::NetLog::LOG_BASIC),
+      last_connect_job_id_(net::NetLog::Source::kInvalidId) {
 }
 
 LoadTimingObserver::~LoadTimingObserver() {
