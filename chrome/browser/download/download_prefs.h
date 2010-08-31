@@ -21,9 +21,8 @@ class DownloadPrefs {
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // TODO(phajdan.jr): Make these accessors const.
-  bool prompt_for_download() { return *prompt_for_download_; }
-  FilePath download_path() { return *download_path_; }
+  bool prompt_for_download() const { return *prompt_for_download_; }
+  FilePath download_path() const { return *download_path_; }
 
   // Returns true if there is at least one file extension registered
   // for auto-open.

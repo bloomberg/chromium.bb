@@ -45,20 +45,23 @@ class PrefMemberBase : public NotificationObserver {
             NotificationObserver* observer);
 
   // See PrefMember<> for description.
-  bool IsManaged();
+  bool IsManaged() const;
 
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  void VerifyValuePrefName();
+  void VerifyValuePrefName() const;
 
   // This methods is used to do the actual sync with pref of the specified type.
-  virtual void UpdateValueFromPref() = 0;
+  // Note: this method is logically const, because it doesn't modify the state
+  // seen by the outside world. It is just doing a lazy load behind the scenes.
+  virtual void UpdateValueFromPref() const = 0;
 
   const std::string& pref_name() const { return pref_name_; }
   PrefService* prefs() { return prefs_; }
+  const PrefService* prefs() const { return prefs_; }
 
  // Ordered the members to compact the class instance.
  private:
@@ -67,7 +70,7 @@ class PrefMemberBase : public NotificationObserver {
   PrefService* prefs_;
 
  protected:
-  bool is_synced_;
+  mutable bool is_synced_;
   bool setting_value_;
 };
 
@@ -97,7 +100,7 @@ class PrefMember : public subtle::PrefMemberBase {
   }
 
   // Retrieve the value of the member variable.
-  ValueType GetValue() {
+  ValueType GetValue() const {
     VerifyValuePrefName();
     // We lazily fetch the value from the pref service the first time GetValue
     // is called.
@@ -109,7 +112,7 @@ class PrefMember : public subtle::PrefMemberBase {
   }
 
   // Provided as a convenience.
-  ValueType operator*() {
+  ValueType operator*() const {
     return GetValue();
   }
 
@@ -134,7 +137,7 @@ class PrefMember : public subtle::PrefMemberBase {
 
   // We cache the value of the pref so we don't have to keep walking the pref
   // tree.
-  ValueType value_;
+  mutable ValueType value_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -146,7 +149,7 @@ class BooleanPrefMember : public PrefMember<bool> {
   virtual ~BooleanPrefMember();
 
  protected:
-  virtual void UpdateValueFromPref();
+  virtual void UpdateValueFromPref() const;
   virtual void UpdatePref(const bool& value);
 
  private:
@@ -159,7 +162,7 @@ class IntegerPrefMember : public PrefMember<int> {
   virtual ~IntegerPrefMember();
 
  protected:
-  virtual void UpdateValueFromPref();
+  virtual void UpdateValueFromPref() const;
   virtual void UpdatePref(const int& value);
 
  private:
@@ -172,7 +175,7 @@ class RealPrefMember : public PrefMember<double> {
   virtual ~RealPrefMember();
 
  protected:
-  virtual void UpdateValueFromPref();
+  virtual void UpdateValueFromPref() const;
   virtual void UpdatePref(const double& value);
 
  private:
@@ -185,7 +188,7 @@ class StringPrefMember : public PrefMember<std::string> {
   virtual ~StringPrefMember();
 
  protected:
-  virtual void UpdateValueFromPref();
+  virtual void UpdateValueFromPref() const;
   virtual void UpdatePref(const std::string& value);
 
  private:
@@ -198,7 +201,7 @@ class FilePathPrefMember : public PrefMember<FilePath> {
   virtual ~FilePathPrefMember();
 
  protected:
-  virtual void UpdateValueFromPref();
+  virtual void UpdateValueFromPref() const;
   virtual void UpdatePref(const FilePath& value);
 
  private:

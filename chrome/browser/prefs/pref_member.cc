@@ -37,7 +37,7 @@ void PrefMemberBase::Init(const char* pref_name, PrefService* prefs,
   prefs_->AddPrefObserver(pref_name, this);
 }
 
-bool PrefMemberBase::IsManaged() {
+bool PrefMemberBase::IsManaged() const {
   DCHECK(!pref_name_.empty());
   const PrefService::Preference* pref =
       prefs_->FindPreference(pref_name_.c_str());
@@ -55,7 +55,7 @@ void PrefMemberBase::Observe(NotificationType type,
     observer_->Observe(type, source, details);
 }
 
-void PrefMemberBase::VerifyValuePrefName() {
+void PrefMemberBase::VerifyValuePrefName() const {
   DCHECK(!pref_name_.empty());
 }
 
@@ -67,7 +67,7 @@ BooleanPrefMember::BooleanPrefMember() : PrefMember<bool>() {
 BooleanPrefMember::~BooleanPrefMember() {
 }
 
-void BooleanPrefMember::UpdateValueFromPref() {
+void BooleanPrefMember::UpdateValueFromPref() const {
   value_ = prefs()->GetBoolean(pref_name().c_str());
 }
 
@@ -81,7 +81,7 @@ IntegerPrefMember::IntegerPrefMember() : PrefMember<int>() {
 IntegerPrefMember::~IntegerPrefMember() {
 }
 
-void IntegerPrefMember::UpdateValueFromPref() {
+void IntegerPrefMember::UpdateValueFromPref() const {
   value_ = prefs()->GetInteger(pref_name().c_str());
 }
 
@@ -95,7 +95,7 @@ RealPrefMember::RealPrefMember() : PrefMember<double>() {
 RealPrefMember::~RealPrefMember() {
 }
 
-void RealPrefMember::UpdateValueFromPref() {
+void RealPrefMember::UpdateValueFromPref() const {
   value_ = prefs()->GetReal(pref_name().c_str());
 }
 
@@ -109,7 +109,7 @@ StringPrefMember::StringPrefMember() : PrefMember<std::string>() {
 StringPrefMember::~StringPrefMember() {
 }
 
-void StringPrefMember::UpdateValueFromPref() {
+void StringPrefMember::UpdateValueFromPref() const {
   value_ = prefs()->GetString(pref_name().c_str());
 }
 
@@ -123,7 +123,7 @@ FilePathPrefMember::FilePathPrefMember() : PrefMember<FilePath>() {
 FilePathPrefMember::~FilePathPrefMember() {
 }
 
-void FilePathPrefMember::UpdateValueFromPref() {
+void FilePathPrefMember::UpdateValueFromPref() const {
   value_ = prefs()->GetFilePath(pref_name().c_str());
 }
 
