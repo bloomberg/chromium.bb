@@ -141,7 +141,6 @@ class NewUserView : public views::View,
   views::Label* title_label_;
   views::NativeButton* sign_in_button_;
   views::Link* create_account_link_;
-  views::Link* cant_access_account_link_;
   views::Link* browse_without_signin_link_;
   views::MenuButton* languages_menubutton_;
   views::Throbber* throbber_;

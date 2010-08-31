@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenTest, TestBasic) {
   // NOTE: When adding new controls check RecreateNativeControls()
   // that |sign_in_button_| is added with correct index.
   // See kSignInButtonFocusOrderIndex constant.
-  EXPECT_EQ(9, login->GetChildViewCount());
+  EXPECT_EQ(8, login->GetChildViewCount());
   login->SetUsername(kUsername);
   login->SetPassword(kPassword);
 

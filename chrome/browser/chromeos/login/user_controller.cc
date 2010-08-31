@@ -373,6 +373,13 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   std::wstring text = is_guest_ ? l10n_util::GetString(IDS_GUEST) :
       UTF8ToWide(user_.GetDisplayName());
+  if (index == 0 && is_guest_) {
+    // This is single guest login without any existing users around because
+    // non-single guest login is rightmost in current screen arrangement and
+    // hence indexed above zero.
+    // Such a single guest login should not be labelled.
+    text = std::wstring();
+  }
   views::Label* label = new views::Label(text);
   label->SetColor(kTextColor);
   label->SetFont(font);

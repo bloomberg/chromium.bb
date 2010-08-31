@@ -80,7 +80,6 @@ NewUserView::NewUserView(Delegate* delegate,
       title_label_(NULL),
       sign_in_button_(NULL),
       create_account_link_(NULL),
-      cant_access_account_link_(NULL),
       browse_without_signin_link_(NULL),
       languages_menubutton_(NULL),
       throbber_(NULL),
@@ -129,7 +128,6 @@ void NewUserView::Init() {
   AddChildView(throbber_);
 
   InitLink(&create_account_link_);
-  InitLink(&cant_access_account_link_);
   if (need_browse_without_signin_) {
     InitLink(&browse_without_signin_link_);
   }
@@ -191,8 +189,6 @@ void NewUserView::UpdateLocalizedStrings() {
   sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
   create_account_link_->SetText(
       l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
-  cant_access_account_link_->SetText(
-      l10n_util::GetString(IDS_CANT_ACCESS_ACCOUNT_BUTTON));
   if (need_browse_without_signin_) {
     browse_without_signin_link_->SetText(
         l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
@@ -289,7 +285,6 @@ void NewUserView::Layout() {
            password_field_->GetPreferredSize().height() +
            sign_in_button_->GetPreferredSize().height() +
            create_account_link_->GetPreferredSize().height() +
-           cant_access_account_link_->GetPreferredSize().height() +
            browse_without_signin_link_height +
            4 * kRowPad;
   y = (this->height() - height) / 2;
@@ -306,7 +301,6 @@ void NewUserView::Layout() {
                 width,
                 false);
   y += setViewBounds(create_account_link_, x, y, max_width, false);
-  y += setViewBounds(cant_access_account_link_, x, y, max_width, false);
 
   if (need_browse_without_signin_) {
     y += setViewBounds(browse_without_signin_link_, x, y, max_width, false);
@@ -356,11 +350,6 @@ void NewUserView::LinkActivated(views::Link* source, int event_flags) {
   if (source == create_account_link_) {
     delegate_->OnCreateAccount();
   } else if (source == browse_without_signin_link_) {
-    delegate_->OnLoginOffTheRecord();
-  } else if (source == cant_access_account_link_) {
-    // TODO(nkostylev): Display offline help when network is not connected.
-    // http://crosbug.com/3874
-    delegate_->AddStartUrl(GetAccountRecoveryHelpUrl());
     delegate_->OnLoginOffTheRecord();
   }
 }
@@ -422,7 +411,6 @@ void NewUserView::EnableInputControls(bool enabled) {
   password_field_->SetEnabled(enabled);
   sign_in_button_->SetEnabled(enabled);
   create_account_link_->SetEnabled(enabled);
-  cant_access_account_link_->SetEnabled(enabled);
   if (need_browse_without_signin_) {
     browse_without_signin_link_->SetEnabled(enabled);
   }
