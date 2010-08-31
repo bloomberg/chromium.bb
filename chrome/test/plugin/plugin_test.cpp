@@ -166,8 +166,12 @@ TEST_F(PluginTest, FlashOctetStream) {
   TestPlugin("flash-octet-stream.html", action_max_timeout_ms(), false);
 }
 
-// http://crbug.com/16114
+#if defined(OS_WIN)
+// http://crbug.com/53926
+TEST_F(PluginTest, FLAKY_FlashLayoutWhilePainting) {
+#else
 TEST_F(PluginTest, FlashLayoutWhilePainting) {
+#endif
   TestPlugin("flash-layout-while-painting.html", action_max_timeout_ms(), true);
 }
 
