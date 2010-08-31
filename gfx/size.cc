@@ -49,7 +49,7 @@ CGSize Size::ToCGSize() const {
 
 void Size::set_width(int width) {
   if (width < 0) {
-    NOTREACHED() << "negative width:" << this;
+    NOTREACHED() << "negative width:" << width;
     width = 0;
   }
   width_ = width;
@@ -57,7 +57,7 @@ void Size::set_width(int width) {
 
 void Size::set_height(int height) {
   if (height < 0) {
-    NOTREACHED() << "negative height:" << this;
+    NOTREACHED() << "negative height:" << height;
     height = 0;
   }
   height_ = height;
