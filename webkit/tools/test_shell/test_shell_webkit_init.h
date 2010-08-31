@@ -18,6 +18,7 @@
 #include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
+#include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
 #include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 
 #if defined(OS_WIN)
@@ -45,6 +46,10 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebCookieJar* cookieJar() {
     return &cookie_jar_;
+  }
+
+  virtual WebKit::WebBlobRegistry* blobRegistry() {
+    return blob_registry_.get();
   }
 
   virtual bool sandboxEnabled() {
@@ -141,6 +146,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;
   SimpleWebCookieJarImpl cookie_jar_;
+  scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
 
 #if defined(OS_WIN)
   WebKit::WebThemeEngine* active_theme_engine_;

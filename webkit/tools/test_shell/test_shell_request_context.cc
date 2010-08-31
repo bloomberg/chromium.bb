@@ -16,6 +16,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
+#include "webkit/blob/blob_storage_controller.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
@@ -79,6 +80,8 @@ void TestShellRequestContext::Init(
   http_transaction_factory_ = cache;
 
   ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
+
+  blob_storage_controller_.reset(new webkit_blob::BlobStorageController());
 }
 
 TestShellRequestContext::~TestShellRequestContext() {

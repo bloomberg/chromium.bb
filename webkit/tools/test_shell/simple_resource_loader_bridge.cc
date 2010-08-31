@@ -58,10 +58,12 @@
 #endif
 #include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/blob/blob_storage_controller.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
+#include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
 
 using webkit_glue::ResourceLoaderBridge;
 using net::StaticCookiePolicy;
@@ -120,10 +122,14 @@ class IOThread : public base::Thread {
 
     SimpleAppCacheSystem::InitializeOnIOThread(g_request_context);
     SimpleSocketStreamBridge::InitializeOnIOThread(g_request_context);
+    TestShellWebBlobRegistryImpl::InitializeOnIOThread(
+        static_cast<TestShellRequestContext*>(g_request_context)->
+            blob_storage_controller());
   }
 
   virtual void CleanUp() {
     SimpleSocketStreamBridge::Cleanup();
+    TestShellWebBlobRegistryImpl::Cleanup();
     if (g_request_context) {
       g_request_context->Release();
       g_request_context = NULL;
@@ -263,6 +269,13 @@ class RequestProxy : public URLRequest::Delegate,
   // actions performed on the owner's thread.
 
   void AsyncStart(RequestParams* params) {
+    // Might need to resolve the blob references in the upload data.
+    if (params->upload) {
+      static_cast<TestShellRequestContext*>(g_request_context)->
+          blob_storage_controller()->ResolveBlobReferencesInUploadData(
+              params->upload.get());
+    }
+
     request_.reset(new URLRequest(params->url, this));
     request_->set_method(params->method);
     request_->set_first_party_for_cookies(params->first_party_for_cookies);
@@ -580,6 +593,13 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
       params_->upload = new net::UploadData();
     params_->upload->AppendFileRange(file_path, offset, length,
                                      expected_modification_time);
+  }
+
+  virtual void AppendBlobToUpload(const GURL& blob_url) {
+    DCHECK(params_.get());
+    if (!params_->upload)
+      params_->upload = new net::UploadData();
+    params_->upload->AppendBlob(blob_url);
   }
 
   virtual void SetUploadIdentifier(int64 identifier) {

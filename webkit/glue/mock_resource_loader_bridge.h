@@ -27,6 +27,7 @@ class MockResourceLoaderBridge : public webkit_glue::ResourceLoaderBridge {
                     uint64 offset,
                     uint64 length,
                     const base::Time& expected_modification_time));
+  MOCK_METHOD1(AppendBlobToUpload, void(const GURL& blob_url));
   MOCK_METHOD1(SetUploadIdentifier, void(int64 identifier));
   MOCK_METHOD1(Start, bool(ResourceLoaderBridge::Peer* peer));
   MOCK_METHOD0(Cancel, void());

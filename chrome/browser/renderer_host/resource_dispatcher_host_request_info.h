@@ -128,6 +128,7 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   // When there is upload data, this is the byte count of that data. When there
   // is no upload, this will be 0.
   uint64 upload_size() const { return upload_size_; }
+  void set_upload_size(uint64 upload_size) { upload_size_ = upload_size; }
 
   // When we're uploading data, this is the the byte offset into the uploaded
   // data that we've uploaded that we've send an upload progress update about.

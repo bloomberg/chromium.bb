@@ -318,6 +318,10 @@ class ResourceLoaderBridge {
       uint64 length,
       const base::Time& expected_modification_time) = 0;
 
+  // Call this method before calling Start() to append the contents of a blob
+  // to the request body.  May only be used with HTTP(S) POST requests.
+  virtual void AppendBlobToUpload(const GURL& blob_url) = 0;
+
   // Call this method before calling Start() to assign an upload identifier to
   // this request.  This is used to enable caching of POST responses.  A value
   // of 0 implies the unspecified identifier.

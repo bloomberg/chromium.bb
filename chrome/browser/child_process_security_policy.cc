@@ -109,6 +109,7 @@ ChildProcessSecurityPolicy::ChildProcessSecurityPolicy() {
   RegisterWebSafeScheme(chrome::kDataScheme);
   RegisterWebSafeScheme("feed");
   RegisterWebSafeScheme(chrome::kExtensionScheme);
+  RegisterWebSafeScheme(chrome::kBlobScheme);
 
   // We know about the following psuedo schemes and treat them specially.
   RegisterPseudoScheme(chrome::kAboutScheme);

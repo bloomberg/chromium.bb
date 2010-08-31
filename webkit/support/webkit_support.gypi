@@ -59,6 +59,8 @@
         '<(DEPTH)/webkit/tools/test_shell/simple_webcookiejar_impl.h',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_request_context.cc',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_request_context.h',
+        '<(DEPTH)/webkit/tools/test_shell/test_shell_webblobregistry_impl.cc',
+        '<(DEPTH)/webkit/tools/test_shell/test_shell_webblobregistry_impl.h',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
       ],

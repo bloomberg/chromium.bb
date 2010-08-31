@@ -11,6 +11,10 @@
 
 class GURL;
 
+namespace net {
+class UploadData;
+}
+
 namespace webkit_blob {
 
 class BlobData;
@@ -25,6 +29,10 @@ class BlobStorageController {
   void RegisterBlobUrlFrom(const GURL& url, const GURL& src_url);
   void UnregisterBlobUrl(const GURL& url);
   BlobData* GetBlobDataFromUrl(const GURL& url);
+
+  // If there is any blob reference in the upload data, it will get resolved
+  // and updated in place.
+  void ResolveBlobReferencesInUploadData(net::UploadData* upload_data);
 
  private:
   void AppendStorageItems(BlobData* target_blob_data,

@@ -11,6 +11,10 @@
 
 class FilePath;
 
+namespace webkit_blob {
+class BlobStorageController;
+}
+
 // A basic URLRequestContext that only provides an in-memory cookie store.
 class TestShellRequestContext : public URLRequestContext {
  public:
@@ -25,11 +29,17 @@ class TestShellRequestContext : public URLRequestContext {
 
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
+  webkit_blob::BlobStorageController* blob_storage_controller() const {
+    return blob_storage_controller_.get();
+  }
+
  private:
   ~TestShellRequestContext();
 
   void Init(const FilePath& cache_path, net::HttpCache::Mode cache_mode,
             bool no_proxy);
+
+  scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H__

@@ -2024,6 +2024,8 @@
         'browser/nacl_host/nacl_broker_service_win.h',
         'browser/nacl_host/nacl_process_host.cc',
         'browser/nacl_host/nacl_process_host.h',
+        'browser/net/blob_url_request_job_factory.cc',
+        'browser/net/blob_url_request_job_factory.h',
         'browser/net/browser_url_util.cc',
         'browser/net/browser_url_util.h',
         'browser/net/chrome_cookie_notification_details.h',

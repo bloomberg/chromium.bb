@@ -43,6 +43,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "webkit/blob/blob_storage_controller.h"
+#include "webkit/blob/blob_url_request_job.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
@@ -52,6 +54,7 @@
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell_devtools_agent.h"
 #include "webkit/tools/test_shell/test_shell_devtools_client.h"
+#include "webkit/tools/test_shell/test_shell_request_context.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
@@ -100,6 +103,17 @@ class URLRequestTestShellFileJob : public URLRequestFileJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestTestShellFileJob);
 };
 
+URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
+                                        const std::string& scheme) {
+  webkit_blob::BlobStorageController* blob_storage_controller =
+      static_cast<TestShellRequestContext*>(request->context())->
+          blob_storage_controller();
+  return new webkit_blob::BlobURLRequestJob(
+      request,
+      blob_storage_controller->GetBlobDataFromUrl(request->url()),
+      NULL);
+}
+
 }  // namespace
 
 // Initialize static member variable
@@ -142,6 +156,8 @@ TestShell::TestShell()
     filter->AddHostnameHandler("test-shell-resource", "inspector",
                                &URLRequestTestShellFileJob::InspectorFactory);
     url_util::AddStandardScheme("test-shell-resource");
+
+    URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
 }
 
 TestShell::~TestShell() {

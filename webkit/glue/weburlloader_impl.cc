@@ -432,6 +432,9 @@ void WebURLLoaderImpl::Context::Start(
                 base::Time::FromDoubleT(element.fileInfo.modificationTime));
           }
           break;
+        case WebHTTPBody::Element::TypeBlob:
+          bridge_->AppendBlobToUpload(GURL(element.blobURL));
+          break;
         default:
           NOTREACHED();
       }

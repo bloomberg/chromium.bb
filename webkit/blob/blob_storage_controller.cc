@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/upload_data.h"
 #include "webkit/blob/blob_data.h"
 
 namespace webkit_blob {
@@ -70,9 +71,12 @@ void BlobStorageController::RegisterBlobUrl(
            blob_data->items().begin();
        iter != blob_data->items().end(); ++iter) {
     switch (iter->type()) {
-      case BlobData::TYPE_DATA:
+      case BlobData::TYPE_DATA: {
+        // WebBlobData does not allow partial data.
+        DCHECK(!(iter->offset()) && iter->length() == iter->data().size());
         target_blob_data->AppendData(iter->data());
         break;
+      }
       case BlobData::TYPE_FILE:
         target_blob_data->AppendFile(iter->file_path(),
                                      iter->offset(),
@@ -80,12 +84,11 @@ void BlobStorageController::RegisterBlobUrl(
                                      iter->expected_modification_time());
         break;
       case BlobData::TYPE_BLOB: {
-        scoped_refptr<BlobData> src_blob_data =
-            blob_map_[iter->blob_url().spec()];
-        DCHECK(src_blob_data.get());
-        if (src_blob_data.get())
+        BlobData* src_blob_data = GetBlobDataFromUrl(iter->blob_url());
+        DCHECK(src_blob_data);
+        if (src_blob_data)
           AppendStorageItems(target_blob_data.get(),
-                             src_blob_data.get(),
+                             src_blob_data,
                              iter->offset(),
                              iter->length());
         break;
@@ -99,6 +102,7 @@ void BlobStorageController::RegisterBlobUrl(
 void BlobStorageController::RegisterBlobUrlFrom(
     const GURL& url, const GURL& src_url) {
   BlobData* blob_data = GetBlobDataFromUrl(src_url);
+  DCHECK(blob_data);
   if (!blob_data)
     return;
 
@@ -110,8 +114,69 @@ void BlobStorageController::UnregisterBlobUrl(const GURL& url) {
 }
 
 BlobData* BlobStorageController::GetBlobDataFromUrl(const GURL& url) {
-  return (blob_map_.find(url.spec()) == blob_map_.end()) ?
-      NULL : blob_map_[url.spec()].get();
+  BlobMap::iterator found = blob_map_.find(url.spec());
+  return (found != blob_map_.end()) ? found->second : NULL;
+}
+
+void BlobStorageController::ResolveBlobReferencesInUploadData(
+    net::UploadData* upload_data) {
+  DCHECK(upload_data);
+
+  std::vector<net::UploadData::Element>* uploads = upload_data->elements();
+  std::vector<net::UploadData::Element>::iterator iter;
+  for (iter = uploads->begin(); iter != uploads->end();) {
+    if (iter->type() != net::UploadData::TYPE_BLOB) {
+      iter++;
+      continue;
+    }
+
+    // Find the referred blob data.
+    webkit_blob::BlobData* blob_data = GetBlobDataFromUrl(iter->blob_url());
+    DCHECK(blob_data);
+    if (!blob_data) {
+      // TODO(jianli): We should probably fail uploading the data
+      iter++;
+      continue;
+    }
+
+    // Remove this element.
+    iter = uploads->erase(iter);
+
+    // If there is no element in the referred blob data, continue the loop.
+    // Note that we should not increase iter since it already points to the one
+    // after the removed element.
+    if (blob_data->items().empty())
+      continue;
+
+    // Insert the elements in the referred blob data.
+    // Note that we traverse from the bottom so that the elements can be
+    // inserted in the original order.
+    for (size_t i = blob_data->items().size(); i > 0; --i) {
+      iter = uploads->insert(iter, net::UploadData::Element());
+
+      const webkit_blob::BlobData::Item& item = blob_data->items().at(i - 1);
+      switch (item.type()) {
+        case webkit_blob::BlobData::TYPE_DATA:
+          // TODO(jianli): Figure out how to avoid copying the data.
+          iter->SetToBytes(
+              &item.data().at(0) + static_cast<int>(item.offset()),
+              static_cast<int>(item.length()));
+          break;
+        case webkit_blob::BlobData::TYPE_FILE:
+          // TODO(michaeln): Ensure that any temp files survive till the
+          // URLRequest is done with the upload.
+          iter->SetToFilePathRange(
+              item.file_path(),
+              item.offset(),
+              item.length(),
+              item.expected_modification_time());
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+    }
+  }
 }
 
 }  // namespace webkit_blob

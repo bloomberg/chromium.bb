@@ -33,8 +33,11 @@ BlobData::BlobData(const WebBlobData& data) {
   while (data.itemAt(i++, item)) {
     switch (item.type) {
       case WebBlobData::Item::TypeData:
-        if (!item.data.isEmpty())
+        if (!item.data.isEmpty()) {
+          // WebBlobData does not allow partial data.
+          DCHECK(!item.offset && item.length == -1);
           AppendData(item.data);
+        }
         break;
       case WebBlobData::Item::TypeFile:
         AppendFile(

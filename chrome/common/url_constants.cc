@@ -10,6 +10,7 @@
 namespace chrome {
 
 const char kAboutScheme[] = "about";
+const char kBlobScheme[] = "blob";
 const char kChromeInternalScheme[] = "chrome-internal";
 const char kChromeUIScheme[] = "chrome";
 const char kDataScheme[] = "data";

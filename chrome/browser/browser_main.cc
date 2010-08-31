@@ -48,6 +48,7 @@
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/net/blob_url_request_job_factory.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -1317,9 +1318,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RegisterURLRequestChromeJob();
   RegisterExtensionProtocols();
   RegisterMetadataURLRequestHandler();
+  RegisterBlobURLRequestJobFactory();
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
-  // the global GoogleURLTracker and IntranetRedirectDetector instances, which
+  // the global GoogleURLTracker and IntranetRedirectDetector instances, which  
   // will promptly go to sleep for five and seven seconds, respectively (to
   // avoid slowing startup), and wake up afterwards to see if they should do
   // anything else.

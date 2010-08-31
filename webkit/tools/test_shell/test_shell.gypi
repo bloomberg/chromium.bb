@@ -369,6 +369,7 @@
         '../../appcache/mock_appcache_service.h',
         '../../appcache/mock_appcache_storage_unittest.cc',
         '../../blob/blob_storage_controller_unittest.cc',
+        '../../blob/blob_url_request_job_unittest.cc',
         '../../database/databases_table_unittest.cc',
         '../../database/database_tracker_unittest.cc',
         '../../database/database_util_unittest.cc',

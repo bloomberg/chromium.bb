@@ -66,6 +66,8 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
 
   WebKit::WebDatabase::setObserver(&database_system_);
 
+  blob_registry_ = new TestShellWebBlobRegistryImpl();
+
   file_utilities_.set_sandbox_enabled(false);
 
 #if defined(OS_WIN)

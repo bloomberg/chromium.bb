@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/cross_site_request_manager.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_manager.h"
@@ -68,6 +69,7 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/blob/blob_storage_controller.h"
 
 // TODO(oshima): Enable this for other platforms.
 #if defined(OS_CHROMEOS)
@@ -369,6 +371,12 @@ void ResourceDispatcherHost::BeginRequest(
       context = static_cast<ChromeURLRequestContext*>(
           context_getter->GetURLRequestContext());
     }
+  }
+
+  // Might need to resolve the blob references in the upload data.
+  if (request_data.upload_data) {
+    context->blob_storage_context()->controller()->
+        ResolveBlobReferencesInUploadData(request_data.upload_data.get());
   }
 
   if (is_shutdown_ ||

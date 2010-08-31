@@ -60,6 +60,7 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
       uint64 offset,
       uint64 length,
       const base::Time& expected_modification_time);
+  virtual void AppendBlobToUpload(const GURL& blob_url);
   virtual void SetUploadIdentifier(int64 identifier);
   virtual bool Start(Peer* peer);
   virtual void Cancel();
@@ -167,6 +168,14 @@ void IPCResourceLoaderBridge::AppendFileRangeToUpload(
     request_.upload_data = new net::UploadData();
   request_.upload_data->AppendFileRange(path, offset, length,
                                         expected_modification_time);
+}
+
+void IPCResourceLoaderBridge::AppendBlobToUpload(const GURL& blob_url) {
+  DCHECK(request_id_ == -1) << "request already started";
+
+  if (!request_.upload_data)
+    request_.upload_data = new net::UploadData();
+  request_.upload_data->AppendBlob(blob_url);
 }
 
 void IPCResourceLoaderBridge::SetUploadIdentifier(int64 identifier) {

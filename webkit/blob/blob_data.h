@@ -73,34 +73,6 @@ class BlobData : public base::RefCounted<BlobData> {
       length_ = length;
     }
 
-#if defined(UNIT_TEST)
-    bool operator==(const Item& other) const {
-      if (type_ != other.type_)
-        return false;
-      if (type_ == TYPE_DATA) {
-        return data_ == other.data_ &&
-               offset_ == other.offset_ &&
-               length_ == other.length_;
-      }
-      if (type_ == TYPE_FILE) {
-        return file_path_ == other.file_path_ &&
-               offset_ == other.offset_ &&
-               length_ == other.length_ &&
-               expected_modification_time_ == other.expected_modification_time_;
-      }
-      if (type_ == TYPE_BLOB) {
-        return blob_url_ == other.blob_url_ &&
-               offset_ == other.offset_ &&
-               length_ == other.length_;
-      }
-      return false;
-    }
-
-    bool operator!=(const Item& other) const {
-      return !(*this == other);
-    }
-#endif  // defined(UNIT_TEST)
-
    private:
     Type type_;
 
@@ -165,22 +137,6 @@ class BlobData : public base::RefCounted<BlobData> {
     content_disposition_ = content_disposition;
   }
 
-#if defined(UNIT_TEST)
-  bool operator==(const BlobData& other) const {
-    if (content_type_ != other.content_type_)
-      return false;
-    if (content_disposition_ != other.content_disposition_)
-      return false;
-    if (items_.size() != other.items_.size())
-      return false;
-    for (size_t i = 0; i < items_.size(); ++i) {
-      if (items_[i] != other.items_[i])
-        return false;
-    }
-    return true;
-  }
-#endif  // defined(UNIT_TEST)
-
  private:
   friend class base::RefCounted<BlobData>;
 
@@ -190,6 +146,52 @@ class BlobData : public base::RefCounted<BlobData> {
   std::string content_disposition_;
   std::vector<Item> items_;
 };
+
+#if defined(UNIT_TEST)
+inline bool operator==(const BlobData::Item& a, const BlobData::Item& b) {
+  if (a.type() != b.type())
+    return false;
+  if (a.type() == BlobData::TYPE_DATA) {
+    return a.data() == b.data() &&
+           a.offset() == b.offset() &&
+           a.length() == b.length();
+  }
+  if (a.type() == BlobData::TYPE_FILE) {
+    return a.file_path() == b.file_path() &&
+           a.offset() == b.offset() &&
+           a.length() == b.length() &&
+           a.expected_modification_time() == b.expected_modification_time();
+  }
+  if (a.type() == BlobData::TYPE_BLOB) {
+    return a.blob_url() == b.blob_url() &&
+           a.offset() == b.offset() &&
+           a.length() == b.length();
+  }
+  return false;
+}
+
+inline  bool operator!=(const BlobData::Item& a, const BlobData::Item& b) {
+  return !(a == b);
+}
+
+inline bool operator==(const BlobData& a, const BlobData& b) {
+  if (a.content_type() != b.content_type())
+    return false;
+  if (a.content_disposition() != b.content_disposition())
+    return false;
+  if (a.items().size() != b.items().size())
+    return false;
+  for (size_t i = 0; i < a.items().size(); ++i) {
+    if (a.items()[i] != b.items()[i])
+      return false;
+  }
+  return true;
+}
+
+inline bool operator!=(const BlobData& a, const BlobData& b) {
+  return !(a == b);
+}
+#endif  // defined(UNIT_TEST)
 
 }  // namespace webkit_blob
 
