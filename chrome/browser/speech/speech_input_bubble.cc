@@ -7,6 +7,7 @@
 #include "gfx/rect.h"
 
 SpeechInputBubble::FactoryMethod SpeechInputBubble::factory_ = NULL;
+const int SpeechInputBubble::kBubbleTargetOffsetX = 5;
 
 SpeechInputBubble* SpeechInputBubble::Create(TabContents* tab_contents,
                                              Delegate* delegate,
@@ -18,10 +19,5 @@ SpeechInputBubble* SpeechInputBubble::Create(TabContents* tab_contents,
   if (!tab_contents)
     return NULL;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
   return CreateNativeBubble(tab_contents, delegate, element_rect);
-#else
-  // TODO(satish): Remove once Linux implementation is ready.
-  return NULL;
-#endif
 }
