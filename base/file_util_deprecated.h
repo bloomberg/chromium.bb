@@ -55,7 +55,6 @@ bool AbsolutePath(std::wstring* path);
 bool Delete(const std::wstring& path, bool recursive);
 bool CopyDirectory(const std::wstring& from_path, const std::wstring& to_path,
                    bool recursive);
-bool ReadFileToString(const std::wstring& path, std::string* contents);
 int ReadFile(const std::wstring& filename, char* data, int size);
 int WriteFile(const std::wstring& filename, const char* data, int size);
 
