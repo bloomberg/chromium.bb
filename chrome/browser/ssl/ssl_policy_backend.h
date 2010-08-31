@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "net/base/x509_certificate.h"
 
 class NavigationController;
@@ -19,16 +20,6 @@ class Task;
 class SSLPolicyBackend {
  public:
   explicit SSLPolicyBackend(NavigationController* controller);
-
-  // Ensure that the specified message is displayed to the user.  This will
-  // display an InfoBar at the top of the associated tab.
-  void ShowMessage(const std::wstring& msg);
-
-  // Same as ShowMessage but also contains a link that when clicked run the
-  // specified task.  The SSL Manager becomes the owner of the task.
-  void ShowMessageWithLink(const std::wstring& msg,
-                           const std::wstring& link_text,
-                           Task* task);
 
   // Records that a host has run insecure content.
   void HostRanInsecureContent(const std::string& host, int pid);
@@ -57,25 +48,33 @@ class SSLPolicyBackend {
   // in an info-bar.
   struct SSLMessageInfo {
    public:
-    explicit SSLMessageInfo(const std::wstring& text)
+    explicit SSLMessageInfo(const string16& text)
         : message(text),
           action(NULL) { }
 
-    SSLMessageInfo(const std::wstring& message,
-                   const std::wstring& link_text,
+    SSLMessageInfo(const string16& message,
+                   const string16& link_text,
                    Task* action)
         : message(message), link_text(link_text), action(action) { }
 
     // Overridden so that std::find works.
-    bool operator==(const std::wstring& other_message) const {
+    bool operator==(const string16& other_message) const {
       // We are uniquing SSLMessageInfo by their message only.
       return message == other_message;
     }
 
-    std::wstring message;
-    std::wstring link_text;
+    string16 message;
+    string16 link_text;
     Task* action;
   };
+
+  // Ensure that the specified message is displayed to the user. This will
+  // display an InfoBar at the top of the associated tab. It also contains a
+  // link that when clicked run the specified task. The SSL Manager becomes the
+  // owner of the task.
+  void ShowMessageWithLink(const string16& msg,
+                           const string16& link_text,
+                           Task* task);
 
   // The NavigationController that owns this SSLManager.  We are responsible
   // for the security UI of this tab.

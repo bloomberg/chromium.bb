@@ -5,7 +5,6 @@
 #include "chrome/browser/ssl/ssl_policy_backend.h"
 
 #include "app/resource_bundle.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -70,45 +69,7 @@ SSLPolicyBackend::SSLPolicyBackend(NavigationController* controller)
   DCHECK(controller_);
 }
 
-void SSLPolicyBackend::ShowMessage(const std::wstring& msg) {
-  ShowMessageWithLink(msg, std::wstring(), NULL);
-}
-
-void SSLPolicyBackend::ShowMessageWithLink(const std::wstring& msg,
-                                           const std::wstring& link_text,
-                                           Task* task) {
-  if (controller_->pending_entry()) {
-    // The main frame is currently loading, wait until the load is committed so
-    // to show the error on the right page (once the location bar shows the
-    // correct url).
-    if (std::find(pending_messages_.begin(), pending_messages_.end(), msg) ==
-        pending_messages_.end())
-      pending_messages_.push_back(SSLMessageInfo(msg, link_text, task));
-
-    return;
-  }
-
-  NavigationEntry* entry = controller_->GetActiveEntry();
-  if (!entry)
-    return;
-
-  // Don't show the message if the user doesn't expect an authenticated session.
-  if (entry->ssl().security_style() <= SECURITY_STYLE_UNAUTHENTICATED)
-    return;
-
-  if (controller_->tab_contents()) {
-    // TODO(evanm): remove base/utf_string_conversions.h include after fixing
-    // below conversions.
-    controller_->tab_contents()->AddInfoBar(
-        new SSLInfoBarDelegate(controller_->tab_contents(),
-                               WideToUTF16Hack(msg),
-                               WideToUTF16Hack(link_text),
-                               task));
-  }
-}
-
-void SSLPolicyBackend::HostRanInsecureContent(const std::string& host,
-                                              int id) {
+void SSLPolicyBackend::HostRanInsecureContent(const std::string& host, int id) {
   ssl_host_state_->HostRanInsecureContent(host, id);
   SSLManager::NotifySSLInternalStateChanged();
 }
@@ -144,4 +105,33 @@ void SSLPolicyBackend::ShowPendingMessages() {
 
 void SSLPolicyBackend::ClearPendingMessages() {
   pending_messages_.clear();
+}
+
+void SSLPolicyBackend::ShowMessageWithLink(const string16& msg,
+                                           const string16& link_text,
+                                           Task* task) {
+  if (controller_->pending_entry()) {
+    // The main frame is currently loading, wait until the load is committed so
+    // to show the error on the right page (once the location bar shows the
+    // correct url).
+    if (std::find(pending_messages_.begin(), pending_messages_.end(), msg) ==
+        pending_messages_.end())
+      pending_messages_.push_back(SSLMessageInfo(msg, link_text, task));
+
+    return;
+  }
+
+  NavigationEntry* entry = controller_->GetActiveEntry();
+  if (!entry)
+    return;
+
+  // Don't show the message if the user doesn't expect an authenticated session.
+  if (entry->ssl().security_style() <= SECURITY_STYLE_UNAUTHENTICATED)
+    return;
+
+  if (controller_->tab_contents()) {
+    controller_->tab_contents()->AddInfoBar(
+        new SSLInfoBarDelegate(controller_->tab_contents(),
+                               msg, link_text, task));
+  }
 }
