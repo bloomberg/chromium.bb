@@ -63,7 +63,7 @@ class MockGatewayPollingPolicy : public PollingPolicyInterface {
     ON_CALL(*this, PollingInterval())
         .WillByDefault(Return(1));
     ON_CALL(*this, NoRouterInterval())
-        .WillByDefault(Return(2));
+        .WillByDefault(Return(1));
   }
 
   // PollingPolicyInterface
@@ -134,7 +134,7 @@ TEST_F(GeolocationGatewayDataProviderCommonTest, StartThread) {
   EXPECT_CALL(*polling_policy_, PollingInterval())
       .Times(AtLeast(1));
   EXPECT_TRUE(provider_->StartDataProvider());
-  provider_->StopDataProvider();
+  main_message_loop_.Run();
   SUCCEED();
 }
 

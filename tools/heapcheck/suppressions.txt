@@ -936,19 +936,3 @@
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
 }
-{
-   bug_53573_a
-   Heapcheck:Leak
-   fun:CancelableTask* NewRunnableMethod
-   fun:DeviceDataProviderImplBase::NotifyListeners
-   fun:GatewayDataProviderCommon::DoRouterScanTask
-   fun:void DispatchToMethod
-   fun:ScopedRunnableMethodFactory::RunnableMethod::Run
-   fun:MessageLoop::RunTask
-}
-{
-   bug_53573_b
-   Heapcheck:Leak
-   ...
-   fun:GeolocationGatewayDataProviderCommonTest::SetUp
-}

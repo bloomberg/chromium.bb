@@ -143,7 +143,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, StartThread) {
   EXPECT_CALL(*polling_policy_, PollingInterval())
       .Times(AtLeast(1));
   EXPECT_TRUE(provider_->StartDataProvider());
-  provider_->StopDataProvider();
+  main_message_loop_.Run();
   SUCCEED();
 }
 
