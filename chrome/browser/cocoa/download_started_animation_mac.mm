@@ -35,8 +35,9 @@ class DownloadAnimationTabObserver;
 };
 
 + (void)startAnimationWithTabContents:(TabContents*)tabContents;
-// Called by our DownloadAnimationTabObserver if the tab is hidden or closed.
-- (void)animationComplete;
+
+// Called by the Observer if the tab is hidden or closed.
+- (void)closeAnimation;
 
 @end
 
@@ -62,7 +63,7 @@ class DownloadAnimationTabObserver : public NotificationObserver {
                const NotificationSource& source,
                const NotificationDetails& details) {
     // This ends up deleting us.
-    [owner_ animationComplete];
+    [owner_ closeAnimation];
   }
 
  private:
@@ -162,25 +163,26 @@ class DownloadAnimationTabObserver : public NotificationObserver {
   [animation_ setFrame:frame display:YES];
 }
 
-- (void)windowWillClose:(NSNotification*)notification {
-  DCHECK([[notification object] isEqual:animation_]);
-  [self animationComplete];
+- (void)closeAnimation {
+  [animation_ close];
 }
 
-- (void)animationComplete {
+// When the animation closes, release self.
+- (void)windowWillClose:(NSNotification*)notification {
+  DCHECK([[notification object] isEqual:animation_]);
   [[animation_ parentWindow] removeChildWindow:animation_];
   [self release];
 }
 
 + (void)startAnimationWithTabContents:(TabContents*)contents {
-  // Will be deleted when the animation is complete in -animationComplete.
+  // Will be deleted when the animation window closes.
   DownloadStartedAnimationMac* controller =
       [[self alloc] initWithTabContents:contents];
   // The initializer can return nil.
   if (!controller)
     return;
 
-  // The |animation_| releaes itself when done.
+  // The |animation_| releases itself when done.
   [controller->animation_ startAnimation];
 }
 

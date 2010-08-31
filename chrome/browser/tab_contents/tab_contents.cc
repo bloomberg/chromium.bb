@@ -1022,8 +1022,6 @@ void TabContents::PopupNotificationVisibilityChanged(bool visible) {
   content_settings_delegate_->SetPopupsBlocked(visible);
   if (!dont_notify_render_view_)
     render_view_host()->AllowScriptToClose(!visible);
-  if (visible)
-    PopupBlockedAnimation::Show(this);
 }
 
 gfx::NativeView TabContents::GetContentNativeView() const {
@@ -1526,6 +1524,8 @@ void TabContents::AddPopup(TabContents* new_contents,
     blocked_popups_->AddTabContents(new_contents, initial_pos);
     content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS,
                                                  std::string());
+    if (!is_being_destroyed())
+      PopupBlockedAnimation::Show(this);
   }
 }
 

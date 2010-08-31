@@ -25,8 +25,8 @@ class PopupBlockedAnimationObserver;
   AnimatableImage* animation_;
 };
 
-// Called by our the Observer if the tab is hidden or closed.
-- (void)animationComplete;
+// Called by the Observer if the tab is hidden or closed.
+- (void)closeAnimation;
 
 @end
 
@@ -52,7 +52,7 @@ class PopupBlockedAnimationObserver : public NotificationObserver {
                const NotificationSource& source,
                const NotificationDetails& details) {
     // This ends up deleting us.
-    [owner_ animationComplete];
+    [owner_ closeAnimation];
   }
 
  private:
@@ -162,12 +162,13 @@ class PopupBlockedAnimationObserver : public NotificationObserver {
   [super dealloc];
 }
 
-- (void)windowWillClose:(NSNotification*)notification {
-  DCHECK([[notification object] isEqual:animation_]);
-  [self animationComplete];
+- (void)closeAnimation {
+  [animation_ close];
 }
 
-- (void)animationComplete {
+// When the animation window closes, release self.
+- (void)windowWillClose:(NSNotification*)notification {
+  DCHECK([[notification object] isEqual:animation_]);
   [[animation_ parentWindow] removeChildWindow:animation_];
   [self release];
 }

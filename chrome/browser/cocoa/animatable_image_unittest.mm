@@ -33,4 +33,14 @@ TEST_F(AnimatableImageTest, BasicAnimation) {
   [animation_ startAnimation];
 }
 
+TEST_F(AnimatableImageTest, CancelAnimation) {
+  [animation_ setStartFrame:CGRectMake(0, 0, 10, 10)];
+  [animation_ setEndFrame:CGRectMake(500, 500, 100, 100)];
+  [animation_ setStartOpacity:0.1];
+  [animation_ setEndOpacity:1.0];
+  [animation_ setDuration:5.0];  // Long enough to be able to test cancelling.
+  [animation_ startAnimation];
+  [animation_ close];
+}
+
 }  // namespace
