@@ -122,7 +122,7 @@ readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 # Current milestones in each repo
 readonly LLVM_REV=d4438bd19bd8
 readonly LLVM_GCC_REV=6da5d51ee4ac
-readonly NEWLIB_REV=c74ed6d22b4f
+readonly NEWLIB_REV=03ddd92d699d
 readonly BINUTILS_REV=0df89bf526ff
 
 ## Old milestones
@@ -216,12 +216,8 @@ setup-tools-common() {
 
   # NOTE: we do not expect the assembler or linker to be used to build newlib.a
   #       hence the use of ILLEGAL_TOOL.
-  # NOTE: newlib's configure attempts to run readelf on some of the bitcode
-  #       files to determine settings like HAVE_INITFINI_ARRAY=1.
-  #       There is no clean way to force it to skip that test and always
-  #       enable the feature. So here we just enable the feature via CFLAGS.
   STD_ENV_FOR_NEWLIB=(
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET} -DHAVE_INITFINI_ARRAY=1"
+    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
     CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
     CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
