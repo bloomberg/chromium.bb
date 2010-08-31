@@ -46,8 +46,7 @@ node = env.CommandSelLdrTestNacl(
 # The second thread manages to acquire the CS only after ~30 seconds of
 # spinning.
 # Somehow this can not be reproduced on desktop machines.
-if not env.IsRunningUnderValgrind():
-  env.AddNodeToTestSuite(node, TEST_SUITES, 'run_simple_thread_test')
+env.AddNodeToTestSuite(node, TEST_SUITES, 'run_simple_thread_test')
 
 env.ComponentProgram('race_test.nexe',
                      'race_test.c',
