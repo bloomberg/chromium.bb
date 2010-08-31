@@ -136,6 +136,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 }
 
 void AdvancedOptionsHandler::Initialize() {
+  DCHECK(dom_ui_);
   SetupDownloadLocationPath();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
@@ -240,7 +241,6 @@ void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
 void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"),
                           NULL);
-  DCHECK(dom_ui_);
   DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
   if (manager)
     manager->download_prefs()->ResetAutoOpen();
@@ -280,20 +280,17 @@ void AdvancedOptionsHandler::HandleShowGearsSettings(const ListValue* args) {
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ShowProxySettings"), NULL);
-  DCHECK(dom_ui_);
   AdvancedOptionsUtilities::ShowNetworkProxySettings(dom_ui_->tab_contents());
 }
 
 void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ManageSSLCertificates"),
                           NULL);
-  DCHECK(dom_ui_);
   AdvancedOptionsUtilities::ShowManageSSLCertificates(dom_ui_->tab_contents());
 }
 #endif
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {
-  DCHECK(dom_ui_);
   StringValue value(default_download_location_.GetValue().value());
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetDownloadLocationPath", value);
@@ -302,7 +299,6 @@ void AdvancedOptionsHandler::SetupDownloadLocationPath() {
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   // Set the enabled state for the AutoOpenFileTypesResetToDefault button.
   // We enable the button if the user has any auto-open file types registered.
-  DCHECK(dom_ui_);
   DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
   bool disabled = !(manager && manager->download_prefs()->IsAutoOpenUsed());
   FundamentalValue value(disabled);
@@ -337,7 +333,6 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
 
 #if defined(OS_WIN)
 void AdvancedOptionsHandler::SetupSSLConfigSettings() {
-  DCHECK(dom_ui_);
   bool checkRevocationSetting = false;
   bool useSSLSetting = false;
 
