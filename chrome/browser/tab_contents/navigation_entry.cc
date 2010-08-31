@@ -89,20 +89,20 @@ const string16& NavigationEntry::GetTitleForDisplay(
     return cached_display_title_;
 
   // Use the virtual URL first if any, and fall back on using the real URL.
-  std::wstring languages;
+  std::string languages;
   if (navigation_controller) {
-      languages = UTF8ToWide(navigation_controller->profile()->GetPrefs()->
-          GetString(prefs::kAcceptLanguages));
+    languages = navigation_controller->profile()->GetPrefs()->
+        GetString(prefs::kAcceptLanguages);
   }
 
-  std::wstring title;
+  string16 title;
   std::wstring elided_title;
   if (!virtual_url_.is_empty()) {
     title = net::FormatUrl(virtual_url_, languages);
   } else if (!url_.is_empty()) {
     title = net::FormatUrl(url_, languages);
   }
-  ElideString(title, chrome::kMaxTitleChars, &elided_title);
+  ElideString(UTF16ToWideHack(title), chrome::kMaxTitleChars, &elided_title);
   cached_display_title_ = WideToUTF16Hack(elided_title);
   return cached_display_title_;
 }

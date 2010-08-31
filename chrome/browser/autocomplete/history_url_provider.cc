@@ -876,23 +876,24 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   DCHECK(match.destination_url.is_valid());
   size_t inline_autocomplete_offset =
       history_match.input_location + params->input.text().length();
+  std::string languages = (match_type == WHAT_YOU_TYPED) ?
+      std::string() : WideToUTF8(params->languages);
   const net::FormatUrlTypes format_types = net::kFormatUrlOmitAll &
       ~((params->trim_http && !history_match.match_in_scheme) ?
           0 : net::kFormatUrlOmitHTTP);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
-      net::FormatUrl(info.url(), match_type == WHAT_YOU_TYPED ?
-      std::wstring() : params->languages, format_types, UnescapeRule::SPACES,
-      NULL, NULL, &inline_autocomplete_offset));
+          UTF16ToWideHack(net::FormatUrl(info.url(), languages, format_types,
+                                         UnescapeRule::SPACES, NULL, NULL,
+                                         &inline_autocomplete_offset)));
   if (!params->input.prevent_inline_autocomplete())
     match.inline_autocomplete_offset = inline_autocomplete_offset;
   DCHECK((match.inline_autocomplete_offset == std::wstring::npos) ||
          (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
-  match.contents = net::FormatUrl(info.url(),
-      match_type == WHAT_YOU_TYPED ? std::wstring() : params->languages,
-      format_types, UnescapeRule::SPACES, NULL, NULL, &match_start);
+  match.contents = UTF16ToWideHack(net::FormatUrl(info.url(), languages,
+      format_types, UnescapeRule::SPACES, NULL, NULL, &match_start));
   if ((match_start != std::wstring::npos) &&
       (inline_autocomplete_offset != std::wstring::npos) &&
       (inline_autocomplete_offset != match_start)) {

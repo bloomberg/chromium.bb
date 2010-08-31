@@ -275,11 +275,11 @@ void BookmarkEditorView::Init() {
       l10n_util::GetString(IDS_BOOMARK_EDITOR_NAME_LABEL));
   title_tf_.SetAccessibleName(title_label_->GetText());
 
-  std::wstring url_text;
+  string16 url_text;
   if (details_.type == EditDetails::EXISTING_NODE) {
-    std::wstring languages = profile_
-        ? UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages))
-        : std::wstring();
+    std::string languages = profile_
+        ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
+        : std::string();
     // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
     // trailing slash, and unescape most characters, but we need to not drop any
     // username/password, or unescape anything that changes the meaning.
@@ -287,7 +287,7 @@ void BookmarkEditorView::Init() {
         net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
         UnescapeRule::SPACES, NULL, NULL, NULL);
   }
-  url_tf_.SetText(url_text);
+  url_tf_.SetText(UTF16ToWide(url_text));
   url_tf_.SetController(this);
 
   url_label_ = new views::Label(

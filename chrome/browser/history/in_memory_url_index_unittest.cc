@@ -118,8 +118,7 @@ TEST_F(InMemoryURLIndexTest, Initialization) {
   while (statement.Step()) ++row_count;
   EXPECT_EQ(29U, row_count);
   url_index_.reset(new InMemoryURLIndex);
-  string16 languages = UTF8ToUTF16("en,ja,hi,zh");
-  url_index_->Init(this, &languages);
+  url_index_->Init(this, "en,ja,hi,zh");
 
   // There should have been 25 of the 29 urls accepted during filtering.
   EXPECT_EQ(25U, url_index_->history_item_count_);

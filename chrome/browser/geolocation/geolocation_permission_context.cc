@@ -92,7 +92,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
       TabContents* tab_contents, GeolocationInfoBarQueueController* controller,
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame_url,
-      const std::wstring& display_languages)
+      const std::string& display_languages)
       : ConfirmInfoBarDelegate(tab_contents),
         tab_contents_(tab_contents),
         controller_(controller),
@@ -128,8 +128,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetMessageText() const {
     return l10n_util::GetStringFUTF16(
         IDS_GEOLOCATION_INFOBAR_QUESTION,
-        WideToUTF16Hack(net::FormatUrl(requesting_frame_url_.GetOrigin(),
-                                       display_languages_)));
+        net::FormatUrl(requesting_frame_url_.GetOrigin(), display_languages_));
   }
   virtual SkBitmap* GetIcon() const {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -160,7 +159,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   int render_view_id_;
   int bridge_id_;
   GURL requesting_frame_url_;
-  std::wstring display_languages_;
+  std::string display_languages_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GeolocationConfirmInfoBarDelegate);
 };
@@ -298,7 +297,7 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBar(
         tab_contents, this,
         render_process_id, render_view_id,
         i->bridge_id, i->requesting_frame,
-        UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
     tab_contents->AddInfoBar(i->infobar_delegate);
     break;
   }

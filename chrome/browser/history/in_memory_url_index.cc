@@ -28,9 +28,9 @@ InMemoryURLIndex::~InMemoryURLIndex() {}
 // Indexing
 
 bool InMemoryURLIndex::Init(history::URLDatabase* history_db,
-                            const string16* languages) {
+                            const std::string& languages) {
   // TODO(mrossetti): Register for profile/language change notifications.
-  languages_ = *languages;
+  languages_ = languages;
   // Reset our indexes.
   char_word_map_.clear();
   word_id_history_map_.clear();
@@ -56,10 +56,10 @@ bool InMemoryURLIndex::Init(history::URLDatabase* history_db,
 
 bool InMemoryURLIndex::IndexRow(URLRow row) {
   const GURL& gurl(row.url());
-  string16 url(WideToUTF16(net::FormatUrl(gurl, UTF16ToWide(languages_),
+  string16 url(net::FormatUrl(gurl, languages_,
       net::kFormatUrlOmitUsernamePassword,
-      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS, NULL, NULL,
-      NULL)));
+      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS,
+      NULL, NULL, NULL));
 
   // TODO(mrossetti): Find or implement a ConvertPercentEncoding and use it
   // on the url.

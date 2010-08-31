@@ -648,7 +648,8 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   url_text_ = gfx::ElideUrl(url, view_->Label::font(), text_width,
       languages);
 
-  std::wstring original_url_text = net::FormatUrl(url, languages);
+  std::wstring original_url_text =
+      UTF16ToWideHack(net::FormatUrl(url, WideToUTF8(languages)));
 
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed

@@ -648,14 +648,13 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
 std::wstring AutocompleteProvider::StringForURLDisplay(const GURL& url,
                                                        bool check_accept_lang,
                                                        bool trim_http) const {
-  std::wstring languages = (check_accept_lang && profile_) ?
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)) :
-      std::wstring();
-  return net::FormatUrl(
+  std::string languages = (check_accept_lang && profile_) ?
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::string();
+  return UTF16ToWideHack(net::FormatUrl(
       url,
       languages,
       net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP),
-      UnescapeRule::SPACES, NULL, NULL, NULL);
+      UnescapeRule::SPACES, NULL, NULL, NULL));
 }
 
 // AutocompleteResult ---------------------------------------------------------

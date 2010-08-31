@@ -1415,7 +1415,7 @@ void Browser::WriteCurrentURLToClipboard() {
 
   chrome_browser_net::WriteURLToClipboard(
       contents->GetURL(),
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
       g_browser_process->clipboard());
 }
 

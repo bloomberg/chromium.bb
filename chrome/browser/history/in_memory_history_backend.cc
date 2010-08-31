@@ -42,7 +42,7 @@ bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
     index_.reset(new InMemoryURLIndex());
     base::TimeTicks beginning_time = base::TimeTicks::Now();
     // TODO(mrossetti): Provide languages when profile is available.
-    index_->Init(db, NULL);
+    index_->Init(db, std::string());
     UMA_HISTOGRAM_TIMES("Autocomplete.HistoryDatabaseIndexingTime",
                         base::TimeTicks::Now() - beginning_time);
   }

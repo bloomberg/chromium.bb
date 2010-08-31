@@ -1454,7 +1454,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
   chrome_browser_net::WriteURLToClipboard(
       url,
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
       g_browser_process->clipboard());
 }
 

@@ -15,7 +15,7 @@ namespace chrome_browser_net {
 
 // Writes a string representation of |url| to the system clipboard.
 void WriteURLToClipboard(const GURL& url,
-                         const std::wstring& languages,
+                         const std::string& languages,
                          Clipboard *clipboard);
 
 }  // namespace chrome_browser_net

@@ -8,6 +8,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "app/sql/connection.h"
@@ -55,7 +56,7 @@ class InMemoryURLIndex {
   typedef std::vector<string16> String16Vector;
 
   // Open and index the URL history database.
-  bool Init(URLDatabase* history_db, const string16* languages);
+  bool Init(URLDatabase* history_db, const std::string& languages);
 
   // Reset the history index.
   void Reset();
@@ -158,7 +159,7 @@ class InMemoryURLIndex {
   WordIDHistoryMap word_id_history_map_;
   TermCharWordSetVector term_char_word_set_cache_;
   HistoryInfoMap history_info_map_;
-  string16 languages_;
+  std::string languages_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };
