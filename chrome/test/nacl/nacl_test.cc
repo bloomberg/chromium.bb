@@ -21,7 +21,7 @@ const char kTestCompleteSuccess[] = "OK";
 const FilePath::CharType kBaseUrl[] =
     FILE_PATH_LITERAL("http://localhost:5103/tests/prebuilt");
 
-}  // anonymous namespace
+}  // namespace
 
 NaClTest::NaClTest()
     : UITest(), use_x64_nexes_(false), multiarch_test_(false) {
@@ -41,8 +41,7 @@ NaClTest::~NaClTest() {}
 FilePath NaClTest::GetTestRootDir() {
   FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  path = path.AppendASCII("native_client");
-  return path;
+  return path.AppendASCII("native_client");
 }
 
 GURL NaClTest::GetTestUrl(const FilePath& filename) {
@@ -57,7 +56,6 @@ GURL NaClTest::GetTestUrl(const FilePath& filename) {
   path = path.Append(filename);
   return GURL(path.value());
 }
-
 
 void NaClTest::WaitForFinish(const FilePath& filename,
                              int wait_time) {
@@ -82,7 +80,6 @@ void NaClTest::RunMultiarchTest(const FilePath& filename, int timeout) {
   multiarch_test_ = true;
   RunTest(filename, timeout);
 }
-
 
 void NaClTest::SetUp() {
   FilePath nacl_test_dir = GetTestRootDir();

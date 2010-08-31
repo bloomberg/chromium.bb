@@ -6,11 +6,11 @@
 #define CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
 #pragma once
 
+#include "base/native_library.h"
 #include "chrome/common/main_function_params.h"
 
 typedef bool (*RunNaClLoaderTests)(void);
 const char kNaClLoaderTestCall[] = "RunNaClLoaderTests";
-
 
 class NaClMainPlatformDelegate {
  public:
@@ -26,21 +26,17 @@ class NaClMainPlatformDelegate {
   // the sandbox.
   void InitSandboxTests(bool no_sandbox);
 
-  // Initiate Lockdown, returns true on success.
-  bool EnableSandbox();
+  // Initiate Lockdown.
+  void EnableSandbox();
 
   // Runs the sandbox tests for the NaCl Loader, if tests supplied.
   // Cannot run again, after this (resources freed).
-  void RunSandboxTests();
+  // Returns false if the tests are supplied and fail.
+  bool RunSandboxTests();
 
  private:
   const MainFunctionParams& parameters_;
-#if defined(OS_WIN)
-  HMODULE sandbox_test_module_;
-  // #elif defined(OS_POSIX) doesn't seem to work on Mac.
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
-  void* sandbox_test_module_;
-#endif
+  base::NativeLibrary sandbox_test_module_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClMainPlatformDelegate);
 };

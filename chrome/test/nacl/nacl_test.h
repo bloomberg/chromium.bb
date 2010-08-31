@@ -49,9 +49,12 @@ class NaClTest : public UITest {
   // Compute the path to the test binaries (prebuilt NaCL executables).
   FilePath GetTestBinariesDir();
   bool use_x64_nexes_;
-  // This test uses HTML file that lists nexes for different architectures
+
+  // This test uses an HTML file that lists nexes for different architectures
   // in the "nexes" property
   bool multiarch_test_;
+
+  DISALLOW_COPY_AND_ASSIGN(NaClTest);
 };
 
 #endif  // CHROME_TEST_NACL_NACL_TEST_H_

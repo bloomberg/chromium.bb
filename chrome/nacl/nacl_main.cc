@@ -121,10 +121,17 @@ int NaClMain(const MainFunctionParams& parameters) {
   if (!no_sandbox) {
     platform.EnableSandbox();
   }
-  platform.RunSandboxTests();
+  bool sandbox_test_result = platform.RunSandboxTests();
 
-  LaunchNaClChildProcess();
-
+  if (sandbox_test_result) {
+    LaunchNaClChildProcess();
+  } else {
+    // This indirectly prevents the test-harness-success-cookie from being set,
+    // as a way of communicating test failure, because the nexe won't reply.
+    // TODO(jvoung): find a better way to indicate failure that doesn't
+    // require waiting for a timeout.
+    LOG(INFO) << "Sandbox test failed: Not launching NaCl process";
+  }
 #else
   NOTIMPLEMENTED() << " not implemented startup, plugin startup dialog etc.";
 #endif

@@ -5,14 +5,16 @@
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/logging.h"
+#include "base/native_library.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "sandbox/src/sandbox.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
     const MainFunctionParams& parameters)
-        : parameters_(parameters), sandbox_test_module_(NULL) {
+    : parameters_(parameters), sandbox_test_module_(NULL) {
 }
 
 NaClMainPlatformDelegate::~NaClMainPlatformDelegate() {
@@ -35,53 +37,56 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
       parameters_.sandbox_info_.TargetServices();
 
   if (target_services && !no_sandbox) {
-    std::wstring test_dll_name =
-      command_line.GetSwitchValueNative(switches::kTestNaClSandbox);
+    FilePath test_dll_name =
+      command_line.GetSwitchValuePath(switches::kTestNaClSandbox);
     if (!test_dll_name.empty()) {
       // At this point, hack on the suffix according to with bitness
       // of your windows process.
 #if defined(_WIN64)
       DLOG(INFO) << "Using 64-bit test dll\n";
-      test_dll_name.append(L"64.dll");
+      test_dll_name = test_dll_name.InsertBeforeExtension(L"64");
+    test_dll_name = test_dll_name.ReplaceExtension(L"dll");
 #else
       DLOG(INFO) << "Using 32-bit test dll\n";
-      test_dll_name.append(L".dll");
+      test_dll_name = test_dll_name.ReplaceExtension(L"dll");
 #endif
-      DLOG(INFO) << "Loading test lib " << test_dll_name << "\n";
-      sandbox_test_module_ = LoadLibrary(test_dll_name.c_str());
+      DLOG(INFO) << "Loading test lib " << test_dll_name.value() << "\n";
+      sandbox_test_module_ = base::LoadNativeLibrary(test_dll_name);
       CHECK(sandbox_test_module_);
       LOG(INFO) << "Testing NaCl sandbox\n";
     }
   }
-  return;
 }
 
-bool NaClMainPlatformDelegate::EnableSandbox() {
+void NaClMainPlatformDelegate::EnableSandbox() {
   sandbox::TargetServices* target_services =
       parameters_.sandbox_info_.TargetServices();
 
-  if (target_services) {
-    // Cause advapi32 to load before the sandbox is turned on.
-    unsigned int dummy_rand;
-    rand_s(&dummy_rand);
-    // Turn the sandbox on.
-    target_services->LowerToken();
-    return true;
-  }
-  return false;
+  CHECK(target_services) << "NaCl-Win EnableSandbox: No Target Services!";
+  // Cause advapi32 to load before the sandbox is turned on.
+  unsigned int dummy_rand;
+  rand_s(&dummy_rand);
+  // Turn the sandbox on.
+  target_services->LowerToken();
 }
 
-void NaClMainPlatformDelegate::RunSandboxTests() {
+bool NaClMainPlatformDelegate::RunSandboxTests() {
+  // TODO(jvoung): Win and mac should share this code.
+  bool result = true;
   if (sandbox_test_module_) {
-    RunNaClLoaderTests run_security_tests = reinterpret_cast<RunNaClLoaderTests>
-      (GetProcAddress(sandbox_test_module_, kNaClLoaderTestCall));
-
-    CHECK(run_security_tests);
+    RunNaClLoaderTests run_security_tests =
+      reinterpret_cast<RunNaClLoaderTests>(
+        base::GetFunctionPointerFromNativeLibrary(sandbox_test_module_,
+                                                  kNaClLoaderTestCall));
     if (run_security_tests) {
       DLOG(INFO) << "Running NaCl Loader security tests";
-      CHECK((*run_security_tests)());
+      result = (*run_security_tests)();
+    } else {
+      LOG(INFO) << "Failed to get NaCl sandbox test function";
+      result = false;
     }
-    FreeLibrary(sandbox_test_module_);
+    base::UnloadNativeLibrary(sandbox_test_module_);
+    sandbox_test_module_ = NULL;
   }
+  return result;
 }
-

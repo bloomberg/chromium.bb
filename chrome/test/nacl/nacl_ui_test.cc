@@ -10,39 +10,30 @@
 #include "chrome/common/chrome_paths.h"
 
 namespace {
-
-  // base url specified in nacl_test
-
+// NOTE: The base URL of each HTML file is specified in nacl_test.
 const FilePath::CharType kSrpcHwHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_hw.html");
-
+  FILE_PATH_LITERAL("srpc_hw.html");
 const FilePath::CharType kSrpcBasicHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_basic.html");
-
+  FILE_PATH_LITERAL("srpc_basic.html");
 const FilePath::CharType kSrpcSockAddrHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_sockaddr.html");
-
+  FILE_PATH_LITERAL("srpc_sockaddr.html");
 const FilePath::CharType kSrpcShmHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_shm.html");
-
+  FILE_PATH_LITERAL("srpc_shm.html");
 const FilePath::CharType kSrpcPluginHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_plugin.html");
-
+  FILE_PATH_LITERAL("srpc_plugin.html");
 const FilePath::CharType kSrpcNrdXferHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_nrd_xfer.html");
-
+  FILE_PATH_LITERAL("srpc_nrd_xfer.html");
 const FilePath::CharType kServerHtmlFileName[] =
-    FILE_PATH_LITERAL("server_test.html");
-
+  FILE_PATH_LITERAL("server_test.html");
 const FilePath::CharType kNpapiHwHtmlFileName[] =
-    FILE_PATH_LITERAL("npapi_hw.html");
-}  // anonymous namespace
+  FILE_PATH_LITERAL("npapi_hw.html");
+}  // namespace
 
-NaClUITest::NaClUITest() : NaClTest() {
-  // NaClTest has all we need.
+NaClUITest::NaClUITest() {
 }
 
-NaClUITest::~NaClUITest() {}
+NaClUITest::~NaClUITest() {
+}
 
 TEST_F(NaClUITest, ServerTest) {
   FilePath test_file(kServerHtmlFileName);

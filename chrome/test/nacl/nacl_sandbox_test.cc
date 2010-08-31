@@ -14,9 +14,9 @@ namespace {
 const FilePath::CharType kSrpcHwHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_hw.html");
 
-}  // anonymous namespace
+}  // namespace
 
-NaClSandboxTest::NaClSandboxTest() : NaClTest() {
+NaClSandboxTest::NaClSandboxTest() {
   // Append the --test-nacl-sandbox=$TESTDLL flag before launching.
   FilePath dylib_dir;
   PathService::Get(base::DIR_EXE, &dylib_dir);
@@ -33,7 +33,8 @@ NaClSandboxTest::NaClSandboxTest() : NaClTest() {
 #endif
 }
 
-NaClSandboxTest::~NaClSandboxTest() {}
+NaClSandboxTest::~NaClSandboxTest() {
+}
 
 // http://crbug.com/50121
 TEST_F(NaClSandboxTest, FLAKY_NaClOuterSBTest) {

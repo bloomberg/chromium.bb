@@ -5,14 +5,12 @@
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 
 #include "base/command_line.h"
-#include "base/debug_util.h"
-#include "sandbox/linux/seccomp/sandbox.h"
-
 #include "chrome/common/chrome_switches.h"
+#include "sandbox/linux/seccomp/sandbox.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
     const MainFunctionParams& parameters)
-        : parameters_(parameters), sandbox_test_module_(NULL) {
+    : parameters_(parameters), sandbox_test_module_(NULL) {
 }
 
 NaClMainPlatformDelegate::~NaClMainPlatformDelegate() {
@@ -30,7 +28,7 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
   return;
 }
 
-bool NaClMainPlatformDelegate::EnableSandbox() {
+void NaClMainPlatformDelegate::EnableSandbox() {
   // The setuid sandbox is started in the zygote process: zygote_main_linux.cc
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
   //
@@ -43,11 +41,10 @@ bool NaClMainPlatformDelegate::EnableSandbox() {
   if (switches::SeccompSandboxEnabled() && SupportsSeccompSandbox(-1))
     StartSeccompSandbox();
 #endif
-  return true;
 }
 
-void NaClMainPlatformDelegate::RunSandboxTests() {
+bool NaClMainPlatformDelegate::RunSandboxTests() {
   // The sandbox is started in the zygote process: zygote_main_linux.cc
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
+  return true;
 }
-

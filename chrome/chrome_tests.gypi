@@ -567,7 +567,7 @@
       ],
       'conditions': [
         ['OS=="mac"', {
-          # only Mac is using gtest for now (linking issues on other plats).
+          # Only the Mac version uses gtest (linking issues on other platforms).
           'dependencies': [
             '../testing/gtest.gyp:gtest'
           ],
@@ -598,8 +598,9 @@
             'test/nacl_security_tests/nacl_security_tests_win.cc',
           ],
         },],
-        # set fPIC for linux in case it isn't set.
-        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
+        # Set fPIC in case it isn't set.
+        ['(OS=="linux" or OS=="openbsd" or OS=="freebsd" or OS=="solaris")'
+         'and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
           'cflags': ['-fPIC'],
         },],
       ],

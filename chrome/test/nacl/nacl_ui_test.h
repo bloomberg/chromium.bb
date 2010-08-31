@@ -14,6 +14,9 @@ class NaClUITest : public NaClTest {
  protected:
   NaClUITest();
   virtual ~NaClUITest();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NaClUITest);
 };
 
 #endif  // CHROME_TEST_NACL_NACL_UI_TEST_H_

@@ -20,6 +20,9 @@ class NaClSandboxTest : public NaClTest {
  protected:
   NaClSandboxTest();
   virtual ~NaClSandboxTest();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NaClSandboxTest);
 };
 
 #endif  // CHROME_TEST_NACL_NACL_SANDBOX_TEST_H_

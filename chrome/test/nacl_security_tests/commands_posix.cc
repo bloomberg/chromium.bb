@@ -4,6 +4,7 @@
 
 #include "chrome/test/nacl_security_tests/commands_posix.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -45,7 +46,6 @@ SboxTestResult TestOpenWriteFile(const char *path) {
 SboxTestResult TestCreateProcess(const char *path) {
   pid_t pid;
   int exec_res;
-  int child_stat;
 
   pid = fork();
   if (0 == pid) {
@@ -57,7 +57,10 @@ SboxTestResult TestCreateProcess(const char *path) {
     }
     return SBOX_TEST_SUCCEEDED;
   } else if (0 < pid) {
-    waitpid(pid, &child_stat, WNOHANG);
+    pid_t w_pid;
+    do {
+      w_pid = waitpid(pid, NULL, WNOHANG);
+    } while (w_pid != -1 && errno != EINTR);
     return SBOX_TEST_SUCCEEDED;
   } else {
     return SBOX_TEST_DENIED;
