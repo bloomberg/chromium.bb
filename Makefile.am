@@ -49,7 +49,10 @@ dist_doc_DATA = \
 
 
 ## Libraries
-lib_LTLIBRARIES = src/libbreakpad.la src/client/linux/libbreakpad_client.la
+lib_LTLIBRARIES = src/libbreakpad.la
+
+if LINUX_HOST
+lib_LTLIBRARIES += src/client/linux/libbreakpad_client.la
 
 src_client_linux_libbreakpad_client_la_SOURCES = \
 	src/client/linux/crash_generation/crash_generation_client.cc \
@@ -62,6 +65,7 @@ src_client_linux_libbreakpad_client_la_SOURCES = \
 	src/common/string_conversion.cc \
 	src/common/linux/file_id.cc \
 	src/common/linux/guid_creator.cc
+endif
 
 src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/common/breakpad_types.h \
@@ -136,14 +140,17 @@ src_libbreakpad_la_SOURCES = \
 
 ## Programs
 bin_PROGRAMS = \
-	src/client/linux/linux_dumper_unittest_helper \
 	src/processor/minidump_dump \
 	src/processor/minidump_stackwalk \
 	src/processor/source_daemon 
 
+if LINUX_HOST
+bin_PROGRAMS += \
+	src/client/linux/linux_dumper_unittest_helper
+endif
+
 ## Tests
 check_PROGRAMS = \
-	src/client/linux/linux_client_unittest \
 	src/common/test_assembler_unittest \
 	src/processor/address_map_unittest \
 	src/processor/binarystream_unittest \
@@ -163,6 +170,11 @@ check_PROGRAMS = \
 	src/processor/stackwalker_x86_unittest \
 	src/processor/synth_minidump_unittest
 
+if LINUX_HOST
+check_PROGRAMS += \
+	src/client/linux/linux_client_unittest
+endif
+
 if SELFTEST
 check_PROGRAMS += \
 	src/processor/stackwalker_selftest
@@ -176,6 +188,7 @@ check_SCRIPTS = \
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
 
+if LINUX_HOST
 src_client_linux_linux_dumper_unittest_helper_SOURCES = \
 	src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
 src_client_linux_linux_dumper_unittest_helper_CXXFLAGS=$(PTHREAD_CFLAGS)
@@ -209,6 +222,7 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/linux/guid_creator.lo \
 	src/common/string_conversion.lo
 src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la
+endif
 
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc

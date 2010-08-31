@@ -34,6 +34,8 @@ AC_INIT(breakpad, 0.1, opensource@google.com)
 dnl Sanity check: the argument is just a file that should exist.
 AC_CONFIG_SRCDIR(README)
 AC_CONFIG_AUX_DIR(autotools)
+AC_CONFIG_MACRO_DIR([m4])
+AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE(subdir-objects tar-ustar 1.11.1)
 AM_CONFIG_HEADER(src/config.h)
@@ -48,6 +50,14 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_HEADER_STDC
 m4_include(m4/ax_pthread.m4)
 AX_PTHREAD
+
+# Only build Linux client libs when compiling for Linux
+case $host in
+     *-*-linux*)
+        LINUX_HOST=true
+        ;;
+esac
+AM_CONDITIONAL(LINUX_HOST, test x$LINUX_HOST = xtrue)
 
 AC_ARG_ENABLE(m32,
               AS_HELP_STRING([--enable-m32],

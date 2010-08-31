@@ -66,12 +66,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = src/client/linux/linux_dumper_unittest_helper$(EXEEXT) \
-	src/processor/minidump_dump$(EXEEXT) \
+@LINUX_HOST_TRUE@am__append_1 = src/client/linux/libbreakpad_client.la
+bin_PROGRAMS = src/processor/minidump_dump$(EXEEXT) \
 	src/processor/minidump_stackwalk$(EXEEXT) \
-	src/processor/source_daemon$(EXEEXT)
-check_PROGRAMS = src/client/linux/linux_client_unittest$(EXEEXT) \
-	src/common/test_assembler_unittest$(EXEEXT) \
+	src/processor/source_daemon$(EXEEXT) $(am__EXEEXT_1)
+@LINUX_HOST_TRUE@am__append_2 = \
+@LINUX_HOST_TRUE@	src/client/linux/linux_dumper_unittest_helper
+
+check_PROGRAMS = src/common/test_assembler_unittest$(EXEEXT) \
 	src/processor/address_map_unittest$(EXEEXT) \
 	src/processor/binarystream_unittest$(EXEEXT) \
 	src/processor/basic_source_line_resolver_unittest$(EXEEXT) \
@@ -88,8 +90,12 @@ check_PROGRAMS = src/client/linux/linux_client_unittest$(EXEEXT) \
 	src/processor/stackwalker_amd64_unittest$(EXEEXT) \
 	src/processor/stackwalker_arm_unittest$(EXEEXT) \
 	src/processor/stackwalker_x86_unittest$(EXEEXT) \
-	src/processor/synth_minidump_unittest$(EXEEXT) $(am__EXEEXT_1)
-@SELFTEST_TRUE@am__append_1 = \
+	src/processor/synth_minidump_unittest$(EXEEXT) $(am__EXEEXT_2) \
+	$(am__EXEEXT_3)
+@LINUX_HOST_TRUE@am__append_3 = \
+@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest
+
+@SELFTEST_TRUE@am__append_4 = \
 @SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
 noinst_PROGRAMS =
@@ -101,8 +107,10 @@ DIST_COMMON = README $(am__configure_deps) $(dist_doc_DATA) \
 	autotools/config.sub autotools/depcomp autotools/install-sh \
 	autotools/ltmain.sh autotools/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_pthread.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/ax_pthread.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -136,17 +144,28 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(docdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 src_client_linux_libbreakpad_client_la_LIBADD =
+am__src_client_linux_libbreakpad_client_la_SOURCES_DIST =  \
+	src/client/linux/crash_generation/crash_generation_client.cc \
+	src/client/linux/handler/exception_handler.cc \
+	src/client/linux/minidump_writer/linux_dumper.cc \
+	src/client/linux/minidump_writer/minidump_writer.cc \
+	src/client/minidump_file_writer.cc src/common/convert_UTF.c \
+	src/common/md5.c src/common/string_conversion.cc \
+	src/common/linux/file_id.cc src/common/linux/guid_creator.cc
 am__dirstamp = $(am__leading_dot)dirstamp
-am_src_client_linux_libbreakpad_client_la_OBJECTS =  \
-	src/client/linux/crash_generation/crash_generation_client.lo \
-	src/client/linux/handler/exception_handler.lo \
-	src/client/linux/minidump_writer/linux_dumper.lo \
-	src/client/linux/minidump_writer/minidump_writer.lo \
-	src/client/minidump_file_writer.lo src/common/convert_UTF.lo \
-	src/common/md5.lo src/common/string_conversion.lo \
-	src/common/linux/file_id.lo src/common/linux/guid_creator.lo
+@LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_la_OBJECTS = src/client/linux/crash_generation/crash_generation_client.lo \
+@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.lo \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.lo \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.lo \
+@LINUX_HOST_TRUE@	src/client/minidump_file_writer.lo \
+@LINUX_HOST_TRUE@	src/common/convert_UTF.lo src/common/md5.lo \
+@LINUX_HOST_TRUE@	src/common/string_conversion.lo \
+@LINUX_HOST_TRUE@	src/common/linux/file_id.lo \
+@LINUX_HOST_TRUE@	src/common/linux/guid_creator.lo
 src_client_linux_libbreakpad_client_la_OBJECTS =  \
 	$(am_src_client_linux_libbreakpad_client_la_OBJECTS)
+@LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_la_rpath =  \
+@LINUX_HOST_TRUE@	-rpath $(libdir)
 src_libbreakpad_la_LIBADD =
 am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
@@ -167,20 +186,32 @@ am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
 	src/processor/udp_network.lo
 src_libbreakpad_la_OBJECTS = $(am_src_libbreakpad_la_OBJECTS)
-@SELFTEST_TRUE@am__EXEEXT_1 =  \
+@LINUX_HOST_TRUE@am__EXEEXT_1 = src/client/linux/linux_dumper_unittest_helper$(EXEEXT)
+@LINUX_HOST_TRUE@am__EXEEXT_2 = src/client/linux/linux_client_unittest$(EXEEXT)
+@SELFTEST_TRUE@am__EXEEXT_3 =  \
 @SELFTEST_TRUE@	src/processor/stackwalker_selftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am_src_client_linux_linux_client_unittest_OBJECTS = src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT) \
-	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.$(OBJEXT) \
-	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.$(OBJEXT) \
-	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.$(OBJEXT) \
-	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.$(OBJEXT) \
-	src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.$(OBJEXT) \
-	src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.$(OBJEXT) \
-	src/testing/src/src_client_linux_linux_client_unittest-gmock-all.$(OBJEXT)
+am__src_client_linux_linux_client_unittest_SOURCES_DIST =  \
+	src/client/linux/handler/exception_handler_unittest.cc \
+	src/client/linux/minidump_writer/directory_reader_unittest.cc \
+	src/client/linux/minidump_writer/line_reader_unittest.cc \
+	src/client/linux/minidump_writer/linux_dumper_unittest.cc \
+	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+@LINUX_HOST_TRUE@am_src_client_linux_linux_client_unittest_OBJECTS = src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/testing/src/src_client_linux_linux_client_unittest-gmock-all.$(OBJEXT)
 src_client_linux_linux_client_unittest_OBJECTS =  \
 	$(am_src_client_linux_linux_client_unittest_OBJECTS)
-am_src_client_linux_linux_dumper_unittest_helper_OBJECTS = src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT)
+am__src_client_linux_linux_dumper_unittest_helper_SOURCES_DIST = src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
+@LINUX_HOST_TRUE@am_src_client_linux_linux_dumper_unittest_helper_OBJECTS = src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT)
 src_client_linux_linux_dumper_unittest_helper_OBJECTS =  \
 	$(am_src_client_linux_linux_dumper_unittest_helper_OBJECTS)
 src_client_linux_linux_dumper_unittest_helper_LDADD = $(LDADD)
@@ -470,10 +501,11 @@ SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
 	$(src_processor_stackwalker_selftest_SOURCES) \
 	$(src_processor_stackwalker_x86_unittest_SOURCES) \
 	$(src_processor_synth_minidump_unittest_SOURCES)
-DIST_SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
+DIST_SOURCES =  \
+	$(am__src_client_linux_libbreakpad_client_la_SOURCES_DIST) \
 	$(src_libbreakpad_la_SOURCES) \
-	$(src_client_linux_linux_client_unittest_SOURCES) \
-	$(src_client_linux_linux_dumper_unittest_helper_SOURCES) \
+	$(am__src_client_linux_linux_client_unittest_SOURCES_DIST) \
+	$(am__src_client_linux_linux_dumper_unittest_helper_SOURCES_DIST) \
 	$(src_common_test_assembler_unittest_SOURCES) \
 	$(src_processor_address_map_unittest_SOURCES) \
 	$(src_processor_basic_source_line_resolver_unittest_SOURCES) \
@@ -647,18 +679,18 @@ dist_doc_DATA = \
 	NEWS \
 	README
 
-lib_LTLIBRARIES = src/libbreakpad.la src/client/linux/libbreakpad_client.la
-src_client_linux_libbreakpad_client_la_SOURCES = \
-	src/client/linux/crash_generation/crash_generation_client.cc \
-	src/client/linux/handler/exception_handler.cc \
-	src/client/linux/minidump_writer/linux_dumper.cc \
-	src/client/linux/minidump_writer/minidump_writer.cc \
-	src/client/minidump_file_writer.cc \
-	src/common/convert_UTF.c \
-	src/common/md5.c \
-	src/common/string_conversion.cc \
-	src/common/linux/file_id.cc \
-	src/common/linux/guid_creator.cc
+lib_LTLIBRARIES = src/libbreakpad.la $(am__append_1)
+@LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_la_SOURCES = \
+@LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.cc \
+@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.cc \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.cc \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.cc \
+@LINUX_HOST_TRUE@	src/client/minidump_file_writer.cc \
+@LINUX_HOST_TRUE@	src/common/convert_UTF.c \
+@LINUX_HOST_TRUE@	src/common/md5.c \
+@LINUX_HOST_TRUE@	src/common/string_conversion.cc \
+@LINUX_HOST_TRUE@	src/common/linux/file_id.cc \
+@LINUX_HOST_TRUE@	src/common/linux/guid_creator.cc
 
 src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/common/breakpad_types.h \
@@ -737,41 +769,41 @@ check_SCRIPTS = \
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT = 
-src_client_linux_linux_dumper_unittest_helper_SOURCES = \
-	src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
+@LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_SOURCES = \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
 
-src_client_linux_linux_dumper_unittest_helper_CXXFLAGS = $(PTHREAD_CFLAGS)
-src_client_linux_linux_dumper_unittest_helper_LDFLAGS = $(PTHREAD_CFLAGS)
-src_client_linux_linux_dumper_unittest_helper_CC = $(PTHREAD_CC)
-src_client_linux_linux_client_unittest_SOURCES = \
-	src/client/linux/handler/exception_handler_unittest.cc \
-	src/client/linux/minidump_writer/directory_reader_unittest.cc \
-	src/client/linux/minidump_writer/line_reader_unittest.cc \
-	src/client/linux/minidump_writer/linux_dumper_unittest.cc \
-	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
-	src/testing/gtest/src/gtest-all.cc \
-	src/testing/gtest/src/gtest_main.cc \
-	src/testing/src/gmock-all.cc
+@LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_CXXFLAGS = $(PTHREAD_CFLAGS)
+@LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_LDFLAGS = $(PTHREAD_CFLAGS)
+@LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_CC = $(PTHREAD_CC)
+@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_SOURCES = \
+@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler_unittest.cc \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/directory_reader_unittest.cc \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/line_reader_unittest.cc \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper_unittest.cc \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
+@LINUX_HOST_TRUE@	src/testing/gtest/src/gtest-all.cc \
+@LINUX_HOST_TRUE@	src/testing/gtest/src/gtest_main.cc \
+@LINUX_HOST_TRUE@	src/testing/src/gmock-all.cc
 
-src_client_linux_linux_client_unittest_CPPFLAGS = \
-	-I$(top_srcdir)/src/testing/include \
-        -I$(top_srcdir)/src/testing/gtest/include \
-	-I$(top_srcdir)/src/testing/gtest \
-	-I$(top_srcdir)/src/testing
+@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_CPPFLAGS = \
+@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/include \
+@LINUX_HOST_TRUE@        -I$(top_srcdir)/src/testing/gtest/include \
+@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest \
+@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing
 
-src_client_linux_linux_client_unittest_LDADD = \
-	src/client/linux/handler/exception_handler.lo \
-	src/client/linux/crash_generation/crash_generation_client.lo \
-	src/client/linux/minidump_writer/linux_dumper.lo \
-	src/client/linux/minidump_writer/minidump_writer.lo \
-	src/client/minidump_file_writer.lo \
-	src/common/convert_UTF.lo \
-	src/common/md5.lo \
-	src/common/linux/file_id.lo \
-	src/common/linux/guid_creator.lo \
-	src/common/string_conversion.lo
+@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
+@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.lo \
+@LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.lo \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.lo \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.lo \
+@LINUX_HOST_TRUE@	src/client/minidump_file_writer.lo \
+@LINUX_HOST_TRUE@	src/common/convert_UTF.lo \
+@LINUX_HOST_TRUE@	src/common/md5.lo \
+@LINUX_HOST_TRUE@	src/common/linux/file_id.lo \
+@LINUX_HOST_TRUE@	src/common/linux/guid_creator.lo \
+@LINUX_HOST_TRUE@	src/common/string_conversion.lo
 
-src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la
+@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
 
@@ -1409,7 +1441,7 @@ src/client/linux/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux
 	@: > src/client/linux/$(am__dirstamp)
 src/client/linux/libbreakpad_client.la: $(src_client_linux_libbreakpad_client_la_OBJECTS) $(src_client_linux_libbreakpad_client_la_DEPENDENCIES) src/client/linux/$(am__dirstamp)
-	$(CXXLINK) -rpath $(libdir) $(src_client_linux_libbreakpad_client_la_OBJECTS) $(src_client_linux_libbreakpad_client_la_LIBADD) $(LIBS)
+	$(CXXLINK) $(am_src_client_linux_libbreakpad_client_la_rpath) $(src_client_linux_libbreakpad_client_la_OBJECTS) $(src_client_linux_libbreakpad_client_la_LIBADD) $(LIBS)
 src/processor/$(am__dirstamp):
 	@$(MKDIR_P) src/processor
 	@: > src/processor/$(am__dirstamp)
