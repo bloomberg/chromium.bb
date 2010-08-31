@@ -250,6 +250,8 @@ void PassiveLogCollector::SourceTracker::AddToDeletionQueue(
   DCHECK_GE(sources_.find(source_id)->second.reference_count, 0);
   DCHECK_LE(deletion_queue_.size(), max_graveyard_size_);
 
+  DCHECK(std::find(deletion_queue_.begin(), deletion_queue_.end(),
+                   source_id) == deletion_queue_.end());
   deletion_queue_.push_back(source_id);
 
   // After the deletion queue has reached its maximum size, start
@@ -533,4 +535,3 @@ PassiveLogCollector::DNSJobTracker::DoAddEntry(const Entry& entry,
     return ACTION_NONE;
   }
 }
-
