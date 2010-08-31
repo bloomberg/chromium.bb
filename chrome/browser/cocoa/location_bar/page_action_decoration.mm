@@ -121,15 +121,15 @@ void PageActionDecoration::OnImageLoaded(
   owner_->UpdatePageActions();
 }
 
-void PageActionDecoration::UpdateVisibility(
-    TabContents* contents, const GURL& url) {
+void PageActionDecoration::UpdateVisibility(TabContents* contents,
+                                            const GURL& url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionDecoration::OnMousePressed.
-  current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
+  current_tab_id_ = contents ? ExtensionTabUtil::GetTabId(contents) : -1;
   current_url_ = url;
 
-  bool visible = preview_enabled_ ||
-                 page_action_->GetIsVisible(current_tab_id_);
+  bool visible = contents &&
+      (preview_enabled_ || page_action_->GetIsVisible(current_tab_id_));
   if (visible) {
     SetToolTip(page_action_->GetTitle(current_tab_id_));
 
@@ -146,19 +146,15 @@ void PageActionDecoration::UpdateVisibility(
     SkBitmap skia_icon = page_action_->GetIcon(current_tab_id_);
     if (skia_icon.isNull()) {
       int icon_index = page_action_->GetIconIndex(current_tab_id_);
-      std::string icon_path;
-      if (icon_index >= 0)
-        icon_path = page_action_->icon_paths()->at(icon_index);
-      else
-        icon_path = page_action_->default_icon_path();
-
+      std::string icon_path = (icon_index < 0) ?
+          page_action_->default_icon_path() :
+          page_action_->icon_paths()->at(icon_index);
       if (!icon_path.empty()) {
         PageActionMap::iterator iter = page_action_icons_.find(icon_path);
         if (iter != page_action_icons_.end())
           skia_icon = iter->second;
       }
     }
-
     if (!skia_icon.isNull()) {
       SetImage(gfx::SkBitmapToNSImage(skia_icon));
     } else if (!GetImage()) {
@@ -171,6 +167,7 @@ void PageActionDecoration::UpdateVisibility(
       SetImage([[NSImage alloc] initWithSize:default_size]);
     }
   }
+
   if (IsVisible() != visible) {
     SetVisible(visible);
     NotificationService::current()->Notify(

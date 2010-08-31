@@ -257,7 +257,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_end(GTK_BOX(entry_box_), tab_to_search_hint_, FALSE, FALSE, 0);
 
   // We don't show the star in popups, app windows, etc.
-  if (!ShouldOnlyShowLocation()) {
+  if (browser_defaults::bookmarks_enabled && !ShouldOnlyShowLocation()) {
     CreateStarButton();
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
   }
@@ -407,6 +407,14 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 }
 
 void LocationBarViewGtk::Update(const TabContents* contents) {
+  bool star_enabled = star_.get() && !toolbar_model_->input_in_progress();
+  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
+  if (star_.get()) {
+    if (star_enabled)
+      gtk_widget_show_all(star_.get());
+    else
+      gtk_widget_hide_all(star_.get());
+  }
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
@@ -615,8 +623,10 @@ void LocationBarViewGtk::UpdatePageActions() {
   if (!page_action_views_.empty() && contents) {
     GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
 
-    for (size_t i = 0; i < page_action_views_.size(); i++)
-      page_action_views_[i]->UpdateVisibility(contents, url);
+    for (size_t i = 0; i < page_action_views_.size(); i++) {
+      page_action_views_[i]->UpdateVisibility(
+          toolbar_model_->input_in_progress() ? NULL : contents, url);
+    }
   }
 
   // If there are no visible page actions, hide the hbox too, so that it does
@@ -1268,15 +1278,14 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
     TabContents* contents, GURL url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionImageView::OnMousePressed.
-  current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
+  current_tab_id_ = contents ? ExtensionTabUtil::GetTabId(contents) : -1;
   current_url_ = url;
 
-  bool visible = preview_enabled_ ||
-                 page_action_->GetIsVisible(current_tab_id_);
+  bool visible = contents &&
+      (preview_enabled_ || page_action_->GetIsVisible(current_tab_id_));
   if (visible) {
     // Set the tooltip.
-    gtk_widget_set_tooltip_text(
-        event_box_.get(),
+    gtk_widget_set_tooltip_text(event_box_.get(),
         page_action_->GetTitle(current_tab_id_).c_str());
 
     // Set the image.
@@ -1304,19 +1313,15 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
       // Otherwise look for a dynamically set index, or fall back to the
       // default path.
       int icon_index = page_action_->GetIconIndex(current_tab_id_);
-      std::string icon_path;
-      if (icon_index >= 0)
-        icon_path = page_action_->icon_paths()->at(icon_index);
-      else
-        icon_path = page_action_->default_icon_path();
-
+      std::string icon_path = (icon_index < 0) ?
+          page_action_->default_icon_path() :
+          page_action_->icon_paths()->at(icon_index);
       if (!icon_path.empty()) {
         PixbufMap::iterator iter = pixbufs_.find(icon_path);
         if (iter != pixbufs_.end())
           pixbuf = iter->second;
       }
     }
-
     // The pixbuf might not be loaded yet.
     if (pixbuf)
       gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);

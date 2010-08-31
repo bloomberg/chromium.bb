@@ -182,46 +182,45 @@ void PageActionImageView::UpdateVisibility(TabContents* contents,
                                            const GURL& url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionImageView::OnMousePressed.
-  current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
+  current_tab_id_ = contents ? ExtensionTabUtil::GetTabId(contents) : -1;
   current_url_ = url;
 
-  bool visible =
-      preview_enabled_ || page_action_->GetIsVisible(current_tab_id_);
-  if (visible) {
-    // Set the tooltip.
-    tooltip_ = page_action_->GetTitle(current_tab_id_);
-    SetTooltipText(UTF8ToWide(tooltip_));
-
-    // Set the image.
-    // It can come from three places. In descending order of priority:
-    // - The developer can set it dynamically by path or bitmap. It will be in
-    //   page_action_->GetIcon().
-    // - The developer can set it dynamically by index. It will be in
-    //   page_action_->GetIconIndex().
-    // - It can be set in the manifest by path. It will be in page_action_->
-    //   default_icon_path().
-
-    // First look for a dynamically set bitmap.
-    SkBitmap icon = page_action_->GetIcon(current_tab_id_);
-    if (icon.isNull()) {
-      int icon_index = page_action_->GetIconIndex(current_tab_id_);
-      std::string icon_path;
-      if (icon_index >= 0)
-        icon_path = page_action_->icon_paths()->at(icon_index);
-      else
-        icon_path = page_action_->default_icon_path();
-
-      if (!icon_path.empty()) {
-        PageActionMap::iterator iter = page_action_icons_.find(icon_path);
-        if (iter != page_action_icons_.end())
-          icon = iter->second;
-      }
-    }
-
-    if (!icon.isNull())
-      SetImage(&icon);
+  if (!contents ||
+      (!preview_enabled_ && !page_action_->GetIsVisible(current_tab_id_))) {
+    SetVisible(false);
+    return;
   }
-  SetVisible(visible);
+
+  // Set the tooltip.
+  tooltip_ = page_action_->GetTitle(current_tab_id_);
+  SetTooltipText(UTF8ToWide(tooltip_));
+
+  // Set the image.
+  // It can come from three places. In descending order of priority:
+  // - The developer can set it dynamically by path or bitmap. It will be in
+  //   page_action_->GetIcon().
+  // - The developer can set it dynamically by index. It will be in
+  //   page_action_->GetIconIndex().
+  // - It can be set in the manifest by path. It will be in
+  //   page_action_->default_icon_path().
+
+  // First look for a dynamically set bitmap.
+  SkBitmap icon = page_action_->GetIcon(current_tab_id_);
+  if (icon.isNull()) {
+    int icon_index = page_action_->GetIconIndex(current_tab_id_);
+    std::string icon_path = (icon_index < 0) ?
+        page_action_->default_icon_path() :
+        page_action_->icon_paths()->at(icon_index);
+    if (!icon_path.empty()) {
+      PageActionMap::iterator iter = page_action_icons_.find(icon_path);
+      if (iter != page_action_icons_.end())
+        icon = iter->second;
+    }
+  }
+  if (!icon.isNull())
+    SetImage(&icon);
+
+  SetVisible(true);
 }
 
 void PageActionImageView::InspectPopup(ExtensionAction* action) {
