@@ -212,9 +212,10 @@ section > h3 {
   width: 100px;
   font-weight: normal;
   -webkit-padding-start: 0;
-  vertical-align: top;
+  vertical-align: middle;
   margin: 0;
   font-size: 100%;
+  padding-top: 2px;
 }
 
 section > div:only-of-type {
@@ -239,6 +240,7 @@ section > div:only-of-type {
  */
 section > div:only-of-type label {
   display: block;
+  margin-bottom: 3px;
 }
 
 .hidden {
@@ -251,6 +253,16 @@ section > div:only-of-type label {
 
 input[type="checkbox"] {
   margin-top: 0;
+  vertical-align: middle;
+}
+
+input[type="radio"] {
+  vertical-align: top;
+  padding-top: 2px;
+}
+
+select {
+  margin: 0px;
 }
 
 .link-button {
