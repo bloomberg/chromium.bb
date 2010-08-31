@@ -113,6 +113,24 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertTrue(os.path.exists(downloaded_pkg))
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
 
+  def testZipInIncognito(self):
+    """Download and verify a zip in incognito window."""
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
+    file_path = os.path.join(test_dir, 'a_zip_file.zip')
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  'a_zip_file.zip')
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)  # open incognito window
+    # Downloads from incognito window do not figure in GetDownloadsInfo()
+    # since the download manager's list doesn't contain it.
+    # Using WaitUntil is the only resort.
+    self.NavigateToURL(file_url, 1, 0)
+    self.assertTrue(self.WaitUntil(lambda: os.path.exists(downloaded_pkg)))
+    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
+    self.assertTrue(self.IsDownloadShelfVisible(1))
+
   def testSaveDangerousFile(self):
     """Verify that we can download and save a dangerous file."""
     file_path = self._GetDangerousDownload()
