@@ -7,7 +7,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "base/callback.h"
+#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ssl/ssl_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
@@ -125,7 +126,11 @@ PageInfoModel::PageInfoModel(Profile* profile,
         subject_name,
         base::IntToString16(ssl.security_bits())));
     if (ssl.displayed_insecure_content() || ssl.ran_insecure_content()) {
-      state = SECTION_STATE_ERROR;
+      const CommandLine* command_line(CommandLine::ForCurrentProcess());
+      if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble))
+        state = SECTION_STATE_WARNING;
+      else
+        state = SECTION_STATE_ERROR;
       description.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
           description,
@@ -133,13 +138,6 @@ PageInfoModel::PageInfoModel(Profile* profile,
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR :
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
     }
-  }
-
-  if (state == SECTION_STATE_OK && ssl.displayed_insecure_content()) {
-    state = SECTION_STATE_WARNING;  // Mixed content warrants a warning.
-    headline.clear();
-    description.assign(l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_SECURITY_MIXED_CONTENT));
   }
 
   uint16 cipher_suite =

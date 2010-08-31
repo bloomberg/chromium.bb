@@ -5368,6 +5368,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Certificate Information
         </message>
       </if>
+      <message name="IDS_PAGE_INFO_HELP_CENTER_LINK" desc="This is the text of the link pointing to the Help Center. This appears at the bottom of the SSL dialog and 'this' refers to the sections within the bubble.">
+        What do these mean?
+      </message>
       <message name="IDS_PAGEINFO_CLOSE_BUTTON" desc="Text of button in the page info that closes the window.">
         Close
       </message>
@@ -5435,9 +5438,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE" desc="This message is displayed when the server hasn't been updated to fix a recent security issues. TLS here is an acronym and need not be translated. 'renegotiation' is a technical term describing a process of agreeing on a new set of security parameters and secrets. 'extension' here should be taken to mean 'amendment' rather than elongation.">
         The server does not support the TLS renegotiation extension.
-      </message>
-      <message name="IDS_PAGE_INFO_SECURITY_MIXED_CONTENT" desc="This message is displayed when there is mixed HTTP and HTTPS content on the page.">
-        Some of the elements on this page came from an unverified source and were not displayed.
       </message>
 
       <!-- SSL Blocking Page -->

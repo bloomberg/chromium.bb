@@ -364,6 +364,11 @@
         25
       </message>
 
+      <!-- The URL for the "Learn more" page for the Privacy section under Options. -->
+      <message name="IDS_PAGE_INFO_HELP_CENTER" translateable="false">
+        http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=95617
+      </message> 
+      
       <!-- The width and height of the Page Info bubble characters and lines (See above). -->
       <message name="IDS_PAGEINFOBUBBLE_WIDTH_CHARS" use_name_for_id="true">
         50

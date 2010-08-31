@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/info_bubble.h"
@@ -16,7 +17,6 @@
 #include "grit/theme_resources.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/controls/link.h"
 #include "views/controls/separator.h"
 #include "views/grid_layout.h"
 #include "views/widget/widget.h"
@@ -40,7 +40,8 @@ class Section : public views::View,
                 public views::LinkController {
  public:
   Section(PageInfoBubbleView* owner,
-          const PageInfoModel::SectionInfo& section_info);
+          const PageInfoModel::SectionInfo& section_info,
+          bool show_cert);
   virtual ~Section();
 
   // views::View methods:
@@ -91,7 +92,8 @@ PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
                                             show_history, this)),
       parent_window_(parent_window),
       cert_id_(ssl.cert_id()),
-      info_bubble_(NULL) {
+      info_bubble_(NULL),
+      help_center_link_(NULL) {
   LayoutSections();
 }
 
@@ -122,16 +124,21 @@ void PageInfoBubbleView::LayoutSections() {
     layout->StartRow(0, 0);
     // TODO(finnur): Remove title from the info struct, since it is
     //               not used anymore.
-    layout->AddView(new Section(this, info));
+    layout->AddView(new Section(this, info, cert_id_ > 0));
 
-    // Add separator after all sections except the last.
-    if (i < count - 1) {
-      layout->AddPaddingRow(0, kPaddingAboveSeparator);
-      layout->StartRow(0, 0);
-      layout->AddView(new views::Separator());
-      layout->AddPaddingRow(0, kPaddingBelowSeparator);
-    }
+    // Add separator after all sections.
+    layout->AddPaddingRow(0, kPaddingAboveSeparator);
+    layout->StartRow(0, 0);
+    layout->AddView(new views::Separator());
+    layout->AddPaddingRow(0, kPaddingBelowSeparator);
   }
+
+  // Then add the help center link at the bottom.
+  layout->StartRow(0, 0);
+  help_center_link_ =
+      new views::Link(l10n_util::GetString(IDS_PAGE_INFO_HELP_CENTER_LINK));
+  help_center_link_->SetController(this);
+  layout->AddView(help_center_link_);
 }
 
 gfx::Size PageInfoBubbleView::GetPreferredSize() {
@@ -142,16 +149,25 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
   int count = model_.GetSectionCount();
   for (int i = 0; i < count; ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
-    Section section(this, info);
+    Section section(this, info, cert_id_ > 0);
     size.Enlarge(0, section.GetHeightForWidth(size.width()));
   }
 
-  // Account for the separators and padding.
+  // Calculate how much space the separators take up (with padding).
   views::Separator separator;
   gfx::Size separator_size = separator.GetPreferredSize();
-  size.Enlarge(0, (count - 1) * (separator_size.height() +
-                                 kPaddingAboveSeparator +
-                                 kPaddingBelowSeparator));
+  gfx::Size separator_plus_padding(0, separator_size.height() +
+                                      kPaddingAboveSeparator +
+                                      kPaddingBelowSeparator);
+
+  // Account for the separators and padding within sections.
+  size.Enlarge(0, (count - 1) * separator_plus_padding.height());
+
+  // Account for the Help Center link and the separator above it.
+  gfx::Size link_size = help_center_link_->GetPreferredSize();
+  size.Enlarge(0, separator_plus_padding.height() +
+                  link_size.height());
+
   return size;
 }
 
@@ -160,13 +176,21 @@ void PageInfoBubbleView::ModelChanged() {
   info_bubble_->SizeToContents();
 }
 
+void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
+  GURL url = GURL(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER));
+  Browser* browser = BrowserList::GetLastActive();
+  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Section
 
 Section::Section(PageInfoBubbleView* owner,
-                 const PageInfoModel::SectionInfo& section_info)
+                 const PageInfoModel::SectionInfo& section_info,
+                 bool show_cert)
     : owner_(owner),
-      info_(section_info) {
+      info_(section_info),
+      link_(NULL) {
   if (!good_state_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     good_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_GOOD);
@@ -208,7 +232,7 @@ Section::Section(PageInfoBubbleView* owner,
   description_label_->SetAllowCharacterBreak(true);
   AddChildView(description_label_);
 
-  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY) {
+  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY && show_cert) {
     link_ = new views::Link(
         l10n_util::GetString(IDS_PAGEINFO_CERT_INFO_BUTTON));
     link_->SetController(this);
@@ -265,7 +289,7 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
     if (!compute_bounds_only)
       description_label_->SetBounds(x, y, 0, 0);
   }
-  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY) {
+  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY && link_) {
     size = link_->GetPreferredSize();
     link_->SetBounds(x, y, size.width(), size.height());
     y += size.height();

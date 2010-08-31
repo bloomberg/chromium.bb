@@ -8,6 +8,7 @@
 
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "views/controls/link.h"
 #include "views/view.h"
 
 namespace views {
@@ -16,7 +17,8 @@ class Label;
 
 class PageInfoBubbleView : public views::View,
                            public PageInfoModel::PageInfoModelObserver,
-                           public InfoBubbleDelegate {
+                           public InfoBubbleDelegate,
+                           public views::LinkController {
  public:
   PageInfoBubbleView(gfx::NativeWindow parent_window,
                      Profile* profile,
@@ -43,6 +45,9 @@ class PageInfoBubbleView : public views::View,
   virtual bool FadeInOnShow() { return false; }
   virtual std::wstring accessible_name() { return L"PageInfoBubble"; }
 
+  // LinkController methods:
+  virtual void LinkActivated(views::Link* source, int event_flags);
+
  private:
   // Layout the sections within the bubble.
   void LayoutSections();
@@ -57,6 +62,9 @@ class PageInfoBubbleView : public views::View,
   int cert_id_;
 
   InfoBubble* info_bubble_;
+
+  // The Help Center link at the bottom of the bubble.
+  views::Link* help_center_link_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleView);
 };
