@@ -15,7 +15,12 @@
             'destination': '<(PRODUCT_DIR)',
             'files': [],
             'conditions': [
-              [ 'OS == "linux" and target_arch == "ia32"', {
+              [ 'chromeos == 1', {
+                'files': [
+                  'binaries/chromeos/libgcflashplayer.so',
+                ]
+              }],
+              [ 'OS == "linux" and target_arch == "ia32" and chromeos == 0', {
                 'files': [
                   'binaries/linux/libgcflashplayer.so',
                   'binaries/linux/plugin.vch',
