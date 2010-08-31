@@ -73,9 +73,12 @@ DownloadManager::~DownloadManager() {
 void DownloadManager::Shutdown() {
   DCHECK(shutdown_needed_) << "Shutdown called when not needed.";
 
-  // Stop receiving download updates
-  if (file_manager_)
-    file_manager_->RemoveDownloadManager(this);
+  if (file_manager_) {
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(file_manager_,
+                          &DownloadFileManager::OnDownloadManagerShutdown,
+                          this));
+  }
 
   // 'in_progress_' may contain DownloadItems that have not finished the start
   // complete (from the history service) and thus aren't in downloads_.
@@ -661,8 +664,6 @@ void DownloadManager::DownloadCancelledInternal(int download_id,
                           render_process_id,
                           request_id));
 
-  // Tell the file manager to cancel the download.
-  file_manager_->RemoveDownload(download_id, this);  // On the UI thread
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
