@@ -1607,3 +1607,80 @@
    fun:CFRelease
    fun:run_animation_callbacks
 }
+{
+   bug_53989_a
+   Memcheck:Cond
+   fun:glvm_function_new
+   fun:glvmCreateModularFunction
+   fun:gleGetVertexSubmitFuncObjectAndKey
+   fun:gleSetVertexArrayFunc
+   fun:gleDrawArraysOrElements_ExecCore
+   fun:gleDrawArraysOrElements_IMM_Exec
+   fun:gl_context_draw
+   fun:ogl_array_flush
+   fun:ogl_primitives_end_
+   fun:ogl_emit_quad_indices
+   fun:ogl_emit_nine_part_rect
+   fun:ogl_emit_rect_tex
+   fun:ogl_render_layer_contents_bg
+   fun:ogl_render_layer_image_
+   fun:ogl_render_layer_
+   fun:ogl_render_layer_image_
+   fun:ogl_render_layer_
+   fun:ogl_render_layers
+   fun:CARenderOGLRender
+   fun:view_draw
+   fun:view_display_link
+   fun:link_callback
+}
+{
+   bug_53989_b
+   Memcheck:Cond
+   fun:glvm_function_hash_value_6
+   fun:glvm_hash_set_*
+   fun:glvm*ModularFunction*Cache
+   fun:gleGetVertexSubmitFuncObjectAndKey
+   fun:gleSetVertexArrayFunc
+   fun:gleDrawArraysOrElements_ExecCore
+   fun:gleDrawArraysOrElements_IMM_Exec
+   fun:gl_context_draw
+   fun:ogl_array_flush
+   fun:ogl_primitives_end_
+   fun:ogl_emit_quad_indices
+   fun:ogl_emit_nine_part_rect
+   fun:ogl_emit_rect_tex
+   fun:ogl_render_layer_contents_bg
+   fun:ogl_render_layer_image_
+   fun:ogl_render_layer_
+   fun:ogl_render_layer_image_
+   fun:ogl_render_layer_
+   fun:ogl_render_layers
+   fun:CARenderOGLRender
+   fun:view_draw
+   fun:view_display_link
+}
+{
+   bug_53989_c
+   Memcheck:Value4
+   ...
+   fun:gleGetVertexSubmitFuncObjectAndKey
+   fun:gleSetVertexArrayFunc
+   fun:gleDrawArraysOrElements_ExecCore
+   fun:gleDrawArraysOrElements_IMM_Exec
+   fun:gl_context_draw
+   fun:ogl_array_flush
+   fun:ogl_primitives_end_
+   fun:ogl_emit_quad_indices
+   fun:ogl_emit_nine_part_rect
+   fun:ogl_emit_rect_tex
+   fun:ogl_render_layer_contents_bg
+   fun:ogl_render_layer_image_
+   fun:ogl_render_layer_
+   fun:ogl_render_layer_image_
+   fun:ogl_render_layer_
+   fun:ogl_render_layers
+   fun:CARenderOGLRender
+   fun:view_draw
+   fun:view_display_link
+   fun:link_callback
+}
