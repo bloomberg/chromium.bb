@@ -35,6 +35,7 @@
 #include "chrome/common/render_messages.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_switches.h"
+#include "net/base/cookie_store.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"

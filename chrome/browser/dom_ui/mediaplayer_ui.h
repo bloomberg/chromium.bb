@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOM_UI_MEDIAPLAYER_UI_H_
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "base/singleton.h"
@@ -25,7 +26,7 @@ class Browser;
 class MediaPlayer : public NotificationObserver,
                     public URLRequest::Interceptor {
  public:
-  ~MediaPlayer() {}
+  ~MediaPlayer();
 
   // Enqueues this url into the current playlist.  If the mediaplayer is
   // not currently visible, show it, and play the given url.

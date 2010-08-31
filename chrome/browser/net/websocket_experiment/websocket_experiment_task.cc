@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/websockets/websocket.h"

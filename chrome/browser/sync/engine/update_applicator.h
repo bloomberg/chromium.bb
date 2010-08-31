@@ -40,6 +40,7 @@ class UpdateApplicator {
                    const UpdateIterator& end,
                    const ModelSafeRoutingInfo& routes,
                    ModelSafeGroup group_filter);
+  ~UpdateApplicator();
 
   // returns true if there's more we can do.
   bool AttemptOneApplication(syncable::WriteTransaction* trans);
@@ -78,6 +79,8 @@ class UpdateApplicator {
   // Track the result of the various items.
   std::vector<syncable::Id> conflicting_ids_;
   std::vector<syncable::Id> successful_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateApplicator);
 };
 
 }  // namespace browser_sync

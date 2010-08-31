@@ -11,6 +11,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/chrome_thread.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"

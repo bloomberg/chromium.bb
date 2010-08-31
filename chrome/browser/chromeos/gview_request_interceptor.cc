@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/singleton.h"
 #include "chrome/common/chrome_paths.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"

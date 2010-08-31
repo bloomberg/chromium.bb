@@ -41,6 +41,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_messages.h"
+#include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "views/event.h"
 

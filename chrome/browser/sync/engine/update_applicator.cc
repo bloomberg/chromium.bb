@@ -35,6 +35,9 @@ UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
     successful_ids_.reserve(item_count);
   }
 
+UpdateApplicator::~UpdateApplicator() {
+}
+
 // Returns true if there's more to do.
 bool UpdateApplicator::AttemptOneApplication(
     syncable::WriteTransaction* trans) {

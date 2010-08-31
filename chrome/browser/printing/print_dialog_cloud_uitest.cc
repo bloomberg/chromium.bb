@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
+#include "base/values.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"

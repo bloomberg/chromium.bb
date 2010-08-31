@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/x509_certificate.h"
 #include "net/url_request/url_request_filter.h"
 
 // static

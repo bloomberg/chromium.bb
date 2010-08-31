@@ -39,7 +39,8 @@ class ChangeReorderBuffer {
  public:
   typedef SyncManager::ChangeRecord ChangeRecord;
 
-  ChangeReorderBuffer() { }
+  ChangeReorderBuffer();
+  ~ChangeReorderBuffer();
 
   // Insert an item, identified by the metahandle |id|, into the reorder
   // buffer. This item will appear in the output list as an ACTION_ADD

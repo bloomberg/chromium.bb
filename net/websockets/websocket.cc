@@ -8,6 +8,7 @@
 #include "net/websockets/websocket.h"
 
 #include "base/message_loop.h"
+#include "net/base/host_resolver.h"
 #include "net/websockets/websocket_handshake.h"
 #include "net/websockets/websocket_handshake_draft75.h"
 

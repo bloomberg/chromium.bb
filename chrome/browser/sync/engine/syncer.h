@@ -81,14 +81,8 @@ class Syncer {
 
   // Called by other threads to tell the syncer to stop what it's doing
   // and return early from SyncShare, if possible.
-  bool ExitRequested() {
-    AutoLock lock(early_exit_requested_lock_);
-    return early_exit_requested_;
-  }
-  void RequestEarlyExit() {
-    AutoLock lock(early_exit_requested_lock_);
-    early_exit_requested_ = true;
-  }
+  bool ExitRequested();
+  void RequestEarlyExit();
 
   // SyncShare(...) variants cause one sync cycle to occur.  The return value
   // indicates whether we should sync again.  If we should not sync again,

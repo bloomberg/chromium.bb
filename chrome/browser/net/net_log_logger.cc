@@ -5,6 +5,7 @@
 #include "chrome/browser/net/net_log_logger.h"
 
 #include "base/json/json_writer.h"
+#include "base/values.h"
 
 NetLogLogger::NetLogLogger() {}
 

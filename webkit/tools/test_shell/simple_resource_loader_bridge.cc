@@ -43,6 +43,7 @@
 #include "base/timer.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "net/base/cookie_store.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/thread.h"
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"

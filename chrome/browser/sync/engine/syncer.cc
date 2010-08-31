@@ -74,6 +74,16 @@ Syncer::~Syncer() {
   shutdown_channel_->Notify(SyncerShutdownEvent(this));
 }
 
+bool Syncer::ExitRequested() {
+  AutoLock lock(early_exit_requested_lock_);
+  return early_exit_requested_;
+}
+
+void Syncer::RequestEarlyExit() {
+  AutoLock lock(early_exit_requested_lock_);
+  early_exit_requested_ = true;
+}
+
 void Syncer::RequestNudge(int milliseconds) {
   SyncerEvent event(SyncerEvent::REQUEST_SYNC_NUDGE);
   event.nudge_delay_milliseconds = milliseconds;

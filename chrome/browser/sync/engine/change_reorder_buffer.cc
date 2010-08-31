@@ -113,6 +113,12 @@ class ChangeReorderBuffer::Traversal {
   DISALLOW_COPY_AND_ASSIGN(Traversal);
 };
 
+ChangeReorderBuffer::ChangeReorderBuffer() {
+}
+
+ChangeReorderBuffer::~ChangeReorderBuffer() {
+}
+
 void ChangeReorderBuffer::GetAllChangesInTreeOrder(
     const BaseTransaction* sync_trans,
     vector<ChangeRecord>* changelist) {

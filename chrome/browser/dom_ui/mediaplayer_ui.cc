@@ -352,6 +352,9 @@ void MediaplayerHandler::HandleShowPlaylist(const ListValue* args) {
 // won't be deleted until it's last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(MediaPlayer);
 
+MediaPlayer::~MediaPlayer() {
+}
+
 void MediaPlayer::EnqueueMediaURL(const GURL& url, Browser* creator) {
   if (!Enabled()) {
     return;
