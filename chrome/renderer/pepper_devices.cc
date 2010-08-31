@@ -173,23 +173,23 @@ NPError AudioDeviceContext::Initialize(AudioMessageFilter* filter,
   context_= context;
 
   ViewHostMsg_Audio_CreateStream_Params params;
-  params.format = AudioManager::AUDIO_PCM_LINEAR;
-  params.channels = config->outputChannelMap;
-  params.sample_rate = config->sampleRate;
+  params.params.format = AudioParameters::AUDIO_PCM_LINEAR;
+  params.params.channels = config->outputChannelMap;
+  params.params.sample_rate = config->sampleRate;
   switch (config->sampleType) {
     case NPAudioSampleTypeInt16:
-      params.bits_per_sample = 16;
+      params.params.bits_per_sample = 16;
       break;
     case NPAudioSampleTypeFloat32:
-      params.bits_per_sample = 32;
+      params.params.bits_per_sample = 32;
       break;
     default:
       return NPERR_INVALID_PARAM;
   }
 
   context->config = *config;
-  params.packet_size = config->sampleFrameCount * config->outputChannelMap
-      * (params.bits_per_sample >> 3);
+  params.packet_size = config->sampleFrameCount * config->outputChannelMap *
+      (params.params.bits_per_sample >> 3);
 
   stream_id_ = filter_->AddDelegate(this);
   filter->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params, true));
@@ -278,4 +278,3 @@ void AudioDeviceContext::Run() {
     FireAudioCallback();
   }
 }
-

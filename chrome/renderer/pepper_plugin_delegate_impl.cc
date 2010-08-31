@@ -344,13 +344,13 @@ bool PlatformAudioImpl::Initialize(
   client_ = client;
 
   ViewHostMsg_Audio_CreateStream_Params params;
-  params.format = AudioManager::AUDIO_PCM_LINEAR;
-  params.channels = 2;
-  params.sample_rate = sample_rate;
-  params.bits_per_sample = 16;
+  params.params.format = AudioParameters::AUDIO_PCM_LINEAR;
+  params.params.channels = 2;
+  params.params.sample_rate = sample_rate;
+  params.params.bits_per_sample = 16;
 
-  params.packet_size = sample_count * params.channels *
-      (params.bits_per_sample >> 3);
+  params.packet_size = sample_count * params.params.channels *
+      (params.params.bits_per_sample >> 3);
 
   stream_id_ = filter_->AddDelegate(this);
   return filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params,

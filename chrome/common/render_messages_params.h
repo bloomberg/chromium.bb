@@ -27,7 +27,7 @@
 #include "chrome/common/window_container_type.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
-#include "media/audio/audio_manager.h"
+#include "media/audio/audio_parameters.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/password_form.h"
@@ -494,16 +494,7 @@ struct ViewHostMsg_DidPrintPage_Params {
 // Parameters for creating an audio output stream.
 struct ViewHostMsg_Audio_CreateStream_Params {
   // Format request for the stream.
-  AudioManager::Format format;
-
-  // Number of channels.
-  int channels;
-
-  // Sampling rate (frequency) of the output stream.
-  int sample_rate;
-
-  // Number of bits per sample;
-  int bits_per_sample;
+  AudioParameters params;
 
   // Number of bytes per packet. Determines the maximum number of bytes
   // transported for each audio packet request.

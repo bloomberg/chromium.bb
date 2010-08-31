@@ -212,12 +212,12 @@ class AudioRendererHostTest : public testing::Test {
 
     ViewHostMsg_Audio_CreateStream_Params params;
     if (mock_stream_)
-      params.format = AudioManager::AUDIO_MOCK;
+      params.params.format = AudioParameters::AUDIO_MOCK;
     else
-      params.format = AudioManager::AUDIO_PCM_LINEAR;
-    params.channels = 2;
-    params.sample_rate = AudioManager::kAudioCDSampleRate;
-    params.bits_per_sample = 16;
+      params.params.format = AudioParameters::AUDIO_PCM_LINEAR;
+    params.params.channels = 2;
+    params.params.sample_rate = AudioParameters::kAudioCDSampleRate;
+    params.params.bits_per_sample = 16;
     params.packet_size = 0;
 
     // Send a create stream message to the audio output stream and wait until
@@ -238,12 +238,12 @@ class AudioRendererHostTest : public testing::Test {
 
     ViewHostMsg_Audio_CreateStream_Params params;
     if (mock_stream_)
-      params.format = AudioManager::AUDIO_MOCK;
+      params.params.format = AudioParameters::AUDIO_MOCK;
     else
-      params.format = AudioManager::AUDIO_PCM_LINEAR;
-    params.channels = 2;
-    params.sample_rate = AudioManager::kAudioCDSampleRate;
-    params.bits_per_sample = 16;
+      params.params.format = AudioParameters::AUDIO_PCM_LINEAR;
+    params.params.channels = 2;
+    params.params.sample_rate = AudioParameters::kAudioCDSampleRate;
+    params.params.bits_per_sample = 16;
     params.packet_size = 0;
 
     // Send a create stream message to the audio output stream and wait until

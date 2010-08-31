@@ -27,9 +27,6 @@ const int kPacketsInBuffer = 3;
 
 AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
     : AudioRendererBase(),
-      channels_(0),
-      sample_rate_(0),
-      sample_bits_(0),
       bytes_per_second_(0),
       filter_(filter),
       stream_id_(0),
@@ -63,18 +60,19 @@ bool AudioRendererImpl::IsMediaFormatSupported(
 bool AudioRendererImpl::OnInitialize(const media::MediaFormat& media_format) {
   // Parse integer values in MediaFormat.
   if (!ParseMediaFormat(media_format,
-                        &channels_,
-                        &sample_rate_,
-                        &sample_bits_)) {
+                        &params_.channels,
+                        &params_.sample_rate,
+                        &params_.bits_per_sample)) {
     return false;
   }
+  params_.format = AudioParameters::AUDIO_PCM_LINEAR;
 
   // Calculate the number of bytes per second using information of the stream.
-  bytes_per_second_ = sample_rate_ * channels_ * sample_bits_ / 8;
+  bytes_per_second_ = params_.sample_rate * params_.channels *
+      params_.bits_per_sample / 8;
+
   io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::CreateStreamTask,
-          AudioManager::AUDIO_PCM_LINEAR, channels_,
-          sample_rate_, sample_bits_));
+      NewRunnableMethod(this, &AudioRendererImpl::CreateStreamTask, params_));
   return true;
 }
 
@@ -253,9 +251,7 @@ void AudioRendererImpl::OnVolume(double volume) {
   // pipeline.
 }
 
-void AudioRendererImpl::CreateStreamTask(
-    AudioManager::Format format, int channels,
-    int sample_rate, int bits_per_sample) {
+void AudioRendererImpl::CreateStreamTask(AudioParameters audio_params) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   AutoLock auto_lock(lock_);
@@ -268,10 +264,7 @@ void AudioRendererImpl::CreateStreamTask(
   io_loop_->AddDestructionObserver(this);
 
   ViewHostMsg_Audio_CreateStream_Params params;
-  params.format = format;
-  params.channels = channels;
-  params.sample_rate = sample_rate;
-  params.bits_per_sample = bits_per_sample;
+  params.params = audio_params;
   params.packet_size = 0;
 
   filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params,

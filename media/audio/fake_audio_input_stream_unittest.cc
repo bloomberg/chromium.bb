@@ -41,7 +41,7 @@ TEST(FakeAudioInputTest, BasicCallbacks) {
   ASSERT_TRUE(NULL != audio_man);
   // Ask for one recorded packet every 50ms.
   AudioInputStream* stream = audio_man->MakeAudioInputStream(
-      AudioManager::AUDIO_MOCK, 2, 8000, 8, 400);
+      AudioParameters(AudioParameters::AUDIO_MOCK, 2, 8000, 8), 400);
   ASSERT_TRUE(NULL != stream);
   EXPECT_TRUE(stream->Open());
   stream->Start(&callback);

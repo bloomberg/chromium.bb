@@ -115,8 +115,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
-  void CreateStreamTask(AudioManager::Format format, int channels,
-                        int sample_rate, int bits_per_sample);
+  void CreateStreamTask(AudioParameters params);
   void PlayTask();
   void PauseTask();
   void SeekTask();
@@ -128,9 +127,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   virtual void WillDestroyCurrentMessageLoop();
 
   // Information about the audio stream.
-  int channels_;
-  int sample_rate_;
-  int sample_bits_;
+  AudioParameters params_;
   uint32 bytes_per_second_;
 
   scoped_refptr<AudioMessageFilter> filter_;

@@ -98,17 +98,23 @@ TEST(WinAudioInputTest, SanityOnMakeParams) {
   if (!CanRunAudioTests())
     return;
   AudioManager* audio_man = AudioManager::GetAudioManager();
-  AudioManager::Format fmt = AudioManager::AUDIO_PCM_LINEAR;
-  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(fmt, 8, 8000, 16, 0));
-  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(fmt, 1, 1024 * 1024, 16,
-                                                      0));
-  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(fmt, 2, 8000, 80, 0));
-  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(fmt, 2, 8000, 80,
-                                                      1024 * 4096));
-  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(fmt, -2, 8000, 16, 0));
-  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(fmt, 2, -8000, 16, 0));
-  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(fmt, 2, 8000, -16, 0));
-  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(fmt, 2, 8000, 16, -1024));
+  AudioParameters::Format fmt = AudioParameters::AUDIO_PCM_LINEAR;
+  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(
+      AudioParameters(fmt, 8, 8000, 16), 0));
+  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(
+      AudioParameters(fmt, 1, 1024 * 1024, 16), 0));
+  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(
+      AudioParameters(fmt, 2, 8000, 80), 0));
+  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(
+      AudioParameters(fmt, 2, 8000, 80), 1024 * 4096));
+  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(
+      AudioParameters(fmt, -2, 8000, 16), 0));
+  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(
+      AudioParameters(fmt, 2, -8000, 16), 0));
+  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(
+      AudioParameters(fmt, 2, 8000, -16), 0));
+  EXPECT_TRUE(NULL == audio_man->MakeAudioInputStream(
+      AudioParameters(fmt, 2, 8000, 16), -1024));
 }
 
 // Test create and close of an AudioInputStream without recording audio.
@@ -117,7 +123,7 @@ TEST(WinAudioInputTest, CreateAndClose) {
     return;
   AudioManager* audio_man = AudioManager::GetAudioManager();
   AudioInputStream* ais = audio_man->MakeAudioInputStream(
-      AudioManager::AUDIO_PCM_LINEAR, 2, 8000, 16, 0);
+      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, 8000, 16), 0);
   ASSERT_TRUE(NULL != ais);
   ais->Close();
 }
@@ -128,7 +134,7 @@ TEST(WinAudioInputTest, OpenAndClose) {
     return;
   AudioManager* audio_man = AudioManager::GetAudioManager();
   AudioInputStream* ais = audio_man->MakeAudioInputStream(
-      AudioManager::AUDIO_PCM_LINEAR, 2, 8000, 16, 0);
+      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, 8000, 16), 0);
   ASSERT_TRUE(NULL != ais);
   EXPECT_TRUE(ais->Open());
   ais->Close();
@@ -142,7 +148,8 @@ TEST(WinAudioInputTest, Record) {
   const int kSamplingRate = 8000;
   const int kSamplesPerPacket = kSamplingRate / 20;
   AudioInputStream* ais = audio_man->MakeAudioInputStream(
-      AudioManager::AUDIO_PCM_LINEAR, 2, kSamplingRate, 16, kSamplesPerPacket);
+      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, kSamplingRate, 16),
+      kSamplesPerPacket);
   ASSERT_TRUE(NULL != ais);
   EXPECT_TRUE(ais->Open());
 
@@ -166,7 +173,8 @@ TEST(WinAudioInputTest, RecordWithSlowSink) {
   const int kSamplingRate = 8000;
   const int kSamplesPerPacket = kSamplingRate / 20;
   AudioInputStream* ais = audio_man->MakeAudioInputStream(
-      AudioManager::AUDIO_PCM_LINEAR, 2, kSamplingRate, 16, kSamplesPerPacket);
+      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, kSamplingRate, 16),
+      kSamplesPerPacket);
   ASSERT_TRUE(NULL != ais);
   EXPECT_TRUE(ais->Open());
 

@@ -159,8 +159,8 @@ struct ParamTraits<NavigationGesture> {
 
 // Traits for AudioManager::Format.
 template <>
-struct ParamTraits<AudioManager::Format> {
-  typedef AudioManager::Format param_type;
+struct ParamTraits<AudioParameters::Format> {
+  typedef AudioParameters::Format param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteInt(p);
   }
@@ -168,19 +168,19 @@ struct ParamTraits<AudioManager::Format> {
     int type;
     if (!m->ReadInt(iter, &type))
       return false;
-    *p = static_cast<AudioManager::Format>(type);
+    *p = static_cast<AudioParameters::Format>(type);
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
     std::string format;
     switch (p) {
-     case AudioManager::AUDIO_PCM_LINEAR:
+     case AudioParameters::AUDIO_PCM_LINEAR:
        format = "AUDIO_PCM_LINEAR";
        break;
-     case AudioManager::AUDIO_PCM_LOW_LATENCY:
+     case AudioParameters::AUDIO_PCM_LOW_LATENCY:
        format = "AUDIO_PCM_LOW_LATENCY";
        break;
-     case AudioManager::AUDIO_MOCK:
+     case AudioParameters::AUDIO_MOCK:
        format = "AUDIO_MOCK";
        break;
      default:
@@ -730,10 +730,10 @@ void ParamTraits<ViewHostMsg_DidPrintPage_Params>::Log(const param_type& p,
 void ParamTraits<ViewHostMsg_Audio_CreateStream_Params>::Write(
     Message* m,
     const param_type& p) {
-  WriteParam(m, p.format);
-  WriteParam(m, p.channels);
-  WriteParam(m, p.sample_rate);
-  WriteParam(m, p.bits_per_sample);
+  WriteParam(m, p.params.format);
+  WriteParam(m, p.params.channels);
+  WriteParam(m, p.params.sample_rate);
+  WriteParam(m, p.params.bits_per_sample);
   WriteParam(m, p.packet_size);
 }
 
@@ -741,10 +741,10 @@ bool ParamTraits<ViewHostMsg_Audio_CreateStream_Params>::Read(const Message* m,
                                                               void** iter,
                                                               param_type* p) {
   return
-      ReadParam(m, iter, &p->format) &&
-      ReadParam(m, iter, &p->channels) &&
-      ReadParam(m, iter, &p->sample_rate) &&
-      ReadParam(m, iter, &p->bits_per_sample) &&
+      ReadParam(m, iter, &p->params.format) &&
+      ReadParam(m, iter, &p->params.channels) &&
+      ReadParam(m, iter, &p->params.sample_rate) &&
+      ReadParam(m, iter, &p->params.bits_per_sample) &&
       ReadParam(m, iter, &p->packet_size);
 }
 
@@ -752,13 +752,13 @@ void ParamTraits<ViewHostMsg_Audio_CreateStream_Params>::Log(
     const param_type& p,
     std::string* l) {
   l->append("<ViewHostMsg_Audio_CreateStream_Params>(");
-  LogParam(p.format, l);
+  LogParam(p.params.format, l);
   l->append(", ");
-  LogParam(p.channels, l);
+  LogParam(p.params.channels, l);
   l->append(", ");
-  LogParam(p.sample_rate, l);
+  LogParam(p.params.sample_rate, l);
   l->append(", ");
-  LogParam(p.bits_per_sample, l);
+  LogParam(p.params.bits_per_sample, l);
   l->append(", ");
   LogParam(p.packet_size, l);
   l->append(")");

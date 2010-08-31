@@ -34,9 +34,11 @@ class AudioInputStreamMacTest : public testing::Test {
     ias_ = NULL;
     AudioManager* audio_man = AudioManager::GetAudioManager();
     ASSERT_TRUE(NULL != audio_man);
-    if (audio_man->HasAudioInputDevices())
-      ias_ = audio_man->MakeAudioInputStream(AudioManager::AUDIO_PCM_LINEAR, 2,
-                                             kSampleRate, 16, kSamplesPerCall);
+    if (audio_man->HasAudioInputDevices()) {
+      AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, 2,
+                             kSampleRate, 16);
+      ias_ = audio_man->MakeAudioInputStream(params, kSamplesPerCall);
+    }
   }
   virtual void TearDown() {
     ias_->Close();
