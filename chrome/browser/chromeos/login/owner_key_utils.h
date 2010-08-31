@@ -67,6 +67,19 @@ class OwnerKeyUtils : public base::RefCounted<OwnerKeyUtils> {
   virtual bool ImportPublicKey(const FilePath& key_file,
                                std::vector<uint8>* output) = 0;
 
+  // Verfiy that |signature| is a Sha1-with-RSA signature over |data| with
+  // |public_key|
+  // Returns true if so, false on bad signature or other error.
+  virtual bool Verify(const std::string& data,
+                      const std::vector<uint8> signature,
+                      const std::vector<uint8> public_key) = 0;
+
+  // Sign |data| with |key| using Sha1 with RSA.  If successful, return true
+  // and populate |OUT_signature|.
+  virtual bool Sign(const std::string& data,
+                    std::vector<uint8>* OUT_signature,
+                    base::RSAPrivateKey* key) = 0;
+
   // Looks for the private key associated with |key| in the default slot,
   // and returns it if it can be found.  Returns NULL otherwise.
   // Caller takes ownership.

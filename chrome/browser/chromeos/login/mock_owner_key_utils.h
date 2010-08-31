@@ -31,6 +31,12 @@ class MockKeyUtils : public OwnerKeyUtils {
                                            const FilePath& key_file));
   MOCK_METHOD2(ImportPublicKey, bool(const FilePath& key_file,
                                      std::vector<uint8>* output));
+  MOCK_METHOD3(Verify, bool(const std::string& data,
+                            const std::vector<uint8> signature,
+                            const std::vector<uint8> public_key));
+  MOCK_METHOD3(Sign, bool(const std::string& data,
+                          std::vector<uint8>* OUT_signature,
+                          base::RSAPrivateKey* key));
   MOCK_METHOD1(FindPrivateKey, RSAPrivateKey*(const std::vector<uint8>& key));
   MOCK_METHOD0(GetOwnerKeyFilePath, FilePath());
 

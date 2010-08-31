@@ -10,8 +10,8 @@
 #include "base/crypto/rsa_private_key.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/nss_util.h"
 #include "base/logging.h"
+#include "base/nss_util.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
@@ -20,6 +20,7 @@
 
 using ::base::RSAPrivateKey;
 using ::testing::DoAll;
+using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
@@ -223,7 +224,7 @@ TEST_F(OwnerManagerTest, GetKeyFailDuringVerify) {
                         &OwnerManager::Verify,
                         ChromeThread::UI,
                         std::string(),
-                        std::string(),
+                        std::vector<uint8>(),
                         &delegate));
   message_loop_.Run();
 }
@@ -231,8 +232,14 @@ TEST_F(OwnerManagerTest, GetKeyFailDuringVerify) {
 TEST_F(OwnerManagerTest, AlreadyHaveKeysVerify) {
   scoped_refptr<OwnerManager> manager(new OwnerManager);
 
+  std::string data;
+  std::vector<uint8> sig(0, 2);
+
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
+  EXPECT_CALL(*mock_, Verify(Eq(data), Eq(sig), Eq(fake_public_key_)))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   InjectKeys(manager.get());
   MockKeyUser delegate(OwnerManager::SUCCESS);
@@ -242,8 +249,8 @@ TEST_F(OwnerManagerTest, AlreadyHaveKeysVerify) {
       NewRunnableMethod(manager.get(),
                         &OwnerManager::Verify,
                         ChromeThread::UI,
-                        std::string(),
-                        std::string(),
+                        data,
+                        sig,
                         &delegate));
   message_loop_.Run();
 }
@@ -254,21 +261,28 @@ TEST_F(OwnerManagerTest, GetKeyAndVerify) {
   loader.SetQuitOnKeyFetch(false);
   scoped_refptr<OwnerManager> manager(new OwnerManager);
 
+  std::string data;
+  std::vector<uint8> sig(0, 2);
+
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
   EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_, _))
       .WillOnce(DoAll(SetArgumentPointee<1>(fake_public_key_),
                       Return(true)))
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_, Verify(Eq(data), Eq(sig), Eq(fake_public_key_)))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   MockKeyUser delegate(OwnerManager::SUCCESS);
+
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::Verify,
                         ChromeThread::UI,
-                        std::string(),
-                        std::string(),
+                        data,
+                        sig,
                         &delegate));
   message_loop_.Run();
 }

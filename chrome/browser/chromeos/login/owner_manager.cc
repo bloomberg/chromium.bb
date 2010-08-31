@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/owner_manager.h"
 
+#include <string>
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "chrome/browser/chrome_thread.h"
@@ -124,22 +127,27 @@ void OwnerManager::Sign(const ChromeThread::ID thread_id,
         thread_id, FROM_HERE,
         NewRunnableMethod(this,
                           &OwnerManager::CallDelegate,
-                          d, KEY_UNAVAILABLE, std::string()));
+                          d, KEY_UNAVAILABLE, std::vector<uint8>()));
     return;
   }
 
-  // TODO(cmasone): Sign |data| with |private_key_|, return
-  // appropriate errors via CallDelegate.
+  LOG(INFO) << "Starting signing attempt";
+  KeyOpCode return_code = SUCCESS;
+  std::vector<uint8> signature;
+  if (!utils_->Sign(data, &signature, private_key_.get())) {
+    return_code = OPERATION_FAILED;
+  }
+
   ChromeThread::PostTask(
       thread_id, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::CallDelegate,
-                        d, SUCCESS, data));
+                        d, return_code, std::vector<uint8>()));
 }
 
 void OwnerManager::Verify(const ChromeThread::ID thread_id,
                           const std::string& data,
-                          const std::string& signature,
+                          const std::vector<uint8>& signature,
                           Delegate* d) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
@@ -148,18 +156,20 @@ void OwnerManager::Verify(const ChromeThread::ID thread_id,
         thread_id, FROM_HERE,
         NewRunnableMethod(this,
                           &OwnerManager::CallDelegate,
-                          d, KEY_UNAVAILABLE, std::string()));
+                          d, KEY_UNAVAILABLE, std::vector<uint8>()));
     return;
   }
 
   LOG(INFO) << "Starting verify attempt";
-  // TODO(cmasone): Verify |signature| over |data| with |public_key_|, return
-  // appropriate errors via CallDelegate.
+  KeyOpCode return_code = SUCCESS;
+  if (!utils_->Verify(data, signature, public_key_)) {
+    return_code = OPERATION_FAILED;
+  }
   ChromeThread::PostTask(
       thread_id, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::CallDelegate,
-                        d, SUCCESS, std::string()));
+                        d, return_code, std::vector<uint8>()));
 }
 
 void OwnerManager::SendNotification(NotificationType type,

@@ -52,11 +52,12 @@ bool OwnershipService::StartTakeOwnershipAttempt() {
   return true;
 }
 
-bool OwnershipService::StartSigningAttempt(const std::string& data,
+void OwnershipService::StartSigningAttempt(const std::string& data,
                                            OwnerManager::Delegate* d) {
   if (!IsAlreadyOwned()) {
     LOG(ERROR) << "Device not yet owned";
-    return false;
+    d->OnKeyOpComplete(OwnerManager::KEY_UNAVAILABLE, std::vector<uint8>());
+    return;
   }
   ChromeThread::ID thread_id;
   if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id))
@@ -67,15 +68,16 @@ bool OwnershipService::StartSigningAttempt(const std::string& data,
                         &OwnerManager::Sign,
                         thread_id,
                         data, d));
-  return true;
+  return;
 }
 
-bool OwnershipService::StartVerifyAttempt(const std::string& data,
-                                          const std::string& signature,
+void OwnershipService::StartVerifyAttempt(const std::string& data,
+                                          const std::vector<uint8>& signature,
                                           OwnerManager::Delegate* d) {
   if (!IsAlreadyOwned()) {
     LOG(ERROR) << "Device not yet owned";
-    return false;
+    d->OnKeyOpComplete(OwnerManager::KEY_UNAVAILABLE, std::vector<uint8>());
+    return;
   }
   ChromeThread::ID thread_id;
   if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id))
@@ -88,7 +90,7 @@ bool OwnershipService::StartVerifyAttempt(const std::string& data,
                         data,
                         signature,
                         d));
-  return true;
+  return;
 }
 
 bool OwnershipService::CurrentUserIsOwner() {

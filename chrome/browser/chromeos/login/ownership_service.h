@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/ref_counted.h"
 #include "base/singleton.h"
@@ -21,7 +22,7 @@ class OwnershipService {
   static OwnershipService* GetSharedInstance();
   virtual ~OwnershipService();
 
-  bool IsAlreadyOwned();
+  virtual bool IsAlreadyOwned();
 
   // If the device has been owned already, posts a task to the FILE thread to
   // fetch the public key off disk.
@@ -29,7 +30,7 @@ class OwnershipService {
   //
   // Sends out a OWNER_KEY_FETCH_ATTEMPT_SUCCESS notification on success,
   // OWNER_KEY_FETCH_ATTEMPT_FAILED on failure.
-  bool StartLoadOwnerKeyAttempt();
+  virtual bool StartLoadOwnerKeyAttempt();
 
   // If the device has not yet been owned, posts a task to the FILE
   // thread to generate the owner's keys and put them in the right
@@ -38,7 +39,7 @@ class OwnershipService {
   //
   // Sends out a OWNER_KEY_FETCH_ATTEMPT_SUCCESS notification on success,
   // OWNER_KEY_FETCH_ATTEMPT_FAILED on failure.
-  bool StartTakeOwnershipAttempt();
+  virtual bool StartTakeOwnershipAttempt();
 
   // Initiate an attempt to sign |data| with |private_key_|.  Will call
   // d->OnKeyOpComplete() when done.  Upon success, the signature will be passed
@@ -47,7 +48,8 @@ class OwnershipService {
   //
   // If you call this on a well-known thread, you'll be called back on that
   // thread.  Otherwise, you'll get called back on the UI thread.
-  bool StartSigningAttempt(const std::string& data, OwnerManager::Delegate* d);
+  virtual void StartSigningAttempt(const std::string& data,
+                                   OwnerManager::Delegate* d);
 
   // Initiate an attempt to verify that |signature| is valid over |data| with
   // |public_key_|.  When the attempt is completed, an appropriate KeyOpCode
@@ -56,17 +58,18 @@ class OwnershipService {
   //
   // If you call this on a well-known thread, you'll be called back on that
   // thread.  Otherwise, you'll get called back on the UI thread.
-  bool StartVerifyAttempt(const std::string& data,
-                          const std::string& signature,
-                          OwnerManager::Delegate* d);
+  virtual void StartVerifyAttempt(const std::string& data,
+                                  const std::vector<uint8>& signature,
+                                  OwnerManager::Delegate* d);
 
-  bool CurrentUserIsOwner();
+  virtual bool CurrentUserIsOwner();
+
+ protected:
+  OwnershipService();
 
  private:
   friend struct DefaultSingletonTraits<OwnershipService>;
   friend class OwnershipServiceTest;
-
-  OwnershipService();
 
   scoped_refptr<OwnerManager> manager_;
   scoped_refptr<OwnerKeyUtils> utils_;

@@ -41,7 +41,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
     // back any artifacts of the operation.  For example, if the operation
     // was a signature attempt, the signature blob would come back in |payload|.
     virtual void OnKeyOpComplete(const KeyOpCode return_code,
-                                 const std::string& payload) = 0;
+                                 const std::vector<uint8>& payload) = 0;
   };
 
   OwnerManager();
@@ -91,7 +91,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
   // error code, passing an empty string for |payload|.
   void Verify(const ChromeThread::ID thread_id,
               const std::string& data,
-              const std::string& signature,
+              const std::vector<uint8>& signature,
               Delegate* d);
 
  private:
@@ -102,7 +102,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
   // A helper method to call back a delegte on another thread.
   void CallDelegate(Delegate* d,
                     const KeyOpCode return_code,
-                    const std::string& payload) {
+                    const std::vector<uint8>& payload) {
     d->OnKeyOpComplete(return_code, payload);
   }
 

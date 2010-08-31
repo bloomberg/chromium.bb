@@ -13,6 +13,8 @@
 #include <limits>
 
 #include "base/crypto/rsa_private_key.h"
+#include "base/crypto/signature_creator.h"
+#include "base/crypto/signature_verifier.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -22,8 +24,10 @@
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/common/extensions/extension_constants.h"
 
 using base::RSAPrivateKey;
+using extension_misc::kSignatureAlgorithm;
 
 namespace chromeos {
 
@@ -53,6 +57,14 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
 
   bool ImportPublicKey(const FilePath& key_file,
                        std::vector<uint8>* output);
+
+  bool Verify(const std::string& data,
+              const std::vector<uint8> signature,
+              const std::vector<uint8> public_key);
+
+  bool Sign(const std::string& data,
+            std::vector<uint8>* OUT_signature,
+            base::RSAPrivateKey* key);
 
   RSAPrivateKey* FindPrivateKey(const std::vector<uint8>& key);
 
@@ -162,6 +174,28 @@ bool OwnerKeyUtilsImpl::ImportPublicKey(const FilePath& key_file,
                                       reinterpret_cast<char*>(&(output->at(0))),
                                       safe_file_size);
   return data_read == safe_file_size;
+}
+
+bool OwnerKeyUtilsImpl::Verify(const std::string& data,
+                               const std::vector<uint8> signature,
+                               const std::vector<uint8> public_key) {
+  base::SignatureVerifier verifier;
+  if (!verifier.VerifyInit(kSignatureAlgorithm, sizeof(kSignatureAlgorithm),
+                           &signature[0], signature.size(),
+                           &public_key[0], public_key.size())) {
+    return false;
+  }
+
+  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(data.c_str()),
+                        data.length());
+  return (verifier.VerifyFinal());
+}
+
+bool OwnerKeyUtilsImpl::Sign(const std::string& data,
+                             std::vector<uint8>* OUT_signature,
+                             base::RSAPrivateKey* key) {
+  // TODO(cmasone): Add signing capabilities.
+  return true;
 }
 
 RSAPrivateKey* OwnerKeyUtilsImpl::FindPrivateKey(

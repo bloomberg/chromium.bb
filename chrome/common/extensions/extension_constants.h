@@ -6,6 +6,8 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_
 #pragma once
 
+#include "base/basictypes.h"
+
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {
   extern const char* kAllFrames;
@@ -213,6 +215,14 @@ namespace extension_misc {
 
   // The extension id of the Web Store component application.
   extern const char* kWebStoreAppId;
+
+  // Note: this structure is an ASN.1 which encodes the algorithm used
+  // with its parameters. This is defined in PKCS #1 v2.1 (RFC 3447).
+  // It is encoding: { OID sha1WithRSAEncryption      PARAMETERS NULL }
+  const uint8 kSignatureAlgorithm[15] = {
+    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+    0xf7, 0x0d, 0x01, 0x01, 0x05, 0x05, 0x00
+  };
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

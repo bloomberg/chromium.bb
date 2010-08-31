@@ -77,18 +77,23 @@ class MockKeyLoadObserver : public NotificationObserver {
 class MockKeyUser : public OwnerManager::Delegate {
  public:
   explicit MockKeyUser(const OwnerManager::KeyOpCode expected)
-      : expected_(expected) {
+      : expected_(expected),
+        quit_on_callback_(true) {
   }
 
   virtual ~MockKeyUser() {}
 
+  void dont_quit_on_callback() { quit_on_callback_ = false; }
+
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
-                       const std::string& payload) {
-    MessageLoop::current()->Quit();
+                       const std::vector<uint8>& payload) {
     EXPECT_EQ(expected_, return_code);
+    if (quit_on_callback_)
+      MessageLoop::current()->Quit();
   }
 
   const OwnerManager::KeyOpCode expected_;
+  bool quit_on_callback_;
  private:
   DISALLOW_COPY_AND_ASSIGN(MockKeyUser);
 };

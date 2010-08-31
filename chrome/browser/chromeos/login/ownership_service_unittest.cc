@@ -21,6 +21,7 @@
 
 using ::base::RSAPrivateKey;
 using ::testing::DoAll;
+using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
@@ -160,7 +161,8 @@ TEST_F(OwnershipServiceTest, NotYetOwnedVerify) {
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
   MockKeyUser delegate(OwnerManager::KEY_UNAVAILABLE);
-  EXPECT_FALSE(service_->StartVerifyAttempt("", "", &delegate));
+  delegate.dont_quit_on_callback();
+  service_->StartVerifyAttempt("", std::vector<uint8>(), &delegate);
 }
 
 TEST_F(OwnershipServiceTest, GetKeyFailDuringVerify) {
@@ -174,7 +176,7 @@ TEST_F(OwnershipServiceTest, GetKeyFailDuringVerify) {
       .RetiresOnSaturation();
 
   MockKeyUser delegate(OwnerManager::KEY_UNAVAILABLE);
-  EXPECT_TRUE(service_->StartVerifyAttempt("", "", &delegate));
+  service_->StartVerifyAttempt("", std::vector<uint8>(), &delegate);
 
   message_loop_.Run();
 }
@@ -184,15 +186,45 @@ TEST_F(OwnershipServiceTest, GetKeyAndVerify) {
   loader.ExpectKeyFetchSuccess(true);
   loader.SetQuitOnKeyFetch(false);
 
+  std::string data;
+  std::vector<uint8> sig(0, 2);
+
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
   EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_, _))
       .WillOnce(DoAll(SetArgumentPointee<1>(fake_public_key_),
                       Return(true)))
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_, Verify(Eq(data), Eq(sig), Eq(fake_public_key_)))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   MockKeyUser delegate(OwnerManager::SUCCESS);
-  EXPECT_TRUE(service_->StartVerifyAttempt("", "", &delegate));
+  service_->StartVerifyAttempt(data, sig, &delegate);
+
+  message_loop_.Run();
+}
+
+TEST_F(OwnershipServiceTest, GetKeyAndFailVerify) {
+  MockKeyLoadObserver loader;
+  loader.ExpectKeyFetchSuccess(true);
+  loader.SetQuitOnKeyFetch(false);
+
+  std::string data;
+  std::vector<uint8> sig(0, 2);
+
+  EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
+      .WillRepeatedly(Return(tmpfile_));
+  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_, _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(fake_public_key_),
+                      Return(true)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_, Verify(Eq(data), Eq(sig), Eq(fake_public_key_)))
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
+
+  MockKeyUser delegate(OwnerManager::OPERATION_FAILED);
+  service_->StartVerifyAttempt(data, sig, &delegate);
 
   message_loop_.Run();
 }
