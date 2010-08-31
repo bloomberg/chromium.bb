@@ -116,6 +116,7 @@
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
         '../third_party/zlib/zlib.gyp:zlib',
         'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
+        'base/protocol/chromotocol.gyp:trace_proto_lib',
         'chromoting_jingle_glue',
         # TODO(hclam): Enable VP8 in the build.
         #'third_party/on2/on2.gyp:vp8',
@@ -158,6 +159,8 @@
         'base/protocol_decoder.h',
         'base/protocol_util.cc',
         'base/protocol_util.h',
+        'base/tracer.cc',
+        'base/tracer.h',
         'base/types.h',
       ],
     },  # end of target 'chromoting_base'
