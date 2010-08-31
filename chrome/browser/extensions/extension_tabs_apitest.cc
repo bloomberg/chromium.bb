@@ -9,9 +9,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-// Tabs is flaky on chromeos, linux views and linux dbg.
+// Tabs is flaky on chromeos, windows, linux views and linux dbg.
 // http://crbug.com/48920
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_Tabs FLAKY_Tabs
 #elif defined(OS_MACOSX)
 // Tabs appears to timeout, or maybe crash on mac.
