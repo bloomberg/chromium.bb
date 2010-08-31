@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef WEBKIT_GLUE_MEDIA_WEB_VIDEO_RENDERER_H_
 #define WEBKIT_GLUE_MEDIA_WEB_VIDEO_RENDERER_H_
 
+#include "media/base/video_frame.h"
 #include "media/filters/video_renderer_base.h"
 
 namespace webkit_glue {
@@ -29,6 +30,15 @@ class WebVideoRenderer : public media::VideoRendererBase {
   // Method called on the render thread.
   virtual void Paint(skia::PlatformCanvas* canvas,
                      const gfx::Rect& dest_rect) = 0;
+
+  // Clients of this class (painter/compositor) should use GetCurrentFrame()
+  // obtain ownership of VideoFrame, it should always relinquish the ownership
+  // by use PutCurrentFrame(). Current frame is not guaranteed to be non-NULL.
+  // It expects clients to use color-fill the background if current frame
+  // is NULL. This could happen when before pipeline is pre-rolled or during
+  // pause/flush/seek.
+  virtual void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out) {}
+  virtual void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebVideoRenderer);

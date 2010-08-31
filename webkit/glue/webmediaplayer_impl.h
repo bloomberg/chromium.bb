@@ -101,6 +101,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
     void SetSize(const gfx::Rect& rect);
     void Detach();
+    void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
+    void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
 
     // Public methods called from the pipeline via callback issued by
     // WebMediaPlayerImpl.
@@ -227,6 +229,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   virtual bool hasSingleSecurityOrigin() const;
   virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
+
+  virtual WebKit::WebVideoFrame* getCurrentFrame();
+  virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame);
 
   // As we are closing the tab or even the browser, |main_loop_| is destroyed
   // even before this object gets destructed, so we need to know when

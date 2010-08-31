@@ -27,6 +27,8 @@ class VideoRendererImpl : public WebVideoRenderer {
   // WebVideoRenderer implementation.
   virtual void SetRect(const gfx::Rect& rect);
   virtual void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
+  virtual void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
+  virtual void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
 
   // Static method for creating factory for this object.
   static media::FilterFactory* CreateFactory(WebMediaPlayerImpl::Proxy* proxy,

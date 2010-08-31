@@ -95,6 +95,16 @@ void VideoRendererImpl::Paint(skia::PlatformCanvas* canvas,
   PutCurrentFrame(video_frame);
 }
 
+void VideoRendererImpl::GetCurrentFrame(
+    scoped_refptr<media::VideoFrame>* frame_out) {
+  VideoRendererBase::GetCurrentFrame(frame_out);
+}
+
+void VideoRendererImpl::PutCurrentFrame(
+    scoped_refptr<media::VideoFrame> frame) {
+  VideoRendererBase::PutCurrentFrame(frame);
+}
+
 // CanFastPaint is a helper method to determine the conditions for fast
 // painting. The conditions are:
 // 1. No skew in canvas matrix.

@@ -11,6 +11,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_format.h"
 #include "media/base/media_switches.h"
+#include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -19,8 +20,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVideoFrame.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/media/web_video_renderer.h"
+#include "webkit/glue/webvideoframe_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebRect;
@@ -178,6 +181,18 @@ void WebMediaPlayerImpl::Proxy::NetworkEventTask() {
   if (webmediaplayer_) {
     webmediaplayer_->OnNetworkEvent();
   }
+}
+
+void WebMediaPlayerImpl::Proxy::GetCurrentFrame(
+    scoped_refptr<media::VideoFrame>* frame_out) {
+  if (video_renderer_)
+    video_renderer_->GetCurrentFrame(frame_out);
+}
+
+void WebMediaPlayerImpl::Proxy::PutCurrentFrame(
+    scoped_refptr<media::VideoFrame> frame) {
+  if (video_renderer_)
+    video_renderer_->PutCurrentFrame(frame);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -565,6 +580,24 @@ WebKit::WebMediaPlayer::MovieLoadType
   if (pipeline_->IsStreaming())
     return WebKit::WebMediaPlayer::LiveStream;
   return WebKit::WebMediaPlayer::Unknown;
+}
+
+WebKit::WebVideoFrame* WebMediaPlayerImpl::getCurrentFrame() {
+  scoped_refptr<media::VideoFrame> video_frame;
+  proxy_->GetCurrentFrame(&video_frame);
+  if (video_frame.get())
+    return new WebVideoFrameImpl(video_frame);
+  return NULL;
+}
+
+void WebMediaPlayerImpl::putCurrentFrame(
+    WebKit::WebVideoFrame* web_video_frame) {
+  if (web_video_frame) {
+    scoped_refptr<media::VideoFrame> video_frame =
+        WebVideoFrameImpl::toVideoFrame(web_video_frame);
+    proxy_->PutCurrentFrame(video_frame);
+    delete web_video_frame;
+  }
 }
 
 void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {

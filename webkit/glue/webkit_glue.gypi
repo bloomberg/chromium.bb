@@ -370,6 +370,8 @@
         'webthemeengine_impl_win.cc',
         'weburlloader_impl.cc',
         'weburlloader_impl.h',
+        'webvideoframe_impl.cc',
+        'webvideoframe_impl.h',
         'window_open_disposition.h',
         'window_open_disposition.cc',
 
