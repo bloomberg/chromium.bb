@@ -431,9 +431,9 @@ class NotificationType {
     // first RenderViewHost is set).
     RENDER_VIEW_HOST_CHANGED,
 
-    // Indicates that the render view host has received a new accessibility tree
-    // from the render view.  The source is the RenderViewHost, the details
-    // are not used.
+    // Indicates that the render view host has received an accessibility tree
+    // update, either partial or full, from the render view.  The source is the
+    // RenderViewHost, the details are not used.
     RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
 
     // This is sent when a RenderWidgetHost is being destroyed. The source is

@@ -39,7 +39,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       parent_hwnd_, OBJID_WINDOW, IID_IAccessible,
       reinterpret_cast<void **>(&window_iaccessible_));
   DCHECK(SUCCEEDED(hr));
-  root_ = CreateAccessibilityTree(NULL, src, 0);
+  root_ = CreateAccessibilityTree(NULL, GetNextChildID(), src, 0);
   if (!focus_)
     focus_ = root_;
 }
@@ -55,6 +55,10 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
   return root_;
+}
+
+void BrowserAccessibilityManager::Remove(LONG child_id) {
+  child_id_map_.erase(child_id);
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFromChildID(
@@ -117,23 +121,78 @@ void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
     return;
 
   LONG child_id = iter->second;
-  ::NotifyWinEvent(EVENT_OBJECT_FOCUS, parent_hwnd_, OBJID_CLIENT, child_id);
+  ::NotifyWinEvent(
+      EVENT_OBJECT_STATECHANGE,
+      parent_hwnd_,
+      OBJID_CLIENT,
+      child_id);
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
-    BrowserAccessibility* parent,
-    const webkit_glue::WebAccessibility& src,
-    int index_in_parent) {
-  BrowserAccessibility* instance = factory_->Create();
+void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
+    const std::vector<webkit_glue::WebAccessibility>& acc_changes) {
+  if (delegate_)
+    delegate_->AccessibilityObjectChildrenChangeAck();
 
+  // For each accessibility object child change.
+  for (unsigned int index = 0; index < acc_changes.size(); index++) {
+    const webkit_glue::WebAccessibility& acc_obj = acc_changes[index];
+    base::hash_map<int, LONG>::iterator iter =
+        renderer_id_to_child_id_map_.find(acc_obj.id);
+    if (iter == renderer_id_to_child_id_map_.end())
+      continue;
+
+    LONG child_id = iter->second;
+    BrowserAccessibility* old_browser_acc = GetFromChildID(child_id);
+
+    BrowserAccessibility* new_browser_acc = CreateAccessibilityTree(
+        old_browser_acc->GetParent(),
+        child_id,
+        acc_obj,
+        old_browser_acc->index_in_parent());
+
+    if (focus_->IsDescendantOf(old_browser_acc))
+      focus_ = new_browser_acc;
+
+    if (old_browser_acc->GetParent()) {
+      old_browser_acc->GetParent()->ReplaceChild(
+          old_browser_acc,
+          new_browser_acc);
+    } else {
+      DCHECK_EQ(old_browser_acc, root_);
+      root_ = new_browser_acc;
+    }
+    old_browser_acc->InactivateTree();
+    old_browser_acc->Release();
+    child_id_map_[child_id] = new_browser_acc;
+
+    if (root_ != new_browser_acc) {
+      NotifyWinEvent(
+          EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, child_id);
+    } else {
+      NotifyWinEvent(
+          EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, CHILDID_SELF);
+    }
+  }
+}
+
+LONG BrowserAccessibilityManager::GetNextChildID() {
   // Get the next child ID, and wrap around when we get near the end
   // of a 32-bit integer range. It's okay to wrap around; we just want
   // to avoid it as long as possible because clients may cache the ID of
   // an object for a while to determine if they've seen it before.
-  LONG child_id = next_child_id_;
   next_child_id_--;
   if (next_child_id_ == -2000000000)
     next_child_id_ = -1;
+
+  return next_child_id_;
+}
+
+BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
+    BrowserAccessibility* parent,
+    int child_id,
+    const webkit_glue::WebAccessibility& src,
+    int index_in_parent) {
+  BrowserAccessibility* instance = factory_->Create();
 
   instance->Initialize(this, parent, child_id, index_in_parent, src);
   child_id_map_[child_id] = instance;
@@ -142,7 +201,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
     focus_ = instance;
   for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
     BrowserAccessibility* child = CreateAccessibilityTree(
-        instance, src.children[i], i);
+        instance, GetNextChildID(), src.children[i], i);
     instance->AddChild(child);
   }
 

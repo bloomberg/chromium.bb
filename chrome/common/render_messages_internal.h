@@ -990,6 +990,11 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
                       int /* object id */)
 
+  // Tells the render view that a ViewHostMsg_AccessibilityObjectChildrenChange
+  // message was processed, and the render view host is ready for additional
+  // children change messages.
+  IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityObjectChildrenChange_ACK)
+
   // Relay a speech recognition result, either partial or final.
   IPC_MESSAGE_ROUTED2(ViewMsg_SpeechInput_SetRecognitionResult,
                       int /* request id */,
@@ -2216,11 +2221,21 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityFocusChange,
                       int /* accessibility object id */)
 
-  // Send as a result of a state change in the renderer (if accessibility is
+  // Sent as a result of a state change in the renderer (if accessibility is
   // enabled), to notify the browser side. Takes the id of the accessibility
   // object that had a state change
   IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityObjectStateChange,
                       int /* accessibility object id */)
+
+  // Sent by the renderer as a result of a accessibility node children change.
+  // The browser responds with a ViewMsg_AccessibilityObjectChildrenChange_ACK.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityObjectChildrenChange,
+                      std::vector<webkit_glue::WebAccessibility>)
+
+  // Send the tree of accessibility data to the browser, where it's cached
+  // in order to respond to OS accessibility queries immediately.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityTree,
+                      webkit_glue::WebAccessibility)
 
   // Message sent from the renderer to the browser to request that the browser
   // close all sockets.  Used for debugging/testing.
@@ -2441,9 +2456,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32, /* response_id */
                        string16 /* name */)
 
-   // WebIDBObjectStore::openCursor() message.
-   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreOpenCursor,
-                        ViewHostMsg_IDBObjectStoreOpenCursor_Params)
+  // WebIDBObjectStore::openCursor() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreOpenCursor,
+                       ViewHostMsg_IDBObjectStoreOpenCursor_Params)
 
   // WebIDBObjectStore::~WebIDBObjectStore() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreDestroyed,
@@ -2667,11 +2682,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL2(ViewHostMsg_Geolocation_Resume,
                        int /* render_view_id */,
                        int /* bridge_id */)
-
-  // Send the tree of accessibility data to the browser, where it's cached
-  // in order to respond to OS accessibility queries immediately.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityTree,
-                      webkit_glue::WebAccessibility)
 
   // Notifies the TabContents that the content being displayed is PDF.
   // This allows the browser to handle things such as zooming differently.

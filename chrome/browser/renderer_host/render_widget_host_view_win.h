@@ -157,6 +157,8 @@ class RenderWidgetHostViewWin
       const webkit_glue::WebAccessibility& tree);
   virtual void OnAccessibilityFocusChange(int acc_obj_id);
   virtual void OnAccessibilityObjectStateChange(int acc_obj_id);
+  virtual void OnAccessibilityObjectChildrenChange(
+      const std::vector<webkit_glue::WebAccessibility>& acc_obj);
 
   // Implementation of NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -166,6 +168,7 @@ class RenderWidgetHostViewWin
   // Implementation of BrowserAccessibilityDelegate:
   virtual void SetAccessibilityFocus(int acc_obj_id);
   virtual void AccessibilityDoDefaultAction(int acc_obj_id);
+  virtual void AccessibilityObjectChildrenChangeAck();
 
  protected:
   // Windows Message Handlers

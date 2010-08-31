@@ -1166,6 +1166,10 @@ void RenderWidgetHost::AccessibilityDoDefaultAction(int acc_obj_id) {
   Send(new ViewMsg_AccessibilityDoDefaultAction(routing_id(), acc_obj_id));
 }
 
+void RenderWidgetHost::AccessibilityObjectChildrenChangeAck() {
+  Send(new ViewMsg_AccessibilityObjectChildrenChange_ACK(routing_id()));
+}
+
 void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {
   if (key_queue_.size() == 0) {
     LOG(ERROR) << "Got a KeyEvent back from the renderer but we "

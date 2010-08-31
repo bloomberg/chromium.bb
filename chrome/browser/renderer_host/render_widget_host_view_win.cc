@@ -1511,6 +1511,14 @@ void RenderWidgetHostViewWin::OnAccessibilityObjectStateChange(int acc_obj_id) {
   }
 }
 
+void RenderWidgetHostViewWin::OnAccessibilityObjectChildrenChange(
+    const std::vector<webkit_glue::WebAccessibility>& acc_changes) {
+  if (browser_accessibility_manager_.get()) {
+    browser_accessibility_manager_->OnAccessibilityObjectChildrenChange(
+        acc_changes);
+  }
+}
+
 void RenderWidgetHostViewWin::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
@@ -1551,6 +1559,10 @@ void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
   }
 
   render_widget_host_->AccessibilityDoDefaultAction(acc_obj_id);
+}
+
+void RenderWidgetHostViewWin::AccessibilityObjectChildrenChangeAck() {
+  render_widget_host_->AccessibilityObjectChildrenChangeAck();
 }
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,

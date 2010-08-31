@@ -10,6 +10,9 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
+#include <string>
+#include <vector>
+
 #include "app/surface/transport_dib.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -250,6 +253,8 @@ class RenderWidgetHostView {
       const webkit_glue::WebAccessibility& tree) { }
   virtual void OnAccessibilityFocusChange(int acc_obj_id) { }
   virtual void OnAccessibilityObjectStateChange(int acc_obj_id) { }
+  virtual void OnAccessibilityObjectChildrenChange(
+       const std::vector<webkit_glue::WebAccessibility>& acc_changes) { }
 
  protected:
   // Interface class only, do not construct.

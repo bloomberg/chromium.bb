@@ -55,6 +55,9 @@ void BrowserAccessibility::AddChild(BrowserAccessibility* child) {
 }
 
 void BrowserAccessibility::InactivateTree() {
+  if (!instance_active_)
+    return;
+
   // Mark this object as inactive, so calls to all COM methods will return
   // failure.
   instance_active_ = false;
@@ -70,6 +73,7 @@ void BrowserAccessibility::InactivateTree() {
     (*iter)->Release();
   }
   children_.clear();
+  manager_->Remove(child_id_);
 }
 
 bool BrowserAccessibility::IsDescendantOf(BrowserAccessibility* ancestor) {
@@ -80,6 +84,10 @@ bool BrowserAccessibility::IsDescendantOf(BrowserAccessibility* ancestor) {
   }
 
   return false;
+}
+
+BrowserAccessibility* BrowserAccessibility::GetParent() {
+  return parent_;
 }
 
 BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() {
@@ -96,6 +104,14 @@ BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
   }
 
   return NULL;
+}
+
+void BrowserAccessibility::ReplaceChild(
+    const BrowserAccessibility* old_acc, BrowserAccessibility* new_acc) {
+  DCHECK_EQ(children_[old_acc->index_in_parent_], old_acc);
+
+  old_acc = children_[old_acc->index_in_parent_];
+  children_[old_acc->index_in_parent_] = new_acc;
 }
 
 BrowserAccessibility* BrowserAccessibility::NewReference() {
