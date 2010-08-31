@@ -16,8 +16,8 @@
 //                    browser for each page load.
 // --memoryusage: prints out memory usage when visiting each page.
 // --logfile=filepath: saves the visit log to the specified path.
-// --timeout=millisecond: time out as specified in millisecond during each
-//                        page load.
+// --timeout=seconds: time out as specified in seconds during each
+//                    page load.
 // --nopagedown: won't simulate page down key presses after page load.
 // --noclearprofile: do not clear profile dir before firing up each time.
 // --savedebuglog: save Chrome, V8, and test debug log for each page loaded.
@@ -98,7 +98,7 @@ FilePath g_test_log_path;
 bool g_stand_alone = false;
 
 const int kUrlNavigationTimeoutSeconds = 20;
-int g_timeout_ms = kUrlNavigationTimeoutSeconds;
+int g_timeout_seconds = kUrlNavigationTimeoutSeconds;
 
 // Overrides a number of IWebBrowser2 event sink handlers as provided by the
 // base chrome_frame_test::WebBrowserEventSink class and provides functionality
@@ -116,7 +116,11 @@ class WebBrowserEventSinkImpl : public chrome_frame_test::WebBrowserEventSink {
   ~WebBrowserEventSinkImpl() {}
 
   STDMETHOD_(void, OnDocumentComplete)(IDispatch* dispatch, VARIANT* url) {
-    if (url->bstrVal && !_wcsicmp(url->bstrVal, url_.c_str())) {
+    // Note that we can't compare url directly to this->url_ since this check
+    // then fails for redirects, e.g. www.google.com -> www.google.ca, since we
+    // only get a single OnDocumentComplete for the final destination.
+    // Instead just discard interstitial "about:blank" notifications.
+    if (url->bstrVal && _wcsicmp(url->bstrVal, L"about:blank") != 0) {
       navigation_started_ = false;
       // If this is a chrome frame navigation then the OnDocumentComplete event
       // does not indicate that we actually finished navigation. For that we
@@ -257,7 +261,7 @@ class PageLoadTest : public testing::Test {
     // assertion when page loading fails. We log the result instead.
     hr = browser_event_sink.Navigate(UTF8ToWide(url.spec()));
     if (SUCCEEDED(hr)) {
-      message_loop.RunFor(g_timeout_ms);
+      message_loop.RunFor(g_timeout_seconds);
       if (browser_event_sink.navigation_completed())
         metrics.result = NAVIGATION_SUCCESS;
     }
@@ -287,7 +291,7 @@ class PageLoadTest : public testing::Test {
       log_file << url_string;
       switch (metrics.result) {
         case NAVIGATION_ERROR:
-          log_file << " error";
+          log_file << " error: " << hr;
           break;
         case NAVIGATION_SUCCESS:
           log_file << " success";
@@ -601,8 +605,8 @@ void SetPageRange(const CommandLine& parsed_command_line) {
     ASSERT_TRUE(
         base::StringToInt(parsed_command_line.GetSwitchValueASCII(
                               kTimeoutSwitch),
-                          &g_timeout_ms));
-    ASSERT_GT(g_timeout_ms, 0);
+                          &g_timeout_seconds));
+    ASSERT_GT(g_timeout_seconds, 0);
   }
 
   if (parsed_command_line.HasSwitch(kNoPageDownSwitch))
