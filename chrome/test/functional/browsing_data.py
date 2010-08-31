@@ -25,6 +25,7 @@ class BrowsingDataTest(pyauto.PyUITest):
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self.WaitForAllDownloadsToComplete()
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
 
   def _GetURLForFile(self, file_name):
     """Returns the url for the file in the 'data' directory."""

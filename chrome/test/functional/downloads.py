@@ -179,6 +179,7 @@ class DownloadsTest(pyauto.PyUITest):
     # The download is removed from downloads, but not from the disk.
     self.assertFalse(self.GetDownloadsInfo().Downloads())
     self.assertTrue(os.path.exists(downloaded_pkg))
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
 
   def testBigZip(self):
     """Verify that we can download a 1GB file.
