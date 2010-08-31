@@ -207,7 +207,7 @@ def main_linux(options, args):
   if bits == 32:
     symbol_file = 'chrome.breakpad.ia32'
   elif bits == 64:
-    symbol_file = 'chrome.breakpad.ia64'
+    symbol_file = 'chrome.breakpad.x64'
   else:
     print 'Unknown architecture'
     return 1
