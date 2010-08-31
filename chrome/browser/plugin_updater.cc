@@ -91,10 +91,13 @@ void EnablePluginFile(bool enable, const FilePath::StringType& path) {
     NPAPI::PluginList::Singleton()->DisablePlugin(file_path);
 }
 
+// Note: if you change this to false from true, you must update
+// kPluginsEnabledInternalPDF to be a new name (i.e. add 2, 3, 4...) at end.
 static bool enable_internal_pdf_ = true;
 
 void DisablePluginGroupsFromPrefs(Profile* profile) {
   bool update_internal_dir = false;
+  bool update_preferences = false;
   FilePath last_internal_dir =
   profile->GetPrefs()->GetFilePath(prefs::kPluginsLastInternalDirectory);
   FilePath cur_internal_dir;
@@ -105,8 +108,17 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
         prefs::kPluginsLastInternalDirectory, cur_internal_dir);
   }
 
+  if (!enable_internal_pdf_) {
+    // This DCHECK guards against us disabling/enabling the pdf plugin more than
+    // once without renaming the flag that tells us whether we can enable it
+    // automatically.  Each time we disable the plugin by default after it was
+    // enabled by default, we need to rename that flag.
+    DCHECK(!profile->GetPrefs()->GetBoolean(prefs::kPluginsEnabledInternalPDF));
+  }
+
   bool found_internal_pdf = false;
   bool force_enable_internal_pdf = false;
+  string16 pdf_group_name;
   FilePath pdf_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
   FilePath::StringType pdf_path_str = pdf_path.value();
@@ -152,14 +164,21 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
 
         if (FilePath::CompareIgnoreCase(path, pdf_path_str) == 0) {
           found_internal_pdf = true;
+          plugin->GetString("name", &pdf_group_name);
           if (!enabled && force_enable_internal_pdf) {
             enabled = true;
             plugin->SetBoolean("enabled", true);
+            update_preferences = true;  // Can't modify the list during looping.
           }
         }
         if (!enabled)
           NPAPI::PluginList::Singleton()->DisablePlugin(plugin_path);
       } else if (!enabled && plugin->GetString("name", &group_name)) {
+        // Don't disable this group if it's for the pdf plugin and we just
+        // forced it on.
+        if (force_enable_internal_pdf && pdf_group_name == group_name)
+          continue;
+
         // Otherwise this is a list of groups.
         EnablePluginGroup(false, group_name);
       }
@@ -207,6 +226,9 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
     // overridden the default.
     NPAPI::PluginList::Singleton()->DisablePlugin(pdf_path);
   }
+
+  if (update_preferences)
+    UpdatePreferences(profile);
 }
 
 void DisableOutdatedPluginGroups() {
