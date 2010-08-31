@@ -1,1 +1,2 @@
 chrome.breakpad.ia32
+chrome.breakpad.x64

@@ -186,7 +186,7 @@
     [ 'OS=="linux"', {
       'conditions': [
         # Tools needed for archiving build symbols.
-        ['branding=="Chrome" or linux_breakpad==1', {
+        ['linux_breakpad==1', {
           'targets': [
             {
               'target_name': 'symupload',
@@ -257,7 +257,7 @@
               ],
 
               # Breakpad rev 583 introduced this flag.
-              # Using this define, stabs_reader.h will include a.out.h to 
+              # Using this define, stabs_reader.h will include a.out.h to
               # build on Linux.
               'defines': [
                 'HAVE_A_OUT_H',
