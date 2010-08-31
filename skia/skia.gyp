@@ -498,6 +498,7 @@
         '../third_party/skia/include/images/SkPageFlipper.h',
 
         'ext/bitmap_platform_device.h',
+        'ext/bitmap_platform_device_data.h',
         'ext/bitmap_platform_device_linux.cc',
         'ext/bitmap_platform_device_linux.h',
         'ext/bitmap_platform_device_mac.cc',

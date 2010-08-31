@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "skia/ext/bitmap_platform_device_linux.h"
+
+#include "skia/ext/bitmap_platform_device_data.h"
 
 #include <cairo/cairo.h>
 
@@ -35,70 +37,16 @@ void LoadClipToContext(cairo_t* context, const SkRegion& clip) {
 
 }  // namespace
 
-// -----------------------------------------------------------------------------
-// These objects are reference counted and own a Cairo surface. The surface is
-// the backing store for a Skia bitmap and we reference count it so that we can
-// copy BitmapPlatformDevice objects without having to copy all the image
-// data.
-// -----------------------------------------------------------------------------
-class BitmapPlatformDevice::BitmapPlatformDeviceData
-    : public base::RefCounted<BitmapPlatformDeviceData> {
- public:
-  explicit BitmapPlatformDeviceData(cairo_surface_t* surface);
-
-  cairo_t* GetContext();
-
-  // Sets the transform and clip operations. This will not update the Cairo
-  // surface, but will mark the config as dirty. The next call of LoadConfig
-  // will pick up these changes.
-  void SetMatrixClip(const SkMatrix& transform, const SkRegion& region);
-
- protected:
-  void LoadConfig();
-
-  // The Cairo surface inside this DC.
-  cairo_t* context_;
-  cairo_surface_t *const surface_;
-
-  // True when there is a transform or clip that has not been set to the
-  // surface.  The surface is retrieved for every text operation, and the
-  // transform and clip do not change as much. We can save time by not loading
-  // the clip and transform for every one.
-  bool config_dirty_;
-
-  // Translation assigned to the DC: we need to keep track of this separately
-  // so it can be updated even if the DC isn't created yet.
-  SkMatrix transform_;
-
-  // The current clipping
-  SkRegion clip_region_;
-
-  // Disallow copy & assign.
-  BitmapPlatformDeviceData(const BitmapPlatformDeviceData&);
-  BitmapPlatformDeviceData& operator=(
-      const BitmapPlatformDeviceData&);
-
- private:
-  friend class base::RefCounted<BitmapPlatformDeviceData>;
-
-  ~BitmapPlatformDeviceData();
-};
-
 BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
     cairo_surface_t* surface)
     : surface_(surface),
       config_dirty_(true) {  // Want to load the config next time.
-  context_ = cairo_create(surface);
+  bitmap_context_ = cairo_create(surface);
 }
 
 BitmapPlatformDevice::BitmapPlatformDeviceData::~BitmapPlatformDeviceData() {
-  cairo_destroy(context_);
+  cairo_destroy(bitmap_context_);
   cairo_surface_destroy(surface_);
-}
-
-cairo_t* BitmapPlatformDevice::BitmapPlatformDeviceData::GetContext() {
-  LoadConfig();
-  return context_;
 }
 
 void BitmapPlatformDevice::BitmapPlatformDeviceData::SetMatrixClip(
@@ -110,17 +58,17 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::SetMatrixClip(
 }
 
 void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
-  if (!config_dirty_ || !context_)
+  if (!config_dirty_ || !bitmap_context_)
     return;  // Nothing to do.
   config_dirty_ = false;
 
   // Load the identity matrix since this is what our clip is relative to.
   cairo_matrix_t cairo_matrix;
   cairo_matrix_init_identity(&cairo_matrix);
-  cairo_set_matrix(context_, &cairo_matrix);
+  cairo_set_matrix(bitmap_context_, &cairo_matrix);
 
-  LoadClipToContext(context_, clip_region_);
-  LoadMatrixToContext(context_, transform_);
+  LoadClipToContext(bitmap_context_, clip_region_);
+  LoadMatrixToContext(bitmap_context_, transform_);
 }
 
 // We use this static factory function instead of the regular constructor so
@@ -187,7 +135,8 @@ BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
 cairo_t* BitmapPlatformDevice::beginPlatformPaint() {
-  cairo_t* cairo = data_->GetContext();
+  data_->LoadConfig();
+  cairo_t* cairo = data_->bitmap_context();
   // Tell Cairo that we've (probably) modified its pixel buffer without
   // its knowledge.
   cairo_surface_mark_dirty(cairo_get_target(cairo));
