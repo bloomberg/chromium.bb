@@ -34,10 +34,11 @@
 #define MAYBE_Tab1Tab3Escape FLAKY_Tab1Tab3Escape
 #endif
 
-// These tests fail on Linux. See http://crbug.com/10941
+// These tests fail on Linux because we haven't implemented all of tab dragging
+// (it's not needed on chromeos). See http://crbug.com/10941
 #if defined(OS_LINUX)
-#define MAYBE_Tab1Tab2 FAILS_Tab1Tab2
-#define MAYBE_Tab1Tab3 FAILS_Tab1Tab3
+#define DISABLED_Tab1Tab2 FAILS_Tab1Tab2
+#define DISABLED_Tab1Tab3 FAILS_Tab1Tab3
 #else
 #define MAYBE_Tab1Tab2 Tab1Tab2
 #define MAYBE_Tab1Tab3 Tab1Tab3
