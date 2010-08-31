@@ -226,9 +226,9 @@ class BugReportHandler : public DOMMessageHandler,
   void ClobberScreenshotsSource();
 
  private:
-  Browser* browser_;
+  void CloseTab();
+
   std::string page_url_;
-  Profile* profile_;
   TabContents* tab_;
   TabContents* target_tab_;
   DOMUIScreenshotSource* screenshot_source_;
@@ -375,8 +375,7 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
 //
 ////////////////////////////////////////////////////////////////////////////////
 BugReportHandler::BugReportHandler(TabContents* tab)
-    : profile_(NULL), tab_(tab), screenshot_source_(NULL) {
-  browser_ = BrowserList::GetLastActive();
+    : tab_(tab), screenshot_source_(NULL) {
 }
 
 BugReportHandler::~BugReportHandler() {
@@ -435,17 +434,16 @@ base::StringPiece BugReportHandler::Init() {
             IDR_BUGREPORT_HTML_INVALID));
   }
 
+  Browser* browser = BrowserList::GetLastActive();
   // Sanity checks.
-  if (((index == 0) && (params != "0")) || (index >= browser_->tab_count())) {
+  if (((index == 0) && (params != "0")) || !browser ||
+      index >= browser->tab_count()) {
     return base::StringPiece(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_BUGREPORT_HTML_INVALID));
   }
 
-  if (browser_)
-    target_tab_ = browser_->GetTabContentsAt(index);
-  else
-    LOG(FATAL) << "Failed to get last active browser.";
+  target_tab_ = browser->GetTabContentsAt(index);
 
   // Setup the screenshot source after we've verified input is legit.
   SetupScreenshotsSource();
@@ -576,7 +574,7 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
     image_data_size = image.size();
   }
 
-  BugReportUtil::SendReport(browser_->profile(),
+  BugReportUtil::SendReport(dom_ui_->GetProfile(),
                             UTF16ToUTF8(target_tab_->GetTitle()),
                             problem_type,
                             page_url,
@@ -592,16 +590,22 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
                             browser::screen_size.height());
 #endif
 
-  browser_->CloseTabContents(tab_);
-  ClobberScreenshotsSource();
+  CloseTab();
 }
 
 void BugReportHandler::HandleCancel(const ListValue*) {
-  browser_->CloseTabContents(tab_);
-  ClobberScreenshotsSource();
+  CloseTab();
 }
 
-
+void BugReportHandler::CloseTab() {
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser) {
+    browser->CloseTabContents(tab_);
+  } else {
+    LOG(FATAL) << "Failed to get last active browser.";
+  }
+  ClobberScreenshotsSource();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
