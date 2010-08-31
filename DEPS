@@ -21,9 +21,6 @@ deps = {
   "src/googleurl":
     "http://google-url.googlecode.com/svn/trunk@145",
 
-  "src/sandbox/linux/seccomp":
-    "http://seccompsandbox.googlecode.com/svn/trunk@91",
-
   "src/sdch/open-vcdiff":
     "http://open-vcdiff.googlecode.com/svn/trunk@28",
 
