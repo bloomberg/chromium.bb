@@ -76,6 +76,32 @@
   Heapcheck:Leak
   fun:IA__FcCharSetCreate
 }
+
+{
+   bug_51988_a
+   Heapcheck:Leak
+   ...
+   fun:mozilla_security_manager::::nsPKCS12Blob_ImportHelper
+   fun:mozilla_security_manager::nsPKCS12Blob_Import
+   fun:net::CertDatabase::ImportFromPKCS12
+}
+{
+   bug_51988_b
+   Heapcheck:Leak
+   ...
+   fun:mozilla_security_manager::nsPKCS12Blob_Export
+   fun:net::CertDatabase::ExportToPKCS12
+}
+{
+   bug_51988_c
+   Heapcheck:Leak
+   ...
+   fun:base::::NSSInitSingleton::OpenUserDB
+   fun:base::::NSSInitSingleton::OpenTestNSSDB
+   fun:base::OpenTestNSSDB
+   fun:net::CertDatabaseNSSTest::SetUp
+}
+
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
