@@ -127,22 +127,22 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
       return None
     if (not os.path.exists(cached_file) or
         (time.time() - os.stat(cached_file).st_mtime) > max_age):
-      dir_info = SVN.CaptureInfo(".")
-      repo_root = dir_info["Repository Root"]
+      dir_info = SVN.CaptureInfo('.')
+      repo_root = dir_info['Repository Root']
       if use_root:
         url_path = repo_root
       else:
-        url_path = dir_info["URL"]
+        url_path = dir_info['URL']
       while True:
         # Look in the repository at the current level for the file.
         for _ in range(5):
-          content = ""
+          content = None
           try:
             # Take advantage of the fact that svn won't output to stderr in case
             # of success but will do in case of failure so don't mind putting
             # stderr into content_array.
             content_array = []
-            svn_path = url_path + "/" + filename
+            svn_path = url_path + '/' + filename
             args = ['cat', svn_path]
             if sys.platform != 'darwin':
               # MacOSX 10.5.2 has a bug with svn 1.4.4 that will trigger the
@@ -174,9 +174,11 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
           break
         # Go up one level to try again.
         url_path = os.path.dirname(url_path)
-      # Write a cached version even if there isn't a file, so we don't try to
-      # fetch it each time.
-      gclient_utils.FileWrite(cached_file, content)
+      if content is not None or filename != CODEREVIEW_SETTINGS_FILE:
+        # Write a cached version even if there isn't a file, so we don't try to
+        # fetch it each time. codereview.settings must always be present so do
+        # not cache negative.
+        gclient_utils.FileWrite(cached_file, content or '')
     else:
       content = gclient_utils.FileRead(cached_file, 'r')
     # Keep the content cached in memory.
