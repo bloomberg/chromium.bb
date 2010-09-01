@@ -3047,12 +3047,11 @@ void Browser::Observe(NotificationType type,
 
       // Close any tabs from the unloaded extension.
       Extension* extension = Details<Extension>(details).ptr();
-      for (int i = 0; i < tabstrip_model_.count(); i++) {
+      for (int i = tabstrip_model_.count() - 1; i >= 0; --i) {
         TabContents* tc = tabstrip_model_.GetTabContentsAt(i);
         if (tc->GetURL().SchemeIs(chrome::kExtensionScheme) &&
             tc->GetURL().host() == extension->id()) {
           CloseTabContents(tc);
-          return;
         }
       }
 
