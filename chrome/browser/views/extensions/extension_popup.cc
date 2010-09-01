@@ -341,7 +341,10 @@ gfx::Rect ExtensionPopup::GetOuterBounds() const {
   if (BubbleBorder::is_arrow_on_left(anchor_position_))
     x = relative_rect.x();
   else
-    x = relative_rect.x() - contents_size.width();
+    // Note that if the arrow is on the right, that the x position of the popup
+    // is assigned so that the rightmost edge of the popup is aligned with the
+    // rightmost edge of the relative region.
+    x = relative_rect.right() - contents_size.width();
 
   return gfx::Rect(x, y, contents_size.width(), contents_size.height());
 }

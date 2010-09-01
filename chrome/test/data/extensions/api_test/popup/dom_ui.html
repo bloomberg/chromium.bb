@@ -1,6 +1,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <script>
+// A token assigned to the global context of this script so that subsequently
+// created tabs/views may find this view.
+var TESTING_TOKEN = true;
+
 var globalValue = "I am not 42.";
 
 // Some helper functions that track the focus state of a form on the toolbar.
@@ -60,7 +64,7 @@ window.onload = function() {
         chrome.test.assertTrue(formFocused);
       });
 
-      chrome.experimental.popup.show("toolband_popup.html",
+      chrome.experimental.popup.show("dom_ui_popup.html",
                                      showDetails,
                                      chrome.test.callbackPass(function() {
         chrome.test.assertTrue(formFocused);
@@ -83,7 +87,7 @@ window.onload = function() {
       var showDetails = {
         "relativeTo": document.getElementById("anchorHere")
       };
-      chrome.experimental.popup.show("toolband_popup.html",
+      chrome.experimental.popup.show("dom_ui_popup.html",
                                      showDetails,
                                      chrome.test.callbackPass(function() {
         chrome.test.assertTrue(
@@ -133,7 +137,7 @@ window.onload = function() {
         "relativeTo": document.getElementById("anchorHere"),
         "borderStyle": "rectangle"
       };
-      chrome.experimental.popup.show("toolband_popup.html",
+      chrome.experimental.popup.show("dom_ui_popup.html",
                                      showDetails,
                                      chrome.test.callbackPass(function() {
         chrome.experimental.extension.getPopupView().close();
@@ -164,7 +168,7 @@ window.onload = function() {
         }
       });
       
-      chrome.experimental.popup.show("toolband_popup_a.html",
+      chrome.experimental.popup.show("dom_ui_popup_a.html",
                                      showDetails1,
                                      function() {
         // Validate that the popup view returned is the one we expect.
@@ -177,7 +181,7 @@ window.onload = function() {
             1,
             chrome.extension.getViews({type: "popup"}).length);
 
-        chrome.experimental.popup.show("toolband_popup_b.html",
+        chrome.experimental.popup.show("dom_ui_popup_b.html",
                                        showDetails2,
                                        function() {
           // Validate that the first popup view is fully closed, and that
@@ -205,7 +209,7 @@ window.onload = function() {
         "relativeTo": document.getElementById("anchorHere")
       };
 
-      chrome.experimental.popup.show("toolband_popup_sizing.html",
+      chrome.experimental.popup.show("dom_ui_popup_sizing.html",
                                      showDetails);
     },
     function popupRectangleSizing() {
@@ -219,14 +223,14 @@ window.onload = function() {
         "borderStyle": "rectangle"
       };
 
-      chrome.experimental.popup.show("toolband_popup_sizing.html",
+      chrome.experimental.popup.show("dom_ui_popup_sizing.html",
                                      showDetails);
     },
     function popupTeardownDismissal() {
       // This test verifies that closing of views that launched active popups
       // results in a popup dismissal.
       var tabProperties = {
-        "url": "toolband_domui_popup_dismissal.html"
+        "url": "dom_ui_popup_dismissal.html"
       };
       chrome.tabs.create(tabProperties);
     }
