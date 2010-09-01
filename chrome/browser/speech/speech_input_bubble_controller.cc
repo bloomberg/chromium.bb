@@ -74,26 +74,32 @@ void SpeechInputBubbleController::SetBubbleToRecognizingMode(int caller_id) {
 
 void SpeechInputBubbleController::RecognitionCancelled() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  int old_bubble_caller_id = current_bubble_caller_id_;
+  current_bubble_caller_id_ = 0;
+  bubble_.reset();
+
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
           this,
           &SpeechInputBubbleController::InvokeDelegateRecognitionCancelled,
-          current_bubble_caller_id_));
-  current_bubble_caller_id_ = 0;
-  bubble_.reset();
+          old_bubble_caller_id));
 }
 
 void SpeechInputBubbleController::InfoBubbleClosed() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  int old_bubble_caller_id = current_bubble_caller_id_;
+  current_bubble_caller_id_ = 0;
+  bubble_.reset();
+
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
           this,
           &SpeechInputBubbleController::InvokeDelegateFocusChanged,
-          current_bubble_caller_id_));
-  current_bubble_caller_id_ = 0;
-  bubble_.reset();
+          old_bubble_caller_id));
 }
 
 void SpeechInputBubbleController::InvokeDelegateRecognitionCancelled(

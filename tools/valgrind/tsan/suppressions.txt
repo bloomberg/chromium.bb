@@ -39,12 +39,6 @@
   fun:*media*PipelineImpl*GetCurrentTime*
 }
 
-{
-  bug_53765
-  ThreadSanitizer:Race
-  fun:*scoped_ptr*SpeechInputBubble*
-}
-
 ############################
 # Real races in third_party
 {
