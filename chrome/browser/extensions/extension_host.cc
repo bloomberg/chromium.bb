@@ -15,6 +15,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
@@ -509,6 +510,8 @@ void ExtensionHost::CreateNewWindow(
     int route_id,
     WindowContainerType window_container_type,
     const string16& frame_name) {
+  // TODO(aa): Use the browser's profile if the extension is split mode
+  // incognito.
   delegate_view_helper_.CreateNewWindow(
       route_id,
       render_view_host()->process()->profile(),
@@ -545,10 +548,14 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   if (!contents)
     return;
 
-  Browser* browser = extension_function_dispatcher_->GetCurrentBrowser(
-      profile_->GetExtensionsService()->IsIncognitoEnabled(extension_));
-  if (!browser)
-    return;
+  Browser* browser = BrowserList::FindBrowserWithType(
+      contents->profile(),
+      Browser::TYPE_NORMAL,
+      false);  // Match incognito exactly.
+  if (!browser) {
+    browser = Browser::Create(contents->profile());
+    browser->window()->Show();
+  }
 
   browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
 }
