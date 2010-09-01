@@ -10,8 +10,8 @@
 #include <string>
 #include <set>
 
-#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
@@ -193,7 +193,7 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model);
 // out. This uses ui_controls::SendKeyPress, see it for details. Returns true
 // if the event was successfully sent and received.
 bool SendKeyPressSync(gfx::NativeWindow window,
-                      app::KeyboardCode key,
+                      base::KeyboardCode key,
                       bool control,
                       bool shift,
                       bool alt,

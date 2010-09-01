@@ -212,13 +212,13 @@ void UserController::ButtonPressed(views::Button* sender,
 bool UserController::HandleKeystroke(
     views::Textfield* sender,
     const views::Textfield::Keystroke& keystroke) {
-  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+  if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
     Login();
     return true;
-  } else if (keystroke.GetKeyboardCode() == app::VKEY_LEFT) {
+  } else if (keystroke.GetKeyboardCode() == base::VKEY_LEFT) {
     SelectUser(user_index() - 1);
     return true;
-  } else if (keystroke.GetKeyboardCode() == app::VKEY_RIGHT) {
+  } else if (keystroke.GetKeyboardCode() == base::VKEY_RIGHT) {
     SelectUser(user_index() + 1);
     return true;
   }

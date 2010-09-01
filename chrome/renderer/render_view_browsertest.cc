@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 
-#include "app/keyboard_codes.h"
 #include "base/file_util.h"
+#include "base/keyboard_codes.h"
 #include "base/shared_memory.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/content_settings.h"
@@ -578,20 +578,20 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
         'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
         'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
         'W', 'X', 'Y', 'Z',
-        app::VKEY_OEM_1,
-        app::VKEY_OEM_PLUS,
-        app::VKEY_OEM_COMMA,
-        app::VKEY_OEM_MINUS,
-        app::VKEY_OEM_PERIOD,
-        app::VKEY_OEM_2,
-        app::VKEY_OEM_3,
-        app::VKEY_OEM_4,
-        app::VKEY_OEM_5,
-        app::VKEY_OEM_6,
-        app::VKEY_OEM_7,
+        base::VKEY_OEM_1,
+        base::VKEY_OEM_PLUS,
+        base::VKEY_OEM_COMMA,
+        base::VKEY_OEM_MINUS,
+        base::VKEY_OEM_PERIOD,
+        base::VKEY_OEM_2,
+        base::VKEY_OEM_3,
+        base::VKEY_OEM_4,
+        base::VKEY_OEM_5,
+        base::VKEY_OEM_6,
+        base::VKEY_OEM_7,
 #if defined(OS_WIN)
         // Not sure how to handle this key on Linux.
-        app::VKEY_OEM_8,
+        base::VKEY_OEM_8,
 #endif
       };
 
@@ -817,20 +817,20 @@ TEST_F(RenderViewTest, InsertCharacters) {
         'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
         'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
         'W', 'X', 'Y', 'Z',
-        app::VKEY_OEM_1,
-        app::VKEY_OEM_PLUS,
-        app::VKEY_OEM_COMMA,
-        app::VKEY_OEM_MINUS,
-        app::VKEY_OEM_PERIOD,
-        app::VKEY_OEM_2,
-        app::VKEY_OEM_3,
-        app::VKEY_OEM_4,
-        app::VKEY_OEM_5,
-        app::VKEY_OEM_6,
-        app::VKEY_OEM_7,
+        base::VKEY_OEM_1,
+        base::VKEY_OEM_PLUS,
+        base::VKEY_OEM_COMMA,
+        base::VKEY_OEM_MINUS,
+        base::VKEY_OEM_PERIOD,
+        base::VKEY_OEM_2,
+        base::VKEY_OEM_3,
+        base::VKEY_OEM_4,
+        base::VKEY_OEM_5,
+        base::VKEY_OEM_6,
+        base::VKEY_OEM_7,
 #if defined(OS_WIN)
         // Unclear how to handle this on Linux.
-        app::VKEY_OEM_8,
+        base::VKEY_OEM_8,
 #endif
       };
 

@@ -14,8 +14,8 @@
 
 #include <string>
 
-#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
+#include "base/keyboard_codes.h"
 #if !defined(OS_LINUX)
 #include "base/logging.h"
 #endif
@@ -65,7 +65,7 @@ class Textfield : public View {
     }
     const GdkEventKey* event() const { return &event_; }
 #endif
-    app::KeyboardCode GetKeyboardCode() const;
+    base::KeyboardCode GetKeyboardCode() const;
     bool IsControlHeld() const;
     bool IsShiftHeld() const;
 

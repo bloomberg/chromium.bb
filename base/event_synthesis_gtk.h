@@ -6,17 +6,17 @@
 // only keyboard events). This is useful for a variety of testing purposes.
 // NOTE: This should not be used outside of testing.
 
-#ifndef APP_EVENT_SYNTHESIS_GTK_
-#define APP_EVENT_SYNTHESIS_GTK_
+#ifndef BASE_EVENT_SYNTHESIS_GTK_
+#define BASE_EVENT_SYNTHESIS_GTK_
 #pragma once
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <vector>
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 
-namespace app {
+namespace base {
 
 // Creates and returns a key event. Passes ownership to the caller.
 GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
@@ -28,10 +28,10 @@ GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
 // Ownership of the events in the vector is passed to the caller.
 void SynthesizeKeyPressEvents(
     GdkWindow* window,
-    app::KeyboardCode key,
+    base::KeyboardCode key,
     bool control, bool shift, bool alt,
     std::vector<GdkEvent*>* events);
 
-}  // namespace app
+}  // namespace base
 
-#endif  // APP_EVENT_SYNTHESIS_GTK_
+#endif  // BASE_EVENT_SYNTHESIS_GTK_

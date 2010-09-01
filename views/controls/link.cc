@@ -8,7 +8,7 @@
 #include <gdk/gdk.h>
 #endif
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "gfx/color_utils.h"
 #include "gfx/font.h"
@@ -122,8 +122,8 @@ void Link::OnMouseReleased(const MouseEvent& e, bool canceled) {
 }
 
 bool Link::OnKeyPressed(const KeyEvent& e) {
-  bool activate = ((e.GetKeyCode() == app::VKEY_SPACE) ||
-                   (e.GetKeyCode() == app::VKEY_RETURN));
+  bool activate = ((e.GetKeyCode() == base::VKEY_SPACE) ||
+                   (e.GetKeyCode() == base::VKEY_RETURN));
   if (!activate)
     return false;
 
@@ -140,8 +140,8 @@ bool Link::OnKeyPressed(const KeyEvent& e) {
 
 bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   // Make sure we don't process space or enter as accelerators.
-  return (e.GetKeyCode() == app::VKEY_SPACE) ||
-      (e.GetKeyCode() == app::VKEY_RETURN);
+  return (e.GetKeyCode() == base::VKEY_SPACE) ||
+      (e.GetKeyCode() == base::VKEY_RETURN);
 }
 
 bool Link::GetAccessibleRole(AccessibilityTypes::Role* role) {

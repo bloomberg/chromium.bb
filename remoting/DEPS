@@ -1,5 +1,4 @@
 include_rules = [
-  "+app",
   "+gfx",
   "+google/protobuf",
   "+media/base",

@@ -25,7 +25,7 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* from, View* to)
     View::ConvertPointToView(from, to, &location_);
 }
 
-KeyEvent::KeyEvent(EventType type, app::KeyboardCode key_code,
+KeyEvent::KeyEvent(EventType type, base::KeyboardCode key_code,
                    int event_flags, int repeat_count, int message_flags)
     : Event(type, event_flags),
       key_code_(key_code),

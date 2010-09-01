@@ -4,7 +4,7 @@
 
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -194,8 +194,8 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
   // TODO(thakis): It would be nice to get cancel: to work somehow.
   // Bug: http://code.google.com/p/chromium/issues/detail?id=32828 .
   if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
-      ((event.windowsKeyCode == app::VKEY_ESCAPE) ||
-       (event.windowsKeyCode == app::VKEY_OEM_PERIOD &&
+      ((event.windowsKeyCode == base::VKEY_ESCAPE) ||
+       (event.windowsKeyCode == base::VKEY_OEM_PERIOD &&
         event.modifiers == NativeWebKeyboardEvent::MetaKey))) {
     [controller_ close];
     return;

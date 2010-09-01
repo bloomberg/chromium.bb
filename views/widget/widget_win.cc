@@ -4,7 +4,6 @@
 
 #include "views/widget/widget_win.h"
 
-#include "app/keyboard_code_conversion_win.h"
 #include "app/l10n_util_win.h"
 #include "app/system_monitor.h"
 #include "app/win_util.h"
@@ -673,7 +672,7 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 }
 
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_PRESSED, app::KeyboardCodeForWindowsKeyCode(c),
+  KeyEvent event(Event::ET_KEY_PRESSED, win_util::WinToKeyboardCode(c),
                  KeyEvent::GetKeyStateFlags(), rep_cnt, flags);
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
@@ -683,7 +682,7 @@ void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
 }
 
 void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_RELEASED, app::KeyboardCodeForWindowsKeyCode(c),
+  KeyEvent event(Event::ET_KEY_RELEASED, win_util::WinToKeyboardCode(c),
                  KeyEvent::GetKeyStateFlags(), rep_cnt, flags);
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)

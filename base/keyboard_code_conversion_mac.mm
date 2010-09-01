@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "app/keyboard_code_conversion_mac.h"
+#import "base/keyboard_code_conversion_mac.h"
 
 #include <algorithm>
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
 
-namespace app {
+namespace base {
 
 namespace {
 
@@ -290,4 +290,4 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
   return macKeycode;
 }
 
-}  // namespace app
+}  // namespace base

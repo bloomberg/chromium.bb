@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -59,12 +59,12 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
   int original_view_id = -1;
   ASSERT_TRUE(window->GetFocusedViewID(&original_view_id));
 
-  app::KeyboardCode menu_key =
-      alternate_key_sequence ? app::VKEY_MENU : app::VKEY_F10;
+  base::KeyboardCode menu_key =
+      alternate_key_sequence ? base::VKEY_MENU : base::VKEY_F10;
 #if defined(OS_CHROMEOS)
   // Chrome OS has different function key accelerators, so we always use the
   // menu key there.
-  menu_key = app::VKEY_MENU;
+  menu_key = base::VKEY_MENU;
 #endif
   ASSERT_TRUE(window->SimulateOSKeyPress(menu_key, 0));
 
@@ -75,16 +75,16 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
   ASSERT_TRUE(browser->StartTrackingPopupMenus());
 
   if (alternate_key_sequence)
-    ASSERT_TRUE(window->SimulateOSKeyPress(app::VKEY_DOWN, 0));
+    ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_DOWN, 0));
   else
-    ASSERT_TRUE(window->SimulateOSKeyPress(app::VKEY_RETURN, 0));
+    ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_RETURN, 0));
 
   // Wait until the popup menu actually opens.
   ASSERT_TRUE(browser->WaitForPopupMenuToOpen());
 
   // Press DOWN to select the first item, then RETURN to select it.
-  ASSERT_TRUE(window->SimulateOSKeyPress(app::VKEY_DOWN, 0));
-  ASSERT_TRUE(window->SimulateOSKeyPress(app::VKEY_RETURN, 0));
+  ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_DOWN, 0));
+  ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_RETURN, 0));
 
   // Wait for the new tab to appear.
   ASSERT_TRUE(browser->WaitForTabCountToBecome(2, action_timeout_ms()));
@@ -125,13 +125,13 @@ TEST_F(KeyboardAccessTest, FAILS_ReserveKeyboardAccelerators) {
   scoped_refptr<WindowProxy> window(browser->GetWindow());
   ASSERT_TRUE(window);
   ASSERT_TRUE(window->SimulateOSKeyPress(
-      app::VKEY_TAB, views::Event::EF_CONTROL_DOWN));
+      base::VKEY_TAB, views::Event::EF_CONTROL_DOWN));
   ASSERT_TRUE(browser->WaitForTabToBecomeActive(0, action_max_timeout_ms()));
 
 #if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
   ASSERT_TRUE(browser->ActivateTab(1));
   ASSERT_TRUE(window->SimulateOSKeyPress(
-      app::VKEY_F4, views::Event::EF_CONTROL_DOWN));
+      base::VKEY_F4, views::Event::EF_CONTROL_DOWN));
   ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
 #endif
 }

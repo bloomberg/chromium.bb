@@ -31,8 +31,8 @@
 // NPAPI interactive UI tests.
 //
 
-#include "app/keyboard_codes.h"
 #include "base/file_path.h"
+#include "base/keyboard_codes.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -95,7 +95,7 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequest404Response) {
   automation()->WaitForAppModalDialog();
   scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
   ASSERT_TRUE(window.get());
-  ASSERT_TRUE(window->SimulateOSKeyPress(app::VKEY_ESCAPE, 0));
+  ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));
 
   WaitForFinish("geturl_404_response", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
@@ -114,7 +114,7 @@ TEST_F(NPAPIVisiblePluginTester, DISABLED_SelfDeletePluginInvokeAlert) {
   ASSERT_TRUE(automation()->WaitForAppModalDialog());
   scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
   ASSERT_TRUE(window.get());
-  ASSERT_TRUE(window->SimulateOSKeyPress(app::VKEY_ESCAPE, 0));
+  ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));
 
   WaitForFinish("self_delete_plugin_invoke_alert", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,

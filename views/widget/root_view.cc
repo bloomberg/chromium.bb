@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "app/drag_drop_types.h"
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "gfx/canvas_skia.h"
@@ -581,8 +581,8 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
   View* v = GetFocusedView();
   // Special case to handle right-click context menus triggered by the
   // keyboard.
-  if (v && v->IsEnabled() && ((event.GetKeyCode() == app::VKEY_APPS) ||
-     (event.GetKeyCode() == app::VKEY_F10 && event.IsShiftDown()))) {
+  if (v && v->IsEnabled() && ((event.GetKeyCode() == base::VKEY_APPS) ||
+     (event.GetKeyCode() == base::VKEY_F10 && event.IsShiftDown()))) {
     v->ShowContextMenu(v->GetKeyboardContextMenuLocation(), false);
     return true;
   }

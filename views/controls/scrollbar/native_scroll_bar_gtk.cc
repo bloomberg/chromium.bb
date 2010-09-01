@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 
-#include "app/keyboard_codes_posix.h"
+#include "base/keyboard_codes_posix.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/controls/scrollbar/scroll_bar.h"
 
@@ -45,32 +45,32 @@ bool NativeScrollBarGtk::OnKeyPressed(const KeyEvent& event) {
   if (!native_view())
     return false;
   switch (event.GetKeyCode()) {
-    case app::VKEY_UP:
+    case base::VKEY_UP:
       if (!native_scroll_bar_->IsHorizontal())
         MoveStep(false /* negative */);
       break;
-    case app::VKEY_DOWN:
+    case base::VKEY_DOWN:
       if (!native_scroll_bar_->IsHorizontal())
         MoveStep(true /* positive */);
       break;
-    case app::VKEY_LEFT:
+    case base::VKEY_LEFT:
       if (native_scroll_bar_->IsHorizontal())
         MoveStep(false /* negative */);
       break;
-    case app::VKEY_RIGHT:
+    case base::VKEY_RIGHT:
       if (native_scroll_bar_->IsHorizontal())
         MoveStep(true /* positive */);
       break;
-    case app::VKEY_PRIOR:
+    case base::VKEY_PRIOR:
       MovePage(false /* negative */);
       break;
-    case app::VKEY_NEXT:
+    case base::VKEY_NEXT:
       MovePage(true /* positive */);
       break;
-    case app::VKEY_HOME:
+    case base::VKEY_HOME:
       MoveTo(0);
       break;
-    case app::VKEY_END:
+    case base::VKEY_END:
       MoveToBottom();
       break;
     default:

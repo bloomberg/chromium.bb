@@ -4,8 +4,7 @@
 
 #include "chrome/browser/automation/ui_controls.h"
 
-#include "app/keyboard_code_conversion_win.h"
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/win_util.h"
@@ -138,10 +137,10 @@ void InputDispatcher::NotifyTask() {
 
 // Populate the INPUT structure with the appropriate keyboard event
 // parameters required by SendInput
-bool FillKeyboardInput(app::KeyboardCode key, INPUT* input, bool key_up) {
+bool FillKeyboardInput(base::KeyboardCode key, INPUT* input, bool key_up) {
   memset(input, 0, sizeof(INPUT));
   input->type = INPUT_KEYBOARD;
-  input->ki.wVk = app::WindowsKeyCodeForKeyboardCode(key);
+  input->ki.wVk = win_util::KeyboardCodeToWin(key);
   input->ki.dwFlags = key_up ? KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP :
                                KEYEVENTF_EXTENDEDKEY;
 
@@ -149,7 +148,7 @@ bool FillKeyboardInput(app::KeyboardCode key, INPUT* input, bool key_up) {
 }
 
 // Send a key event (up/down)
-bool SendKeyEvent(app::KeyboardCode key, bool up) {
+bool SendKeyEvent(base::KeyboardCode key, bool up) {
   INPUT input = { 0 };
 
   if (!FillKeyboardInput(key, &input, up))
@@ -161,7 +160,7 @@ bool SendKeyEvent(app::KeyboardCode key, bool up) {
   return true;
 }
 
-bool SendKeyPressImpl(app::KeyboardCode key,
+bool SendKeyPressImpl(base::KeyboardCode key,
                       bool control, bool shift, bool alt,
                       Task* task) {
   scoped_refptr<InputDispatcher> dispatcher(
@@ -172,7 +171,7 @@ bool SendKeyPressImpl(app::KeyboardCode key,
   // exists, send the key event directly there.
   HWND popup_menu = ::FindWindow(L"#32768", 0);
   if (popup_menu != NULL && popup_menu == ::GetTopWindow(NULL)) {
-    WPARAM w_param = app::WindowsKeyCodeForKeyboardCode(key);
+    WPARAM w_param = win_util::KeyboardCodeToWin(key);
     LPARAM l_param = 0;
     ::SendMessage(popup_menu, WM_KEYDOWN, w_param, l_param);
     ::SendMessage(popup_menu, WM_KEYUP, w_param, l_param);
@@ -186,19 +185,19 @@ bool SendKeyPressImpl(app::KeyboardCode key,
 
   UINT i = 0;
   if (control) {
-    if (!FillKeyboardInput(app::VKEY_CONTROL, &input[i], false))
+    if (!FillKeyboardInput(base::VKEY_CONTROL, &input[i], false))
       return false;
     i++;
   }
 
   if (shift) {
-    if (!FillKeyboardInput(app::VKEY_SHIFT, &input[i], false))
+    if (!FillKeyboardInput(base::VKEY_SHIFT, &input[i], false))
       return false;
     i++;
   }
 
   if (alt) {
-    if (!FillKeyboardInput(app::VKEY_MENU, &input[i], false))
+    if (!FillKeyboardInput(base::VKEY_MENU, &input[i], false))
       return false;
     i++;
   }
@@ -212,19 +211,19 @@ bool SendKeyPressImpl(app::KeyboardCode key,
   i++;
 
   if (alt) {
-    if (!FillKeyboardInput(app::VKEY_MENU, &input[i], true))
+    if (!FillKeyboardInput(base::VKEY_MENU, &input[i], true))
       return false;
     i++;
   }
 
   if (shift) {
-    if (!FillKeyboardInput(app::VKEY_SHIFT, &input[i], true))
+    if (!FillKeyboardInput(base::VKEY_SHIFT, &input[i], true))
       return false;
     i++;
   }
 
   if (control) {
-    if (!FillKeyboardInput(app::VKEY_CONTROL, &input[i], true))
+    if (!FillKeyboardInput(base::VKEY_CONTROL, &input[i], true))
       return false;
     i++;
   }
@@ -323,14 +322,14 @@ bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
 
 // public functions -----------------------------------------------------------
 
-bool SendKeyPress(gfx::NativeWindow window, app::KeyboardCode key,
+bool SendKeyPress(gfx::NativeWindow window, base::KeyboardCode key,
                   bool control, bool shift, bool alt, bool command) {
   DCHECK(command == false);  // No command key on Windows
   return SendKeyPressImpl(key, control, shift, alt, NULL);
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                app::KeyboardCode key,
+                                base::KeyboardCode key,
                                 bool control, bool shift, bool alt,
                                 bool command,
                                 Task* task) {

@@ -22,46 +22,46 @@ namespace views {
 std::wstring Accelerator::GetShortcutText() const {
   int string_id = 0;
   switch(key_code_) {
-    case app::VKEY_TAB:
+    case base::VKEY_TAB:
       string_id = IDS_APP_TAB_KEY;
       break;
-    case app::VKEY_RETURN:
+    case base::VKEY_RETURN:
       string_id = IDS_APP_ENTER_KEY;
       break;
-    case app::VKEY_ESCAPE:
+    case base::VKEY_ESCAPE:
       string_id = IDS_APP_ESC_KEY;
       break;
-    case app::VKEY_PRIOR:
+    case base::VKEY_PRIOR:
       string_id = IDS_APP_PAGEUP_KEY;
       break;
-    case app::VKEY_NEXT:
+    case base::VKEY_NEXT:
       string_id = IDS_APP_PAGEDOWN_KEY;
       break;
-    case app::VKEY_END:
+    case base::VKEY_END:
       string_id = IDS_APP_END_KEY;
       break;
-    case app::VKEY_HOME:
+    case base::VKEY_HOME:
       string_id = IDS_APP_HOME_KEY;
       break;
-    case app::VKEY_INSERT:
+    case base::VKEY_INSERT:
       string_id = IDS_APP_INSERT_KEY;
       break;
-    case app::VKEY_DELETE:
+    case base::VKEY_DELETE:
       string_id = IDS_APP_DELETE_KEY;
       break;
-    case app::VKEY_LEFT:
+    case base::VKEY_LEFT:
       string_id = IDS_APP_LEFT_ARROW_KEY;
       break;
-    case app::VKEY_RIGHT:
+    case base::VKEY_RIGHT:
       string_id = IDS_APP_RIGHT_ARROW_KEY;
       break;
-    case app::VKEY_BACK:
+    case base::VKEY_BACK:
       string_id = IDS_APP_BACKSPACE_KEY;
       break;
-    case app::VKEY_F1:
+    case base::VKEY_F1:
       string_id = IDS_APP_F1_KEY;
       break;
-    case app::VKEY_F11:
+    case base::VKEY_F11:
       string_id = IDS_APP_F11_KEY;
       break;
     default:

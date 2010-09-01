@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/keyboard_codes.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "grit/generated_resources.h"
@@ -162,7 +162,7 @@ void PasswordChangedView::ButtonPressed(Button* sender,
 
 bool PasswordChangedView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
-  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+  if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
     ExitDialog();
     return true;
   }

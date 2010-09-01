@@ -942,7 +942,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
   // it can be shared between Windows and Linux.
   // For now, we just override back-space and tab keys, as back-space is the
   // accelerator for back navigation and tab key is used by some input methods.
-  if (e.GetKeyCode() == app::VKEY_BACK ||
+  if (e.GetKeyCode() == base::VKEY_BACK ||
       views::FocusManager::IsTabTraversalKeyEvent(e))
     return true;
   return false;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/password_autocomplete_manager.h"
@@ -116,7 +116,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
   }
 
   void SimulateKeyDownEvent(const WebInputElement& element,
-                            app::KeyboardCode key_code) {
+                            base::KeyboardCode key_code) {
     WebKit::WebKeyboardEvent key_event;
     key_event.windowsKeyCode = key_code;
     view_->textFieldDidReceiveKeyDown(element, key_event);
@@ -288,12 +288,12 @@ TEST_F(PasswordAutocompleteManagerTest, MAYBE_InlineAutocomplete) {
   CheckUsernameSelection(2, 5);
 
   // Test that deleting does not trigger autocomplete.
-  SimulateKeyDownEvent(username_element_, app::VKEY_BACK);
+  SimulateKeyDownEvent(username_element_, base::VKEY_BACK);
   SimulateUsernameChange("alic", true);
   CheckTextFieldsState("alic", false, "", false);
   CheckUsernameSelection(4, 4);  // No selection.
   // Reset the last pressed key to something other than backspace.
-  SimulateKeyDownEvent(username_element_, app::VKEY_A);
+  SimulateKeyDownEvent(username_element_, base::VKEY_A);
 
   // Now lets say the user goes astray from the stored username and types the
   // letter 'f', spelling 'alf'.  We don't know alf (that's just sad), so in

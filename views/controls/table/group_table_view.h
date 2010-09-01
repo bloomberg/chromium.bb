@@ -56,7 +56,7 @@ class GroupTableView : public TableView {
   // keys), we must take action when an arrow key is pressed. The reason we
   // need to process this message has to do with the manner in which the focus
   // needs to be set on a group item when a group is selected.
-  virtual bool OnKeyDown(app::KeyboardCode virtual_keycode);
+  virtual bool OnKeyDown(base::KeyboardCode virtual_keycode);
 
   // Overriden to make sure rows in the same group stay grouped together.
   virtual int CompareRows(int model_row1, int model_row2);
