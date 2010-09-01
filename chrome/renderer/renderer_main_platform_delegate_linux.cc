@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/debug_util.h"
-#include "sandbox/linux/seccomp/sandbox.h"
+#include "seccompsandbox/sandbox.h"
 
 #include "chrome/common/chrome_switches.h"
 

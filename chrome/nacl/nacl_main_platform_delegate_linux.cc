@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "sandbox/linux/seccomp/sandbox.h"
+#include "seccompsandbox/sandbox.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
     const MainFunctionParams& parameters)

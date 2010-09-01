@@ -161,7 +161,7 @@
           'conditions': [
             ['target_arch!="arm"', {
                'dependencies': [
-                 'linux/seccomp/seccomp.gyp:seccomp_sandbox',
+                 '../seccompsandbox/seccomp.gyp:seccomp_sandbox',
                ]},
             ],
           ],

@@ -46,7 +46,7 @@
 
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 
-#include "sandbox/linux/seccomp/sandbox.h"
+#include "seccompsandbox/sandbox.h"
 
 #include "unicode/timezone.h"
 
