@@ -15,9 +15,7 @@
 #endif
 
 // TODO(hclam): Split this file for different platforms.
-// TODO(hclam): |type| is not used at all. Different types of service process
-// should have a different instance of process and channel.
-std::string GetServiceProcessChannelName(ServiceProcessType type) {
+std::string GetServiceProcessChannelName() {
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
 

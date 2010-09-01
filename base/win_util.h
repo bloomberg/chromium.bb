@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/keyboard_codes.h"
+#include "base/string16.h"
 
 struct IPropertyStore;
 struct _tagpropertykey;
@@ -124,6 +125,14 @@ base::KeyboardCode WinToKeyboardCode(WORD keycode);
 // Win7.
 bool SetAppIdForPropertyStore(IPropertyStore* property_store,
                               const wchar_t* app_id);
+
+// Adds the specified |command| using the specified |name| to the AutoRun key.
+// |root_key| could be HKCU or HKLM or the root of any user hive.
+bool AddCommandToAutoRun(HKEY root_key, const string16& name,
+                         const string16& command);
+// Removes the command specified by |name| from the AutoRun key. |root_key|
+// could be HKCU or HKLM or the root of any user hive.
+bool RemoveCommandFromAutoRun(HKEY root_key, const string16& name);
 
 }  // namespace win_util
 

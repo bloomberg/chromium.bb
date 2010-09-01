@@ -17,9 +17,10 @@ CloudPrintProxy::~CloudPrintProxy() {
   Shutdown();
 }
 
-void CloudPrintProxy::Initialize(JsonPrefStore* service_prefs) {
+void CloudPrintProxy::Initialize(JsonPrefStore* service_prefs, Client* client) {
   DCHECK(CalledOnValidThread());
   service_prefs_ = service_prefs;
+  client_ = client;
 }
 
 void CloudPrintProxy::EnableForUser(const std::string& lsid) {
@@ -72,11 +73,17 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
     backend_->InitializeWithToken(cloud_print_token, cloud_print_xmpp_token,
                                   cloud_print_email, proxy_id);
   }
+  if (client_) {
+    client_->OnCloudPrintProxyEnabled();
+  }
 }
 
 void CloudPrintProxy::DisableForUser() {
   DCHECK(CalledOnValidThread());
   Shutdown();
+  if (client_) {
+    client_->OnCloudPrintProxyDisabled();
+  }
 }
 
 void CloudPrintProxy::Shutdown() {

@@ -11,9 +11,9 @@
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/remoting/remoting_directory_service.h"
 
-class CloudPrintProxy;
 class JsonPrefStore;
 class ServiceIPCServer;
 
@@ -30,7 +30,8 @@ class JsonHostConfig;
 
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
-class ServiceProcess : public RemotingDirectoryService::Client {
+class ServiceProcess : public RemotingDirectoryService::Client,
+                       public CloudPrintProxy::Client {
  public:
   ServiceProcess();
   ~ServiceProcess();
@@ -73,6 +74,10 @@ class ServiceProcess : public RemotingDirectoryService::Client {
 
   CloudPrintProxy* GetCloudPrintProxy();
 
+  // CloudPrintProxy::Client implementation.
+  virtual void OnCloudPrintProxyEnabled();
+  virtual void OnCloudPrintProxyDisabled();
+
 #if defined(ENABLE_REMOTING)
   // Return the reference to the chromoting host only if it has started.
   remoting::ChromotingHost* GetChromotingHost() { return chromoting_host_; }
@@ -97,6 +102,16 @@ class ServiceProcess : public RemotingDirectoryService::Client {
 #endif
 
  private:
+  // Called exactly ONCE per process instance for each service that gets
+  // enabled in this process.
+  void OnServiceEnabled();
+  // Called exactly ONCE per process instance for each service that gets
+  // disabled in this process (note that shutdown != disabled).
+  void OnServiceDisabled();
+
+  bool AddServiceProcessToAutoStart();
+  bool RemoveServiceProcessFromAutoStart();
+
 #if defined(ENABLE_REMOTING)
   FRIEND_TEST_ALL_PREFIXES(ServiceProcessTest, RunChromoting);
   FRIEND_TEST_ALL_PREFIXES(ServiceProcessTest, RunChromotingUntilShutdown);
@@ -142,6 +157,9 @@ class ServiceProcess : public RemotingDirectoryService::Client {
 
   // Pointer to the main message loop that host this object.
   MessageLoop* main_message_loop_;
+
+  // Count of currently enabled services in this process.
+  int enabled_services_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

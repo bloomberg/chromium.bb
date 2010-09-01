@@ -11,11 +11,10 @@
 
 class Profile;
 
-// Return the IPC channel to connect to the service process with |profile|
-// and |type|.
+// Return the IPC channel to connect to the service process.
 //
 // TODO(hclam): Need more information to come up with the channel name.
-std::string GetServiceProcessChannelName(ServiceProcessType type);
+std::string GetServiceProcessChannelName();
 
 // The following methods are used as a mechanism to signal a service process
 // is running properly and all initialized.

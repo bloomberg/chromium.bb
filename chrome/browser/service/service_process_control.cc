@@ -103,9 +103,8 @@ void ServiceProcessControl::ConnectInternal() {
   // Run the IPC channel on the shared IO thread.
   base::Thread* io_thread = g_browser_process->io_thread();
 
-  // TODO(hclam): Determine the the channel id from profile and type.
   // TODO(hclam): Handle error connecting to channel.
-  const std::string channel_id = GetServiceProcessChannelName(type_);
+  const std::string channel_id = GetServiceProcessChannelName();
   channel_.reset(
       new IPC::SyncChannel(channel_id, IPC::Channel::MODE_CLIENT, this, NULL,
                            io_thread->message_loop(), true,

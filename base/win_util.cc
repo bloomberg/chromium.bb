@@ -415,6 +415,20 @@ bool SetAppIdForPropertyStore(IPropertyStore* property_store,
   return SUCCEEDED(result);
 }
 
+static const char16 kAutoRunKeyPath[] =
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+
+bool AddCommandToAutoRun(HKEY root_key, const string16& name,
+                         const string16& command) {
+  RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
+  return autorun_key.WriteValue(name.c_str(), command.c_str());
+}
+
+bool RemoveCommandFromAutoRun(HKEY root_key, const string16& name) {
+  RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
+  return autorun_key.DeleteValue(name.c_str());
+}
+
 }  // namespace win_util
 
 #ifdef _MSC_VER

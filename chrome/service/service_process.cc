@@ -6,11 +6,17 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#if defined(OS_WIN)
+#include "base/win_util.h"
+#endif  // defined(OS_WIN)
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_process_type.h"
@@ -42,7 +48,8 @@ ServiceProcess* g_service_process = NULL;
 
 ServiceProcess::ServiceProcess()
   : shutdown_event_(true, false),
-    main_message_loop_(NULL) {
+    main_message_loop_(NULL),
+    enabled_services_(0) {
   DCHECK(!g_service_process);
   g_service_process = this;
 }
@@ -77,12 +84,17 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
     StartChromotingHost();
   }
 
-  // TODO(hclam): Each type of service process should has it own instance of
-  // process and thus channel, but now we have only one process for all types
-  // so the type parameter doesn't matter now.
+  bool cloud_print_proxy_enabled = false;
+
+  // Check if the cloud print proxy is already enabled.
+  if (values->GetBoolean(prefs::kCloudPrintProxyEnabled,
+                         &cloud_print_proxy_enabled) &&
+      cloud_print_proxy_enabled) {
+    GetCloudPrintProxy()->EnableForUser(std::string());
+  }
+
   LOG(INFO) << "Starting Service Process IPC Server";
-  ipc_server_.reset(new ServiceIPCServer(
-      GetServiceProcessChannelName(kServiceProcessCloudPrint)));
+  ipc_server_.reset(new ServiceIPCServer(GetServiceProcessChannelName()));
   ipc_server_->Init();
 
   // After the IPC server has started we signal that the service process is
@@ -125,10 +137,70 @@ void ServiceProcess::Shutdown() {
 CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
   if (!cloud_print_proxy_.get()) {
     cloud_print_proxy_.reset(new CloudPrintProxy());
-    cloud_print_proxy_->Initialize(service_prefs_.get());
+    cloud_print_proxy_->Initialize(service_prefs_.get(), this);
   }
   return cloud_print_proxy_.get();
 }
+
+void ServiceProcess::OnCloudPrintProxyEnabled() {
+  // Save the preference that we have enabled the cloud print proxy.
+  service_prefs_->prefs()->SetBoolean(prefs::kCloudPrintProxyEnabled, true);
+  service_prefs_->WritePrefs();
+  OnServiceEnabled();
+}
+
+void ServiceProcess::OnCloudPrintProxyDisabled() {
+  // Save the preference that we have disabled the cloud print proxy.
+  service_prefs_->prefs()->SetBoolean(prefs::kCloudPrintProxyEnabled, false);
+  service_prefs_->WritePrefs();
+  OnServiceDisabled();
+}
+
+void ServiceProcess::OnServiceEnabled() {
+  enabled_services_++;
+  if (1 == enabled_services_) {
+    AddServiceProcessToAutoStart();
+  }
+}
+
+void ServiceProcess::OnServiceDisabled() {
+  DCHECK(0 != enabled_services_);
+  enabled_services_--;
+  if (0 == enabled_services_) {
+    RemoveServiceProcessFromAutoStart();
+    Shutdown();
+  }
+}
+
+bool ServiceProcess::AddServiceProcessToAutoStart() {
+// TODO(sanjeevr): This needs to move to some common place like base or
+// chrome/common and implementation for non-Windows platforms needs to be added.
+#if defined(OS_WIN)
+  FilePath chrome_path;
+  if (PathService::Get(base::FILE_EXE, &chrome_path)) {
+    CommandLine cmd_line(chrome_path);
+    cmd_line.AppendSwitchASCII(switches::kProcessType,
+                               switches::kServiceProcess);
+    // We need a unique name for the command per user-date-dir. Just use the
+    // channel name.
+    return win_util::AddCommandToAutoRun(
+        HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessChannelName()),
+        cmd_line.command_line_string());
+  }
+#endif  // defined(OS_WIN)
+  return false;
+}
+
+bool ServiceProcess::RemoveServiceProcessFromAutoStart() {
+// TODO(sanjeevr): This needs to move to some common place like base or
+// chrome/common and implementation for non-Windows platforms needs to be added.
+#if defined(OS_WIN)
+  return win_util::RemoveCommandFromAutoRun(
+      HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessChannelName()));
+#endif  // defined(OS_WIN)
+  return false;
+}
+
 
 #if defined(ENABLE_REMOTING)
 bool ServiceProcess::EnableChromotingHostWithTokens(
@@ -190,6 +262,7 @@ bool ServiceProcess::StartChromotingHost() {
   // we made OnChromotingShutdown() is calls.
   chromoting_host_->Start(
       NewRunnableMethod(this, &ServiceProcess::OnChromotingHostShutdown));
+  OnServiceEnabled();
   return true;
 }
 
