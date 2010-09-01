@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/cros/mount_library.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
