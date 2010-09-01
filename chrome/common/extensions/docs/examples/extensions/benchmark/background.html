@@ -198,7 +198,7 @@ function Benchmark() {
       chrome.browserAction.setBadgeBackgroundColor({"color": [0, 255, 0, 255]});
       var tabs = chrome.extension.getExtensionTabs();
       if (tabs && tabs.length) {
-        tabs[0].location.reload();
+        tabs[0].location.reload(true);
       }
     }
   }
@@ -367,7 +367,7 @@ function run() {
     if (chrome.benchmarking.isSingleProcess()) {
       alert("Warning: the WebKit cache may not be cleared correctly " +
             "between runs because Chrome is running in single-process mode.");
-    } 
+    }
   }
 
   var urls = testUrl.split(",");
