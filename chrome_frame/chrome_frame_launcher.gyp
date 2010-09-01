@@ -117,7 +117,7 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'OutputFile':
-              '$(OutDir)\\servers\\$(ProjectName).exe',
+              '$(OutDir)\\$(ProjectName).exe',
           # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
           'SubSystem': '2',
         },
@@ -156,7 +156,7 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'OutputFile':
-              '$(OutDir)\\servers\\chrome_frame_helper.dll',
+              '$(OutDir)\\chrome_frame_helper.dll',
           # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
           'SubSystem': '2',
           'AdditionalDependencies': [
