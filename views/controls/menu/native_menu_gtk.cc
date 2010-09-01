@@ -8,11 +8,11 @@
 #include <map>
 #include <string>
 
+#include "app/keyboard_code_conversion_gtk.h"
+#include "app/keyboard_codes.h"
 #include "app/menus/menu_model.h"
 #include "base/gtk_util.h"
 #include "base/i18n/rtl.h"
-#include "base/keyboard_code_conversion_gtk.h"
-#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -329,7 +329,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
                               submenu->GetNativeMenu());
   }
 
-  views::Accelerator accelerator(base::VKEY_UNKNOWN, false, false, false);
+  views::Accelerator accelerator(app::VKEY_UNKNOWN, false, false, false);
   if (accel_group && model_->GetAcceleratorAt(index, &accelerator)) {
     int gdk_modifiers = 0;
     if (accelerator.IsShiftDown())
@@ -339,7 +339,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
     if (accelerator.IsAltDown())
       gdk_modifiers |= GDK_MOD1_MASK;
     gtk_widget_add_accelerator(menu_item, "activate", accel_group,
-        base::GdkKeyCodeForWindowsKeyCode(accelerator.GetKeyCode(), false),
+        app::GdkKeyCodeForWindowsKeyCode(accelerator.GetKeyCode(), false),
         static_cast<GdkModifierType>(gdk_modifiers), GTK_ACCEL_VISIBLE);
   }
 

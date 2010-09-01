@@ -169,7 +169,7 @@ void KeywordEditorView::Init() {
       this, l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON));
   add_button_->SetEnabled(controller_->loaded());
   add_button_->AddAccelerator(
-      views::Accelerator(base::VKEY_A, false, false, true));
+      views::Accelerator(app::VKEY_A, false, false, true));
   add_button_->SetAccessibleKeyboardShortcut(L"A");
 
   edit_button_ = new views::NativeButton(
@@ -180,7 +180,7 @@ void KeywordEditorView::Init() {
       this, l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON));
   remove_button_->SetEnabled(false);
   remove_button_->AddAccelerator(
-      views::Accelerator(base::VKEY_R, false, false, true));
+      views::Accelerator(app::VKEY_R, false, false, true));
   remove_button_->SetAccessibleKeyboardShortcut(L"R");
 
   make_default_button_ = new views::NativeButton(

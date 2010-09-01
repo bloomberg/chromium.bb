@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include "base/keyboard_codes.h"
-
 struct IPropertyStore;
 struct _tagpropertykey;
 typedef _tagpropertykey PROPERTYKEY;
@@ -114,10 +112,6 @@ std::wstring FormatMessage(unsigned messageid);
 
 // Uses the last Win32 error to generate a human readable message string.
 std::wstring FormatLastWin32Error();
-
-// Methods to convert base::KeyboardCode/Windows virtual key type methods.
-WORD KeyboardCodeToWin(base::KeyboardCode keycode);
-base::KeyboardCode WinToKeyboardCode(WORD keycode);
 
 // Sets the application id in given IPropertyStore. The function is intended
 // for tagging application/chromium shortcut, browser window and jump list for

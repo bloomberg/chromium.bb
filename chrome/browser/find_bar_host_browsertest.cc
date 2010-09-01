@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -721,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
           browser()->window()->GetNativeHandle());
 
   // See where Escape is registered.
-  views::Accelerator escape(base::VKEY_ESCAPE, false, false, false);
+  views::Accelerator escape(app::VKEY_ESCAPE, false, false, false);
   views::AcceleratorTarget* old_target =
       focus_manager->GetCurrentTargetForAccelerator(escape);
   EXPECT_TRUE(old_target != NULL);

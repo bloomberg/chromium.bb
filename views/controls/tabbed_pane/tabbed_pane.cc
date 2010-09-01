@@ -4,7 +4,7 @@
 
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
@@ -82,7 +82,7 @@ void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 bool TabbedPane::AcceleratorPressed(const views::Accelerator& accelerator) {
   // We only accept Ctrl+Tab keyboard events.
   DCHECK(accelerator.GetKeyCode() ==
-      base::VKEY_TAB && accelerator.IsCtrlDown());
+      app::VKEY_TAB && accelerator.IsCtrlDown());
 
   int tab_count = GetTabCount();
   if (tab_count <= 1)
@@ -100,9 +100,9 @@ bool TabbedPane::AcceleratorPressed(const views::Accelerator& accelerator) {
 
 void TabbedPane::LoadAccelerators() {
   // Ctrl+Shift+Tab
-  AddAccelerator(views::Accelerator(base::VKEY_TAB, true, true, false));
+  AddAccelerator(views::Accelerator(app::VKEY_TAB, true, true, false));
   // Ctrl+Tab
-  AddAccelerator(views::Accelerator(base::VKEY_TAB, false, true, false));
+  AddAccelerator(views::Accelerator(app::VKEY_TAB, false, true, false));
 }
 
 void TabbedPane::Layout() {

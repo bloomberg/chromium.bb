@@ -5,7 +5,7 @@
 #include "remoting/host/event_executor_win.h"
 
 #include <windows.h>
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 #include "base/stl_util-inl.h"
 #include "remoting/host/capturer.h"
 
@@ -13,338 +13,338 @@ namespace remoting {
 
 // TODO(hclam): Move this method to base.
 // TODO(hclam): Using values look ugly, change it to something else.
-static base::KeyboardCode WindowsKeyCodeForPosixKeyCode(int keycode) {
+static app::KeyboardCode WindowsKeyCodeForPosixKeyCode(int keycode) {
   switch (keycode) {
     case 0x08:
-      return base::VKEY_BACK;
+      return app::VKEY_BACK;
     case 0x09:
-      return base::VKEY_TAB;
+      return app::VKEY_TAB;
     case 0x0C:
-      return base::VKEY_CLEAR;
+      return app::VKEY_CLEAR;
     case 0x0D:
-      return base::VKEY_RETURN;
+      return app::VKEY_RETURN;
     case 0x10:
-      return base::VKEY_SHIFT;
+      return app::VKEY_SHIFT;
     case 0x11:
-      return base::VKEY_CONTROL;
+      return app::VKEY_CONTROL;
     case 0x12:
-      return base::VKEY_MENU;
+      return app::VKEY_MENU;
     case 0x13:
-      return base::VKEY_PAUSE;
+      return app::VKEY_PAUSE;
     case 0x14:
-      return base::VKEY_CAPITAL;
+      return app::VKEY_CAPITAL;
     case 0x15:
-      return base::VKEY_KANA;
+      return app::VKEY_KANA;
     case 0x17:
-      return base::VKEY_JUNJA;
+      return app::VKEY_JUNJA;
     case 0x18:
-      return base::VKEY_FINAL;
+      return app::VKEY_FINAL;
     case 0x19:
-      return base::VKEY_KANJI;
+      return app::VKEY_KANJI;
     case 0x1B:
-      return base::VKEY_ESCAPE;
+      return app::VKEY_ESCAPE;
     case 0x1C:
-      return base::VKEY_CONVERT;
+      return app::VKEY_CONVERT;
     case 0x1D:
-      return base::VKEY_NONCONVERT;
+      return app::VKEY_NONCONVERT;
     case 0x1E:
-      return base::VKEY_ACCEPT;
+      return app::VKEY_ACCEPT;
     case 0x1F:
-      return base::VKEY_MODECHANGE;
+      return app::VKEY_MODECHANGE;
     case 0x20:
-      return base::VKEY_SPACE;
+      return app::VKEY_SPACE;
     case 0x21:
-      return base::VKEY_PRIOR;
+      return app::VKEY_PRIOR;
     case 0x22:
-      return base::VKEY_NEXT;
+      return app::VKEY_NEXT;
     case 0x23:
-      return base::VKEY_END;
+      return app::VKEY_END;
     case 0x24:
-      return base::VKEY_HOME;
+      return app::VKEY_HOME;
     case 0x25:
-      return base::VKEY_LEFT;
+      return app::VKEY_LEFT;
     case 0x26:
-      return base::VKEY_UP;
+      return app::VKEY_UP;
     case 0x27:
-      return base::VKEY_RIGHT;
+      return app::VKEY_RIGHT;
     case 0x28:
-      return base::VKEY_DOWN;
+      return app::VKEY_DOWN;
     case 0x29:
-      return base::VKEY_SELECT;
+      return app::VKEY_SELECT;
     case 0x2A:
-      return base::VKEY_PRINT;
+      return app::VKEY_PRINT;
     case 0x2B:
-      return base::VKEY_EXECUTE;
+      return app::VKEY_EXECUTE;
     case 0x2C:
-      return base::VKEY_SNAPSHOT;
+      return app::VKEY_SNAPSHOT;
     case 0x2D:
-      return base::VKEY_INSERT;
+      return app::VKEY_INSERT;
     case 0x2E:
-      return base::VKEY_DELETE;
+      return app::VKEY_DELETE;
     case 0x2F:
-      return base::VKEY_HELP;
+      return app::VKEY_HELP;
     case 0x30:
-      return base::VKEY_0;
+      return app::VKEY_0;
     case 0x31:
-      return base::VKEY_1;
+      return app::VKEY_1;
     case 0x32:
-      return base::VKEY_2;
+      return app::VKEY_2;
     case 0x33:
-      return base::VKEY_3;
+      return app::VKEY_3;
     case 0x34:
-      return base::VKEY_4;
+      return app::VKEY_4;
     case 0x35:
-      return base::VKEY_5;
+      return app::VKEY_5;
     case 0x36:
-      return base::VKEY_6;
+      return app::VKEY_6;
     case 0x37:
-      return base::VKEY_7;
+      return app::VKEY_7;
     case 0x38:
-      return base::VKEY_8;
+      return app::VKEY_8;
     case 0x39:
-      return base::VKEY_9;
+      return app::VKEY_9;
     case 0x41:
-      return base::VKEY_A;
+      return app::VKEY_A;
     case 0x42:
-      return base::VKEY_B;
+      return app::VKEY_B;
     case 0x43:
-      return base::VKEY_C;
+      return app::VKEY_C;
     case 0x44:
-      return base::VKEY_D;
+      return app::VKEY_D;
     case 0x45:
-      return base::VKEY_E;
+      return app::VKEY_E;
     case 0x46:
-      return base::VKEY_F;
+      return app::VKEY_F;
     case 0x47:
-      return base::VKEY_G;
+      return app::VKEY_G;
     case 0x48:
-      return base::VKEY_H;
+      return app::VKEY_H;
     case 0x49:
-      return base::VKEY_I;
+      return app::VKEY_I;
     case 0x4A:
-      return base::VKEY_J;
+      return app::VKEY_J;
     case 0x4B:
-      return base::VKEY_K;
+      return app::VKEY_K;
     case 0x4C:
-      return base::VKEY_L;
+      return app::VKEY_L;
     case 0x4D:
-      return base::VKEY_M;
+      return app::VKEY_M;
     case 0x4E:
-      return base::VKEY_N;
+      return app::VKEY_N;
     case 0x4F:
-      return base::VKEY_O;
+      return app::VKEY_O;
     case 0x50:
-      return base::VKEY_P;
+      return app::VKEY_P;
     case 0x51:
-      return base::VKEY_Q;
+      return app::VKEY_Q;
     case 0x52:
-      return base::VKEY_R;
+      return app::VKEY_R;
     case 0x53:
-      return base::VKEY_S;
+      return app::VKEY_S;
     case 0x54:
-      return base::VKEY_T;
+      return app::VKEY_T;
     case 0x55:
-      return base::VKEY_U;
+      return app::VKEY_U;
     case 0x56:
-      return base::VKEY_V;
+      return app::VKEY_V;
     case 0x57:
-      return base::VKEY_W;
+      return app::VKEY_W;
     case 0x58:
-      return base::VKEY_X;
+      return app::VKEY_X;
     case 0x59:
-      return base::VKEY_Y;
+      return app::VKEY_Y;
     case 0x5A:
-      return base::VKEY_Z;
+      return app::VKEY_Z;
     case 0x5B:
-      return base::VKEY_LWIN;
+      return app::VKEY_LWIN;
     case 0x5C:
-      return base::VKEY_RWIN;
+      return app::VKEY_RWIN;
     case 0x5D:
-      return base::VKEY_APPS;
+      return app::VKEY_APPS;
     case 0x5F:
-      return base::VKEY_SLEEP;
+      return app::VKEY_SLEEP;
     case 0x60:
-      return base::VKEY_NUMPAD0;
+      return app::VKEY_NUMPAD0;
     case 0x61:
-      return base::VKEY_NUMPAD1;
+      return app::VKEY_NUMPAD1;
     case 0x62:
-      return base::VKEY_NUMPAD2;
+      return app::VKEY_NUMPAD2;
     case 0x63:
-      return base::VKEY_NUMPAD3;
+      return app::VKEY_NUMPAD3;
     case 0x64:
-      return base::VKEY_NUMPAD4;
+      return app::VKEY_NUMPAD4;
     case 0x65:
-      return base::VKEY_NUMPAD5;
+      return app::VKEY_NUMPAD5;
     case 0x66:
-      return base::VKEY_NUMPAD6;
+      return app::VKEY_NUMPAD6;
     case 0x67:
-      return base::VKEY_NUMPAD7;
+      return app::VKEY_NUMPAD7;
     case 0x68:
-      return base::VKEY_NUMPAD8;
+      return app::VKEY_NUMPAD8;
     case 0x69:
-      return base::VKEY_NUMPAD9;
+      return app::VKEY_NUMPAD9;
     case 0x6A:
-      return base::VKEY_MULTIPLY;
+      return app::VKEY_MULTIPLY;
     case 0x6B:
-      return base::VKEY_ADD;
+      return app::VKEY_ADD;
     case 0x6C:
-      return base::VKEY_SEPARATOR;
+      return app::VKEY_SEPARATOR;
     case 0x6D:
-      return base::VKEY_SUBTRACT;
+      return app::VKEY_SUBTRACT;
     case 0x6E:
-      return base::VKEY_DECIMAL;
+      return app::VKEY_DECIMAL;
     case 0x6F:
-      return base::VKEY_DIVIDE;
+      return app::VKEY_DIVIDE;
     case 0x70:
-      return base::VKEY_F1;
+      return app::VKEY_F1;
     case 0x71:
-      return base::VKEY_F2;
+      return app::VKEY_F2;
     case 0x72:
-      return base::VKEY_F3;
+      return app::VKEY_F3;
     case 0x73:
-      return base::VKEY_F4;
+      return app::VKEY_F4;
     case 0x74:
-      return base::VKEY_F5;
+      return app::VKEY_F5;
     case 0x75:
-      return base::VKEY_F6;
+      return app::VKEY_F6;
     case 0x76:
-      return base::VKEY_F7;
+      return app::VKEY_F7;
     case 0x77:
-      return base::VKEY_F8;
+      return app::VKEY_F8;
     case 0x78:
-      return base::VKEY_F9;
+      return app::VKEY_F9;
     case 0x79:
-      return base::VKEY_F10;
+      return app::VKEY_F10;
     case 0x7A:
-      return base::VKEY_F11;
+      return app::VKEY_F11;
     case 0x7B:
-      return base::VKEY_F12;
+      return app::VKEY_F12;
     case 0x7C:
-      return base::VKEY_F13;
+      return app::VKEY_F13;
     case 0x7D:
-      return base::VKEY_F14;
+      return app::VKEY_F14;
     case 0x7E:
-      return base::VKEY_F15;
+      return app::VKEY_F15;
     case 0x7F:
-      return base::VKEY_F16;
+      return app::VKEY_F16;
     case 0x80:
-      return base::VKEY_F17;
+      return app::VKEY_F17;
     case 0x81:
-      return base::VKEY_F18;
+      return app::VKEY_F18;
     case 0x82:
-      return base::VKEY_F19;
+      return app::VKEY_F19;
     case 0x83:
-      return base::VKEY_F20;
+      return app::VKEY_F20;
     case 0x84:
-      return base::VKEY_F21;
+      return app::VKEY_F21;
     case 0x85:
-      return base::VKEY_F22;
+      return app::VKEY_F22;
     case 0x86:
-      return base::VKEY_F23;
+      return app::VKEY_F23;
     case 0x87:
-      return base::VKEY_F24;
+      return app::VKEY_F24;
     case 0x90:
-      return base::VKEY_NUMLOCK;
+      return app::VKEY_NUMLOCK;
     case 0x91:
-      return base::VKEY_SCROLL;
+      return app::VKEY_SCROLL;
     case 0xA0:
-      return base::VKEY_LSHIFT;
+      return app::VKEY_LSHIFT;
     case 0xA1:
-      return base::VKEY_RSHIFT;
+      return app::VKEY_RSHIFT;
     case 0xA2:
-      return base::VKEY_LCONTROL;
+      return app::VKEY_LCONTROL;
     case 0xA3:
-      return base::VKEY_RCONTROL;
+      return app::VKEY_RCONTROL;
     case 0xA4:
-      return base::VKEY_LMENU;
+      return app::VKEY_LMENU;
     case 0xA5:
-      return base::VKEY_RMENU;
+      return app::VKEY_RMENU;
     case 0xA6:
-      return base::VKEY_BROWSER_BACK;
+      return app::VKEY_BROWSER_BACK;
     case 0xA7:
-      return base::VKEY_BROWSER_FORWARD;
+      return app::VKEY_BROWSER_FORWARD;
     case 0xA8:
-      return base::VKEY_BROWSER_REFRESH;
+      return app::VKEY_BROWSER_REFRESH;
     case 0xA9:
-      return base::VKEY_BROWSER_STOP;
+      return app::VKEY_BROWSER_STOP;
     case 0xAA:
-      return base::VKEY_BROWSER_SEARCH;
+      return app::VKEY_BROWSER_SEARCH;
     case 0xAB:
-      return base::VKEY_BROWSER_FAVORITES;
+      return app::VKEY_BROWSER_FAVORITES;
     case 0xAC:
-      return base::VKEY_BROWSER_HOME;
+      return app::VKEY_BROWSER_HOME;
     case 0xAD:
-      return base::VKEY_VOLUME_MUTE;
+      return app::VKEY_VOLUME_MUTE;
     case 0xAE:
-      return base::VKEY_VOLUME_DOWN;
+      return app::VKEY_VOLUME_DOWN;
     case 0xAF:
-      return base::VKEY_VOLUME_UP;
+      return app::VKEY_VOLUME_UP;
     case 0xB0:
-      return base::VKEY_MEDIA_NEXT_TRACK;
+      return app::VKEY_MEDIA_NEXT_TRACK;
     case 0xB1:
-      return base::VKEY_MEDIA_PREV_TRACK;
+      return app::VKEY_MEDIA_PREV_TRACK;
     case 0xB2:
-      return base::VKEY_MEDIA_STOP;
+      return app::VKEY_MEDIA_STOP;
     case 0xB3:
-      return base::VKEY_MEDIA_PLAY_PAUSE;
+      return app::VKEY_MEDIA_PLAY_PAUSE;
     case 0xB4:
-      return base::VKEY_MEDIA_LAUNCH_MAIL;
+      return app::VKEY_MEDIA_LAUNCH_MAIL;
     case 0xB5:
-      return base::VKEY_MEDIA_LAUNCH_MEDIA_SELECT;
+      return app::VKEY_MEDIA_LAUNCH_MEDIA_SELECT;
     case 0xB6:
-      return base::VKEY_MEDIA_LAUNCH_APP1;
+      return app::VKEY_MEDIA_LAUNCH_APP1;
     case 0xB7:
-      return base::VKEY_MEDIA_LAUNCH_APP2;
+      return app::VKEY_MEDIA_LAUNCH_APP2;
     case 0xBA:
-      return base::VKEY_OEM_1;
+      return app::VKEY_OEM_1;
     case 0xBB:
-      return base::VKEY_OEM_PLUS;
+      return app::VKEY_OEM_PLUS;
     case 0xBC:
-      return base::VKEY_OEM_COMMA;
+      return app::VKEY_OEM_COMMA;
     case 0xBD:
-      return base::VKEY_OEM_MINUS;
+      return app::VKEY_OEM_MINUS;
     case 0xBE:
-      return base::VKEY_OEM_PERIOD;
+      return app::VKEY_OEM_PERIOD;
     case 0xBF:
-      return base::VKEY_OEM_2;
+      return app::VKEY_OEM_2;
     case 0xC0:
-      return base::VKEY_OEM_3;
+      return app::VKEY_OEM_3;
     case 0xDB:
-      return base::VKEY_OEM_4;
+      return app::VKEY_OEM_4;
     case 0xDC:
-      return base::VKEY_OEM_5;
+      return app::VKEY_OEM_5;
     case 0xDD:
-      return base::VKEY_OEM_6;
+      return app::VKEY_OEM_6;
     case 0xDE:
-      return base::VKEY_OEM_7;
+      return app::VKEY_OEM_7;
     case 0xDF:
-      return base::VKEY_OEM_8;
+      return app::VKEY_OEM_8;
     case 0xE2:
-      return base::VKEY_OEM_102;
+      return app::VKEY_OEM_102;
     case 0xE5:
-      return base::VKEY_PROCESSKEY;
+      return app::VKEY_PROCESSKEY;
     case 0xE7:
-      return base::VKEY_PACKET;
+      return app::VKEY_PACKET;
     case 0xF6:
-      return base::VKEY_ATTN;
+      return app::VKEY_ATTN;
     case 0xF7:
-      return base::VKEY_CRSEL;
+      return app::VKEY_CRSEL;
     case 0xF8:
-      return base::VKEY_EXSEL;
+      return app::VKEY_EXSEL;
     case 0xF9:
-      return base::VKEY_EREOF;
+      return app::VKEY_EREOF;
     case 0xFA:
-      return base::VKEY_PLAY;
+      return app::VKEY_PLAY;
     case 0xFB:
-      return base::VKEY_ZOOM;
+      return app::VKEY_ZOOM;
     case 0xFC:
-      return base::VKEY_NONAME;
+      return app::VKEY_NONAME;
     case 0xFD:
-      return base::VKEY_PA1;
+      return app::VKEY_PA1;
     case 0xFE:
-      return base::VKEY_OEM_CLEAR;
+      return app::VKEY_OEM_CLEAR;
     default:
-      return base::VKEY_UNKNOWN;
+      return app::VKEY_UNKNOWN;
   }
 }
 

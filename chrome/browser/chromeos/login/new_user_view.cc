@@ -10,11 +10,11 @@
 #include <algorithm>
 #include <vector>
 
+#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -83,8 +83,8 @@ NewUserView::NewUserView(Delegate* delegate,
       browse_without_signin_link_(NULL),
       languages_menubutton_(NULL),
       throbber_(NULL),
-      accel_focus_user_(views::Accelerator(base::VKEY_U, false, false, true)),
-      accel_focus_pass_(views::Accelerator(base::VKEY_P, false, false, true)),
+      accel_focus_user_(views::Accelerator(app::VKEY_U, false, false, true)),
+      accel_focus_pass_(views::Accelerator(app::VKEY_P, false, false, true)),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       focus_delayed_(false),
@@ -388,11 +388,11 @@ bool NewUserView::HandleKeystroke(views::Textfield* s,
   if (!CrosLibrary::Get()->EnsureLoaded() || login_in_process_)
     return false;
 
-  if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
+  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
     Login();
     // Return true so that processing ends
     return true;
-  } else if (keystroke.GetKeyboardCode() == base::VKEY_LEFT) {
+  } else if (keystroke.GetKeyboardCode() == app::VKEY_LEFT) {
     if (s == username_field_ &&
         username_field_->text().empty() &&
         password_field_->text().empty()) {

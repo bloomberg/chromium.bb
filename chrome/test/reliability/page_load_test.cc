@@ -36,11 +36,11 @@
 
 #include <fstream>
 
+#include "app/keyboard_codes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/keyboard_codes.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -209,9 +209,9 @@ class PageLoadTest : public UITest {
             scoped_refptr<WindowProxy> window(browser->GetWindow());
             if (window.get()) {
               if (browser->BringToFront()) {
-                window->SimulateOSKeyPress(base::VKEY_NEXT, 0);
+                window->SimulateOSKeyPress(app::VKEY_NEXT, 0);
                 PlatformThread::Sleep(sleep_timeout_ms());
-                window->SimulateOSKeyPress(base::VKEY_NEXT, 0);
+                window->SimulateOSKeyPress(app::VKEY_NEXT, 0);
                 PlatformThread::Sleep(sleep_timeout_ms());
               }
             }

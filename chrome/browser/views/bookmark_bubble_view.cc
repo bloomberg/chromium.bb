@@ -4,9 +4,9 @@
 
 #include "chrome/browser/views/bookmark_bubble_view.h"
 
+#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/keyboard_codes.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -129,7 +129,7 @@ void BookmarkBubbleView::DidChangeBounds(const gfx::Rect& previous,
 void BookmarkBubbleView::BubbleShown() {
   DCHECK(GetWidget());
   GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(base::VKEY_RETURN, false, false, false), this);
+      views::Accelerator(app::VKEY_RETURN, false, false, false), this);
 
   title_tf_->RequestFocus();
   title_tf_->SelectAll();
@@ -137,7 +137,7 @@ void BookmarkBubbleView::BubbleShown() {
 
 bool BookmarkBubbleView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  if (accelerator.GetKeyCode() != base::VKEY_RETURN)
+  if (accelerator.GetKeyCode() != app::VKEY_RETURN)
     return false;
 
   if (edit_button_->HasFocus())

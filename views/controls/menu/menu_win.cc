@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -443,7 +443,7 @@ void MenuWin::AddMenuItemInternal(int index,
       delegate()->GetLabel(item_id) : label);
 
   // Find out if there is a shortcut we need to append to the label.
-  views::Accelerator accelerator(base::VKEY_UNKNOWN, false, false, false);
+  views::Accelerator accelerator(app::VKEY_UNKNOWN, false, false, false);
   if (delegate() && delegate()->GetAcceleratorInfo(item_id, &accelerator)) {
     actual_label += L'\t';
     actual_label += accelerator.GetShortcutText();

@@ -10,8 +10,9 @@
 #include <atlframe.h>
 #include <atlmisc.h>
 
+#include "app/keyboard_code_conversion_win.h"
+#include "app/keyboard_codes.h"
 #include "app/l10n_util_win.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "gfx/native_theme_win.h"
@@ -359,7 +360,7 @@ LRESULT CALLBACK NativeControl::NativeControlWndProc(HWND window, UINT message,
   DCHECK(native_control);
 
   if (message == WM_KEYDOWN &&
-      native_control->OnKeyDown(win_util::WinToKeyboardCode(w_param))) {
+      native_control->OnKeyDown(app::KeyboardCodeForWindowsKeyCode(w_param))) {
     return 0;
   } else if (message == WM_SETFOCUS) {
     // Let the focus manager know that the focus changed.

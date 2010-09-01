@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/views/chrome_views_delegate.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
     // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
     LOG(ERROR) << "Sending TAB key event...";
     ui_controls::SendKeyPressNotifyWhenDone(current_view_native_window(),
-                                            base::VKEY_TAB,
+                                            app::VKEY_TAB,
                                             true, false, false, false,
                                             new MessageLoop::QuitTask());
     set_waiting(true);
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
                        DISABLED_TabInToolbar) {
   gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
   ui_controls::SendKeyPressNotifyWhenDone(native_window,
-                                          base::VKEY_T,
+                                          app::VKEY_T,
                                           false, true, true, false,
                                           new MessageLoop::QuitTask());
   set_waiting(true);
@@ -197,7 +197,7 @@ void BrowserKeyboardAccessibility::TabCycler(gfx::NativeWindow hwnd,
   do {
     // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
     LOG(ERROR) << "Sending TAB key event.";
-    ui_controls::SendKeyPressNotifyWhenDone(hwnd, base::VKEY_TAB,
+    ui_controls::SendKeyPressNotifyWhenDone(hwnd, app::VKEY_TAB,
         false, !forward_tab, false, false, new MessageLoop::QuitTask());
     set_waiting(true);
     ui_test_utils::RunMessageLoop();

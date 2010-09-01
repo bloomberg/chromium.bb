@@ -8,11 +8,11 @@
 
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
+#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
 #include "base/i18n/rtl.h"
-#include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
@@ -313,13 +313,13 @@ bool NativeTextfieldWin::GetAcceleratorForCommandId(int command_id,
   // anywhere so we need to check for them explicitly here.
   switch (command_id) {
     case IDS_APP_CUT:
-      *accelerator = views::Accelerator(base::VKEY_X, false, true, false);
+      *accelerator = views::Accelerator(app::VKEY_X, false, true, false);
       return true;
     case IDS_APP_COPY:
-      *accelerator = views::Accelerator(base::VKEY_C, false, true, false);
+      *accelerator = views::Accelerator(app::VKEY_C, false, true, false);
       return true;
     case IDS_APP_PASTE:
-      *accelerator = views::Accelerator(base::VKEY_V, false, true, false);
+      *accelerator = views::Accelerator(app::VKEY_V, false, true, false);
       return true;
   }
   return container_view_->GetWidget()->GetAccelerator(command_id, accelerator);
@@ -868,7 +868,7 @@ void NativeTextfieldWin::HandleKeystroke(UINT message,
   if (!handled) {
     OnBeforePossibleChange();
 
-    if (key == base::VKEY_HOME || key == base::VKEY_END) {
+    if (key == app::VKEY_HOME || key == app::VKEY_END) {
       // DefWindowProc() might reset the keyboard layout when it receives a
       // keydown event for VKEY_HOME or VKEY_END. When the window was created
       // with WS_EX_LAYOUTRTL and the current keyboard layout is not a RTL one,

@@ -124,7 +124,7 @@ class TableExample
 
   virtual void OnMiddleClick() {}
 
-  virtual void OnKeyDown(base::KeyboardCode virtual_keycode) {}
+  virtual void OnKeyDown(app::KeyboardCode virtual_keycode) {}
 
   virtual void OnTableViewDelete(views::TableView* table_view) {}
 

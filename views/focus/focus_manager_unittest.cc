@@ -5,7 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "app/combobox_model.h"
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -36,7 +36,7 @@
 #include "views/widget/widget_win.h"
 #include "views/window/window_win.h"
 #elif defined(OS_LINUX)
-#include "base/keyboard_code_conversion_gtk.h"
+#include "app/keyboard_code_conversion_gtk.h"
 #include "views/window/window_gtk.h"
 #endif
 
@@ -209,23 +209,23 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
   }
 
 #if defined(OS_WIN)
-  void PostKeyDown(base::KeyboardCode key_code) {
+  void PostKeyDown(app::KeyboardCode key_code) {
     ::PostMessage(window_->GetNativeWindow(), WM_KEYDOWN, key_code, 0);
   }
 
-  void PostKeyUp(base::KeyboardCode key_code) {
+  void PostKeyUp(app::KeyboardCode key_code) {
     ::PostMessage(window_->GetNativeWindow(), WM_KEYUP, key_code, 0);
   }
 #elif defined(OS_LINUX)
-  void PostKeyDown(base::KeyboardCode key_code) {
+  void PostKeyDown(app::KeyboardCode key_code) {
     PostKeyEvent(key_code, true);
   }
 
-  void PostKeyUp(base::KeyboardCode key_code) {
+  void PostKeyUp(app::KeyboardCode key_code) {
     PostKeyEvent(key_code, false);
   }
 
-  void PostKeyEvent(base::KeyboardCode key_code, bool pressed) {
+  void PostKeyEvent(app::KeyboardCode key_code, bool pressed) {
     int keyval = GdkKeyCodeForWindowsKeyCode(key_code, false);
     GdkKeymapKey* keys;
     gint n_keys;
@@ -1300,8 +1300,8 @@ class TestAcceleratorTarget : public AcceleratorTarget {
 
 TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
-  Accelerator return_accelerator(base::VKEY_RETURN, false, false, false);
-  Accelerator escape_accelerator(base::VKEY_ESCAPE, false, false, false);
+  Accelerator return_accelerator(app::VKEY_RETURN, false, false, false);
+  Accelerator escape_accelerator(app::VKEY_ESCAPE, false, false, false);
 
   TestAcceleratorTarget return_target(true);
   TestAcceleratorTarget escape_target(true);
@@ -1418,7 +1418,7 @@ class SelfUnregisteringAcceleratorTarget : public AcceleratorTarget {
 
 TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
-  Accelerator return_accelerator(base::VKEY_RETURN, false, false, false);
+  Accelerator return_accelerator(app::VKEY_RETURN, false, false, false);
   SelfUnregisteringAcceleratorTarget target(return_accelerator, focus_manager);
   EXPECT_EQ(target.accelerator_count(), 0);
   EXPECT_EQ(NULL,
@@ -1466,11 +1466,11 @@ class MessageTrackingView : public View {
     keys_released_.clear();
   }
 
-  const std::vector<base::KeyboardCode>& keys_pressed() const {
+  const std::vector<app::KeyboardCode>& keys_pressed() const {
     return keys_pressed_;
   }
 
-  const std::vector<base::KeyboardCode>& keys_released() const {
+  const std::vector<app::KeyboardCode>& keys_released() const {
     return keys_released_;
   }
 
@@ -1480,8 +1480,8 @@ class MessageTrackingView : public View {
 
  private:
   bool accelerator_pressed_;
-  std::vector<base::KeyboardCode> keys_pressed_;
-  std::vector<base::KeyboardCode> keys_released_;
+  std::vector<app::KeyboardCode> keys_pressed_;
+  std::vector<app::KeyboardCode> keys_released_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageTrackingView);
 };
@@ -1494,53 +1494,53 @@ class MessageTrackingView : public View {
 TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   FocusManager* focus_manager = GetFocusManager();
   MessageTrackingView* mtv = new MessageTrackingView();
-  mtv->AddAccelerator(Accelerator(base::VKEY_0, false, false, false));
-  mtv->AddAccelerator(Accelerator(base::VKEY_1, false, false, false));
+  mtv->AddAccelerator(Accelerator(app::VKEY_0, false, false, false));
+  mtv->AddAccelerator(Accelerator(app::VKEY_1, false, false, false));
   content_view_->AddChildView(mtv);
   focus_manager->SetFocusedView(mtv);
 
   // First send a non-accelerator key sequence.
-  PostKeyDown(base::VKEY_9);
-  PostKeyUp(base::VKEY_9);
+  PostKeyDown(app::VKEY_9);
+  PostKeyUp(app::VKEY_9);
   AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   MessageLoopForUI::current()->Run(&accelerator_handler);
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(1U, mtv->keys_pressed().size());
-  EXPECT_EQ(base::VKEY_9, mtv->keys_pressed().at(0));
+  EXPECT_EQ(app::VKEY_9, mtv->keys_pressed().at(0));
   ASSERT_EQ(1U, mtv->keys_released().size());
-  EXPECT_EQ(base::VKEY_9, mtv->keys_released().at(0));
+  EXPECT_EQ(app::VKEY_9, mtv->keys_released().at(0));
   EXPECT_FALSE(mtv->accelerator_pressed());
   mtv->Reset();
 
   // Same thing with repeat and more than one key at once.
-  PostKeyDown(base::VKEY_9);
-  PostKeyDown(base::VKEY_9);
-  PostKeyDown(base::VKEY_8);
-  PostKeyDown(base::VKEY_9);
-  PostKeyDown(base::VKEY_7);
-  PostKeyUp(base::VKEY_9);
-  PostKeyUp(base::VKEY_7);
-  PostKeyUp(base::VKEY_8);
+  PostKeyDown(app::VKEY_9);
+  PostKeyDown(app::VKEY_9);
+  PostKeyDown(app::VKEY_8);
+  PostKeyDown(app::VKEY_9);
+  PostKeyDown(app::VKEY_7);
+  PostKeyUp(app::VKEY_9);
+  PostKeyUp(app::VKEY_7);
+  PostKeyUp(app::VKEY_8);
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   MessageLoopForUI::current()->Run(&accelerator_handler);
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(5U, mtv->keys_pressed().size());
-  EXPECT_EQ(base::VKEY_9, mtv->keys_pressed().at(0));
-  EXPECT_EQ(base::VKEY_9, mtv->keys_pressed().at(1));
-  EXPECT_EQ(base::VKEY_8, mtv->keys_pressed().at(2));
-  EXPECT_EQ(base::VKEY_9, mtv->keys_pressed().at(3));
-  EXPECT_EQ(base::VKEY_7, mtv->keys_pressed().at(4));
+  EXPECT_EQ(app::VKEY_9, mtv->keys_pressed().at(0));
+  EXPECT_EQ(app::VKEY_9, mtv->keys_pressed().at(1));
+  EXPECT_EQ(app::VKEY_8, mtv->keys_pressed().at(2));
+  EXPECT_EQ(app::VKEY_9, mtv->keys_pressed().at(3));
+  EXPECT_EQ(app::VKEY_7, mtv->keys_pressed().at(4));
   ASSERT_EQ(3U, mtv->keys_released().size());
-  EXPECT_EQ(base::VKEY_9, mtv->keys_released().at(0));
-  EXPECT_EQ(base::VKEY_7, mtv->keys_released().at(1));
-  EXPECT_EQ(base::VKEY_8, mtv->keys_released().at(2));
+  EXPECT_EQ(app::VKEY_9, mtv->keys_released().at(0));
+  EXPECT_EQ(app::VKEY_7, mtv->keys_released().at(1));
+  EXPECT_EQ(app::VKEY_8, mtv->keys_released().at(2));
   EXPECT_FALSE(mtv->accelerator_pressed());
   mtv->Reset();
 
   // Now send an accelerator key sequence.
-  PostKeyDown(base::VKEY_0);
-  PostKeyUp(base::VKEY_0);
+  PostKeyDown(app::VKEY_0);
+  PostKeyUp(app::VKEY_0);
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   MessageLoopForUI::current()->Run(&accelerator_handler);
   EXPECT_TRUE(mtv->keys_pressed().empty());
@@ -1549,13 +1549,13 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   mtv->Reset();
 
   // Same thing with repeat and more than one key at once.
-  PostKeyDown(base::VKEY_0);
-  PostKeyDown(base::VKEY_1);
-  PostKeyDown(base::VKEY_1);
-  PostKeyDown(base::VKEY_0);
-  PostKeyDown(base::VKEY_0);
-  PostKeyUp(base::VKEY_1);
-  PostKeyUp(base::VKEY_0);
+  PostKeyDown(app::VKEY_0);
+  PostKeyDown(app::VKEY_1);
+  PostKeyDown(app::VKEY_1);
+  PostKeyDown(app::VKEY_0);
+  PostKeyDown(app::VKEY_0);
+  PostKeyUp(app::VKEY_1);
+  PostKeyUp(app::VKEY_0);
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   MessageLoopForUI::current()->Run(&accelerator_handler);
   EXPECT_TRUE(mtv->keys_pressed().empty());

@@ -12,7 +12,7 @@
 #include <windows.h>
 #endif
 
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 #include "base/string16.h"
 #include "base/thread.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
@@ -54,7 +54,7 @@ class WindowProxy : public AutomationResourceProxy {
   // key pressed and |flags| specifies which modifiers keys are also pressed (as
   // defined in chrome/views/event.h).  Note that this actually sends the event
   // to the window that has focus.
-  bool SimulateOSKeyPress(base::KeyboardCode key, int flags);
+  bool SimulateOSKeyPress(app::KeyboardCode key, int flags);
 
   // Shows/hides the window and as a result makes it active/inactive.
   // Returns true if the call was successful.

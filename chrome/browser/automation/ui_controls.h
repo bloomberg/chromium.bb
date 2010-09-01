@@ -12,7 +12,7 @@
 #include <wtypes.h>
 #endif
 
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 
@@ -46,13 +46,13 @@ namespace ui_controls {
 // If you're writing a test chances are you want the variant in ui_test_utils.
 // See it for details.
 bool SendKeyPress(gfx::NativeWindow window,
-                  base::KeyboardCode key,
+                  app::KeyboardCode key,
                   bool control,
                   bool shift,
                   bool alt,
                   bool command);
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                base::KeyboardCode key,
+                                app::KeyboardCode key,
                                 bool control,
                                 bool shift,
                                 bool alt,

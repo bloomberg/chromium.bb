@@ -6,7 +6,7 @@
 #define APP_MENUS_ACCELERATOR_H_
 #pragma once
 
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 
 namespace menus {
 
@@ -15,9 +15,9 @@ namespace menus {
 
 class Accelerator {
  public:
-  Accelerator() : key_code_(base::VKEY_UNKNOWN), modifiers_(0) {}
+  Accelerator() : key_code_(app::VKEY_UNKNOWN), modifiers_(0) {}
 
-  Accelerator(base::KeyboardCode keycode, int modifiers)
+  Accelerator(app::KeyboardCode keycode, int modifiers)
       : key_code_(keycode),
         modifiers_(modifiers) {}
 
@@ -52,7 +52,7 @@ class Accelerator {
     return !(*this == rhs);
   }
 
-  base::KeyboardCode GetKeyCode() const {
+  app::KeyboardCode GetKeyCode() const {
     return key_code_;
   }
 
@@ -62,7 +62,7 @@ class Accelerator {
 
  protected:
   // The keycode (VK_...).
-  base::KeyboardCode key_code_;
+  app::KeyboardCode key_code_;
 
   // The state of the Shift/Ctrl/Alt keys (platform-dependent).
   int modifiers_;

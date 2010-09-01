@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithMouseClick) {
 
 void KeyPress(views::Widget* widget) {
   ui_controls::SendKeyPress(GTK_WINDOW(widget->GetNativeView()),
-                            base::VKEY_SPACE, false, false, false, false);
+                            app::VKEY_SPACE, false, false, false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithKeyPress) {

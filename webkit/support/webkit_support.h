@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
-#include "base/keyboard_codes.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
 class Task;
@@ -154,19 +154,19 @@ WebKit::WebURL GetDevToolsPathAsURL();
 
 // -------- Keyboard code
 enum {
-    VKEY_LEFT = base::VKEY_LEFT,
-    VKEY_RIGHT = base::VKEY_RIGHT,
-    VKEY_UP = base::VKEY_UP,
-    VKEY_DOWN = base::VKEY_DOWN,
-    VKEY_RETURN = base::VKEY_RETURN,
-    VKEY_INSERT = base::VKEY_INSERT,
-    VKEY_DELETE = base::VKEY_DELETE,
-    VKEY_PRIOR = base::VKEY_PRIOR,
-    VKEY_NEXT = base::VKEY_NEXT,
-    VKEY_HOME = base::VKEY_HOME,
-    VKEY_END = base::VKEY_END,
-    VKEY_SNAPSHOT = base::VKEY_SNAPSHOT,
-    VKEY_F1 = base::VKEY_F1,
+    VKEY_LEFT = app::VKEY_LEFT,
+    VKEY_RIGHT = app::VKEY_RIGHT,
+    VKEY_UP = app::VKEY_UP,
+    VKEY_DOWN = app::VKEY_DOWN,
+    VKEY_RETURN = app::VKEY_RETURN,
+    VKEY_INSERT = app::VKEY_INSERT,
+    VKEY_DELETE = app::VKEY_DELETE,
+    VKEY_PRIOR = app::VKEY_PRIOR,
+    VKEY_NEXT = app::VKEY_NEXT,
+    VKEY_HOME = app::VKEY_HOME,
+    VKEY_END = app::VKEY_END,
+    VKEY_SNAPSHOT = app::VKEY_SNAPSHOT,
+    VKEY_F1 = app::VKEY_F1,
 };
 
 }  // namespace webkit_support
