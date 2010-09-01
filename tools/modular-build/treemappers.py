@@ -10,7 +10,7 @@ import types
 
 # Do not add any more imports here!  This could lead to undeclared
 # dependencies, changes to which fail to trigger rebuilds.
-from dirtree import FileSnapshot, FileSnapshotInMemory
+from dirtree import FileSnapshot, FileSnapshotInMemory, LazyDict
 
 
 def UnionIntoDict(input_tree, dest_dict, context=""):
@@ -28,6 +28,17 @@ def UnionIntoDict(input_tree, dest_dict, context=""):
         raise Exception("Cannot overwrite directory %r with file"
                         % new_context)
       UnionIntoDict(value, dest_subdir, new_context)
+
+
+def DeepCopy(tree):
+  """
+  This function copies a read-only directory tree to return a mutable
+  tree that can be modified using in-place operations.
+  """
+  if isinstance(tree, FileSnapshot):
+    return tree
+  else:
+    return dict((key, DeepCopy(value)) for key, value in tree.iteritems())
 
 
 def UnionDir(*trees):
@@ -48,6 +59,17 @@ def SetPath(tree, path, value):
   for element in elements[:-1]:
     tree = tree.setdefault(element, {})
   tree[elements[-1]] = value
+
+
+VERSION_CONTROL_DIRS = (".svn", ".git")
+
+def RemoveVersionControlDirs(tree):
+  if isinstance(tree, FileSnapshot):
+    return tree
+  else:
+    return LazyDict(lambda: dict((key, RemoveVersionControlDirs(value))
+                                 for key, value in tree.iteritems()
+                                 if key not in VERSION_CONTROL_DIRS))
 
 
 # The tree mapper functions below -- AddHeadersToNewlib() and
@@ -84,7 +106,7 @@ def RenameLib32ToLib(tree, arch, bits):
   libdir = tree.get(arch, {}).get("lib" + bits)
   if libdir is not None:
     assert ("lib" not in tree[arch] or
-            tree[arch]["lib"] == {})
+            tree[arch]["lib"].copy() == {})
     del tree[arch]["lib" + bits]
     tree[arch]["lib"] = libdir
 
@@ -115,6 +137,7 @@ exec ${0%%/*}/../original-bin/%(script_name)s "$@"
 
 
 def CombineInstallTrees(*trees):
+  trees = map(DeepCopy, trees)
   for tree in trees:
     MungeMultilibDir(tree, "nacl64", "32")
     MungeMultilibDir(tree, "nacl", "64")
@@ -125,8 +148,9 @@ def CombineInstallTrees(*trees):
 
 
 def AddHeadersToNewlib(newlib_source, nacl_headers):
-  UnionIntoDict(nacl_headers, newlib_source["newlib"]["libc"]["sys"]["nacl"])
-  return newlib_source
+  dest = DeepCopy(newlib_source)
+  UnionIntoDict(nacl_headers, dest["newlib"]["libc"]["sys"]["nacl"])
+  return dest
 
 
 def InstallLinkerScripts(glibc_tree, arch):

@@ -189,15 +189,50 @@ class FileSnapshotInMemory(FileSnapshot):
     return self._data
 
 
+class LazyDict(object):
+
+  """
+  LazyDict(func) returns a read-only dictionary object whose contents
+  are lazily evaluated by calling func(), which is expected to return
+  a dictionary.  LazyDict implements a read-only subset of the
+  interface of dict objects.
+  """
+
+  def __init__(self, func):
+    self._func = func
+    self._dict = None
+
+  def _GetDict(self):
+    if self._dict is None:
+      self._dict = self._func()
+      self._func = None
+    return self._dict
+
+  def iteritems(self):
+    return self._GetDict().iteritems()
+
+  def copy(self):
+    return self._GetDict().copy()
+
+  def __getitem__(self, key):
+    return self._GetDict()[key]
+
+  def __contains__(self, key):
+    return key in self._GetDict()
+
+  def get(self, *args):
+    return self._GetDict().get(*args)
+
+
 def MakeSnapshotFromPath(filename):
   if os.path.isfile(filename):
     return FileSnapshotUsingHardLink(filename)
   else:
-    dir_dict = {}
-    for leafname in os.listdir(filename):
-      dir_dict[leafname] = MakeSnapshotFromPath(
-          os.path.join(filename, leafname))
-    return dir_dict
+    def ReadDir():
+      return dict(
+          (leafname, MakeSnapshotFromPath(os.path.join(filename, leafname)))
+          for leafname in os.listdir(filename))
+    return LazyDict(ReadDir)
 
 
 def WriteSnapshotToPath(snapshot, dest_path):
