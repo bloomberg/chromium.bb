@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="options/content_settings.css">
 <link rel="stylesheet" href="options/content_settings_exceptions_area.css">
 <link rel="stylesheet" href="options/cookies_view.css">
+<link rel="stylesheet" href="options/edit_search_engine_overlay.css">
 <link rel="stylesheet" href="options/passwords_exceptions_list.css">
 <link rel="stylesheet" href="options/import_data_overlay.css">
 <link rel="stylesheet" href="options/search_engine_manager.css">
@@ -85,6 +86,7 @@
 <script src="options/content_settings_ui.js"></script>
 <script src="options/cookies_tree.js"></script>
 <script src="options/cookies_view.js"></script>
+<script src="options/edit_search_engine_overlay.js"></script>
 <script src="options/font_settings_overlay.js"></script>
 <script src="options/import_data_overlay.js"></script>
 <script src="options/passwords_exceptions.js"></script>
@@ -106,6 +108,7 @@ var BrowserOptions = options.BrowserOptions;
 var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
 var ContentSettings = options.ContentSettings;
 var CookiesView = options.CookiesView;
+var EditSearchEngineOverlay = options.EditSearchEngineOverlay;
 var FontSettingsOverlay = options.FontSettingsOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
 var OptionsPage = options.OptionsPage;
@@ -143,6 +146,7 @@ function load() {
   OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
+  OptionsPage.registerOverlay(EditSearchEngineOverlay.getInstance());
   OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
   OptionsPage.registerOverlay(StopSyncingOverlay.getInstance());
@@ -231,6 +235,7 @@ window.onpopstate = function(e) {
   <include src="options/autofill_edit_address_overlay.html">
   <include src="options/autofill_edit_creditcard_overlay.html">
   <include src="options/clear_browser_data_overlay.html">
+  <include src="options/edit_search_engine_overlay.html">
   <include src="options/font_settings_overlay.html">
   <include src="options/import_data_overlay.html">
   <include src="options/stop_syncing_overlay.html">

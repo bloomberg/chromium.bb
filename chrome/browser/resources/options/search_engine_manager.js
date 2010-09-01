@@ -37,14 +37,15 @@ cr.define('options', function() {
 
       var self = this;
       $('addSearchEngineButton').onclick = function(event) {
-        // TODO(stuartmorgan): Show an overlay to edit the new search engine.
+        chrome.send('editSearchEngine', ["-1"]);
+        OptionsPage.showOverlay('editSearchEngineOverlay');
       };
       $('removeSearchEngineButton').onclick = function(event) {
         chrome.send('removeSearchEngine', [self.selectedModelIndex_]);
       };
       $('editSearchEngineButton').onclick = function(event) {
-        // TODO(stuartmorgan): Show an overlay to edit the selected
-        // search engine.
+        chrome.send('editSearchEngine', [self.selectedModelIndex_]);
+        OptionsPage.showOverlay('editSearchEngineOverlay');
       };
       $('makeDefaultSearchEngineButton').onclick = function(event) {
         chrome.send('managerSetDefaultSearchEngine',
@@ -93,6 +94,7 @@ cr.define('options', function() {
 
       $('removeSearchEngineButton').disabled =
           !(engine && engine['canBeRemoved']);
+      $('editSearchEngineButton').disabled = engine == null;
       $('makeDefaultSearchEngineButton').disabled =
           !(engine && engine['canBeDefault']);
     },
