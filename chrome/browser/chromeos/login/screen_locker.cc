@@ -342,23 +342,30 @@ ScreenLocker* ScreenLocker::screen_locker_ = NULL;
 // See screen_locker.h for more details.
 class MouseEventRelay : public MessageLoopForUI::Observer {
  public:
-  MouseEventRelay(GdkWindow* src, GdkWindow* dest) : src_(src), dest_(dest) {
+  MouseEventRelay(GdkWindow* src, GdkWindow* dest)
+      : src_(src),
+        dest_(dest),
+        initialized_(false) {
     DCHECK(src_);
     DCHECK(dest_);
-    gint src_x, src_y, dest_x, dest_y, width, height, depth;
-    gdk_window_get_geometry(src_, &src_x, &src_y, &width, &height, &depth);
-    gdk_window_get_geometry(dest_, &dest_x, &dest_y, &width, &height, &depth);
-
-    offset_.SetPoint(dest_x - src_x, dest_y - src_y);
   }
 
   virtual void WillProcessEvent(GdkEvent* event) {}
 
   virtual void DidProcessEvent(GdkEvent* event) {
-    if (event->any.window != src_) {
+    if (event->any.window != src_)
       return;
+    if (!initialized_) {
+      gint src_x, src_y, dest_x, dest_y, width, height, depth;
+      gdk_window_get_geometry(dest_, &dest_x, &dest_y, &width, &height, &depth);
+      // wait to compute offset until the info bubble widget's location
+      // is available.
+      if (dest_x < 0 || dest_y < 0)
+        return;
+      gdk_window_get_geometry(src_, &src_x, &src_y, &width, &height, &depth);
+      offset_.SetPoint(dest_x - src_x, dest_y - src_y);
+      initialized_ = true;
     }
-
     if (event->type == GDK_BUTTON_PRESS ||
         event->type == GDK_BUTTON_RELEASE) {
       GdkEvent* copy = gdk_event_copy(event);
@@ -371,8 +378,8 @@ class MouseEventRelay : public MessageLoopForUI::Observer {
       gdk_event_free(copy);
     } else if (event->type == GDK_MOTION_NOTIFY) {
       GdkEvent* copy = gdk_event_copy(event);
-      copy->button.window = dest_;
-      g_object_ref(copy->button.window);
+      copy->motion.window = dest_;
+      g_object_ref(copy->motion.window);
       copy->motion.x -= offset_.x();
       copy->motion.y -= offset_.y();
 
@@ -384,6 +391,7 @@ class MouseEventRelay : public MessageLoopForUI::Observer {
  private:
   GdkWindow* src_;
   GdkWindow* dest_;
+  bool initialized_;
 
   // Offset from src_'s origin to dest_'s origin.
   gfx::Point offset_;
