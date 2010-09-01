@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
