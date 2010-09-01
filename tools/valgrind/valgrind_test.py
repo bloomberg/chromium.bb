@@ -756,6 +756,7 @@ class DrMemory(BaseTool):
 
     proc += ["-logdir", (os.getcwd() + "\\" + self.TMP_DIR)]
     proc += ["-batch", "-quiet"]
+    proc += ["-no_check_leaks", "-no_count_leaks"]
 
     # Dr.Memory requires -- to separate tool flags from the executable name.
     proc += ["--"]

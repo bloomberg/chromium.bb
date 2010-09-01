@@ -61,6 +61,27 @@ UNINITIALIZED READ
 ...
 *!CreateWindow*
 
+# http://code.google.com/p/drmemory/issues/detail?id=18
+UNINITIALIZED READ
+...
+*!CoInitialize*
+
+UNINITIALIZED READ
+...
+*!CoCreateInstance*
+
+UNINITIALIZED READ
+...
+*!CoUninitialize*
+
+UNINITIALIZED READ
+...
+UxTheme.dll!*
+
+UNINITIALIZED READ
+...
+RPCRT4.dll!UuidCreate
+
 # http://code.google.com/p/drmemory/issues/detail?id=36
 UNINITIALIZED READ
 system call NtContinue
@@ -93,6 +114,42 @@ UNINITIALIZED READ
 UNINITIALIZED READ
 ...
 ADVAPI32.dll!CryptAcquireContext*
+
+UNINITIALIZED READ
+...
+ntshrui.dll!IsPathSharedW
+
+UNINITIALIZED READ
+...
+*!NetApiBufferFree
+
+UNINITIALIZED READ
+...
+*!ShellExecute*
+
+UNADDRESSABLE ACCESS
+...
+*!SHParseDisplayName
+
+UNINITIALIZED READ
+...
+*!SHParseDisplayName
+
+UNINITIALIZED READ
+...
+*!GetCanonicalPathInfo*
+
+UNADDRESSABLE ACCESS
+...
+*!GetCanonicalPathInfo*
+
+UNINITIALIZED READ
+...
+SHELL32.dll!Ordinal*
+
+UNADDRESSABLE ACCESS
+...
+GDI32.dll!CreateDC*
 
 ############################
 # Real issues in Chromium
