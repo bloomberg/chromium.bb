@@ -2483,7 +2483,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
   SetNotWaitingForResponse();
 
   DCHECK(rvh == render_view_host());
-  NavigationEntry* entry = controller_.GetEntryWithPageID(GetSiteInstance(),
+  NavigationEntry* entry = controller_.GetEntryWithPageID(rvh->site_instance(),
                                                           page_id);
   if (!entry || !UpdateTitleForEntry(entry, title))
     return;
