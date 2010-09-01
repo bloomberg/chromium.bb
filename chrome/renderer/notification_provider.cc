@@ -88,6 +88,7 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_PostDisplayToNotificationObject, OnDisplay);
     IPC_MESSAGE_HANDLER(ViewMsg_PostErrorToNotificationObject, OnError);
     IPC_MESSAGE_HANDLER(ViewMsg_PostCloseToNotificationObject, OnClose);
+    IPC_MESSAGE_HANDLER(ViewMsg_PostClickToNotificationObject, OnClick);
     IPC_MESSAGE_HANDLER(ViewMsg_PermissionRequestDone,
                         OnPermissionRequestComplete);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -165,6 +166,15 @@ void NotificationProvider::OnClose(int id, bool by_user) {
     notification.dispatchCloseEvent(by_user);
     manager_.UnregisterNotification(id);
   }
+}
+
+void NotificationProvider::OnClick(int id) {
+  WebNotification notification;
+  bool found = manager_.GetNotification(id, &notification);
+  // |found| may be false if the WebNotification went out of scope in
+  // the page before the associated toast was clicked on.
+  if (found)
+    notification.dispatchClickEvent();
 }
 
 void NotificationProvider::OnPermissionRequestComplete(int id) {

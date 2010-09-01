@@ -47,6 +47,7 @@ class NotificationProvider : public WebKit::WebNotificationPresenter {
   void OnDisplay(int id);
   void OnError(int id, const WebKit::WebString& message);
   void OnClose(int id, bool by_user);
+  void OnClick(int id);
   void OnPermissionRequestComplete(int id);
 
   bool Send(IPC::Message* message);

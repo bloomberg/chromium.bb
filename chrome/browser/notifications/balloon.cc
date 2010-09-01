@@ -51,6 +51,10 @@ void Balloon::Update(const Notification& notification) {
   }
 }
 
+void Balloon::OnClick() {
+  notification_->Click();
+}
+
 void Balloon::OnClose(bool by_user) {
   notification_->Close(by_user);
   collection_->OnBalloonClosed(this);

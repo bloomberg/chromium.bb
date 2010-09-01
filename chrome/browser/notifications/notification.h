@@ -57,6 +57,7 @@ class Notification {
 
   void Display() const { delegate()->Display(); }
   void Error() const { delegate()->Error(); }
+  void Click() const { delegate()->Click(); }
   void Close(bool by_user) const { delegate()->Close(by_user); }
 
   bool IsSame(const Notification& other) const {

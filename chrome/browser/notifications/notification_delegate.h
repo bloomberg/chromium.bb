@@ -27,6 +27,9 @@ class NotificationDelegate
   // user explicitly (as opposed to timeout/script), |by_user| should be true.
   virtual void Close(bool by_user) = 0;
 
+  // To be called when a desktop notification is clicked.
+  virtual void Click() = 0;
+
   // Returns unique id of the notification.
   virtual std::string id() const = 0;
 

@@ -110,7 +110,7 @@ class BalloonHost : public RenderViewHostDelegate,
   }
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
   virtual void HandleMouseMove() {}
-  virtual void HandleMouseDown() {}
+  virtual void HandleMouseDown();
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;

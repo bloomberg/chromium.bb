@@ -30,6 +30,7 @@ class MockNotificationDelegate : public NotificationDelegate {
   virtual void Display() {}
   virtual void Error() {}
   virtual void Close(bool by_user) {}
+  virtual void Click() {}
   virtual std::string id() const { return id_; }
 
  private:

@@ -805,6 +805,10 @@ IPC_BEGIN_MESSAGES(View)
                       int /* notification_id */,
                       bool /* by_user */)
 
+  // Informs the renderer that one of its notifications was clicked on.
+  IPC_MESSAGE_ROUTED1(ViewMsg_PostClickToNotificationObject,
+                      int /* notification_id */)
+
   // Informs the renderer that the one if its notifications has closed.
   IPC_MESSAGE_ROUTED1(ViewMsg_PermissionRequestDone,
                       int /* request_id */)

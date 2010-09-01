@@ -96,6 +96,9 @@ class Balloon {
   // Notify that the content of notification has changed.
   virtual void Update(const Notification& notification);
 
+  // Called when the balloon is clicked by the user.
+  virtual void OnClick();
+
   // Called when the balloon is closed, either by user (through the UI)
   // or by a script.
   virtual void OnClose(bool by_user);

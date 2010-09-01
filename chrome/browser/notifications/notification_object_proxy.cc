@@ -49,6 +49,15 @@ void NotificationObjectProxy::Close(bool by_user) {
   }
 }
 
+void NotificationObjectProxy::Click() {
+  if (worker_) {
+    NOTREACHED();
+  } else {
+    DeliverMessage(new ViewMsg_PostClickToNotificationObject(
+        route_id_, notification_id_));
+  }
+}
+
 std::string NotificationObjectProxy::id() const {
   return StringPrintf("%d:%d:%d:%d", process_id_, route_id_,
                       notification_id_, worker_);

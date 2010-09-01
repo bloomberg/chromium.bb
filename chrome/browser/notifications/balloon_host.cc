@@ -123,6 +123,10 @@ void BalloonHost::UpdatePreferredSize(const gfx::Size& new_size) {
   balloon_->SetContentPreferredSize(new_size);
 }
 
+void BalloonHost::HandleMouseDown() {
+  balloon_->OnClick();
+}
+
 RendererPreferences BalloonHost::GetRendererPrefs(Profile* profile) const {
   RendererPreferences preferences;
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);

@@ -54,6 +54,7 @@ class SystemNotification {
     void Display() {}
     void Error() {}
     void Close(bool by_user) {}
+    void Click() {}
     std::string id() const { return id_; }
 
    private:
@@ -76,4 +77,3 @@ class SystemNotification {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_SYSTEM_NOTIFICATION_H_
-
