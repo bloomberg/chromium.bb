@@ -48,18 +48,19 @@ void WebKitContext::PurgeMemory() {
 
 void WebKitContext::DeleteDataModifiedSince(
     const base::Time& cutoff,
-    const char* url_scheme_to_be_skipped) {
+    const char* url_scheme_to_be_skipped,
+    const std::vector<string16>& protected_origins) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::WEBKIT)) {
     bool result = ChromeThread::PostTask(
         ChromeThread::WEBKIT, FROM_HERE,
         NewRunnableMethod(this, &WebKitContext::DeleteDataModifiedSince,
-                          cutoff, url_scheme_to_be_skipped));
+                          cutoff, url_scheme_to_be_skipped, protected_origins));
     DCHECK(result);
     return;
   }
 
-  dom_storage_context_->DeleteDataModifiedSince(cutoff,
-                                                url_scheme_to_be_skipped);
+  dom_storage_context_->DeleteDataModifiedSince(
+      cutoff, url_scheme_to_be_skipped, protected_origins);
 }
 
 

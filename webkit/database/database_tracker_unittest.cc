@@ -156,10 +156,13 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(file_util::SetLastModifiedTime(
         tracker->GetFullDBFilePath(kOrigin2, kDB3), three_days_ago));
 
-    // Delete databases modified since yesterday.
+    // Delete databases modified since yesterday. db2 is whitelisted.
     base::Time yesterday = base::Time::Now();
     yesterday -= base::TimeDelta::FromDays(1);
-    result = tracker->DeleteDataModifiedSince(yesterday, &callback);
+    std::vector<string16> protected_origins;
+    protected_origins.push_back(kOrigin2);
+    result = tracker->DeleteDataModifiedSince(
+        yesterday, protected_origins, &callback);
     EXPECT_EQ(net::ERR_IO_PENDING, result);
     ASSERT_FALSE(callback.have_result());
     EXPECT_TRUE(observer.DidReceiveNewNotification());
@@ -169,7 +172,7 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_EQ(net::OK, result);
     EXPECT_FALSE(file_util::PathExists(tracker->DatabaseDirectory().Append(
         FilePath::FromWStringHack(UTF16ToWide(kOrigin1)))));
-    EXPECT_FALSE(
+    EXPECT_TRUE(
         file_util::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB2)));
     EXPECT_TRUE(
         file_util::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB3)));

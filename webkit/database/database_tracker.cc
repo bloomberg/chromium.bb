@@ -4,6 +4,7 @@
 
 #include "webkit/database/database_tracker.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "app/sql/connection.h"
@@ -520,6 +521,7 @@ int DatabaseTracker::DeleteDatabase(const string16& origin_identifier,
 
 int DatabaseTracker::DeleteDataModifiedSince(
     const base::Time& cutoff,
+    const std::vector<string16>& protected_origins,
     net::CompletionCallback* callback) {
   if (!LazyInit())
     return net::ERR_FAILED;
@@ -536,6 +538,12 @@ int DatabaseTracker::DeleteDataModifiedSince(
        ori != origins.end(); ++ori) {
     if (StartsWith(*ori, ASCIIToUTF16(kExtensionOriginIdentifierPrefix), true))
       continue;
+
+    std::vector<string16>::const_iterator find_iter =
+        std::find(protected_origins.begin(), protected_origins.end(), *ori);
+    if (find_iter != protected_origins.end())
+      continue;
+
     std::vector<DatabaseDetails> details;
     if (!databases_table_->GetAllDatabaseDetailsForOrigin(*ori, &details))
       rv = net::ERR_FAILED;

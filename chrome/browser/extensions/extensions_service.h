@@ -362,6 +362,10 @@ class ExtensionsService
 
   ExtensionMenuManager* menu_manager() { return &menu_manager_; }
 
+  const std::map<GURL, int>& protected_storage_map() const {
+    return protected_storage_map_;
+  }
+
   // Notify the frontend that there was an error loading an extension.
   // This method is public because ExtensionsServiceBackend can post to here.
   void ReportExtensionLoadError(const FilePath& extension_path,
@@ -412,6 +416,8 @@ class ExtensionsService
   void LoadInstalledExtension(const ExtensionInfo& info, bool write_to_prefs);
 
   // Helper methods to configure the storage services accordingly.
+  void GrantProtectedStorage(Extension* extension);
+  void RevokeProtectedStorage(Extension* extension);
   void GrantUnlimitedStorage(Extension* extension);
   void RevokeUnlimitedStorage(Extension* extension);
 
@@ -489,10 +495,18 @@ class ExtensionsService
   typedef std::map<GURL, int> UnlimitedStorageMap;
   UnlimitedStorageMap unlimited_storage_map_;
 
+  // Collection of origins whose storage is protected by "Clear browsing data."
+  // A map from origin to the number of Apps currently installed and therefore
+  // intrinsically protected.
+  typedef std::map<GURL, int> ProtectedStorageMap;
+  ProtectedStorageMap protected_storage_map_;
+
   FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
                            InstallAppsWithUnlimtedStorage);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
+                           InstallAppsAndCheckStorageProtection);
   DISALLOW_COPY_AND_ASSIGN(ExtensionsService);
 };
 

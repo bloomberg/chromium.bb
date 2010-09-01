@@ -1267,6 +1267,49 @@ TEST_F(ExtensionsServiceTest, InstallAppsWithUnlimtedStorage) {
   EXPECT_TRUE(service_->unlimited_storage_map_.empty());
 }
 
+TEST_F(ExtensionsServiceTest, InstallAppsAndCheckStorageProtection) {
+  InitializeEmptyExtensionsService();
+  EXPECT_TRUE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->protected_storage_map_.empty());
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  int pref_count = 0;
+
+  PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
+  ValidatePrefKeyCount(++pref_count);
+  ASSERT_EQ(1u, service_->extensions()->size());
+  Extension* extension = service_->extensions()->at(0);
+  EXPECT_TRUE(extension->is_app());
+  const std::string id1 = extension->id();
+  EXPECT_FALSE(service_->protected_storage_map_.empty());
+  const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
+  ASSERT_EQ(1, service_->protected_storage_map_[origin1]);
+
+  // App 4 has a different origin (maps.google.com).
+  PackAndInstallExtension(extensions_path.AppendASCII("app4"), true);
+  ValidatePrefKeyCount(++pref_count);
+  ASSERT_EQ(2u, service_->extensions()->size());
+  extension = service_->extensions()->at(1);
+  const std::string id2 = extension->id();
+  EXPECT_FALSE(service_->protected_storage_map_.empty());
+  const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
+  ASSERT_NE(origin1, origin2);
+  ASSERT_EQ(1, service_->protected_storage_map_[origin2]);
+
+  service_->UninstallExtension(id1, false);
+  loop_.RunAllPending();
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_FALSE(service_->protected_storage_map_.empty());
+
+  service_->UninstallExtension(id2, false);
+  loop_.RunAllPending();
+
+  EXPECT_TRUE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->protected_storage_map_.empty());
+}
+
 // Test that when an extension version is reinstalled, nothing happens.
 TEST_F(ExtensionsServiceTest, Reinstall) {
   InitializeEmptyExtensionsService();

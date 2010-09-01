@@ -4,6 +4,8 @@
 
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 
+#include <algorithm>
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
@@ -156,7 +158,8 @@ void DOMStorageContext::PurgeMemory() {
 
 void DOMStorageContext::DeleteDataModifiedSince(
     const base::Time& cutoff,
-    const char* url_scheme_to_be_skipped) {
+    const char* url_scheme_to_be_skipped,
+    const std::vector<string16>& protected_origins) {
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
   PurgeMemory();
@@ -171,6 +174,13 @@ void DOMStorageContext::DeleteDataModifiedSince(
             webkit_glue::FilePathToWebString(path.BaseName()));
     if (EqualsASCII(web_security_origin.protocol(), url_scheme_to_be_skipped))
       continue;
+
+    std::vector<string16>::const_iterator find_iter =
+        std::find(protected_origins.begin(), protected_origins.end(),
+            web_security_origin.databaseIdentifier());
+    if (find_iter != protected_origins.end())
+      continue;
+
     file_util::FileEnumerator::FindInfo find_info;
     file_enumerator.GetFindInfo(&find_info);
     if (file_util::HasFileBeenModifiedSince(find_info, cutoff))
@@ -185,7 +195,7 @@ void DOMStorageContext::DeleteLocalStorageFile(const FilePath& file_path) {
   // by unloading all of the databases temporarily.
   // TODO(bulach): both this method and DeleteDataModifiedSince could purge
   // only the memory used by the specific file instead of all memory at once.
-  // See http://code.google.com/p/chromium/issues/detail?id=32000
+  // See http://crbug.com/32000
   PurgeMemory();
   file_util::Delete(file_path, false);
 }

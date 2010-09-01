@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_
 #pragma once
 
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -51,7 +53,8 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
   // Tell all children (where applicable) to delete any objects that were
   // last modified on or after the following time.
   void DeleteDataModifiedSince(const base::Time& cutoff,
-                               const char* url_scheme_to_be_skipped);
+                               const char* url_scheme_to_be_skipped,
+                               const std::vector<string16>& protected_origins);
 
   // Delete the session storage namespace associated with this id.  Called from
   // the UI thread.

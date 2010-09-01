@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_BROWSING_DATA_REMOVER_H_
 #pragma once
 
+#include <vector>
+
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
@@ -116,15 +118,19 @@ class BrowsingDataRemover : public NotificationObserver {
   // NotifyAndDeleteIfDone.
   void OnClearedDatabases(int rv);
 
-  // Invoked on the FILE thread to delete HTML5 databases.
-  void ClearDatabasesOnFILEThread(base::Time delete_begin);
+  // Invoked on the FILE thread to delete HTML5 databases. Ignores any within
+  // the |webkit_db_whitelist|.
+  void ClearDatabasesOnFILEThread(base::Time delete_begin,
+      const std::vector<string16>& webkit_db_whitelist);
 
   // Callback when the appcache has been cleared. Invokes
   // NotifyAndDeleteIfDone.
   void OnClearedAppCache();
 
-  // Invoked on the IO thread to delete from the AppCache.
-  void ClearAppCacheOnIOThread(base::Time delete_begin);
+  // Invoked on the IO thread to delete from the AppCache, ignoring data from
+  // any origins within the |origin_whitelist|.
+  void ClearAppCacheOnIOThread(base::Time delete_begin,
+                               const std::vector<GURL>& origin_whitelist);
 
   // Lower level helpers.
   void OnGotAppCacheInfo(int rv);
@@ -166,6 +172,7 @@ class BrowsingDataRemover : public NotificationObserver {
   net::CompletionCallbackImpl<BrowsingDataRemover> appcache_deleted_callback_;
   scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  std::vector<GURL> appcache_whitelist_;
   int appcaches_to_be_deleted_count_;
 
   // Used to delete data from the HTTP caches.

@@ -145,10 +145,12 @@ class DatabaseTracker
                      net::CompletionCallback* callback);
 
   // Delete any databases that have been touched since the cutoff date that's
-  // supplied. Returns net::OK on success, net::FAILED if not all databases
-  // could be deleted, and net::ERR_IO_PENDING and |callback| is invoked upon
-  // completion, if non-NULL.
+  // supplied, omitting any that match IDs within |protected_origins|.
+  // Returns net::OK on success, net::FAILED if not all databases could be
+  // deleted, and net::ERR_IO_PENDING and |callback| is invoked upon completion,
+  // if non-NULL.
   int DeleteDataModifiedSince(const base::Time& cutoff,
+                              const std::vector<string16>& protected_origins,
                               net::CompletionCallback* callback);
 
   // Delete all databases that belong to the given origin. Returns net::OK on

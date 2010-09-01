@@ -67,7 +67,8 @@ class DOMStorageContext {
   // Delete any local storage files that have been touched since the cutoff
   // date that's supplied.
   void DeleteDataModifiedSince(const base::Time& cutoff,
-                               const char* url_scheme_to_be_skipped);
+                               const char* url_scheme_to_be_skipped,
+                               const std::vector<string16>& protected_origins);
 
   // Deletes a single local storage file.
   void DeleteLocalStorageFile(const FilePath& file_path);

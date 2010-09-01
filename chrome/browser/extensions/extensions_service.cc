@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extensions_service.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -85,9 +87,18 @@ void GetExplicitOriginsInExtent(Extension* extension,
        pattern != patterns.end(); ++pattern) {
     if (pattern->match_subdomains() || pattern->match_all_urls())
       continue;
-    GURL origin = GURL(pattern->GetAsString()).GetOrigin();
-    if (origin.is_valid())
-      set.insert(origin);
+    // Wildcard URL schemes won't parse into a valid GURL, so explicit schemes
+    // must be used.
+    PatternList explicit_patterns = pattern->ConvertToExplicitSchemes();
+    for (PatternList::const_iterator explicit_p = explicit_patterns.begin();
+         explicit_p != explicit_patterns.end(); ++explicit_p) {
+      GURL origin = GURL(explicit_p->GetAsString()).GetOrigin();
+      if (origin.is_valid()) {
+        set.insert(origin);
+      } else {
+        NOTREACHED();
+      }
+    }
   }
 
   for (std::set<GURL>::const_iterator unique = set.begin();
@@ -700,6 +711,11 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
     // Check if this permission requires unlimited storage quota
     if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
       GrantUnlimitedStorage(extension);
+
+    // If the extension is an app, protect its local storage from
+    // "Clear browsing data."
+    if (extension->is_app())
+      GrantProtectedStorage(extension);
   }
 
   LOG(INFO) << "Sending EXTENSION_LOADED";
@@ -725,6 +741,31 @@ void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
     // in-memory quota.
     if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
       RevokeUnlimitedStorage(extension);
+
+    // If this is an app, then stop protecting its storage so it can be deleted.
+    if (extension->is_app())
+      RevokeProtectedStorage(extension);
+  }
+}
+
+void ExtensionsService::GrantProtectedStorage(Extension* extension) {
+  DCHECK(extension->is_app()) << "Only Apps are allowed protected storage.";
+  std::vector<GURL> origins;
+  GetExplicitOriginsInExtent(extension, &origins);
+  for (size_t i = 0; i < origins.size(); ++i)
+    ++protected_storage_map_[origins[i]];
+}
+
+void ExtensionsService::RevokeProtectedStorage(Extension* extension) {
+  DCHECK(extension->is_app()) << "Attempting to revoke protected storage from "
+      << " a non-app extension.";
+  std::vector<GURL> origins;
+  GetExplicitOriginsInExtent(extension, &origins);
+  for (size_t i = 0; i < origins.size(); ++i) {
+    const GURL& origin = origins[i];
+    DCHECK(protected_storage_map_[origin] > 0);
+    if (--protected_storage_map_[origin] <= 0)
+      protected_storage_map_.erase(origin);
   }
 }
 
