@@ -15,8 +15,7 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
     TabContents* owner, ConstrainedWindowGtkDelegate* delegate)
     : owner_(owner),
       delegate_(delegate),
-      visible_(false),
-      accel_group_(gtk_accel_group_new()) {
+      visible_(false) {
   DCHECK(owner);
   DCHECK(delegate);
   GtkWidget* dialog = delegate->GetWidgetRoot();
@@ -34,20 +33,14 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   gtk_container_add(GTK_CONTAINER(frame), alignment);
   gtk_container_add(GTK_CONTAINER(ebox), frame);
   border_.Own(ebox);
-  ConnectAccelerators();
+
+  gtk_widget_add_events(widget(), GDK_KEY_PRESS_MASK);
+  g_signal_connect(widget(), "key-press-event", G_CALLBACK(OnKeyPressThunk),
+                   this);
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
   border_.Destroy();
-
-  gtk_accel_group_disconnect_key(accel_group_, GDK_Escape,
-                                 static_cast<GdkModifierType>(0));
-  if (ContainingView() && ContainingView()->GetTopLevelNativeWindow()) {
-    gtk_window_remove_accel_group(
-        GTK_WINDOW(ContainingView()->GetTopLevelNativeWindow()),
-        accel_group_);
-  }
-  g_object_unref(accel_group_);
 }
 
 void ConstrainedWindowGtk::ShowConstrainedWindow() {
@@ -66,36 +59,23 @@ void ConstrainedWindowGtk::CloseConstrainedWindow() {
   delegate_->DeleteDelegate();
   owner_->WillClose(this);
 
-  delete this;
+  // Let the stack unwind so any relevant event handler can release its ref
+  // on widget().
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 TabContentsViewGtk* ConstrainedWindowGtk::ContainingView() {
   return static_cast<TabContentsViewGtk*>(owner_->view());
 }
 
-void ConstrainedWindowGtk::ConnectAccelerators() {
-  gtk_accel_group_connect(accel_group_,
-                          GDK_Escape, static_cast<GdkModifierType>(0),
-                          static_cast<GtkAccelFlags>(0),
-                          g_cclosure_new(G_CALLBACK(OnEscapeThunk),
-                                         this, NULL));
-  gtk_window_add_accel_group(
-      GTK_WINDOW(ContainingView()->GetTopLevelNativeWindow()),
-      accel_group_);
-}
+gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
+                                          GdkEventKey* key) {
+  if (key->keyval == GDK_Escape) {
+    CloseConstrainedWindow();
+    return TRUE;
+  }
 
-
-gboolean ConstrainedWindowGtk::OnEscape(GtkAccelGroup* group,
-                                        GObject* acceleratable,
-                                        guint keyval,
-                                        GdkModifierType modifier) {
-  // Handle this accelerator only if this is on the currently selected tab.
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser || browser->GetSelectedTabContents() != owner_)
-    return FALSE;
-
-  CloseConstrainedWindow();
-  return TRUE;
+  return FALSE;
 }
 
 // static
@@ -104,4 +84,3 @@ ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
     ConstrainedWindowGtkDelegate* delegate) {
   return new ConstrainedWindowGtk(parent, delegate);
 }
-

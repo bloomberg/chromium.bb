@@ -1059,4 +1059,11 @@ string16 GetStockPreferencesMenuLabel() {
   return preferences;
 }
 
+bool IsWidgetAncestryVisible(GtkWidget* widget) {
+  GtkWidget* parent = widget;
+  while (parent && GTK_WIDGET_VISIBLE(parent))
+    parent = parent->parent;
+  return !parent;
+}
+
 }  // namespace gtk_util
