@@ -34,7 +34,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual WebKit::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index, const WebKit::WebString& challenge,
       const WebKit::WebURL& url);
-  virtual size_t memoryUsageMB();
+  virtual size_t memoryUsageMB(bool no_cache = false);
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url);
