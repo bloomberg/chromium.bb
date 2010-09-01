@@ -1005,9 +1005,9 @@ class RenderView : public RenderWidget,
   HostContentSettings host_content_settings_;
   HostZoomLevels host_zoom_levels_;
 
-  // Whether content state (such as form state and scroll position) should be
-  // sent to the browser immediately. This is normally false, but set to true
-  // by some tests.
+  // Whether content state (such as form state, scroll position and page
+  // contents) should be sent to the browser immediately. This is normally
+  // false, but set to true by some tests.
   bool send_content_state_immediately_;
 
   // Stores if loading of images, scripts, and plugins is allowed.

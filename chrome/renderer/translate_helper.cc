@@ -12,6 +12,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
+#include "webkit/glue/dom_operations.h"
 
 using WebKit::WebFrame;
 using WebKit::WebScriptSource;
@@ -101,6 +102,61 @@ void TranslateHelper::CancelPendingTranslation() {
   page_id_ = -1;
   source_lang_.clear();
   target_lang_.clear();
+}
+
+// static
+bool TranslateHelper::IsPageTranslatable(WebKit::WebDocument* document) {
+  std::vector<WebKit::WebElement> meta_elements;
+  webkit_glue::GetMetaElementsWithAttribute(document,
+                                            ASCIIToUTF16("name"),
+                                            ASCIIToUTF16("google"),
+                                            &meta_elements);
+  std::vector<WebKit::WebElement>::const_iterator iter;
+  for (iter = meta_elements.begin(); iter != meta_elements.end(); ++iter) {
+    WebKit::WebString attribute = iter->getAttribute("value");
+    if (attribute.isNull())  // We support both 'value' and 'content'.
+      attribute = iter->getAttribute("content");
+    if (attribute.isNull())
+      continue;
+    if (LowerCaseEqualsASCII(attribute, "notranslate"))
+      return false;
+  }
+  return true;
+}
+
+// static
+std::string TranslateHelper::GetPageLanguageFromMetaTag(
+    WebKit::WebDocument* document) {
+  // The META language tag looks like:
+  // <meta http-equiv="content-language" content="en">
+  // It can contain more than one language:
+  // <meta http-equiv="content-language" content="en, fr">
+  std::vector<WebKit::WebElement> meta_elements;
+  webkit_glue::GetMetaElementsWithAttribute(document,
+                                            ASCIIToUTF16("http-equiv"),
+                                            ASCIIToUTF16("content-language"),
+                                            &meta_elements);
+  if (meta_elements.empty())
+    return std::string();
+
+  // We don't expect more than one such tag. If there are several, just use the
+  // first one.
+  WebKit::WebString attribute = meta_elements[0].getAttribute("content");
+  if (attribute.isEmpty())
+    return std::string();
+
+  // The value is supposed to be ASCII.
+  if (!IsStringASCII(attribute))
+    return std::string();
+
+  std::string language = StringToLowerASCII(UTF16ToASCII(attribute));
+  size_t coma_index = language.find(',');
+  if (coma_index != std::string::npos) {
+    // There are more than 1 language specified, just keep the first one.
+    language = language.substr(0, coma_index);
+  }
+  TrimWhitespaceASCII(language, TRIM_ALL, &language);
+  return language;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

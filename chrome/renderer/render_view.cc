@@ -889,15 +889,22 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
   string16 contents;
   CaptureText(main_frame, &contents);
   if (contents.size()) {
-    base::TimeTicks begin_time = base::TimeTicks::Now();
-    std::string language = DetermineTextLanguage(contents);
-    UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
-                               base::TimeTicks::Now() - begin_time);
     WebKit::WebDocument document = main_frame->document();
+    // If the page explicitly specifies a language, use it, otherwise we'll
+    // determine it based on the text content using the CLD.
+    std::string language =
+        TranslateHelper::GetPageLanguageFromMetaTag(&document);
+    if (language.empty()) {
+      base::TimeTicks begin_time = base::TimeTicks::Now();
+      language = DetermineTextLanguage(contents);
+      UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
+                                 base::TimeTicks::Now() - begin_time);
+    }
     // Send the text to the browser for indexing (the browser might decide not
     // to index, if the URL is HTTPS for instance) and language discovery.
-    Send(new ViewHostMsg_PageContents(routing_id_, url, load_id, contents,
-                                      language, IsPageTranslatable(&document)));
+    Send(new ViewHostMsg_PageContents(
+        routing_id_, url, load_id, contents, language,
+        TranslateHelper::IsPageTranslatable(&document)));
   }
 
   OnCaptureThumbnail();
@@ -1799,7 +1806,7 @@ void RenderView::didStopLoading() {
       FROM_HERE,
       page_info_method_factory_.NewRunnableMethod(
           &RenderView::CapturePageInfo, page_id_, false),
-      kDelayForCaptureMs);
+      send_content_state_immediately_ ? 0 : kDelayForCaptureMs);
 }
 
 bool RenderView::isSmartInsertDeleteEnabled() {
@@ -2087,23 +2094,6 @@ void RenderView::UpdateTargetURL(const GURL& url, const GURL& fallback_url) {
     target_url_ = latest_url;
     target_url_status_ = TARGET_INFLIGHT;
   }
-}
-
-bool RenderView::IsPageTranslatable(WebKit::WebDocument* document) {
-  std::vector<WebKit::WebElement> meta_elements;
-  webkit_glue::GetMetaElementsWithName(document, ASCIIToUTF16("google"),
-                                       &meta_elements);
-  std::vector<WebKit::WebElement>::const_iterator iter;
-  for (iter = meta_elements.begin(); iter != meta_elements.end(); ++iter) {
-    WebString attribute = iter->getAttribute("value");
-    if (attribute.isNull())  // We support both 'value' and 'content'.
-      attribute = iter->getAttribute("content");
-    if (attribute.isNull())
-      continue;
-    if (LowerCaseEqualsASCII(attribute, "notranslate"))
-      return false;
-  }
-  return true;
 }
 
 void RenderView::StartNavStateSyncTimerIfNecessary() {

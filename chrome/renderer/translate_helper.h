@@ -13,6 +13,7 @@
 
 class RenderView;
 namespace WebKit {
+class WebDocument;
 class WebFrame;
 }
 
@@ -38,6 +39,18 @@ class TranslateHelper {
   // Cancels any translation that is currently being performed.  This does not
   // revert existing translations.
   void CancelPendingTranslation();
+
+  // Returns whether the page associated with |document| is a candidate for
+  // translation.  Some pages can explictly specify (via a meta-tag) that they
+  // should not be translated.
+  static bool IsPageTranslatable(WebKit::WebDocument* document);
+
+  // Returns the language specified in the language meta tag of |document|, or
+  // an empty string if no such tag was found.
+  // The tag may specify several languages, the first one is returned.
+  // Example of such meta-tag:
+  // <meta http-equiv="content-language" content="en, fr">
+  static std::string GetPageLanguageFromMetaTag(WebKit::WebDocument* document);
 
  protected:
   // The following methods are protected so they can be overridden in
