@@ -40,27 +40,23 @@ class BackFwdMenuModelTest : public RenderViewHostTestHarness {
   // will be pending after we ask to navigate there).
   void NavigateToOffset(int offset) {
     controller().GoToOffset(offset);
-    const NavigationEntry* entry = controller().pending_entry();
-    rvh()->SendNavigate(entry->page_id(), entry->url());
+    contents()->CommitPendingNavigation();
   }
 
   // Same as NavigateToOffset but goes to an absolute index.
   void NavigateToIndex(int index) {
     controller().GoToIndex(index);
-    const NavigationEntry* entry = controller().pending_entry();
-    rvh()->SendNavigate(entry->page_id(), entry->url());
+    contents()->CommitPendingNavigation();
   }
 
   // Goes back/forward and commits the load.
   void GoBack() {
     controller().GoBack();
-    const NavigationEntry* entry = controller().pending_entry();
-    rvh()->SendNavigate(entry->page_id(), entry->url());
+    contents()->CommitPendingNavigation();
   }
   void GoForward() {
     controller().GoForward();
-    const NavigationEntry* entry = controller().pending_entry();
-    rvh()->SendNavigate(entry->page_id(), entry->url());
+    contents()->CommitPendingNavigation();
   }
 };
 

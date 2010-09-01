@@ -1805,6 +1805,59 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   EXPECT_EQ(controller().session_id().id(), other_controller.session_id().id());
 }
 
+// Tests that navigations initiated from the page (with the history object)
+// work as expected without navigation entries.
+TEST_F(NavigationControllerTest, HistoryNavigate) {
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const GURL url3("http://foo3");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  NavigateAndCommit(url3);
+  controller().GoBack();
+  contents()->CommitPendingNavigation();
+
+  // Casts the TabContents to a RenderViewHostDelegate::BrowserIntegration so we
+  // can call GoToEntryAtOffset which is private.
+  RenderViewHostDelegate::BrowserIntegration* rvh_delegate =
+      static_cast<RenderViewHostDelegate::BrowserIntegration*>(contents());
+
+  // Simulate the page calling history.back(), it should not create a pending
+  // entry.
+  rvh_delegate->GoToEntryAtOffset(-1);
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  // The actual cross-navigation is suspended until the current RVH tells us
+  // it unloaded, simulate that.
+  contents()->ProceedWithCrossSiteNavigation();
+  // Also make sure we told the page to navigate.
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(ViewMsg_Navigate::ID);
+  ASSERT_TRUE(message != NULL);
+  Tuple1<ViewMsg_Navigate_Params> nav_params;
+  ViewMsg_Navigate::Read(message, &nav_params);
+  EXPECT_EQ(url1, nav_params.a.url);
+  process()->sink().ClearMessages();
+
+  // Now test history.forward()
+  rvh_delegate->GoToEntryAtOffset(1);
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  // The actual cross-navigation is suspended until the current RVH tells us
+  // it unloaded, simulate that.
+  contents()->ProceedWithCrossSiteNavigation();
+  message = process()->sink().GetFirstMessageMatching(ViewMsg_Navigate::ID);
+  ASSERT_TRUE(message != NULL);
+  ViewMsg_Navigate::Read(message, &nav_params);
+  EXPECT_EQ(url3, nav_params.a.url);
+  process()->sink().ClearMessages();
+
+  // Make sure an extravagant history.go() doesn't break.
+  rvh_delegate->GoToEntryAtOffset(120);  // Out of bounds.
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  message = process()->sink().GetFirstMessageMatching(ViewMsg_Navigate::ID);
+  EXPECT_TRUE(message == NULL);
+}
+
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.

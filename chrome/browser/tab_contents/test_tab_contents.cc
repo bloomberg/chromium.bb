@@ -45,7 +45,7 @@ void TestTabContents::Observe(NotificationType type,
   }
 }
 
-TestRenderViewHost* TestTabContents::pending_rvh() {
+TestRenderViewHost* TestTabContents::pending_rvh() const {
   return static_cast<TestRenderViewHost*>(
       render_manager_.pending_render_view_host_);
 }
@@ -70,7 +70,34 @@ void TestTabContents::NavigateAndCommit(const GURL& url) {
   bool reverse_on_redirect = false;
   BrowserURLHandler::RewriteURLIfNecessary(
       &loaded_url, profile(), &reverse_on_redirect);
-  static_cast<TestRenderViewHost*>(render_view_host())->SendNavigate(
-      static_cast<MockRenderProcessHost*>(render_view_host()->process())->
-      max_page_id() + 1, loaded_url);
+
+  // LoadURL created a navigation entry, now simulate the RenderView sending
+  // a notification that it actually navigated.
+  CommitPendingNavigation();
+}
+
+void TestTabContents::CommitPendingNavigation() {
+  // If we are doing a cross-site navigation, this simulates the current RVH
+  // notifying that it has unloaded so the pending RVH is resumed and can
+  // navigate.
+  ProceedWithCrossSiteNavigation();
+  TestRenderViewHost* rvh = pending_rvh();
+  if (!rvh)
+    rvh = static_cast<TestRenderViewHost*>(render_manager_.current_host());
+
+  const NavigationEntry* entry = controller().pending_entry();
+  DCHECK(entry);
+  int page_id = entry->page_id();
+  if (page_id == -1) {
+    // It's a new navigation, assign a never-seen page id to it.
+    page_id =
+        static_cast<MockRenderProcessHost*>(rvh->process())->max_page_id() + 1;
+  }
+  rvh->SendNavigate(page_id, entry->url());
+}
+
+void TestTabContents::ProceedWithCrossSiteNavigation() {
+  if (!pending_rvh())
+    return;
+  render_manager_.ShouldClosePage(true, true);
 }

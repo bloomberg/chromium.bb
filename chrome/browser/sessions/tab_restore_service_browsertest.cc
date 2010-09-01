@@ -9,6 +9,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/test/render_view_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,8 +69,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
     // Navigate back. We have to do this song and dance as NavigationController
     // isn't happy if you navigate immediately while going back.
     controller().GoToIndex(index);
-    rvh()->SendNavigate(controller().pending_entry()->page_id(),
-                        controller().pending_entry()->url());
+    contents()->CommitPendingNavigation();
   }
 
   void RecreateService() {
@@ -157,9 +157,9 @@ TEST_F(TabRestoreServiceTest, Basic) {
   tab = static_cast<TabRestoreService::Tab*>(entry);
   EXPECT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
-  EXPECT_TRUE(url1_ == tab->navigations[0].virtual_url());
-  EXPECT_TRUE(url2_ == tab->navigations[1].virtual_url());
-  EXPECT_TRUE(url3_ == tab->navigations[2].virtual_url());
+  EXPECT_EQ(url1_, tab->navigations[0].virtual_url());
+  EXPECT_EQ(url2_, tab->navigations[1].virtual_url());
+  EXPECT_EQ(url3_, tab->navigations[2].virtual_url());
   EXPECT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
             tab->timestamp.ToInternalValue());

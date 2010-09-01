@@ -818,6 +818,12 @@ class TabContents : public PageNavigator,
   // different and was therefore updated.
   bool UpdateTitleForEntry(NavigationEntry* entry, const std::wstring& title);
 
+  // Causes the TabContents to navigate in the right renderer to |entry|, which
+  // must be already part of the entries in the navigation controller.
+  // This does not change the NavigationController state.
+  bool NavigateToEntry(const NavigationEntry& entry,
+                       NavigationController::ReloadType reload_type);
+
   // Misc non-view stuff -------------------------------------------------------
 
   // Helper functions for sending notifications.
