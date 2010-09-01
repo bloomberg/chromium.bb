@@ -396,7 +396,8 @@ class Extension {
                       const gfx::Size& max_size);
   SkBitmap GetCachedImage(const ExtensionResource& source,
                           const gfx::Size& max_size);
-
+  bool is_hosted_app() { return is_app() && !web_extent().is_empty(); }
+  bool is_packaged_app() { return is_app() && web_extent().is_empty(); }
  private:
   // We keep a cache of images loaded from extension resources based on their
   // path and a string representation of a size that may have been used to

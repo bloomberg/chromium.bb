@@ -1,0 +1,16 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "urls": [
+      "http://www.google.com/mail/"
+    ],
+    "launch": {
+      "web_url": "http://www.google.com/mail/"
+    }
+  },
+  "permissions": [
+    "notifications"
+  ],
+  "options_page": "options.html"
+}

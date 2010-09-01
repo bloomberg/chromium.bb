@@ -3558,6 +3558,9 @@ each locale. -->
       <message name="IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED" desc="">
         Could not load background page '<ph name="BACKGROUND_PAGE">$1<ex>page.html</ex></ph>'.
       </message>
+      <message name="IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED" desc="">
+        Could not load options page '<ph name="OPTIONS_PAGE">$1<ex>page.html</ex></ph>'.
+      </message>
 
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">

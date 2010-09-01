@@ -757,8 +757,10 @@ bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
 
   for (DictionaryValue::key_iterator key = manifest->begin_keys();
        key != manifest->end_keys(); ++key) {
-    if (!IsBaseCrxKey(*key) && *key != keys::kApp &&
-        *key != keys::kPermissions) {
+    if (!IsBaseCrxKey(*key) &&
+        *key != keys::kApp &&
+        *key != keys::kPermissions &&
+        *key != keys::kOptionsPage) {
       *error = errors::kHostedAppsCannotIncludeExtensionFeatures;
       return false;
     }
@@ -1285,16 +1287,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     background_url_ = GetResourceURL(background_str);
   }
 
-  // Initialize options page url (optional).
-  if (source.HasKey(keys::kOptionsPage)) {
-    std::string options_str;
-    if (!source.GetString(keys::kOptionsPage, &options_str)) {
-      *error = errors::kInvalidOptionsPage;
-      return false;
-    }
-    options_url_ = GetResourceURL(options_str);
-  }
-
   // Initialize toolstrips.  This is deprecated for public use.
   // NOTE(erikkay) Although deprecated, we intend to preserve this parsing
   // code indefinitely.  Please contact me or Joi for details as to why.
@@ -1426,6 +1418,39 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       !LoadLaunchURL(manifest_value_.get(), error) ||
       !LoadLaunchContainer(manifest_value_.get(), error)) {
     return false;
+  }
+
+  // Initialize options page url (optional).
+  // Funtion LoadIsApp() set is_app_ above.
+  if (source.HasKey(keys::kOptionsPage)) {
+    std::string options_str;
+    if (!source.GetString(keys::kOptionsPage, &options_str)) {
+      *error = errors::kInvalidOptionsPage;
+      return false;
+    }
+
+    if (is_hosted_app()) {
+      // hosted apps require an absolute URL.
+      GURL options_url(options_str);
+      if (!options_url.is_valid() ||
+          !(options_url.SchemeIs("http") || options_url.SchemeIs("https"))) {
+        *error = errors::kInvalidOptionsPageInHostedApp;
+        return false;
+      }
+      options_url_ = options_url;
+
+    } else {
+      GURL absolute(options_str);
+      if (absolute.is_valid()) {
+        *error = errors::kInvalidOptionsPageExpectUrlInPackage;
+        return false;
+      }
+      options_url_ = GetResourceURL(options_str);
+      if (!options_url_.is_valid()) {
+        *error = errors::kInvalidOptionsPage;
+        return false;
+      }
+    }
   }
 
   // Initialize the permissions (optional).

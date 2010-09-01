@@ -167,6 +167,11 @@ const char* kInvalidOmniboxKeyword =
     "Invalid value for 'omnibox_keyword'.";
 const char* kInvalidOptionsPage =
     "Invalid value for 'options_page'.";
+const char* kInvalidOptionsPageExpectUrlInPackage =
+    "Invalid value for 'options_page'.  Value must be a relative path.";
+const char* kInvalidOptionsPageInHostedApp =
+    "Invalid value for 'options_page'. Hosted apps must specify an "
+    "absolute URL.";
 const char* kInvalidPageAction =
     "Invalid value for 'page_action'.";
 const char* kInvalidPageActionDefaultTitle =

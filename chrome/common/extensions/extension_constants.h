@@ -129,6 +129,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidName;
   extern const char* kInvalidOmniboxKeyword;
   extern const char* kInvalidOptionsPage;
+  extern const char* kInvalidOptionsPageExpectUrlInPackage;
+  extern const char* kInvalidOptionsPageInHostedApp;
   extern const char* kInvalidPageAction;
   extern const char* kInvalidPageActionDefaultTitle;
   extern const char* kInvalidPageActionIconPath;

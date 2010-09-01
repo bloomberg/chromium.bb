@@ -283,6 +283,32 @@ TEST_F(ExtensionManifestTest, DisallowHybridApps) {
                      errors::kHostedAppsCannotIncludeExtensionFeatures);
 }
 
+TEST_F(ExtensionManifestTest, OptionsPageInApps) {
+  scoped_ptr<Extension> extension;
+
+  // Allow options page with absolute URL in hosed apps.
+  extension.reset(
+      LoadAndExpectSuccess("hosted_app_absolute_options.json"));
+  EXPECT_STREQ("http",
+               extension->options_url().scheme().c_str());
+  EXPECT_STREQ("example.com",
+               extension->options_url().host().c_str());
+  EXPECT_STREQ("options.html",
+               extension->options_url().ExtractFileName().c_str());
+
+  // Forbid options page with relative URL in hosted apps.
+  LoadAndExpectError("hosted_app_relative_options.json",
+                     errors::kInvalidOptionsPageInHostedApp);
+
+  // Forbid options page with non-(http|https) scheme in hosted app.
+  LoadAndExpectError("hosted_app_file_options.json",
+                     errors::kInvalidOptionsPageInHostedApp);
+
+  // Forbid absolute URL for options page in packaged apps.
+  LoadAndExpectError("packaged_app_absolute_options.json",
+                     errors::kInvalidOptionsPageExpectUrlInPackage);
+}
+
 TEST_F(ExtensionManifestTest, DisallowExtensionPermissions) {
   std::string error;
   scoped_ptr<DictionaryValue> manifest(

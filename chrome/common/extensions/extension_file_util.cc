@@ -251,6 +251,21 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     }
   }
 
+  // Validate path to the options page.  Don't check the URL for hosted apps,
+  // because they are expected to refer to an external URL.
+  if (!extension->options_url().is_empty() && !extension->is_hosted_app()) {
+    const FilePath options_path = ExtensionURLToRelativeFilePath(
+        extension->options_url());
+    const FilePath path = extension->GetResource(options_path).GetFilePath();
+    if (path.empty() || !file_util::PathExists(path)) {
+      *error =
+          l10n_util::GetStringFUTF8(
+              IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED,
+              WideToUTF16(options_path.ToWStringHack()));
+      return false;
+    }
+  }
+
   // Validate locale info.
   if (!ValidateLocaleInfo(*extension, error))
     return false;
