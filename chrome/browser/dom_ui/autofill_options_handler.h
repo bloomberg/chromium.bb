@@ -31,9 +31,17 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   // Loads AutoFill addresses and credit cards using the PersonalDataManager.
   void LoadAutoFillData();
 
-  // Adds an address to the WebDatabase.  Called from DOMUI.
-  // |args| - an associative array containing the address data.
-  void AddAddress(const ListValue* args);
+  // Adds or updates an address, depending on the unique ID of the address. If
+  // the unique ID is 0, a new address is added to the WebDatabase; otherwise,
+  // the address with the matching ID is updated. Called from DOMUI.
+  // |args| - an array containing the unique ID of the address followed by the
+  // address data.
+  void UpdateAddress(const ListValue* args);
+
+  // Loads the data from an address and sends this data back to the DOMUI to
+  // show in the address editor. Called from DOMUI.
+  // |args| - an integer, the unique ID of the address to remove.
+  void EditAddress(const ListValue* args);
 
   // Removes an address from the WebDatabase. Called from DOMUI.
   // |args| - an integer, the unique ID of the address to remove.

@@ -67,8 +67,12 @@ void AutoFillOptionsHandler::Initialize() {
 
 void AutoFillOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
-      "addAddress",
-      NewCallback(this, &AutoFillOptionsHandler::AddAddress));
+      "updateAddress",
+      NewCallback(this, &AutoFillOptionsHandler::UpdateAddress));
+
+  dom_ui_->RegisterMessageCallback(
+      "editAddress",
+      NewCallback(this, &AutoFillOptionsHandler::EditAddress));
 
   dom_ui_->RegisterMessageCallback(
       "removeAddress",
@@ -117,10 +121,6 @@ void AutoFillOptionsHandler::SetAddressOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FAX));
   localized_strings->SetString("emailLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
-  localized_strings->SetString("autoFillEditAddressApplyButton",
-      l10n_util::GetStringUTF16(IDS_OK));
-  localized_strings->SetString("autoFillEditAddressCancelButton",
-      l10n_util::GetStringUTF16(IDS_CANCEL));
 }
 
 void AutoFillOptionsHandler::SetCreditCardOverlayStrings(
@@ -170,36 +170,108 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
                                   credit_cards);
 }
 
-void AutoFillOptionsHandler::AddAddress(const ListValue* args) {
+void AutoFillOptionsHandler::UpdateAddress(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
+  int unique_id = 0;
+  if (!ExtractIntegerValue(args, &unique_id)) {
+    NOTREACHED();
+    return;
+  }
+
   AutoFillProfile profile;
+  profile.set_unique_id(unique_id);
+
   string16 value;
-  if (args->GetString(0, &value))
-    profile.SetInfo(AutoFillType(NAME_FULL), value);
   if (args->GetString(1, &value))
-    profile.SetInfo(AutoFillType(COMPANY_NAME), value);
+    profile.SetInfo(AutoFillType(NAME_FULL), value);
   if (args->GetString(2, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1), value);
+    profile.SetInfo(AutoFillType(COMPANY_NAME), value);
   if (args->GetString(3, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2), value);
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1), value);
   if (args->GetString(4, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY), value);
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2), value);
   if (args->GetString(5, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), value);
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY), value);
   if (args->GetString(6, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), value);
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), value);
   if (args->GetString(7, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), value);
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), value);
   if (args->GetString(8, &value))
-    profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), value);
+    profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), value);
   if (args->GetString(9, &value))
-    profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), value);
+    profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), value);
   if (args->GetString(10, &value))
+    profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), value);
+  if (args->GetString(11, &value))
     profile.SetInfo(AutoFillType(EMAIL_ADDRESS), value);
 
-  personal_data_->AddProfile(profile);
+  if (unique_id == 0)
+    personal_data_->AddProfile(profile);
+  else
+    personal_data_->UpdateProfile(profile);
+}
+
+void AutoFillOptionsHandler::EditAddress(const ListValue* args) {
+  if (!personal_data_->IsDataLoaded())
+    return;
+
+  int unique_id = 0;
+  if (!ExtractIntegerValue(args, &unique_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  // TODO(jhawkins): Refactor and move this into PersonalDataManager.
+  AutoFillProfile* profile = NULL;
+  for (std::vector<AutoFillProfile*>::const_iterator iter =
+           personal_data_->web_profiles().begin();
+       iter != personal_data_->web_profiles().end(); ++iter) {
+    if ((*iter)->unique_id() == unique_id) {
+      profile = *iter;
+      break;
+    }
+  }
+
+  if (!profile) {
+    NOTREACHED();
+    return;
+  }
+
+  // TODO(jhawkins): This is hacky because we can't send DictionaryValue
+  // directly to CallJavascriptFunction().
+  ListValue addressList;
+  DictionaryValue* address = new DictionaryValue();
+  address->SetInteger("uniqueID", profile->unique_id());
+  address->SetString("fullName",
+                     profile->GetFieldText(AutoFillType(NAME_FULL)));
+  address->SetString("companyName",
+                     profile->GetFieldText(AutoFillType(COMPANY_NAME)));
+  address->SetString("addrLine1",
+                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)));
+  address->SetString("addrLine2",
+                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)));
+  address->SetString("city",
+                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_CITY)));
+  address->SetString("state",
+                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
+  address->SetString("zipCode",
+                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
+  address->SetString("country",
+                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)));
+  address->SetString(
+      "phone",
+      profile->GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)));
+  address->SetString(
+      "fax",
+      profile->GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER)));
+  address->SetString("email",
+                     profile->GetFieldText(AutoFillType(EMAIL_ADDRESS)));
+  addressList.Append(address);
+
+  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.editAddress",
+                                  addressList);
 }
 
 void AutoFillOptionsHandler::RemoveAddress(const ListValue* args) {

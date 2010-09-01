@@ -422,6 +422,25 @@ void PersonalDataManager::AddProfile(const AutoFillProfile& profile) {
   SetProfiles(&profiles);
 }
 
+void PersonalDataManager::UpdateProfile(const AutoFillProfile& profile) {
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
+    return;
+
+  // Update the cached profile.
+  for (std::vector<AutoFillProfile*>::iterator iter = web_profiles_->begin();
+       iter != web_profiles_->end(); ++iter) {
+    if ((*iter)->unique_id() == profile.unique_id()) {
+      delete *iter;
+      *iter = new AutoFillProfile(profile);
+      break;
+    }
+  }
+
+  wds->UpdateAutoFillProfile(profile);
+  FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
+}
+
 void PersonalDataManager::RemoveProfile(int unique_id) {
   // TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
   std::vector<AutoFillProfile> profiles(web_profiles_.size());

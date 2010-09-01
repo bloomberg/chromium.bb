@@ -103,6 +103,9 @@ class PersonalDataManager
   // Adds |profile| to the web database.
   void AddProfile(const AutoFillProfile& profile);
 
+  // Updates |profile| which already exists in the web database.
+  void UpdateProfile(const AutoFillProfile& profile);
+
   // Removes the profile represented by |unique_id|.
   void RemoveProfile(int unique_id);
 

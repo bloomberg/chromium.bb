@@ -5,6 +5,9 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
 
+  // The unique ID of the loaded address.
+  var uniqueID;
+
   /**
    * AutoFillEditAddressOverlay class
    * Encapsulated handling of the 'Add Page' overlay page.
@@ -33,7 +36,7 @@ cr.define('options', function() {
       }
       $('autoFillEditAddressApplyButton').onclick = function(event) {
         self.saveAddress_();
-        OptionsPage.clearOverlays();
+        self.dismissOverlay_();
       }
 
       self.clearInputFields_();
@@ -41,11 +44,13 @@ cr.define('options', function() {
     },
 
     /**
-     * Clears any uncommited input, and dismisses the overlay.
+     * Clears any uncommited input, resets the stored unique ID and dismisses
+     * the overlay.
      * @private
      */
     dismissOverlay_: function() {
       this.clearInputFields_();
+      this.uniqueID = 0;
       OptionsPage.clearOverlays();
     },
 
@@ -56,18 +61,20 @@ cr.define('options', function() {
      */
     saveAddress_: function() {
       var address = new Array();
-      address[0] = $('fullName').value;
-      address[1] = $('companyName').value;
-      address[2] = $('addrLine1').value;
-      address[3] = $('addrLine2').value;
-      address[4] = $('city').value;
-      address[5] = $('state').value;
-      address[6] = $('zipCode').value;
-      address[7] = $('country').value;
-      address[8] = $('phone').value;
-      address[9] = $('fax').value;
-      address[10] = $('email').value;
-      chrome.send('addAddress', address);
+      address[0] = String(this.uniqueID);
+      address[1] = $('fullName').value;
+      address[2] = $('companyName').value;
+      address[3] = $('addrLine1').value;
+      address[4] = $('addrLine2').value;
+      address[5] = $('city').value;
+      address[6] = $('state').value;
+      address[7] = $('zipCode').value;
+      address[8] = $('country').value;
+      address[9] = $('phone').value;
+      address[10] = $('fax').value;
+      address[11] = $('email').value;
+
+      chrome.send('updateAddress', address);
     },
 
     /**
@@ -118,10 +125,42 @@ cr.define('options', function() {
       $('fax').value = '';
       $('email').value = '';
     },
+
+    /**
+     * Loads the address data from |address|, sets the input fields based on
+     * this data and stores the unique ID of the address.
+     * @private
+     */
+    loadAddress_: function(address) {
+      this.setInputFields_(address);
+      this.uniqueID = address['uniqueID'];
+    },
+
+    /**
+     * Sets the value of each input field according to |address|
+     * @private
+     */
+    setInputFields_: function(address) {
+      $('fullName').value = address['fullName'];
+      $('companyName').value = address['companyName'];
+      $('addrLine1').value = address['addrLine1'];
+      $('addrLine2').value = address['addrLine2'];
+      $('city').value = address['city'];
+      $('state').value = address['state'];
+      $('zipCode').value = address['zipCode'];
+      $('country').value = address['country'];
+      $('phone').value = address['phone'];
+      $('fax').value = address['fax'];
+      $('email').value = address['email'];
+    },
   };
 
   AutoFillEditAddressOverlay.clearInputFields = function() {
     AutoFillEditAddressOverlay.getInstance().clearInputFields_();
+  };
+
+  AutoFillEditAddressOverlay.loadAddress = function(address) {
+    AutoFillEditAddressOverlay.getInstance().loadAddress_(address);
   };
 
   AutoFillEditAddressOverlay.setTitle = function(title) {

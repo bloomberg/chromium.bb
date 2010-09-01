@@ -48,6 +48,9 @@ cr.define('options', function() {
       $('addCreditCardButton').onclick = function(event) {
         self.showAddCreditCardOverlay_();
       };
+      $('autoFillEditButton').onclick = function(event) {
+        self.editProfile_();
+      };
       $('autoFillRemoveButton').onclick = function(event) {
         self.removeProfile_();
       };
@@ -79,6 +82,17 @@ cr.define('options', function() {
       var title = localStrings.getString('addAddressTitle');
       AutoFillEditAddressOverlay.setTitle(title);
       AutoFillEditAddressOverlay.clearInputFields();
+      OptionsPage.showOverlay('autoFillEditAddressOverlay');
+    },
+
+    /**
+     * Shows the 'Edit address' overlay, using the data in |address| to fill the
+     * input fields. |address| is a list with one item, an associative array
+     * that contains the address data.
+     * @private
+     */
+    showEditAddressOverlay_: function(address) {
+      AutoFillEditAddressOverlay.loadAddress(address[0]);
       OptionsPage.showOverlay('autoFillEditAddressOverlay');
     },
 
@@ -172,6 +186,21 @@ cr.define('options', function() {
     },
 
     /**
+     * Calls into the browser to load either an address or a credit card,
+     * depending on the selected index.  The browser calls back into either
+     * editAddress() or editCreditCard() which show their respective editors.
+     * @private
+     */
+    editProfile_: function() {
+      var idx = $('profileList').selectedIndex;
+      if ((profileIndex = this.getAddressIndex_(idx)) != -1) {
+        chrome.send('editAddress', [String(this.addressIDs[profileIndex])]);
+      } else if ((profileIndex = this.getCreditCardIndex_(idx)) != -1) {
+        // TODO(jhawkins): Implement editCreditCard command.
+      }
+    },
+
+    /**
      * Removes the currently selected profile, whether it's an address or a
      * credit card.
      * @private
@@ -227,6 +256,10 @@ cr.define('options', function() {
 
   AutoFillOptions.updateCreditCards = function(creditCards) {
     AutoFillOptions.getInstance().updateCreditCards_(creditCards);
+  };
+
+  AutoFillOptions.editAddress = function(address) {
+    AutoFillOptions.getInstance().showEditAddressOverlay_(address);
   };
 
   // Export
