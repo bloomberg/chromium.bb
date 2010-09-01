@@ -1764,6 +1764,7 @@
         'browser/gtk/overflow_button.h',
         'browser/gtk/owned_widget_gtk.cc',
         'browser/gtk/owned_widget_gtk.h',
+        'browser/gtk/page_info_bubble_gtk.cc',
         'browser/gtk/page_info_window_gtk.cc',
         'browser/gtk/popup_blocked_animation_gtk.cc',
         'browser/gtk/process_singleton_dialog.cc',

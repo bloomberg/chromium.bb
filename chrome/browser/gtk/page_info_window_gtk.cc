@@ -220,12 +220,4 @@ void ShowPageInfo(gfx::NativeWindow parent,
   page_info_window->Show();
 }
 
-void ShowPageInfoBubble(gfx::NativeWindow parent,
-                        Profile* profile,
-                        const GURL& url,
-                        const NavigationEntry::SSLStatus& ssl,
-                        bool show_history) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace browser

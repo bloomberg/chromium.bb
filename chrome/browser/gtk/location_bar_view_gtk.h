@@ -58,6 +58,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Returns the widget the caller should host.  You must call Init() first.
   GtkWidget* widget() { return hbox_.get(); }
 
+  // Returns the widget the page info bubble should point to.
+  GtkWidget* location_icon_widget() const { return location_icon_image_; }
+
   // Returns the current TabContents.
   TabContents* GetTabContents() const;
 
