@@ -47,3 +47,6 @@ BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-24.html = PASS
 BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-25.html = PASS
 BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-28.html = PASS
 BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-7.html = PASS
+
+// Still failing, should be moved upstream.
+BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE
