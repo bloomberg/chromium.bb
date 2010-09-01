@@ -79,11 +79,18 @@ class BrowserAccessibilityManager {
   // Called when the renderer process has notified us of a focus, state,
   // or children change. Send a notification to MSAA clients of the change.
   void OnAccessibilityFocusChange(int acc_obj_id);
-  void OnAccessibilityObjectStateChange(int acc_obj_id);
+  void OnAccessibilityObjectStateChange(
+      const webkit_glue::WebAccessibility& acc_obj);
   void OnAccessibilityObjectChildrenChange(
       const std::vector<webkit_glue::WebAccessibility>& acc_changes);
 
  private:
+  // Update the accessibility tree with an updated WebAccessibility tree or
+  // subtree received from the renderer process. Returns the updated node or
+  // NULL if no node was updated.
+  BrowserAccessibility* UpdateTree(
+      const webkit_glue::WebAccessibility& acc_obj);
+
   // Returns the next MSAA child id.
   static LONG GetNextChildID();
 

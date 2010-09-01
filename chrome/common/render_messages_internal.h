@@ -2226,13 +2226,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityFocusChange,
                       int /* accessibility object id */)
 
-  // Sent as a result of a state change in the renderer (if accessibility is
-  // enabled), to notify the browser side. Takes the id of the accessibility
-  // object that had a state change
+  // Sent by the renderer when the state of an accessibility node changes.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityObjectStateChange,
-                      int /* accessibility object id */)
+                      webkit_glue::WebAccessibility)
 
-  // Sent by the renderer as a result of a accessibility node children change.
+  // Sent by the renderer as a result of an accessibility node children change.
   // The browser responds with a ViewMsg_AccessibilityObjectChildrenChange_ACK.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityObjectChildrenChange,
                       std::vector<webkit_glue::WebAccessibility>)

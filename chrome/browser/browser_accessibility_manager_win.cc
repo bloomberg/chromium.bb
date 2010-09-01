@@ -114,18 +114,16 @@ void BrowserAccessibilityManager::OnAccessibilityFocusChange(int renderer_id) {
 }
 
 void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
-    int renderer_id) {
-  base::hash_map<int, LONG>::iterator iter =
-      renderer_id_to_child_id_map_.find(renderer_id);
-  if (iter == renderer_id_to_child_id_map_.end())
+    const webkit_glue::WebAccessibility& acc_obj) {
+  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  if (!new_browser_acc)
     return;
 
-  LONG child_id = iter->second;
-  ::NotifyWinEvent(
+  NotifyWinEvent(
       EVENT_OBJECT_STATECHANGE,
       parent_hwnd_,
       OBJID_CLIENT,
-      child_id);
+      new_browser_acc->child_id());
 }
 
 void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
@@ -136,22 +134,47 @@ void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
   // For each accessibility object child change.
   for (unsigned int index = 0; index < acc_changes.size(); index++) {
     const webkit_glue::WebAccessibility& acc_obj = acc_changes[index];
-    base::hash_map<int, LONG>::iterator iter =
-        renderer_id_to_child_id_map_.find(acc_obj.id);
-    if (iter == renderer_id_to_child_id_map_.end())
+    BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+    if (!new_browser_acc)
       continue;
 
-    LONG child_id = iter->second;
-    BrowserAccessibility* old_browser_acc = GetFromChildID(child_id);
+    LONG child_id;
+    if (root_ != new_browser_acc) {
+      child_id = new_browser_acc->GetParent()->child_id();
+    } else {
+      child_id = CHILDID_SELF;
+    }
 
+    NotifyWinEvent(EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, child_id);
+  }
+}
+
+BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
+    const webkit_glue::WebAccessibility& acc_obj) {
+  base::hash_map<int, LONG>::iterator iter =
+      renderer_id_to_child_id_map_.find(acc_obj.id);
+  if (iter == renderer_id_to_child_id_map_.end())
+    return NULL;
+
+  LONG child_id = iter->second;
+  BrowserAccessibility* old_browser_acc = GetFromChildID(child_id);
+
+  if (old_browser_acc->GetChildCount() == 0 && acc_obj.children.size() == 0) {
+    // Reinitialize the BrowserAccessibility if there are no children to update.
+    old_browser_acc->Initialize(
+        this,
+        old_browser_acc->GetParent(),
+        child_id,
+        old_browser_acc->index_in_parent(),
+        acc_obj);
+
+    return old_browser_acc;
+  } else {
     BrowserAccessibility* new_browser_acc = CreateAccessibilityTree(
         old_browser_acc->GetParent(),
         child_id,
         acc_obj,
         old_browser_acc->index_in_parent());
-
-    if (focus_->IsDescendantOf(old_browser_acc))
-      focus_ = new_browser_acc;
 
     if (old_browser_acc->GetParent()) {
       old_browser_acc->GetParent()->ReplaceChild(
@@ -165,13 +188,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
     old_browser_acc->Release();
     child_id_map_[child_id] = new_browser_acc;
 
-    if (root_ != new_browser_acc) {
-      NotifyWinEvent(
-          EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, child_id);
-    } else {
-      NotifyWinEvent(
-          EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, CHILDID_SELF);
-    }
+    return new_browser_acc;
   }
 }
 

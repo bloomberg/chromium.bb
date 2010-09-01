@@ -28,6 +28,8 @@ void BrowserAccessibility::Initialize(
     LONG child_id,
     LONG index_in_parent,
     const webkit_glue::WebAccessibility& src) {
+  DCHECK_EQ(children_.size(), 0U);
+
   manager_ = manager;
   parent_ = parent;
   child_id_ = child_id;
@@ -88,6 +90,10 @@ bool BrowserAccessibility::IsDescendantOf(BrowserAccessibility* ancestor) {
 
 BrowserAccessibility* BrowserAccessibility::GetParent() {
   return parent_;
+}
+
+uint32 BrowserAccessibility::GetChildCount() {
+  return children_.size();
 }
 
 BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() {

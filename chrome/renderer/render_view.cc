@@ -177,6 +177,7 @@ using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::SiteIsolationMetrics;
+using webkit_glue::WebAccessibility;
 using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebApplicationCacheHost;
@@ -4307,7 +4308,7 @@ void RenderView::OnGetAccessibilityTree() {
   accessibility_changes_.clear();
 
   WebAccessibilityObject src_tree = webview()->accessibilityObject();
-  webkit_glue::WebAccessibility dst_tree(src_tree, accessibility_.get());
+  WebAccessibility dst_tree(src_tree, accessibility_.get());
   Send(new ViewHostMsg_AccessibilityTree(routing_id_, dst_tree));
 }
 
@@ -5334,43 +5335,26 @@ void RenderView::focusAccessibilityObject(
 }
 
 void RenderView::didChangeAccessibilityObjectState(
-    const WebKit::WebAccessibilityObject& acc_obj) {
-#if defined(OS_WIN)
-  // TODO(dglazkov): Current logic implies that a state change can only be made
-  // after at least one call to RenderView::OnGetAccessibilityInfo, which is
-  // where accessibility is initialized. We should determine whether that's
-  // right.
+    const WebAccessibilityObject& acc_obj) {
   if (!accessibility_.get())
     return;
 
-  // Retrieve the accessibility object id of the AccessibilityObject.
-  int acc_obj_id = accessibility_->addOrGetId(acc_obj);
-
-  // If id is valid, alert the browser side that an accessibility object state
-  // change occurred.
-  if (acc_obj_id >= 0)
-    Send(new ViewHostMsg_AccessibilityObjectStateChange(routing_id_,
-                                                        acc_obj_id));
-
-#else  // defined(OS_WIN)
-  // TODO(port): accessibility not yet implemented
-  NOTIMPLEMENTED();
-#endif
+  Send(new ViewHostMsg_AccessibilityObjectStateChange(
+      routing_id_, WebAccessibility(acc_obj, accessibility_.get())));
 }
 
 void RenderView::didChangeAccessibilityObjectChildren(
-    const WebKit::WebAccessibilityObject& acc_obj) {
+    const WebAccessibilityObject& acc_obj) {
   if (!accessibility_.get())
     return;
 
   if (accessibility_changes_.empty()) {
     Send(new ViewHostMsg_AccessibilityObjectChildrenChange(
-        routing_id_,
-        std::vector<webkit_glue::WebAccessibility>()));
+        routing_id_, std::vector<WebAccessibility>()));
   }
 
   accessibility_changes_.push_back(
-      webkit_glue::WebAccessibility(acc_obj, accessibility_.get()));
+      WebAccessibility(acc_obj, accessibility_.get()));
 }
 
 void RenderView::Print(WebFrame* frame, bool script_initiated) {

@@ -82,10 +82,14 @@ class AccessibleChecker {
   // Set the expected value for this AccessibleChecker.
   void SetExpectedValue(wstring expected_value);
 
+  // Set the expected state for this AccessibleChecker.
+  void SetExpectedState(LONG expected_state);
+
  private:
   void CheckAccessibleName(IAccessible* accessible);
   void CheckAccessibleRole(IAccessible* accessible);
   void CheckAccessibleValue(IAccessible* accessible);
+  void CheckAccessibleState(IAccessible* accessible);
   void CheckAccessibleChildren(IAccessible* accessible);
 
  private:
@@ -99,6 +103,9 @@ class AccessibleChecker {
 
   // Expected accessible value. Checked against IAccessible::get_accValue.
   wstring value_;
+
+  // Expected accessible state. Checked against IAccessible::get_accState.
+  LONG state_;
 
   // Expected accessible children. Checked using IAccessible::get_accChildCount
   // and ::AccessibleChildren.
@@ -154,14 +161,16 @@ AccessibleChecker::AccessibleChecker(
     wstring expected_name, int32 expected_role, wstring expected_value) :
     name_(expected_name),
     role_(expected_role),
-    value_(expected_value) {
+    value_(expected_value),
+    state_(-1) {
 }
 
 AccessibleChecker::AccessibleChecker(
     wstring expected_name, wstring expected_role, wstring expected_value) :
     name_(expected_name),
     role_(expected_role.c_str()),
-    value_(expected_value) {
+    value_(expected_value),
+    state_(-1) {
 }
 
 void AccessibleChecker::AppendExpectedChild(
@@ -173,11 +182,16 @@ void AccessibleChecker::CheckAccessible(IAccessible* accessible) {
   CheckAccessibleName(accessible);
   CheckAccessibleRole(accessible);
   CheckAccessibleValue(accessible);
+  CheckAccessibleState(accessible);
   CheckAccessibleChildren(accessible);
 }
 
 void AccessibleChecker::SetExpectedValue(wstring expected_value) {
   value_ = expected_value;
+}
+
+void AccessibleChecker::SetExpectedState(LONG expected_state) {
+  state_ = expected_state;
 }
 
 void AccessibleChecker::CheckAccessibleName(IAccessible* accessible) {
@@ -213,6 +227,18 @@ void AccessibleChecker::CheckAccessibleValue(IAccessible* accessible) {
   // Test that the correct string was returned.
   EXPECT_STREQ(value_.c_str(),
                wstring(value.m_str, SysStringLen(value)).c_str());
+}
+
+void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
+  if (state_ < 0)
+    return;
+
+  VARIANT var_state = {0};
+  HRESULT hr =
+      accessible->get_accState(CreateI4Variant(CHILDID_SELF), &var_state);
+  EXPECT_EQ(hr, S_OK);
+  EXPECT_EQ(VT_I4, V_VT(&var_state));
+  ASSERT_TRUE(state_ == V_I4(&var_state));
 }
 
 void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
@@ -306,7 +332,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // detected. Request and wait for the accessibility tree to be updated.
   GURL tree_url(
       "data:text/html,<html><body><div onclick=\"this.innerHTML='<b>new text"
-      "</b>';\"><b>old text</b></div></body></html>");
+      "</b>';\"><b>old text</b></div><div><input type='checkbox' /></div>"
+      "</body></html>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   ScopedComPtr<IAccessible> document_accessible(
       GetRenderWidgetHostViewClientAccessible());
@@ -314,33 +341,63 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   AccessibleChecker text_checker(L"", ROLE_SYSTEM_TEXT, L"old text");
-  AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
 
-  AccessibleChecker div_checker(L"", L"div", L"");
-  div_checker.AppendExpectedChild(&text_checker);
+  AccessibleChecker div1_checker(L"", L"div", L"");
+  div1_checker.AppendExpectedChild(&text_checker);
+
+  AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
+  checkbox_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
+
+  AccessibleChecker div2_checker(L"", L"div", L"");
+  div2_checker.AppendExpectedChild(&checkbox_checker);
 
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  document_checker.AppendExpectedChild(&div_checker);
+  document_checker.AppendExpectedChild(&div1_checker);
+  document_checker.AppendExpectedChild(&div2_checker);
+
+  // TODO(ctguil): Fix: We should not be expecting busy state here.
+  document_checker.SetExpectedState(STATE_SYSTEM_BUSY);
 
   // Check the accessible tree of the browser.
   document_accessible = GetRenderWidgetHostViewClientAccessible();
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
   document_checker.CheckAccessible(document_accessible);
 
-  // Perform the default action on the div which executes the script that
+  // Perform the default action on the div1 which executes the script that
   // updates text node within the div.
-  CComPtr<IDispatch> div_dispatch;
+  CComPtr<IDispatch> div1_dispatch;
   HRESULT hr = document_accessible->get_accChild(CreateI4Variant(1),
-                                                 &div_dispatch);
+                                                 &div1_dispatch);
   EXPECT_EQ(hr, S_OK);
-  CComQIPtr<IAccessible> div_accessible(div_dispatch);
-  hr = div_accessible->accDoDefaultAction(CreateI4Variant(CHILDID_SELF));
+  CComQIPtr<IAccessible> div1_accessible(div1_dispatch);
+  hr = div1_accessible->accDoDefaultAction(CreateI4Variant(CHILDID_SELF));
   EXPECT_EQ(hr, S_OK);
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check that the accessibility tree of the browser has been updated.
   text_checker.SetExpectedValue(L"new text");
+  document_checker.CheckAccessible(document_accessible);
+
+  // Perform the default action on the checkbox which marks it as checked.
+  CComPtr<IDispatch> div2_dispatch;
+  hr = document_accessible->get_accChild(CreateI4Variant(2), &div2_dispatch);
+  EXPECT_EQ(hr, S_OK);
+  CComQIPtr<IAccessible> div2_accessible(div2_dispatch);
+  CComPtr<IDispatch> checkbox_dispatch;
+  hr = div2_accessible->get_accChild(CreateI4Variant(1), &checkbox_dispatch);
+  EXPECT_EQ(hr, S_OK);
+  CComQIPtr<IAccessible> checkbox_accessible(checkbox_dispatch);
+  hr = checkbox_accessible->accDoDefaultAction(CreateI4Variant(CHILDID_SELF));
+  EXPECT_EQ(hr, S_OK);
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check that the accessibility tree of the browser has been updated.
+  checkbox_checker.SetExpectedState(
+      STATE_SYSTEM_CHECKED | STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED |
+      STATE_SYSTEM_READONLY);
   document_checker.CheckAccessible(document_accessible);
 }
 }  // namespace.

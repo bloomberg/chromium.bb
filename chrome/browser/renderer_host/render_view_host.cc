@@ -1968,8 +1968,14 @@ void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
   view()->OnAccessibilityFocusChange(acc_obj_id);
 }
 
-void RenderViewHost::OnAccessibilityObjectStateChange(int acc_obj_id) {
-  view()->OnAccessibilityObjectStateChange(acc_obj_id);
+void RenderViewHost::OnAccessibilityObjectStateChange(
+    const webkit_glue::WebAccessibility& acc_obj) {
+  view()->OnAccessibilityObjectStateChange(acc_obj);
+
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+      Source<RenderViewHost>(this),
+      NotificationService::NoDetails());
 }
 
 void RenderViewHost::OnAccessibilityObjectChildrenChange(

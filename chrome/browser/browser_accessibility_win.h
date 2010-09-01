@@ -71,6 +71,9 @@ class ATL_NO_VTABLE BrowserAccessibility
   // root.
   BrowserAccessibility* GetParent();
 
+  // Returns the number of children of this BrowserAccessibility object.
+  uint32 GetChildCount();
+
   // Return the previous sibling of this object, or NULL if it's the first
   // child of its parent.
   BrowserAccessibility* GetPreviousSibling();

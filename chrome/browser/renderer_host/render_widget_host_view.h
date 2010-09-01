@@ -252,7 +252,8 @@ class RenderWidgetHostView {
   virtual void UpdateAccessibilityTree(
       const webkit_glue::WebAccessibility& tree) { }
   virtual void OnAccessibilityFocusChange(int acc_obj_id) { }
-  virtual void OnAccessibilityObjectStateChange(int acc_obj_id) { }
+  virtual void OnAccessibilityObjectStateChange(
+      const webkit_glue::WebAccessibility& acc_obj) { }
   virtual void OnAccessibilityObjectChildrenChange(
        const std::vector<webkit_glue::WebAccessibility>& acc_changes) { }
 

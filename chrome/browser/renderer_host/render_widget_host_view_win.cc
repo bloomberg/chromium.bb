@@ -1504,10 +1504,10 @@ void RenderWidgetHostViewWin::OnAccessibilityFocusChange(int acc_obj_id) {
   }
 }
 
-void RenderWidgetHostViewWin::OnAccessibilityObjectStateChange(int acc_obj_id) {
+void RenderWidgetHostViewWin::OnAccessibilityObjectStateChange(
+    const webkit_glue::WebAccessibility& acc_obj) {
   if (browser_accessibility_manager_.get()) {
-    browser_accessibility_manager_->OnAccessibilityObjectStateChange(
-        acc_obj_id);
+    browser_accessibility_manager_->OnAccessibilityObjectStateChange(acc_obj);
   }
 }
 
