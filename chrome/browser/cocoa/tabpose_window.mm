@@ -1033,7 +1033,8 @@ void AnimateCALayerFrameFromTo(
   }
 
   // Animate layers out, all in one transaction.
-  CGFloat duration = 2 * kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1);
+  CGFloat duration =
+      1.3 * kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1);
   ScopedCAActionSetDuration durationSetter(duration);
   for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
     CALayer* layer = [allThumbnailLayers_ objectAtIndex:i];
