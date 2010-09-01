@@ -97,9 +97,3 @@ fun_r:threadLockingTest
 # There is a benign race which is hard to suppress properly,
 # see http://crbug.com/44580
 fun_r:*ChromeThread*GetCurrentThreadIdentifier*
-
-# Ignore accesses in talk_base::CriticalSection::CurrentThreadIsOwner()
-# There is a benign race but we don't have dynamic_annotations in libjingle
-# so we ignore the function instead of annotating it (for now).
-# See http://crbug.com/53766
-fun:*talk_base*CriticalSection*CurrentThreadIsOwner*

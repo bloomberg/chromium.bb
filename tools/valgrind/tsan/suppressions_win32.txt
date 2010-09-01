@@ -15,14 +15,6 @@
   fun:*InitializeClock*
 }
 
-{
-  bug_53837
-  ThreadSanitizer:Race
-  fun:*talk_base*MessageQueueManager*Clear*
-  fun:*talk_base*~MessageHandler*
-  fun:*remoting*JingleThread*Run*
-}
-
 ############################
 # Reports on the guts of Windows
 {

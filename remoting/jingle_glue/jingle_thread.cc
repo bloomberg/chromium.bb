@@ -92,6 +92,9 @@ void JingleThread::Stop() {
   // queue before exiting. Thread::Stop() would not do that.
   Post(this, kStopMessageId);
   stopped_event_.Wait();
+
+  // This will wait until the thread is actually finished.
+  Thread::Stop();
 }
 
 MessageLoop* JingleThread::message_loop() {
