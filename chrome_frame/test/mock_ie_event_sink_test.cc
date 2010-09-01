@@ -100,12 +100,10 @@ void MockIEEventSink::ExpectNavigation(bool is_cf, const std::wstring& url) {
   }
 }
 
-void MockIEEventSink::ExpectInPageNavigation(bool is_cf,
-                                             const std::wstring& url) {
+void MockIEEventSink::ExpectNavigationOptionalBefore(bool is_cf,
+                                                     const std::wstring& url) {
   InSequence expect_in_sequence_for_scope;
   if (is_cf && GetInstalledIEVersion() == IE_6) {
-    // OnBeforeNavigation events are not sent for navigation between different
-    // anchors in a CF page in IE6.
     ExpectNavigationCardinality(url, testing::AtMost(1),
                                 testing::Between(1, 2));
   } else {
@@ -115,14 +113,11 @@ void MockIEEventSink::ExpectInPageNavigation(bool is_cf,
 
 void MockIEEventSink::ExpectJavascriptWindowOpenNavigation(
     bool parent_cf, bool new_window_cf, const std::wstring& url) {
-  DCHECK(!(parent_cf && !new_window_cf)) << "Cannot expect popup to be loaded"
-      " in Internet Explorer if parent window is loaded in Chrome Frame.";
-
   if (parent_cf) {
     InSequence expect_in_sequence_for_scope;
     ExpectNavigation(IN_CF, L"");
     ExpectNavigationCardinality(L"", testing::AtMost(1),
-                                                 testing::Between(1, 2));
+                                testing::Between(1, 2));
   } else {
     if (new_window_cf) {
       ExpectNavigationCardinality(url, testing::AtMost(1), testing::AtMost(1));

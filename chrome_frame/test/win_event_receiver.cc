@@ -9,8 +9,6 @@
 
 #include "chrome_frame/function_stub.h"
 
-#include "third_party/xulrunner-sdk/win/include/accessibility/AccessibleEventId.h"
-
 // WinEventReceiver methods
 WinEventReceiver::WinEventReceiver()
     : listener_(NULL),
@@ -115,25 +113,5 @@ void WindowWatchdog::OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
   for (ObserverMap::iterator i = interested_observers.begin();
       i != interested_observers.end(); i++) {
     i->observer->OnWindowDetected(hwnd, caption);
-  }
-}
-
-// AccessibilityEventListener methods
-AccessibilityEventObserver::AccessibilityEventObserver() {
-  event_receiver_.SetListenerForEvents(this, EVENT_SYSTEM_MENUPOPUPSTART,
-                                       IA2_EVENT_DOCUMENT_LOAD_COMPLETE);
-}
-
-void AccessibilityEventObserver::OnEventReceived(DWORD event,
-                                                 HWND hwnd,
-                                                 LONG object_id,
-                                                 LONG child_id) {
-  switch (event) {
-    case EVENT_SYSTEM_MENUPOPUPSTART:
-      OnMenuPopup(hwnd);
-      break;
-    case IA2_EVENT_DOCUMENT_LOAD_COMPLETE:
-      OnAccDocLoad(hwnd);
-      break;
   }
 }

@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
+#include "chrome_frame/test/win_event_receiver.h"
 
 namespace gfx {
 class Rect;
@@ -47,17 +48,26 @@ class AccObject : public base::RefCounted<AccObject> {
   // Creates an AccObject from querying the given IDispatch. May return NULL
   // if the object does not implement IAccessible. The client owns the created
   // AccObject.
-  // Note: This does not work in Chrome.
   static AccObject* CreateFromDispatch(IDispatch* dispatch);
 
   // Creates an AccObject corresponding to the accessible object at the screen
   // coordinates given. Returns NULL on failure. The client owns the created
   // AccObject.
+  // Note: This does not work in Chrome.
   static AccObject* CreateFromPoint(int x, int y);
 
   // Performs the default action on this object. Returns whether the action
   // performed successfully. Will cause test failure if unsuccessful.
+  // Note: This does not work for selecting menu items if the desktop is locked.
   bool DoDefaultAction();
+
+  // Posts a left click message at this object's center point to the window
+  // containing this object.
+  bool LeftClick();
+
+  // Posts a right click message at this object's center point to the window
+  // containing this object.
+  bool RightClick();
 
   // Focuses this object. Returns whether the object receives focus. Will cause
   // test failure if the object is not focused.
@@ -86,6 +96,10 @@ class AccObject : public base::RefCounted<AccObject> {
   // on success.
   bool GetLocation(gfx::Rect* location);
 
+  // Gets the location of the object relative to the containing window's
+  // client rect.
+  bool GetLocationInClient(gfx::Rect* location);
+
   // Gets the parent of the object. May return NULL.
   AccObject* GetParent();
 
@@ -95,6 +109,14 @@ class AccObject : public base::RefCounted<AccObject> {
 
   // Gets the number of children of this object and returns true on success.
   bool GetChildCount(int* child_count);
+
+  // Gets the window containing this object and returns true on success. This
+  // method will return false if the object is not contained within a window.
+  bool GetWindow(HWND* window);
+
+  // Gets the class name for the window containing this object and returns true
+  // on success. If this object does not have a window, this will return false.
+  bool GetWindowClassName(std::wstring* class_name);
 
   // Returns whether this object is a simple element.
   bool IsSimpleElement();
@@ -113,6 +135,9 @@ class AccObject : public base::RefCounted<AccObject> {
  private:
   friend class base::RefCounted<AccObject>;
   ~AccObject() {}
+
+  // Helper method for posting mouse button messages at this object's location.
+  bool PostMouseButtonMessages(int button_up, int button_down);
 
   ScopedComPtr<IAccessible> accessible_;
   ScopedVariant child_id_;
@@ -150,6 +175,9 @@ class AccObjectMatcher {
   // given window, which must support the IAccessible interface.
   bool FindInWindow(HWND hwnd, scoped_refptr<AccObject>* match) const;
 
+  // Returns whether |object| satisfies this matcher.
+  bool DoesMatch(AccObject* object) const;
+
   // Return a description of the matcher, for debugging/logging purposes.
   std::wstring GetDescription() const;
 
@@ -159,6 +187,50 @@ class AccObjectMatcher {
   std::wstring name_;
   std::wstring role_text_;
   std::wstring value_;
+};
+
+// Observes various accessibility events.
+class AccEventObserver : public WinEventListener {
+ public:
+  AccEventObserver();
+  virtual ~AccEventObserver();
+
+  // Begins watching for a value changed event for an accessibility object that
+  // satisfies |matcher|. Once the event occurs, this observer will stop
+  // watching.
+  void WatchForOneValueChange(const AccObjectMatcher& matcher);
+
+  // Called when the DOM accessibility tree for the page is ready.
+  virtual void OnAccDocLoad(HWND hwnd) = 0;
+
+  // Called when an accessibility object value changes. Only called if the
+  // observer was set to watch for it.
+  virtual void OnAccValueChange(HWND hwnd, AccObject* object,
+                                const std::wstring& new_value) = 0;
+
+  // Called when a new menu is shown.
+  virtual void OnMenuPopup(HWND hwnd) = 0;
+
+ private:
+  class EventHandler : public base::RefCounted<EventHandler> {
+   public:
+    EventHandler(AccEventObserver* observer);
+
+    // Examines the given event and invokes the corresponding method of its
+    // observer.
+    void Handle(DWORD event, HWND hwnd, LONG object_id, LONG child_id);
+
+    AccEventObserver* observer_;
+  };
+
+  // Overriden from WinEventListener.
+  virtual void OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
+                               LONG child_id);
+
+  scoped_refptr<EventHandler> event_handler_;
+  bool is_watching_;
+  AccObjectMatcher watching_for_matcher_;
+  WinEventReceiver event_receiver_;
 };
 
 // Finds an AccObject from the given window that satisfied |matcher|.

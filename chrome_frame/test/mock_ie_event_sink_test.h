@@ -9,9 +9,11 @@
 #include <atlcom.h>
 #include <string>
 
+#include "base/file_path.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test/test_with_web_server.h"
@@ -97,9 +99,11 @@ class MockIEEventSink : public IEEventListener {
   // Expect a normal navigation to |url| to occur in CF or IE.
   void ExpectNavigation(bool is_cf, const std::wstring& url);
 
-  // Same as above, but used when the new navigation is to a diffrent fragment
-  // in the same page.
-  void ExpectInPageNavigation(bool is_cf, const std::wstring& url);
+  // Similar as above, but should be used in cases where IE6 with CF may not
+  // generate an OnBeforeNavigate event during the navigation. This occurs
+  // during in-page navigation (via anchors), form submission, window.open
+  // to target "self", and possibly others.
+  void ExpectNavigationOptionalBefore(bool is_cf, const std::wstring& url);
 
   // Expect a navigation in a new window created by a window.open call to |url|.
   // |parent_cf| signifies whether the parent frame was loaded in CF, while
@@ -217,9 +221,11 @@ class MockWindowObserver : public WindowObserver {
   WindowWatchdog window_watcher_;
 };
 
-class MockAccessibilityEventObserver : public AccessibilityEventObserver {
+class MockAccEventObserver : public AccEventObserver {
  public:
   MOCK_METHOD1(OnAccDocLoad, void (HWND));  // NOLINT
+  MOCK_METHOD3(OnAccValueChange, void (HWND, AccObject*,  // NOLINT
+                                       const std::wstring&));
   MOCK_METHOD1(OnMenuPopup, void (HWND));  // NOLINT
 };
 

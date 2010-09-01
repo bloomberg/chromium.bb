@@ -18,6 +18,7 @@
 #include "gfx/rect.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/xulrunner-sdk/win/include/accessibility/AccessibleEventId.h"
 
 namespace chrome_frame_test {
 
@@ -89,51 +90,25 @@ AccObject* AccObject::CreateFromPoint(int x, int y) {
 }
 
 bool AccObject::DoDefaultAction() {
-  HWND parent_window = NULL;
-  ::WindowFromAccessibleObject(accessible_, &parent_window);
-  if (!parent_window) {
-    DLOG(ERROR) << "Could not get the window containing the given "
-                << "accessibility object: " << GetDescription();
-    return false;
-  }
-  wchar_t class_name[MAX_PATH];
-  if (!::GetClassName(parent_window, class_name, arraysize(class_name))) {
-    DLOG(ERROR) << "Could not get class name from accessibily object's window";
-    return false;
-  }
-  if (wcscmp(class_name, L"#32768") == 0) {
-    // Hack: if the desktop is locked, menu items cannot be selected using
-    // accDoDefaultAction for some unknown reason. Get around this by
-    // sending mouse button messages at the menu item location. Do this
-    // even if the desktop is unlocked for consistency. We do not do this
-    // for all objects because DoDefaultAction is not always equivalent to
-    // a mouse click.
-    gfx::Rect menu_item_rect;
-    if (GetLocation(&menu_item_rect)) {
-      DLOG(WARNING) << "Attempting to click menu item via mouse messages. "
-                    << "May not work for all menus";
-      // WM_LBUTTON* messages supposedly expect relative coordinates to the
-      // client area, which for popup menus seems to be the entire desktop.
-      gfx::Point center = menu_item_rect.CenterPoint();
-      LPARAM coordinates = (center.y() << 16) | center.x();
-      ::PostMessage(parent_window, WM_LBUTTONDOWN, (WPARAM)0, coordinates);
-      ::PostMessage(parent_window, WM_LBUTTONUP, (WPARAM)0, coordinates);
-      return true;
-    }
-    // TODO(kkania): Try sending the access key for the menu item to the
-    // menu if the mouse button messages are found to be insufficient
-    // at times.
-    DLOG(ERROR) << "Could not get location of menu item via MSAA. "
-        << "Accessibility object: " << WideToUTF8(this->GetDescription())
-        << std::endl << "This is necessary to select a menu item since the "
-        << "desktop is locked.";
-    return false;
+  // Prevent clients from using this method to try to select menu items, which
+  // does not work with a locked desktop.
+  std::wstring class_name;
+  if (GetWindowClassName(&class_name)) {
+    DCHECK(class_name != L"#32768") << "Do not use DoDefaultAction with menus";
   }
 
   HRESULT result = accessible_->accDoDefaultAction(child_id_);
   EXPECT_HRESULT_SUCCEEDED(result)
       << "Could not do default action for AccObject: " << GetDescription();
   return SUCCEEDED(result);
+}
+
+bool AccObject::LeftClick() {
+  return PostMouseButtonMessages(WM_LBUTTONDOWN, WM_LBUTTONUP);
+}
+
+bool AccObject::RightClick() {
+  return PostMouseButtonMessages(WM_RBUTTONDOWN, WM_RBUTTONUP);
 }
 
 bool AccObject::Focus() {
@@ -252,6 +227,25 @@ bool AccObject::GetLocation(gfx::Rect* location) {
   return SUCCEEDED(result);
 }
 
+bool AccObject::GetLocationInClient(gfx::Rect* client_location) {
+  DCHECK(client_location);
+  gfx::Rect location;
+  if (!GetLocation(&location))
+    return false;
+  HWND container_window = NULL;
+  if (!GetWindow(&container_window))
+    return false;
+  POINT offset = {0, 0};
+  if (!::ScreenToClient(container_window, &offset)) {
+    DLOG(ERROR) << "Could not convert from screen to client coordinates for "
+        << "window containing accessibility object: " << GetDescription();
+    return false;
+  }
+  location.Offset(offset.x, offset.y);
+  *client_location = location;
+  return true;
+}
+
 AccObject* AccObject::GetParent() {
   if (IsSimpleElement())
     return new AccObject(accessible_);
@@ -345,6 +339,24 @@ bool AccObject::GetChildCount(int* child_count) {
   return true;
 }
 
+bool AccObject::GetWindow(HWND* window) {
+  DCHECK(window);
+  return SUCCEEDED(::WindowFromAccessibleObject(accessible_, window)) && window;
+}
+
+bool AccObject::GetWindowClassName(std::wstring* class_name) {
+  DCHECK(class_name);
+  HWND container_window = NULL;
+  if (GetWindow(&container_window)) {
+    wchar_t class_arr[MAX_PATH];
+    if (::GetClassName(container_window, class_arr, arraysize(class_arr))) {
+      *class_name = class_arr;
+      return true;
+    }
+  }
+  return false;
+}
+
 bool AccObject::IsSimpleElement() {
   return V_I4(&child_id_) != CHILDID_SELF;
 }
@@ -397,6 +409,33 @@ std::wstring AccObject::GetTree() {
   return string_stream.str();
 }
 
+bool AccObject::PostMouseButtonMessages(int button_up, int button_down) {
+ std::wstring class_name;
+  if (!GetWindowClassName(&class_name)) {
+    DLOG(ERROR) << "Could not get class name of window for accessibility "
+                << "object: " << GetDescription();
+    return false;
+  }
+  gfx::Rect location;
+  if (class_name == L"#32768") {
+    // For some reason, it seems that menus expect screen coordinates.
+    if (!GetLocation(&location))
+      return false;
+  } else {
+    if (!GetLocationInClient(&location))
+      return false;
+  }
+  HWND container_window;
+  if (!GetWindow(&container_window))
+    return false;
+
+  gfx::Point center = location.CenterPoint();
+  LPARAM coordinates = (center.y() << 16) | center.x();
+  ::PostMessage(container_window, button_up, 0, coordinates);
+  ::PostMessage(container_window, button_down, 0, coordinates);
+  return true;
+}
+
 // AccObjectMatcher methods
 AccObjectMatcher::AccObjectMatcher(const std::wstring& name,
                                    const std::wstring& role_text,
@@ -406,22 +445,7 @@ AccObjectMatcher::AccObjectMatcher(const std::wstring& name,
 
 bool AccObjectMatcher::FindHelper(AccObject* object,
                                   scoped_refptr<AccObject>* match) const {
-  // Determine if |object| is a match.
-  bool does_match = true;
-  std::wstring name, role_text, value;
-  if (name_.length()) {
-    object->GetName(&name);
-    does_match = MatchPatternWide(name, name_);
-  }
-  if (does_match && role_text_.length()) {
-    object->GetRoleText(&role_text);
-    does_match = MatchPatternWide(role_text, role_text_);
-  }
-  if (does_match && value_.length()) {
-    object->GetValue(&value);
-    does_match = MatchPatternWide(value, value_);
-  }
-  if (does_match) {
+  if (DoesMatch(object)) {
     *match = object;
   } else {
     // Try to match the children of |object|.
@@ -459,6 +483,25 @@ bool AccObjectMatcher::FindInWindow(HWND hwnd,
   return Find(object.get(), match);
 }
 
+bool AccObjectMatcher::DoesMatch(AccObject* object) const {
+  DCHECK(object);
+  bool does_match = true;
+  std::wstring name, role_text, value;
+  if (name_.length()) {
+    object->GetName(&name);
+    does_match = MatchPatternWide(name, name_);
+  }
+  if (does_match && role_text_.length()) {
+    object->GetRoleText(&role_text);
+    does_match = MatchPatternWide(role_text, role_text_);
+  }
+  if (does_match && value_.length()) {
+    object->GetValue(&value);
+    does_match = MatchPatternWide(value, value_);
+  }
+  return does_match;
+}
+
 std::wstring AccObjectMatcher::GetDescription() const {
   std::wostringstream ss;
   ss << L"[";
@@ -470,6 +513,74 @@ std::wstring AccObjectMatcher::GetDescription() const {
     ss << L"Value: '" << value_ << L"'";
   ss << L"]";
   return ss.str();
+}
+
+// AccEventObserver methods
+AccEventObserver::AccEventObserver()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(event_handler_(new EventHandler(this))),
+      is_watching_(false) {
+  event_receiver_.SetListenerForEvents(this, EVENT_SYSTEM_MENUPOPUPSTART,
+                                       EVENT_OBJECT_VALUECHANGE);
+}
+
+AccEventObserver::~AccEventObserver() {
+  event_handler_->observer_ = NULL;
+}
+
+void AccEventObserver::WatchForOneValueChange(const AccObjectMatcher& matcher) {
+  is_watching_ = true;
+  watching_for_matcher_ = matcher;
+}
+
+void AccEventObserver::OnEventReceived(DWORD event,
+                                       HWND hwnd,
+                                       LONG object_id,
+                                       LONG child_id) {
+  // Process events in a separate task to stop reentrancy problems.
+  DCHECK(MessageLoop::current());
+  MessageLoop::current()->PostTask(FROM_HERE,
+      NewRunnableMethod(event_handler_.get(), &EventHandler::Handle,
+                        event, hwnd, object_id, child_id));
+}
+
+// AccEventObserver::EventHandler methods
+AccEventObserver::EventHandler::EventHandler(AccEventObserver* observer)
+    : observer_(observer) {
+}
+
+void AccEventObserver::EventHandler::Handle(DWORD event,
+                                            HWND hwnd,
+                                            LONG object_id,
+                                            LONG child_id) {
+  if (!observer_)
+    return;
+  switch (event) {
+    case EVENT_SYSTEM_MENUPOPUPSTART:
+      observer_->OnMenuPopup(hwnd);
+      break;
+    case IA2_EVENT_DOCUMENT_LOAD_COMPLETE:
+      observer_->OnAccDocLoad(hwnd);
+      break;
+    case EVENT_OBJECT_VALUECHANGE:
+      if (observer_->is_watching_) {
+        scoped_refptr<AccObject> object(
+            AccObject::CreateFromEvent(hwnd, object_id, child_id));
+        if (object) {
+          if (observer_->watching_for_matcher_.DoesMatch(object.get())) {
+            // Stop watching before calling OnAccValueChange in case the
+            // client invokes our watch method during the call.
+            observer_->is_watching_ = false;
+            std::wstring new_value;
+            if (object->GetValue(&new_value)) {
+              observer_->OnAccValueChange(hwnd, object.get(), new_value);
+            }
+          }
+        }
+      }
+      break;
+    default:
+      break;
+  }
 }
 
 // Other methods

@@ -97,6 +97,9 @@ class IEEventSink
   // be fired when the window closes (async).
   HRESULT CloseWebBrowser();
 
+  // Posts a message to the given target in ChromeFrame. |target| may be "*".
+  void PostMessageToCF(const std::wstring& message, const std::wstring& target);
+
     // Set input focus to chrome frame window.
   void SetFocusToRenderer();
 
@@ -107,6 +110,10 @@ class IEEventSink
   // Send mouse click to the renderer window hosted in chrome using
   // SendInput API.
   void SendMouseClick(int x, int y, simulate_input::MouseButton button);
+
+  // Get the HWND for the browser's main window. Will fail test if window
+  // not found.
+  HWND GetBrowserWindow();
 
   // Get the HWND for the browser's renderer window. Will fail test if
   // renderer window not found.

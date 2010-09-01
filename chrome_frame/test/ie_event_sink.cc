@@ -190,6 +190,14 @@ bool IEEventSink::IsCFRendering() {
   return false;
 }
 
+void IEEventSink::PostMessageToCF(const std::wstring& message,
+                                  const std::wstring& target) {
+  ScopedBstr message_bstr(message.c_str());
+  ScopedVariant target_variant(target.c_str());
+  EXPECT_HRESULT_SUCCEEDED(
+      chrome_frame_->postMessage(message_bstr, target_variant));
+}
+
 void IEEventSink::SetFocusToRenderer() {
   simulate_input::SetKeyboardFocusToWindow(GetRendererWindow());
 }
@@ -238,6 +246,13 @@ void IEEventSink::Exec(const GUID* cmd_group_guid, DWORD command_id,
   ASSERT_TRUE(NULL != shell_browser_cmd_target);
   EXPECT_HRESULT_SUCCEEDED(shell_browser_cmd_target->Exec(cmd_group_guid,
       command_id, cmd_exec_opt, in_args, out_args));
+}
+
+HWND IEEventSink::GetBrowserWindow() {
+  HWND browser_window = NULL;
+  web_browser2_->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&browser_window));
+  EXPECT_TRUE(::IsWindow(browser_window));
+  return browser_window;
 }
 
 HWND IEEventSink::GetRendererWindow() {

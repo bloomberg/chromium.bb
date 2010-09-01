@@ -89,21 +89,4 @@ class WindowWatchdog : public WinEventListener {
   WinEventReceiver win_event_receiver_;
 };
 
-class AccessibilityEventObserver : public WinEventListener {
- public:
-  AccessibilityEventObserver();
-
-  // Called when the DOM accessibility tree for the page is ready.
-  virtual void OnAccDocLoad(HWND hwnd) = 0;
-
-  // Called when a new menu is shown.
-  virtual void OnMenuPopup(HWND hwnd) = 0;
-
- private:
-  virtual void OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
-                               LONG child_id);
-
-  WinEventReceiver event_receiver_;
-};
-
 #endif  // CHROME_FRAME_TEST_WIN_EVENT_RECEIVER_H_
