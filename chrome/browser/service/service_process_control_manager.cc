@@ -36,12 +36,8 @@ ServiceProcessControl* ServiceProcessControlManager::GetProcessControl(
 }
 
 void ServiceProcessControlManager::Shutdown() {
-  // TODO(hclam): Normally we should just delete the list but for simplicity
-  // we also shutdown the service processes.
-  for (ServiceProcessControlList::iterator i = process_control_list_.begin();
-       i != process_control_list_.end(); ++i) {
-    (*i)->Shutdown();
-  }  
+  // When we shutdown the manager we just clear the list and don't actually
+  // shutdown the service process.
   STLDeleteElements(&process_control_list_);
 }
 
