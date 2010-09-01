@@ -301,7 +301,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   // TODO(sanjeevr): Validate the tokens.
   auth_token_ = cloud_print_token;
 
-  const bool kUseChromeAsyncSocket = false;
+  const bool kUseChromeAsyncSocket = true;
   const bool kTrySslTcpFirst = false;
   const bool kInitializeSsl = true;
   const bool kConnectImmediately = false;
