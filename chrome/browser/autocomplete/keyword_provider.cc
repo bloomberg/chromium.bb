@@ -24,7 +24,7 @@
 // otherwise.
 class KeywordProvider::ScopedEndExtensionKeywordMode {
  public:
-  ScopedEndExtensionKeywordMode(KeywordProvider* provider)
+  explicit ScopedEndExtensionKeywordMode(KeywordProvider* provider)
       : provider_(provider) { }
   ~ScopedEndExtensionKeywordMode() {
     if (provider_)
@@ -177,6 +177,9 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // front of our vector.
   if (keyword_matches.front() == keyword) {
     const TemplateURL* template_url(model->GetTemplateURLForKeyword(keyword));
+    // TODO(pkasting): We should probably check that if the user explicitly
+    // typed a scheme, that scheme matches the one in |template_url|.
+
     if (profile_ &&
         !input.synchronous_only() && template_url->IsExtensionKeyword()) {
       // If this extension keyword is disabled, make sure we don't add any

@@ -131,6 +131,15 @@ std::wstring TemplateURLModel::CleanUserInputKeyword(
   if (url_parse::ExtractScheme(WideToUTF8(keyword).c_str(),
                                static_cast<int>(keyword.length()),
                                &scheme_component)) {
+    // If the scheme isn't "http" or "https", bail.  The user isn't trying to
+    // type a web address, but rather an FTP, file:, or other scheme URL, or a
+    // search query with some sort of initial operator (e.g. "site:").
+    if (result.compare(0, scheme_component.end(),
+                       ASCIIToWide(chrome::kHttpScheme)) &&
+        result.compare(0, scheme_component.end(),
+                       ASCIIToWide(chrome::kHttpsScheme)))
+      return std::wstring();
+
     // Include trailing ':'.
     result.erase(0, scheme_component.end() + 1);
     // Many schemes usually have "//" after them, so strip it too.
