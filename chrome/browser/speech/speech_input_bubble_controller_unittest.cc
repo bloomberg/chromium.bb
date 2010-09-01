@@ -100,7 +100,14 @@ MockSpeechInputBubble::BubbleType MockSpeechInputBubble::type_ =
 
 // Test that the speech bubble UI gets created in the UI thread and that the
 // focus changed callback comes back in the IO thread.
-TEST_F(SpeechInputBubbleControllerTest, TestFocusChanged) {
+//
+// Crashes on Win only.  http://crbug.com/54044
+#if defined(OS_WIN)
+#define MAYBE_TestFocusChanged DISABLED_TestFocusChanged
+#else
+#define MAYBE_TestFocusChanged TestFocusChanged
+#endif
+TEST_F(SpeechInputBubbleControllerTest, MAYBE_TestFocusChanged) {
   MockSpeechInputBubble::set_type(
       MockSpeechInputBubble::BUBBLE_TEST_FOCUS_CHANGED);
 
