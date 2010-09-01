@@ -46,13 +46,6 @@ class ImportsTest(pyauto.PyUITest):
           pyauto.PyUITest.DataDir(), 'import', 'firefox', 'macwin.zip')
       self._safari_profiles_path = os.path.join(
           os.environ['HOME'], 'Library', 'Safari')
-      # Set the path here since it can't get set on the browser side and it is
-      # necessary for importing passwords on Mac.
-      self._old_path = None
-      if 'DYLD_FALLBACK_LIBRARY_PATH' in os.environ:
-        self._old_path = os.environ['DYLD_FALLBACK_LIBRARY_PATH']
-      os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = os.path.join(
-          self.DataDir(), 'firefox3_nss_mac')
       # Don't import passwords to avoid Keychain popups. See crbug.com/49378.
       self._to_import = ['HISTORY', 'FAVORITES', 'SEARCH_ENGINES', 'HOME_PAGE']
     elif pyauto.PyUITest.IsWin():
@@ -80,12 +73,6 @@ class ImportsTest(pyauto.PyUITest):
 
   def tearDown(self):
     pyauto.PyUITest.tearDown(self)
-    # Re-set the path to its state before the test.
-    if self.IsMac():
-      if self._old_path:
-        os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = self._old_path
-      else:
-        os.environ.pop('DYLD_FALLBACK_LIBRARY_PATH')
     # Delete any replacers to restore the original profiles.
     if self._safari_replacer:
       del self._safari_replacer
