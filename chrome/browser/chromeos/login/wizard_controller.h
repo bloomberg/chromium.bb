@@ -58,8 +58,14 @@ class WizardController : public chromeos::ScreenObserver,
   // Returns OOBE completion status.
   static bool IsOobeCompleted();
 
+  // Marks OOBE process as completed.
+  static void MarkOobeCompleted();
+
   // Returns device registration completion status, i.e. second part of OOBE.
   static bool IsDeviceRegistered();
+
+  // Marks device registered. i.e. second part of OOBE is completed.
+  static void MarkDeviceRegistered();
 
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. |screen_bounds| are used to calculate position
@@ -170,12 +176,6 @@ class WizardController : public chromeos::ScreenObserver,
   // Determines which screen to show first by the parameter, shows it and
   // sets it as the current one.
   void ShowFirstScreen(const std::string& first_screen_name);
-
-  // Marks OOBE process as completed.
-  void MarkOobeCompleted();
-
-  // Marks device registered. i.e. second part of OOBE is completed.
-  void MarkDeviceRegistered();
 
   // Logs in the specified user via default login screen.
   void Login(const std::string& username, const std::string& password);

@@ -701,6 +701,12 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   }
 }
 
+// static
+bool WizardController::IsOobeCompleted() {
+  return g_browser_process->local_state()->GetBoolean(kOobeComplete);
+}
+
+// static
 void WizardController::MarkOobeCompleted() {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(kOobeComplete, true);
@@ -708,6 +714,13 @@ void WizardController::MarkOobeCompleted() {
   prefs->SavePersistentPrefs();
 }
 
+// static
+bool WizardController::IsDeviceRegistered() {
+  FilePath oobe_complete_flag_file_path(kOobeCompleteFlagFilePath);
+  return file_util::PathExists(oobe_complete_flag_file_path);
+}
+
+// static
 void WizardController::MarkDeviceRegistered() {
   // Create flag file for boot-time init scripts.
   FilePath oobe_complete_path(kOobeCompleteFlagFilePath);
@@ -786,15 +799,6 @@ chromeos::ScreenObserver* WizardController::GetObserver(WizardScreen* screen) {
   return observer_ ? observer_ : this;
 }
 
-bool WizardController::IsOobeCompleted() {
-  return g_browser_process->local_state()->GetBoolean(kOobeComplete);
-}
-
-bool WizardController::IsDeviceRegistered() {
-  FilePath oobe_complete_flag_file_path(kOobeCompleteFlagFilePath);
-  return file_util::PathExists(oobe_complete_flag_file_path);
-}
-
 namespace browser {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
@@ -833,6 +837,16 @@ void ShowLoginWizard(const std::string& first_screen_name,
           switches::kEnableLoginImages)) {
     std::vector<chromeos::UserManager::User> users =
         chromeos::UserManager::Get()->GetUsers();
+
+    // Fix for users who updated device and thus never passed register screen.
+    // If we already have user we assume that it is not a second part of OOBE.
+    // See http://corbug.com/6289
+    if (!WizardController::IsDeviceRegistered() && !users.empty()) {
+      LOG(INFO) << "Mark device registered because there are remembered users: "
+                << users.size();
+      WizardController::MarkDeviceRegistered();
+    }
+
     // ExistingUserController deletes itself.
     (new chromeos::ExistingUserController(users, screen_bounds))->Init();
 
