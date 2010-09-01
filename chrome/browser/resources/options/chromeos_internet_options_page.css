@@ -50,9 +50,12 @@
   -webkit-padding-start: 30px;
   background: 0 50% no-repeat;
   cursor: default;
+  display: table-cell;
+  height: 24px;
   line-height: 100%;
   max-width: 320px;
   overflow: hidden;
+  vertical-align: middle;
 }
 
 .network-item[connected] > * > .network-name-label {

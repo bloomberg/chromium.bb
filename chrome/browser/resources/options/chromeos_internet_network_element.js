@@ -127,10 +127,13 @@ cr.define('options.internet', function() {
         return;
       }
 
-      var statusEl = this.ownerDocument.createElement('div');
-      statusEl.className = 'network-status-label';
-      statusEl.textContent = this.data.networkStatus;
-      textDiv.appendChild(statusEl);
+      // Only show status text for networks other than "remembered".
+      if (!this.data.remembered) {
+        var statusEl = this.ownerDocument.createElement('div');
+        statusEl.className = 'network-status-label';
+        statusEl.textContent = this.data.networkStatus;
+        textDiv.appendChild(statusEl);
+      }
 
       this.appendChild(textDiv);
 
@@ -150,9 +153,11 @@ cr.define('options.internet', function() {
           buttonsDiv.appendChild(this.createButton_('options_button',
               'options'));
         } else if (!this.data.connecting) {
-          // connect button
-          buttonsDiv.appendChild(this.createButton_('connect_button',
-              'connect'));
+          // connect button (if not ethernet)
+          if (this.data.networkType != 1) {
+            buttonsDiv.appendChild(this.createButton_('connect_button',
+                'connect'));
+          }
         }
       } else {
         // forget button
