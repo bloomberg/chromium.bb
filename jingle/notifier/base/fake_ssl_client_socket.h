@@ -45,31 +45,19 @@ class FakeSSLClientSocket : public net::ClientSocket {
   static base::StringPiece GetSslServerHello();
 
   // net::ClientSocket implementation.
-
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::CompletionCallback* callback);
-
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     net::CompletionCallback* callback);
-
   virtual bool SetReceiveBufferSize(int32 size);
-
   virtual bool SetSendBufferSize(int32 size);
-
   virtual int Connect(net::CompletionCallback* callback);
-
   virtual void Disconnect();
-
   virtual bool IsConnected() const;
-
   virtual bool IsConnectedAndIdle() const;
-
   virtual int GetPeerAddress(net::AddressList* address) const;
-
   virtual const net::BoundNetLog& NetLog() const;
-
   virtual void SetSubresourceSpeculation();
-
   virtual void SetOmniboxSpeculation();
 
  private:
