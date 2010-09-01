@@ -271,8 +271,13 @@ void ExtensionInstallUI::OnImageLoaded(
   else
     icon_ = SkBitmap();
   if (icon_.empty()) {
-    icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_EXTENSION_DEFAULT_ICON);
+    if (extension_->is_app()) {
+      icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_APP_DEFAULT_ICON);
+    } else {
+      icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_EXTENSION_DEFAULT_ICON);
+    }
   }
 
   switch (prompt_type_) {

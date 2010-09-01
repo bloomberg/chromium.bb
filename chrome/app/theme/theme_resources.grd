@@ -22,6 +22,7 @@
         <include name="IDR_ABOUT_BACKGROUND_RTL" file="chromium/about_background_rtl.png" type="BINDATA" />
       </if>
       <include name="IDR_ACCESSED_COOKIES" file="accessed_cookies.png" type="BINDATA" />
+      <include name="IDR_APP_DEFAULT_ICON" file="app_default_icon.png" type="BINDATA" />
       <include name="IDR_APP_DROPARROW" file="app_droparrow.png" type="BINDATA" />
       <include name="IDR_BACK" file="back.png" type="BINDATA" />
       <include name="IDR_BACK_D" file="back_d.png" type="BINDATA" />

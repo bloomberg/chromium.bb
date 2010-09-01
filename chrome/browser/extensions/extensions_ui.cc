@@ -216,8 +216,10 @@ void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
     if (icons->at(i).relative_path().empty() ||
         !file_util::ReadFileToString(icons->at(i).GetFilePath(),
                                      &file_contents)) {
-      // If there's no icon, default to the puzzle icon. This is safe to do from
+      // If there's no icon, use the default icon. This is safe to do from
       // the file thread.
+      // TODO(erikkay) Assuming we're going to keep showing apps in this list,
+      // then we need to figure out when we should use the app default icon.
       file_contents = ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_EXTENSION_DEFAULT_ICON).as_string();
     }

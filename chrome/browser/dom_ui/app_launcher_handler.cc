@@ -95,10 +95,9 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
   value->SetString("launch_url", extension->GetFullLaunchURL().spec());
   value->SetString("options_url", extension->options_url().spec());
 
-  // TODO(aa): Need a better default icon for apps.
   value->SetString("icon_big", GetIconURL(
       extension, Extension::EXTENSION_ICON_LARGE,
-      "chrome://theme/IDR_EXTENSION_DEFAULT_ICON"));
+      "chrome://theme/IDR_APP_DEFAULT_ICON"));
   value->SetString("icon_small", GetIconURL(
       extension, Extension::EXTENSION_ICON_BITTY,
       std::string("chrome://favicon/") + extension->GetFullLaunchURL().spec()));
