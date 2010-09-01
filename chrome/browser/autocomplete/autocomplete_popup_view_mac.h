@@ -62,6 +62,9 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   }
   virtual void UpdatePopupAppearance();
 
+  // Set |line| to be selected.
+  void SetSelectedLine(size_t line);
+
   // This is only called by model in SetSelectedLine() after updating
   // everything.  Popup should already be visible.
   virtual void PaintUpdatesNow();

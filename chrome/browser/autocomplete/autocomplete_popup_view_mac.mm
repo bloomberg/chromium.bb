@@ -448,6 +448,10 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   PositionPopup(rows * cellHeight);
 }
 
+void AutocompletePopupViewMac::SetSelectedLine(size_t line) {
+  model_->SetSelectedLine(line, false);
+}
+
 // This is only called by model in SetSelectedLine() after updating
 // everything.  Popup should already be visible.
 void AutocompletePopupViewMac::PaintUpdatesNow() {
@@ -673,7 +677,8 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   NSInteger row, column;
   if ([self getRow:&row column:&column forPoint:point]) {
     DCHECK_EQ(column, 0);
-    [self selectCellAtRow:row column:column];
+    DCHECK(popupView_);
+    popupView_->SetSelectedLine(row);
     return YES;
   }
   return NO;
