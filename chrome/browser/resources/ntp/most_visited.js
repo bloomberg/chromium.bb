@@ -561,6 +561,10 @@ var MostVisited = (function() {
       this.miniview.textContent = '';
       var data = this.data.slice(0, MAX_MINIVIEW_ITEMS);
       for (var i = 0, item; item = data[i]; i++) {
+        if (item.filler) {
+          continue;
+        }
+
         var span = document.createElement('span');
         var a = span.appendChild(document.createElement('a'));
         a.href = item.url;
@@ -568,6 +572,11 @@ var MostVisited = (function() {
         a.style.backgroundImage = url('chrome://favicon/' + item.url);
         a.className = 'item';
         this.miniview.appendChild(span);
+
+        if ((a.offsetLeft + a.offsetWidth) > this.miniview.offsetWidth) {
+          this.miniview.removeChild(span);
+          return;
+        }
       }
     },
 

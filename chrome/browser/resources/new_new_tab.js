@@ -6,6 +6,9 @@
 // than this many items in the miniview.
 var MAX_MINIVIEW_ITEMS = 15;
 
+// Extra spacing at the top of the layout.
+var LAYOUT_SPACING_TOP = 5;
+
 var loading = true;
 
 function updateSimpleSection(id, section) {
@@ -152,7 +155,7 @@ SectionLayoutInfo.getAll = function() {
 function layoutSections() {
   var sections = SectionLayoutInfo.getAll();
   var expandedSection = null;
-  var headerHeight = 0;
+  var headerHeight = LAYOUT_SPACING_TOP;
   var footerHeight = 0;
 
   // Calculate the height of the fixed elements above the expanded section. Also
@@ -204,7 +207,7 @@ function layoutSections() {
   }
 
   // Now position all the elements.
-  var y = 0;
+  var y = LAYOUT_SPACING_TOP;
   for (i = 0, section; section = sections[i]; i++) {
     section.header.style.top = y + 'px';
     y += section.header.offsetHeight;
@@ -737,7 +740,7 @@ $('main').addEventListener('click', function(e) {
   }
 
   p = p.parentNode;
-  if (p.noexpand) {
+  if (p.hasAttribute('noexpand')) {
     return;
   }
 

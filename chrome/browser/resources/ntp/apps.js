@@ -10,6 +10,11 @@ function getAppsCallback(data) {
   appsSectionContent.textContent = '';
   appsMiniview.textContent = '';
 
+  if (data.apps.length == 0) {
+    appsSection.classList.add('disabled');
+    return;
+  }
+
   data.apps.forEach(function(app) {
     appsSectionContent.appendChild(apps.createElement(app));
   });
@@ -20,6 +25,7 @@ function getAppsCallback(data) {
     appsMiniview.appendChild(apps.createMiniviewElement(app));
   });
 
+  appsSection.classList.remove('disabled');
   layoutSections();
 }
 

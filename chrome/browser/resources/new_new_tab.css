@@ -338,13 +338,6 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   cursor: pointer;
 }
 
-/* The first one is special because we want a little extra space at the top of
-the layout. */
-.section:first-child > h2 {
-  padding-top: 20px;
-  background-size: 100% 44px, 100% 10px;
-}
-
 .section > h2 > .disclosure {
   margin-left: -13px;
   padding-right: 4px;

@@ -22,8 +22,28 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
   pref->RegisterIntegerPref(prefs::kNTPShownSections, 0);
   pref->SetInteger(prefs::kNTPShownSections, THUMB);
 
-  ShownSectionsHandler::MigrateUserPrefs(pref.get(), 0, 3);
+  ShownSectionsHandler::MigrateUserPrefs(pref.get(), 0, 1);
 
   int shown_sections = pref->GetInteger(prefs::kNTPShownSections);
-  EXPECT_EQ(APPS, shown_sections);
+
+  EXPECT_TRUE(shown_sections & THUMB);
+  EXPECT_FALSE(shown_sections & LIST);
+  EXPECT_FALSE(shown_sections & RECENT);
+  EXPECT_TRUE(shown_sections & TIPS);
+  EXPECT_TRUE(shown_sections & SYNC);
+}
+
+TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
+  scoped_ptr<PrefService> pref(new TestingPrefService);
+
+  // Set an *old* value
+  pref->RegisterIntegerPref(prefs::kNTPShownSections, 0);
+  pref->SetInteger(prefs::kNTPShownSections, LIST);
+
+  ShownSectionsHandler::MigrateUserPrefs(pref.get(), 1, 2);
+
+  int shown_sections = pref->GetInteger(prefs::kNTPShownSections);
+
+  EXPECT_TRUE(shown_sections & THUMB);
+  EXPECT_FALSE(shown_sections & LIST);
 }

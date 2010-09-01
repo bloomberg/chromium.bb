@@ -110,10 +110,17 @@ void ShownSectionsHandler::MigrateUserPrefs(PrefService* pref_service,
   bool changed = false;
   int shown_sections = pref_service->GetInteger(prefs::kNTPShownSections);
 
-  if (old_pref_version < 3) {
-    // At version 3, we added apps. To bring attention to the feature, we start
-    // it off as the only expanded section.
-    shown_sections = APPS;
+  if (old_pref_version < 1) {
+    // TIPS was used in early builds of the NNTP but since it was removed before
+    // Chrome 3.0 we want to ensure that it is shown by default.
+    shown_sections |= TIPS | SYNC;
+    changed = true;
+  }
+
+  if (old_pref_version < 2) {
+    // LIST is no longer used. Change to THUMB.
+    shown_sections &= ~LIST;
+    shown_sections |= THUMB;
     changed = true;
   }
 
