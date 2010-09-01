@@ -2033,7 +2033,7 @@
    # See the description of tooltip_554686_2
    tooltip_554686_4
    Memcheck:Cond
-   fun:_ZNK8chromeos22NormalBrowserFrameView7HitTestERKN3gfx5PointE
+   fun:_ZNK22OpaqueBrowserFrameView7HitTestERKN3gfx5PointE
    fun:_ZN5views13NonClientView15GetViewForPointERKN3gfx5PointE
    fun:_ZN5views4View15GetViewForPointERKN3gfx5PointE
    fun:_ZN5views17TooltipManagerGtk11ShowTooltipEiibP11_GtkTooltip
