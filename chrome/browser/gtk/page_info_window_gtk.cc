@@ -150,7 +150,7 @@ GtkWidget* PageInfoWindowGtk::CreateSection(
   GtkWidget* section_box = gtk_hbox_new(FALSE, 0);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GtkWidget* image = gtk_image_new_from_pixbuf(
-      section.state != PageInfoModel::SECTION_STATE_ERROR ?
+      section.state == PageInfoModel::SECTION_STATE_OK ?
       rb.GetPixbufNamed(IDR_PAGEINFO_GOOD) :
       rb.GetPixbufNamed(IDR_PAGEINFO_BAD));
   gtk_box_pack_start(GTK_BOX(section_box), image, FALSE, FALSE,

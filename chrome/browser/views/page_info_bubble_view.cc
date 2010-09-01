@@ -310,10 +310,14 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   // Find where to point the bubble at.
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForNativeWindow(parent);
-  gfx::Rect bounds = browser_view->toolbar()->location_bar()->bounds();
   gfx::Point point;
+  if (base::i18n::IsRTL()) {
+    int width = browser_view->toolbar()->location_bar()->width();
+    point = gfx::Point(width - kIconOffset, 0);
+  }
   views::View::ConvertPointToScreen(browser_view->toolbar()->location_bar(),
                                     &point);
+  gfx::Rect bounds = browser_view->toolbar()->location_bar()->bounds();
   bounds.set_origin(point);
   bounds.set_width(kIconOffset);
 
