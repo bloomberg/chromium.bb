@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "jingle/notifier/base/chrome_async_socket.h"
+#include "jingle/notifier/base/xmpp_client_socket_factory.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/connection_settings.h"
 #include "jingle/notifier/communicator/const_communicator.h"
@@ -225,8 +226,12 @@ void SingleLoginAttempt::OnCertificateExpired() {
 buzz::AsyncSocket* SingleLoginAttempt::CreateSocket(
     const buzz::XmppClientSettings& xcs) {
   if (use_chrome_async_socket_) {
+    bool use_fake_ssl_client_socket =
+        (xcs.protocol() == cricket::PROTO_SSLTCP);
     net::ClientSocketFactory* const client_socket_factory =
-        net::ClientSocketFactory::GetDefaultFactory();
+        new XmppClientSocketFactory(
+            net::ClientSocketFactory::GetDefaultFactory(),
+            use_fake_ssl_client_socket);
     // The default SSLConfig is good enough for us for now.
     const net::SSLConfig ssl_config;
     // A read buffer of 64k ought to be sufficient.

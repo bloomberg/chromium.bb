@@ -34,7 +34,7 @@ namespace notifier {
 
 class ChromeAsyncSocket : public buzz::AsyncSocket {
  public:
-  // Does not take ownership of |client_socket_factory| or |net_log|.
+  // Takes ownership of |client_socket_factory| but not |net_log|.
   // |net_log| may be NULL.
   ChromeAsyncSocket(net::ClientSocketFactory* client_socket_factory,
                     const net::SSLConfig& ssl_config,
@@ -185,8 +185,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   net::CompletionCallbackImpl<ChromeAsyncSocket> write_callback_;
   net::CompletionCallbackImpl<ChromeAsyncSocket> ssl_connect_callback_;
 
-  // Weak pointer.
-  net::ClientSocketFactory* const client_socket_factory_;
+  scoped_ptr<net::ClientSocketFactory> client_socket_factory_;
   const net::SSLConfig ssl_config_;
   net::BoundNetLog bound_net_log_;
 

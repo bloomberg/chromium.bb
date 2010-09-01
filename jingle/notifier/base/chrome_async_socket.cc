@@ -57,7 +57,7 @@ ChromeAsyncSocket::ChromeAsyncSocket(
       write_state_(IDLE),
       write_buf_(new net::IOBufferWithSize(write_buf_size)),
       write_end_(0U) {
-  DCHECK(client_socket_factory_);
+  DCHECK(client_socket_factory_.get());
   DCHECK_GT(read_buf_size, 0U);
   DCHECK_GT(write_buf_size, 0U);
 }
