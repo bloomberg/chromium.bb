@@ -341,7 +341,7 @@ handle_event(struct wl_display *display,
 	struct wl_listener *listener;
 	struct wl_proxy *proxy;
 	struct wl_closure *closure;
-	struct wl_message *message;
+	const struct wl_message *message;
 
 	wl_connection_copy(display->connection, p, size);
 	if (id == 1)
