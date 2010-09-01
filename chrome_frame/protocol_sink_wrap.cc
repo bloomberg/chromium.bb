@@ -631,6 +631,20 @@ bool HandleAttachToExistingExternalTab(LPCWSTR url,
   return false;
 }
 
+HRESULT ForwardHookStart(InternetProtocol_Start_Fn orig_start,
+    IInternetProtocol* protocol, LPCWSTR url, IInternetProtocolSink* prot_sink,
+    IInternetBindInfo* bind_info, DWORD flags, HANDLE_PTR reserved) {
+  ExceptionBarrierReportOnlyModule barrier;
+  return orig_start(protocol, url, prot_sink, bind_info, flags, reserved);
+}
+
+HRESULT ForwardWrappedHookStart(InternetProtocol_Start_Fn orig_start,
+    IInternetProtocol* protocol, LPCWSTR url, IInternetProtocolSink* prot_sink,
+    IInternetBindInfo* bind_info, DWORD flags, HANDLE_PTR reserved) {
+  ExceptionBarrier barrier;
+  return orig_start(protocol, url, prot_sink, bind_info, flags, reserved);
+}
+
 // IInternetProtocol/Ex hooks.
 STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
     IInternetProtocol* protocol, LPCWSTR url, IInternetProtocolSink* prot_sink,
@@ -640,13 +654,13 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
     return E_INVALIDARG;
   DLOG_IF(INFO, url != NULL) << "OnStart: " << url << PiFlags2Str(flags);
 
-  ExceptionBarrier barrier;
   ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
   if (!bind_ctx) {
     // MSHTML sometimes takes a short path, skips the creation of
     // moniker and binding, by directly grabbing protocol from InternetSession
     DLOG(INFO) << "DirectBind for " << url;
-    return orig_start(protocol, url, prot_sink, bind_info, flags, reserved);
+    return ForwardHookStart(orig_start, protocol, url, prot_sink, bind_info,
+                            flags, reserved);
   }
 
   scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
@@ -660,7 +674,8 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
   }
 
   if (IsCFRequest(bind_ctx)) {
-    return orig_start(protocol, url, prot_sink, bind_info, flags, reserved);
+    return ForwardHookStart(orig_start, protocol, url, prot_sink, bind_info,
+                            flags, reserved);
   }
 
   if (prot_data) {
@@ -668,11 +683,13 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
     prot_data->UpdateUrl(url);
     ScopedComPtr<IInternetProtocolSink> new_sink =
         ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
-    return orig_start(protocol, url, new_sink, bind_info, flags, reserved);
+    return ForwardWrappedHookStart(orig_start, protocol, url, new_sink,
+                                   bind_info, flags, reserved);
   }
 
   if (!ShouldWrapSink(prot_sink, url)) {
-    return orig_start(protocol, url, prot_sink, bind_info, flags, reserved);
+    return ForwardHookStart(orig_start, protocol, url, prot_sink, bind_info,
+                            flags, reserved);
   }
 
   // Fresh request.
@@ -683,7 +700,22 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
 
   ScopedComPtr<IInternetProtocolSink> new_sink =
       ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
-  return orig_start(protocol, url, new_sink, bind_info, flags, reserved);
+  return ForwardWrappedHookStart(orig_start, protocol, url, new_sink, bind_info,
+                                 flags, reserved);
+}
+
+HRESULT ForwardHookStartEx(InternetProtocol_StartEx_Fn orig_start_ex,
+    IInternetProtocolEx* protocol, IUri* uri, IInternetProtocolSink* prot_sink,
+    IInternetBindInfo* bind_info, DWORD flags, HANDLE_PTR reserved) {
+  ExceptionBarrierReportOnlyModule barrier;
+  return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
+}
+
+HRESULT ForwardWrappedHookStartEx(InternetProtocol_StartEx_Fn orig_start_ex,
+    IInternetProtocolEx* protocol, IUri* uri, IInternetProtocolSink* prot_sink,
+    IInternetBindInfo* bind_info, DWORD flags, HANDLE_PTR reserved) {
+  ExceptionBarrier barrier;
+  return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
 }
 
 STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
@@ -697,13 +729,13 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   uri->GetPropertyBSTR(Uri_PROPERTY_ABSOLUTE_URI, url.Receive(), 0);
   DLOG_IF(INFO, url != NULL) << "OnStartEx: " << url << PiFlags2Str(flags);
 
-  ExceptionBarrier barrier;
   ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
   if (!bind_ctx) {
     // MSHTML sometimes takes a short path, skips the creation of
     // moniker and binding, by directly grabbing protocol from InternetSession.
     DLOG(INFO) << "DirectBind for " << url;
-    return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
+    return ForwardHookStartEx(orig_start_ex, protocol, uri, prot_sink,
+                              bind_info, flags, reserved);
   }
 
   scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
@@ -717,7 +749,8 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   }
 
   if (IsCFRequest(bind_ctx)) {
-    return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
+    return ForwardHookStartEx(orig_start_ex, protocol, uri, prot_sink,
+                              bind_info, flags, reserved);
   }
 
   if (prot_data) {
@@ -725,11 +758,13 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
     prot_data->UpdateUrl(url);
     ScopedComPtr<IInternetProtocolSink> new_sink =
         ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
-    return orig_start_ex(protocol, uri, new_sink, bind_info, flags, reserved);
+    return ForwardWrappedHookStartEx(orig_start_ex, protocol, uri, new_sink,
+                                     bind_info, flags, reserved);
   }
 
   if (!ShouldWrapSink(prot_sink, url)) {
-    return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
+    return ForwardHookStartEx(orig_start_ex, protocol, uri, prot_sink,
+                              bind_info, flags, reserved);
   }
 
   // Fresh request.
@@ -740,7 +775,8 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
 
   ScopedComPtr<IInternetProtocolSink> new_sink =
       ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
-  return orig_start_ex(protocol, uri, new_sink, bind_info, flags, reserved);
+  return ForwardWrappedHookStartEx(orig_start_ex, protocol, uri, new_sink,
+                                   bind_info, flags, reserved);
 }
 
 STDMETHODIMP Hook_Read(InternetProtocol_Read_Fn orig_read,
@@ -750,6 +786,8 @@ STDMETHODIMP Hook_Read(InternetProtocol_Read_Fn orig_read,
 
   scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
   if (!prot_data) {
+    // We are not wrapping this request, avoid false positive crash reports.
+    ExceptionBarrierReportOnlyModule barrier;
     hr = orig_read(protocol, buffer, size, size_read);
     return hr;
   }
