@@ -16,6 +16,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/common/notification_observer.h"
 
 class NavigationEntry;
@@ -23,6 +24,7 @@ class NotificationRegistrar;
 class PageUsageData;
 class Profile;
 class TabNavigationEntry;
+class TabRestoreService;
 @class HistoryMenuCocoaController;
 
 namespace {
@@ -54,26 +56,16 @@ class HistoryMenuBridgeTest;
 // controller is very thin and only exists to interact with Cocoa, but this
 // class does the bulk of the work.
 class HistoryMenuBridge : public NotificationObserver,
-                          public TabRestoreService::Observer {
+                          public TabRestoreServiceObserver {
  public:
   // This is a generalization of the data we store in the history menu because
   // we pull things from different sources with different data types.
   struct HistoryItem {
    public:
-    HistoryItem()
-        : icon_requested(false),
-          menu_item(nil),
-          session_id(0) {}
-
+    HistoryItem();
     // Copy constructor allowed.
-    HistoryItem(const HistoryItem& copy)
-        : title(copy.title),
-          url(copy.url),
-          icon_requested(false),
-          menu_item(nil),
-          session_id(copy.session_id) {}
-
-    ~HistoryItem() {}
+    HistoryItem(const HistoryItem& copy);
+    ~HistoryItem();
 
     // The title for the menu item.
     string16 title;
@@ -136,7 +128,7 @@ class HistoryMenuBridge : public NotificationObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // For TabRestoreService::Observer
+  // For TabRestoreServiceObserver
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
 

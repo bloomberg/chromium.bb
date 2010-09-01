@@ -20,6 +20,7 @@ class Browser;
 class NavigationController;
 class Profile;
 struct SessionWindow;
+class TabRestoreServiceObserver;
 
 // TabRestoreService is responsible for maintaining the most recently closed
 // tabs and windows. When a tab is closed
@@ -34,21 +35,6 @@ struct SessionWindow;
 // add an observer.
 class TabRestoreService : public BaseSessionService {
  public:
-  // Observer is notified when the set of entries managed by TabRestoreService
-  // changes in some way.
-  class Observer {
-   public:
-    // Sent when the set of entries changes in some way.
-    virtual void TabRestoreServiceChanged(TabRestoreService* service) = 0;
-
-    // Sent to all remaining Observers when TabRestoreService's
-    // destructor is run.
-    virtual void TabRestoreServiceDestroyed(TabRestoreService* service) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // Interface used to allow the test to provide a custom time.
   class TimeFactory {
    public:
@@ -132,8 +118,8 @@ class TabRestoreService : public BaseSessionService {
 
   // Adds/removes an observer. TabRestoreService does not take ownership of
   // the observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(TabRestoreServiceObserver* observer);
+  void RemoveObserver(TabRestoreServiceObserver* observer);
 
   // Creates a Tab to represent |tab| and notifies observers the list of
   // entries has changed.
@@ -328,7 +314,7 @@ class TabRestoreService : public BaseSessionService {
   // Number of entries we've written.
   int entries_written_;
 
-  ObserverList<Observer> observer_list_;
+  ObserverList<TabRestoreServiceObserver> observer_list_;
 
   // Set of tabs that we've received a BrowserClosing method for but no
   // corresponding BrowserClosed. We cache the set of browsers closing to

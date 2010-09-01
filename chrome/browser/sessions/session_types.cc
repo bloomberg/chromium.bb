@@ -11,6 +11,51 @@
 
 // TabNavigation --------------------------------------------------------------
 
+TabNavigation::TabNavigation()
+    : transition_(PageTransition::TYPED),
+      type_mask_(0),
+      index_(-1) {
+}
+
+TabNavigation::TabNavigation(int index,
+                             const GURL& virtual_url,
+                             const GURL& referrer,
+                             const string16& title,
+                             const std::string& state,
+                             PageTransition::Type transition)
+    : virtual_url_(virtual_url),
+      referrer_(referrer),
+      title_(title),
+      state_(state),
+      transition_(transition),
+      type_mask_(0),
+      index_(index) {
+}
+
+TabNavigation::TabNavigation(const TabNavigation& tab)
+    : virtual_url_(tab.virtual_url_),
+      referrer_(tab.referrer_),
+      title_(tab.title_),
+      state_(tab.state_),
+      transition_(tab.transition_),
+      type_mask_(tab.type_mask_),
+      index_(tab.index_) {
+}
+
+TabNavigation::~TabNavigation() {
+}
+
+TabNavigation& TabNavigation::operator=(const TabNavigation& tab) {
+  virtual_url_ = tab.virtual_url_;
+  referrer_ = tab.referrer_;
+  title_ = tab.title_;
+  state_ = tab.state_;
+  transition_ = tab.transition_;
+  type_mask_ = tab.type_mask_;
+  index_ = tab.index_;
+  return *this;
+}
+
 // static
 NavigationEntry* TabNavigation::ToNavigationEntry(int page_id,
                                                   Profile *profile) const {
@@ -37,6 +82,17 @@ void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
   state_ = entry.content_state();
   transition_ = entry.transition_type();
   type_mask_ = entry.has_post_data() ? TabNavigation::HAS_POST_DATA : 0;
+}
+
+// SessionTab -----------------------------------------------------------------
+
+SessionTab::SessionTab()
+    : tab_visual_index(-1),
+      current_navigation_index(-1),
+      pinned(false) {
+}
+
+SessionTab::~SessionTab() {
 }
 
 // SessionWindow ---------------------------------------------------------------

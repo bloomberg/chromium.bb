@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/scoped_vector.h"
+#include "net/base/file_stream.h"
 
 using base::TimeTicks;
 
@@ -333,6 +334,9 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
     }
   }
   return true;
+}
+
+SessionBackend::~SessionBackend() {
 }
 
 void SessionBackend::ResetFile() {
