@@ -72,7 +72,7 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
      0,  // This dialog isn't used for cookies.
      0,
      0,
-     0,
+     IDS_PLUGIN_LOAD_SANDBOXED_RADIO,
      0,
      IDS_GEOLOCATION_ASK_RADIO,
      IDS_NOTIFICATIONS_ASK_RADIO,
@@ -103,7 +103,12 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
   gtk_box_pack_start(GTK_BOX(vbox), block_radio_, FALSE, FALSE, 0);
 
   ContentSetting default_setting;
-  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    default_setting = profile()->GetHostContentSettingsMap()->
+        GetDefaultContentSetting(content_type_);
+    if (profile()->GetHostContentSettingsMap()->GetBlockNonsandboxedPlugins())
+      default_setting = CONTENT_SETTING_ASK;
+  } else if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     default_setting = profile()->GetGeolocationContentSettingsMap()->
         GetDefaultContentSetting();
   } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
@@ -170,7 +175,17 @@ void ContentFilterPageGtk::OnAllowToggled(GtkWidget* toggle_button) {
           gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(block_radio_)) ?
               CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK;
   DCHECK(ask_radio_ || default_setting != CONTENT_SETTING_ASK);
-  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    if (default_setting == CONTENT_SETTING_ASK) {
+      default_setting = CONTENT_SETTING_ALLOW;
+      profile()->GetHostContentSettingsMap()->SetBlockNonsandboxedPlugins(true);
+    } else {
+      profile()->GetHostContentSettingsMap()->
+          SetBlockNonsandboxedPlugins(false);
+    }
+    profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+        content_type_, default_setting);
+  } else if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     profile()->GetGeolocationContentSettingsMap()->SetDefaultContentSetting(
         default_setting);
   } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {

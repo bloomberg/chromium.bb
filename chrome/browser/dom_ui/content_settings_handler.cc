@@ -175,6 +175,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PLUGIN_TAB_LABEL));
   localized_strings->SetString("plugins_setting",
       l10n_util::GetStringUTF16(IDS_PLUGIN_SETTING_LABEL));
+  localized_strings->SetString("plugins_allow_sandboxed",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD_SANDBOXED_RADIO));
   localized_strings->SetString("plugins_allow",
       l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD_RADIO));
   localized_strings->SetString("plugins_block",
@@ -233,6 +235,12 @@ void ContentSettingsHandler::Initialize() {
 
     filter_settings.SetString(ContentSettingsTypeToGroupName(type),
                               ContentSettingToString(default_setting));
+  }
+
+  if (settings_map->GetBlockNonsandboxedPlugins()) {
+    filter_settings.SetString(
+        ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_PLUGINS),
+        ContentSettingToString(CONTENT_SETTING_ASK));
   }
 
   dom_ui_->CallJavascriptFunction(
@@ -324,6 +332,17 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
         args->GetString(1, &setting))) {
     NOTREACHED();
     return;
+  }
+
+  if (ContentSettingsTypeFromGroupName(group) ==
+      CONTENT_SETTINGS_TYPE_PLUGINS) {
+    bool block_nonsandboxed_plugins = false;
+    if (ContentSettingFromString(setting) == CONTENT_SETTING_ASK) {
+      setting = ContentSettingToString(CONTENT_SETTING_ALLOW);
+      block_nonsandboxed_plugins = true;
+    }
+    dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+        SetBlockNonsandboxedPlugins(block_nonsandboxed_plugins);
   }
 
   dom_ui_->GetProfile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
