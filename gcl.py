@@ -143,7 +143,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
             # stderr into content_array.
             content_array = []
             svn_path = url_path + '/' + filename
-            args = ['cat', svn_path]
+            args = ['svn', 'cat', svn_path]
             if sys.platform != 'darwin':
               # MacOSX 10.5.2 has a bug with svn 1.4.4 that will trigger the
               # 'Can\'t get username or password' and can be fixed easily.
