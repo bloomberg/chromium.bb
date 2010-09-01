@@ -66,3 +66,7 @@ PREFIX : tabcontentsview::deactivate___renderwidgethost::onmessagereceived___ren
 
 # 53076
 PREFIX : tabcontentsview::activate___renderwidgethost::onmessagereceived___renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived
+
+# 54115
+PREFIX : ipc::sendtask::run___messageloop::runtask___messageloop::dowork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
+
