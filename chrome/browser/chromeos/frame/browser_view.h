@@ -50,7 +50,6 @@ class BrowserView : public ::BrowserView,
   virtual void Show();
   virtual void FocusChromeOSStatus();
   virtual views::LayoutManager* CreateLayoutManager() const;
-  virtual void InitTabStrip(TabStripModel* tab_strip_model);
   virtual void ChildPreferredSizeChanged(View* child);
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
 
@@ -76,22 +75,12 @@ class BrowserView : public ::BrowserView,
  private:
   void InitSystemMenu();
 
-  // Updates the background of the otr icon. The background differs for vertical
-  // tabs.
-  void UpdateOTRBackground();
-
   // Status Area view.
   StatusAreaView* status_area_;
 
   // System menus.
   scoped_ptr<menus::SimpleMenuModel> system_menu_contents_;
   scoped_ptr<views::Menu2> system_menu_menu_;
-
-  // A flag to specify if the browser window should be maximized.
-  bool force_maximized_window_;
-
-  // Off the record icon.
-  views::ImageView* otr_avatar_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

@@ -457,8 +457,6 @@
         'browser/chromeos/frame/browser_frame_chromeos.h',
         'browser/chromeos/frame/browser_view.cc',
         'browser/chromeos/frame/browser_view.h',
-        'browser/chromeos/frame/normal_browser_frame_view.cc',
-        'browser/chromeos/frame/normal_browser_frame_view.h',
         'browser/chromeos/frame/panel_browser_view.cc',
         'browser/chromeos/frame/panel_browser_view.h',
         'browser/chromeos/frame/panel_controller.cc',

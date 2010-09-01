@@ -13,7 +13,6 @@ enum ChromeOSViewIds {
   // Start with the offset that is big enough to avoid possible
   // collison.
   VIEW_ID_STATUS_AREA = VIEW_ID_PREDEFINED_COUNT + 10000,
-  VIEW_ID_OTR_AVATAR,
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_VIEW_IDS_H_

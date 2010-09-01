@@ -4,10 +4,11 @@
 
 #include "chrome/browser/chromeos/frame/browser_frame_chromeos.h"
 
-#include "chrome/browser/chromeos/frame/normal_browser_frame_view.h"
+#include "base/command_line.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/views/frame/popup_non_client_frame_view.h"
+#include "chrome/common/chrome_switches.h"
 
 // static (Factory method.)
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
@@ -34,11 +35,6 @@ void BrowserFrameChromeos::Init() {
   if (IsPanel()) {
     // ChromeOS Panels should always use PopupNonClientFrameView.
     set_browser_frame_view(new PopupNonClientFrameView());
-  } else if (!browser_view()->ShouldShowWindowIcon() &&
-             !browser_view()->ShouldShowWindowTitle()) {
-    // Excludes a browser intance that requires icon/title.
-    // This is typically true for dev tools and javascript console.
-    set_browser_frame_view(new NormalBrowserFrameView(this, browser_view()));
   } else {
     // Default FrameView.
     set_browser_frame_view(new OpaqueBrowserFrameView(this, browser_view()));
@@ -53,7 +49,9 @@ void BrowserFrameChromeos::Init() {
 }
 
 bool BrowserFrameChromeos::IsMaximized() const {
-  return !IsPanel() || WindowGtk::IsMaximized();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame))
+    return WindowGtk::IsMaximized();
+  return !IsFullscreen() && (!IsPanel() || WindowGtk::IsMaximized());
 }
 
 bool BrowserFrameChromeos::IsPanel() const {
