@@ -9,8 +9,8 @@
 #include <exception>
 #include <stdexcept>
 
-#include "port/mutex.h"
-#include "port/thread.h"
+#include "native_client/src/trusted/port/mutex.h"
+#include "native_client/src/trusted/port/thread.h"
 
 /*
  * Define the OS specific portions of gdb_utils IThread interface.
@@ -18,7 +18,7 @@
 
 namespace port {
 
-static IThread::CatchFunc s_CatchFunc = NULL;
+static IThread::CatchFunc_t s_CatchFunc = NULL;
 static void* s_CatchCookie = NULL;
 static PVOID s_OldCatch = NULL;
 
@@ -268,10 +268,11 @@ class Thread : public IThread {
   virtual bool SetStep(bool on) {
     if ((state_ == RUNNING) || (state_ == DEAD)) return false;
 
-    if (on)
+    if (on) {
       context_.EFlags |= TRAP_FLAG;
-    else
+    } else {
       context_.EFlags &= ~TRAP_FLAG;
+    }
     return true;
   }
 
@@ -376,7 +377,7 @@ void IThread::Release(IThread *ithread) {
   }
 }
 
-void IThread::SetExceptionCatch(IThread::CatchFunc func, void *cookie) {
+void IThread::SetExceptionCatch(IThread::CatchFunc_t func, void *cookie) {
   MutexLock lock(ThreadGetLock());
 
   // Remove our old catch if there is one, this allows us to add again

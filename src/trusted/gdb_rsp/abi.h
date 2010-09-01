@@ -1,0 +1,99 @@
+/*
+ * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
+
+// This module provides an interface for performing ABI specific
+// functions needed by the Target and Host.  ABI objects are provided
+// to the rest of the system as "const" to prevent accidental modification.
+// None of the resources in the Abi object are actually owned by the Abi
+// object, they are assumed to be static and never destroyed.
+//
+// This module will only throw standard errors
+//    std::bad_alloc - when out of memory
+//    std::out_of_range - when using an out of range regsiter index
+//
+// It is required that Init be called prior to calling Find to ensure
+// the various built-in ABIs have been registered.
+
+#ifndef NATIVE_CLIENT_GDB_RSP_ABI_H_
+#define NATIVE_CLIENT_GDB_RSP_ABI_H_ 1
+
+#include <map>
+#include <string>
+
+#include "native_client/src/trusted/port/std_types.h"
+
+namespace gdb_rsp {
+
+class Abi {
+ public:
+  enum RegType {
+    GENERAL,
+    LINK_PTR,
+    INST_PTR,
+    STACK_PTR,
+    FRAME_PTR,
+    BASE_PTR,
+    SEGMENT,
+    TLS,
+    FLAGS,
+    CONTROL,
+    REG_TYPE_CNT
+  };
+
+  struct RegDef {
+    const char *name_;
+    uint32_t bytes_;
+    RegType type_;
+    uint32_t index_;
+    uint32_t offset_;
+  };
+
+  // Returns the registered name of this ABI.
+  const char *GetName() const;
+
+  // Returns the size of the thread context.
+  uint32_t GetContextSize() const;
+
+  // Returns the number of registers visbible.
+  uint32_t GetRegisterCount() const;
+
+  // Returns a definition of the register at the provided index, or
+  // NULL if it does not exist.
+  const RegDef *GetRegisterDef(uint32_t index) const;
+
+  // Returns the 'nth' register of the type specified or NULL if it
+  // does not exist.
+  const RegDef *GetRegisterType(RegType rt, uint32_t index = 0) const;
+
+  // Called to assign a set of register definitions to an ABI.
+  // This function is non-reentrant.
+  static void Register(const char *name, RegDef *defs, uint32_t cnt);
+
+  // Called to search the map for a matching Abi by name.
+  // This function is reentrant.
+  static const Abi *Find(const char *name);
+
+  // Get the ABI of for the running application.
+  static const Abi *Get();
+
+ protected:
+  const char *name_;
+  const RegDef *regDefs_;
+  uint32_t regCnt_;
+  uint32_t ctxSize_;
+
+ private:
+  Abi();
+  ~Abi();
+  void operator =(const Abi&);
+};
+
+typedef std::map<std::string, Abi*> AbiMap_t;
+
+}  // namespace gdb_rsp
+
+#endif  // NATIVE_CLIENT_GDB_RSP_ABI_H_
+

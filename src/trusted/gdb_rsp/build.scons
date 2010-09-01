@@ -16,20 +16,20 @@ if env.Bit('windows'):
     env.Append(CPPDEFINES=['WIN64'])
 
 if env['TARGET_ARCHITECTURE'] == 'arm':
-  env.Append(CPPDEFINES=['NACL_CPU_ARM'])
+  env.Append(CPPDEFINES=['GDB_RSP_ABI_ARM'])
 
 if env['TARGET_ARCHITECTURE'] == 'x86':
-  env.Append(CPPDEFINES=['NACL_CPU_X86'])
+  env.Append(CPPDEFINES=['GDB_RSP_ABI_X86'])
   if env['TARGET_SUBARCH'] == '64':
-    env.Append(CPPDEFINES=['NACL_CPU_X86_64'])
+    env.Append(CPPDEFINES=['GDB_RSP_ABI_X86_64'])
 
 rsp_sources = [
-    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/abi.cc',
-    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/host.cc',
-    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/packet.cc',
-    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/session.cc',
-    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/target.cc',
-    '$SOURCE_ROOT/gdb_utils/src/gdb_rsp/util.cc',
+    'abi.cc',
+    'host.cc',
+    'packet.cc',
+    'session.cc',
+    'target.cc',
+    'util.cc',
     ]
 
 # Build only for Win64

@@ -21,8 +21,8 @@
 #define closesocket close
 #endif
 
-#include "port/platform.h"
-#include "port/transport.h"
+#include "native_client/src/trusted/port/platform.h"
+#include "native_client/src/trusted/port/transport.h"
 
 namespace port {
 
@@ -151,8 +151,7 @@ ITransport* ITransport::Connect(const char *addr) {
 }
 
 ITransport* ITransport::Accept(const char *addr) {
-  if (!SocketsAvailible())
-    return NULL;
+  if (!SocketsAvailible()) return NULL;
 
   SOCKET s = ::accept(s_ServerSock, NULL, 0);
   return new Transport(s);

@@ -9,9 +9,9 @@
 
 #include <map>
 
-#include "gdb_rsp/abi.h"
-#include "port/platform.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/gdb_rsp/abi.h"
+#include "native_client/src/trusted/port/platform.h"
 
 namespace port {
 

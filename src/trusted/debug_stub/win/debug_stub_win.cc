@@ -13,7 +13,7 @@
 #endif
 
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
-#include "port/platform.h"
+#include "native_client/src/trusted/port/platform.h"
 
 
 using port::IPlatform;

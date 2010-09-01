@@ -12,10 +12,10 @@
  * NaCl Functions for intereacting with debuggers
  */
 
-#include "gdb_utils/src/gdb_rsp/session.h"
-#include "gdb_utils/src/gdb_rsp/target.h"
-#include "gdb_utils/src/port/platform.h"
-#include "gdb_utils/src/port/thread.h"
+#include "native_client/src/trusted/gdb_rsp/session.h"
+#include "native_client/src/trusted/gdb_rsp/target.h"
+#include "native_client/src/trusted/port/platform.h"
+#include "native_client/src/trusted/port/thread.h"
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -218,7 +218,7 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
     /*
      * TODO(noelallen) We need to associate the natp with this thread
      * so we can get to the untrusted context preserved on a syscall.
-     */     
+     */
   }
 #endif
 }
@@ -238,7 +238,7 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
      * TODO(noelallen) We need to associate the natp with this thread
      * so we can get to the thread once we support freeing a thread
      * from a different thread than the executing one.
-     */     
+     */
   }
 #endif
 }

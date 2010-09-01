@@ -8,7 +8,6 @@
       'type': 'none',
       # NOTE: Chrome-specific targets should not be part of this project
       'dependencies': [
-        '../../gdb_utils/src/gdb_rsp/gdb_rsp.gyp:*',
         '../../ppapi/ppapi.gyp:*',
         '../src/shared/gio/gio.gyp:*',
         '../src/shared/imc/imc.gyp:*',
@@ -20,6 +19,7 @@
         '../src/third_party/protobuf/protobuf.gyp:*',
         '../src/trusted/debug_stub/debug_stub.gyp:*',
         '../src/trusted/desc/desc.gyp:*',
+        '../src/trusted/gdb_rsp/gdb_rsp.gyp:*',
         '../src/trusted/nacl_breakpad/nacl_breakpad.gyp:*',
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',

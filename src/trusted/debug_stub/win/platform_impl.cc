@@ -11,10 +11,9 @@
 
 #include <exception>
 
-#include "gdb_rsp/abi.h"
-#include "port/platform.h"
-
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/gdb_rsp/abi.h"
+#include "native_client/src/trusted/port/platform.h"
 
 /*
  * Define the OS specific portions of gdb_utils IPlatform interface.
@@ -42,9 +41,9 @@ uint32_t IPlatform::GetCurrentThread() {
  * Since the windows compiler does not use __stdcall by default, we need to
  * modify this function pointer.
  */
-typedef unsigned (__stdcall *WinThreadFunc)(void *cookie);
+typedef unsigned (__stdcall *WinThreadFunc_t)(void *cookie);
 
-uint32_t IPlatform::CreateThread(IPlatform::ThreadFunc func, void* cookie) {
+uint32_t IPlatform::CreateThread(IPlatform::ThreadFunc_t func, void* cookie) {
   uint32_t id;
   /*
    * We use our own code here instead of NaClThreadCtor because
@@ -52,7 +51,7 @@ uint32_t IPlatform::CreateThread(IPlatform::ThreadFunc func, void* cookie) {
    * TODO(noelallen) - Merge port and platform
    */
   uintptr_t res = _beginthreadex(NULL, 0,
-                                 reinterpret_cast<WinThreadFunc>(func),
+                                 reinterpret_cast<WinThreadFunc_t>(func),
                                  cookie, 0, &id);
 
   return id;

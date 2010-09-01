@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <exception>
 
-#include "port/mutex.h"
+#include "native_client/src/trusted/port/mutex.h"
 
 /*
  * Define the gdb_utils IMutex interface to use the NaCl version.
@@ -23,14 +23,12 @@ class Mutex : public IMutex {
     handle_ = CreateMutex(NULL, FALSE, NULL);
 
     // If we fail to create the mutex, then abort the app.
-    if (NULL == handle_)
-      throw std::exception("Failed to create mutex.");
+    if (NULL == handle_) throw std::exception("Failed to create mutex.");
   }
 
   ~Mutex() {
     // If constructor where to throw, then the mutex could be unset
-    if (NULL == handle_)
-      return;
+    if (NULL == handle_) return;
 
     // This should always succeed.
     (void) CloseHandle(handle_);
@@ -40,14 +38,13 @@ class Mutex : public IMutex {
     DWORD ret;
     do {
       ret = WaitForSingleObject(handle_, INFINITE);
-      if (WAIT_OBJECT_0 == ret) {
-        return;
-      }
+      if (WAIT_OBJECT_0 == ret) return;
 
       // If this lock wasn't abandoned or locked
       // the there must be an error.
-      if (WAIT_ABANDONED != ret)
+      if (WAIT_ABANDONED != ret) {
         throw std::exception("Lock failed on mutex.");
+      }
     } while (WAIT_ABANDONED == ret);
   }
 

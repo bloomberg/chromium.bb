@@ -321,7 +321,7 @@
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
-            '<(DEPTH)/gdb_utils/src/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
+            '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
           ],
           'conditions': [
             ['nacl_standalone==0 and OS=="win"', {

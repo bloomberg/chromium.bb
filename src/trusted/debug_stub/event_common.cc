@@ -4,7 +4,6 @@
  * be found in the LICENSE file.
  */
 
-#include "port/event.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 
 /*
@@ -19,6 +18,8 @@
 # include "native_client/src/shared/platform/linux/lock.h"
 # include "native_client/src/shared/platform/linux/condition_variable.h"
 #endif
+
+#include "native_client/src/trusted/port/event.h"
 
 namespace port {
 
