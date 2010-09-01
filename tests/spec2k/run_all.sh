@@ -233,7 +233,7 @@ SetupPnaclTranslatorX8632Opt() {
 #@ SetupGccArm
 #@   use CS cross compiler
 SetupGccArm() {
-  PREFIX=$(readlink -f ../../toolchain/linux_arm-trusted/qemu_tool.sh run)
+  PREFIX="$(readlink -f ../../toolchain/linux_arm-trusted/qemu_tool.sh) run"
   SUFFIX=gcc.arm
 }
 

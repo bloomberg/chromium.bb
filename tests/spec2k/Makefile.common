@@ -56,20 +56,22 @@ LOCAL_GCC=$(TIME_CMD) /usr/bin/gcc
 
 # straight x86-32 gcc
 $(IT).gcc.x8632: $(SRC) $(CPPSRC)
-	$(LOCAL_GCC) -O0 -m32 $(CFLAGS) $^  -static  -lm  -o $@
+	$(LOCAL_GCC) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -o $@
 
 # optimized x86-32 gcc
 $(IT).gcc.opt.x8632: $(SRC) $(CPPSRC)
-	$(LOCAL_GCC) -O3 -m32 $(CFLAGS) $^  -static -lm  -o $@
+	$(LOCAL_GCC) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -o $@
 
 
 # straight x86-64 gcc
 $(IT).gcc.x8664: $(SRC) $(CPPSRC)
-	$(LOCAL_GCC) -O0 -m64 $(CFLAGS) $^  -static  -lm  -o $@
+	$(LOCAL_GCC) -O0 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
+	$^ -static -lstdc++ -lm  -o $@
 
 # optimized x86-64 gcc
 $(IT).gcc.opt.x8664: $(SRC) $(CPPSRC)
-	$(LOCAL_GCC) -O3 -m64 $(CFLAGS) $^  -static -lm  -o $@
+	$(LOCAL_GCC) -O3 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
+	$^ -static -lstdc++ -lm  -o $@
 
 ######################################################################
 LOCAL_CROSS_GCC=$(TIME_CMD) \
@@ -77,11 +79,13 @@ LOCAL_CROSS_GCC=$(TIME_CMD) \
 
 # straight arm gcc (code sourcery)
 $(IT).gcc.arm: $(SRC) $(CPPSRC)
-	$(LOCAL_CROSS_GCC) -O0 -march=armv6 $(CFLAGS) $^  -static  -lm  -o $@
+	$(LOCAL_CROSS_GCC) -O0 -march=armv6 $(CFLAGS) \
+	$^ -static -lstdc++ -lm  -o $@
 
 # optimized x86 gcc (code sourcery)
 $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
-	$(LOCAL_CROSS_GCC) -O3 -march=armv6 $(CFLAGS) $^  -static -lm  -o $@
+	$(LOCAL_CROSS_GCC) -O3 -march=armv6 $(CFLAGS) \
+	$^ -static -lstdc++ -lm  -o $@
 
 ######################################################################
 ## NACL-GCC TOOLCHAINS
@@ -222,4 +226,3 @@ $(IT).pnacl_translator.x8664: $(IT).prelinked.bc
 
 $(IT).pnacl_translator.opt.x8664: $(IT).opt.prelinked.bc
 	$(BC_X8664_TRANSLATOR) $(IT).opt.prelinked.bc $@
-

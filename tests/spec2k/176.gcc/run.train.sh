@@ -11,7 +11,9 @@ EMU_HACK=${EMU_HACK:-yes}
 
 DASHDASH=""
 if [[ "${PREFIX}" =~ sel_ldr ]] ; then
- DASHDASH="--"
+# TODO(robertm): remove -c option
+# c.f.: http://code.google.com/p/nativeclient/issues/detail?id=717
+ DASHDASH="-c --"
 fi
 
 rm -f  *.out *.s
@@ -20,9 +22,8 @@ if [[ "${EMU_HACK}" != "no" ]] ; then
   touch cp-decl.s
 fi
 
-# TODO(robertm): remove -c option
-# c.f.: http://code.google.com/p/nativeclient/issues/detail?id=717
-${PREFIX} $1 -c ${DASHDASH} data/train/input/cp-decl.i -o cp-decl.s > stdout.out 2> stderr.out
+${PREFIX} $1 ${DASHDASH} data/train/input/cp-decl.i -o cp-decl.s \
+  > stdout.out 2> stderr.out
 
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"
