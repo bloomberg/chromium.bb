@@ -214,7 +214,7 @@
     {
       'name': 'RestoreOnStartup',
       'policies': [{
-        'name': 'RestoreOnStartupMode',
+        'name': 'RestoreOnStartup',
 	'type': 'enum',
 	'items': [
 	  {'name': 'RestoreOnStartupIsNone', 'value': '0'},

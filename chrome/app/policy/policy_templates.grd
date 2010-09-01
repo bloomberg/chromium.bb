@@ -489,10 +489,10 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>   
    
-    <message name="IDS_POLICY_RESTOREONSTARTUPMODE_CAPTION" desc="Caption of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'.">
+    <message name="IDS_POLICY_RESTOREONSTARTUP_CAPTION" desc="Caption of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'.">
       Action on Startup 
     </message>
-    <message name="IDS_POLICY_RESTOREONSTARTUPMODE_DESC" desc="Description of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'">
+    <message name="IDS_POLICY_RESTOREONSTARTUP_DESC" desc="Description of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'">
       Allows you to specify the behavior on startup.
     </message>
 
