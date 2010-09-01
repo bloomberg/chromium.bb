@@ -587,8 +587,11 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
 }
 
-// Failing on Chromium Mac: http://crbug/53586
-TEST_F(BrowserWindowFullScreenControllerTest, FLAKY_TestActivate) {
+// If this test fails, it is usually a sign that the bots have some sort of
+// problem (such as a modal dialog up).  This tests is a very useful canary, so
+// please do not mark it as flaky without first verifying that there are no bot
+// problems.
+TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
