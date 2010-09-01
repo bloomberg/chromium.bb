@@ -608,10 +608,16 @@ std::string TranslateManager::GetTargetLanguage() {
 TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
     TabContents* tab) {
   for (int i = 0; i < tab->infobar_delegate_count(); ++i) {
-    TranslateInfoBarDelegate* delegate =
-        tab->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
-    if (delegate)
-      return delegate;
+    InfoBarDelegate* delegate = tab->GetInfoBarDelegateAt(i);
+    if (!delegate) {
+      // Please let jcivelli know if you hit this and how you got to that point.
+      NOTREACHED();
+      continue;
+    }
+    TranslateInfoBarDelegate* translate_delegate =
+        delegate->AsTranslateInfoBarDelegate();
+    if (translate_delegate)
+      return translate_delegate;
   }
   return NULL;
 }
