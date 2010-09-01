@@ -147,6 +147,9 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // Disable support for cached byte-ranges.
 const char kDisableByteRangeSupport[]       = "disable-byte-range-support";
 
+// Disable click-to-play for blocked plug-ins.
+const char kDisableClickToPlay[]            = "disable-click-to-play";
+
 // Disables establishing a backup TCP connection if a specified timeout is
 // exceeded.
 const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
@@ -359,9 +362,6 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // This applies only when the process type is "service". Enables the
 // Chromoting Host Process within the service process.
 const char kEnableRemoting[]                = "enable-remoting";
-
-// Enable click-to-play for blocked plugins.
-const char kEnableClickToPlay[]             = "enable-click-to-play";
 
 // This applies only when the process type is "service". Enables the
 // Cloud Print Proxy component within the service process.

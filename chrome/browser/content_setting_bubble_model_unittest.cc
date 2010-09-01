@@ -98,7 +98,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   EXPECT_NE(std::string(), bubble_content.manage_link);
   EXPECT_EQ(std::string(), bubble_content.info_link);
   EXPECT_NE(std::string(), bubble_content.title);
-  EXPECT_EQ(std::string(), bubble_content.load_plugins_link_title);
+  EXPECT_NE(std::string(), bubble_content.load_plugins_link_title);
 }
 
 TEST_F(ContentSettingBubbleModelTest, Geolocation) {

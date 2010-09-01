@@ -288,16 +288,16 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
 
  private:
   void SetLoadPluginsLinkTitle() {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableClickToPlay)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableClickToPlay)) {
       set_load_plugins_link_title(
           l10n_util::GetStringUTF8(IDS_BLOCKED_PLUGINS_LOAD_ALL));
      }
    }
 
   virtual void OnLoadPluginsLinkClicked() {
-    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-         switches::kEnableClickToPlay));
+    DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableClickToPlay));
     if (tab_contents()) {
       tab_contents()->render_view_host()->LoadBlockedPlugins();
     }

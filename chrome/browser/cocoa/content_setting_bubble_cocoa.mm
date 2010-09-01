@@ -391,8 +391,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 }
 
 - (void)sizeToFitLoadPluginsButton {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableClickToPlay)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableClickToPlay)) {
     const ContentSettingBubbleModel::BubbleContent& content =
         contentSettingBubbleModel_->bubble_content();
     [loadAllPluginsButton_ setEnabled:content.load_plugins_link_enabled];
