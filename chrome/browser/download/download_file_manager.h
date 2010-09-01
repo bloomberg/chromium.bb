@@ -44,6 +44,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/timer.h"
 #include "gfx/native_widget_types.h"
@@ -74,17 +75,16 @@ class DownloadFileManager
   // Called on the IO thread
   int GetNextId();
 
-  // Called on UI thread to make DownloadFileManager start the download.
-  void StartDownload(DownloadCreateInfo* info);
-
   // Handlers for notifications sent from the IO thread and run on the
   // download thread.
+  void StartDownload(DownloadCreateInfo* info);
   void UpdateDownload(int id, DownloadBuffer* buffer);
   void CancelDownload(int id);
   void DownloadFinished(int id, DownloadBuffer* buffer);
 
-  // Called on FILE thread by DownloadManager at the beginning of its shutdown.
-  void OnDownloadManagerShutdown(DownloadManager* manager);
+  // Called on the UI thread to remove a download item or manager.
+  void RemoveDownloadManager(DownloadManager* manager);
+  void RemoveDownload(int id, DownloadManager* manager);
 
 #if !defined(OS_MACOSX)
   // The open and show methods run on the file thread, which does not work on
@@ -125,13 +125,21 @@ class DownloadFileManager
   // Clean up helper that runs on the download thread.
   void OnShutdown();
 
-  // Creates DownloadFile on FILE thread and continues starting the download
-  // process.
-  void CreateDownloadFile(DownloadCreateInfo* info,
-                          DownloadManager* download_manager);
+  // Handlers for notifications sent from the download thread and run on
+  // the UI thread.
+  void OnStartDownload(DownloadCreateInfo* info);
+  void OnDownloadFinished(int id, int64 bytes_so_far);
+
+  // Called only on UI thread to get the DownloadManager for a tab's profile.
+  static DownloadManager* DownloadManagerFromRenderIds(int render_process_id,
+                                                       int review_view_id);
+  DownloadManager* GetDownloadManager(int download_id);
 
   // Called only on the download thread.
   DownloadFile* GetDownloadFile(int id);
+
+  // Called on the UI thread to remove a download from the UI progress table.
+  void RemoveDownloadFromUIProgress(int id);
 
   // Called only from OnFinalDownloadName or OnIntermediateDownloadName
   // on the FILE thread.
@@ -144,11 +152,27 @@ class DownloadFileManager
   typedef base::hash_map<int, DownloadFile*> DownloadFileMap;
   DownloadFileMap downloads_;
 
-  // Schedule periodic updates of the download progress. This timer
-  // is controlled from the FILE thread, and posts updates to the UI thread.
+  // Throttle updates to the UI thread.
   base::RepeatingTimer<DownloadFileManager> update_timer_;
 
   ResourceDispatcherHost* resource_dispatcher_host_;
+
+  // Tracking which DownloadManager to send data to, called only on UI thread.
+  // DownloadManagerMap maps download IDs to their DownloadManager.
+  typedef base::hash_map<int, DownloadManager*> DownloadManagerMap;
+  DownloadManagerMap managers_;
+
+  // RequestMap maps a DownloadManager to all in-progress download IDs.
+  // Called only on the UI thread.
+  typedef base::hash_set<int> DownloadRequests;
+  typedef std::map<DownloadManager*, DownloadRequests> RequestMap;
+  RequestMap requests_;
+
+  // Used for progress updates on the UI thread, mapping download->id() to bytes
+  // received so far. Written to by the file thread and read by the UI thread.
+  typedef base::hash_map<int, int64> ProgressMap;
+  ProgressMap ui_progress_;
+  Lock progress_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileManager);
 };

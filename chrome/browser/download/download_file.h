@@ -7,12 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/download/base_file.h"
 #include "chrome/browser/download/download_types.h"
 
 struct DownloadCreateInfo;
-class DownloadManager;
 class ResourceDispatcherHost;
 
 // These objects live exclusively on the download thread and handle the writing
@@ -21,8 +19,7 @@ class ResourceDispatcherHost;
 // cancelled, the DownloadFile is destroyed.
 class DownloadFile : public BaseFile {
  public:
-  DownloadFile(const DownloadCreateInfo* info,
-               DownloadManager* download_manager);
+  explicit DownloadFile(const DownloadCreateInfo* info);
   virtual ~DownloadFile();
 
   // Deletes its .crdownload intermediate file.
@@ -32,10 +29,7 @@ class DownloadFile : public BaseFile {
   // Cancels the download request associated with this file.
   void CancelDownloadRequest(ResourceDispatcherHost* rdh);
 
-  void OnDownloadManagerShutdown();
-
   int id() const { return id_; }
-  DownloadManager* GetDownloadManager();
 
  private:
   // The unique identifier for this download, assigned at creation by
@@ -47,9 +41,6 @@ class DownloadFile : public BaseFile {
 
   // Handle for informing the ResourceDispatcherHost of a UI based cancel.
   int request_id_;
-
-  // DownloadManager this download belongs to.
-  scoped_refptr<DownloadManager> download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFile);
 };

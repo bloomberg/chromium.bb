@@ -20,14 +20,13 @@
 BaseFile::BaseFile(const FilePath& full_path,
                    const GURL& source_url,
                    const GURL& referrer_url,
-                   int64 received_bytes,
                    const linked_ptr<net::FileStream>& file_stream)
     : full_path_(full_path),
       path_renamed_(false),
       source_url_(source_url),
       referrer_url_(referrer_url),
       file_stream_(file_stream),
-      bytes_so_far_(received_bytes),
+      bytes_so_far_(0),
       power_save_blocker_(true) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 }

@@ -92,7 +92,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_;
   ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+      ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
           download_file_manager_, &DownloadFileManager::StartDownload, info));
   return true;
