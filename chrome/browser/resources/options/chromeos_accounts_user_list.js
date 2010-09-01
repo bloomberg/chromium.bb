@@ -43,12 +43,34 @@ cr.define('options.accounts', function() {
     },
 
     /**
+     * Finds the index of user by given email.
+     * @private
+     * @param {string} email The email address to look for.
+     * @return {number} The index of the found user or -1 if not found.
+     */
+    findUserByEmail_: function(email) {
+      var dataModel = this.dataModel;
+      var length = dataModel.length;
+      for (var i = 0; i < length; ++i) {
+        var user = dataModel.item(i);
+        if (user.email == email) {
+          return i;
+        }
+      }
+
+      return -1;
+    },
+
+    /**
      * Adds given user to model and update backend.
      * @param {Object} user A user to be added to user list.
      */
     addUser: function(user) {
-      this.dataModel.push(user);
-      this.updateBackend_();
+      var index = this.findUserByEmail_(user.email);
+      if (index == -1) {
+        this.dataModel.push(user);
+        this.updateBackend_();
+      }
     },
 
     /**
