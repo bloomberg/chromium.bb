@@ -44,11 +44,7 @@ void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
 // static
 int ShownSectionsHandler::GetShownSections(PrefService* prefs) {
   int sections = prefs->GetInteger(prefs::kNTPShownSections);
-
-  DCHECK(!(sections & RECENT)) << "Should be impossible to ever end up with "
-                               << "recent section visible.";
   sections &= ~RECENT;
-
   return sections;
 }
 
