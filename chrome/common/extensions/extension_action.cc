@@ -37,11 +37,11 @@ const int kBottomMargin = 5;
 const int kPadding = 2;
 const int kTopTextPadding = 0;
 #else
-const float kTextSize = 7.5;
+const float kTextSize = 10;
 const int kBottomMargin = 5;
 const int kPadding = 2;
 // The padding between the top of the badge and the top of the text.
-const int kTopTextPadding = 1;
+const int kTopTextPadding = -1;
 #endif
 
 const int kBadgeHeight = 11;
