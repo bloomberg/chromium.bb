@@ -28,7 +28,7 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   virtual void Start();
 
  private:
-  ~URLRequestSlowHTTPJob() {}
+  ~URLRequestSlowHTTPJob();
 
   void RealStart();
 

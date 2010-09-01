@@ -323,7 +323,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
     friend class SyncBackendHostForProfileSyncTest;
 
-    ~Core() {}
+    ~Core();
 
     // Sends a SYNC_PAUSED notification to the notification service on
     // the UI thread.

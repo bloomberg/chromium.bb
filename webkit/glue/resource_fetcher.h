@@ -100,7 +100,7 @@ class ResourceFetcherWithTimeout : public ResourceFetcher {
  public:
   ResourceFetcherWithTimeout(const GURL& url, WebKit::WebFrame* frame,
                              int timeout_secs, Callback* c);
-  virtual ~ResourceFetcherWithTimeout() {}
+  virtual ~ResourceFetcherWithTimeout();
 
  private:
   // Callback for timer that limits how long we wait for the alternate error

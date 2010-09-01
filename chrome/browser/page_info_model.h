@@ -78,6 +78,7 @@ class PageInfoModel {
                 const NavigationEntry::SSLStatus& ssl,
                 bool show_history,
                 PageInfoModelObserver* observer);
+  ~PageInfoModel();
 
   int GetSectionCount();
   SectionInfo GetSectionInfo(int index);
@@ -92,7 +93,7 @@ class PageInfoModel {
 
  protected:
   // Testing constructor. DO NOT USE.
-  PageInfoModel() {}
+  PageInfoModel();
 
   PageInfoModelObserver* observer_;
 

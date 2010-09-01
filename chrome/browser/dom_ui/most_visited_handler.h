@@ -28,7 +28,7 @@ class MostVisitedHandler : public DOMMessageHandler,
  public:
 
   MostVisitedHandler();
-  virtual ~MostVisitedHandler() { }
+  virtual ~MostVisitedHandler();
 
   // DOMMessageHandler override and implementation.
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);

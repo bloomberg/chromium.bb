@@ -23,7 +23,7 @@ class WebFrame;
 class TranslateHelper {
  public:
   explicit TranslateHelper(RenderView* render_view);
-  virtual ~TranslateHelper() {}
+  virtual ~TranslateHelper();
 
   // Translates the page contents from |source_lang| to |target_lang|.
   // Does nothing if |page_id| is not the current page id.

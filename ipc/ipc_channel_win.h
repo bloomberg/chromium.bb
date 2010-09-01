@@ -22,7 +22,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::IOHandler {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
   ChannelImpl(const std::string& channel_id, Mode mode, Listener* listener);
-  ~ChannelImpl() { Close(); }
+  ~ChannelImpl();
   bool Connect();
   void Close();
   void set_listener(Listener* listener) { listener_ = listener; }

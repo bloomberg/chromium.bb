@@ -22,6 +22,9 @@ BookmarkDropInfo::BookmarkDropInfo(gfx::NativeWindow wnd, int top_margin)
       scroll_up_(false) {
 }
 
+BookmarkDropInfo::~BookmarkDropInfo() {
+}
+
 void BookmarkDropInfo::Update(const views::DropTargetEvent& event) {
   source_operations_ = event.GetSourceOperations();
   is_control_down_ = event.IsControlDown();

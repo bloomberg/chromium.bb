@@ -27,6 +27,7 @@ class WebFrame;
 class UserScriptIdleScheduler {
  public:
   UserScriptIdleScheduler(RenderView* view, WebKit::WebFrame* frame);
+  ~UserScriptIdleScheduler();
 
   bool has_run() { return has_run_; }
 

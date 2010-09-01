@@ -313,6 +313,9 @@ bool SyncBackendHost::RequestResume() {
   return true;
 }
 
+SyncBackendHost::Core::~Core() {
+}
+
 void SyncBackendHost::Core::NotifyPaused() {
   NotificationService::current()->Notify(NotificationType::SYNC_PAUSED,
                                          NotificationService::AllSources(),

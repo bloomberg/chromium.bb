@@ -25,6 +25,7 @@ class DownloadHistory {
   static const int kUninitializedHandle;
 
   explicit DownloadHistory(Profile* profile);
+  ~DownloadHistory();
 
   // Retrieves DownloadCreateInfos saved in the history.
   void Load(HistoryService::DownloadQueryCallback* callback);

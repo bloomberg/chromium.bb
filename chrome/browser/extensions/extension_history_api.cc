@@ -184,6 +184,12 @@ bool HistoryFunction::GetTimeFromValue(Value* value, base::Time* time) {
   return true;
 }
 
+HistoryFunctionWithCallback::HistoryFunctionWithCallback() {
+}
+
+HistoryFunctionWithCallback::~HistoryFunctionWithCallback() {
+}
+
 bool HistoryFunctionWithCallback::RunImpl() {
   AddRef();  // Balanced in SendAysncRepose() and below.
   bool retval = RunAsyncImpl();

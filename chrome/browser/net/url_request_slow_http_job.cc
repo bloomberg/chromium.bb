@@ -53,6 +53,9 @@ void URLRequestSlowHTTPJob::Start() {
                      &URLRequestSlowHTTPJob::RealStart);
 }
 
+URLRequestSlowHTTPJob::~URLRequestSlowHTTPJob() {
+}
+
 void URLRequestSlowHTTPJob::RealStart() {
   URLRequestMockHTTPJob::Start();
 }

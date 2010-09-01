@@ -65,7 +65,7 @@ class DownloadResourceHandler : public ResourceHandler {
   void CheckWriteProgress();
 
  private:
-  ~DownloadResourceHandler() {}
+  ~DownloadResourceHandler();
 
   void StartPauseTimer();
 

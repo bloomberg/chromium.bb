@@ -48,6 +48,10 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
   }
 }
 
+Channel::ChannelImpl::~ChannelImpl() {
+  Close();
+}
+
 void Channel::ChannelImpl::Close() {
   if (thread_check_.get()) {
     DCHECK(thread_check_->CalledOnValidThread());

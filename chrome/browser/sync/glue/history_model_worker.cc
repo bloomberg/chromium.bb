@@ -42,6 +42,9 @@ HistoryModelWorker::HistoryModelWorker(HistoryService* history_service)
   : history_service_(history_service) {
 }
 
+HistoryModelWorker::~HistoryModelWorker() {
+}
+
 void HistoryModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   WaitableEvent done(false, false);
   scoped_refptr<WorkerTask> task = new WorkerTask(work, &done);

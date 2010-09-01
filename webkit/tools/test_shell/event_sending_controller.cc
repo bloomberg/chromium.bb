@@ -305,6 +305,9 @@ EventSendingController::EventSendingController(TestShell* shell)
 #endif
 }
 
+EventSendingController::~EventSendingController() {
+}
+
 void EventSendingController::Reset() {
   // The test should have finished a drag and the mouse button state.
   DCHECK(current_drag_data.isNull());

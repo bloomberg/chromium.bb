@@ -42,6 +42,9 @@ TranslateHelper::TranslateHelper(RenderView* render_view)
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
+TranslateHelper::~TranslateHelper() {
+}
+
 void TranslateHelper::TranslatePage(int page_id,
                                     const std::string& source_lang,
                                     const std::string& target_lang,

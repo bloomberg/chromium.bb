@@ -24,7 +24,7 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
 
  public:
   TestShellDevToolsAgent();
-  virtual ~TestShellDevToolsAgent() {}
+  virtual ~TestShellDevToolsAgent();
 
   void SetWebView(WebKit::WebView* web_view);
 

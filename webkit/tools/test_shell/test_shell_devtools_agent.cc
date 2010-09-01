@@ -61,6 +61,9 @@ TestShellDevToolsAgent::TestShellDevToolsAgent()
         &TestShellDevToolsAgent::DispatchMessageLoop);
 }
 
+TestShellDevToolsAgent::~TestShellDevToolsAgent() {
+}
+
 void TestShellDevToolsAgent::SetWebView(WebKit::WebView* web_view) {
   web_view_ = web_view;
 }

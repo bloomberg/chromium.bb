@@ -119,6 +119,9 @@ ResourceFetcherWithTimeout::ResourceFetcherWithTimeout(
                        &ResourceFetcherWithTimeout::TimeoutFired);
 }
 
+ResourceFetcherWithTimeout::~ResourceFetcherWithTimeout() {
+}
+
 void ResourceFetcherWithTimeout::TimeoutFired() {
   if (!completed_) {
     loader_->cancel();

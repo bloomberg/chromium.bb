@@ -70,9 +70,7 @@ class ViewEventTestBase : public views::WindowDelegate,
   // Destroys the window.
   virtual void TearDown();
 
-  virtual bool CanResize() const {
-    return true;
-  }
+  virtual bool CanResize() const;
 
   // WindowDelegate method. Calls into CreateContentsView to get the actual
   // view.
@@ -84,7 +82,7 @@ class ViewEventTestBase : public views::WindowDelegate,
   static bool ImplementsThreadSafeReferenceCounting() { return false; }
 
  protected:
-  virtual ~ViewEventTestBase() {}
+  virtual ~ViewEventTestBase();
 
   // Returns the view that is added to the window.
   virtual views::View* CreateContentsView() = 0;

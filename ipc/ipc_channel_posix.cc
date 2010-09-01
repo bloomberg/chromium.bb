@@ -295,6 +295,10 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
   }
 }
 
+Channel::ChannelImpl::~ChannelImpl() {
+  Close();
+}
+
 // static
 void AddChannelSocket(const std::string& name, int socket) {
   Singleton<PipeMap>()->Insert(name, socket);

@@ -71,6 +71,9 @@ class HistoryFunction : public AsyncExtensionFunction {
 // chrome services and the extension thread.
 class HistoryFunctionWithCallback : public HistoryFunction {
  public:
+  HistoryFunctionWithCallback();
+  ~HistoryFunctionWithCallback();
+
   // Return true if the async call was completed, false otherwise.
   virtual bool RunAsyncImpl() = 0;
 

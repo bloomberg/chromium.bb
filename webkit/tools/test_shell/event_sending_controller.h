@@ -36,6 +36,7 @@ class EventSendingController : public CppBoundClass {
   // Builds the property and method lists needed to bind this class to a JS
   // object.
   EventSendingController(TestShell* shell);
+  ~EventSendingController();
 
   // Resets some static variable state.
   void Reset();

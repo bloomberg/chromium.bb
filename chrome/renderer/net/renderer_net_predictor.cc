@@ -32,6 +32,9 @@ RendererNetPredictor::RendererNetPredictor()
   Reset();
 }
 
+RendererNetPredictor::~RendererNetPredictor() {
+}
+
 void RendererNetPredictor::Reset() {
   domain_map_.clear();
   c_string_queue_.Clear();

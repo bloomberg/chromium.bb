@@ -14,7 +14,6 @@
 #include <set>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -23,10 +22,8 @@
 class SdchDictionaryFetcher : public URLFetcher::Delegate,
                               public SdchFetcher {
  public:
-  SdchDictionaryFetcher() :
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      task_is_pending_(false) {}
-  virtual ~SdchDictionaryFetcher() {}
+  SdchDictionaryFetcher();
+  virtual ~SdchDictionaryFetcher();
 
   // Implementation of SdchFetcher class.
   // This method gets the requested dictionary, and then calls back into the
@@ -86,7 +83,6 @@ class SdchDictionaryFetcher : public URLFetcher::Delegate,
   // so that we won't try to load from an URL more than once.
   // TODO(jar): Try to augment the SDCH proposal to include this restiction.
   std::set<GURL> attempted_load_;
-
 
   DISALLOW_COPY_AND_ASSIGN(SdchDictionaryFetcher);
 };

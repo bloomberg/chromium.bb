@@ -72,6 +72,9 @@ SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
   transport_socket_ = new TransportSocket(socket, this);
 }
 
+SSLSocketAdapter::~SSLSocketAdapter() {
+}
+
 int SSLSocketAdapter::StartSSL(const char* hostname, bool restartable) {
   DCHECK(!restartable);
   hostname_ = hostname;
@@ -220,6 +223,9 @@ TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
       socket_(socket) {
   socket_->SignalReadEvent.connect(this, &TransportSocket::OnReadEvent);
   socket_->SignalWriteEvent.connect(this, &TransportSocket::OnWriteEvent);
+}
+
+TransportSocket::~TransportSocket() {
 }
 
 int TransportSocket::Connect(net::CompletionCallback* callback) {

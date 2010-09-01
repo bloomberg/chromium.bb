@@ -199,6 +199,12 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindProperty("webHistoryItemCount", &webHistoryItemCount_);
 }
 
+LayoutTestController::~LayoutTestController() {
+}
+
+LayoutTestController::WorkQueue::WorkQueue() {
+}
+
 LayoutTestController::WorkQueue::~WorkQueue() {
   Reset();
 }

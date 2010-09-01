@@ -36,8 +36,7 @@ void DnsPrefetchCString(const char* hostname, size_t length);
 class RendererNetPredictor {
  public:
   RendererNetPredictor();
-
-  ~RendererNetPredictor() {}
+  ~RendererNetPredictor();
 
   // Push a name into the queue to be resolved.
   void Resolve(const char* name, size_t length);

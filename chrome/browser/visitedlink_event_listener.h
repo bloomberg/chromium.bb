@@ -19,8 +19,8 @@ class SharedMemory;
 
 class VisitedLinkEventListener : public VisitedLinkMaster::Listener {
  public:
-  VisitedLinkEventListener() {}
-  virtual ~VisitedLinkEventListener() {}
+  VisitedLinkEventListener();
+  virtual ~VisitedLinkEventListener();
 
   virtual void NewTable(base::SharedMemory* table_memory);
   virtual void Add(VisitedLinkMaster::Fingerprint fingerprint);

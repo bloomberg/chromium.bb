@@ -23,6 +23,9 @@ DownloadHistory::DownloadHistory(Profile* profile)
   DCHECK(profile);
 }
 
+DownloadHistory::~DownloadHistory() {
+}
+
 void DownloadHistory::Load(HistoryService::DownloadQueryCallback* callback) {
   DCHECK(callback);
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);

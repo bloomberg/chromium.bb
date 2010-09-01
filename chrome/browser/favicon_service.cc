@@ -84,6 +84,9 @@ void FaviconService::SetFavicon(const GURL& page_url,
     hs->SetFavicon(page_url, icon_url, image_data);
 }
 
+FaviconService::~FaviconService() {
+}
+
 void FaviconService::ForwardEmptyResultAsync(GetFaviconRequest* request) {
   request->ForwardResultAsync(FaviconDataCallback::TupleType(request->handle(),
         false, NULL, false, GURL()));

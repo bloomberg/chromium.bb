@@ -44,13 +44,7 @@ class Value;
 class SearchProvider : public AutocompleteProvider,
                        public URLFetcher::Delegate {
  public:
-  SearchProvider(ACProviderListener* listener, Profile* profile)
-      : AutocompleteProvider(listener, profile, "Search"),
-        have_history_results_(false),
-        history_request_pending_(false),
-        suggest_results_pending_(0),
-        have_suggest_results_(false) {
-  }
+  SearchProvider(ACProviderListener* listener, Profile* profile);
 
 #if defined(UNIT_TEST)
   static void set_query_suggest_immediately(bool value) {
@@ -78,7 +72,7 @@ class SearchProvider : public AutocompleteProvider,
   static const int kKeywordProviderURLFetcherID;
 
  private:
-  ~SearchProvider() {}
+  ~SearchProvider();
 
   // Manages the providers (TemplateURLs) used by SearchProvider. Two providers
   // may be used:

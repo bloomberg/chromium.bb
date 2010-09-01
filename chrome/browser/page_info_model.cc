@@ -202,6 +202,9 @@ PageInfoModel::PageInfoModel(Profile* profile,
   }
 }
 
+PageInfoModel::~PageInfoModel() {
+}
+
 int PageInfoModel::GetSectionCount() {
   return sections_.size();
 }
@@ -253,4 +256,7 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
 // static
 void PageInfoModel::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kPageInfoWindowPlacement);
+}
+
+PageInfoModel::PageInfoModel() {
 }

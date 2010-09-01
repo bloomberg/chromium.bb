@@ -62,6 +62,9 @@ MostVisitedHandler::MostVisitedHandler()
       got_first_most_visited_request_(false) {
 }
 
+MostVisitedHandler::~MostVisitedHandler() {
+}
+
 DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   url_blacklist_ = dom_ui->GetProfile()->GetPrefs()->
       GetMutableDictionary(prefs::kNTPMostVisitedURLsBlacklist);

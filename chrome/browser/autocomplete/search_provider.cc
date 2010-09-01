@@ -54,6 +54,14 @@ void SearchProvider::Providers::Set(const TemplateURL* default_provider,
     cached_keyword_provider_ = *keyword_provider;
 }
 
+SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
+    : AutocompleteProvider(listener, profile, "Search"),
+      have_history_results_(false),
+      history_request_pending_(false),
+      suggest_results_pending_(0),
+      have_suggest_results_(false) {
+}
+
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
   matches_.clear();
@@ -196,6 +204,9 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
 
   ConvertResultsToAutocompleteMatches();
   listener_->OnProviderUpdate(!suggest_results->empty());
+}
+
+SearchProvider::~SearchProvider() {
 }
 
 void SearchProvider::StartOrStopHistoryQuery(bool minimal_changes) {

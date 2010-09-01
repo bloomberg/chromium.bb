@@ -4,8 +4,17 @@
 
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/profile.h"
 #include "net/url_request/url_request_status.h"
+
+SdchDictionaryFetcher::SdchDictionaryFetcher()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      task_is_pending_(false) {
+}
+
+SdchDictionaryFetcher::~SdchDictionaryFetcher() {
+}
 
 void SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
   // Avoid pushing duplicate copy onto queue.  We may fetch this url again later

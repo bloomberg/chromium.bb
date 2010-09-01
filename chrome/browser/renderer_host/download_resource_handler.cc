@@ -205,6 +205,9 @@ void DownloadResourceHandler::CheckWriteProgress() {
   }
 }
 
+DownloadResourceHandler::~DownloadResourceHandler() {
+}
+
 void DownloadResourceHandler::StartPauseTimer() {
   if (!pause_timer_.IsRunning())
     pause_timer_.Start(base::TimeDelta::FromMilliseconds(kThrottleTimeMs), this,

@@ -19,6 +19,9 @@ UserScriptIdleScheduler::UserScriptIdleScheduler(RenderView* view,
   frame_(frame), has_run_(false) {
 }
 
+UserScriptIdleScheduler::~UserScriptIdleScheduler() {
+}
+
 void UserScriptIdleScheduler::DidFinishDocumentLoad() {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       method_factory_.NewRunnableMethod(&UserScriptIdleScheduler::MaybeRun),

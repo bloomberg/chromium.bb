@@ -26,6 +26,7 @@ class LayoutTestController : public CppBoundClass {
   // Builds the property and method lists needed to bind this class to a JS
   // object.
   LayoutTestController(TestShell* shell);
+  ~LayoutTestController();
 
   // This function sets a flag that tells the test_shell to dump pages as
   // plain text, rather than as a text representation of the renderer's state.
@@ -352,6 +353,7 @@ class LayoutTestController : public CppBoundClass {
   // queueScript.
   class WorkQueue {
    public:
+    WorkQueue();
     virtual ~WorkQueue();
     void ProcessWorkSoon();
 

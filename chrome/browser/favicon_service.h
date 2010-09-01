@@ -90,7 +90,7 @@ class FaviconService : public CancelableRequestProvider,
  private:
   friend class base::RefCountedThreadSafe<FaviconService>;
 
-  ~FaviconService() {}
+  ~FaviconService();
 
   Profile* profile_;
 

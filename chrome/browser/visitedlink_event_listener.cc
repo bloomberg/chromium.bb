@@ -13,6 +13,12 @@ using base::TimeDelta;
 // The amount of time we wait to accumulate visited link additions.
 static const int kCommitIntervalMs = 100;
 
+VisitedLinkEventListener::VisitedLinkEventListener() {
+}
+
+VisitedLinkEventListener::~VisitedLinkEventListener() {
+}
+
 void VisitedLinkEventListener::NewTable(base::SharedMemory* table_memory) {
   if (!table_memory)
     return;

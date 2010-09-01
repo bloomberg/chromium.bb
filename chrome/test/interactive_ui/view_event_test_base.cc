@@ -99,6 +99,10 @@ void ViewEventTestBase::TearDown() {
 #endif
 }
 
+bool ViewEventTestBase::CanResize() const {
+  return true;
+}
+
 views::View* ViewEventTestBase::GetContentsView() {
   if (!content_view_) {
     // Wrap the real view (as returned by CreateContentsView) in a View so
@@ -109,6 +113,9 @@ views::View* ViewEventTestBase::GetContentsView() {
     content_view_ = test_view;
   }
   return content_view_;
+}
+
+ViewEventTestBase::~ViewEventTestBase() {
 }
 
 void ViewEventTestBase::StartMessageLoopAndRunTest() {
