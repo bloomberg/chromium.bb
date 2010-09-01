@@ -870,9 +870,9 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
   def testRest(self):
     self.gclient(['sync'])
     # TODO(maruel): This is incorrect, it should run on ./ too.
-    out = self.parseGclient(['cleanup', '--deps', 'mac'],
+    out = self.parseGclient(['cleanup', '--deps', 'mac', '--verbose'],
                             [('running', join(self.root_dir, 'foo', 'bar'))])
-    out = self.parseGclient(['diff', '--deps', 'mac'],
+    out = self.parseGclient(['diff', '--deps', 'mac', '--verbose'],
                             [('running', join(self.root_dir, 'foo', 'bar'))])
 
 

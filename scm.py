@@ -306,12 +306,6 @@ class SVN(object):
   current_version = None
 
   @staticmethod
-  def Run(args, **kwargs):
-    """Wrappers to gclient_utils.CheckCallAndFilterAndHeader()."""
-    return gclient_utils.CheckCallAndFilterAndHeader(['svn'] + args,
-        always=True, **kwargs)
-
-  @staticmethod
   def Capture(args, in_directory=None, print_error=True):
     """Runs svn, capturing output sent to stdout as a string.
 

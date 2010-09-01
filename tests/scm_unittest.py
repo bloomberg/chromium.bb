@@ -161,7 +161,7 @@ class SVNTestCase(BaseSCMTestCase):
         'CaptureHeadRevision', 'CaptureInfo', 'CaptureStatus',
         'current_version', 'DiffItem', 'GenerateDiff',
         'GetCheckoutRoot', 'GetEmail', 'GetFileProperty', 'IsMoved',
-        'IsMovedInfo', 'ReadSimpleAuth', 'Run', 'RunAndGetFileList',
+        'IsMovedInfo', 'ReadSimpleAuth', 'RunAndGetFileList',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.SVN, members)
@@ -310,14 +310,6 @@ class SVNTestCase(BaseSCMTestCase):
       ('C      ', 'scripts\\master\\factory\\gclient_factory.py'),
     ]
     self.assertEquals(sorted(info), sorted(expected))
-
-  def testRun(self):
-    param2 = 'bleh'
-    scm.gclient_utils.CheckCallAndFilterAndHeader(
-        ['svn', 'foo', 'bar'], cwd=param2,
-        always=True).AndReturn(None)
-    self.mox.ReplayAll()
-    scm.SVN.Run(['foo', 'bar'], cwd=param2)
 
   def testCaptureStatusEmpty(self):
     text = r"""<?xml version="1.0"?>

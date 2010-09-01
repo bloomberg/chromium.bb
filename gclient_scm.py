@@ -670,15 +670,14 @@ class SVNWrapper(SCMWrapper):
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
-    scm.SVN.Run(['cleanup'] + args,
-                cwd=os.path.join(self._root_dir, self.relpath))
+    self._Run(['cleanup'] + args, options)
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
       raise gclient_utils.Error('Directory %s is not present.' % path)
-    scm.SVN.Run(['diff'] + args, cwd=path)
+    self._Run(['diff'] + args, options)
 
   def export(self, options, args, file_list):
     """Export a clean directory tree into the given path."""
@@ -689,8 +688,7 @@ class SVNWrapper(SCMWrapper):
     except OSError:
       pass
     assert os.path.exists(export_path)
-    scm.SVN.Run(['export', '--force', '.', export_path],
-                cwd=os.path.join(self._root_dir, self.relpath))
+    self._Run(['export', '--force', '.', export_path], options)
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
@@ -745,8 +743,7 @@ class SVNWrapper(SCMWrapper):
       # We need to checkout.
       command = ['checkout', url, checkout_path]
       command = self._AddAdditionalUpdateFlags(command, options, revision)
-      scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
-          file_list)
+      self._RunAndGetFileList(command, options, file_list, self._root_dir)
       return
 
     # Get the existing scm url and the revision number of the current checkout.
@@ -761,7 +758,7 @@ class SVNWrapper(SCMWrapper):
     dir_info = scm.SVN.CaptureStatus(os.path.join(checkout_path, '.'))
     if [True for d in dir_info if d[0][2] == 'L' and d[1] == checkout_path]:
       # The current directory is locked, clean it up.
-      scm.SVN.Run(['cleanup'], cwd=checkout_path)
+      self._Run(['cleanup'], options)
 
     # Retrieve the current HEAD version because svn is slow at null updates.
     if options.manually_grab_svn_rev and not revision:
@@ -793,7 +790,7 @@ class SVNWrapper(SCMWrapper):
                    from_info['Repository Root'],
                    to_info['Repository Root'],
                    self.relpath]
-        scm.SVN.Run(command, cwd=self._root_dir)
+        self._Run(command, options, cwd=self._root_dir)
         from_info['URL'] = from_info['URL'].replace(
             from_info['Repository Root'],
             to_info['Repository Root'])
@@ -812,8 +809,7 @@ class SVNWrapper(SCMWrapper):
         # We need to checkout.
         command = ['checkout', url, checkout_path]
         command = self._AddAdditionalUpdateFlags(command, options, revision)
-        scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
-            file_list)
+        self._RunAndGetFileList(command, options, file_list, self._root_dir)
         return
 
     # If the provided url has a revision number that matches the revision
@@ -825,8 +821,7 @@ class SVNWrapper(SCMWrapper):
 
     command = ['update', checkout_path]
     command = self._AddAdditionalUpdateFlags(command, options, revision)
-    scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
-        file_list)
+    self._RunAndGetFileList(command, options, file_list, self._root_dir)
 
   def updatesingle(self, options, args, file_list):
     checkout_path = os.path.join(self._root_dir, self.relpath)
@@ -836,12 +831,11 @@ class SVNWrapper(SCMWrapper):
         # Create an empty checkout and then update the one file we want.  Future
         # operations will only apply to the one file we checked out.
         command = ["checkout", "--depth", "empty", self.url, checkout_path]
-        scm.SVN.Run(command, cwd=self._root_dir)
+        self._Run(command, options, cwd=self._root_dir)
         if os.path.exists(os.path.join(checkout_path, filename)):
           os.remove(os.path.join(checkout_path, filename))
         command = ["update", filename]
-        scm.SVN.RunAndGetFileList(options.verbose, command, checkout_path,
-            file_list)
+        self._RunAndGetFileList(command, options, file_list)
       # After the initial checkout, we can use update as if it were any other
       # dep.
       self.update(options, args, file_list)
@@ -856,7 +850,7 @@ class SVNWrapper(SCMWrapper):
                  os.path.join(checkout_path, filename)]
       command = self._AddAdditionalUpdateFlags(command, options,
           options.revision)
-      scm.SVN.Run(command, cwd=self._root_dir)
+      self._Run(command, options, cwd=self._root_dir)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications. Subversion specific.
@@ -919,9 +913,8 @@ class SVNWrapper(SCMWrapper):
     try:
       # svn revert is so broken we don't even use it. Using
       # "svn up --revision BASE" achieve the same effect.
-      scm.SVN.RunAndGetFileList(options.verbose,
-                                ['update', '--revision', 'BASE'], path,
-                                file_list)
+      self._RunAndGetFileList(['update', '--revision', 'BASE'], options,
+          file_list)
     except OSError, e:
       # Maybe the directory disapeared meanwhile. We don't want it to throw an
       # exception.
@@ -937,8 +930,7 @@ class SVNWrapper(SCMWrapper):
   def status(self, options, args, file_list):
     """Display status information."""
     path = os.path.join(self._root_dir, self.relpath)
-    command = ['status']
-    command.extend(args)
+    command = ['status'] + args
     if not os.path.isdir(path):
       # svn status won't work if the directory doesn't exist.
       print("\n________ couldn't run \'%s\' in \'%s\':\nThe directory "
@@ -946,11 +938,23 @@ class SVNWrapper(SCMWrapper):
             % (' '.join(command), path))
       # There's no file list to retrieve.
     else:
-      scm.SVN.RunAndGetFileList(options.verbose, command, path, file_list)
+      self._RunAndGetFileList(command, options, file_list)
 
   def FullUrlForRelativeUrl(self, url):
     # Find the forth '/' and strip from there. A bit hackish.
     return '/'.join(self.url.split('/')[:4]) + url
+
+  def _Run(self, args, options, **kwargs):
+    """Runs a commands that goes to stdout."""
+    kwargs.setdefault('cwd', os.path.join(self._root_dir, self.relpath))
+    gclient_utils.CheckCallAndFilterAndHeader(['svn'] + args,
+        always=options.verbose, stdout=options.stdout, **kwargs)
+
+  def _RunAndGetFileList(self, args, options, file_list, cwd=None):
+    """Runs a commands that goes to stdout and grabs the file listed."""
+    cwd = cwd or os.path.join(self._root_dir, self.relpath)
+    scm.SVN.RunAndGetFileList(options.verbose, args, cwd=cwd,
+        file_list=file_list, stdout=options.stdout)
 
   @staticmethod
   def _AddAdditionalUpdateFlags(command, options, revision):
