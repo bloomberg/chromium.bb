@@ -448,11 +448,15 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       splice_index = command.index('$matching_files')
       command[splice_index:splice_index + 1] = matching_file_list
 
-    # Use a discrete exit status code of 2 to indicate that a hook action
-    # failed.  Users of this script may wish to treat hook action failures
-    # differently from VC failures.
-    return gclient_utils.SubprocessCall(command, cwd=self.root_dir(),
-        fail_status=2)
+    try:
+      gclient_utils.CheckCallAndFilterAndHeader(
+          command, cwd=self.root_dir(), always=True)
+    except gclient_utils.Error, e:
+      # Use a discrete exit status code of 2 to indicate that a hook action
+      # failed.  Users of this script may wish to treat hook action failures
+      # differently from VC failures.
+      print >> sys.stderr, 'Error: %s' % str(e)
+      sys.exit(2)
 
   def root_dir(self):
     return self.parent.root_dir()

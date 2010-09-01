@@ -118,6 +118,7 @@ def GetNodeNamedAttributeText(node, node_name, attribute_name):
 
 class Error(Exception):
   """gclient exception class."""
+  # TODO(maruel): Merge with CheckCallError.
   pass
 
 
@@ -251,54 +252,56 @@ def RemoveDirectory(*path):
     os.rmdir(file_path)
 
 
-def SubprocessCall(args, **kwargs):
-  """Wraps SubprocessCallAndFilter() with different default arguments.
+def CheckCallAndFilterAndHeader(args, always=False, **kwargs):
+  """Adds 'header' support to CheckCallAndFilter.
 
-  Calls subprocess and capture nothing."""
-  kwargs['print_messages'] = True
-  kwargs['print_stdout'] = True
-  return SubprocessCallAndFilter(args, **kwargs)
-
-
-def SubprocessCallAndFilter(args, **kwargs):
-  """Runs a command and prints a header line if appropriate.
-
-  If |print_messages| is True, a message indicating what is being done
-  is printed to stdout. Otherwise the message is printed only if the call
-  generated any ouput. If both |print_messages| and |print_stdout| are False,
-  no output at all is generated.
-
-  If |print_stdout| is True, the command's stdout is also forwarded to stdout.
-
-  If |filter_fn| function is specified, it is expected to take a single
-  string argument, and it will be called with each line of the
-  subprocess's output. Each line has had the trailing newline character
-  trimmed.
-
-  If the command fails, as indicated by a nonzero exit status, gclient will
-  exit with an exit status of fail_status. If fail_status is None (the
-  default), gclient will raise an Error exception.
-
-  Other subprocess.Popen parameters can be specified.
+  If |always| is True, a message indicating what is being done
+  is printed to stdout all the time even if not output is generated. Otherwise
+  the message header is printed only if the call generated any ouput.
   """
-  stdout = kwargs.pop('stdout', sys.stdout) or sys.stdout
-  assert not 'stderr' in kwargs
-  filter_fn = kwargs.pop('filter_fn', None)
-  print_messages = kwargs.pop('print_messages', False)
-  print_stdout = kwargs.pop('print_stdout', False)
-  fail_status = kwargs.pop('fail_status', None)
-
-  logging.debug(args)
-  if print_messages:
+  stdout = kwargs.get('stdout', None) or sys.stdout
+  if always:
     stdout.write('\n________ running \'%s\' in \'%s\'\n'
-          % (' '.join(args), kwargs['cwd']))
+        % (' '.join(args), kwargs.get('cwd', '.')))
+  else:
+    filter_fn = kwargs.get('filter_fn', None)
+    def filter_msg(line):
+      if line is None:
+        stdout.write('\n________ running \'%s\' in \'%s\'\n'
+            % (' '.join(args), kwargs.get('cwd', '.')))
+      elif filter_fn:
+        filter_fn(line)
+    kwargs['filter_fn'] = filter_msg
+    kwargs['call_filter_on_first_line'] = True
+  # Obviously.
+  kwargs['print_stdout'] = True
+  return CheckCallAndFilter(args, **kwargs)
 
+
+def CheckCallAndFilter(args, stdout=None, filter_fn=None,
+                       print_stdout=None, call_filter_on_first_line=False,
+                       **kwargs):
+  """Runs a command and calls back a filter function if needed.
+
+  Accepts all subprocess.Popen() parameters plus:
+    print_stdout: If True, the command's stdout is forwarded to stdout.
+    filter_fn: A function taking a single string argument called with each line
+               of the subprocess's output. Each line has the trailing newline
+               character trimmed.
+    stdout: Can be any bufferable output.
+
+  stderr is always redirected to stdout.
+  """
+  assert print_stdout or filter_fn
+  stdout = stdout or sys.stdout
+  filter_fn = filter_fn or (lambda x: None)
+  assert not 'stderr' in kwargs
+  logging.debug(args)
   kid = Popen(args, bufsize=0,
               stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
               **kwargs)
 
-  # Do a flush of sys.stdout before we begin reading from the subprocess's
-  # stdout.
+  # Do a flush of stdout before we begin reading from the subprocess's stdout
   last_flushed_at = time.time()
   stdout.flush()
 
@@ -307,40 +310,34 @@ def SubprocessCallAndFilter(args, **kwargs):
   # normally buffering is done for each line, but if svn requests input, no
   # end-of-line character is output after the prompt and it would not show up.
   in_byte = kid.stdout.read(1)
-  in_line = ''
-  while in_byte:
-    if in_byte != '\r':
-      if print_stdout:
-        if not print_messages:
-          stdout.write('\n________ running \'%s\' in \'%s\'\n'
-              % (' '.join(args), kwargs['cwd']))
-          print_messages = True
-        stdout.write(in_byte)
-      if in_byte != '\n':
-        in_line += in_byte
-    if in_byte == '\n':
-      if filter_fn:
-        filter_fn(in_line)
-      in_line = ''
-      # Flush at least 10 seconds between line writes.  We wait at least 10
-      # seconds to avoid overloading the reader that called us with output,
-      # which can slow busy readers down.
-      if (time.time() - last_flushed_at) > 10:
-        last_flushed_at = time.time()
-        stdout.flush()
-    in_byte = kid.stdout.read(1)
-  # Flush the rest of buffered output. This is only an issue with files not
-  # ending with a \n.
-  if len(in_line) and filter_fn:
-    filter_fn(in_line)
+  if in_byte:
+    if call_filter_on_first_line:
+      filter_fn(None)
+    in_line = ''
+    while in_byte:
+      if in_byte != '\r':
+        if print_stdout:
+          stdout.write(in_byte)
+        if in_byte != '\n':
+          in_line += in_byte
+        else:
+          filter_fn(in_line)
+          in_line = ''
+          # Flush at least 10 seconds between line writes.  We wait at least 10
+          # seconds to avoid overloading the reader that called us with output,
+          # which can slow busy readers down.
+          if (time.time() - last_flushed_at) > 10:
+            last_flushed_at = time.time()
+            stdout.flush()
+      in_byte = kid.stdout.read(1)
+    # Flush the rest of buffered output. This is only an issue with
+    # stdout/stderr not ending with a \n.
+    if len(in_line):
+      filter_fn(in_line)
   rv = kid.wait()
-
   if rv:
-    msg = 'failed to run command: %s' % ' '.join(args)
-    if fail_status != None:
-      sys.stderr.write(msg + '\n')
-      sys.exit(fail_status)
-    raise Error(msg)
+    raise Error('failed to run command: %s' % ' '.join(args))
+  return 0
 
 
 def FindGclientRoot(from_dir, filename='.gclient'):

@@ -32,9 +32,9 @@ class GCBaseTestCase(SuperMoxTestBase):
 class BaseTestCase(GCBaseTestCase):
   def setUp(self):
     GCBaseTestCase.setUp(self)
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCallAndFilter')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'SubprocessCall')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'RemoveDirectory')
     self._CaptureSVNInfo = gclient_scm.scm.SVN.CaptureInfo
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')

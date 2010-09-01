@@ -29,8 +29,8 @@ class BaseSCMTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
     self.mox.StubOutWithMock(scm.gclient_utils, 'Popen')
-    self.mox.StubOutWithMock(scm.gclient_utils, 'SubprocessCall')
-    self.mox.StubOutWithMock(scm.gclient_utils, 'SubprocessCallAndFilter')
+    self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCallAndFilter')
+    self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCallAndFilterAndHeader')
 
 
 class RootTestCase(BaseSCMTestCase):
@@ -129,12 +129,11 @@ from :3
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'COMMAND', 'AssertVersion', 'Capture', 'CaptureStatus',
+        'AssertVersion', 'Capture', 'CaptureStatus',
         'FetchUpstreamTuple',
         'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
         'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
-        'GetUpstreamBranch', 'IsGitSvn', 'RunAndFilterOutput',
-        'ShortBranchName',
+        'GetUpstreamBranch', 'IsGitSvn', 'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.GIT, members)
@@ -158,12 +157,11 @@ class SVNTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'COMMAND', 'AssertVersion', 'Capture', 'CaptureBaseRevision',
+        'AssertVersion', 'Capture', 'CaptureBaseRevision',
         'CaptureHeadRevision', 'CaptureInfo', 'CaptureStatus',
         'current_version', 'DiffItem', 'GenerateDiff',
         'GetCheckoutRoot', 'GetEmail', 'GetFileProperty', 'IsMoved',
-        'IsMovedInfo', 'ReadSimpleAuth', 'Run', 'RunAndFilterOutput',
-        'RunAndGetFileList',
+        'IsMovedInfo', 'ReadSimpleAuth', 'Run', 'RunAndGetFileList',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.SVN, members)
@@ -315,8 +313,9 @@ class SVNTestCase(BaseSCMTestCase):
 
   def testRun(self):
     param2 = 'bleh'
-    scm.gclient_utils.SubprocessCall(['svn', 'foo', 'bar'],
-                                     cwd=param2).AndReturn(None)
+    scm.gclient_utils.CheckCallAndFilterAndHeader(
+        ['svn', 'foo', 'bar'], cwd=param2,
+        always=True).AndReturn(None)
     self.mox.ReplayAll()
     scm.SVN.Run(['foo', 'bar'], cwd=param2)
 

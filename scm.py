@@ -65,8 +65,6 @@ def GenFakeDiff(filename):
 
 
 class GIT(object):
-  COMMAND = "git"
-
   @staticmethod
   def Capture(args, in_directory=None, print_error=True, error_ok=False):
     """Runs git, capturing output sent to stdout as a string.
@@ -78,10 +76,8 @@ class GIT(object):
     Returns:
       The output sent to stdout as a string.
     """
-    c = [GIT.COMMAND]
-    c.extend(args)
     try:
-      return gclient_utils.CheckCall(c, in_directory, print_error)
+      return gclient_utils.CheckCall(['git'] + args, in_directory, print_error)
     except gclient_utils.CheckCallError:
       if error_ok:
         return ('', '')
@@ -115,11 +111,6 @@ class GIT(object):
           raise Exception("status currently unsupported: %s" % statusline)
         results.append(('%s      ' % m.group(1), m.group(2)))
     return results
-
-  @staticmethod
-  def RunAndFilterOutput(args, **kwargs):
-    """Wrapper to gclient_utils.SubprocessCallAndFilter()."""
-    return gclient_utils.SubprocessCallAndFilter([GIT.COMMAND] + args, **kwargs)
 
   @staticmethod
   def GetEmail(repo_root):
@@ -312,13 +303,13 @@ class GIT(object):
 
 
 class SVN(object):
-  COMMAND = "svn"
   current_version = None
 
   @staticmethod
   def Run(args, **kwargs):
-    """Wrappers to gclient_utils.SubprocessCall()."""
-    return gclient_utils.SubprocessCall([SVN.COMMAND] + args, **kwargs)
+    """Wrappers to gclient_utils.CheckCallAndFilterAndHeader()."""
+    return gclient_utils.CheckCallAndFilterAndHeader(['svn'] + args,
+        always=True, **kwargs)
 
   @staticmethod
   def Capture(args, in_directory=None, print_error=True):
@@ -331,13 +322,11 @@ class SVN(object):
     Returns:
       The output sent to stdout as a string.
     """
-    c = [SVN.COMMAND]
-    c.extend(args)
     stderr = None
     if not print_error:
       stderr = subprocess.PIPE
-    return gclient_utils.Popen(c, cwd=in_directory, stdout=subprocess.PIPE,
-        stderr=stderr).communicate()[0]
+    return gclient_utils.Popen(['svn'] + args, cwd=in_directory,
+        stdout=subprocess.PIPE, stderr=stderr).communicate()[0]
 
   @staticmethod
   def RunAndGetFileList(verbose, args, cwd, file_list, stdout=None):
@@ -393,10 +382,12 @@ class SVN(object):
           failure.append(line)
 
       try:
-        SVN.RunAndFilterOutput(args, cwd=cwd, print_messages=verbose,
-                               print_stdout=True,
-                               filter_fn=CaptureMatchingLines,
-                               stdout=stdout)
+        gclient_utils.CheckCallAndFilterAndHeader(
+            ['svn'] + args,
+            cwd=cwd,
+            always=verbose,
+            filter_fn=CaptureMatchingLines,
+            stdout=stdout)
       except gclient_utils.Error:
         def IsKnownFailure():
           for x in failure:
@@ -436,11 +427,6 @@ class SVN(object):
         time.sleep(15)
         continue
       break
-
-  @staticmethod
-  def RunAndFilterOutput(args, **kwargs):
-    """Wrapper for gclient_utils.SubprocessCallAndFilter()."""
-    return gclient_utils.SubprocessCallAndFilter([SVN.COMMAND] + args, **kwargs)
 
   @staticmethod
   def CaptureInfo(relpath, in_directory=None, print_error=True):

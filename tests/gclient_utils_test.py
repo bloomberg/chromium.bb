@@ -15,19 +15,20 @@ class GclientUtilBase(SuperMoxTestBase):
   def setUp(self):
     super(GclientUtilBase, self).setUp()
     gclient_utils.sys.stdout.flush = lambda: None
+    self.mox.StubOutWithMock(gclient_utils, 'Popen')
 
 
 class GclientUtilsUnittest(GclientUtilBase):
   """General gclient_utils.py tests."""
   def testMembersChanged(self):
     members = [
-        'CheckCall', 'CheckCallError', 'Error', 'ExecutionQueue', 'FileRead',
+        'CheckCall', 'CheckCallError', 'CheckCallAndFilter',
+        'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'GetNamedNodeText',
         'GetNodeNamedAttributeText', 'PathDifference', 'ParseXML', 'Popen',
         'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
-        'SubprocessCall', 'SubprocessCallAndFilter', 'SyntaxErrorToError',
-        'WorkItem',
+        'SyntaxErrorToError', 'WorkItem',
         'errno', 'logging', 'os', 're', 'stat', 'subprocess', 'sys',
         'threading', 'time', 'xml',
     ]
@@ -40,14 +41,10 @@ class CheckCallTestCase(GclientUtilBase):
     args = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
     process.returncode = 0
-    env = gclient_utils.os.environ.copy()
-    env['LANGUAGE'] = 'en'
-    gclient_utils.subprocess.Popen(
+    gclient_utils.Popen(
         args, cwd=None,
         stderr=None,
-        env=env,
-        stdout=gclient_utils.subprocess.PIPE,
-        shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
+        stdout=gclient_utils.subprocess.PIPE).AndReturn(process)
     process.communicate().AndReturn(['bleh', 'foo'])
     self.mox.ReplayAll()
     gclient_utils.CheckCall(args)
@@ -56,14 +53,10 @@ class CheckCallTestCase(GclientUtilBase):
     args = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
     process.returncode = 42
-    env = gclient_utils.os.environ.copy()
-    env['LANGUAGE'] = 'en'
-    gclient_utils.subprocess.Popen(
+    gclient_utils.Popen(
         args, cwd=None,
         stderr=None,
-        env=env,
-        stdout=gclient_utils.subprocess.PIPE,
-        shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
+        stdout=gclient_utils.subprocess.PIPE).AndReturn(process)
     process.communicate().AndReturn(['bleh', 'foo'])
     self.mox.ReplayAll()
     try:
@@ -77,7 +70,7 @@ class CheckCallTestCase(GclientUtilBase):
       self.assertEqual(e.stderr, 'foo')
 
 
-class SubprocessCallAndFilterTestCase(GclientUtilBase):
+class CheckCallAndFilterTestCase(GclientUtilBase):
   class ProcessIdMock(object):
     def __init__(self, test_string):
       self.stdout = StringIO.StringIO(test_string)
@@ -86,17 +79,13 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
 
   def _inner(self, args, test_string):
     cwd = 'bleh'
-    env = gclient_utils.os.environ.copy()
-    env['LANGUAGE'] = 'en'
     gclient_utils.sys.stdout.write(
         '\n________ running \'boo foo bar\' in \'bleh\'\n')
     for i in test_string:
       gclient_utils.sys.stdout.write(i)
-    gclient_utils.subprocess.Popen(
+    gclient_utils.Popen(
         args,
         cwd=cwd,
-        shell=(gclient_utils.sys.platform == 'win32'),
-        env=env,
         stdout=gclient_utils.subprocess.PIPE,
         stderr=gclient_utils.subprocess.STDOUT,
         bufsize=0).AndReturn(self.ProcessIdMock(test_string))
@@ -107,22 +96,22 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
     capture_list = []
     def FilterLines(line):
       line_list.append(line)
+      assert isinstance(line, str), type(line)
       match = compiled_pattern.search(line)
       if match:
         capture_list.append(match.group(1))
-    gclient_utils.SubprocessCallAndFilter(
-        args, cwd=cwd, print_messages=True, print_stdout=True,
-        filter_fn=FilterLines)
+    gclient_utils.CheckCallAndFilterAndHeader(
+        args, cwd=cwd, always=True, filter_fn=FilterLines)
     self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb'])
     self.assertEquals(capture_list, ['cc', 'dd'])
 
-  def testSubprocessCallAndFilter(self):
+  def testCheckCallAndFilter(self):
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n'
     self._inner(args, test_string)
 
   def testNoLF(self):
-    # Exactly as testSubprocessCallAndFilter without trailing \n
+    # Exactly as testCheckCallAndFilterAndHeader without trailing \n
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb'
     self._inner(args, test_string)

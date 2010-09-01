@@ -152,10 +152,10 @@ class GitWrapper(SCMWrapper):
     """
     path = os.path.join(self._root_dir, self.relpath)
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
-    command = ['diff', merge_base]
+    command = ['git', 'diff', merge_base]
     filterer = DiffFilterer(self.relpath)
-    scm.GIT.RunAndFilterOutput(command, cwd=path, filter_fn=filterer.Filter,
-        stdout=options.stdout)
+    gclient_utils.CheckCallAndFilter(
+        command, cwd=path, filter_fn=filterer.Filter, stdout=options.stdout)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -650,8 +650,7 @@ class GitWrapper(SCMWrapper):
       stdout = subprocess.PIPE
     if cwd == None:
       cwd = self.checkout_path
-    cmd = [scm.GIT.COMMAND]
-    cmd.extend(args)
+    cmd = ['git'] + args
     logging.debug(cmd)
     try:
       sp = gclient_utils.Popen(cmd, cwd=cwd, stdout=stdout)
@@ -699,11 +698,11 @@ class SVNWrapper(SCMWrapper):
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
       raise gclient_utils.Error('Directory %s is not present.' % path)
-    command = ['diff', '-x', '--ignore-eol-style']
+    command = ['svn', 'diff', '-x', '--ignore-eol-style']
     command.extend(args)
 
     filterer = DiffFilterer(self.relpath)
-    scm.SVN.RunAndFilterOutput(command, cwd=path, print_messages=False,
+    gclient_utils.CheckCallAndFilter(command, cwd=path, always=False,
         print_stdout=False, filter_fn=filterer.Filter,
         stdout=options.stdout)
 
