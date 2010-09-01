@@ -333,6 +333,7 @@ extern const char kChromeosFrame[];
 extern const char kChromeosLogToFile[];
 extern const char kBWSI[];
 extern const char kStubCros[];
+extern const char kScreenSaverUrl[];
 #endif
 
 #if defined(OS_LINUX)

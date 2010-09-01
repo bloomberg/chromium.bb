@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "views/accelerator.h"
 
 namespace gfx {
 class Rect;
@@ -24,7 +25,9 @@ class WidgetGtk;
 namespace chromeos {
 
 class Authenticator;
+class BackgroundView;
 class InputEventObserver;
+class LockerInputEventObserver;
 class MessageBubble;
 class MouseEventRelay;
 class ScreenLockView;
@@ -38,7 +41,8 @@ class ScreenLockerTester;
 // authenticate the user. ScreenLocker manages its life cycle and will
 // delete itself when it's unlocked.
 class ScreenLocker : public LoginStatusConsumer,
-                     public MessageBubbleDelegate {
+                     public MessageBubbleDelegate,
+                     public views::AcceleratorTarget {
  public:
   explicit ScreenLocker(const UserManager::User& user);
 
@@ -97,6 +101,7 @@ class ScreenLocker : public LoginStatusConsumer,
  private:
   friend class DeleteTask<ScreenLocker>;
   friend class test::ScreenLockerTester;
+  friend class LockerInputEventObserver;
 
   virtual ~ScreenLocker();
 
@@ -109,6 +114,15 @@ class ScreenLocker : public LoginStatusConsumer,
   // Called when the window manager is ready to handle locked state.
   void OnWindowManagerReady();
 
+  // Stops screen saver.
+  void StopScreenSaver();
+
+  // Starts screen saver.
+  void StartScreenSaver();
+
+  // Overridden from AcceleratorTarget:
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+
   // Event handler for client-event.
   CHROMEGTK_CALLBACK_1(ScreenLocker, void, OnClientEvent, GdkEventClient*);
 
@@ -120,6 +134,9 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // A view that accepts password.
   ScreenLockView* screen_lock_view_;
+
+  // A view that can display html page as background.
+  BackgroundView* background_view_;
 
   // Logged in user.
   UserManager::User user_;
@@ -136,6 +153,10 @@ class ScreenLocker : public LoginStatusConsumer,
   // A message loop observer to detect user's keyboard/mouse event.
   // Used when |unlock_on_input_| is true.
   scoped_ptr<InputEventObserver> input_event_observer_;
+
+  // A message loop observer to detect user's keyboard/mouse event.
+  // Used when to show the screen locker upon such an event.
+  scoped_ptr<LockerInputEventObserver> locker_input_event_observer_;
 
   // An info bubble to display login failure message.
   MessageBubble* error_info_;

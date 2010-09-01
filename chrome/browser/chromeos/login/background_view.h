@@ -19,6 +19,8 @@ class Label;
 class TextButton;
 }
 
+class DOMView;
+class GURL;
 class Profile;
 
 namespace chromeos {
@@ -55,6 +57,10 @@ class BackgroundView : public views::View,
 
   BackgroundView();
 
+  // Initializes the background view. It backgroun_url is given (non empty),
+  // it creates a DOMView background area that renders a webpage.
+  void Init(const GURL& background_url);
+
   // Creates a window containing an instance of WizardContentsView as the root
   // view. The caller is responsible for showing (and closing) the returned
   // widget. The BackgroundView is set in |view|.
@@ -75,6 +81,18 @@ class BackgroundView : public views::View,
 
   // Toggles GoIncognito button visibility.
   void SetGoIncognitoButtonVisible(bool visible, Delegate *delegate);
+
+  // Shows screen saver.
+  void ShowScreenSaver();
+
+  // Hides screen saver.
+  void HideScreenSaver();
+
+  // Tells if screen saver is visible.
+  bool IsScreenSaverVisible();
+
+  // Tells if screen saver is enabled.
+  bool ScreenSaverEnabled();
 
  protected:
   // Overridden from views::View:
@@ -119,6 +137,7 @@ class BackgroundView : public views::View,
   void OnBootTimes(
       BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times);
 
+  // All of these variables could be NULL.
   StatusAreaView* status_area_;
   views::Label* os_version_label_;
   views::Label* boot_times_label_;
@@ -141,6 +160,9 @@ class BackgroundView : public views::View,
   bool did_paint_;
 
   Delegate *delegate_;
+
+  // DOMView for rendering a webpage as a background.
+  DOMView* background_area_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };

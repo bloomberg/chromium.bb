@@ -1159,6 +1159,9 @@ const char kBWSI[]                          = "bwsi";
 // Indicates that stub implementations of the libcros library should be used.
 // This is typically used to test the chromeos build of chrome on the desktop.
 const char kStubCros[]                      = "stub-cros";
+
+// URL of the html page for Screen Saver.
+const char kScreenSaverUrl[]                = "screen-saver-url";
 #endif
 
 #if defined(OS_LINUX)

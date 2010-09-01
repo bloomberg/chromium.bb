@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -20,7 +21,11 @@
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/dom_view.h"
 #include "cros/chromeos_wm_ipc_enums.h"
+#include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -62,9 +67,23 @@ class TextButtonWithHandCursorOver : public views::TextButton {
   DISALLOW_COPY_AND_ASSIGN(TextButtonWithHandCursorOver);
 };
 
+// This gets rid of the ugly X default cursor.
+static void ResetXCursor() {
+  // TODO(sky): nuke this once new window manager is in place.
+  Display* display = x11_util::GetXDisplay();
+  Cursor cursor = XCreateFontCursor(display, XC_left_ptr);
+  XID root_window = x11_util::GetX11RootWindow();
+  XSetWindowAttributes attr;
+  attr.cursor = cursor;
+  XChangeWindowAttributes(display, root_window, CWCursor, &attr);
+}
+
 }  // namespace
 
 namespace chromeos {
+
+///////////////////////////////////////////////////////////////////////////////
+// BackgroundView public:
 
 BackgroundView::BackgroundView()
     : status_area_(NULL),
@@ -72,22 +91,23 @@ BackgroundView::BackgroundView()
       boot_times_label_(NULL),
       progress_bar_(NULL),
       go_incognito_button_(NULL),
-      did_paint_(false) {
+      did_paint_(false),
+      background_area_(NULL) {
+}
+
+void BackgroundView::Init(const GURL& background_url) {
   views::Painter* painter = CreateBackgroundPainter();
   set_background(views::Background::CreateBackgroundPainter(true, painter));
   InitStatusArea();
   InitInfoLabels();
-}
-
-static void ResetXCursor() {
-  // TODO(sky): nuke this once new window manager is in place.
-  // This gets rid of the ugly X default cursor.
-  Display* display = x11_util::GetXDisplay();
-  Cursor cursor = XCreateFontCursor(display, XC_left_ptr);
-  XID root_window = x11_util::GetX11RootWindow();
-  XSetWindowAttributes attr;
-  attr.cursor = cursor;
-  XChangeWindowAttributes(display, root_window, CWCursor, &attr);
+  if (!background_url.is_empty()) {
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    background_area_ = new DOMView();
+    AddChildView(background_area_);
+    background_area_->Init(profile, NULL);
+    background_area_->SetVisible(false);
+    background_area_->LoadURL(background_url);
+  }
 }
 
 // static
@@ -99,6 +119,7 @@ views::Widget* BackgroundView::CreateWindowContainingView(
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->Init(NULL, bounds);
   *view = new BackgroundView();
+  (*view)->Init(GURL());
   window->SetContentsView(*view);
 
   (*view)->UpdateWindowType();
@@ -113,6 +134,62 @@ views::Widget* BackgroundView::CreateWindowContainingView(
 void BackgroundView::SetStatusAreaVisible(bool visible) {
   status_area_->SetVisible(visible);
 }
+
+void BackgroundView::SetOobeProgressBarVisible(bool visible) {
+  if (!progress_bar_ && visible)
+    InitProgressBar();
+
+  if (progress_bar_)
+    progress_bar_->SetVisible(visible);
+}
+
+bool BackgroundView::IsOobeProgressBarVisible() {
+  return progress_bar_ && progress_bar_->IsVisible();
+}
+
+void BackgroundView::SetOobeProgress(LoginStep step) {
+  DCHECK(step <= PICTURE);
+  if (progress_bar_)
+    progress_bar_->SetProgress(step);
+}
+
+// Toggles GoIncognito button visibility.
+void BackgroundView::SetGoIncognitoButtonVisible(bool visible,
+                                                 Delegate *delegate) {
+  // Set delegate to handle button pressing.
+  delegate_ = delegate;
+  bool currently_visible =
+      go_incognito_button_ && go_incognito_button_->IsVisible();
+  if (currently_visible != visible) {
+    if (!go_incognito_button_) {
+      InitGoIncognitoButton();
+    }
+    go_incognito_button_->SetVisible(visible);
+  }
+}
+
+void BackgroundView::ShowScreenSaver() {
+  SetStatusAreaVisible(false);
+  background_area_->SetVisible(true);
+}
+
+void BackgroundView::HideScreenSaver() {
+  SetStatusAreaVisible(true);
+  // TODO(oshima): we need a way to suspend screen saver
+  // to save power when it's not visible.
+  background_area_->SetVisible(false);
+}
+
+bool BackgroundView::IsScreenSaverVisible() {
+  return ScreenSaverEnabled() && background_area_->IsVisible();
+}
+
+bool BackgroundView::ScreenSaverEnabled() {
+  return background_area_ != NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BackgroundView protected:
 
 void BackgroundView::Paint(gfx::Canvas* canvas) {
   views::View::Paint(canvas);
@@ -167,9 +244,17 @@ void BackgroundView::Layout() {
           go_button_size.width(),
           go_button_size.height());
   }
+  if (background_area_)
+    background_area_->SetBounds(this->bounds());
 }
 
 void BackgroundView::ChildPreferredSizeChanged(View* child) {
+  Layout();
+  SchedulePaint();
+}
+
+void BackgroundView::OnLocaleChanged() {
+  UpdateLocalizedStrings();
   Layout();
   SchedulePaint();
 }
@@ -212,11 +297,8 @@ void BackgroundView::ButtonPressed(views::Button* sender,
   }
 }
 
-void BackgroundView::OnLocaleChanged() {
-  UpdateLocalizedStrings();
-  Layout();
-  SchedulePaint();
-}
+///////////////////////////////////////////////////////////////////////////////
+// BackgroundView private:
 
 void BackgroundView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
@@ -309,39 +391,6 @@ void BackgroundView::InitGoIncognitoButton() {
 void BackgroundView::UpdateLocalizedStrings() {
   go_incognito_button_->SetText(
       UTF8ToWide(l10n_util::GetStringUTF8(IDS_GO_INCOGNITO_BUTTON)));
-}
-
-void BackgroundView::SetOobeProgressBarVisible(bool visible) {
-  if (!progress_bar_ && visible)
-    InitProgressBar();
-
-  if (progress_bar_)
-    progress_bar_->SetVisible(visible);
-}
-
-bool BackgroundView::IsOobeProgressBarVisible() {
-  return progress_bar_ && progress_bar_->IsVisible();
-}
-
-// Toggles GoIncognito button visibility.
-void BackgroundView::SetGoIncognitoButtonVisible(bool visible,
-                                                 Delegate *delegate) {
-  // Set delegate to handle button pressing.
-  delegate_ = delegate;
-  bool currently_visible =
-      go_incognito_button_ && go_incognito_button_->IsVisible();
-  if (currently_visible != visible) {
-    if (!go_incognito_button_) {
-      InitGoIncognitoButton();
-    }
-    go_incognito_button_->SetVisible(visible);
-  }
-}
-
-void BackgroundView::SetOobeProgress(LoginStep step) {
-  DCHECK(step <= PICTURE);
-  if (progress_bar_)
-    progress_bar_->SetProgress(step);
 }
 
 void BackgroundView::UpdateWindowType() {
