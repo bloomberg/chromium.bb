@@ -319,9 +319,9 @@ ThemeProvider* BaseTab::GetThemeProvider() {
 void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
                                       TabRendererData::NetworkState state) {
   static bool initialized = false;
-  static int loading_animation_frame_count = 0,
-      waiting_animation_frame_count = 0,
-      waiting_to_loading_frame_count_ratio = 0;
+  static int loading_animation_frame_count = 0;
+  static int waiting_animation_frame_count = 0;
+  static int waiting_to_loading_frame_count_ratio = 0;
   if (!initialized) {
     initialized = true;
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
