@@ -212,7 +212,7 @@ void ProfileSyncService::InitSettings() {
   LOG(INFO) << "Using " << sync_service_url_ << " for sync server URL.";
 
   use_chrome_async_socket_ =
-      command_line.HasSwitch(switches::kSyncUseChromeAsyncSocket);
+      !command_line.HasSwitch(switches::kSyncDisableChromeAsyncSocket);
   if (use_chrome_async_socket_) {
     LOG(INFO) << "Using ChromeAsyncSocket";
   }

@@ -985,6 +985,11 @@ const char kStartMaximized[]                = "start-maximized";
 // Control Sync XMPP client settings.
 const char kSyncAllowPlain[]                = "allow-plain";
 
+// Disable the Chrome-socket-based buzz::AsyncSocket implementation
+// for sync notifications, instead using libjingle sockets.
+const char kSyncDisableChromeAsyncSocket[]  =
+    "sync-disable-chrome-async-socket";
+
 // Control Sync XMPP client settings.
 const char kSyncDisableTls[]                = "disable-tls";
 
@@ -1011,10 +1016,6 @@ const char kSyncServer[]                    = "server";
 
 // Override the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
-
-// Use the (new, untested) Chrome-socket-based buzz::AsyncSocket
-// implementation for notifications.
-const char kSyncUseChromeAsyncSocket[]      = "sync-use-chrome-async-socket";
 
 // Control Sync XMPP client settings.
 const char kSyncUseSslTcp[]                 = "use-ssl-tcp";
