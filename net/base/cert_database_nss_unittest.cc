@@ -136,6 +136,16 @@ class CertDatabaseNSSTest : public testing::Test {
 // static
 bool CertDatabaseNSSTest::temp_db_initialized_ = false;
 
+TEST_F(CertDatabaseNSSTest, ListCerts) {
+  // This test isn't terribly useful, though it will at least let valgrind test
+  // for leaks.
+  CertificateList certs;
+  cert_db_.ListCerts(&certs);
+  // The test DB is empty, but let's assume there will always be something in
+  // the other slots.
+  EXPECT_LT(0U, certs.size());
+}
+
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12WrongPassword) {
   std::string pkcs12_data = ReadTestFile("client.p12");
 
