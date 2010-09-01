@@ -62,7 +62,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
 }
 
 // TODO(mpcomplete): http://code.google.com/p/chromium/issues/detail?id=38992
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
+// Disabled, http://crbug.com/38992.
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   BrowserActionsContainer::disable_animations_during_testing_ = true;
 
   // Load extension A (contains browser action).
