@@ -4070,5 +4070,48 @@
         "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
       }
     ]
+  },
+
+  {
+    "namespace":"webstorePrivate",
+    "nodoc": "true",
+    "functions": [
+      {
+        "name": "getSyncLogin",
+        "description": "Returns the logged-in sync user login if there is one, or the empty string otherwise.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              { "name": "login", "type": "string" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getStoreLogin",
+        "description": "Returns the previous value set by setStoreLogin, or the empty string if there is none.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              { "name": "login", "type": "string" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setStoreLogin",
+        "description": "Set a preference value with the store login.",
+        "parameters": [
+          { "name": "login", "type": "string" },
+          { "name": "callback", "type": "function", "optional": "true" }
+        ]
+      }
+    ]
   }
 ]

@@ -110,6 +110,7 @@ class Extension {
   static const char* kTabPermission;
   static const char* kUnlimitedStoragePermission;
   static const char* kNativeClientPermission;
+  static const char* kWebstorePrivatePermission;
 
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;

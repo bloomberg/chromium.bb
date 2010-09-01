@@ -49,6 +49,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/extension_tts_api.h"
 #endif
+#include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -279,6 +280,11 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetEnabledFunction>();
   RegisterFunction<InstallFunction>();
   RegisterFunction<UninstallFunction>();
+
+  // WebstorePrivate.
+  RegisterFunction<GetSyncLoginFunction>();
+  RegisterFunction<GetStoreLoginFunction>();
+  RegisterFunction<SetStoreLoginFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

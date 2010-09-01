@@ -160,6 +160,7 @@ const char* Extension::kProxyPermission = "proxy";
 const char* Extension::kTabPermission = "tabs";
 const char* Extension::kUnlimitedStoragePermission = "unlimitedStorage";
 const char* Extension::kNativeClientPermission = "nativeClient";
+const char* Extension::kWebstorePrivatePermission = "webstorePrivate";
 
 const char* Extension::kPermissionNames[] = {
   Extension::kBackgroundPermission,
@@ -175,6 +176,7 @@ const char* Extension::kPermissionNames[] = {
   Extension::kTabPermission,
   Extension::kUnlimitedStoragePermission,
   Extension::kNativeClientPermission,
+  Extension::kWebstorePrivatePermission,
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
@@ -184,7 +186,8 @@ const char* Extension::kHostedAppPermissionNames[] = {
   Extension::kGeolocationPermission,
   Extension::kNotificationPermission,
   Extension::kUnlimitedStoragePermission,
-  Extension::kNativeClientPermission
+  Extension::kNativeClientPermission,
+  Extension::kWebstorePrivatePermission,
 };
 const size_t Extension::kNumHostedAppPermissions =
     arraysize(Extension::kHostedAppPermissionNames);
@@ -1468,6 +1471,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermission, base::IntToString(i));
         return false;
+      }
+
+      // Only COMPONENT extensions can use the webstorePrivate APIs.
+      // TODO(asargent) - We want a more general purpose mechanism for this,
+      // and better error messages. (http://crbug.com/54013)
+      if (permission_str == kWebstorePrivatePermission &&
+          location_ != Extension::COMPONENT) {
+        continue;
       }
 
       // Remap the old unlimited storage permission name.

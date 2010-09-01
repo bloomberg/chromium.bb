@@ -75,6 +75,10 @@ const char kPrefIncognitoEnabled[] = "incognito";
 // pages with file URLs.
 const char kPrefAllowFileAccess[] = "allowFileAccess";
 
+// A preference set by the web store to indicate login information for
+// purchased apps.
+const char kWebStoreLogin[] = "extensions.webstore_login";
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -793,6 +797,18 @@ std::set<std::string> ExtensionPrefs::GetIdleInstallInfoIds() {
   return result;
 }
 
+bool ExtensionPrefs::GetWebStoreLogin(std::string* result) {
+  if (prefs_->HasPrefPath(kWebStoreLogin)) {
+    *result = prefs_->GetString(kWebStoreLogin);
+    return true;
+  }
+  return false;
+}
+
+void ExtensionPrefs::SetWebStoreLogin(const std::string& login) {
+  prefs_->SetString(kWebStoreLogin, login);
+  prefs_->ScheduleSavePersistentPrefs();
+}
 
 // static
 void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
@@ -802,4 +818,5 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
   prefs->RegisterListPref(kExtensionInstallAllowList);
   prefs->RegisterListPref(kExtensionInstallDenyList);
+  prefs->RegisterStringPref(kWebStoreLogin, std::string() /* default_value */);
 }

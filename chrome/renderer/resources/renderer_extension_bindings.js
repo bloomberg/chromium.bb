@@ -275,6 +275,7 @@ var chrome = chrome || {};
       "tabs",
       "test",
       "toolstrip",
+      "webstorePrivate",
       "windows",
 
       // Functions/events/properties within the extension namespace.
