@@ -4207,20 +4207,6 @@
    fun:_ZN14RenderViewHost25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
 }
 {
-   bug_53188
-   Memcheck:Addr4
-   ...
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelper20CancelAllConnectJobsEv
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelperD0Ev
-   fun:_ZN4base10RefCountedIN3net8internal26ClientSocketPoolBaseHelperEE7ReleaseEv
-   ...
-   fun:_ZN13scoped_refptrIN3net8internal26ClientSocketPoolBaseHelperEED*Ev
-   ...
-   fun:_ZN3net20ClientSocketPoolBaseINS_15TCPSocketParamsEED*Ev
-   fun:_ZN3net19TCPClientSocketPoolD0Ev
-   fun:_ZN4base10RefCountedIN3net16ClientSocketPoolEE7ReleaseEv
-}
-{
    bug_53277
    Memcheck:Leak
    fun:_Znw*
