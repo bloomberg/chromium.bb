@@ -160,8 +160,8 @@ TEST_F(OwnershipServiceTest, NotYetOwnedVerify) {
 
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
-  MockKeyUser delegate(OwnerManager::KEY_UNAVAILABLE);
-  delegate.dont_quit_on_callback();
+  // Create delegate that does not quit the message loop on callback.
+  MockKeyUser delegate(OwnerManager::KEY_UNAVAILABLE, false);
   service_->StartVerifyAttempt("", std::vector<uint8>(), &delegate);
 }
 

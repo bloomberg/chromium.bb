@@ -80,10 +80,12 @@ class MockKeyUser : public OwnerManager::Delegate {
       : expected_(expected),
         quit_on_callback_(true) {
   }
+  MockKeyUser(const OwnerManager::KeyOpCode expected, bool quit_on_callback)
+      : expected_(expected),
+        quit_on_callback_(quit_on_callback) {
+  }
 
   virtual ~MockKeyUser() {}
-
-  void dont_quit_on_callback() { quit_on_callback_ = false; }
 
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload) {
@@ -93,9 +95,34 @@ class MockKeyUser : public OwnerManager::Delegate {
   }
 
   const OwnerManager::KeyOpCode expected_;
-  bool quit_on_callback_;
+  const bool quit_on_callback_;
  private:
   DISALLOW_COPY_AND_ASSIGN(MockKeyUser);
+};
+
+class MockSigner : public OwnerManager::Delegate {
+ public:
+  MockSigner(const OwnerManager::KeyOpCode expected,
+             const std::vector<uint8>& sig)
+      : expected_code_(expected),
+        expected_sig_(sig) {
+  }
+
+  virtual ~MockSigner() {}
+
+  void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                       const std::vector<uint8>& payload) {
+    EXPECT_EQ(expected_code_, return_code);
+    for (uint32 i = 0; i < payload.size(); ++i)
+      EXPECT_EQ(expected_sig_[i], payload[i]);
+    MessageLoop::current()->Quit();
+  }
+
+  const OwnerManager::KeyOpCode expected_code_;
+  const std::vector<uint8> expected_sig_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSigner);
 };
 
 }  // namespace chromeos

@@ -194,8 +194,13 @@ bool OwnerKeyUtilsImpl::Verify(const std::string& data,
 bool OwnerKeyUtilsImpl::Sign(const std::string& data,
                              std::vector<uint8>* OUT_signature,
                              base::RSAPrivateKey* key) {
-  // TODO(cmasone): Add signing capabilities.
-  return true;
+  scoped_ptr<base::SignatureCreator> signer(
+      base::SignatureCreator::Create(key));
+  if (!signer->Update(reinterpret_cast<const uint8*>(data.c_str()),
+                      data.length())) {
+    return false;
+  }
+  return signer->Final(OUT_signature);
 }
 
 RSAPrivateKey* OwnerKeyUtilsImpl::FindPrivateKey(

@@ -287,4 +287,30 @@ TEST_F(OwnerManagerTest, GetKeyAndVerify) {
   message_loop_.Run();
 }
 
+TEST_F(OwnerManagerTest, AlreadyHaveKeysSign) {
+  scoped_refptr<OwnerManager> manager(new OwnerManager);
+
+  std::string data;
+  std::vector<uint8> sig(0, 2);
+
+  EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
+      .WillRepeatedly(Return(tmpfile_));
+  EXPECT_CALL(*mock_, Sign(Eq(data), _, Eq(fake_private_key_.get())))
+      .WillOnce(DoAll(SetArgumentPointee<1>(sig),
+                      Return(true)))
+      .RetiresOnSaturation();
+
+  InjectKeys(manager.get());
+  MockSigner delegate(OwnerManager::SUCCESS, sig);
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(manager.get(),
+                        &OwnerManager::Sign,
+                        ChromeThread::UI,
+                        data,
+                        &delegate));
+  message_loop_.Run();
+}
+
 }  // namespace chromeos
