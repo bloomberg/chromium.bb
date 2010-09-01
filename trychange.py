@@ -547,25 +547,6 @@ def TryChange(argv,
                         "useful for gclient-style checkouts. Use @rev or "
                         "@branch or @branch1..branch2 to specify the "
                         "revision/branch to diff against.")
-  # Mostly chromium-specific
-  try:
-    def WebKitRevision(options, opt, value, parser):
-      if not hasattr(options, 'sub_rep'):
-        options.sub_rep = []
-      if parser.rargs and not parser.rargs[0].startswith('-'):
-        options.sub_rep.append('third_party/WebKit@%s' % parser.rargs.pop(0))
-      else:
-        options.sub_rep.append('third_party/WebKit')
-
-    group.add_option("-W", "--webkit", action="callback",
-                     callback=WebKitRevision,
-                     metavar="BRANCH",
-                     help="Shorthand for -s third_party/WebKit@BRANCH. "
-                          "BRANCH is optional and is the branch the current "
-                          "checkout will be diff'ed against.")
-  except optparse.OptionError:
-    # append_const is not supported on 2.4. Too bad.
-    pass
   group.add_option("--no_gclient", action="store_true",
                    help="Disable automatic search for gclient checkout.")
   group.add_option("-E", "--exclude", action="append",
