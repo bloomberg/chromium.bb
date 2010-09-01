@@ -30,6 +30,22 @@ ntdll.dll!Rtl*
 ntdll.dll!Rtl*
 ntdll.dll!RtlFindActivationContextSectionString
 
+UNINITIALIZED READ
+...
+SHELL32.dll!SHFileOperation*
+
+UNINITIALIZED READ
+...
+SHELL32.dll!SHGetFolderPath*
+
+UNINITIALIZED READ
+...
+SHELL32.dll!SHCreateDirectory*
+
+UNADDRESSABLE ACCESS
+...
+SHELL32.dll!SHFileOperation*
+
 # http://code.google.com/p/drmemory/issues/detail?id=14
 UNINITIALIZED READ
 ...
@@ -51,6 +67,23 @@ system call NtContinue
 *!DebuggerProbe
 *!DebuggerKnownHandle
 
+# http://code.google.com/p/drmemory/issues/detail?id=40
+UNINITIALIZED READ
+...
+WINSPOOL.DRV!*
+
+UNADDRESSABLE ACCESS
+...
+WINSPOOL.DRV!*
+
+INVALID HEAP ARGUMENT
+...
+WINSPOOL.DRV!*
+
+LEAK
+...
+WINSPOOL.DRV!*
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -59,7 +92,7 @@ UNINITIALIZED READ
 
 UNINITIALIZED READ
 ...
-WINSPOOL.DRV!*
+ADVAPI32.dll!CryptAcquireContext*
 
 ############################
 # Real issues in Chromium
