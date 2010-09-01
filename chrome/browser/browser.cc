@@ -3746,9 +3746,14 @@ bool Browser::CanCloseWithInProgressDownloads() {
 // Browser, Assorted utility functions (private):
 
 // static
+Browser* Browser::GetTabbedBrowser(Profile* profile, bool match_incognito) {
+  return BrowserList::FindBrowserWithType(profile, TYPE_NORMAL,
+                                          match_incognito);
+}
+
+// static
 Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
-  Browser* browser = BrowserList::FindBrowserWithType(profile, TYPE_NORMAL,
-                                                      false);
+  Browser* browser = GetTabbedBrowser(profile, false);
   if (!browser)
     browser = Browser::Create(profile);
   return browser;

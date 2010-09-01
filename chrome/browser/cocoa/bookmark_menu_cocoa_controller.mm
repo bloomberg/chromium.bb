@@ -74,8 +74,9 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 // Open the URL of the given BookmarkNode in the current tab.
 - (void)openURLForNode:(const BookmarkNode*)node {
-  Browser* browser =
-      Browser::GetOrCreateTabbedBrowser(bridge_->GetProfile());
+  Browser* browser = Browser::GetTabbedBrowser(bridge_->GetProfile(), true);
+  if (!browser)
+    browser = Browser::Create(bridge_->GetProfile());
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   browser->OpenURL(node->GetURL(), GURL(), disposition,

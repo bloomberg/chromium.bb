@@ -573,6 +573,9 @@ class Browser : public TabStripModelDelegate,
       const NavigationController* controller, int* index);
 
   // Retrieve the last active tabbed browser with a profile matching |profile|.
+  static Browser* GetTabbedBrowser(Profile* profile, bool match_incognito);
+
+  // Retrieve the last active tabbed browser with a profile matching |profile|.
   // Creates a new Browser if none are available.
   static Browser* GetOrCreateTabbedBrowser(Profile* profile);
 
