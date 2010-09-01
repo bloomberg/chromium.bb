@@ -12,6 +12,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
@@ -34,13 +35,22 @@ using importer::ProfileInfo;
 using importer::SEARCH_ENGINES;
 using webkit_glue::PasswordForm;
 
+Firefox3Importer::Firefox3Importer() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  locale_ = g_browser_process->GetApplicationLocale();
+}
+
+Firefox3Importer::~Firefox3Importer() {
+}
+
 void Firefox3Importer::StartImport(importer::ProfileInfo profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   bridge_ = bridge;
   source_path_ = profile_info.source_path;
   app_path_ = profile_info.app_path;
-
 
   // The order here is important!
   bridge_->NotifyStarted();
@@ -350,9 +360,9 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
   FilePath app_path = app_path_.AppendASCII("searchplugins");
   FilePath profile_path = source_path_.AppendASCII("searchplugins");
 
-  // Firefox doesn't store a search engine in its sqlite database unless
-  // the user has changed the default definition of engine. So we get search
-  // engines from sqlite db as well as from file system.
+  // Firefox doesn't store a search engine in its sqlite database unless the
+  // user has added a engine. So we get search engines from sqlite db as well
+  // as from the file system.
   if (s.step() == SQLITE_ROW) {
     const std::wstring kAppPrefix = L"[app]/";
     const std::wstring kProfilePrefix = L"[profile]/";
@@ -380,6 +390,20 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
       files->push_back(file);
     } while (s.step() == SQLITE_ROW && !cancelled());
   }
+
+#if defined(OS_LINUX)
+  // Ubuntu-flavored Firefox3 supports locale-specific search engines via
+  // locale-named subdirectories. They fall back to en-US.
+  // See http://crbug.com/53899
+  // TODO(jshin): we need to make sure our locale code matches that of
+  // Firefox.
+  FilePath locale_app_path = app_path.AppendASCII(locale_);
+  FilePath default_locale_app_path = app_path.AppendASCII("en-US");
+  if (file_util::DirectoryExists(locale_app_path))
+    app_path = locale_app_path;
+  else if (file_util::DirectoryExists(default_locale_app_path))
+    app_path = default_locale_app_path;
+#endif
 
   // Get search engine definition from file system.
   file_util::FileEnumerator engines(app_path, false,

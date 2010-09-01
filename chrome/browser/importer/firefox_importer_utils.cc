@@ -282,30 +282,7 @@ std::string ReadPrefsJsValue(const FilePath& profile_path,
   if (!ReadPrefFile(profile_path.AppendASCII("prefs.js"), &content))
     return "";
 
-  // This file has the syntax: user_pref("key", value);
-  std::string search_for = std::string("user_pref(\"") + pref_key +
-                           std::string("\", ");
-  size_t prop_index = content.find(search_for);
-  if (prop_index == std::string::npos)
-    return "";
-
-  size_t start = prop_index + search_for.length();
-  size_t stop = std::string::npos;
-  if (start != std::string::npos)
-    stop = content.find(")", start + 1);
-
-  if (start == std::string::npos || stop == std::string::npos) {
-    NOTREACHED() << "Firefox property " << pref_key << " could not be parsed.";
-    return "";
-  }
-
-  // String values have double quotes we don't need to return to the caller.
-  if (content[start] == '\"' && content[stop - 1] == '\"') {
-    ++start;
-    --stop;
-  }
-
-  return content.substr(start, stop - start);
+  return GetPrefsJsValue(content, pref_key);
 }
 
 int GetFirefoxDefaultSearchEngineIndex(
@@ -317,8 +294,8 @@ int GetFirefoxDefaultSearchEngineIndex(
   if (search_engines.empty())
     return -1;
 
-  std::wstring default_se_name = UTF8ToWide(
-      ReadPrefsJsValue(profile_path, "browser.search.selectedEngine"));
+  std::string default_se_name =
+      ReadPrefsJsValue(profile_path, "browser.search.selectedEngine");
 
   if (default_se_name.empty()) {
     // browser.search.selectedEngine does not exist if the user has not changed
@@ -331,7 +308,7 @@ int GetFirefoxDefaultSearchEngineIndex(
   int default_se_index = -1;
   for (std::vector<TemplateURL*>::const_iterator iter = search_engines.begin();
        iter != search_engines.end(); ++iter) {
-    if (default_se_name == (*iter)->short_name()) {
+    if (default_se_name == WideToUTF8((*iter)->short_name())) {
       default_se_index = static_cast<int>(iter - search_engines.begin());
       break;
     }
@@ -448,4 +425,36 @@ bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
           pref_file.value() << "' value is '" << value << "'.";
   }
   return true;
+}
+
+std::string GetPrefsJsValue(const std::string& content,
+                            const std::string& pref_key) {
+  // This file has the syntax: user_pref("key", value);
+  std::string search_for = std::string("user_pref(\"") + pref_key +
+                           std::string("\", ");
+  size_t prop_index = content.find(search_for);
+  if (prop_index == std::string::npos)
+    return "";
+
+  size_t start = prop_index + search_for.length();
+  size_t stop = std::string::npos;
+  if (start != std::string::npos) {
+    // Stop at the last ')' on this line.
+    stop = content.find("\n", start + 1);
+    stop = content.rfind(")", stop);
+  }
+
+  if (start == std::string::npos || stop == std::string::npos ||
+      stop < start) {
+    LOG(WARNING) << "Firefox property " << pref_key << " could not be parsed.";
+    return "";
+  }
+
+  // String values have double quotes we don't need to return to the caller.
+  if (content[start] == '\"' && content[stop - 1] == '\"') {
+    ++start;
+    --stop;
+  }
+
+  return content.substr(start, stop - start);
 }

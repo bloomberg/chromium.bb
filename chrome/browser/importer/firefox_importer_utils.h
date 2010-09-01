@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UTILS_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -94,5 +95,10 @@ bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path);
 // Note: for strings, only valid UTF-8 string values are supported.  If a
 // key/pair is not valid UTF-8, it is ignored and will not appear in |prefs|.
 bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs);
+
+// Parses the value of a particular firefox preference from a string that is
+// the contents of the prefs file.
+std::string GetPrefsJsValue(const std::string& prefs,
+                            const std::string& pref_key);
 
 #endif  // CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UTILS_H_

@@ -24,7 +24,7 @@ struct sqlite3;
 // http://wiki.mozilla.org/Places
 class Firefox3Importer : public Importer {
  public:
-  Firefox3Importer() { }
+  Firefox3Importer();
 
   // Importer methods.
   virtual void StartImport(importer::ProfileInfo profile_info,
@@ -34,7 +34,7 @@ class Firefox3Importer : public Importer {
  private:
   typedef std::map<int64, std::set<GURL> > FaviconMap;
 
-  virtual ~Firefox3Importer() { }
+  virtual ~Firefox3Importer();
 
   void ImportBookmarks();
   void ImportPasswords();
@@ -81,6 +81,9 @@ class Firefox3Importer : public Importer {
 
   FilePath source_path_;
   FilePath app_path_;
+
+  // Stored because we can only access it from the UI thread.
+  std::string locale_;
 
   DISALLOW_COPY_AND_ASSIGN(Firefox3Importer);
 };

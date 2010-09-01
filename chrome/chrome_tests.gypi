@@ -1126,6 +1126,7 @@
         'browser/importer/firefox_importer_unittest_messages_internal.h',
         'browser/importer/firefox_importer_unittest_utils.h',
         'browser/importer/firefox_importer_unittest_utils_mac.cc',
+        'browser/importer/firefox_importer_utils_unittest.cc',
         'browser/importer/firefox_profile_lock_unittest.cc',
         'browser/importer/firefox_proxy_settings_unittest.cc',
         'browser/importer/importer_unittest.cc',
