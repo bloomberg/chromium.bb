@@ -1255,24 +1255,6 @@ void Browser::OpenCurrentURL() {
       location_bar->GetWindowOpenDisposition();
   GURL url(WideToUTF8(location_bar->GetInputString()));
 
-  if (open_disposition == CURRENT_TAB) {
-    TabContents* selected_contents = GetSelectedTabContents();
-    Extension* extension = profile()->GetExtensionsService()
-        ->GetExtensionByWebExtent(url);
-
-    if (extension && selected_contents &&
-        selected_contents->GetURL().GetOrigin() ==
-            GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
-      // If the |url| is within an app's web extent and it was typed into the
-      // omnibox of an NTP page, interpret as an app launch and close the NTP
-      // tab.
-      Browser::OpenApplication(profile(), extension,
-          extension->launch_container());
-      CloseTabContents(selected_contents);
-      return;
-    }
-  }
-
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
   // inherit the opener. In some cases the tabstrip will determine the group
   // should be inherited, in which case the group is inherited instead of the
