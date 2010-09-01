@@ -170,6 +170,9 @@ class LocationBarView : public LocationBar,
 #endif
 
   // AutocompleteEditController
+  virtual void OnAutocompleteWillClosePopup();
+  virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
+  virtual void OnAutocompleteWillAccept();
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     PageTransition::Type transition,

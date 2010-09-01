@@ -696,6 +696,9 @@ void AutocompleteEditViewWin::UpdatePopup() {
 }
 
 void AutocompleteEditViewWin::ClosePopup() {
+  if (popup_view_->GetModel()->IsOpen())
+    controller_->OnAutocompleteWillClosePopup();
+
   popup_view_->GetModel()->StopAutocomplete();
 }
 
@@ -1351,6 +1354,9 @@ void AutocompleteEditViewWin::OnKillFocus(HWND focus_wnd) {
     SetMsgHandled(false);
     return;
   }
+
+  // This must be invoked before ClosePopup.
+  controller_->OnAutocompleteLosingFocus(focus_wnd);
 
   // Close the popup.
   ClosePopup();

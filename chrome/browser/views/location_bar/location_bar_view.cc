@@ -681,6 +681,16 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event,
 }
 #endif
 
+void LocationBarView::OnAutocompleteWillClosePopup() {
+}
+
+void LocationBarView::OnAutocompleteLosingFocus(
+    gfx::NativeView view_gaining_focus) {
+}
+
+void LocationBarView::OnAutocompleteWillAccept() {
+}
+
 void LocationBarView::OnAutocompleteAccept(
     const GURL& url,
     WindowOpenDisposition disposition,
@@ -725,8 +735,9 @@ void LocationBarView::OnChanged() {
 
   if (MatchPreview::IsEnabled() && GetTabContents() &&
       !profile_->IsOffTheRecord()) {
+    PageTransition::Type transition_type;
     GURL url = location_entry_->model()->user_input_in_progress() ?
-        location_entry_->model()->CurrentURL() : GURL();
+        location_entry_->model()->CurrentURL(&transition_type) : GURL();
     GetTabContents()->match_preview()->Update(url);
   }
 }

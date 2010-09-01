@@ -10,6 +10,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -28,6 +29,21 @@ class AutocompleteEditView;
 // Embedders of an AutocompleteEdit widget must implement this class.
 class AutocompleteEditController {
  public:
+#if defined(TOOLKIT_VIEWS)
+  // Sent when the autocomplete popup is about to close.
+  virtual void OnAutocompleteWillClosePopup() = 0;
+
+  // Sent when the edit is losing focus. |view_gaining_focus| is the view
+  // gaining focus and may be null.
+  virtual void OnAutocompleteLosingFocus(
+      gfx::NativeView view_gaining_focus) = 0;
+
+  // Sent prior to OnAutoCompleteAccept and before the model has been reverted.
+  virtual void OnAutocompleteWillAccept() = 0;
+#else
+  // TODO: port.
+#endif
+
   // When the user presses enter or selects a line with the mouse, this
   // function will get called synchronously with the url to open and
   // disposition and transition to use when opening it.
@@ -118,10 +134,10 @@ class AutocompleteEditModel : public NotificationObserver {
   // Restores local state from the saved |state|.
   void RestoreState(const State& state);
 
-  // Returns the url for the current text. If the user has not edited the text
-  // this is the permanent url, otherwise it is the url the user would navigate
-  // to if they accept the current edit.
-  GURL CurrentURL();
+  // Returns the url and transition type for the current text. If the user has
+  // not edited the text this is the permanent url, otherwise it is the url the
+  // user would navigate to if they accept the current edit.
+  GURL CurrentURL(PageTransition::Type* transition_type);
 
   // Called when the user wants to export the entire current text as a URL.
   // Sets the url, and if known, the title and favicon.

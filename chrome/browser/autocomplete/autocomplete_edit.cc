@@ -129,9 +129,10 @@ void AutocompleteEditModel::RestoreState(const State& state) {
   }
 }
 
-GURL AutocompleteEditModel::CurrentURL() {
+GURL AutocompleteEditModel::CurrentURL(PageTransition::Type* transition_type) {
   AutocompleteMatch match;
   GetInfoForCurrentText(&match, NULL);
+  *transition_type = match.transition;
   return match.destination_url;
 }
 
@@ -403,6 +404,9 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
     // search engine, if applicable; see comments in template_url.h.
   }
 
+#if defined(TOOLKIT_VIEWS)
+  controller_->OnAutocompleteWillAccept();
+#endif
   if (disposition != NEW_BACKGROUND_TAB)
     view_->RevertAll();  // Revert the box to its unedited state
   controller_->OnAutocompleteAccept(url, disposition, transition,

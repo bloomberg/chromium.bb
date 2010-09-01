@@ -59,6 +59,9 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
 class TestingAutocompleteEditController : public AutocompleteEditController {
  public:
   TestingAutocompleteEditController() {}
+  virtual void OnAutocompleteWillClosePopup() {}
+  virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus) {}
+  virtual void OnAutocompleteWillAccept() {}
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     PageTransition::Type transition,
