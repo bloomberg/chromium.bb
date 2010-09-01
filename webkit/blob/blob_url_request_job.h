@@ -57,6 +57,7 @@ class BlobURLRequestJob : public URLRequestJob {
   void NotifySuccess();
   void NotifyFailure(int);
 
+  void DidStart();
   void DidResolve(base::PlatformFileError rv,
                   const file_util::FileInfo& file_info);
   void DidRead(int result);

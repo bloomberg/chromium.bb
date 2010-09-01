@@ -65,6 +65,12 @@ BlobURLRequestJob::~BlobURLRequestJob() {
 }
 
 void BlobURLRequestJob::Start() {
+  // Continue asynchronously.
+  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &BlobURLRequestJob::DidStart));
+}
+
+void BlobURLRequestJob::DidStart() {
   // We only support GET request per the spec.
   if (request()->method() != "GET") {
     NotifyFailure(net::ERR_METHOD_NOT_SUPPORTED);
@@ -77,9 +83,7 @@ void BlobURLRequestJob::Start() {
     return;
   }
 
-  // Continue asynchronously.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &BlobURLRequestJob::CountSize));
+  CountSize();
 }
 
 void BlobURLRequestJob::Kill() {
