@@ -308,7 +308,7 @@ class CandidateWindowController : public CandidateWindowView::Observer {
  public:
   CandidateWindowController();
   virtual ~CandidateWindowController();
-  void Init();
+  bool Init();
 
   // Returns the work area of the monitor nearest the candidate window.
   gfx::Rect GetMonitorWorkAreaNearestWindow();
@@ -858,7 +858,7 @@ int CandidateWindowView::GetHorizontalOffset() {
 }
 
 
-void CandidateWindowController::Init() {
+bool CandidateWindowController::Init() {
   // Initialize the input method UI status connection.
   InputMethodUiStatusMonitorFunctions functions;
   functions.hide_auxiliary_text =
@@ -872,11 +872,15 @@ void CandidateWindowController::Init() {
   functions.update_lookup_table =
       &CandidateWindowController::OnUpdateLookupTable;
   ui_status_connection_ = MonitorInputMethodUiStatus(functions, this);
-  CHECK(ui_status_connection_)
-      << "MonitorInputMethodUiStatus() failed.";
+  if (!ui_status_connection_) {
+    LOG(ERROR) << "MonitorInputMethodUiStatus() failed.";
+    return false;
+  }
 
   // Create the candidate window view.
   CreateView();
+
+  return true;
 }
 
 void CandidateWindowController::CreateView() {
@@ -1083,7 +1087,9 @@ int main(int argc, char** argv) {
 
   // Create the candidate window controller.
   chromeos::CandidateWindowController controller;
-  controller.Init();
+  if (!controller.Init()) {
+    return 1;
+  }
 
   // Start the main loop.
   views::AcceleratorHandler accelerator_handler;
