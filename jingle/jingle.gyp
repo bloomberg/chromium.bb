@@ -20,6 +20,8 @@
         'notifier/base/signal_thread_task.h',
         'notifier/base/ssl_adapter.h',
         'notifier/base/ssl_adapter.cc',
+        'notifier/base/fake_ssl_client_socket.cc',
+        'notifier/base/fake_ssl_client_socket.h',
         'notifier/base/static_assert.h',
         'notifier/base/task_pump.cc',
         'notifier/base/task_pump.h',
@@ -96,6 +98,7 @@
         # TODO(akalin): Write our own test suite and runner.
         '../base/test/run_all_unittests.cc',
         'notifier/base/chrome_async_socket_unittest.cc',
+        'notifier/base/fake_ssl_client_socket_unittest.cc',
         'notifier/listener/talk_mediator_unittest.cc',
         'notifier/listener/send_update_task_unittest.cc',
         'notifier/listener/subscribe_task_unittest.cc',
