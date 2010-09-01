@@ -512,15 +512,9 @@ TEST_F(DownloadTest, DISABLED_DontCloseNewWindow) {
   CheckDownload(file);
 }
 
-// http://crbug.com/50060
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_NewWindow DISABLED_NewWindow
-#else
-#define MAYBE_NewWindow NewWindow
-#endif
-
 // Regression test for http://crbug.com/44454
-TEST_F(DownloadTest, MAYBE_NewWindow) {
+// See also http://crbug.com/50060.
+TEST_F(DownloadTest, DISABLED_NewWindow) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
