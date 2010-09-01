@@ -23,7 +23,7 @@ class BaseFileTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base_file_.reset(new BaseFile(FilePath(), GURL(), GURL(), file_stream_));
+    base_file_.reset(new BaseFile(FilePath(), GURL(), GURL(), 0, file_stream_));
   }
 
   virtual void TearDown() {

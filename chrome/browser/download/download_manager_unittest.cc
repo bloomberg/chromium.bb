@@ -179,7 +179,7 @@ const struct {
 class MockDownloadFile : public DownloadFile {
  public:
   explicit MockDownloadFile(DownloadCreateInfo* info)
-      : DownloadFile(info), renamed_count_(0) { }
+      : DownloadFile(info, NULL), renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
   MOCK_METHOD2(Rename, bool(const FilePath&, bool));
   MOCK_METHOD0(DeleteCrDownload, void());

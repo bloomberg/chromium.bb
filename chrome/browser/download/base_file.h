@@ -22,6 +22,7 @@ class BaseFile {
   BaseFile(const FilePath& full_path,
            const GURL& source_url,
            const GURL& referrer_url,
+           int64 received_bytes,
            const linked_ptr<net::FileStream>& file_stream);
   ~BaseFile();
 
