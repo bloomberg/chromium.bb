@@ -149,17 +149,18 @@ def DiffStringsIgnoringWhiteSpace(a, b):
           yield '+[' + repr(line) + ']'
 
 
-def RegexpFilterLines(regexp, lines):
+def RegexpFilterLines(regexp, inverse, group_only, lines):
   """Apply regexp to filter lines of text, keeping only those lines
   that match.
 
   Any carriage return / newline sequence is turned into a newline.
 
   Args:
-    regexp: A regular expression which may contain regexp groups, in
-      which case the line is replaced with the groups (text outside
-      the groups are omitted, useful for eliminating file names that
-      might change, etc).
+    regexp: A regular expression, only lines that match are kept
+    inverse: Only keep lines that do not match
+    group_only: replace matching lines with the regexp groups,
+                text outside the groups are omitted, useful for
+                eliminating file names that might change, etc).
 
     lines: A string containing newline-separated lines of text
 
@@ -173,13 +174,18 @@ def RegexpFilterLines(regexp, lines):
     if line.endswith('\r'):
       line = line[:-1]
     mobj = nfa.search(line)
-    if mobj:
-      if not mobj.groups():
-        result.append(line)
-      else:
-        matched_strings = []
-        for s in mobj.groups():
-          if s is not None:
-            matched_strings.append(s)
-        result.append(''.join(matched_strings))
+    if mobj and inverse:
+      continue
+    if not mobj and not inverse:
+      continue
+
+    if group_only:
+      matched_strings = []
+      for s in mobj.groups():
+        if s is not None:
+          matched_strings.append(s)
+      result.append(''.join(matched_strings))
+    else:
+      result.append(line)
+
   return '\n'.join(result)

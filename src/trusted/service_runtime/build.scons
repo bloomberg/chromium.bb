@@ -707,11 +707,16 @@ def AddIntegrationTest(test, location):
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
 if env['TARGET_ARCHITECTURE'] == 'x86':
+  RE_HELLO = '^(Hello, World!)$'
+  RE_IDENT = '^\[[0-9,:.]*\] (e_ident\+1 = ELF)$'
+
   node = env.CommandSelLdrTestNacl(
       'nacl_log.out',
       command = [env.File(arch_testdata_dir + '/hello_world.nexe')],
       log_golden = env.File('testdata/hello_world.log'),
-      log_filter = '"^(Hello, World!)$|^\[[0-9,:.]*\] (e_ident\+1 = ELF)$"')
+      filter_regex = '"' + RE_HELLO + '|' + RE_IDENT + '"',
+      filter_group_only = 'true'
+      )
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
   assert len(INTEGRATION_TESTS_X86) == len(INTEGRATION_TESTS_X86_STDIN_OUT)
@@ -751,7 +756,8 @@ def AddDeathTest(test, skip):
       test  + '.out',
       command = [env.File(arch_testdata_dir + '/' + test + '.nexe')],
       stderr_golden = env.File('testdata/' + test + '.stderr'),
-      stderr_filter = ERROR_WHILE_LOADING,
+      filter_regex = ERROR_WHILE_LOADING,
+      filter_group_only = 'true',
       exit_status = '1')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 

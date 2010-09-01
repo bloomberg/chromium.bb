@@ -72,11 +72,12 @@ gdb_test = env.CommandGdbTestNacl(
     command=[env.File('hello_world_gdb.nexe')],
     stdout_golden=env.File('hello_world_gdb.stdout'),
     input=env.File('hello_world_gdb.in'),
-    stdout_filter=("'(Breakpoint 1 at)|"
+    filter_regex=("'(Breakpoint 1 at)|"
                    "(Breakpoint 1, )0x[0-9]+ (in hello_world)|"
                    "^(#0 ) 0x[0-9a-f]+ (in hello_world)|"
                    "^(#1 ) 0x[0-9a-f]+ (in main)'"
                    ),
+    filter_group_only='true',
     )
 
 # TODO(mseaborn): explain this magic

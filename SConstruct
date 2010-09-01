@@ -864,8 +864,8 @@ pre_base_env.AddMethod(CommandPosixOverSrpcTestNacl)
 # ----------------------------------------------------------
 TEST_EXTRA_ARGS = ['stdin', 'logout',
                    'stdout_golden', 'stderr_golden', 'log_golden',
-                   'stdout_filter', 'stderr_filter', 'log_filter',
-                   'osenv', 'exit_status', 'filter_validator']
+                   'filter_regex', 'filter_inverse', 'filter_group_only',
+                   'osenv', 'exit_status']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,

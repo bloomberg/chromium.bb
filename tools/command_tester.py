@@ -111,11 +111,9 @@ def ResetGlobalSettings():
       'stderr_golden': None,
       'log_golden': None,
 
-      'stdout_filter': None,
-      'stderr_filter': None,
-      'log_filter': None,
-
-      'filter_validator': 0,
+      'filter_regex': None,
+      'filter_inverse': False,
+      'filter_group_only': False,
 
       'time_warning': 0,
       'time_error': 0,
@@ -251,13 +249,6 @@ def main(argv):
     Print(FailureMessage())
     return -1
 
-  if GlobalSettings['filter_validator']:
-    # Note: This will filter out x86-32 validator messages.
-    stdout = test_lib.RegexpFilterLines(r'^(?!VALIDATOR)', stdout)
-    # Note: This will filter out x86-64 validator messages.
-    stderr = test_lib.RegexpFilterLines(
-             r'^(?!\[\d+,\d+:\d+:\d+:\d+\.\d+] VALIDATOR:)', stderr)
-
   for (stream, getter) in [
       ('stdout', lambda: stdout),
       ('stderr', lambda: stderr),
@@ -266,10 +257,12 @@ def main(argv):
     golden = stream + '_golden'
     if GlobalSettings[golden]:
       golden_data = open(GlobalSettings[golden]).read()
-      filt = stream + '_filter'
       actual = getter()
-      if GlobalSettings[filt]:
-        actual = test_lib.RegexpFilterLines(GlobalSettings[filt], actual)
+      if GlobalSettings['filter_regex']:
+        actual = test_lib.RegexpFilterLines(GlobalSettings['filter_regex'],
+                                            GlobalSettings['filter_inverse'],
+                                            GlobalSettings['filter_group_only'],
+                                            actual)
       if DifferentFromGolden(actual, golden_data, stream, FailureMessage()):
         return -1
 

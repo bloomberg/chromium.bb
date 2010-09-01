@@ -98,8 +98,9 @@ if env.Bit('linux'):
         test + '_actual.out',
         [ncval, env.File('testdata/' + test + '.nexe')],
         exit_status = str(exit_status),
+        filter_regex = "'^ncval'",
+        # NOTE: all stdout_golden are currently empty
         stdout_golden = env.File('testdata/' + test + '.out'),
-        stderr_filter = "'^ncval'",
         stderr_golden = env.File('testdata/' + test + '.err'))
 
     env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
@@ -120,4 +121,3 @@ if env.Bit('linux'):
       command=[validator_tests_exe])
   gtest_env.AddNodeToTestSuite(test_node, ['small_tests'],
       'run_arm_validator_tests')
-
