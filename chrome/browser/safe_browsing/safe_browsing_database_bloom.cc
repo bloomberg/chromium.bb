@@ -597,10 +597,20 @@ void SafeBrowsingDatabaseBloom::BuildBloomFilter() {
 int SafeBrowsingDatabaseBloom::PairCompare(const void* arg1, const void* arg2) {
   const SBPair* p1 = reinterpret_cast<const SBPair*>(arg1);
   const SBPair* p2 = reinterpret_cast<const SBPair*>(arg2);
-  int delta = p1->chunk_id - p2->chunk_id;
-  if (delta == 0)
-    delta = p1->prefix - p2->prefix;
-  return delta;
+
+  if (p1->chunk_id < p2->chunk_id)
+    return -1;
+
+  if (p1->chunk_id > p2->chunk_id)
+    return 1;
+
+  if (p1->prefix < p2->prefix)
+    return -1;
+
+  if (p1->prefix > p2->prefix)
+    return 1;
+
+  return 0;
 }
 
 bool SafeBrowsingDatabaseBloom::BuildAddPrefixList(SBPair* adds) {
