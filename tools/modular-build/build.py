@@ -187,12 +187,15 @@ def GetTargets(src):
 
   AddSconsModule(
       "nc_threads",
-      deps=["binutils", "pre-gcc"] + gcc_libs,
-      scons_args=["MODE=nacl_extra_sdk", "install_libpthread"])
+      # This only installs headers, so it has no dependencies.
+      deps=[],
+      scons_args=["MODE=nacl_extra_sdk", "install_libpthread",
+                  "naclsdk_validate=0"])
   AddSconsModule(
       "libnacl_headers",
-      deps=["binutils", "pre-gcc"] + gcc_libs,
-      scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update_header"])
+      deps=[],
+      scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update_header",
+                  "naclsdk_validate=0"])
   # Before full-gcc is built, we cannot build any C++ code, and
   # tools/Makefile builds the following with nocpp=yes.  However,
   # full-gcc does not actually depend on it, so we do not use it.
@@ -314,7 +317,7 @@ int main() {
   AddAutoconfModule(
       "full-gcc-glibc", "gcc",
       deps=["binutils", "glibc", "installed_linux_headers", "dummy_libs",
-            "sys_include_alias"] + gcc_libs,
+            "linker_scripts", "sys_include_alias"] + gcc_libs,
       configure_opts=[
           "--disable-libmudflap",
           "--disable-decimal-float",
@@ -361,6 +364,15 @@ int main() {
                   "google_nacl_platform",
                   "libav",
                   "libsrpc"])
+
+  # TODO(mseaborn): Enable this for other platforms.  This involves
+  # sorting out the MODE argument.
+  if sys.platform == "linux2":
+    AddSconsModule(
+        "scons_tests",
+        deps=glibc_toolchain_deps,
+        scons_args=["MODE=dbg-linux,nacl", "--nacl_glibc",
+                    "run_hello_world_test"])
 
   return module_list
 

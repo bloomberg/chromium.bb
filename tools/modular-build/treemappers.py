@@ -76,6 +76,19 @@ def MungeMultilibDir(tree, arch, bits):
     tree[arch]["lib" + bits] = libdir
 
 
+# This is a workaround for gcc, which installs libgcc_s.so.1 into
+# "nacl/lib32" instead of "nacl/lib", even though it is built with
+# "--disable-multilib".  However, the Scons build expects libraries to
+# be in "lib", so rename "lib32" to "lib".
+def RenameLib32ToLib(tree, arch, bits):
+  libdir = tree.get(arch, {}).get("lib" + bits)
+  if libdir is not None:
+    assert ("lib" not in tree[arch] or
+            tree[arch]["lib"] == {})
+    del tree[arch]["lib" + bits]
+    tree[arch]["lib"] = libdir
+
+
 def LibraryPathVar():
   if sys.platform == "darwin":
     return "DYLD_LIBRARY_PATH"
@@ -105,6 +118,7 @@ def CombineInstallTrees(*trees):
   for tree in trees:
     MungeMultilibDir(tree, "nacl64", "32")
     MungeMultilibDir(tree, "nacl", "64")
+    RenameLib32ToLib(tree, "nacl", "32")
   combined = UnionDir(*trees)
   AddEnvVarWrapperScripts(combined)
   return combined
