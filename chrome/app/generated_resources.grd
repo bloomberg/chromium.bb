@@ -7420,6 +7420,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_SUCCESS" desc="Operation successful">
         Success!
       </message>
+      <message name="IDS_SYNC_LOGIN_ACCOUNT_MISMATCH" desc="A warning message shown at sync login when the user is signed in to the web store already.">
+        Your web store account is <ph name="EMAIL_ADDRESS">$1<ex>user@gmail.com</ex></ph> - signing in to sync with a different account will result in incompatibilities.
+      </message>
 
       <!-- Sync app menu item strings -->
       <if expr="not pp_ifdef('use_titlecase')">
