@@ -214,7 +214,15 @@ class ChromeInvalidationListener
   ChromeInvalidationListener() {}
 
   virtual void OnInvalidate(syncable::ModelType model_type) {
-    LOG(INFO) << "Invalidate: " << syncable::ModelTypeToString(model_type);
+    // TODO(akalin): This is a hack to make new sync data types work
+    // with server-issued notifications.  Remove this when it's not
+    // needed anymore.
+    if (model_type == syncable::UNSPECIFIED) {
+      LOG(INFO) << "OnInvalidate: UNKNOWN";
+    } else {
+      LOG(INFO) << "OnInvalidate: "
+                << syncable::ModelTypeToString(model_type);
+    }
     // A real implementation would respond to the invalidation.
   }
 
