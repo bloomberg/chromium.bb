@@ -23,27 +23,20 @@
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
 #include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
+#include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate.h"
 #include "native_client/src/trusted/validator_x86/ncval_driver.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
 
-/* Print time usage information. */
-static Bool FLAGS_print_timing = FALSE;
-
-/* Flag defining which validator model to use. */
-static Bool FLAGS_use_iter = (64 == NACL_TARGET_SUBARCH);
-
-/* Flag defining the name of a hex text to be used as the code segment. Assumes
- * that the pc associated with the code segment is defined by
- * FLAGS_decode_pc.
+/* Flag defining the name of a hex text to be used as the code segment.
  */
-static char* FLAGS_hex_text = "";
+static char* NACL_FLAGS_hex_text = "";
 
 /* Define if we should process segments (rather than sections) when applying SFI
  * validator.
  */
-static Bool FLAGS_analyze_segments = FALSE;
+static Bool NACL_FLAGS_analyze_segments = FALSE;
 
 /***************************************
  * Code to run segment based validator.*
@@ -101,16 +94,18 @@ int AnalyzeSegmentSections(ncfile *ncf, struct NCValidatorState *vstate) {
         (0 == (phdr[ii].p_flags & PF_X)))
       continue;
     SegmentDebug("parsing segment %d\n", ii);
-    /*
-     * This used NCDecodeSegment() instead of NCValidateSegment()
-     * because the latter required a HLT at the end of the code, but
-     * this requirement has now gone.
-     * TODO(mseaborn): Could use NCValidateSegment() now.
-     */
-    NCDecodeSegment(ncf->data + (phdr[ii].p_vaddr - ncf->vbase),
-                    phdr[ii].p_vaddr, phdr[ii].p_memsz, vstate);
+    NCValidateSegment(ncf->data + (phdr[ii].p_vaddr - ncf->vbase),
+                      phdr[ii].p_vaddr, phdr[ii].p_memsz, vstate);
   }
   return -badsections;
+}
+
+static void NCValidateResults(int result, const char* fname) {
+  if (result == 0) {
+    SegmentDebug("***module %s is safe***\n", fname);
+  } else {
+    SegmentDebug("***MODULE %s IS UNSAFE***\n", fname);
+  }
 }
 
 static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
@@ -124,11 +119,7 @@ static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
     SegmentInfo("%s: text validate failed\n", fname);
   }
   result = NCValidateFinish(vstate);
-  if (result != 0) {
-    SegmentDebug("***MODULE %s IS UNSAFE***\n", fname);
-  } else {
-    SegmentDebug("***module %s is safe***\n", fname);
-  }
+  NCValidateResults(result, fname);
   Stats_Print(stdout, vstate);
   NCValidateFreeState(&vstate);
   SegmentDebug("Validated %s\n", fname);
@@ -206,7 +197,7 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
   if (vstate == NULL) {
     NaClValidatorMessage(LOG_FATAL, vstate, "Unable to create validator state");
   }
-  if (FLAGS_analyze_segments) {
+  if (NACL_FLAGS_analyze_segments) {
     AnalyzeSfiSegments(ncf, vstate);
   } else {
     AnalyzeSfiSections(ncf, vstate);
@@ -305,14 +296,14 @@ static int ValidateSfiHexLoad(int argc, const char* argv[],
   if (argc != 1) {
     SfiHexFatal("expected: %s <options>\n", argv[0]);
   }
-  if (0 == strcmp(FLAGS_hex_text, "-")) {
+  if (0 == strcmp(NACL_FLAGS_hex_text, "-")) {
     data->num_bytes = (NaClMemorySize)
         NaClReadHexTextWithPc(stdin, &data->base, data->bytes,
                               NACL_MAX_INPUT_LINE);
   } else {
-    FILE* input = fopen(FLAGS_hex_text, "r");
+    FILE* input = fopen(NACL_FLAGS_hex_text, "r");
     if (NULL == input) {
-      SfiHexFatal("Can't open hex text file: %s\n", FLAGS_hex_text);
+      SfiHexFatal("Can't open hex text file: %s\n", NACL_FLAGS_hex_text);
     }
     data->num_bytes = (NaClMemorySize)
         NaClReadHexTextWithPc(input, &data->base, data->bytes,
@@ -347,10 +338,10 @@ static void usage() {
       "\tUse the iterator model. Currently, the x86-64 bit\n"
       "\tvalidator uses the iterator model while the x86-32 bit model\n"
       "\tdoes not.\n"
+      "--alignment=N\n"
+      "\tSet block alignment to N bytes (only 16 or 32 allowed).\n"
       "\n"
       "Options (iterator model):\n"
-      "--alignment=N\n"
-      "\tSet block alignment to N bytes.\n"
       "--errors\n"
       "\tPrint out error and fatal error messages, but not\n"
       "\tinformative and warning messages\n"
@@ -393,13 +384,14 @@ static int GrokFlags(int argc, const char* argv[]) {
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
     const char* arg = argv[i];
-    if (GrokCstringFlag("--hex_text", arg, &FLAGS_hex_text) ||
-        GrokBoolFlag("--segments", arg, &FLAGS_analyze_segments) ||
+    if (GrokCstringFlag("--hex_text", arg, &NACL_FLAGS_hex_text) ||
+        GrokBoolFlag("--segments", arg, &NACL_FLAGS_analyze_segments) ||
         GrokBoolFlag("--trace_insts",
                      arg, &NACL_FLAGS_validator_trace_instructions) ||
-        GrokBoolFlag("--use_iter", arg, &FLAGS_use_iter) ||
-        GrokBoolFlag("-t", arg, &FLAGS_print_timing) ||
-        GrokBoolFlag("--use_iter", arg, &FLAGS_use_iter) ||
+        GrokBoolFlag("--use_iter", arg, &NACL_FLAGS_use_iter) ||
+        GrokIntFlag("--alignment", arg, &NACL_FLAGS_block_alignment) ||
+        GrokBoolFlag("-t", arg, &NACL_FLAGS_print_timing) ||
+        GrokIntFlag("--max_errors", arg, &NACL_FLAGS_max_reported_errors) ||
         GrokBoolFlag("--help", arg, &help)) {
       if (help) {
         usage();
@@ -431,11 +423,12 @@ int main(int argc, const char *argv[]) {
   NaClLogModuleInitExtended(LOG_INFO, gout);
 
   argc = GrokFlags(argc, argv);
+  NCValidatorSetMaxDiagnostics(NACL_FLAGS_max_reported_errors);
 
-  if (FLAGS_use_iter) {
+  if (NACL_FLAGS_use_iter) {
     Bool success = FALSE;
     argc = NaClRunValidatorGrokFlags(argc, argv);
-    if (0 == strcmp(FLAGS_hex_text, "")) {
+    if (0 == strcmp(NACL_FLAGS_hex_text, "")) {
       /* Run SFI validator on elf file. */
       ValidateData data;
       success = NaClRunValidator(argc, argv, &data,
@@ -460,7 +453,7 @@ int main(int argc, const char *argv[]) {
   } else if (64 == NACL_TARGET_SUBARCH) {
     SegmentFatal("Can only run %s using -use_iter=false flag on 64 bit code\n",
                  argv[0]);
-  } else {
+  } else if (0 == strcmp(NACL_FLAGS_hex_text, "")) {
     for (i=1; i< argc; i++) {
       /* Run x86-32 segment based validator. */
       clock_t clock_0;
@@ -480,7 +473,7 @@ int main(int argc, const char *argv[]) {
       }
       clock_v = clock();
 
-      if (FLAGS_print_timing) {
+      if (NACL_FLAGS_print_timing) {
         SegmentInfo("%s: load time: %0.6f  analysis time: %0.6f\n",
                     argv[i],
                     (double)(clock_l - clock_0) /  (double)CLOCKS_PER_SEC,
@@ -489,6 +482,16 @@ int main(int argc, const char *argv[]) {
 
       nc_freefile(ncf);
     }
+  } else {
+    NaClValidatorByteArray data;
+    struct NCValidatorState *vstate;
+    argc = ValidateSfiHexLoad(argc, argv, &data);
+    vstate = NCValidateInit(data.base, data.num_bytes,
+                            (uint8_t) NACL_FLAGS_block_alignment);
+    NCValidateSetStubOutMode(vstate, 1);
+    NCValidateSegment(&data.bytes[0], data.base, data.num_bytes, vstate);
+    NCValidateResults(NCValidateFinish(vstate), "<hex_text>");
+    NCValidateFreeState(&vstate);
   }
   NaClLogModuleFini();
   GioFileDtor(gout);

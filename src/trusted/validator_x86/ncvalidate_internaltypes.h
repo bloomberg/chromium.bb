@@ -46,6 +46,7 @@ struct NCValidatorState {
   uint8_t *vttable;
   uint8_t *kttable;
   int do_stub_out;  /* boolean */
+  int num_diagnostics; /* How many error messages to print. */
 };
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_INTERNALTYPES_H_*/

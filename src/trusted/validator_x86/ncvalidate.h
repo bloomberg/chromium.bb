@@ -55,13 +55,6 @@ void NCValidateSetStubOutMode(struct NCValidatorState *vstate,
  * it to check memory that can't be accessed. This should of be
  * interpreted as an indication that the module in question is
  * invalid.
- *
- * This routine will not produce verbose validator output, but will
- * print an error message to suggest using ncval for more details on
- * validation errors.
- *
- * NCValidateSegment is used by sel_ldr. For dev/debug purposes,
- * use NCDecodeSegment(). See ncval.c for an example.
  */
 void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate);
@@ -89,5 +82,20 @@ void Stats_Print(FILE *f, struct NCValidatorState *vstate);
 /* Book-keeping routines called from the decoder. */
 void OpcodeHisto(const uint8_t byte1,
                  struct NCValidatorState *vstate);
+
+/* Returns the default value used for controlling printing
+ * of validator messages.
+ * If zero, no messages are printed.
+ * If >0, only that many diagnostic errors are printed.
+ * If negative, all validator diagnostics are printed.
+ */
+int NCValidatorGetMaxDiagnostics();
+
+/* Changes default flag for printing validator error messages.
+ * If zero, no messages are printed.
+ * If >0, only that many diagnostic errors are printed.
+ * If negative, all validator diagnostics are printed.
+ */
+void NCValidatorSetMaxDiagnostics(int new_value);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_ */

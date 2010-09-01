@@ -404,17 +404,17 @@ def __AddNcDisTests(use_iter):
 __AddNcDisTests(True)
 __AddNcDisTests(False)
 
-# Run tests using ncval -use_iter, on test files. Assume that write sandbox tests
+# Run tests using ncval --use_iter, on test files. Assume that write sandbox tests
 # use extension 'val' while read/write sandbox tests use extention 'rval'.
 def __AddNcvalSfiTests(test_readwrite):
   if env['TARGET_SUBARCH'] == '64':
-    test = 'ncval_hex'
+    test = 'ncval64_hex'
     if test_readwrite:
       ext = 'rval'
     else:
       ext = 'val'
     for base in __GoldenBases(ext):
-      command = [ncval[0], '--use_iter', '--hex_text=-', '--max-errors=1000']
+      command = [ncval[0], '--use_iter', '--hex_text=-', '--max_errors=1000']
       if test_readwrite:
         command.append('--readwrite_sfi')
       else:
@@ -428,6 +428,25 @@ def __AddNcvalSfiTests(test_readwrite):
 
 __AddNcvalSfiTests(True)
 __AddNcvalSfiTests(False)
+
+# Run tests using ncval --use_iter=false on test files.
+def __AddNcvalSegmentTests():
+  if env['TARGET_SUBARCH'] == '32':
+    test = 'ncval32_hex'
+    ext = 'nval'
+    for base in __GoldenBases(ext):
+      command = [ncval[0],
+                 '--use_iter=false',
+                 '--hex_text=-',
+                 '--max_errors=1000']
+      node_val = env.CommandTest(
+          __OutTestFile(test, base, ext),
+          command,
+          stdin = __BaseTestFile(base, 'hex'),
+          stdout_golden = __BaseTestFile(base, ext))
+      __AddTest(test, base, ext, node_val, ['small_tests', 'validator_tests'])
+
+__AddNcvalSegmentTests()
 
 # Run test to see if we have changed the set of modeled instructions.
 def __AddModeledInstsTest():
