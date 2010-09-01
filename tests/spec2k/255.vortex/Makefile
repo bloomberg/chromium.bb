@@ -68,6 +68,6 @@ src/vom.c
 
 
 IT=vortex
+CFLAGS_EXTRA=-fno-strict-aliasing
 EXTRA_CLEAN=persons.* lendian* bendian*
 include ../Makefile.common
-
