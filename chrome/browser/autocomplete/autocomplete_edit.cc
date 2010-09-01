@@ -503,6 +503,8 @@ void AutocompleteEditModel::OnControlKeyChanged(bool pressed) {
       // the input text.
       InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
       has_temporary_text_ = false;
+      if (KeywordIsSelected())
+        AcceptKeyword();
     }
     if ((old_state != DOWN_WITH_CHANGE) && popup_->IsOpen()) {
       // Autocomplete history provider results may change, so refresh the
@@ -632,8 +634,7 @@ bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
     return false;
   }
 
-  const bool had_keyword = (keyword_ui_state_ != NO_KEYWORD) &&
-      !is_keyword_hint_ && !keyword_.empty();
+  const bool had_keyword = KeywordIsSelected();
 
   // Modifying the selection counts as accepting the autocompleted text.
   InternalSetUserText(UserTextFromDisplayText(new_text));
