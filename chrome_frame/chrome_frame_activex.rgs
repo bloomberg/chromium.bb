@@ -1,4 +1,4 @@
-HKLM {
+%HIVE% {
   NoRemove Software {
     NoRemove Classes {
       ChromeTab.ChromeFrame.1 = s 'Chrome Frame' {

@@ -1,4 +1,4 @@
-HKLM {
+%HIVE% {
   NoRemove Software {
     NoRemove Classes {
       NoRemove AppID {

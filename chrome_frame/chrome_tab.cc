@@ -43,7 +43,7 @@
 namespace {
 // This function has the side effect of initializing an unprotected
 // vector pointer inside GoogleUrl. If this is called during DLL loading,
-// it has the effect of avoiding an initializiation race on that pointer.
+// it has the effect of avoiding an initialization race on that pointer.
 // TODO(siggi): fix GoogleUrl.
 void InitGoogleUrl() {
   static const char kDummyUrl[] = "http://www.google.com";
@@ -87,6 +87,8 @@ LPFNGETCLASSOBJECT g_dll_get_class_object_redir_ptr = NULL;
 class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
  public:
   typedef CAtlDllModuleT<ChromeTabModule> ParentClass;
+
+  ChromeTabModule() : do_system_registration_(true) {}
 
   DECLARE_LIBID(LIBID_ChromeTabLib)
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CHROMETAB,
@@ -151,14 +153,32 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
       DCHECK(SUCCEEDED(hr));
     }
 
+    if (SUCCEEDED(hr)) {
+      // Add the registry hive to use.
+      // Note: This is ugly as hell. I'd rather use the pMapEntries parameter
+      // to CAtlModule::UpdateRegistryFromResource, unfortunately we have a
+      // few components that are registered by calling their
+      // static T::UpdateRegistry() methods directly, which doesn't allow
+      // pMapEntries to be passed through :-(
+      if (do_system_registration_) {
+        hr = registrar->AddReplacement(L"HIVE", L"HKLM");
+      } else {
+        hr = registrar->AddReplacement(L"HIVE", L"HKCU");
+      }
+      DCHECK(SUCCEEDED(hr));
+    }
+
     return hr;
   }
+
+  // See comments in AddCommonRGSReplacements
+  bool do_system_registration_;
 };
 
 ChromeTabModule _AtlModule;
 
 base::AtExitManager* g_exit_manager = NULL;
-bool RegisterSecuredMimeHandler(bool enable);  // forward
+bool RegisterSecuredMimeHandler(bool enable, bool is_system);  // forward
 
 // DLL Entry Point
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
@@ -325,7 +345,7 @@ enum RegistrationFlags {
   ALL                 = 0xFFFF
 };
 
-STDAPI CustomRegistration(UINT reg_flags, BOOL reg) {
+STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
   UINT flags = reg_flags;
 
   if (reg && (flags & (ACTIVEDOC | ACTIVEX)))
@@ -333,8 +353,15 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg) {
 
   HRESULT hr = S_OK;
 
+  // Set the flag that gets checked in AddCommonRGSReplacements before doing
+  // registration work.
+  _AtlModule.do_system_registration_ = is_system;
+
   if ((hr == S_OK) && (flags & ACTIVEDOC)) {
-    if (!RegisterSecuredMimeHandler(reg? true : false))
+    // Don't fail to unregister if we can't undo the secure mime
+    // handler registration. This was observed getting hit during
+    // uninstallation.
+    if (!RegisterSecuredMimeHandler(reg ? true : false, is_system) && reg)
       return E_FAIL;
     hr = ChromeActiveDocument::UpdateRegistry(reg);
   }
@@ -357,13 +384,14 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg) {
     hr = Bho::UpdateRegistry(reg);
   }
 
-  if ((hr == S_OK) && (flags & BHO_REGISTRATION)) {
+  if ((hr == S_OK) && (flags & BHO_REGISTRATION) && !is_system) {
     _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, reg);
   }
 
   if ((hr == S_OK) && (flags & TYPELIB)) {
-    hr = (reg)? _AtlComModule.RegisterTypeLib():
-                _AtlComModule.UnRegisterTypeLib();
+    hr = (reg)?
+        UtilRegisterTypeLib(_AtlComModule.m_hInstTypeLib, NULL, !is_system) :
+        UtilUnRegisterTypeLib(_AtlComModule.m_hInstTypeLib, NULL, !is_system);
   }
 
   if ((hr == S_OK) && (flags & NPAPI_PLUGIN)) {
@@ -388,7 +416,7 @@ STDAPI DllRegisterServer() {
     flags |= IDR_CHROMEFRAME_NPAPI;
   }
 
-  HRESULT hr = CustomRegistration(flags, TRUE);
+  HRESULT hr = CustomRegistration(flags, TRUE, true);
   if (SUCCEEDED(hr)) {
     SetupRunOnce();
   }
@@ -398,7 +426,29 @@ STDAPI DllRegisterServer() {
 
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer() {
-  HRESULT hr = CustomRegistration(ALL, FALSE);
+  HRESULT hr = CustomRegistration(ALL, FALSE, true);
+  return hr;
+}
+
+// DllRegisterServer - Adds entries to the HKCU hive in the registry
+STDAPI DllRegisterUserServer() {
+  UINT flags =  ACTIVEX | ACTIVEDOC | TYPELIB | GCF_PROTOCOL | BHO_CLSID;
+
+  if (UtilIsPersistentNPAPIMarkerSet()) {
+    flags |= IDR_CHROMEFRAME_NPAPI;
+  }
+
+  HRESULT hr = CustomRegistration(flags, TRUE, false);
+  if (SUCCEEDED(hr)) {
+    SetupRunOnce();
+  }
+
+  return hr;
+}
+
+// DllRegisterServer - Removes entries from the HKCU hive in the registry.
+STDAPI DllUnregisterUserServer() {
+  HRESULT hr = CustomRegistration(ALL, FALSE, false);
   return hr;
 }
 
@@ -542,10 +592,10 @@ struct TokenWithPrivileges {
   CSid user_;
 };
 
-static bool SetOrDeleteMimeHandlerKey(bool set) {
+static bool SetOrDeleteMimeHandlerKey(bool set, HKEY root_key) {
   std::wstring key_name = kInternetSettings;
   key_name.append(L"\\Secure Mime Handlers");
-  RegKey key(HKEY_LOCAL_MACHINE, key_name.c_str(), KEY_READ | KEY_WRITE);
+  RegKey key(root_key, key_name.c_str(), KEY_READ | KEY_WRITE);
   if (!key.Valid())
     return false;
 
@@ -561,9 +611,11 @@ static bool SetOrDeleteMimeHandlerKey(bool set) {
   return result;
 }
 
-bool RegisterSecuredMimeHandler(bool enable) {
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
-    return SetOrDeleteMimeHandlerKey(enable);
+bool RegisterSecuredMimeHandler(bool enable, bool is_system) {
+  if (!is_system) {
+    return SetOrDeleteMimeHandlerKey(enable, HKEY_CURRENT_USER);
+  } else if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+    return SetOrDeleteMimeHandlerKey(enable, HKEY_LOCAL_MACHINE);
   }
 
   std::wstring mime_key = kInternetSettings;
@@ -597,7 +649,7 @@ bool RegisterSecuredMimeHandler(bool enable) {
     sd.GetDacl(&new_dacl);
     new_dacl.AddAllowedAce(token_.GetUser(), GENERIC_WRITE | GENERIC_READ);
     if (AtlSetDacl(object_name.c_str(), SE_REGISTRY_KEY, new_dacl)) {
-      result = SetOrDeleteMimeHandlerKey(enable);
+      result = SetOrDeleteMimeHandlerKey(enable, HKEY_LOCAL_MACHINE);
     }
   }
 

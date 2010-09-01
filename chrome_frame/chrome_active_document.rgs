@@ -1,4 +1,4 @@
-HKLM {
+%HIVE% {
   NoRemove Software {
     NoRemove Classes {
       ChromeTab.ChromeActiveDocument.1 = s 'ChromeActiveDocument Class' {
@@ -34,7 +34,7 @@ HKLM {
   }
 }
 
-HKLM {
+%HIVE% {
   NoRemove Software {
     NoRemove Classes {
       NoRemove MIME {

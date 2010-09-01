@@ -1,4 +1,4 @@
-HKLM {
+%HIVE% {
   NoRemove Software {
     NoRemove MozillaPlugins {
       ForceRemove '@google.com/ChromeFrame,version=1.0' {

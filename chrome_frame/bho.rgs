@@ -1,4 +1,4 @@
-HKLM {
+%HIVE% {
   NoRemove SOFTWARE {
     NoRemove Classes {
       ChromeFrame.Bho.1 = s 'Bho Class' {

@@ -1,4 +1,4 @@
-HKLM {
+%HIVE% {
   NoRemove Software {
     NoRemove Classes {
       ChromeTab.ChromeProtocol.1 = s 'ChromeProtocol Class' {
@@ -24,7 +24,7 @@ HKLM {
   }
 }
 
-HKLM {
+%HIVE% {
   NoRemove Software {
     NoRemove Classes {
       NoRemove Protocols {
