@@ -56,6 +56,7 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   state->num_rex_prefixes = 0;
   state->prefix_mask = 0;
   state->inst = NULL;
+  state->nodes.is_defined = FALSE;
   state->nodes.number_expr_nodes = 0;
 }
 
@@ -701,6 +702,7 @@ static void NaClClearInstState(NaClInstState* state, uint8_t opcode_length) {
   state->num_imm2_bytes = 0;
   state->operand_size = 32;
   state->address_size = 32;
+  state->nodes.is_defined = FALSE;
   state->nodes.number_expr_nodes = 0;
 }
 
@@ -888,7 +890,8 @@ NaClPcAddress NaClInstStateVpc(NaClInstState* state) {
 }
 
 NaClExpVector* NaClInstStateExpVector(NaClInstState* state) {
-  if (state->nodes.number_expr_nodes == 0) {
+  if (!state->nodes.is_defined) {
+    state->nodes.is_defined = TRUE;
     NaClBuildExpVector(state);
   }
   return &state->nodes;

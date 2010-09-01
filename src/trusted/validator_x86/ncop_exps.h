@@ -56,6 +56,7 @@ typedef struct NaClExp {
  * (preorder) tree that defines the instruction expression.
  */
 typedef struct NaClExpVector {
+  Bool is_defined;  /* TRUE iff vector has been built. */
   uint32_t number_expr_nodes;
   NaClExp node[NACL_MAX_EXPS];
 } NaClExpVector;
