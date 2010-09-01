@@ -85,21 +85,21 @@ ServiceProcessControl::ServiceProcessControl(Profile* profile,
 ServiceProcessControl::~ServiceProcessControl() {
 }
 
-void ServiceProcessControl::Connect(Task* task) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+void ServiceProcessControl::ConnectInternal(Task* task) {
+  // If the channel has already been established then we run the task
+  // and return.
   if (channel_.get()) {
-    task->Run();
-    delete task;
+    if (task) {
+      task->Run();
+      delete task;
+    }
     return;
   }
 
-  // Saves the task.
-  connect_done_task_.reset(task);
-  ConnectInternal();
-}
-
-void ServiceProcessControl::ConnectInternal() {
+  // Actually going to connect.
   LOG(INFO) << "Connecting to Service Process IPC Server";
+  connect_done_task_.reset(task);
+
   // Run the IPC channel on the shared IO thread.
   base::Thread* io_thread = g_browser_process->io_thread();
 
@@ -114,11 +114,10 @@ void ServiceProcessControl::ConnectInternal() {
 
 void ServiceProcessControl::Launch(Task* task) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (channel_.get()) {
-    if (task) {
-      task->Run();
-      delete task;
-    }
+
+  // If the service process is already running then connects to it.
+  if (CheckServiceProcessRunning(kServiceProcessCloudPrint)) {
+    ConnectInternal(task);
     return;
   }
 
@@ -157,12 +156,9 @@ void ServiceProcessControl::Launch(Task* task) {
 void ServiceProcessControl::OnProcessLaunched(Task* task) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (launcher_->launched()) {
-    // Now use the launch task as the connect task.
-    connect_done_task_.reset(task);
-
     // After we have successfully created the service process we try to connect
     // to it. The launch task is transfered to a connect task.
-    ConnectInternal();
+    ConnectInternal(task);
   } else if (task) {
     // If we don't have process handle that means launching the service process
     // has failed.

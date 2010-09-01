@@ -54,14 +54,11 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Return true if this object is connected to the service.
   bool is_connected() const { return channel_.get() != NULL; }
 
-  // Initialize the connection to the service process.
-  // |connect_done_task| is invoked if the connection has succeeded or failed.
-  // User should call is_connected() to check the connection status.
-  void Connect(Task* connect_done_task);
-
   // Create a new service process and connects to it.
   // |launch_done_task| is called if launching the service process has failed
   // or we have successfully launched the process and connected to it.
+  // If the service process is already running this method will try to connect
+  // to the service process.
   void Launch(Task* launch_done_task);
 
   // IPC::Channel::Listener implementation.
@@ -99,8 +96,9 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Method called by Launcher when the service process is launched.
   void OnProcessLaunched(Task* launch_done_task);
 
-  // Used internally to connect to the service process.
-  void ConnectInternal();
+  // Used internally to connect to the service process. |task| is executed
+  // when the connection is made or an error occurred.
+  void ConnectInternal(Task* task);
 
   Profile* profile_;
   ServiceProcessType type_;
