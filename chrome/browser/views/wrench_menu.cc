@@ -706,6 +706,9 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
 
   MenuItemView* menu_item = parent->AppendMenuItemImpl(id, label, icon, type);
 
+  if (menu_item)
+    menu_item->SetVisible(model->IsVisibleAt(index));
+
   if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
     SkBitmap icon;
     if (model->GetIconAt(index, &icon))
