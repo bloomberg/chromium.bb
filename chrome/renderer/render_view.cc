@@ -2563,6 +2563,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   bool is_content_initiated =
       NavigationState::FromDataSource(frame->provisionalDataSource())->
           is_content_initiated();
+  GURL old_url(frame->url());
 
   // We only care about navigations that are within the current tab (as opposed
   // to, for example, opening a new window).
@@ -2584,7 +2585,10 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
 
     // We forward non-local navigations from extensions to the browser if they
     // are top-level events, even if the browser hasn't expressed interest.
+    // TODO(erikkay) crbug.com/54118 - combine this clause and the next into
+    // some shared logic.
     if (BindingsPolicy::is_extension_enabled(enabled_bindings_) &&
+        old_url.SchemeIs(chrome::kExtensionScheme) &&
         IsNonLocalTopLevelNavigation(url, frame, type)) {
         // We don't send referrer from extensions.
         OpenURL(url, GURL(), default_policy);
@@ -2622,7 +2626,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   // (see below).
   bool is_fork =
       // Must start from a tab showing about:blank, which is later redirected.
-      GURL(frame->url()) == GURL(chrome::kAboutBlankURL) &&
+      old_url == GURL(chrome::kAboutBlankURL) &&
       // Must be the first real navigation of the tab.
       historyBackListCount() < 1 &&
       historyForwardListCount() < 1 &&
