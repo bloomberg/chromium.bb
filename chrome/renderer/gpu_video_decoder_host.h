@@ -81,7 +81,7 @@ class GpuVideoDecoderHost
   // We expect that GpuVideoServiceHost's always available during our life span.
   GpuVideoServiceHost* gpu_video_service_host_;
 
-  scoped_refptr<GpuChannelHost> channel_host_;
+  GpuChannelHost* channel_host_;
 
   // We expect that the client of us will always available during our life span.
   EventHandler* event_handler_;

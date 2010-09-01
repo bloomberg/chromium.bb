@@ -9,14 +9,15 @@
 #include "chrome/renderer/render_thread.h"
 
 GpuVideoServiceHost::GpuVideoServiceHost()
-    : router_(NULL),
+    : channel_host_(NULL),
+      router_(NULL),
       message_loop_(NULL) {
   memset(&service_info_, 0, sizeof(service_info_));
 }
 
 void GpuVideoServiceHost::OnChannelError() {
   LOG(ERROR) << "GpuVideoServiceHost::OnChannelError";
-  channel_host_.release();
+  channel_host_ = NULL;
   router_ = NULL;
 }
 
@@ -32,7 +33,7 @@ scoped_refptr<GpuVideoDecoderHost> GpuVideoServiceHost::CreateVideoDecoder(
     GpuVideoDecoderHost::EventHandler* event_handler) {
   DCHECK(RenderThread::current());
 
-  if (!channel_host_.get() || !service_info_.service_available_)
+  if (!channel_host_ || !service_info_.service_available_)
     return NULL;
 
   GpuVideoDecoderInfoParam param;
@@ -60,7 +61,7 @@ void GpuVideoServiceHost::DestroyVideoDecoder(
     scoped_refptr<GpuVideoDecoderHost> gpu_video_decoder_host) {
   DCHECK(RenderThread::current());
 
-  if (!channel_host_.get() || !service_info_.service_available_)
+  if (!channel_host_ || !service_info_.service_available_)
     return;
 
   DCHECK(gpu_video_decoder_host.get());

@@ -34,7 +34,7 @@ class GpuVideoServiceHost : public IPC::Channel::Listener,
  private:
   GpuVideoServiceHost();
 
-  scoped_refptr<GpuChannelHost> channel_host_;
+  GpuChannelHost* channel_host_;
   MessageRouter* router_;
   GpuVideoServiceInfoParam service_info_;
   MessageLoop* message_loop_;  // Message loop of render thread.

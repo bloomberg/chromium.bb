@@ -24,7 +24,7 @@ GpuVideoDecoderHost::GpuVideoDecoderHost(GpuVideoServiceHost* service_host,
 }
 
 void GpuVideoDecoderHost::OnChannelError() {
-  channel_host_.release();
+  channel_host_ = NULL;
 }
 
 void GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
@@ -49,7 +49,7 @@ bool GpuVideoDecoderHost::Initialize(const GpuVideoDecoderInitParam& param) {
   DCHECK_EQ(state_, kStateUninitialized);
 
   init_param_ = param;
-  if (!channel_host_->Send(
+  if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_Initialize(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_Initialize failed";
     return false;
@@ -58,7 +58,8 @@ bool GpuVideoDecoderHost::Initialize(const GpuVideoDecoderInitParam& param) {
 }
 
 bool GpuVideoDecoderHost::Uninitialize() {
-  if (!channel_host_->Send(new GpuVideoDecoderMsg_Destroy(route_id()))) {
+  if (!channel_host_ || !channel_host_->Send(
+      new GpuVideoDecoderMsg_Destroy(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_Destroy failed";
     return false;
   }
@@ -87,7 +88,7 @@ void GpuVideoDecoderHost::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
     return;
 
   GpuVideoDecoderOutputBufferParam param;
-  if (!channel_host_->Send(
+  if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_FillThisBuffer(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBuffer failed";
   }
@@ -95,7 +96,8 @@ void GpuVideoDecoderHost::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
 
 bool GpuVideoDecoderHost::Flush() {
   state_ = kStateFlushing;
-  if (!channel_host_->Send(new GpuVideoDecoderMsg_Flush(route_id()))) {
+  if (!channel_host_ || !channel_host_->Send(
+      new GpuVideoDecoderMsg_Flush(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_Flush failed";
     return false;
   }
@@ -179,7 +181,7 @@ void GpuVideoDecoderHost::OnFillThisBufferDone(
   }
 
   event_handler_->OnFillBufferDone(frame);
-  if (!channel_host_->Send(
+  if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_FillThisBufferDoneACK(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBufferDoneACK failed";
   }
@@ -206,7 +208,7 @@ void GpuVideoDecoderHost::SendInputBufferToGpu() {
   param.size_ = buffer->GetDataSize();
   param.timestamp_ = buffer->GetTimestamp().InMicroseconds();
   memcpy(input_transfer_buffer_->memory(), buffer->GetData(), param.size_);
-  if (!channel_host_->Send(
+  if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_EmptyThisBuffer(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBuffer failed";
   }
