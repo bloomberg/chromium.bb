@@ -31,16 +31,25 @@ class TabNavigation {
     HAS_POST_DATA = 1
   };
 
-  TabNavigation();
+  TabNavigation()
+      : transition_(PageTransition::TYPED),
+        type_mask_(0),
+        index_(-1) {
+  }
+
   TabNavigation(int index,
                 const GURL& virtual_url,
                 const GURL& referrer,
                 const string16& title,
                 const std::string& state,
-                PageTransition::Type transition);
-  TabNavigation(const TabNavigation& tab);
-  ~TabNavigation();
-  TabNavigation& operator=(const TabNavigation& tab);
+                PageTransition::Type transition)
+      : virtual_url_(virtual_url),
+        referrer_(referrer),
+        title_(title),
+        state_(state),
+        transition_(transition),
+        type_mask_(0),
+        index_(index) {}
 
   // Converts this TabNavigation into a NavigationEntry with a page id of
   // |page_id|. The caller owns the returned NavigationEntry.
@@ -98,8 +107,10 @@ class TabNavigation {
 
 // SessionTab corresponds to a NavigationController.
 struct SessionTab {
-  SessionTab();
-  ~SessionTab();
+  SessionTab()
+      : tab_visual_index(-1),
+        current_navigation_index(-1),
+        pinned(false) { }
 
   // Unique id of the window.
   SessionID window_id;

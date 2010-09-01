@@ -15,7 +15,6 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/sessions/tab_restore_service_observer.h"
 
 class FilePath;
 class Profile;
@@ -92,7 +91,7 @@ typedef std::vector<scoped_refptr<ShellLinkItem> > ShellLinkItemList;
 // * Creatng COM objects used by JumpList from PageUsageData objects;
 // * Adding COM objects to JumpList, etc.
 //
-// This class also implements TabRestoreServiceObserver. So, once we call
+// This class also implements TabRestoreService::Observer. So, once we call
 // AddObserver() and register this class as an observer, it automatically
 // updates a JumpList when a tab is added or removed.
 //
@@ -100,7 +99,7 @@ typedef std::vector<scoped_refptr<ShellLinkItem> > ShellLinkItemList;
 // update it in a UI thread. To solve this problem, this class posts a
 // task when it actually updates a JumpList. (This task is implemented in an
 // anomynous namespace in "jumplist_win.cc".)
-class JumpList : public TabRestoreServiceObserver {
+class JumpList : public TabRestoreService::Observer {
  public:
   JumpList();
   ~JumpList();

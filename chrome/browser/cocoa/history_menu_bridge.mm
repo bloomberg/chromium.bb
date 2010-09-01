@@ -46,23 +46,6 @@ const unsigned int kRecentlyClosedCount = 10;
 
 }  // namespace
 
-HistoryMenuBridge::HistoryItem::HistoryItem()
-   : icon_requested(false),
-     menu_item(nil),
-     session_id(0) {
-}
-
-HistoryMenuBridge::HistoryItem::HistoryItem(const HistoryItem& copy)
-   : title(copy.title),
-     url(copy.url),
-     icon_requested(false),
-     menu_item(nil),
-     session_id(copy.session_id) {
-}
-
-HistoryMenuBridge::HistoryItem::~HistoryItem() {
-}
-
 HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
     : controller_([[HistoryMenuCocoaController alloc] initWithBridge:this]),
       profile_(profile),

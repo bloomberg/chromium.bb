@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"

@@ -11,7 +11,6 @@
 #include "chrome/browser/cocoa/view_id_util.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"

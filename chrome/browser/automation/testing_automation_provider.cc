@@ -30,7 +30,6 @@
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/login_prompt.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/renderer_host/render_process_host.h"

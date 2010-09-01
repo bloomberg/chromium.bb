@@ -12,10 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_command.h"
-
-namespace net {
-class FileStream;
-}
+#include "net/base/file_stream.h"
 
 // SessionBackend -------------------------------------------------------------
 
@@ -96,7 +93,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
  private:
   friend class base::RefCountedThreadSafe<SessionBackend>;
 
-  ~SessionBackend();
+  ~SessionBackend() {}
 
   // If current_session_file_ is open, it is truncated so that it is essentially
   // empty (only contains the header). If current_session_file_ isn't open, it
