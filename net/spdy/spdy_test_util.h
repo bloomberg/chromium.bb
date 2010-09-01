@@ -200,6 +200,18 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                                   int stream_id,
                                   RequestPriority request_priority);
 
+// Constructs a standard SPDY GET SYN packet, optionally compressed.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.  If |direct| is false, the
+// the full url will be used instead of simply the path.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
+                                  int extra_header_count,
+                                  bool compressed,
+                                  int stream_id,
+                                  RequestPriority request_priority,
+                                  bool direct);
+
 // Constructs a standard SPDY push SYN packet.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.

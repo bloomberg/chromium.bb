@@ -370,11 +370,25 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                                   bool compressed,
                                   int stream_id,
                                   RequestPriority request_priority) {
-  static const char* const kStandardGetHeaders[] = {
+  return ConstructSpdyGet(extra_headers, extra_header_count, compressed,
+                          stream_id, request_priority, true);
+}
+
+// Constructs a standard SPDY GET SYN packet, optionally compressed.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
+                                  int extra_header_count,
+                                  bool compressed,
+                                  int stream_id,
+                                  RequestPriority request_priority,
+                                  bool direct) {
+  const char* const kStandardGetHeaders[] = {
     "method",
     "GET",
     "url",
-    "/",
+    (direct ? "/" : "http://www.google.com/"),
     "host",
     "www.google.com",
     "scheme",
