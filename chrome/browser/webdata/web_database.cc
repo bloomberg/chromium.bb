@@ -447,18 +447,16 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   }
 
   // Initialize the tables.
-  bool credit_card_table_created = false;
   if (!InitKeywordsTable() || !InitLoginsTable() || !InitWebAppIconsTable() ||
       !InitWebAppsTable() || !InitAutofillTable() ||
       !InitAutofillDatesTable() || !InitAutoFillProfilesTable() ||
-      !InitCreditCardsTable(&credit_card_table_created) ||
-      !InitTokenServiceTable()) {
+      !InitCreditCardsTable() || !InitTokenServiceTable()) {
     LOG(WARNING) << "Unable to initialize the web database.";
     return sql::INIT_FAILURE;
   }
 
   // If the file on disk is an older database version, bring it up to date.
-  MigrateOldVersionsAsNeeded(credit_card_table_created);
+  MigrateOldVersionsAsNeeded();
 
   return transaction.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
 }
@@ -762,7 +760,7 @@ bool WebDatabase::InitAutoFillProfilesTable() {
   return true;
 }
 
-bool WebDatabase::InitCreditCardsTable(bool* table_was_created) {
+bool WebDatabase::InitCreditCardsTable() {
   if (!db_.DoesTableExist("credit_cards")) {
     if (!db_.Execute("CREATE TABLE credit_cards ( "
                      "label VARCHAR, "
@@ -780,7 +778,6 @@ bool WebDatabase::InitCreditCardsTable(bool* table_was_created) {
       NOTREACHED();
       return false;
     }
-    *table_was_created = true;
     if (!db_.Execute("CREATE INDEX credit_cards_label_index "
                      "ON credit_cards (label)")) {
       NOTREACHED();
@@ -1874,7 +1871,7 @@ bool WebDatabase::RemoveFormElementForID(int64 pair_id) {
   return false;
 }
 
-void WebDatabase::MigrateOldVersionsAsNeeded(bool credit_card_table_created) {
+void WebDatabase::MigrateOldVersionsAsNeeded(){
   // Migrate if necessary.
   int current_version = meta_table_.GetVersionNumber();
   switch (current_version) {
@@ -1912,23 +1909,53 @@ void WebDatabase::MigrateOldVersionsAsNeeded(bool credit_card_table_created) {
 
     case 22:
       // Add the card_number_encrypted column if credit card table was not
-      // created in this build.
-      if (!credit_card_table_created) {
-        if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
-                         "card_number_encrypted BLOB DEFAULT NULL")) {
-            NOTREACHED();
-            LOG(WARNING) << "Unable to update web database to version 23.";
-            return;
-        }
-        if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
-                         "verification_code_encrypted BLOB DEFAULT NULL")) {
-            NOTREACHED();
-            LOG(WARNING) << "Unable to update web database to version 23.";
-            return;
-        }
+      // created in this build (otherwise the column already exists).
+      // WARNING: Do not change the order of the execution of the SQL
+      // statements in this case!  Profile corruption and data migration
+      // issues WILL OCCUR. (see http://crbug.com/10913)
+      //
+      // The problem is that if a user has a profile which was created before
+      // r37036, when the credit_cards table was added, and then failed to
+      // update this profile between the credit card addition and the addition
+      // of the "encrypted" columns (44963), the next data migration will put
+      // the user's profile in an incoherent state: The user will update from
+      // a data profile set to be earlier than 22, and therefore pass through
+      // this update case.  But because the user did not have a credit_cards
+      // table before starting Chrome, it will have just been initialized
+      // above, and so already have these columns -- and thus this data
+      // update step will have failed.
+      //
+      // The false assumption in this case is that at this step in the
+      // migration, the user has a credit card table, and that this
+      // table does not include encrypted columns!
+      // Because this case does not roll back the complete set of SQL
+      // transactions properly in case of failure (that is, it does not
+      // roll back the table initialization done above), the incoherent
+      // profile will now see itself as being at version 22 -- but include a
+      // fully initialized credit_cards table.  Every time Chrome runs, it
+      // will try to update the web database and fail at this step, unless
+      // we allow for the faulty assumption described above by checking for
+      // the existence of the columns only AFTER we've executed the commands
+      // to add them.
+      if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
+                       "card_number_encrypted BLOB DEFAULT NULL")) {
+        LOG(WARNING) << "Could not add card_number_encrypted to "
+                        "credit_cards table.";
+      }
+      if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
+                       "verification_code_encrypted BLOB DEFAULT NULL")) {
+        LOG(WARNING) << "Could not add verification_code_encrypted to "
+                        "credit_cards table.";
+      }
+      if (!db_.Execute(
+              "SELECT card_number_encrypted FROM credit_cards limit 1") ||
+          !db_.Execute(
+              "SELECT verification_code_encrypted FROM credit_cards limit 1")) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 23.";
+        return;
       }
       meta_table_.SetVersionNumber(23);
-
       // FALL THROUGH
 
     case 23: {
@@ -1990,7 +2017,7 @@ void WebDatabase::MigrateOldVersionsAsNeeded(bool credit_card_table_created) {
     }
 
     case 24:
-      // Add the logo_id column.
+      // Add the logo_id column if keyword table was not created in this build.
       if (!db_.Execute("ALTER TABLE keywords ADD COLUMN logo_id "
                        "INTEGER DEFAULT 0")) {
         NOTREACHED();

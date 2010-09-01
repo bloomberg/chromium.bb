@@ -332,13 +332,12 @@ class WebDatabase {
   bool InitAutofillTable();
   bool InitAutofillDatesTable();
   bool InitAutoFillProfilesTable();
-  // Out parameter |credit_card_table_created| true if table created here.
-  bool InitCreditCardsTable(bool* table_was_created);
+  bool InitCreditCardsTable();
   bool InitTokenServiceTable();
   bool InitWebAppIconsTable();
   bool InitWebAppsTable();
 
-  void MigrateOldVersionsAsNeeded(bool credit_card_table_created);
+  void MigrateOldVersionsAsNeeded();
 
   sql::Connection db_;
   sql::MetaTable meta_table_;
