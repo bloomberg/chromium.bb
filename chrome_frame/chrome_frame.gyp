@@ -357,6 +357,15 @@
       ],
       'conditions': [
         ['OS=="win"', {
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
           'link_settings': {
             'libraries': [
               '-loleacc.lib',
