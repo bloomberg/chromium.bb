@@ -197,6 +197,8 @@ bool CustomButton::OnKeyPressed(const KeyEvent& e) {
   } else if (e.GetKeyCode() == base::VKEY_RETURN) {
     SetState(BS_NORMAL);
     NotifyClick(e);
+  } else {
+    return false;
   }
   return true;
 }
