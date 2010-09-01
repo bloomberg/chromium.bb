@@ -160,7 +160,9 @@ namespace {
 
 typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 
-// Current version number.
+// Current version number.  Note: when changing the current version number,
+// corresponding changes must happen in the unit tests, and new migration test
+// added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 const int kCurrentVersionNumber = 25;
 const int kCompatibleVersionNumber = 25;
 const int kUrlIdPosition = 14;
