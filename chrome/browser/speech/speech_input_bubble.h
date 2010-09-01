@@ -68,6 +68,10 @@ class SpeechInputBubble {
   // Indicates to the user that recognition is in progress.
   virtual void SetRecognizingMode() = 0;
 
+  // The horizontal distance between the start of the html widget and the speech
+  // bubble's arrow.
+  static const int kBubbleTargetOffsetX;
+
  private:
   static FactoryMethod factory_;
 };
