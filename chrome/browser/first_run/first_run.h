@@ -45,6 +45,7 @@ class FirstRun {
     int dont_import_items;
     bool run_search_engine_experiment;
     bool randomize_search_engine_experiment;
+    bool make_chrome_default;
     std::vector<GURL> new_tabs;
     std::vector<GURL> bookmarks;
   };
@@ -74,6 +75,7 @@ class FirstRun {
       int dont_import_items,
       bool search_engine_experiment,
       bool randomize_search_engine_experiment,
+      bool make_chrome_default,
       ProcessSingleton* process_singleton);
 
   // Does platform specific setup. Called at the start of AutoImport.

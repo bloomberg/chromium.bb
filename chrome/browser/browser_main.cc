@@ -1254,6 +1254,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
                            master_prefs.dont_import_items,
                            master_prefs.run_search_engine_experiment,
                            master_prefs.randomize_search_engine_experiment,
+                           master_prefs.make_chrome_default,
                            &process_singleton);
 #else
       if (!OpenFirstRunDialog(profile,

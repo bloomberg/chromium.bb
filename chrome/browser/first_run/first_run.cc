@@ -206,7 +206,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kMakeChromeDefaultForUser, &value) &&
       value)
-    ShellIntegration::SetAsDefaultBrowser();
+    out_prefs->make_chrome_default = true;
 
   // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
   // import process.  http://crbug.com/49647
@@ -281,6 +281,11 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     }
   }
 #endif
+
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kMakeChromeDefaultForUser, &value) &&
+      value)
+    ShellIntegration::SetAsDefaultBrowser();
 
   return false;
 }
@@ -466,6 +471,7 @@ void FirstRun::AutoImport(
     int dont_import_items,
     bool search_engine_experiment,
     bool randomize_search_engine_experiment,
+    bool make_chrome_default,
     ProcessSingleton* process_singleton) {
   // We need to avoid dispatching new tabs when we are importing because
   // that will lead to data corruption or a crash. Because there is no UI for
@@ -528,6 +534,9 @@ void FirstRun::AutoImport(
 
     ShowFirstRunDialog(profile, randomize_search_engine_experiment);
   }
+
+  if (make_chrome_default)
+    ShellIntegration::SetAsDefaultBrowser();
 
   FirstRun::SetShowFirstRunBubblePref(true);
   // Set the first run bubble to minimal.
