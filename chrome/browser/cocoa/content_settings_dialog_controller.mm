@@ -142,6 +142,7 @@ class PrefObserverDisabler {
     // the HostContentSettingsMap or GeolocationContentSettingsMap.
     PrefService* prefs = profile_->GetPrefs();
     prefs->AddPrefObserver(prefs::kBlockThirdPartyCookies, observer_.get());
+    prefs->AddPrefObserver(prefs::kBlockNonsandboxedPlugins, observer_.get());
     prefs->AddPrefObserver(prefs::kDefaultContentSettings, observer_.get());
     prefs->AddPrefObserver(prefs::kGeolocationDefaultContentSetting,
                            observer_.get());
@@ -157,6 +158,8 @@ class PrefObserverDisabler {
   if (profile_) {
     PrefService* prefs = profile_->GetPrefs();
     prefs->RemovePrefObserver(prefs::kBlockThirdPartyCookies, observer_.get());
+    prefs->RemovePrefObserver(prefs::kBlockNonsandboxedPlugins,
+                              observer_.get());
     prefs->RemovePrefObserver(prefs::kDefaultContentSettings, observer_.get());
     prefs->RemovePrefObserver(prefs::kGeolocationDefaultContentSetting,
                               observer_.get());
@@ -413,20 +416,39 @@ class PrefObserverDisabler {
 }
 
 - (void)setPluginsEnabledIndex:(NSInteger)value {
-  ContentSetting setting = value == kContentSettingsEnabledIndex ?
-      CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  bool blockNonsandboxedPlugins = false;
+  switch (value) {
+    case kPluginsAllowSandboxedIndex:
+      blockNonsandboxedPlugins = true;
+      // Fall through to the next case.
+    case kPluginsAllowIndex:
+      setting = CONTENT_SETTING_ALLOW;
+      break;
+    case kPluginsBlockIndex:
+      setting = CONTENT_SETTING_BLOCK;
+      break;
+    default:
+      NOTREACHED();
+  }
   ContentSettingsDialogControllerInternal::PrefObserverDisabler
       disabler(observer_.get());
   profile_->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, setting);
+  profile_->GetHostContentSettingsMap()->SetBlockNonsandboxedPlugins(
+      blockNonsandboxedPlugins);
 }
 
 - (NSInteger)pluginsEnabledIndex {
-  HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
-  bool enabled =
-      settingsMap->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS) ==
-      CONTENT_SETTING_ALLOW;
-  return enabled ? kContentSettingsEnabledIndex : kContentSettingsDisabledIndex;
+  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  ContentSetting setting =
+      map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
+  if (setting == CONTENT_SETTING_ALLOW) {
+    if (map->GetBlockNonsandboxedPlugins())
+      return kPluginsAllowSandboxedIndex;
+    return kPluginsAllowIndex;
+  }
+  return kPluginsBlockIndex;
 }
 
 - (void)setPopupsEnabledIndex:(NSInteger)value {
@@ -514,6 +536,10 @@ class PrefObserverDisabler {
   if (*prefName == prefs::kBlockThirdPartyCookies) {
     [self willChangeValueForKey:@"blockThirdPartyCookies"];
     [self didChangeValueForKey:@"blockThirdPartyCookies"];
+  }
+  if (*prefName == prefs::kBlockNonsandboxedPlugins) {
+    [self willChangeValueForKey:@"pluginsEnabledIndex"];
+    [self didChangeValueForKey:@"pluginsEnabledIndex"];
   }
   if (*prefName == prefs::kDefaultContentSettings) {
     // We don't know exactly which setting has changed, so we'll tickle all

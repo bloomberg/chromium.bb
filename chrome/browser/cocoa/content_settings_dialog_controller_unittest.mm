@@ -162,23 +162,35 @@ TEST_F(ContentSettingsDialogControllerTest, PluginsSetting) {
   // Change setting, check dialog property.
   settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                          CONTENT_SETTING_ALLOW);
-  EXPECT_EQ([controller_ pluginsEnabledIndex], kContentSettingsEnabledIndex);
+  settingsMap_->SetBlockNonsandboxedPlugins(false);
+  EXPECT_EQ(kPluginsAllowIndex, [controller_ pluginsEnabledIndex]);
+
+  settingsMap_->SetBlockNonsandboxedPlugins(true);
+  EXPECT_EQ(kPluginsAllowSandboxedIndex, [controller_ pluginsEnabledIndex]);
 
   settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                          CONTENT_SETTING_BLOCK);
-  EXPECT_EQ([controller_ pluginsEnabledIndex], kContentSettingsDisabledIndex);
+  EXPECT_EQ(kPluginsBlockIndex, [controller_ pluginsEnabledIndex]);
 
   // Change dialog property, check setting.
   NSInteger setting;
-  [controller_ setPluginsEnabledIndex:kContentSettingsEnabledIndex];
+  [controller_ setPluginsEnabledIndex:kPluginsAllowIndex];
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
-  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
+  EXPECT_EQ(false, settingsMap_->GetBlockNonsandboxedPlugins());
 
-  [controller_ setPluginsEnabledIndex:kContentSettingsDisabledIndex];
+  [controller_ setPluginsEnabledIndex:kPluginsAllowSandboxedIndex];
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
-  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
+  EXPECT_EQ(true, settingsMap_->GetBlockNonsandboxedPlugins());
+
+  [controller_ setPluginsEnabledIndex:kPluginsBlockIndex];
+  setting =
+      settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, setting);
+  EXPECT_EQ(false, settingsMap_->GetBlockNonsandboxedPlugins());
 }
 
 TEST_F(ContentSettingsDialogControllerTest, PopupsSetting) {

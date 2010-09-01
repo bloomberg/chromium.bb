@@ -232,6 +232,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   prefs->AddPrefObserver(prefs::kDefaultContentSettings, this);
   prefs->AddPrefObserver(prefs::kContentSettingsPatterns, this);
   prefs->AddPrefObserver(prefs::kBlockThirdPartyCookies, this);
+  prefs->AddPrefObserver(prefs::kBlockNonsandboxedPlugins, this);
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
@@ -755,6 +756,10 @@ void HostContentSettingsMap::Observe(NotificationType type,
       AutoLock auto_lock(lock_);
       block_third_party_cookies_ = profile_->GetPrefs()->GetBoolean(
           prefs::kBlockThirdPartyCookies);
+    } else if (prefs::kBlockNonsandboxedPlugins == *name) {
+      AutoLock auto_lock(lock_);
+      block_nonsandboxed_plugins_ = profile_->GetPrefs()->GetBoolean(
+          prefs::kBlockNonsandboxedPlugins);
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
@@ -908,6 +913,7 @@ void HostContentSettingsMap::UnregisterObservers() {
   prefs->RemovePrefObserver(prefs::kDefaultContentSettings, this);
   prefs->RemovePrefObserver(prefs::kContentSettingsPatterns, this);
   prefs->RemovePrefObserver(prefs::kBlockThirdPartyCookies, this);
+  prefs->RemovePrefObserver(prefs::kBlockNonsandboxedPlugins, this);
   notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;
