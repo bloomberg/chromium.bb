@@ -1509,6 +1509,7 @@ nacl_env.Append(
     'tests/libc_free_hello_world/nacl.scons',
     'tests/loop/nacl.scons',
     'tests/mandel/nacl.scons',
+    'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
     'tests/nacl_log/nacl.scons',
