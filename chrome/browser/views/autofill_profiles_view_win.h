@@ -155,7 +155,6 @@ class AutoFillProfilesView : public views::View,
   // and then rebuild EditableSetViewContents.
   struct EditableSetInfo {
     bool is_address;
-    bool has_credit_card_number_been_edited;
     // If |is_address| is true |address| has some data and |credit_card|
     // is empty, and vice versa
     AutoFillProfile address;
@@ -163,13 +162,11 @@ class AutoFillProfilesView : public views::View,
 
     explicit EditableSetInfo(const AutoFillProfile* input_address)
         : address(*input_address),
-          is_address(true),
-          has_credit_card_number_been_edited(false) {
+          is_address(true) {
     }
     explicit EditableSetInfo(const CreditCard* input_credit_card)
         : credit_card(*input_credit_card),
-          is_address(false),
-          has_credit_card_number_been_edited(false) {
+          is_address(false) {
     }
   };
 
@@ -329,6 +326,7 @@ class AutoFillProfilesView : public views::View,
     views::Textfield* text_fields_[MAX_TEXT_FIELD];
     std::vector<EditableSetInfo>::iterator editable_fields_set_;
     EditableSetInfo temporary_info_;
+    bool has_credit_card_number_been_edited_;
     AutoFillProfilesView* observer_;
     AddressComboBoxModel* billing_model_;
     views::Combobox* combo_box_billing_;

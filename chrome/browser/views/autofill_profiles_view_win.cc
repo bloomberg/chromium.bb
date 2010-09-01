@@ -653,6 +653,7 @@ AutoFillProfilesView::EditableSetViewContents::EditableSetViewContents(
     std::vector<EditableSetInfo>::iterator field_set)
     : editable_fields_set_(field_set),
       temporary_info_(*editable_fields_set_),
+      has_credit_card_number_been_edited_(false),
       observer_(observer),
       billing_model_(billing_model),
       combo_box_billing_(NULL),
@@ -864,10 +865,10 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
 bool AutoFillProfilesView::EditableSetViewContents::HandleKeystroke(
     views::Textfield* sender, const views::Textfield::Keystroke& keystroke) {
   if (sender == text_fields_[TEXT_CC_NUMBER] &&
-      !temporary_info_.has_credit_card_number_been_edited) {
+      !has_credit_card_number_been_edited_) {
     // You cannot edit obfuscated number, you must retype it anew.
     sender->SetText(string16());
-    temporary_info_.has_credit_card_number_been_edited = true;
+    has_credit_card_number_been_edited_ = true;
   }
   return false;
 }
