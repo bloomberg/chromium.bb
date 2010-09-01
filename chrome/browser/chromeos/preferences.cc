@@ -168,34 +168,6 @@ void Preferences::Init(PrefService* prefs) {
   language_xkb_auto_repeat_interval_pref_.Init(
       prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
 
-  std::string locale(g_browser_process->GetApplicationLocale());
-  // Add input methods based on the application locale when the user first
-  // logs in. For instance, if the user chooses Japanese as the UI
-  // language at the first login, we'll add input methods associated with
-  // Japanese, such as mozc.
-  if (locale != kFallbackInputMethodLocale &&
-      !prefs->HasPrefPath(prefs::kLanguagePreloadEngines)) {
-    std::string preload_engines(language_preload_engines_.GetValue());
-    std::vector<std::string> input_method_ids;
-    input_method::GetInputMethodIdsFromLanguageCode(
-        locale, input_method::kAllInputMethods, &input_method_ids);
-    if (!input_method_ids.empty()) {
-      if (!preload_engines.empty())
-        preload_engines += ',';
-      preload_engines += input_method_ids[0];
-    }
-    language_preload_engines_.SetValue(preload_engines);
-  }
-  // Add the UI language to the preferred languages the user first logs in.
-  if (!prefs->HasPrefPath(prefs::kLanguagePreferredLanguages)) {
-    std::string preferred_languages(locale);
-    if (locale != kFallbackInputMethodLocale) {
-      preferred_languages += ",";
-      preferred_languages += kFallbackInputMethodLocale;
-    }
-    language_preferred_languages_.SetValue(preferred_languages);
-  }
-
   // Initialize touchpad settings to what's saved in user preferences.
   NotifyPrefChanged(NULL);
 }

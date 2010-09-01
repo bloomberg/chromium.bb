@@ -27,7 +27,8 @@ static InputMethodDescriptors CreateInputMethodDescriptors() {
   return descriptors;
 }
 
-TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
+// TODO: Fix this test.  See http://crosbug.com/6269
+TEST(LanguageOptionsHandlerTest, DISABLED_GetInputMethodList) {
   // Use the stub libcros. The change is global (i.e. affects other unti
   // tests), but it should be ok. Unit tests should not require the real
   // libcros.

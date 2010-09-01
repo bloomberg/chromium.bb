@@ -21,12 +21,14 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/logging_chrome.h"
@@ -38,6 +40,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -140,6 +143,18 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
 
+  const std::vector<UserManager::User>& users = UserManager::Get()->GetUsers();
+
+  bool first_login = true;
+  for (std::vector<UserManager::User>::const_iterator it = users.begin();
+       it < users.end(); ++it) {
+    std::string user_email = it->email();
+    if (username == user_email) {
+      first_login = false;
+      break;
+    }
+  }
+
   UserManager::Get()->UserLoggedIn(username);
   ConnectToPreferredNetwork();
 
@@ -178,6 +193,40 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   CookieFetcher* cf = new CookieFetcher(profile);
   cf->AttemptFetch(credentials.data);
   auth_token_ = credentials.token;
+
+  static const char kFallbackInputMethodLocale[] = "en-US";
+  if (first_login) {
+    std::string locale(g_browser_process->GetApplicationLocale());
+    // Add input methods based on the application locale when the user first
+    // logs in. For instance, if the user chooses Japanese as the UI
+    // language at the first login, we'll add input methods associated with
+    // Japanese, such as mozc.
+    if (locale != kFallbackInputMethodLocale) {
+      StringPrefMember language_preload_engines;
+      language_preload_engines.Init(prefs::kLanguagePreloadEngines,
+                                    profile->GetPrefs(), this);
+      StringPrefMember language_preferred_languages;
+      language_preferred_languages.Init(prefs::kLanguagePreferredLanguages,
+                                        profile->GetPrefs(), this);
+
+      std::string preload_engines(language_preload_engines.GetValue());
+      std::vector<std::string> input_method_ids;
+      input_method::GetInputMethodIdsFromLanguageCode(
+          locale, input_method::kAllInputMethods, &input_method_ids);
+      if (!input_method_ids.empty()) {
+        if (!preload_engines.empty())
+          preload_engines += ',';
+        preload_engines += input_method_ids[0];
+      }
+      language_preload_engines.SetValue(preload_engines);
+
+      // Add the UI language to the preferred languages the user first logs in.
+      std::string preferred_languages(locale);
+      preferred_languages += ",";
+      preferred_languages += kFallbackInputMethodLocale;
+      language_preferred_languages.SetValue(preferred_languages);
+    }
+  }
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
