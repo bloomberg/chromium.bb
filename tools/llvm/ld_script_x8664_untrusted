@@ -11,7 +11,8 @@ PHDRS
   text    PT_LOAD FLAGS(5) ;       /* read + execute */
   rodata  PT_LOAD FLAGS(4) ;       /* read */
   data    PT_LOAD FLAGS(6) ;       /* read + write */
-  tls     PT_TLS;
+  /* The additional read flag for PT_TLS needed to be specified when used w/ the gnu linker */
+  tls     PT_TLS  FLAGS(4) ;       /* read */
   /* TODO(sehr): do we need a stack? */
 }
 SECTIONS

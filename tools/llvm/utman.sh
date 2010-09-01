@@ -123,7 +123,7 @@ readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 readonly LLVM_REV=d4438bd19bd8
 readonly LLVM_GCC_REV=6da5d51ee4ac
 readonly NEWLIB_REV=03ddd92d699d
-readonly BINUTILS_REV=0df89bf526ff
+readonly BINUTILS_REV=725c7aa6f399
 
 ## Old milestones
 ##readonly LLVM_REV=de95d2b6c570
@@ -1787,6 +1787,7 @@ binutils-sb-configure() {
   StepBanner "BINUTILS-SB" "Configure ${arch}"
   local bitsize=${arch:3:2}
   local nacl="nacl${bitsize/"32"/}"
+  local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH"
   local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
   local installdir="${PNACL_CLIENT_TC_ROOT}/${arch}"
@@ -1795,26 +1796,26 @@ binutils-sb-configure() {
   spushd ${objdir}
   cp ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ./opcodes/.
   RunWithLog \
-    binutils.${arch}.sandboxed.configure \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    AR="${NACL_TOOLCHAIN}/bin/${nacl}-ar" \
-    AS="${NACL_TOOLCHAIN}/bin/${nacl}-as" \
-    CC="${NACL_TOOLCHAIN}/bin/${nacl}-gcc" \
-    CXX="${NACL_TOOLCHAIN}/bin/${nacl}-g++" \
-    LD="${NACL_TOOLCHAIN}/bin/${nacl}-ld" \
-    RANLIB="${NACL_TOOLCHAIN}/bin/${nacl}-ranlib" \
-    CFLAGS="-m${bitsize} -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -I${NACL_TOOLCHAIN}/${nacl}/include" \
-    LDFLAGS="-s" \
-    LDFLAGS_FOR_BUILD="-L ." \
-    ${srcdir}/binutils-2.20/configure \
-                             --prefix=${installdir} \
-                             --host=${nacl} \
-                             --target=${nacl} \
-                             --disable-nls \
-                             --enable-static \
-                             --enable-shared=no \
-                             --with-sysroot=${NEWLIB_INSTALL_DIR}
+      binutils.${arch}.sandboxed.configure \
+      env -i \
+      PATH="/usr/bin:/bin" \
+      AR="${NACL_TOOLCHAIN}/bin/${nacl}-ar" \
+      AS="${NACL_TOOLCHAIN}/bin/${nacl}-as" \
+      CC="${NACL_TOOLCHAIN}/bin/${nacl}-gcc" \
+      CXX="${NACL_TOOLCHAIN}/bin/${nacl}-g++" \
+      LD="${NACL_TOOLCHAIN}/bin/${nacl}-ld" \
+      RANLIB="${NACL_TOOLCHAIN}/bin/${nacl}-ranlib" \
+      CFLAGS="-m${bitsize} -O2 ${flags} -I${NACL_TOOLCHAIN}/${nacl}/include" \
+      LDFLAGS="-s" \
+      LDFLAGS_FOR_BUILD="-L ." \
+      ${srcdir}/binutils-2.20/configure \
+        --prefix=${installdir} \
+        --host=${nacl} \
+        --target=${nacl} \
+        --disable-nls \
+        --disable-werror \
+        --enable-static \
+        --enable-shared=no
   spopd
 }
 
@@ -1838,8 +1839,8 @@ binutils-sb-make() {
   ts-touch-open "${objdir}"
 
   RunWithLog binutils.${arch}.sandboxed.make \
-    env -i PATH="/usr/bin:/bin" \
-    make ${MAKE_OPTS} all-gas
+      env -i PATH="/usr/bin:/bin" \
+      make ${MAKE_OPTS} all-gas all-ld
 
   ts-touch-commit "${objdir}"
 
@@ -1855,8 +1856,8 @@ binutils-sb-install() {
   spushd ${objdir}
 
   RunWithLog binutils.${arch}.sandboxed.install \
-    env -i PATH="/usr/bin:/bin" \
-    make install-gas
+      env -i PATH="/usr/bin:/bin" \
+      make install-gas install-ld
 
   spopd
 }
@@ -1900,14 +1901,6 @@ install-translators() {
   assert-file "${INSTALL_DIR}/bin/llc" "Install PNaCl toolchain."
   cp "${INSTALL_DIR}/bin/llc" "${PNACL_CLIENT_TC_X8632}/bin"
   cp "${INSTALL_DIR}/bin/llc" "${PNACL_CLIENT_TC_X8664}/bin"
-
-# TODO(abetul): Replace ld's with 32/64 bit sandboxed executables.
-  assert-file "${INSTALL_DIR}/bin/arm-none-linux-gnueabi-ld" \
-        "Install PNaCl toolchain."
-  cp "${INSTALL_DIR}/bin/arm-none-linux-gnueabi-ld" \
-        "${PNACL_CLIENT_TC_X8632}/bin/ld"
-  cp "${INSTALL_DIR}/bin/arm-none-linux-gnueabi-ld" \
-        "${PNACL_CLIENT_TC_X8664}/bin/ld"
 
   scons-build-sel_ldr x86-32
   cp "./scons-out/opt-linux-x86-32/staging/sel_ldr" \
