@@ -398,6 +398,7 @@ bool HistoryURLProvider::FixupExactSuggestion(history::URLDatabase* db,
   // * ...then just before pressing "ctrl" the best match we supplied was the
   //   what-you-typed match, so stick with it by promoting this.
   history::URLRow info;
+  MatchType type = INLINE_AUTOCOMPLETE;
   if (!db->GetRowForURL(match->destination_url, &info)) {
     if (input.desired_tld().empty())
       return false;
@@ -416,10 +417,20 @@ bool HistoryURLProvider::FixupExactSuggestion(history::URLDatabase* db,
     AutocompleteMatch::ClassifyMatchInString(input.text(),
         UTF16ToWide(info.title()),
         ACMatchClassification::NONE, &match->description_class);
+    if (!info.typed_count()) {
+      // If we reach here, we must be in the second pass, and we must not have
+      // promoted this match as an exact match during the first pass.  That
+      // means it will have been outscored by the "search what you typed match".
+      // We need to maintain that ordering in order to not make the destination
+      // for the user's typing change depending on when they hit enter.  So
+      // lower the score here enough to let the search provider continue to
+      // outscore this match.
+      type = WHAT_YOU_TYPED;
+    }
   }
 
   // Promote as an exact match.
-  match->relevance = CalculateRelevance(input.type(), INLINE_AUTOCOMPLETE, 0);
+  match->relevance = CalculateRelevance(input.type(), type, 0);
 
   // Put it on the front of the HistoryMatches for redirect culling.
   EnsureMatchPresent(info, std::wstring::npos, false, matches, true);
