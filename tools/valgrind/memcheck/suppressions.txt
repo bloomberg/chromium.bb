@@ -4259,7 +4259,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN3net75_GLOBAL__N_net_socket_client_socket_pool_base_unittest.cc*ClientSocketPoolBaseTest_AbortAllRequestsOnFlush_Test8TestBodyEv
+   fun:*ClientSocketPoolBaseTest_AbortAllRequestsOnFlush_Test8TestBodyEv
 }
 {
    bug_54056
