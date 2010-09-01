@@ -3777,6 +3777,11 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   if (status) {
     info->SetStatus(true, "");
   } else {
+    // We cannot reach here if we are using the shader translator.
+    // All invalid shaders must be rejected by the translator.
+    // All translated shaders must compile.
+    LOG_IF(ERROR, use_shader_translator_)
+        << "Shader translator allowed/produced an invalid shader.";
     GLint len = 0;
     glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
     scoped_array<char> temp(new char[len]);
