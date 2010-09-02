@@ -66,60 +66,7 @@ templates and will be translated for each locale. -->
       <output filename="app/policy/mac/app-Manifest.plist" type="plist" lang="en" />
       <!-- The following directory names use Mac language codes (en instead of en-US,
            underscores instead of dashes. (As described in build/apply_locales.py -->
-      <output filename="app/policy/mac/strings/am.lproj/Localizable.strings" type="plist_strings" lang="am" />
-      <output filename="app/policy/mac/strings/ar.lproj/Localizable.strings" type="plist_strings" lang="ar" />
-      <output filename="app/policy/mac/strings/bg.lproj/Localizable.strings" type="plist_strings" lang="bg" />
-      <output filename="app/policy/mac/strings/bn.lproj/Localizable.strings" type="plist_strings" lang="bn" />
-      <output filename="app/policy/mac/strings/ca.lproj/Localizable.strings" type="plist_strings" lang="ca" />
-      <output filename="app/policy/mac/strings/cs.lproj/Localizable.strings" type="plist_strings" lang="cs" />
-      <output filename="app/policy/mac/strings/da.lproj/Localizable.strings" type="plist_strings" lang="da" />
-      <output filename="app/policy/mac/strings/de.lproj/Localizable.strings" type="plist_strings" lang="de" />
-      <output filename="app/policy/mac/strings/el.lproj/Localizable.strings" type="plist_strings" lang="el" />
-      <output filename="app/policy/mac/strings/en_GB.lproj/Localizable.strings" type="plist_strings" lang="en-GB" />
-      <!-- en-US is en on Mac-->
       <output filename="app/policy/mac/strings/en.lproj/Localizable.strings" type="plist_strings" lang="en" />
-      <output filename="app/policy/mac/strings/es.lproj/Localizable.strings" type="plist_strings" lang="es" />
-      <output filename="app/policy/mac/strings/es_419.lproj/Localizable.strings" type="plist_strings" lang="es-419" />
-      <output filename="app/policy/mac/strings/et.lproj/Localizable.strings" type="plist_strings" lang="et" />
-      <output filename="app/policy/mac/strings/fi.lproj/Localizable.strings" type="plist_strings" lang="fi" />
-      <output filename="app/policy/mac/strings/fil.lproj/Localizable.strings" type="plist_strings" lang="fil" />
-      <output filename="app/policy/mac/strings/fr.lproj/Localizable.strings" type="plist_strings" lang="fr" />
-      <output filename="app/policy/mac/strings/gu.lproj/Localizable.strings" type="plist_strings" lang="gu" />
-      <output filename="app/policy/mac/strings/he.lproj/Localizable.strings" type="plist_strings" lang="he" />
-      <output filename="app/policy/mac/strings/hi.lproj/Localizable.strings" type="plist_strings" lang="hi" />
-      <output filename="app/policy/mac/strings/hr.lproj/Localizable.strings" type="plist_strings" lang="hr" />
-      <output filename="app/policy/mac/strings/hu.lproj/Localizable.strings" type="plist_strings" lang="hu" />
-      <output filename="app/policy/mac/strings/id.lproj/Localizable.strings" type="plist_strings" lang="id" />
-      <output filename="app/policy/mac/strings/it.lproj/Localizable.strings" type="plist_strings" lang="it" />
-      <output filename="app/policy/mac/strings/ja.lproj/Localizable.strings" type="plist_strings" lang="ja" />
-      <output filename="app/policy/mac/strings/kn.lproj/Localizable.strings" type="plist_strings" lang="kn" />
-      <output filename="app/policy/mac/strings/ko.lproj/Localizable.strings" type="plist_strings" lang="ko" />
-      <output filename="app/policy/mac/strings/lt.lproj/Localizable.strings" type="plist_strings" lang="lt" />
-      <output filename="app/policy/mac/strings/lv.lproj/Localizable.strings" type="plist_strings" lang="lv" />
-      <output filename="app/policy/mac/strings/ml.lproj/Localizable.strings" type="plist_strings" lang="ml" />
-      <output filename="app/policy/mac/strings/mr.lproj/Localizable.strings" type="plist_strings" lang="mr" />
-      <output filename="app/policy/mac/strings/nl.lproj/Localizable.strings" type="plist_strings" lang="nl" />
-      <!-- The translation console uses 'no' for Norwegian Bokmål. It should
-           be 'nb'. -->
-      <output filename="app/policy/mac/strings/nb.lproj/Localizable.strings" type="plist_strings" lang="no" />
-      <output filename="app/policy/mac/strings/pl.lproj/Localizable.strings" type="plist_strings" lang="pl" />
-      <output filename="app/policy/mac/strings/pt_BR.lproj/Localizable.strings" type="plist_strings" lang="pt-BR" />
-      <output filename="app/policy/mac/strings/pt_PT.lproj/Localizable.strings" type="plist_strings" lang="pt-PT" />
-      <output filename="app/policy/mac/strings/ro.lproj/Localizable.strings" type="plist_strings" lang="ro" />
-      <output filename="app/policy/mac/strings/ru.lproj/Localizable.strings" type="plist_strings" lang="ru" />
-      <output filename="app/policy/mac/strings/sk.lproj/Localizable.strings" type="plist_strings" lang="sk" />
-      <output filename="app/policy/mac/strings/sl.lproj/Localizable.strings" type="plist_strings" lang="sl" />
-      <output filename="app/policy/mac/strings/sr.lproj/Localizable.strings" type="plist_strings" lang="sr" />
-      <output filename="app/policy/mac/strings/sv.lproj/Localizable.strings" type="plist_strings" lang="sv" />
-      <output filename="app/policy/mac/strings/sw.lproj/Localizable.strings" type="plist_strings" lang="sw" />
-      <output filename="app/policy/mac/strings/ta.lproj/Localizable.strings" type="plist_strings" lang="ta" />
-      <output filename="app/policy/mac/strings/te.lproj/Localizable.strings" type="plist_strings" lang="te" />
-      <output filename="app/policy/mac/strings/th.lproj/Localizable.strings" type="plist_strings" lang="th" />
-      <output filename="app/policy/mac/strings/tr.lproj/Localizable.strings" type="plist_strings" lang="tr" />
-      <output filename="app/policy/mac/strings/uk.lproj/Localizable.strings" type="plist_strings" lang="uk" />
-      <output filename="app/policy/mac/strings/vi.lproj/Localizable.strings" type="plist_strings" lang="vi" />
-      <output filename="app/policy/mac/strings/zh_CN.lproj/Localizable.strings" type="plist_strings" lang="zh-CN" />
-      <output filename="app/policy/mac/strings/zh_TW.lproj/Localizable.strings" type="plist_strings" lang="zh-TW" />
    </if>
 
   </outputs>

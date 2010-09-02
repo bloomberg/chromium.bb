@@ -279,6 +279,10 @@
           'dependencies': [
             'helper_app',
             'infoplist_strings_tool',
+            'chrome_manifest_bundle',
+          ],
+          'mac_bundle_resources': [
+            '<(PRODUCT_DIR)/<(mac_bundle_id).manifest',
           ],
           'actions': [
             {
@@ -321,31 +325,6 @@
                 '<@(locales)',
               ],
               'message': 'Generating the language InfoPlist.strings files',
-              'process_outputs_as_mac_bundle_resources': 1,
-            },
-            {
-              # Massage the manifest and add it as a resource
-              'action_name': 'Generate MCX manifest file',
-              'variables': {
-                'tool_path': 'tools/build/mac/copy_mcx_manifest.sh',
-                'input_path': 'app/policy/mac/app-Manifest.plist',
-                'output_path': '<(INTERMEDIATE_DIR)/<(mac_bundle_id).manifest',
-              },
-              'inputs': [
-                '<(tool_path)',
-                '<(input_path)',
-              ],
-              'outputs': [
-                '<(output_path)',
-              ],
-              'action': [
-                '<(tool_path)',
-                '<(mac_product_name)',
-                '<(mac_bundle_id)',
-                '<(input_path)',
-                '<(output_path)',
-              ],
-              'message': 'Generating the MCX policy manifest file',
               'process_outputs_as_mac_bundle_resources': 1,
             },
           ],
@@ -511,5 +490,75 @@
         },
       ],
     }],
+    ['OS=="mac"', {
+      'targets': [
+        {
+          # This is the bundle of the manifest file of Chrome.
+          # It contains the manifest file and its string tables.
+          'target_name': 'chrome_manifest_bundle',
+          'type': 'loadable_module',
+          'mac_bundle': 1,
+          'product_extension': 'manifest',
+          'product_name': '<(mac_bundle_id)',
+          'variables': {
+            # This avoids stripping debugging symbols from the target, which
+            # would fail because there is no binary code here.
+            'mac_strip': 0,
+          },
+          'dependencies': [
+             # Provides app-Manifest.plist and its string tables:
+            'policy_templates',
+          ],
+          'actions': [
+            {
+              'action_name': 'Copy MCX manifest file to manifest bundle',
+              'inputs': [
+                '<(grit_out_dir)/app/policy/mac/app-Manifest.plist',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/app_manifest/<(mac_bundle_id).manifest',
+              ],
+              'action': [
+                'cp',
+                '<@(_inputs)',
+                '<@(_outputs)',
+              ],
+              'message':
+                'Copying the MCX policy manifest file to the manifest bundle',
+              'process_outputs_as_mac_bundle_resources': 1,
+            },
+            {
+              'action_name':
+                'Copy Localizable.strings files to manifest bundle',
+              'variables': {
+                'input_path': '<(grit_out_dir)/app/policy/mac/strings',
+                # Directory to collect the Localizable.strings files before
+                # they are copied to the bundle.
+                'output_path': '<(INTERMEDIATE_DIR)/app_manifest',
+                # TODO(gfeher): replace this with <(locales) when we have real
+                # translations
+                'available_locales': 'en',
+              },
+              'inputs': [
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(<(apply_locales_cmd) -d \'<(input_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
+              ],
+              'outputs': [
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
+              ],
+              'action': [
+                'cp', '-R',
+                '<(input_path)/',
+                '<(output_path)',
+              ],
+              'message':
+                'Copy the Localizable.strings files to the manifest bundle',
+              'process_outputs_as_mac_bundle_resources': 1,
+            },
+          ],
+        },
+      ]
+    }]
   ],
 }
