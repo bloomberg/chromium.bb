@@ -57,6 +57,17 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
    */
   page_pad = (NaClRoundAllocPage(nap->static_text_end + NACL_HALT_SLED_SIZE)
               - nap->static_text_end);
+
+  /* NOTE: make sure we are not silently overwriting data */
+  if (0 != nap->data_start &&
+      nap->static_text_end + NACL_HALT_SLED_SIZE > nap->data_start) {
+    NaClLog(LOG_FATAL, "Missing gap between text and data for halt_sled");
+  }
+  if (0 != nap->rodata_start &&
+      nap->static_text_end + NACL_HALT_SLED_SIZE > nap->rodata_start) {
+    NaClLog(LOG_FATAL, "Missing gap between text and rodata for halt_sled");
+  }
+
   CHECK(page_pad >= NACL_HALT_SLED_SIZE);
   CHECK(page_pad < NACL_MAP_PAGESIZE + NACL_HALT_SLED_SIZE);
 
