@@ -39,6 +39,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/shell_dialogs.h"
 
 class DownloadFileManager;
@@ -54,8 +55,10 @@ struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 
 // Browser's download manager: manages all downloads and destination view.
-class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
-                        public SelectFileDialog::Listener {
+class DownloadManager
+    : public base::RefCountedThreadSafe<DownloadManager,
+                                        ChromeThread::DeleteOnUIThread>,
+      public SelectFileDialog::Listener {
   // For testing.
   friend class DownloadManagerTest;
   friend class MockDownloadManager;
@@ -213,7 +216,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
     DownloadManager* observed_download_manager_;
   };
 
-  friend class base::RefCountedThreadSafe<DownloadManager>;
+  friend class ChromeThread;
+  friend class DeleteTask<DownloadManager>;
   friend class OtherDownloadManagerObserver;
 
   ~DownloadManager();
