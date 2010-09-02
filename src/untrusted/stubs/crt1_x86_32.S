@@ -97,4 +97,5 @@ _start:
 halt_loop:
     hlt
     jmp     halt_loop
+    .p2align 5
 
