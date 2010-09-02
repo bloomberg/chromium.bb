@@ -254,6 +254,7 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
                                   kForwardSwitches,
                                   arraysize(kForwardSwitches));
     command_line.AppendSwitch(switches::kBWSI);
+    command_line.AppendSwitch(switches::kEnableTabbedOptions);
     command_line.AppendSwitchASCII(
         switches::kLoginUser,
         UserManager::Get()->logged_in_user().email());
