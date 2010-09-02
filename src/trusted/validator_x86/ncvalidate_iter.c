@@ -51,6 +51,7 @@ int NaClValidatorStateGetMaxReportedErrors(NaClValidatorState* state) {
 void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState* state,
                                             int new_value) {
   state->quit_after_error_count = new_value;
+  state->quit = NaClValidatorQuit(state);
 }
 
 Bool NaClValidatorStateGetPrintOpcodeHistogram(NaClValidatorState* state) {
@@ -140,6 +141,7 @@ static void NaClRecordErrorReported(NaClValidatorState* state, int level) {
   if ((state != NULL) && ((level == LOG_ERROR) || (level == LOG_FATAL)) &&
       (state->quit_after_error_count > 0)) {
     --(state->quit_after_error_count);
+    state->quit = NaClValidatorQuit(state);
     if (state->quit_after_error_count == 0) {
       NaClLog(LOG_INFO,
               "%sError limit reached. Validator quitting!\n",
@@ -159,6 +161,7 @@ static int NaClRecordIfValidatorError(NaClValidatorState* state,
   if (((level == LOG_ERROR) || (level == LOG_FATAL)) &&
       (NULL != state)) {
     state->validates_ok = FALSE;
+    state->quit = NaClValidatorQuit(state);
   }
   return level;
 }
@@ -245,10 +248,6 @@ Bool NaClValidatorQuit(NaClValidatorState* state) {
   return !state->validates_ok && (state->quit_after_error_count == 0);
 }
 
-Bool NaClValidateQuit(NaClValidatorState* state) {
-  return NaClValidatorQuit(state);
-}
-
 void NaClRegisterValidator(
     NaClValidatorState* state,
     NaClValidator validator,
@@ -302,6 +301,10 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
     state->trace_instructions = NACL_FLAGS_validator_trace_instructions;
     state->trace_inst_internals = NACL_FLAGS_validator_trace_inst_internals;
     state->log_verbosity = LOG_INFO;
+    state->cur_inst_state = NULL;
+    state->cur_inst = NULL;
+    state->cur_inst_vector = NULL;
+    state->quit = NaClValidatorQuit(return_value);
   }
   return return_value;
 }
@@ -344,10 +347,10 @@ static void NaClApplyValidators(NaClValidatorState* state, NaClInstIter* iter) {
   int i;
   DEBUG(NaClLog(LOG_INFO, "iter state:\n");
         NaClInstStateInstPrint(NaClLogGetGio(), NaClInstIterGetState(iter)));
-  if (NaClValidatorQuit(state)) return;
+  if (state->quit) return;
   for (i = 0; i < state->number_validators; ++i) {
     state->validators[i].validator(state, iter, state->local_memory[i]);
-    if (NaClValidatorQuit(state)) return;
+    if (state->quit) return;
   }
 }
 
@@ -358,11 +361,11 @@ static void NaClApplyPostValidators(NaClValidatorState* state,
                                     NaClInstIter* iter) {
   int i;
   DEBUG(NaClLog(LOG_INFO, "applying post validators...\n"));
-  if (NaClValidatorQuit(state)) return;
+  if (state->quit) return;
   for (i = 0; i < state->number_validators; ++i) {
     if (NULL != state->validators[i].post_validate) {
       state->validators[i].post_validate(state, iter, state->local_memory[i]);
-      if (NaClValidatorQuit(state)) return;
+      if (state->quit) return;
     }
   }
 }
@@ -381,9 +384,15 @@ void NaClValidateSegment(uint8_t* mbase, NaClPcAddress vbase,
   for (iter = NaClInstIterCreateWithLookback(&segment, kLookbackSize);
        NaClInstIterHasNext(iter);
        NaClInstIterAdvance(iter)) {
+    state->cur_inst_state = NaClInstIterGetState(iter);
+    state->cur_inst = NaClInstStateInst(state->cur_inst_state);
+    state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
     NaClApplyValidators(state, iter);
-    if (NaClValidatorQuit(state)) break;
+    if (state->quit) break;
   }
+  state->cur_inst_state = NULL;
+  state->cur_inst = NULL;
+  state->cur_inst_vector = NULL;
   NaClApplyPostValidators(state, iter);
   NaClInstIterDestroy(iter);
   NaClValidatorStatePrintStats(state);

@@ -150,21 +150,21 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
                                   NaClInstIter* iter,
                                   void* ignore) {
   uint32_t i;
-  NaClInstState* inst_state = NaClInstIterGetState(iter);
-  NaClExpVector* vector = NaClInstStateExpVector(inst_state);
+  NaClInstState* inst_state = state->cur_inst_state;
+  NaClExpVector* vector = state->cur_inst_vector;
 
   DEBUG({
       struct Gio* g = NaClLogGetGio();
       NaClLog(LOG_INFO, "-> Validating store\n");
       NaClInstStateInstPrint(g, inst_state);
-      NaClInstPrint(g, NaClInstStateInst(inst_state));
-      NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
+      NaClInstPrint(g, state->cur_inst);
+      NaClExpVectorPrint(g, vector);
     });
 
   /* Look for assignments on a memory offset. */
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     NaClExp* node = &vector->node[i];
-    if (NaClValidatorQuit(state)) break;
+    if (state->quit) break;
     DEBUG(NaClLog(LOG_INFO, "processing argument %"NACL_PRIu32"\n", i));
     if (IsPossibleSandboxingNode(node)) {
       DEBUG(NaClLog(LOG_INFO, "found possible sandboxing reference\n"));

@@ -13,6 +13,8 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 
+struct NaClExpVector;
+
 /* Defines the maximum number of validators that can be registered. */
 #define NACL_MAX_NCVALIDATORS 20
 
@@ -84,6 +86,22 @@ struct NaClValidatorState {
   Bool trace_inst_internals;
   /* Defines the verbosity of messages to print. */
   int log_verbosity;
+  /* Cached instruction state. Only guaranteed to be defined when a
+   * NaClValidator is called. When not defined, is NULL.
+   */
+  NaClInstState* cur_inst_state;
+  /* Cached instruction. Only guaranteed to be defined when a NaClValidator is
+   * called. When not defined, is NULL.
+   */
+  NaClInst* cur_inst;
+  /* Cached translation of instruction. Only guaranteed to be defined when a
+   * NaClValidator is called. When not defined, is NULL.
+   */
+  struct NaClExpVector* cur_inst_vector;
+  /* Cached quit value. Kept up to date throughout the lifetime of the
+   * validator state. Safe to use within registered validator functions.
+   */
+  Bool quit;
 };
 
 #endif

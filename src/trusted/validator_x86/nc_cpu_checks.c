@@ -58,11 +58,10 @@ void NaClCpuCheckMemoryDestroy(NaClValidatorState* state,
 void NaClCpuCheck(struct NaClValidatorState* state,
                   struct NaClInstIter* iter,
                   NaClCpuCheckState* checked_features) {
-  NaClInstState* inst_state = NaClInstIterGetState(iter);
+  NaClInstState* inst_state = state->cur_inst_state;
   Bool squash_me = FALSE;
-  NaClInst* inst = NaClInstStateInst(inst_state);
   CPUFeatures *cpu_features = &state->cpu_features;
-  switch (inst->insttype) {
+  switch (state->cur_inst->insttype) {
     case NACLi_X87:
       NACL_CHECK_FEATURE(f_x87, "x87");
       break;

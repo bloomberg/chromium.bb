@@ -14,6 +14,7 @@
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -27,14 +28,14 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
                                   void* ignore) {
   int num_prefix_bytes;
   Bool is_legal = TRUE;
-  NaClInstState* inst_state = NaClInstIterGetState(iter);
-  NaClInst* inst = NaClInstStateInst(inst_state);
+  NaClInstState* inst_state = state->cur_inst_state;
+  NaClInst* inst = state->cur_inst;
   NaClDisallowsFlags disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
   DEBUG({
       struct Gio* g = NaClLogGetGio();
       NaClLog(LOG_INFO, "->NaClValidateInstructionLegal\n");
       NaClInstPrint(g, NaClInstStateInst(inst_state));
-      NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
+      NaClExpVectorPrint(g, state->cur_inst_vector);
     });
 
   /* Don't allow more than one (non-REX) prefix. */
@@ -195,7 +196,7 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
           }
         }
         /* Stop looking if we should quit reporting errors. */
-        if (NaClValidateQuit(state)) break;
+        if (state->quit) break;
       }
       /* Be sure we print a reason (in case the switch isn't complete). */
       if (!printed_reason) {

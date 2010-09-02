@@ -190,9 +190,6 @@ void NaClValidateSegment(uint8_t* mbase,
  */
 Bool NaClValidatesOk(NaClValidatorState* state);
 
-/* Returns true if the validator quit after the first found error. */
-Bool NaClValidateQuit(NaClValidatorState* state);
-
 /* Cleans up and returns the memory created by the corresponding
  * call to NaClValidatorStateCreate.
  */

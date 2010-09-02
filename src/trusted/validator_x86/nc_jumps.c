@@ -482,10 +482,10 @@ static void NaClAddRegisterJumpIndirect32(NaClValidatorState* state,
 static void NaClAddExprJumpTarget(NaClValidatorState* state,
                                   NaClInstIter* iter,
                                   NaClPcAddress inst_pc,
-                                  NaClInstState* inst_state,
                                   NaClJumpSets* jump_sets) {
   uint32_t i;
-  NaClExpVector* vector = NaClInstStateExpVector(inst_state);
+  NaClInstState* inst_state = state->cur_inst_state;
+  NaClExpVector* vector = state->cur_inst_vector;
   DEBUG(NaClLog(LOG_INFO, "jump checking: ");
         NaClInstStateInstPrint(NaClLogGetGio(), inst_state));
   for (i = 0; i < vector->number_expr_nodes; ++i) {
@@ -584,11 +584,10 @@ static void NaClRememberIp(NaClValidatorState* state,
 void NaClJumpValidator(NaClValidatorState* state,
                        NaClInstIter* iter,
                        NaClJumpSets* jump_sets) {
-  NaClInstState* inst_state = NaClInstIterGetState(iter);
+  NaClInstState* inst_state = state->cur_inst_state;
   NaClPcAddress pc = NaClInstStateVpc(inst_state);
-  NaClInst* inst = NaClInstStateInst(inst_state);
   NaClRememberIp(state, pc, inst_state, jump_sets);
-  switch (inst->name) {
+  switch (state->cur_inst->name) {
     case InstJb:
     case InstJbe:
     case InstJcxz:
@@ -612,10 +611,10 @@ void NaClJumpValidator(NaClValidatorState* state,
     case InstLoop:
     case InstLoope:
     case InstLoopne:
-      NaClAddExprJumpTarget(state, iter, pc, inst_state, jump_sets);
+      NaClAddExprJumpTarget(state, iter, pc, jump_sets);
       break;
     case InstCall:
-      NaClAddExprJumpTarget(state, iter, pc, inst_state, jump_sets);
+      NaClAddExprJumpTarget(state, iter, pc, jump_sets);
       NaClValidateCallAlignment(state, pc, inst_state);
       break;
     default:
@@ -646,7 +645,7 @@ void NaClJumpValidatorSummarize(NaClValidatorState* state,
    * of disassembled instructions.
    */
   NaClPcAddress addr;
-  if (NaClValidatorQuit(state)) return;
+  if (state->quit) return;
   NaClValidatorMessage(
       LOG_INFO, state,
       "Checking jump targets: %"NACL_PRIxNaClPcAddress

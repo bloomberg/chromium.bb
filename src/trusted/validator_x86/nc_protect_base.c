@@ -175,7 +175,7 @@ static Bool NaClAcceptRegMoveLea32To64(struct NaClValidatorState* state,
                                        struct NaClInstIter* iter,
                                        NaClInst* inst,
                                        NaClOpKind reg) {
-  NaClInstState* inst_state = NaClInstIterGetState(iter);
+  NaClInstState* inst_state = state->cur_inst_state;
   assert((RegRSP == reg) || (RegRBP == reg));
   if (NaClOperandOneIsRegisterSet(inst_state, reg) &&
       NaClInstIterHasLookbackState(iter, 1)) {
@@ -197,9 +197,9 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                                struct NaClInstIter* iter,
                                NaClBaseRegisterLocals* locals) {
   uint32_t i;
-  NaClInstState* inst_state = NaClInstIterGetState(iter);
-  NaClInst* inst = NaClInstStateInst(inst_state);
-  NaClExpVector* vector = NaClInstStateExpVector(inst_state);
+  NaClInstState* inst_state = state->cur_inst_state;
+  NaClInst* inst = state->cur_inst;
+  NaClExpVector* vector = state->cur_inst_vector;
 
   DEBUG(NaClValidatorInstMessage(
       LOG_INFO, state, inst_state, "Checking base registers...\n"));

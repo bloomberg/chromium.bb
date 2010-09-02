@@ -16,6 +16,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 
 /* Holds a histogram of the (first) byte of the found opcodes for each
  * instruction.
@@ -47,8 +48,7 @@ void NaClOpcodeHistogramMemoryDestroy(NaClValidatorState* state,
 void NaClOpcodeHistogramRecord(NaClValidatorState* state,
                                NaClInstIter* iter,
                                NaClOpcodeHistogram* histogram) {
-  NaClInstState* inst_state = NaClInstIterGetState(iter);
-  NaClInst* inst = NaClInstStateInst(inst_state);
+  NaClInst* inst = state->cur_inst;
   if (inst->name != InstInvalid) {
     histogram->opcode_histogram[inst->opcode[inst->num_opcode_bytes - 1]]++;
   }
