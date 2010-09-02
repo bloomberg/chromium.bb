@@ -362,6 +362,11 @@ void PostDelayedTaskFromHere(Task* task, int64 delay_ms) {
   MessageLoop::current()->PostDelayedTask(FROM_HERE, task, delay_ms);
 }
 
+void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms) {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, NewRunnableFunction(func, context), delay_ms);
+}
+
 // Wrappers for FilePath and file_util
 
 WebString GetAbsoluteWebStringFromUTF8Path(const std::string& utf8_path) {

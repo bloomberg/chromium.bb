@@ -105,6 +105,7 @@ WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
     CreateDevToolsMessageLoop();
 void PostTaskFromHere(Task* task);  // TODO(tkent): Eliminate Task.
 void PostDelayedTaskFromHere(Task* task, int64 delay_ms);  // ditto.
+void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms);
 
 // -------- File path and PathService
 // Converts the specified path string to an absolute path in WebString.
