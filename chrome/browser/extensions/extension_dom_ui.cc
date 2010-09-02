@@ -222,10 +222,6 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
   if (!url->SchemeIs(chrome::kChromeUIScheme))
     return false;
 
-  // We can't handle chrome-extension URLs in incognito mode.
-  if (profile->IsOffTheRecord())
-    return false;
-
   const DictionaryValue* overrides =
       profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
   std::string page = url->host();
@@ -242,9 +238,10 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
     return false;
   }
 
-  while (url_list->GetSize()) {
-    Value* val;
-    url_list->Get(0, &val);
+  size_t i = 0;
+  while (i < url_list->GetSize()) {
+    Value* val = NULL;
+    url_list->Get(i, &val);
 
     // Verify that the override value is good.  If not, unregister it and find
     // the next one.
@@ -269,6 +266,16 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
       // were deleted directly from the filesystem, etc.
       LOG(WARNING) << "chrome URL override present for non-existant extension";
       UnregisterChromeURLOverride(page, profile, val);
+      continue;
+    }
+
+    // We can't handle chrome-extension URLs in incognito mode unless the
+    // extension uses split mode.
+    bool incognito_override_allowed =
+        extension->incognito_split_mode() &&
+        service->IsIncognitoEnabled(extension);
+    if (profile->IsOffTheRecord() && !incognito_override_allowed) {
+      ++i;
       continue;
     }
 

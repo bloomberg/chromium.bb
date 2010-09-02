@@ -50,6 +50,9 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
   // URL or a web app URL.
   Extension* GetExtensionOrAppByURL(const GURL& url);
 
+  // Returns true if the extension is allowed to run in incognito mode.
+  bool IsIncognitoEnabled(const Extension* extension);
+
   ExtensionProcessManager* original_manager_;
 };
 
@@ -183,10 +186,9 @@ void ExtensionProcessManager::OpenOptionsPage(Extension* extension,
                                               Browser* browser) {
   DCHECK(!extension->options_url().is_empty());
 
-  // We can't open extensions URLs in incognito windows, unless the extension
-  // uses "split" incognito mode.
-  if (!browser || (browser->profile()->IsOffTheRecord() &&
-                   !extension->incognito_split_mode())) {
+  // Force the options page to open in non-OTR window, because it won't be
+  // able to save settings from OTR.
+  if (!browser || browser->profile()->IsOffTheRecord()) {
     browser = Browser::GetOrCreateTabbedBrowser(
         browsing_instance_->profile()->GetOriginalProfile());
   }
@@ -373,8 +375,15 @@ ExtensionHost* IncognitoExtensionProcessManager::CreateView(
     Browser* browser,
     ViewType::Type view_type) {
   if (extension->incognito_split_mode()) {
-    return ExtensionProcessManager::CreateView(extension, url,
-                                               browser, view_type);
+    if (IsIncognitoEnabled(extension)) {
+      return ExtensionProcessManager::CreateView(extension, url,
+                                                 browser, view_type);
+    } else {
+      NOTREACHED() <<
+          "We shouldn't be trying to create an incognito extension view unless "
+          "it has been enabled for incognito.";
+      return NULL;
+    }
   } else {
     return original_manager_->CreateView(extension, url, browser, view_type);
   }
@@ -383,7 +392,8 @@ ExtensionHost* IncognitoExtensionProcessManager::CreateView(
 void IncognitoExtensionProcessManager::CreateBackgroundHost(
     Extension* extension, const GURL& url) {
   if (extension->incognito_split_mode()) {
-    ExtensionProcessManager::CreateBackgroundHost(extension, url);
+    if (IsIncognitoEnabled(extension))
+      ExtensionProcessManager::CreateBackgroundHost(extension, url);
   } else {
     // Do nothing. If an extension is spanning, then its original-profile
     // background page is shared with incognito, so we don't create another.
@@ -414,8 +424,17 @@ Extension* IncognitoExtensionProcessManager::GetExtensionOrAppByURL(
     const GURL& url) {
   ExtensionsService* service =
       browsing_instance_->profile()->GetExtensionsService();
+  if (!service)
+    return NULL;
   return (url.SchemeIs(chrome::kExtensionScheme)) ?
       service->GetExtensionByURL(url) : service->GetExtensionByWebExtent(url);
+}
+
+bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
+    const Extension* extension) {
+  ExtensionsService* service =
+      browsing_instance_->profile()->GetExtensionsService();
+  return service && service->IsIncognitoEnabled(extension);
 }
 
 void IncognitoExtensionProcessManager::Observe(
