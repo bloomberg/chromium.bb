@@ -1424,6 +1424,8 @@ binutils-arm-configure() {
   local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${TC_BUILD_BINUTILS_ARM}"
 
+  # enable multiple targets so that we can use the same ar with all .o files
+  local targ="${CROSS_TARGET_ARM},${CROSS_TARGET_X86_32},${CROSS_TARGET_X86_64}"
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
@@ -1438,6 +1440,7 @@ binutils-arm-configure() {
     CXX=${CXX} \
     ${srcdir}/binutils-2.20/configure --prefix=${INSTALL_DIR} \
                                       --target=${CROSS_TARGET_ARM} \
+                                      --enable-targets=${targ} \
                                       --enable-checking \
                                       --enable-gold \
                                       --enable-plugins \
@@ -2376,10 +2379,6 @@ organize-native-code() {
         ${startup_dir}/crtbegin.o \
         ${startup_dir}/crtend.o \
         ${PNACL_X8664_ROOT}
-  StepBanner "PNaCl" "x86-64 steal libcrt_platform.a  from nacl-gcc"
-  # NOTE: we cannot build this ourselves:
-  # http://code.google.com/p/nativeclient/issues/detail?id=797
-  cp -f ${x86_src}/nacl64/lib/libcrt_platform.a ${PNACL_X8664_ROOT}
 
   DebugRun ls -l ${PNACL_X8664_ROOT}
 }
