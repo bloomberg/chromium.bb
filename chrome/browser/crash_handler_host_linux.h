@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,8 @@
 
 #include <string>
 
-#include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/singleton.h"
-
-namespace base {
-class Thread;
-}
+#include "base/message_loop.h"
 
 // This is the base class for singleton objects which crash dump renderers and
 // plugins on Linux. We perform the crash dump from the browser because it
@@ -56,7 +51,6 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
   int process_socket_;
   int browser_socket_;
   MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
-  scoped_ptr<base::Thread> uploader_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
 };
@@ -64,10 +58,14 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
 class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
  private:
   friend struct DefaultSingletonTraits<PluginCrashHandlerHostLinux>;
-  PluginCrashHandlerHostLinux();
-  virtual ~PluginCrashHandlerHostLinux();
+  PluginCrashHandlerHostLinux() {
+    SetProcessType();
+  }
+  virtual ~PluginCrashHandlerHostLinux() {}
 
-  virtual void SetProcessType();
+  virtual void SetProcessType() {
+    process_type_ = "plugin";
+  }
 
   DISALLOW_COPY_AND_ASSIGN(PluginCrashHandlerHostLinux);
 };
@@ -75,10 +73,14 @@ class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
 class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
  private:
   friend struct DefaultSingletonTraits<RendererCrashHandlerHostLinux>;
-  RendererCrashHandlerHostLinux();
-  virtual ~RendererCrashHandlerHostLinux();
+  RendererCrashHandlerHostLinux() {
+    SetProcessType();
+  }
+  virtual ~RendererCrashHandlerHostLinux() {}
 
-  virtual void SetProcessType();
+  virtual void SetProcessType() {
+    process_type_ = "renderer";
+  }
 
   DISALLOW_COPY_AND_ASSIGN(RendererCrashHandlerHostLinux);
 };
