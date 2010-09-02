@@ -151,8 +151,6 @@ static void PrintUsage() {
           "    main thread anyway\n"
           "\n"
           " (testing flags)\n"
-          /* TODO(robertm): retire -d */
-          " -d (debug mode) allow file access, ignore validator dangerous!\n"
           " -a allow file access! dangerous!\n"
           " -c ignore validator! dangerous!\n"
           " -s safely stub out non-validating instructions\n"
@@ -260,14 +258,8 @@ int main(int  ac,
   }
 
 
-  while ((opt = getopt(ac, av, "acdf:gh:i:Il:mMP:Qr:svw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "acf:gh:i:Il:mMP:Qr:svw:X:")) != -1) {
     switch (opt) {
-      /* TODO(robertm): retire -d */
-      case 'd':
-        fprintf(stderr, "DEBUG MODE ENABLED (bypass acl, ignore validator)\n");
-        debug_mode_ignore_validator = 1;
-        debug_mode_bypass_acl_checks = 1;
-        break;
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
         debug_mode_ignore_validator = 1;

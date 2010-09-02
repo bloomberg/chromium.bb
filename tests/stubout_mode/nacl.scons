@@ -24,11 +24,11 @@ nodes.append(env.CommandSelLdrTestNacl(
         'partly_invalid_1.out', command=[env.File('partly_invalid.nexe')],
         exit_status='1'))
 
-# With "-d", the executable runs to completion but is not safe.
+# With "-c", the executable runs to completion but is not safe.
 nodes.append(env.CommandSelLdrTestNacl(
         'partly_invalid_2.out', command=[env.File('partly_invalid.nexe')],
         stdout_golden=env.File('without_stubout.stdout'),
-        sel_ldr_flags=['-d']))
+        sel_ldr_flags=['-c']))
 
 # With "-s", the executable runs part way but then faults.
 nodes.append(env.CommandSelLdrTestNacl(

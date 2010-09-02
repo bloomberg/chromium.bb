@@ -57,7 +57,7 @@ if not env.Bit('host_windows'):
       command=[env.File('syscalls.nexe'), env.File('file_ok_rdwr.txt')],
       stdout_golden=env.File('syscalls.stdout'),
       filter_regex="'^(All tests PASSED)$|^(TEST.*)$'",
-      sel_ldr_flags=['-d'],
+      sel_ldr_flags=['-a'],
                                    )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 #endif

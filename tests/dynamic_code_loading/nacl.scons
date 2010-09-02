@@ -61,7 +61,8 @@ tests = [
         ),
     env.CommandSelLdrTestNacl(
         'debug_mode_test.out',
-        sel_ldr_flags=["-d"],
+        # NOTE: the data we are loading does not pass the validator
+        sel_ldr_flags=["-c"],
         command=[env.File('debug_mode_test.nexe')],
         ),
   ]

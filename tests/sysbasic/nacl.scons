@@ -42,7 +42,7 @@ env.ComponentProgram('sysbasic.nexe',
 
 node = env.CommandSelLdrTestNacl(
     'sysbasic_test.out',
-    sel_ldr_flags=['-P', '69', '-d'],
+    sel_ldr_flags=['-P', '69'],
     command=[env.File('sysbasic.nexe')],
     exit_status='69')
 
