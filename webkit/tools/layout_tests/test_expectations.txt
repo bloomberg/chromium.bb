@@ -50,3 +50,6 @@ BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-7.html = PASS
 
 // Still failing, should be moved upstream.
 BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE
+
+// Newly added test apparently misbehaves.  
+BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
