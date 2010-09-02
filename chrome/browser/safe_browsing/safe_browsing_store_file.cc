@@ -108,39 +108,6 @@ bool WriteVector(const std::vector<T>& values, FILE* fp, MD5Context* context) {
   return WriteArray(ptr, values.size(), fp, context);
 }
 
-// Remove deleted items (|chunk_id| in |del_set|) from the vector
-// starting at |offset| running to |end()|.
-template <class T>
-void RemoveDeleted(std::vector<T>* vec, size_t offset,
-                   const base::hash_set<int32>& del_set) {
-  DCHECK(vec);
-
-  // Scan through the items read, dropping the items in |del_set|.
-  typename std::vector<T>::iterator add_iter = vec->begin() + offset;
-  for (typename std::vector<T>::iterator iter = add_iter;
-       iter != vec->end(); ++iter) {
-    if (del_set.count(iter->chunk_id) == 0) {
-      *add_iter = *iter;
-      ++add_iter;
-    }
-  }
-  vec->erase(add_iter, vec->end());
-}
-
-// Combine |ReadToVector()| and |RemoveDeleted()|.  Returns true on
-// success.
-template <class T>
-bool ReadToVectorAndDelete(std::vector<T>* values, size_t count,
-                           FILE* fp, MD5Context* context,
-                           const base::hash_set<int32>& del_set) {
-  const size_t original_size = values->size();
-  if (!ReadToVector(values, count, fp, context))
-    return false;
-
-  RemoveDeleted(values, original_size, del_set);
-  return true;
-}
-
 // Read an array of |count| integers and add them to |values|.
 // Returns true on success.
 bool ReadToChunkSet(std::set<int32>* values, size_t count,
@@ -431,14 +398,14 @@ bool SafeBrowsingStoreFile::DoUpdate(
                         file_.get(), &context))
       return OnCorruptDatabase();
 
-    if (!ReadToVectorAndDelete(&add_prefixes, header.add_prefix_count,
-                               file_.get(), &context, add_del_cache_) ||
-        !ReadToVectorAndDelete(&sub_prefixes, header.sub_prefix_count,
-                               file_.get(), &context, sub_del_cache_) ||
-        !ReadToVectorAndDelete(&add_full_hashes, header.add_hash_count,
-                               file_.get(), &context, add_del_cache_) ||
-        !ReadToVectorAndDelete(&sub_full_hashes, header.sub_hash_count,
-                               file_.get(), &context, sub_del_cache_))
+    if (!ReadToVector(&add_prefixes, header.add_prefix_count,
+                      file_.get(), &context) ||
+        !ReadToVector(&sub_prefixes, header.sub_prefix_count,
+                      file_.get(), &context) ||
+        !ReadToVector(&add_full_hashes, header.add_hash_count,
+                      file_.get(), &context) ||
+        !ReadToVector(&sub_full_hashes, header.sub_hash_count,
+                      file_.get(), &context))
       return OnCorruptDatabase();
 
     // Calculate the digest to this point.
@@ -475,27 +442,25 @@ bool SafeBrowsingStoreFile::DoUpdate(
     // some sort of recursive binary merge might be in order (merge
     // chunks pairwise, merge those chunks pairwise, and so on, then
     // merge the result with the main list).
-    if (!ReadToVectorAndDelete(&add_prefixes, header.add_prefix_count,
-                               new_file_.get(), NULL, add_del_cache_) ||
-        !ReadToVectorAndDelete(&sub_prefixes, header.sub_prefix_count,
-                               new_file_.get(), NULL, sub_del_cache_) ||
-        !ReadToVectorAndDelete(&add_full_hashes, header.add_hash_count,
-                               new_file_.get(), NULL, add_del_cache_) ||
-        !ReadToVectorAndDelete(&sub_full_hashes, header.sub_hash_count,
-                               new_file_.get(), NULL, sub_del_cache_))
+    if (!ReadToVector(&add_prefixes, header.add_prefix_count,
+                      new_file_.get(), NULL) ||
+        !ReadToVector(&sub_prefixes, header.sub_prefix_count,
+                      new_file_.get(), NULL) ||
+        !ReadToVector(&add_full_hashes, header.add_hash_count,
+                      new_file_.get(), NULL) ||
+        !ReadToVector(&sub_full_hashes, header.sub_hash_count,
+                      new_file_.get(), NULL))
       return false;
   }
 
-  // Append items from |pending_adds| which haven't been deleted.
-  for (std::vector<SBAddFullHash>::const_iterator iter = pending_adds.begin();
-       iter != pending_adds.end(); ++iter) {
-    if (add_del_cache_.count(iter->chunk_id) == 0)
-      add_full_hashes.push_back(*iter);
-  }
+  // Append items from |pending_adds|.
+  add_full_hashes.insert(add_full_hashes.end(),
+                         pending_adds.begin(), pending_adds.end());
 
-  // Knock the subs from the adds.
+  // Knock the subs from the adds and process deleted chunks.
   SBProcessSubs(&add_prefixes, &sub_prefixes,
-                &add_full_hashes, &sub_full_hashes);
+                &add_full_hashes, &sub_full_hashes,
+                add_del_cache_, sub_del_cache_);
 
   // We no longer need to track deleted chunks.
   DeleteChunksFromSet(add_del_cache_, &add_chunks_cache_);

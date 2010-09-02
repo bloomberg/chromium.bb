@@ -127,8 +127,9 @@ class SafeBrowsingStoreSqlite : public SafeBrowsingStore {
   bool CheckCompatibleVersion();
 
   bool CreateTables();
-  bool RenameTables();
-  bool DeleteOldTables();
+
+  // Clear the old safe-browsing data from the tables.
+  bool ResetTables();
 
   // Read and write the chunks-seen data from |*_chunks_cache_|.
   // Chunk deletions are not accounted for.

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/hash_tables.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -124,7 +125,8 @@ bool SBAddPrefixHashLess(const T& a, const U& b) {
 
 // Process the lists for subs which knock out adds.  For any item in
 // |sub_prefixes| which has a match in |add_prefixes|, knock out the
-// matched items from all vectors.
+// matched items from all vectors.  Additionally remove items from
+// deleted chunks.
 //
 // TODO(shess): Since the prefixes are uniformly-distributed hashes,
 // there aren't many ways to organize the inputs for efficient
@@ -139,7 +141,9 @@ bool SBAddPrefixHashLess(const T& a, const U& b) {
 void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
                    std::vector<SBSubPrefix>* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
-                   std::vector<SBSubFullHash>* sub_full_hashes);
+                   std::vector<SBSubFullHash>* sub_full_hashes,
+                   const base::hash_set<int32>& add_chunks_deleted,
+                   const base::hash_set<int32>& sub_chunks_deleted);
 
 // TODO(shess): This uses int32 rather than int because it's writing
 // specifically-sized items to files.  SBPrefix should likewise be

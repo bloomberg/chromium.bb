@@ -102,12 +102,31 @@ void RemoveMatchingPrefixes(const std::vector<SBAddPrefix>& removes,
   full_hashes->erase(out, hash_iter);
 }
 
+// Remove deleted items (|chunk_id| in |del_set|) from the vector.
+template <class T>
+void RemoveDeleted(std::vector<T>* vec, const base::hash_set<int32>& del_set) {
+  DCHECK(vec);
+
+  // Scan through the items read, dropping the items in |del_set|.
+  typename std::vector<T>::iterator add_iter = vec->begin();
+  for (typename std::vector<T>::iterator iter = add_iter;
+       iter != vec->end(); ++iter) {
+    if (del_set.count(iter->chunk_id) == 0) {
+      *add_iter = *iter;
+      ++add_iter;
+    }
+  }
+  vec->erase(add_iter, vec->end());
+}
+
 }  // namespace
 
 void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
                    std::vector<SBSubPrefix>* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
-                   std::vector<SBSubFullHash>* sub_full_hashes) {
+                   std::vector<SBSubFullHash>* sub_full_hashes,
+                   const base::hash_set<int32>& add_chunks_deleted,
+                   const base::hash_set<int32>& sub_chunks_deleted) {
   // It is possible to structure templates and template
   // specializations such that the following calls work without having
   // to qualify things.  It becomes very arbitrary, though, and less
@@ -152,4 +171,12 @@ void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
                  SBAddPrefixHashLess<SBSubFullHash,SBAddFullHash>,
                  &removed_full_adds);
   }
+
+  // Remove items from the deleted chunks.  This is done after other
+  // processing to allow subs to knock out adds (and be removed) even
+  // if the add's chunk is deleted.
+  RemoveDeleted(add_prefixes, add_chunks_deleted);
+  RemoveDeleted(sub_prefixes, sub_chunks_deleted);
+  RemoveDeleted(add_full_hashes, add_chunks_deleted);
+  RemoveDeleted(sub_full_hashes, sub_chunks_deleted);
 }

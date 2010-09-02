@@ -373,7 +373,7 @@ void SafeBrowsingDatabaseNew::InsertSub(int chunk_id, SBPrefix host,
   if (!count) {
     // No prefixes, use host instead.
     STATS_COUNTER("SB.PrefixSub", 1);
-    const int add_chunk_id = EncodeChunkId(chunk_id, list_id);
+    const int add_chunk_id = EncodeChunkId(entry->chunk_id(), list_id);
     store_->WriteSubPrefix(encoded_chunk_id, add_chunk_id, host);
   } else if (entry->IsPrefix()) {
     // Prefixes only.
