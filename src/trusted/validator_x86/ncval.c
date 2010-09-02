@@ -265,8 +265,9 @@ static Bool ValidateSfiLoad(int argc, const char* argv[], ValidateData* data) {
 
 /* Analyze the code segments of the elf file. */
 static Bool ValidateAnalyze(ValidateData* data) {
+  int i;
   Bool results = TRUE;
-  for (int i = 0; i < NACL_FLAGS_validate_attempts; ++i) {
+  for (i = 0; i < NACL_FLAGS_validate_attempts; ++i) {
     Bool return_value = AnalyzeSfiCodeSegments(data->ncf, data->fname);
     if (!return_value) {
       results = FALSE;
