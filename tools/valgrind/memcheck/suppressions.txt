@@ -892,6 +892,47 @@
    fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_39963_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_*ChromeCookieMonsterDelegateC1EP7Profile
+   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
+   ...
+   fun:_ZN11ProfileImpl36RegisterExtensionWithRequestContextsEP9Extension
+   fun:_ZN17ExtensionsService21NotifyExtensionLoadedEP9Extension
+   fun:_ZN17ExtensionsService17OnExtensionLoadedEP9Extensionb
+   fun:_ZN17ExtensionsService23LoadComponentExtensionsEv
+   fun:_ZN17ExtensionsService17LoadAllExtensionsEv
+   fun:_ZN17ExtensionsService4InitEv
+   fun:_ZN11ProfileImpl14InitExtensionsEv
+}
+{
+   bug_39963_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_127ChromeCookieMonsterDelegateC2EP7Profile
+   fun:_ZN12_GLOBAL__N_127ChromeCookieMonsterDelegateC1EP7Profile
+   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
+   fun:_ZN12_GLOBAL__N_120FactoryForExtensionsC2EP7ProfileRK8FilePathb
+   fun:_ZN12_GLOBAL__N_120FactoryForExtensionsC1EP7ProfileRK8FilePathb
+   fun:_ZN29ChromeURLRequestContextGetter31CreateOffTheRecordForExtensionsEP7Prof
+   fun:_ZN23OffTheRecordProfileImpl30GetRequestContextForExtensionsEv
+   fun:_ZN21ResourceMessageFilterC2EP22ResourceDispatcherHostiP17AudioRendererHostP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
+   fun:_ZN21ResourceMessageFilterC1EP22ResourceDispatcherHostiP17AudioRendererHostP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
+   fun:_ZN24BrowserRenderProcessHost4InitEb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
+   fun:_ZNK7Browser23CreateTabContentsForURLERK4GURLS2_P7ProfilejbP12SiteInstance
+   fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jiiP12SiteInstanceRKSsPPS_
+   fun:_ZN7Browser13AddBlankTabAtEib
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -2744,21 +2785,6 @@
    fun:_ZN18AudioDeviceContext10InitializeEP18AudioMessageFilterPK27_NPDeviceContextAudioConfigP21_NPDeviceContextAudio
    fun:_ZN23WebPluginDelegatePepper28DeviceAudioInitializeContextEPK27_NPDeviceContextAudioConfigP21_NPDeviceContextAudio
    ...
-}
-{
-   bug_39963
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_*ChromeCookieMonsterDelegateC1EP7Profile
-   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   ...
-   fun:_ZN11ProfileImpl36RegisterExtensionWithRequestContextsEP9Extension
-   fun:_ZN17ExtensionsService21NotifyExtensionLoadedEP9Extension
-   fun:_ZN17ExtensionsService17OnExtensionLoadedEP9Extensionb
-   fun:_ZN17ExtensionsService23LoadComponentExtensionsEv
-   fun:_ZN17ExtensionsService17LoadAllExtensionsEv
-   fun:_ZN17ExtensionsService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsEv
 }
 {
    bug_40499
