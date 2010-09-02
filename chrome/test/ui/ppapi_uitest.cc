@@ -87,6 +87,10 @@ class PPAPITest : public UITest {
   }
 };
 
+TEST_F(PPAPITest, FAILS_Instance) {
+  RunTest("Instance");
+}
+
 // http://crbug.com/54150
 TEST_F(PPAPITest, FLAKY_Graphics2D) {
   RunTest("Graphics2D");

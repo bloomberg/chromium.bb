@@ -93,6 +93,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool BindGraphics(PP_Resource device_id);
   bool full_frame() const { return full_frame_; }
   bool SetCursor(PP_CursorType_Dev type);
+  PP_Var ExecuteScript(PP_Var script, PP_Var* exception);
 
   // PPP_Instance pass-through.
   void Delete();
