@@ -8231,7 +8231,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Can't access your account?
       </message>
       <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON">
-        Browse without signing in
+        Skip sign-in and go incognito
       </message>
       <message name="IDS_GO_INCOGNITO_BUTTON">
         Go incognito
