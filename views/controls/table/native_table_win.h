@@ -74,7 +74,7 @@ class NativeTableWin : public NativeControlWin, public NativeTableWrapper {
   virtual void OnMiddleClick();
 
   // Overridden from NativeControl. Notifies the observer.
-  virtual bool OnKeyDown(base::KeyboardCode virtual_keycode);
+  virtual bool OnKeyDown(app::KeyboardCode virtual_keycode);
 
   // Custom drawing of our icons.
   LRESULT OnCustomDraw(NMLVCUSTOMDRAW* draw_info);

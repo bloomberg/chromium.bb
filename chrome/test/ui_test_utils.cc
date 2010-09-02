@@ -551,7 +551,7 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
 }
 
 bool SendKeyPressSync(gfx::NativeWindow window,
-                      base::KeyboardCode key,
+                      app::KeyboardCode key,
                       bool control,
                       bool shift,
                       bool alt,

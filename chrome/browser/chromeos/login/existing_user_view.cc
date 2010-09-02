@@ -45,7 +45,7 @@ class UserEntryTextfield : public views::Textfield {
 
   // Overridden from View:
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
-    if (e.GetKeyCode() == base::VKEY_TAB) {
+    if (e.GetKeyCode() == app::VKEY_TAB) {
       int index = controller_->user_index() + (e.IsShiftDown() ? -1 : 1);
       controller_->SelectUser(index);
       return true;
@@ -56,7 +56,7 @@ class UserEntryTextfield : public views::Textfield {
 
   // Overridden from views::Textfield:
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-    if (e.GetKeyCode() == base::VKEY_TAB)
+    if (e.GetKeyCode() == app::VKEY_TAB)
       return true;
     else
       return views::Textfield::SkipDefaultKeyEventProcessing(e);

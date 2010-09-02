@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_KEYBOARD_CODES_H_
-#define BASE_KEYBOARD_CODES_H_
+#ifndef APP_KEYBOARD_CODES_H_
+#define APP_KEYBOARD_CODES_H_
 #pragma once
 
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include "base/keyboard_codes_win.h"
+#include "app/keyboard_codes_win.h"
 #elif defined(USE_X11) || defined(OS_MACOSX)
-#include "base/keyboard_codes_posix.h"
+#include "app/keyboard_codes_posix.h"
 #endif
 
-#endif  // BASE_KEYBOARD_CODES_H_
+#endif  // APP_KEYBOARD_CODES_H_

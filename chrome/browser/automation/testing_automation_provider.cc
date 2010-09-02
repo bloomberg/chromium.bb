@@ -879,7 +879,7 @@ void TestingAutomationProvider::WindowSimulateKeyPress(
 
   gfx::NativeWindow window = window_tracker_->GetResource(handle);
   // The key event is sent to whatever window is active.
-  ui_controls::SendKeyPress(window, static_cast<base::KeyboardCode>(key),
+  ui_controls::SendKeyPress(window, static_cast<app::KeyboardCode>(key),
                            ((flags & views::Event::EF_CONTROL_DOWN) ==
                               views::Event::EF_CONTROL_DOWN),
                             ((flags & views::Event::EF_SHIFT_DOWN) ==

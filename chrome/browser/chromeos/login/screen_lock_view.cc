@@ -202,7 +202,7 @@ bool ScreenLockView::HandleKeystroke(
     views::Textfield* sender,
     const views::Textfield::Keystroke& keystroke) {
   screen_locker_->ClearErrors();
-  if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
+  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
     screen_locker_->Authenticate(password_field_->text());
     return true;
   }

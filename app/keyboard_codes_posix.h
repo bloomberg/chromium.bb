@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BASE_KEYBOARD_CODES_POSIX_H_
-#define BASE_KEYBOARD_CODES_POSIX_H_
+#ifndef APP_KEYBOARD_CODES_POSIX_H_
+#define APP_KEYBOARD_CODES_POSIX_H_
 #pragma once
 
-namespace base {
+namespace app {
 
 typedef enum {
   VKEY_BACK = 0x08,
@@ -205,6 +205,6 @@ typedef enum {
   VKEY_UNKNOWN = 0
 } KeyboardCode;
 
-}  // namespace views
+}  // namespace app
 
-#endif  // BASE_KEYBOARD_CODES_POSIX_H_
+#endif  // APP_KEYBOARD_CODES_POSIX_H_
