@@ -18,10 +18,12 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "gfx/codec/png_codec.h"
 #include "grit/theme_resources.h"
 
@@ -77,6 +79,14 @@ void save_image_to_file(const SkBitmap& image,
       FROM_HERE,
       NewRunnableFunction(&save_path_to_local_state,
                           username, image_path.value()));
+}
+
+// Checks current user's ownership on file thread.
+void CheckOwnership() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  UserManager::Get()->set_current_user_is_owner(
+      OwnershipService::GetSharedInstance()->CurrentUserIsOwner());
 }
 
 }  // namespace
@@ -242,7 +252,12 @@ void UserManager::OnImageLoaded(const std::string& username,
 
 // Private constructor and destructor. Do nothing.
 UserManager::UserManager()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader(this))) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader(this))),
+      current_user_is_owner_(false) {
+  registrar_.Add(this, NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
+      NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
+      NotificationService::AllSources());
 }
 
 UserManager::~UserManager() {
@@ -262,6 +277,20 @@ void UserManager::NotifyOnLogin() {
       StopInputMethodProcesses();
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);
+
+  // Schedules current user ownership check on file thread.
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(&CheckOwnership));
+}
+
+void UserManager::Observe(NotificationType type,
+                          const NotificationSource& source,
+                          const NotificationDetails& details) {
+  if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED ||
+      type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED) {
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+        NewRunnableFunction(&CheckOwnership));
+  }
 }
 
 }  // namespace chromeos

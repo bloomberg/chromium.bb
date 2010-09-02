@@ -119,6 +119,12 @@ cr.define('options.accounts', function() {
   };
 
   /**
+   * Whether the user list is disabled. Only used for display purpose.
+   * @type {boolean}
+   */
+  cr.defineProperty(UserList, 'disabled', cr.PropertyKind.BOOL_ATTR);
+
+  /**
    * Creates a new user list item.
    * @param user The user account this represents.
    * @constructor

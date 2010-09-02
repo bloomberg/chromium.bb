@@ -4,17 +4,33 @@
 
 #include "chrome/browser/chromeos/cros_settings_provider_user.h"
 
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+
+namespace {
+
+Value* CreateSettingsBooleanValue(bool value, bool managed) {
+  DictionaryValue* dict = new DictionaryValue;
+  dict->Set("value", Value::CreateBooleanValue(value));
+  dict->Set("managed", Value::CreateBooleanValue(managed));
+  return dict;
+}
+
+}  // namespace
 
 namespace chromeos {
 
 UserCrosSettingsProvider::UserCrosSettingsProvider()
     : dict_(new DictionaryValue) {
-  Set(kAccountsPrefAllowBWSI, Value::CreateBooleanValue(true));
-  Set(kAccountsPrefAllowGuest, Value::CreateBooleanValue(true));
-  Set(kAccountsPrefShowUserNamesOnSignIn, Value::CreateBooleanValue(true));
+  bool is_owner = UserManager::Get()->current_user_is_owner();
+
+  Set(kAccountsPrefAllowBWSI, CreateSettingsBooleanValue(true, !is_owner));
+  Set(kAccountsPrefAllowGuest, CreateSettingsBooleanValue(true, !is_owner));
+  Set(kAccountsPrefShowUserNamesOnSignIn,
+      CreateSettingsBooleanValue(true, !is_owner));
 
   ListValue* user_list = new ListValue;
 

@@ -7,8 +7,10 @@
 #include "app/l10n_util.h"
 #include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider_user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {
@@ -38,6 +40,10 @@ void AccountsOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT));
   localized_strings->SetString("add_users",l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ADD_USERS));
+
+  localized_strings->SetString("current_user_is_owner",
+      UserManager::Get()->current_user_is_owner() ?
+      ASCIIToUTF16("true") : ASCIIToUTF16("false"));
 }
 
 }  // namespace chromeos
