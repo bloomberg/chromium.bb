@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_FFMPEG_VIDEO_ALLOCATOR_H_
-#define MEDIA_FILTERS_FFMPEG_VIDEO_ALLOCATOR_H_
+#ifndef MEDIA_VIDEO_FFMPEG_VIDEO_ALLOCATOR_H_
+#define MEDIA_VIDEO_FFMPEG_VIDEO_ALLOCATOR_H_
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -91,4 +91,4 @@ class FFmpegVideoAllocator {
 
 } // namespace media
 
-#endif  // MEDIA_FILTERS_FFMPEG_VIDEO_ALLOCATOR_H_
+#endif  // MEDIA_VIDEO_FFMPEG_VIDEO_ALLOCATOR_H_

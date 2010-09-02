@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
-#define MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
+#ifndef MEDIA_VIDEO_FFMPEG_VIDEO_DECODE_ENGINE_H_
+#define MEDIA_VIDEO_FFMPEG_VIDEO_DECODE_ENGINE_H_
 
 #include <deque>
 
 #include "base/scoped_ptr.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/filters/video_decode_engine.h"
+#include "media/video/video_decode_engine.h"
 
 // FFmpeg types.
 struct AVCodecContext;
@@ -82,4 +82,4 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
+#endif  // MEDIA_VIDEO_FFMPEG_VIDEO_DECODE_ENGINE_H_
