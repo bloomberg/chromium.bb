@@ -833,6 +833,7 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     { "permissions2", true },  // tabs -> tabs,bookmarks
     { "permissions3", true },  // http://a -> http://a,tabs
     { "permissions4", false },  // plugin -> plugin,tabs
+    { "permissions5", true },  // bookmarks -> bookmarks,history
     { "plugin1", false },  // plugin -> plugin
     { "plugin2", false },  // plugin -> none
 #if defined(OS_CHROMEOS)

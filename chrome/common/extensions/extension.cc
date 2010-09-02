@@ -944,7 +944,6 @@ bool Extension::IsPrivilegeIncrease(Extension* old_extension,
 // static
 bool Extension::HasEffectiveBrowsingHistoryPermission() const {
   return HasApiPermission(kTabPermission) ||
-      HasApiPermission(kBookmarkPermission) ||
       HasApiPermission(kHistoryPermission);
 }
 
