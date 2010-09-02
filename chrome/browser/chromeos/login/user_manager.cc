@@ -256,8 +256,6 @@ UserManager::UserManager()
       current_user_is_owner_(false) {
   registrar_.Add(this, NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
-      NotificationService::AllSources());
 }
 
 UserManager::~UserManager() {
@@ -286,8 +284,7 @@ void UserManager::NotifyOnLogin() {
 void UserManager::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED ||
-      type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED) {
+  if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
     ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
         NewRunnableFunction(&CheckOwnership));
   }
