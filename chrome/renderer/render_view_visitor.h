@@ -6,6 +6,8 @@
 #define CHROME_RENDERER_RENDER_VIEW_VISITOR_H_
 #pragma once
 
+class RenderView;
+
 class RenderViewVisitor {
  public:
   // Return true to continue visiting RenderViews or false to stop.

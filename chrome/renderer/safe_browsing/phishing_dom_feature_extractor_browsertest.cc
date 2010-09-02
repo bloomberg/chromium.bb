@@ -9,62 +9,20 @@
 
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
-#include <string.h>  // for memcpy()
-#include <map>
-#include <string>
-
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/message_loop.h"
-#include "base/process.h"
-#include "base/string_util.h"
 #include "base/time.h"
-#include "chrome/common/main_function_params.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
-#include "chrome/common/sandbox_init_wrapper.h"
-#include "chrome/renderer/mock_render_process.h"
-#include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/render_view.h"
-#include "chrome/renderer/render_view_visitor.h"
-#include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
-#include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel.h"
-#include "net/base/upload_data.h"
-#include "net/http/http_response_headers.h"
+#include "chrome/renderer/safe_browsing/render_view_fake_resources_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webkit_glue.h"
 
 using ::testing::ContainerEq;
 using ::testing::Return;
 
 namespace safe_browsing {
 
-class PhishingDOMFeatureExtractorTest : public ::testing::Test,
-                                        public IPC::Channel::Listener,
-                                        public RenderViewVisitor {
- public:
-  // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& message) {
-    IPC_BEGIN_MESSAGE_MAP(PhishingDOMFeatureExtractorTest, message)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnDidStopLoading)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_RequestResource, OnRequestResource)
-    IPC_END_MESSAGE_MAP()
-  }
-
-  // RenderViewVisitor implementation.
-  virtual bool Visit(RenderView* render_view) {
-    view_ = render_view;
-    return false;
-  }
-
+class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
  protected:
   class MockClock : public FeatureExtractorClock {
    public:
@@ -72,73 +30,15 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
   };
 
   virtual void SetUp() {
-    // Set up the renderer.  This code is largely adapted from
-    // render_view_test.cc and renderer_main.cc.  Note that we use a
-    // MockRenderProcess (because we don't need to use IPC for painting),
-    // but we use a real RenderThread so that we can use the ResourceDispatcher
-    // to fetch network resources.  These are then served canned content
-    // in OnRequestResource().
-    sandbox_init_wrapper_.reset(new SandboxInitWrapper);
-    command_line_.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
-    params_.reset(new MainFunctionParams(*command_line_,
-                                         *sandbox_init_wrapper_, NULL));
-    platform_.reset(new RendererMainPlatformDelegate(*params_));
-    platform_->PlatformInitialize();
-
-    std::string thread_name = GetNextThreadName();
-    channel_.reset(new IPC::Channel(thread_name,
-                                    IPC::Channel::MODE_SERVER, this));
-    ASSERT_TRUE(channel_->Connect());
-
-    webkit_glue::SetJavaScriptFlags("--expose-gc");
-    mock_process_.reset(new MockRenderProcess);
-    render_thread_ = new RenderThread(thread_name);
-    mock_process_->set_main_thread(render_thread_);
-
-    // Tell the renderer to create a view, then wait until it's ready.
-    // We can't call View::Create() directly here or else we won't get
-    // RenderProcess's lazy initialization of WebKit.
-    view_ = NULL;
-    ViewMsg_New_Params params;
-    params.parent_window = 0;
-    params.view_id = kViewId;
-    params.session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
-    ASSERT_TRUE(channel_->Send(new ViewMsg_New(params)));
-    msg_loop_.Run();
+    // Set up WebKit and the RenderView.
+    RenderViewFakeResourcesTest::SetUp();
 
     clock_ = new MockClock();
     extractor_.reset(new PhishingDOMFeatureExtractor(view_, clock_));
   }
 
   virtual void TearDown() {
-    // Try very hard to collect garbage before shutting down.
-    GetMainFrame()->collectGarbage();
-    GetMainFrame()->collectGarbage();
-
-    ASSERT_TRUE(channel_->Send(new ViewMsg_Close(kViewId)));
-    do {
-      msg_loop_.RunAllPending();
-      view_ = NULL;
-      RenderView::ForEach(this);
-    } while (view_);
-
-    mock_process_.reset();
-    msg_loop_.RunAllPending();
-    platform_->PlatformUninitialize();
-    platform_.reset();
-    command_line_.reset();
-    sandbox_init_wrapper_.reset();
-  }
-
-  // Returns the main WebFrame for our RenderView.
-  WebKit::WebFrame* GetMainFrame() {
-    return view_->webview()->mainFrame();
-  }
-
-  // Loads |url| into the RenderView, waiting for the load to finish.
-  void LoadURL(const std::string& url) {
-    GetMainFrame()->loadRequest(WebKit::WebURLRequest(GURL(url)));
-    msg_loop_.Run();
+    RenderViewFakeResourcesTest::TearDown();
   }
 
   // Runs the DOMFeatureExtractor on the RenderView, waiting for the
@@ -148,109 +48,20 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
     extractor_->ExtractFeatures(
         features,
         NewCallback(this, &PhishingDOMFeatureExtractorTest::ExtractionDone));
-    msg_loop_.Run();
+    message_loop_.Run();
     return success_;
   }
 
   // Completion callback for feature extraction.
   void ExtractionDone(bool success) {
     success_ = success;
-    msg_loop_.Quit();
+    message_loop_.Quit();
   }
-
-  // IPC message handlers below
-
-  // Notification that page load has finished.  Exit the message loop
-  // so that the test can continue.
-  void OnDidStopLoading() {
-    msg_loop_.Quit();
-  }
-
-  // Notification that the renderer wants to load a resource.
-  // If the requested url is in responses_, we send the renderer a 200
-  // and the supplied content, otherwise we send it a 404 error.
-  void OnRequestResource(const IPC::Message& message,
-                         int request_id,
-                         const ViewHostMsg_Resource_Request& request_data) {
-    std::string headers, body;
-    std::map<std::string, std::string>::const_iterator it =
-        responses_.find(request_data.url.spec());
-    if (it == responses_.end()) {
-      headers = "HTTP/1.1 404 Not Found\0Content-Type:text/html\0\0";
-      body = "content not found";
-    } else {
-      headers = "HTTP/1.1 200 OK\0Content-Type:text/html\0\0";
-      body = it->second;
-    }
-
-    ResourceResponseHead response_head;
-    response_head.headers = new net::HttpResponseHeaders(headers);
-    response_head.mime_type = "text/html";
-    ASSERT_TRUE(channel_->Send(new ViewMsg_Resource_ReceivedResponse(
-        message.routing_id(), request_id, response_head)));
-
-    base::SharedMemory shared_memory;
-    ASSERT_TRUE(shared_memory.Create(std::wstring(), false,
-                                     false, body.size()));
-    ASSERT_TRUE(shared_memory.Map(body.size()));
-    memcpy(shared_memory.memory(), body.data(), body.size());
-
-    base::SharedMemoryHandle handle;
-    ASSERT_TRUE(shared_memory.GiveToProcess(base::Process::Current().handle(),
-                                            &handle));
-    ASSERT_TRUE(channel_->Send(new ViewMsg_Resource_DataReceived(
-        message.routing_id(), request_id, handle, body.size())));
-
-    ASSERT_TRUE(channel_->Send(new ViewMsg_Resource_RequestComplete(
-        message.routing_id(),
-        request_id,
-        URLRequestStatus(),
-        std::string())));
-  }
-
-  // Notification that the render view we've created is ready to use.
-  void OnRenderViewReady() {
-    // Grab a pointer to the new view using RenderViewVisitor.
-    ASSERT_TRUE(!view_);
-    RenderView::ForEach(this);
-    ASSERT_TRUE(view_);
-    msg_loop_.Quit();
-  }
-
-  // We use a new IPC channel name for each test that runs.
-  // This is necessary because the renderer-side IPC channel is not
-  // shut down when the RenderThread goes away, so attempting to reuse
-  // the channel name gives an error (see ChildThread::~ChildThread()).
-  static std::string GetNextThreadName() {
-    return StringPrintf(
-        "phishing_dom_feature_Extractor_unittest.%d",
-        next_thread_id_++);
-  }
-
-  static int next_thread_id_;  // incrementing counter for thread ids
-  static const int32 kViewId = 5;  // arbitrary id for our testing view
-
-  MessageLoopForIO msg_loop_;
-  // channel that the renderer uses to talk to the browser.
-  // For this test, we will handle the browser end of the channel.
-  scoped_ptr<IPC::Channel> channel_;
-  RenderThread* render_thread_;  // owned by mock_process_
-  scoped_ptr<MockRenderProcess> mock_process_;
-  RenderView* view_;  // not owned, deletes itself on close
-  scoped_ptr<RendererMainPlatformDelegate> platform_;
-  scoped_ptr<MainFunctionParams> params_;
-  scoped_ptr<CommandLine> command_line_;
-  scoped_ptr<SandboxInitWrapper> sandbox_init_wrapper_;
 
   scoped_ptr<PhishingDOMFeatureExtractor> extractor_;
   MockClock* clock_;  // owned by extractor_
-  // Map of URL -> response body for network requests from the renderer.
-  // Any URLs not in this map are served a 404 error.
-  std::map<std::string, std::string> responses_;
   bool success_;  // holds the success value from ExtractFeatures
 };
-
-int PhishingDOMFeatureExtractorTest::next_thread_id_ = 0;
 
 TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
   // This test doesn't exercise the extraction timing.

@@ -1784,6 +1784,8 @@
         'renderer/render_view_browsertest.cc',
         'renderer/render_view_browsertest_mac.mm',
         'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
+        'renderer/safe_browsing/render_view_fake_resources_test.cc',
+        'renderer/safe_browsing/render_view_fake_resources_test.h',
         'renderer/translate_helper_browsertest.cc',
         'test/automation/dom_automation_browsertest.cc',
         'test/in_process_browser_test.cc',
