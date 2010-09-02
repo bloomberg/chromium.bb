@@ -26,36 +26,14 @@ BUGWK44514 LINUX WIN : svg/custom/missing-xlink.svg = TEXT
 BUGWK44514 MAC : fast/backgrounds/svg-as-background-6.html = IMAGE
 BUGWK44514 MAC : svg/zoom/page/zoom-mask-with-percentages.svg = IMAGE
 
-// V8 related fixed that will be upstreamed afterwards.
-// V8 roll to version 2.4.0 fixes array-splice
-BUGRICOW : fast/js/array-splice.html = PASS
-// A number of ietestcenter tests no longer fails with the V8
-// roll to 2.3.11 last week.
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-12.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-13.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-14.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-24.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-25.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-28.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-29.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-7.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-3-8.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.14-4-9.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-12.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-13.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-24.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-25.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-28.html = PASS
-BUGRICOW : ietestcenter/Javascript/15.4.4.15-3-7.html = PASS
-
 // Still failing, should be moved upstream.
 BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE
 
 // Newly added test apparently misbehaves.  
 BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
 
-// http://trac.webkit.org/changeset/66666/ altered a test.  Suppress it for time being.
-// We should move these upstream and fix upstream.
+// These can be removed when we roll to r66680.
+BUGRICOW : fast/js/array-splice.html = PASS
 BUGTONY : platform/gtk/scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html = TIMEOUT TEXT
 BUGTONY : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TIMEOUT TEXT
 BUGTONY : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
