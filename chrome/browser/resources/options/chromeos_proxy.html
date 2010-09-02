@@ -2,75 +2,84 @@
   <h1 i18n-content="proxyPage"></h1>
   <section>
     <h3 i18n-content="proxy_config_title"></h3>
-   <table class="option-control-table">
-    <tr><td>
-      <label><input type="radio" name="proxytype"
-          value=""><span
-          i18n-content="proxyDirectIternetConnection"></span>
+    <div>
+      <label><input type="radio" id="directProxy" name="proxytype" 
+          pref="cros.proxy.type" value="1"><span
+          i18n-content="proxyDirectInternetConnection"></span>
       </label>
-    </td></tr>
-    <tr><td>
-      <label><input type="radio" name="proxytype"
-          value=""><span
+      <label><input type="radio" id="manualProxy" name="proxytype"
+          pref="cros.proxy.type" value="2"><span
           i18n-content="proxyManual"></span></label>
-    </td></tr>
-    <tr><td>
       <label><input id="proxyAllProtocols"
-          type="checkbox"><span
-          i18n-content="sameProxyProtocols"></span></label><br>
-      <label><span
-          i18n-content="httpProxy"></span>
-        <input id="proxyHostName" type="text" size="30" disabled>
-      </label>
-      <label><span
-          i18n-content="proxyPort"></span>
-        <input id="proxyHostPort" type="text" size="5" disabled>
-      </label>
-      <br>
-      <label><span
-          i18n-content="secureHttpProxy"></span>
-        <input id="secureProxyHostName" type="text" size="30" disabled>
-      </label>
-      <label><span
-          i18n-content="proxyPort"></span>
-        <input id="secureProxyHostNamePort" type="text" size="5" disabled>
-      </label>
-      <br>
-      <label><span
-          i18n-content="ftpProxy"></span>
-        <input id="ftpProxy" type="text" size="30" disabled>
-      </label>
-      <label><span
-          i18n-content="proxyPort"></span>
-        <input id="ftpProxyPort" type="text" size="5" disabled>
-      </label>
-      <br>
-      <label><span
-          i18n-content="socksHost"></span>
-        <input id="socksHost" type="text" size="30" disabled>
-      </label>
-      <label><span
-          i18n-content="proxyPort"></span>
-        <input id="socksPort" type="text" size="5" disabled>
-      </label>
-      <br>
-    </td></tr>
-    <tr><td>
-      <label><input type="radio" name="proxytype"
-          value=""><span
-          i18n-content="proxyAutomatic"></span></label><br>
+          type="checkbox" pref="cros.proxy.single"><span
+          i18n-content="sameProxyProtocols"></span></label>
+      <div id="singleProxy">
+        <table>
+        <tr><td><span
+            i18n-content="httpProxy"></span>
+          <input id="proxyHostSingleName" type="text" size="30" pref="cros.proxy.singlehttp" disabled>
+          </td><td>
+          <span
+            i18n-content="proxyPort"></span>
+          <input id="proxyHostSinglePort" type="text" size="5" pref="cros.proxy.singlehttpport" disabled>
+          </td></tr>
+        </table>
+      </div>
+      <div id="multiProxy">
+        <table>
+        <tr>
+        <td><span
+            i18n-content="httpProxy"></span></td><td>
+          <input id="proxyHostName" type="text" size="30" pref="cros.proxy.httpurl" disabled>
+        </td><td>
+        <span
+          i18n-content="proxyPort"></span></td><td>
+        <input id="proxyHostPort" type="text" size="5" pref="cros.proxy.httpport" disabled>
+        </td></tr>
+        <tr>
+        <td><span
+          i18n-content="secureHttpProxy"></span></td><td>
+        <input id="secureProxyHostName" type="text" size="30" pref="cros.proxy.httpsurl" disabled>
+        </td><td>
+        <span
+          i18n-content="proxyPort"></span></td><td>
+        <input id="secureProxyPort" type="text" size="5" pref="cros.proxy.httpsport" disabled>
+        </td></tr>
+        <tr>    
+        <td><span
+            i18n-content="ftpProxy"></span></td><td>
+          <input id="ftpProxy" type="text" size="30" pref="cros.proxy.ftpurl" disabled>
+          </td><td>
+          <span
+            i18n-content="proxyPort"></span></td><td>
+          <input id="ftpProxyPort" type="text" size="5" pref="cros.proxy.ftpport" disabled>
+        </td></tr>
+        <tr>
+        <td><span
+            i18n-content="socksHost"></span></td><td>
+          <input id="socksHost" type="text" size="30" pref="cros.proxy.socks" disabled>
+          </td><td>
+          <span
+            i18n-content="proxyPort"></span></td><td>
+          <input id="socksPort" type="text" size="5" pref="cros.proxy.socksport" disabled>
+        </td></tr>
+        </table>
+      </div>
+      <label><input type="radio" id="autoProxy" name="proxytype"
+            pref="cros.proxy.type" value="3"><span
+          i18n-content="proxyAutomatic"></span></label>
       <label><span
           i18n-content="proxyConfigUrl"></span>
-        <input id="proxyConfig" type="url" size="60" disabled>
+        <input id="proxyConfig" type="url" size="60" pref="cros.proxy.pacurl">
       </label>
-     </td></tr>
-    </table>
+    </div>
   </section>
-  <section>
+  <section id="advancedConfig">
     <h3 i18n-content="advanced_proxy_config"></h3>
     <div class="option">
-         <td class="option-name"><list id="ignoredHostList"></list></td>
-       <br>     
+         <list id="ignoredHostList"></list>
+       <br>
+       <input id="newHost" type="url" size="30"><br>
        <button id="addHost"
                i18n-content="addHost"></button>
        <button id="removeHost"

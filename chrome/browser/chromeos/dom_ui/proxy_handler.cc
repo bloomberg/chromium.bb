@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings_provider_proxy.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -19,7 +20,10 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 
-ProxyHandler::ProxyHandler() {
+namespace chromeos {
+
+ProxyHandler::ProxyHandler()
+    : CrosOptionsPageUIHandler(new CrosSettingsProviderProxy())  {
 }
 
 ProxyHandler::~ProxyHandler() {
@@ -33,7 +37,7 @@ void ProxyHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_PROXY_TAB_LABEL));
   localized_strings->SetString("proxy_config_title",
      l10n_util::GetStringUTF16(IDS_PROXY_CONFIG_TITLE));
-  localized_strings->SetString("proxyDirectIternetConnection",
+  localized_strings->SetString("proxyDirectInternetConnection",
      l10n_util::GetStringUTF16(IDS_PROXY_DIRECT_CONNECTION));
 
   localized_strings->SetString("proxyManual",
@@ -62,3 +66,5 @@ void ProxyHandler::GetLocalizedValues(
   localized_strings->SetString("proxyPort",
      l10n_util::GetStringUTF16(IDS_PROXY_PORT));
 }
+
+} // namespace chromeos

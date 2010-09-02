@@ -165,7 +165,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
                           new chromeos::LanguageOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::LanguagePinyinOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new ProxyHandler());
+  AddOptionsPageUIHandler(localized_strings, new chromeos::ProxyHandler());
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
 #endif
 

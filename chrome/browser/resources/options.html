@@ -60,6 +60,8 @@
   <script src="options/chromeos_language_options.js"></script>
   <script src="options/chromeos_system_options.js"></script>
   <script src="options/chromeos_accounts_options.js"></script>
+  <script src="options/chromeos_proxy_options.js"></script>
+  <script src="options/chromeos_proxy_rules_list.js"></script>
   <script src="options/chromeos_accounts_user_list.js"></script>
   <script src="options/chromeos_accounts_user_name_edit.js"></script>
   <script>
@@ -117,6 +119,7 @@ var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
 var SearchEngineManager = options.SearchEngineManager;
 var StopSyncingOverlay = options.StopSyncingOverlay;
+var ProxyOptions = options.ProxyOptions;
 var PasswordsRemoveAllOverlay = options.PasswordsRemoveAllOverlay;
 
 /**
@@ -175,10 +178,7 @@ function load() {
         'languagePinyin',
         localStrings.getString('languagePinyinPage'),
         'languagePinyinPage'));
-    var proxy = new OptionsPage('proxy',
-                                localStrings.getString('proxyPage'),
-                                'proxyPage');
-    OptionsPage.registerSubPage(proxy);
+    OptionsPage.registerSubPage(ProxyOptions.getInstance());
   }
 
   var syncSettings = new OptionsPage('sync',

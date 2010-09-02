@@ -379,6 +379,8 @@
         'browser/chromeos/cros_settings_names.cc',
         'browser/chromeos/cros_settings_names.h',
         'browser/chromeos/cros_settings_provider.h',
+        'browser/chromeos/cros_settings_provider_proxy.cc',
+        'browser/chromeos/cros_settings_provider_proxy.h',
         'browser/chromeos/cros_settings_provider_user.cc',
         'browser/chromeos/cros_settings_provider_user.h',
         'browser/chromeos/cros/burn_library.cc',
