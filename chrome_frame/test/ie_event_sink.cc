@@ -100,10 +100,19 @@ void IEEventSink::Attach(IDispatch* browser_disp) {
   EXPECT_TRUE(NULL != browser_disp);
   if (browser_disp) {
     EXPECT_HRESULT_SUCCEEDED(web_browser2_.QueryFrom(browser_disp));
-    EXPECT_TRUE(S_OK == DispEventAdvise(web_browser2_,
-                                        &DIID_DWebBrowserEvents2));
-    FindIEProcessId();
+    EXPECT_HRESULT_SUCCEEDED(Attach(web_browser2_.get()));
   }
+}
+
+HRESULT IEEventSink::Attach(IWebBrowser2* browser) {
+  DCHECK(browser);
+  HRESULT result;
+  if (browser) {
+    web_browser2_ = browser;
+    FindIEProcessId();
+    result = DispEventAdvise(web_browser2_, &DIID_DWebBrowserEvents2);
+  }
+  return result;
 }
 
 void IEEventSink::Uninitialize() {
@@ -339,16 +348,11 @@ HRESULT IEEventSink::LaunchIEAndNavigate(
     const std::wstring& navigate_url, IEEventListener* listener) {
   listener_ = listener;
   HRESULT hr = LaunchIEAsComServer(web_browser2_.Receive());
-  EXPECT_EQ(S_OK, hr);
-  if (hr == S_OK) {
-    FindIEProcessId();
+  if (SUCCEEDED(hr)) {
     web_browser2_->put_Visible(VARIANT_TRUE);
-    hr = DispEventAdvise(web_browser2_, &DIID_DWebBrowserEvents2);
-    EXPECT_TRUE(hr == S_OK);
+    Attach(web_browser2_);
     hr = Navigate(navigate_url);
   }
-
-  DLOG_IF(WARNING, FAILED(hr)) << "Failed to launch IE. Error:" << hr;
   return hr;
 }
 
@@ -425,6 +429,7 @@ void IEEventSink::FindIEProcessId() {
   EXPECT_TRUE(::IsWindow(hwnd));
   if (::IsWindow(hwnd))
     ::GetWindowThreadProcessId(hwnd, &ie_process_id_);
+  EXPECT_NE(static_cast<DWORD>(0), ie_process_id_);
 }
 
 // Event callbacks

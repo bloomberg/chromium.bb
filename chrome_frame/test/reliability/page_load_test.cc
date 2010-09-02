@@ -12,8 +12,6 @@
 // Optional Switches:
 // --iterations=num: goes through the list of URLs constructed in usage 2 or 3
 //                   num times.
-// --continuousload: continuously visits the list of URLs without restarting
-//                    browser for each page load.
 // --memoryusage: prints out memory usage when visiting each page.
 // --logfile=filepath: saves the visit log to the specified path.
 // --timeout=seconds: time out as specified in seconds during each
@@ -47,6 +45,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/ie_event_sink.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -56,7 +55,11 @@
 #include "chrome/test/reliability/page_load_test.h"
 #include "chrome_frame/utils.h"
 #include "net/base/net_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
+using testing::StrCaseEq;
+using testing::StrCaseNe;
 
 namespace {
 
@@ -85,8 +88,6 @@ int32 g_start_index = 1;
 int32 g_end_index = kint32max;
 int32 g_iterations = 1;
 bool g_memory_usage = false;
-bool g_continuous_load = false;
-bool g_browser_existing = false;
 bool g_page_down = true;
 bool g_clear_profile = true;
 std::string g_end_url;
@@ -100,85 +101,23 @@ bool g_stand_alone = false;
 const int kUrlNavigationTimeoutSeconds = 20;
 int g_timeout_seconds = kUrlNavigationTimeoutSeconds;
 
-// Overrides a number of IWebBrowser2 event sink handlers as provided by the
-// base chrome_frame_test::WebBrowserEventSink class and provides functionality
-// for reliability testing.
-class WebBrowserEventSinkImpl : public chrome_frame_test::WebBrowserEventSink {
+// Mocks document complete and load events.
+class MockLoadListener : public chrome_frame_test::IEEventListener {
  public:
-  typedef chrome_frame_test::WebBrowserEventSink Base;
-
-  WebBrowserEventSinkImpl()
-      : navigation_started_(false),
-        navigation_completed_(false),
-        message_loop_(NULL),
-        is_chrome_frame_navigation_(false) {}
-
-  ~WebBrowserEventSinkImpl() {}
-
-  STDMETHOD_(void, OnDocumentComplete)(IDispatch* dispatch, VARIANT* url) {
-    // Note that we can't compare url directly to this->url_ since this check
-    // then fails for redirects, e.g. www.google.com -> www.google.ca, since we
-    // only get a single OnDocumentComplete for the final destination.
-    // Instead just discard interstitial "about:blank" notifications.
-    if (url->bstrVal && _wcsicmp(url->bstrVal, L"about:blank") != 0) {
-      navigation_started_ = false;
-      // If this is a chrome frame navigation then the OnDocumentComplete event
-      // does not indicate that we actually finished navigation. For that we
-      // have to wait for the OnLoad notification from ChromeFrame to arrive.
-      if (!is_chrome_frame_navigation_) {
-        navigation_completed_ = true;
-        DCHECK(message_loop_);
-        message_loop_->Quit();
-      }
-    }
-  }
-
-  virtual void OnLoad(const wchar_t* url) {
-    navigation_completed_ = true;
-    DCHECK(message_loop_);
-    message_loop_->Quit();
-  }
-
-  virtual HRESULT Navigate(const std::wstring& navigate_url) {
-    if (StartsWith(navigate_url, kChromeProtocolPrefix, true)) {
-      is_chrome_frame_navigation_ = true;
-      url_ = navigate_url.substr(wcslen(kChromeProtocolPrefix));
-    } else {
-      url_ = navigate_url;
-    }
-    navigation_started_ = true;
-    navigation_completed_ = false;
-
-    return Base::Navigate(navigate_url);
-  }
-
-  bool navigation_started() const {
-    return navigation_started_;
-  }
-
-  bool navigation_completed() const {
-    return navigation_completed_;
-  }
-
-  const std::wstring& url() const {
-    return url_;
-  }
-
-  bool is_chrome_frame_navigation() const {
-    return is_chrome_frame_navigation_;
-  }
-
-  void set_message_loop(chrome_frame_test::TimedMsgLoop* message_loop) {
-    message_loop_ = message_loop;
-  }
+  MOCK_METHOD1(OnDocumentComplete, void (const wchar_t* url));  // NOLINT
+  MOCK_METHOD1(OnLoad, void (const wchar_t* url));  // NOLINT
+  MOCK_METHOD0(OnQuit, void ());  // NOLINT
 
  private:
-  bool navigation_started_;
-  bool navigation_completed_;
-  std::wstring url_;
-  chrome_frame_test::TimedMsgLoop* message_loop_;
-  bool is_chrome_frame_navigation_;
+  virtual void OnDocumentComplete(IDispatch* dispatch, VARIANT* url) {
+    if (url->bstrVal)
+      OnDocumentComplete(url->bstrVal);
+  }
 };
+
+ACTION_P(QuitIE, event_sink) {
+  EXPECT_HRESULT_SUCCEEDED(event_sink->CloseWebBrowser());
+}
 
 class PageLoadTest : public testing::Test {
  public:
@@ -239,30 +178,47 @@ class PageLoadTest : public testing::Test {
 
     chrome_frame_test::TimedMsgLoop message_loop;
 
-    CComObjectStack<WebBrowserEventSinkImpl> browser_event_sink;
-    browser_event_sink.set_message_loop(&message_loop);
-
-    if (!g_continuous_load && !g_browser_existing) {
-      ScopedComPtr<IWebBrowser2> web_browser2;
-      hr = chrome_frame_test::LaunchIEAsComServer(web_browser2.Receive());
-      EXPECT_HRESULT_SUCCEEDED(hr);
-      EXPECT_TRUE(web_browser2.get() != NULL);
-
-      EXPECT_HRESULT_SUCCEEDED(browser_event_sink.SetWebBrowser(web_browser2));
-      g_browser_existing = true;
-    }
+    // Launch IE.
+    ScopedComPtr<IWebBrowser2> web_browser2;
+    hr = chrome_frame_test::LaunchIEAsComServer(web_browser2.Receive());
+    EXPECT_HRESULT_SUCCEEDED(hr);
+    EXPECT_TRUE(web_browser2.get() != NULL);
+    web_browser2->put_Visible(VARIANT_TRUE);
 
     // Log Browser Launched time.
     time_now = base::Time::Now();
     test_log << "browser_launched_seconds=";
     test_log << (time_now.ToDoubleT() - time_start) << std::endl;
 
-    // This is essentially what NavigateToURL does except we don't fire
-    // assertion when page loading fails. We log the result instead.
-    hr = browser_event_sink.Navigate(UTF8ToWide(url.spec()));
+    bool is_chrome_frame_navigation =
+        StartsWith(UTF8ToWide(url.spec()), kChromeProtocolPrefix, true);
+
+    CComObjectStack<chrome_frame_test::IEEventSink> ie_event_sink;
+    MockLoadListener load_listener;
+    // Disregard any interstitial about:blank loads.
+    EXPECT_CALL(load_listener, OnDocumentComplete(StrCaseEq(L"about:blank")))
+        .Times(testing::AnyNumber());
+
+    // Note that we can't compare the loaded url directly with the given url
+    // because the page may have redirected us to a different page, e.g.
+    // www.google.com -> www.google.ca.
+    if (is_chrome_frame_navigation) {
+      EXPECT_CALL(load_listener, OnDocumentComplete(testing::_));
+      EXPECT_CALL(load_listener, OnLoad(testing::_))
+          .WillOnce(QuitIE(&ie_event_sink));
+    } else {
+      EXPECT_CALL(load_listener, OnDocumentComplete(StrCaseNe(L"about:blank")))
+          .WillOnce(QuitIE(&ie_event_sink));
+    }
+    EXPECT_CALL(load_listener, OnQuit()).WillOnce(QUIT_LOOP(message_loop));
+
+    // Attach the sink and navigate.
+    ie_event_sink.set_listener(&load_listener);
+    ie_event_sink.Attach(web_browser2);
+    hr = ie_event_sink.Navigate(UTF8ToWide(url.spec()));
     if (SUCCEEDED(hr)) {
       message_loop.RunFor(g_timeout_seconds);
-      if (browser_event_sink.navigation_completed())
+      if (!message_loop.WasTimedOut())
         metrics.result = NAVIGATION_SUCCESS;
     }
 
@@ -271,11 +227,10 @@ class PageLoadTest : public testing::Test {
     test_log << "navigate_complete_seconds=";
     test_log << (time_now.ToDoubleT() - time_start) << std::endl;
 
-    if (!g_continuous_load) {
-      browser_event_sink.Uninitialize();
-      chrome_frame_test::CloseAllIEWindows();
-      g_browser_existing = false;
-    }
+    // Close IE.
+    ie_event_sink.set_listener(NULL);
+    ie_event_sink.Uninitialize();
+    chrome_frame_test::CloseAllIEWindows();
 
     // Log end of test time.
     time_now = base::Time::Now();
@@ -302,7 +257,7 @@ class PageLoadTest : public testing::Test {
     }
 
     // Get stability metrics recorded by Chrome itself.
-    if (browser_event_sink.is_chrome_frame_navigation()) {
+    if (is_chrome_frame_navigation) {
       GetStabilityMetrics(&metrics);
     }
 
@@ -319,7 +274,7 @@ class PageLoadTest : public testing::Test {
     // Close test log.
     test_log.close();
 
-    if (log_file.is_open() && g_save_debug_log && !g_continuous_load)
+    if (log_file.is_open() && g_save_debug_log)
       SaveDebugLogs(log_file);
 
     // Log revision information for Chrome build under test.
@@ -594,9 +549,6 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kMemoryUsageSwitch))
     g_memory_usage = true;
-
-  if (parsed_command_line.HasSwitch(kContinuousLoadSwitch))
-    g_continuous_load = true;
 
   if (parsed_command_line.HasSwitch(kLogFileSwitch))
     g_log_file_path = parsed_command_line.GetSwitchValuePath(kLogFileSwitch);

@@ -67,8 +67,6 @@ class PropertyNotifySinkListener {
 
 // This class sets up event sinks to the IWebBrowser interface. It forwards
 // all events to its listener.
-// TODO(kkania): Delete WebBrowserEventSink and use this class instead for
-// the reliability tests.
 class IEEventSink
     : public CComObjectRootEx<CComSingleThreadModel>,
       public IDispEventSimpleImpl<0, IEEventSink,
@@ -85,9 +83,20 @@ class IEEventSink
   IEEventSink();
   ~IEEventSink();
 
+  // Launches IE, sets up the sink to forward events to the listener, and
+  // navigates to the given page.
+  HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url,
+                              IEEventListener* listener);
+
+  // Navigate to the given url.
+  HRESULT Navigate(const std::wstring& navigate_url);
+
   // Listen to events from this |browser_disp|, which should be queryable for
   // IWebBrowser2.
   void Attach(IDispatch* browser_disp);
+
+  // Listen to events from the given browser.
+  HRESULT Attach(IWebBrowser2* browser);
 
   // Stop listening to the associated web browser and possibly wait for it to
   // close, if this browser has its own process.
@@ -122,13 +131,6 @@ class IEEventSink
   // Same as above, but does not fail the test if the window cannot be found.
   // In that case, the returned handle will be NULL.
   HWND GetRendererWindowSafe();
-
-  // Launch IE, use the given listener, and navigate to the given url.
-  HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url,
-                              IEEventListener* listener);
-
-  // Navigate to the given url.
-  HRESULT Navigate(const std::wstring& navigate_url);
 
   // Returns whether CF is rendering the current page.
   bool IsCFRendering();
