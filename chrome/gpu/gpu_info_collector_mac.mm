@@ -10,7 +10,7 @@
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 #import <IOKit/IOKitLib.h>
-#import <OpenGL/GL.h>
+#import <OpenGL/gl.h>
 
 namespace gpu_info_collector {
 
