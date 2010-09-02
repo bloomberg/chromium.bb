@@ -456,12 +456,16 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
       return S_OK;
   }
 
+  // We are just pass through at this point, avoid false positive crash reports.
+  ExceptionBarrierReportOnlyModule barrier;
   return delegate->ReportProgress(status_code, status_text);
 }
 
 HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
                               DWORD flags, ULONG progress, ULONG max_progress) {
   if (renderer_type_ != UNDETERMINED) {
+    // We are just pass through now, avoid false positive crash reports.
+    ExceptionBarrierReportOnlyModule barrier;
     return delegate->ReportData(flags, progress, max_progress);
   }
 
