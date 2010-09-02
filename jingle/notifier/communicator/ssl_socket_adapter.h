@@ -45,6 +45,7 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
   virtual const net::BoundNetLog& NetLog() const { return net_log_; }
   virtual void SetSubresourceSpeculation();
   virtual void SetOmniboxSpeculation();
+  virtual bool WasEverUsed() const;
 
   // net::Socket implementation
 
@@ -73,6 +74,8 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
 
   talk_base::AsyncSocket *socket_;
   talk_base::SocketAddress addr_;
+
+  bool was_used_to_convey_data_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSocket);
 };

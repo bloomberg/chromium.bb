@@ -324,4 +324,8 @@ void FakeSSLClientSocket::SetOmniboxSpeculation() {
   transport_socket_->SetOmniboxSpeculation();
 }
 
+bool FakeSSLClientSocket::WasEverUsed() const {
+  return transport_socket_->WasEverUsed();
+}
+
 }  // namespace notifier

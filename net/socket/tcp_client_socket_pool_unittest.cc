@@ -52,6 +52,7 @@ class MockClientSocket : public ClientSocket {
 
   virtual void SetSubresourceSpeculation() {}
   virtual void SetOmniboxSpeculation() {}
+  virtual bool WasEverUsed() const { return false; }
 
   // Socket methods:
   virtual int Read(IOBuffer* buf, int buf_len,
@@ -96,6 +97,7 @@ class MockFailingClientSocket : public ClientSocket {
 
   virtual void SetSubresourceSpeculation() {}
   virtual void SetOmniboxSpeculation() {}
+  virtual bool WasEverUsed() const { return false; }
 
   // Socket methods:
   virtual int Read(IOBuffer* buf, int buf_len,
@@ -153,6 +155,7 @@ class MockPendingClientSocket : public ClientSocket {
 
   virtual void SetSubresourceSpeculation() {}
   virtual void SetOmniboxSpeculation() {}
+  virtual bool WasEverUsed() const { return false; }
 
   // Socket methods:
   virtual int Read(IOBuffer* buf, int buf_len,

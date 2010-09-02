@@ -220,7 +220,8 @@ TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
       write_callback_(NULL),
       read_buffer_len_(0),
       write_buffer_len_(0),
-      socket_(socket) {
+      socket_(socket),
+      was_used_to_convey_data_(false) {
   socket_->SignalReadEvent.connect(this, &TransportSocket::OnReadEvent);
   socket_->SignalWriteEvent.connect(this, &TransportSocket::OnWriteEvent);
 }
@@ -276,6 +277,12 @@ void TransportSocket::SetOmniboxSpeculation() {
   NOTREACHED();
 }
 
+bool TransportSocket::WasEverUsed() const {
+  // We don't use this in ClientSocketPools, so this should never be used.
+  NOTREACHED();
+  return was_used_to_convey_data_;
+}
+
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
                           net::CompletionCallback* callback) {
   DCHECK(buf);
@@ -290,6 +297,8 @@ int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
       read_buffer_len_ = buf_len;
     }
   }
+  if (result != net::ERR_IO_PENDING)
+    was_used_to_convey_data_ = true;
   return result;
 }
 
@@ -307,6 +316,8 @@ int TransportSocket::Write(net::IOBuffer* buf, int buf_len,
       write_buffer_len_ = buf_len;
     }
   }
+  if (result != net::ERR_IO_PENDING)
+    was_used_to_convey_data_ = true;
   return result;
 }
 
@@ -341,6 +352,7 @@ void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
         return;
       }
     }
+    was_used_to_convey_data_ = true;
     callback->RunWithParams(Tuple1<int>(result));
   }
 }
@@ -366,6 +378,7 @@ void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
         return;
       }
     }
+    was_used_to_convey_data_ = true;
     callback->RunWithParams(Tuple1<int>(result));
   }
 }

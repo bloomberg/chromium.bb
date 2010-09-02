@@ -59,6 +59,7 @@ class MockClientSocket : public net::ClientSocket {
   MOCK_CONST_METHOD0(NetLog, const net::BoundNetLog&());
   MOCK_METHOD0(SetSubresourceSpeculation, void());
   MOCK_METHOD0(SetOmniboxSpeculation, void());
+  MOCK_CONST_METHOD0(WasEverUsed, bool());
 };
 
 // Break up |data| into a bunch of chunked MockReads/Writes and push
@@ -336,4 +337,3 @@ TEST_F(FakeSSLClientSocketTest, MalformedServerHello) {
 }  // namespace
 
 }  // namespace notifier
-

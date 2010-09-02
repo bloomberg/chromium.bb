@@ -58,10 +58,15 @@ class ClientSocket : public Socket {
   virtual const BoundNetLog& NetLog() const = 0;
 
   // Set the annotation to indicate this socket was created for speculative
-  // reasons.  This call is generally fowarded to a basic TCPClientSocket*,
+  // reasons.  This call is generally forwarded to a basic TCPClientSocket*,
   // where a UseHistory can be updated.
   virtual void SetSubresourceSpeculation() = 0;
   virtual void SetOmniboxSpeculation() = 0;
+
+  // Returns true if the underlying transport socket ever had any reads or
+  // writes.  ClientSockets layered on top of transport sockets should forward
+  // this call to the transport socket.
+  virtual bool WasEverUsed() const = 0;
 
  protected:
   // The following class is only used to gather statistics about the history of
@@ -83,6 +88,8 @@ class ClientSocket : public Socket {
     // request.
     void set_subresource_speculation();
     void set_omnibox_speculation();
+
+    bool was_used_to_convey_data() const;
 
    private:
     // Summarize the statistics for this socket.

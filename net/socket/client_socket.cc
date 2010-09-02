@@ -93,5 +93,9 @@ void ClientSocket::UseHistory::set_omnibox_speculation() {
   omnibox_speculation_ = true;
 }
 
-}  // namespace net
+bool ClientSocket::UseHistory::was_used_to_convey_data() const {
+  DCHECK(!was_used_to_convey_data_ || was_ever_connected_);
+  return was_used_to_convey_data_;
+}
 
+}  // namespace net
