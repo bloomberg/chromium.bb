@@ -392,7 +392,6 @@ const LanguageMultipleChoicePreference<int> kXkbModifierMultipleChoicePrefs = {
 const int kXkbAutoRepeatDelayInMs = 500;
 const int kXkbAutoRepeatIntervalInMs = 50;
 const char kPreferredKeyboardLayout[] = "PreferredKeyboardLayout";
-const char kHardwareKeyboardLayout[] = "xkb:us::eng";
 
 }  // namespace language_prefs
 }  // namespace chromeos

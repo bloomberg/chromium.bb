@@ -161,11 +161,6 @@ extern const int kXkbAutoRepeatIntervalInMs;
 // the login screen.
 extern const char kPreferredKeyboardLayout[];
 
-// A input method name that corresponds the hardware keyboard layout.
-// TODO(yusukes): just assuming US qwerty keyboard is not always correct.
-// crosbug.com/5579.
-extern const char kHardwareKeyboardLayout[];
-
 }  // language_prefs
 }  // chromeos
 

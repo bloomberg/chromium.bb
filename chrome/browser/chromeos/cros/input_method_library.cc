@@ -50,7 +50,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
         ime_running_(false),
         ime_connected_(false),
         defer_ime_startup_(false),
-        active_input_method_(language_prefs::kHardwareKeyboardLayout),
         need_input_method_set_(false),
         ime_handle_(0),
         candidate_window_handle_(0),
@@ -58,6 +57,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     scoped_ptr<InputMethodDescriptors> input_method_descriptors(
         CreateFallbackInputMethodDescriptors());
     current_input_method_ = input_method_descriptors->at(0);
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      active_input_method_ = chromeos::GetHardwareKeyboardLayoutName();
+    }
   }
 
   ~InputMethodLibraryImpl() {
@@ -105,7 +107,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   void ChangeInputMethod(const std::string& input_method_id) {
     active_input_method_ = input_method_id;
     if (EnsureLoadedAndStarted()) {
-      if (input_method_id != language_prefs::kHardwareKeyboardLayout) {
+      if (input_method_id != chromeos::GetHardwareKeyboardLayoutName()) {
         StartInputMethodProcesses();
       }
       chromeos::ChangeInputMethod(
@@ -177,7 +179,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
         if (value.type == ImeConfigValue::kValueTypeStringList &&
             value.string_list_value.size() == 1 &&
             value.string_list_value[0] ==
-            language_prefs::kHardwareKeyboardLayout) {
+            chromeos::GetHardwareKeyboardLayoutName()) {
           StopInputMethodProcesses();
         } else if (!defer_ime_startup_) {
           StartInputMethodProcesses();
@@ -450,8 +452,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   void StopInputMethodProcesses() {
     ime_running_ = false;
     if (ime_handle_) {
-      chromeos::ChangeInputMethod(input_method_status_connection_,
-                                  language_prefs::kHardwareKeyboardLayout);
+      chromeos::ChangeInputMethod(
+          input_method_status_connection_,
+          chromeos::GetHardwareKeyboardLayoutName().c_str());
       kill(ime_handle_, SIGTERM);
       ime_handle_ = 0;
     }

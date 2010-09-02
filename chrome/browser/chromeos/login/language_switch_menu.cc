@@ -7,6 +7,8 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
@@ -101,7 +103,8 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     // Enable the keyboard layouts that are necessary for the new locale.
     input_method::EnableInputMethods(
         locale, input_method::kKeyboardLayoutsOnly,
-        language_prefs::kHardwareKeyboardLayout);
+        CrosLibrary::Get()->GetKeyboardLibrary()->
+            GetHardwareKeyboardLayoutName());
 
     // The following line does not seem to affect locale anyhow. Maybe in
     // future..

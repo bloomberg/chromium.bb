@@ -563,9 +563,11 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   std::vector<std::string> input_method_ids;
   GetInputMethodIdsFromLanguageCode(language_code, type, &input_method_ids);
 
+  std::string keyboard = CrosLibrary::Get()->GetKeyboardLibrary()->
+      GetHardwareKeyboardLayoutName();
   if (std::count(input_method_ids.begin(), input_method_ids.end(),
-                 language_prefs::kHardwareKeyboardLayout) == 0) {
-    input_method_ids.push_back(language_prefs::kHardwareKeyboardLayout);
+                 keyboard) == 0) {
+    input_method_ids.push_back(keyboard);
   }
   // First, sort the vector by input method id, then by its display name.
   std::sort(input_method_ids.begin(), input_method_ids.end());
