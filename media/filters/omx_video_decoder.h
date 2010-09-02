@@ -10,7 +10,7 @@
 #include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/base/media_format.h"
-#include "media/filters/video_decode_engine.h"
+#include "media/video/video_decode_engine.h"
 
 class MessageLoop;
 
