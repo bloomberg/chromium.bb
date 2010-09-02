@@ -44,6 +44,14 @@ CGFloat WidthForResults(NSAttributedString* resultsString) {
   return kBaselineAdjust;
 }
 
+- (CGFloat)cornerRadius {
+  return 4.0;
+}
+
+- (StyledTextFieldCellRoundedFlags)roundedFlags {
+  return StyledTextFieldCellRoundedLeft;
+}
+
 // @synthesize doesn't seem to compile for this transition.
 - (NSAttributedString*)resultsString {
   return resultsString_.get();
