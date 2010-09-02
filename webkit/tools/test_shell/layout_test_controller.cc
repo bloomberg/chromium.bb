@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAnimationController.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
@@ -129,6 +130,8 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setSelectTrailingWhitespaceEnabled", &LayoutTestController::setSelectTrailingWhitespaceEnabled);
   BindMethod("pauseAnimationAtTimeOnElementWithId", &LayoutTestController::pauseAnimationAtTimeOnElementWithId);
   BindMethod("pauseTransitionAtTimeOnElementWithId", &LayoutTestController::pauseTransitionAtTimeOnElementWithId);
+  BindMethod("suspendAnimations", &LayoutTestController::suspendAnimations);
+  BindMethod("resumeAnimations", &LayoutTestController::resumeAnimations);
   BindMethod("elementDoesAutoCompleteForElementWithId", &LayoutTestController::elementDoesAutoCompleteForElementWithId);
   BindMethod("numberOfActiveAnimations", &LayoutTestController::numberOfActiveAnimations);
   BindMethod("disableImageLoading", &LayoutTestController::disableImageLoading);
@@ -833,6 +836,34 @@ void LayoutTestController::pauseTransitionAtTimeOnElementWithId(
   } else {
     result->Set(false);
   }
+}
+
+void LayoutTestController::suspendAnimations(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  WebKit::WebFrame* web_frame = shell_->webView()->mainFrame();
+  if (!web_frame)
+    return;
+
+  WebKit::WebAnimationController* controller = web_frame->animationController();
+  if (!controller)
+    return;  
+  controller->suspendAnimations();
+}
+
+void LayoutTestController::resumeAnimations(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  WebKit::WebFrame* web_frame = shell_->webView()->mainFrame();
+  if (!web_frame)
+    return;
+
+  WebKit::WebAnimationController* controller = web_frame->animationController();
+  if (!controller)
+    return;
+  controller->resumeAnimations();
 }
 
 void LayoutTestController::elementDoesAutoCompleteForElementWithId(

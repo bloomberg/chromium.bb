@@ -181,6 +181,8 @@ class LayoutTestController : public CppBoundClass {
                                            CppVariant* result);
   void pauseTransitionAtTimeOnElementWithId(const CppArgumentList& args,
                                             CppVariant* result);
+  void suspendAnimations(const CppArgumentList& args, CppVariant* result);
+  void resumeAnimations(const CppArgumentList& args, CppVariant* result);
   void elementDoesAutoCompleteForElementWithId(const CppArgumentList& args,
                                                CppVariant* result);
   void numberOfActiveAnimations(const CppArgumentList& args,
