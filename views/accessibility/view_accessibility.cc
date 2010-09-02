@@ -290,11 +290,6 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
   // Check to see if child is out-of-bounds.
   if (IsValidChild((var_child.lVal - 1), view_)) {
     child_view = view_->GetChildViewAt(var_child.lVal - 1);
-
-    // Parents handle leaf IAccessible's.
-    if (child_view && child_view->GetChildViewCount() == 0 &&
-        !child_view->child_widget())
-      return S_FALSE;
   } else {
     // Child is located elsewhere in this view's subtree.
     // Positive child id's are 1-based indexes so you can iterate over all
@@ -334,6 +329,10 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
       return S_OK;
     }
   }
+
+  // Parents handle leaf IAccessible's.
+  if (child_view->GetChildViewCount() == 0)
+    return S_FALSE;
 
   // Finally, try our ViewAccessibility implementation.
   // Retrieve the IUnknown interface for the requested child view, and

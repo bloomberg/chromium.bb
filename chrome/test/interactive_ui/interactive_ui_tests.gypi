@@ -116,6 +116,7 @@
         '<(DEPTH)/chrome/chrome.gyp:crash_service',  # run time dependency
         '<(DEPTH)/chrome/chrome.gyp:installer_util_strings',
         '<(DEPTH)/sandbox/sandbox.gyp:sandbox',
+        '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
       ],
       'sources': [
         '<(DEPTH)/webkit/glue/resources/aliasb.cur',

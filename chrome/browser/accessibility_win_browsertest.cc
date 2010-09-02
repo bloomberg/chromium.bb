@@ -14,6 +14,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "ia2_api_all.h"  // Generated
 
 using std::auto_ptr;
 using std::vector;
@@ -130,13 +131,75 @@ IAccessible* GetAccessibleFromResultVariant(IAccessible* parent, VARIANT *var) {
     case VT_I4: {
       CComPtr<IDispatch> dispatch;
       HRESULT hr = parent->get_accChild(CreateI4Variant(V_I4(var)), &dispatch);
-      EXPECT_EQ(hr, S_OK);
+      EXPECT_TRUE(SUCCEEDED(hr));
       return CComQIPtr<IAccessible>(dispatch).Detach();
       break;
     }
   }
 
   return NULL;
+}
+
+HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
+  // TODO(ctguil): For some reason querying the IAccessible2 interface from
+  // IAccessible fails.
+  ScopedComPtr<IServiceProvider> service_provider;
+  HRESULT hr = accessible->QueryInterface(service_provider.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  hr = service_provider->QueryService(IID_IAccessible2, accessible2);
+  return hr;
+}
+
+// Sets result to true if the child is located in the parent's tree. An
+// exhustive search is perform here because we determine equality using
+// IAccessible2::get_uniqueID which is only supported by the child node.
+void AccessibleContainsAccessible(
+    IAccessible* parent, IAccessible2* child, bool* result) {
+  vector<ScopedComPtr<IAccessible>> accessible_list;
+  accessible_list.push_back(ScopedComPtr<IAccessible>(parent));
+
+  LONG unique_id;
+  HRESULT hr = child->get_uniqueID(&unique_id);
+  ASSERT_EQ(hr, S_OK);
+  *result = false;
+
+  while (accessible_list.size()) {
+    ScopedComPtr<IAccessible> accessible = accessible_list.back();
+    accessible_list.pop_back();
+
+    ScopedComPtr<IAccessible2> accessible2;
+    hr = QueryIAccessible2(accessible, accessible2.Receive());
+    if (SUCCEEDED(hr)) {
+      LONG child_id;
+      accessible2->get_uniqueID(&child_id);
+      if (child_id == unique_id) {
+        *result = true;
+        break;
+      }
+    }
+
+    LONG child_count;
+    hr = accessible->get_accChildCount(&child_count);
+    ASSERT_EQ(hr, S_OK);
+    if (child_count == 0)
+      continue;
+
+    auto_ptr<VARIANT> child_array(new VARIANT[child_count]);
+    LONG obtained_count = 0;
+    hr = AccessibleChildren(
+        accessible, 0, child_count, child_array.get(), &obtained_count);
+    ASSERT_EQ(hr, S_OK);
+    ASSERT_EQ(child_count, obtained_count);
+
+    for (int index = 0; index < obtained_count; index++) {
+      ScopedComPtr<IAccessible> child_accessible(
+        GetAccessibleFromResultVariant(accessible, &child_array.get()[index]));
+      if (child_accessible.get())
+        accessible_list.push_back(ScopedComPtr<IAccessible>(child_accessible));
+    }
+  }
 }
 
 // Retrieve the MSAA client accessibility object for the Render Widget Host View
@@ -260,6 +323,7 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
        ++child_checker, ++child) {
     ScopedComPtr<IAccessible> child_accessible;
     child_accessible.Attach(GetAccessibleFromResultVariant(parent, child));
+    ASSERT_TRUE(child_accessible.get());
     (*child_checker)->CheckAccessible(child_accessible);
   }
 }
@@ -399,5 +463,70 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       STATE_SYSTEM_CHECKED | STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED |
       STATE_SYSTEM_READONLY);
   document_checker.CheckAccessible(document_accessible);
+}
+
+// This test verifies that browser-side cache of the renderer accessibility
+// tree is reachable from the browser's tree. Tools that analyze windows
+// accessibility trees like AccExplorer32 should be able to drill into the
+// cached renderer accessibility tree.
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       ContainsRendererAccessibilityTree) {
+  // By requesting an accessible chrome will believe a screen reader has been
+  // detected. Request and wait for the accessibility tree to be updated.
+  GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
+  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  ScopedComPtr<IAccessible> document_accessible(
+      GetRenderWidgetHostViewClientAccessible());
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Get the accessibility object for the browser window.
+  HWND browser_hwnd = browser()->window()->GetNativeHandle();
+  ScopedComPtr<IAccessible> browser_accessible;
+  HRESULT hr = AccessibleObjectFromWindow(
+      browser_hwnd,
+      OBJID_WINDOW,
+      IID_IAccessible,
+      reinterpret_cast<void**>(browser_accessible.Receive()));
+  ASSERT_EQ(S_OK, hr);
+
+  // Get the accessibility object for the renderer client document.
+  document_accessible = GetRenderWidgetHostViewClientAccessible();
+  ScopedComPtr<IAccessible2> document_accessible2;
+  hr = QueryIAccessible2(document_accessible, document_accessible2.Receive());
+  ASSERT_EQ(S_OK, hr);
+
+  // TODO(ctguil): Pointer comparison of retrieved IAccessible pointers dosen't
+  // seem to work for here. Perhaps make IAccessible2 available in views to make
+  // unique id comparison available.
+  bool found = false;
+  ScopedComPtr<IAccessible> parent = document_accessible;
+  while (parent.get()) {
+    ScopedComPtr<IDispatch> parent_dispatch;
+    hr = parent->get_accParent(parent_dispatch.Receive());
+    ASSERT_TRUE(SUCCEEDED(hr));
+    if (!parent_dispatch.get()) {
+      ASSERT_EQ(hr, S_FALSE);
+      break;
+    }
+
+    parent.Release();
+    hr = parent_dispatch.QueryInterface(parent.Receive());
+    ASSERT_EQ(S_OK, hr);
+
+    if (parent.get() == browser_accessible.get()) {
+      found = true;
+      break;
+    }
+  }
+
+  // If pointer comparison fails resort to the exhuasive search that can use
+  // IAccessible2::get_uniqueID for equality comparison.
+  if (!found) {
+    AccessibleContainsAccessible(
+        browser_accessible, document_accessible2, &found);
+  }
+
+  ASSERT_EQ(found, true);
 }
 }  // namespace.
