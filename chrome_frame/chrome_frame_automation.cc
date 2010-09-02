@@ -51,10 +51,12 @@ class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
   }
 
   void AddTabProxy(AutomationHandle tab_proxy) {
+    AutoLock lock(lock_);
     tabs_list_.push_back(tab_proxy);
   }
 
   void RemoveTabProxy(AutomationHandle tab_proxy) {
+    AutoLock lock(lock_);
     tabs_list_.remove(tab_proxy);
   }
 
@@ -92,6 +94,7 @@ class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
  private:
   AutomationHandleTracker* tracker_;
   std::list<AutomationHandle> tabs_list_;
+  Lock lock_;
 };
 
 class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
