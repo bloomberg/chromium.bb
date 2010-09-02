@@ -1513,7 +1513,10 @@
    fun:ogl_attach_surface
    fun:ogl_render_fade_transition
    fun:ogl_render_layer_
+   ...
    fun:ogl_render_layers
+   fun:CARenderOGLRender
+   fun:view_draw
 }
 {
    bug_52364_a
