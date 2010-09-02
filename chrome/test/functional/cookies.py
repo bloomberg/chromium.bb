@@ -12,30 +12,12 @@ import pyauto
 class CookiesTest(pyauto.PyUITest):
   """Tests for Cookies."""
 
-  def _ClearCookiesAndCheck(self, url):
-    self.ClearBrowsingData(['COOKIES'], 'EVERYTHING')
-    cookie_data = self.GetCookie(pyauto.GURL(url))
-    self.assertEqual(0, len(cookie_data))
-
-  def _CookieCheckRegularWindow(self, url):
-    """Check the cookie for the given URL in a regular window."""
-    self._ClearCookiesAndCheck(url)
-    # Assert that the cookie data isn't empty after navigating to the url.
-    self.NavigateToURL(url)
-    cookie_data = self.GetCookie(pyauto.GURL(url))
-    self.assertNotEqual(0, len(cookie_data))
-    # Restart the browser and ensure the cookie data is the same.
-    self.RestartBrowser(clear_profile=False)
-    self.assertEqual(cookie_data, self.GetCookie(pyauto.GURL(url)))
-
   def _CookieCheckIncognitoWindow(self, url):
     """Check the cookie for the given URL in an incognito window."""
-    self._ClearCookiesAndCheck(url)
     # Navigate to the URL in an incognito window and verify no cookie is set.
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(url, 1, 0)
-    cookie_data = self.GetCookie(pyauto.GURL(url))
-    self.assertEqual(0, len(cookie_data))
+    self.assertFalse(self.GetCookie(pyauto.GURL(url)))
 
   def testSetCookies(self):
     """Test setting cookies and getting the value."""
@@ -48,21 +30,42 @@ class CookiesTest(pyauto.PyUITest):
   def testCookiesHttp(self):
     """Test cookies set over HTTP for incognito and regular windows."""
     http_url = 'http://www.google.com'
-    self._CookieCheckRegularWindow(http_url)
+    self.assertFalse(self.GetCookie(pyauto.GURL(http_url)))
+    # Incognito window
     self._CookieCheckIncognitoWindow(http_url)
+    # Regular window
+    self.NavigateToURL(http_url)
+    cookie_data = self.GetCookie(pyauto.GURL(http_url))
+    self.assertTrue(cookie_data)
+    # Restart and verify that the cookie persists.
+    self.assertEqual(cookie_data, self.GetCookie(pyauto.GURL(http_url)))
 
   def testCookiesHttps(self):
     """Test cookies set over HTTPS for incognito and regular windows."""
     https_url = 'https://www.google.com'
-    self._CookieCheckRegularWindow(https_url)
+    self.assertFalse(self.GetCookie(pyauto.GURL(https_url)))
+    # Incognito window
     self._CookieCheckIncognitoWindow(https_url)
+    # Regular window
+    self.NavigateToURL(https_url)
+    cookie_data = self.GetCookie(pyauto.GURL(https_url))
+    self.assertTrue(cookie_data)
+    # Restart and verify that the cookie persists.
+    self.assertEqual(cookie_data, self.GetCookie(pyauto.GURL(https_url)))
 
   def testCookiesFile(self):
-    """Test cookies set from an HTML file for incognito and regular windows."""
+    """Test cookies set from file:// url for incognito and regular windows."""
     file_url = self.GetFileURLForPath(
         os.path.join(self.DataDir(), 'setcookie.html'))
-    self._CookieCheckRegularWindow(file_url)
+    self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
+    # Incognito window
     self._CookieCheckIncognitoWindow(file_url)
+    # Regular window
+    self.NavigateToURL(file_url)
+    self.assertEqual('name=Good', self.GetCookie(pyauto.GURL(file_url)))
+    # Restart and verify that cookie persists
+    self.RestartBrowser(clear_profile=False)
+    self.assertEqual('name=Good', self.GetCookie(pyauto.GURL(file_url)))
 
 
 if __name__ == '__main__':
