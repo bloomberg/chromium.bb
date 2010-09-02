@@ -30,7 +30,8 @@ class TabposeWindowTest : public CocoaTest {
 };
 
 // Check that this doesn't leak.
-TEST_F(TabposeWindowTest, TestShow) {
+// Crashy, http://crbug.com/54323.
+TEST_F(TabposeWindowTest, DISABLED_TestShow) {
   BrowserWindow* browser_window = browser_helper_.CreateBrowserWindow();
   NSWindow* parent = browser_window->GetNativeHandle();
 
@@ -54,7 +55,8 @@ TEST_F(TabposeWindowTest, TestShow) {
   browser_helper_.CloseBrowserWindow();
 }
 
-TEST_F(TabposeWindowTest, TestModelObserver) {
+// Crashy, http://crbug.com/54323.
+TEST_F(TabposeWindowTest, DISABLED_TestModelObserver) {
   BrowserWindow* browser_window = browser_helper_.CreateBrowserWindow();
   NSWindow* parent = browser_window->GetNativeHandle();
   [parent orderFront:nil];
