@@ -188,7 +188,15 @@ class SamplesManifest(object):
       # Don't render apps
       if sample.is_app() == False:
         samples.append(sample)
-    samples.sort(lambda x,y: cmp(x['name'].upper(), y['name'].upper()))
+
+    def compareSamples(sample1, sample2):
+      """ Compares two samples as a sort comparator, by name then path. """
+      value = cmp(sample1['name'].upper(), sample2['name'].upper())
+      if value == 0:
+        value = cmp(sample1['path'], sample2['path'])
+      return value
+
+    samples.sort(compareSamples)
 
     manifest_data = {'samples': samples, 'api': api_method_dict}
     return manifest_data
