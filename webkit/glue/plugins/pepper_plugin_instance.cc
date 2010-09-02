@@ -33,7 +33,6 @@
 #include "third_party/ppapi/c/ppb_core.h"
 #include "third_party/ppapi/c/ppb_instance.h"
 #include "third_party/ppapi/c/ppp_instance.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
@@ -51,7 +50,6 @@
 #include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
-using WebKit::WebBindings;
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
 using WebKit::WebFrame;
@@ -162,21 +160,11 @@ bool IsFullFrame(PP_Instance instance_id) {
   return instance->full_frame();
 }
 
-PP_Var ExecuteScript(PP_Instance instance_id,
-                     PP_Var script,
-                     PP_Var* exception) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
-  if (!instance)
-    return PP_MakeVoid();
-  return instance->ExecuteScript(script, exception);
-}
-
 const PPB_Instance ppb_instance = {
   &GetWindowObject,
   &GetOwnerElementObject,
   &BindGraphics,
   &IsFullFrame,
-  &ExecuteScript,
 };
 
 void NumberOfFindResultsChanged(PP_Instance instance_id,
@@ -336,44 +324,6 @@ bool PluginInstance::BindGraphics(PP_Resource device_id) {
 bool PluginInstance::SetCursor(PP_CursorType_Dev type) {
   cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
   return true;
-}
-
-PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
-    return PP_MakeVoid();
-
-  // Convert the script into an inconvenient NPString object.
-  String* script_string = GetString(script);
-  if (!script_string) {
-    try_catch.SetException("Script param to ExecuteScript must be a string.");
-    return PP_MakeVoid();
-  }
-  NPString np_script;
-  np_script.UTF8Characters = script_string->value().c_str();
-  np_script.UTF8Length = script_string->value().length();
-
-  // Get the current frame to pass to the evaluate function.
-  WebFrame* frame = container_->element().document().frame();
-  if (!frame) {
-    try_catch.SetException("No frame to execute script in.");
-    return PP_MakeVoid();
-  }
-
-  NPVariant result;
-  bool ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
-                                  &result);
-  if (!ok) {
-    // TODO(brettw) bug 54011: The TryCatch isn't working properly and
-    // doesn't actually catch this exception.
-    try_catch.SetException("Exception caught");
-    WebBindings::releaseVariantValue(&result);
-    return PP_MakeVoid();
-  }
-
-  PP_Var ret = NPVariantToPPVar(&result);
-  WebBindings::releaseVariantValue(&result);
-  return ret;
 }
 
 void PluginInstance::Delete() {
