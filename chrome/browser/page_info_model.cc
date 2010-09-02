@@ -110,7 +110,10 @@ PageInfoModel::PageInfoModel(Profile* profile,
   state = SECTION_STATE_OK;
   headline.clear();
   description.clear();
-  if (ssl.security_bits() <= 0) {
+  if (ssl.security_bits() < 0) {
+    // Security strength is unknown.  Say nothing.
+    state = SECTION_STATE_ERROR;
+  } else if (ssl.security_bits() == 0) {
     state = SECTION_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -184,12 +187,14 @@ PageInfoModel::PageInfoModel(Profile* profile,
     }
   }
 
-  sections_.push_back(SectionInfo(
-      state,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
-      headline,
-      description,
-      SECTION_INFO_CONNECTION));
+  if (!description.empty()) {
+    sections_.push_back(SectionInfo(
+        state,
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
+        headline,
+        description,
+        SECTION_INFO_CONNECTION));
+  }
 
   // Request the number of visits.
   HistoryService* history = profile->GetHistoryService(

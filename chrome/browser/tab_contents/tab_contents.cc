@@ -2130,7 +2130,7 @@ void TabContents::DidLoadResourceFromMemoryCache(
     const std::string& main_frame_origin,
     const std::string& security_info) {
   // Send out a notification that we loaded a resource from our memory cache.
-  int cert_id = 0, cert_status = 0, security_bits = 0, connection_status = 0;
+  int cert_id = 0, cert_status = 0, security_bits = -1, connection_status = 0;
   SSLManager::DeserializeSecurityInfo(security_info,
                                       &cert_id, &cert_status,
                                       &security_bits,

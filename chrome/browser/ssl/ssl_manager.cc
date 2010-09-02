@@ -75,12 +75,12 @@ bool SSLManager::DeserializeSecurityInfo(const std::string& state,
                                          int* cert_status,
                                          int* security_bits,
                                          int* ssl_connection_status) {
-  DCHECK(cert_id && cert_status && security_bits);
+  DCHECK(cert_id && cert_status && security_bits && ssl_connection_status);
   if (state.empty()) {
     // No SSL used.
     *cert_id = 0;
     *cert_status = 0;
-    *security_bits = -1;
+    *security_bits = 0;  // Not encrypted.
     *ssl_connection_status = 0;
     return false;
   }
@@ -139,7 +139,8 @@ void SSLManager::DidCommitProvisionalLoad(
   if (details->is_main_frame) {
     if (entry) {
       // Decode the security details.
-      int ssl_cert_id, ssl_cert_status, ssl_security_bits, ssl_connection_status;
+      int ssl_cert_id, ssl_cert_status, ssl_security_bits,
+          ssl_connection_status;
       DeserializeSecurityInfo(details->serialized_security_info,
                               &ssl_cert_id,
                               &ssl_cert_status,
