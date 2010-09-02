@@ -146,7 +146,7 @@ html[dir='rtl'] .navbar-item-selected {
 
 #mainview {
   -webkit-box-align: stretch;
-  padding: 0 0 0 251px;
+  -webkit-padding-start: 251px;
   margin: 0;
   position: absolute;
   left: 0;
