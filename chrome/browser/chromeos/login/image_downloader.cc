@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile_manager.h"
@@ -31,7 +32,7 @@ ImageDownloader::ImageDownloader(ImageDecoder::Delegate* delegate,
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   if (!auth_token.empty()) {
     image_fetcher_->set_extra_request_headers(
-        StringPrintf(kAuthorizationHeader, auth_token.c_str()));
+        base::StringPrintf(kAuthorizationHeader, auth_token.c_str()));
   }
   image_fetcher_->Start();
 }

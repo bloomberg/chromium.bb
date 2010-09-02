@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -50,7 +51,7 @@ UserImageDownloader::UserImageDownloader(const std::string& username,
   profile_fetcher_->set_request_context(
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   profile_fetcher_->set_extra_request_headers(
-      StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
+      base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
   profile_fetcher_->Start();
 }
 

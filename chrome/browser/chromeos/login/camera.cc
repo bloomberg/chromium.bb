@@ -21,6 +21,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "gfx/size.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -242,7 +243,7 @@ void Camera::StopCapturing() {
 int Camera::OpenDevice(const char* device_name) const {
   struct stat st;
   if (stat(device_name, &st) == -1) {
-    log_errno(StringPrintf("Cannot identify %s", device_name));
+    log_errno(base::StringPrintf("Cannot identify %s", device_name));
     return -1;
   }
   if (!S_ISCHR(st.st_mode)) {
@@ -251,7 +252,7 @@ int Camera::OpenDevice(const char* device_name) const {
   }
   int fd = open(device_name, O_RDWR | O_NONBLOCK, 0);
   if (fd == -1) {
-    log_errno(StringPrintf("Cannot open %s", device_name));
+    log_errno(base::StringPrintf("Cannot open %s", device_name));
     return -1;
   }
   return fd;

@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
@@ -261,7 +262,8 @@ TEST_F(GoogleAuthenticatorTest, ReadLocalaccount) {
 
 TEST_F(GoogleAuthenticatorTest, ReadLocalaccountTrailingWS) {
   FilePath tmp_file_path =
-      FakeLocalaccountFile(StringPrintf("%s\n", bytes_as_ascii_.c_str()));
+      FakeLocalaccountFile(base::StringPrintf("%s\n",
+                                              bytes_as_ascii_.c_str()));
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
   ReadLocalaccountFile(auth.get(), tmp_file_path.BaseName().value());

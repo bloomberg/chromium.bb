@@ -11,6 +11,7 @@
 #include "app/x11_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_progress_bar.h"
@@ -426,7 +427,7 @@ void BackgroundView::OnBootTimes(
 
   if (boot_times.chrome > 0) {
     boot_times_text =
-        StringPrintf(
+        base::StringPrintf(
             kBootTimesChromeExec,
             boot_times.total,
             boot_times.firmware,
@@ -435,7 +436,7 @@ void BackgroundView::OnBootTimes(
             boot_times.chrome);
   } else {
     boot_times_text =
-        StringPrintf(
+        base::StringPrintf(
             kBootTimesNoChromeExec,
             boot_times.total,
             boot_times.firmware,

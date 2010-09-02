@@ -23,9 +23,8 @@ URLFetcher* IssueResponseHandler::Handle(
     const std::string& to_process,
     URLFetcher::Delegate* catcher) {
   LOG(INFO) << "Handling IssueAuthToken response";
-  token_url_.assign(StringPrintf("%s%s",
-                                 AuthResponseHandler::kTokenAuthUrl,
-                                 to_process.c_str()));
+  token_url_.assign(base::StringPrintf("%s%s",
+      AuthResponseHandler::kTokenAuthUrl, to_process.c_str()));
   URLFetcher* fetcher =
       new URLFetcher(GURL(token_url_), URLFetcher::GET, catcher);
   fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);

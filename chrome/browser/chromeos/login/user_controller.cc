@@ -9,6 +9,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/existing_user_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -78,9 +79,9 @@ std::string GetNameTooltip(const UserManager::User& user) {
   size_t domain_start = at_pos + 1;
   std::string domain = email.substr(domain_start,
                                     email.length() - domain_start);
-  return StringPrintf("%s (%s)",
-                      user.GetDisplayName().c_str(),
-                      domain.c_str());
+  return base::StringPrintf("%s (%s)",
+                            user.GetDisplayName().c_str(),
+                            domain.c_str());
 }
 
 }  // namespace
