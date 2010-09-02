@@ -5,12 +5,15 @@
 
 import os.path
 
+# When files in these directories are changed, we display a warning.
 DEPENDENT_DIRS = set([
   os.path.normpath("chrome/common/extensions/api"),
-  os.path.normpath("chrome/common/extensions/docs/build"),
-  os.path.normpath("chrome/common/extensions/docs/js"),
-  os.path.normpath("chrome/common/extensions/docs/static"),
-  os.path.normpath("chrome/common/extensions/docs/template")
+  os.path.normpath("chrome/common/extensions/docs")
+])
+
+# Except for these directories.
+BLACKLIST_DIRS = set([
+  os.path.normpath("chrome/common/extensions/docs/server")
 ])
 
 REBUILD_WARNING = """
@@ -26,8 +29,12 @@ Be sure to include any modified resulting static files
 def CheckChange(input_api, output_api):  
   for f in input_api.AffectedFiles():
     dir = os.path.normpath(input_api.os_path.dirname(f.LocalPath()))
-    if dir in DEPENDENT_DIRS:
-      return [output_api.PresubmitPromptWarning(REBUILD_WARNING)]
+    while len(dir):
+      if dir in BLACKLIST_DIRS:
+        return []
+      if dir in DEPENDENT_DIRS:
+        return [output_api.PresubmitPromptWarning(REBUILD_WARNING)]
+      dir = os.path.dirname(dir)
   return []
 
 def CheckChangeOnUpload(input_api, output_api):
