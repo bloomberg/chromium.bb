@@ -19,33 +19,6 @@ namespace skia {
 
 namespace {
 
-// Constrains position and size to fit within available_size. If |size| is -1,
-// all the |available_size| is used. Returns false if the position is out of
-// |available_size|.
-bool Constrain(int available_size, int* position, int *size) {
-  if (*size < -2)
-    return false;
-
-  if (*position < 0) {
-    if (*size != -1)
-      *size += *position;
-    *position = 0;
-  }
-  if (*size == 0 || *position >= available_size)
-    return false;
-
-  if (*size > 0) {
-    int overflow = (*position + *size) - available_size;
-    if (overflow > 0) {
-      *size -= overflow;
-    }
-  } else {
-    // Fill up available size.
-    *size = available_size - *position;
-  }
-  return true;
-}
-
 static CGContextRef CGContextForData(void* data, int width, int height) {
 #define HAS_ARGB_SHIFTS(a, r, g, b) \
             (SK_A32_SHIFT == (a) && SK_R32_SHIFT == (r) \
@@ -277,28 +250,6 @@ SkColor BitmapPlatformDevice::getColorAt(int x, int y) {
 
 void BitmapPlatformDevice::onAccessBitmap(SkBitmap*) {
   // Not needed in CoreGraphics
-}
-
-void BitmapPlatformDevice::processPixels(int x, int y,
-                                         int width, int height,
-                                         adjustAlpha adjustor) {
-  const SkBitmap& bitmap = accessBitmap(true);
-  const SkMatrix& matrix = data_->transform();
-  int bitmap_start_x = SkScalarRound(matrix.getTranslateX()) + x;
-  int bitmap_start_y = SkScalarRound(matrix.getTranslateY()) + y;
-
-  SkAutoLockPixels lock(bitmap);
-  if (Constrain(bitmap.width(), &bitmap_start_x, &width) &&
-      Constrain(bitmap.height(), &bitmap_start_y, &height)) {
-    uint32_t* data = bitmap.getAddr32(0, 0);
-    size_t row_words = bitmap.rowBytes() / 4;
-    for (int i = 0; i < height; i++) {
-      size_t offset = (i + bitmap_start_y) * row_words + bitmap_start_x;
-      for (int j = 0; j < width; j++) {
-        adjustor(data + offset + j);
-      }
-    }
-  }
 }
 
 }  // namespace skia

@@ -58,6 +58,7 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   virtual void DrawToContext(CGContextRef context, int x, int y,
                              const CGRect* src_rect);
+  virtual void makeOpaque(int x, int y, int width, int height);
   virtual bool IsVectorial() { return false; }
 
   // Returns the color value at the specified location. This does not
@@ -77,10 +78,6 @@ class BitmapPlatformDevice : public PlatformDevice {
   // directly by Skia. Overridden from SkDevice, this is called when Skia
   // starts accessing pixel data.
   virtual void onAccessBitmap(SkBitmap*);
-
-  virtual void processPixels(int x, int y,
-                             int width, int height,
-                             adjustAlpha adjustor);
 
   // Data associated with this device, guaranteed non-null. We hold a reference
   // to this object.

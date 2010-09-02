@@ -79,6 +79,8 @@ class BitmapPlatformDevice : public PlatformDevice {
   // A stub copy constructor.  Needs to be properly implemented.
   BitmapPlatformDevice(const BitmapPlatformDevice& other);
 
+  virtual void makeOpaque(int x, int y, int width, int height);
+
   // Bitmaps aren't vector graphics.
   virtual bool IsVectorial() { return false; }
 

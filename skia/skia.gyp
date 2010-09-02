@@ -497,6 +497,7 @@
         '../third_party/skia/include/images/SkMovie.h',
         '../third_party/skia/include/images/SkPageFlipper.h',
 
+        'ext/bitmap_platform_device.cc',
         'ext/bitmap_platform_device.h',
         'ext/bitmap_platform_device_data.h',
         'ext/bitmap_platform_device_linux.cc',
