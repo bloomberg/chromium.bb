@@ -18,8 +18,22 @@ class MockLoginLibrary : public LoginLibrary {
   MockLoginLibrary() {}
   virtual ~MockLoginLibrary() {}
   MOCK_METHOD0(EmitLoginPromptReady, bool(void));
-  MOCK_METHOD2(SetOwnerKey, bool(const std::vector<uint8>&,
+  MOCK_METHOD2(CheckWhitelist, bool(const std::string&, std::vector<uint8>*));
+  MOCK_METHOD3(RetrieveProperty, bool(const std::string&,
+                                      std::string*,
+                                      std::vector<uint8>*));
+  MOCK_METHOD2(SetOwnerKeyAsync, bool(const std::vector<uint8>&,
                                  Delegate<bool>*));
+  MOCK_METHOD4(StorePropertyAsync, bool(const std::string&,
+                                        const std::string&,
+                                        const std::vector<uint8>&,
+                                        Delegate<bool>*));
+  MOCK_METHOD3(UnwhitelistAsync, bool(const std::string&,
+                                      const std::vector<uint8>&,
+                                      Delegate<bool>*));
+  MOCK_METHOD3(WhitelistAsync, bool(const std::string&,
+                                    const std::vector<uint8>&,
+                                    Delegate<bool>*));
   MOCK_METHOD2(StartSession, bool(const std::string&, const std::string&));
   MOCK_METHOD1(StopSession, bool(const std::string&));
   MOCK_METHOD2(RestartJob, bool(int, const std::string&));

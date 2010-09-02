@@ -123,7 +123,7 @@ bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(
   }
 
   if (CrosLibrary::Get()->EnsureLoaded())
-    ok = CrosLibrary::Get()->GetLoginLibrary()->SetOwnerKey(to_export, d);
+    ok = CrosLibrary::Get()->GetLoginLibrary()->SetOwnerKeyAsync(to_export, d);
 
   return ok;
 }
