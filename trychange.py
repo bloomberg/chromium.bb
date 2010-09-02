@@ -163,6 +163,8 @@ class SCM(object):
       root = os.path.abspath(self.gclient_root)
     else:
       root = gclient_utils.FindGclientRoot(cur)
+    if not root:
+      root = cur
     assert cur.startswith(root), (root, cur)
     while cur.startswith(root):
       filepath = os.path.join(cur, filename)
