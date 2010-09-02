@@ -205,6 +205,10 @@ void TabSpecificContentSettings::GeolocationDidNavigate(
   geolocation_settings_state_.DidNavigate(details);
 }
 
+void TabSpecificContentSettings::ClearGeolocationContentSettings() {
+  geolocation_settings_state_.ClearStateMap();
+}
+
 CookiesTreeModel* TabSpecificContentSettings::GetAllowedCookiesTreeModel() {
   return allowed_local_shared_objects_.GetCookiesTreeModel();
 }

@@ -44,6 +44,10 @@ void GeolocationSettingsState::DidNavigate(
     state_map_.clear();
 }
 
+void GeolocationSettingsState::ClearStateMap() {
+  state_map_.clear();
+}
+
 void GeolocationSettingsState::GetDetailedInfo(
     FormattedHostsPerState* formatted_hosts_per_state,
     unsigned int* tab_state_flags) const {

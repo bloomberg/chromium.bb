@@ -2104,8 +2104,10 @@ void TabContents::DidStartProvisionalLoadForFrame(
       NotificationType::FRAME_PROVISIONAL_LOAD_START,
       Source<NavigationController>(&controller_),
       Details<ProvisionalLoadDetails>(&details));
-  if (is_main_frame)
+  if (is_main_frame) {
     content_settings_delegate_->ClearCookieSpecificContentSettings();
+    content_settings_delegate_->ClearGeolocationContentSettings();
+  }
 }
 
 void TabContents::DidStartReceivingResourceResponse(

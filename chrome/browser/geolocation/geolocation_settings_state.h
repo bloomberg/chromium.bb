@@ -33,6 +33,8 @@ class GeolocationSettingsState {
   // may need to clear our settings.
   void DidNavigate(const NavigationController::LoadCommittedDetails& details);
 
+  void ClearStateMap();
+
   enum TabState {
     TABSTATE_NONE = 0,
     // There's at least one entry with non-default setting.

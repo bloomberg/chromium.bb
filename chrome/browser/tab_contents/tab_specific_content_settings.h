@@ -49,6 +49,9 @@ class TabSpecificContentSettings
   // Resets all cookies related information.
   void ClearCookieSpecificContentSettings();
 
+  // Clears the Geolocation settings.
+  void ClearGeolocationContentSettings();
+
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
 
