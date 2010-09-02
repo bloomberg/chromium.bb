@@ -213,16 +213,18 @@ resolve_kde_browser_desktop()
 read_kde_browser()
 {
     browser="`kreadconfig --file kdeglobals --group General --key BrowserApplication`"
-    if [ "$browser" ]; then
+    if [ x"$browser" != x ]; then
         echo "$browser"
+    else
+        # kreadconfig in KDE 4 may not notice Key[$*]=... localized settings, so
+        # check by hand if it didn't find anything (oddly kwriteconfig works
+        # fine though).
+        kdeglobals_dir=`kde${KDE_SESSION_VERSION}-config --path config  | cut -d ':' -f 1`
+        kdeglobals="$kdeglobals_dir/kdeglobals"
+        [ ! -f "$kdeglobals" ] && return
+        # This will only take the first value if there is more than one.
+        grep '^BrowserApplication\[$[^]=]*\]=' "$kdeglobals" | head -n 1 | cut -d= -f 2-
     fi
-    # kreadconfig in KDE 4 may not notice Key[$*]=... localized settings, so check
-    # by hand if it didn't find anything (oddly kwriteconfig works fine though).
-    kdeglobals_dir=`kde${KDE_SESSION_VERSION}-config --path config  | cut -d ':' -f 1`
-    kdeglobals="$kdeglobals_dir/kdeglobals"
-    [ ! -f "$kdeglobals" ] && return
-    # This will only take the first value if there is more than one.
-    grep '^BrowserApplication\[$[^]=]*\]=' "$kdeglobals" | head -n 1 | cut -d= -f 2-
 }
 
 get_browser_kde()
