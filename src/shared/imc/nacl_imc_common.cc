@@ -10,15 +10,9 @@
 // TODO(robertm): stdio.h is included for NULL only - find a better way
 #include <stdio.h>
 
-#if NACL_WINDOWS
 #include "native_client/src/include/portability.h"
-#else
-#include <stdint.h>
-#endif
 
 #include "native_client/src/shared/imc/nacl_imc.h"
-
-#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
 namespace nacl {

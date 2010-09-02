@@ -129,7 +129,7 @@ Handle CreateMemoryObject(size_t length) {
   if (fd >= 0)
     return fd;
 #endif
-  
+
   // Try shm_open().
   fd = TryShmOrTempOpen(length, false);
   if (fd >= 0)
