@@ -40,17 +40,10 @@ void ChromeMiniInstaller::SetBuildUnderTest(const std::wstring& build) {
   else
     build_prefix = build.c_str();
 
-  std::wstring full_installer_pattern;
-  if (is_chrome_frame_)
-    full_installer_pattern =
-        mini_installer_constants::kChromeFrameFullInstallerPattern;
-  else
-    full_installer_pattern = mini_installer_constants::kFullInstallerPattern;
-
   // Do not fail here if cannot find the installer. Set the bool and allow
   // to fail in the particular test.
   has_full_installer_ = MiniInstallerTestUtil::GetInstaller(
-      full_installer_pattern.c_str(),
+      mini_installer_constants::kFullInstallerPattern,
       &full_installer_, build_prefix, is_chrome_frame_);
   has_diff_installer_ = MiniInstallerTestUtil::GetInstaller(
       mini_installer_constants::kDiffInstallerPattern,
@@ -207,8 +200,13 @@ void ChromeMiniInstaller::OverInstall() {
 void ChromeMiniInstaller::Repair(
     ChromeMiniInstaller::RepairChrome repair_type) {
   InstallFullInstaller(false);
+  if (is_chrome_frame_) {
+    MiniInstallerTestUtil::CloseProcesses(
+        mini_installer_constants::kIEProcessName);
+  } else {
+    MiniInstallerTestUtil::CloseProcesses(installer_util::kNaClExe);
+  }
   MiniInstallerTestUtil::CloseProcesses(installer_util::kChromeExe);
-  MiniInstallerTestUtil::CloseProcesses(installer_util::kNaClExe);
   if (repair_type == ChromeMiniInstaller::VERSION_FOLDER) {
     DeleteFolder(L"version_folder");
     printf("Deleted folder. Now trying to launch chrome\n");
@@ -245,10 +243,13 @@ void ChromeMiniInstaller::UnInstall() {
     printf("%ls is not installed.\n", product_name.c_str());
     return;
   }
-  if (is_chrome_frame_)
-    MiniInstallerTestUtil::CloseProcesses(L"IEXPLORE.EXE");
+  if (is_chrome_frame_) {
+    MiniInstallerTestUtil::CloseProcesses(
+        mini_installer_constants::kIEProcessName);
+  } else {
+    MiniInstallerTestUtil::CloseProcesses(installer_util::kNaClExe);
+  }
   MiniInstallerTestUtil::CloseProcesses(installer_util::kChromeExe);
-  MiniInstallerTestUtil::CloseProcesses(installer_util::kNaClExe);
   std::wstring uninstall_path = GetUninstallPath();
   if (uninstall_path == L"") {
     printf("\n %ls install is in a weird state. Cleaning the machine...\n",
@@ -301,14 +302,16 @@ bool ChromeMiniInstaller::CloseUninstallWindow() {
     timer = timer + 200;
   }
 
-  if (hndl == NULL)
-    hndl = FindWindow(NULL, mini_installer_constants::kChromeBuildType);
+  if (!is_chrome_frame_) {
+    if (hndl == NULL)
+      hndl = FindWindow(NULL, mini_installer_constants::kChromeBuildType);
 
-  if (hndl == NULL)
-    return false;
+    if (hndl == NULL)
+      return false;
 
-  SetForegroundWindow(hndl);
-  MiniInstallerTestUtil::SendEnterKeyToWindow();
+    SetForegroundWindow(hndl);
+    MiniInstallerTestUtil::SendEnterKeyToWindow();
+  }
   return true;
 }
 
@@ -379,20 +382,24 @@ bool ChromeMiniInstaller::CheckRegistryKeyOnUninstall(
 // Deletes Installer folder from Applications directory.
 void ChromeMiniInstaller::DeleteFolder(const wchar_t* folder_name) {
   FilePath install_path(GetChromeInstallDirectoryLocation());
+  std::wstring temp_chrome_dir;
+  if (is_chrome_frame_) {
+    temp_chrome_dir = mini_installer_constants::kChromeFrameAppDir;
+  } else {
+    temp_chrome_dir = mini_installer_constants::kChromeAppDir;
+  }
+
   if (wcscmp(folder_name, L"version_folder") == 0) {
-    std::wstring delete_path;
-    delete_path = mini_installer_constants::kChromeAppDir;
     std::wstring build_number;
     GetChromeVersionFromRegistry(&build_number);
-    delete_path = delete_path + build_number;
-    install_path = install_path.Append(delete_path);
-  } else if (wcscmp(folder_name,
-                    mini_installer_constants::kChromeAppDir) == 0) {
+    temp_chrome_dir = temp_chrome_dir + build_number;
+    install_path = install_path.Append(temp_chrome_dir);
+  } else if (wcscmp(folder_name, temp_chrome_dir.c_str()) == 0) {
     install_path = install_path.Append(folder_name).StripTrailingSeparators();
   }
   printf("This path will be deleted: %ls\n", install_path.value().c_str());
   ASSERT_TRUE(file_util::Delete(install_path, true));
-}
+ }
 
 // Will delete user data profile.
 void ChromeMiniInstaller::DeleteUserDataFolder() {
@@ -601,7 +608,7 @@ void ChromeMiniInstaller::VerifyChromeFrameInstall() {
   }
 
   // Launch IE
-  LaunchBrowser(browser_path, L"cf:about:version",
+  LaunchBrowser(browser_path, L"gcf:about:version",
                 mini_installer_constants::kIEProcessName,
                 true);
 

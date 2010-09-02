@@ -25,7 +25,6 @@ const wchar_t kBrowserAppName[] = L"Google - Google Chrome";
 const wchar_t kBrowserTabName[] = L"New Tab - Google Chrome";
 const wchar_t kChromeFrameAppDir[] = L"Google\\Chrome Frame\\Application\\";
 const wchar_t kChromeFrameAppName[] = L"Google Chrome Frame";
-const wchar_t kChromeFrameFullInstallerPattern[] = L"_chromeframe_installer";
 const wchar_t kChromeFrameProductName[] = L"Chrome Frame";
 const wchar_t kChromeMiniInstallerExecutable[] = L"mini_installer.exe";
 const wchar_t kChromeMetaInstallerExecutable[] = L"chrome_installer.exe";
@@ -43,6 +42,7 @@ const wchar_t kStandaloneInstaller[] = L"ChromeSetupTest.exe";
 const wchar_t kSystemInstall[] = L"system";
 const wchar_t kUserInstall[] = L"user";
 const wchar_t kUntaggedInstallerPattern[] = L"ChromeStandaloneSetup_";
+const wchar_t kWinFolder[] = L"win";
 
 
 const wchar_t kDevChannelBuild[] = L"3.0.";
@@ -64,5 +64,5 @@ const wchar_t kChromeApplyTagExe[] =
 const wchar_t kChromeApplyTagParameters[] =
     L"\"appguid={8A69D345-D564-463C-AFF1-A69D9E530F96}&appname=Chrome&needsadmin=false\"";
 const wchar_t kChromeDiffInstallerLocation[] =
-    L"\\\\172.24.6.7\\shares\\googleclient\\save\\builds\\chrome\\";
+    L"\\\\172.24.6.7\\shares\\chromeclient\\builds\\chrome\\";
 }

@@ -13,7 +13,6 @@ namespace mini_installer_constants {
 // Path and process names
 extern const wchar_t kChromeAppDir[];
 extern const wchar_t kChromeFrameAppDir[];
-extern const wchar_t kChromeFrameFullInstallerPattern[];
 extern const wchar_t kChromeFrameProductName[];
 extern const wchar_t kChromeMetaInstallerExecutable[];
 extern const wchar_t kChromeMiniInstallerExecutable[];
@@ -29,6 +28,7 @@ extern const wchar_t kGoogleUpdateExecutable[];
 extern const wchar_t kIEExecutable[];
 extern const wchar_t kSystemInstall[];
 extern const wchar_t kUserInstall[];
+extern const wchar_t kWinFolder[];
 
 // Window names.
 extern const wchar_t kBrowserAppName[];
