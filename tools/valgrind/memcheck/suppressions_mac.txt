@@ -1585,29 +1585,6 @@
    fun:_ZN16AudioQueueObject4StopEb
 }
 {
-   bug_53893
-   Memcheck:Addr4
-   ...
-   fun:_ZN16ObserverListBaseI21TabStripModelObserverE14RemoveObserverEPS0_
-   fun:_ZN13TabStripModel14RemoveObserverEP21TabStripModelObserver
-   fun:_ZN27TabStripModelObserverBridgeD0Ev
-   fun:_ZN10scoped_ptrI27TabStripModelObserverBridgeED2Ev
-   fun:_ZN10scoped_ptrI27TabStripModelObserverBridgeED1Ev
-   fun:-[TabposeWindow .cxx_destruct]
-   fun:object_cxxDestructFromClass
-   fun:_internal_object_dispose
-   fun:NSDeallocateObject
-   fun:-[NSResponder dealloc]
-   fun:-[NSWindow dealloc]
-   fun:CFRelease
-   fun:CAAttrListFreeMemory
-   fun:CAAttrListFree
-   fun:CAAnimationDestroy
-   fun:-[CAAnimation dealloc]
-   fun:CFRelease
-   fun:run_animation_callbacks
-}
-{
    bug_53989_a
    Memcheck:Cond
    fun:glvm_function_new

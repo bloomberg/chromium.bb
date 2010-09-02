@@ -229,7 +229,8 @@ void ThumbnailLoader::LoadThumbnail() {
 
 - (void)drawInContext:(CGContextRef)context {
   RenderWidgetHost* rwh = contents_->render_view_host();
-  RenderWidgetHostView* rwhv = rwh->view();  // NULL if renderer crashed.
+  // NULL if renderer crashed.
+  RenderWidgetHostView* rwhv = rwh ? rwh->view() : NULL;
   if (!rwhv) {
     // TODO(thakis): Maybe draw a sad tab layer?
     [super drawInContext:context];
@@ -1005,6 +1006,10 @@ void AnimateCALayerFrameFromTo(
 
   state_ = tabpose::kFadingOut;
   [self setAcceptsMouseMovedEvents:NO];
+
+  // We're not interested in tab strip changes any more once the exit animation
+  // plays.
+  tabStripModelObserverBridge_.reset();
 
   // Select chosen tab.
   if (tileSet_->selected_index() < tabStripModel_->count()) {
