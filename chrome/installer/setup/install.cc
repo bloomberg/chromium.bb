@@ -773,8 +773,21 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
       installer_util::GetDistroBooleanPreference(prefs,
           installer_util::master_preferences::kMakeChromeDefault,
           &make_chrome_default);
+
+      // If this is not the user's first Chrome install, but they have chosen
+      // Chrome to become their default browser on the download page, we must
+      // force it here because the master_preferences file will not get copied
+      // into the build.
+      bool force_chrome_default_for_user = false;
+      if (result == installer_util::NEW_VERSION_UPDATED ||
+          result == installer_util::INSTALL_REPAIRED) {
+        installer_util::GetDistroBooleanPreference(prefs,
+            installer_util::master_preferences::kMakeChromeDefaultForUser,
+            &force_chrome_default_for_user);
+      }
+
       RegisterChromeOnMachine(install_path, system_install,
-                              make_chrome_default);
+          make_chrome_default || force_chrome_default_for_user);
     }
 
     std::wstring latest_version_to_keep(new_version.GetString());
