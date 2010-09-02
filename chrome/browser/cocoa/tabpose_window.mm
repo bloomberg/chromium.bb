@@ -981,7 +981,7 @@ void AnimateCALayerFrameFromTo(
 }
 
 - (void)swipeWithEvent:(NSEvent*)event {
-  if ([event deltaY] > 0.5)  // Swipe up
+  if (abs([event deltaY]) > 0.5)  // Swipe up or down.
     [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
 }
 
