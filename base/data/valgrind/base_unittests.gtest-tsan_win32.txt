@@ -1,3 +1,6 @@
+# Occasionally fails under TSan, see http://crbug.com/54229
+ProcessUtilTest.CalcFreeMemory
+
 # This file is copied from Valgrind-on-Wine filter
 # TODO(timurrrr): include/investigate the listed tests one-by-one
 EtwTraceControllerTest.EnableDisable
