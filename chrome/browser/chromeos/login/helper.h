@@ -52,7 +52,7 @@ enum Command {
 };
 
 // Gap between edge and image view, and image view and controls.
-const int kBorderSize = 4;
+const int kBorderSize = 6;
 
 // The size of user image.
 const int kUserImageSize = 256;

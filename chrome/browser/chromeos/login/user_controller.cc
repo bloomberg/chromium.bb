@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/existing_user_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/notification_service.h"
@@ -40,7 +41,7 @@ namespace {
 const int kUserNameGap = 4;
 
 // Approximate height of controls window, this constant is used in new user
-// case to make border window size close to exsisting users.
+// case to make border window size close to existing users.
 const int kControlsHeight = 26;
 
 // Widget that notifies window manager about clicking on itself.
@@ -337,14 +338,20 @@ void UserController::CreateBorderWindow(int index,
                                         int controls_height) {
   // Guest login controls window is much higher than existing user's controls
   // window so window manager will place the control instead of image window.
-  int width = kUserImageSize + kBorderSize * 2;
+  int width = kBorderSize * 2 + kUserImageSize;
   int height = kBorderSize * 2 + controls_height;
   if (!is_guest_)
     height += kBorderSize + kUserImageSize;
   border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
+  border_window_->MakeTransparent();
   border_window_->Init(NULL, gfx::Rect(0, 0, width, height));
-  border_window_->GetRootView()->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
+  {
+    static BorderDefinition borderDef = BorderDefinition::kScreenBorder;
+    borderDef.shadow = 0;
+    views::Painter* painter = CreateWizardPainter(&borderDef);
+    border_window_->GetRootView()->set_background(
+        views::Background::CreateBackgroundPainter(true, painter));
+  }
   UpdateUserCount(index, total_user_count);
 
   GdkWindow* gdk_window = border_window_->GetNativeView()->window;

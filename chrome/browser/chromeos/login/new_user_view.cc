@@ -103,9 +103,6 @@ void NewUserView::Init() {
     views::Painter* painter = CreateWizardPainter(
         &BorderDefinition::kScreenBorder);
     set_background(views::Background::CreateBackgroundPainter(true, painter));
-  } else {
-    set_background(views::Background::CreateSolidBackground(
-        BorderDefinition::kScreenBorder.top_color));
   }
 
   // Set up fonts.
