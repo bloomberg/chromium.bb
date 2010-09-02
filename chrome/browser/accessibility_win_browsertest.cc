@@ -465,12 +465,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(document_accessible);
 }
 
+// FAILS crbug.com/54220
 // This test verifies that browser-side cache of the renderer accessibility
 // tree is reachable from the browser's tree. Tools that analyze windows
 // accessibility trees like AccExplorer32 should be able to drill into the
 // cached renderer accessibility tree.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       ContainsRendererAccessibilityTree) {
+                       FAILS_ContainsRendererAccessibilityTree) {
   // By requesting an accessible chrome will believe a screen reader has been
   // detected. Request and wait for the accessibility tree to be updated.
   GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
