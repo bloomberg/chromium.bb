@@ -172,7 +172,7 @@ void WebSocketExperimentRunner::InitConfig() {
 void WebSocketExperimentRunner::DoLoop() {
   if (next_state_ == STATE_NONE) {
     if (task_.get()) {
-      AddRef();  // Release in OnTaskCompleted.
+      AddRef();  // Release in OnTaskCompleted after Cancelled.
       task_->Cancel();
     }
     return;
@@ -215,7 +215,7 @@ void WebSocketExperimentRunner::DoLoop() {
 }
 
 void WebSocketExperimentRunner::OnTaskCompleted(int result) {
-  if (result == net::ERR_ABORTED) {
+  if (next_state_ == STATE_NONE) {
     task_.reset();
     // Task is Canceled.
     DLOG(INFO) << "WebSocketExperiment Task is canceled.";
