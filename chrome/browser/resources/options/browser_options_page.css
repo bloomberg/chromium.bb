@@ -7,6 +7,20 @@
   width: 100%;
 }
 
+#defaultSearchEngineGroup {
+  display: -webkit-box;
+}
+
+#defaultSearchEngine {
+  display: block;
+  -webkit-box-flex: 1;
+}
+
+#defaultSearchManageEnginesButton {
+  margin-top: 0px;
+  -webkit-margin-start: 10px;
+}
+
 #defaultBrowserState {
   color: #880000;
 }

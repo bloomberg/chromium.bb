@@ -19,6 +19,11 @@
   font-weight: bold;
 }
 
+#searchEngineList .name, #searchEngineList .keyword {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 #searchEngineHeading {
   font-weight: bold;
   padding: 4px;
