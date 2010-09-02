@@ -142,7 +142,9 @@ cr.define('options', function() {
       // Listen to user events.
       this.addEventListener('change',
           function(e) {
-            Preferences.setIntegerPref(self.pref, self.value, self.metric);
+            if (this.validity.valid) {
+              Preferences.setIntegerPref(self.pref, self.value, self.metric);
+            }
           });
     }
   };
@@ -175,6 +177,14 @@ cr.define('options', function() {
     decorate: function() {
       this.type = 'number';
       PrefNumeric.prototype.decorate.call(this);
+
+      // Listen to user events.
+      this.addEventListener('input',
+          function(e) {
+            if (this.validity.valid) {
+              Preferences.setIntegerPref(self.pref, self.value, self.metric);
+            }
+          });
     }
   };
 
