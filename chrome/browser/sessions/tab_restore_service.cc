@@ -17,6 +17,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -182,17 +183,18 @@ TabRestoreService::~TabRestoreService() {
   if (backend())
     Save();
 
-  FOR_EACH_OBSERVER(Observer, observer_list_, TabRestoreServiceDestroyed(this));
+  FOR_EACH_OBSERVER(TabRestoreServiceObserver, observer_list_,
+                    TabRestoreServiceDestroyed(this));
   STLDeleteElements(&entries_);
   STLDeleteElements(&staging_entries_);
   time_factory_ = NULL;
 }
 
-void TabRestoreService::AddObserver(Observer* observer) {
+void TabRestoreService::AddObserver(TabRestoreServiceObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void TabRestoreService::RemoveObserver(Observer* observer) {
+void TabRestoreService::RemoveObserver(TabRestoreServiceObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
@@ -484,7 +486,8 @@ void TabRestoreService::PopulateTab(Tab* tab,
 }
 
 void TabRestoreService::NotifyTabsChanged() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, TabRestoreServiceChanged(this));
+  FOR_EACH_OBSERVER(TabRestoreServiceObserver, observer_list_,
+                    TabRestoreServiceChanged(this));
 }
 
 void TabRestoreService::AddEntry(Entry* entry, bool notify, bool to_front) {

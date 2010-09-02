@@ -32,6 +32,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
@@ -120,7 +121,7 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
 // RecentlyClosedTabsHandler
 
 class RecentlyClosedTabsHandler : public DOMMessageHandler,
-                                  public TabRestoreService::Observer {
+                                  public TabRestoreServiceObserver {
  public:
   RecentlyClosedTabsHandler() : tab_restore_service_(NULL) {}
   virtual ~RecentlyClosedTabsHandler();
@@ -136,7 +137,7 @@ class RecentlyClosedTabsHandler : public DOMMessageHandler,
   // Callback for the "getRecentlyClosedTabs" message.
   void HandleGetRecentlyClosedTabs(const ListValue* args);
 
-  // Observer callback for TabRestoreService::Observer. Sends data on
+  // Observer callback for TabRestoreServiceObserver. Sends data on
   // recently closed tabs to the javascript side of this page to
   // display to the user.
   virtual void TabRestoreServiceChanged(TabRestoreService* service);

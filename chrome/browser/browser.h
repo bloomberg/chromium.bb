@@ -14,11 +14,12 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -50,7 +51,7 @@ class Browser : public TabStripModelDelegate,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public NotificationObserver,
                 public SelectFileDialog::Listener,
-                public TabRestoreService::Observer,
+                public TabRestoreServiceObserver,
                 public ProfileSyncServiceObserver {
  public:
   // If you change the values in this enum you'll need to update browser_proxy.
@@ -619,7 +620,7 @@ class Browser : public TabStripModelDelegate,
   // Helper function to run unload listeners on a TabContents.
   static bool RunUnloadEventsHelper(TabContents* contents);
 
-  // TabRestoreService::Observer ///////////////////////////////////////////////
+  // TabRestoreServiceObserver /////////////////////////////////////////////////
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
 
