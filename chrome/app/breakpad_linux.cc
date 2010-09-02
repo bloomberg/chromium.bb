@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define SYS_SEGMENTNAME "syscalls" // For linux_syscall_support.h
+#define SYS_SEGMENTNAME "syscalls"  // For linux_syscall_support.h
 
 #include "chrome/app/breakpad_linux.h"
 
@@ -558,6 +558,8 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
       header,
       post_file,
       kUploadURL,
+      "--timeout=10",  // Set a timeout so we don't hang forever.
+      "--tries=1",     // Don't retry if the upload fails.
       "-O",  // output reply to fd 3
       "/dev/fd/3",
       NULL,
