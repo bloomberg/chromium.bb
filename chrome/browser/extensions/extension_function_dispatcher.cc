@@ -46,9 +46,7 @@
 #include "chrome/browser/extensions/extension_sidebar_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/extension_tts_api.h"
-#endif
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -235,12 +233,10 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetFocusedControlFunction>();
   RegisterFunction<SetAccessibilityEnabledFunction>();
 
-#if defined(OS_CHROMEOS)
   // Text-to-speech.
   RegisterFunction<ExtensionTtsSpeakFunction>();
   RegisterFunction<ExtensionTtsStopSpeakingFunction>();
   RegisterFunction<ExtensionTtsIsSpeakingFunction>();
-#endif
 
   // Clipboard.
   RegisterFunction<ExecuteCopyClipboardFunction>();

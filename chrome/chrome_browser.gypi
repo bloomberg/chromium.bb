@@ -1449,6 +1449,9 @@
         'browser/extensions/extension_test_api.h',
         'browser/extensions/extension_tts_api.cc',
         'browser/extensions/extension_tts_api.h',
+        'browser/extensions/extension_tts_api_gtk.cc',
+        'browser/extensions/extension_tts_api_mac.mm',
+        'browser/extensions/extension_tts_api_win.cc',
         'browser/extensions/extension_toolbar_model.cc',
         'browser/extensions/extension_toolbar_model.h',
         'browser/extensions/extension_updater.cc',
@@ -3124,7 +3127,6 @@
             ['exclude', 'browser/dom_ui/mediaplayer_ui.cc'],
             ['exclude', 'browser/dom_ui/slideshow_ui.cc'],
             ['exclude', 'browser/extensions/extension_tts_api.cc'],
-            ['exclude', 'browser/extensions/extension_tts_api.h'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.cc'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.h'],
           ],
@@ -3771,6 +3773,7 @@
             # non-ChromeOS views Linux builds.
             ['OS=="linux" and toolkit_views==1 and chromeos==0', {
               'sources/': [
+                ['exclude', '^browser/extensions/extension_tts_api.cc'],
                 ['include', '^browser/gtk/dialogs_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.h'],
@@ -3793,6 +3796,7 @@
             }],
             ['OS=="linux" and chromeos==1',{
               'sources/': [
+                ['exclude', '^browser/extensions/extension_tts_api_gtk.cc'],
                 ['exclude', '^browser/notifications/balloon_collection.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.h'],
                 ['exclude', '^browser/notifications/balloon_collection_linux.cc'],
@@ -3850,6 +3854,7 @@
             'browser/bookmarks/bookmark_menu_controller.h',
             'browser/browser_accessibility_win.cc',
             'browser/browser_accessibility_manager_win.cc',
+            'browser/extensions/extension_tts_api_win.cc',
             'browser/google/google_update.cc',
             'browser/history/history_indexer.idl',
             'browser/history_tab_ui.cc',
