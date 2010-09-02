@@ -482,6 +482,10 @@ void FirstRun::AutoImport(
 
   PlatformSetup();
 
+  FilePath local_state_path;
+  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
+  bool local_state_file_exists = file_util::PathExists(local_state_path);
+
   scoped_refptr<ImporterHost> importer_host;
   importer_host = new ImporterHost();
   // Do import if there is an available profile for us to import.
@@ -502,13 +506,15 @@ void FirstRun::AutoImport(
       if (import_items & importer::HOME_PAGE)
         items = items | importer::HOME_PAGE;
     }
-    // Search engines are imported in organic builds only unless overriden
-    // in master_preferences.
+    // Search engines are only imported in organic builds unless overridden
+    // in master_preferences. Search engines are not imported automatically
+    // if the user already has a user preferences directory.
     if (IsOrganic()) {
-      if (!(dont_import_items & importer::SEARCH_ENGINES))
+      if (!(dont_import_items & importer::SEARCH_ENGINES) &&
+          !local_state_file_exists) {
         items = items | importer::SEARCH_ENGINES;
-    } else {
-      if (import_items & importer::SEARCH_ENGINES)
+      }
+    } else if (import_items & importer::SEARCH_ENGINES) {
         items = items | importer::SEARCH_ENGINES;
     }
 
@@ -523,15 +529,10 @@ void FirstRun::AutoImport(
 
   // Launch the search engine dialog only if build is organic, and user has not
   // already set search preferences.
-  FilePath local_state_path;
-  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  bool local_state_file_exists = file_util::PathExists(local_state_path);
-
   if (IsOrganic() && !local_state_file_exists) {
     // The home page string may be set in the preferences, but the user should
     // initially use Chrome with the NTP as home page in organic builds.
     profile->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
-
     ShowFirstRunDialog(profile, randomize_search_engine_experiment);
   }
 
