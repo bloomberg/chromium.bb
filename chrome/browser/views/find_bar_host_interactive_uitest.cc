@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
 
   // This used to crash until bug 1303709 was fixed.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser()->window()->GetNativeHandle(), app::VKEY_ESCAPE,
+      browser()->window()->GetNativeHandle(), base::VKEY_ESCAPE,
       false, false, false, false));
 }
 
@@ -187,21 +187,21 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 
   // Search for "a".
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_A, false, false, false, false));  // No modifiers
+      window, base::VKEY_A, false, false, false, false));  // No modifiers
 
   // We should find "a" here.
   EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarText());
 
   // Delete "a".
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_BACK, false, false, false, false));  // No modifiers.
+      window, base::VKEY_BACK, false, false, false, false));  // No modifiers.
 
   // Validate we have cleared the text.
   EXPECT_EQ(string16(), GetFindBarText());
 
   // Close the Find box.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_ESCAPE, false, false, false, false));  // No modifiers.
+      window, base::VKEY_ESCAPE, false, false, false, false));  // No modifiers.
 
   // Show the Find bar.
   browser()->GetFindBarController()->Show();
@@ -212,11 +212,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 
   // Close the Find box.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_ESCAPE, false, false, false, false));  // No modifiers.
+      window, base::VKEY_ESCAPE, false, false, false, false));  // No modifiers.
 
   // Press F3 to trigger FindNext.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_F3, false, false, false, false));  // No modifiers.
+      window, base::VKEY_F3, false, false, false, false));  // No modifiers.
 
   // After the Find box has been reopened, it should still have no prepopulate
   // value.

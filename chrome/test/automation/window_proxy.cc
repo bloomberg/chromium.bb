@@ -41,7 +41,7 @@ bool WindowProxy::GetWindowTitle(string16* text) {
   return sender_->Send(new AutomationMsg_WindowTitle(0, handle_, text));
 }
 
-bool WindowProxy::SimulateOSKeyPress(app::KeyboardCode key, int flags) {
+bool WindowProxy::SimulateOSKeyPress(base::KeyboardCode key, int flags) {
   if (!is_valid()) return false;
 
   return sender_->Send(

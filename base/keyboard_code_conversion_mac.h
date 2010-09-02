@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_KEYBOARD_CODE_CONVERSION_MAC_H_
-#define APP_KEYBOARD_CODE_CONVERSION_MAC_H_
+#ifndef BASE_KEYBOARD_CODE_CONVERSION_MAC_H_
+#define BASE_KEYBOARD_CODE_CONVERSION_MAC_H_
 
 #import <Cocoa/Cocoa.h>
-#include "app/keyboard_codes_posix.h"
-#include "base/basictypes.h"
+#include "basictypes.h"
+#include "base/keyboard_codes_posix.h"
 
-namespace app {
+namespace base {
 
 // We use windows virtual keycodes throughout our keyboard event related code,
 // including unit tests. But Mac uses a different set of virtual keycodes.
@@ -29,6 +29,6 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                 unichar* character,
                                 unichar* characterIgnoringModifiers);
 
-} // namespace app
+} // namespace base
 
-#endif  // APP_KEYBOARD_CODE_CONVERSION_MAC_H_
+#endif  // BASE_KEYBOARD_CODE_CONVERSION_MAC_H_

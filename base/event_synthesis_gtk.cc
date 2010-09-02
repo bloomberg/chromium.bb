@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/event_synthesis_gtk.h"
+#include "base/event_synthesis_gtk.h"
 
-#include "app/keyboard_code_conversion_gtk.h"
+#include "base/keyboard_code_conversion_gtk.h"
 
-namespace app {
+namespace base {
 
 GdkEvent* SynthesizeKeyEvent(GdkWindow* window,
                              bool press, guint gdk_key, guint state) {
@@ -39,7 +39,7 @@ GdkEvent* SynthesizeKeyEvent(GdkWindow* window,
 }
 
 void SynthesizeKeyPressEvents(GdkWindow* window,
-                              app::KeyboardCode key,
+                              base::KeyboardCode key,
                               bool control, bool shift, bool alt,
                               std::vector<GdkEvent*>* events) {
   if (control)
@@ -64,7 +64,7 @@ void SynthesizeKeyPressEvents(GdkWindow* window,
                 (shift ? GDK_SHIFT_MASK : 0) |
                 (alt ? GDK_MOD1_MASK : 0);
 
-  guint gdk_key = GdkKeyCodeForWindowsKeyCode(key, shift);
+  guint gdk_key = base::GdkKeyCodeForWindowsKeyCode(key, shift);
   events->push_back(SynthesizeKeyEvent(window, true, gdk_key, state));
   events->push_back(SynthesizeKeyEvent(window, false, gdk_key, state));
 
@@ -87,4 +87,4 @@ void SynthesizeKeyPressEvents(GdkWindow* window,
   }
 }
 
-}  // namespace app
+}  // namespace base

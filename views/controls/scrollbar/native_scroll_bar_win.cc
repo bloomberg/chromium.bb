@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <string>
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "gfx/window_impl.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
@@ -231,31 +231,31 @@ bool NativeScrollBarWin::OnKeyPressed(const KeyEvent& event) {
     return false;
   int code = -1;
   switch (event.GetKeyCode()) {
-    case app::VKEY_UP:
+    case base::VKEY_UP:
       if (!native_scroll_bar_->IsHorizontal())
         code = SB_LINEUP;
       break;
-    case app::VKEY_PRIOR:
+    case base::VKEY_PRIOR:
       code = SB_PAGEUP;
       break;
-    case app::VKEY_NEXT:
+    case base::VKEY_NEXT:
       code = SB_PAGEDOWN;
       break;
-    case app::VKEY_DOWN:
+    case base::VKEY_DOWN:
       if (!native_scroll_bar_->IsHorizontal())
         code = SB_LINEDOWN;
       break;
-    case app::VKEY_HOME:
+    case base::VKEY_HOME:
       code = SB_TOP;
       break;
-    case app::VKEY_END:
+    case base::VKEY_END:
       code = SB_BOTTOM;
       break;
-    case app::VKEY_LEFT:
+    case base::VKEY_LEFT:
       if (native_scroll_bar_->IsHorizontal())
         code = SB_LINELEFT;
       break;
-    case app::VKEY_RIGHT:
+    case base::VKEY_RIGHT:
       if (native_scroll_bar_->IsHorizontal())
         code = SB_LINERIGHT;
       break;

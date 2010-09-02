@@ -4,7 +4,7 @@
 
 #include "chrome/browser/views/html_dialog_view.h"
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -55,7 +55,7 @@ gfx::Size HtmlDialogView::GetPreferredSize() {
 
 bool HtmlDialogView::AcceleratorPressed(const views::Accelerator& accelerator) {
   // Pressing ESC closes the dialog.
-  DCHECK_EQ(app::VKEY_ESCAPE, accelerator.GetKeyCode());
+  DCHECK_EQ(base::VKEY_ESCAPE, accelerator.GetKeyCode());
   OnDialogClosed(std::string());
   return true;
 }
@@ -201,7 +201,7 @@ void HtmlDialogView::InitDialog() {
                                                   this);
 
   // Pressing the ESC key will close the dialog.
-  AddAccelerator(views::Accelerator(app::VKEY_ESCAPE, false, false, false));
+  AddAccelerator(views::Accelerator(base::VKEY_ESCAPE, false, false, false));
 
   DOMView::LoadURL(GetDialogContentURL());
 }

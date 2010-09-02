@@ -8,10 +8,10 @@
 #include "views/screen.h"
 #endif
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
@@ -496,32 +496,32 @@ bool BitmapScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
 bool BitmapScrollBar::OnKeyPressed(const KeyEvent& event) {
   ScrollAmount amount = SCROLL_NONE;
   switch (event.GetKeyCode()) {
-    case app::VKEY_UP:
+    case base::VKEY_UP:
       if (!IsHorizontal())
         amount = SCROLL_PREV_LINE;
       break;
-    case app::VKEY_DOWN:
+    case base::VKEY_DOWN:
       if (!IsHorizontal())
         amount = SCROLL_NEXT_LINE;
       break;
-    case app::VKEY_LEFT:
+    case base::VKEY_LEFT:
       if (IsHorizontal())
         amount = SCROLL_PREV_LINE;
       break;
-    case app::VKEY_RIGHT:
+    case base::VKEY_RIGHT:
       if (IsHorizontal())
         amount = SCROLL_NEXT_LINE;
       break;
-    case app::VKEY_PRIOR:
+    case base::VKEY_PRIOR:
       amount = SCROLL_PREV_PAGE;
       break;
-    case app::VKEY_NEXT:
+    case base::VKEY_NEXT:
       amount = SCROLL_NEXT_PAGE;
       break;
-    case app::VKEY_HOME:
+    case base::VKEY_HOME:
       amount = SCROLL_START;
       break;
-    case app::VKEY_END:
+    case base::VKEY_END:
       amount = SCROLL_END;
       break;
   }

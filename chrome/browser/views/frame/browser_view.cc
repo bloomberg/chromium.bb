@@ -688,13 +688,13 @@ bool BrowserView::GetAccelerator(int cmd_id, menus::Accelerator* accelerator) {
   // anywhere so we need to check for them explicitly here.
   switch (cmd_id) {
     case IDC_CUT:
-      *accelerator = views::Accelerator(app::VKEY_X, false, true, false);
+      *accelerator = views::Accelerator(base::VKEY_X, false, true, false);
       return true;
     case IDC_COPY:
-      *accelerator = views::Accelerator(app::VKEY_C, false, true, false);
+      *accelerator = views::Accelerator(base::VKEY_C, false, true, false);
       return true;
     case IDC_PASTE:
-      *accelerator = views::Accelerator(app::VKEY_V, false, true, false);
+      *accelerator = views::Accelerator(base::VKEY_V, false, true, false);
       return true;
   }
   // Else, we retrieve the accelerator information from the accelerator table.
@@ -1293,7 +1293,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 #if defined(OS_WIN)
   // As Alt+F4 is the close-app keyboard shortcut, it needs processing
   // immediately.
-  if (event.windowsKeyCode == app::VKEY_F4 &&
+  if (event.windowsKeyCode == base::VKEY_F4 &&
       event.modifiers == NativeWebKeyboardEvent::AltKey) {
     DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
@@ -1305,7 +1305,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   DCHECK(focus_manager);
 
   views::Accelerator accelerator(
-      static_cast<app::KeyboardCode>(event.windowsKeyCode),
+      static_cast<base::KeyboardCode>(event.windowsKeyCode),
       (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
           NativeWebKeyboardEvent::ShiftKey,
       (event.modifiers & NativeWebKeyboardEvent::ControlKey) ==
@@ -1371,34 +1371,34 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // manager to do that.
 #if !defined(OS_MACOSX)
 void BrowserView::Cut() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_X,
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_X,
                             true, false, false, false);
 }
 
 void BrowserView::Copy() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_C,
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_C,
                             true, false, false, false);
 }
 
 void BrowserView::Paste() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_V,
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_V,
                             true, false, false, false);
 }
 #else
 // Mac versions.  Not tested by antyhing yet;
 // don't assume written == works.
 void BrowserView::Cut() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_X,
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_X,
                             false, false, false, true);
 }
 
 void BrowserView::Copy() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_C,
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_C,
                             false, false, false, true);
 }
 
 void BrowserView::Paste() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_V,
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_V,
                             false, false, false, true);
 }
 #endif
@@ -2304,7 +2304,7 @@ void BrowserView::LoadAccelerators() {
     bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
     bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
     views::Accelerator accelerator(
-        static_cast<app::KeyboardCode>(accelerators[i].key),
+        static_cast<base::KeyboardCode>(accelerators[i].key),
         shift_down, ctrl_down, alt_down);
     accelerator_table_[accelerator] = accelerators[i].cmd;
 

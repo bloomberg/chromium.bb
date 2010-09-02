@@ -18,11 +18,11 @@ AccessibleToolbarView::AccessibleToolbarView()
     : toolbar_has_focus_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       focus_manager_(NULL),
-      home_key_(app::VKEY_HOME, false, false, false),
-      end_key_(app::VKEY_END, false, false, false),
-      escape_key_(app::VKEY_ESCAPE, false, false, false),
-      left_key_(app::VKEY_LEFT, false, false, false),
-      right_key_(app::VKEY_RIGHT, false, false, false),
+      home_key_(base::VKEY_HOME, false, false, false),
+      end_key_(base::VKEY_END, false, false, false),
+      escape_key_(base::VKEY_ESCAPE, false, false, false),
+      left_key_(base::VKEY_LEFT, false, false, false),
+      right_key_(base::VKEY_RIGHT, false, false, false),
       last_focused_view_storage_id_(-1) {
   focus_search_.reset(new views::FocusSearch(this, true, true));
 }
@@ -148,27 +148,27 @@ bool AccessibleToolbarView::AcceleratorPressed(
   views::View* focused_view = focus_manager_->GetFocusedView();
   if ((focused_view->GetClassName() == LocationBarView::kViewClassName ||
        focused_view->GetClassName() == views::NativeViewHost::kViewClassName) &&
-      (accelerator.GetKeyCode() == app::VKEY_LEFT ||
-       accelerator.GetKeyCode() == app::VKEY_RIGHT)) {
+      (accelerator.GetKeyCode() == base::VKEY_LEFT ||
+       accelerator.GetKeyCode() == base::VKEY_RIGHT)) {
     return false;
   }
 
   switch (accelerator.GetKeyCode()) {
-    case app::VKEY_ESCAPE:
+    case base::VKEY_ESCAPE:
       RemoveToolbarFocus();
       RestoreLastFocusedView();
       return true;
-    case app::VKEY_LEFT:
+    case base::VKEY_LEFT:
       focus_manager_->AdvanceFocus(true);
       return true;
-    case app::VKEY_RIGHT:
+    case base::VKEY_RIGHT:
       focus_manager_->AdvanceFocus(false);
       return true;
-    case app::VKEY_HOME:
+    case base::VKEY_HOME:
       focus_manager_->SetFocusedViewWithReason(
           GetFirstFocusableChild(), views::FocusManager::kReasonFocusTraversal);
       return true;
-    case app::VKEY_END:
+    case base::VKEY_END:
       focus_manager_->SetFocusedViewWithReason(
           GetLastFocusableChild(), views::FocusManager::kReasonFocusTraversal);
       return true;

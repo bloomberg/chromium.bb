@@ -475,7 +475,7 @@ bool FindBarView::HandleKeystroke(views::Textfield* sender,
   if (find_bar_host()->MaybeForwardKeystrokeToWebpage(key))
     return true;  // Handled, we are done!
 
-  if (key.GetKeyboardCode() == app::VKEY_RETURN) {
+  if (key.GetKeyboardCode() == base::VKEY_RETURN) {
     // Pressing Return/Enter starts the search (unless text box is empty).
     string16 find_string = find_text_->text();
     if (!find_string.empty()) {

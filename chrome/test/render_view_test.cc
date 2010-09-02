@@ -26,7 +26,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_LINUX)
-#include "app/event_synthesis_gtk.h"
+#include "base/event_synthesis_gtk.h"
 #endif
 
 using WebKit::WebFrame;
@@ -188,8 +188,8 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
   // We ignore |layout|, which means we are only testing the layout of the
   // current locale. TODO(estade): fix this to respect |layout|.
   std::vector<GdkEvent*> events;
-  app::SynthesizeKeyPressEvents(
-      NULL, static_cast<app::KeyboardCode>(key_code),
+  base::SynthesizeKeyPressEvents(
+      NULL, static_cast<base::KeyboardCode>(key_code),
       modifiers & (MockKeyboard::LEFT_CONTROL | MockKeyboard::RIGHT_CONTROL),
       modifiers & (MockKeyboard::LEFT_SHIFT | MockKeyboard::RIGHT_SHIFT),
       modifiers & (MockKeyboard::LEFT_ALT | MockKeyboard::RIGHT_ALT),

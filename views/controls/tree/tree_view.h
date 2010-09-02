@@ -11,9 +11,9 @@
 
 #include <map>
 
-#include "app/keyboard_codes.h"
 #include "app/tree_model.h"
 #include "base/basictypes.h"
+#include "base/keyboard_codes.h"
 #include "views/controls/native_control.h"
 
 namespace views {
@@ -36,7 +36,7 @@ class TreeViewController {
   }
 
   // Invoked when a key is pressed on the tree view.
-  virtual void OnTreeViewKeyDown(app::KeyboardCode keycode) {}
+  virtual void OnTreeViewKeyDown(base::KeyboardCode keycode) {}
 };
 
 // TreeView -------------------------------------------------------------------
@@ -181,7 +181,7 @@ class TreeView : public NativeControl, TreeModelObserver {
   // We pay attention to key down for two reasons: to circumvent VK_ENTER from
   // toggling the expaned state when processes_enter_ is false, and to have F2
   // start editting.
-  virtual bool OnKeyDown(app::KeyboardCode virtual_key_code);
+  virtual bool OnKeyDown(base::KeyboardCode virtual_key_code);
 
   virtual void OnContextMenu(const POINT& location);
 

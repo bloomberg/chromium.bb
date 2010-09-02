@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"

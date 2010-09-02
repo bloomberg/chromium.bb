@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_KEYBOARD_CODES_WIN_H_
-#define APP_KEYBOARD_CODES_WIN_H_
+#ifndef BASE_KEYBOARD_CODES_WIN_H_
+#define BASE_KEYBOARD_CODES_WIN_H_
 #pragma once
 
 #include <windows.h>
 
-namespace app {
+namespace base {
 
 typedef enum {
   VKEY_BACK = VK_BACK,
@@ -181,6 +181,6 @@ typedef enum {
   VKEY_UNKNOWN = 0
 } KeyboardCode;
 
-}  // namespace app
+}  // namespace base
 
-#endif  // APP_KEYBOARD_CODES_WIN_H_
+#endif  // BASE_KEYBOARD_CODES_WIN_H_

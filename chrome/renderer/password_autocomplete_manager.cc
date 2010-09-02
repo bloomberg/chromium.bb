@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/password_autocomplete_manager.h"
 
-#include "app/keyboard_codes.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/render_messages.h"
@@ -302,7 +302,7 @@ void PasswordAutocompleteManager::TextFieldHandlingKeyDown(
 
   int win_key_code = event.windowsKeyCode;
   iter->second.backspace_pressed_last =
-      (win_key_code == app::VKEY_BACK || win_key_code == app::VKEY_DELETE);
+      (win_key_code == base::VKEY_BACK || win_key_code == base::VKEY_DELETE);
 }
 
 bool PasswordAutocompleteManager::InputElementClicked(
