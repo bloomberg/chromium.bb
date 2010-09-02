@@ -173,6 +173,8 @@
         'chromoting_jingle_glue',
       ],
       'sources': [
+        'host/access_verifier.cc',
+        'host/access_verifier.h',
         'host/capturer.cc',
         'host/capturer.h',
         'host/capturer_fake.cc',
@@ -198,6 +200,8 @@
         'host/host_key_pair.h',
         'host/json_host_config.cc',
         'host/json_host_config.h',
+        'host/in_memory_host_config.cc',
+        'host/in_memory_host_config.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -363,6 +367,7 @@
         'base/protocol_decoder_unittest.cc',
         'client/chromoting_view_unittest.cc',
         'client/mock_objects.h',
+        'host/access_verifier_unittest.cc',
         'host/chromoting_host_context_unittest.cc',
         'host/client_connection_unittest.cc',
         'host/differ_unittest.cc',

@@ -39,6 +39,8 @@ class HostConfig : public base::RefCountedThreadSafe<HostConfig> {
 };
 
 // MutableHostConfig extends HostConfig for mutability.
+//
+// TODO(sergeyu): Simplify this interface.
 class MutableHostConfig : public HostConfig {
  public:
   MutableHostConfig() { };

@@ -5,13 +5,12 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_key_pair.h"
-#include "remoting/host/json_host_config.h"
+#include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/test_key_pair.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_client.h"
@@ -56,24 +55,18 @@ class HeartbeatSenderTest : public testing::Test {
   class TestConfigUpdater :
       public base::RefCountedThreadSafe<TestConfigUpdater> {
    public:
-    void DoUpdate(scoped_refptr<JsonHostConfig> target) {
+    void DoUpdate(scoped_refptr<InMemoryHostConfig> target) {
       target->SetString(kHostIdConfigPath, kHostId);
       target->SetString(kPrivateKeyConfigPath, kTestHostKeyPair);
     }
   };
 
   virtual void SetUp() {
-    ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-    FilePath config_path = test_dir_.path().AppendASCII("test_config.json");
-    config_ = new JsonHostConfig(
-        config_path, base::MessageLoopProxy::CreateForCurrentThread());
+    config_ = new InMemoryHostConfig();
     scoped_refptr<TestConfigUpdater> config_updater(new TestConfigUpdater());
     config_->Update(
         NewRunnableMethod(config_updater.get(), &TestConfigUpdater::DoUpdate,
                           config_));
-
-    // Run the message loop to save new config.
-    message_loop_.RunAllPending();
 
     jingle_thread_.message_loop_ = &message_loop_;
 
@@ -84,8 +77,7 @@ class HeartbeatSenderTest : public testing::Test {
   JingleThread jingle_thread_;
   scoped_refptr<MockJingleClient> jingle_client_;
   MessageLoop message_loop_;
-  ScopedTempDir test_dir_;
-  scoped_refptr<JsonHostConfig> config_;
+  scoped_refptr<InMemoryHostConfig> config_;
 };
 
 TEST_F(HeartbeatSenderTest, DoSendStanza) {

@@ -84,6 +84,8 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
   scoped_ptr<IqRequest> request_;
   std::string host_id_;
   HostKeyPair key_pair_;
+
+  DISALLOW_COPY_AND_ASSIGN(HeartbeatSender);
 };
 
 }  // namespace remoting

@@ -9,6 +9,7 @@
 
 #include "base/thread.h"
 #include "remoting/base/encoder.h"
+#include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_connection.h"
 #include "remoting/host/event_executor.h"
@@ -132,6 +133,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Objects that takes care of sending heartbeats to the chromoting bot.
   scoped_refptr<HeartbeatSender> heartbeat_sender_;
+
+  AccessVerifier access_verifier_;
 
   // A ClientConnection manages the connectino to a remote client.
   // TODO(hclam): Expand this to a list of clients.

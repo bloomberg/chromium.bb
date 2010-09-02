@@ -168,6 +168,10 @@ bool ChromotingHost::OnAcceptConnection(
   if (client_.get())
     return false;
 
+  // Check that the user has access to the host.
+  if (!access_verifier_.VerifyPermissions(jid))
+    return false;
+
   LOG(INFO) << "Client connected: " << jid << std::endl;
 
   // If we accept the connected then create a client object and set the
@@ -212,9 +216,12 @@ void ChromotingHost::DoStart(Task* shutdown_task) {
   std::string xmpp_auth_token;
   if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
       !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
-    LOG(ERROR) << "XMMP credentials are not defined in config.";
+    LOG(ERROR) << "XMPP credentials are not defined in the config.";
     return;
   }
+
+  if (!access_verifier_.Init(config_))
+    return;
 
   // Connect to the talk network with a JingleClient.
   jingle_client_ = new JingleClient(context_->jingle_thread());
