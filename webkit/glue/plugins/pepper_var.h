@@ -26,10 +26,6 @@ const PPB_Var* GetVarInterface();
 // function multiple times given the same NPObject results in the same PP_Var.
 PP_Var NPObjectToPPVar(NPObject* object);
 
-// Returns a PP_Var that corresponds to the given NPVariant.  The contents of
-// the NPVariant will be copied unless the NPVariant corresponds to an object.
-PP_Var NPVariantToPPVar(const NPVariant* variant);
-
 // Returns the NPObject corresponding to the PP_Var.  This pointer has not been
 // retained, so you should not call WebBindings::releaseObject unless you first
 // call WebBindings::retainObject.  Returns NULL if the PP_Var is not an object
@@ -45,30 +41,6 @@ PP_Var StringToPPVar(const std::string& str);
 // AddRef'd, so you should not call Release!  Returns NULL if the PP_Var is not
 // a string type.
 String* GetString(PP_Var var);
-
-// Instantiate this object on the stack to catch V8 exceptions and pass them
-// to an optional out parameter supplied by the plugin.
-class TryCatch {
- public:
-  // The given exception may be NULL if the consumer isn't interested in
-  // catching exceptions. If non-NULL, the given var will be updated if any
-  // exception is thrown (so it must outlive the TryCatch object).
-  TryCatch(PP_Var* exception);
-  ~TryCatch();
-
-  // Returns true is an exception has been thrown. This can be true immediately
-  // after construction if the var passed to the constructor is non-void.
-  bool HasException() const;
-
-  // Sets the given exception.
-  void SetException(const char* message);
-
- private:
-  static void Catch(void* self, const char* message);
-
-  // May be null if the consumer isn't interesting in catching exceptions.
-  PP_Var* exception_;
-};
 
 }  // namespace pepper
 
