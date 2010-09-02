@@ -2272,7 +2272,7 @@
    fun:_ZN2v88internal21Builtin_HandleApiCallENS0_9ArgumentsE
 }
 {
-   bug_32273
+   bug_32273_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN3IPC12ChannelProxy4SendEPNS_7MessageE
@@ -2293,7 +2293,7 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_32273_a
+   bug_32273_b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN3IPC12ChannelProxy4SendEPNS_7MessageE
@@ -2317,6 +2317,32 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
+}
+{
+   bug_32273_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC12ChannelProxy4SendEPNS_7MessageE
+   fun:_ZN3IPC11SyncChannel15SendWithTimeoutEPNS_7MessageEi
+   fun:_ZN3IPC11SyncChannel4SendEPNS_7MessageE
+   fun:_ZN24BrowserRenderProcessHost4SendEPN3IPC7MessageE
+   fun:_ZN16RenderWidgetHost4SendEPN3IPC7MessageE
+   fun:_ZN14RenderViewHost27ExecuteJavascriptInWebFrameERKSbIwSt11char_traitsIwESaIwEES5_
+   fun:_ZN5DOMUI17ExecuteJavascriptERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN5DOMUI22CallJavascriptFunctionERKSbIwSt11char_traitsIwESaIwEERK5ValueS8_
+   fun:_ZN22ContentSettingsHandler29UpdateExceptionsViewFromModelE19ContentSettingsType
+   fun:_ZN22ContentSettingsHandler33UpdateAllExceptionsViewsFromModelEv
+   fun:_ZN22ContentSettingsHandler10InitializeEv
+   fun:_ZN9OptionsUI18InitializeHandlersEv
+   fun:_ZN18CoreOptionsHandler16HandleInitializeEPK9ListValue
+   fun:_Z16DispatchToMethodI18CoreOptionsHandlerMS0_FvPK9ListValueES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplI18CoreOptionsHandlerMS0_FvPK9ListValueE6Tuple1IS3_EE13RunWithParamsERKS7_
+   fun:_ZN14CallbackRunnerI6Tuple1IPK9ListValueEE3RunIS3_EEvRKT_
+   fun:_ZN5DOMUI19ProcessDOMUIMessageERK29ViewHostMsg_DomMessage_Params
+   fun:_ZN11TabContents19ProcessDOMUIMessageERK29ViewHostMsg_DomMessage_Params
+   fun:_ZN14RenderViewHost14OnMsgDOMUISendERK4GURLRKSsS4_
+   fun:_Z16DispatchToMethodI14RenderViewHostMS0_FvRK4GURLRKSsS5_ES1_SsSsEvPT_T0_RK6Tuple3IT1_T2_T3_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple3I4GURLSsSsEE8DispatchI14RenderViewHostMS6_FvRKS2_RKSsSA_EEEbPKNS_7MessageEPT_T0_
 }
 {
    bug_32299
