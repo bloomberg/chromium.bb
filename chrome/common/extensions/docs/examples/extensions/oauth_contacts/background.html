@@ -39,8 +39,11 @@
             'emails' : []
           };
 
-          for (var j = 0, email; email = entry['gd$email'][j]; j++) {
-            contact['emails'].push(email['address']);
+          if (entry['gd$email']) {
+            var emails = entry['gd$email'];
+            for (var j = 0, email; email = emails[j]; j++) {
+              contact['emails'].push(email['address']);
+            }
           }
 
           if (!contact['name']) {
