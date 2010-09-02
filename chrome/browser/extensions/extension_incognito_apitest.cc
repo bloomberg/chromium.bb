@@ -97,8 +97,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
-// Hanging/failing: http://crbug.com/53991
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoSplitMode) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 

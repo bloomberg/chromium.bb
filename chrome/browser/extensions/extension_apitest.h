@@ -59,6 +59,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
     // If non-NULL, we will listen to events from this profile only.
     Profile* profile_restriction_;
+
+    // True if we're in a nested message loop waiting for results from
+    // the extension.
+    bool waiting_;
   };
 
   // Load |extension_name| and wait for pass / fail notification.

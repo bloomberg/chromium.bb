@@ -12,7 +12,8 @@
 #include "chrome/test/ui_test_utils.h"
 
 ExtensionApiTest::ResultCatcher::ResultCatcher()
-    : profile_restriction_(NULL) {
+    : profile_restriction_(NULL),
+      waiting_(false) {
   registrar_.Add(this, NotificationType::EXTENSION_TEST_PASSED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_TEST_FAILED,
@@ -27,8 +28,11 @@ bool ExtensionApiTest::ResultCatcher::GetNextResult() {
   // to RunMessageLoop(), so we maintain a queue of results and just pull them
   // off as the test calls this, going to the run loop only when the queue is
   // empty.
-  if (results_.empty())
+  if (results_.empty()) {
+    waiting_ = true;
     ui_test_utils::RunMessageLoop();
+    waiting_ = false;
+  }
 
   if (!results_.empty()) {
     bool ret = results_.front();
@@ -55,14 +59,16 @@ void ExtensionApiTest::ResultCatcher::Observe(
       std::cout << "Got EXTENSION_TEST_PASSED notification.\n";
       results_.push_back(true);
       messages_.push_back("");
-      MessageLoopForUI::current()->Quit();
+      if (waiting_)
+        MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_TEST_FAILED:
       std::cout << "Got EXTENSION_TEST_FAILED notification.\n";
       results_.push_back(false);
       messages_.push_back(*(Details<std::string>(details).ptr()));
-      MessageLoopForUI::current()->Quit();
+      if (waiting_)
+        MessageLoopForUI::current()->Quit();
       break;
 
     default:
