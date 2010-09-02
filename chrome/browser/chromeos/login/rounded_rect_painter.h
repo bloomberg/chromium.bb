@@ -26,6 +26,7 @@ struct BorderDefinition {
   SkColor bottom_color;
 
   static const BorderDefinition kScreenBorder;
+  static const BorderDefinition kUserBorder;
 };
 
 // Creates painter to paint view background with parameters specified.

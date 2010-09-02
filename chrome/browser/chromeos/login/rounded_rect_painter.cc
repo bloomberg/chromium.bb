@@ -236,6 +236,16 @@ const BorderDefinition BorderDefinition::kScreenBorder = {
   kScreenBottomColor
 };
 
+const BorderDefinition BorderDefinition::kUserBorder = {
+  0,
+  SK_ColorBLACK,
+  0,
+  kScreenShadowColor,
+  kCornerRadius,
+  kScreenTopColor,
+  kScreenBottomColor
+};
+
 views::Painter* CreateWizardPainter(const BorderDefinition* const border) {
   return new RoundedRectPainter(border);
 }

@@ -345,13 +345,10 @@ void UserController::CreateBorderWindow(int index,
   border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   border_window_->MakeTransparent();
   border_window_->Init(NULL, gfx::Rect(0, 0, width, height));
-  {
-    static BorderDefinition borderDef = BorderDefinition::kScreenBorder;
-    borderDef.shadow = 0;
-    views::Painter* painter = CreateWizardPainter(&borderDef);
-    border_window_->GetRootView()->set_background(
-        views::Background::CreateBackgroundPainter(true, painter));
-  }
+  views::Painter* painter = CreateWizardPainter(
+      &BorderDefinition::kUserBorder);
+  border_window_->GetRootView()->set_background(
+      views::Background::CreateBackgroundPainter(true, painter));
   UpdateUserCount(index, total_user_count);
 
   GdkWindow* gdk_window = border_window_->GetNativeView()->window;
