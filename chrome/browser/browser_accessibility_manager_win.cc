@@ -158,6 +158,8 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
 
   LONG child_id = iter->second;
   BrowserAccessibility* old_browser_acc = GetFromChildID(child_id);
+  if (!old_browser_acc)
+    return NULL;
 
   if (old_browser_acc->GetChildCount() == 0 && acc_obj.children.size() == 0) {
     // Reinitialize the BrowserAccessibility if there are no children to update.
