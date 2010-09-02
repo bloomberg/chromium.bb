@@ -11,7 +11,6 @@ vars = {
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "805",
   "gtest_rev": "267",
-  "protobuf_rev": "305",
   "tools_rev": "3082",
   "python_rev": "22967",
   "wix_rev": "153",
@@ -38,8 +37,6 @@ deps = {
   "breakpad/src":
     "http://google-breakpad.googlecode.com/svn/trunk/src@" +
     Var("breakpad_rev"),
-  "native_client/src/third_party/protobuf/src":
-    "http://protobuf.googlecode.com/svn/trunk@" + Var("protobuf_rev"),
   "third_party/gcc":
     Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
   "third_party/gdb":
