@@ -49,7 +49,6 @@ class EventSendingController : public CppBoundClass {
   void mouseDown(const CppArgumentList& args, CppVariant* result);
   void mouseUp(const CppArgumentList& args, CppVariant* result);
   void mouseMoveTo(const CppArgumentList& args, CppVariant* result);
-  void mouseWheelTo(const CppArgumentList& args, CppVariant* result);
   void leapForward(const CppArgumentList& args, CppVariant* result);
   void keyDown(const CppArgumentList& args, CppVariant* result);
   void dispatchMessage(const CppArgumentList& args, CppVariant* result);
@@ -57,6 +56,8 @@ class EventSendingController : public CppBoundClass {
   void textZoomOut(const CppArgumentList& args, CppVariant* result);
   void zoomPageIn(const CppArgumentList& args, CppVariant* result);
   void zoomPageOut(const CppArgumentList& args, CppVariant* result);
+  void mouseScrollBy(const CppArgumentList& args, CppVariant* result);
+  void continuousMouseScrollBy(const CppArgumentList& args, CppVariant* result);
   void scheduleAsynchronousClick(const CppArgumentList& args,
                                  CppVariant* result);
   void beginDragWithFiles(const CppArgumentList& args, CppVariant* result);
@@ -76,7 +77,8 @@ class EventSendingController : public CppBoundClass {
   // Unimplemented stubs
   void contextClick(const CppArgumentList& args, CppVariant* result);
   void enableDOMUIEventLogging(const CppArgumentList& args, CppVariant* result);
-  void fireKeyboardEventsToElement(const CppArgumentList& args, CppVariant* result);
+  void fireKeyboardEventsToElement(const CppArgumentList& args,
+                                   CppVariant* result);
   void clearKillRing(const CppArgumentList& args, CppVariant* result);
 
   // Properties used in layout tests.
@@ -121,6 +123,9 @@ class EventSendingController : public CppBoundClass {
 
   // Compose a touch event from the current touch points and send it.
   void SendCurrentTouchEvent(const WebKit::WebInputEvent::Type type);
+
+  // Handle a request to send a wheel event.
+  void handleMouseWheel(const CppArgumentList&, CppVariant*, bool continuous);
 
   ScopedRunnableMethodFactory<EventSendingController> method_factory_;
 

@@ -112,9 +112,11 @@ static const int kMultiClickRadiusPixels = 5;
 // match the WebKit impl and layout test results.
 static const float kScrollbarPixelsPerTick = 40.0f;
 
-inline bool outside_multiclick_radius(const gfx::Point &a, const gfx::Point &b) {
-  return ((a.x() - b.x()) * (a.x() - b.x()) + (a.y() - b.y()) * (a.y() - b.y())) >
-    kMultiClickRadiusPixels * kMultiClickRadiusPixels;
+inline bool outside_multiclick_radius(const gfx::Point &a,
+                                      const gfx::Point &b) {
+  return ((a.x() - b.x()) * (a.x() - b.x()) +
+          (a.y() - b.y()) * (a.y() - b.y())) >
+      kMultiClickRadiusPixels * kMultiClickRadiusPixels;
 }
 
 // Used to offset the time the event hander things an event happened.  This is
@@ -262,7 +264,6 @@ EventSendingController::EventSendingController(TestShell* shell)
   BindMethod("mouseUp", &EventSendingController::mouseUp);
   BindMethod("contextClick", &EventSendingController::contextClick);
   BindMethod("mouseMoveTo", &EventSendingController::mouseMoveTo);
-  BindMethod("mouseWheelTo", &EventSendingController::mouseWheelTo);
   BindMethod("leapForward", &EventSendingController::leapForward);
   BindMethod("keyDown", &EventSendingController::keyDown);
   BindMethod("dispatchMessage", &EventSendingController::dispatchMessage);
@@ -275,6 +276,9 @@ EventSendingController::EventSendingController(TestShell* shell)
   BindMethod("textZoomOut", &EventSendingController::textZoomOut);
   BindMethod("zoomPageIn", &EventSendingController::zoomPageIn);
   BindMethod("zoomPageOut", &EventSendingController::zoomPageOut);
+  BindMethod("mouseScrollBy", &EventSendingController::mouseScrollBy);
+  BindMethod("continuousMouseScrollBy",
+             &EventSendingController::continuousMouseScrollBy);
   BindMethod("scheduleAsynchronousClick",
              &EventSendingController::scheduleAsynchronousClick);
   BindMethod("beginDragWithFiles",
@@ -343,7 +347,8 @@ WebView* EventSendingController::webview() {
 void EventSendingController::DoDragDrop(const WebDragData& drag_data,
                                         WebDragOperationsMask mask) {
   WebMouseEvent event;
-  InitMouseEvent(WebInputEvent::MouseDown, pressed_button_, last_mouse_pos_, &event);
+  InitMouseEvent(WebInputEvent::MouseDown, pressed_button_, last_mouse_pos_,
+                 &event);
   WebPoint client_point(event.x, event.y);
   WebPoint screen_point(event.globalX, event.globalY);
   current_drag_data = drag_data;
@@ -495,32 +500,6 @@ void EventSendingController::mouseMoveTo(
                      mouse_pos, &event);
       DoMouseMove(event);
     }
-  }
-}
-
-void EventSendingController::mouseWheelTo(
-    const CppArgumentList& args, CppVariant* result) {
-  result->SetNull();
-
-  if (args.size() >= 2 && args[0].isNumber() && args[1].isNumber()) {
-    // Force a layout here just to make sure every position has been
-    // determined before we send events (as well as all the other methods
-    // that send an event do). The layout test calling this
-    // (scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html, only one
-    // for now) does not rely on this though.
-    webview()->layout();
-
-    int horizontal = args[0].ToInt32();
-    int vertical = args[1].ToInt32();
-
-    WebMouseWheelEvent event;
-    InitMouseEvent(WebInputEvent::MouseWheel, pressed_button_,
-                   last_mouse_pos_, &event);
-    event.wheelTicksX = static_cast<float>(horizontal);
-    event.wheelTicksY = static_cast<float>(vertical);
-    event.deltaX = -horizontal * kScrollbarPixelsPerTick;
-    event.deltaY = -vertical * kScrollbarPixelsPerTick;
-    webview()->handleInputEvent(event);
   }
 }
 
@@ -748,6 +727,17 @@ void EventSendingController::zoomPageOut(
   result->SetNull();
 }
 
+void EventSendingController::mouseScrollBy(const CppArgumentList& args,
+                                           CppVariant* result) {
+  handleMouseWheel(args, result, false);
+}
+
+void EventSendingController::continuousMouseScrollBy(
+    const CppArgumentList& args,
+    CppVariant* result) {
+  handleMouseWheel(args, result, true);
+}
+
 void EventSendingController::ReplaySavedEvents() {
   replaying_saved_events = true;
   while (!mouse_event_queue.empty()) {
@@ -952,6 +942,36 @@ void EventSendingController::SendCurrentTouchEvent(
       ++i;
     }
   }
+}
+
+void EventSendingController::handleMouseWheel(const CppArgumentList& args,
+                                              CppVariant* result,
+                                              bool continuous) {
+  result->SetNull();
+
+  if (args.size() < 2 || !args[0].isNumber() || !args[1].isNumber())
+      return;
+
+  // Force a layout here just to make sure every position has been
+  // determined before we send events (as well as all the other methods
+  // that send an event do).
+  webview()->layout();
+
+  int horizontal = args[0].ToInt32();
+  int vertical = args[1].ToInt32();
+
+  WebMouseWheelEvent event;
+  InitMouseEvent(WebInputEvent::MouseWheel, pressed_button_, last_mouse_pos_,
+                 &event);
+  event.wheelTicksX = static_cast<float>(horizontal);
+  event.wheelTicksY = static_cast<float>(vertical);
+  event.deltaX = event.wheelTicksX;
+  event.deltaY = event.wheelTicksY;
+  if (!continuous) {
+      event.deltaX *= kScrollbarPixelsPerTick;
+      event.deltaY *= kScrollbarPixelsPerTick;
+  }
+  webview()->handleInputEvent(event);
 }
 
 void EventSendingController::touchEnd(
