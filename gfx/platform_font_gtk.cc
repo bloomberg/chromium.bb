@@ -131,6 +131,13 @@ PlatformFontGtk::PlatformFontGtk(NativeFont native_font) {
   gint size = pango_font_description_get_size(native_font);
   const char* family_name = pango_font_description_get_family(native_font);
 
+  if (pango_font_description_get_size_is_absolute(native_font)) {
+    // font_size_ is treated as scaled (see comment in GetPangoScaleFactor). If
+    // we get here the font size is absolute though, and we need to invert the
+    // scale so that when scaled in the rest of this class everything lines up.
+    size /= PlatformFontGtk::GetPangoScaleFactor();
+  }
+
   // Find best match font for |family_name| to make sure we can get
   // a SkTypeface for the default font.
   // TODO(agl): remove this.
