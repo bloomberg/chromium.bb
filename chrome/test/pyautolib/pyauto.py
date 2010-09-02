@@ -489,13 +489,22 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict)
 
-  def WaitForAllDownloadsToComplete(self):
+  def WaitForAllDownloadsToComplete(self, timeout=-1):
     """Wait for all downloads to complete.
+
+    Args:
+      timeout: The timeout to use - default is WaitUntil's default timeout.
 
     Note: This method does not work for dangerous downloads. Use
     WaitForGivenDownloadsToComplete (below) instead.
     """
-    self._GetResultFromJSONRequest({'command': 'WaitForAllDownloadsToComplete'})
+    # Downloads implementation is largely broken. Try to get around by using
+    # WaitUntil instead of using notifications. crbug.com/54131
+    # self._GetResultFromJSONRequest(
+    #    {'command': 'WaitForAllDownloadsToComplete'})
+    return self.WaitUntil(
+        lambda: len(self.GetDownloadsInfo().DownloadsInProgress()) == 0,
+        timeout=timeout)
 
   def WaitForDownloadToComplete(self, download_path, timeout=-1):
     """Wait for the given downloads to complete.
