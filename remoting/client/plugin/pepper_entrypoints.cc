@@ -56,7 +56,7 @@ void PPP_ShutdownModule() {
 const void* PPP_GetInterface(const char* interface_name) {
   if (!pp::Module::Get())
     return NULL;
-  return pp::Module::Get()->GetPluginInterface(interface_name);
+  return pp::Module::Get()->GetInstanceInterface(interface_name);
 }
 
 }  // namespace remoting
