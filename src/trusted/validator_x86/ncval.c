@@ -38,6 +38,11 @@ static char* NACL_FLAGS_hex_text = "";
  */
 static Bool NACL_FLAGS_analyze_segments = FALSE;
 
+/* Define how many times we will analyze the code segment.
+ * Note: Values, other than 1, is only used for profiling.
+ */
+static int NACL_FLAGS_validate_attempts = 1;
+
 /***************************************
  * Code to run segment based validator.*
  ***************************************/
@@ -260,9 +265,15 @@ static Bool ValidateSfiLoad(int argc, const char* argv[], ValidateData* data) {
 
 /* Analyze the code segments of the elf file. */
 static Bool ValidateAnalyze(ValidateData* data) {
-  Bool return_value = AnalyzeSfiCodeSegments(data->ncf, data->fname);
+  Bool results = TRUE;
+  for (int i = 0; i < NACL_FLAGS_validate_attempts; ++i) {
+    Bool return_value = AnalyzeSfiCodeSegments(data->ncf, data->fname);
+    if (!return_value) {
+      results = FALSE;
+    }
+  }
   nc_freefile(data->ncf);
-  return return_value;
+  return results;
 }
 
 /***************************************************
@@ -370,7 +381,10 @@ static void usage() {
       "\tPrint out warnings, errors, and fatal errors, but not\n"
       "\tinformative messages.\n"
       "--write_sfi\n"
-      "\tOnly check for memory write software fault isolation.\n",
+      "\tOnly check for memory write software fault isolation.\n"
+      "--attempts=N\n"
+      "\tRun the validator on the nexe file (after loading) N times.\n"
+      "\tNote: this flag should only be used for profiling.\n",
       NACL_TARGET_SUBARCH);
   exit(0);
 }
@@ -392,6 +406,7 @@ static int GrokFlags(int argc, const char* argv[]) {
         GrokIntFlag("--alignment", arg, &NACL_FLAGS_block_alignment) ||
         GrokBoolFlag("-t", arg, &NACL_FLAGS_print_timing) ||
         GrokIntFlag("--max_errors", arg, &NACL_FLAGS_max_reported_errors) ||
+        GrokIntFlag("--attempts", arg, &NACL_FLAGS_validate_attempts) ||
         GrokBoolFlag("--help", arg, &help)) {
       if (help) {
         usage();
@@ -413,7 +428,6 @@ static int GrokFlags(int argc, const char* argv[]) {
 
 int main(int argc, const char *argv[]) {
   int result = 0;
-  int i;
   struct GioFile gio_out_stream;
   struct Gio* gout = (struct Gio*) &gio_out_stream;
   if (!GioFileRefCtor(&gio_out_stream, stdout)) {
@@ -437,11 +451,17 @@ int main(int argc, const char *argv[]) {
       result = (success ? 0 : 1);
     } else {
       NaClValidatorByteArray data;
+      int i;
+      success = TRUE;
       NaClLogDisableTimestamp();
       argc = ValidateSfiHexLoad(argc, argv, &data);
-      success = NaClRunValidatorBytes(
-          argc, argv, (uint8_t*) &data.bytes,
-          data.num_bytes, data.base);
+      for (i = 0; i < NACL_FLAGS_validate_attempts; ++i) {
+        if (!NaClRunValidatorBytes(
+               argc, argv, (uint8_t*) &data.bytes,
+               data.num_bytes, data.base)) {
+          success = FALSE;
+        }
+      }
       /* always succeed, so that the testing framework works. */
       result = 0;
     }
@@ -454,6 +474,7 @@ int main(int argc, const char *argv[]) {
     SegmentFatal("Can only run %s using -use_iter=false flag on 64 bit code\n",
                  argv[0]);
   } else if (0 == strcmp(NACL_FLAGS_hex_text, "")) {
+      int i;
     for (i=1; i< argc; i++) {
       /* Run x86-32 segment based validator. */
       clock_t clock_0;
