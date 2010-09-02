@@ -18,13 +18,11 @@
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/options_util.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/dom_view.h"
 #include "chrome/common/native_web_keyboard_event.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/chromium_strings.h"
@@ -154,11 +152,6 @@ static GURL GetOemEulaPagePath() {
 }
 
 void EulaView::Init() {
-  // Handle preference that enables crash/statistics reporting. We do
-  // not monitor its change in background since we are in OOBE wizard.
-  metrics_reporting_enabled_.Init(prefs::kMetricsReportingEnabled,
-                                  g_browser_process->local_state(), NULL);
-
   // Use rounded rect background.
   views::Painter* painter = CreateWizardPainter(
       &BorderDefinition::kScreenBorder);
@@ -194,11 +187,13 @@ void EulaView::Init() {
   layout->StartRow(0, SINGLE_CONTROL_WITH_SHIFT_ROW);
   usage_statistics_checkbox_ = new views::Checkbox();
   usage_statistics_checkbox_->SetMultiLine(true);
-  usage_statistics_checkbox_->SetChecked(
-      metrics_reporting_enabled_.GetValue());
+
+  // TODO(zelidrag): http://crosbug/6367 - Change default settings for checked
+  // and enabled state of usage_statistics_checkbox_ before the product is
+  // released.
+  usage_statistics_checkbox_->SetChecked(true);
   layout->AddView(usage_statistics_checkbox_);
-  usage_statistics_checkbox_->SetEnabled(
-      metrics_reporting_enabled_.IsManaged());
+  usage_statistics_checkbox_->SetEnabled(false);
 
   layout->StartRow(0, SINGLE_LINK_WITH_SHIFT_ROW);
   learn_more_link_ = new views::Link();
@@ -293,15 +288,12 @@ void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == continue_button_) {
     if (usage_statistics_checkbox_) {
       bool enable_reporting = usage_statistics_checkbox_->checked();
-      if (metrics_reporting_enabled_.GetValue() != enable_reporting) {
-        enable_reporting =
-            OptionsUtil::ResolveMetricsReportingEnabled(enable_reporting);
-        metrics_reporting_enabled_.SetValueIfNotManaged(enable_reporting);
+      enable_reporting =
+          OptionsUtil::ResolveMetricsReportingEnabled(enable_reporting);
 #if defined(USE_LINUX_BREAKPAD)
-        if (enable_reporting)
-          InitCrashReporter();
+      if (enable_reporting)
+        InitCrashReporter();
 #endif
-      }
     }
     observer_->OnExit(ScreenObserver::EULA_ACCEPTED);
   }
