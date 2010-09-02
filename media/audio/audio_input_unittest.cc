@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
-
 #include "base/basictypes.h"
+#include "base/environment.h"
+#include "base/message_loop.h"
+#include "base/platform_thread.h"
+#include "base/scoped_ptr.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const int kSamplingRate = 8000;
+const int kSamplesPerPacket = kSamplingRate / 20;
 
 // This class allows to find out if the callbacks are occurring as
 // expected and if any error has been reported.
@@ -27,7 +32,8 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
     // Read the first byte to make sure memory is good.
     if (size) {
       ASSERT_LE(static_cast<int>(size), max_data_bytes_);
-      EXPECT_TRUE(data[0] >= 0);
+      int value = data[0];
+      EXPECT_TRUE(value >= 0);
     }
   }
   virtual void OnClose(AudioInputStream* stream) {
@@ -75,7 +81,7 @@ class TestInputCallbackBlocking : public TestInputCallback {
     // Call the base, which increments the callback_count_.
     TestInputCallback::OnData(stream, data, size);
     if (callback_count() > block_after_callback_)
-      ::Sleep(block_for_ms_);
+      PlatformThread::Sleep(block_for_ms_);
   }
 
  private:
@@ -84,17 +90,30 @@ class TestInputCallbackBlocking : public TestInputCallback {
 };
 
 bool CanRunAudioTests() {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (env->HasVar("CHROME_HEADLESS"))
+    return false;
+
   AudioManager* audio_man = AudioManager::GetAudioManager();
   if (NULL == audio_man)
     return false;
-  return (audio_man->HasAudioInputDevices() &&
-          ::GetEnvironmentVariableW(L"CHROME_HEADLESS", NULL, 0) == 0);
+
+  return audio_man->HasAudioInputDevices();
+}
+
+AudioInputStream* CreateTestAudioInputStream() {
+  AudioManager* audio_man = AudioManager::GetAudioManager();
+  AudioInputStream* ais = audio_man->MakeAudioInputStream(
+      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, kSamplingRate, 16),
+      kSamplesPerPacket);
+  EXPECT_TRUE(NULL != ais);
+  return ais;
 }
 
 }  // namespace.
 
 // Test that AudioInputStream rejects out of range parameters.
-TEST(WinAudioInputTest, SanityOnMakeParams) {
+TEST(AudioInputTest, SanityOnMakeParams) {
   if (!CanRunAudioTests())
     return;
   AudioManager* audio_man = AudioManager::GetAudioManager();
@@ -118,46 +137,46 @@ TEST(WinAudioInputTest, SanityOnMakeParams) {
 }
 
 // Test create and close of an AudioInputStream without recording audio.
-TEST(WinAudioInputTest, CreateAndClose) {
+TEST(AudioInputTest, CreateAndClose) {
   if (!CanRunAudioTests())
     return;
-  AudioManager* audio_man = AudioManager::GetAudioManager();
-  AudioInputStream* ais = audio_man->MakeAudioInputStream(
-      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, 8000, 16), 0);
-  ASSERT_TRUE(NULL != ais);
+  AudioInputStream* ais = CreateTestAudioInputStream();
   ais->Close();
 }
 
 // Test create, open and close of an AudioInputStream without recording audio.
-TEST(WinAudioInputTest, OpenAndClose) {
+TEST(AudioInputTest, OpenAndClose) {
   if (!CanRunAudioTests())
     return;
-  AudioManager* audio_man = AudioManager::GetAudioManager();
-  AudioInputStream* ais = audio_man->MakeAudioInputStream(
-      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, 8000, 16), 0);
-  ASSERT_TRUE(NULL != ais);
+  AudioInputStream* ais = CreateTestAudioInputStream();
   EXPECT_TRUE(ais->Open());
   ais->Close();
 }
 
-// Test a normal recording sequence using an AudioInputStream.
-TEST(WinAudioInputTest, Record) {
+// Test create, open, stop and close of an AudioInputStream without recording.
+TEST(AudioInputTest, OpenStopAndClose) {
   if (!CanRunAudioTests())
     return;
-  AudioManager* audio_man = AudioManager::GetAudioManager();
-  const int kSamplingRate = 8000;
-  const int kSamplesPerPacket = kSamplingRate / 20;
-  AudioInputStream* ais = audio_man->MakeAudioInputStream(
-      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, kSamplingRate, 16),
-      kSamplesPerPacket);
-  ASSERT_TRUE(NULL != ais);
+  AudioInputStream* ais = CreateTestAudioInputStream();
+  EXPECT_TRUE(ais->Open());
+  ais->Stop();
+  ais->Close();
+}
+
+// Test a normal recording sequence using an AudioInputStream.
+TEST(AudioInputTest, Record) {
+  if (!CanRunAudioTests())
+    return;
+  MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
+  AudioInputStream* ais = CreateTestAudioInputStream();
   EXPECT_TRUE(ais->Open());
 
   TestInputCallback test_callback(kSamplesPerPacket * 4);
   ais->Start(&test_callback);
   // Verify at least 500ms worth of audio was recorded, after giving sufficient
   // extra time.
-  Sleep(590);
+  message_loop.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(), 590);
+  message_loop.Run();
   EXPECT_GE(test_callback.callback_count(), 10);
   EXPECT_FALSE(test_callback.had_error());
 
@@ -166,16 +185,11 @@ TEST(WinAudioInputTest, Record) {
 }
 
 // Test a recording sequence with delays in the audio callback.
-TEST(WinAudioInputTest, RecordWithSlowSink) {
+TEST(AudioInputTest, RecordWithSlowSink) {
   if (!CanRunAudioTests())
     return;
-  AudioManager* audio_man = AudioManager::GetAudioManager();
-  const int kSamplingRate = 8000;
-  const int kSamplesPerPacket = kSamplingRate / 20;
-  AudioInputStream* ais = audio_man->MakeAudioInputStream(
-      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, 2, kSamplingRate, 16),
-      kSamplesPerPacket);
-  ASSERT_TRUE(NULL != ais);
+  MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
+  AudioInputStream* ais = CreateTestAudioInputStream();
   EXPECT_TRUE(ais->Open());
 
   // We should normally get a callback every 50ms, and a 20ms delay inside each
@@ -184,7 +198,8 @@ TEST(WinAudioInputTest, RecordWithSlowSink) {
   ais->Start(&test_callback);
   // Verify at least 500ms worth of audio was recorded, after giving sufficient
   // extra time.
-  Sleep(590);
+  message_loop.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(), 590);
+  message_loop.Run();
   EXPECT_GE(test_callback.callback_count(), 10);
   EXPECT_FALSE(test_callback.had_error());
 
