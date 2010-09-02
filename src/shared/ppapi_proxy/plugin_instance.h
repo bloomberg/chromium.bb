@@ -22,6 +22,9 @@ class PluginInstance {
   virtual PP_Var GetOwnerElementObject() = 0;
   virtual bool BindGraphicsDeviceContext(PP_Resource device) = 0;
   virtual bool IsFullFrame() = 0;
+  virtual bool SetCursor(PP_CursorType type,
+                         PP_Resource custom_image,
+                         const PP_Point* hot_spot) = 0;
 
   static const PPB_Instance* GetInterface();
 

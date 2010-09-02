@@ -61,10 +61,6 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
   // See how NPN_PluginThreadAsyncCall is implemented in npruntime.
 }
 
-static bool IsMainThread() {
-  NACL_UNIMPLEMENTED();
-}
-
 }  // namespace
 
 const void* PluginCore::GetInterface() {
@@ -74,8 +70,7 @@ const void* PluginCore::GetInterface() {
     MemAlloc,
     MemFree,
     GetTime,
-    CallOnMainThread,
-    IsMainThread
+    CallOnMainThread
   };
   return reinterpret_cast<const void*>(&intf);
 }
