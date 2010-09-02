@@ -2651,7 +2651,7 @@
    fun:_ZN10SkDrawIterC1EP8SkCanvasb
    fun:_ZN8SkCanvas9LayerIterC1EPS_b
    fun:_ZNK4skia14PlatformCanvas20getTopPlatformDeviceEv
-   fun:_ZN9TestShell9DumpImageEPN4skia14PlatformCanvasERKSbIwSt11char_traitsIwESaIwEERKSs
+   fun:_ZN9TestShell9DumpImageEPN4skia14PlatformCanvasERK8FilePathRKSs
    fun:_ZN9TestShell4DumpEPS_
    fun:_ZN9TestShell12TestFinishedEv
    fun:_ZN20LayoutTestController9WorkQueue15ProcessWorkSoonEv
