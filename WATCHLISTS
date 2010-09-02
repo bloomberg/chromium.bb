@@ -146,6 +146,9 @@
         'chrome/renderer/autofill_.*|'\
         'chrome/renderer/form_manager.*',
     },
+    'webdata': {
+      'filepath': 'chrome/browser/webdata/.*',
+    },
     'i18n': {
       'filepath': 'base/i18n/.*|base/*string.*|.*l10n.*|.*icu.*|'\
         '.*locale_settings.*|.*encoding.*',
@@ -201,6 +204,7 @@
     'domui_options': ['dhg@chromium.org'],
     'cookie_monster': ['rdsmith@chromium.org'],
     'autofill': ['dhollowa@chromium.org', 'jhawkins@chromium.org'],
+    'webdata': ['dhollowa@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
   },
 }
