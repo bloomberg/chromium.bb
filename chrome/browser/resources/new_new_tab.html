@@ -129,19 +129,31 @@ if ('mode' in hashParams) {
     <span class="link"><span class="link-color"></span></span>
   </div>
 
+  <div id="top-spacer"></div>
+
   <div class="sections">
     <!-- Start disabled. We only enable if we have at least one app. -->
     <div class="section disabled" section="APPS" id="apps-section">
-      <h2><img class="disclosure" img src="ntp/ntp_disclosure_triangle.png"
-        ><span i18n-content="apps"></span><div class="back"></div></h2>
+      <h2>
+        <img class="disclosure" img src="ntp/ntp_disclosure_triangle.png">
+        <div class="mask">
+          <div class="back"></div>
+          <span i18n-content="apps"></span>
+        </div>
+      </h2>
       <div class="maxiview" id="apps-section-content"></div>
       <div class="miniview"></div>
     </div>
 
     <div id="most-visited-section" class="section" section="THUMB">
-      <h2><img class="disclosure" src="ntp/ntp_disclosure_triangle.png"
-        ><span i18n-content="mostvisited"></span
-        ><div class="settings"></div><div class="back"></div></h2>
+      <h2>
+        <img class="disclosure" src="ntp/ntp_disclosure_triangle.png">
+        <div class="mask">
+          <div class="back"></div>
+          <span i18n-content="mostvisited"></span>
+          <div class="settings-wrapper"><div class="settings"></div></div>
+        </div>
+      </h2>
       <div class="maxiview" id="most-visited"></div>
       <div class="miniview"></div>
     </div>
@@ -150,8 +162,12 @@ if ('mode' in hashParams) {
          silly without any. -->
     <div id="recently-closed" class="section hidden disabled" section="RECENT"
         noexpand="true">
-      <h2><span i18n-content="recentlyclosed"></span
-        ><div class="back"></div></h2>
+      <h2>
+        <div class="mask">
+          <div class="back"></div>
+          <span i18n-content="recentlyclosed"></span>
+        </div>
+      </h2>
       <div class="miniview"></div>
     </div>
 

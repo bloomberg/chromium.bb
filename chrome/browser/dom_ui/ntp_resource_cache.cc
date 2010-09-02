@@ -459,15 +459,12 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst2.push_back(SkColorToRGBAString(
       color_section_header_text_hover)); // $$9
 
-  // A fully transparent version of the background color --- used for gradients.
+  subst3.push_back(SkColorToRGBAString(color_section_header_rule));  // $$$1
   subst3.push_back(SkColorToRGBAString(
-      SkColorSetA(color_background, 0)));  // $$$1
+      color_section_header_rule_light));  // $$$2
+  subst3.push_back(SkColorToRGBAString(
+      SkColorSetA(color_section_header_rule, 0)));  // $$$3
 
-  // TODO(aa): It seems we could generate sensible defaults for all these colors
-  // for better backward compat with old themes.
-  subst3.push_back(SkColorToRGBAString(color_section_header_rule));  // $$$2
-  subst3.push_back(SkColorToRGBAString(
-      color_section_header_rule_light));  // $$$3
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(

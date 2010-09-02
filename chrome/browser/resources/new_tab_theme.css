@@ -1,11 +1,22 @@
-html {
-  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
+html,
+#top-spacer,
+.miniview,
+.section > h2 .mask,
+.section > h2 .settings-wrapper,
+.section > h2 span {
+  background-attachment: fixed;
   background-color: $2; /* COLOR_NTP_BACKGROUND */
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
   background-position: $3;
   background-repeat: $5;
 }
 
-html[bookmarkbarattached='true'] {
+html[bookmarkbarattached='true'],
+html[bookmarkbarattached='true'] #top-spacer,
+html[bookmarkbarattached='true'] .miniview,
+html[bookmarkbarattached='true'] .section > h2 .mask,
+html[bookmarkbarattached='true'] .section > h2 .settings-wrapper,
+html[bookmarkbarattached='true'] .section > h2 span {
   background-position: $4;
 }
 
@@ -69,12 +80,12 @@ body {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-.miniview > span > span {
+.miniview > span {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
   text-decoration: underline;
 }
 
-.miniview > span > span > .item {
+.miniview > span > .item {
   color: $9; /* COLOR_NTP_LINK */
   text-decoration: none;
 }
@@ -99,57 +110,33 @@ body {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
-.section > h2 {
-  background-color: $2; /* COLOR_NTP_BACKGROUND */
-  color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT */
-}
-
-.section:not(.hidden) > h2 {
-  background-color: transparent;
-  background-image:
-      -webkit-gradient(linear, 0% 0%, 0% 100%, from($2), to($2)),
-      -webkit-gradient(linear, 0% 0%, 0% 100%, from($2), to($$$1));
+.section:not(.hidden) > h2 > .mask {
   color: $$9;
 }
 
-.section:not(.hidden) + .section > h2 {
-  background-color: transparent;
-  background-image:
-      -webkit-gradient(linear, 0% 0%, 0% 100%, from($$$1), to($2)),
-      -webkit-gradient(linear, 0% 0%, 0% 100%, from($2), to($2));
-}
-
-.section.hidden:not([noexpand]) > h2:hover {
+.section.hidden:not([noexpand]) > h2:hover > .mask {
   color: $$9;
 }
 
-.section > h2 > span {
-  background: $2; /* COLOR_NTP_BACKGROUND */
-}
-
-.section > h2 > .back {
+.section > h2 .back {
   background-image:
       -webkit-gradient(radial, 50% -1753, 1750, 50% -1753, 1770,
-                       from($$$2), to($$$1));
-  border-top: 1px solid $$$2; /* COLOR_NTP_SECTION_HEADER_RULE */
+                       from($$$1), to($$$3));
+  border-top: 1px solid $$$1; /* COLOR_NTP_SECTION_HEADER_RULE */
 }
 
-.section.hidden > h2 > .back {
+.section.hidden > h2 .back {
   background: none;
-  border-color-top: $$$3; /* COLOR_NTP_SECTION_HEADER_RULE_LIGHT */
+  border-color-top: $$$2; /* COLOR_NTP_SECTION_HEADER_RULE_LIGHT */
 }
 
-.section.hidden:hover > h2 > .back {
-  border-color-top: $$$2; /* COLOR_NTP_SECTION_HEADER_RULE */
+.section.hidden:hover > h2 .back {
+  border-color-top: $$$1; /* COLOR_NTP_SECTION_HEADER_RULE */
 }
 
 .section > h2 > .settings {
   background-color: $2; /* COLOR_NTP_BACKGROUND */
   border-color: $2; /* COLOR_NTP_BACKGROUND */
-}
-
-.section > .miniview {
-  background: $2; /* COLOR_NTP_BACKGROUND */
 }
 
 #apps-section .app a {

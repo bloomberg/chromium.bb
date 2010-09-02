@@ -720,7 +720,7 @@ OptionMenu.prototype = {
 };
 
 var optionMenu = new OptionMenu(
-    document.querySelector('#most-visited-section h2 .settings'),
+    document.querySelector('#most-visited-section h2 .settings-wrapper'),
     $('option-menu'));
 optionMenu.commands = {
   'clear-all-blacklisted' : function() {

@@ -43,6 +43,13 @@ SkColor TintForUnderline(SkColor input) {
   return SkColorSetA(input, SkColorGetA(input) / 3);
 }
 
+SkColor IncreaseLightness(SkColor color, double percent) {
+  color_utils::HSL result;
+  color_utils::SkColorToHSL(color, &result);
+  result.l += (1 - result.l) * percent;
+  return color_utils::HSLToSkColor(result, SkColorGetA(color));
+}
+
 // Default colors.
 const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
@@ -79,10 +86,6 @@ const SkColor kDefaultColorNTPHeader = SkColorSetRGB(75, 140, 220);
 const SkColor kDefaultColorNTPSection = SkColorSetRGB(229, 239, 254);
 const SkColor kDefaultColorNTPSectionText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(6, 55, 116);
-const SkColor kDefaultColorNTPSectionHeaderText = SkColorSetRGB(76, 76, 76);
-const SkColor kDefaultColorNTPSectionHeaderRule = SkColorSetRGB(179, 179, 179);
-const SkColor kDefaultColorNTPSectionHeaderRuleLight =
-    SkColorSetRGB(220, 220, 220);
 const SkColor kDefaultColorControlBackground = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
 #if defined(OS_MACOSX)
@@ -223,6 +226,19 @@ SkColor BrowserThemeProvider::GetColor(int id) const {
   SkColor color;
   if (theme_pack_.get() && theme_pack_->GetColor(id, &color))
     return color;
+
+  // For backward compat with older themes, some newer colors are generated from
+  // older ones if they are missing.
+  switch (id) {
+    case COLOR_NTP_SECTION_HEADER_TEXT:
+      return IncreaseLightness(GetColor(COLOR_NTP_TEXT), 0.30);
+    case COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
+      return GetColor(COLOR_NTP_TEXT);
+    case COLOR_NTP_SECTION_HEADER_RULE:
+      return IncreaseLightness(GetColor(COLOR_NTP_TEXT), 0.70);
+    case COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
+      return IncreaseLightness(GetColor(COLOR_NTP_TEXT), 0.86);
+  }
 
   return GetDefaultColor(id);
 }
@@ -448,14 +464,6 @@ SkColor BrowserThemeProvider::GetDefaultColor(int id) {
       return kDefaultColorNTPSectionLink;
     case COLOR_NTP_SECTION_LINK_UNDERLINE:
       return TintForUnderline(kDefaultColorNTPSectionLink);
-    case COLOR_NTP_SECTION_HEADER_TEXT:
-      return kDefaultColorNTPSectionHeaderText;
-    case COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
-      return kDefaultColorNTPText;
-    case COLOR_NTP_SECTION_HEADER_RULE:
-      return kDefaultColorNTPSectionHeaderRule;
-    case COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
-      return kDefaultColorNTPSectionHeaderRuleLight;
     case COLOR_CONTROL_BACKGROUND:
       return kDefaultColorControlBackground;
     case COLOR_BUTTON_BACKGROUND:
