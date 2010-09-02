@@ -49,6 +49,9 @@ std::string GetClientId();
 //   multiple because of process collapsing).
 void SetActiveExtensions(const std::set<std::string>& extension_ids);
 
+// Sets a number of views/tabs opened in this process.
+void SetNumberOfViews(int number_of_views);
+
 // Sets the data on the gpu to send along with crash reports.
 void SetGpuInfo(const GPUInfo& gpu_info);
 

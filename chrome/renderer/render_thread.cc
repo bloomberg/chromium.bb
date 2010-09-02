@@ -433,11 +433,13 @@ bool RenderThread::Send(IPC::Message* msg) {
 void RenderThread::AddRoute(int32 routing_id,
                             IPC::Channel::Listener* listener) {
   widget_count_++;
+  child_process_logging::SetNumberOfViews(widget_count_);
   return ChildThread::AddRoute(routing_id, listener);
 }
 
 void RenderThread::RemoveRoute(int32 routing_id) {
   widget_count_--;
+  child_process_logging::SetNumberOfViews(widget_count_);
   return ChildThread::RemoveRoute(routing_id);
 }
 

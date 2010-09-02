@@ -24,6 +24,7 @@ const char *kGPUDeviceIdParamName = "devid";
 const char *kGPUDriverVersionParamName = "driver";
 const char *kGPUPixelShaderVersionParamName = "psver";
 const char *kGPUVertexShaderVersionParamName = "vsver";
+const char *kNumberOfViews = "num-views";
 
 static SetCrashKeyValueFuncPtr g_set_key_func;
 static ClearCrashKeyValueFuncPtr g_clear_key_func;
@@ -142,6 +143,19 @@ void SetGpuInfoImpl(const GPUInfo& gpu_info,
 void SetGpuInfo(const GPUInfo& gpu_info) {
   if (g_set_key_func)
     SetGpuInfoImpl(gpu_info, g_set_key_func);
+}
+
+
+void SetNumberOfViewsImpl(int number_of_views,
+                          SetCrashKeyValueFuncPtr set_key_func) {
+  NSString *key = [NSString stringWithUTF8String:kNumberOfViews];
+  NSString *value = [NSString stringWithFormat:@"%d", number_of_views];
+  set_key_func(key, value);
+}
+
+void SetNumberOfViews(int number_of_views) {
+  if (g_set_key_func)
+    SetNumberOfViewsImpl(number_of_views, g_set_key_func);
 }
 
 }  // namespace child_process_logging

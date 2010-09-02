@@ -30,6 +30,10 @@ typedef void (__cdecl *MainSetGpuInfo)(const wchar_t*, const wchar_t*,
                                        const wchar_t*, const wchar_t*,
                                        const wchar_t*);
 
+// exported in breakpad_win.cc:
+//   void __declspec(dllexport) __cdecl SetNumberOfViews.
+typedef void (__cdecl *MainSetNumberOfViews)(int);
+
 void SetActiveURL(const GURL& url) {
   static MainSetActiveURL set_active_url = NULL;
   // note: benign race condition on set_active_url.
@@ -121,6 +125,20 @@ void SetGpuInfo(const GPUInfo& gpu_info) {
       gpu_info.driver_version().c_str(),
       base::UintToString16(gpu_info.pixel_shader_version()).c_str(),
       base::UintToString16(gpu_info.vertex_shader_version()).c_str());
+}
+
+void SetNumberOfViews(int number_of_views) {
+  static MainSetNumberOfViews set_number_of_views = NULL;
+  if (!set_number_of_views) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (!exe_module)
+      return;
+    set_number_of_views = reinterpret_cast<MainSetNumberOfViews>(
+        GetProcAddress(exe_module, "SetNumberOfViews"));
+    if (!set_number_of_views)
+      return;
+  }
+  (set_number_of_views)(number_of_views);
 }
 
 }  // namespace child_process_logging

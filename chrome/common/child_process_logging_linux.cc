@@ -53,4 +53,8 @@ void SetGpuInfo(const GPUInfo& gpu_info) {
   // TODO(rlp): Bug 38737.
 }
 
+void SetNumberOfViews(int number_of_views) {
+  // TODO(port)
+}
+
 }  // namespace child_process_logging

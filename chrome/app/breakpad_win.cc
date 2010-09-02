@@ -68,6 +68,7 @@ static size_t g_url_chunks_offset;
 static size_t g_extension_ids_offset;
 static size_t g_client_id_offset;
 static size_t g_gpu_info_offset;
+static size_t g_num_of_views_offset;
 
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
@@ -148,6 +149,9 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
       google_breakpad::CustomInfoEntry(L"guid", guid.c_str()));
 
   if (type == L"renderer" || type == L"plugin" || type == L"gpu-process") {
+    g_num_of_views_offset = g_custom_entries->size();
+    g_custom_entries->push_back(
+        google_breakpad::CustomInfoEntry(L"num-views", L""));
     // Create entries for the URL. Currently we only allow each chunk to be 64
     // characters, which isn't enough for a URL. As a hack we create 8 entries
     // and split the URL across the g_custom_entries.
@@ -157,6 +161,9 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
           StringPrintf(L"url-chunk-%i", i + 1).c_str(), L""));
     }
   } else {
+    g_custom_entries->push_back(
+        google_breakpad::CustomInfoEntry(L"num-views", L"N/A"));
+
     // Browser-specific g_custom_entries.
     google_breakpad::CustomInfoEntry switch1(L"switch-1", L"");
     google_breakpad::CustomInfoEntry switch2(L"switch-2", L"");
@@ -337,6 +344,16 @@ extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
   wcscpy_s((*g_custom_entries)[g_gpu_info_offset+4].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            vertex_shader_version);
+}
+
+extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
+    int number_of_views) {
+  if (!g_custom_entries)
+    return;
+
+  wcscpy_s((*g_custom_entries)[g_num_of_views_offset].value,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           StringPrintf(L"%d", number_of_views).c_str());
 }
 
 }  // namespace
