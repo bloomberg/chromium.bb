@@ -63,39 +63,13 @@ struct ParamTraits<WebKit::WebScreenInfo> {
 };
 
 template <>
-struct ParamTraits<WebKit::WebConsoleMessage::Level> {
-  typedef WebKit::WebConsoleMessage::Level param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    LogParam(static_cast<int>(p), l);
-  }
+struct SimilarTypeTraits<WebKit::WebConsoleMessage::Level> {
+  typedef int Type;
 };
 
 template <>
-struct ParamTraits<WebKit::WebPopupType> {
-  typedef WebKit::WebPopupType param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    LogParam(static_cast<int>(p), l);
-  }
+struct SimilarTypeTraits<WebKit::WebPopupType> {
+  typedef int Type;
 };
 
 template <>
@@ -231,38 +205,13 @@ struct ParamTraits<WebKit::WebCache::ResourceTypeStats> {
 };
 
 template <>
-struct ParamTraits<WebKit::WebTextDirection> {
-  typedef WebKit::WebTextDirection param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    LogParam(static_cast<int>(p), l);
-  }
+struct SimilarTypeTraits<WebKit::WebTextDirection> {
+  typedef int Type;
 };
 
 template <>
-struct ParamTraits<WebKit::WebDragOperation> {
-  typedef WebKit::WebDragOperation param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int temp;
-    bool res = m->ReadInt(iter, &temp);
-    *r = static_cast<param_type>(temp);
-    return res;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append(StringPrintf("%d", p));
-  }
+struct SimilarTypeTraits<WebKit::WebDragOperation> {
+  typedef int Type;
 };
 
 template <>
@@ -274,17 +223,8 @@ struct ParamTraits<WebKit::WebMediaPlayerAction> {
 };
 
 template <>
-  struct ParamTraits<WebKit::WebContextMenuData::MediaType> {
-  typedef WebKit::WebContextMenuData::MediaType param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int temp;
-    bool res = m->ReadInt(iter, &temp);
-    *r = static_cast<param_type>(temp);
-    return res;
-  }
+struct SimilarTypeTraits<WebKit::WebContextMenuData::MediaType> {
+  typedef int Type;
 };
 
 template <>
