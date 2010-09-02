@@ -18,6 +18,7 @@
               [ 'chromeos == 1', {
                 'files': [
                   'binaries/chromeos/libgcflashplayer.so',
+                  'binaries/linux/plugin.vch',
                 ]
               }],
               [ 'OS == "linux" and target_arch == "ia32" and chromeos == 0', {
