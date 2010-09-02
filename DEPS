@@ -1,6 +1,6 @@
 vars = {
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
-  "nacl_trunk": "http://nativeclient.googlecode.com/svn/trunk",
+  "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "66624",
   "ffmpeg_revision": "58138",
   "skia_revision": "593",
