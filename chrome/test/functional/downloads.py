@@ -200,12 +200,8 @@ class DownloadsTest(pyauto.PyUITest):
       self.DownloadAndWaitForStart(file_url)
       # Waiting for big file to download might exceed automation timeout.
       # Temporarily increase the automation timeout.
-
-      # Temp workaround for crbug.com/54131
-      # self._CallFunctionWithNewTimeout(4 * 60 * 1000,  # 4 min.
-      #                                  self.WaitForAllDownloadsToComplete)
-      self.WaitForAllDownloadsToComplete(timeout=4*60*1000)
-      # -- End workaround
+      self._CallFunctionWithNewTimeout(4 * 60 * 1000,  # 4 min.
+                                       self.WaitForAllDownloadsToComplete)
       # Verify that the file was correctly downloaded
       self.assertTrue(os.path.exists(downloaded_pkg),
                       'Downloaded file %s missing.' % downloaded_pkg)
