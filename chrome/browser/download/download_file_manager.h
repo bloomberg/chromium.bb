@@ -130,6 +130,10 @@ class DownloadFileManager
   void CreateDownloadFile(DownloadCreateInfo* info,
                           DownloadManager* download_manager);
 
+  // Tells the ResourceDispatcherHost to resume a download request
+  // that was paused to wait for the on-disk file to be created.
+  void ResumeDownloadRequest(int child_id, int request_id);
+
   // Called only on the download thread.
   DownloadFile* GetDownloadFile(int id);
 
