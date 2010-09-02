@@ -145,14 +145,6 @@ class GClientSmoke(GClientSmokeBase):
     self.check(res, self.gclient(['sync']))
     self.check(res, self.gclient(['update']))
 
-  def testWrongConfig(self):
-    # tested in testConfig.
-    self.gclient(['config', self.svn_base + 'trunk/src/'])
-    other_src = join(self.root_dir, 'src-other')
-    os.mkdir(other_src)
-    res = ('', 'Error: client not configured; see \'gclient config\'\n', 1)
-    self.check(res, self.gclient(['status'], other_src))
-
   def testConfig(self):
     p = join(self.root_dir, '.gclient')
     def test(cmd, expected):

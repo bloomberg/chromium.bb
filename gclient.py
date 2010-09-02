@@ -621,24 +621,13 @@ solutions = [
   def LoadCurrentConfig(options):
     """Searches for and loads a .gclient file relative to the current working
     dir. Returns a GClient object."""
-    cwd = os.getcwd()
-    path = gclient_utils.FindGclientRoot(cwd, options.config_filename)
+    path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
     if not path:
       return None
     client = GClient(path, options)
     client.SetConfig(gclient_utils.FileRead(
         os.path.join(path, options.config_filename)))
-    if path == cwd:
-      return client
-    # Validate the current directory we are in belongs to the .gclient file we
-    # found.
-    cwd = cwd[len(path)+1:]
-    all_solutions = client.tree(False)
-    while len(cwd):
-      if cwd in all_solutions:
-        return client
-      cwd = os.path.dirname(cwd)
-    return None
+    return client
 
   def SetDefaultConfig(self, solution_name, solution_url, safesync_url):
     self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
