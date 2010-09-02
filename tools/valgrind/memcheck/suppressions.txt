@@ -3979,35 +3979,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_51134_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos24UserCrosSettingsProviderC1Ev
-   fun:_ZN8chromeos12CrosSettingsC1Ev
-   fun:_ZN22DefaultSingletonTraitsIN8chromeos12CrosSettingsEE3NewEv
-}
-{
-   bug_51134_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsP5ValueEEE8allocateEjPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE14_M_create_nodeERKS4_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE9_M_insertEPSt18_Rb_tree_node_baseSC_RKS4_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE16_M_insert_uniqueESt17_Rb_tree_iteratorIS4_ERKS4_
-   fun:_ZNSt3mapISsP5ValueSt4lessISsESaISt4pairIKSsS1_EEE6insertESt17_Rb_tree_iteratorIS6_ERKS6_
-   fun:_ZNSt3mapISsP5ValueSt4lessISsESaISt4pairIKSsS1_EEEixERS5_
-   fun:_ZN15DictionaryValue23SetWithoutPathExpansionERKSsP5Value
-   fun:_ZN15DictionaryValue3SetERKSsP5Value
-   fun:_ZN15DictionaryValue3SetERKSbIwSt11char_traitsIwESaIwEEP5Value
-   fun:_ZN8chromeos24UserCrosSettingsProvider3SetERKSbIwSt11char_traitsIwESaIwEEP5Value
-   fun:_ZN8chromeos24UserCrosSettingsProviderC1Ev
-   fun:_ZN8chromeos12CrosSettingsC1Ev
-   fun:_ZN22DefaultSingletonTraitsIN8chromeos12CrosSettingsEE3NewEv
-   fun:_ZN9SingletonIN8chromeos12CrosSettingsE22DefaultSingletonTraitsIS1_ES1_E3getEv
-   fun:_ZN8chromeos12CrosSettings3GetEv
-}
-{
    bug_51218
    Memcheck:Leak
    fun:_Znw*
@@ -4291,4 +4262,30 @@
    fun:_ZN3net12CertVerifier7Request8DoVerifyEv
    fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
+}
+{
+   bug_54308
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK8chromeos25CrosSettingsProviderProxy3GetERKSsPP5Value
+   fun:_ZNK8chromeos12CrosSettings3GetERKSsPP5Value
+   fun:_ZN8chromeos26CoreChromeOSOptionsHandler9FetchPrefERKSs
+   fun:_ZN18CoreOptionsHandler16HandleFetchPrefsEPK9ListValue
+   fun:_Z16DispatchToMethodI18CoreOptionsHandlerMS0_FvPK9ListValueES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplI18CoreOptionsHandlerMS0_FvPK9ListValueE6Tuple1IS3_EE13RunWithParamsERKS7_
+   fun:_ZN14CallbackRunnerI6Tuple1IPK9ListValueEE3RunIS3_EEvRKT_
+   fun:_ZN5DOMUI19ProcessDOMUIMessageERK29ViewHostMsg_DomMessage_Params
+   fun:_ZN11TabContents19ProcessDOMUIMessageERK29ViewHostMsg_DomMessage_Params
+   fun:_ZN14RenderViewHost14OnMsgDOMUISendERK4GURLRKSsS4_
+   fun:_Z16DispatchToMethodI14RenderViewHostMS0_FvRK4GURLRKSsS5_ES1_SsSsEvPT_T0_RK6Tuple3IT1_T2_T3_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple3I4GURLSsSsEE8DispatchI14RenderViewHostMS6_FvRKS2_RKSsSA_EEEbPKNS_7MessageEPT_T0_
+   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN24BrowserRenderProcessHost17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base16MessagePumpForUI14HandleDispatchEv
 }
