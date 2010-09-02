@@ -53,3 +53,8 @@ BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE
 
 // Newly added test apparently misbehaves.  
 BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
+
+// http://trac.webkit.org/changeset/66666/ altered a test.  Suppress it for time being.
+BUGNO : platform/gtk/scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html = TIMEOUT
+BUGNO : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TIMEOUT 
+BUGNO : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
