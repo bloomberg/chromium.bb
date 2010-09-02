@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <string>
+#include <list>
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
@@ -192,6 +193,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
 
+  std::list<std::string> autofilled_forms_signatures_;
   // Handles queries and uploads to AutoFill servers.
   AutoFillDownloadManager download_manager_;
 

@@ -363,6 +363,7 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
     // proceed to the next |result| field, and the next |form_structure|.
     ++i;
   }
+  autofilled_forms_signatures_.push_front(form_structure->FormSignature());
 
   host->AutoFillFormDataFilled(query_id, result);
   return true;
@@ -445,11 +446,26 @@ void AutoFillManager::HandleSubmit() {
 }
 
 void AutoFillManager::UploadFormData() {
-  // TODO(georgey): enable upload request when we make sure that our data is in
-  // line with toolbar data (bug #52501):
-  // if (!disable_download_manager_requests_)
-  //   download_manager_.StartUploadRequest(upload_form_structure_,
-  //                                        form_is_autofilled);
+  if (!disable_download_manager_requests_) {
+    bool was_autofilled = false;
+    // Check if the form among last 3 forms that were auto-filled.
+    // Clear older signatures.
+    std::list<std::string>::iterator it;
+    int total_form_checked = 0;
+    for (it = autofilled_forms_signatures_.begin();
+         it != autofilled_forms_signatures_.end() && total_form_checked < 3;
+         ++it, ++total_form_checked) {
+      if (*it == upload_form_structure_->FormSignature())
+        was_autofilled = true;
+    }
+    // Remove outdated form signatures.
+    if (total_form_checked == 3 && it != autofilled_forms_signatures_.end()) {
+      autofilled_forms_signatures_.erase(it,
+                                         autofilled_forms_signatures_.end());
+    }
+    download_manager_.StartUploadRequest(*(upload_form_structure_.get()),
+                                         was_autofilled);
+  }
 }
 
 void AutoFillManager::OnInfoBarClosed(bool should_save) {
