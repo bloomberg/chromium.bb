@@ -11,7 +11,7 @@
 #include "media/base/limits.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_interfaces.h"
-#include "media/video/omx_video_decode_engine.h"
+#include "media/filters/omx_video_decode_engine.h"
 
 namespace media {
 
