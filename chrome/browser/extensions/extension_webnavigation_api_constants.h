@@ -4,11 +4,11 @@
 
 // Constants used for the WebNavigation API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_NAVIGATION_API_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_NAVIGATION_API_CONSTANTS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_CONSTANTS_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_CONSTANTS_H_
 #pragma once
 
-namespace extension_web_navigation_api_constants {
+namespace extension_webnavigation_api_constants {
 
 // Keys.
 extern const char kErrorKey[];
@@ -20,6 +20,7 @@ extern const char kTabIdKey[];
 extern const char kTargetUrlKey[];
 extern const char kTimeStampKey[];
 extern const char kTransitionTypeKey[];
+extern const char kTransitionQualifiersKey[];
 extern const char kUrlKey[];
 
 // Events.
@@ -30,6 +31,6 @@ extern const char kOnCompleted[];
 extern const char kOnDOMContentLoaded[];
 extern const char kOnErrorOccurred[];
 
-}  // namespace extension_web_navigation_api_constants
+}  // namespace extension_webnavigation_api_constants
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_NAVIGATION_API_CONSTANTS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_CONSTANTS_H_

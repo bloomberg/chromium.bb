@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_web_navigation_api_constants.h"
+#include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
 
-namespace extension_web_navigation_api_constants {
+namespace extension_webnavigation_api_constants {
 
 const char kErrorKey[] = "error";
 const char kFrameIdKey[] = "frameId";
@@ -15,6 +15,7 @@ const char kTabIdKey[] = "tabId";
 const char kTargetUrlKey[] = "targetUrl";
 const char kTimeStampKey[] = "timeStamp";
 const char kTransitionTypeKey[] = "transitionType";
+const char kTransitionQualifiersKey[] = "transitionQualifiers";
 const char kUrlKey[] = "url";
 
 const char kOnBeforeNavigate[] = "experimental.webNavigation.onBeforeNavigate";
@@ -25,4 +26,4 @@ const char kOnDOMContentLoaded[] =
     "experimental.webNavigation.onDOMContentLoaded";
 const char kOnErrorOccurred[] = "experimental.webNavigation.onErrorOccurred";
 
-}  // namespace extension_web_navigation_api_constants
+}  // namespace extension_webnavigation_api_constants
