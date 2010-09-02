@@ -46,15 +46,6 @@ static bool IsFullFrameThunk(PP_Instance instance) {
   return GetInstancePointer(instance)->IsFullFrame();
 }
 
-static bool SetCursorThunk(PP_Instance instance,
-                           PP_CursorType type,
-                           PP_Resource custom_image,
-                           const PP_Point* hot_spot) {
-  DebugPrintf("PluginInstance::SetCursor: instance=%" NACL_PRIx64"\n",
-              instance);
-  return GetInstancePointer(instance)->SetCursor(type, custom_image, hot_spot);
-}
-
 }  // namespace
 
 const PPB_Instance* PluginInstance::GetInterface() {
@@ -62,8 +53,7 @@ const PPB_Instance* PluginInstance::GetInterface() {
     GetWindowObjectThunk,
     GetOwnerElementObjectThunk,
     BindGraphicsDeviceContextThunk,
-    IsFullFrameThunk,
-    SetCursorThunk
+    IsFullFrameThunk
   };
   return &intf;
 }

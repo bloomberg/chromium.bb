@@ -56,6 +56,10 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
   NACL_UNIMPLEMENTED();
 }
 
+static bool IsMainThread() {
+  NACL_UNIMPLEMENTED();
+}
+
 }  // namespace
 
 namespace fake_browser_ppapi {
@@ -67,7 +71,8 @@ const PPB_Core* Core::GetInterface() {
     MemAlloc,
     MemFree,
     GetTime,
-    CallOnMainThread
+    CallOnMainThread,
+    IsMainThread
   };
   return &intf;
 }

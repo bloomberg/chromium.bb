@@ -45,16 +45,4 @@ bool Instance::IsFullFrame() {
   return false;
 }
 
-bool Instance::SetCursor(PP_CursorType type,
-                         PP_Resource custom_image,
-                         const PP_Point* hot_spot) {
-  DebugPrintf("Instance::SetCursor: instance=%p\n",
-              reinterpret_cast<void*>(this));
-  NACL_UNIMPLEMENTED();
-  UNREFERENCED_PARAMETER(type);
-  UNREFERENCED_PARAMETER(custom_image);
-  UNREFERENCED_PARAMETER(hot_spot);
-  return false;
-}
-
 }  // namespace fake_browser_ppapi
