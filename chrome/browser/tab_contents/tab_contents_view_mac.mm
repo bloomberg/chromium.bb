@@ -127,7 +127,7 @@ gfx::NativeWindow TabContentsViewMac::GetTopLevelNativeWindow() const {
 }
 
 void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
-  *out = [cocoa_view_.get() NSRectToRect:[cocoa_view_.get() bounds]];
+  *out = [cocoa_view_.get() flipNSRectToRect:[cocoa_view_.get() bounds]];
 }
 
 void TabContentsViewMac::StartDragging(
@@ -182,7 +182,7 @@ void TabContentsViewMac::SizeContents(const gfx::Size& size) {
   // See tab_contents_view.h.
   gfx::Rect rect(gfx::Point(), size);
   TabContentsViewCocoa* view = cocoa_view_.get();
-  [view setFrame:[view RectToNSRect:rect]];
+  [view setFrame:[view flipRectToNSRect:rect]];
 }
 
 void TabContentsViewMac::Focus() {

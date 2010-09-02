@@ -30,8 +30,8 @@
 - (void)keyEvent:(NSEvent *)theEvent;
 
 // Useful rect conversions (doing coordinate flipping)
-- (gfx::Rect)NSRectToRect:(NSRect)rect;
-- (NSRect)RectToNSRect:(gfx::Rect)rect;
+- (gfx::Rect)flipNSRectToRect:(NSRect)rect;
+- (NSRect)flipRectToNSRect:(gfx::Rect)rect;
 
 @end
 

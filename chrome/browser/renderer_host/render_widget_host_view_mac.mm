@@ -454,10 +454,11 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
   // superview is another RenderWidgetHostViewCocoa, but even if it's directly
   // in a TabContentsViewCocoa, they're both BaseViews.
   gfx::Rect rect =
-      [(BaseView*)[cocoa_view_ superview] NSRectToRect:[cocoa_view_ frame]];
+      [(BaseView*)[cocoa_view_ superview] flipNSRectToRect:[cocoa_view_ frame]];
   rect.set_width(size.width());
   rect.set_height(size.height());
-  [cocoa_view_ setFrame:[(BaseView*)[cocoa_view_ superview] RectToNSRect:rect]];
+  [cocoa_view_ setFrame:
+      [(BaseView*)[cocoa_view_ superview] flipRectToNSRect:rect]];
 }
 
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
@@ -495,7 +496,7 @@ void RenderWidgetHostViewMac::MovePluginWindows(
     if (plugin_views_.end() == it) {
       continue;
     }
-    NSRect new_rect([cocoa_view_ RectToNSRect:rect]);
+    NSRect new_rect([cocoa_view_ flipRectToNSRect:rect]);
     [it->second setFrame:new_rect];
     [it->second setNeedsDisplay:YES];
 
@@ -536,7 +537,7 @@ bool RenderWidgetHostViewMac::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
-  return [cocoa_view_ NSRectToRect:[cocoa_view_ bounds]];
+  return [cocoa_view_ flipNSRectToRect:[cocoa_view_ bounds]];
 }
 
 void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
@@ -582,7 +583,7 @@ void RenderWidgetHostViewMac::ImeUpdateTextInputState(
   // whose origin is the upper-left corner of this view. On the other hand,
   // Cocoa uses a coordinate system whose origin is the lower-left corner of
   // this view. So, we convert the cursor rectangle and save it.
-  [cocoa_view_ setCaretRect:[cocoa_view_ RectToNSRect:caret_rect]];
+  [cocoa_view_ setCaretRect:[cocoa_view_ flipRectToNSRect:caret_rect]];
 }
 
 void RenderWidgetHostViewMac::ImeCancelComposition() {
@@ -603,7 +604,7 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
     rects.push_back(scroll_rect);
 
   for (size_t i = 0; i < rects.size(); ++i) {
-    NSRect ns_rect = [cocoa_view_ RectToNSRect:rects[i]];
+    NSRect ns_rect = [cocoa_view_ flipRectToNSRect:rects[i]];
 
     if (about_to_validate_and_paint_) {
       // As much as we'd like to use -setNeedsDisplayInRect: here, we can't.
@@ -960,7 +961,7 @@ namespace {
 // Adjusts an NSRect in Cocoa screen coordinates to have an origin in the upper
 // left of the primary screen (Carbon coordinates), and stuffs it into a
 // gfx::Rect.
-gfx::Rect NSRectToRect(const NSRect rect) {
+gfx::Rect flipNSRectToRect(const NSRect rect) {
   gfx::Rect new_rect(NSRectToCGRect(rect));
   if ([[NSScreen screens] count] > 0) {
     new_rect.set_y([[[NSScreen screens] objectAtIndex:0] frame].size.height -
@@ -1003,7 +1004,7 @@ gfx::Rect RenderWidgetHostViewMac::GetWindowRect() {
   NSRect bounds = [cocoa_view_ bounds];
   bounds = [cocoa_view_ convertRect:bounds toView:nil];
   bounds.origin = [enclosing_window convertBaseToScreen:bounds.origin];
-  return NSRectToRect(bounds);
+  return flipNSRectToRect(bounds);
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
@@ -1015,7 +1016,7 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
     return gfx::Rect();
 
   NSRect bounds = [enclosing_window frame];
-  return NSRectToRect(bounds);
+  return flipNSRectToRect(bounds);
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
@@ -1458,7 +1459,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   if (backing_store) {
     NSRect view_bounds = [self bounds];
-    gfx::Rect damaged_rect([self NSRectToRect:dirtyRect]);
+    gfx::Rect damaged_rect([self flipNSRectToRect:dirtyRect]);
 
     gfx::Rect bitmap_rect(0, 0,
                           backing_store->size().width(),
@@ -1511,7 +1512,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
         height = -height;
       }
 
-      NSRect r = [self RectToNSRect:gfx::Rect(x, y, width, height)];
+      NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
       [[NSColor whiteColor] set];
       NSRectFill(r);
     }
@@ -1532,7 +1533,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
         height = -height;
       }
 
-      NSRect r = [self RectToNSRect:gfx::Rect(x, y, width, height)];
+      NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
       [[NSColor whiteColor] set];
       NSRectFill(r);
     }

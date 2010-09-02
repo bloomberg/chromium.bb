@@ -127,13 +127,13 @@
   [self keyEvent:theEvent];
 }
 
-- (gfx::Rect)NSRectToRect:(NSRect)rect {
+- (gfx::Rect)flipNSRectToRect:(NSRect)rect {
   gfx::Rect new_rect(NSRectToCGRect(rect));
   new_rect.set_y([self bounds].size.height - new_rect.y() - new_rect.height());
   return new_rect;
 }
 
-- (NSRect)RectToNSRect:(gfx::Rect)rect {
+- (NSRect)flipRectToNSRect:(gfx::Rect)rect {
   NSRect new_rect(NSRectFromCGRect(rect.ToCGRect()));
   new_rect.origin.y =
       [self bounds].size.height - new_rect.origin.y - new_rect.size.height;

@@ -29,16 +29,16 @@ TEST_VIEW(BaseViewTest, view_)
 // Convert a rect in |view_|'s Cocoa coordinate system to gfx::Rect's top-left
 // coordinate system. Repeat the process in reverse and make sure we come out
 // with the original rect.
-TEST_F(BaseViewTest, NSRectToRect) {
+TEST_F(BaseViewTest, flipNSRectToRect) {
   NSRect convert = NSMakeRect(10, 10, 50, 50);
-  gfx::Rect converted = [view_ NSRectToRect:convert];
+  gfx::Rect converted = [view_ flipNSRectToRect:convert];
   EXPECT_EQ(converted.x(), 10);
   EXPECT_EQ(converted.y(), 40);  // Due to view being 100px tall.
   EXPECT_EQ(converted.width(), convert.size.width);
   EXPECT_EQ(converted.height(), convert.size.height);
 
   // Go back the other way.
-  NSRect back_again = [view_ RectToNSRect:converted];
+  NSRect back_again = [view_ flipRectToNSRect:converted];
   EXPECT_EQ(back_again.origin.x, convert.origin.x);
   EXPECT_EQ(back_again.origin.y, convert.origin.y);
   EXPECT_EQ(back_again.size.width, convert.size.width);
