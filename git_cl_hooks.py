@@ -40,19 +40,19 @@ class ChangeOptions:
     absroot = os.path.abspath(root)
     if not root:
       raise Exception("Could not get root directory.")
-    log = Backquote(['git', 'show', '--name-only',
-                     '--pretty=format:%H%n%s%n%n%b'])
-    m = re.match(r'^(\w+)\n(.*)$', log, re.MULTILINE|re.DOTALL)
-    if not m:
-      raise Exception("Could not parse log message: %s" % log)
-    name = m.group(1)
+    # We use the sha1 of HEAD as a name of this change.
+    name = Backquote(['git', 'rev-parse', 'HEAD'])
     files = scm.GIT.CaptureStatus([root], upstream_branch)
     issue = BackquoteAsInteger(['git', 'cl', 'status', '--field=id'])
     patchset = BackquoteAsInteger(['git', 'cl', 'status', '--field=patch'])
     if issue:
       description = Backquote(['git', 'cl', 'status', '--field=desc'])
     else:
-      description = m.group(2)
+      # If the change was never uploaded, use the log messages of all commits
+      # up to the branch point, as git cl upload will prefill the description
+      # with these log messages.
+      description = Backquote(['git', 'log', '--pretty=format:%s%n%n%b',
+                               '%s...' % (upstream_branch)])
     self.change = presubmit_support.GitChange(name, description, absroot, files,
                                               issue, patchset)
 
