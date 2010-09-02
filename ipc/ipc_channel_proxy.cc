@@ -155,6 +155,11 @@ void ChannelProxy::Context::OnChannelClosed() {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnSendMessage(Message* message) {
+  if (!channel_) {
+    delete message;
+    OnChannelClosed();
+    return;
+  }
   if (!channel_->Send(message))
     OnChannelError();
 }

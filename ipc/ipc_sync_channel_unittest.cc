@@ -160,10 +160,11 @@ class Worker : public Channel::Listener, public Message::Sender {
     NOTREACHED();
   }
 
- private:
   base::Thread* ListenerThread() {
     return overrided_thread_ ? overrided_thread_ : &listener_thread_;
   }
+
+ private:
   // Called on the listener thread to create the sync channel.
   void OnStart() {
     // Link ipc_thread_, listener_thread_ and channel_ altogether.
@@ -1111,6 +1112,40 @@ class SyncMessageFilterServer : public Worker {
   scoped_refptr<TestSyncMessageFilter> filter_;
 };
 
+// This class provides functionality to test the case that a Send on the sync
+// channel does not crash after the channel has been closed.
+class ServerSendAfterClose : public Worker {
+ public:
+  ServerSendAfterClose()
+     : Worker(Channel::MODE_SERVER, "simpler_server"),
+       send_result_(true) {
+  }
+
+  bool SendDummy() {
+    ListenerThread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &ServerSendAfterClose::Send, new SyncChannelTestMsg_NoArgs));
+    return true;
+  }
+
+  bool send_result() const {
+    return send_result_;
+  }
+
+ private:
+  virtual void Run() {
+    CloseChannel();
+    Done();
+  }
+
+  bool Send(Message* msg) {
+    send_result_ = Worker::Send(msg);
+    Done();
+    return send_result_;
+  }
+
+  bool send_result_;
+};
+
 }  // namespace
 
 // Tests basic synchronous call
@@ -1120,3 +1155,19 @@ TEST_F(IPCSyncChannelTest, SyncMessageFilter) {
   workers.push_back(new SimpleClient());
   RunTest(workers);
 }
+
+// Test the case when the channel is closed and a Send is attempted after that.
+TEST_F(IPCSyncChannelTest, SendAfterClose) {
+  ServerSendAfterClose server;
+  server.Start();
+
+  server.done_event()->Wait();
+  server.done_event()->Reset();
+
+  server.SendDummy();
+  server.done_event()->Wait();
+
+  EXPECT_FALSE(server.send_result());
+}
+
+

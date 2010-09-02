@@ -283,7 +283,6 @@ bool SyncChannel::SyncContext::TryToUnblockListener(const Message* msg) {
 void SyncChannel::SyncContext::Clear() {
   CancelPendingSends();
   received_sync_msgs_->RemoveContext(this);
-
   Context::Clear();
 }
 
@@ -320,6 +319,7 @@ void SyncChannel::SyncContext::OnChannelOpened() {
 }
 
 void SyncChannel::SyncContext::OnChannelClosed() {
+  CancelPendingSends();
   shutdown_watcher_.StopWatching();
   Context::OnChannelClosed();
 }
