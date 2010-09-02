@@ -942,7 +942,9 @@ bool IsHeadlessMode() {
 }
 
 bool IsUnpinnedMode() {
-  bool unpinned = GetConfigBool(false, kChromeFrameUnpinnedMode);
+  // We only check this value once and then cache it since changing the registry
+  // once we've pinned the DLL won't have any effect.
+  static bool unpinned = GetConfigBool(false, kChromeFrameUnpinnedMode);
   return unpinned;
 }
 
@@ -1388,5 +1390,24 @@ bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
   }
 
   return true;
+}
+
+void PinModule() {
+  static bool s_pinned = false;
+  if (!s_pinned && !IsUnpinnedMode()) {
+    FilePath module_path;
+    if (PathService::Get(base::FILE_MODULE, &module_path)) {
+      HMODULE unused;
+      if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN,
+                             module_path.value().c_str(), &unused)) {
+        NOTREACHED() << "Failed to pin module " << module_path.value().c_str()
+                     << " , last error: " << GetLastError();
+      } else {
+        s_pinned = true;
+      }
+    } else {
+      NOTREACHED() << "Could not get module path.";
+    }
+  }
 }
 

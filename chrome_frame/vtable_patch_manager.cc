@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 
 #include "chrome_frame/function_stub.h"
+#include "chrome_frame/utils.h"
 
 namespace vtable_patch {
 
@@ -144,6 +145,7 @@ HRESULT PatchInterfaceMethods(void* unknown, MethodPatchInfo* patches) {
     } else {
       // Success, save the stub we created.
       it->stub_ = stub;
+      PinModule();
     }
   }
 

@@ -312,34 +312,12 @@ void Bho::ProcessOptInUrls(IWebBrowser2* browser, BSTR url) {
   }
 }
 
-namespace {
-// Utility function that prevents the current module from ever being unloaded.
-void PinModule() {
-  FilePath module_path;
-  if (PathService::Get(base::FILE_MODULE, &module_path)) {
-    HMODULE unused;
-    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN,
-                           module_path.value().c_str(), &unused)) {
-      NOTREACHED() << "Failed to pin module " << module_path.value().c_str()
-                   << " , last error: " << GetLastError();
-    }
-  } else {
-    NOTREACHED() << "Could not get module path.";
-  }
-}
-}  // namespace
-
 bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
   bool ret = false;
 
   _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
 
   if (state_ == UNKNOWN) {
-    // If we're going to start patching things for reals, we'd better make sure
-    // that we stick around for ever more:
-    if (!IsUnpinnedMode())
-      PinModule();
-
     ProtocolPatchMethod patch_method = GetPatchMethod();
     if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
       g_trans_hooks.InstallHooks();

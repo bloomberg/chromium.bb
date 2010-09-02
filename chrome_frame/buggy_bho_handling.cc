@@ -128,6 +128,7 @@ HRESULT BuggyBhoTls::PatchInvokeMethod(PROC* invoke) {
       hr = E_UNEXPECTED;
       FunctionStub::Destroy(stub);
     } else {
+      PinModule();  // No backing out now.
       ::FlushInstructionCache(::GetCurrentProcess(), invoke, sizeof(PROC));
     }
   }

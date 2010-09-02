@@ -538,4 +538,8 @@ class ChromeFrameUrl {
 bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
                  bool is_privileged);
 
+// Utility function that prevents the current module from ever being unloaded.
+// Call if you make irreversible patches.
+void PinModule();
+
 #endif  // CHROME_FRAME_UTILS_H_
