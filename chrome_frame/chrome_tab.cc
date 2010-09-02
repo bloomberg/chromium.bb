@@ -384,7 +384,7 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
     hr = Bho::UpdateRegistry(reg);
   }
 
-  if ((hr == S_OK) && (flags & BHO_REGISTRATION) && !is_system) {
+  if ((hr == S_OK) && (flags & BHO_REGISTRATION) && is_system) {
     _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, reg);
   }
 
