@@ -956,8 +956,8 @@ TEST(ExtensionTest, OldUnlimitedStoragePermission) {
 
   // Create a permissions list containing "unlimited_storage" and add it.
   ListValue* permissions = new ListValue();
-  const std::string old_unlimited = std::string("unlimited_storage");
-  EXPECT_EQ(old_unlimited, Extension::kOldUnlimitedStoragePermission);
+  const char* old_unlimited = "unlimited_storage";
+  EXPECT_STREQ(old_unlimited, Extension::kOldUnlimitedStoragePermission);
   permissions->Append(Value::CreateStringValue(old_unlimited));
   dictionary.Set(extension_manifest_keys::kPermissions, permissions);
 

@@ -97,29 +97,29 @@ class Extension {
   // - Extension::GetSimplePermissions()
   // - Extension::IsPrivilegeIncrease()
   // - ExtensionInstallUI::GetV2Warnings()
-  static const char* kBackgroundPermission;
-  static const char* kBookmarkPermission;
-  static const char* kContextMenusPermission;
-  static const char* kCookiePermission;
-  static const char* kExperimentalPermission;
-  static const char* kGeolocationPermission;
-  static const char* kHistoryPermission;
-  static const char* kIdlePermission;
-  static const char* kNotificationPermission;
-  static const char* kProxyPermission;
-  static const char* kTabPermission;
-  static const char* kUnlimitedStoragePermission;
-  static const char* kNativeClientPermission;
-  static const char* kWebstorePrivatePermission;
+  static const char kBackgroundPermission[];
+  static const char kBookmarkPermission[];
+  static const char kContextMenusPermission[];
+  static const char kCookiePermission[];
+  static const char kExperimentalPermission[];
+  static const char kGeolocationPermission[];
+  static const char kHistoryPermission[];
+  static const char kIdlePermission[];
+  static const char kNotificationPermission[];
+  static const char kProxyPermission[];
+  static const char kTabPermission[];
+  static const char kUnlimitedStoragePermission[];
+  static const char kNativeClientPermission[];
+  static const char kWebstorePrivatePermission[];
 
-  static const char* kPermissionNames[];
+  static const char* const kPermissionNames[];
   static const size_t kNumPermissions;
-  static const char* kHostedAppPermissionNames[];
+  static const char* const kHostedAppPermissionNames[];
   static const size_t kNumHostedAppPermissions;
 
   // The old name for the unlimited storage permission, which is deprecated but
   // still accepted as meaning the same thing as kUnlimitedStoragePermission.
-  static const char* kOldUnlimitedStoragePermission;
+  static const char kOldUnlimitedStoragePermission[];
 
   // A "simple permission" is one that has a one-to-one mapping with a message
   // that is displayed in the install UI. This is in contrast to more complex
@@ -148,7 +148,7 @@ class Extension {
   static const FilePath::CharType kMessagesFilename[];
 
 #if defined(OS_WIN)
-  static const char* kExtensionRegistryPath;
+  static const char kExtensionRegistryPath[];
 #endif
 
   // The number of bytes in a legal id.

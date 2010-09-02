@@ -126,7 +126,7 @@ const FilePath::CharType Extension::kMessagesFilename[] =
     FILE_PATH_LITERAL("messages.json");
 
 #if defined(OS_WIN)
-const char* Extension::kExtensionRegistryPath =
+const char Extension::kExtensionRegistryPath[] =
     "Software\\Google\\Chrome\\Extensions";
 #endif
 
@@ -147,22 +147,22 @@ const int Extension::kPageActionIconMaxSize = 19;
 const int Extension::kBrowserActionIconMaxSize = 19;
 
 // Explicit permissions -- permission declaration required.
-const char* Extension::kBackgroundPermission = "background";
-const char* Extension::kContextMenusPermission = "contextMenus";
-const char* Extension::kBookmarkPermission = "bookmarks";
-const char* Extension::kCookiePermission = "cookies";
-const char* Extension::kExperimentalPermission = "experimental";
-const char* Extension::kGeolocationPermission = "geolocation";
-const char* Extension::kHistoryPermission = "history";
-const char* Extension::kIdlePermission = "idle";
-const char* Extension::kNotificationPermission = "notifications";
-const char* Extension::kProxyPermission = "proxy";
-const char* Extension::kTabPermission = "tabs";
-const char* Extension::kUnlimitedStoragePermission = "unlimitedStorage";
-const char* Extension::kNativeClientPermission = "nativeClient";
-const char* Extension::kWebstorePrivatePermission = "webstorePrivate";
+const char Extension::kBackgroundPermission[] = "background";
+const char Extension::kContextMenusPermission[] = "contextMenus";
+const char Extension::kBookmarkPermission[] = "bookmarks";
+const char Extension::kCookiePermission[] = "cookies";
+const char Extension::kExperimentalPermission[] = "experimental";
+const char Extension::kGeolocationPermission[] = "geolocation";
+const char Extension::kHistoryPermission[] = "history";
+const char Extension::kIdlePermission[] = "idle";
+const char Extension::kNotificationPermission[] = "notifications";
+const char Extension::kProxyPermission[] = "proxy";
+const char Extension::kTabPermission[] = "tabs";
+const char Extension::kUnlimitedStoragePermission[] = "unlimitedStorage";
+const char Extension::kNativeClientPermission[] = "nativeClient";
+const char Extension::kWebstorePrivatePermission[] = "webstorePrivate";
 
-const char* Extension::kPermissionNames[] = {
+const char* const Extension::kPermissionNames[] = {
   Extension::kBackgroundPermission,
   Extension::kBookmarkPermission,
   Extension::kContextMenusPermission,
@@ -181,7 +181,7 @@ const char* Extension::kPermissionNames[] = {
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
 
-const char* Extension::kHostedAppPermissionNames[] = {
+const char* const Extension::kHostedAppPermissionNames[] = {
   Extension::kBackgroundPermission,
   Extension::kGeolocationPermission,
   Extension::kNotificationPermission,
@@ -193,7 +193,7 @@ const size_t Extension::kNumHostedAppPermissions =
     arraysize(Extension::kHostedAppPermissionNames);
 
 // We purposefully don't put this into kPermissionNames.
-const char* Extension::kOldUnlimitedStoragePermission = "unlimited_storage";
+const char Extension::kOldUnlimitedStoragePermission[] = "unlimited_storage";
 
 // static
 const Extension::SimplePermissions& Extension::GetSimplePermissions() {
