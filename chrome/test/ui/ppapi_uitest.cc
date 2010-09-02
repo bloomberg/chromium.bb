@@ -87,12 +87,8 @@ class PPAPITest : public UITest {
   }
 };
 
-#if defined(OS_WIN) || defined(OS_MAC)
-TEST_F(PPAPITest, Graphics2D) {
-#else
 // http://crbug.com/54150
-TEST_F(PPAPITest, FAILS_Graphics2D) {
-#endif
+TEST_F(PPAPITest, FLAKY_Graphics2D) {
   RunTest("Graphics2D");
 }
 
