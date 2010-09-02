@@ -14,10 +14,12 @@
 #include <cstring>
 #include <cstdlib>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_util.h"
 #include "net/base/ssl_config_service.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/socket/client_socket_factory.h"
@@ -99,26 +101,20 @@ void ChromeAsyncSocket::DoNetErrorFromStatus(int status) {
 
 namespace {
 
+// Takes a 32-bit integer in host byte order and converts it to a
+// net::IPAddressNumber.
+net::IPAddressNumber Uint32ToIPAddressNumber(uint32 ip) {
+  uint32 ip_nbo = htonl(ip);
+  const unsigned char* const ip_start =
+      reinterpret_cast<const unsigned char*>(&ip_nbo);
+  return net::IPAddressNumber(ip_start, ip_start + (sizeof ip_nbo));
+}
+
 net::AddressList SocketAddressToAddressList(
     const talk_base::SocketAddress& address) {
   DCHECK_NE(address.ip(), 0U);
-  // Use malloc() as net::AddressList uses free().
-  addrinfo* ai = static_cast<addrinfo*>(std::malloc(sizeof *ai));
-  memset(ai, 0, sizeof *ai);
-  ai->ai_family = AF_INET;
-  ai->ai_socktype = SOCK_STREAM;
-  ai->ai_addrlen = sizeof(sockaddr_in);
-
-  sockaddr_in* addr = static_cast<sockaddr_in*>(std::malloc(sizeof *addr));
-  memset(addr, 0, sizeof *addr);
-  addr->sin_family = AF_INET;
-  addr->sin_addr.s_addr = htonl(address.ip());
-  addr->sin_port = htons(address.port());
-  ai->ai_addr = reinterpret_cast<sockaddr*>(addr);
-
-  net::AddressList address_list;
-  address_list.Adopt(ai);
-  return address_list;
+  return net::AddressList(Uint32ToIPAddressNumber(address.ip()),
+                          address.port(), false);
 }
 
 }  // namespace
