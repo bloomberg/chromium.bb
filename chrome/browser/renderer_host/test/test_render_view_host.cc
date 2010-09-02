@@ -236,8 +236,6 @@ TestingProfile* RenderViewHostTestHarness::profile() {
 }
 
 MockRenderProcessHost* RenderViewHostTestHarness::process() {
-  if (pending_rvh())
-    return static_cast<MockRenderProcessHost*>(pending_rvh()->process());
   return static_cast<MockRenderProcessHost*>(rvh()->process());
 }
 

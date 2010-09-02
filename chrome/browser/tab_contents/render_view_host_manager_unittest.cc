@@ -11,7 +11,6 @@
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/test_notification_tracker.h"
 #include "chrome/test/testing_profile.h"
@@ -295,50 +294,4 @@ TEST_F(RenderViewHostManagerTest, NonDOMUIChromeURLs) {
                               PageTransition::TYPED);
 
   EXPECT_TRUE(ShouldSwapProcesses(&manager, &ntp_entry, &about_entry));
-}
-
-// Tests that we don't end up in an inconsistent state if a page does a back and
-// then reload. http://crbug.com/51680
-TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
-  GURL url1("http://www.google.com/");
-  GURL url2("http://www.evil-site.com/");
-
-  // Navigate to a safe site, then an evil site.
-  contents()->NavigateAndCommit(url1);
-  RenderViewHost* host1 = contents()->render_view_host();
-  contents()->NavigateAndCommit(url2);
-  RenderViewHost* host2 = contents()->render_view_host();
-  // We should have got a new RVH for the evil site.
-  EXPECT_NE(host1, host2);
-
-  // Casts the TabContents to a RenderViewHostDelegate::BrowserIntegration so we
-  // can call GoToEntryAtOffset which is private.
-  RenderViewHostDelegate::BrowserIntegration* rvh_delegate =
-      static_cast<RenderViewHostDelegate::BrowserIntegration*>(contents());
-
-  // Now let's simulate the evil page calling history.back().
-  rvh_delegate->GoToEntryAtOffset(-1);
-  // The pending RVH should be the one for the Google.
-  EXPECT_EQ(host1, contents()->render_manager()->pending_render_view_host());
-
-  // Before that RVH has committed, the evil page reloads itself.
-  ViewHostMsg_FrameNavigate_Params params;
-  params.page_id = 1;
-  params.url = url2;
-  params.transition = PageTransition::CLIENT_REDIRECT;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.was_within_same_page = false;
-  params.is_post = false;
-  contents()->TestDidNavigate(host2, params);
-
-  // That should have cancelled the pending RVH, and the evil RVH should be the
-  // current one.
-  EXPECT_TRUE(contents()->render_manager()->pending_render_view_host() == NULL);
-  EXPECT_EQ(host2, contents()->render_manager()->current_host());
-
-  // Also we should not have a pending navigation entry.
-  NavigationEntry* entry = contents()->controller().GetActiveEntry();
-  ASSERT_TRUE(entry != NULL);
-  EXPECT_EQ(url2, entry->url());
 }

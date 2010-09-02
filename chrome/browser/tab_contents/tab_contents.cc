@@ -224,12 +224,12 @@ ViewMsg_Navigate_Params::NavigationType GetNavigationType(
   return ViewMsg_Navigate_Params::NORMAL;
 }
 
-void MakeNavigateParams(const NavigationEntry& entry,
-                        const NavigationController& controller,
+void MakeNavigateParams(const NavigationController& controller,
                         NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
+  const NavigationEntry& entry = *controller.pending_entry();
   params->page_id = entry.page_id();
-  params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
+  params->pending_history_list_offset = controller.pending_entry_index();
   params->current_history_list_offset = controller.last_committed_entry_index();
   params->current_history_list_length = controller.entry_count();
   params->url = entry.url();
@@ -844,12 +844,8 @@ void TabContents::OpenURL(const GURL& url, const GURL& referrer,
 
 bool TabContents::NavigateToPendingEntry(
     NavigationController::ReloadType reload_type) {
-  return NavigateToEntry(*controller_.pending_entry(), reload_type);
-}
+  const NavigationEntry& entry = *controller_.pending_entry();
 
-bool TabContents::NavigateToEntry(
-    const NavigationEntry& entry,
-    NavigationController::ReloadType reload_type) {
   RenderViewHost* dest_render_view_host = render_manager_.Navigate(entry);
   if (!dest_render_view_host)
     return false;  // Unable to create the desired render view host.
@@ -881,7 +877,7 @@ bool TabContents::NavigateToEntry(
 
   // Navigate in the desired RenderViewHost.
   ViewMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(entry, controller_, reload_type, &navigate_params);
+  MakeNavigateParams(controller_, reload_type, &navigate_params);
   dest_render_view_host->Navigate(navigate_params);
 
   if (entry.page_id() == -1) {
@@ -1988,15 +1984,8 @@ void TabContents::OnFindReply(int request_id,
 }
 
 void TabContents::GoToEntryAtOffset(int offset) {
-  if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    NavigationEntry* entry = controller_.GetEntryAtOffset(offset);
-    if (!entry)
-      return;
-    // Note that we don't call NavigationController::GotToOffset() as we don't
-    // want to create a pending navigation entry (it might end up lingering
-    // http://crbug.com/51680).
-    NavigateToEntry(*entry, NavigationController::NO_RELOAD);
-  }
+  if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
+    controller_.GoToOffset(offset);
 }
 
 void TabContents::OnMissingPluginStatus(int status) {
