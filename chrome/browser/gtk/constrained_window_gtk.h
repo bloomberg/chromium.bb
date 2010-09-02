@@ -15,6 +15,7 @@
 
 class TabContents;
 class TabContentsViewGtk;
+typedef struct _GtkWidget GtkWidget;
 
 class ConstrainedWindowGtkDelegate {
  public:
@@ -55,9 +56,12 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   ConstrainedWindowGtk(TabContents* owner,
                        ConstrainedWindowGtkDelegate* delegate);
 
-  // Handler for Escape.
-  CHROMEGTK_CALLBACK_1(ConstrainedWindowGtk, gboolean, OnKeyPress,
-                       GdkEventKey*);
+  // Connects the ESC accelerator to the window.
+  void ConnectAccelerators();
+
+  // Handles an ESC accelerator being pressed.
+  CHROMEG_CALLBACK_3(ConstrainedWindowGtk, gboolean, OnEscape, GtkAccelGroup*,
+                     GObject*, guint, GdkModifierType);
 
   // The TabContents that owns and constrains this ConstrainedWindow.
   TabContents* owner_;
@@ -70,6 +74,8 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
 
   // Stores if |ShowConstrainedWindow()| has been called.
   bool visible_;
+
+  GtkAccelGroup* accel_group_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowGtk);
 };

@@ -19,22 +19,19 @@ FocusStoreGtk::~FocusStoreGtk() {
 }
 
 void FocusStoreGtk::Store(GtkWidget* widget) {
-  GtkWidget* focus_widget = NULL;
-  if (widget) {
-    GtkWindow* window = platform_util::GetTopLevel(widget);
-    if (window)
-      focus_widget = window->focus_widget;
+  DisconnectDestroyHandler();
+  if (!widget) {
+    widget_ = NULL;
+    return;
   }
 
-  SetWidget(focus_widget);
-}
+  GtkWindow* window = platform_util::GetTopLevel(widget);
+  if (!window) {
+    widget_ = NULL;
+    return;
+  }
 
-void FocusStoreGtk::SetWidget(GtkWidget* widget) {
-  DisconnectDestroyHandler();
-
-  // We don't add a ref. The signal handler below effectively gives us a weak
-  // reference.
-  widget_ = widget;
+  widget_ = window->focus_widget;
   if (widget_) {
     // When invoked, |gtk_widget_destroyed| will set |widget_| to NULL.
     destroy_handler_id_ = g_signal_connect(widget_, "destroy",
@@ -44,8 +41,6 @@ void FocusStoreGtk::SetWidget(GtkWidget* widget) {
 }
 
 void FocusStoreGtk::DisconnectDestroyHandler() {
-  if (widget_) {
+  if (widget_)
     g_signal_handler_disconnect(widget_, destroy_handler_id_);
-    widget_ = NULL;
-  }
 }

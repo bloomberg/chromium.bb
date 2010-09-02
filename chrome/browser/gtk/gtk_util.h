@@ -315,10 +315,6 @@ gfx::Rect GetDialogBounds(GtkWidget* dialog);
 // empty string if no stock item found.
 string16 GetStockPreferencesMenuLabel();
 
-// Checks whether a widget is actually visible, i.e. whether it and all its
-// ancestors up to its toplevel are visible.
-bool IsWidgetAncestryVisible(GtkWidget* widget);
-
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_
