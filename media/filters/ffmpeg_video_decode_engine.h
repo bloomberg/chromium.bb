@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
 #define MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
 
+#include <deque>
+
 #include "base/scoped_ptr.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/video_decode_engine.h"
@@ -15,6 +17,8 @@ struct AVFrame;
 struct AVStream;
 
 namespace media {
+
+class FFmpegVideoAllocator;
 
 class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
  public:
@@ -40,11 +44,38 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   VideoFrame::Format GetSurfaceFormat() const;
  private:
   void DecodeFrame(scoped_refptr<Buffer> buffer);
+  void ReadInput();
+  void TryToFinishPendingFlush();
 
   AVCodecContext* codec_context_;
   AVStream* av_stream_;
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFree> av_frame_;
   VideoDecodeEngine::EventHandler* event_handler_;
+
+  // Whether direct rendering is used.
+  bool direct_rendering_;
+
+  // Used when direct rendering is used to recycle output buffers.
+  scoped_ptr<FFmpegVideoAllocator> allocator_;
+
+  // Indicate how many buffers are pending on input port of this filter:
+  // Increment when engine receive one input packet from demuxer;
+  // Decrement when engine send one input packet to demuxer;
+  int pending_input_buffers_;
+
+  // Indicate how many buffers are pending on output port of this filter:
+  // Increment when engine receive one output frame from renderer;
+  // Decrement when engine send one output frame to renderer;
+  int pending_output_buffers_;
+
+  // Whether end of stream had been reached at output side.
+  bool output_eos_reached_;
+
+  // Used when direct rendering is disabled to hold available output buffers.
+  std::deque<scoped_refptr<VideoFrame> > frame_queue_available_;
+
+  // Whether flush operation is pending.
+  bool flush_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecodeEngine);
 };

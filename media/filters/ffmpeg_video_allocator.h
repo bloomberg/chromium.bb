@@ -28,7 +28,13 @@ class FFmpegVideoAllocator {
 
   struct RefCountedAVFrame {
     RefCountedAVFrame() : usage_count_(0) {}
-    ~RefCountedAVFrame() { DCHECK_EQ(usage_count_, 0); }
+
+    // TODO(jiesun): we had commented out "DCHECK_EQ(usage_count_, 0);" here.
+    // Because the way FFMPEG-MT handle release buffer in delayed fashion.
+    // Probably we could wait FFMPEG-MT release all buffers before we callback
+    // the flush completion.
+    ~RefCountedAVFrame() {}
+
     void AddRef() {
       base::AtomicRefCountIncN(&usage_count_, 1);
     }

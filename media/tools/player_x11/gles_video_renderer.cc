@@ -446,7 +446,7 @@ void GlesVideoRenderer::CreateTextureAndProgramEgl() {
         egl_image,
         &video_frame);
     egl_frames_.push_back(std::make_pair(video_frame, texture));
-    GetDecoder()->FillThisBuffer(video_frame);
+    ReadInput(video_frame);
   }
 
   GLuint program = glCreateProgram();

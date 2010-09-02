@@ -14,13 +14,19 @@
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_util.h"
 #include "media/filters/ffmpeg_demuxer.h"
+#include "media/filters/ffmpeg_video_allocator.h"
 
 namespace media {
 
 FFmpegVideoDecodeEngine::FFmpegVideoDecodeEngine()
     : codec_context_(NULL),
       av_stream_(NULL),
-      event_handler_(NULL) {
+      event_handler_(NULL),
+      direct_rendering_(false),
+      pending_input_buffers_(0),
+      pending_output_buffers_(0),
+      output_eos_reached_(false),
+      flush_pending_(false) {
 }
 
 FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {
@@ -30,6 +36,8 @@ void FFmpegVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
     const VideoCodecConfig& config) {
+  allocator_.reset(new FFmpegVideoAllocator());
+
   // Always try to use three threads for video decoding.  There is little reason
   // not to since current day CPUs tend to be multi-core and we measured
   // performance benefits on older machines such as P4s with hyperthreading.
@@ -51,6 +59,16 @@ void FFmpegVideoDecodeEngine::Initialize(
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
 
+  if (codec) {
+#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
+    direct_rendering_ = codec->capabilities & CODEC_CAP_DR1 ? true : false;
+#endif
+    if (direct_rendering_) {
+      DLOG(INFO) << "direct rendering is used";
+      allocator_->Initialize(codec_context_, GetSurfaceFormat());
+    }
+  }
+
   // TODO(fbarchard): Improve thread logic based on size / codec.
   // TODO(fbarchard): Fix bug affecting video-cookie.html
   int decode_threads = (codec_context_->codec_id == CODEC_ID_THEORA) ?
@@ -70,15 +88,38 @@ void FFmpegVideoDecodeEngine::Initialize(
   av_frame_.reset(avcodec_alloc_frame());
   VideoCodecInfo info;
   info.success_ = false;
-  info.provides_buffers_ = false;
+  info.provides_buffers_ = true;
   info.stream_info_.surface_type_ = VideoFrame::TYPE_SYSTEM_MEMORY;
   info.stream_info_.surface_format_ = GetSurfaceFormat();
   info.stream_info_.surface_width_ = config.width_;
   info.stream_info_.surface_height_ = config.height_;
+
+  // If we do not have enough buffers, we will report error too.
+  bool buffer_allocated = true;
+  frame_queue_available_.clear();
+  if (!direct_rendering_) {
+    // Create output buffer pool when direct rendering is not used.
+    for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
+      scoped_refptr<VideoFrame> video_frame;
+      VideoFrame::CreateFrame(VideoFrame::YV12,
+                              config.width_,
+                              config.height_,
+                              StreamSample::kInvalidTimestamp,
+                              StreamSample::kInvalidTimestamp,
+                              &video_frame);
+      if (!video_frame.get()) {
+        buffer_allocated = false;
+        break;
+      }
+      frame_queue_available_.push_back(video_frame);
+    }
+  }
+
   if (codec &&
       avcodec_thread_init(codec_context_, decode_threads) >= 0 &&
       avcodec_open(codec_context_, codec) >= 0 &&
-      av_frame_.get()) {
+      av_frame_.get() &&
+      buffer_allocated) {
     info.success_ = true;
   }
   event_handler_ = event_handler;
@@ -112,12 +153,34 @@ static void CopyPlane(size_t plane,
 
 void FFmpegVideoDecodeEngine::EmptyThisBuffer(
     scoped_refptr<Buffer> buffer) {
-  DecodeFrame(buffer);
+  pending_input_buffers_--;
+  if (flush_pending_) {
+    TryToFinishPendingFlush();
+  } else {
+    // Otherwise try to decode this buffer.
+    DecodeFrame(buffer);
+  }
 }
 
 void FFmpegVideoDecodeEngine::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
-  scoped_refptr<Buffer> buffer;
-  event_handler_->OnEmptyBufferCallback(buffer);
+  // We should never receive NULL frame or EOS frame.
+  DCHECK(frame.get() && !frame->IsEndOfStream());
+
+  // Increment pending output buffer count.
+  pending_output_buffers_++;
+
+  // Return this frame to available pool or allocator after display.
+  if (direct_rendering_)
+    allocator_->DisplayDone(codec_context_, frame);
+  else
+    frame_queue_available_.push_back(frame);
+
+  if (flush_pending_) {
+    TryToFinishPendingFlush();
+  } else if (!output_eos_reached_) {
+    // If we already deliver EOS to renderer, we stop reading new input.
+    ReadInput();
+  }
 }
 
 // Try to decode frame when both input and output are ready.
@@ -158,11 +221,17 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   }
 
   // If frame_decoded == 0, then no frame was produced.
+  // In this case, if we already begin to flush codec with empty
+  // input packet at the end of input stream, the first time we
+  // encounter frame_decoded == 0 signal output frame had been
+  // drained, we mark the flag. Otherwise we read from demuxer again.
   if (frame_decoded == 0) {
-    if (buffer->IsEndOfStream())  // We had started flushing.
+    if (buffer->IsEndOfStream()) {  // We had started flushing.
       event_handler_->OnFillBufferCallback(video_frame);
-    else
-      event_handler_->OnEmptyBufferCallback(buffer);
+      output_eos_reached_ = true;
+    } else {
+      ReadInput();
+    }
     return;
   }
 
@@ -198,42 +267,74 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   base::TimeDelta duration =
       ConvertTimestamp(doubled_time_base, 2 + av_frame_->repeat_pict);
 
-  VideoFrame::CreateFrame(GetSurfaceFormat(),
-                          codec_context_->width,
-                          codec_context_->height,
-                          timestamp,
-                          duration,
-                          &video_frame);
-  if (!video_frame.get()) {
-    // TODO(jiesun): call event_handler_->OnError() instead.
-    event_handler_->OnFillBufferCallback(video_frame);
-    return;
+  if (!direct_rendering_) {
+    // Available frame is guaranteed, because we issue as much reads as
+    // available frame, except the case of |frame_decoded| == 0, which
+    // implies decoder order delay, and force us to read more inputs.
+    DCHECK(frame_queue_available_.size());
+    video_frame = frame_queue_available_.front();
+    frame_queue_available_.pop_front();
+
+    // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
+    // output, meaning the data is only valid until the next
+    // avcodec_decode_video() call.
+    CopyPlane(VideoFrame::kYPlane, video_frame.get(), av_frame_.get());
+    CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get());
+    CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get());
+  } else {
+    // Get the VideoFrame from allocator which associate with av_frame_.
+    video_frame = allocator_->DecodeDone(codec_context_, av_frame_.get());
   }
 
-  // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
-  // output, meaning the data is only valid until the next
-  // avcodec_decode_video() call.
-  // TODO(scherkus): figure out pre-allocation/buffer cycling scheme.
-  // TODO(scherkus): is there a cleaner way to figure out the # of planes?
-  CopyPlane(VideoFrame::kYPlane, video_frame.get(), av_frame_.get());
-  CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get());
-  CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get());
+  video_frame->SetTimestamp(timestamp);
+  video_frame->SetDuration(duration);
 
+  pending_output_buffers_--;
   event_handler_->OnFillBufferCallback(video_frame);
 }
 
 void FFmpegVideoDecodeEngine::Uninitialize() {
-  // TODO(jiesun): Release buffers when we support buffer recycling.
+  if (direct_rendering_) {
+    allocator_->Stop(codec_context_);
+  }
+
   event_handler_->OnUninitializeComplete();
 }
 
 void FFmpegVideoDecodeEngine::Flush() {
   avcodec_flush_buffers(codec_context_);
-  event_handler_->OnFlushComplete();
+  flush_pending_ = true;
+  TryToFinishPendingFlush();
+}
+
+void FFmpegVideoDecodeEngine::TryToFinishPendingFlush() {
+  DCHECK(flush_pending_);
+
+  // We consider ourself flushed when there is no pending input buffers
+  // and output buffers, which implies that all buffers had been returned
+  // to its owner.
+  if (!pending_input_buffers_ && !pending_output_buffers_) {
+    // Try to finish flushing and notify pipeline.
+    flush_pending_ = false;
+    event_handler_->OnFlushComplete();
+  }
 }
 
 void FFmpegVideoDecodeEngine::Seek() {
+  // After a seek, output stream no longer considered as EOS.
+  output_eos_reached_ = false;
+
+  // The buffer provider is assumed to perform pre-roll operation.
+  for (unsigned int i = 0; i < Limits::kMaxVideoFrames; ++i)
+    ReadInput();
+
   event_handler_->OnSeekComplete();
+}
+
+void FFmpegVideoDecodeEngine::ReadInput() {
+  DCHECK_EQ(output_eos_reached_, false);
+  pending_input_buffers_++;
+  event_handler_->OnEmptyBufferCallback(NULL);
 }
 
 VideoFrame::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {

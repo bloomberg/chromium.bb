@@ -5,8 +5,6 @@
 #ifndef MEDIA_FILTERS_OMX_VIDEO_DECODE_ENGINE_H_
 #define MEDIA_FILTERS_OMX_VIDEO_DECODE_ENGINE_H_
 
-#include <functional>
-#include <list>
 #include <queue>
 #include <vector>
 
@@ -20,14 +18,7 @@
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
 
-class MessageLoop;
-
-// FFmpeg types.
-struct AVStream;
-
 namespace media {
-
-class Buffer;
 
 class OmxVideoDecodeEngine : public VideoDecodeEngine {
  public:
@@ -80,9 +71,6 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
 
   // calls into other classes
   void FinishEmptyBuffer(scoped_refptr<Buffer> buffer);
-  void OnFormatChange(
-      const OmxConfigurator::MediaFormat& input_format,
-      const OmxConfigurator::MediaFormat& output_format);
   void FinishFillBuffer(OMX_BUFFERHEADERTYPE* buffer);
   // Helper method to perform tasks when this object is stopped.
   void OnStopDone();
@@ -135,9 +123,6 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   // Method to send input buffers to component
   void EmptyBufferTask();
 
-  // Take one decoded buffer to fulfill one read request.
-  void FulfillOneRead();
-
   // Method doing initial reads to get bit stream from demuxer.
   void InitialReadBuffer();
 
@@ -186,6 +171,10 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   void (OmxVideoDecodeEngine::*OnStateSetEventFunc)(OMX_STATETYPE state);
   void (OmxVideoDecodeEngine::*OnFlushEventFunc)(int port);
 
+  // Helper function
+  scoped_refptr<VideoFrame> CreateOmxBufferVideoFrame(
+      OMX_BUFFERHEADERTYPE* omx_buffer);
+
   size_t width_;
   size_t height_;
 
@@ -201,10 +190,11 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   bool input_has_fed_eos_;
   bool input_port_flushed_;
 
-  std::vector<OMX_BUFFERHEADERTYPE*> output_buffers_;
   int output_buffer_count_;
   int output_buffer_size_;
   int output_port_;
+  int output_buffers_at_component_;
+  int output_pending_request_;
   bool output_eos_;
   bool output_port_flushed_;
   bool uses_egl_image_;
@@ -230,19 +220,20 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   // OMX_EmptyThisBuffer() call.
   std::queue<OMX_BUFFERHEADERTYPE*> available_input_buffers_;
 
-  // flag for freeing input buffers
+  // flag for freeing input/output buffers
   bool need_free_input_buffers_;
+  bool need_free_output_buffers_;
+
+  // for calling flush callback only once.
+  bool flush_pending_;
 
   // For output buffer recycling cases.
   typedef std::pair<scoped_refptr<VideoFrame>,
                     OMX_BUFFERHEADERTYPE*> OutputFrame;
   std::vector<OutputFrame> output_frames_;
-  std::queue<OMX_BUFFERHEADERTYPE*> available_output_frames_;
-  std::queue<OMX_BUFFERHEADERTYPE*> output_frames_ready_;
   bool output_frames_allocated_;
 
   // port related
-  bool input_port_enabled_;
   bool need_setup_output_port_;
   OmxIlPortState output_port_state_;
   VideoDecodeEngine::EventHandler* event_handler_;
