@@ -848,6 +848,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void ClearUnclearedRenderbuffers(
       GLenum target, FramebufferManager::FramebufferInfo* info);
 
+  // Restore all GL state that affects clearing.
+  void RestoreClearState();
+
   // Remembers the state of some capabilities.
   void SetCapabilityState(GLenum cap, bool enabled);
 
@@ -1057,7 +1060,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glValidateProgram.
   void DoValidateProgram(GLuint program_client_id);
 
-  void DoCopyTextureToParentTexture(GLuint client_texture_id, GLuint parent_client_texture_id);
+  void DoCopyTextureToParentTexture(GLuint client_texture_id,
+                                    GLuint parent_client_texture_id);
 
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
@@ -1167,13 +1171,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // The GL context this decoder renders to on behalf of the client.
   scoped_ptr<gfx::GLContext> context_;
-
-  // A GLContext that is kept in its default state. It is used to perform
-  // operations that should not be dependent on client set GLContext state, like
-  // clearing a render buffer when it is created.
-  // TODO(apatrick): Decoders in the same ContextGroup could potentially share
-  // the same default GL context.
-  scoped_ptr<gfx::GLContext> default_context_;
 
   // A parent decoder can access this decoders saved offscreen frame buffer.
   // The parent pointer is reset if the parent is destroyed.
@@ -1334,15 +1331,6 @@ ScopedFrameBufferBinder::ScopedFrameBufferBinder(GLES2DecoderImpl* decoder,
 ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
   ScopedGLErrorSuppressor suppressor(decoder_);
   decoder_->RestoreCurrentFramebufferBindings();
-}
-
-ScopedDefaultGLContext::ScopedDefaultGLContext(GLES2DecoderImpl* decoder)
-    : decoder_(decoder) {
-  decoder_->default_context_->MakeCurrent();
-}
-
-ScopedDefaultGLContext::~ScopedDefaultGLContext() {
-  decoder_->context_->MakeCurrent();
 }
 
 Texture::Texture(GLES2DecoderImpl* decoder)
@@ -1567,15 +1555,6 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
 
   // Take ownership of the GLContext.
   context_.reset(context);
-
-  // Create a GL context that is kept in a default state and shares a namespace
-  // with the main GL context.
-  default_context_.reset(gfx::GLContext::CreateOffscreenGLContext(
-      context_.get()));
-  if (!default_context_.get()) {
-    Destroy();
-    return false;
-  }
 
   // Keep only a weak pointer to the parent so we don't unmap its client
   // frame buffer after it has been destroyed.
@@ -1826,6 +1805,14 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
   }
 }
 
+static bool IsAngle() {
+#if defined(OS_WIN)
+  return gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+#else
+  return false;
+#endif
+}
+
 // }  // anonymous namespace
 
 bool GLES2DecoderImpl::MakeCurrent() {
@@ -2016,18 +2003,19 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     return false;
   }
 
-  // TODO(apatrick): Fix this once ANGLE supports shared contexts.
-  // Clear offscreen frame buffer to its initial state. Use default GL context
-  // to ensure clear is not affected by client set state.
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    ScopedDefaultGLContext scoped_context(this);
-    glBindFramebufferEXT(GL_FRAMEBUFFER,
-                         offscreen_target_frame_buffer_->id());
+  // Clear the target frame buffer.
+  {
+    ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
+    glClearColor(0, 1, 0, 1);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClearStencil(0);
+    glStencilMaskSeparate(GL_FRONT, GL_TRUE);
+    glStencilMaskSeparate(GL_BACK, GL_TRUE);
+    glClearDepth(0);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_SCISSOR_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-
-    if (glGetError() != GL_NO_ERROR)
-      return false;
+    RestoreClearState();
   }
 
   if (parent_) {
@@ -2064,18 +2052,15 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
       return false;
     }
 
-    // TODO(apatrick): Fix this once ANGLE supports shared contexts.
-    // Clear the saved offscreen color texture. Use default GL context
-    // to ensure clear is not affected by client set state.
-    if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-      ScopedDefaultGLContext scoped_context(this);
-      glBindFramebufferEXT(GL_FRAMEBUFFER,
-                           offscreen_target_frame_buffer_->id());
+    // Clear the offscreen color texture.
+    {
+      ScopedFrameBufferBinder binder(this,
+                                     offscreen_target_frame_buffer_->id());
+      glClearColor(0, 0, 0, 0);
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glDisable(GL_SCISSOR_TEST);
       glClear(GL_COLOR_BUFFER_BIT);
-      glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-
-      if (glGetError() != GL_NO_ERROR)
-        return false;
+      RestoreClearState();
     }
 
     // Re-attach the offscreen render texture to the target frame buffer.
@@ -2150,11 +2135,6 @@ void GLES2DecoderImpl::Destroy() {
     context_->Destroy();
     context_.reset();
   }
-
-  if (default_context_.get()) {
-    default_context_->Destroy();
-    default_context_.reset();
-  }
 }
 
 void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
@@ -2164,10 +2144,14 @@ void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   pending_offscreen_size_ = size;
 }
 
-void GLES2DecoderImpl::DoCopyTextureToParentTexture(GLuint client_texture_id, GLuint parent_client_texture_id) {
+void GLES2DecoderImpl::DoCopyTextureToParentTexture(
+    GLuint client_texture_id,
+    GLuint parent_client_texture_id) {
   if (parent_) {
-    TextureManager::TextureInfo* texture = texture_manager()->GetTextureInfo(client_texture_id);
-    TextureManager::TextureInfo* parent_texture = parent_->texture_manager()->GetTextureInfo(parent_client_texture_id);
+    TextureManager::TextureInfo* texture = texture_manager()->GetTextureInfo(
+        client_texture_id);
+    TextureManager::TextureInfo* parent_texture =
+        parent_->texture_manager()->GetTextureInfo(parent_client_texture_id);
     if (!texture || !parent_texture) {
       current_decoder_error_ = error::kInvalidArguments;
       return;
@@ -2184,7 +2168,7 @@ void GLES2DecoderImpl::DoCopyTextureToParentTexture(GLuint client_texture_id, GL
     glCopyTexImage2D(GL_TEXTURE_2D,
                      0,  // level
                      GL_RGBA,
-                     0, 0, // x, y
+                     0, 0,  // x, y
                      width,
                      height,
                      0);  // border
@@ -3038,7 +3022,14 @@ void GLES2DecoderImpl::ClearUnclearedRenderbuffers(
 
   info->MarkAttachedRenderbuffersAsCleared();
 
-  // reset clear color
+  RestoreClearState();
+
+  if (target == GL_READ_FRAMEBUFFER_EXT) {
+    // TODO(gman): rebind draw.
+  }
+}
+
+void GLES2DecoderImpl::RestoreClearState() {
   glClearColor(clear_red_, clear_green_, clear_blue_, clear_alpha_);
   glColorMask(mask_red_, mask_green_, mask_blue_, mask_alpha_);
   glClearStencil(clear_stencil_);
@@ -3048,10 +3039,6 @@ void GLES2DecoderImpl::ClearUnclearedRenderbuffers(
   glDepthMask(mask_depth_);
   if (enable_scissor_test_) {
     glEnable(GL_SCISSOR_TEST);
-  }
-
-  if (target == GL_READ_FRAMEBUFFER_EXT) {
-    // TODO(gman): rebind draw.
   }
 }
 
@@ -5332,10 +5319,17 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       return error::kLostContext;
 
     if (parent_) {
+      // Copy the target frame buffer to the saved offscreen texture.
       ScopedFrameBufferBinder binder(this,
                                      offscreen_target_frame_buffer_->id());
       offscreen_saved_color_texture_->Copy(
           offscreen_saved_color_texture_->size());
+
+      // Ensure the side effects of the copy are visible to the parent context.
+      // There is no need to do this for ANGLE because it uses a single D3D
+      // device for all contexts.
+      if (!IsAngle())
+        glFlush();
     }
   } else {
     context_->SwapBuffers();
