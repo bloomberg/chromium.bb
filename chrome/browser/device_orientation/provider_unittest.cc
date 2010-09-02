@@ -251,12 +251,16 @@ TEST_F(DeviceOrientationProviderTest, ObserverNotRemoved) {
       new MockOrientationFactory());
   Init(MockOrientationFactory::CreateDataFetcher);
   const Orientation kTestOrientation(true, 1, true, 2, true, 3);
+  const Orientation kTestOrientation2(true, 4, true, 5, true, 6);
 
   scoped_ptr<UpdateChecker> checker(new UpdateChecker(&pending_expectations_));
   checker->AddExpectation(kTestOrientation);
   orientation_factory->SetOrientation(kTestOrientation);
   provider_->AddObserver(checker.get());
+  MessageLoop::current()->Run();
 
+  checker->AddExpectation(kTestOrientation2);
+  orientation_factory->SetOrientation(kTestOrientation2);
   MessageLoop::current()->Run();
 
   // Note that checker is not removed. This should not be a problem.
