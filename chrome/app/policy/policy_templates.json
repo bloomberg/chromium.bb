@@ -146,7 +146,7 @@
       'name' : 'AutoFillEnabled',
       'policies': [{
         'name': 'AutoFillEnabled',
-	'type': 'main',
+        'type': 'main',
       }]
     },
     {
@@ -215,15 +215,15 @@
       'name': 'RestoreOnStartup',
       'policies': [{
         'name': 'RestoreOnStartup',
-	'type': 'enum',
-	'items': [
-	  {'name': 'RestoreOnStartupIsNone', 'value': '0'},
-	  {'name': 'RestoreOnStartupIsLastSession', 'value': '1'},
-	  {'name': 'RestoreOnStartupIsURLs', 'value': '4'},
-	],
+        'type': 'enum',
+        'items': [
+          {'name': 'RestoreOnStartupIsNone', 'value': '0'},
+          {'name': 'RestoreOnStartupIsLastSession', 'value': '1'},
+          {'name': 'RestoreOnStartupIsURLs', 'value': '4'},
+        ],
       },{
         'name': 'RestoreOnStartupURLs',
-	'type': 'list',
+        'type': 'list',
       }]
     },
   ],

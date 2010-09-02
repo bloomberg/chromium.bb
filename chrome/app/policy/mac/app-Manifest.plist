@@ -18,7 +18,13 @@
         <key>pfm_name</key>
         <string>HomepageLocation</string>
         <key>pfm_description</key>
-        <string>Configures the default homepage URL in Chromium and prevents users from changing it.\n\nThe homepage type can either be set to a URL you specify here or set to the New Tab Page.\n\nIf you specify the New Tab Page as the homepage type, then this policy is ignored.\n\nIf you enable this setting, users cannot change their homepage URL in Chromium, but they still can choose the New Tab Page as their homepage.</string>
+        <string>Configures the default homepage URL in Chromium and prevents users from changing it.
+
+The homepage type can either be set to a URL you specify here or set to the New Tab Page.
+
+If you specify the New Tab Page as the homepage type, then this policy is ignored.
+
+If you enable this setting, users cannot change their homepage URL in Chromium, but they still can choose the New Tab Page as their homepage.</string>
         <key>pfm_title</key>
         <string>Homepage URL</string>
         <key>pfm_targets</key>
@@ -32,7 +38,13 @@
         <key>pfm_name</key>
         <string>HomepageIsNewTabPage</string>
         <key>pfm_description</key>
-        <string>Configures the type of the default home page in Chromium and prevents users from changing homepage preferences. The homepage can either be set to a URL you specify or set to the New Tab Page.\n\nIf you enable this setting, always the New Tab Page is used for the homepage, and the homepage URL location is ignored.\n\nIf you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.\n\nIf you enable or disable this setting, users cannot change their homepage type in Chromium.</string>
+        <string>Configures the type of the default home page in Chromium and prevents users from changing homepage preferences. The homepage can either be set to a URL you specify or set to the New Tab Page.
+
+If you enable this setting, always the New Tab Page is used for the homepage, and the homepage URL location is ignored.
+
+If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
+
+If you enable or disable this setting, users cannot change their homepage type in Chromium.</string>
         <key>pfm_title</key>
         <string>Use New Tab Page as homepage</string>
         <key>pfm_targets</key>
@@ -46,7 +58,11 @@
         <key>pfm_name</key>
         <string>ApplicationLocaleValue</string>
         <key>pfm_description</key>
-        <string>Configures the application locale in Chromium and prevents users from changing the locale.\n\nIf you enable this setting, Chromium uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.\n\nIf this setting is disabled or not configured, Chromium uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'.</string>
+        <string>Configures the application locale in Chromium and prevents users from changing the locale.
+
+If you enable this setting, Chromium uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
+
+If this setting is disabled or not configured, Chromium uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'.</string>
         <key>pfm_title</key>
         <string>Application locale</string>
         <key>pfm_targets</key>
@@ -60,7 +76,13 @@
         <key>pfm_name</key>
         <string>AlternateErrorPagesEnabled</string>
         <key>pfm_description</key>
-        <string>Enables the use of alternate error pages that are built into Chromium (such as 'page not found') and prevents users from changing this setting.\n\nIf you enable this setting, alternate error pages are used.\n\nIf you disable this setting, alternate error pages are never used.\n\nIf you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Enables the use of alternate error pages that are built into Chromium (such as 'page not found') and prevents users from changing this setting.
+
+If you enable this setting, alternate error pages are used.
+
+If you disable this setting, alternate error pages are never used.
+
+If you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Enable alternate error pages</string>
         <key>pfm_targets</key>
@@ -74,7 +96,13 @@
         <key>pfm_name</key>
         <string>SearchSuggestEnabled</string>
         <key>pfm_description</key>
-        <string>Enables search suggestions in Chromium's Omnibox and prevents users from changing this setting.\n\nIf you enable this setting, search suggestions are used.\n\nIf you disable this setting, search suggestions are never used.\n\nIf you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Enables search suggestions in Chromium's Omnibox and prevents users from changing this setting.
+
+If you enable this setting, search suggestions are used.
+
+If you disable this setting, search suggestions are never used.
+
+If you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Enable search suggestions</string>
         <key>pfm_targets</key>
@@ -88,7 +116,9 @@
         <key>pfm_name</key>
         <string>DnsPrefetchingEnabled</string>
         <key>pfm_description</key>
-        <string>Enables DNS prefetching in Chromium and prevents users from changing this setting.\n\nIf you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Enables DNS prefetching in Chromium and prevents users from changing this setting.
+
+If you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Enable DNS prefetching</string>
         <key>pfm_targets</key>
@@ -102,7 +132,13 @@
         <key>pfm_name</key>
         <string>SafeBrowsingEnabled</string>
         <key>pfm_description</key>
-        <string>Enables Chromium's Safe Browsing feature and prevents users from changing this setting.\n\nIf you enable this setting, Safe Browsing is always active.\n\nIf you disable this setting, Safe Browsing is never active.\n\nIf you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Enables Chromium's Safe Browsing feature and prevents users from changing this setting.
+
+If you enable this setting, Safe Browsing is always active.
+
+If you disable this setting, Safe Browsing is never active.
+
+If you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Enable Safe Browsing</string>
         <key>pfm_targets</key>
@@ -116,7 +152,13 @@
         <key>pfm_name</key>
         <string>MetricsReportingEnabled</string>
         <key>pfm_description</key>
-        <string>Enables anonymous reporting of usage and crash-related data about Chromium to Google and prevents users from changing this setting.\n\nIf you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.\n\nIf you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.\n\nIf you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Enables anonymous reporting of usage and crash-related data about Chromium to Google and prevents users from changing this setting.
+
+If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.
+
+If you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.
+
+If you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Enable reporting of usage and crash-related data</string>
         <key>pfm_targets</key>
@@ -130,7 +172,13 @@
         <key>pfm_name</key>
         <string>PasswordManagerEnabled</string>
         <key>pfm_description</key>
-        <string>Enables saving passwords and using saved passwords in Chromium.\n\nIf you enable this setting, users can have Chromium memorize passwords and provide them automatically the next time you log into a site.\n\nIf you disable this setting, users are not able to save passwords or use already saved passwords.\n\nIf you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Enables saving passwords and using saved passwords in Chromium.
+
+If you enable this setting, users can have Chromium memorize passwords and provide them automatically the next time you log into a site.
+
+If you disable this setting, users are not able to save passwords or use already saved passwords.
+
+If you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Enable the password manager</string>
         <key>pfm_targets</key>
@@ -144,7 +192,15 @@
         <key>pfm_name</key>
         <string>AutoFillEnabled</string>
         <key>pfm_description</key>
-        <string>Enables Chromium's AutoFill\nfeature and allows users to auto-complete web-forms using previously stored\ninformation like address or credit card information.\n\nIf you enable this setting, AutoFill is always active.\n\nIf you disable this setting, AutoFill is never active.\n\nIf you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Enables Chromium's AutoFill
+feature and allows users to auto-complete web-forms using previously stored
+information like address or credit card information.
+
+If you enable this setting, AutoFill is always active.
+
+If you disable this setting, AutoFill is never active.
+
+If you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Enable AutoFill</string>
         <key>pfm_targets</key>
@@ -158,9 +214,11 @@
         <key>pfm_name</key>
         <string>DisabledPlugins</string>
         <key>pfm_description</key>
-        <string>Specifies a list of plugins that are disabled in Chromium and prevents users from changing this setting. The value is a comma-separated list of the names of plugins to be disabled.\n\nIf you enable this setting, the specified list of plugins is never used in Chromium. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them.</string>
+        <string>Specifies a list of plugins that are disabled in Chromium and prevents users from changing this setting.
+
+If you enable this setting, the specified list of plugins is never used in Chromium. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them.</string>
         <key>pfm_title</key>
-        <string>Comma-separated list of disabled plugins</string>
+        <string>List of disabled plugins</string>
         <key>pfm_targets</key>
         <array>
           <string>user-managed</string>
@@ -172,7 +230,9 @@
         <key>pfm_name</key>
         <string>SyncDisabled</string>
         <key>pfm_description</key>
-        <string>Disallows data synchronization in Chromium using Google-hosted synchronization services and prevents users from changing this setting.\n\nIf you enable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Disallows data synchronization in Chromium using Google-hosted synchronization services and prevents users from changing this setting.
+
+If you enable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Disallow synchronization of data with Google</string>
         <key>pfm_targets</key>
@@ -186,7 +246,22 @@
         <key>pfm_name</key>
         <string>ProxyServerMode</string>
         <key>pfm_description</key>
-        <string>Allows you to specify the proxy server used by Chromium and prevents users from changing proxy settings.\n\nIf you choose to never use a proxy server and always connect directly, all other options are ignored.\n\nIf you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.\n\nIf you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.\n\nFor detailed examples, visit:\nhttp://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett\n\nIf you enable this setting, Chromium ignores all proxy-related options specified from the command line.</string>
+        <string>0 - Never use a proxy
+1 - Auto detect proxy settings
+2 - Manually specify proxy settings
+3 - Use system proxy settings
+Allows you to specify the proxy server used by Chromium and prevents users from changing proxy settings.
+
+If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
+
+If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.
+
+For detailed examples, visit:
+http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett
+
+If you enable this setting, Chromium ignores all proxy-related options specified from the command line.</string>
         <key>pfm_title</key>
         <string>Choose how to specify proxy server settings</string>
         <key>pfm_targets</key>
@@ -207,7 +282,12 @@
         <key>pfm_name</key>
         <string>ProxyServer</string>
         <key>pfm_description</key>
-        <string>You can specify the URL of the proxy server here.\n\nThis policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.\n\nFor more options and detailed examples, visit:\nhttp://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</string>
+        <string>You can specify the URL of the proxy server here.
+
+This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+For more options and detailed examples, visit:
+http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</string>
         <key>pfm_title</key>
         <string>Address or URL of proxy server</string>
         <key>pfm_targets</key>
@@ -221,7 +301,12 @@
         <key>pfm_name</key>
         <string>ProxyPacUrl</string>
         <key>pfm_description</key>
-        <string>You can specify an URL to a proxy .pac file here.\n\nThis policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.\n\nFor detailed examples, visit:\nhttp://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</string>
+        <string>You can specify an URL to a proxy .pac file here.
+
+This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+For detailed examples, visit:
+http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</string>
         <key>pfm_title</key>
         <string>URL to a proxy .pac file</string>
         <key>pfm_targets</key>
@@ -235,7 +320,12 @@
         <key>pfm_name</key>
         <string>ProxyBypassList</string>
         <key>pfm_description</key>
-        <string>Chromium will bypass any proxy for the list of hosts given here.\n\nThis policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.\n\nFor more detailed examples, visit:\nhttp://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</string>
+        <string>Chromium will bypass any proxy for the list of hosts given here.
+
+This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+For more detailed examples, visit:
+http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</string>
         <key>pfm_title</key>
         <string>Comma-separated list of proxy bypass rules</string>
         <key>pfm_targets</key>
@@ -249,7 +339,9 @@
         <key>pfm_name</key>
         <string>ExtensionInstallBlacklist</string>
         <key>pfm_description</key>
-        <string>Allows you to specify which extensions the users can NOT install.\n\nA blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.</string>
+        <string>Allows you to specify which extensions the users can NOT install.
+
+A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.</string>
         <key>pfm_title</key>
         <string>Extension IDs the user should be prevented from installing (or * for all)</string>
         <key>pfm_targets</key>
@@ -263,7 +355,11 @@
         <key>pfm_name</key>
         <string>ExtensionInstallWhitelist</string>
         <key>pfm_description</key>
-        <string>Allows you to specify which extensions are not subject to the blacklist.\n\nA blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.\n\nBy default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</string>
+        <string>Allows you to specify which extensions are not subject to the blacklist.
+
+A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.
+
+By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</string>
         <key>pfm_title</key>
         <string>Extension IDs to exempt from the blacklist</string>
         <key>pfm_targets</key>
@@ -277,7 +373,13 @@
         <key>pfm_name</key>
         <string>ShowHomeButton</string>
         <key>pfm_description</key>
-        <string>Shows the Home button on Chromium's toolbar.\n\nIf you enable this setting, the Home button is always shown.\n\nIf you disable this setting, the Home button is never shown.\n\nIf you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
+        <string>Shows the Home button on Chromium's toolbar.
+
+If you enable this setting, the Home button is always shown.
+
+If you disable this setting, the Home button is never shown.
+
+If you enable or disable this setting, users cannot change or override this setting in Chromium.</string>
         <key>pfm_title</key>
         <string>Show Home button on toolbar</string>
         <key>pfm_targets</key>
@@ -291,7 +393,10 @@
         <key>pfm_name</key>
         <string>RestoreOnStartup</string>
         <key>pfm_description</key>
-        <string>Allows you to specify the behavior on startup.</string>
+        <string>0 - Open home page
+1 - Reopen the URLs that were open last
+4 - Open a list of URLs
+Allows you to specify the behavior on startup.</string>
         <key>pfm_title</key>
         <string>Action on Startup</string>
         <key>pfm_targets</key>

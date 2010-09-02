@@ -431,12 +431,12 @@ templates and will be translated for each locale. -->
       Specify a list of plugins that are disabled
     </message>
     <message name="IDS_POLICY_GROUP_DISABLEDPLUGINS_DESC" desc="Description of the 'disable plugins' policy settings page.">
-      Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting. The value is a comma-separated list of the names of plugins to be disabled.
+      Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them.
     </message>
     <message name="IDS_POLICY_DISABLEDPLUGINS_CAPTION" desc="Label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
-      Comma-separated list of disabled plugins
+      List of disabled plugins
     </message>
 
     <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLBLACKLIST_CAPTION" desc="Caption of the 'extension blacklist' policy settings page.">
