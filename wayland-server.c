@@ -262,22 +262,6 @@ wl_client_destroy(struct wl_client *client)
 	free(client);
 }
 
-WL_EXPORT int
-wl_client_add_surface(struct wl_client *client,
-		      struct wl_surface *surface,
-		      const struct wl_surface_interface *implementation, 
-		      uint32_t id)
-{
-	surface->base.base.id = id;
-	surface->base.base.interface = &wl_surface_interface;
-	surface->base.base.implementation = (void (**)(void)) implementation;
-	surface->client = client;
-
-	wl_client_add_resource(client, &surface->base);
-
-	return 0;
-}
-
 WL_EXPORT void
 wl_client_send_acknowledge(struct wl_client *client,
 			   struct wl_compositor *compositor,

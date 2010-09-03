@@ -635,8 +635,14 @@ compositor_create_surface(struct wl_client *client,
 
 	wl_list_insert(ec->surface_list.prev, &surface->link);
 	surface->base.base.destroy = destroy_surface;
-	wl_client_add_surface(client, &surface->base,
-			      &surface_interface, id);
+
+	surface->base.base.base.id = id;
+	surface->base.base.base.interface = &wl_surface_interface;
+	surface->base.base.base.implementation =
+		(void (**)(void)) &surface_interface;
+	surface->base.client = client;
+
+	wl_client_add_resource(client, &surface->base.base);
 }
 
 static void

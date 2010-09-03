@@ -156,12 +156,6 @@ wl_display_set_compositor(struct wl_display *display,
 			  struct wl_compositor *compositor,
 			  const struct wl_compositor_interface *implementation);
 
-int
-wl_client_add_surface(struct wl_client *client,
-		      struct wl_surface *surface,
-		      const struct wl_surface_interface *implementation, 
-		      uint32_t id);
-
 void
 wl_client_send_acknowledge(struct wl_client *client,
 			   struct wl_compositor *compositor,
