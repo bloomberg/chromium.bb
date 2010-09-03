@@ -24,12 +24,12 @@ const int PowerMenuButton::kNumPowerImages = 12;
 
 PowerMenuButton::PowerMenuButton()
     : StatusAreaButton(this),
-      ALLOW_THIS_IN_INITIALIZER_LIST(power_menu_(this)),
       battery_is_present_(false),
       line_power_on_(false),
       battery_fully_charged_(false),
       battery_percentage_(0.0),
-      icon_id_(-1) {
+      icon_id_(-1),
+      ALLOW_THIS_IN_INITIALIZER_LIST(power_menu_(this)) {
   UpdateIconAndLabelInfo();
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
 }
@@ -56,36 +56,40 @@ string16 PowerMenuButton::GetLabelAt(int index) const {
         base::IntToString16(static_cast<int>(battery_percentage_)));
   }
 
-  // The second item shows the battery is charged if it is.
-  if (battery_fully_charged_)
-    return l10n_util::GetStringUTF16(IDS_STATUSBAR_BATTERY_IS_CHARGED);
+  if (index == 1) {
+    // The second item shows the battery is charged if it is.
+    if (battery_fully_charged_)
+      return l10n_util::GetStringUTF16(IDS_STATUSBAR_BATTERY_IS_CHARGED);
 
-  // If battery is in an intermediate charge state, we show how much time left.
-  base::TimeDelta time = line_power_on_ ? battery_time_to_full_ :
-                                          battery_time_to_empty_;
-  if (time.InSeconds() == 0) {
-    // If time is 0, then that means we are still calculating how much time.
-    // Depending if line power is on, we either show a message saying that we
-    // are calculating time until full or calculating remaining time.
-    int msg = line_power_on_ ?
-        IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_FULL :
-        IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_EMPTY;
-    return l10n_util::GetStringUTF16(msg);
-  } else {
-    // Depending if line power is on, we either show a message saying XX:YY
-    // until full or XX:YY remaining where XX is number of hours and YY is
-    // number of minutes.
-    int msg = line_power_on_ ? IDS_STATUSBAR_BATTERY_TIME_UNTIL_FULL :
-                               IDS_STATUSBAR_BATTERY_TIME_UNTIL_EMPTY;
-    int hour = time.InHours();
-    int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-    string16 hour_str = base::IntToString16(hour);
-    string16 min_str = base::IntToString16(min);
-    // Append a "0" before the minute if it's only a single digit.
-    if (min < 10)
-      min_str = ASCIIToUTF16("0") + min_str;
-    return l10n_util::GetStringFUTF16(msg, hour_str, min_str);
+    // If battery is in an intermediate charge state, we show how much time left.
+    base::TimeDelta time = line_power_on_ ? battery_time_to_full_ :
+        battery_time_to_empty_;
+    if (time.InSeconds() == 0) {
+      // If time is 0, then that means we are still calculating how much time.
+      // Depending if line power is on, we either show a message saying that we
+      // are calculating time until full or calculating remaining time.
+      int msg = line_power_on_ ?
+          IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_FULL :
+          IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_EMPTY;
+      return l10n_util::GetStringUTF16(msg);
+    } else {
+      // Depending if line power is on, we either show a message saying XX:YY
+      // until full or XX:YY remaining where XX is number of hours and YY is
+      // number of minutes.
+      int msg = line_power_on_ ? IDS_STATUSBAR_BATTERY_TIME_UNTIL_FULL :
+          IDS_STATUSBAR_BATTERY_TIME_UNTIL_EMPTY;
+      int hour = time.InHours();
+      int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
+      string16 hour_str = base::IntToString16(hour);
+      string16 min_str = base::IntToString16(min);
+      // Append a "0" before the minute if it's only a single digit.
+      if (min < 10)
+        min_str = ASCIIToUTF16("0") + min_str;
+      return l10n_util::GetStringFUTF16(msg, hour_str, min_str);
+    }
   }
+
+  return string16();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

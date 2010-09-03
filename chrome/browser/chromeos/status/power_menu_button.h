@@ -74,10 +74,7 @@ class PowerMenuButton : public StatusAreaButton,
   // The number of power images.
   static const int kNumPowerImages;
 
-  // The power menu.
-  views::Menu2 power_menu_;
-
-  // Stored data gathered CrosLibrary::PowerLibrary.
+  // Stored data gathered from CrosLibrary::PowerLibrary.
   bool battery_is_present_;
   bool line_power_on_;
   bool battery_fully_charged_;
@@ -87,6 +84,10 @@ class PowerMenuButton : public StatusAreaButton,
 
   // The currently showing icon bitmap id.
   int icon_id_;
+
+  // The power menu. This needs to be initialized last since it calls into
+  // GetLabelAt() during construction.
+  views::Menu2 power_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMenuButton);
 };
