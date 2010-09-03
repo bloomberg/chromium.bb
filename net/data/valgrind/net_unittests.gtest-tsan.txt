@@ -4,11 +4,11 @@ DiskCacheEntryTest.*HugeSparse*
 
 # SPDY tests tend to crash on both Mac and Windows.
 # See http://crbug.com/51144
-SpdyNetworkingTest/SpdyNetworkTransactionTest.SocketWriteReturnsZero*
+Spdy/SpdyNetworkTransactionTest.SocketWriteReturnsZero*
 # See http://crbug.com/50918
-SpdyNetworkingTest/SpdyNetworkTransactionTest.CancelledTransactionSendRst*
+Spdy/SpdyNetworkTransactionTest.CancelledTransactionSendRst*
 # See http://crbug.com/51087
-SpdyNetworkingTest*
+Spdy*
 
 # See http://crbug.com/44570
 HttpNetworkTransactionTest.StopsReading204
