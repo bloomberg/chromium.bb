@@ -375,18 +375,6 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
       params.arg_values.push_back("opaque");
     }
   }
-
-  params.containing_window_frame = render_view_->rootWindowRect();
-  // If the renderer isn't currently visible, don't bother asking for anything
-  // else; the plugin will get real data when its renderer becomes visible.
-  if (params.containing_window_frame.IsEmpty()) {
-    params.containing_content_frame = gfx::Rect();
-    params.containing_window_has_focus = false;
-  } else {
-    params.containing_content_frame = render_view_->windowRect();
-    WebKit::WebView* webview = render_view_->webview();
-    params.containing_window_has_focus = webview && webview->isActive();
-  }
 #endif
   params.load_manually = load_manually;
 

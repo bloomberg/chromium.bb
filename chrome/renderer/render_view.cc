@@ -585,6 +585,14 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
 #if defined(OS_MACOSX)
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.insert(delegate);
+  // If the renderer is visible, set initial visibility and focus state.
+  if (!is_hidden()) {
+    delegate->SetContainerVisibility(true);
+    if (webview() && webview()->isActive())
+      delegate->SetWindowFocus(true);
+    if (has_focus())
+      delegate->SetContentAreaFocus(true);
+  }
 }
 
 void RenderView::UnregisterPluginDelegate(WebPluginDelegateProxy* delegate) {

@@ -224,6 +224,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // the focus on our own when the browser did not focus us.
   void ClearFocus();
 
+  bool has_focus() const { return has_focus_; }
+
   // Set the pending window rect.
   // Because the real render_widget is hosted in another process, there is
   // a time period where we may have set a new window rect which has not yet

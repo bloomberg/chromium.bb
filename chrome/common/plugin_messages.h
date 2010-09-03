@@ -42,11 +42,6 @@ struct PluginMsg_Init_Params {
   std::vector<std::string> arg_values;
   bool load_manually;
   int host_render_view_routing_id;
-#if defined(OS_MACOSX)
-  gfx::Rect containing_window_frame;
-  gfx::Rect containing_content_frame;
-  bool containing_window_has_focus;
-#endif
 };
 
 struct PluginHostMsg_URLRequest_Params {
@@ -128,11 +123,6 @@ struct ParamTraits<PluginMsg_Init_Params> {
     WriteParam(m, p.arg_values);
     WriteParam(m, p.load_manually);
     WriteParam(m, p.host_render_view_routing_id);
-#if defined(OS_MACOSX)
-    WriteParam(m, p.containing_window_frame);
-    WriteParam(m, p.containing_content_frame);
-    WriteParam(m, p.containing_window_has_focus);
-#endif
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->containing_window) &&
@@ -141,14 +131,7 @@ struct ParamTraits<PluginMsg_Init_Params> {
            ReadParam(m, iter, &p->arg_names) &&
            ReadParam(m, iter, &p->arg_values) &&
            ReadParam(m, iter, &p->load_manually) &&
-           ReadParam(m, iter, &p->host_render_view_routing_id)
-#if defined(OS_MACOSX)
-           &&
-           ReadParam(m, iter, &p->containing_window_frame) &&
-           ReadParam(m, iter, &p->containing_content_frame) &&
-           ReadParam(m, iter, &p->containing_window_has_focus)
-#endif
-           ;
+           ReadParam(m, iter, &p->host_render_view_routing_id);
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("(");
@@ -165,14 +148,6 @@ struct ParamTraits<PluginMsg_Init_Params> {
     LogParam(p.load_manually, l);
     l->append(", ");
     LogParam(p.host_render_view_routing_id, l);
-#if defined(OS_MACOSX)
-    l->append(", ");
-    LogParam(p.containing_window_frame, l);
-    l->append(", ");
-    LogParam(p.containing_content_frame, l);
-    l->append(", ");
-    LogParam(p.containing_window_has_focus, l);
-#endif
     l->append(")");
   }
 };

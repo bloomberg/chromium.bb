@@ -385,12 +385,6 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
       break;
   }
 
-  // TODO(stuartmorgan): We need real plugin container visibility information
-  // when the plugin is initialized; for now, assume it's visible.
-  // None of the calls SetContainerVisibility would make are useful at this
-  // point, so we just set the initial state directly.
-  container_is_visible_ = true;
-
   // Let the WebPlugin know that we are windowless (unless this is a
   // Core Animation plugin, in which case BindFakePluginWindowHandle will take
   // care of setting up the appropriate window handle).

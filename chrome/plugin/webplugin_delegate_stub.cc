@@ -191,11 +191,6 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                     params.arg_values,
                                     webplugin_,
                                     params.load_manually);
-#if defined(OS_MACOSX)
-    delegate_->WindowFrameChanged(params.containing_window_frame,
-                                  params.containing_content_frame);
-    delegate_->SetWindowHasFocus(params.containing_window_has_focus);
-#endif
   }
 }
 
