@@ -38,12 +38,14 @@ class ServiceProcessControlBrowserTest
   void ProcessControlLaunched() {
     process()->SetMessageHandler(this);
     // Quit the current message.
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->PostTask(FROM_HERE,
+        new MessageLoop::QuitTask());
   }
 
   // ServiceProcessControl::MessageHandler implementations.
   virtual void OnGoodDay() {
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->PostTask(FROM_HERE,
+        new MessageLoop::QuitTask());
   }
 
   ServiceProcessControl* process() { return process_; }
@@ -68,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 
 // This tests the case when a service process is launched when browser
 // starts but we try to launch it again in the remoting setup dialog.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, DISABLED_LaunchTwice) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
   // Launch the service process the first time.
   LaunchServiceProcessControl();
 
