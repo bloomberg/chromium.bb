@@ -14,7 +14,7 @@
 // all methods in this class are executed on the same thread as
 // VideoDecoderImpl. Because of that there's no need for locking anywhere.
 
-#include "media/filters/omx_video_decode_engine.h"
+#include "media/video/omx_video_decode_engine.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"

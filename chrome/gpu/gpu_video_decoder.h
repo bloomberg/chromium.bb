@@ -10,7 +10,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/gpu_video_common.h"
-#include "media/filters/video_decode_engine.h"
+#include "media/video/video_decode_engine.h"
 #include "ipc/ipc_channel.h"
 
 class GpuChannel;
@@ -93,4 +93,3 @@ class GpuVideoDecoder
 };
 
 #endif  // CHROME_GPU_GPU_VIDEO_DECODER_H_
-

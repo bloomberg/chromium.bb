@@ -22,10 +22,10 @@
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/file_protocol.h"
 #include "media/filters/bitstream_converter.h"
-#include "media/filters/omx_video_decode_engine.h"
 #include "media/tools/omx_test/color_space_util.h"
 #include "media/tools/omx_test/file_reader_util.h"
 #include "media/tools/omx_test/file_sink.h"
+#include "media/video/omx_video_decode_engine.h"
 
 using media::BlockFileReader;
 using media::Buffer;

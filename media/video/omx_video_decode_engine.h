@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_OMX_VIDEO_DECODE_ENGINE_H_
-#define MEDIA_FILTERS_OMX_VIDEO_DECODE_ENGINE_H_
+#ifndef MEDIA_VIDEO_OMX_VIDEO_DECODE_ENGINE_H_
+#define MEDIA_VIDEO_OMX_VIDEO_DECODE_ENGINE_H_
 
 #include <queue>
 #include <vector>
@@ -12,8 +12,8 @@
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "media/filters/video_decode_engine.h"
 #include "media/omx/omx_configurator.h"
+#include "media/video/video_decode_engine.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
@@ -243,4 +243,4 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_OMX_VIDEO_DECODE_ENGINE_H_
+#endif  // MEDIA_VIDEO_OMX_VIDEO_DECODE_ENGINE_H_
