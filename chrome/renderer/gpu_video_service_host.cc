@@ -29,51 +29,6 @@ void GpuVideoServiceHost::OnMessageReceived(const IPC::Message& msg) {
 #endif
 }
 
-scoped_refptr<GpuVideoDecoderHost> GpuVideoServiceHost::CreateVideoDecoder(
-    GpuVideoDecoderHost::EventHandler* event_handler) {
-  DCHECK(RenderThread::current());
-
-  if (!channel_host_ || !service_info_.service_available_)
-    return NULL;
-
-  GpuVideoDecoderInfoParam param;
-  if (!channel_host_->Send(new GpuChannelMsg_CreateVideoDecoder(&param))) {
-    LOG(ERROR) << "GpuChannelMsg_CreateVideoDecoder failed";
-    return NULL;
-  }
-
-  scoped_refptr<GpuVideoDecoderHost> gpu_video_decoder_host =
-      new GpuVideoDecoderHost(this, channel_host_, event_handler, param);
-  if (!gpu_video_decoder_host.get()) {
-    if (!channel_host_->Send(
-        new GpuChannelMsg_DestroyVideoDecoder(param.decoder_id_))) {
-      LOG(ERROR) << "GpuChannelMsg_DestroyVideoDecoder failed";
-    }
-    return NULL;
-  }
-
-  router_->AddRoute(gpu_video_decoder_host->my_route_id(),
-                    gpu_video_decoder_host.get());
-  return gpu_video_decoder_host;
-}
-
-void GpuVideoServiceHost::DestroyVideoDecoder(
-    scoped_refptr<GpuVideoDecoderHost> gpu_video_decoder_host) {
-  DCHECK(RenderThread::current());
-
-  if (!channel_host_ || !service_info_.service_available_)
-    return;
-
-  DCHECK(gpu_video_decoder_host.get());
-
-  int32 decoder_id = gpu_video_decoder_host->decoder_id();
-  if (!channel_host_->Send(new GpuChannelMsg_DestroyVideoDecoder(decoder_id))) {
-    LOG(ERROR) << "GpuChannelMsg_DestroyVideoDecoder failed";
-  }
-
-  router_->RemoveRoute(gpu_video_decoder_host->my_route_id());
-}
-
 void GpuVideoServiceHost::OnRendererThreadInit(MessageLoop* message_loop) {
   message_loop_ = message_loop;
 }
@@ -96,3 +51,18 @@ void GpuVideoServiceHost::OnGpuChannelConnected(
     router->AddRoute(service_info_.video_service_host_route_id_, this);
 }
 
+GpuVideoDecoderHost* GpuVideoServiceHost::CreateVideoDecoder(
+    int context_route_id) {
+  DCHECK(RenderThread::current());
+
+  return new GpuVideoDecoderHost(this, channel_host_, context_route_id);
+}
+
+void GpuVideoServiceHost::AddRoute(int route_id,
+                                   GpuVideoDecoderHost* decoder_host) {
+  router_->AddRoute(route_id, decoder_host);
+}
+
+void GpuVideoServiceHost::RemoveRoute(int route_id) {
+  router_->RemoveRoute(route_id);
+}

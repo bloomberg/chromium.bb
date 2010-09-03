@@ -47,7 +47,7 @@ class GpuVideoDecoderHost
   virtual void OnChannelError();
   virtual void OnMessageReceived(const IPC::Message& message);
 
-  bool Initialize(const GpuVideoDecoderInitParam& param);
+  bool Initialize(EventHandler* handler, const GpuVideoDecoderInitParam& param);
   bool Uninitialize();
   void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
   void FillThisBuffer(scoped_refptr<VideoFrame> frame);
@@ -60,12 +60,10 @@ class GpuVideoDecoderHost
   virtual ~GpuVideoDecoderHost() {}
 
  private:
+  friend class GpuVideoServiceHost;
   GpuVideoDecoderHost(GpuVideoServiceHost* service_host,
                       GpuChannelHost* channel_host,
-                      EventHandler* event_handler,
-                      GpuVideoDecoderInfoParam decoder_info);
-
-  friend class GpuVideoServiceHost;
+                      int context_route_id);
 
   // Input message handler.
   void OnInitializeDone(const GpuVideoDecoderInitDoneParam& param);
@@ -82,6 +80,9 @@ class GpuVideoDecoderHost
   GpuVideoServiceHost* gpu_video_service_host_;
 
   GpuChannelHost* channel_host_;
+
+  // Route ID of the GLES2 context in the GPU process.
+  int context_route_id_;
 
   // We expect that the client of us will always available during our life span.
   EventHandler* event_handler_;
@@ -117,4 +118,3 @@ class GpuVideoDecoderHost
 };
 
 #endif  // CHROME_RENDERER_GPU_VIDEO_DECODER_HOST_H_
-

@@ -6,6 +6,7 @@
 #include "chrome/renderer/media/ipc_video_decoder.h"
 
 #include "base/task.h"
+#include "chrome/renderer/ggl/ggl.h"
 #include "media/base/callback.h"
 #include "media/base/filters.h"
 #include "media/base/filter_host.h"
@@ -47,6 +48,8 @@ void IpcVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   initialize_callback_.reset(callback);
 
   // We require bit stream converter for openmax hardware decoder.
+  // TODO(hclam): This is a wrong place to initialize the demuxer stream's
+  // bitstream converter.
   demuxer_stream->EnableBitstreamConverter();
 
   // Get the AVStream by querying for the provider interface.
@@ -61,15 +64,14 @@ void IpcVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   width_ = av_stream->codec->width;
   height_ = av_stream->codec->height;
 
-  // Create hardware decoder instance.
-  GpuVideoServiceHost* gpu_video_service_host = GpuVideoServiceHost::get();
-  gpu_video_decoder_host_ = gpu_video_service_host->CreateVideoDecoder(this);
+  // TODO(hclam): Pass an actual context instead of NULL.
+  gpu_video_decoder_host_ = ggl::CreateVideoDecoder(NULL);
 
   // Initialize hardware decoder.
   GpuVideoDecoderInitParam param = {0};
   param.width_ = width_;
   param.height_ = height_;
-  if (!gpu_video_decoder_host_->Initialize(param)) {
+  if (!gpu_video_decoder_host_->Initialize(this, param)) {
     GpuVideoDecoderInitDoneParam param;
     OnInitializeDone(false, param);
   }
@@ -344,4 +346,3 @@ bool IpcVideoDecoder::IsMediaFormatSupported(const MediaFormat& format) {
 }
 
 }  // namespace media
-

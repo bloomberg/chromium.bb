@@ -11,6 +11,7 @@
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/gpu_channel_host.h"
+#include "chrome/renderer/gpu_video_service_host.h"
 #include "chrome/renderer/render_widget.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -96,6 +97,9 @@ class Context : public base::SupportsWeakPtr<Context> {
   // TODO(apatrick): support rendering to browser window. This function is
   // not useful at this point.
   bool SwapBuffers();
+
+  // Create a hardware accelerated video decoder associated with this context.
+  GpuVideoDecoderHost* CreateVideoDecoder();
 
   // Get the current error code.
   Error GetError();
@@ -320,6 +324,11 @@ bool Context::SwapBuffers() {
   return true;
 }
 
+GpuVideoDecoderHost* Context::CreateVideoDecoder() {
+  return GpuVideoServiceHost::get()->CreateVideoDecoder(
+      command_buffer_->route_id());
+}
+
 Error Context::GetError() {
   gpu::CommandBuffer::State state = command_buffer_->GetState();
   if (state.error == gpu::error::kNoError) {
@@ -454,6 +463,10 @@ bool DestroyContext(Context* context) {
 #else
   return false;
 #endif
+}
+
+GpuVideoDecoderHost* CreateVideoDecoder(Context* context) {
+  return context->CreateVideoDecoder();
 }
 
 Error GetError() {

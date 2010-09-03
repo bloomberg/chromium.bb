@@ -50,23 +50,9 @@ class IpcVideoDecoder : public VideoDecoder,
   virtual bool ProvidesBuffer();
 
  private:
-  void OnSeekComplete(FilterCallback* callback);
-  void OnReadComplete(Buffer* buffer);
-  void ReadCompleteTask(scoped_refptr<Buffer> buffer);
-
- private:
   friend class FilterFactoryImpl2<IpcVideoDecoder,
                                   VideoDecodeEngine*,
                                   MessageLoop*>;
-
- private:
-  int32 width_;
-  int32 height_;
-  MediaFormat media_format_;
-
-  scoped_ptr<FilterCallback> flush_callback_;
-  scoped_ptr<FilterCallback> initialize_callback_;
-  scoped_ptr<FilterCallback> stop_callback_;
 
   enum DecoderState {
     kUnInitialized,
@@ -77,6 +63,19 @@ class IpcVideoDecoder : public VideoDecoder,
     kEnded,
     kStopped,
   };
+
+  void OnSeekComplete(FilterCallback* callback);
+  void OnReadComplete(Buffer* buffer);
+  void ReadCompleteTask(scoped_refptr<Buffer> buffer);
+
+  int32 width_;
+  int32 height_;
+  MediaFormat media_format_;
+
+  scoped_ptr<FilterCallback> flush_callback_;
+  scoped_ptr<FilterCallback> initialize_callback_;
+  scoped_ptr<FilterCallback> stop_callback_;
+
   DecoderState state_;
 
   // Tracks the number of asynchronous reads issued to |demuxer_stream_|.
@@ -97,4 +96,3 @@ class IpcVideoDecoder : public VideoDecoder,
 }  // namespace media
 
 #endif  // CHROME_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_
-

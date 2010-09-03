@@ -13,6 +13,9 @@
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
 
+// A GpuVideoServiceHost is a singleton in the renderer process that provides
+// access to hardware accelerated video decoding device in the GPU process
+// though a GpuVideoDecoderHost.
 class GpuVideoServiceHost : public IPC::Channel::Listener,
                             public Singleton<GpuVideoServiceHost> {
  public:
@@ -22,14 +25,32 @@ class GpuVideoServiceHost : public IPC::Channel::Listener,
   virtual void OnMessageReceived(const IPC::Message& message);
 
   void OnRendererThreadInit(MessageLoop* message_loop);
+
+  // Called by GpuChannelHost when a GPU channel is established.
   void OnGpuChannelConnected(GpuChannelHost* channel_host,
                              MessageRouter* router,
                              IPC::SyncChannel* channel);
 
-  // call at RenderThread. one per renderer process.
-  scoped_refptr<GpuVideoDecoderHost> CreateVideoDecoder(
-      GpuVideoDecoderHost::EventHandler* event_handler);
-  void DestroyVideoDecoder(scoped_refptr<GpuVideoDecoderHost>);
+  // Called on RenderThread to create a hardware accelerated video decoder
+  // in the GPU process.
+  //
+  // A routing ID for the GLES2 context needs to be provided when creating a
+  // hardware video decoder. This is important because the resources used by
+  // the video decoder needs to be shared with the GLES2 context corresponding
+  // to the RenderView.
+  //
+  // This means that a GPU video decoder is tied to a specific RenderView and
+  // its GLES2 context in the GPU process.
+  //
+  // Returns a GpuVideoDecoderHost as a handle to control the video decoder.
+  GpuVideoDecoderHost* CreateVideoDecoder(int context_route_id);
+
+  // TODO(hclam): Provide a method to destroy the decoder. We also need to
+  // listen to context lost event.
+
+  // Methods called by GpuVideoDecoderHost.
+  void AddRoute(int route_id, GpuVideoDecoderHost* decoder_host);
+  void RemoveRoute(int route_id);
 
  private:
   GpuVideoServiceHost();
@@ -44,4 +65,3 @@ class GpuVideoServiceHost : public IPC::Channel::Listener,
 };
 
 #endif  // CHROME_RENDERER_GPU_VIDEO_SERVICE_HOST_H_
-

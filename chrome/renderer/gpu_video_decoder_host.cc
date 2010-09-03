@@ -10,12 +10,11 @@
 
 GpuVideoDecoderHost::GpuVideoDecoderHost(GpuVideoServiceHost* service_host,
                                          GpuChannelHost* channel_host,
-                                         EventHandler* event_handler,
-                                         GpuVideoDecoderInfoParam decoder_info)
+                                         int context_route_id)
     : gpu_video_service_host_(service_host),
       channel_host_(channel_host),
-      event_handler_(event_handler),
-      decoder_info_(decoder_info),
+      context_route_id_(context_route_id),
+      event_handler_(NULL),
       buffer_id_serial_(0),
       state_(kStateUninitialized),
       input_buffer_busy_(false) {
@@ -45,8 +44,25 @@ void GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-bool GpuVideoDecoderHost::Initialize(const GpuVideoDecoderInitParam& param) {
+bool GpuVideoDecoderHost::Initialize(EventHandler* event_handler,
+                                     const GpuVideoDecoderInitParam& param) {
   DCHECK_EQ(state_, kStateUninitialized);
+
+  // Save the event handler before we perform initialization operations so
+  // that we can report initialization events.
+  event_handler_ = event_handler;
+
+  // TODO(hclam): Pass the context route ID here.
+  // TODO(hclam): This create video decoder operation is synchronous, need to
+  // make it asynchronous.
+  if (!channel_host_->Send(
+          new GpuChannelMsg_CreateVideoDecoder(&decoder_info_))) {
+    LOG(ERROR) << "GpuChannelMsg_CreateVideoDecoder failed";
+    return false;
+  }
+
+  // Add the route so we'll receive messages.
+  gpu_video_service_host_->AddRoute(my_route_id(), this);
 
   init_param_ = param;
   if (!channel_host_ || !channel_host_->Send(
@@ -213,4 +229,3 @@ void GpuVideoDecoderHost::SendInputBufferToGpu() {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBuffer failed";
   }
 }
-

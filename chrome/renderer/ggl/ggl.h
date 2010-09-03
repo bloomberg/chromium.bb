@@ -16,6 +16,7 @@
 #include "gfx/size.h"
 
 class GpuChannelHost;
+class GpuVideoDecoderHost;
 
 namespace ggl {
 
@@ -113,6 +114,9 @@ bool SwapBuffers(Context* context);
 
 // Destroy the given GGL context.
 bool DestroyContext(Context* context);
+
+// Create a hardware video decoder corresponding to the context.
+GpuVideoDecoderHost* CreateVideoDecoder(Context* context);
 
 // TODO(gman): Remove this
 void DisableShaderTranslation(Context* context);
