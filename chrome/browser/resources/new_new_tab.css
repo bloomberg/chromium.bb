@@ -276,25 +276,6 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   font-family: inherit;
 }
 
-#apps-launch-control {
-  margin-top: 10px;
-}
-
-#apps-launch-control input {
-  position: relative;
-  top: 1px;
-  margin-right: 0.2em;
-  margin-left: 1em;
-}
-
-#debug > h2 {
-  color: red;
-}
-
-#debug > div {
-  margin: 0;
-}
-
 .section {
   position: fixed;
   font-size: 12px;

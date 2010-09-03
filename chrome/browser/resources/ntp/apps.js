@@ -34,16 +34,6 @@ var apps = {
    * @this {!HTMLAnchorElement}
    */
   handleClick_: function() {
-    var launchType = '';
-    var inputElements = document.querySelectorAll(
-        '#apps-launch-control input');
-    for (var i = 0, input; input = inputElements[i]; i++) {
-      if (input.checked) {
-        launchType = input.value;
-        break;
-      }
-    }
-
     // TODO(arv): Handle zoom?
     var rect = this.getBoundingClientRect();
     var cs = getComputedStyle(this);
@@ -55,7 +45,7 @@ var apps = {
     var left = rect.left + ((rect.width - width) >> 1);  // Integer divide by 2.
     var top = rect.top + parseInt(cs.backgroundPositionY, 10);
 
-    chrome.send('launchApp', [this.getAttribute("app_id"), launchType,
+    chrome.send('launchApp', [this.getAttribute("app_id"),
                               String(left), String(top),
                               String(width), String(height)]);
     return false;

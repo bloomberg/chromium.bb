@@ -138,18 +138,16 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
 
 void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   std::string extension_id;
-  std::string launch_container;
   int left = 0;
   int top = 0;
   int width = 0;
   int height = 0;
 
   if (!args->GetString(0, &extension_id) ||
-      !args->GetString(1, &launch_container) ||
-      !ExtractInt(args, 2, &left) ||
-      !ExtractInt(args, 3, &top) ||
-      !ExtractInt(args, 4, &width) ||
-      !ExtractInt(args, 5, &height)) {
+      !ExtractInt(args, 1, &left) ||
+      !ExtractInt(args, 2, &top) ||
+      !ExtractInt(args, 3, &width) ||
+      !ExtractInt(args, 4, &height)) {
     NOTREACHED();
     return;
   }
@@ -161,22 +159,11 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   dom_ui_->tab_contents()->GetContainerBounds(&tab_contents_bounds);
   rect.Offset(tab_contents_bounds.origin());
 
-  // Override the default launch container.
   Extension* extension =
       extensions_service_->GetExtensionById(extension_id, false);
   DCHECK(extension);
-
   Profile* profile = extensions_service_->profile();
-
   Extension::LaunchContainer container = extension->launch_container();
-  if (launch_container == "tab")
-    container = Extension::LAUNCH_TAB;
-  else if (launch_container == "panel")
-    container = Extension::LAUNCH_PANEL;
-  else if (launch_container == "window")
-    container = Extension::LAUNCH_WINDOW;
-  else if (!launch_container.empty())
-    NOTREACHED() << "Unexpected launch container: " << launch_container << ".";
 
   // To give a more "launchy" experience when using the NTP launcher, we close
   // it automatically.

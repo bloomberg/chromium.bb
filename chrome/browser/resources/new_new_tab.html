@@ -164,22 +164,6 @@ if ('mode' in hashParams) {
       <div class="miniview"></div>
     </div>
 
-    <!-- TODO(aa): Remove this -- we don't use it anymore. -->
-    <div id="debug" class="section disabled" section="DEBUG">
-      <h2><span>Debug</span></h2>
-      <div id="apps-launch-control">
-        Open apps in:<label
-        ><input type="radio" name="launch-container-type" value=""
-            checked="true">Default</label
-        ><input type="radio" name="launch-container-type" value="tab"
-            >Tab</label
-        ><label><input type="radio" name="launch-container-type" value="window"
-            >Window</label
-        ><label><input type="radio" name="launch-container-type" value="panel"
-            >Panel</label>
-      </div>
-    </div>
-
     <div id="sync-status" class="section disabled">
       <div>
         <h3></h3>
@@ -214,8 +198,6 @@ i18nTemplate.process(document, templateData);
   updateSimpleSection('apps', Section.APPS);
   updateSimpleSection('most-visited', Section.THUMB);
   updateSimpleSection('recently-closed', Section.RECENT);
-  updateSimpleSection('debug', Section.DEBUG);
-
   layoutSections();
 </script>
 </html>
