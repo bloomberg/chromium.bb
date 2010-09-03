@@ -2358,8 +2358,6 @@ organize-native-code() {
   mkdir -p ${PNACL_ARM_ROOT}
   local startup_dir=${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}
   cp -f ${startup_dir}/libgcc.a \
-        ${startup_dir}/crtbegin.o \
-        ${startup_dir}/crtend.o \
         ${PNACL_ARM_ROOT}
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
@@ -2367,8 +2365,6 @@ organize-native-code() {
   mkdir -p ${PNACL_X8632_ROOT}
   local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}
   cp -f ${startup_dir}/libgcc.a \
-        ${startup_dir}/crtbegin.o \
-        ${startup_dir}/crtend.o \
         ${PNACL_X8632_ROOT}
   DebugRun ls -l ${PNACL_X8632_ROOT}
 
@@ -2376,8 +2372,6 @@ organize-native-code() {
   mkdir -p ${PNACL_X8664_ROOT}
   local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}
   cp -f ${startup_dir}/libgcc.a \
-        ${startup_dir}/crtbegin.o \
-        ${startup_dir}/crtend.o \
         ${PNACL_X8664_ROOT}
 
   DebugRun ls -l ${PNACL_X8664_ROOT}
