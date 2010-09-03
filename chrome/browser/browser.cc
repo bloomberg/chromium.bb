@@ -2479,7 +2479,8 @@ void Browser::TabSelectedAt(TabContents* old_contents,
     status_bubble->Hide();
 
     // Show the loading state (if any).
-    status_bubble->SetStatus(GetSelectedTabContents()->GetStatusText());
+    status_bubble->SetStatus(WideToUTF16Hack(
+        GetSelectedTabContents()->GetStatusText()));
   }
 
   if (HasFindBarController()) {
@@ -2639,8 +2640,10 @@ void Browser::LoadingStateChanged(TabContents* source) {
 
   if (source == GetSelectedTabContents()) {
     UpdateReloadStopState(source->is_loading(), false);
-    if (GetStatusBubble())
-      GetStatusBubble()->SetStatus(GetSelectedTabContents()->GetStatusText());
+    if (GetStatusBubble()) {
+      GetStatusBubble()->SetStatus(WideToUTF16(
+          GetSelectedTabContents()->GetStatusText()));
+    }
 
     if (source->is_loading())
       UpdateZoomCommandsForTabState();
@@ -2720,7 +2723,7 @@ void Browser::ContentsMouseEvent(
   if (source == GetSelectedTabContents()) {
     GetStatusBubble()->MouseMoved(location, !motion);
     if (!motion)
-      GetStatusBubble()->SetURL(GURL(), std::wstring());
+      GetStatusBubble()->SetURL(GURL(), string16());
   }
 }
 
@@ -2731,7 +2734,7 @@ void Browser::UpdateTargetURL(TabContents* source, const GURL& url) {
   if (source == GetSelectedTabContents()) {
     PrefService* prefs = profile_->GetPrefs();
     GetStatusBubble()->SetURL(
-        url, UTF8ToWide(prefs->GetString(prefs::kAcceptLanguages)));
+        url, UTF8ToUTF16(prefs->GetString(prefs::kAcceptLanguages)));
   }
 }
 
@@ -3481,7 +3484,7 @@ void Browser::ProcessPendingUIUpdates() {
 
       // Updating the URL happens synchronously in ScheduleUIUpdate.
       if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble())
-        GetStatusBubble()->SetStatus(contents->GetStatusText());
+        GetStatusBubble()->SetStatus(WideToUTF16(contents->GetStatusText()));
 
       if (flags & (TabContents::INVALIDATE_TAB |
                    TabContents::INVALIDATE_TITLE)) {

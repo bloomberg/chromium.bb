@@ -112,7 +112,7 @@ class StatusBubbleViews::StatusView : public views::Label,
   // Set the bubble text to a certain value, hides the bubble if text is
   // an empty string.  Trigger animation sequence to display if
   // |should_animate_open|.
-  void SetText(const std::wstring& text, bool should_animate_open);
+  void SetText(const string16& text, bool should_animate_open);
 
   BubbleStage GetState() const { return stage_; }
 
@@ -164,7 +164,7 @@ class StatusBubbleViews::StatusView : public views::Label,
   views::Widget* popup_;
 
   // The currently-displayed text.
-  std::wstring text_;
+  string16 text_;
 
   // Start and end opacities for the current transition - note that as a
   // fade-in can easily turn into a fade out, opacity_start_ is sometimes
@@ -176,8 +176,8 @@ class StatusBubbleViews::StatusView : public views::Label,
   ThemeProvider* theme_provider_;
 };
 
-void StatusBubbleViews::StatusView::SetText(
-    const std::wstring& text, bool should_animate_open) {
+void StatusBubbleViews::StatusView::SetText(const string16& text,
+                                            bool should_animate_open) {
   if (text.empty()) {
     // The string was empty.
     StartHiding();
@@ -428,7 +428,8 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
   // Draw highlight text and then the text body. In order to make sure the text
   // is aligned to the right on RTL UIs, we mirror the text bounds if the
   // locale is RTL.
-  int text_width = std::min(views::Label::font().GetStringWidth(text_),
+  int text_width = std::min(
+      views::Label::font().GetStringWidth(UTF16ToWide(text_)),
       width - (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding);
   int text_height = height - (kShadowThickness * 2);
   gfx::Rect body_bounds(kShadowThickness + kTextPositionX,
@@ -445,7 +446,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
       (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
       (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
       (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
-  canvas->DrawStringInt(text_,
+  canvas->DrawStringInt(UTF16ToWide(text_),
                         views::Label::font(),
                         text_color,
                         body_bounds.x(),
@@ -471,7 +472,7 @@ class StatusBubbleViews::StatusViewExpander : public LinearAnimation,
   }
 
   // Manage the expansion of the bubble.
-  void StartExpansion(std::wstring expanded_text, int current_width,
+  void StartExpansion(string16 expanded_text, int current_width,
                       int expansion_end);
 
   // Set width of fully expanded bubble.
@@ -491,7 +492,7 @@ class StatusBubbleViews::StatusViewExpander : public LinearAnimation,
   StatusView* status_view_;
 
   // Text elided (if needed) to fit maximum status bar width.
-  std::wstring expanded_text_;
+  string16 expanded_text_;
 
   // Widths at expansion start and end.
   int expansion_start_;
@@ -509,7 +510,7 @@ void StatusBubbleViews::StatusViewExpander::AnimationEnded(
 }
 
 void StatusBubbleViews::StatusViewExpander::StartExpansion(
-    std::wstring expanded_text, int expansion_start,
+    string16 expanded_text, int expansion_start,
     int expansion_end) {
   expanded_text_ = expanded_text;
   expansion_start_ = expansion_start;
@@ -595,7 +596,7 @@ void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
   Reposition();
 }
 
-void StatusBubbleViews::SetStatus(const std::wstring& status_text) {
+void StatusBubbleViews::SetStatus(const string16& status_text) {
   if (size_.IsEmpty())
     return;  // We have no bounds, don't attempt to show the popup.
 
@@ -613,11 +614,11 @@ void StatusBubbleViews::SetStatus(const std::wstring& status_text) {
   } else if (!url_text_.empty()) {
     view_->SetText(url_text_, true);
   } else {
-    view_->SetText(std::wstring(), true);
+    view_->SetText(string16(), true);
   }
 }
 
-void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
+void StatusBubbleViews::SetURL(const GURL& url, const string16& languages) {
   languages_ = languages;
   url_ = url;
   if (size_.IsEmpty())
@@ -628,7 +629,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   // If we want to clear a displayed URL but there is a status still to
   // display, display that status instead.
   if (url.is_empty() && !status_text_.empty()) {
-    url_text_ = std::wstring();
+    url_text_ = string16();
     if (IsFrameVisible())
       view_->SetText(status_text_, true);
     return;
@@ -645,17 +646,16 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   popup_->GetBounds(&popup_bounds, true);
   int text_width = static_cast<int>(popup_bounds.width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
-  url_text_ = gfx::ElideUrl(url, view_->Label::font(), text_width,
-      languages);
+  url_text_ = WideToUTF16(gfx::ElideUrl(url, view_->Label::font(),
+      text_width, UTF16ToWide(languages)));
 
   std::wstring original_url_text =
-      UTF16ToWideHack(net::FormatUrl(url, WideToUTF8(languages)));
+      UTF16ToWideHack(net::FormatUrl(url, UTF16ToUTF8(languages)));
 
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
   // correctly.
-  url_text_ = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
-      WideToUTF16(url_text_)));
+  url_text_ = base::i18n::GetDisplayStringInLTRDirectionality(url_text_);
 
   if (IsFrameVisible()) {
     view_->SetText(url_text_, true);
@@ -674,8 +674,8 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
 }
 
 void StatusBubbleViews::Hide() {
-  status_text_ = std::wstring();
-  url_text_ = std::wstring();
+  status_text_ = string16();
+  url_text_ = string16();
   if (view_)
     view_->Hide();
 }
@@ -801,14 +801,13 @@ void StatusBubbleViews::ExpandBubble() {
   gfx::Rect popup_bounds;
   popup_->GetBounds(&popup_bounds, true);
   int max_status_bubble_width = GetMaxStatusBubbleWidth();
-  url_text_ = gfx::ElideUrl(url_, view_->Label::font(),
-                            max_status_bubble_width, languages_);
-  int expanded_bubble_width =
-      std::max(GetStandardStatusBubbleWidth(),
-               std::min(view_->Label::font().GetStringWidth(url_text_) +
-                            (kShadowThickness * 2) + kTextPositionX +
-                            kTextHorizPadding + 1,
-                        max_status_bubble_width));
+  url_text_ = WideToUTF16(gfx::ElideUrl(url_, view_->Label::font(),
+      max_status_bubble_width, UTF16ToWideHack(languages_)));
+  int expanded_bubble_width =std::max(GetStandardStatusBubbleWidth(),
+      std::min(view_->Label::font().GetStringWidth(UTF16ToWide(url_text_)) +
+                   (kShadowThickness * 2) + kTextPositionX +
+                   kTextHorizPadding + 1,
+               max_status_bubble_width));
   is_expanded_ = true;
   expand_view_->StartExpansion(url_text_, popup_bounds.width(),
                                expanded_bubble_width);

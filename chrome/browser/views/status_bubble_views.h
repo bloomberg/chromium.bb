@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "chrome/browser/status_bubble.h"
 #include "googleurl/src/gurl.h"
@@ -51,8 +52,8 @@ class StatusBubbleViews : public StatusBubble {
   void SetBubbleWidth(int width);
 
   // Overridden from StatusBubble:
-  virtual void SetStatus(const std::wstring& status);
-  virtual void SetURL(const GURL& url, const std::wstring& languages);
+  virtual void SetStatus(const string16& status);
+  virtual void SetURL(const GURL& url, const string16& languages);
   virtual void Hide();
   virtual void MouseMoved(const gfx::Point& location, bool left_content);
   virtual void UpdateDownloadShelfVisibility(bool visible);
@@ -85,16 +86,16 @@ class StatusBubbleViews : public StatusBubble {
   int GetMaxStatusBubbleWidth();
 
   // The status text we want to display when there are no URLs to display.
-  std::wstring status_text_;
+  string16 status_text_;
 
   // The url we want to display when there is no status text to display.
-  std::wstring url_text_;
+  string16 url_text_;
 
   // The original, non-elided URL.
   GURL url_;
 
   // Used to elide the original URL again when we expand it.
-  std::wstring languages_;
+  string16 languages_;
 
   // Position relative to the base_view_.
   gfx::Point original_position_;

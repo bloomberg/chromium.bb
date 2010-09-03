@@ -39,8 +39,8 @@ class StatusBubbleGtk : public StatusBubble,
   int y_offset() const { return y_offset_; }
 
   // StatusBubble implementation.
-  virtual void SetStatus(const std::wstring& status);
-  virtual void SetURL(const GURL& url, const std::wstring& languages);
+  virtual void SetStatus(const string16& status);
+  virtual void SetURL(const GURL& url, const string16& languages);
   virtual void Hide();
   virtual void MouseMoved(const gfx::Point& location, bool left_content);
 
@@ -129,7 +129,7 @@ class StatusBubbleGtk : public StatusBubble,
 
   // Used to determine the character set that the user can read (for eliding
   // the url text).
-  std::wstring languages_;
+  string16 languages_;
 
   // A timer that hides our window after a delay.
   base::OneShotTimer<StatusBubbleGtk> hide_timer_;
