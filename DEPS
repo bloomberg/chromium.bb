@@ -255,7 +255,7 @@ deps_os = {
       "/trunk/deps/reference_builds/chrome_linux@41515",
 
     "src/third_party/xdg-utils":
-      "/trunk/deps/third_party/xdg-utils@29103",
+      "/trunk/deps/third_party/xdg-utils@58316",
 
     # TODO(ajwong): Move this into the OS-independent block.
     "src/third_party/yasm/source/patched-yasm":

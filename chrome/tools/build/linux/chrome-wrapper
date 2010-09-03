@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 DESKTOP="chromium-devel"
 TITLE="Chromium"
 
-# Check to see if there is a desktop file of the given name
+# Check to see if there is a desktop file of the given name.
 exists_desktop_file() {
     # Build a search list from $XDG_DATA_HOME and $XDG_DATA_DIRS, the latter
     # of which can itself be a colon-separated list of directories to search.
@@ -21,11 +21,11 @@ exists_desktop_file() {
         [ "$dir" -a -d "$dir/applications" ] || continue
         [ -r "$dir/applications/$DESKTOP.desktop" ] && return
     done
-    # Didn't find it in the search path
+    # Didn't find it in the search path.
     return 1
 }
 
-# Checks a file to see if it's a 32 or 64-bit
+# Checks a file to see if it's a 32 or 64-bit.
 check_executable() {
     out=$(file $(readlink -f $1) 2> /dev/null)
     echo $out | grep -qs "ELF 32-bit LSB"
@@ -41,7 +41,7 @@ check_executable() {
     echo neither
 }
 
-# Generate a desktop file that will run this script
+# Generate a desktop file that will run this script.
 generate_desktop_file() {
     apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
     mkdir -p "$apps"
@@ -59,19 +59,24 @@ MimeType=text/html;text/xml;application/xhtml_xml;
 EOF
 }
 
-# Let the wrapped binary know that it has been run through the wrapper
+# Let the wrapped binary know that it has been run through the wrapper.
 export CHROME_WRAPPER="`readlink -f "$0"`"
 export CHROME_DESKTOP="$DESKTOP.desktop"
 
 HERE="`dirname "$CHROME_WRAPPER"`"
 
+# We include some xdg utilities next to the binary, and we want to prefer them
+# over the system versions because we know they work correctly for us. But if
+# our path already exists, we leave it where it is, to allow overriding this.
+# (Once distributions have picked up the updated xdg-mime, we can go back to
+# appending $HERE rather than prepending.)
 case ":$PATH:" in
   *:$HERE:*)
-    # $PATH already contains $HERE
+    # $PATH already contains $HERE, leave it where it is.
     ;;
   *)
-    # Append $HERE to $PATH
-    export PATH="$PATH:$HERE"
+    # Prepend $HERE to $PATH.
+    export PATH="$HERE:$PATH"
     ;;
 esac
 

@@ -195,6 +195,7 @@
             {
               'destination': '<(PRODUCT_DIR)',
               'files': ['tools/build/linux/chrome-wrapper',
+                        '../third_party/xdg-utils/scripts/xdg-mime',
                         '../third_party/xdg-utils/scripts/xdg-settings',
                         ],
               # The wrapper script above may need to generate a .desktop file,
