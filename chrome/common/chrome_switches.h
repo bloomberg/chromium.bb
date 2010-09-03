@@ -127,6 +127,7 @@ extern const char kEnableExperimentalWebGL[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFastback[];
 extern const char kEnableFileCookies[];
+extern const char kEnableFileSystem[];
 extern const char kEnableGPUPlugin[];
 extern const char kEnableGPURendering[];
 extern const char kEnableIndexedDatabase[];

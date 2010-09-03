@@ -959,6 +959,9 @@ void RenderThread::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableDeviceOrientation));
 
   WebRuntimeFeatures::enableSpeechInput(IsSpeechInputEnabled(command_line));
+
+  WebRuntimeFeatures::enableFileSystem(
+      command_line.HasSwitch(switches::kEnableFileSystem));
 }
 
 void RenderThread::IdleHandler() {

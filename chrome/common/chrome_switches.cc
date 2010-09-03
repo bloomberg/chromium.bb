@@ -404,6 +404,9 @@ const char kEnableFastback[]                = "enable-fastback";
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
+// Enable the FileSystem API.
+const char kEnableFileSystem[]              = "enable-file-system";
+
 // Enable the Indexed Database API.
 const char kEnableIndexedDatabase[]         = "enable-indexed-database";
 
