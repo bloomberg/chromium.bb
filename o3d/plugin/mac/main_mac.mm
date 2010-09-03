@@ -37,6 +37,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 
@@ -489,7 +490,12 @@ NPError InitializePlugin() {
 
   // Turn on the logging.
   CommandLine::Init(0, NULL);
-  InitLogging("debug.log",
+
+  FilePath log;
+  file_util::GetTempDir(&log);
+  log = log.Append("debug.log");
+
+  InitLogging(log.value().c_str(),
               logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
               logging::DONT_LOCK_LOG_FILE,
               logging::APPEND_TO_OLD_LOG_FILE);
