@@ -1376,7 +1376,13 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 	ec->wl_display = display;
 
-	wl_display_set_compositor(display, &ec->base, &compositor_interface); 
+	ec->base.base.interface = &wl_compositor_interface;
+	ec->base.base.implementation =
+		(void (**)(void)) &compositor_interface;
+
+	wl_display_add_object(display, &ec->base.base);
+	if (wl_display_add_global(display, &ec->base.base, NULL))
+		return -1;
 
 	ec->shell.base.interface = &wl_shell_interface;
 	ec->shell.base.implementation = (void (**)(void)) &shell_interface;

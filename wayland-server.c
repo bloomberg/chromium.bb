@@ -282,21 +282,6 @@ wl_client_destroy(struct wl_client *client)
 	free(client);
 }
 
-WL_EXPORT int
-wl_display_set_compositor(struct wl_display *display,
-			  struct wl_compositor *compositor,
-			  const struct wl_compositor_interface *implementation)
-{
-	compositor->base.interface = &wl_compositor_interface;
-	compositor->base.implementation = (void (**)(void)) implementation;
-
-	wl_display_add_object(display, &compositor->base);
-	if (wl_display_add_global(display, &compositor->base, NULL))
-		return -1;
-
-	return 0;
-}
-
 static void
 display_sync(struct wl_client *client,
 	       struct wl_display *display, uint32_t key)
