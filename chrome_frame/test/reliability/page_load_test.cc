@@ -246,7 +246,7 @@ class PageLoadTest : public testing::Test {
       log_file << url_string;
       switch (metrics.result) {
         case NAVIGATION_ERROR:
-          log_file << " error: " << hr;
+          log_file << " error";
           break;
         case NAVIGATION_SUCCESS:
           log_file << " success";
