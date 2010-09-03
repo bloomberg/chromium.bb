@@ -18,32 +18,13 @@
 
 #include <sys/nacl_syscalls.h>
 
-static NaClSrpcError Interpreter(NaClSrpcService* service,
-                                 NaClSrpcChannel* channel,
-                                 uint32_t rpc_number,
-                                 NaClSrpcArg** ins,
-                                 NaClSrpcArg** outs) {
-  return (*NaClSrpcServiceMethod(service, rpc_number))(NULL, ins, outs);
-}
-
 int __attribute__ ((weak)) main(int argc, char* argv[]) {
   const int stand_alone = (-1 == srpc_get_fd());
   /* NOTE: stand_alone mode happens when a nacl_module is run directly
    * via sel_ldr not using sel_universal or a plugin
    */
   if (stand_alone) {
-    /* Build the service */
-    NaClSrpcService* service = (NaClSrpcService*) malloc(sizeof(*service));
-    if (NULL == service) {
-      return 1;
-    }
-    if (!NaClSrpcServiceHandlerCtor(service, __kNaClSrpcHandlers)) {
-      free(service);
-      return 1;
-    }
-    /* TODO(sehr): Add the descriptor for the default socket address */
-    /* Message processing loop. */
-    NaClSrpcCommandLoop(service, NULL, Interpreter, kNaClSrpcInvalidImcDesc);
+    return NaClSrpcCommandLoopMain(__kNaClSrpcHandlers);
   }
   /* NOTE: in the "else case" we implicitly call the sequence
    *  __srpc_init();

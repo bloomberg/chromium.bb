@@ -912,3 +912,28 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
     }
   }
 }
+
+static NaClSrpcError Interpreter(NaClSrpcService *service,
+                                 NaClSrpcChannel *channel,
+                                 uint32_t rpc_number,
+                                 NaClSrpcArg **ins,
+                                 NaClSrpcArg **outs) {
+  UNREFERENCED_PARAMETER(channel);
+  return (*NaClSrpcServiceMethod(service, rpc_number))(NULL, ins, outs);
+}
+
+int NaClSrpcCommandLoopMain(const struct NaClSrpcHandlerDesc *methods) {
+  /* Build the service */
+  NaClSrpcService *service = (NaClSrpcService *) malloc(sizeof(*service));
+  if (NULL == service) {
+    return 1;
+  }
+  if (!NaClSrpcServiceHandlerCtor(service, methods)) {
+    free(service);
+    return 1;
+  }
+  /* TODO(sehr): Add the descriptor for the default socket address */
+  /* Message processing loop. */
+  NaClSrpcCommandLoop(service, NULL, Interpreter, kNaClSrpcInvalidImcDesc);
+  return 0;
+}

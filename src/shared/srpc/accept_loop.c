@@ -6,6 +6,7 @@
 
 #include <pthread.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
@@ -16,8 +17,26 @@
 /* TODO: This file seems to have relative includes and should probably
    not live in shared/   */
 
+/*
+ * If any NACL_SRPC_METHOD declarations are present and the global
+ * method table is non-empty (with the exception of __shutdown, which
+ * is always declared below), we do implicit SRPC startup, which is
+ * triggered by the NaCl/SRPC-specific crt1.o and happens before
+ * main().
+ *
+ * Because this is implicit and magic, it is deprecated.  New code
+ * should use NaClSrpcMain() instead.  TODO(mseaborn): Remove once
+ * there are no users of this.
+ */
+static int ShouldDoImplicitSrpcSetup() {
+  return !(__kNaClSrpcHandlers[0].entry_fmt == NULL ||
+           (strcmp(__kNaClSrpcHandlers[0].entry_fmt, "__shutdown::") == 0 &&
+            __kNaClSrpcHandlers[1].entry_fmt == NULL));
+}
+
 struct worker_state {
   int d;
+  const struct NaClSrpcHandlerDesc *methods;
   /*
    * TODO(mseaborn): Remove is_privileged.  Now that the plugin
    * creates only one connection, this concept is unused.
@@ -42,13 +61,15 @@ void __srpc_wait() {
   if (__srpc_wait_hook) {
     __srpc_wait_hook();
   }
-  is_embedded = (srpc_get_fd() != -1);
-  if (is_embedded) {
-    pthread_mutex_lock(&shutdown_wait_mu);
-    while (!shutdown_done) {
-      pthread_cond_wait(&shutdown_wait_cv, &shutdown_wait_mu);
+  if (ShouldDoImplicitSrpcSetup()) {
+    is_embedded = (srpc_get_fd() != -1);
+    if (is_embedded) {
+      pthread_mutex_lock(&shutdown_wait_mu);
+      while (!shutdown_done) {
+        pthread_cond_wait(&shutdown_wait_cv, &shutdown_wait_mu);
+      }
+      pthread_mutex_unlock(&shutdown_wait_mu);
     }
-    pthread_mutex_unlock(&shutdown_wait_mu);
   }
 }
 
@@ -96,7 +117,7 @@ NACL_SRPC_METHOD("__shutdown::", srpc_shutdown_request);
 static void *srpc_worker(void *arg) {
   struct worker_state *state = (struct worker_state *) arg;
 
-  NaClSrpcServerLoop(state->d, __kNaClSrpcHandlers, NULL);
+  NaClSrpcServerLoop(state->d, state->methods, NULL);
 
   (void) close(state->d);
   if (state->is_privileged) {
@@ -112,7 +133,8 @@ static void *srpc_worker(void *arg) {
  * worker thread that invokes NaClSrpcServerLoop.
  */
 static void *srpc_default_acceptor(void *arg) {
-  int       first = (int) arg;
+  struct NaClSrpcHandlerDesc *methods = arg;
+  int       first = 1;
   int       d;
 
   while (-1 != (d = imc_accept(BOUND_SOCKET))) {
@@ -128,6 +150,7 @@ static void *srpc_default_acceptor(void *arg) {
       continue;
     }
     state->d = d;
+    state->methods = methods;
     state->is_privileged = first;
     /* worker thread is responsible for state and d. */
     pthread_create(&worker_tid, NULL, srpc_worker, state);
@@ -165,13 +188,25 @@ void __srpc_init() {
   }
   init_done = 1;
 
-  is_embedded = (srpc_get_fd() != -1);
-  if (is_embedded) {
-    /*
-     * Start the acceptor thread.
-     */
-    pthread_create(&acceptor_tid, NULL,
-                   srpc_default_acceptor, (void *) 1);
-    pthread_detach(acceptor_tid);
+  if (ShouldDoImplicitSrpcSetup()) {
+    is_embedded = (srpc_get_fd() != -1);
+    if (is_embedded) {
+      /*
+       * Start the acceptor thread.
+       */
+      pthread_create(&acceptor_tid, NULL,
+                     srpc_default_acceptor, (void *) __kNaClSrpcHandlers);
+      pthread_detach(acceptor_tid);
+    }
+  }
+}
+
+int NaClSrpcMain(const struct NaClSrpcHandlerDesc *methods) {
+  int stand_alone = (srpc_get_fd() == -1);
+  if (stand_alone) {
+    return NaClSrpcCommandLoopMain(methods);
+  } else {
+    srpc_default_acceptor((void *) methods);
+    return 0;
   }
 }

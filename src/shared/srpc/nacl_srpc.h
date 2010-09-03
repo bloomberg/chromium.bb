@@ -798,6 +798,21 @@ extern void NaClSrpcCommandLoop(NaClSrpcService* service,
                                 NaClSrpcInterpreter interpreter,
                                 NaClSrpcImcDescType default_socket_address);
 
+/**
+ * Runs a text-based interpreter given a list of SRPC methods.  This
+ * calls NaClSrpcCommandLoop().
+ * @return Returns zero on success, non-zero otherwise.
+ */
+int NaClSrpcCommandLoopMain(const struct NaClSrpcHandlerDesc *methods);
+
+/**
+ * This runs a main loop for a process providing SRPC services.  For a
+ * process in standalone mode, this runs a text-based interpreter;
+ * otherwise, it accepts socket connections.
+ * @return Returns zero on success, non-zero otherwise.
+ */
+int NaClSrpcMain(const struct NaClSrpcHandlerDesc *methods);
+
 EXTERN_C_END
 
 /**
