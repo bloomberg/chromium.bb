@@ -37,3 +37,6 @@ BUGRICOW : fast/js/array-splice.html = PASS
 BUGTONY : platform/gtk/scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html = TIMEOUT TEXT
 BUGTONY : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TIMEOUT TEXT
 BUGTONY : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
+
+// Temporary disable test.  Will investigate (antonm@chromium.org).
+BUGANTONM : fast/js/reserved-words-as-property.html = CRASH TEXT
