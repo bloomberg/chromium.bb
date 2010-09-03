@@ -318,7 +318,7 @@ views::View* HungRendererDialogView::GetContentsView() {
 void HungRendererDialogView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == kill_button_) {
-    if (!contents_) {
+    if (contents_ && contents_->GetRenderProcessHost()) {
       // Kill the process.
       TerminateProcess(contents_->GetRenderProcessHost()->GetHandle(),
                        ResultCodes::HUNG);
