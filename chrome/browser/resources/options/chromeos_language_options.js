@@ -182,9 +182,20 @@ cr.define('options', function() {
      * @private
      */
     handleLanguageOptionsListSave_: function(e) {
-      // Handle this event to sort the preload engines per the saved
-      // languages. For instance, suppose we have two languages and
-      // associated input methods:
+      // Sort the preload engines per the saved languages before save.
+      this.preloadEngines_ = this.sortPreloadEngines_(this.preloadEngines_);
+      this.savePreloadEnginesPref_();
+    },
+
+    /**
+     * Sorts preloadEngines_ by languageOptionsList's order.
+     * @param {Array} preloadEngines List of preload engines.
+     * @return {Array} Returns sorted preloadEngines.
+     * @private
+     */
+    sortPreloadEngines_: function(preloadEngines) {
+      // For instance, suppose we have two languages and associated input
+      // methods:
       //
       // - Korean: hangul
       // - Chinese: pinyin
@@ -197,8 +208,8 @@ cr.define('options', function() {
 
       // Convert the list into a dictonary for simpler lookup.
       var preloadEngineSet = {};
-      for (var i = 0; i < this.preloadEngines_.length; i++) {
-        preloadEngineSet[this.preloadEngines_[i]] = true;
+      for (var i = 0; i < preloadEngines.length; i++) {
+        preloadEngineSet[preloadEngines[i]] = true;
       }
 
       // Create the new preload engine list per the language codes.
@@ -221,8 +232,7 @@ cr.define('options', function() {
         }
       }
 
-      this.preloadEngines_ = newPreloadEngines;
-      this.savePreloadEnginesPref_();
+      return newPreloadEngines;
     },
 
     /**
@@ -378,6 +388,7 @@ cr.define('options', function() {
         checkbox.checked = true;
       }
       this.updatePreloadEnginesFromCheckboxes_();
+      this.preloadEngines_ = this.sortPreloadEngines_(this.preloadEngines_);
       this.savePreloadEnginesPref_();
     },
 
