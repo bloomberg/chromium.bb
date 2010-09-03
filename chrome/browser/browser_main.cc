@@ -1388,15 +1388,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   metrics->StartExternalMetrics();
 #endif
 
-#if !defined(OS_CHROMEOS)
-  // On Chrome OS, event routers are initialized in
-  // LoginUtilsImpl::CompleteLogin instead.
   if (profile->GetExtensionsService()) {
     // This will initialize bookmarks. Call it after bookmark import is done.
     // See issue 40144.
     profile->GetExtensionsService()->InitEventRouters();
   }
-#endif
 
 #if defined(OS_WIN)
   // We check this here because if the profile is OTR (chromeos possibility)
