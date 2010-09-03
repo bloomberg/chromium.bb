@@ -182,6 +182,13 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
     webkit_prefs.databases_enabled = true;
   }
 
+  // Force accelerated compositing off for chrome: and chrome-extension: pages
+  if (delegate_->GetURL().SchemeIs(chrome::kChromeUIScheme) ||
+      delegate_->GetURL().SchemeIs(chrome::kExtensionScheme) ||
+      delegate_->GetURL().SchemeIs(chrome::kChromeInternalScheme)) {
+    webkit_prefs.accelerated_compositing_enabled = false;
+  }
+
   ViewMsg_New_Params params;
   params.parent_window = GetNativeViewId();
   params.renderer_preferences =
