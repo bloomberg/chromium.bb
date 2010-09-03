@@ -24,7 +24,8 @@ class GpuVideoService : public IPC::Channel::Listener,
 
   bool CreateVideoDecoder(GpuChannel* channel,
                           MessageRouter* router,
-                          GpuVideoDecoderInfoParam* param);
+                          GpuVideoDecoderInfoParam* param,
+                          gpu::gles2::GLES2Decoder* gles2_decoder);
   void DestroyVideoDecoder(MessageRouter* router,
                            int32 decoder_id);
 
@@ -52,4 +53,3 @@ class GpuVideoService : public IPC::Channel::Listener,
 };
 
 #endif  // CHROME_GPU_GPU_VIDEO_SERVICE_H_
-

@@ -208,14 +208,21 @@ void GpuChannel::OnGetVideoService(GpuVideoServiceInfoParam* info) {
 void GpuChannel::OnCreateVideoDecoder(GpuVideoDecoderInfoParam* info) {
 #if defined(ENABLE_GPU)
   LOG(INFO) << "GpuChannel::OnCreateVideoDecoder";
-  info->decoder_id_ = -1;
+  info->decoder_id = -1;
   GpuVideoService* service = GpuVideoService::get();
   if (service == NULL)
     return;
 
-  info->decoder_host_route_id_ = GenerateRouteID();
-  info->decoder_route_id_ = GenerateRouteID();
-  service->CreateVideoDecoder(this, &router_, info);
+  // The context ID corresponds to the command buffer used.
+  GpuCommandBufferStub* stub = stubs_.Lookup(info->context_id);
+
+  info->decoder_host_route_id = GenerateRouteID();
+  info->decoder_route_id = GenerateRouteID();
+
+  // TODO(hclam): Need to be careful about the lifetime of the command buffer
+  // decoder.
+  service->CreateVideoDecoder(this, &router_, info,
+                              stub->processor()->decoder());
 #endif
 }
 

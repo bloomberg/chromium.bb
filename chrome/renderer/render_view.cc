@@ -72,6 +72,7 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "chrome/renderer/webgles2context_impl.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/websharedworker_proxy.h"
@@ -2421,8 +2422,10 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
       cmd_line->HasSwitch(switches::kEnableAcceleratedCompositing)) {
     // Add the hardware video decoder factory.
-    factory->AddFactory(
-        media::IpcVideoDecoder::CreateFactory(MessageLoop::current()));
+    factory->AddFactory(IpcVideoDecoder::CreateFactory(
+        MessageLoop::current(),
+        reinterpret_cast<WebGLES2ContextImpl*>(
+            webview()->gles2Context())->context()));
   }
 
   WebApplicationCacheHostImpl* appcache_host =

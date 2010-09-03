@@ -21,12 +21,18 @@ class GpuVideoServiceInfoParam {
 
 class GpuVideoDecoderInfoParam {
  public:
-  // global decoder id.
-  int32 decoder_id_;
-  // route id for GpuVideoDecoder on GPU process side for this channel.
-  int32 decoder_route_id_;
-  // route id for GpuVideoServiceHost on Render process side for this channel.
-  int32 decoder_host_route_id_;
+  // Context ID of the GLES2 context what this decoder should assicate with.
+  int context_id;
+
+  // Global decoder id.
+  int32 decoder_id;
+
+  // Route id for GpuVideoDecoder on GPU process side for this channel.
+  int32 decoder_route_id;
+
+  // TODO(hclam): Merge this ID with |decoder_route_id_|.
+  // Route id for GpuVideoServiceHost on Render process side for this channel.
+  int32 decoder_host_route_id;
 };
 
 class GpuVideoDecoderInitParam {
@@ -169,4 +175,3 @@ struct ParamTraits<GpuVideoDecoderFormatChangeParam> {
 };
 
 #endif  // CHROME_COMMON_GPU_VIDEO_COMMON_H_
-

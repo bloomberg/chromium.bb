@@ -89,6 +89,9 @@ class GPUProcessor : public CommandBufferEngine {
   // It is not defined on which thread this callback is called.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
 
+  // Get the GLES2Decoder associated with this processor.
+  gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
+
  private:
   // Called via a callback just before we are supposed to call the
   // user's swap buffers callback.

@@ -53,9 +53,9 @@ class GpuVideoDecoderHost
   void FillThisBuffer(scoped_refptr<VideoFrame> frame);
   bool Flush();
 
-  int32 decoder_id() { return decoder_info_.decoder_id_; }
-  int32 route_id() { return decoder_info_.decoder_route_id_; }
-  int32 my_route_id() { return decoder_info_.decoder_host_route_id_; }
+  int32 decoder_id() { return decoder_info_.decoder_id; }
+  int32 route_id() { return decoder_info_.decoder_route_id; }
+  int32 my_route_id() { return decoder_info_.decoder_host_route_id; }
 
   virtual ~GpuVideoDecoderHost() {}
 

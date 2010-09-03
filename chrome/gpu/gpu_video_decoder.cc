@@ -199,12 +199,14 @@ void GpuVideoDecoder::OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
 GpuVideoDecoder::GpuVideoDecoder(
     const GpuVideoDecoderInfoParam* param,
     GpuChannel* channel,
-    base::ProcessHandle handle)
-    : decoder_host_route_id_(param->decoder_host_route_id_),
+    base::ProcessHandle handle,
+    gpu::gles2::GLES2Decoder* decoder)
+    : decoder_host_route_id_(param->decoder_host_route_id),
       output_transfer_buffer_busy_(false),
       pending_output_requests_(0),
       channel_(channel),
-      renderer_handle_(handle) {
+      renderer_handle_(handle),
+      gles2_decoder_(decoder) {
   memset(&config_, 0, sizeof(config_));
   memset(&info_, 0, sizeof(info_));
 #if defined(OS_WIN) && defined(ENABLE_GPU_DECODER)
@@ -315,4 +317,3 @@ void GpuVideoDecoder::SendFillBufferDone(
     LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBufferDone failed";
   }
 }
-

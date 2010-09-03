@@ -43,23 +43,25 @@ bool GpuVideoService::UnintializeGpuVideoService() {
 bool GpuVideoService::CreateVideoDecoder(
     GpuChannel* channel,
     MessageRouter* router,
-    GpuVideoDecoderInfoParam* param) {
+    GpuVideoDecoderInfoParam* param,
+    gpu::gles2::GLES2Decoder* gles2_decoder) {
   GpuVideoDecoderInfo decoder_info;
   int32 decoder_id = GetNextAvailableDecoderID();
-  param->decoder_id_ = decoder_id;
+  param->decoder_id = decoder_id;
   base::ProcessHandle handle = channel->renderer_handle();
-  decoder_info.decoder_ = new GpuVideoDecoder(param, channel, handle);
+  decoder_info.decoder_ = new GpuVideoDecoder(param, channel, handle,
+                                              gles2_decoder);
   decoder_info.channel_ = channel;
   decoder_info.param = *param;
   decoder_map_[decoder_id] = decoder_info;
-  router->AddRoute(param->decoder_route_id_, decoder_info.decoder_);
+  router->AddRoute(param->decoder_route_id, decoder_info.decoder_);
   return true;
 }
 
 void GpuVideoService::DestroyVideoDecoder(
     MessageRouter* router,
     int32 decoder_id) {
-  int32 route_id = decoder_map_[decoder_id].param.decoder_route_id_;
+  int32 route_id = decoder_map_[decoder_id].param.decoder_route_id;
   router->RemoveRoute(route_id);
   decoder_map_.erase(decoder_id);
 }
@@ -67,4 +69,3 @@ void GpuVideoService::DestroyVideoDecoder(
 int32 GpuVideoService::GetNextAvailableDecoderID() {
   return ++next_available_decoder_id_;
 }
-

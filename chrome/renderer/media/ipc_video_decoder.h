@@ -13,29 +13,31 @@
 
 struct AVRational;
 
-namespace media {
+namespace ggl {
+class Context;
+}  // namespace ggl
 
-class VideoDecodeEngine;
-
-class IpcVideoDecoder : public VideoDecoder,
+class IpcVideoDecoder : public media::VideoDecoder,
                         public GpuVideoDecoderHost::EventHandler {
  public:
-  explicit IpcVideoDecoder(MessageLoop* message_loop);
+  explicit IpcVideoDecoder(MessageLoop* message_loop,
+                           ggl::Context* ggl_context);
   virtual ~IpcVideoDecoder();
 
-  static FilterFactory* CreateFactory(MessageLoop* message_loop);
-  static bool IsMediaFormatSupported(const MediaFormat& media_format);
+  static media::FilterFactory* CreateFactory(MessageLoop* message_loop,
+                                             ggl::Context* ggl_context);
+  static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
 
   // MediaFilter implementation.
-  virtual void Stop(FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, FilterCallback* callback);
-  virtual void Pause(FilterCallback* callback);
-  virtual void Flush(FilterCallback* callback);
+  virtual void Stop(media::FilterCallback* callback);
+  virtual void Seek(base::TimeDelta time, media::FilterCallback* callback);
+  virtual void Pause(media::FilterCallback* callback);
+  virtual void Flush(media::FilterCallback* callback);
 
   // Decoder implementation.
-  virtual void Initialize(DemuxerStream* demuxer_stream,
-                          FilterCallback* callback);
-  virtual const MediaFormat& media_format() { return media_format_; }
+  virtual void Initialize(media::DemuxerStream* demuxer_stream,
+                          media::FilterCallback* callback);
+  virtual const media::MediaFormat& media_format() { return media_format_; }
   virtual void FillThisBuffer(scoped_refptr<VideoFrame> video_frame);
 
   // GpuVideoDecoderHost::EventHandler.
@@ -43,17 +45,13 @@ class IpcVideoDecoder : public VideoDecoder,
                                 const GpuVideoDecoderInitDoneParam& param);
   virtual void OnUninitializeDone();
   virtual void OnFlushDone();
-  virtual void OnEmptyBufferDone(scoped_refptr<Buffer> buffer);
-  virtual void OnFillBufferDone(scoped_refptr<VideoFrame> frame);
+  virtual void OnEmptyBufferDone(scoped_refptr<media::Buffer> buffer);
+  virtual void OnFillBufferDone(scoped_refptr<media::VideoFrame> frame);
   virtual void OnDeviceError();
 
   virtual bool ProvidesBuffer();
 
  private:
-  friend class FilterFactoryImpl2<IpcVideoDecoder,
-                                  VideoDecodeEngine*,
-                                  MessageLoop*>;
-
   enum DecoderState {
     kUnInitialized,
     kPlaying,
@@ -64,17 +62,17 @@ class IpcVideoDecoder : public VideoDecoder,
     kStopped,
   };
 
-  void OnSeekComplete(FilterCallback* callback);
-  void OnReadComplete(Buffer* buffer);
-  void ReadCompleteTask(scoped_refptr<Buffer> buffer);
+  void OnSeekComplete(media::FilterCallback* callback);
+  void OnReadComplete(media::Buffer* buffer);
+  void ReadCompleteTask(scoped_refptr<media::Buffer> buffer);
 
   int32 width_;
   int32 height_;
-  MediaFormat media_format_;
+  media::MediaFormat media_format_;
 
-  scoped_ptr<FilterCallback> flush_callback_;
-  scoped_ptr<FilterCallback> initialize_callback_;
-  scoped_ptr<FilterCallback> stop_callback_;
+  scoped_ptr<media::FilterCallback> flush_callback_;
+  scoped_ptr<media::FilterCallback> initialize_callback_;
+  scoped_ptr<media::FilterCallback> stop_callback_;
 
   DecoderState state_;
 
@@ -85,14 +83,19 @@ class IpcVideoDecoder : public VideoDecoder,
   size_t pending_requests_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
-  scoped_refptr<DemuxerStream> demuxer_stream_;
+  scoped_refptr<media::DemuxerStream> demuxer_stream_;
 
   MessageLoop* renderer_thread_message_loop_;
+
+  // A context for allocating textures and issuing GLES2 commands.
+  // TODO(hclam): A ggl::Context lives on the Render Thread while this object
+  // lives on the Video Decoder Thread, we need to take care of context lost
+  // and destruction of the context.
+  ggl::Context* ggl_context_;
+
   scoped_refptr<GpuVideoDecoderHost> gpu_video_decoder_host_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcVideoDecoder);
 };
-
-}  // namespace media
 
 #endif  // CHROME_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_

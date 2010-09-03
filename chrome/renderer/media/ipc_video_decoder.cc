@@ -2,7 +2,6 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-
 #include "chrome/renderer/media/ipc_video_decoder.h"
 
 #include "base/task.h"
@@ -17,22 +16,22 @@
 #include "media/ffmpeg/ffmpeg_util.h"
 #include "media/filters/ffmpeg_interfaces.h"
 
-namespace media {
-
-IpcVideoDecoder::IpcVideoDecoder(MessageLoop* message_loop)
+IpcVideoDecoder::IpcVideoDecoder(MessageLoop* message_loop,
+                                 ggl::Context* ggl_context)
     : width_(0),
       height_(0),
       state_(kUnInitialized),
       pending_reads_(0),
       pending_requests_(0),
-      renderer_thread_message_loop_(message_loop) {
+      renderer_thread_message_loop_(message_loop),
+      ggl_context_(ggl_context) {
 }
 
 IpcVideoDecoder::~IpcVideoDecoder() {
 }
 
-void IpcVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 FilterCallback* callback) {
+void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
+                                 media::FilterCallback* callback) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -43,7 +42,7 @@ void IpcVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
     return;
   }
 
-  CHECK(!demuxer_stream_);
+  DCHECK(!demuxer_stream_);
   demuxer_stream_ = demuxer_stream;
   initialize_callback_.reset(callback);
 
@@ -53,7 +52,7 @@ void IpcVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   demuxer_stream->EnableBitstreamConverter();
 
   // Get the AVStream by querying for the provider interface.
-  AVStreamProvider* av_stream_provider;
+  media::AVStreamProvider* av_stream_provider;
   if (!demuxer_stream->QueryInterface(&av_stream_provider)) {
     GpuVideoDecoderInitDoneParam param;
     OnInitializeDone(false, param);
@@ -89,25 +88,25 @@ void IpcVideoDecoder::OnInitializeDone(
     return;
   }
 
-  AutoCallbackRunner done_runner(initialize_callback_.release());
+  media::AutoCallbackRunner done_runner(initialize_callback_.release());
 
   if (success) {
-    media_format_.SetAsString(MediaFormat::kMimeType,
-                              mime_type::kUncompressedVideo);
-    media_format_.SetAsInteger(MediaFormat::kWidth, width_);
-    media_format_.SetAsInteger(MediaFormat::kHeight, height_);
-    media_format_.SetAsInteger(MediaFormat::kSurfaceType,
+    media_format_.SetAsString(media::MediaFormat::kMimeType,
+                              media::mime_type::kUncompressedVideo);
+    media_format_.SetAsInteger(media::MediaFormat::kWidth, width_);
+    media_format_.SetAsInteger(media::MediaFormat::kHeight, height_);
+    media_format_.SetAsInteger(media::MediaFormat::kSurfaceType,
                                static_cast<int>(param.surface_type_));
-    media_format_.SetAsInteger(MediaFormat::kSurfaceFormat,
+    media_format_.SetAsInteger(media::MediaFormat::kSurfaceFormat,
                                static_cast<int>(param.format_));
     state_ = kPlaying;
   } else {
     LOG(ERROR) << "IpcVideoDecoder initialization failed!";
-    host()->SetError(PIPELINE_ERROR_DECODE);
+    host()->SetError(media::PIPELINE_ERROR_DECODE);
   }
 }
 
-void IpcVideoDecoder::Stop(FilterCallback* callback) {
+void IpcVideoDecoder::Stop(media::FilterCallback* callback) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -133,16 +132,16 @@ void IpcVideoDecoder::OnUninitializeDone() {
     return;
   }
 
-  AutoCallbackRunner done_runner(stop_callback_.release());
+  media::AutoCallbackRunner done_runner(stop_callback_.release());
 
   state_ = kStopped;
 }
 
-void IpcVideoDecoder::Pause(FilterCallback* callback) {
+void IpcVideoDecoder::Pause(media::FilterCallback* callback) {
   Flush(callback);  // TODO(jiesun): move this to flush().
 }
 
-void IpcVideoDecoder::Flush(FilterCallback* callback) {
+void IpcVideoDecoder::Flush(media::FilterCallback* callback) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -177,7 +176,8 @@ void IpcVideoDecoder::OnFlushDone() {
   }
 }
 
-void IpcVideoDecoder::Seek(base::TimeDelta time, FilterCallback* callback) {
+void IpcVideoDecoder::Seek(base::TimeDelta time,
+                           media::FilterCallback* callback) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -191,7 +191,7 @@ void IpcVideoDecoder::Seek(base::TimeDelta time, FilterCallback* callback) {
   OnSeekComplete(callback);
 }
 
-void IpcVideoDecoder::OnSeekComplete(FilterCallback* callback) {
+void IpcVideoDecoder::OnSeekComplete(media::FilterCallback* callback) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -201,7 +201,7 @@ void IpcVideoDecoder::OnSeekComplete(FilterCallback* callback) {
     return;
   }
 
-  AutoCallbackRunner done_runner(callback);
+  media::AutoCallbackRunner done_runner(callback);
 
   state_ = kPlaying;
 
@@ -213,12 +213,13 @@ void IpcVideoDecoder::OnSeekComplete(FilterCallback* callback) {
   }
 }
 
-void IpcVideoDecoder::OnReadComplete(Buffer* buffer) {
-  scoped_refptr<Buffer> buffer_ref = buffer;
+void IpcVideoDecoder::OnReadComplete(media::Buffer* buffer) {
+  scoped_refptr<media::Buffer> buffer_ref = buffer;
   ReadCompleteTask(buffer_ref);
 }
 
-void IpcVideoDecoder::ReadCompleteTask(scoped_refptr<Buffer> buffer) {
+void IpcVideoDecoder::ReadCompleteTask(
+    scoped_refptr<media::Buffer> buffer) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -238,7 +239,6 @@ void IpcVideoDecoder::ReadCompleteTask(scoped_refptr<Buffer> buffer) {
 
   if (state_ == kFlushing) {
     if (pending_reads_ == 0 && pending_requests_ == 0) {
-      CHECK(flush_callback_.get());
       flush_callback_->Run();
       flush_callback_.reset();
       state_ = kPlaying;
@@ -253,7 +253,8 @@ void IpcVideoDecoder::ReadCompleteTask(scoped_refptr<Buffer> buffer) {
   gpu_video_decoder_host_->EmptyThisBuffer(buffer);
 }
 
-void IpcVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> video_frame) {
+void IpcVideoDecoder::FillThisBuffer(
+    scoped_refptr<media::VideoFrame> video_frame) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -264,14 +265,15 @@ void IpcVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> video_frame) {
   }
 
   // Synchronized flushing before stop should prevent this.
-  CHECK_NE(state_, kStopped);
+  DCHECK_NE(state_, kStopped);
 
   // Notify decode engine the available of new frame.
   ++pending_requests_;
   gpu_video_decoder_host_->FillThisBuffer(video_frame);
 }
 
-void IpcVideoDecoder::OnFillBufferDone(scoped_refptr<VideoFrame> video_frame) {
+void IpcVideoDecoder::OnFillBufferDone(
+    scoped_refptr<media::VideoFrame> video_frame) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -296,14 +298,14 @@ void IpcVideoDecoder::OnFillBufferDone(scoped_refptr<VideoFrame> video_frame) {
       // When in kFlushCodec, any errored decode, or a 0-lengthed frame,
       // is taken as a signal to stop decoding.
       state_ = kEnded;
-      scoped_refptr<VideoFrame> video_frame;
-      VideoFrame::CreateEmptyFrame(&video_frame);
+      scoped_refptr<media::VideoFrame> video_frame;
+      media::VideoFrame::CreateEmptyFrame(&video_frame);
       fill_buffer_done_callback()->Run(video_frame);
     }
   }
 }
 
-void IpcVideoDecoder::OnEmptyBufferDone(scoped_refptr<Buffer> buffer) {
+void IpcVideoDecoder::OnEmptyBufferDone(scoped_refptr<media::Buffer> buffer) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
@@ -319,7 +321,7 @@ void IpcVideoDecoder::OnEmptyBufferDone(scoped_refptr<Buffer> buffer) {
 }
 
 void IpcVideoDecoder::OnDeviceError() {
-  host()->SetError(PIPELINE_ERROR_DECODE);
+  host()->SetError(media::PIPELINE_ERROR_DECODE);
 }
 
 bool IpcVideoDecoder::ProvidesBuffer() {
@@ -327,22 +329,24 @@ bool IpcVideoDecoder::ProvidesBuffer() {
 }
 
 // static
-FilterFactory* IpcVideoDecoder::CreateFactory(MessageLoop* message_loop) {
-  return new FilterFactoryImpl1<IpcVideoDecoder, MessageLoop*>(message_loop);
+media::FilterFactory* IpcVideoDecoder::CreateFactory(
+    MessageLoop* message_loop, ggl::Context* ggl_context) {
+  return new media::FilterFactoryImpl2<IpcVideoDecoder,
+      MessageLoop*,
+      ggl::Context*>(
+          message_loop, ggl_context);
 }
 
 // static
-bool IpcVideoDecoder::IsMediaFormatSupported(const MediaFormat& format) {
+bool IpcVideoDecoder::IsMediaFormatSupported(const media::MediaFormat& format) {
   std::string mime_type;
-  if (!format.GetAsString(MediaFormat::kMimeType, &mime_type) &&
-      mime_type::kFFmpegVideo != mime_type)
+  if (!format.GetAsString(media::MediaFormat::kMimeType, &mime_type) &&
+      media::mime_type::kFFmpegVideo != mime_type)
       return false;
 
   // TODO(jiesun): Although we current only support H264 hardware decoding,
   // in the future, we should query GpuVideoService for capabilities.
   int codec_id;
-  return format.GetAsInteger(MediaFormat::kFFmpegCodecID, &codec_id) &&
-         codec_id == CODEC_ID_H264;
+  return format.GetAsInteger(media::MediaFormat::kFFmpegCodecID, &codec_id) &&
+      codec_id == CODEC_ID_H264;
 }
-
-}  // namespace media

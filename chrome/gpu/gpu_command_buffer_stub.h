@@ -41,6 +41,9 @@ class GpuCommandBufferStub
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
 
+  // Get the GLContext associated with this object.
+  gpu::GPUProcessor* processor() const { return processor_.get(); }
+
   int32 route_id() const { return route_id_; }
 
  private:

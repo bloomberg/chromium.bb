@@ -13,13 +13,19 @@
 #include "media/video/video_decode_engine.h"
 #include "ipc/ipc_channel.h"
 
-class GpuChannel;
-
 using media::VideoCodecConfig;
 using media::VideoCodecInfo;
 using media::VideoStreamInfo;
 using media::VideoFrame;
 using media::Buffer;
+
+namespace gpu {
+namespace gles2 {
+class GLES2Decoder;
+}  // namespace gles2
+}  // namespace gpu
+
+class GpuChannel;
 
 class GpuVideoDecoder
     : public IPC::Channel::Listener,
@@ -44,7 +50,8 @@ class GpuVideoDecoder
 
   GpuVideoDecoder(const GpuVideoDecoderInfoParam* param,
                   GpuChannel* channel_,
-                  base::ProcessHandle handle);
+                  base::ProcessHandle handle,
+                  gpu::gles2::GLES2Decoder* decoder);
   virtual ~GpuVideoDecoder() {}
 
  private:
@@ -65,6 +72,11 @@ class GpuVideoDecoder
 
   GpuChannel* channel_;
   base::ProcessHandle renderer_handle_;
+
+  // The GLES2 decoder has the context associated with this decoder. This object
+  // is used to switch GLES2 context and translate client texture ID to service
+  // ID.
+  gpu::gles2::GLES2Decoder* gles2_decoder_;
 
   scoped_ptr<base::SharedMemory> input_transfer_buffer_;
   scoped_ptr<base::SharedMemory> output_transfer_buffer_;

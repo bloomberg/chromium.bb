@@ -34,16 +34,18 @@ void ParamTraits<GpuVideoServiceInfoParam>::Log(
 
 void ParamTraits<GpuVideoDecoderInfoParam>::Write(
     Message* m, const GpuVideoDecoderInfoParam& p) {
-  m->WriteInt(p.decoder_id_);
-  m->WriteInt(p.decoder_route_id_);
-  m->WriteInt(p.decoder_host_route_id_);
+  m->WriteInt(p.context_id);
+  m->WriteInt(p.decoder_id);
+  m->WriteInt(p.decoder_route_id);
+  m->WriteInt(p.decoder_host_route_id);
 }
 
 bool ParamTraits<GpuVideoDecoderInfoParam>::Read(
     const Message* m, void** iter, GpuVideoDecoderInfoParam* r) {
-  if (!m->ReadInt(iter, &r->decoder_id_) ||
-      !m->ReadInt(iter, &r->decoder_route_id_) ||
-      !m->ReadInt(iter, &r->decoder_host_route_id_))
+  if (!m->ReadInt(iter, &r->context_id) ||
+      !m->ReadInt(iter, &r->decoder_id) ||
+      !m->ReadInt(iter, &r->decoder_route_id) ||
+      !m->ReadInt(iter, &r->decoder_host_route_id))
     return false;
   return true;
 }
@@ -51,9 +53,9 @@ bool ParamTraits<GpuVideoDecoderInfoParam>::Read(
 void ParamTraits<GpuVideoDecoderInfoParam>::Log(
     const GpuVideoDecoderInfoParam& p, std::string* l) {
   l->append(StringPrintf("(%d, %d, %d)",
-            p.decoder_id_,
-            p.decoder_route_id_,
-            p.decoder_host_route_id_));
+            p.decoder_id,
+            p.decoder_route_id,
+            p.decoder_host_route_id));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -208,4 +210,3 @@ void ParamTraits<GpuVideoDecoderFormatChangeParam>::Log(
                          p.output_buffer_size_));
 }
 };
-

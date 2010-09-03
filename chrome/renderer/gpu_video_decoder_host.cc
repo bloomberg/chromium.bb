@@ -55,6 +55,7 @@ bool GpuVideoDecoderHost::Initialize(EventHandler* event_handler,
   // TODO(hclam): Pass the context route ID here.
   // TODO(hclam): This create video decoder operation is synchronous, need to
   // make it asynchronous.
+  decoder_info_.context_id = context_route_id_;
   if (!channel_host_->Send(
           new GpuChannelMsg_CreateVideoDecoder(&decoder_info_))) {
     LOG(ERROR) << "GpuChannelMsg_CreateVideoDecoder failed";
@@ -79,6 +80,8 @@ bool GpuVideoDecoderHost::Uninitialize() {
     LOG(ERROR) << "GpuVideoDecoderMsg_Destroy failed";
     return false;
   }
+
+  gpu_video_service_host_->RemoveRoute(my_route_id());
   return true;
 }
 
