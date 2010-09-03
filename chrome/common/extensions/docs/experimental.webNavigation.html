@@ -1344,7 +1344,7 @@
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span>["link", "user_browser", "redirect_meta_refresh", "redirect_onload", "forward_back", "redirect_javascript", "new_window", "reload", "other"]</span>
+                        <span>["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"]</span>
                       </span>
                     </span>
                   )
@@ -1355,7 +1355,65 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Cause of the navigation. Set to null for subframe navigations.</dd>
+          <dd>Cause of the navigation. The same transition types as defined in the history API are used.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>transitionQualifiers</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span>["client_redirect", "server_redirect", "forward_back"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Zero or more transition qualifiers delimited by "|". Possible qualifiers are "client_redirect", "server_redirect", and "forward_backward".</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
