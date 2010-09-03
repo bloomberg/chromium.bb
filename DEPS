@@ -1,4 +1,5 @@
 vars = {
+  "googlecode_url": "http://%s.googlecode.com/svn",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "66666",
@@ -13,25 +14,25 @@ vars = {
 
 deps = {
   "src/breakpad/src":
-    "http://google-breakpad.googlecode.com/svn/trunk/src@657",
+    (Var("googlecode_url") % "google-breakpad") + "/trunk/src@657",
 
   "src/build/util/support":
     "/trunk/deps/support@20411",
 
   "src/googleurl":
-    "http://google-url.googlecode.com/svn/trunk@145",
+    (Var("googlecode_url") % "google-url") + "/trunk@145",
 
   "src/seccompsandbox":
     "http://seccompsandbox.googlecode.com/svn/trunk@91",
 
   "src/sdch/open-vcdiff":
-    "http://open-vcdiff.googlecode.com/svn/trunk@28",
+    (Var("googlecode_url") % "open-vcdiff") + "/trunk@28",
 
   "src/testing/gtest":
-    "http://googletest.googlecode.com/svn/trunk@408",
+    (Var("googlecode_url") % "googletest") + "/trunk@408",
 
   "src/third_party/angle":
-    "http://angleproject.googlecode.com/svn/trunk@402",
+    (Var("googlecode_url") % "angleproject") + "/trunk@402",
 
   "src/third_party/WebKit":
     "/trunk/deps/third_party/WebKit@33467",
@@ -46,16 +47,16 @@ deps = {
    "/trunk/deps/third_party/hunspell_dictionaries@51875",
 
   "src/third_party/protobuf2/src":
-    "http://protobuf.googlecode.com/svn/trunk@327",
+    (Var("googlecode_url") % "protobuf") + "/trunk@327",
 
   "src/third_party/cacheinvalidation/files":
-    "http://google-cache-invalidation-api.googlecode.com/svn/trunk@35",
+    (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@35",
 
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@840",
+    (Var("googlecode_url") % "gyp") + "/trunk@840",
 
   "src/v8":
-    "http://v8.googlecode.com/svn/trunk@5388",
+    (Var("googlecode_url") % "v8") + "/trunk@5388",
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
@@ -64,10 +65,10 @@ deps = {
     Var("nacl_revision"),
 
   "src/third_party/skia/src":
-    "http://skia.googlecode.com/svn/trunk/src@" + Var("skia_revision"),
+    (Var("googlecode_url") % "skia") + "/trunk/src@" + Var("skia_revision"),
 
   "src/third_party/skia/include":
-    "http://skia.googlecode.com/svn/trunk/include@" + Var("skia_revision"),
+    (Var("googlecode_url") % "skia") + "/trunk/include@" + Var("skia_revision"),
 
   "src/third_party/WebKit/LayoutTests":
     Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
@@ -88,7 +89,7 @@ deps = {
     Var("webkit_trunk") + "/WebKitTools/Scripts@" + Var("webkit_revision"),
 
   "src/third_party/ots":
-    "http://ots.googlecode.com/svn/trunk@35",
+    (Var("googlecode_url") % "ots") + "/trunk@35",
 
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@19546",
@@ -166,10 +167,10 @@ deps = {
     Var("libvpx_revision"),
 
   "src/third_party/ppapi":
-    "http://ppapi.googlecode.com/svn/trunk@234",
+    (Var("googlecode_url") % "ppapi") + "/trunk@234",
 
   "src/third_party/libjingle/source":
-    "http://libjingle.googlecode.com/svn/branches/nextsnap@" +
+    (Var("googlecode_url") % "libjingle") + "/branches/nextsnap@" +
     Var("libjingle_revision"),
 
   "src/third_party/speex":
@@ -202,7 +203,7 @@ deps_os = {
 
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
-      "http://pefile.googlecode.com/svn/trunk@63",
+      (Var("googlecode_url") % "pefile") + "/trunk@63",
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
@@ -216,16 +217,16 @@ deps_os = {
        Var("nacl_revision")),
 
     "src/rlz":
-      "http://rlz.googlecode.com/svn/trunk@15",
+      (Var("googlecode_url") % "rlz") + "/trunk@15",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
       "/trunk/deps/reference_builds/chrome_mac@41963",
 
     "src/third_party/GTM":
-      "http://google-toolbox-for-mac.googlecode.com/svn/trunk@375",
+      (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@375",
     "src/third_party/pdfsqueeze":
-      "http://pdfsqueeze.googlecode.com/svn/trunk@2",
+      (Var("googlecode_url") % "pdfsqueeze") + "/trunk@2",
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@33737",
 
