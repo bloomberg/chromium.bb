@@ -261,11 +261,13 @@ void IEImporter::ImportPasswordsIE7() {
   while (reg_iterator.Valid() && !cancelled()) {
     // Get the size of the encrypted data.
     DWORD value_len = 0;
-    if (key.ReadValue(reg_iterator.Name(), NULL, &value_len) && value_len) {
+    if (key.ReadValue(reg_iterator.Name(), NULL, &value_len, NULL) &&
+        value_len) {
       // Query the encrypted data.
       std::vector<unsigned char> value;
       value.resize(value_len);
-      if (key.ReadValue(reg_iterator.Name(), &value.front(), &value_len)) {
+      if (key.ReadValue(reg_iterator.Name(), &value.front(), &value_len,
+                        NULL)) {
         IE7PasswordInfo password_info;
         password_info.url_hash = reg_iterator.Name();
         password_info.encrypted_data = value;

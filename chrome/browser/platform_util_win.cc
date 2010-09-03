@@ -116,7 +116,7 @@ void OpenExternal(const GURL& url) {
   key.Open(HKEY_CLASSES_ROOT, registry_path.c_str(), KEY_READ);
   if (key.Valid()) {
     DWORD size = 0;
-    key.ReadValue(NULL, NULL, &size);
+    key.ReadValue(NULL, NULL, &size, NULL);
     if (size <= 2) {
       // ShellExecute crashes the process when the command is empty.
       // We check for "2" because it always returns the trailing NULL.

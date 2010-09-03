@@ -7,13 +7,9 @@
 #pragma once
 
 #include <windows.h>
-
 #include <string>
 
 #include "base/basictypes.h"
-
-// TODO(tfarina): Get rid of all the default arguments used in this file.
-// They are not allowed by our style guide.
 
 // Utility class to read, write and manipulate the Windows Registry.
 // Registry vocabulary primer: a "key" is like a folder, in which there
@@ -56,8 +52,7 @@ class RegKey {
 
   bool ValueExists(const wchar_t* name);
 
-  bool ReadValue(const wchar_t* name, void* data, DWORD* dsize,
-                 DWORD* dtype = NULL);
+  bool ReadValue(const wchar_t* name, void* data, DWORD* dsize, DWORD* dtype);
   bool ReadValue(const wchar_t* name, std::wstring* value);
   bool ReadValueDW(const wchar_t* name, DWORD* value);
 

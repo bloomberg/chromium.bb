@@ -172,7 +172,7 @@ bool ConfigurationPolicyProviderWin::ReadRegistryStringValue(
   // the 0-termination.
   buffer.reset(new uint8[value_size + 2]);
   memset(buffer.get(), 0, value_size + 2);
-  key->ReadValue(name.c_str(), buffer.get(), &value_size);
+  key->ReadValue(name.c_str(), buffer.get(), &value_size, NULL);
   result->assign(reinterpret_cast<const wchar_t*>(buffer.get()));
   return true;
 }
