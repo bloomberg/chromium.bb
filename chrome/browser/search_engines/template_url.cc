@@ -185,6 +185,12 @@ std::string TemplateURLRef::ParseURL(const std::string& url,
 }
 
 void TemplateURLRef::ParseIfNecessary() const {
+  UIThreadSearchTermsData search_terms_data;
+  ParseIfNecessaryUsingTermsData(search_terms_data);
+}
+
+void TemplateURLRef::ParseIfNecessaryUsingTermsData(
+    const SearchTermsData& search_terms_data) const {
   if (!parsed_) {
     parsed_ = true;
     parsed_url_ = ParseURL(url_, &replacements_, &valid_);
@@ -206,14 +212,13 @@ void TemplateURLRef::ParseIfNecessary() const {
       // Only parse the host/key if there is one search term. Technically there
       // could be more than one term, but it's uncommon; so we punt.
       if (has_only_one_search_term)
-        ParseHostAndSearchTermKey();
+        ParseHostAndSearchTermKey(search_terms_data);
     }
   }
 }
 
-void TemplateURLRef::ParseHostAndSearchTermKey() const {
-  UIThreadSearchTermsData search_terms_data;
-
+void TemplateURLRef::ParseHostAndSearchTermKey(
+    const SearchTermsData& search_terms_data) const {
   std::string url_string = url_;
   ReplaceSubstringsAfterOffset(&url_string, 0,
                                kGoogleBaseURLParameterFull,
@@ -273,7 +278,7 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
     int accepted_suggestion,
     const std::wstring& original_query_for_suggestion,
     const SearchTermsData& search_terms_data) const {
-  ParseIfNecessary();
+  ParseIfNecessaryUsingTermsData(search_terms_data);
   if (!valid_)
     return std::string();
 
@@ -404,12 +409,24 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 }
 
 bool TemplateURLRef::SupportsReplacement() const {
-  ParseIfNecessary();
+  UIThreadSearchTermsData search_terms_data;
+  return SupportsReplacementUsingTermsData(search_terms_data);
+}
+
+bool TemplateURLRef::SupportsReplacementUsingTermsData(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessaryUsingTermsData(search_terms_data);
   return valid_ && supports_replacements_;
 }
 
 bool TemplateURLRef::IsValid() const {
-  ParseIfNecessary();
+  UIThreadSearchTermsData search_terms_data;
+  return IsValidUsingTermsData(search_terms_data);
+}
+
+bool TemplateURLRef::IsValidUsingTermsData(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessaryUsingTermsData(search_terms_data);
   return valid_;
 }
 
@@ -524,7 +541,16 @@ GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
 
 // static
 bool TemplateURL::SupportsReplacement(const TemplateURL* turl) {
-  return turl && turl->url() && turl->url()->SupportsReplacement();
+  UIThreadSearchTermsData search_terms_data;
+  return SupportsReplacementUsingTermsData(turl, search_terms_data);
+}
+
+// static
+bool TemplateURL::SupportsReplacementUsingTermsData(
+    const TemplateURL* turl,
+    const SearchTermsData& search_terms_data) {
+  return turl && turl->url() &&
+      turl->url()->SupportsReplacementUsingTermsData(search_terms_data);
 }
 
 TemplateURL::TemplateURL()

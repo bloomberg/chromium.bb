@@ -7,11 +7,13 @@
 #include "base/path_service.h"
 #include "base/scoped_vector.h"
 #include "base/string_util.h"
+#include "base/ref_counted.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
@@ -30,21 +32,6 @@ using base::TimeDelta;
 #define MAYBE_Load Load
 #endif
 
-// Create an URL that appears to have been prepopulated, but won't be in the
-// current data. The caller owns the returned TemplateURL*.
-static TemplateURL* CreatePreloadedTemplateURL() {
-  TemplateURL* t_url = new TemplateURL();
-  t_url->SetURL("http://www.unittest.com/", 0, 0);
-  t_url->set_keyword(L"unittest");
-  t_url->set_short_name(L"unittest");
-  t_url->set_safe_for_autoreplace(true);
-  GURL favicon_url("http://favicon.url");
-  t_url->SetFavIconURL(favicon_url);
-  t_url->set_date_created(Time::FromTimeT(100));
-  t_url->set_prepopulate_id(999999);
-  return t_url;
-}
-
 // A Task used to coordinate when the database has finished processing
 // requests. See note in BlockTillServiceProcessesRequests for details.
 //
@@ -60,6 +47,74 @@ class QuitTask2 : public Task {
  private:
   MessageLoop* main_loop_;
 };
+
+// Test the GenerateSearchURL on a thread or the main thread.
+class TestGenerateSearchURL :
+    public base::RefCountedThreadSafe<TestGenerateSearchURL> {
+ public:
+  explicit TestGenerateSearchURL(SearchTermsData* search_terms_data)
+      : search_terms_data_(search_terms_data),
+        passed_(false) {
+  }
+
+  // Run the test cases for GenerateSearchURL.
+  void RunTest();
+
+  // Did the test pass?
+  bool passed() const { return passed_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<TestGenerateSearchURL>;
+  ~TestGenerateSearchURL() {}
+
+  SearchTermsData* search_terms_data_;
+  bool passed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestGenerateSearchURL);
+};
+
+// Simple implementation of SearchTermsData.
+class TestSearchTermsData : public SearchTermsData {
+ public:
+  explicit TestSearchTermsData(const char* google_base_url)
+      : google_base_url_(google_base_url)  {
+  }
+
+  virtual std::string GoogleBaseURLValue() const {
+    return google_base_url_;
+  }
+
+  virtual std::string GetApplicationLocale() const {
+    return "yy";
+  }
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  // Returns the value for the Chrome Omnibox rlz.
+  virtual std::wstring GetRlzParameterValue() const {
+    return std::wstring();
+  }
+#endif
+
+ private:
+  std::string google_base_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSearchTermsData);
+};
+
+// Create an URL that appears to have been prepopulated, but won't be in the
+// current data. The caller owns the returned TemplateURL*.
+static TemplateURL* CreatePreloadedTemplateURL() {
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL("http://www.unittest.com/", 0, 0);
+  t_url->set_keyword(L"unittest");
+  t_url->set_short_name(L"unittest");
+  t_url->set_safe_for_autoreplace(true);
+  GURL favicon_url("http://favicon.url");
+  t_url->SetFavIconURL(favicon_url);
+  t_url->set_date_created(Time::FromTimeT(100));
+  t_url->set_prepopulate_id(999999);
+  return t_url;
+}
 
 // Subclass the TestingProfile so that it can return a WebDataService.
 class TemplateURLModelTestingProfile : public TestingProfile {
@@ -182,15 +237,21 @@ class TemplateURLModelTest : public testing::Test,
     changed_count_ = 0;
   }
 
-  // Blocks the caller until the service has finished servicing all pending
+  // Blocks the caller until thread has finished servicing all pending
   // requests.
-  void BlockTillServiceProcessesRequests() {
-    // Schedule a task on the DB thread that is processed after all
-    // pending requests on the DB thread.
-    ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new QuitTask2());
+  void WaitForThreadToProcessRequests(ChromeThread::ID identifier) {
+    // Schedule a task on the thread that is processed after all
+    // pending requests on the thread.
+    ChromeThread::PostTask(identifier, FROM_HERE, new QuitTask2());
     // Run the current message loop. QuitTask2, when run, invokes Quit,
     // which unblocks this.
     MessageLoop::current()->Run();
+  }
+
+  // Blocks the caller until the service has finished servicing all pending
+  // requests.
+  void BlockTillServiceProcessesRequests() {
+    WaitForThreadToProcessRequests(ChromeThread::DB);
   }
 
   // Makes sure the load was successful and sent the correct notification.
@@ -261,6 +322,42 @@ class TemplateURLModelTest : public testing::Test,
   scoped_ptr<TestingTemplateURLModel> model_;
   int changed_count_;
 };
+
+void TestGenerateSearchURL::RunTest() {
+  struct GenerateSearchURLCase {
+    const char* test_name;
+    const char* url;
+    const char* expected;
+  } generate_url_cases[] = {
+    { "empty TemplateURLRef", NULL, "" },
+    { "invalid URL", "foo{searchTerms}", "" },
+    { "URL with no replacements", "http://foo/", "http://foo/" },
+    { "basic functionality", "http://foo/{searchTerms}",
+      "http://foo/blah.blah.blah.blah.blah" }
+  };
+
+  // Don't use ASSERT/EXPECT since this is run on a thread in one test
+  // and those macros aren't meant for threads at this time according to
+  // gtest documentation.
+  bool everything_passed = true;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generate_url_cases); ++i) {
+    TemplateURL t_url;
+    if (generate_url_cases[i].url)
+      t_url.SetURL(generate_url_cases[i].url, 0, 0);
+
+    std::string result = search_terms_data_ ?
+        TemplateURLModel::GenerateSearchURLUsingTermsData(
+            &t_url, *search_terms_data_).spec() :
+        TemplateURLModel::GenerateSearchURL(&t_url).spec();
+    if (strcmp(generate_url_cases[i].expected, result.c_str())) {
+      LOG(ERROR) << generate_url_cases[i].test_name << " failed. Expected " <<
+          generate_url_cases[i].expected << " Actual " << result;
+
+      everything_passed = false;
+    }
+  }
+  passed_ = everything_passed;
+}
 
 TemplateURL* TemplateURLModelTest::CreateReplaceablePreloadedTemplateURL(
     size_t index_offset_from_default,
@@ -399,6 +496,31 @@ TEST_F(TemplateURLModelTest, GenerateKeyword) {
   // Make sure we don't get a trailing /
   ASSERT_EQ(L"blah", TemplateURLModel::GenerateKeyword(GURL("http://blah/"),
                                                        true));
+}
+
+TEST_F(TemplateURLModelTest, GenerateSearchURL) {
+  scoped_refptr<TestGenerateSearchURL> test_generate_search_url(
+      new TestGenerateSearchURL(NULL));
+  test_generate_search_url->RunTest();
+  EXPECT_TRUE(test_generate_search_url->passed());
+}
+
+TEST_F(TemplateURLModelTest, GenerateSearchURLUsingTermsData) {
+  // Run the test for GenerateSearchURLUsingTermsData on the "IO" thread and
+  // wait for it to finish.
+  TestSearchTermsData search_terms_data("http://google.com/");
+  scoped_refptr<TestGenerateSearchURL> test_generate_search_url(
+      new TestGenerateSearchURL(&search_terms_data));
+
+  ChromeThread io_thread(ChromeThread::IO);
+  io_thread.Start();
+  io_thread.message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(test_generate_search_url.get(),
+                        &TestGenerateSearchURL::RunTest));
+  WaitForThreadToProcessRequests(ChromeThread::IO);
+  EXPECT_TRUE(test_generate_search_url->passed());
+  io_thread.Stop();
 }
 
 TEST_F(TemplateURLModelTest, ClearBrowsingData_Keywords) {

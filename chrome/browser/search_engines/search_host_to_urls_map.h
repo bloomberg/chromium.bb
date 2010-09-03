@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 
+class SearchTermsData;
 class TemplateURL;
 
 // Holds the host to template url mappings for the search providers. WARNING:
@@ -26,11 +27,13 @@ class SearchHostToURLsMap {
   ~SearchHostToURLsMap();
 
   // Initializes the map.
-  void Init(const std::vector<const TemplateURL*>& template_urls);
+  void Init(const std::vector<const TemplateURL*>& template_urls,
+            const SearchTermsData& search_terms_data);
 
   // Adds a new TemplateURL to the map. Since |template_url| is owned
   // externally, Remove or RemoveAll should be called if it becomes invalid.
-  void Add(const TemplateURL* template_url);
+  void Add(const TemplateURL* template_url,
+           const SearchTermsData& search_terms_data);
 
   // Removes the TemplateURL from the lookup.
   void Remove(const TemplateURL* template_url);
@@ -38,10 +41,12 @@ class SearchHostToURLsMap {
   // Updates information in an existing TemplateURL. Note: Using Remove and
   // then Add separately would lead to race conditions in reading because the
   // lock would be released inbetween the calls.
-  void Update(const TemplateURL* existing_turl, const TemplateURL& new_values);
+  void Update(const TemplateURL* existing_turl,
+              const TemplateURL& new_values,
+              const SearchTermsData& search_terms_data);
 
   // Updates all search providers which have a google base url.
-  void UpdateGoogleBaseURLs();
+  void UpdateGoogleBaseURLs(const SearchTermsData& search_terms_data);
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs

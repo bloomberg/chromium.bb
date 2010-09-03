@@ -17,22 +17,24 @@ SearchHostToURLsMap::~SearchHostToURLsMap() {
 }
 
 void SearchHostToURLsMap::Init(
-    const std::vector<const TemplateURL*>& template_urls) {
+    const std::vector<const TemplateURL*>& template_urls,
+    const SearchTermsData& search_terms_data) {
   DCHECK(!initialized_);
 
   // Set as initialized here so Add doesn't assert.
   initialized_ = true;
 
-  for (size_t i = 0; i < template_urls.size(); ++i) {
-    Add(template_urls[i]);
-  }
+  for (size_t i = 0; i < template_urls.size(); ++i)
+    Add(template_urls[i], search_terms_data);
 }
 
-void SearchHostToURLsMap::Add(const TemplateURL* template_url) {
+void SearchHostToURLsMap::Add(const TemplateURL* template_url,
+                              const SearchTermsData& search_terms_data) {
   DCHECK(initialized_);
   DCHECK(template_url);
 
-  const GURL url(TemplateURLModel::GenerateSearchURL(template_url));
+  const GURL url(TemplateURLModel::GenerateSearchURLUsingTermsData(
+      template_url, search_terms_data));
   if (!url.is_valid() || !url.has_host())
     return;
 
@@ -59,7 +61,8 @@ void SearchHostToURLsMap::Remove(const TemplateURL* template_url) {
 }
 
 void SearchHostToURLsMap::Update(const TemplateURL* existing_turl,
-                                 const TemplateURL& new_values) {
+                                 const TemplateURL& new_values,
+                                 const SearchTermsData& search_terms_data) {
   DCHECK(initialized_);
   DCHECK(existing_turl);
 
@@ -71,10 +74,11 @@ void SearchHostToURLsMap::Update(const TemplateURL* existing_turl,
   *modifiable_turl = new_values;
   modifiable_turl->set_id(previous_id);
 
-  Add(existing_turl);
+  Add(existing_turl, search_terms_data);
 }
 
-void SearchHostToURLsMap::UpdateGoogleBaseURLs() {
+void SearchHostToURLsMap::UpdateGoogleBaseURLs(
+    const SearchTermsData& search_terms_data) {
   DCHECK(initialized_);
 
   // Create a list of the the TemplateURLs to update.
@@ -97,7 +101,7 @@ void SearchHostToURLsMap::UpdateGoogleBaseURLs() {
     RemoveByPointer(t_urls_using_base_url[i]);
 
   for (size_t i = 0; i < t_urls_using_base_url.size(); ++i)
-    Add(t_urls_using_base_url[i]);
+    Add(t_urls_using_base_url[i], search_terms_data);
 }
 
 const TemplateURL* SearchHostToURLsMap::GetTemplateURLForHost(

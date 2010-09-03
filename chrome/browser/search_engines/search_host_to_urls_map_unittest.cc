@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,14 +48,16 @@ void SearchHostToURLsMapTest::SetUp() {
   template_urls.push_back(&t_urls_[1]);
 
   provider_map_.reset(new SearchHostToURLsMap);
-  provider_map_->Init(template_urls);
+  UIThreadSearchTermsData search_terms_data;
+  provider_map_->Init(template_urls, search_terms_data);
 }
 
 TEST_F(SearchHostToURLsMapTest, Add) {
   std::string new_host = "example.com";
   TemplateURL new_t_url;
   new_t_url.SetURL("http://" + new_host + "/", 0, 0);
-  provider_map_->Add(&new_t_url);
+  UIThreadSearchTermsData search_terms_data;
+  provider_map_->Add(&new_t_url, search_terms_data);
 
   ASSERT_EQ(&new_t_url, provider_map_->GetTemplateURLForHost(new_host));
 }
@@ -82,26 +85,28 @@ TEST_F(SearchHostToURLsMapTest, Update) {
   TemplateURL new_values;
   new_values.SetURL("http://" + new_host + "/", 0, 0);
 
-  provider_map_->Update(&t_urls_[0], new_values);
+  UIThreadSearchTermsData search_terms_data;
+  provider_map_->Update(&t_urls_[0], new_values, search_terms_data);
 
   ASSERT_EQ(&t_urls_[0], provider_map_->GetTemplateURLForHost(new_host));
   ASSERT_EQ(&t_urls_[1], provider_map_->GetTemplateURLForHost(host_));
 }
 
 TEST_F(SearchHostToURLsMapTest, UpdateGoogleBaseURLs) {
+  UIThreadSearchTermsData search_terms_data;
   std::string google_base_url = "google.com";
   SetGoogleBaseURL("http://" + google_base_url +"/");
 
   // Add in a url with the templated Google base url.
   TemplateURL new_t_url;
   new_t_url.SetURL("{google:baseURL}?q={searchTerms}", 0, 0);
-  provider_map_->Add(&new_t_url);
+  provider_map_->Add(&new_t_url, search_terms_data);
   ASSERT_EQ(&new_t_url, provider_map_->GetTemplateURLForHost(google_base_url));
 
   // Now change the Google base url and verify the result.
   std::string new_google_base_url = "other.com";
   SetGoogleBaseURL("http://" + new_google_base_url +"/");
-  provider_map_->UpdateGoogleBaseURLs();
+  provider_map_->UpdateGoogleBaseURLs(search_terms_data);
   ASSERT_EQ(&new_t_url, provider_map_->GetTemplateURLForHost(
       new_google_base_url));
 }

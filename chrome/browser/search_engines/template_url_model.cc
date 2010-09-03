@@ -160,25 +160,26 @@ std::wstring TemplateURLModel::CleanUserInputKeyword(
 GURL TemplateURLModel::GenerateSearchURL(const TemplateURL* t_url) {
   DCHECK(t_url);
   UIThreadSearchTermsData search_terms_data;
-  return GenerateSearchURLWithTermsData(t_url, search_terms_data);
+  return GenerateSearchURLUsingTermsData(t_url, search_terms_data);
 }
 
 // static
-GURL TemplateURLModel::GenerateSearchURLWithTermsData(
+GURL TemplateURLModel::GenerateSearchURLUsingTermsData(
     const TemplateURL* t_url,
     const SearchTermsData& search_terms_data) {
   DCHECK(t_url);
   const TemplateURLRef* search_ref = t_url->url();
   // Extension keywords don't have host-based search URLs.
-  if (!search_ref || !search_ref->IsValid() || t_url->IsExtensionKeyword())
+  if (!search_ref || !search_ref->IsValidUsingTermsData(search_terms_data) ||
+      t_url->IsExtensionKeyword())
     return GURL();
 
-  if (!search_ref->SupportsReplacement())
+  if (!search_ref->SupportsReplacementUsingTermsData(search_terms_data))
     return GURL(search_ref->url());
 
-  return GURL(search_ref->ReplaceSearchTerms(
+  return GURL(search_ref->ReplaceSearchTermsUsingTermsData(
       *t_url, kReplacementTerm, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-      std::wstring()));
+      std::wstring(), search_terms_data));
 }
 
 bool TemplateURLModel::CanReplaceKeyword(
@@ -673,8 +674,10 @@ void TemplateURLModel::RemoveFromKeywordMapByPointer(
 void TemplateURLModel::AddToMaps(const TemplateURL* template_url) {
   if (!template_url->keyword().empty())
     keyword_to_template_map_[template_url->keyword()] = template_url;
-  if (loaded_)
-    provider_map_.Add(template_url);
+  if (loaded_) {
+    UIThreadSearchTermsData search_terms_data;
+    provider_map_.Add(template_url, search_terms_data);
+  }
 }
 
 void TemplateURLModel::SetTemplateURLs(const std::vector<TemplateURL*>& urls) {
@@ -705,7 +708,8 @@ void TemplateURLModel::SetTemplateURLs(const std::vector<TemplateURL*>& urls) {
 void TemplateURLModel::ChangeToLoadedState() {
   DCHECK(!loaded_);
 
-  provider_map_.Init(template_urls_);
+  UIThreadSearchTermsData search_terms_data;
+  provider_map_.Init(template_urls_, search_terms_data);
   loaded_ = true;
 }
 
@@ -855,7 +859,8 @@ void TemplateURLModel::Update(const TemplateURL* existing_turl,
     keyword_to_template_map_.erase(existing_turl->keyword());
 
   // This call handles copying over the values (while retaining the id).
-  provider_map_.Update(existing_turl, new_values);
+  UIThreadSearchTermsData search_terms_data;
+  provider_map_.Update(existing_turl, new_values, search_terms_data);
 
   if (!existing_turl->keyword().empty())
     keyword_to_template_map_[existing_turl->keyword()] = existing_turl;
@@ -1013,7 +1018,8 @@ void TemplateURLModel::GoogleBaseURLChanged() {
   }
 
   if (something_changed && loaded_) {
-    provider_map_.UpdateGoogleBaseURLs();
+    UIThreadSearchTermsData search_terms_data;
+    provider_map_.UpdateGoogleBaseURLs(search_terms_data);
     FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
                       OnTemplateURLModelChanged());
   }

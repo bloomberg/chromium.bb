@@ -58,6 +58,10 @@ class TemplateURLRef {
   // Returns true if this URL supports replacement.
   bool SupportsReplacement() const;
 
+  // Like SupportsReplacement but usable on threads other than the UI thread.
+  bool SupportsReplacementUsingTermsData(
+      const SearchTermsData& search_terms_data) const;
+
   // Returns a string that is the result of replacing the search terms in
   // the url with the specified value.
   //
@@ -93,6 +97,9 @@ class TemplateURLRef {
   // Returns true if the TemplateURLRef is valid. An invalid TemplateURLRef is
   // one that contains unknown terms, or invalid characters.
   bool IsValid() const;
+
+  // Like IsValid but usable on threads other than the UI thread.
+  bool IsValidUsingTermsData(const SearchTermsData& search_terms_data) const;
 
   // Returns a string representation of this TemplateURLRef suitable for
   // display. The display format is the same as the format used by Firefox.
@@ -192,8 +199,13 @@ class TemplateURLRef {
   // search_offset_.
   void ParseIfNecessary() const;
 
+  // Like ParseIfNecessary but usable on threads other than the UI thread.
+  void ParseIfNecessaryUsingTermsData(
+      const SearchTermsData& search_terms_data) const;
+
   // Extracts the query key and host from the url.
-  void ParseHostAndSearchTermKey() const;
+  void ParseHostAndSearchTermKey(
+      const SearchTermsData& search_terms_data) const;
 
   // Used by tests to set the value for the Google base url. This takes
   // ownership of the given std::string.
@@ -268,6 +280,11 @@ class TemplateURL {
   // Returns true if |true| is non-null and has a search URL that supports
   // replacement.
   static bool SupportsReplacement(const TemplateURL* turl);
+
+  // Like SupportsReplacement but usable on threads other than the UI thread.
+  static bool SupportsReplacementUsingTermsData(
+      const TemplateURL* turl,
+      const SearchTermsData& search_terms_data);
 
   TemplateURL();
   ~TemplateURL();

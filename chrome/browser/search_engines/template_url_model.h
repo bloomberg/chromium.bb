@@ -86,7 +86,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Just like GenerateSearchURL except that it takes SearchTermsData to supply
   // the data for some search terms. Most of the time GenerateSearchURL should
   // be called.
-  static GURL GenerateSearchURLWithTermsData(
+  static GURL GenerateSearchURLUsingTermsData(
       const TemplateURL* t_url,
       const SearchTermsData& search_terms_data);
 
