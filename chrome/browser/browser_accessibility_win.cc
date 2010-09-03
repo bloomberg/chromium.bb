@@ -5,7 +5,10 @@
 #include "chrome/browser/browser_accessibility_win.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_accessibility_manager_win.h"
+#include "net/base/escape.h"
 
 using webkit_glue::WebAccessibility;
 
@@ -39,6 +42,7 @@ void BrowserAccessibility::Initialize(
   name_ = src.name;
   value_ = src.value;
   attributes_ = src.attributes;
+  html_attributes_ = src.html_attributes;
   location_ = src.location;
   InitRoleAndState(src.role, src.state);
 
@@ -105,6 +109,7 @@ BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() {
 
 BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
   if (parent_ &&
+      index_in_parent_ >= 0 &&
       index_in_parent_ < static_cast<int>(parent_->children_.size() - 1)) {
     return parent_->children_[index_in_parent_ + 1];
   }
@@ -271,17 +276,8 @@ STDMETHODIMP BrowserAccessibility::get_accDefaultAction(VARIANT var_id,
   if (!target)
     return E_INVALIDARG;
 
-  string16 action;
-  if (!target->GetAttribute(WebAccessibility::ATTR_SHORTCUT, &action))
-    return S_FALSE;
-
-  if (action.empty())
-    return S_FALSE;
-
-  *def_action = SysAllocString(action.c_str());
-
-  DCHECK(*def_action);
-  return S_OK;
+  return target->GetAttributeAsBstr(
+      WebAccessibility::ATTR_SHORTCUT, def_action);
 }
 
 STDMETHODIMP BrowserAccessibility::get_accDescription(VARIANT var_id,
@@ -296,17 +292,7 @@ STDMETHODIMP BrowserAccessibility::get_accDescription(VARIANT var_id,
   if (!target)
     return E_INVALIDARG;
 
-  string16 description;
-  if (!target->GetAttribute(WebAccessibility::ATTR_DESCRIPTION, &description))
-    return S_FALSE;
-
-  if (description.empty())
-    return S_FALSE;
-
-  *desc = SysAllocString(description.c_str());
-
-  DCHECK(*desc);
-  return S_OK;
+  return target->GetAttributeAsBstr(WebAccessibility::ATTR_DESCRIPTION, desc);
 }
 
 STDMETHODIMP BrowserAccessibility::get_accFocus(VARIANT* focus_child) {
@@ -341,17 +327,7 @@ STDMETHODIMP BrowserAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
   if (!target)
     return E_INVALIDARG;
 
-  string16 help_str;
-  if (!target->GetAttribute(WebAccessibility::ATTR_HELP, &help_str))
-    return S_FALSE;
-
-  if (help_str.empty())
-    return S_FALSE;
-
-  *help = SysAllocString(help_str.c_str());
-
-  DCHECK(*help);
-  return S_OK;
+  return target->GetAttributeAsBstr(WebAccessibility::ATTR_HELP, help);
 }
 
 STDMETHODIMP BrowserAccessibility::get_accKeyboardShortcut(VARIANT var_id,
@@ -366,17 +342,7 @@ STDMETHODIMP BrowserAccessibility::get_accKeyboardShortcut(VARIANT var_id,
   if (!target)
     return E_INVALIDARG;
 
-  string16 shortcut;
-  if (!target->GetAttribute(WebAccessibility::ATTR_SHORTCUT, &shortcut))
-    return S_FALSE;
-
-  if (shortcut.empty())
-    return S_FALSE;
-
-  *acc_key = SysAllocString(shortcut.c_str());
-
-  DCHECK(*acc_key);
-  return S_OK;
+  return target->GetAttributeAsBstr(WebAccessibility::ATTR_SHORTCUT, acc_key);
 }
 
 STDMETHODIMP BrowserAccessibility::get_accName(VARIANT var_id, BSTR* name) {
@@ -524,7 +490,23 @@ STDMETHODIMP BrowserAccessibility::get_attributes(BSTR* attributes) {
   if (!attributes)
     return E_INVALIDARG;
 
-  return S_FALSE;
+  // Follow Firefox's convention, which is to return a set of key-value pairs
+  // separated by semicolons, with a colon between the key and the value.
+  string16 str;
+  for (unsigned int i = 0; i < html_attributes_.size(); i++) {
+    if (i != 0)
+      str += L';';
+    str += Escape(html_attributes_[i].first);
+    str += L':';
+    str += Escape(html_attributes_[i].second);
+  }
+
+  if (str.empty())
+    return S_FALSE;
+
+  *attributes = SysAllocString(str.c_str());
+  DCHECK(*attributes);
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_states(AccessibleStates* states) {
@@ -583,17 +565,7 @@ STDMETHODIMP BrowserAccessibility::get_description(BSTR* desc) {
   if (!desc)
     return E_INVALIDARG;
 
-  string16 description;
-  if (!GetAttribute(WebAccessibility::ATTR_DESCRIPTION, &description))
-    return S_FALSE;
-
-  if (description.empty())
-    return S_FALSE;
-
-  *desc = SysAllocString(description.c_str());
-
-  DCHECK(*desc);
-  return S_OK;
+  return GetAttributeAsBstr(WebAccessibility::ATTR_DESCRIPTION, desc);
 }
 
 STDMETHODIMP BrowserAccessibility::get_imagePosition(
@@ -665,13 +637,338 @@ STDMETHODIMP BrowserAccessibility::get_text(
   if (end_offset > len)
     end_offset = len;
 
-  *text = SysAllocString(
-      name_.substr(start_offset, end_offset - start_offset).c_str());
+  string16 substr = name_.substr(start_offset, end_offset - start_offset);
+  if (substr.empty())
+    return S_FALSE;
+
+  *text = SysAllocString(substr.c_str());
+  DCHECK(*text);
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_caretOffset(long* offset) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!offset)
+    return E_INVALIDARG;
+
   *offset = 0;
+  return S_OK;
+}
+
+//
+// ISimpleDOMDocument methods.
+//
+
+STDMETHODIMP BrowserAccessibility::get_URL(BSTR* url) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!url)
+    return E_INVALIDARG;
+
+  return GetAttributeAsBstr(WebAccessibility::ATTR_DOC_URL, url);
+}
+
+STDMETHODIMP BrowserAccessibility::get_title(BSTR* title) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!title)
+    return E_INVALIDARG;
+
+  return GetAttributeAsBstr(WebAccessibility::ATTR_DOC_TITLE, title);
+}
+
+STDMETHODIMP BrowserAccessibility::get_mimeType(BSTR* mime_type) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!mime_type)
+    return E_INVALIDARG;
+
+  return GetAttributeAsBstr(WebAccessibility::ATTR_DOC_MIMETYPE, mime_type);
+}
+
+STDMETHODIMP BrowserAccessibility::get_docType(BSTR* doc_type) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!doc_type)
+    return E_INVALIDARG;
+
+  return GetAttributeAsBstr(WebAccessibility::ATTR_DOC_DOCTYPE, doc_type);
+}
+
+//
+// ISimpleDOMNode methods.
+//
+
+STDMETHODIMP BrowserAccessibility::get_nodeInfo(
+    BSTR* node_name,
+    short* name_space_id,
+    BSTR* node_value,
+    unsigned int* num_children,
+    unsigned int* unique_id,
+    unsigned short* node_type) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!node_name || !name_space_id || !node_value || !num_children ||
+      !unique_id || !node_type) {
+    return E_INVALIDARG;
+  }
+
+  string16 tag;
+  if (GetAttribute(WebAccessibility::ATTR_HTML_TAG, &tag))
+    *node_name = SysAllocString(tag.c_str());
+  else
+    *node_name = NULL;
+
+  *name_space_id = 0;
+  *node_value = SysAllocString(value_.c_str());
+  *num_children = children_.size();
+  *unique_id = child_id_;
+
+  if (role_ == ROLE_SYSTEM_DOCUMENT) {
+    *node_type = NODETYPE_DOCUMENT;
+  } else if (role_ == ROLE_SYSTEM_TEXT &&
+             ((ia2_state_ & IA2_STATE_EDITABLE) == 0)) {
+    *node_type = NODETYPE_TEXT;
+  } else {
+    *node_type = NODETYPE_ELEMENT;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_attributes(
+    unsigned short max_attribs,
+    BSTR* attrib_names,
+    short* name_space_id,
+    BSTR* attrib_values,
+    unsigned short* num_attribs) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!attrib_names || !name_space_id || !attrib_values || !num_attribs)
+    return E_INVALIDARG;
+
+  *num_attribs = max_attribs;
+  if (*num_attribs > html_attributes_.size())
+    *num_attribs = html_attributes_.size();
+
+  for (unsigned short i = 0; i < *num_attribs; ++i) {
+    attrib_names[i] = SysAllocString(html_attributes_[i].first.c_str());
+    name_space_id[i] = 0;
+    attrib_values[i] = SysAllocString(html_attributes_[i].second.c_str());
+  }
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_attributesForNames(
+    unsigned short num_attribs,
+    BSTR* attrib_names,
+    short* name_space_id,
+    BSTR* attrib_values) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!attrib_names || !name_space_id || !attrib_values)
+    return E_INVALIDARG;
+
+  for (unsigned short i = 0; i < num_attribs; ++i) {
+    name_space_id[i] = 0;
+    bool found = false;
+    string16 name = (LPCWSTR)attrib_names[i];
+    for (unsigned int j = 0;  j < html_attributes_.size(); ++j) {
+      if (html_attributes_[j].first == name) {
+        attrib_values[i] = SysAllocString(html_attributes_[j].second.c_str());
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      attrib_values[i] = NULL;
+    }
+  }
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_computedStyle(
+    unsigned short max_style_properties,
+    boolean use_alternate_view,
+    BSTR *style_properties,
+    BSTR *style_values,
+    unsigned short *num_style_properties)  {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!style_properties || !style_values)
+    return E_INVALIDARG;
+
+  // We only cache a single style property for now: DISPLAY
+
+  if (max_style_properties == 0 ||
+      !HasAttribute(WebAccessibility::ATTR_DISPLAY)) {
+    *num_style_properties = 0;
+    return S_OK;
+  }
+
+  string16 display;
+  GetAttribute(WebAccessibility::ATTR_DISPLAY, &display);
+  *num_style_properties = 1;
+  style_properties[0] = SysAllocString(L"display");
+  style_values[0] = SysAllocString(display.c_str());
+
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_computedStyleForProperties(
+    unsigned short num_style_properties,
+    boolean use_alternate_view,
+    BSTR* style_properties,
+    BSTR* style_values) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!style_properties || !style_values)
+    return E_INVALIDARG;
+
+  // We only cache a single style property for now: DISPLAY
+
+  for (unsigned short i = 0; i < num_style_properties; i++) {
+    string16 name = (LPCWSTR)style_properties[i];
+    StringToLowerASCII(&name);
+    if (name == L"display") {
+      string16 display;
+      GetAttribute(WebAccessibility::ATTR_DISPLAY, &display);
+      style_values[i] = SysAllocString(display.c_str());
+    } else {
+      style_values[i] = NULL;
+    }
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::scrollTo(boolean placeTopLeft) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP BrowserAccessibility::get_parentNode(ISimpleDOMNode** node) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!node)
+    return E_INVALIDARG;
+
+  *node = parent_->NewReference();
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_firstChild(ISimpleDOMNode** node)  {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!node)
+    return E_INVALIDARG;
+
+  if (children_.size()) {
+    *node = children_[0]->NewReference();
+    return S_OK;
+  } else {
+    *node = NULL;
+    return S_FALSE;
+  }
+}
+
+STDMETHODIMP BrowserAccessibility::get_lastChild(ISimpleDOMNode** node) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!node)
+    return E_INVALIDARG;
+
+  if (children_.size()) {
+    *node = children_[children_.size() - 1]->NewReference();
+    return S_OK;
+  } else {
+    *node = NULL;
+    return S_FALSE;
+  }
+}
+
+STDMETHODIMP BrowserAccessibility::get_previousSibling(
+    ISimpleDOMNode** node) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!node)
+    return E_INVALIDARG;
+
+  if (parent_ && index_in_parent_ > 0) {
+    *node = parent_->children_[index_in_parent_ - 1]->NewReference();
+    return S_OK;
+  } else {
+    *node = NULL;
+    return S_FALSE;
+  }
+}
+
+STDMETHODIMP BrowserAccessibility::get_nextSibling(ISimpleDOMNode** node) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!node)
+    return E_INVALIDARG;
+
+  if (parent_ &&
+      index_in_parent_ >= 0 &&
+      index_in_parent_ < static_cast<int>(parent_->children_.size()) - 1) {
+    *node = parent_->children_[index_in_parent_ + 1]->NewReference();
+    return S_OK;
+  } else {
+    *node = NULL;
+    return S_FALSE;
+  }
+}
+
+STDMETHODIMP BrowserAccessibility::get_childAt(
+    unsigned int child_index,
+    ISimpleDOMNode** node) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!node)
+    return E_INVALIDARG;
+
+  if (child_index < children_.size()) {
+    *node = children_[child_index]->NewReference();
+    return S_OK;
+  } else {
+    *node = NULL;
+    return S_FALSE;
+  }
+}
+
+//
+// ISimpleDOMText methods.
+//
+
+STDMETHODIMP BrowserAccessibility::get_domText(BSTR* dom_text) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!dom_text)
+    return E_INVALIDARG;
+
+  if (name_.empty())
+    return S_FALSE;
+
+  *dom_text = SysAllocString(name_.c_str());
+  DCHECK(*dom_text);
   return S_OK;
 }
 
@@ -684,8 +981,15 @@ STDMETHODIMP BrowserAccessibility::QueryService(
   if (!instance_active_)
     return E_FAIL;
 
-  if (guidService == IID_IAccessible || guidService == IID_IAccessible2)
+  if (guidService == IID_IAccessible ||
+      guidService == IID_IAccessible2 ||
+      guidService == IID_IAccessibleImage ||
+      guidService == IID_IAccessibleText ||
+      guidService == IID_ISimpleDOMDocument ||
+      guidService == IID_ISimpleDOMNode ||
+      guidService == IID_ISimpleDOMText) {
     return QueryInterface(riid, object);
+  }
 
   *object = NULL;
   return E_FAIL;
@@ -707,6 +1011,11 @@ HRESULT WINAPI BrowserAccessibility::InternalQueryInterface(
     }
   } else if (iid == IID_IAccessibleImage) {
     if (role_ != ROLE_SYSTEM_GRAPHIC) {
+      *object = NULL;
+      return E_NOINTERFACE;
+    }
+  } else if (iid == IID_ISimpleDOMDocument) {
+    if (role_ != ROLE_SYSTEM_DOCUMENT) {
       *object = NULL;
       return E_NOINTERFACE;
     }
@@ -750,10 +1059,31 @@ bool BrowserAccessibility::GetAttribute(
   return false;
 }
 
+HRESULT BrowserAccessibility::GetAttributeAsBstr(
+    WebAccessibility::Attribute attribute, BSTR* value_bstr) {
+  string16 str;
+
+  if (!GetAttribute(attribute, &str))
+    return S_FALSE;
+
+  if (str.empty())
+    return S_FALSE;
+
+  *value_bstr = SysAllocString(str.c_str());
+  DCHECK(*value_bstr);
+
+  return S_OK;
+}
+
+string16 BrowserAccessibility::Escape(string16 str) {
+  return UTF8ToUTF16(EscapeNonASCII(UTF16ToUTF8(str)));
+}
+
 void BrowserAccessibility::InitRoleAndState(LONG web_role,
                                             LONG web_state) {
   state_ = 0;
   ia2_state_ = IA2_STATE_OPAQUE;
+  GetAttribute(WebAccessibility::ATTR_HTML_TAG, &role_name_);
 
   if ((web_state >> WebAccessibility::STATE_CHECKED) & 1)
     state_ |= STATE_SYSTEM_CHECKED;
@@ -817,7 +1147,6 @@ void BrowserAccessibility::InitRoleAndState(LONG web_role,
       role_ = ROLE_SYSTEM_COMBOBOX;
       break;
     case WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION:
-      role_name_ = L"dd";
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       break;
     case WebAccessibility::ROLE_DEFINITION_LIST_TERM:
@@ -841,19 +1170,15 @@ void BrowserAccessibility::InitRoleAndState(LONG web_role,
       role_ = ROLE_SYSTEM_TABLE;
       break;
     case WebAccessibility::ROLE_GROUP:
-      role_name_ = L"div";
       ia2_role_ = IA2_ROLE_SECTION;
       break;
     case WebAccessibility::ROLE_HEADING:
-      // TODO(dmazzoni): support all heading levels
-      role_name_ = L"h1";
       ia2_role_ = IA2_ROLE_HEADING;
       break;
     case WebAccessibility::ROLE_IMAGE:
       role_ = ROLE_SYSTEM_GRAPHIC;
       break;
     case WebAccessibility::ROLE_IMAGE_MAP:
-      role_name_ = L"map";
       ia2_role_ = IA2_ROLE_IMAGE_MAP;
       break;
     case WebAccessibility::ROLE_IMAGE_MAP_LINK:
