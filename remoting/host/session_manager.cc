@@ -111,7 +111,7 @@ void SessionManager::DoStart() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   if (started_) {
-    NOTREACHED() << "Record session already started";
+    NOTREACHED() << "Record session already started.";
     return;
   }
 
@@ -128,7 +128,7 @@ void SessionManager::DoPause() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   if (!started_) {
-    NOTREACHED() << "Record session not started";
+    NOTREACHED() << "Record session not started.";
     return;
   }
 

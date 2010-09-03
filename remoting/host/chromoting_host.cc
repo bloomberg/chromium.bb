@@ -68,15 +68,12 @@ void ChromotingHost::OnClientConnected(ClientConnection* client) {
                                   context_->main_message_loop(),
                                   capturer_.get(),
                                   encoder_.get());
-
-    // Immediately add the client and start the session.
-    session_->AddClient(client);
-    session_->Start();
-    LOG(INFO) << "Session manager started";
-  } else {
-    // If a session manager already exists we simply add the new client.
-    session_->AddClient(client);
   }
+
+  // Immediately add the client and start the session.
+  session_->AddClient(client);
+  session_->Start();
+  LOG(INFO) << "Session manager started";
 }
 
 void ChromotingHost::OnClientDisconnected(ClientConnection* client) {
@@ -88,6 +85,9 @@ void ChromotingHost::OnClientDisconnected(ClientConnection* client) {
     session_->RemoveClient(client);
     session_->Pause();
   }
+
+  // Close the connection to client just to be safe.
+  client->Disconnect();
 
   // Also remove reference to ClientConnection from this object.
   client_ = NULL;
@@ -117,7 +117,6 @@ void ChromotingHost::OnConnectionOpened(ClientConnection* client) {
 void ChromotingHost::OnConnectionClosed(ClientConnection* client) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
-  // Completes the client connection.
   LOG(INFO) << "Connection to client closed.";
   OnClientDisconnected(client_.get());
 }
@@ -125,7 +124,6 @@ void ChromotingHost::OnConnectionClosed(ClientConnection* client) {
 void ChromotingHost::OnConnectionFailed(ClientConnection* client) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
-  // The client has disconnected.
   LOG(ERROR) << "Connection failed unexpectedly.";
   OnClientDisconnected(client_.get());
 }
