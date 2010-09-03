@@ -19,9 +19,9 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/controls/button/native_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/controls/link.h"
 #include "views/standard_layout.h"
 #include "views/view.h"
 
@@ -33,14 +33,14 @@ const int kBubbleVertMargin = 0;
 // This is the content view which is placed inside a SpeechInputBubble.
 class ContentView
     : public views::View,
-      public views::LinkController {
+      public views::ButtonListener {
  public:
   explicit ContentView(SpeechInputBubbleDelegate* delegate);
 
   void SetRecognizingMode();
 
-  // views::LinkController methods.
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::ButtonListener methods.
+  virtual void ButtonPressed(views::Button* source, const views::Event& event);
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize();
@@ -50,7 +50,7 @@ class ContentView
   SpeechInputBubbleDelegate* delegate_;
   views::ImageView* icon_;
   views::Label* heading_;
-  views::Link* cancel_;
+  views::NativeButton* cancel_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
@@ -72,10 +72,7 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
   icon_->SetHorizontalAlignment(views::ImageView::CENTER);
   AddChildView(icon_);
 
-  cancel_ = new views::Link(l10n_util::GetString(IDS_CANCEL));
-  cancel_->SetController(this);
-  cancel_->SetFont(font.DeriveFont(3, gfx::Font::NORMAL));
-  cancel_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  cancel_ = new views::NativeButton(this, l10n_util::GetString(IDS_CANCEL));
   AddChildView(cancel_);
 }
 
@@ -84,7 +81,8 @@ void ContentView::SetRecognizingMode() {
       IDR_SPEECH_INPUT_PROCESSING));
 }
 
-void ContentView::LinkActivated(views::Link* source, int event_flags) {
+void ContentView::ButtonPressed(views::Button* source,
+                                const views::Event& event) {
   if (source == cancel_) {
     delegate_->RecognitionCancelled();
   } else {
