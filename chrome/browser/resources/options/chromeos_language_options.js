@@ -409,6 +409,7 @@ cr.define('options', function() {
           // Filipino).
           this.preloadEngines_.indexOf(inputMethodIds[0]) == -1) {
         this.preloadEngines_.push(inputMethodIds[0]);
+	this.updateCheckboxesFromPreloadEngines_();
         this.savePreloadEnginesPref_();
       }
       OptionsPage.clearOverlays();
