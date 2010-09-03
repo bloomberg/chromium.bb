@@ -9,9 +9,12 @@ namespace browser_defaults {
 #if defined(OS_CHROMEOS)
 
 const double kAutocompleteEditFontPixelSize = 12.0;
-const double kAutocompleteEditFontPixelSizeInPopup = kAutocompletePopupFontSize;
+const double kAutocompleteEditFontPixelSizeInPopup = 10;
 
+// This is only used by AutocompletePopupViewGtk which is unused
+// unless TOOLKIT_VIEWS is undefined:
 const int kAutocompletePopupFontSize = 7;
+
 const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::LAST;
 const int kMiniTabWidth = 64;
