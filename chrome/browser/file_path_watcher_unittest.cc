@@ -19,13 +19,6 @@
 #include "base/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
-// TODO(tony): Tests are flaky on mac.  http://crbug.com/38188
-#define MAYBE(name) FLAKY_ ## name
-#else
-#define MAYBE(name) name
-#endif
-
 namespace {
 
 // The time we wait for events to happen. It should be large enough to be
@@ -173,7 +166,7 @@ class FilePathWatcherTest : public testing::Test {
 };
 
 // Basic test: Create the file and verify that we notice.
-TEST_F(FilePathWatcherTest, MAYBE(NewFile)) {
+TEST_F(FilePathWatcherTest, NewFile) {
   FilePathWatcher watcher;
   scoped_refptr<TestDelegate> delegate(new TestDelegate);
   SetupWatch(test_file(), &watcher, delegate.get());
@@ -183,7 +176,7 @@ TEST_F(FilePathWatcherTest, MAYBE(NewFile)) {
 }
 
 // Verify that modifying the file is caught.
-TEST_F(FilePathWatcherTest, MAYBE(ModifiedFile)) {
+TEST_F(FilePathWatcherTest, ModifiedFile) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
 
   FilePathWatcher watcher;
@@ -196,7 +189,7 @@ TEST_F(FilePathWatcherTest, MAYBE(ModifiedFile)) {
 }
 
 // Verify that moving the file into place is caught.
-TEST_F(FilePathWatcherTest, MAYBE(MovedFile)) {
+TEST_F(FilePathWatcherTest, MovedFile) {
   FilePath source_file(temp_dir_->path().AppendASCII("source"));
   ASSERT_TRUE(WriteFile(source_file, "content"));
 
@@ -209,7 +202,7 @@ TEST_F(FilePathWatcherTest, MAYBE(MovedFile)) {
   EXPECT_LE(1, WaitForEvents(delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(DeletedFile)) {
+TEST_F(FilePathWatcherTest, DeletedFile) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
 
   FilePathWatcher watcher;
@@ -223,7 +216,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DeletedFile)) {
 }
 
 // Verify that letting the watcher go out of scope stops notifications.
-TEST_F(FilePathWatcherTest, MAYBE(Unregister)) {
+TEST_F(FilePathWatcherTest, Unregister) {
   scoped_refptr<TestDelegate> delegate(new TestDelegate);
 
   {
@@ -259,7 +252,7 @@ class Deleter : public FilePathWatcher::Delegate {
 }  // anonymous namespace
 
 // Verify that deleting a watcher during the callback doesn't crash.
-TEST_F(FilePathWatcherTest, MAYBE(DeleteDuringNotify)) {
+TEST_F(FilePathWatcherTest, DeleteDuringNotify) {
   FilePathWatcher* watcher = new FilePathWatcher;
   // Takes ownership of watcher.
   scoped_refptr<Deleter> deleter(new Deleter(watcher, &loop_));
@@ -275,7 +268,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DeleteDuringNotify)) {
 
 // Verify that deleting the watcher works even if there is a pending
 // notification.
-TEST_F(FilePathWatcherTest, MAYBE(DestroyWithPendingNotification)) {
+TEST_F(FilePathWatcherTest, DestroyWithPendingNotification) {
   scoped_refptr<TestDelegate> delegate(new TestDelegate);
   FilePathWatcher* watcher = new FilePathWatcher;
   SetupWatch(test_file(), watcher, delegate.get());
@@ -285,7 +278,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DestroyWithPendingNotification)) {
   WaitForEvents(delegate.get());
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(MultipleWatchersSingleFile)) {
+TEST_F(FilePathWatcherTest, MultipleWatchersSingleFile) {
   FilePathWatcher watcher1, watcher2;
   scoped_refptr<TestDelegate> delegate1(new TestDelegate);
   scoped_refptr<TestDelegate> delegate2(new TestDelegate);
@@ -299,7 +292,7 @@ TEST_F(FilePathWatcherTest, MAYBE(MultipleWatchersSingleFile)) {
 
 // Verify that watching a file whose parent directory doesn't exist yet works if
 // the directory and file are created eventually.
-TEST_F(FilePathWatcherTest, MAYBE(NonExistentDirectory)) {
+TEST_F(FilePathWatcherTest, NonExistentDirectory) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_->path().AppendASCII("dir"));
   FilePath file(dir.AppendASCII("file"));
@@ -321,7 +314,7 @@ TEST_F(FilePathWatcherTest, MAYBE(NonExistentDirectory)) {
 
 // Exercises watch reconfiguration for the case that directories on the path
 // are rapidly created.
-TEST_F(FilePathWatcherTest, MAYBE(DirectoryChain)) {
+TEST_F(FilePathWatcherTest, DirectoryChain) {
   FilePath path(temp_dir_->path());
   std::vector<std::string> dir_names;
   for (int i = 0; i < 20; i++) {
@@ -348,7 +341,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DirectoryChain)) {
   EXPECT_LE(1, WaitForEvents(delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(DisappearingDirectory)) {
+TEST_F(FilePathWatcherTest, DisappearingDirectory) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_->path().AppendASCII("dir"));
   FilePath file(dir.AppendASCII("file"));
@@ -368,7 +361,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DisappearingDirectory)) {
 }
 
 // Tests that a file that is deleted and reappears is tracked correctly.
-TEST_F(FilePathWatcherTest, MAYBE(DeleteAndRecreate)) {
+TEST_F(FilePathWatcherTest, DeleteAndRecreate) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
   FilePathWatcher watcher;
   scoped_refptr<TestDelegate> delegate(new TestDelegate);
@@ -381,7 +374,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DeleteAndRecreate)) {
   EXPECT_LE(1, WaitForEvents(delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(WatchDirectory)) {
+TEST_F(FilePathWatcherTest, WatchDirectory) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_->path().AppendASCII("dir"));
   FilePath file1(dir.AppendASCII("file1"));
@@ -406,7 +399,7 @@ TEST_F(FilePathWatcherTest, MAYBE(WatchDirectory)) {
   EXPECT_LE(1, WaitForEvents(delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(MoveParent)) {
+TEST_F(FilePathWatcherTest, MoveParent) {
   FilePathWatcher file_watcher;
   FilePathWatcher subdir_watcher;
   FilePath dir(temp_dir_->path().AppendASCII("dir"));
@@ -436,7 +429,7 @@ TEST_F(FilePathWatcherTest, MAYBE(MoveParent)) {
   EXPECT_LE(1, WaitForEvents(subdir_delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(MoveChild)) {
+TEST_F(FilePathWatcherTest, MoveChild) {
   FilePathWatcher file_watcher;
   FilePathWatcher subdir_watcher;
   FilePath source_dir(temp_dir_->path().AppendASCII("source"));
