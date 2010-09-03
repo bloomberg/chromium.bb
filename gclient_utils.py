@@ -38,26 +38,22 @@ class CheckCallError(OSError):
     self.stderr = stderr
 
 
-def Popen(*args, **kwargs):
+def Popen(args, **kwargs):
   """Calls subprocess.Popen() with hacks to work around certain behaviors.
 
   Ensure English outpout for svn and make it work reliably on Windows.
   """
-  copied = False
+  logging.debug(u'%s, cwd=%s' % (u' '.join(args), kwargs.get('cwd', '')))
   if not 'env' in kwargs:
-    copied = True
-    kwargs = kwargs.copy()
     # It's easier to parse the stdout if it is always in English.
     kwargs['env'] = os.environ.copy()
     kwargs['env']['LANGUAGE'] = 'en'
   if not 'shell' in kwargs:
-    if not copied:
-      kwargs = kwargs.copy()
     # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
     # executable, but shell=True makes subprocess on Linux fail when it's called
     # with a list because it only tries to execute the first item in the list.
     kwargs['shell'] = (sys.platform=='win32')
-  return subprocess.Popen(*args, **kwargs)
+  return subprocess.Popen(args, **kwargs)
 
 
 def CheckCall(command, cwd=None, print_error=True):
@@ -66,7 +62,6 @@ def CheckCall(command, cwd=None, print_error=True):
 
   Works on python 2.4
   """
-  logging.debug('%s, cwd=%s' % (str(command), str(cwd)))
   try:
     stderr = None
     if not print_error:
@@ -296,7 +291,6 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   stdout = stdout or sys.stdout
   filter_fn = filter_fn or (lambda x: None)
   assert not 'stderr' in kwargs
-  logging.debug(args)
   kid = Popen(args, bufsize=0,
               stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
               **kwargs)
