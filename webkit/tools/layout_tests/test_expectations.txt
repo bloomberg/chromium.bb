@@ -34,3 +34,8 @@ BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
 
 // Temporary disable test.  Will investigate (antonm@chromium.org).
 BUGANTONM : fast/js/reserved-words-as-property.html = CRASH TEXT
+
+// Temporarily marked as pass + fail until the fix for
+// https://bugs.webkit.org/show_bug.cgi?id=45155 lands and rolls in, at which
+// point this can be removed.
+BUGPKASTING : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TEXT PASS

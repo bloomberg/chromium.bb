@@ -967,7 +967,10 @@ void EventSendingController::handleMouseWheel(const CppArgumentList& args,
   event.wheelTicksY = static_cast<float>(vertical);
   event.deltaX = event.wheelTicksX;
   event.deltaY = event.wheelTicksY;
-  if (!continuous) {
+  if (continuous) {
+      event.wheelTicksX /= kScrollbarPixelsPerTick;
+      event.wheelTicksY /= kScrollbarPixelsPerTick;
+  } else {
       event.deltaX *= kScrollbarPixelsPerTick;
       event.deltaY *= kScrollbarPixelsPerTick;
   }
