@@ -115,9 +115,8 @@ class BrowserProxy : public AutomationResourceProxy {
                             bool press_escape_en_route) WARN_UNUSED_RESULT;
 
   // Block the thread until the tab count is |count|.
-  // |wait_timeout| is the timeout, in milliseconds, for waiting.
   // Returns true on success.
-  bool WaitForTabCountToBecome(int count, int wait_timeout) WARN_UNUSED_RESULT;
+  bool WaitForTabCountToBecome(int count) WARN_UNUSED_RESULT;
 
   // Block the thread until the specified tab is the active tab.
   // |wait_timeout| is the timeout, in milliseconds, for waiting.

@@ -10,8 +10,7 @@
 TEST_F(AutomatedUITestBase, DragOut) {
   NewTab();
   NewTab();
-  ASSERT_TRUE(active_browser()->
-      WaitForTabCountToBecome(3, action_max_timeout_ms()));
+  ASSERT_TRUE(active_browser()->WaitForTabCountToBecome(3));
   PlatformThread::Sleep(sleep_timeout_ms());
   ASSERT_TRUE(DragTabOut());
   int window_count;
@@ -22,8 +21,7 @@ TEST_F(AutomatedUITestBase, DragOut) {
 TEST_F(AutomatedUITestBase, DragLeftRight) {
   NewTab();
   NewTab();
-  ASSERT_TRUE(active_browser()->
-      WaitForTabCountToBecome(3, action_max_timeout_ms()));
+  ASSERT_TRUE(active_browser()->WaitForTabCountToBecome(3));
   // TODO(phajdan.jr): We need a WaitForTabstripAnimationsToEnd() function.
   // Every sleep in this file should be replaced with it.
   PlatformThread::Sleep(sleep_timeout_ms());
