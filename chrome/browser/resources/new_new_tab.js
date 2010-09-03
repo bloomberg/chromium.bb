@@ -226,6 +226,8 @@ function layoutSections() {
     if (section == expandedSection)
       y += expandedSectionHeight;
   }
+
+  updateAttributionDisplay(y);
 }
 
 function updateMask(maxiview, visibleHeightPx) {
@@ -469,14 +471,36 @@ function formatTabsText(numTabs) {
 
 // Theme related
 
-function themeChanged() {
+function themeChanged(hasAttribution) {
+  document.documentElement.setAttribute('hasattribution', hasAttribution);
   $('themecss').href = 'chrome://theme/css/newtab.css?' + Date.now();
   updateAttribution();
 }
 
 function updateAttribution() {
-  $('attribution-img').src = 'chrome://theme/IDR_THEME_NTP_ATTRIBUTION?' +
-      Date.now();
+  var imageId =
+      document.documentElement.getAttribute('hasattribution') == 'true' ?
+      'IDR_THEME_NTP_ATTRIBUTION' : 'IDR_PRODUCT_LOGO';
+  $('attribution-img').src = 'chrome://theme/' + imageId + '?' + Date.now();
+}
+
+// If the content overlaps with the attribution, we bump its opacity down.
+function updateAttributionDisplay(contentBottom) {
+  var attribution = $('attribution');
+  var main = $('main');
+  var rtl = document.documentElement.dir == 'rtl';
+  var contentRect = main.getBoundingClientRect();
+  var attributionRect = attribution.getBoundingClientRect();
+
+  if (contentBottom > attribution.offsetTop) {
+    if ((!rtl && contentRect.right > attributionRect.left) ||
+        (rtl && attributionRect.right > contentRect.left)) {
+      attribution.classList.add('obscured');
+      return;
+    }
+  }
+
+  attribution.classList.remove('obscured');
 }
 
 function bookmarkBarAttached() {
@@ -623,7 +647,10 @@ OptionMenu.prototype = {
   positionMenu_: function() {
     var rect = this.button.getBoundingClientRect();
     this.menu.style.top = rect.bottom + 'px';
-    this.menu.style.right = (document.body.clientWidth - rect.right) + 'px'
+    if (document.documentElement.dir == 'rtl')
+      this.menu.style.left = rect.left + 'px';
+    else
+      this.menu.style.right = (document.body.clientWidth - rect.right) + 'px'
   },
 
   hide: function() {

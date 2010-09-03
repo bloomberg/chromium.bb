@@ -451,19 +451,17 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst2.push_back(SkColorToRGBAString(color_section_border));  // $$2
   subst2.push_back(SkColorToRGBAString(color_section_text));  // $$3
   subst2.push_back(SkColorToRGBAString(color_section_link));  // $$4
-  subst2.push_back(
-      tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ? "block" : "none");  // $$5
-  subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
-  subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
-  subst2.push_back(SkColorToRGBAString(color_section_header_text)); // $$8
+  subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$5
+  subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$6
+  subst2.push_back(SkColorToRGBAString(color_section_header_text)); // $$7
   subst2.push_back(SkColorToRGBAString(
-      color_section_header_text_hover)); // $$9
+      color_section_header_text_hover)); // $$8
+  subst2.push_back(SkColorToRGBAString(color_section_header_rule));  // $$9
 
-  subst3.push_back(SkColorToRGBAString(color_section_header_rule));  // $$$1
   subst3.push_back(SkColorToRGBAString(
-      color_section_header_rule_light));  // $$$2
+      color_section_header_rule_light));  // $$$1
   subst3.push_back(SkColorToRGBAString(
-      SkColorSetA(color_section_header_rule, 0)));  // $$$3
+      SkColorSetA(color_section_header_rule, 0)));  // $$$2
 
 
   // Get our template.

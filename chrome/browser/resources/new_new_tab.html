@@ -117,8 +117,12 @@ if ('mode' in hashParams) {
 <body class="loading"
       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
-<div id="main">
+<div id="attribution" class="attribution">
+  <div i18n-content="attributionintro"></div>
+  <img id="attribution-img">
+</div>
 
+<div id="main">
   <menu id="option-menu">
     <div command="clear-all-blacklisted"
          i18n-content="restorethumbnails"></div>
@@ -170,11 +174,6 @@ if ('mode' in hashParams) {
         <span></span>
       </div>
     </div>
-  </div>
-
-  <div id="attribution" class="attribution">
-    <div i18n-content="attributionintro"></div>
-    <img id="attribution-img">
   </div>
 </div>  <!-- main -->
 

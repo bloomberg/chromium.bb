@@ -261,7 +261,23 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 }
 
 #attribution {
-  margin: 10px 0;
+  position: fixed;
+  right: 5px;
+  bottom: 5px;
+  text-align: end;
+}
+
+html[dir=rtl] #attribution {
+  left: 5px;
+  right: auto;
+}
+
+#attribution.obscured {
+  opacity: 0.3;
+}
+
+html[hasattribution=false] #attribution > div {
+  display: none;
 }
 
 .sync-button {
@@ -303,6 +319,12 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   top: 4px;
 }
 
+html[dir=rtl] .section > h2 > .disclosure {
+  left: auto;
+  right: -15px;
+  -webkit-transform: rotate(180deg);
+}
+
 .section:not(.hidden) > h2 > .disclosure {
   -webkit-transform:rotate(90deg);
 }
@@ -317,7 +339,7 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 }
 
 .section > h2 span {
-  padding-right: 5px;
+  -webkit-padding-end: 5px;
   position: relative;
   z-index: 2;
 }
@@ -329,6 +351,11 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   width: 21px;
   height: 21px;
   z-index: 3;
+}
+
+html[dir=rtl] .section > h2 .settings-wrapper {
+  left: 0;
+  right: auto;
 }
 
 .section > h2 .settings {

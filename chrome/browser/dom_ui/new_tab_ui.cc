@@ -27,6 +27,7 @@
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -40,6 +41,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 namespace {
 
@@ -485,7 +487,12 @@ void NewTabUI::Observe(NotificationType type,
                        const NotificationDetails& details) {
   if (NotificationType::BROWSER_THEME_CHANGED == type) {
     InitializeCSSCaches();
-    CallJavascriptFunction(L"themeChanged");
+    ListValue args;
+    args.Append(Value::CreateStringValue(
+        GetProfile()->GetThemeProvider()->HasCustomImage(
+            IDR_THEME_NTP_ATTRIBUTION) ?
+        "true" : "false"));
+    CallJavascriptFunction(L"themeChanged", args);
   } else if (NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED) {
     if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
       CallJavascriptFunction(L"bookmarkBarAttached");
