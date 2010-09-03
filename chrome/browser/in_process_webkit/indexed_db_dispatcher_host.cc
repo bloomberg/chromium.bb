@@ -10,6 +10,7 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/indexed_db_key.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/serialized_script_value.h"
@@ -98,6 +99,9 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBCursorDirection::ID:
     case ViewHostMsg_IDBCursorKey::ID:
     case ViewHostMsg_IDBCursorValue::ID:
+    case ViewHostMsg_IDBCursorUpdate::ID:
+    case ViewHostMsg_IDBCursorContinue::ID:
+    case ViewHostMsg_IDBCursorRemove::ID:
     case ViewHostMsg_IDBFactoryOpen::ID:
     case ViewHostMsg_IDBFactoryAbortPendingTransactions::ID:
     case ViewHostMsg_IDBDatabaseName::ID:
@@ -568,7 +572,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(
   std::vector<string16> index_names;
   index_names.reserve(web_index_names.length());
   for (unsigned i = 0; i < web_index_names.length(); ++i)
-    index_names[i] = web_index_names.item(i);
+    index_names.push_back(web_index_names.item(i));
   ViewHostMsg_IDBObjectStoreIndexNames::WriteReplyParams(reply_msg,
                                                          index_names);
   parent_->Send(reply_msg);
@@ -678,6 +682,9 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
                                     OnDirection)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorKey, OnKey)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorValue, OnValue)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBCursorUpdate, OnUpdate)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBCursorContinue, OnContinue)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBCursorRemove, OnRemove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBCursorDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -745,6 +752,43 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnValue(
   SerializedScriptValue value(idb_cursor->value());
   ViewHostMsg_IDBCursorValue::WriteReplyParams(reply_msg, value);
   parent_->Send(reply_msg);
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
+    int32 cursor_id,
+    int32 response_id,
+    const SerializedScriptValue& value) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
+      &map_, cursor_id, NULL, ViewHostMsg_IDBCursorUpdate::ID);
+  if (!idb_cursor)
+    return;
+  idb_cursor->update(
+      value, new IndexedDBCallbacks<void>(parent_, response_id));
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
+    int32 cursor_id,
+    int32 response_id,
+    const IndexedDBKey& key) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
+      &map_, cursor_id, NULL, ViewHostMsg_IDBCursorContinue::ID);
+  if (!idb_cursor)
+    return;
+  idb_cursor->continueFunction(
+      key, new IndexedDBCallbacks<WebIDBCursor>(parent_, response_id));
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnRemove(
+    int32 cursor_id,
+    int32 response_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
+      &map_, cursor_id, NULL, ViewHostMsg_IDBCursorUpdate::ID);
+  if (!idb_cursor)
+    return;
+  idb_cursor->remove(new IndexedDBCallbacks<void>(parent_, response_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(

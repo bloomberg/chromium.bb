@@ -178,6 +178,14 @@ class IndexedDBDispatcherHost
     void OnDirection(int32 idb_object_store_id, IPC::Message* reply_msg);
     void OnKey(int32 idb_object_store_id, IPC::Message* reply_msg);
     void OnValue(int32 idb_object_store_id, IPC::Message* reply_msg);
+    void OnUpdate(int32 idb_object_store_id,
+                  int32 response_id,
+                  const SerializedScriptValue& value);
+    void OnContinue(int32 idb_object_store_id,
+                    int32 response_id,
+                    const IndexedDBKey& key);
+    void OnRemove(int32 idb_object_store_id,
+                  int32 response_id);
     void OnDestroyed(int32 idb_cursor_id);
 
     IndexedDBDispatcherHost* parent_;

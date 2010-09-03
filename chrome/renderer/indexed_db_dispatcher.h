@@ -36,6 +36,20 @@ class IndexedDBDispatcher {
       WebKit::WebIDBCallbacks* callbacks, const string16& origin,
       WebKit::WebFrame* web_frame);
 
+  void RequestIDBCursorUpdate(
+      const SerializedScriptValue& value,
+      WebKit::WebIDBCallbacks* callbacks_ptr,
+      int32 idb_cursor_id);
+
+  void RequestIDBCursorContinue(
+      const IndexedDBKey& key,
+      WebKit::WebIDBCallbacks* callbacks_ptr,
+      int32 idb_cursor_id);
+
+  void RequestIDBCursorRemove(
+      WebKit::WebIDBCallbacks* callbacks_ptr,
+      int32 idb_cursor_id);
+
   void RequestIDBDatabaseCreateObjectStore(
       const string16& name, const NullableString16& key_path,
       bool auto_increment, WebKit::WebIDBCallbacks* callbacks,

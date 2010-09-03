@@ -59,6 +59,38 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+void IndexedDBDispatcher::RequestIDBCursorUpdate(
+    const SerializedScriptValue& value,
+    WebIDBCallbacks* callbacks_ptr,
+    int32 idb_cursor_id) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBCursorUpdate(
+          idb_cursor_id, pending_callbacks_.Add(callbacks.release()), value));
+}
+
+void IndexedDBDispatcher::RequestIDBCursorContinue(
+    const IndexedDBKey& key,
+    WebIDBCallbacks* callbacks_ptr,
+    int32 idb_cursor_id) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBCursorContinue(
+          idb_cursor_id, pending_callbacks_.Add(callbacks.release()), key));
+}
+
+void IndexedDBDispatcher::RequestIDBCursorRemove(
+    WebIDBCallbacks* callbacks_ptr,
+    int32 idb_cursor_id) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBCursorRemove(
+          idb_cursor_id, pending_callbacks_.Add(callbacks.release())));
+}
+
 void IndexedDBDispatcher::RequestIDBFactoryOpen(
     const string16& name, const string16& description,
     WebIDBCallbacks* callbacks_ptr, const string16& origin,

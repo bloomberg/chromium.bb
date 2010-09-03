@@ -2326,6 +2326,23 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int32, /* idb_cursor_id */
                               SerializedScriptValue)
 
+  // WebIDBCursor::update() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBCursorUpdate,
+                       int32, /* idb_cursor_id */
+                       int32, /* response_id */
+                       SerializedScriptValue /* value */)
+
+  // WebIDBCursor::continue() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBCursorContinue,
+                       int32, /* idb_cursor_id */
+                       int32, /* response_id */
+                       IndexedDBKey /* key */)
+
+  // WebIDBCursor::remove() message.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_IDBCursorRemove,
+                       int32, /* idb_cursor_id */
+                       int32 /* response_id */)
+
   // WebIDBFactory::open() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBFactoryOpen,
                        ViewHostMsg_IDBFactoryOpen_Params)
