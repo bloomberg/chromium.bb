@@ -1304,6 +1304,19 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
+#if defined(OS_LINUX)
+  // Views and WebKit use different tables for GdkEventKey -> views::KeyEvent
+  // conversion. We need to use View's conversion table here to keep consistent
+  // behavior with views::FocusManager::OnKeyEvent() method.
+  // TODO(suzhe): We need to check if Windows code also has this issue, and
+  // it'll be best if we can unify these conversion tables.
+  // See http://crbug.com/54315
+  views::KeyEvent views_event(event.os_event);
+  views::Accelerator accelerator(views_event.GetKeyCode(),
+                                 views_event.IsShiftDown(),
+                                 views_event.IsControlDown(),
+                                 views_event.IsAltDown());
+#else
   views::Accelerator accelerator(
       static_cast<app::KeyboardCode>(event.windowsKeyCode),
       (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
@@ -1312,6 +1325,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
           NativeWebKeyboardEvent::ControlKey,
       (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
           NativeWebKeyboardEvent::AltKey);
+#endif
 
   // We first find out the browser command associated to the |event|.
   // Then if the command is a reserved one, and should be processed
