@@ -278,6 +278,13 @@ class DownloadManager
   // the change to the history system.
   void RenameDownload(DownloadItem* download, const FilePath& new_path);
 
+  // Makes the ResourceDispatcherHost pause/un-pause a download request.
+  // Called on the IO thread.
+  void PauseDownloadRequest(ResourceDispatcherHost* rdh,
+                            int render_process_id,
+                            int request_id,
+                            bool pause);
+
   // Inform observers that the model has changed.
   void NotifyModelChanged();
 

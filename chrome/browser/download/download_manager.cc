@@ -671,9 +671,6 @@ void DownloadManager::DownloadCancelledInternal(int download_id,
           file_manager_, &DownloadFileManager::CancelDownload, download_id));
 }
 
-// DownloadManager is owned by RDH, no need for reference counting.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ResourceDispatcherHost);
-
 void DownloadManager::PauseDownload(int32 download_id, bool pause) {
   DownloadMap::iterator it = in_progress_.find(download_id);
   if (it == in_progress_.end())
@@ -683,11 +680,11 @@ void DownloadManager::PauseDownload(int32 download_id, bool pause) {
   if (pause == download->is_paused())
     return;
 
-  // Inform the ResourceDispatcherHost of the new pause state.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(g_browser_process->resource_dispatcher_host(),
-                        &ResourceDispatcherHost::PauseRequest,
+      NewRunnableMethod(this,
+                        &DownloadManager::PauseDownloadRequest,
+                        g_browser_process->resource_dispatcher_host(),
                         download->render_process_id(),
                         download->request_id(),
                         pause));
@@ -727,6 +724,14 @@ void DownloadManager::RenameDownload(DownloadItem* download,
                                      const FilePath& new_path) {
   download->Rename(new_path);
   download_history_->UpdateDownloadPath(download, new_path);
+}
+
+void DownloadManager::PauseDownloadRequest(ResourceDispatcherHost* rdh,
+                                           int render_process_id,
+                                           int request_id,
+                                           bool pause) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  rdh->PauseRequest(render_process_id, request_id, pause);
 }
 
 void DownloadManager::RemoveDownload(int64 download_handle) {
