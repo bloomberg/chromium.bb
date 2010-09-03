@@ -183,7 +183,7 @@
               {
                 'action_name': 'unpack_firefox',
                 'inputs': [
-                  '<(PRODUCT_DIR)/O3D.plugin',
+                  '<(PRODUCT_DIR)/<(plugin_npapi_filename).plugin',
                 ],
                 'outputs': [
                   '<(PRODUCT_DIR)/selenium_firefox',
@@ -191,7 +191,7 @@
                 'action': [
                   'python',
                   'unpack_firefox.py',
-                  '--plugin_path=<(PRODUCT_DIR)/O3D.plugin',
+                  '--plugin_path=<(PRODUCT_DIR)/<(plugin_npapi_filename).plugin',
                   '--product_path=<(PRODUCT_DIR)',
                 ],
               },
