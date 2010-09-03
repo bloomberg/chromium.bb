@@ -60,16 +60,7 @@ ERROR_OUT = [sys.stderr]
 BASE_ARM = BASE + '/arm-none-linux-gnueabi'
 BASE_ARM_INCLUDE = BASE_ARM + '/arm-none-linux-gnueabi/include'
 
-LD_SCRIPT_ARM = BASE_ARM + '/ld_script_arm_untrusted'
-
 GOLD_PLUGIN = BASE_ARM + '/lib/libLLVMgold.so'
-
-# NOTE: derived from
-# toolchain/linux_x86/nacl64/lib/ldscripts/elf_nacl.x
-LD_SCRIPT_X8632 = BASE_NACL + '/tools/llvm/ld_script_x8632_untrusted'
-# NOTE: derived from
-# toolchain/linux_x86/nacl64/lib/ldscripts/elf64_nacl.x
-LD_SCRIPT_X8664 = BASE_NACL + '/tools/llvm/ld_script_x8664_untrusted'
 
 # arm libstdc++
 LIBDIR_ARM_3 = BASE_ARM + '/lib'
@@ -195,27 +186,7 @@ global_config_flags = {
       ],
     },
 
-  'LD': {
-    'arm': [
-      '--native-client',
-      '-nostdlib',
-      '-T', LD_SCRIPT_ARM,
-      '-static',
-      ],
-    'x86-32': [
-      '--native-client',
-      '-nostdlib',
-      '-T', LD_SCRIPT_X8632,
-      #    '-melf_nacl',
-      '-static',
-      ],
-    'x86-64': [
-      '--native-client',
-      '-nostdlib',
-      '-T', LD_SCRIPT_X8664,
-      '-static',
-      ],
-    }
+  'LD': [ '--native-client', '-Ttext=0x00020000', '-nostdlib', '-static' ]
 }
 
 ######################################################################
@@ -666,7 +637,7 @@ def Translate(combined_bitcode_file, argv, arch):
   as_flags = global_config_flags['AS'][arch]
   Run([ascom] + as_flags + [asm_combined, '-o', obj_combined])
 
-  ld_flags = global_config_flags['LD'][arch]
+  ld_flags = global_config_flags['LD']
   args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + argv,
                                                 arch,
                                                 ld_flags)

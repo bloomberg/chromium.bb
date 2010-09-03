@@ -123,7 +123,7 @@ readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 readonly LLVM_REV=1e92a9c6c7ac
 readonly LLVM_GCC_REV=6da5d51ee4ac
 readonly NEWLIB_REV=03ddd92d699d
-readonly BINUTILS_REV=0d86e38ba767
+readonly BINUTILS_REV=259fa751c0e8
 
 ## Old milestones
 ##readonly LLVM_REV=de95d2b6c570
