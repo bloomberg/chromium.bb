@@ -404,5 +404,6 @@ main (int argc, char **argv)
 	    FcStrFree (cache_file);
     }
 
+    FcFini ();
     return 0;
 }
