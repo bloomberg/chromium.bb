@@ -579,6 +579,7 @@ var MostVisited = (function() {
           return;
         }
       }
+      updateMiniviewClipping(this.miniview);
     },
 
     handleClick_: function(e) {

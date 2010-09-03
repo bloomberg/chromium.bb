@@ -97,6 +97,7 @@ function handleWindowResize() {
     mostVisited.useSmallGrid = b;
     mostVisited.layout();
     renderRecentlyClosed();
+    updateAllMiniviewClippings();
   }
 
   layoutSections();
@@ -126,6 +127,29 @@ SectionLayoutInfo.getAll = function() {
   }
   return result;
 };
+
+// Ensure the miniview sections don't have any clipped items.
+function updateMiniviewClipping(miniview) {
+  var clipped = false;
+  for (var j = 0, item; item = miniview.children[j]; j++) {
+    item.style.display = '';
+    if (clipped ||
+        (item.offsetLeft + item.offsetWidth) > miniview.offsetWidth) {
+      item.style.display = 'none';
+      clipped = true;
+    } else {
+      item.style.display = '';
+    }
+  }
+}
+
+// Ensure none of the miniviews have any clipped items.
+function updateAllMiniviewClippings() {
+  var miniviews = document.querySelectorAll('.section.hidden .miniview');
+  for (var i = 0, miniview; miniview = miniviews[i]; i++) {
+    updateMiniviewClipping(miniview);
+  }
+}
 
 // Layout the sections in a modified accordian. The header and miniview, if
 // visible are fixed within the viewport. If there is an expanded section, its
@@ -216,11 +240,9 @@ function layoutSections() {
     section.section.style.top = y + 'px';
     y += section.fixedHeight;
 
-    if (section.maxiview) {
+    if (section.maxiview && section == expandedSection) {
       section.maxiview.style.top = y + 'px';
-
-      if (section == expandedSection)
-        updateMask(section.maxiview, expandedSectionHeight);
+      updateMask(section.maxiview, expandedSectionHeight);
     }
 
     if (section == expandedSection)
@@ -293,8 +315,10 @@ function showSection(section) {
       el.classList.remove('hidden');
 
       var maxiview = getSectionMaxiview(el);
-      if (maxiview)
+      if (maxiview) {
+        maxiview.classList.remove('hiding');
         maxiview.classList.remove('hidden');
+      }
     }
 
     switch (section) {
@@ -323,10 +347,21 @@ function hideSection(section) {
 
       var maxiview = getSectionMaxiview(el);
       if (maxiview)
-        maxiview.classList.add('hidden');
+        maxiview.classList.add('hiding');
+
+      var miniview = el.getElementsByClassName('miniview')[0];
+      if (miniview)
+        updateMiniviewClipping(miniview);
     }
   }
 }
+
+window.addEventListener('webkitTransitionEnd', function(e) {
+  if (e.target.classList.contains('hiding'))
+    e.target.classList.add('hidden');
+
+  document.documentElement.setAttribute("enable-section-animations", "false");
+});
 
 /**
  * Callback when the shown sections changes in another NTP.
@@ -828,6 +863,8 @@ $('main').addEventListener('click', function(e) {
 
   var section = p.getAttribute('section');
   if (section) {
+    // We set it back in webkitTransitionEnd.
+    document.documentElement.setAttribute("enable-section-animations", "true");
     if (shownSections & Section[section]) {
       hideSection(Section[section]);
     } else {

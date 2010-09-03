@@ -26,6 +26,7 @@ function getAppsCallback(data) {
   });
 
   appsSection.classList.remove('disabled');
+  updateMiniviewClipping(appsMiniview);
   layoutSections();
 }
 

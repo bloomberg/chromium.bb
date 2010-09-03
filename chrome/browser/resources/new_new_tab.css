@@ -297,6 +297,10 @@ html[hasattribution=false] #attribution > div {
   font-size: 12px;
 }
 
+html[anim=true][enable-section-animations=true] .section {
+  -webkit-transition: top .15s;
+}
+
 .section.disabled {
   display: none !important;
 }
@@ -323,6 +327,10 @@ html[dir=rtl] .section > h2 > .disclosure {
   left: auto;
   right: -15px;
   -webkit-transform: rotate(180deg);
+}
+
+html[anim=true] .section > h2 > .disclosure {
+  -webkit-transition: -webkit-transform .15s;
 }
 
 .section:not(.hidden) > h2 > .disclosure {
@@ -380,13 +388,26 @@ html[dir=rtl] .section > h2 .settings-wrapper {
   padding: 5px 0 30px;
   position: absolute;
   -webkit-mask-attachment: fixed;
+  opacity: 1;
+}
+
+.maxiview.hiding {
+  opacity: 0;
+}
+
+.maxiview.hidden {
+  display: none;
+}
+
+html[anim=true] .maxiview {
+  -webkit-transition: opacity .15s;
 }
 
 .section > .miniview {
   display: none;
-  height: 24px;
   margin: 10px 0 30px;
-  overflow: hidden;
+  white-space: nowrap;
+  overflow-x: hidden;
 }
 
 .section.hidden > * {
@@ -400,10 +421,6 @@ html[dir=rtl] .section > h2 .settings-wrapper {
 
 .section.hidden > h2 {
   margin-right: 0;
-}
-
-.maxiview.hidden {
-  display: none;
 }
 
 .miniview > span  {
