@@ -236,19 +236,37 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
         animation_connecting_.StartThrobbing(std::numeric_limits<int>::max());
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS1));
       }
+      std::string network_name = cros->wifi_connecting() ?
+          cros->wifi_name() : cros->cellular_name();
+      SetTooltipText(
+          l10n_util::GetStringF(IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
+                                UTF8ToWide(network_name)));
     } else {
       // Stop connecting animation since we are not connecting.
       animation_connecting_.Stop();
 
       // Always show the higher priority connection first. Ethernet then wifi.
-      if (cros->ethernet_connected())
+      if (cros->ethernet_connected()) {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
-      else if (cros->wifi_connected())
+        SetTooltipText(
+            l10n_util::GetStringF(
+                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+                l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)));
+      } else if (cros->wifi_connected()) {
         SetIcon(IconForNetworkStrength(cros->wifi_strength(), false));
-      else if (cros->cellular_connected())
+        SetTooltipText(l10n_util::GetStringF(
+            IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+            UTF8ToWide(cros->wifi_name())));
+      } else if (cros->cellular_connected()) {
         SetIcon(IconForNetworkStrength(cros->cellular_strength(), false));
-      else
+        SetTooltipText(l10n_util::GetStringF(
+            IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+            UTF8ToWide(cros->cellular_name())));
+      } else {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
+        SetTooltipText(l10n_util::GetString(
+            IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
+      }
     }
 
     if (!cros->Connected() && !cros->Connecting()) {
@@ -264,6 +282,8 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
   } else {
     SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
     SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING));
+    SetTooltipText(l10n_util::GetString(
+        IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
   }
 
   SchedulePaint();

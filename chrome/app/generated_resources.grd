@@ -9180,6 +9180,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_BATTERY_IS_CHARGED" desc="In the power menu button, the battery is charged message.">
         Battery is charged
       </message>
+      <message name="IDS_STATUSBAR_FEEDBACK_TOOLTIP" desc="Tooltip for the feedback status bar icon.">
+        Report a bug.
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP" desc="Tooltip for the network menu status bar icon when no network is connected.">
+        No network
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP" desc="Tooltip for the network menu status bar icon when connecting to a network.">
+        Connecting to: <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP" desc="Tooltip for the network menu status bar icon when connected to a network.">
+        Network: <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
+      <message name="IDS_STATUSBAR_CLOCK_TOOLTIP" desc="Tooltip for the clock in the status bar.">
+        <ph name="DATE">$1<ex>Aug 16, 2010</ex></ph>
+      </message>
       <message name="IDS_VERSION_FIELD_PREFIX" desc="Display the OS version to the user.">
         OS version
       </message>
