@@ -19,8 +19,9 @@
 #define CHECK_EQ_DOUBLE(a, b)                                           \
   (a == b) ? 0 : (printf("ERROR %f != %f at %d\n", a, b, __LINE__), 1)
 
-#define CHECK_NAN(a)                                                    \
-  isnan(a) ? 0 : (printf("ERROR %f != NaN at %d\n", (double)a, __LINE__), 1)
+#define CHECK_NAN(_x_)                                                    \
+  isnan(_x_) ? 0 : (printf("ERROR %s(%f) != NaN at %d\n", \
+  #_x_, (double)_x_, __LINE__), 1)
 
 #define CHECK_INF(a)                                                    \
   isinf(a) ? 0 : (printf("ERROR %f != Inf at %d\n", (double)a, __LINE__), 1)
@@ -77,8 +78,8 @@ int test_compares() {
   errs += CHECK_INF(INFINITY + INFINITY);
   errs += CHECK_INF(1.0 / 0.0);
 
-  errs += ASSERT_FALSE(finite(INFINITY));
-  errs += ASSERT_FALSE(finite(NAN));
+  errs += ASSERT_FALSE(isfinite(INFINITY));
+  errs += ASSERT_FALSE(isfinite(NAN));
 
   return errs;
 }
@@ -93,6 +94,7 @@ int test_defined() {
   errs += CHECK_EQ_DOUBLE(pow(INFINITY, 0.0), 1.0);
 
   errs += CHECK_INF(sqrt(INFINITY));
+  errs += CHECK_EQ_DOUBLE(sqrt(-0.0), -0.0);
   errs += CHECK_INF(pow(INFINITY, 2.0));
   errs += ASSERT_TRUE(log(0) == -INFINITY);
 
@@ -141,22 +143,33 @@ https://www.securecoding.cert.org/confluence/display/seccode/ \
 */
 
 /* Check exceptions communicated by the "old" errno mechanism */
-#define CHECK_TRIPPED_ERRNO(expression)                                 \
-  errno = 0,                                                            \
-    expression,                                                         \
-    errno ? 0 : (printf("%s - errno not set at %d\n", #expression, __LINE__), 1)
+#define CHECK_TRIPPED_ERRNO(expr)                                 \
+  (errno = 0,                                                            \
+   expr,                                                         \
+   (0 != errno ? 0 : (printf("%s - errno %d not set at %d\n", \
+                      #expr, errno, __LINE__), 1)))
 
 int test_exception() {
   int errs = 0;
+  printf("Checking that exceptional lib calls set errno\n");
   errs += CHECK_TRIPPED_ERRNO(pow(-3, 4.4));
   errs += CHECK_TRIPPED_ERRNO(log(-3.0));
   errs += CHECK_TRIPPED_ERRNO(sqrt(-0.001));
   errs += CHECK_TRIPPED_ERRNO(asin(1.0001));
+
+/* Some versions of libc don't set errno =(
+ * http://sourceware.org/bugzilla/show_bug.cgi?id=6780
+ * http://sourceware.org/bugzilla/show_bug.cgi?id=6781
   errs += CHECK_TRIPPED_ERRNO(sin(INFINITY));
   errs += CHECK_TRIPPED_ERRNO(cos(INFINITY));
+  */
   errs += CHECK_TRIPPED_ERRNO(acosh(0.999));
   errs += CHECK_TRIPPED_ERRNO(remainder(3.3, 0.0));
+
+/* Some versions of libc don't set errno =(
+ * http://sourceware.org/bugzilla/show_bug.cgi?id=6783
   errs += CHECK_TRIPPED_ERRNO(remainder(INFINITY, 3.3));
+  */
   return errs;
 }
 
@@ -168,7 +181,9 @@ int main(int ac, char* av[]) {
   errs += test_compares();
   errs += test_defined();
   errs += test_errs();
+#if !defined(NO_ERRNO_CHECK)
   errs += test_exception();
+#endif
 
   printf("%d errs!\n", errs);
   return errs + 55;
