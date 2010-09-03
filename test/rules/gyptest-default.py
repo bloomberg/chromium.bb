@@ -44,4 +44,7 @@ test.run_built_executable('program2', chdir=chdir, stdout=expect)
 test.must_match('relocate/src/subdir2/file1.out', "Hello from file1.in\n")
 test.must_match('relocate/src/subdir2/file2.out', "Hello from file2.in\n")
 
+test.must_match('relocate/src/subdir2/file1.out2', "Hello from file1.in\n")
+test.must_match('relocate/src/subdir2/file2.out2', "Hello from file2.in\n")
+
 test.pass_test()

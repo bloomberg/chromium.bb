@@ -737,7 +737,7 @@ class MakefileWriter:
 
       all_outputs = []
 
-      for rule_source in rule['rule_sources']:
+      for rule_source in rule.get('rule_sources', []):
         dirs = set()
         rule_source_basename = os.path.basename(rule_source)
         (rule_source_root, rule_source_ext) = \
