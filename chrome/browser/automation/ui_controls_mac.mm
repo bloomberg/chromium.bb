@@ -8,7 +8,7 @@
 #include <mach/mach_time.h>
 #include <vector>
 
-#include "base/keyboard_code_conversion_mac.h"
+#include "app/keyboard_code_conversion_mac.h"
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "chrome/browser/chrome_thread.h"
@@ -76,11 +76,11 @@ NSTimeInterval TimeIntervalSinceSystemStartup() {
 // Creates and returns an autoreleased key event.
 NSEvent* SynthesizeKeyEvent(NSWindow* window,
                             bool keyDown,
-                            base::KeyboardCode keycode,
+                            app::KeyboardCode keycode,
                             NSUInteger flags) {
   unichar character;
   unichar characterIgnoringModifiers;
-  int macKeycode = base::MacKeyCodeForWindowsKeyCode(
+  int macKeycode = app::MacKeyCodeForWindowsKeyCode(
       keycode, flags, &character, &characterIgnoringModifiers);
 
   if (macKeycode < 0)
@@ -97,8 +97,8 @@ NSEvent* SynthesizeKeyEvent(NSWindow* window,
 
   // Modifier keys generate NSFlagsChanged event rather than
   // NSKeyDown/NSKeyUp events.
-  if (keycode == base::VKEY_CONTROL || keycode == base::VKEY_SHIFT ||
-      keycode == base::VKEY_MENU || keycode == base::VKEY_COMMAND)
+  if (keycode == app::VKEY_CONTROL || keycode == app::VKEY_SHIFT ||
+      keycode == app::VKEY_MENU || keycode == app::VKEY_COMMAND)
     type = NSFlagsChanged;
 
   // For events other than mouse moved, [event locationInWindow] is
@@ -121,7 +121,7 @@ NSEvent* SynthesizeKeyEvent(NSWindow* window,
 
 // Creates the proper sequence of autoreleased key events for a key down + up.
 void SynthesizeKeyEventsSequence(NSWindow* window,
-                                 base::KeyboardCode keycode,
+                                 app::KeyboardCode keycode,
                                  bool control,
                                  bool shift,
                                  bool alt,
@@ -131,25 +131,25 @@ void SynthesizeKeyEventsSequence(NSWindow* window,
   NSUInteger flags = 0;
   if (control) {
     flags |= NSControlKeyMask;
-    event = SynthesizeKeyEvent(window, true, base::VKEY_CONTROL, flags);
+    event = SynthesizeKeyEvent(window, true, app::VKEY_CONTROL, flags);
     DCHECK(event);
     events->push_back(event);
   }
   if (shift) {
     flags |= NSShiftKeyMask;
-    event = SynthesizeKeyEvent(window, true, base::VKEY_SHIFT, flags);
+    event = SynthesizeKeyEvent(window, true, app::VKEY_SHIFT, flags);
     DCHECK(event);
     events->push_back(event);
   }
   if (alt) {
     flags |= NSAlternateKeyMask;
-    event = SynthesizeKeyEvent(window, true, base::VKEY_MENU, flags);
+    event = SynthesizeKeyEvent(window, true, app::VKEY_MENU, flags);
     DCHECK(event);
     events->push_back(event);
   }
   if (command) {
     flags |= NSCommandKeyMask;
-    event = SynthesizeKeyEvent(window, true, base::VKEY_COMMAND, flags);
+    event = SynthesizeKeyEvent(window, true, app::VKEY_COMMAND, flags);
     DCHECK(event);
     events->push_back(event);
   }
@@ -163,25 +163,25 @@ void SynthesizeKeyEventsSequence(NSWindow* window,
 
   if (command) {
     flags &= ~NSCommandKeyMask;
-    event = SynthesizeKeyEvent(window, false, base::VKEY_COMMAND, flags);
+    event = SynthesizeKeyEvent(window, false, app::VKEY_COMMAND, flags);
     DCHECK(event);
     events->push_back(event);
   }
   if (alt) {
     flags &= ~NSAlternateKeyMask;
-    event = SynthesizeKeyEvent(window, false, base::VKEY_MENU, flags);
+    event = SynthesizeKeyEvent(window, false, app::VKEY_MENU, flags);
     DCHECK(event);
     events->push_back(event);
   }
   if (shift) {
     flags &= ~NSShiftKeyMask;
-    event = SynthesizeKeyEvent(window, false, base::VKEY_SHIFT, flags);
+    event = SynthesizeKeyEvent(window, false, app::VKEY_SHIFT, flags);
     DCHECK(event);
     events->push_back(event);
   }
   if (control) {
     flags &= ~NSControlKeyMask;
-    event = SynthesizeKeyEvent(window, false, base::VKEY_CONTROL, flags);
+    event = SynthesizeKeyEvent(window, false, app::VKEY_CONTROL, flags);
     DCHECK(event);
     events->push_back(event);
   }
@@ -221,7 +221,7 @@ NSPoint g_mouse_location = { 0, 0 };
 namespace ui_controls {
 
 bool SendKeyPress(gfx::NativeWindow window,
-                  base::KeyboardCode key,
+                  app::KeyboardCode key,
                   bool control,
                   bool shift,
                   bool alt,
@@ -234,7 +234,7 @@ bool SendKeyPress(gfx::NativeWindow window,
 // Win and Linux implement a SendKeyPress() this as a
 // SendKeyPressAndRelease(), so we should as well (despite the name).
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                base::KeyboardCode key,
+                                app::KeyboardCode key,
                                 bool control,
                                 bool shift,
                                 bool alt,

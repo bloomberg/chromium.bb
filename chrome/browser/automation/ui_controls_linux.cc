@@ -7,8 +7,8 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
+#include "app/event_synthesis_gtk.h"
 #include "gfx/rect.h"
-#include "base/event_synthesis_gtk.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
@@ -96,7 +96,7 @@ void FakeAMouseMotionEvent(gint x, gint y) {
 namespace ui_controls {
 
 bool SendKeyPress(gfx::NativeWindow window,
-                  base::KeyboardCode key,
+                  app::KeyboardCode key,
                   bool control, bool shift, bool alt, bool command) {
   DCHECK(command == false);  // No command key on Linux
   GdkWindow* event_window = NULL;
@@ -124,7 +124,7 @@ bool SendKeyPress(gfx::NativeWindow window,
   }
 
   std::vector<GdkEvent*> events;
-  base::SynthesizeKeyPressEvents(event_window, key, control, shift, alt,
+  app::SynthesizeKeyPressEvents(event_window, key, control, shift, alt,
                                  &events);
   for (std::vector<GdkEvent*>::iterator iter = events.begin();
        iter != events.end(); ++iter) {
@@ -137,7 +137,7 @@ bool SendKeyPress(gfx::NativeWindow window,
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                base::KeyboardCode key,
+                                app::KeyboardCode key,
                                 bool control, bool shift,
                                 bool alt, bool command,
                                 Task* task) {

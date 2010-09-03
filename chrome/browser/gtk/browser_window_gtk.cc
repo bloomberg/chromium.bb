@@ -9,10 +9,10 @@
 #include <string>
 
 #include "app/gtk_util.h"
+#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -299,8 +299,8 @@ bool ShouldExecuteReservedCommandImmediately(
   // Keys like Ctrl+w, Ctrl+n, etc. should always be sent to the renderer first,
   // otherwise some web apps or the Emacs key bindings may not work correctly.
   int vkey = event.windowsKeyCode;
-  if ((vkey >= base::VKEY_0 && vkey <= base::VKEY_9) ||
-      (vkey >= base::VKEY_A && vkey <= base::VKEY_Z))
+  if ((vkey >= app::VKEY_0 && vkey <= app::VKEY_9) ||
+      (vkey >= app::VKEY_A && vkey <= app::VKEY_Z))
     return false;
 
   // All other reserved accelerators should be processed immediately.

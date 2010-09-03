@@ -19,10 +19,10 @@
 #include <queue>
 #include <vector>
 
+#include "app/keyboard_codes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
@@ -217,16 +217,16 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
     return false;
 
   switch (event.windowsKeyCode) {
-    case base::VKEY_LEFT:
+    case app::VKEY_LEFT:
       *name = "MoveToBeginningOfLine";
       break;
-    case base::VKEY_RIGHT:
+    case app::VKEY_RIGHT:
       *name = "MoveToEndOfLine";
       break;
-    case base::VKEY_UP:
+    case app::VKEY_UP:
       *name = "MoveToBeginningOfDocument";
       break;
-    case base::VKEY_DOWN:
+    case app::VKEY_DOWN:
       *name = "MoveToEndOfDocument";
       break;
     default:
@@ -537,29 +537,29 @@ void EventSendingController::keyDown(
     bool needs_shift_key_modifier = false;
     if (L"\n" == code_str) {
       generate_char = true;
-      text = code = base::VKEY_RETURN;
+      text = code = app::VKEY_RETURN;
     } else if (L"rightArrow" == code_str) {
-      code = base::VKEY_RIGHT;
+      code = app::VKEY_RIGHT;
     } else if (L"downArrow" == code_str) {
-      code = base::VKEY_DOWN;
+      code = app::VKEY_DOWN;
     } else if (L"leftArrow" == code_str) {
-      code = base::VKEY_LEFT;
+      code = app::VKEY_LEFT;
     } else if (L"upArrow" == code_str) {
-      code = base::VKEY_UP;
+      code = app::VKEY_UP;
     } else if (L"insert" == code_str) {
-      code = base::VKEY_INSERT;
+      code = app::VKEY_INSERT;
     } else if (L"delete" == code_str) {
-      code = base::VKEY_BACK;
+      code = app::VKEY_BACK;
     } else if (L"pageUp" == code_str) {
-      code = base::VKEY_PRIOR;
+      code = app::VKEY_PRIOR;
     } else if (L"pageDown" == code_str) {
-      code = base::VKEY_NEXT;
+      code = app::VKEY_NEXT;
     } else if (L"home" == code_str) {
-      code = base::VKEY_HOME;
+      code = app::VKEY_HOME;
     } else if (L"end" == code_str) {
-      code = base::VKEY_END;
+      code = app::VKEY_END;
     } else if (L"printScreen" == code_str) {
-      code = base::VKEY_SNAPSHOT;
+      code = app::VKEY_SNAPSHOT;
     } else {
       // Compare the input string with the function-key names defined by the
       // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
@@ -569,7 +569,7 @@ void EventSendingController::keyDown(
         function_key_name += L"F";
         function_key_name += UTF8ToWide(base::IntToString(i));
         if (function_key_name == code_str) {
-          code = base::VKEY_F1 + (i - 1);
+          code = app::VKEY_F1 + (i - 1);
           break;
         }
       }

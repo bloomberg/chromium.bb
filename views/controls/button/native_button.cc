@@ -4,8 +4,8 @@
 
 #include "views/controls/button/native_button.h"
 
+#include "app/keyboard_codes.h"
 #include "base/i18n/rtl.h"
-#include "base/keyboard_codes.h"
 #include "views/controls/native/native_view_host.h"
 
 #if defined(OS_WIN)
@@ -90,9 +90,9 @@ void NativeButton::SetIsDefault(bool is_default) {
   if (is_default == is_default_)
     return;
   if (is_default)
-    AddAccelerator(Accelerator(base::VKEY_RETURN, false, false, false));
+    AddAccelerator(Accelerator(app::VKEY_RETURN, false, false, false));
   else
-    RemoveAccelerator(Accelerator(base::VKEY_RETURN, false, false, false));
+    RemoveAccelerator(Accelerator(app::VKEY_RETURN, false, false, false));
   SetAppearsAsDefault(is_default);
 }
 

@@ -173,7 +173,7 @@ void ExtensionView::PreferredSizeChanged() {
 bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
   // Let the tab key event be processed by the renderer (instead of moving the
   // focus to the next focusable view).
-  return (e.GetKeyCode() == base::VKEY_TAB);
+  return (e.GetKeyCode() == app::VKEY_TAB);
 }
 
 void ExtensionView::HandleMouseMove() {

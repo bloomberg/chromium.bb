@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
       ASSERT_TRUE(IsViewFocused(vid));
 
       ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-          window, base::VKEY_TAB, true, false, false, false));
+          window, app::VKEY_TAB, true, false, false, false));
     }
 
     // As above, but with ctrl+shift+tab.
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
       ASSERT_TRUE(IsViewFocused(vid));
 
       ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-          window, base::VKEY_TAB, true, true, false, false));
+          window, app::VKEY_TAB, true, true, false, false));
     }
   }
 }
@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
           &actual));
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
+      ASSERT_TRUE(ui_controls::SendKeyPress(window, app::VKEY_TAB,
                                             false, false, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
@@ -509,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < 7; ++j) {
       SCOPED_TRACE(StringPrintf("inner loop: %" PRIuS, j));
-      ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
+      ASSERT_TRUE(ui_controls::SendKeyPress(window, app::VKEY_TAB,
                                             false, true, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
       std::string actual = interstitial_page->GetFocusedElement();
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
+      ASSERT_TRUE(ui_controls::SendKeyPress(window, app::VKEY_TAB,
                                             false, false, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
@@ -609,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < 7; ++j) {
-      ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
+      ASSERT_TRUE(ui_controls::SendKeyPress(window, app::VKEY_TAB,
                                             false, true, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
@@ -682,11 +682,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 #if defined(OS_MACOSX)
   // Press Cmd+F, which will make the Find box open and request focus.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, base::VKEY_F, false, false, false, true));
+      window, app::VKEY_F, false, false, false, true));
 #else
   // Press Ctrl+F, which will make the Find box open and request focus.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, base::VKEY_F, true, false, false, false));
+      window, app::VKEY_F, true, false, false, false));
 #endif
 
   // Ideally, we wouldn't sleep here and instead would intercept the
@@ -706,10 +706,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   // Now press Ctrl+F again and focus should move to the Find box.
 #if defined(OS_MACOSX)
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, base::VKEY_F, false, false, false, true));
+      window, app::VKEY_F, false, false, false, true));
 #else
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, base::VKEY_F, true, false, false, false));
+      window, app::VKEY_F, true, false, false, false));
 #endif
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
@@ -720,10 +720,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   // Now press Ctrl+F again and focus should move to the Find box.
 #if defined(OS_MACOSX)
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, base::VKEY_F, false, false, false, true));
+      window, app::VKEY_F, false, false, false, true));
 #else
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, base::VKEY_F, true, false, false, false));
+      window, app::VKEY_F, true, false, false, false));
 #endif
 
   // See remark above on why we wait.

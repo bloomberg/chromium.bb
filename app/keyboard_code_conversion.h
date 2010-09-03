@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_KEYBOARD_CODE_CONVERSION_H_
-#define BASE_KEYBOARD_CODE_CONVERSION_H_
+#ifndef APP_KEYBOARD_CODE_CONVERSION_H_
+#define APP_KEYBOARD_CODE_CONVERSION_H_
 #pragma once
 
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 
 #include <string>
 
-namespace base {
+namespace app {
 
 // Convert a KeyIdentifer (see Section 6.3.3 here:
 // http://www.w3.org/TR/DOM-Level-3-Events/#keyset-keyidentifiers)
-// to a base::KeyboardCode.
+// to a app::KeyboardCode.
 KeyboardCode KeyCodeFromKeyIdentifier(const std::string& key_identifier);
 
 }  // namespace
 
-#endif  // BASE_KEYBOARD_CODE_CONVERSION_H_
+#endif  // APP_KEYBOARD_CODE_CONVERSION_H_

@@ -33,15 +33,15 @@
 
 // WindowsKeyCodeForGdkKeyCode is copied from platform/gtk/KeyEventGtk.cpp
 
-#include "base/keyboard_code_conversion_gtk.h"
+#include "app/keyboard_code_conversion_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
 
-#include "base/keyboard_codes_posix.h"
+#include "app/keyboard_codes_posix.h"
 
-namespace base {
+namespace app {
 
-base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
+app::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
   switch (keycode) {
     case GDK_KP_0:
       return VKEY_NUMPAD0;  // (60) Numeric keypad 0 key
@@ -403,14 +403,14 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
     case GDK_F22:
     case GDK_F23:
     case GDK_F24:
-      return static_cast<base::KeyboardCode>(VKEY_F1 + (keycode - GDK_F1));
+      return static_cast<app::KeyboardCode>(VKEY_F1 + (keycode - GDK_F1));
     default:
       return VKEY_UNKNOWN;
     }
 }
 
 // TODO(jcampan): this method might be incomplete.
-int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode, bool shift) {
+int GdkKeyCodeForWindowsKeyCode(app::KeyboardCode keycode, bool shift) {
   switch (keycode) {
     case VKEY_NUMPAD0:
       return GDK_KP_0;
@@ -614,4 +614,4 @@ int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode, bool shift) {
     }
 }
 
-}  // namespace base
+}  // namespace app

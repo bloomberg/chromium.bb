@@ -19,8 +19,8 @@ class AcceleratorHandlerGtkTest
       public AcceleratorTarget {
  public:
   AcceleratorHandlerGtkTest()
-      : kMenuAccelerator(base::VKEY_MENU, false, false, false),
-        kHomepageAccelerator(base::VKEY_HOME, false, false, true),
+      : kMenuAccelerator(app::VKEY_MENU, false, false, false),
+        kHomepageAccelerator(app::VKEY_HOME, false, false, true),
         content_view_(NULL) {
   }
 

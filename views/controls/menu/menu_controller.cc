@@ -4,10 +4,10 @@
 
 #include "views/controls/menu/menu_controller.h"
 
+#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "base/i18n/rtl.h"
-#include "base/keyboard_codes.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
@@ -22,7 +22,7 @@
 #include "views/widget/widget.h"
 
 #if defined(OS_LINUX)
-#include "base/keyboard_code_conversion_gtk.h"
+#include "app/keyboard_code_conversion_gtk.h"
 #endif
 
 using base::Time;
@@ -813,8 +813,8 @@ bool MenuController::Dispatch(GdkEvent* event) {
 
   switch (event->type) {
     case GDK_KEY_PRESS: {
-      base::KeyboardCode win_keycode =
-          base::WindowsKeyCodeForGdkKeyCode(event->key.keyval);
+      app::KeyboardCode win_keycode =
+          app::WindowsKeyCodeForGdkKeyCode(event->key.keyval);
 
       if (!OnKeyDown(win_keycode))
         return false;
@@ -853,35 +853,35 @@ bool MenuController::OnKeyDown(int key_code
   DCHECK(blocking_run_);
 
   switch (key_code) {
-    case base::VKEY_UP:
+    case app::VKEY_UP:
       IncrementSelection(-1);
       break;
 
-    case base::VKEY_DOWN:
+    case app::VKEY_DOWN:
       IncrementSelection(1);
       break;
 
     // Handling of VK_RIGHT and VK_LEFT is different depending on the UI
     // layout.
-    case base::VKEY_RIGHT:
+    case app::VKEY_RIGHT:
       if (base::i18n::IsRTL())
         CloseSubmenu();
       else
         OpenSubmenuChangeSelectionIfCan();
       break;
 
-    case base::VKEY_LEFT:
+    case app::VKEY_LEFT:
       if (base::i18n::IsRTL())
         OpenSubmenuChangeSelectionIfCan();
       else
         CloseSubmenu();
       break;
 
-    case base::VKEY_SPACE:
+    case app::VKEY_SPACE:
       SendAcceleratorToHotTrackedView();
       break;
 
-    case base::VKEY_RETURN:
+    case app::VKEY_RETURN:
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
           OpenSubmenuChangeSelectionIfCan();
@@ -893,7 +893,7 @@ bool MenuController::OnKeyDown(int key_code
       }
       break;
 
-    case base::VKEY_ESCAPE:
+    case app::VKEY_ESCAPE:
       if (!state_.item->GetParentMenuItem() ||
           (!state_.item->GetParentMenuItem()->GetParentMenuItem() &&
            (!state_.item->HasSubmenu() ||
@@ -956,7 +956,7 @@ bool MenuController::SendAcceleratorToHotTrackedView() {
   if (!hot_view)
     return false;
 
-  Accelerator accelerator(base::VKEY_RETURN, false, false, false);
+  Accelerator accelerator(app::VKEY_RETURN, false, false, false);
   hot_view->AcceleratorPressed(accelerator);
   hot_view->SetHotTracked(true);
   return true;

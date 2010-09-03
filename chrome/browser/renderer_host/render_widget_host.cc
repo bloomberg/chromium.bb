@@ -4,10 +4,10 @@
 
 #include "chrome/browser/renderer_host/render_widget_host.h"
 
+#include "app/keyboard_codes.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/histogram.h"
-#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store.h"
@@ -468,8 +468,8 @@ void RenderWidgetHost::ForwardKeyboardEvent(
     return;
 
   if (key_event.type == WebKeyboardEvent::Char &&
-      (key_event.windowsKeyCode == base::VKEY_RETURN ||
-       key_event.windowsKeyCode == base::VKEY_SPACE)) {
+      (key_event.windowsKeyCode == app::VKEY_RETURN ||
+       key_event.windowsKeyCode == app::VKEY_SPACE)) {
     OnUserGesture();
   }
 

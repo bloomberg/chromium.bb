@@ -61,7 +61,7 @@ void GroupTableView::SyncSelection() {
   }
 }
 
-bool GroupTableView::OnKeyDown(base::KeyboardCode virtual_keycode) {
+bool GroupTableView::OnKeyDown(app::KeyboardCode virtual_keycode) {
   // In a list view, multiple items can be selected but only one item has the
   // focus. This creates a problem when the arrow keys are used for navigating
   // between items in the list view. An example will make this more clear:
@@ -87,8 +87,8 @@ bool GroupTableView::OnKeyDown(base::KeyboardCode virtual_keycode) {
   // detect that one of the arrow keys is pressed. Thus, when it comes time
   // for the list view control to actually switch the focus, the right item
   // will be selected.
-  if ((virtual_keycode != base::VKEY_UP) &&
-      (virtual_keycode != base::VKEY_DOWN)) {
+  if ((virtual_keycode != app::VKEY_UP) &&
+      (virtual_keycode != app::VKEY_DOWN)) {
     return TableView::OnKeyDown(virtual_keycode);
   }
 
@@ -116,10 +116,10 @@ bool GroupTableView::OnKeyDown(base::KeyboardCode virtual_keycode) {
   // If the user pressed the UP key, then the focus should be set to the
   // topmost element in the group. If the user pressed the DOWN key, the focus
   // should be set to the bottommost element.
-  if (virtual_keycode == base::VKEY_UP) {
+  if (virtual_keycode == app::VKEY_UP) {
     SetFocusOnItem(group_range.start);
   } else {
-    DCHECK_EQ(virtual_keycode, base::VKEY_DOWN);
+    DCHECK_EQ(virtual_keycode, app::VKEY_DOWN);
     SetFocusOnItem(group_range.start + group_range.length - 1);
   }
 

@@ -385,14 +385,6 @@ std::wstring FormatLastWin32Error() {
   return FormatMessage(GetLastError());
 }
 
-WORD KeyboardCodeToWin(base::KeyboardCode keycode) {
-  return static_cast<WORD>(keycode);
-}
-
-base::KeyboardCode WinToKeyboardCode(WORD keycode) {
-  return static_cast<base::KeyboardCode>(keycode);
-}
-
 bool SetAppIdForPropertyStore(IPropertyStore* property_store,
                               const wchar_t* app_id) {
   DCHECK(property_store);

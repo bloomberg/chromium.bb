@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_ACCESSIBILITY_HELPER_H_
 #pragma once
 
-#include "base/keyboard_codes.h"
+#include "app/keyboard_codes.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_handler.h"
@@ -34,7 +34,7 @@ class WizardAccessibilityHelper {
   void MaybeEnableAccessibility(views::View* view_tree, Profile* profile);
 
   // Keyboard accelerator key to enable accessibility.
-  static const base::KeyboardCode accelerator = base::VKEY_Z;
+  static const app::KeyboardCode accelerator = app::VKEY_Z;
 
  private:
   friend struct DefaultSingletonTraits<WizardAccessibilityHelper>;

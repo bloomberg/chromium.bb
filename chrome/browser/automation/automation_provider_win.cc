@@ -4,8 +4,8 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
+#include "app/keyboard_codes.h"
 #include "base/json/json_reader.h"
-#include "base/keyboard_codes.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
@@ -200,7 +200,7 @@ void AutomationProvider::WindowSimulateDrag(int handle,
 
     if (press_escape_en_route) {
       // Press Escape.
-      ui_controls::SendKeyPress(window, base::VKEY_ESCAPE,
+      ui_controls::SendKeyPress(window, app::VKEY_ESCAPE,
                                ((flags & views::Event::EF_CONTROL_DOWN)
                                 == views::Event::EF_CONTROL_DOWN),
                                ((flags & views::Event::EF_SHIFT_DOWN) ==

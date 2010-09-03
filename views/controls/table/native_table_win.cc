@@ -463,7 +463,7 @@ void NativeTableWin::OnMiddleClick() {
     table_->observer()->OnMiddleClick();
 }
 
-bool NativeTableWin::OnKeyDown(base::KeyboardCode virtual_keycode) {
+bool NativeTableWin::OnKeyDown(app::KeyboardCode virtual_keycode) {
   if (!ignore_listview_change_ && table_->observer())
     table_->observer()->OnKeyDown(virtual_keycode);
   return false;  // Let the key event be processed as ususal.

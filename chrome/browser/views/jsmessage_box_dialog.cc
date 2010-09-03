@@ -4,9 +4,9 @@
 
 #include "chrome/browser/views/jsmessage_box_dialog.h"
 
+#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
-#include "base/keyboard_codes.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -25,7 +25,7 @@ JavaScriptMessageBoxDialog::JavaScriptMessageBoxDialog(
   DCHECK(message_box_view_);
 
   message_box_view_->AddAccelerator(
-      views::Accelerator(base::VKEY_C, false, true, false));
+      views::Accelerator(app::VKEY_C, false, true, false));
   if (display_suppress_checkbox) {
     message_box_view_->SetCheckBoxLabel(
         l10n_util::GetString(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION));

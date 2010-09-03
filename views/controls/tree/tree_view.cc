@@ -6,10 +6,11 @@
 
 #include <vector>
 
+#include "app/keyboard_code_conversion_win.h"
+#include "app/keyboard_codes.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/win_util.h"
@@ -448,7 +449,7 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
         NMTVKEYDOWN* key_down_message =
             reinterpret_cast<NMTVKEYDOWN*>(l_param);
         controller_->OnTreeViewKeyDown(
-            win_util::WinToKeyboardCode(key_down_message->wVKey));
+            app::KeyboardCodeForWindowsKeyCode(key_down_message->wVKey));
       }
       break;
 
@@ -458,7 +459,7 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
   return 0;
 }
 
-bool TreeView::OnKeyDown(base::KeyboardCode virtual_key_code) {
+bool TreeView::OnKeyDown(app::KeyboardCode virtual_key_code) {
   if (virtual_key_code == VK_F2) {
     if (!GetEditingNode()) {
       TreeModelNode* selected_node = GetSelectedNode();
@@ -466,7 +467,7 @@ bool TreeView::OnKeyDown(base::KeyboardCode virtual_key_code) {
         StartEditing(selected_node);
     }
     return true;
-  } else if (virtual_key_code == base::VKEY_RETURN && !process_enter_) {
+  } else if (virtual_key_code == app::VKEY_RETURN && !process_enter_) {
     Widget* widget = GetWidget();
     DCHECK(widget);
     Accelerator accelerator(Accelerator(virtual_key_code,
