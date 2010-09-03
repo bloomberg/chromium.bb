@@ -32,11 +32,5 @@ BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE
 // Newly added test apparently misbehaves.  
 BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
 
-// These can be removed when we roll to r66680.
-BUGRICOW : fast/js/array-splice.html = PASS
-BUGTONY : platform/gtk/scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html = TIMEOUT TEXT
-BUGTONY : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TIMEOUT TEXT
-BUGTONY : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
-
 // Temporary disable test.  Will investigate (antonm@chromium.org).
 BUGANTONM : fast/js/reserved-words-as-property.html = CRASH TEXT
