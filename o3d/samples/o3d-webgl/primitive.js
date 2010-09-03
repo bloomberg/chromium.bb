@@ -150,7 +150,8 @@ o3d.Primitive.prototype.render = function() {
         this.gl.enableVertexAttribArray(gl_index);
         enabled_attribs.push(gl_index);
 
-        var kFloatSize = Float32Array.BYTES_PER_ELEMENT;
+        // HACK: Firefox 4.0b4+ missing BYTES_PER_ELEMENT
+        var kFloatSize = Float32Array.BYTES_PER_ELEMENT || 4;
 
         this.gl.vertexAttribPointer(
             gl_index, field.numComponents, this.gl.FLOAT, false,
