@@ -613,6 +613,12 @@ int ChromeMain(int argc, char** argv) {
   app::RegisterPathProvider();
   chrome::RegisterPathProvider();
 
+  // Notice a user data directory override if any
+  const FilePath user_data_dir =
+      parsed_command_line.GetSwitchValuePath(switches::kUserDataDir);
+  if (!user_data_dir.empty())
+    CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
+
 #if defined(OS_MACOSX)
   // TODO(mark): Right now, InitCrashReporter() needs to be called after
   // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally, Breakpad
@@ -699,12 +705,6 @@ int ChromeMain(int argc, char** argv) {
 #if defined(OS_WIN)
   _Module.Init(NULL, instance);
 #endif
-
-  // Notice a user data directory override if any
-  const FilePath user_data_dir =
-      parsed_command_line.GetSwitchValuePath(switches::kUserDataDir);
-  if (!user_data_dir.empty())
-    CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
 
   bool single_process =
 #if defined (GOOGLE_CHROME_BUILD)
