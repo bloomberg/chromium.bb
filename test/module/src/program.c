@@ -14,7 +14,7 @@
 #if defined(PLATFORM_WIN)
 #define MODULE_SUFFIX ".dll"
 #elif defined(PLATFORM_MAC)
-#define MODULE_SUFFIX ".dylib"
+#define MODULE_SUFFIX ".so"
 #elif defined(PLATFORM_LINUX)
 #define MODULE_SUFFIX ".so"
 #endif
