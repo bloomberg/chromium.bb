@@ -32,6 +32,9 @@ class FileSystemBackend {
             const FilePath& dest_path,
             int request_id);
 
+  // If |dest_path| exists and is a directory, behavior is unspecified or
+  // varies for different platforms.
+  // TODO(kkanetkar): Add more checks.
   void Move(const FilePath& src_path,
             const FilePath& dest_path,
             int request_id);

@@ -20,9 +20,9 @@ WebKit::WebFileError PlatformToWebkitError(base::PlatformFileError rv) {
     case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
          return WebKit::WebFileErrorInvalidModification;
     case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-        return WebKit::WebFileErrorInvalidModification;
-    default:
         return WebKit::WebFileErrorNoModificationAllowed;
+    default:
+        return WebKit::WebFileErrorInvalidModification;
   }
 }
 }  // namespace
@@ -40,7 +40,7 @@ void FileSystemBackend::CreateFile(const FilePath& path,
   request_id_ = request_id;
   base::FileUtilProxy::CreateOrOpen(
     ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
-    path, base::PLATFORM_FILE_CREATE,
+    path, base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ,
     callback_factory_.NewCallback(
         exclusive ? &FileSystemBackend::DidCreateFileExclusive
                   : &FileSystemBackend::DidCreateFileNonExclusive));
@@ -127,7 +127,7 @@ void FileSystemBackend::DidCreateFileNonExclusive(base::PlatformFileError rv,
   // Supress the already exists error and report success.
   if (rv == base::PLATFORM_FILE_OK ||
       rv == base::PLATFORM_FILE_ERROR_EXISTS)
-    client_->DidSucceed(rv);
+    client_->DidSucceed(request_id_);
   else
     client_->DidFail(PlatformToWebkitError(rv), request_id_);
 }
@@ -188,3 +188,4 @@ void FileSystemBackend::DidReadDirectory(
   else
     client_->DidFail(PlatformToWebkitError(rv), request_id_);
 }
+
