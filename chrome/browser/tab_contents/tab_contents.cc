@@ -30,6 +30,7 @@
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
@@ -1166,6 +1167,10 @@ void TabContents::ReplaceInfoBar(InfoBarDelegate* old_delegate,
 
 bool TabContents::ShouldShowBookmarkBar() {
   if (showing_interstitial_page())
+    return false;
+
+  // Do not show bookmarks bar if bookmarks aren't enabled.
+  if (!browser_defaults::bookmarks_enabled)
     return false;
 
   // See GetDOMUIForCurrentState() comment for more info. This case is very
