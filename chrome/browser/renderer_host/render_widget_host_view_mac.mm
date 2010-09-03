@@ -961,7 +961,7 @@ namespace {
 // Adjusts an NSRect in Cocoa screen coordinates to have an origin in the upper
 // left of the primary screen (Carbon coordinates), and stuffs it into a
 // gfx::Rect.
-gfx::Rect flipNSRectToRect(const NSRect rect) {
+gfx::Rect FlipNSRectToRectScreen(const NSRect rect) {
   gfx::Rect new_rect(NSRectToCGRect(rect));
   if ([[NSScreen screens] count] > 0) {
     new_rect.set_y([[[NSScreen screens] objectAtIndex:0] frame].size.height -
@@ -1004,7 +1004,7 @@ gfx::Rect RenderWidgetHostViewMac::GetWindowRect() {
   NSRect bounds = [cocoa_view_ bounds];
   bounds = [cocoa_view_ convertRect:bounds toView:nil];
   bounds.origin = [enclosing_window convertBaseToScreen:bounds.origin];
-  return flipNSRectToRect(bounds);
+  return FlipNSRectToRectScreen(bounds);
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
@@ -1016,7 +1016,7 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
     return gfx::Rect();
 
   NSRect bounds = [enclosing_window frame];
-  return flipNSRectToRect(bounds);
+  return FlipNSRectToRectScreen(bounds);
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
@@ -1436,6 +1436,54 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   renderWidgetHostView_->invalid_rect_ = NSZeroRect;
 }
 
+// Fills with white the parts of the area to the right and bottom for |rect|
+// that intersect |damagedRect|.
+- (void)fillBottomRightRemainderOfRect:(gfx::Rect)rect
+                             dirtyRect:(gfx::Rect)damagedRect {
+  if (damagedRect.right() > rect.right()) {
+    int x = std::max(rect.right(), damagedRect.x());
+    int y = std::min(rect.bottom(), damagedRect.bottom());
+    int width = damagedRect.right() - x;
+    int height = damagedRect.y() - y;
+
+    // Extra fun to get around the fact that gfx::Rects can't have
+    // negative sizes.
+    if (width < 0) {
+      x += width;
+      width = -width;
+    }
+    if (height < 0) {
+      y += height;
+      height = -height;
+    }
+
+    NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
+    [[NSColor whiteColor] set];
+    NSRectFill(r);
+  }
+  if (damagedRect.bottom() > rect.bottom()) {
+    int x = damagedRect.x();
+    int y = damagedRect.bottom();
+    int width = damagedRect.right() - x;
+    int height = std::max(rect.bottom(), damagedRect.y()) - y;
+
+    // Extra fun to get around the fact that gfx::Rects can't have
+    // negative sizes.
+    if (width < 0) {
+      x += width;
+      width = -width;
+    }
+    if (height < 0) {
+      y += height;
+      height = -height;
+    }
+
+    NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
+    [[NSColor whiteColor] set];
+    NSRectFill(r);
+  }
+}
+
 - (void)drawRect:(NSRect)dirtyRect {
   if (!renderWidgetHostView_->render_widget_host_) {
     // TODO(shess): Consider using something more noticable?
@@ -1444,7 +1492,24 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     return;
   }
 
+  const gfx::Rect damagedRect([self flipNSRectToRect:dirtyRect]);
+
   if (renderWidgetHostView_->render_widget_host_->is_gpu_rendering_active()) {
+    gfx::Rect gpuRect;
+
+    gfx::PluginWindowHandle root_handle =
+       renderWidgetHostView_->plugin_container_manager_.root_container_handle();
+    if (root_handle != gfx::kNullPluginWindow) {
+      RenderWidgetHostViewMac::PluginViewMap::iterator it =
+          renderWidgetHostView_->plugin_views_.find(root_handle);
+      DCHECK(it != renderWidgetHostView_->plugin_views_.end());
+      if (it != renderWidgetHostView_->plugin_views_.end() &&
+          ![it->second isHidden]) {
+        gpuRect = [self flipNSRectToRect:[it->second frame]];
+      }
+    }
+
+    [self fillBottomRightRemainderOfRect:gpuRect dirtyRect:damagedRect];
     return;
   }
 
@@ -1453,33 +1518,30 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   DCHECK(!renderWidgetHostView_->about_to_validate_and_paint_);
 
   renderWidgetHostView_->about_to_validate_and_paint_ = true;
-  BackingStoreMac* backing_store = static_cast<BackingStoreMac*>(
+  BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
       renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
   renderWidgetHostView_->about_to_validate_and_paint_ = false;
 
-  if (backing_store) {
-    NSRect view_bounds = [self bounds];
-    gfx::Rect damaged_rect([self flipNSRectToRect:dirtyRect]);
-
-    gfx::Rect bitmap_rect(0, 0,
-                          backing_store->size().width(),
-                          backing_store->size().height());
+  if (backingStore) {
+    gfx::Rect bitmapRect(0, 0,
+                         backingStore->size().width(),
+                         backingStore->size().height());
 
     // Specify the proper y offset to ensure that the view is rooted to the
     // upper left corner.  This can be negative, if the window was resized
     // smaller and the renderer hasn't yet repainted.
-    int yOffset = NSHeight(view_bounds) - backing_store->size().height();
+    int yOffset = NSHeight([self bounds]) - backingStore->size().height();
 
-    gfx::Rect paint_rect = bitmap_rect.Intersect(damaged_rect);
-    if (!paint_rect.IsEmpty()) {
+    gfx::Rect paintRect = bitmapRect.Intersect(damagedRect);
+    if (!paintRect.IsEmpty()) {
       // if we have a CGLayer, draw that into the window
-      if (backing_store->cg_layer()) {
+      if (backingStore->cg_layer()) {
         CGContextRef context = static_cast<CGContextRef>(
             [[NSGraphicsContext currentContext] graphicsPort]);
 
         // TODO: add clipping to dirtyRect if it improves drawing performance.
         CGContextDrawLayerAtPoint(context, CGPointMake(0.0, yOffset),
-                                  backing_store->cg_layer());
+                                  backingStore->cg_layer());
       } else {
         // if we haven't created a layer yet, draw the cached bitmap into
         // the window.  The CGLayer will be created the next time the renderer
@@ -1487,56 +1549,16 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
         CGContextRef context = static_cast<CGContextRef>(
             [[NSGraphicsContext currentContext] graphicsPort]);
         scoped_cftyperef<CGImageRef> image(
-            CGBitmapContextCreateImage(backing_store->cg_bitmap()));
-        CGRect imageRect = bitmap_rect.ToCGRect();
+            CGBitmapContextCreateImage(backingStore->cg_bitmap()));
+        CGRect imageRect = bitmapRect.ToCGRect();
         imageRect.origin.y = yOffset;
         CGContextDrawImage(context, imageRect, image);
       }
     }
 
-    // Fill the remaining portion of the damaged_rect with white
-    if (damaged_rect.right() > bitmap_rect.right()) {
-      int x = std::max(bitmap_rect.right(), damaged_rect.x());
-      int y = std::min(bitmap_rect.bottom(), damaged_rect.bottom());
-      int width = damaged_rect.right() - x;
-      int height = damaged_rect.y() - y;
+    // Fill the remaining portion of the damagedRect with white
+    [self fillBottomRightRemainderOfRect:bitmapRect dirtyRect:damagedRect];
 
-      // Extra fun to get around the fact that gfx::Rects can't have
-      // negative sizes.
-      if (width < 0) {
-        x += width;
-        width = -width;
-      }
-      if (height < 0) {
-        y += height;
-        height = -height;
-      }
-
-      NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
-      [[NSColor whiteColor] set];
-      NSRectFill(r);
-    }
-    if (damaged_rect.bottom() > bitmap_rect.bottom()) {
-      int x = damaged_rect.x();
-      int y = damaged_rect.bottom();
-      int width = damaged_rect.right() - x;
-      int height = std::max(bitmap_rect.bottom(), damaged_rect.y()) - y;
-
-      // Extra fun to get around the fact that gfx::Rects can't have
-      // negative sizes.
-      if (width < 0) {
-        x += width;
-        width = -width;
-      }
-      if (height < 0) {
-        y += height;
-        height = -height;
-      }
-
-      NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
-      [[NSColor whiteColor] set];
-      NSRectFill(r);
-    }
     if (!renderWidgetHostView_->whiteout_start_time_.is_null()) {
       base::TimeDelta whiteout_duration = base::TimeTicks::Now() -
           renderWidgetHostView_->whiteout_start_time_;

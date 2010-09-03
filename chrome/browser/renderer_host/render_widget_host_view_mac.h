@@ -284,6 +284,12 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // Current text input type.
   WebKit::WebTextInputType text_input_type_;
 
+  typedef std::map<gfx::PluginWindowHandle, NSView*> PluginViewMap;
+  PluginViewMap plugin_views_;  // Weak values.
+
+  // Helper class for managing instances of accelerated plug-ins.
+  AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
+
  private:
   // Updates the display cursor to the current cursor if the cursor is over this
   // render view.
@@ -300,9 +306,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // release it when told to destroy (for example, because a pop-up menu has
   // closed).
   RenderWidgetHostViewCocoa* cocoa_view_;
-
-  typedef std::map<gfx::PluginWindowHandle, NSView*> PluginViewMap;
-  PluginViewMap plugin_views_;  // Weak values.
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
@@ -325,9 +328,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Used for positioning a popup menu.
   NSView* parent_view_;
-
-  // Helper class for managing instances of accelerated plug-ins.
-  AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
 
   // Whether or not web accessibility is enabled.
   bool renderer_accessible_;
