@@ -48,7 +48,7 @@ def GetGClientBranchName():
 
 def GetWebKitRev():
   """Extract the 'webkit_revision' variable out of DEPS."""
-  locals = {'Var': lambda _: ''}
+  locals = {'Var': lambda _: locals["vars"][_]}
   execfile('DEPS', {}, locals)
   return locals['vars']['webkit_revision']
 
