@@ -40,6 +40,8 @@
 
 #include "chrome_frame/metrics_service.h"
 
+#include <atlbase.h>
+#include <atlwin.h>
 #include <windows.h>
 #include <objbase.h>
 
@@ -55,22 +57,32 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/net/url_fetcher_protect.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bind_status_callback_impl.h"
+#include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/utils.h"
+#include "net/base/capturing_net_log.h"
+#include "net/base/host_resolver.h"
+#include "net/base/ssl_config_service_defaults.h"
 #include "net/base/upload_data.h"
-#include "chrome_frame/urlmon_bind_status_callback.h"
+#include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_cache.h"
+#include "net/http/http_network_layer.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_status.h"
 
 using base::Time;
 using base::TimeDelta;
 
-static const char kMetricsType[] =
-    "Content-Type: application/vnd.mozilla.metrics.bz2\r\n";
+static const char kMetricsType[] = "application/vnd.mozilla.metrics.bz2";
 
 // The first UMA upload occurs after this interval.
 static const int kInitialUMAUploadTimeoutMilliSeconds = 30000;
@@ -83,151 +95,196 @@ base::LazyInstance<base::ThreadLocalPointer<MetricsService> >
 
 extern base::LazyInstance<StatisticsRecorder> g_statistics_recorder_;
 
+// This class provides HTTP request context information for metrics upload
+// requests initiated by ChromeFrame.
+class ChromeFrameUploadRequestContext : public URLRequestContext {
+ public:
+  ChromeFrameUploadRequestContext(MessageLoop* io_loop)
+      : io_loop_(io_loop) {
+    Initialize();
+  }
+
+  ~ChromeFrameUploadRequestContext() {
+    DLOG(INFO) << __FUNCTION__;
+  }
+
+  void Initialize() {
+    user_agent_ = http_utils::GetDefaultUserAgent();
+    user_agent_ = http_utils::AddChromeFrameToUserAgentValue(
+      user_agent_);
+
+    host_resolver_ =
+        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
+                                      NULL);
+    net::ProxyConfigService* proxy_config_service =
+        net::ProxyService::CreateSystemProxyConfigService(NULL, NULL);
+    DCHECK(proxy_config_service);
+
+    const size_t kNetLogBound = 50u;
+    net_log_.reset(new net::CapturingNetLog(kNetLogBound));
+
+    proxy_service_ = net::ProxyService::Create(proxy_config_service, false, 0,
+                                               this, net_log_.get(), io_loop_);
+    DCHECK(proxy_service_);
+
+    ssl_config_service_ = new net::SSLConfigServiceDefaults;
+    http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
+    http_transaction_factory_ = new net::HttpCache(
+        net::HttpNetworkLayer::CreateFactory(host_resolver_,
+                                             proxy_service_,
+                                             ssl_config_service_,
+                                             http_auth_handler_factory_,
+                                             network_delegate_,
+                                             NULL),
+        net::HttpCache::DefaultBackend::InMemory(0));
+  }
+
+  virtual const std::string& GetUserAgent(const GURL& url) const {
+    return user_agent_;
+  }
+
+ private:
+  std::string user_agent_;
+  MessageLoop* io_loop_;
+  scoped_ptr<net::NetLog> net_log_;
+};
+
+// This class provides an interface to retrieve the URL request context for
+// metrics HTTP upload requests initiated by ChromeFrame.
+class ChromeFrameUploadRequestContextGetter : public URLRequestContextGetter {
+ public:
+  ChromeFrameUploadRequestContextGetter(MessageLoop* io_loop)
+      : io_loop_(io_loop) {}
+
+  virtual URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new ChromeFrameUploadRequestContext(io_loop_);
+    return context_;
+  }
+
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
+    if (!io_message_loop_proxy_.get()) {
+      io_message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
+    }
+    return io_message_loop_proxy_;
+  }
+
+ private:
+  ~ChromeFrameUploadRequestContextGetter() {
+    DLOG(INFO) << __FUNCTION__;
+  }
+
+  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  MessageLoop* io_loop_;
+};
+
 // This class provides functionality to upload the ChromeFrame UMA data to the
 // server. An instance of this class is created whenever we have data to be
 // uploaded to the server.
-class ChromeFrameMetricsDataUploader : public BSCBImpl {
+class ChromeFrameMetricsDataUploader
+    : public URLFetcher::Delegate,
+      public base::RefCountedThreadSafe<ChromeFrameMetricsDataUploader>,
+      public CWindowImpl<ChromeFrameMetricsDataUploader>,
+      public TaskMarshallerThroughWindowsMessages<
+          ChromeFrameMetricsDataUploader> {
  public:
+  BEGIN_MSG_MAP(ChromeFrameMetricsDataUploader)
+    CHAIN_MSG_MAP(
+        TaskMarshallerThroughWindowsMessages<ChromeFrameMetricsDataUploader>)
+  END_MSG_MAP()
+
   ChromeFrameMetricsDataUploader()
-      : cache_stream_(NULL),
-        upload_data_size_(0) {
+      : fetcher_(NULL),
+        upload_thread_("ChromeFrameMetricsUploadThread") {
     DLOG(INFO) << __FUNCTION__;
+    creator_thread_id_ = PlatformThread::CurrentId();
   }
 
   ~ChromeFrameMetricsDataUploader() {
     DLOG(INFO) << __FUNCTION__;
+    DCHECK(creator_thread_id_ == PlatformThread::CurrentId());
+  }
+
+  virtual void OnFinalMessage(HWND wnd) {
+    Release();
+  }
+
+  bool Initialize() {
+    if (!Create(NULL, NULL, NULL, WS_OVERLAPPEDWINDOW)) {
+      NOTREACHED() << "Failed to create window";
+      return false;
+    }
+    DCHECK(IsWindow());
+
+    // Grab a reference to the current instance which ensures that it stays
+    // around until the HTTP request initiated below completes.
+    // Corresponding Release is in OnFinalMessage.
+    AddRef();
+
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_IO;
+    return upload_thread_.StartWithOptions(options);
+  }
+
+  bool Uninitialize() {
+    DestroyWindow();
+    return true;
   }
 
   static HRESULT ChromeFrameMetricsDataUploader::UploadDataHelper(
       const std::string& upload_data) {
-    CComObject<ChromeFrameMetricsDataUploader>* data_uploader = NULL;
-    CComObject<ChromeFrameMetricsDataUploader>::CreateInstance(&data_uploader);
-    DCHECK(data_uploader != NULL);
+    scoped_refptr<ChromeFrameMetricsDataUploader> data_uploader =
+        new ChromeFrameMetricsDataUploader();
 
-    data_uploader->AddRef();
-    HRESULT hr = data_uploader->UploadData(upload_data);
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "Failed to initialize ChromeFrame UMA data uploader: Err"
-                  << hr;
-    }
-    data_uploader->Release();
-    return hr;
+    data_uploader->Initialize();
+    DCHECK(data_uploader->upload_thread_.message_loop());
+
+    data_uploader->upload_thread_.message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(data_uploader.get(),
+                          &ChromeFrameMetricsDataUploader::UploadData,
+                          upload_data));
+    return S_OK;
   }
 
-  HRESULT UploadData(const std::string& upload_data) {
-    if (upload_data.empty()) {
-      NOTREACHED() << "Invalid upload data";
-      return E_INVALIDARG;
-    }
-
-    DCHECK(cache_stream_.get() == NULL);
-
-    upload_data_size_ = upload_data.size() + 1;
-
-    HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, cache_stream_.Receive());
-    if (FAILED(hr)) {
-      NOTREACHED() << "Failed to create stream. Error:"
-                   << hr;
-      return hr;
-    }
-
-    DCHECK(cache_stream_.get());
-
-    unsigned long written = 0;
-    cache_stream_->Write(upload_data.c_str(), upload_data_size_, &written);
-    DCHECK(written == upload_data_size_);
-
-    RewindStream(cache_stream_);
+  void UploadData(const std::string& upload_data) {
+    DCHECK(fetcher_ == NULL);
 
     BrowserDistribution* dist = ChromeFrameDistribution::GetDistribution();
-    server_url_ = dist->GetStatsServerURL();
-    DCHECK(!server_url_.empty());
+    DCHECK(dist != NULL);
 
-    hr = CreateURLMoniker(NULL, server_url_.c_str(),
-                          upload_moniker_.Receive());
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "Failed to create url moniker for url:"
-                  << server_url_.c_str()
-                  << " Error:"
-                  << hr;
-    } else {
-      ScopedComPtr<IBindCtx> context;
-      hr = CreateAsyncBindCtx(0, this, NULL, context.Receive());
-      DCHECK(SUCCEEDED(hr));
-      DCHECK(context);
+    fetcher_ = new URLFetcher(GURL(WideToUTF8(dist->GetStatsServerURL())),
+                              URLFetcher::POST, this);
 
-      ScopedComPtr<IStream> stream;
-      hr = upload_moniker_->BindToStorage(
-          context, NULL, IID_IStream,
-          reinterpret_cast<void**>(stream.Receive()));
-      if (FAILED(hr)) {
-        NOTREACHED();
-        DLOG(ERROR) << "Failed to bind to upload data moniker. Error:"
-                    << hr;
-      }
-    }
-    return hr;
+    fetcher_->set_request_context(new ChromeFrameUploadRequestContextGetter(
+        upload_thread_.message_loop()));
+    fetcher_->set_upload_data(kMetricsType, upload_data);
+    fetcher_->Start();
   }
 
-  STDMETHOD(BeginningTransaction)(LPCWSTR url, LPCWSTR headers, DWORD reserved,
-                                  LPWSTR* additional_headers) {
-    std::string new_headers;
-    new_headers = StringPrintf("Content-Length: %s\r\n",
-                               base::Int64ToString(upload_data_size_).c_str());
-    new_headers += kMetricsType;
+  // URLFetcher::Delegate
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const URLRequestStatus& status,
+                                  int response_code,
+                                  const ResponseCookies& cookies,
+                                  const std::string& data) {
+    DLOG(INFO) << __FUNCTION__
+               << StringPrintf(": url : %hs, status:%d, response code: %d\n",
+                               url.spec().c_str(), status.status(),
+                               response_code);
+    delete fetcher_;
+    fetcher_ = NULL;
 
-    std::string user_agent_value = http_utils::GetDefaultUserAgent();
-    user_agent_value = http_utils::AddChromeFrameToUserAgentValue(
-        user_agent_value);
-
-    new_headers += "User-Agent: " + user_agent_value;
-    new_headers += "\r\n";
-
-    *additional_headers = reinterpret_cast<wchar_t*>(
-        CoTaskMemAlloc((new_headers.size() + 1) * sizeof(wchar_t)));
-
-    lstrcpynW(*additional_headers, ASCIIToWide(new_headers).c_str(),
-              new_headers.size());
-
-    return BSCBImpl::BeginningTransaction(url, headers, reserved,
-                                          additional_headers);
-  }
-
-  STDMETHOD(GetBindInfo)(DWORD* bind_flags, BINDINFO* bind_info) {
-    if ((bind_info == NULL) || (bind_info->cbSize == 0) ||
-        (bind_flags == NULL))
-      return E_INVALIDARG;
-
-    *bind_flags = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE | BINDF_PULLDATA;
-    // Bypass caching proxies on POSTs and PUTs and avoid writing responses to
-    // these requests to the browser's cache
-    *bind_flags |= BINDF_GETNEWESTVERSION | BINDF_PRAGMA_NO_CACHE;
-
-    DCHECK(cache_stream_.get());
-
-    // Initialize the STGMEDIUM.
-    memset(&bind_info->stgmedData, 0, sizeof(STGMEDIUM));
-    bind_info->grfBindInfoF = 0;
-    bind_info->szCustomVerb = NULL;
-    bind_info->dwBindVerb = BINDVERB_POST;
-    bind_info->stgmedData.tymed = TYMED_ISTREAM;
-    bind_info->stgmedData.pstm = cache_stream_.get();
-    bind_info->stgmedData.pstm->AddRef();
-    return BSCBImpl::GetBindInfo(bind_flags, bind_info);
-  }
-
-  STDMETHOD(OnResponse)(DWORD response_code, LPCWSTR response_headers,
-                        LPCWSTR request_headers, LPWSTR* additional_headers) {
-    DLOG(INFO) << __FUNCTION__ << " headers: \n" << response_headers;
-    return BSCBImpl::OnResponse(response_code, response_headers,
-                                request_headers, additional_headers);
+    PostTask(FROM_HERE,
+             NewRunnableMethod(this,
+                               &ChromeFrameMetricsDataUploader::Uninitialize));
   }
 
  private:
-  std::wstring server_url_;
-  size_t upload_data_size_;
-  ScopedComPtr<IStream> cache_stream_;
-  ScopedComPtr<IMoniker> upload_moniker_;
+  base::Thread upload_thread_;
+  URLFetcher* fetcher_;
+  PlatformThreadId creator_thread_id_;
 };
 
 MetricsService* MetricsService::GetInstance() {
@@ -272,7 +329,6 @@ void MetricsService::InitializeMetricsState() {
 
   // Ensure that an instance of the StatisticsRecorder object is created.
   g_statistics_recorder_.Get();
-
   CrashMetricsReporter::GetInstance()->set_active(true);
 }
 
