@@ -165,7 +165,7 @@
     <file path="app_locale_settings_zh-TW.xtb" lang="zh-TW" />
   </translations>
   <release seq="1" allow_pseudo="false">
-    <messages>
+    <messages fallback_to_english="true">
       <!-- The UI font used in native UI components (e.g. menu). 'default'
            indicates that the font obtained from the system be used.
            Otherwise, the system default UI font will be overriden with

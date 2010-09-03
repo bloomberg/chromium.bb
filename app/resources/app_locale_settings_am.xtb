@@ -2,8 +2,4 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="IDS_UI_FONT_FAMILY_XP">abyssinica sil</translation> 
-<translation id="IDS_UI_FONT_FAMILY">default</translation>
-<translation id="IDS_UI_FONT_SIZE_SCALER_XP">100</translation>
-<translation id="IDS_UI_FONT_SIZE_SCALER">100</translation>
-<translation id="IDS_MINIMUM_UI_FONT_SIZE">5</translation>
 </translationbundle>
