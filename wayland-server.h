@@ -91,6 +91,8 @@ typedef void (*wl_client_connect_func_t)(struct wl_client *client, struct wl_obj
 int wl_display_add_global(struct wl_display *display, struct wl_object *object, wl_client_connect_func_t func);
 
 void wl_client_destroy(struct wl_client *client);
+void wl_client_post_no_memory(struct wl_client *client);
+void wl_client_post_global(struct wl_client *client, struct wl_object *object);
 
 struct wl_compositor {
 	struct wl_object base;

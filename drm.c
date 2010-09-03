@@ -93,9 +93,7 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 
 	buffer = malloc(sizeof *buffer);
 	if (buffer == NULL) {
-		wl_client_post_event(client,
-				     (struct wl_object *) compositor->wl_display,
-				     WL_DISPLAY_NO_MEMORY, 0);
+		wl_client_post_no_memory(client);
 		return;
 	}
 

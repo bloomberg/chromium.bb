@@ -590,14 +590,11 @@ static void
 shell_create_drag(struct wl_client *client,
 		  struct wl_shell *shell, uint32_t id)
 {
-	struct wl_display *display = wl_client_get_display(client);
 	struct wl_drag *drag;
 
 	drag = malloc(sizeof *drag);
 	if (drag == NULL) {
-		wl_client_post_event(client,
-				     (struct wl_object *) display,
-				     WL_DISPLAY_NO_MEMORY);
+		wl_client_post_no_memory(client);
 		return;
 	}
 
@@ -627,9 +624,7 @@ compositor_create_surface(struct wl_client *client,
 
 	surface = wlsc_surface_create(ec, NULL, 0, 0, 0, 0);
 	if (surface == NULL) {
-		wl_client_post_event(client,
-				     (struct wl_object *) ec->wl_display,
-				     WL_DISPLAY_NO_MEMORY);
+		wl_client_post_no_memory(client);
 		return;
 	}
 
@@ -1065,12 +1060,8 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 	if (surface &&
 	    (!drag->pointer_focus ||
 	     drag->pointer_focus->client != surface->base.client)) {
-		wl_surface_post_event(&surface->base,
-				      (struct wl_object *) surface->compositor->wl_display,
-				      WL_DISPLAY_GLOBAL,
-				      &drag->drag_offer.base,
-				      drag->drag_offer.base.interface->name,
-				      drag->drag_offer.base.interface->version);
+		wl_client_post_global(surface->base.client,
+				      &drag->drag_offer.base);
 
 		end = drag->types.data + drag->types.size;
 		for (p = drag->types.data; p < end; p++)
@@ -1138,16 +1129,13 @@ static const struct wl_drag_offer_interface drag_offer_interface = {
 static void
 drag_offer(struct wl_client *client, struct wl_drag *drag, const char *type)
 {
-	struct wl_display *display = wl_client_get_display (client);
 	char **p;
 
 	p = wl_array_add(&drag->types, sizeof *p);
 	if (p)
 		*p = strdup(type);
 	if (!p || !*p)
-		wl_client_post_event(client,
-				     (struct wl_object *) display,
-				     WL_DISPLAY_NO_MEMORY);
+		wl_client_post_no_memory(client);
 }
 
 static void

@@ -139,8 +139,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 					     p[0], opcode);
 			continue;
 		} else if (closure == NULL && errno == ENOMEM) {
-			wl_client_post_event(client, &client->display->base,
-					     WL_DISPLAY_NO_MEMORY);
+			wl_client_post_no_memory(client);
 			continue;
 		}
 
@@ -231,6 +230,25 @@ wl_client_add_resource(struct wl_client *client,
 	wl_hash_table_insert(client->display->objects,
 			     resource->base.id, resource);
 	wl_list_insert(client->resource_list.prev, &resource->link);
+}
+
+WL_EXPORT void
+wl_client_post_no_memory(struct wl_client *client)
+{
+	wl_client_post_event(client,
+			     &client->display->base,
+			     WL_DISPLAY_NO_MEMORY);
+}
+
+WL_EXPORT void
+wl_client_post_global(struct wl_client *client, struct wl_object *object)
+{
+	wl_client_post_event(client,
+			     &client->display->base,
+			     WL_DISPLAY_GLOBAL,
+			     object,
+			     object->interface->name,
+			     object->interface->version);
 }
 
 WL_EXPORT void
