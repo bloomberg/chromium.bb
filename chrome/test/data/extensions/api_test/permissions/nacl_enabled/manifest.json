@@ -3,5 +3,5 @@
    "description": "nacl permission enabled extension",
    "version": "0.1",
    "background_page": "background.html",
-   "permissions": [ "nativeClient" ]
+   "permissions": [ "experimental" ]
 }

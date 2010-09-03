@@ -49,6 +49,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FavIconPermission) {
 // Mark as Flaky.  http://crbug.com/51861
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_NaClPermissionEnabled) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kInternalNaCl);
   ASSERT_TRUE(RunExtensionTest("permissions/nacl_enabled")) << message_;
 }
 #endif

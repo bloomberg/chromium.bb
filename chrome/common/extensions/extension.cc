@@ -159,7 +159,6 @@ const char Extension::kNotificationPermission[] = "notifications";
 const char Extension::kProxyPermission[] = "proxy";
 const char Extension::kTabPermission[] = "tabs";
 const char Extension::kUnlimitedStoragePermission[] = "unlimitedStorage";
-const char Extension::kNativeClientPermission[] = "nativeClient";
 const char Extension::kWebstorePrivatePermission[] = "webstorePrivate";
 
 const char* const Extension::kPermissionNames[] = {
@@ -175,7 +174,6 @@ const char* const Extension::kPermissionNames[] = {
   Extension::kProxyPermission,
   Extension::kTabPermission,
   Extension::kUnlimitedStoragePermission,
-  Extension::kNativeClientPermission,
   Extension::kWebstorePrivatePermission,
 };
 const size_t Extension::kNumPermissions =
@@ -186,7 +184,6 @@ const char* const Extension::kHostedAppPermissionNames[] = {
   Extension::kGeolocationPermission,
   Extension::kNotificationPermission,
   Extension::kUnlimitedStoragePermission,
-  Extension::kNativeClientPermission,
   Extension::kWebstorePrivatePermission,
 };
 const size_t Extension::kNumHostedAppPermissions =

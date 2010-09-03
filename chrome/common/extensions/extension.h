@@ -109,7 +109,6 @@ class Extension {
   static const char kProxyPermission[];
   static const char kTabPermission[];
   static const char kUnlimitedStoragePermission[];
-  static const char kNativeClientPermission[];
   static const char kWebstorePrivatePermission[];
 
   static const char* const kPermissionNames[];
