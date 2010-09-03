@@ -8,8 +8,10 @@ namespace browser_defaults {
 
 #if defined(OS_CHROMEOS)
 
-const double kAutocompleteEditFontPixelSize = 12.0;
-const double kAutocompleteEditFontPixelSizeInPopup = 10;
+// Make the regular omnibox text two points larger than the nine-point font
+// used in the tab strip (11pt / 72pt/in * 96px/in = 14.667px).
+const double kAutocompleteEditFontPixelSize = 14.7;
+const double kAutocompleteEditFontPixelSizeInPopup = 10.0;
 
 // This is only used by AutocompletePopupViewGtk which is unused
 // unless TOOLKIT_VIEWS is undefined:
