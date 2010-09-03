@@ -2,5 +2,6 @@ include_rules = [
   "+chrome/app",
   "+gpu/command_buffer",
   "+media/base",
-  "+media/video",
+  "+media/filters",
 ]
+

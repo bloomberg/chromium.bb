@@ -12,9 +12,9 @@
 #include "base/time.h"
 #include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
+#include "media/filters/video_decode_engine.h"
 #include "media/mf/file_reader_util.h"
 #include "media/mf/mft_h264_decoder.h"
-#include "media/video/video_decode_engine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;

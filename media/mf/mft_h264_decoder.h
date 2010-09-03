@@ -19,7 +19,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_comptr_win.h"
-#include "media/video/video_decode_engine.h"
+#include "media/filters/video_decode_engine.h"
 
 class MessageLoop;
 

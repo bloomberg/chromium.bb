@@ -14,8 +14,8 @@
 #include "media/base/mock_filters.h"
 #include "media/base/mock_task.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/video/omx_video_decode_engine.h"
-#include "media/video/video_decode_engine.h"
+#include "media/filters/omx_video_decode_engine.h"
+#include "media/filters/video_decode_engine.h"
 #include "media/omx/mock_omx.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
