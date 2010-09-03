@@ -372,6 +372,73 @@
       ],
     },
     {
+      'target_name': 'view_unit_tests',
+      'type': 'executable',
+      'dependencies': [
+        '../app/app.gyp:app_resources',
+        '../app/app.gyp:app_strings',
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../skia/skia.gyp:skia',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        'views',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'animation/bounds_animator_unittest.cc',
+        'box_layout_unittest.cc',
+        'controls/label_unittest.cc',
+        'controls/progress_bar_unittest.cc',
+        'controls/tabbed_pane/tabbed_pane_unittest.cc',
+        'controls/table/table_view_unittest.cc',
+        'focus/accelerator_handler_gtk_unittest.cc',
+        'focus/focus_manager_unittest.cc',
+        'grid_layout_unittest.cc',
+        'run_all_unittests.cc',
+        'view_unittest.cc',
+
+        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+      ],
+      'conditions': [
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../chrome/chrome.gyp:packed_resources',
+          ],
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+               'dependencies': [
+                 '../base/allocator/allocator.gyp:allocator',
+               ],
+            }],
+          ],
+        },
+        ],
+        ['OS=="win"', {
+          'dependencies': [
+            # TODO(jcivelli): ideally the resource needed by views would be
+            #                 factored out. (for some reason it pulls in a bunch
+            #                 unrelated things like v8, sqlite nss...).
+            '../chrome/app/locales/locales.gyp:en-US',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-limm32.lib',
+              '-loleacc.lib',
+            ]
+          },
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'view_examples',
       'type': 'executable',
       'dependencies': [
