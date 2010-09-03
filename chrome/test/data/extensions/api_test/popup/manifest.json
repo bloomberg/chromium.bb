@@ -1,7 +1,0 @@
-{
-  "name": "Popup tester",
-  "version": "0.1",
-  "description": "apitest for the popup api",
-  "background_page": "background_page.html",
-  "permissions": ["experimental", "tabs"]
-}
