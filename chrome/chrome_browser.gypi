@@ -543,6 +543,8 @@
         'browser/chromeos/login/screen_lock_view.cc',
         'browser/chromeos/login/screen_lock_view.h',
         'browser/chromeos/login/screen_observer.h',
+        'browser/chromeos/login/signed_settings.cc',
+        'browser/chromeos/login/signed_settings.h',
         'browser/chromeos/login/update_screen.cc',
         'browser/chromeos/login/update_screen.h',
         'browser/chromeos/login/update_view.cc',
