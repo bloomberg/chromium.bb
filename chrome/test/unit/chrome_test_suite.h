@@ -60,9 +60,6 @@ class ChromeTestSuite : public base::TestSuite {
   ScopedOleInitializer ole_initializer_;
   scoped_refptr<WarningHostResolverProc> host_resolver_proc_;
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
-
-  // Flag indicating whether user_data_dir was automatically created or not.
-  bool created_user_data_dir_;
 };
 
 #endif  // CHROME_TEST_UNIT_CHROME_TEST_SUITE_H_

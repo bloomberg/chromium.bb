@@ -71,8 +71,7 @@ int WarningHostResolverProc::Resolve(const std::string& host,
 
 ChromeTestSuite::ChromeTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv),
-      stats_table_(NULL),
-      created_user_data_dir_(false) {
+      stats_table_(NULL) {
 }
 
 ChromeTestSuite::~ChromeTestSuite() {
@@ -90,22 +89,6 @@ void ChromeTestSuite::Initialize() {
   chrome::RegisterPathProvider();
   app::RegisterPathProvider();
   g_browser_process = new TestingBrowserProcess;
-
-  // Notice a user data override, and otherwise default to using a custom
-  // user data directory that lives alongside the current app.
-  // NOTE: The user data directory will be erased before each UI test that
-  //       uses it, in order to ensure consistency.
-  FilePath user_data_dir =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kUserDataDir);
-  if (user_data_dir.empty() &&
-      file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_test_"),
-                                        &user_data_dir)) {
-    user_data_dir = user_data_dir.AppendASCII("test_user_data");
-    created_user_data_dir_ = true;
-  }
-  if (!user_data_dir.empty())
-    PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 
   if (!browser_dir_.empty()) {
     PathService::Override(base::DIR_EXE, browser_dir_);
@@ -149,15 +132,5 @@ void ChromeTestSuite::Shutdown() {
   delete stats_table_;
   RemoveSharedMemoryFile(stats_filename_);
 
-  // Delete the test_user_data dir recursively
-  // NOTE: user_data_dir will be deleted only if it was automatically
-  // created.
-  FilePath user_data_dir;
-  if (created_user_data_dir_ &&
-      PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) &&
-      !user_data_dir.empty()) {
-    file_util::Delete(user_data_dir, true);
-    file_util::Delete(user_data_dir.DirName(), false);
-  }
   base::TestSuite::Shutdown();
 }
