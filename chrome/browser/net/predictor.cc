@@ -212,12 +212,17 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
                         motivation));
 }
 
+void Predictor::PreconnectUrlAndSubresources(const GURL& url) {
+  if (preconnect_enabled()) {
+    std::string host = url.HostNoBrackets();
+    UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
+    Preconnect::PreconnectOnUIThread(CanonicalizeUrl(url), motivation);
+    PredictFrameSubresources(url.GetWithEmptyPath());
+  }
+}
+
 void Predictor::PredictFrameSubresources(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(url.GetWithEmptyPath() == url);
-  Referrers::iterator it = referrers_.find(url);
-  if (referrers_.end() == it)
-    return;
   // Add one pass through the message loop to allow current navigation to
   // proceed.
   ChromeThread::PostTask(

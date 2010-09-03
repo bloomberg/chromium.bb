@@ -10,17 +10,25 @@
 #pragma once
 
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/net/url_info.h"
-#include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
+#include "net/http/http_request_info.h"
+#include "net/http/stream_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/tcp_client_socket_pool.h"
 #include "net/url_request/url_request_context.h"
 
+namespace net {
+
+class ProxyInfo;
+struct SSLConfig;
+
+}
+
 namespace chrome_browser_net {
 
-class Preconnect : public net::CompletionCallback,
-                   public base::RefCountedThreadSafe<Preconnect> {
+class Preconnect : public net::StreamFactory::StreamRequestDelegate {
  public:
   // Try to preconnect.  Typically motivated by OMNIBOX to reach search service.
   static void PreconnectOnUIThread(const GURL& url,
@@ -31,9 +39,13 @@ class Preconnect : public net::CompletionCallback,
   static void PreconnectOnIOThread(const GURL& url,
                                    UrlInfo::ResolutionMotivation motivation);
 
-  static void SetPreconnectDespiteProxy(bool status) {
-    preconnect_despite_proxy_ = status;
-  }
+  // StreamRequestDelegate interface
+  virtual void OnStreamReady(net::HttpStreamHandle* stream);
+  virtual void OnStreamFailed(int status);
+  virtual void OnCertificateError(int status, const net::SSLInfo& ssl_info);
+  virtual void OnNeedsProxyAuth(const net::HttpResponseInfo& proxy_response,
+                                net::HttpAuthController* auth_controller);
+  virtual void OnNeedsClientAuth(net::SSLCertRequestInfo* cert_info);
 
  private:
   friend class base::RefCountedThreadSafe<Preconnect>;
@@ -41,28 +53,29 @@ class Preconnect : public net::CompletionCallback,
   explicit Preconnect(UrlInfo::ResolutionMotivation motivation)
       : motivation_(motivation) {
   }
-  ~Preconnect();
+  virtual ~Preconnect() {}
 
   // Request actual connection.
   void Connect(const GURL& url);
-
-  // IO Callback which whould be performed when the connection is established.
-  virtual void RunWithParams(const Tuple1<int>& params);
-
-  // Preconnections are currently conservative, and do nothing if there is a
-  // chance that a proxy may be used.  This boolean allows proxy settings to
-  // be ignored (presumably because a user knows that the proxy won't be doing
-  // much work anway).
-  static bool preconnect_despite_proxy_;
-
-  // The handle holding the request. We need this so that we can mark the
-  // request as speculative when an actual socket is bound to it.
-  net::ClientSocketHandle handle_;
 
   // Generally either LEARNED_REFERAL_MOTIVATED or OMNIBOX_MOTIVATED to indicate
   // why we were trying to do a preconnection.
   const UrlInfo::ResolutionMotivation motivation_;
 
+  // HttpRequestInfo used for connecting.
+  scoped_ptr<net::HttpRequestInfo> request_info_;
+
+  // SSLConfig used for connecting.
+  scoped_ptr<net::SSLConfig> ssl_config_;
+
+  // ProxyInfo used for connecting.
+  scoped_ptr<net::ProxyInfo> proxy_info_;
+
+  // A net log to use for this preconnect.
+  net::BoundNetLog net_log_;
+
+  // Our preconnect.
+  scoped_refptr<net::StreamFactory::StreamRequestJob> stream_request_job_;
 
   DISALLOW_COPY_AND_ASSIGN(Preconnect);
 };

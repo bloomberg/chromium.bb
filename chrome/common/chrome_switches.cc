@@ -814,10 +814,6 @@ const char kPluginProcess[]                 = "plugin";
 // Causes the plugin process to display a dialog on launch.
 const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 
-// Enable TCP/IP preconnection, and DNS preresolution, even if a proxy might
-// possibly be used for connections.
-const char kPreconnectDespiteProxy[]        = "preconnect-despite-proxy";
-
 // Establishes a channel to the GPU process asynchronously and (re)launches it
 // if necessary when a renderer process starts.
 const char kPrelaunchGpuProcess[]           = "prelaunch-gpu-process";

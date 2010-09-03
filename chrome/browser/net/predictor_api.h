@@ -48,7 +48,12 @@ void DnsPrefetchList(const NameList& hostnames);
 // This API is used by the autocomplete popup box (as user types).
 // This will either preresolve the domain name, or possibly preconnect creating
 // an open TCP/IP connection to the host.
-void AnticipateUrl(const GURL& url, bool preconnectable);
+void AnticipateOmniboxUrl(const GURL& url, bool preconnectable);
+
+// This API should only be called when we're absolutely certain that we will
+// be connecting to the URL.  It will preconnect the url and it's associated
+// subresource domains immediately.
+void PreconnectUrlAndSubresources(const GURL& url);
 
 // When displaying info in about:dns, the following API is called.
 void PredictorGetHtmlInfo(std::string* output);
@@ -84,7 +89,7 @@ class PredictorInit {
   static const int kMaxPrefetchQueueingDelayMs;
 
   PredictorInit(PrefService* user_prefs, PrefService* local_state,
-                bool preconnect_enabled, bool preconnect_despite_proxy);
+                bool preconnect_enabled);
 
  private:
   // Maintain a field trial instance when we do A/B testing.

@@ -161,7 +161,7 @@ static void DnsPrefetchMotivatedList(
 }
 
 // This API is used by the autocomplete popup box (where URLs are typed).
-void AnticipateUrl(const GURL& url, bool preconnectable) {
+void AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!predictor_enabled || NULL == g_predictor)
     return;
@@ -170,6 +170,17 @@ void AnticipateUrl(const GURL& url, bool preconnectable) {
 
   g_predictor->AnticipateOmniboxUrl(url, preconnectable);
 }
+
+void PreconnectUrlAndSubresources(const GURL& url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (!predictor_enabled || NULL == g_predictor)
+    return;
+  if (!url.is_valid() || !url.has_host())
+    return;
+
+  g_predictor->PreconnectUrlAndSubresources(url);
+}
+
 
 //------------------------------------------------------------------------------
 // This section intermingles prefetch results with actual browser HTTP
@@ -494,8 +505,7 @@ static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
 
 PredictorInit::PredictorInit(PrefService* user_prefs,
                              PrefService* local_state,
-                             bool preconnect_enabled,
-                             bool proconnect_despite_proxy) {
+                             bool preconnect_enabled) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Set up a field trial to see what disabling DNS pre-resolution does to
   // latency of page loads.
@@ -571,8 +581,6 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
 
     TimeDelta max_queueing_delay(
         TimeDelta::FromMilliseconds(max_queueing_delay_ms));
-
-    Preconnect::SetPreconnectDespiteProxy(proconnect_despite_proxy);
 
     DCHECK(!g_predictor);
     InitNetworkPredictor(max_queueing_delay, max_concurrent, user_prefs,

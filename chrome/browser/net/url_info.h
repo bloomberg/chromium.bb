@@ -39,6 +39,9 @@ class UrlInfo {
     LINKED_MAX_MOTIVATED,    // enum demarkation above motivation from links.
     OMNIBOX_MOTIVATED,       // Omni-box suggested resolving this.
     STARTUP_LIST_MOTIVATED,  // Startup list caused this resolution.
+    EARLY_LOAD_MOTIVATED,    // In some cases we use the prefetcher to warm up
+                             // the connection in advance of issuing the real
+                             // request.
 
     NO_PREFETCH_MOTIVATION,  // Browser navigation info (not prefetch related).
 

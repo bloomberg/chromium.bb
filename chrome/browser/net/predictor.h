@@ -96,6 +96,9 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // preconnect to the search server).
   void AnticipateOmniboxUrl(const GURL& url, bool preconnectable);
 
+  // Preconnect a URL and all of its subresource domains.
+  void PreconnectUrlAndSubresources(const GURL& url);
+
   // Record details of a navigation so that we can preresolve the host name
   // ahead of time the next time the users navigates to the indicated host.
   // Should only be called when urls are distinct, and they should already be
