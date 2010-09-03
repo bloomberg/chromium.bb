@@ -242,22 +242,6 @@
   fun:::RenderThreadTest::SetUp
   fun:testing::Test::Run
 }
-{
-  bug_38206_a
-  Heapcheck:Leak
-  ...
-  fun:GeolocationWifiDataProviderCommonTest::SetUp
-}
-{
-  bug_38206_b
-  Heapcheck:Leak
-  fun:CancelableTask* NewRunnableMethod
-  fun:DeviceDataProviderImplBase::NotifyListeners
-  fun:WifiDataProviderCommon::DoWifiScanTask
-  fun:void DispatchToMethod
-  fun:ScopedRunnableMethodFactory::RunnableMethod::Run
-  fun:MessageLoop::RunTask
-}
 # TODO(glider): sometimes the stacks differ between the bot and the local run,
 # e.g. "base::subtle::RefCountedBase::RefCountedBase" vs. "RefCountedBase".
 {
