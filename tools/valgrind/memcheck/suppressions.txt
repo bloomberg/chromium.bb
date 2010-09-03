@@ -3543,18 +3543,6 @@
    fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
 }
 {
-   bug_46678
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackIN8remoting14SessionManager*
-   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_11CaptureDataEE
-   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_11CaptureDataEEES4_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_11CaptureDataEEE6Tuple1IS4_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   ...
-   fun:_ZN8remoting38SessionManagerTest_OneRecordCycle_Test8TestBodyEv
-}
-{
    bug_47331_part_1
    Memcheck:Leak
    fun:malloc
@@ -4228,18 +4216,6 @@
    fun:_ZN15TabContentsView33CreateNewFullscreenWidgetInternalEiN6WebKit12WebPopupTypeE
    fun:_ZN15TabContentsView25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
    fun:_ZN14RenderViewHost25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
-}
-{
-   bug_53277
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackIN8remoting14SessionManagerEPNS0_21ChromotingHostMessageEiEPN9Callback2IT0_T1_E4TypeEPT_MSA_FvS5_S6_E
-   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_11CaptureDataEE
-   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_11CaptureDataEEES4_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_11CaptureDataEEE6Tuple1IS4_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   ...
-   fun:_ZN8remoting38SessionManagerTest_OneRecordCycle_Test8TestBodyEv
 }
 {
    bug_53349

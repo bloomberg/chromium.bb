@@ -68,16 +68,7 @@ ACTION_P(FinishEncode, msg) {
                                   Encoder::EncodingInProgress |
                                   Encoder::EncodingEnded);
   arg2->Run(msg, state);
-}
-
-ACTION_P(AssignCaptureData, data) {
-  arg0[0] = data[0];
-  arg0[1] = data[1];
-  arg0[2] = data[2];
-}
-
-ACTION_P(AssignDirtyRect, rects) {
-  *arg0 = *rects;
+  delete arg2;
 }
 
 TEST_F(SessionManagerTest, OneRecordCycle) {
