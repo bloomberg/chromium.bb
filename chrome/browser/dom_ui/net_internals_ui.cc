@@ -477,7 +477,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
     chrome::VersionInfo version_info;
 
-    if (version_info.is_valid()) {
+    if (!version_info.is_valid()) {
       DLOG(ERROR) << "Unable to create chrome::VersionInfo";
     } else {
       // We have everything we need to send the right values.
