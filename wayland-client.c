@@ -59,6 +59,20 @@ struct wl_proxy {
 	void *user_data;
 };
 
+struct wl_sync_handler {
+	wl_display_sync_func_t func;
+	uint32_t key;
+	void *data;
+	struct wl_list link;
+};
+
+struct wl_frame_handler {
+	wl_display_frame_func_t func;
+	uint32_t key;
+	void *data;
+	struct wl_list link;
+};
+
 struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
@@ -78,6 +92,9 @@ struct wl_display {
 
 	wl_display_global_func_t global_handler;
 	void *global_handler_data;
+
+	struct wl_list sync_list, frame_list;
+	uint32_t key;
 };
 
 static int
@@ -270,12 +287,49 @@ display_handle_range(void *data,
 	display->next_range = range;
 }
 
+static void
+display_handle_sync(void *data, struct wl_display *display, uint32_t key)
+{
+	struct wl_sync_handler *handler;
+
+	handler = container_of(display->sync_list.next,
+			       struct wl_sync_handler, link);
+	if (handler->key != key) {
+		fprintf(stderr, "unsolicited sync event, client gone?\n");
+		return;
+	}
+
+	wl_list_remove(&handler->link);
+	handler->func(handler->data);
+	free(handler);
+}
+
+static void
+display_handle_frame(void *data,
+		     struct wl_display *display, uint32_t key, uint32_t time)
+{
+	struct wl_frame_handler *handler;
+
+	handler = container_of(display->frame_list. next,
+			       struct wl_frame_handler, link);
+	if (handler->key != key) {
+		fprintf(stderr, "unsolicited frame event, client gone?\n");
+		return;
+	}
+
+	wl_list_remove(&handler->link);
+	handler->func(handler->data, time);
+	free(handler);
+}
+
 static const struct wl_display_listener display_listener = {
 	display_handle_invalid_object,
 	display_handle_invalid_method,
 	display_handle_no_memory,
 	display_handle_global,
-	display_handle_range
+	display_handle_range,
+	display_handle_sync,
+	display_handle_frame
 };
 
 WL_EXPORT struct wl_display *
@@ -315,6 +369,9 @@ wl_display_create(const char *name, size_t name_size)
 	display->proxy.display = display;
 	wl_list_init(&display->proxy.listener_list);
 
+	wl_list_init(&display->sync_list);
+	wl_list_init(&display->frame_list);
+
 	display->listener.implementation = (void(**)(void)) &display_listener;
 	wl_list_insert(display->proxy.listener_list.prev, &display->listener.link);
 
@@ -343,6 +400,46 @@ wl_display_get_fd(struct wl_display *display,
 	display->update(display->mask, display->update_data);
 
 	return display->fd;
+}
+
+WL_EXPORT int
+wl_display_sync_callback(struct wl_display *display,
+			 wl_display_sync_func_t func, void *data)
+{
+	struct wl_sync_handler *handler;
+
+	handler = malloc(sizeof *handler);
+	if (handler == NULL)
+		return -1;
+
+	handler->func = func;
+	handler->key = display->key++;
+	handler->data = data;
+
+	wl_list_insert(display->sync_list.prev, &handler->link);
+	wl_display_sync(display, handler->key);
+
+	return 0;
+}
+
+WL_EXPORT int
+wl_display_frame_callback(struct wl_display *display,
+			  wl_display_frame_func_t func, void *data)
+{
+	struct wl_frame_handler *handler;
+
+	handler = malloc(sizeof *handler);
+	if (handler == NULL)
+		return -1;
+
+	handler->func = func;
+	handler->key = display->key++;
+	handler->data = data;
+
+	wl_list_insert(display->frame_list.prev, &handler->link);
+	wl_display_frame(display, handler->key);
+
+	return 0;
 }
 
 static void

@@ -215,7 +215,7 @@ terminal_draw(struct terminal *terminal)
 
 	window_draw(terminal->window);
 	terminal_draw_contents(terminal);
-	window_commit(terminal->window, 0);
+	window_flush(terminal->window);
 }
 
 static void

@@ -349,12 +349,8 @@ wlsc_surface_update_matrix(struct wlsc_surface *es)
 void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs)
 {
-	wl_display_post_frame(compositor->wl_display,
-			      &compositor->base,
-			      compositor->current_frame, msecs);
-
+	wl_display_post_frame(compositor->wl_display, msecs);
 	wl_event_source_timer_update(compositor->timer_source, 5);
-	compositor->current_frame++;
 }
 
 static void
@@ -426,6 +422,7 @@ surface_attach(struct wl_client *client,
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
 	es->visual = buffer->visual;
+	wlsc_compositor_schedule_repaint(es->compositor);
 }
 
 static void
@@ -441,6 +438,7 @@ surface_map(struct wl_client *client,
 	es->height = height;
 
 	wlsc_surface_update_matrix(es);
+	wlsc_compositor_schedule_repaint(es->compositor);
 }
 
 static void
@@ -448,7 +446,9 @@ surface_damage(struct wl_client *client,
 	       struct wl_surface *surface,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	/* FIXME: This need to take a damage region, of course. */
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+
+	wlsc_compositor_schedule_repaint(es->compositor);
 }
 
 const static struct wl_surface_interface surface_interface = {
@@ -640,19 +640,8 @@ compositor_create_surface(struct wl_client *client,
 	wl_client_add_resource(client, &surface->base.base);
 }
 
-static void
-compositor_commit(struct wl_client *client,
-		  struct wl_compositor *compositor, uint32_t key)
-{
-	struct wlsc_compositor *ec = (struct wlsc_compositor *) compositor;
-
-	wlsc_compositor_schedule_repaint(ec);
-	wl_client_send_acknowledge(client, compositor, key, ec->current_frame);
-}
-
 const static struct wl_compositor_interface compositor_interface = {
 	compositor_create_surface,
-	compositor_commit
 };
 
 static void

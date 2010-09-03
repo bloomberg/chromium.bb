@@ -154,7 +154,6 @@ struct wlsc_compositor {
 	int repaint_needed;
 	int repaint_on_timeout;
 	struct timespec previous_swap;
-	uint32_t current_frame;
 
 	uint32_t focus;
 

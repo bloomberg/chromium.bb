@@ -183,8 +183,8 @@ dnd_draw(struct dnd *dnd)
 	cairo_destroy(cr);
 
 	window_copy_surface(dnd->window, &rectangle, surface);
-	window_commit(dnd->window, dnd->key);
 	cairo_surface_destroy(surface);
+	window_flush(dnd->window);
 }
 
 static void

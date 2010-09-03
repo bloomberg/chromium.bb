@@ -1,6 +1,14 @@
 <protocol>
 
   <interface name="display" version="1">
+    <request name="sync">
+      <arg name="key" type="uint"/>
+    </request>
+
+    <request name="frame">
+      <arg name="key" type="uint"/>
+    </request>
+
     <event name="invalid_object">
       <arg name="object_id" type="uint"/>
     </event>
@@ -21,26 +29,21 @@
     <event name="range">
       <arg name="base" type="uint"/>
     </event>
+
+    <event name="sync">
+      <arg name="key" type="uint"/>
+    </event>
+
+    <event name="frame">
+      <arg name="key" type="uint"/>
+      <arg name="time" type="uint"/>
+    </event>
   </interface>
 
   <interface name="compositor" version="1">
     <request name="create_surface">
       <arg name="id" type="new_id" interface="surface"/>
     </request>
-
-    <request name="commit">
-      <arg name="key" type="uint"/>
-    </request>
-
-    <event name="acknowledge">
-      <arg name="key" type="uint"/>
-      <arg name="frame" type="uint"/>
-    </event>
-
-    <event name="frame">
-      <arg name="frame" type="uint"/>
-      <arg name="timestamp" type="uint"/>
-    </event>
   </interface>
 
   <interface name="drm" version="1">

@@ -101,8 +101,7 @@ view_draw(struct view *view)
 	poppler_page_render(page, cr);
 	cairo_destroy(cr);
 	g_object_unref(G_OBJECT(page));
-
-	window_commit(view->window, 0);
+	window_flush(view->window);
 }
 
 static void

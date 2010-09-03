@@ -43,7 +43,6 @@ struct wl_client {
 	struct wl_event_source *source;
 	struct wl_display *display;
 	struct wl_list resource_list;
-	struct wl_list link;
 	uint32_t id_count;
 };
 
@@ -52,11 +51,18 @@ struct wl_display {
 	struct wl_event_loop *loop;
 	struct wl_hash_table *objects;
 
-	struct wl_list pending_frame_list;
+	struct wl_list frame_list;
 	uint32_t client_id_range;
 	uint32_t id;
 
 	struct wl_list global_list;
+};
+
+struct wl_frame_listener {
+	struct wl_resource resource;
+	struct wl_client *client;
+	uint32_t key;
+	struct wl_list link;
 };
 
 struct wl_global {
@@ -200,7 +206,6 @@ wl_client_create(struct wl_display *display, int fd)
 		wl_connection_create(fd, wl_client_connection_update, client);
 
 	wl_list_init(&client->resource_list);
-	wl_list_init(&client->link);
 
 	wl_display_post_range(display, client);
 
@@ -257,7 +262,8 @@ wl_resource_destroy(struct wl_resource *resource, struct wl_client *client)
 	struct wl_display *display = client->display;
 
 	wl_list_remove(&resource->link);
-	wl_hash_table_remove(display->objects, resource->base.id);
+	if (resource->base.id > 0)
+		wl_hash_table_remove(display->objects, resource->base.id);
 	resource->destroy(resource, client);
 }
 
@@ -268,28 +274,12 @@ wl_client_destroy(struct wl_client *client)
 
 	printf("disconnect from client %p\n", client);
 
-	wl_list_remove(&client->link);
-
-	wl_list_for_each_safe(resource, tmp, &client->resource_list, link) {
-		wl_list_remove(&resource->link);
-		resource->destroy(resource, client);
-	}
+	wl_list_for_each_safe(resource, tmp, &client->resource_list, link)
+		wl_resource_destroy(resource, client);
 
 	wl_event_source_remove(client->source);
 	wl_connection_destroy(client->connection);
 	free(client);
-}
-
-WL_EXPORT void
-wl_client_send_acknowledge(struct wl_client *client,
-			   struct wl_compositor *compositor,
-			   uint32_t key, uint32_t frame)
-{
-	wl_list_remove(&client->link);
-	wl_list_insert(client->display->pending_frame_list.prev,
-		       &client->link);
-	wl_client_post_event(client, &compositor->base,
-			     WL_COMPOSITOR_ACKNOWLEDGE, key, frame);
 }
 
 WL_EXPORT int
@@ -306,6 +296,51 @@ wl_display_set_compositor(struct wl_display *display,
 
 	return 0;
 }
+
+static void
+display_sync(struct wl_client *client,
+	       struct wl_display *display, uint32_t key)
+{
+	wl_client_post_event(client, &display->base, WL_DISPLAY_SYNC, key);
+}
+
+static void
+destroy_frame_listener(struct wl_resource *resource, struct wl_client *client)
+{
+	struct wl_frame_listener *listener =
+		container_of(resource, struct wl_frame_listener, resource);
+
+	wl_list_remove(&listener->link);
+	free(listener);
+}
+
+static void
+display_frame(struct wl_client *client,
+	      struct wl_display *display, uint32_t key)
+{
+	struct wl_frame_listener *listener;
+
+	listener = malloc(sizeof *listener);
+	if (listener == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	/* The listener is a resource so we destroy it when the client
+	 * goes away. */
+	listener->resource.destroy = destroy_frame_listener;
+	listener->resource.base.id = 0;
+	listener->client = client;
+	listener->key = key;
+	wl_list_insert(client->resource_list.prev, &listener->resource.link);
+	wl_list_insert(display->frame_list.prev, &listener->link);
+}
+
+struct wl_display_interface display_interface = {
+	display_sync,
+	display_frame
+};
+
 
 WL_EXPORT struct wl_display *
 wl_display_create(void)
@@ -328,22 +363,22 @@ wl_display_create(void)
 		return NULL;
 	}
 
-	wl_list_init(&display->pending_frame_list);
+	wl_list_init(&display->frame_list);
 	wl_list_init(&display->global_list);
 
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	display->id = 1;
 	display->base.interface = &wl_display_interface;
-	display->base.implementation = NULL;
+	display->base.implementation = (void (**)(void)) &display_interface;
 	wl_display_add_object(display, &display->base);
 	if (wl_display_add_global(display, &display->base, NULL)) {
 		wl_event_loop_destroy(display->loop);
 		free(display);
 		return NULL;
-	}		
+	}
 
-	return display;		
+	return display;
 }
 
 WL_EXPORT void
@@ -388,18 +423,15 @@ wl_surface_post_event(struct wl_surface *surface,
 }
 
 WL_EXPORT void
-wl_display_post_frame(struct wl_display *display,
-		      struct wl_compositor *compositor,
-		      uint32_t frame, uint32_t msecs)
+wl_display_post_frame(struct wl_display *display, uint32_t time)
 {
-	struct wl_client *client;
+	struct wl_frame_listener *listener, *next;
 
-	wl_list_for_each(client, &display->pending_frame_list, link)
-		wl_client_post_event(client, &compositor->base,
-				     WL_COMPOSITOR_FRAME, frame, msecs);
-
-	wl_list_remove(&display->pending_frame_list);
-	wl_list_init(&display->pending_frame_list);
+	wl_list_for_each_safe(listener, next, &display->frame_list, link) {
+		wl_client_post_event(listener->client, &display->base,
+				     WL_DISPLAY_FRAME, listener->key, time);
+		wl_resource_destroy(&listener->resource, listener->client);
+	}
 }
 
 WL_EXPORT struct wl_event_loop *

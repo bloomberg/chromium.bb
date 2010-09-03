@@ -317,31 +317,21 @@ keyboard_focus_handler(struct window *window,
 }
 
 static void
-acknowledge_handler(struct window *window,
-		    uint32_t key, uint32_t frame,
-		    void *data)
+frame_callback(void *data, uint32_t time)
 {
 	struct gears *gears = data;
 
-	if (key == 10) {
-		if (gears->resized)
-			resize_window(gears);
-
-		draw_gears(gears);
-	}
-}
-
-static void
-frame_handler(struct window *window,
-	      uint32_t frame, uint32_t timestamp, void *data)
-{
-  	struct gears *gears = data;
-
 	window_copy_image(gears->window, &gears->rectangle, gears->image);
 
-	window_commit(gears->window, 10);
+	if (gears->resized)
+		resize_window(gears);
 
-	gears->angle = (GLfloat) (timestamp % 8192) * 360 / 8192.0;
+	draw_gears(gears);
+
+	gears->angle = (GLfloat) (time % 8192) * 360 / 8192.0;
+
+	wl_display_frame_callback(display_get_display(gears->d),
+				  frame_callback, gears);
 }
 
 static struct gears *
@@ -417,13 +407,13 @@ gears_create(struct display *display)
 
 	resize_window(gears);
 	draw_gears(gears);
-	frame_handler(gears->window, 0, 0, gears);
 
 	window_set_user_data(gears->window, gears);
 	window_set_resize_handler(gears->window, resize_handler);
 	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler);
-	window_set_acknowledge_handler(gears->window, acknowledge_handler);
-	window_set_frame_handler(gears->window, frame_handler);
+
+	wl_display_frame_callback(display_get_display(gears->d),
+				  frame_callback, gears);
 
 	return gears;
 }

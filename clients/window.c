@@ -98,8 +98,6 @@ struct window {
 	window_key_handler_t key_handler;
 	window_button_handler_t button_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
-	window_acknowledge_handler_t acknowledge_handler;
-	window_frame_handler_t frame_handler;
 	window_motion_handler_t motion_handler;
 
 	void *user_data;
@@ -331,6 +329,21 @@ display_get_pointer_surface(struct display *display, int pointer,
 	return cairo_surface_reference(surface);
 }
 
+
+static void
+window_attach_surface(struct window *window);
+
+static void
+free_surface(void *data)
+{
+	struct window *window = data;
+
+	cairo_surface_destroy(window->pending_surface);
+	window->pending_surface = NULL;
+	if (window->cairo_surface)
+		window_attach_surface(window);
+}
+
 static void
 window_attach_surface(struct window *window)
 {
@@ -353,17 +366,14 @@ window_attach_surface(struct window *window)
 		       window->allocation.width,
 		       window->allocation.height);
 
-	wl_compositor_commit(window->display->compositor, 0);
+	wl_display_sync_callback(display->display, free_surface, window);
 }
 
 void
-window_commit(struct window *window, uint32_t key)
+window_flush(struct window *window)
 {
-	if (window->cairo_surface) {
-		window_attach_surface(window);
-	} else {
-		wl_compositor_commit(window->display->compositor, key);
-	}
+       if (window->cairo_surface)
+	       window_attach_surface(window);
 }
 
 static void
@@ -848,6 +858,10 @@ window_copy_surface(struct window *window,
 
 	cairo_paint (cr);
 	cairo_destroy (cr);
+
+	wl_surface_damage(window->surface,
+			  rectangle->x, rectangle->y,
+			  rectangle->width, rectangle->height);
 }
 
 static gboolean
@@ -934,20 +948,6 @@ window_set_button_handler(struct window *window,
 }
 
 void
-window_set_acknowledge_handler(struct window *window,
-			       window_acknowledge_handler_t handler)
-{
-	window->acknowledge_handler = handler;
-}
-
-void
-window_set_frame_handler(struct window *window,
-			 window_frame_handler_t handler)
-{
-	window->frame_handler = handler;
-}
-
-void
 window_set_motion_handler(struct window *window,
 			  window_motion_handler_t handler)
 {
@@ -1023,48 +1023,6 @@ static const struct wl_drm_listener drm_listener = {
 };
 
 static void
-display_handle_acknowledge(void *data,
-			   struct wl_compositor *compositor,
-			   uint32_t key, uint32_t frame)
-{
-	struct display *d = data;
-	struct window *window;
-		
-	/* The acknowledge event means that the server processed our
-	 * last commit request and we can now safely free the old
-	 * window buffer if we resized and render the next frame into
-	 * our back buffer.. */
-	wl_list_for_each(window, &d->window_list, link) {
-		cairo_surface_destroy(window->pending_surface);
-		window->pending_surface = NULL;
-		if (window->cairo_surface)
-			window_attach_surface(window);
-		if (window->acknowledge_handler)
-			(*window->acknowledge_handler)(window, key, frame, window->user_data);
-	}
-}
-
-static void
-display_handle_frame(void *data,
-		     struct wl_compositor *compositor,
-		     uint32_t frame, uint32_t timestamp)
-{
-	struct display *d = data;
-	struct window *window;
-
-	wl_list_for_each(window, &d->window_list, link) {
-		if (window->frame_handler)
-			(*window->frame_handler)(window, frame,
-						 timestamp, window->user_data);
-	}
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	display_handle_acknowledge,
-	display_handle_frame,
-};
-
-static void
 display_handle_geometry(void *data,
 			struct wl_output *output,
 			int32_t width, int32_t height)
@@ -1111,8 +1069,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 
 	if (strcmp(interface, "compositor") == 0) {
 		d->compositor = wl_compositor_create(display, id);
-		wl_compositor_add_listener(d->compositor,
-					   &compositor_listener, d);
 	} else if (strcmp(interface, "output") == 0) {
 		d->output = wl_output_create(display, id);
 		wl_output_add_listener(d->output, &output_listener, d);
@@ -1288,6 +1244,12 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	init_xkb(d);
 
 	return d;
+}
+
+struct wl_display *
+display_get_display(struct display *display)
+{
+	return display->display;
 }
 
 struct wl_compositor *

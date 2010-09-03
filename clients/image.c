@@ -176,7 +176,7 @@ image_draw(struct image *image)
 	g_object_unref(pb);
 
 	window_copy_surface(image->window, &rectangle, surface);
-	window_commit(image->window, image->key);
+	window_flush(image->window);
 	cairo_surface_destroy(surface);
 }
 

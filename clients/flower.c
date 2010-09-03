@@ -98,21 +98,22 @@ draw_stuff(cairo_surface_t *surface, int width, int height)
 }
 
 struct flower {
+	struct display *display;
 	struct window *window;
 	int x, y, width, height;
 	int offset;
 };
 
 static void
-handle_frame(struct window *window,
-	     uint32_t frame, uint32_t timestamp, void *data)
+frame_callback(void *data, uint32_t time)
 {
 	struct flower *flower = data;
 
 	window_move(flower->window, 
-		    flower->x + cos((flower->offset + timestamp) / 400.0) * 400 - flower->width / 2,
-		    flower->y + sin((flower->offset + timestamp) / 320.0) * 300 - flower->height / 2);
-	window_commit(flower->window, 0);
+		    flower->x + cos((flower->offset + time) / 400.0) * 400 - flower->width / 2,
+		    flower->y + sin((flower->offset + time) / 320.0) * 300 - flower->height / 2);
+	wl_display_frame_callback(display_get_display(flower->display),
+				  frame_callback, flower);
 }
 
 int main(int argc, char *argv[])
@@ -128,6 +129,7 @@ int main(int argc, char *argv[])
 	flower.y = 384;
 	flower.width = 200;
 	flower.height = 200;
+	flower.display = d;
 	flower.window = window_create(d, "flower", flower.x, flower.y,
 				      flower.width, flower.height);
 
@@ -145,10 +147,11 @@ int main(int argc, char *argv[])
 
 	draw_stuff(s, flower.width, flower.height);
 	cairo_surface_flush(s);
+	window_flush(flower.window);
 
 	window_set_user_data(flower.window, &flower);
-	window_set_frame_handler(flower.window, handle_frame);
-	window_commit(flower.window, 0);
+	wl_display_frame_callback(display_get_display(d),
+				  frame_callback, &flower);
 
 	display_run(d);
 

@@ -34,6 +34,8 @@ extern "C" {
 #define WL_DISPLAY_WRITABLE 0x02
 
 typedef int (*wl_display_update_func_t)(uint32_t mask, void *data);
+typedef void (*wl_display_sync_func_t)(void *data);
+typedef void (*wl_display_frame_func_t)(void *data, uint32_t time);
 
 struct wl_display *wl_display_create(const char *name, size_t name_size);
 void wl_display_destroy(struct wl_display *display);
@@ -41,6 +43,10 @@ int wl_display_get_fd(struct wl_display *display,
 		      wl_display_update_func_t update, void *data);
 uint32_t wl_display_allocate_id(struct wl_display *display);
 void wl_display_iterate(struct wl_display *display, uint32_t mask);
+int wl_display_sync_callback(struct wl_display *display,
+			     wl_display_sync_func_t func, void *data);
+int wl_display_frame_callback(struct wl_display *display,
+			      wl_display_frame_func_t func, void *data);
 
 struct wl_global_listener;
 typedef void (*wl_display_global_func_t)(struct wl_display *display,
