@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profile.h"
@@ -165,6 +166,14 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+
+  // Init extension event routers; this normally happens in browser_main
+  // but on Chrome OS it has to be deferred until the user finishes
+  // logging in and the profile is not OTR.
+  if (profile->GetExtensionsService() &&
+      profile->GetExtensionsService()->extensions_enabled()) {
+    profile->GetExtensionsService()->InitEventRouters();
+  }
 
   logging::RedirectChromeLogging(
       user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
