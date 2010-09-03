@@ -150,12 +150,12 @@ class GitWrapper(SCMWrapper):
     The patch file is generated from a diff of the merge base of HEAD and
     its upstream branch.
     """
-    path = os.path.join(self._root_dir, self.relpath)
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
-    command = ['git', 'diff', merge_base]
-    filterer = DiffFilterer(self.relpath)
     gclient_utils.CheckCallAndFilter(
-        command, cwd=path, filter_fn=filterer.Filter, stdout=options.stdout)
+        ['git', 'diff', merge_base],
+        cwd=self.checkout_path,
+        filter_fn=DiffFilterer(self.relpath, options.stdout).Filter,
+        stdout=options.stdout)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -411,8 +411,7 @@ class GitWrapper(SCMWrapper):
 
     All reverted files will be appended to file_list.
     """
-    path = os.path.join(self._root_dir, self.relpath)
-    if not os.path.isdir(path):
+    if not os.path.isdir(self.checkout_path):
       # revert won't work if the directory doesn't exist. It needs to
       # checkout instead.
       options.stdout.write('\n_____ %s is missing, synching instead\n' %
@@ -685,9 +684,9 @@ class SVNWrapper(SCMWrapper):
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
-    path = os.path.join(self._root_dir, self.relpath)
-    if not os.path.isdir(path):
-      raise gclient_utils.Error('Directory %s is not present.' % path)
+    if not os.path.isdir(self.checkout_path):
+      raise gclient_utils.Error('Directory %s is not present.' %
+          self.checkout_path)
     self._Run(['diff'] + args, options)
 
   def export(self, options, args, file_list):
@@ -704,15 +703,14 @@ class SVNWrapper(SCMWrapper):
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
     repository."""
-    path = os.path.join(self._root_dir, self.relpath)
-    if not os.path.isdir(path):
-      raise gclient_utils.Error('Directory %s is not present.' % path)
-    command = ['svn', 'diff', '-x', '--ignore-eol-style']
-    command.extend(args)
-
-    filterer = DiffFilterer(self.relpath, options.stdout)
-    gclient_utils.CheckCallAndFilter(command, cwd=path, always=False,
-        print_stdout=False, filter_fn=filterer.Filter,
+    if not os.path.isdir(self.checkout_path):
+      raise gclient_utils.Error('Directory %s is not present.' %
+          self.checkout_path)
+    gclient_utils.CheckCallAndFilter(
+        ['svn', 'diff', '-x', '--ignore-eol-style'] + args,
+        cwd=self.checkout_path,
+        print_stdout=False,
+        filter_fn=DiffFilterer(self.relpath, options.stdout).Filter,
         stdout=options.stdout)
 
   def update(self, options, args, file_list):
@@ -724,8 +722,7 @@ class SVNWrapper(SCMWrapper):
       Error: if can't get URL for relative path.
     """
     # Only update if git is not controlling the directory.
-    checkout_path = os.path.join(self._root_dir, self.relpath)
-    git_path = os.path.join(self._root_dir, self.relpath, '.git')
+    git_path = os.path.join(self.checkout_path, '.git')
     if os.path.exists(git_path):
       options.stdout.write('________ found .git directory; skipping %s\n' %
           self.relpath)
@@ -751,24 +748,25 @@ class SVNWrapper(SCMWrapper):
       forced_revision = False
       rev_str = ''
 
-    if not os.path.exists(checkout_path):
+    if not os.path.exists(self.checkout_path):
       # We need to checkout.
-      command = ['checkout', url, checkout_path]
+      command = ['checkout', url, self.checkout_path]
       command = self._AddAdditionalUpdateFlags(command, options, revision)
       self._RunAndGetFileList(command, options, file_list, self._root_dir)
       return
 
     # Get the existing scm url and the revision number of the current checkout.
-    from_info = scm.SVN.CaptureInfo(os.path.join(checkout_path, '.'), '.')
+    from_info = scm.SVN.CaptureInfo(os.path.join(self.checkout_path, '.'), '.')
     if not from_info:
       raise gclient_utils.Error(('Can\'t update/checkout %r if an unversioned '
                                  'directory is present. Delete the directory '
                                  'and try again.') %
-                                checkout_path)
+                                self.checkout_path)
 
     # Look for locked directories.
-    dir_info = scm.SVN.CaptureStatus(os.path.join(checkout_path, '.'))
-    if [True for d in dir_info if d[0][2] == 'L' and d[1] == checkout_path]:
+    dir_info = scm.SVN.CaptureStatus(os.path.join(self.checkout_path, '.'))
+    if [True for d in dir_info
+        if d[0][2] == 'L' and d[1] == self.checkout_path]:
       # The current directory is locked, clean it up.
       self._Run(['cleanup'], options)
 
@@ -810,18 +808,18 @@ class SVNWrapper(SCMWrapper):
       else:
         if not options.force and not options.reset:
           # Look for local modifications but ignore unversioned files.
-          for status in scm.SVN.CaptureStatus(checkout_path):
+          for status in scm.SVN.CaptureStatus(self.checkout_path):
             if status[0] != '?':
               raise gclient_utils.Error(
                   ('Can\'t switch the checkout to %s; UUID don\'t match and '
                    'there is local changes in %s. Delete the directory and '
-                   'try again.') % (url, checkout_path))
+                   'try again.') % (url, self.checkout_path))
         # Ok delete it.
         options.stdout.write('\n_____ switching %s to a new checkout\n' %
             self.relpath)
-        gclient_utils.RemoveDirectory(checkout_path)
+        gclient_utils.RemoveDirectory(self.checkout_path)
         # We need to checkout.
-        command = ['checkout', url, checkout_path]
+        command = ['checkout', url, self.checkout_path]
         command = self._AddAdditionalUpdateFlags(command, options, revision)
         self._RunAndGetFileList(command, options, file_list, self._root_dir)
         return
@@ -833,21 +831,20 @@ class SVNWrapper(SCMWrapper):
         options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
       return
 
-    command = ['update', checkout_path]
+    command = ['update', self.checkout_path]
     command = self._AddAdditionalUpdateFlags(command, options, revision)
     self._RunAndGetFileList(command, options, file_list, self._root_dir)
 
   def updatesingle(self, options, args, file_list):
-    checkout_path = os.path.join(self._root_dir, self.relpath)
     filename = args.pop()
     if scm.SVN.AssertVersion("1.5")[0]:
-      if not os.path.exists(os.path.join(checkout_path, '.svn')):
+      if not os.path.exists(os.path.join(self.checkout_path, '.svn')):
         # Create an empty checkout and then update the one file we want.  Future
         # operations will only apply to the one file we checked out.
-        command = ["checkout", "--depth", "empty", self.url, checkout_path]
+        command = ["checkout", "--depth", "empty", self.url, self.checkout_path]
         self._Run(command, options, cwd=self._root_dir)
-        if os.path.exists(os.path.join(checkout_path, filename)):
-          os.remove(os.path.join(checkout_path, filename))
+        if os.path.exists(os.path.join(self.checkout_path, filename)):
+          os.remove(os.path.join(self.checkout_path, filename))
         command = ["update", filename]
         self._RunAndGetFileList(command, options, file_list)
       # After the initial checkout, we can use update as if it were any other
@@ -858,10 +855,10 @@ class SVNWrapper(SCMWrapper):
       # just exporting the file.  This has the downside that revision
       # information is not stored next to the file, so we will have to
       # re-export the file every time we sync.
-      if not os.path.exists(checkout_path):
-        os.makedirs(checkout_path)
+      if not os.path.exists(self.checkout_path):
+        os.makedirs(self.checkout_path)
       command = ["export", os.path.join(self.url, filename),
-                 os.path.join(checkout_path, filename)]
+                 os.path.join(self.checkout_path, filename)]
       command = self._AddAdditionalUpdateFlags(command, options,
           options.revision)
       self._Run(command, options, cwd=self._root_dir)
@@ -872,8 +869,7 @@ class SVNWrapper(SCMWrapper):
     All reverted files will be appended to file_list, even if Subversion
     doesn't know about them.
     """
-    path = os.path.join(self._root_dir, self.relpath)
-    if not os.path.isdir(path):
+    if not os.path.isdir(self.checkout_path):
       # svn revert won't work if the directory doesn't exist. It needs to
       # checkout instead.
       options.stdout.write('\n_____ %s is missing, synching instead\n' %
@@ -886,8 +882,8 @@ class SVNWrapper(SCMWrapper):
     last_flushed_at = time.time()
     sys.stdout.flush()
 
-    for file_status in scm.SVN.CaptureStatus(path):
-      file_path = os.path.join(path, file_status[1])
+    for file_status in scm.SVN.CaptureStatus(self.checkout_path):
+      file_path = os.path.join(self.checkout_path, file_status[1])
       if file_status[0][0] == 'X':
         # Ignore externals.
         logging.info('Ignoring external %s' % file_path)
@@ -944,13 +940,12 @@ class SVNWrapper(SCMWrapper):
 
   def status(self, options, args, file_list):
     """Display status information."""
-    path = os.path.join(self._root_dir, self.relpath)
     command = ['status'] + args
-    if not os.path.isdir(path):
+    if not os.path.isdir(self.checkout_path):
       # svn status won't work if the directory doesn't exist.
       options.stdout.write(
           ('\n________ couldn\'t run \'%s\' in \'%s\':\nThe directory '
-           'does not exist.') % (' '.join(command), path))
+           'does not exist.') % (' '.join(command), self.checkout_path))
       # There's no file list to retrieve.
     else:
       self._RunAndGetFileList(command, options, file_list)
@@ -961,13 +956,13 @@ class SVNWrapper(SCMWrapper):
 
   def _Run(self, args, options, **kwargs):
     """Runs a commands that goes to stdout."""
-    kwargs.setdefault('cwd', os.path.join(self._root_dir, self.relpath))
+    kwargs.setdefault('cwd', self.checkout_path)
     gclient_utils.CheckCallAndFilterAndHeader(['svn'] + args,
         always=options.verbose, stdout=options.stdout, **kwargs)
 
   def _RunAndGetFileList(self, args, options, file_list, cwd=None):
     """Runs a commands that goes to stdout and grabs the file listed."""
-    cwd = cwd or os.path.join(self._root_dir, self.relpath)
+    cwd = cwd or self.checkout_path
     scm.SVN.RunAndGetFileList(options.verbose, args, cwd=cwd,
         file_list=file_list, stdout=options.stdout)
 
