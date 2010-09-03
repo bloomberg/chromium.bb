@@ -103,9 +103,7 @@ void ImporterHost::Loaded(BookmarkModel* model) {
   waiting_for_bookmarkbar_model_ = false;
   installed_bookmark_observer_ = false;
 
-  std::vector<GURL> starred_urls;
-  model->GetBookmarks(&starred_urls);
-  importer_->set_import_to_bookmark_bar(starred_urls.size() == 0);
+  importer_->set_import_to_bookmark_bar(!model->HasBookmarks());
   InvokeTaskIfDone();
 }
 
@@ -262,9 +260,7 @@ void ImporterHost::ImportEnded() {
 bool ImporterHost::ShouldImportToBookmarkBar(bool first_run) {
   bool import_to_bookmark_bar = first_run;
   if (profile_ && profile_->GetBookmarkModel()->IsLoaded()) {
-    std::vector<GURL> starred_urls;
-    profile_->GetBookmarkModel()->GetBookmarks(&starred_urls);
-    import_to_bookmark_bar = (starred_urls.size() == 0);
+    import_to_bookmark_bar = (!profile_->GetBookmarkModel()->HasBookmarks());
   }
   return import_to_bookmark_bar;
 }
@@ -319,12 +315,10 @@ void ExternalProcessImporterHost::Loaded(BookmarkModel* model) {
   waiting_for_bookmarkbar_model_ = false;
   installed_bookmark_observer_ = false;
 
-  std::vector<GURL> starred_urls;
-  model->GetBookmarks(&starred_urls);
   // Because the import process is running externally, the decision whether
   // to import to the bookmark bar must be stored here so that it can be
   // passed to the importer when the import task is invoked.
-  import_to_bookmark_bar_ = (starred_urls.size() == 0);
+  import_to_bookmark_bar_ = (!model->HasBookmarks());
   InvokeTaskIfDone();
 }
 
