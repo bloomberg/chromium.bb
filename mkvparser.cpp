@@ -2839,7 +2839,8 @@ void Cluster::ParseBlockGroup(long long start, long long size, size_t index)
     assert(m_entriesCount);
     assert(index < m_entriesCount);
 
-    BlockGroup* const pGroup = new BlockGroup(this, index, start, size);
+    BlockGroup* const pGroup =
+        new (std::nothrow) BlockGroup(this, index, start, size);
     assert(pGroup);  //TODO
 
     m_pEntries[index] = pGroup;
@@ -2863,18 +2864,33 @@ void Cluster::ParseSimpleBlock(long long start, long long size, size_t index)
 
 const BlockEntry* Cluster::GetFirst()
 {
-    LoadBlockEntries();
+    //TODO: handle empty cluster
 
-    return m_pEntries[0];
+    LoadBlockEntries();
+    assert(m_pEntries);
+    assert(m_entriesCount >= 1);
+
+    const BlockEntry* const pFirst = m_pEntries[0];
+    assert(pFirst);
+
+    return pFirst;
 }
 
 
 const BlockEntry* Cluster::GetLast()
 {
-    if (m_entriesCount == 0)
-        return m_pEntries[0];
+    //TODO: handle empty cluster
 
-    return m_pEntries[m_entriesCount-1];
+    LoadBlockEntries();
+    assert(m_pEntries);
+    assert(m_entriesCount >= 1);
+
+    const size_t idx = m_entriesCount - 1;
+
+    const BlockEntry* const pLast = m_pEntries[idx];
+    assert(pLast);
+
+    return pLast;
 }
 
 
@@ -2896,7 +2912,6 @@ const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
 
 const BlockEntry* Cluster::GetEntry(const Track* pTrack)
 {
-
     assert(pTrack);
 
     if (m_pSegment == NULL)  //EOS

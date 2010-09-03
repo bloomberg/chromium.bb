@@ -6,9 +6,8 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 //
-// This sample application is designed to help clients understand how to use
-// mkvparser library.
-// By using the mkvparser lib clients are able to handle a matroska format file.
+// This sample application demonstrates how to use the matroska parser
+// library, which allows clients to handle a matroska format file.
 
 #include "mkvreader.hpp"
 #include "mkvparser.hpp"
@@ -56,10 +55,10 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    int major, minor, build, revision;
+    int maj, min, build, rev;
 
-    GetVersion(major, minor, build, revision);
-    printf("\t\t libmkv verison: %d.%d.%d.%d\n", major, minor, build, revision);
+    GetVersion(maj, min, build, rev);
+    printf("\t\t libmkv verison: %d.%d.%d.%d\n", maj, min, build, rev);
 
     long long pos = 0;
 
@@ -94,9 +93,15 @@ int main(int argc, char* argv[])
 
     const long long timeCodeScale = pSegmentInfo->GetTimeCodeScale();
     const long long duration_ns = pSegmentInfo->GetDuration();
-    const wchar_t* const pTitle = utf8towcs(pSegmentInfo->GetTitleAsUTF8());
-    const wchar_t* const pMuxingApp = utf8towcs(pSegmentInfo->GetMuxingAppAsUTF8());
-    const wchar_t* const pWritingApp = utf8towcs(pSegmentInfo->GetWritingAppAsUTF8());
+
+    const char* const pTitle_ = pSegmentInfo->GetTitleAsUTF8();
+    const wchar_t* const pTitle = utf8towcs(pTitle_);
+
+    const char* const pMuxingApp_ = pSegmentInfo->GetMuxingAppAsUTF8();
+    const wchar_t* const pMuxingApp = utf8towcs(pMuxingApp_);
+
+    const char* const pWritingApp_ = pSegmentInfo->GetWritingAppAsUTF8();
+    const wchar_t* const pWritingApp = utf8towcs(pWritingApp_);
 
     printf("\n");
     printf("\t\t\t   Segment Info\n");
@@ -121,8 +126,11 @@ int main(int argc, char* argv[])
     else
         printf("\t\tWriting App\t\t: %ls\n", pWritingApp);
 
-    printf("\t\tPosition(Segment)\t: %lld\n", pSegment->m_start); // position of segment payload
-    printf("\t\tSize(Segment)\t\t: %lld\n", pSegment->m_size);  // size of segment payload
+    // pos of segment payload
+    printf("\t\tPosition(Segment)\t: %lld\n", pSegment->m_start);
+
+    // size of segment payload
+    printf("\t\tSize(Segment)\t\t: %lld\n", pSegment->m_size);
 
     mkvparser::Tracks* const pTracks = pSegment->GetTracks();
 
@@ -161,7 +169,8 @@ int main(int argc, char* argv[])
         else
             printf("\t\tCodec Id\t\t: %s\n", pCodecId);
 
-        const wchar_t* const pCodecName = utf8towcs(pTrack->GetCodecNameAsUTF8());
+        const char* const pCodecName_ = pTrack->GetCodecNameAsUTF8();
+        const wchar_t* const pCodecName = utf8towcs(pCodecName_);
 
         if (pCodecName == NULL)
             printf("\t\tCodec Name\t\t: NULL\n");
@@ -170,25 +179,31 @@ int main(int argc, char* argv[])
 
         if (trackType == VIDEO_TRACK)
         {
-            const VideoTrack* const pVideoTrack = static_cast<const VideoTrack* const>(pTrack);
-            long long width =  pVideoTrack->GetWidth();
-            long long height = pVideoTrack->GetHeight();
-            double rate = pVideoTrack->GetFrameRate();
+            const VideoTrack* const pVideoTrack =
+                static_cast<const VideoTrack*>(pTrack);
 
+            const long long width =  pVideoTrack->GetWidth();
             printf("\t\tVideo Width\t\t: %lld\n", width);
+
+            const long long height = pVideoTrack->GetHeight();
             printf("\t\tVideo Height\t\t: %lld\n", height);
+
+            const double rate = pVideoTrack->GetFrameRate();
             printf("\t\tVideo Rate\t\t: %f\n",rate);
         }
 
         if (trackType == AUDIO_TRACK)
         {
-            const AudioTrack* const pAudioTrack = static_cast<const AudioTrack* const>(pTrack);
-            long long channels =  pAudioTrack->GetChannels();
-            long long bitDepth = pAudioTrack->GetBitDepth();
-            double sampleRate = pAudioTrack->GetSamplingRate();
+            const AudioTrack* const pAudioTrack =
+                static_cast<const AudioTrack*>(pTrack);
 
+            const long long channels =  pAudioTrack->GetChannels();
             printf("\t\tAudio Channels\t\t: %lld\n", channels);
+
+            const long long bitDepth = pAudioTrack->GetBitDepth();
             printf("\t\tAudio BitDepth\t\t: %lld\n", bitDepth);
+
+            const double sampleRate = pAudioTrack->GetSamplingRate();
             printf("\t\tAddio Sample Rate\t: %.3f\n", sampleRate);
         }
     }
@@ -221,9 +236,8 @@ int main(int argc, char* argv[])
         {
             const Block* const pBlock  = pBlockEntry->GetBlock();
             const unsigned long trackNum = pBlock->GetTrackNumber();
-            const Track *pTrack = pTracks->GetTrackByNumber(trackNum);
-            const long long trackType_ = pTrack->GetType();
-            const unsigned long trackType = static_cast<unsigned long>(trackType_);
+            const Track* const pTrack = pTracks->GetTrackByNumber(trackNum);
+            const long long trackType = pTrack->GetType();
             const long size = pBlock->GetSize();
             const long long time_ns = pBlock->GetTime(pCluster);
 
