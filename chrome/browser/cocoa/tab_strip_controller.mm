@@ -1322,6 +1322,8 @@ private:
   // The tab moved, which means that the mini-tab state may have changed.
   if (tabStripModel_->IsMiniTab(modelTo) != [movedTabController mini])
     [self tabMiniStateChangedWithContents:contents atIndex:modelTo];
+
+  [self layoutTabs];
 }
 
 // Called when a tab is pinned or unpinned without moving.
