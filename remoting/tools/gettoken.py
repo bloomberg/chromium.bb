@@ -13,26 +13,46 @@ import urllib
 
 import gaia_auth
 
-auth_filepath = os.path.join(os.path.expanduser('~'), '.chromotingAuthToken')
+chromoting_auth_filepath = os.path.join(os.path.expanduser('~'),
+                                        '.chromotingAuthToken')
+chromoting_dir_auth_filepath = os.path.join(os.path.expanduser('~'),
+                                            '.chromotingDirectoryAuthToken')
 
 print "Email:",
 email = raw_input()
 
 passwd = getpass.getpass("Password: ")
 
-authenticator = gaia_auth.GaiaAuthenticator('chromiumsync');
-auth_token = authenticator.authenticate(email, passwd)
+chromoting_authenticator = gaia_auth.GaiaAuthenticator('chromiumsync');
+chromoting_auth_token = chromoting_authenticator.authenticate(email, passwd)
 
-# Set permission mask for created file.
+chromoting_dir_authenticator = gaia_auth.GaiaAuthenticator('chromoting');
+chromoting_dir_auth_token = \
+    chromoting_dir_authenticator.authenticate(email, passwd)
+
+# Set permission mask for created files.
 os.umask(0066)
-auth_file = open(auth_filepath, 'w')
-auth_file.write(email)
-auth_file.write('\n')
-auth_file.write(auth_token)
-auth_file.close()
+
+chromoting_auth_file = open(chromoting_auth_filepath, 'w')
+chromoting_auth_file.write(email)
+chromoting_auth_file.write('\n')
+chromoting_auth_file.write(chromoting_auth_token)
+chromoting_auth_file.close()
 
 print
-print 'Auth token:'
+print 'Chromoting (sync) Auth Token:'
 print
-print auth_token
-print '...saved in', auth_filepath
+print chromoting_auth_token
+print '...saved in', chromoting_auth_filepath
+
+chromoting_dir_auth_file = open(chromoting_dir_auth_filepath, 'w')
+chromoting_dir_auth_file.write(email)
+chromoting_dir_auth_file.write('\n')
+chromoting_dir_auth_file.write(chromoting_dir_auth_token)
+chromoting_dir_auth_file.close()
+
+print
+print 'Chromoting Directory Auth Token:'
+print
+print chromoting_dir_auth_token
+print '...saved in', chromoting_dir_auth_filepath
