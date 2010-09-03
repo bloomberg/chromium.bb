@@ -69,6 +69,7 @@
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
         '../chrome/chrome.gyp:chrome_version_header',
+        'chrome_frame.gyp:chrome_frame_utils',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -90,7 +91,7 @@
             'shlwapi.lib',
           ],
         },
-      },      
+      },
     },
     {
       'target_name': 'chrome_frame_helper',
@@ -99,6 +100,7 @@
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
         '../chrome/chrome.gyp:chrome_version_header',
+        'chrome_frame.gyp:chrome_frame_utils',
         'chrome_frame_helper_dll',
       ],
       'resource_include_dirs': [

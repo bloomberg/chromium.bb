@@ -603,8 +603,16 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base_i18n',
-       ],
+        '../breakpad/breakpad.gyp:breakpad_handler',
+        '../chrome/chrome.gyp:chrome_version_header',
+      ],
+      'include_dirs': [
+        # To allow including "chrome_tab.h"
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
       'sources': [
+        'crash_server_init.cc',
+        'crash_server_init.h',
         'simple_resource_loader.cc',
         'simple_resource_loader.h',
       ],

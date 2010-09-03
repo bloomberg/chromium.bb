@@ -15,6 +15,8 @@
 #include <crtdbg.h>
 #include <windows.h>
 
+#include "chrome_frame/crash_server_init.h"
+
 // Window class and window names.
 const wchar_t kChromeFrameHelperWindowClassName[] =
     L"ChromeFrameHelperWindowClass";
@@ -100,8 +102,9 @@ HWND RegisterAndCreateWindow(HINSTANCE hinstance) {
 }
 
 int APIENTRY wWinMain(HINSTANCE hinstance, HINSTANCE, wchar_t*, int show_cmd) {
-  // TODO(robertshield): Before this actually gets used, add breakpad
-  // integration.
+  const wchar_t* cmd_line = ::GetCommandLine();
+  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
+      InitializeCrashReporting(cmd_line));
 
   // Create a window with a known class and title just to listen for WM_CLOSE
   // messages that will shut us down.
