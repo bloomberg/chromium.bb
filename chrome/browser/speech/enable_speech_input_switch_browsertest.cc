@@ -18,9 +18,10 @@ class SpeechInputEnableSwitchTest : public InProcessBrowserTest {
   }
 };
 
-// Speech input is enabled by default in windows & mac builds, so this test
-// is not relevant for them.
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+// Speech input is enabled by default in windows, linux & mac builds for the
+// next dev channel build, after which we'll remove this check and keep it
+// disabled.
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
 
 IN_PROC_BROWSER_TEST_F(SpeechInputEnableSwitchTest, UnavailabilityTest) {
   // Test that speech input is not available to a web page if
