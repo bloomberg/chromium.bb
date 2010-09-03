@@ -31,6 +31,10 @@ JsonPrefStore::~JsonPrefStore() {
 }
 
 PrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
+  if (path_.empty()) {
+    read_only_ = true;
+    return PREF_READ_ERROR_FILE_NOT_SPECIFIED;
+  }
   JSONFileValueSerializer serializer(path_);
 
   int error_code = 0;
@@ -127,4 +131,3 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   scoped_ptr<DictionaryValue> copy(prefs_->DeepCopyWithoutEmptyChildren());
   return serializer.Serialize(*(copy.get()));
 }
-

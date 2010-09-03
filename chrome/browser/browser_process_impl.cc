@@ -605,7 +605,7 @@ void BrowserProcessImpl::CreateLocalState() {
   FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   local_state_.reset(PrefService::CreatePrefService(local_state_path, NULL));
-  }
+}
 
 void BrowserProcessImpl::CreateIconManager() {
   DCHECK(!created_icon_manager_ && icon_manager_.get() == NULL);

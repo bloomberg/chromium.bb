@@ -23,11 +23,9 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
   JsonPrefStore* user = NULL;
   ConfigurationPolicyPrefStore* recommended = NULL;
 
-  if (!pref_filename.empty()) {
-    user = new JsonPrefStore(
-        pref_filename,
-        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
-  }
+  user = new JsonPrefStore(
+      pref_filename,
+      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
 
   if (!user_only) {
     managed = ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore();
