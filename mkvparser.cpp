@@ -1167,10 +1167,13 @@ long Segment::Load()
 #endif
     long long index = m_pos;
 
+    //TODO: we don't want to count clusters here.
+    //Just do a lazy init.
+
     m_clusterCount = 0;
 
     long long* fileposition_of_clusters = NULL;
-    long long size_of_cluster_pos = 0;
+    size_t size_of_cluster_pos = 0;
 
     while (index < stop)
     {
@@ -1211,14 +1214,19 @@ long Segment::Load()
         if (id == 0x0F43B675) // Cluster ID
         {
             assert(fileposition_of_clusters);
+
             if (m_clusterCount >= size_of_cluster_pos)
             {
+                assert(size_of_cluster_pos > 0);
                 size_of_cluster_pos *= 2;
+
                 long long* const temp = new long long[size_of_cluster_pos];
                 memset(temp, 0, sizeof(long long) * size_of_cluster_pos);
-                memcpy(temp, fileposition_of_clusters, sizeof(long long) \
-                       * m_clusterCount);
-                delete [] fileposition_of_clusters;
+
+                const size_t size = sizeof(long long) * m_clusterCount;
+                memcpy(temp, fileposition_of_clusters, size);
+
+                delete[] fileposition_of_clusters;
                 fileposition_of_clusters = temp;
             }
             fileposition_of_clusters[m_clusterCount] = idpos;
@@ -1232,7 +1240,11 @@ long Segment::Load()
             assert(m_clusterCount == 0);
 
             const long long duration = m_pInfo->GetDuration();
-            size_of_cluster_pos = duration / 1000000000 + 1;
+            assert(duration >= 0);
+
+            const long long size_of_cluster_pos_ = duration / 1000000000 + 1;
+            size_of_cluster_pos = static_cast<size_t>(size_of_cluster_pos_);
+
             fileposition_of_clusters = new long long[size_of_cluster_pos];
             memset(fileposition_of_clusters, 0, size_of_cluster_pos);
         }
@@ -1244,10 +1256,10 @@ long Segment::Load()
 
     m_clusters = new Cluster*[m_clusterCount];
 
-    for (int i = 0; i < m_clusterCount; ++i)
+    for (size_t i = 0; i < m_clusterCount; ++i)
         m_clusters[i] = Cluster::Parse(this, i, fileposition_of_clusters[i]);
 
-    delete [] fileposition_of_clusters;
+    delete[] fileposition_of_clusters;
 
     while (m_pos < stop)
     {
@@ -1813,8 +1825,7 @@ const BlockEntry* Track::GetEOS() const
 
 long long Track::GetType() const
 {
-    const unsigned long result = static_cast<unsigned long>(m_info.type);
-    return result;
+    return m_info.type;
 }
 
 unsigned long Track::GetNumber() const
@@ -1850,12 +1861,13 @@ const unsigned char* Track::GetCodecPrivate(size_t& size) const
 
 long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 {
-    Cluster* const pCluster = m_pSegment->GetFirst();
+    Cluster* pCluster = m_pSegment->GetFirst();
 
     //If Segment::GetFirst returns NULL, then this must be a network
     //download, and we haven't loaded any clusters yet.  In this case,
     //returning NULL from Track::GetFirst means the same thing.
 
+#if 0
     if ((pCluster == NULL) || pCluster->EOS())
     {
         pBlockEntry = NULL;
@@ -1874,6 +1886,37 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 
         pBlockEntry = pCluster->GetNext(pBlockEntry);
     }
+#else
+    for (int i = 0; i < 100; ++i)  //arbitrary upper bound
+    {
+        if ((pCluster == NULL) || pCluster->EOS())
+        {
+            if (m_pSegment->Unparsed() <= 0)  //all clusters have been loaded
+            {
+                pBlockEntry = GetEOS();
+                return 1;
+            }
+
+            pBlockEntry = 0;
+            return E_BUFFER_NOT_FULL;
+        }
+
+        pBlockEntry = pCluster->GetFirst();
+
+        while (pBlockEntry)
+        {
+            const Block* const pBlock = pBlockEntry->GetBlock();
+            assert(pBlock);
+
+            if (pBlock->GetTrackNumber() == m_info.number)
+                return 0;
+
+            pBlockEntry = pCluster->GetNext(pBlockEntry);
+        }
+
+        pCluster = m_pSegment->GetNext(pCluster);
+    }
+#endif
 
     //NOTE: if we get here, it means that we didn't find a block with
     //a matching track number.  We interpret that as an error (which
@@ -1884,12 +1927,15 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 }
 
 
-long Track::GetNext(const BlockEntry* pCurrEntry, const BlockEntry*& pNextEntry) const
+long Track::GetNext(
+    const BlockEntry* pCurrEntry,
+    const BlockEntry*& pNextEntry) const
 {
     assert(pCurrEntry);
     assert(!pCurrEntry->EOS());  //?
-    assert(pCurrEntry->GetBlock()->GetTrackNumber() == (unsigned long)m_info.number);
+    assert(pCurrEntry->GetBlock()->GetTrackNumber() == m_info.number);
 
+#if 0
     const Cluster* const pCurrCluster = pCurrEntry->GetCluster();
     assert(pCurrCluster);
     assert(!pCurrCluster->EOS());
@@ -1988,6 +2034,62 @@ long Track::GetNext(const BlockEntry* pCurrEntry, const BlockEntry*& pNextEntry)
     //return E_FAIL;
     pNextEntry = GetEOS();
     return 1L;
+#else
+    Cluster* pCluster = pCurrEntry->GetCluster();
+    assert(pCluster);
+    assert(!pCluster->EOS());
+
+    pNextEntry = pCluster->GetNext(pCurrEntry);
+
+    for (int i = 0; i < 100; ++i)  //arbitrary upper bound to search
+    {
+        while (pNextEntry)
+        {
+            const Block* const pNextBlock = pNextEntry->GetBlock();
+            assert(pNextBlock);
+
+            if (pNextBlock->GetTrackNumber() == m_info.number)
+                return 0;
+
+            pNextEntry = pCluster->GetNext(pNextEntry);
+        }
+
+        pCluster = m_pSegment->GetNext(pCluster);
+
+        if ((pCluster == NULL) || pCluster->EOS())
+        {
+            if (m_pSegment->Unparsed() <= 0)   //all clusters have been loaded
+            {
+                pNextEntry = GetEOS();
+                return 1;
+            }
+
+            //TODO: there is a potential O(n^2) problem here: we tell the
+            //caller to (pre)load another cluster, which he does, but then he
+            //calls GetNext again, which repeats the same search.  This is
+            //a pathological case, since the only way it can happen is if
+            //there exists a long sequence of clusters none of which contain a
+            // block from this track.  One way around this problem is for the
+            //caller to be smarter when he loads another cluster: don't call
+            //us back until you have a cluster that contains a block from this
+            //track. (Of course, that's not cheap either, since our caller
+            //would have to scan the each cluster as it's loaded, so that
+            //would just push back the problem.)
+
+            pNextEntry = NULL;
+            return E_BUFFER_NOT_FULL;
+        }
+
+        pNextEntry = pCluster->GetFirst();
+    }
+
+    //NOTE: if we get here, it means that we didn't find a block with
+    //a matching track number after lots of searching, so we give
+    //up trying.
+
+    pNextEntry = GetEOS();  //so we can return a non-NULL value
+    return 1;
+#endif
 }
 
 
@@ -2320,7 +2422,11 @@ void Tracks::ParseTrackEntry(
             assert(i.nameAsUTF8);
         else if (Match(pReader, pos, 0x06, i.codecId))
             ;
-        else if (Match(pReader, pos, 0x23A2, i.codecPrivate, i.codecPrivateSize))
+        else if (Match(pReader,
+                       pos,
+                       0x23A2,
+                       i.codecPrivate,
+                       i.codecPrivateSize))
             ;
         else if (Match(pReader, pos, 0x058688, i.codecNameAsUTF8))
             assert(i.codecNameAsUTF8);
@@ -2712,6 +2818,21 @@ long long Cluster::GetTime()
 }
 
 
+__int64 Cluster::GetFirstTime()
+{
+    const BlockEntry* const pEntry = GetFirst();
+
+    if (pEntry == 0)  //empty cluster
+        return GetTime();
+
+    const Block* const pBlock = pEntry->GetBlock();
+    assert(pBlock);
+
+    return pBlock->GetTime(this);
+}
+
+
+
 void Cluster::ParseBlockGroup(long long start, long long size, size_t index)
 {
     assert(m_pEntries);
@@ -2732,7 +2853,8 @@ void Cluster::ParseSimpleBlock(long long start, long long size, size_t index)
     assert(m_entriesCount);
     assert(index < m_entriesCount);
 
-    SimpleBlock* const pSimpleBlock = new SimpleBlock(this, index, start, size);
+    SimpleBlock* const pSimpleBlock =
+        new (std::nothrow) SimpleBlock(this, index, start, size);
     assert(pSimpleBlock);  //TODO
 
     m_pEntries[index] = pSimpleBlock;

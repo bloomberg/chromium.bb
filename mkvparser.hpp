@@ -21,7 +21,7 @@ const int E_BUFFER_NOT_FULL = -3;
 class IMkvReader
 {
 public:
-    virtual int Read(long long position, long length, unsigned char* buffer) = 0;
+    virtual int Read(long long pos, long len, unsigned char* buf) = 0;
     virtual int Length(long long* total, long long* available) = 0;
 protected:
     virtual ~IMkvReader();
@@ -77,7 +77,7 @@ public:
     unsigned long GetTrackNumber() const;
 
     long long GetTimeCode(Cluster*) const;  //absolute, but not scaled
-    long long GetTime(Cluster*) const;      //absolute, and scaled (nanosecond units)
+    long long GetTime(Cluster*) const;      //absolute, and scaled (ns units)
     bool IsKey() const;
     void SetKey(bool);
 
@@ -352,8 +352,9 @@ public:
 
     bool EOS() const;
 
-    long long GetTimeCode();  //absolute, but not scaled
-    long long GetTime();      //absolute, and scaled (nanosecond units)
+    long long GetTimeCode();   //absolute, but not scaled
+    long long GetTime();       //absolute, and scaled (nanosecond units)
+    long long GetFirstTime();  //time (ns) of first (earliest) block
 
     const BlockEntry* GetFirst();
     const BlockEntry* GetLast();
