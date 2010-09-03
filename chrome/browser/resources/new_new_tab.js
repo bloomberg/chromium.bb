@@ -7,15 +7,22 @@
 var MAX_MINIVIEW_ITEMS = 15;
 
 // Extra spacing at the top of the layout.
-var LAYOUT_SPACING_TOP = 5;
+var LAYOUT_SPACING_TOP = 25;
 
 var loading = true;
 
 function updateSimpleSection(id, section) {
-  if (shownSections & section)
+  var elm = $(id);
+  var maxiview = getSectionMaxiview(elm);
+  if (shownSections & section) {
     $(id).classList.remove('hidden');
-  else
+    if (maxiview)
+      maxiview.classList.remove('hidden');
+  } else {
     $(id).classList.add('hidden');
+    if (maxiview)
+      maxiview.classList.add('hidden');
+  }
 }
 
 function recentlyClosedTabs(data) {
@@ -101,16 +108,13 @@ function SectionLayoutInfo(section) {
   this.section = section;
   this.header = section.getElementsByTagName('h2')[0];
   this.miniview = section.getElementsByClassName('miniview')[0];
-  this.maxiview = section.getElementsByClassName('maxiview')[0];
-  this.expanded = !section.classList.contains('hidden');
-  this.fixedHeight = this.header.offsetHeight;
+  this.maxiview = getSectionMaxiview(section);
+  this.expanded = this.maxiview && !section.classList.contains('hidden');
+  this.fixedHeight = this.section.offsetHeight;
   this.scrollingHeight = 0;
 
-  if (this.expanded) {
+  if (this.expanded)
     this.scrollingHeight = this.maxiview.offsetHeight;
-  } else if (this.miniview) {
-    this.fixedHeight += this.miniview.offsetHeight;
-  }
 }
 
 // Get all sections to be layed out.
@@ -209,23 +213,56 @@ function layoutSections() {
   // Now position all the elements.
   var y = LAYOUT_SPACING_TOP;
   for (i = 0, section; section = sections[i]; i++) {
-    section.header.style.top = y + 'px';
-    y += section.header.offsetHeight;
-
-    if (section.miniview) {
-      section.miniview.style.top = y + 'px';
-      if (section != expandedSection) {
-        y += section.miniview.offsetHeight;
-      }
-    }
+    section.section.style.top = y + 'px';
+    y += section.fixedHeight;
 
     if (section.maxiview) {
       section.maxiview.style.top = y + 'px';
-      if (section == expandedSection) {
-        y += expandedSectionHeight;
-      }
+
+      if (section == expandedSection)
+        updateMask(section.maxiview, expandedSectionHeight);
     }
+
+    if (section == expandedSection)
+      y += expandedSectionHeight;
   }
+}
+
+function updateMask(maxiview, visibleHeightPx) {
+  // We want to end up with 10px gradients at the top and bottom of
+  // visibleHeight, but webkit-mask only supports expression in terms of
+  // percentages.
+
+  // We might not have enough room to do 10px gradients on each side. To get the
+  // right effect, we don't want to make the gradients smaller, but make them
+  // appear to mush into each other.
+  var gradientHeightPx = Math.min(10, Math.floor(visibleHeightPx / 2));
+  var gradientDestination = 'rgba(0,0,0,' + (gradientHeightPx / 10) + ')';
+
+  var bottomSpacing = 15;
+  var first = parseFloat(maxiview.style.top) / window.innerHeight;
+  var second = first + gradientHeightPx / window.innerHeight;
+  var fourth = first + (visibleHeightPx - bottomSpacing) / window.innerHeight;
+  var third = fourth - gradientHeightPx / window.innerHeight;
+
+  var gradientArguments = [
+    "linear",
+    "0 0",
+    "0 100%",
+    "from(transparent)",
+    getColorStopString(first, "transparent"),
+    getColorStopString(second, gradientDestination),
+    getColorStopString(third, gradientDestination),
+    getColorStopString(fourth, "transparent"),
+    "to(transparent)"
+  ];
+
+  var gradient = '-webkit-gradient(' + gradientArguments.join(', ') + ')';
+  maxiview.style.WebkitMaskImage = gradient;
+}
+
+function getColorStopString(height, color) {
+  return "color-stop(" + height + ", " + color + ")";
 }
 
 window.addEventListener('resize', handleWindowResize);
@@ -242,12 +279,21 @@ function getSectionElement(section) {
   return sectionToElementMap[section];
 }
 
+function getSectionMaxiview(section) {
+  return $(section.id + '-maxiview');
+}
+
 function showSection(section) {
   if (!(section & shownSections)) {
     shownSections |= section;
     var el = getSectionElement(section);
-    if (el)
+    if (el) {
       el.classList.remove('hidden');
+
+      var maxiview = getSectionMaxiview(el);
+      if (maxiview)
+        maxiview.classList.remove('hidden');
+    }
 
     switch (section) {
       case Section.THUMB:
@@ -270,8 +316,13 @@ function hideSection(section) {
     }
 
     var el = getSectionElement(section);
-    if (el)
+    if (el) {
       el.classList.add('hidden');
+
+      var maxiview = getSectionMaxiview(el);
+      if (maxiview)
+        maxiview.classList.add('hidden');
+    }
   }
 }
 
@@ -340,31 +391,33 @@ function layoutRecentlyClosed() {
  */
 function syncMessageChanged(newMessage) {
   var syncStatusElement = $('sync-status');
-  var style = syncStatusElement.style;
 
   // Hide the section if the message is emtpy.
   if (!newMessage['syncsectionisvisible']) {
-    style.display = 'none';
+    syncStatusElement.classList.add('disabled');
     return;
   }
-  style.display = 'block';
+
+  syncStatusElement.classList.remove('disabled');
+
+  var content = syncStatusElement.children[0];
 
   // Set the sync section background color based on the state.
   if (newMessage.msgtype == 'error') {
-    style.backgroundColor = 'tomato';
+    content.style.backgroundColor = 'tomato';
   } else {
-    style.backgroundColor = '';
+    content.style.backgroundColor = '';
   }
 
   // Set the text for the header and sync message.
-  var titleElement = syncStatusElement.firstElementChild;
+  var titleElement = content.firstElementChild;
   titleElement.textContent = newMessage.title;
   var messageElement = titleElement.nextElementSibling;
   messageElement.textContent = newMessage.msg;
 
   // Remove what comes after the message
   while (messageElement.nextSibling) {
-    syncStatusElement.removeChild(messageElement.nextSibling);
+    content.removeChild(messageElement.nextSibling);
   }
 
   if (newMessage.linkisvisible) {
@@ -379,9 +432,11 @@ function syncMessageChanged(newMessage) {
       el.addEventListener('click', syncSectionLinkClicked);
     }
     el.textContent = newMessage.linktext;
-    syncStatusElement.appendChild(el);
+    content.appendChild(el);
     fixLinkUnderline(el);
   }
+
+  layoutSections();
 }
 
 /**
@@ -720,7 +775,7 @@ OptionMenu.prototype = {
 };
 
 var optionMenu = new OptionMenu(
-    document.querySelector('#most-visited-section h2 .settings-wrapper'),
+    document.querySelector('#most-visited h2 .settings-wrapper'),
     $('option-menu'));
 optionMenu.commands = {
   'clear-all-blacklisted' : function() {
@@ -740,7 +795,7 @@ $('main').addEventListener('click', function(e) {
   }
 
   p = p.parentNode;
-  if (p.hasAttribute('noexpand')) {
+  if (!getSectionMaxiview(p)) {
     return;
   }
 
@@ -1003,8 +1058,8 @@ function fixLinkUnderline(el) {
 updateAttribution();
 
 var mostVisited = new MostVisited(
-    $('most-visited'),
-    document.querySelector('#most-visited-section .miniview'),
+    $('most-visited-maxiview'),
+    document.querySelector('#most-visited .miniview'),
     useSmallGrid(),
     shownSections & Section.THUMB);
 

@@ -4,8 +4,8 @@
 
 function getAppsCallback(data) {
   logEvent('recieved apps');
-  var appsSection = $('apps-section');
-  var appsSectionContent = $('apps-section-content');
+  var appsSection = $('apps');
+  var appsSectionContent = $('apps-maxiview');
   var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
   appsSectionContent.textContent = '';
   appsMiniview.textContent = '';

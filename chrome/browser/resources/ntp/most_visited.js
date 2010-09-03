@@ -255,6 +255,7 @@ var MostVisited = (function() {
       var w = thumbWidth + 2 * borderWidth + 2 * marginWidth;
       var h = thumbHeight + 40 + 2 * marginHeight;
       var sumWidth = cols * w  - 2 * marginWidth;
+      var topSpacing = 10;
 
       var rtl = isRtl();
       var rects = [];
@@ -266,7 +267,7 @@ var MostVisited = (function() {
           var left = rtl ? sumWidth - col * w - thumbWidth - 2 * borderWidth :
               col * w;
 
-          var top = row * h;
+          var top = row * h + topSpacing;
 
           rects[i] = {left: left, top: top};
         }

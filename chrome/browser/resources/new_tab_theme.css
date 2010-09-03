@@ -1,7 +1,4 @@
 html,
-#top-spacer,
-.miniview,
-.section > h2 .mask,
 .section > h2 .settings-wrapper,
 .section > h2 span {
   background-attachment: fixed;
@@ -12,9 +9,6 @@ html,
 }
 
 html[bookmarkbarattached='true'],
-html[bookmarkbarattached='true'] #top-spacer,
-html[bookmarkbarattached='true'] .miniview,
-html[bookmarkbarattached='true'] .section > h2 .mask,
 html[bookmarkbarattached='true'] .section > h2 .settings-wrapper,
 html[bookmarkbarattached='true'] .section > h2 span {
   background-position: $4;
@@ -110,11 +104,11 @@ body {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
-.section:not(.hidden) > h2 > .mask {
+.section:not(.hidden) > h2 {
   color: $$9;
 }
 
-.section.hidden:not([noexpand]) > h2:hover > .mask {
+.section.hidden:not([noexpand]) > h2:hover {
   color: $$9;
 }
 
@@ -139,12 +133,12 @@ body {
   border-color: $2; /* COLOR_NTP_BACKGROUND */
 }
 
-#apps-section .app a {
+.app a {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-#apps-section .app:hover > .front > a,
-#apps-section .app > .back {
+.app:hover > .front > a,
+.app > .back {
   color: $$3; /* COLOR_NTP_SECTION_TEXT */
   background-color: $$1; /* COLOR_NTP_SECTION */;
 }

@@ -1,7 +1,7 @@
 /* Apps */
 
-#apps-section .app,
-#apps-section .app[new=installed] {
+.app,
+.app[new=installed] {
   -webkit-box-sizing: border-box;
   -webkit-perspective: 400;
   border-radius: 10px;
@@ -113,11 +113,11 @@
   }
 }
 
-#apps-section .app[new=new] {
+.app[new=new] {
   opacity: 0;
 }
 
-#apps-section .app[new=installed] {
+.app[new=installed] {
   -webkit-animation: bounce .5s ease-in-out;
   -webkit-transition: opacity .5s;
 }

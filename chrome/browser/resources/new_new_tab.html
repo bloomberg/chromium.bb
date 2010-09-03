@@ -129,32 +129,27 @@ if ('mode' in hashParams) {
     <span class="link"><span class="link-color"></span></span>
   </div>
 
-  <div id="top-spacer"></div>
+  <div class="maxiview" id="apps-maxiview"></div>
+  <div class="maxiview" id="most-visited-maxiview"></div>
 
   <div class="sections">
     <!-- Start disabled. We only enable if we have at least one app. -->
-    <div class="section disabled" section="APPS" id="apps-section">
+    <div id="apps" class="section disabled" section="APPS">
       <h2>
         <img class="disclosure" img src="ntp/ntp_disclosure_triangle.png">
-        <div class="mask">
-          <div class="back"></div>
-          <span i18n-content="apps"></span>
-        </div>
+        <div class="back"></div>
+        <span i18n-content="apps"></span>
       </h2>
-      <div class="maxiview" id="apps-section-content"></div>
       <div class="miniview"></div>
     </div>
 
-    <div id="most-visited-section" class="section" section="THUMB">
+    <div id="most-visited" class="section" section="THUMB">
       <h2>
         <img class="disclosure" src="ntp/ntp_disclosure_triangle.png">
-        <div class="mask">
-          <div class="back"></div>
-          <span i18n-content="mostvisited"></span>
-          <div class="settings-wrapper"><div class="settings"></div></div>
-        </div>
+        <div class="back"></div>
+        <span i18n-content="mostvisited"></span>
+        <div class="settings-wrapper"><div class="settings"></div></div>
       </h2>
-      <div class="maxiview" id="most-visited"></div>
       <div class="miniview"></div>
     </div>
 
@@ -163,10 +158,8 @@ if ('mode' in hashParams) {
     <div id="recently-closed" class="section hidden disabled" section="RECENT"
         noexpand="true">
       <h2>
-        <div class="mask">
-          <div class="back"></div>
-          <span i18n-content="recentlyclosed"></span>
-        </div>
+        <div class="back"></div>
+        <span i18n-content="recentlyclosed"></span>
       </h2>
       <div class="miniview"></div>
     </div>
@@ -186,18 +179,19 @@ if ('mode' in hashParams) {
             >Panel</label>
       </div>
     </div>
-  </div>
 
-  <div id="sync-status">
-    <h2></h2>
-    <span></span>
+    <div id="sync-status" class="section disabled">
+      <div>
+        <h3></h3>
+        <span></span>
+      </div>
+    </div>
   </div>
 
   <div id="attribution" class="attribution">
     <div i18n-content="attributionintro"></div>
     <img id="attribution-img">
   </div>
-
 </div>  <!-- main -->
 
 <div class="window-menu" id="window-tooltip"></div>
@@ -217,8 +211,8 @@ i18nTemplate.process(document, templateData);
 <script src="ntp/apps.js"></script>
 
 <script>
-  updateSimpleSection('apps-section', Section.APPS);
-  updateSimpleSection('most-visited-section', Section.THUMB);
+  updateSimpleSection('apps', Section.APPS);
+  updateSimpleSection('most-visited', Section.THUMB);
   updateSimpleSection('recently-closed', Section.RECENT);
   updateSimpleSection('debug', Section.DEBUG);
 

@@ -1,10 +1,8 @@
 /* Most Visited */
 
-#most-visited {
+#most-visited-maxiview {
   position: relative;
-  padding: 0;
   height: 366px;
-  margin-top: 0;
   -webkit-user-select: none;
 }
 
@@ -240,7 +238,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
 }
 
 @media (max-width: 940px) {
-  #most-visited {
+  #most-visited-maxiview {
     height: 294px;
   }
 

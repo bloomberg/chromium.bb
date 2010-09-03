@@ -20,6 +20,11 @@ html[mode=app-launcher] {
   -webkit-transition: width .15s;
   margin: 0 auto;
   min-height: 100%;
+}
+
+#main,
+.section,
+.maxiview {
   width: 920px;
 }
 
@@ -29,15 +34,6 @@ html[dir=rtl] #main {
 
 html[mode=app-launcher] #main {
   min-height: 50px;
-}
-
-#top-spacer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 5px;
-  z-index: 2;
 }
 
 html[anim=false] *,
@@ -200,16 +196,15 @@ html[dir=rtl] .item {
   -webkit-box-orient: horizontal;
 }
 
-#sync-status {
-  display: none;
+#sync-status > div {
   border-radius: 6px;
   padding: 5px 0;
-  margin: 10px 0;
+  margin: 10px 0 20px;
   white-space: nowrap;
   overflow-x: hidden;
 }
 
-#sync-status > * {
+#sync-status > div > * {
   display: inline-block;
   max-width: none;
   white-space: nowrap;
@@ -300,24 +295,13 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   margin: 0;
 }
 
-.section > * {
+.section {
+  position: fixed;
   font-size: 12px;
-  width: 920px;
 }
 
 .section.disabled {
   display: none !important;
-}
-
-.section > div {
-  padding-bottom: 20px;
-}
-
-#apps-section-content {
-  /* This one is special because the app buttons already have a lot of empty
-     space around them. */
-  margin-top: -5px;
-  padding-bottom: 5px;
 }
 
 .section > h2 {
@@ -325,8 +309,7 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   font-size: 16px;
   font-weight: normal;
   margin: 0;
-  position: fixed;
-  z-index: 2;
+  position: relative;
 }
 
 .section:not([noexpand]) > h2 {
@@ -336,35 +319,17 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 .section > h2 > .disclosure {
   position: absolute;
   left: -15px;
-  top: 19px;
+  top: 4px;
 }
 
 .section:not(.hidden) > h2 > .disclosure {
   -webkit-transform:rotate(90deg);
 }
 
-.section > h2 > .mask {
-  padding: 15px 0;
-}
-
-.section:not(.hidden) > h2 > .mask {
-  /* NOTE: 0.75 ~= 29/39 (for 10px of gradient) */
-  -webkit-mask-image: 
-      -webkit-gradient(linear, 0% 0%, 0% 100%, from(black),
-                       color-stop(0.75, black), to(transparent));
-}
-
-.section:not(.hidden) + .section > h2 > .mask {
-  /* NOTE: 0.25 ~= 10/39 (for 10px of gradient) */
-  -webkit-mask-image: 
-      -webkit-gradient(linear, 0% 0%, 0% 100%, from(transparent),
-                       color-stop(0.25, black), to(black));
-}
-
 .section > h2 .back {
   position: absolute;
   left: 0;
-  top: 24px;
+  top: 9px;
   width: 100%;
   height: 24px;
   z-index: 1;
@@ -378,7 +343,7 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 
 .section > h2 .settings-wrapper {
   position: absolute;
-  top: 13px;
+  top: -1px;
   right: 0;
   width: 21px;
   height: 21px;
@@ -403,14 +368,17 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   display: none;
 }
 
-.section > .maxiview {
+.maxiview {
+  padding: 5px 0 30px;
   position: absolute;
+  -webkit-mask-attachment: fixed;
 }
 
 .section > .miniview {
   display: none;
-  position: fixed;
-  z-index: 2;
+  height: 24px;
+  margin: 10px 0 30px;
+  overflow: hidden;
 }
 
 .section.hidden > * {
@@ -426,9 +394,8 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   margin-right: 0;
 }
 
-.miniview {
-  white-space: nowrap;
-  overflow-x: hidden;
+.maxiview.hidden {
+  display: none;
 }
 
 .miniview > span  {
@@ -454,7 +421,8 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 @media (max-width: 940px) {
 
   #main,
-  .section > * {
+  .section,
+  .maxiview {
     width: 692px;
   }
 
