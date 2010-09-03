@@ -7,6 +7,8 @@
 #include <shlobj.h>
 #include <wininet.h>
 
+#include <atlsecurity.h>
+
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
@@ -1126,6 +1128,19 @@ bool IsIBrowserServicePatchEnabled() {
   ProtocolPatchMethod patch_method = GetPatchMethod();
   return patch_method == PATCH_METHOD_IBROWSER;
 }
+
+bool IsSystemProcess() {
+  bool is_system = false;
+  CAccessToken process_token;
+  if (process_token.GetProcessToken(TOKEN_QUERY, GetCurrentProcess())) {
+    CSid logon_sid;
+    if (process_token.GetUser(&logon_sid)) {
+      is_system = logon_sid == Sids::System();
+    }
+  }
+  return is_system;
+}
+
 
 std::string BindStatus2Str(ULONG bind_status) {
   std::string s;

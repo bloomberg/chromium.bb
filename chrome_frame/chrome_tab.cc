@@ -298,8 +298,15 @@ HRESULT SetupRunOnce() {
     return S_OK;
   }
 
+  HKEY hive = HKEY_CURRENT_USER;
+  if (IsSystemProcess()) {
+    // For system installs, our updates will be running as SYSTEM which
+    // makes writing to a RunOnce key under HKCU not so terribly useful.
+    hive = HKEY_LOCAL_MACHINE;
+  }
+
   RegKey run_once;
-  if (run_once.Create(HKEY_CURRENT_USER, kRunOnce, KEY_READ | KEY_WRITE)) {
+  if (run_once.Create(hive, kRunOnce, KEY_READ | KEY_WRITE)) {
     CommandLine run_once_command(chrome_launcher::GetChromeExecutablePath());
     run_once_command.AppendSwitchASCII(switches::kAutomationClientChannelID,
                                        "0");

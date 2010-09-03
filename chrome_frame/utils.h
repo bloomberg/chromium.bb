@@ -460,6 +460,9 @@ ProtocolPatchMethod GetPatchMethod();
 // Returns true if the IMoniker patch is enabled.
 bool IsIBrowserServicePatchEnabled();
 
+// Returns true if we can detect that we are running as SYSTEM, false otherwise.
+bool IsSystemProcess();
+
 // STL helper class that implements a functor to delete objects.
 // E.g: std::for_each(v.begin(), v.end(), utils::DeleteObject());
 namespace utils {
