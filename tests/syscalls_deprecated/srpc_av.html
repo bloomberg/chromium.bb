@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SRPC Simple Plug-in</title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+<script type="text/javascript">
+//<![CDATA[
+
+function avtest() {
+  var result = "";
+  try {
+    result = document.getElementById('pluginobj').avtest();
+    if (result != "SUCCESS") throw result;
+    result = "SUCCESS";
+  } catch(e) {
+    result = "ERROR: " + e;
+  }
+  return result;
+}
+
+//]]>
+</script>
+
+<h1>Native Client SRPC deprecated AV syscall (50..58) test.</h1>
+<p>
+  <button onclick='alert(avtest()+"!")'>Call avtest()</button>
+  <embed name="nacl_module"
+         id="pluginobj"
+         width=256 height=256
+         src="srpc_av.nexe"
+         type="application/x-nacl-srpc" />
+</p>
+
+<p>This tests deprecated NaCl Audio-Visual system calls.  In Chrome,
+  these system calls should all fail and return -ENOSYS.  If all AV syscalls
+  (50..58) return -ENOSYS, this will be reported below in status as 'SUCCESS:
+  all tests passed'  If status reports an ERROR, click on button above
+  "Call avtest()" to get details on failed test.
+</p>
+
+<h2>Status</h2>
+<div id=status>NO-STATUS</div>
+
+<script type="text/javascript" src="nacl_js_lib.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var nacllib = new NaclLib("nacl_module", "status", 500);
+
+nacllib.test = function() {
+  var result = avtest();
+  if ("SUCCESS" != result) {
+    return "Deprecated syscall returned value other than -ENOSYS";
+  }
+  return "";
+};
+//]]>
+</script>
+
+  </body>
+</html>

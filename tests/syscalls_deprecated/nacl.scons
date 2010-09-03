@@ -1,0 +1,18 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+raw_syscall_objects = env.RawSyscallObjects(['srpc_av.c'])
+nexe = env.ComponentProgram('srpc_av.nexe', raw_syscall_objects,
+                            EXTRA_LIBS=['srpc', 'google_nacl_imc_c','pthread'])
+
+# Note that the html is required to run this program.
+nacl_js_lib = env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')
+env.Publish('srpc_av.nexe', 'run', ['srpc_av.html', nacl_js_lib])
+env.AddPrebuiltBinaryToRepository(nexe)
+
+# TODO(dpolukhin): enable for x86-64 ASAP.
+if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '64':
+  Return()

@@ -1534,6 +1534,7 @@ nacl_env.Append(
     'tests/stubout_mode/nacl.scons',
     'tests/sysbasic/nacl.scons',
     'tests/syscalls/nacl.scons',
+    'tests/syscalls_deprecated/nacl.scons',
     'tests/syscall_return_sandboxing/nacl.scons',
     'tests/threads/nacl.scons',
     'tests/time/nacl.scons',
