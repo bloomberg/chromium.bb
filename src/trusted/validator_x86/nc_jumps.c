@@ -100,14 +100,19 @@ static void NaClAddressSetAdd(NaClAddressSet set, NaClPcAddress address,
   }
 }
 
-/* Create an address set for the range 0..Size. */
-static INLINE NaClAddressSet NaClAddressSetCreate(NaClMemorySize size) {
+/* Returns the array size to use for the given memory size. */
+static size_t NaClAddressSetArraySize(NaClMemorySize size) {
   /* Be sure to add an element for partial overlaps. */
   /* TODO(karl) The cast to size_t for the number of elements may
    * cause loss of data. We need to fix this. This is a security
    * issue when doing cross-platform (32-64 bit) generation.
    */
-  return (NaClAddressSet) calloc((size_t) NaClPcAddressToOffset(size) + 1,
+  return (size_t) NaClPcAddressToOffset(size) + 1;
+}
+
+/* Create an address set for the range 0..Size. */
+static NaClAddressSet NaClAddressSetCreate(NaClMemorySize size) {
+  return (NaClAddressSet) calloc(NaClAddressSetArraySize(size),
                                  sizeof(uint8_t));
 }
 
@@ -137,6 +142,8 @@ typedef struct NaClJumpSets {
    * the call to NaClJumpValidator.
    */
   NaClAddressSet removed_targets;
+  /* Holds the (array) size of each set above. */
+  size_t set_array_size;
 } NaClJumpSets;
 
 /* Generates a jump validator. */
@@ -155,6 +162,8 @@ NaClJumpSets* NaClJumpValidatorCreate(NaClValidatorState* state) {
         jump_sets->removed_targets == NULL) {
       NaClValidatorMessage(LOG_FATAL, state, "unable to allocate jump sets");
     }
+    jump_sets->set_array_size =
+        NaClAddressSetArraySize(state->vlimit - align_base);
   }
   return jump_sets;
 }
@@ -645,12 +654,18 @@ void NaClJumpValidatorSummarize(NaClValidatorState* state,
    * of disassembled instructions.
    */
   NaClPcAddress addr;
+  size_t i;
   if (state->quit) return;
   NaClValidatorMessage(
       LOG_INFO, state,
       "Checking jump targets: %"NACL_PRIxNaClPcAddress
       " to %"NACL_PRIxNaClPcAddress"\n",
       state->vbase, state->vlimit);
+
+  /* Note: The following is the high-level code that has been commented
+   * out, because it is too slow. It represents slightly more than
+   * 15% of the overall validator time.
+   *
   for (addr = state->vbase; addr < state->vlimit; addr++) {
     if (NaClAddressSetContains(jump_sets->actual_targets, addr, state)) {
       DEBUG(NaClLog(LOG_INFO,
@@ -659,6 +674,37 @@ void NaClJumpValidatorSummarize(NaClValidatorState* state,
       if (!IsNaClReachableAddress(state, addr, jump_sets)) {
         NaClValidatorPcAddressMessage(LOG_ERROR, state, addr,
                                       "Bad jump target\n");
+      }
+    }
+  }
+  */
+
+  /* (Low level) Walk the collected sets to find address that correspond
+   * to branches into an atomic sequence of instructions.
+   */
+  for (i = 0; i < jump_sets->set_array_size; ++i) {
+    uint8_t problem = jump_sets->actual_targets[i] &
+        (~jump_sets->possible_targets[i] |
+         jump_sets->removed_targets[i]);
+    if (problem) {
+      /* Some bit in this range is a problem, so we will convert back
+       * to code like the above and test each bit separately.
+       */
+      NaClPcAddress j;
+      NaClPcAddress base = (i << 3) + state->vbase;
+      for (j = 0; j < 8; ++j) {
+        addr = base + j;
+        if (addr < state->vlimit) {
+          if (NaClAddressSetContains(jump_sets->actual_targets, addr, state)) {
+            DEBUG(NaClLog(LOG_INFO,
+                          "Checking jump address: %"NACL_PRIxNaClPcAddress"\n",
+                          addr));
+            if (!IsNaClReachableAddress(state, addr, jump_sets)) {
+              NaClValidatorPcAddressMessage(LOG_ERROR, state, addr,
+                                            "Bad jump target\n");
+            }
+          }
+        }
       }
     }
   }
