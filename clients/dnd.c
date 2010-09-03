@@ -44,12 +44,21 @@ struct dnd {
 	struct display *display;
 	uint32_t key;
 	struct item *items[16];
+};
 
-	struct wl_buffer *translucent_buffer;
-	struct wl_buffer *opaque_buffer;
+struct dnd_drag {
+	cairo_surface_t *translucent;
+	cairo_surface_t *opaque;
 	int hotspot_x, hotspot_y;
-	uint32_t tag;
+	struct dnd *dnd;
+	struct input *input;
+};
+
+struct dnd_offer {
+	struct dnd *dnd;
+	struct wl_array types;
 	const char *drag_type;
+	uint32_t tag;
 };
 
 struct item {
@@ -108,7 +117,7 @@ item_create(struct display *display, int x, int y)
 		cairo_curve_to(cr,
 			       x1 - y1 * u, y1 + x1 * u,
 			       x2 + y2 * v, y2 - x2 * v,
-			       x2, y2);			       
+			       x2, y2);
 
 		cairo_curve_to(cr,
 			       x2 - y2 * v, y2 + x2 * v,
@@ -219,90 +228,130 @@ dnd_get_item(struct dnd *dnd, int32_t x, int32_t y)
 }
 
 static void
-drag_handle_device(void *data,
-		   struct wl_drag *drag, struct wl_input_device *device)
-{
-}
-
-static void
-drag_pointer_focus(void *data,
-		   struct wl_drag *drag,
-		   uint32_t time, struct wl_surface *surface,
-		   int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
-{
-	struct dnd *dnd = data;
-
-	/* FIXME: We need the offered types before we get the
-	 * pointer_focus event so we know which one we want and can
-	 * send the accept request back. */
-
-	fprintf(stderr, "drag pointer focus %p\n", surface);
-
-	if (!surface) {
-		dnd->drag_type = NULL;
-		return;
-	}
-
-	if (!dnd_get_item(dnd, surface_x, surface_y)) {
-		wl_drag_accept(drag, "text/plain");
-		dnd->drag_type = "text/plain";
-	} else {
-		wl_drag_accept(drag, NULL);
-		dnd->drag_type = NULL;
-	}
-}
-
-static void
-drag_offer(void *data,
-	   struct wl_drag *drag, const char *type)
-{
-	fprintf(stderr, "drag offer %s\n", type);
-}
-
-static void
-drag_motion(void *data,
-	    struct wl_drag *drag,
-	    uint32_t time,
-	    int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
-{
-	struct dnd *dnd = data;
-
-	/* FIXME: Need to correlate this with the offer event.
-	 * Problem is, we don't know when we've seen that last offer
-	 * event, and we might need to look at all of them before we
-	 * can decide which one to go with. */
-	if (!dnd_get_item(dnd, surface_x, surface_y)) {
-		wl_drag_accept(drag, "text/plain");
-		dnd->drag_type = "text/plain";
-	} else {
-		wl_drag_accept(drag, NULL);
-		dnd->drag_type = NULL;
-	}
-}
-
-static void
 drag_target(void *data,
 	    struct wl_drag *drag, const char *mime_type)
 {
-	struct dnd *dnd = data;
-	struct input *input;
+	struct dnd_drag *dnd_drag = data;
+	struct dnd *dnd = dnd_drag->dnd;
 	struct wl_input_device *device;
+	cairo_surface_t *surface;
+	struct wl_buffer *buffer;
 
 	fprintf(stderr, "target %s\n", mime_type);
-	input = wl_drag_get_user_data(drag);
-	device = input_get_input_device(input);
+	device = input_get_input_device(dnd_drag->input);
 	if (mime_type)
-		wl_input_device_attach(device, dnd->opaque_buffer,
-				       dnd->hotspot_x, dnd->hotspot_y);
+		surface = dnd_drag->opaque;
 	else
-		wl_input_device_attach(device, dnd->translucent_buffer,
-				       dnd->hotspot_x, dnd->hotspot_y);
+		surface = dnd_drag->translucent;
+
+	buffer = display_get_buffer_for_surface(dnd->display, surface);
+	wl_input_device_attach(device, buffer,
+			       dnd_drag->hotspot_x, dnd_drag->hotspot_y);
+}
+
+static void
+drag_finish(void *data, struct wl_drag *drag, int fd)
+{
+	struct dnd_drag *dnd_drag = data;
+	char text[] = "[drop data]";
+
+	fprintf(stderr, "got 'finish', fd %d, sending message\n", fd);
+
+	write(fd, text, sizeof text);
+	close(fd);
+
+	/* The 'finish' event marks the end of the session on the drag
+	 * source side and we need to clean up the drag object created
+	 * and the local state. */
+	wl_drag_destroy(drag);
+	cairo_surface_destroy(dnd_drag->translucent);
+	cairo_surface_destroy(dnd_drag->opaque);
+	free(dnd_drag);
+}
+
+static const struct wl_drag_listener drag_listener = {
+	drag_target,
+	drag_finish
+};
+
+static void
+drag_offer_offer(void *data,
+		 struct wl_drag_offer *offer, const char *type)
+{
+	struct dnd_offer *dnd_offer = data;
+	char **p;
+
+	p = wl_array_add(&dnd_offer->types, sizeof *p);
+	if (p)
+		*p = strdup(type);
+}
+
+static void
+drag_offer_pointer_focus(void *data,
+			 struct wl_drag_offer *offer,
+			 uint32_t time, struct wl_surface *surface,
+			 int32_t x, int32_t y,
+			 int32_t surface_x, int32_t surface_y)
+{
+	struct dnd_offer *dnd_offer = data;
+	struct window *window;
+	char **p, **end;
+
+	/* The last event in a dnd session is pointer_focus with a
+	 * NULL surface, whether or not we get the drop event.  We
+	 * need to clean up the dnd_offer proxy and whatever state we
+	 * allocated. */
+	if (!surface) {
+		fprintf(stderr, "pointer focus NULL, session over\n");
+		wl_array_release(&dnd_offer->types);
+		free(dnd_offer);
+		wl_drag_offer_destroy(offer);
+		return;
+	}
+
+	fprintf(stderr, "drag pointer focus %p\n", surface);
+	fprintf(stderr, "offered types:\n");
+	end = dnd_offer->types.data + dnd_offer->types.size;
+	for (p = dnd_offer->types.data; p < end; p++)
+		fprintf(stderr, "\%s\n", *p);
+
+	window = wl_surface_get_user_data(surface);
+	dnd_offer->dnd = window_get_user_data(window);
+
+	if (!dnd_get_item(dnd_offer->dnd, surface_x, surface_y)) {
+		wl_drag_offer_accept(offer, time, "text/plain");
+		dnd_offer->drag_type = "text/plain";
+	} else {
+		wl_drag_offer_accept(offer, time, NULL);
+		dnd_offer->drag_type = NULL;
+	}
+}
+
+static void
+drag_offer_motion(void *data,
+		  struct wl_drag_offer *offer, uint32_t time,
+		  int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
+{
+	struct dnd_offer *dnd_offer = data;
+	struct dnd *dnd = dnd_offer->dnd;
+
+	if (!dnd_get_item(dnd, surface_x, surface_y)) {
+		fprintf(stderr, "drag offer motion %d, %d, accepting\n",
+			surface_x, surface_y);
+		wl_drag_offer_accept(offer, time, "text/plain");
+		dnd_offer->drag_type = "text/plain";
+	} else {
+		fprintf(stderr, "drag offer motion %d, %d, declining\n",
+			surface_x, surface_y);
+		wl_drag_offer_accept(offer, time, NULL);
+		dnd_offer->drag_type = NULL;
+	}
 }
 
 static gboolean
 drop_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-	struct dnd *dnd = data;
+	struct dnd_offer *dnd_offer = data;
 	char buffer[256];
 	int fd;
 	unsigned int len;
@@ -312,7 +361,7 @@ drop_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
 	fprintf(stderr, "read %d bytes: %s\n", len, buffer);
 	fd = g_io_channel_unix_get_fd(source);
 	close(fd);
-	g_source_remove(dnd->tag);
+	g_source_remove(dnd_offer->tag);
 
 	g_io_channel_unref(source);
 
@@ -320,13 +369,13 @@ drop_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
 }
 
 static void
-drag_drop(void *data, struct wl_drag *drag)
+drag_offer_drop(void *data, struct wl_drag_offer *offer)
 {
-	struct dnd *dnd = data;
-	int p[2];
+	struct dnd_offer *dnd_offer = data;
 	GIOChannel *channel;
+	int p[2];
 
-	if (!dnd->drag_type) {
+	if (!dnd_offer->drag_type) {
 		fprintf(stderr, "got 'drop', but no target\n");
 		/* FIXME: Should send response so compositor and
 		 * source knows it's over. Can't send -1 to indicate
@@ -338,38 +387,39 @@ drag_drop(void *data, struct wl_drag *drag)
 	fprintf(stderr, "got 'drop', sending write end of pipe\n");
 
 	pipe(p);
-	wl_drag_receive(drag, p[1]);
+	wl_drag_offer_receive(offer, p[1]);
 	close(p[1]);
 
 	channel = g_io_channel_unix_new(p[0]);
-	dnd->tag = g_io_add_watch(channel, G_IO_IN, drop_io_func, dnd);
+	dnd_offer->tag = g_io_add_watch(channel, G_IO_IN,
+					drop_io_func, dnd_offer);
 }
 
-static void
-drag_finish(void *data, struct wl_drag *drag, int fd)
-{
-	char text[] = "[drop data]";
-
-	fprintf(stderr, "got 'finish', fd %d, sending message\n", fd);
-
-	write(fd, text, sizeof text);
-	close(fd);
-}
-
-static const struct wl_drag_listener drag_listener = {
-	drag_handle_device,
-	drag_pointer_focus,
-	drag_offer,
-	drag_motion,
-	drag_target,
-	drag_drop,
-	drag_finish
+static const struct wl_drag_offer_listener drag_offer_listener = {
+	drag_offer_offer,
+	drag_offer_pointer_focus,
+	drag_offer_motion,
+	drag_offer_drop,
 };
 
-static cairo_surface_t *
-create_drag_cursor(struct dnd *dnd, struct item *item, int32_t x, int32_t y,
-		   double opacity)
+static void
+drag_offer_handler(struct wl_drag_offer *offer, struct display *display)
 {
+	struct dnd_offer *dnd_offer;
+
+	dnd_offer = malloc(sizeof *dnd_offer);
+	if (dnd_offer == NULL)
+		return;
+
+	wl_drag_offer_add_listener(offer, &drag_offer_listener, dnd_offer);
+	wl_array_init(&dnd_offer->types);
+}
+
+static cairo_surface_t *
+create_drag_cursor(struct dnd_drag *dnd_drag,
+		   struct item *item, int32_t x, int32_t y, double opacity)
+{
+	struct dnd *dnd = dnd_drag->dnd;
 	cairo_surface_t *surface, *pointer;
 	int32_t pointer_width, pointer_height, hotspot_x, hotspot_y;
 	struct rectangle rectangle;
@@ -409,8 +459,8 @@ create_drag_cursor(struct dnd *dnd, struct item *item, int32_t x, int32_t y,
 	display_flush_cairo_device(dnd->display);
 	cairo_destroy(cr);
 
-	dnd->hotspot_x = pointer_width + x - item->x;
-	dnd->hotspot_y = pointer_height + y - item->y;
+	dnd_drag->hotspot_x = pointer_width + x - item->x;
+	dnd_drag->hotspot_y = pointer_height + y - item->y;
 
 	return surface;
 }
@@ -423,8 +473,8 @@ dnd_button_handler(struct window *window,
 	struct dnd *dnd = data;
 	int32_t x, y;
 	struct item *item;
-	cairo_surface_t *surface;
 	struct rectangle rectangle;
+	struct dnd_drag *dnd_drag;
 
 	window_get_child_rectangle(dnd->window, &rectangle);
 	input_get_position(input, &x, &y);
@@ -435,18 +485,17 @@ dnd_button_handler(struct window *window,
 	if (item && state == 1) {
 		fprintf(stderr, "start drag, item %p\n", item);
 
-		surface = create_drag_cursor(dnd, item, x, y, 1);
-		dnd->opaque_buffer =
-			display_get_buffer_for_surface(dnd->display, surface);
+		dnd_drag = malloc(sizeof *dnd_drag);
+		dnd_drag->dnd = dnd;
+		dnd_drag->input = input;
 
-		surface = create_drag_cursor(dnd, item, x, y, 0.2);
-		dnd->translucent_buffer =
-			display_get_buffer_for_surface(dnd->display, surface);
+		dnd_drag->opaque =
+			create_drag_cursor(dnd_drag, item, x, y, 1);
+		dnd_drag->translucent =
+			create_drag_cursor(dnd_drag, item, x, y, 0.2);
 
-		window_start_drag(window, input, time);
-
-		/* FIXME: We leak the surface because we can't free it
-		 * until the server has referenced it. */
+		window_start_drag(window, input, time,
+				  &drag_listener, dnd_drag);
 	}
 }
 
@@ -509,8 +558,6 @@ dnd_create(struct display *display)
 	rectangle.height = 4 * (item_height + item_padding) + item_padding;
 	window_set_child_size(dnd->window, &rectangle);
 
-	display_add_drag_listener(display, &drag_listener, dnd);
-
 	dnd_draw(dnd);
 
 	return dnd;
@@ -531,6 +578,8 @@ main(int argc, char *argv[])
 	srandom(tv.tv_usec);
 
 	d = display_create(&argc, &argv, option_entries);
+
+	display_set_drag_offer_handler(d, drag_offer_handler);
 
 	dnd = dnd_create (d);
 

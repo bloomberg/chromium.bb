@@ -146,6 +146,18 @@ wl_proxy_create(struct wl_proxy *factory,
 				      wl_display_allocate_id(factory->display));
 }
 
+WL_EXPORT void
+wl_proxy_destroy(struct wl_proxy *proxy)
+{
+	struct wl_listener *listener, *next;
+
+	wl_list_for_each_safe(listener, next, &proxy->listener_list, link)
+		free(listener);
+
+	wl_hash_table_remove(proxy->display->objects, proxy->base.id);
+	free(proxy);
+}
+
 WL_EXPORT int
 wl_proxy_add_listener(struct wl_proxy *proxy,
 		      void (**implementation)(void), void *data)

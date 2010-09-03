@@ -66,7 +66,7 @@
   </interface>
 
   <interface name="buffer" version="1">
-    <request name="destroy"/>
+    <request name="destroy" type="destructor"/>
   </interface>
 
   <interface name="shell" version="1">
@@ -84,6 +84,10 @@
       <arg name="edges" type="uint"/>
     </request>
 
+    <request name="create_drag">
+      <arg name="id" type="new_id" interface="drag"/>
+    </request>
+
     <event name="configure">
       <arg name="time" type="uint"/>
       <!-- Same as edges except also move (16) -->
@@ -97,46 +101,65 @@
   </interface>
 
   <interface name="drag" version="1">
-    <request name="prepare">
-      <!-- Start a drag action from given surface and device for the
-	   grab started by the button click at time -->
-      <arg name="surface" type="object" interface="surface"/>
-      <arg name="time" type="uint"/>
-    </request>
-
     <!-- Add an offered mime type.  Can be called several times to
          offer multiple types, but must be called before 'activate'. -->
     <request name="offer">
       <arg name="type" type="string"/>
     </request>
 
-    <request name="activate"/>
+    <request name="activate">
+      <arg name="surface" type="object" interface="surface"/>
+      <arg name="input_device" type="object" interface="input_device"/>
+      <arg name="time" type="uint"/>
+    </request>
 
-    <!-- Cancel the drag. -->
-    <request name="cancel"/>
+    <!-- Destroy the drag and cancel the session. -->
+    <request name="destroy" type="destructor"/>
 
-    <!-- Called by the drag target to accept the offer of the given
-         type -->
+    <!-- Sent when a target accepts pointer_focus or motion events.
+         If a target does not accept any of the offered types, type is
+         NULL -->
+    <event name="target">
+      <arg name="mime_type" type="string"/>
+    </event>
+
+    <!-- Sent when the drag is finished.  The final mime type is that
+         of the last target event.  If that was NULL, no drag target
+         was valid when the drag finished, fd is undefined and the
+         source should not send data.  The event is also sent in case
+         a drag source tries to activate a drag after the grab was
+         released, in which case mime_type will also be NULL. -->
+    <event name="finish">
+      <arg name="fd" type="fd"/>
+    </event>
+  </interface>
+
+
+  <interface name="drag_offer" version="1">
+    <!-- Call to accept the offer of the given type -->
     <request name="accept">
+      <arg name="time" type="uint"/>
       <arg name="type" type="string"/>
     </request>
 
-    <!-- Called by the drag target to initiate the drag finish
-         sequence.  Send the pipe fd to the compositor, which forwards
-         it to the source in the 'finish' event -->
+    <!-- Called to initiate the drag finish sequence.  Sends the pipe
+         fd to the compositor, which forwards it to the source in the
+         'finish' event -->
     <request name="receive">
       <arg name="fd" type="fd"/>
     </request>
 
-    <!-- Sent at connect time to announce the association -->
-    <event name="device">
-      <arg name="device" type="object" interface="input_device"/>
+    <!-- Sent before the pointer_focus event to announce the types
+         offered.  One event per offered mime type. -->
+    <event name="offer">
+      <arg name="type" type="string"/>
     </event>
 
-    <!-- Similar to device::pointer_focus.  Sent to potential
-	 target surfaces to offer drag data.  If the device
-	 leaves the window, the drag stops or the originator cancels
-	 the drag, this event is sent with the NULL surface. -->
+    <!-- Similar to device::pointer_focus.  Sent to potential target
+         surfaces to offer drag data.  If the device leaves the
+         window, the drag stops or the originator cancels the drag,
+         this event is sent with the NULL surface, at which point the
+         drag object may no longer be valid. -->
     <event name="pointer_focus">
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="surface"/>
@@ -144,12 +167,6 @@
       <arg name="y" type="int"/>
       <arg name="surface_x" type="int"/>
       <arg name="surface_y" type="int"/>
-    </event>
-
-    <!-- Sent after the pointer_focus event to announce the types
-	 offered.  One event per offered mime type. -->
-    <event name="offer">
-      <arg name="type" type="string"/>
     </event>
 
     <!-- Similar to device::motion.  Sent to potential target surfaces
@@ -162,34 +179,15 @@
       <arg name="surface_y" type="int"/>
     </event>
 
-    <!-- Sent to drag originator in response to pointer_focus and
-         motion events.  If a target does not accept any of the
-         offered types, type is NULL -->
-    <event name="target">
-      <arg name="mime_type" type="string"/>
-    </event>
-
-    <!-- Sent to target, to indicate that the drag is finishing.  The
-         last motion/pointer_focus event gives the location of the
-         drop.  Target must respond with the 'receive' request, which
-         sends an fd to the source for writing the drag data. -->
+    <!-- Sent to indicate that the drag is finishing.  The last
+         motion/pointer_focus event gives the location of the drop.
+         Target must respond with the 'receive' request, which sends
+         an fd to the source for writing the drag data. -->
     <event name="drop"/>
-
-    <!-- Sent to drag source when the drag is finished.  The final
-         mime type is that of the last target event.  If that was
-         NULL, no drag target was valid when the drag finished, fd is
-         undefined and the source should not send data.  The event is
-         also sent in case a drag source tries to activate a drag
-         after the grab was released, in which case mime_type will
-         also be NULL. -->
-    <event name="finish">
-      <arg name="fd" type="fd"/>
-    </event>
-
   </interface>
 
   <interface name="surface" version="1">
-    <request name="destroy"/>
+    <request name="destroy" type="destructor"/>
 
     <request name="attach">
       <arg name="buffer" type="object" interface="buffer"/>

@@ -107,7 +107,7 @@ struct wlsc_input_device {
 	int32_t grab_width, grab_height;
 	int32_t grab_dx, grab_dy;
 	uint32_t grab_button;
-	struct wl_drag drag;
+	struct wl_drag *drag;
 
 	struct wlsc_listener listener;
 };

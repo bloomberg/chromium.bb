@@ -74,6 +74,7 @@ struct message {
 	char *uppercase_name;
 	struct wl_list arg_list;
 	struct wl_list link;
+	int destructor;
 };
 
 enum arg_type {
@@ -177,6 +178,11 @@ start_element(void *data, const char *element_name, const char **atts)
 			wl_list_insert(ctx->interface->event_list.prev,
 				       &message->link);
 
+		if (type != NULL && strcmp(type, "destructor") == 0)
+			message->destructor = 1;
+		else
+			message->destructor = 0;
+
 		ctx->message = message;
 	} else if (strcmp(element_name, "arg") == 0) {
 		arg = malloc(sizeof *arg);
@@ -263,6 +269,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 {
 	struct message *m;
 	struct arg *a, *ret;
+	int has_destructor, has_destroy;
 
 	/* We provide a hand written constructor for the display object */
 	if (strcmp(interface->name, "display") != 0)
@@ -292,6 +299,33 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	       "}\n\n",
 	       interface->name, interface->name, interface->name,
 	       interface->name);
+
+	has_destructor = 0;
+	has_destroy = 0;
+	wl_list_for_each(m, message_list, link) {
+		if (m->destructor)
+			has_destructor = 1;
+		if (strcmp(m->name, "destroy)") == 0)
+			has_destroy = 1;
+	}
+
+	if (!has_destructor && has_destroy) {
+		fprintf(stderr,
+			"interface %s has method named destroy but"
+			"no destructor", interface->name);
+		exit(EXIT_FAILURE);
+	}
+
+	/* And we have a hand-written display destructor */
+	if (!has_destructor && strcmp(interface->name, "display") != 0)
+		printf("static inline void\n"
+		       "wl_%s_destroy(struct wl_%s *%s)\n"
+		       "{\n"
+		       "\twl_proxy_destroy("
+		       "(struct wl_proxy *) %s);\n"
+		       "}\n\n",
+		       interface->name, interface->name, interface->name,
+		       interface->name);
 
 	if (wl_list_empty(message_list))
 		return;
@@ -346,6 +380,11 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 				printf("%s", a->name);
 		}
 		printf(");\n");
+
+		if (m->destructor)
+			printf("\n\twl_proxy_destroy("
+			       "(struct wl_proxy *) %s);\n",
+			       interface->name);
 
 		if (ret)
 			printf("\n\treturn (struct wl_%s *) %s;\n",
@@ -441,6 +480,9 @@ static const char client_prototypes[] =
 	"extern struct wl_proxy *\n"
 	"wl_proxy_create_for_id(struct wl_display *display,\n"
 	"\t\t       const struct wl_interface *interface, uint32_t id);\n"
+
+	"extern void\n"
+	"wl_proxy_destroy(struct wl_proxy *proxy);\n\n"
 
 	"extern int\n"
 	"wl_proxy_add_listener(struct wl_proxy *proxy,\n"

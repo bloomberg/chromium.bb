@@ -124,8 +124,13 @@ struct wl_visual {
 	struct wl_object base;
 };
 
-struct wl_drag {
+struct wl_drag_offer {
 	struct wl_object base;
+};
+
+struct wl_drag {
+	struct wl_resource resource;
+	struct wl_drag_offer drag_offer;
 	struct wl_surface *source;
 	struct wl_surface *pointer_focus;
 	struct wl_client *target;
@@ -133,7 +138,7 @@ struct wl_drag {
 	struct wl_input_device *input_device;
 	struct wl_array types;
 	const char *type;
-	uint32_t time;
+	uint32_t pointer_focus_time;
 };
 
 void

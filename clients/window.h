@@ -111,6 +111,9 @@ typedef int (*window_motion_handler_t)(struct window *window,
 				       int32_t x, int32_t y,
 				       int32_t sx, int32_t sy, void *data);
 
+typedef void (*display_drag_offer_handler_t)(struct wl_drag_offer *offer,
+					     struct display *display);
+
 struct window *
 window_create(struct display *display, const char *title,
 	      int32_t x, int32_t y, int32_t width, int32_t height);
@@ -148,6 +151,9 @@ window_set_fullscreen(struct window *window, int fullscreen);
 
 void
 window_set_user_data(struct window *window, void *data);
+
+void *
+window_get_user_data(struct window *window);
 
 void
 window_set_redraw_handler(struct window *window,
@@ -191,7 +197,13 @@ window_set_frame_handler(struct window *window,
 			 window_frame_handler_t handler);
 
 void
-window_start_drag(struct window *window, struct input *input, uint32_t time);
+display_set_drag_offer_handler(struct display *display,
+			       display_drag_offer_handler_t handler);
+
+struct wl_drag *
+window_start_drag(struct window *window, struct input *input, uint32_t time,
+		  const struct wl_drag_listener *listener, void *data);
+
 
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);

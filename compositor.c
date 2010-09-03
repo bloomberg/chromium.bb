@@ -573,9 +573,49 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 	wlsc_input_device_set_pointer_image(wd, pointer);
 }
 
+static void
+destroy_drag(struct wl_resource *resource, struct wl_client *client)
+{
+	struct wl_drag *drag =
+		container_of(resource, struct wl_drag, resource);
+
+	/* FIXME: More stuff */
+
+	free(drag);
+}
+
+const static struct wl_drag_interface drag_interface;
+
+static void
+shell_create_drag(struct wl_client *client,
+		  struct wl_shell *shell, uint32_t id)
+{
+	struct wl_display *display = wl_client_get_display(client);
+	struct wl_drag *drag;
+
+	drag = malloc(sizeof *drag);
+	if (drag == NULL) {
+		wl_client_post_event(client,
+				     (struct wl_object *) display,
+				     WL_DISPLAY_NO_MEMORY);
+		return;
+	}
+
+	memset(drag, 0, sizeof *drag);
+	drag->resource.base.id = id;
+	drag->resource.base.interface = &wl_drag_interface;
+	drag->resource.base.implementation =
+		(void (**)(void)) &drag_interface;
+
+	drag->resource.destroy = destroy_drag;
+
+	wl_client_add_resource(client, &drag->resource);
+}
+
 const static struct wl_shell_interface shell_interface = {
 	shell_move,
-	shell_resize
+	shell_resize,
+	shell_create_drag
 };
 
 static void
@@ -589,7 +629,7 @@ compositor_create_surface(struct wl_client *client,
 	if (surface == NULL) {
 		wl_client_post_event(client,
 				     (struct wl_object *) ec->wl_display,
-				     WL_DISPLAY_NO_MEMORY, 0);
+				     WL_DISPLAY_NO_MEMORY);
 		return;
 	}
 
@@ -696,8 +736,6 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 }
 
 static void
-wl_drag_reset(struct wl_drag *drag);
-static void
 wl_drag_set_pointer_focus(struct wl_drag *drag,
 			  struct wlsc_surface *surface, uint32_t time,
 			  int32_t x, int32_t y, int32_t sx, int32_t sy);
@@ -797,11 +835,12 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 
 	case WLSC_DEVICE_GRAB_DRAG:
 		es = pick_surface(device, &sx, &sy);
-		wl_drag_set_pointer_focus(&device->drag,
+		wl_drag_set_pointer_focus(device->drag,
 					  es, time, x, y, sx, sy);
 		if (es)
-			wl_surface_post_event(&es->base, &device->drag.base,
-					      WL_DRAG_MOTION,
+			wl_surface_post_event(&es->base,
+					      &device->drag->drag_offer.base,
+					      WL_DRAG_OFFER_MOTION,
 					      time, x, y, sx, sy);
 		break;
 
@@ -817,7 +856,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 static void
 wlsc_input_device_end_grab(struct wlsc_input_device *device, uint32_t time)
 {
-	struct wl_drag *drag = &device->drag;
+	struct wl_drag *drag = device->drag;
 	struct wlsc_surface *es;
 	int32_t sx, sy;
 
@@ -825,9 +864,10 @@ wlsc_input_device_end_grab(struct wlsc_input_device *device, uint32_t time)
 	case WLSC_DEVICE_GRAB_DRAG:
 		if (drag->target)
 			wl_client_post_event(drag->target,
-					     &drag->base, WL_DRAG_DROP);
+					     &drag->drag_offer.base,
+					     WL_DRAG_OFFER_DROP);
 		wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);
-		wl_drag_reset(drag);
+		device->drag = NULL;
 		break;
 	default:
 		break;
@@ -1012,79 +1052,88 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 	if (drag->pointer_focus &&
 	    (!surface || drag->pointer_focus->client != surface->base.client))
 		wl_surface_post_event(drag->pointer_focus,
-				      &drag->base,
-				      WL_DRAG_POINTER_FOCUS,
+				      &drag->drag_offer.base,
+				      WL_DRAG_OFFER_POINTER_FOCUS,
 				      time, NULL, 0, 0, 0, 0);
-	if (surface) {
+
+	if (surface &&
+	    (!drag->pointer_focus ||
+	     drag->pointer_focus->client != surface->base.client)) {
 		wl_surface_post_event(&surface->base,
-				      &drag->base,
-				      WL_DRAG_POINTER_FOCUS,
-				      time, &surface->base,
-				      x, y, sx, sy);
+				      (struct wl_object *) surface->compositor->wl_display,
+				      WL_DISPLAY_GLOBAL,
+				      &drag->drag_offer.base,
+				      drag->drag_offer.base.interface->name,
+				      drag->drag_offer.base.interface->version);
 
 		end = drag->types.data + drag->types.size;
 		for (p = drag->types.data; p < end; p++)
 			wl_surface_post_event(&surface->base,
-					      &drag->base,
-					      WL_DRAG_OFFER, *p);
+					      &drag->drag_offer.base,
+					      WL_DRAG_OFFER_OFFER, *p);
 	}
 
+	if (surface) {
+		wl_surface_post_event(&surface->base,
+				      &drag->drag_offer.base,
+				      WL_DRAG_OFFER_POINTER_FOCUS,
+				      time, &surface->base,
+				      x, y, sx, sy);
+
+	}
 
 	drag->pointer_focus = &surface->base;
+	drag->pointer_focus_time = time;
 	drag->target = NULL;
 }
 
 static void
-wl_drag_reset(struct wl_drag *drag)
+drag_offer_accept(struct wl_client *client,
+		  struct wl_drag_offer *offer, uint32_t time, const char *type)
 {
+	struct wl_drag *drag = container_of(offer, struct wl_drag, drag_offer);
 	char **p, **end;
 
+	/* If the client responds to drag pointer_focus or motion
+	 * events after the pointer has left the surface, we just
+	 * discard the accept requests.  The drag source just won't
+	 * get the corresponding 'target' events and eventually the
+	 * next surface/root will start sending events. */
+	if (time < drag->pointer_focus_time)
+		return;
+
+	drag->target = client;
+	drag->type = NULL;
 	end = drag->types.data + drag->types.size;
 	for (p = drag->types.data; p < end; p++)
-		free(*p);
-	wl_array_release(&drag->types);
-	wl_array_init(&drag->types);
+		if (type && strcmp(*p, type) == 0)
+			drag->type = *p;
 
-	/* FIXME: We need to reset drag->target too, but can't right
-	 * now because we need it for send/drop.
-	 *
-	 * drag->target = NULL;
-	 * drag->source = NULL;
-	 */
-	drag->time = 0;
-	drag->pointer_focus = NULL;
+	wl_surface_post_event(drag->source, &drag->resource.base,
+			      WL_DRAG_TARGET, drag->type);
 }
 
 static void
-drag_prepare(struct wl_client *client,
-	     struct wl_drag *drag, struct wl_surface *surface, uint32_t time)
+drag_offer_receive(struct wl_client *client,
+		   struct wl_drag_offer *offer, int fd)
 {
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) drag->input_device;
+	struct wl_drag *drag = container_of(offer, struct wl_drag, drag_offer);
 
-	if (&device->pointer_focus->base != surface ||
-	    device->grab_time != time)
-		return;
-
-	wl_drag_reset(drag);
-	drag->source = surface;
-	drag->time = time;
+	wl_surface_post_event(drag->source, &drag->resource.base,
+			      WL_DRAG_FINISH, fd);
+	close(fd);
 }
+
+static const struct wl_drag_offer_interface drag_offer_interface = {
+	drag_offer_accept,
+	drag_offer_receive
+};
 
 static void
 drag_offer(struct wl_client *client, struct wl_drag *drag, const char *type)
 {
 	struct wl_display *display = wl_client_get_display (client);
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) drag->input_device;
 	char **p;
-
-	if (drag->source == NULL ||
-	    drag->source->client != client ||
-	    device->grab != WLSC_DEVICE_GRAB_MOTION ||
-	    &device->pointer_focus->base != drag->source ||
-	    device->grab_time != drag->time)
-		return;
 
 	p = wl_array_add(&drag->types, sizeof *p);
 	if (p)
@@ -1097,25 +1146,36 @@ drag_offer(struct wl_client *client, struct wl_drag *drag, const char *type)
 
 static void
 drag_activate(struct wl_client *client,
-	      struct wl_drag *drag)
+	      struct wl_drag *drag,
+	      struct wl_surface *surface,
+	      struct wl_input_device *input_device, uint32_t time)
 {
+	struct wl_display *display = wl_client_get_display (client);
 	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) drag->input_device;
-	struct wlsc_surface *surface;
+		(struct wlsc_input_device *) input_device;
+	struct wlsc_surface *target;
 	int32_t sx, sy;
 
-	if (drag->source == NULL ||
-	    drag->source->client != client ||
-	    device->grab != WLSC_DEVICE_GRAB_MOTION ||
-	    &device->pointer_focus->base != drag->source ||
-	    device->grab_time != drag->time)
+	if (device->grab != WLSC_DEVICE_GRAB_MOTION ||
+	    &device->pointer_focus->base != surface ||
+	    device->grab_time != time)
 		return;
 
-	wlsc_input_device_start_grab(device, drag->time,
+	drag->source = surface;
+	drag->input_device = input_device;
+
+	drag->drag_offer.base.interface = &wl_drag_offer_interface;
+	drag->drag_offer.base.implementation =
+		(void (**)(void)) &drag_offer_interface;
+
+	wl_display_add_object(display, &drag->drag_offer.base);
+
+	wlsc_input_device_start_grab(device, time,
 				     WLSC_DEVICE_GRAB_DRAG);
 
-	surface = pick_surface(device, &sx, &sy);
-	wl_drag_set_pointer_focus(&device->drag, surface, drag->time,
+	device->drag = drag;
+	target = pick_surface(device, &sx, &sy);
+	wl_drag_set_pointer_focus(device->drag, target, time,
 				  device->x, device->y, sx, sy);
 }
 
@@ -1125,101 +1185,18 @@ drag_cancel(struct wl_client *client, struct wl_drag *drag)
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) drag->input_device;
 
-	if (drag->source == NULL ||
-	    drag->source->client != client ||
-	    device->grab != WLSC_DEVICE_GRAB_DRAG)
+	if (drag->source == NULL || drag->source->client != client)
 		return;
 
 	wlsc_input_device_end_grab(device, get_time());
-}
-
-static void
-drag_accept(struct wl_client *client,
-	    struct wl_drag *drag, const char *type)
-{
-	char **p, **end;
-
-	/* If the client responds to drag motion events after the
-	 * pointer has left the surface, we just discard the accept
-	 * requests.  The drag source just won't get the corresponding
-	 * 'target' events and the next surface/root will start
-	 * sending events. */
-	if (drag->pointer_focus == NULL)
-		return;
-
-	/* The accept request may arrive after the pointer has left
-	 * the surface that received the drag motion events that
-	 * triggered the request.  But if the pointer re-enters the
-	 * surface (or another surface from the same client) and we
-	 * receive the 'accept' requests from the first visit to the
-	 * surface later, this check will pass.  Then we end up
-	 * sending the 'target' event for the old 'accept' requests
-	 * events *after* potentially sending 'target' from the root
-	 * surface, out of order.  So we need to track the time of
-	 * pointer_focus and this request needs a time stamp so we can
-	 * compare and reject 'accept' requests that are older than
-	 * the pointer_focus in timestamp. */
-	if (drag->pointer_focus->client != client)
-		return;
-
-	/* FIXME: We need a serial number here to correlate the accept
-	 * request with a pointer_focus/motion event. */
-	drag->target = client;
-
-	if (type == NULL) {
-		drag->type = NULL;
-	} else {
-		end = drag->types.data + drag->types.size;
-		for (p = drag->types.data; p < end; p++)
-			if (strcmp(*p, type) == 0)
-				drag->type = *p;
-	}
-
-	wl_surface_post_event(drag->source, &drag->base,
-			      WL_DRAG_TARGET, drag->type);
-}
-
-static void
-drag_receive(struct wl_client *client,
-	     struct wl_drag *drag, int fd)
-{
-	wl_surface_post_event(drag->source, &drag->base, WL_DRAG_FINISH, fd);
-	close(fd);
+	device->drag = NULL;
 }
 
 static const struct wl_drag_interface drag_interface = {
-	drag_prepare,
 	drag_offer,
 	drag_activate,
 	drag_cancel,
-	drag_accept,
-	drag_receive
 };
-
-static void
-wl_drag_post_device(struct wl_client *client, struct wl_object *global)
-{
-	struct wl_drag *drag = container_of(global, struct wl_drag, base);
-
-	wl_client_post_event(client, global,
-			     WL_DRAG_DEVICE, drag->input_device);
-}
-
-static void
-wl_drag_init(struct wl_drag *drag,
-	     struct wl_display *display, struct wl_input_device *input_device)
-{
-	drag->base.interface = &wl_drag_interface;
-	drag->base.implementation = (void (**)(void))
-		&drag_interface;
-
-	wl_display_add_object(display, &drag->base);
-	wl_display_add_global(display, &drag->base, wl_drag_post_device);
-
-	drag->source = NULL;
-	wl_array_init(&drag->types);
-	drag->input_device = input_device;
-}
 
 void
 wlsc_input_device_init(struct wlsc_input_device *device,
@@ -1230,8 +1207,6 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 		(void (**)(void)) &input_device_interface;
 	wl_display_add_object(ec->wl_display, &device->base.base);
 	wl_display_add_global(ec->wl_display, &device->base.base, NULL);
-
-	wl_drag_init(&device->drag, ec->wl_display, &device->base);
 
 	device->x = 100;
 	device->y = 100;

@@ -27,18 +27,6 @@ Core wayland protocol
       send a NULL type or x-wayland/root-something type if the source
       offers that.
 
-   Races between pointer motion, ending the drag, the target sending
-   accept request and the source receiving the target event.
-
-    - We've sent a drag focus or motion event to the source, but
-      haven't received an accept request corresponding to that event
-      and now the button is release.  The compositor could wait for
-      the source to reply to outstanding focus/motion events before
-      sending the finish event to the source.  Or we could send the
-      finish event through the source so that it needs to reply to the
-      finish event too.  Either way, the state of the drag blocks on
-      the client.  What if we drag to a client that doesn't doo dnd?
-
    How do we animate the drag icon back to the drag origin in case of
    a failed drag?
 
@@ -47,18 +35,6 @@ Core wayland protocol
    dnd.register_surface() method so clients can opt-in the surfaces
    that will participate in dnd.  Or just assume client is not
    participating until we receive an accept request.
-
-   May need to look at all offer events before we can decide which one
-   to go with.  Problem is, we don't know when we've seen that last
-   offer event.
-
-   Create transient dnd object when a client starts a drag.  Announce
-   the dnd object to clients first time the drag enters one of its
-   surfaces.  Track if we've already announced the object by comparing
-   the drag start timestamp/serial with the clients last-event
-   timestamp/serial?  Wont work if we send other events to a client
-   after creating the drag object.  Maybe just keep the transient
-   object on the initiator side?
 
  - Pointer image issue:
 

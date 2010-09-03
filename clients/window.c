@@ -71,6 +71,8 @@ struct display {
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 	struct xkb_desc *xkb;
 	cairo_surface_t **pointer_surfaces;
+
+	display_drag_offer_handler_t drag_offer_handler;
 };
 
 struct window {
@@ -107,7 +109,6 @@ struct window {
 struct input {
 	struct display *display;
 	struct wl_input_device *input_device;
-	struct wl_drag *drag;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
 	uint32_t modifiers;
@@ -744,25 +745,21 @@ input_get_input_device(struct input *input)
 	return input->input_device;
 }
 
-void
-display_add_drag_listener(struct display *display,
-			  const struct wl_drag_listener *drag_listener,
-			  void *data)
+struct wl_drag *
+window_start_drag(struct window *window, struct input *input, uint32_t time,
+		  const struct wl_drag_listener *listener, void *data)
 {
-	struct input *input;
+	struct wl_drag *drag;
 
-	wl_list_for_each(input, &display->input_list, link)
-		wl_drag_add_listener(input->drag, drag_listener, data);
-}
-
-void
-window_start_drag(struct window *window, struct input *input, uint32_t time)
-{
 	cairo_device_flush (window->display->device);
 
-	wl_drag_prepare(input->drag, window->surface, time);
-	wl_drag_offer(input->drag, "text/plain");
-	wl_drag_activate(input->drag);
+	drag = wl_shell_create_drag(window->display->shell);
+	wl_drag_offer(drag, "text/plain");
+	wl_drag_offer(drag, "text/html");
+	wl_drag_activate(drag, window->surface, input->input_device, time);
+	wl_drag_add_listener(drag, listener, data);
+
+	return drag;
 }
 
 static void
@@ -900,6 +897,12 @@ void
 window_set_user_data(struct window *window, void *data)
 {
 	window->user_data = data;
+}
+
+void *
+window_get_user_data(struct window *window)
+{
+	return window->user_data;
 }
 
 void
@@ -1100,70 +1103,11 @@ display_add_input(struct display *d, uint32_t id)
 }
 
 static void
-drag_handle_device(void *data,
-		   struct wl_drag *drag, struct wl_input_device *device)
-{
-	struct input *input;
-
-	input = wl_input_device_get_user_data(device);
-	input->drag = drag;
-	wl_drag_set_user_data(drag, input);
-}
-
-static void
-drag_pointer_focus(void *data,
-		   struct wl_drag *drag,
-		   uint32_t time, struct wl_surface *surface,
-		   int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
-{
-}
-
-static void
-drag_offer(void *data,
-	   struct wl_drag *drag, const char *type)
-{
-}
-
-static void
-drag_motion(void *data,
-	    struct wl_drag *drag,
-	    uint32_t time,
-	    int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
-{
-}
-
-static void
-drag_target(void *data,
-	    struct wl_drag *drag, const char *mime_type)
-{
-}
-
-static void
-drag_drop(void *data, struct wl_drag *drag)
-{
-}
-
-static void
-drag_finish(void *data, struct wl_drag *drag, int fd)
-{
-}
-
-static const struct wl_drag_listener drag_listener = {
-	drag_handle_device,
-	drag_pointer_focus,
-	drag_offer,
-	drag_motion,
-	drag_target,
-	drag_drop,
-	drag_finish
-};
-
-static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
 	struct display *d = data;
-	struct wl_drag *drag;
+	struct wl_drag_offer *offer;
 
 	if (strcmp(interface, "compositor") == 0) {
 		d->compositor = wl_compositor_create(display, id);
@@ -1180,9 +1124,9 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "drm") == 0) {
 		d->drm = wl_drm_create(display, id);
 		wl_drm_add_listener(d->drm, &drm_listener, d);
-	} else if (strcmp(interface, "drag") == 0) {
-		drag = wl_drag_create(display, id);
-		wl_drag_add_listener(drag, &drag_listener, NULL);
+	} else if (strcmp(interface, "drag_offer") == 0) {
+		offer = wl_drag_offer_create(display, id);
+		d->drag_offer_handler(offer, d);
 	}
 }
 
@@ -1362,4 +1306,11 @@ void
 display_run(struct display *d)
 {
 	g_main_loop_run(d->loop);
+}
+
+void
+display_set_drag_offer_handler(struct display *display,
+			       display_drag_offer_handler_t handler)
+{
+	display->drag_offer_handler = handler;
 }
