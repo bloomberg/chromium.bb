@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
+#include "base/string_util.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -19,13 +20,14 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/codec/png_codec.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 // Encryptor is now in place for Windows and Mac.  The Linux implementation
 // currently obfuscates only.  Mac Encryptor implementation can block the
@@ -33,7 +35,6 @@
 // details.
 // For details on the Linux work see:
 //   http://crbug.com/25404
-#include "chrome/browser/password_manager/encryptor.h"
 
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
@@ -41,6 +42,7 @@ using webkit_glue::PasswordForm;
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Schema
+//   Note: The database stores time in seconds, UTC.
 //
 // keywords                 Most of the columns mirror that of a field in
 //                          TemplateURL. See TemplateURL for more details.
@@ -62,6 +64,8 @@ using webkit_glue::PasswordForm;
 //   prepopulate_id         See TemplateURL::prepopulate_id.
 //   autogenerate_keyword
 //   logo_id                See TemplateURL::logo_id
+//   created_by_policy      See TemplateURL::created_by_policy.  This was added
+//                          in version 26.
 //
 // logins
 //   origin_url
@@ -163,9 +167,9 @@ typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 25;
-const int kCompatibleVersionNumber = 25;
-const int kUrlIdPosition = 14;
+const int kCurrentVersionNumber = 26;
+const int kCompatibleVersionNumber = 26;
+const int kUrlIdPosition = 15;
 
 // Keys used in the meta table.
 const char* kDefaultSearchProviderKey = "Default Search Provider ID";
@@ -173,17 +177,6 @@ const char* kBuiltinKeywordVersion = "Builtin Keyword Version";
 
 // The maximum length allowed for form data.
 const size_t kMaxDataLength = 1024;
-
-std::string JoinStrings(const std::string& separator,
-                        const std::vector<std::string>& strings) {
-  if (strings.empty())
-    return std::string();
-  std::vector<std::string>::const_iterator i(strings.begin());
-  std::string result(*i);
-  while (++i != strings.end())
-    result += separator + *i;
-  return result;
-}
 
 void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindString(0, WideToUTF8(url.short_name()));
@@ -208,7 +201,7 @@ void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   }
   s->BindInt64(6, url.date_created().ToTimeT());
   s->BindInt(7, url.usage_count());
-  s->BindString(8, JoinStrings(";", url.input_encodings()));
+  s->BindString(8, JoinString(url.input_encodings(), ';'));
   s->BindInt(9, url.show_in_default_list() ? 1 : 0);
   if (url.suggestions_url())
     s->BindString(10, url.suggestions_url()->url());
@@ -217,6 +210,7 @@ void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindInt(11, url.prepopulate_id());
   s->BindInt(12, url.autogenerate_keyword() ? 1 : 0);
   s->BindInt(13, url.logo_id());
+  s->BindBool(14, url.created_by_policy());
 }
 
 void InitPasswordFormFromStatement(PasswordForm* form, sql::Statement* s) {
@@ -632,7 +626,8 @@ bool WebDatabase::InitKeywordsTable() {
                      "suggest_url VARCHAR,"
                      "prepopulate_id INTEGER DEFAULT 0,"
                      "autogenerate_keyword INTEGER DEFAULT 0,"
-                     "logo_id INTEGER DEFAULT 0)")) {
+                     "logo_id INTEGER DEFAULT 0,"
+                     "created_by_policy INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -833,13 +828,14 @@ bool WebDatabase::InitTokenServiceTable() {
 
 bool WebDatabase::AddKeyword(const TemplateURL& url) {
   DCHECK(url.id());
+  // Be sure to change kUrlIdPosition if you add columns
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO keywords "
       "(short_name, keyword, favicon_url, url, safe_for_autoreplace, "
       "originating_url, date_created, usage_count, input_encodings, "
       "show_in_default_list, suggest_url, prepopulate_id, "
-      "autogenerate_keyword, logo_id, id) VALUES "
-      "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+      "autogenerate_keyword, logo_id, created_by_policy, id) VALUES "
+      "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -869,7 +865,8 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
       "SELECT id, short_name, keyword, favicon_url, url, "
       "safe_for_autoreplace, originating_url, date_created, "
       "usage_count, input_encodings, show_in_default_list, "
-      "suggest_url, prepopulate_id, autogenerate_keyword, logo_id "
+      "suggest_url, prepopulate_id, autogenerate_keyword, logo_id, "
+      "created_by_policy "
       "FROM keywords ORDER BY id ASC"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
@@ -919,6 +916,8 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
 
     template_url->set_logo_id(s.ColumnInt(14));
 
+    template_url->set_created_by_policy(s.ColumnBool(15));
+
     urls->push_back(template_url);
   }
   return s.Succeeded();
@@ -926,13 +925,14 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
 
 bool WebDatabase::UpdateKeyword(const TemplateURL& url) {
   DCHECK(url.id());
+  // Be sure to change kUrlIdPosition if you add columns
   sql::Statement s(db_.GetUniqueStatement(
       "UPDATE keywords "
       "SET short_name=?, keyword=?, favicon_url=?, url=?, "
       "safe_for_autoreplace=?, originating_url=?, date_created=?, "
       "usage_count=?, input_encodings=?, show_in_default_list=?, "
       "suggest_url=?, prepopulate_id=?, autogenerate_keyword=?, "
-      "logo_id=? WHERE id=?"));
+      "logo_id=?, created_by_policy=? WHERE id=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -2029,6 +2029,19 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
       meta_table_.SetVersionNumber(25);
       meta_table_.SetCompatibleVersionNumber(
           std::min(25, kCompatibleVersionNumber));
+      // FALL THROUGH
+
+    case 25:
+      // Add the created_by_policy column.
+      if (!db_.Execute("ALTER TABLE keywords ADD COLUMN created_by_policy "
+                       "INTEGER DEFAULT 0")) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 26.";
+        return;
+      }
+      meta_table_.SetVersionNumber(26);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(26, kCompatibleVersionNumber));
       // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and

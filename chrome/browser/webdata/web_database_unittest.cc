@@ -197,12 +197,16 @@ TEST_F(WebDatabaseTest, Keywords) {
   template_url.SetFavIconURL(favicon_url);
   template_url.SetURL("http://url/", 0, 0);
   template_url.set_safe_for_autoreplace(true);
+  base::Time created_time = Time::Now();
+  template_url.set_date_created(created_time);
   template_url.set_show_in_default_list(true);
   template_url.set_originating_url(originating_url);
   template_url.set_usage_count(32);
   template_url.add_input_encoding("UTF-8");
+  template_url.add_input_encoding("UTF-16");
   set_prepopulate_id(&template_url, 10);
   set_logo_id(&template_url, 1000);
+  template_url.set_created_by_policy(true);
   SetID(1, &template_url);
 
   EXPECT_TRUE(db.AddKeyword(template_url));
@@ -223,6 +227,9 @@ TEST_F(WebDatabaseTest, Keywords) {
 
   EXPECT_TRUE(restored_url->safe_for_autoreplace());
 
+  // The database stores time only at the resolution of a second.
+  EXPECT_EQ(created_time.ToTimeT(), restored_url->date_created().ToTimeT());
+
   EXPECT_TRUE(restored_url->show_in_default_list());
 
   EXPECT_EQ(GetID(&template_url), GetID(restored_url));
@@ -231,12 +238,15 @@ TEST_F(WebDatabaseTest, Keywords) {
 
   EXPECT_EQ(32, restored_url->usage_count());
 
-  ASSERT_EQ(1U, restored_url->input_encodings().size());
+  ASSERT_EQ(2U, restored_url->input_encodings().size());
   EXPECT_EQ("UTF-8", restored_url->input_encodings()[0]);
+  EXPECT_EQ("UTF-16", restored_url->input_encodings()[1]);
 
   EXPECT_EQ(10, restored_url->prepopulate_id());
 
   EXPECT_EQ(1000, restored_url->logo_id());
+
+  EXPECT_TRUE(restored_url->created_by_policy());
 
   EXPECT_TRUE(db.RemoveKeyword(restored_url->id()));
 
@@ -1561,6 +1571,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   void SetUpVersion22Database();
   void SetUpVersion22CorruptDatabase();
   void SetUpVersion24Database();
+  void SetUpVersion25Database();
 
  private:
   ScopedTempDir temp_dir_;
@@ -1568,7 +1579,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 25;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 26;
 
 // This schema is taken from a build prior to the addition of the |credit_card|
 // table.  Version 22 of the schema.  Contrast this with the corrupt version
@@ -1797,6 +1808,66 @@ void WebDatabaseMigrationTest::SetUpVersion24Database() {
   ASSERT_TRUE(connection.CommitTransaction());
 }
 
+// This schema is taken from a build prior to the addition of the |keywords|
+// |created_by_policy| column.
+void WebDatabaseMigrationTest::SetUpVersion25Database() {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(connection.Execute(
+    "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,"
+        "value LONGVARCHAR);"
+    "INSERT INTO \"meta\" VALUES('version','25');"
+    "INSERT INTO \"meta\" VALUES('last_compatible_version','25');"
+    "CREATE TABLE keywords (id INTEGER PRIMARY KEY,short_name VARCHAR NOT NULL,"
+        "keyword VARCHAR NOT NULL,favicon_url VARCHAR NOT NULL,"
+        "url VARCHAR NOT NULL,show_in_default_list INTEGER,"
+        "safe_for_autoreplace INTEGER,originating_url VARCHAR,"
+        "date_created INTEGER DEFAULT 0,usage_count INTEGER DEFAULT 0,"
+        "input_encodings VARCHAR,suggest_url VARCHAR,"
+        "prepopulate_id INTEGER DEFAULT 0,"
+        "autogenerate_keyword INTEGER DEFAULT 0,"
+        "logo_id INTEGER DEFAULT 0);"
+    "CREATE TABLE logins (origin_url VARCHAR NOT NULL, action_url VARCHAR,"
+        "username_element VARCHAR, username_value VARCHAR,"
+        "password_element VARCHAR, password_value BLOB, submit_element VARCHAR,"
+        "signon_realm VARCHAR NOT NULL,"
+        "ssl_valid INTEGER NOT NULL,preferred INTEGER NOT NULL,"
+        "date_created INTEGER NOT NULL,blacklisted_by_user INTEGER NOT NULL,"
+        "scheme INTEGER NOT NULL,UNIQUE (origin_url, username_element,"
+        "username_value, password_element, submit_element, signon_realm));"
+    "CREATE TABLE web_app_icons (url LONGVARCHAR,width int,height int,"
+        "image BLOB, UNIQUE (url, width, height));"
+    "CREATE TABLE web_apps (url LONGVARCHAR UNIQUE,"
+        "has_all_images INTEGER NOT NULL);"
+    "CREATE TABLE autofill (name VARCHAR, value VARCHAR, value_lower VARCHAR,"
+        "pair_id INTEGER PRIMARY KEY, count INTEGER DEFAULT 1);"
+    "CREATE TABLE autofill_dates ( pair_id INTEGER DEFAULT 0,"
+        "date_created INTEGER DEFAULT 0);"
+    "CREATE TABLE autofill_profiles ( label VARCHAR,"
+        "unique_id INTEGER PRIMARY KEY, first_name VARCHAR,"
+        "middle_name VARCHAR, last_name VARCHAR, email VARCHAR,"
+        "company_name VARCHAR, address_line_1 VARCHAR, address_line_2 VARCHAR,"
+        "city VARCHAR, state VARCHAR, zipcode VARCHAR, country VARCHAR,"
+        "phone VARCHAR, fax VARCHAR);"
+    "CREATE TABLE credit_cards ( label VARCHAR, unique_id INTEGER PRIMARY KEY,"
+        "name_on_card VARCHAR, type VARCHAR, card_number VARCHAR,"
+        "expiration_month INTEGER, expiration_year INTEGER,"
+        "verification_code VARCHAR, billing_address VARCHAR,"
+        "shipping_address VARCHAR, card_number_encrypted BLOB,"
+        "verification_code_encrypted BLOB);"
+    "CREATE TABLE token_service (service VARCHAR PRIMARY KEY NOT NULL,"
+        "encrypted_token BLOB);"
+    "CREATE INDEX logins_signon ON logins (signon_realm);"
+    "CREATE INDEX web_apps_url_index ON web_apps (url);"
+    "CREATE INDEX autofill_name ON autofill (name);"
+    "CREATE INDEX autofill_name_value_lower ON autofill (name, value_lower);"
+    "CREATE INDEX autofill_dates_pair_id ON autofill_dates (pair_id);"
+    "CREATE INDEX autofill_profiles_label_index ON autofill_profiles (label);"
+    "CREATE INDEX credit_cards_label_index ON credit_cards (label);"));
+  ASSERT_TRUE(connection.CommitTransaction());
+}
+
 // Tests that the all migrations from an empty database succeed.
 TEST_F(WebDatabaseMigrationTest, MigrateEmptyToCurrent) {
   // Load the database via the WebDatabase class and migrate the database to
@@ -1954,5 +2025,44 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion24ToCurrent) {
     // |keywords| |logo_id| column should have been added.
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "logo_id"));
+  }
+}
+
+// Tests that the |keywords| |created_by_policy| column gets added to the schema
+// for a version 25 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion25ToCurrent) {
+  // Initialize the database.
+  SetUpVersion25Database();
+
+  // Verify pre-conditions.  These are expectations for version 25 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Columns existing and not existing before current version.
+    ASSERT_TRUE(connection.DoesColumnExist("keywords", "id"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "created_by_policy"));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // |keywords| |logo_id| column should have been added.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "created_by_policy"));
   }
 }

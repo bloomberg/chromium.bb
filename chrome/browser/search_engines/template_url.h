@@ -411,6 +411,13 @@ class TemplateURL {
   void set_date_created(base::Time time) { date_created_ = time; }
   base::Time date_created() const { return date_created_; }
 
+  // True if this TemplateURL was automatically created by the administrator via
+  // group policy.
+  void set_created_by_policy(bool created_by_policy) {
+     created_by_policy_ = created_by_policy;
+  }
+  bool created_by_policy() const { return created_by_policy_; }
+
   // Number of times this keyword has been explicitly used to load a URL.  We
   // don't increment this for uses as the "default search engine" since that's
   // not really "explicit" usage and incrementing would result in pinning the
@@ -489,6 +496,7 @@ class TemplateURL {
   std::vector<std::string> input_encodings_;
   TemplateURLID id_;
   base::Time date_created_;
+  bool created_by_policy_;
   int usage_count_;
   TemplateURLPrepopulateData::SearchEngineType search_engine_type_;
   int logo_id_;
