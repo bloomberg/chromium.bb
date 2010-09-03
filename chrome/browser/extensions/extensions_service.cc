@@ -1620,6 +1620,7 @@ void ExtensionsServiceBackend::SetProviderForTesting(
 void ExtensionsServiceBackend::OnExternalExtensionFileFound(
     const std::string& id, const Version* version, const FilePath& path,
     Extension::Location location) {
+  DCHECK(version);
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(

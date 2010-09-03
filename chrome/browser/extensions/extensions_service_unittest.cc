@@ -2309,17 +2309,17 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
   InitializeEmptyExtensionsService();
   std::string json_data =
       "{"
-        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
-          "\"external_crx\": \"RandomExtension.crx\","
-          "\"external_version\": \"1.0\""
-        "},"
-        "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\": {"
-          "\"external_crx\": \"RandomExtension2.crx\","
-          "\"external_version\": \"2.0\""
-        "},"
-        "\"cccccccccccccccccccccccccccccccc\": {"
-          "\"external_update_url\": \"http:\\\\foo.com/update\""
-        "}"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\""
+      "  },"
+      "  \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\": {"
+      "    \"external_crx\": \"RandomExtension2.crx\","
+      "    \"external_version\": \"2.0\""
+      "  },"
+      "  \"cccccccccccccccccccccccccccccccc\": {"
+      "    \"external_update_url\": \"http:\\\\foo.com/update\""
+      "  }"
       "}";
 
   MockProviderVisitor visitor;
@@ -2332,40 +2332,47 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
   ignore_list.insert("cccccccccccccccccccccccccccccccc");
   EXPECT_EQ(0, visitor.Visit(json_data, ignore_list));
 
-  // Use a json that contains six invalid extensions:
+  // Simulate an external_extensions.json file that contains seven invalid
+  // extensions:
   // - One that is missing the 'external_crx' key.
   // - One that is missing the 'external_version' key.
   // - One that is specifying .. in the path.
   // - One that specifies both a file and update URL.
   // - One that specifies no file or update URL.
   // - One that has an update URL that is not well formed.
-  // - Plus one valid extension to make sure the json file is parsed properly.
+  // - One that contains a malformed version.
+  // The final extension is valid, and we check that it is read to make sure
+  // failures don't stop valid records from being read.
   json_data =
       "{"
-        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
-          "\"external_version\": \"1.0\""
-        "},"
-        "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\": {"
-          "\"external_crx\": \"RandomExtension.crx\""
-        "},"
-        "\"cccccccccccccccccccccccccccccccc\": {"
-          "\"external_crx\": \"..\\\\foo\\\\RandomExtension2.crx\","
-          "\"external_version\": \"2.0\""
-        "},"
-        "\"dddddddddddddddddddddddddddddddd\": {"
-          "\"external_crx\": \"..\\\\foo\\\\RandomExtension2.crx\","
-          "\"external_version\": \"2.0\","
-          "\"external_update_url\": \"http:\\\\foo.com/update\""
-        "},"
-        "\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\": {"
-        "},"
-        "\"ffffffffffffffffffffffffffffffff\": {"
-          "\"external_update_url\": \"This string is not avalid URL\""
-        "},"
-        "\"gggggggggggggggggggggggggggggggg\": {"
-          "\"external_crx\": \"RandomValidExtension.crx\","
-          "\"external_version\": \"1.0\""
-        "}"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_version\": \"1.0\""
+      "  },"
+      "  \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\": {"
+      "    \"external_crx\": \"RandomExtension.crx\""
+      "  },"
+      "  \"cccccccccccccccccccccccccccccccc\": {"
+      "    \"external_crx\": \"..\\\\foo\\\\RandomExtension2.crx\","
+      "    \"external_version\": \"2.0\""
+      "  },"
+      "  \"dddddddddddddddddddddddddddddddd\": {"
+      "    \"external_crx\": \"RandomExtension2.crx\","
+      "    \"external_version\": \"2.0\","
+      "    \"external_update_url\": \"http:\\\\foo.com/update\""
+      "  },"
+      "  \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\": {"
+      "  },"
+      "  \"ffffffffffffffffffffffffffffffff\": {"
+      "    \"external_update_url\": \"This string is not a valid URL\""
+      "  },"
+      "  \"gggggggggggggggggggggggggggggggg\": {"
+      "    \"external_crx\": \"RandomExtension3.crx\","
+      "    \"external_version\": \"This is not a valid version!\""
+      "  },"
+      "  \"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh\": {"
+      "    \"external_crx\": \"RandomValidExtension.crx\","
+      "    \"external_version\": \"1.0\""
+      "  }"
       "}";
   ignore_list.clear();
   EXPECT_EQ(1, visitor.Visit(json_data, ignore_list));

@@ -86,7 +86,7 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
         continue;
       }
 
-      // See if it's an absolute path...
+      // If the path is relative, make it absolute.
       FilePath path(external_crx);
       if (!path.IsAbsolute()) {
         // Try path as relative path from external extension dir.
@@ -97,6 +97,12 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
 
       scoped_ptr<Version> version;
       version.reset(Version::GetVersionFromString(external_version));
+      if (!version.get()) {
+        LOG(ERROR) << "Malformed extension dictionary for extension: "
+                   << extension_id.c_str() << ".  Invalid version string \""
+                   << external_version << "\".";
+        continue;
+      }
       visitor->OnExternalExtensionFileFound(extension_id, version.get(), path,
                                             Extension::EXTERNAL_PREF);
       continue;
@@ -107,7 +113,8 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
     if (!update_url.is_valid()) {
       LOG(WARNING) << "Malformed extension dictionary for extension: "
                    << extension_id.c_str() << ".  " << kExternalUpdateUrl
-                   << " must be a valid URL: " << external_update_url;
+                   << " must be a valid URL.  Saw \"" << external_update_url
+                   << "\".";
       continue;
     }
     visitor->OnExternalExtensionUpdateUrlFound(extension_id, update_url);
