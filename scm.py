@@ -364,6 +364,7 @@ class SVN(object):
         }[args[0]]
     compiled_pattern = re.compile(pattern)
     # Place an upper limit.
+    backoff_time = 5
     for _ in range(10):
       previous_list_len = len(file_list)
       failure = []
@@ -417,8 +418,9 @@ class SVN(object):
           if len(file_list) == previous_list_len and not IsKnownFailure():
             # No known svn error was found and no progress, bail out.
             raise
-        print "Sleeping 15 seconds and retrying...."
-        time.sleep(15)
+        print "Sleeping %.1f seconds and retrying...." % backoff_time
+        time.sleep(backoff_time)
+        backoff_time *= 1.3
         continue
       break
 

@@ -256,6 +256,7 @@ class GitWrapper(SCMWrapper):
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
     # Update the remotes first so we have all the refs.
+    backoff_time = 5
     for _ in range(10):
       try:
         remote_output, remote_err = scm.GIT.Capture(
@@ -268,8 +269,10 @@ class GitWrapper(SCMWrapper):
         # 502 in stderr should be fine.
         if '502' in e.stderr:
           options.stdout.write(str(e) + '\n')
-          options.stdout.write('Sleeping 15 seconds and retrying...\n')
-          time.sleep(15)
+          options.stdout.write('Sleeping %.1f seconds and retrying...\n' %
+                               backoff_time)
+          time.sleep(backoff_time)
+          backoff_time *= 1.3
           continue
         raise
 
