@@ -21,8 +21,8 @@ class WebFileSystemCallbacks;
 struct WebFileSystemEntry;
 }
 
-namespace file_util {
-struct FileInfo;
+namespace base {
+struct PlatformFileInfo;
 }
 
 struct ViewMsg_FileSystem_DidReadDirectory_Params;
@@ -68,7 +68,7 @@ class FileSystemDispatcher {
   void DidSucceed(int request_id);
   void DidReadMetadata(
       int request_id,
-      const file_util::FileInfo& file_info);
+      const base::PlatformFileInfo& file_info);
   void DidReadDirectory(
       const ViewMsg_FileSystem_DidReadDirectory_Params& params);
   void DidFail(

@@ -688,26 +688,35 @@ void ParamTraits<printing::NativeMetafile>::Log(
   l->append("<printing::NativeMetafile>");
 }
 
-void ParamTraits<file_util::FileInfo>::Write(
+void ParamTraits<base::PlatformFileInfo>::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.size);
   WriteParam(m, p.is_directory);
   WriteParam(m, p.last_modified.ToDoubleT());
+  WriteParam(m, p.last_accessed.ToDoubleT());
+  WriteParam(m, p.creation_time.ToDoubleT());
 }
 
-bool ParamTraits<file_util::FileInfo>::Read(
+bool ParamTraits<base::PlatformFileInfo>::Read(
     const Message* m, void** iter, param_type* p) {
   double last_modified;
+  double last_accessed;
+  double creation_time;
   bool result =
       ReadParam(m, iter, &p->size) &&
       ReadParam(m, iter, &p->is_directory) &&
-      ReadParam(m, iter, &last_modified);
-  if (result)
+      ReadParam(m, iter, &last_modified) &&
+      ReadParam(m, iter, &last_accessed) &&
+      ReadParam(m, iter, &creation_time);
+  if (result) {
     p->last_modified = base::Time::FromDoubleT(last_modified);
+    p->last_accessed = base::Time::FromDoubleT(last_accessed);
+    p->creation_time = base::Time::FromDoubleT(creation_time);
+  }
   return result;
 }
 
-void ParamTraits<file_util::FileInfo>::Log(
+void ParamTraits<base::PlatformFileInfo>::Log(
     const param_type& p, std::string* l) {
   l->append("(");
   LogParam(p.size, l);
@@ -715,6 +724,10 @@ void ParamTraits<file_util::FileInfo>::Log(
   LogParam(p.is_directory, l);
   l->append(",");
   LogParam(p.last_modified.ToDoubleT(), l);
+  l->append(",");
+  LogParam(p.last_accessed.ToDoubleT(), l);
+  l->append(",");
+  LogParam(p.creation_time.ToDoubleT(), l);
   l->append(")");
 }
 

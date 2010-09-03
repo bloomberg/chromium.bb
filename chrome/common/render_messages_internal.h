@@ -1032,7 +1032,7 @@ IPC_BEGIN_MESSAGES(View)
                        int /* request_id */)
   IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidReadMetadata,
                        int /* request_id */,
-                       file_util::FileInfo)
+                       base::PlatformFileInfo)
   IPC_MESSAGE_CONTROL1(ViewMsg_FileSystem_DidReadDirectory,
                        ViewMsg_FileSystem_DidReadDirectory_Params)
   IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidFail,

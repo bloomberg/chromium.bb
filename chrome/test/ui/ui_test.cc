@@ -1043,7 +1043,7 @@ void UITestBase::WaitForGeneratedFileAndCheck(
     bool need_equal,
     bool delete_generated_file) {
   // Check whether the target file has been generated.
-  file_util::FileInfo previous, current;
+  base::PlatformFileInfo previous, current;
   bool exist = false;
   const int kCycles = 20;
   for (int i = 0; i < kCycles; ++i) {
@@ -1259,4 +1259,3 @@ AutomationProxy* UITest::CreateAutomationProxy(int execution_timeout) {
   // hosed if we hit those errors.
   return new AutomationProxy(execution_timeout, true);
 }
-

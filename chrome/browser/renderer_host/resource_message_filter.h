@@ -51,15 +51,12 @@ struct ViewHostMsg_CreateWorker_Params;
 struct WebPluginInfo;
 
 namespace base {
+struct PlatformFileInfo;
 class SharedMemory;
 }
 
 namespace device_orientation {
 class DispatcherHost;
-}
-
-namespace file_util {
-struct FileInfo;
 }
 
 namespace net {
@@ -134,7 +131,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   friend class ChromeThread;
   friend class DeleteTask<ResourceMessageFilter>;
   typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
-                                    const file_util::FileInfo& file_info);
+                                    const base::PlatformFileInfo& file_info);
 
   virtual ~ResourceMessageFilter();
 

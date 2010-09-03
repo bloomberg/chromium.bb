@@ -711,8 +711,8 @@ FilePath AutomatedUITest::GetMostRecentCrashDump() {
                                        file_util::FileEnumerator::FILES);
   for (FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
-    file_util::FileInfo file_info;
-    GetFileInfo(path, &file_info);
+    base::PlatformFileInfo file_info;
+    file_util::GetFileInfo(path, &file_info);
     if (first_file) {
       most_recent_file_time = file_info.last_modified;
       most_recent_file_name = path.BaseName();

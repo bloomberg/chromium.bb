@@ -107,7 +107,7 @@ void FilePathWatcherImpl::OnFilePathChanged() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   DCHECK(!target_.empty());
 
-  file_util::FileInfo file_info;
+  base::PlatformFileInfo file_info;
   bool file_exists = file_util::GetFileInfo(target_, &file_info);
   if (file_exists && (last_modified_.is_null() ||
       last_modified_ != file_info.last_modified)) {
@@ -150,7 +150,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
 
   FSEventStreamEventId start_event = FSEventsGetCurrentEventId();
 
-  file_util::FileInfo file_info;
+  base::PlatformFileInfo file_info;
   if (file_util::GetFileInfo(target_, &file_info)) {
     last_modified_ = file_info.last_modified;
     first_notification_ = base::Time::Now();

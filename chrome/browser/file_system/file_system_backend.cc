@@ -141,7 +141,7 @@ void FileSystemBackend::DidFinishFileOperation(base::PlatformFileError rv) {
 }
 
 void FileSystemBackend::DidDirectoryExists(
-    base::PlatformFileError rv, const file_util::FileInfo& file_info) {
+    base::PlatformFileError rv, const base::PlatformFileInfo& file_info) {
   DCHECK(client_);
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
@@ -154,8 +154,9 @@ void FileSystemBackend::DidDirectoryExists(
   }
 }
 
-void FileSystemBackend::DidFileExists(base::PlatformFileError rv,
-                                      const file_util::FileInfo& file_info) {
+void FileSystemBackend::DidFileExists(
+    base::PlatformFileError rv,
+    const base::PlatformFileInfo& file_info) {
   DCHECK(client_);
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
@@ -168,8 +169,9 @@ void FileSystemBackend::DidFileExists(base::PlatformFileError rv,
   }
 }
 
-void FileSystemBackend::DidGetMetadata(base::PlatformFileError rv,
-                                       const file_util::FileInfo& file_info) {
+void FileSystemBackend::DidGetMetadata(
+    base::PlatformFileError rv,
+    const base::PlatformFileInfo& file_info) {
   DCHECK(client_);
   if (rv == base::PLATFORM_FILE_OK)
     client_->DidReadMetadata(file_info, request_id_);

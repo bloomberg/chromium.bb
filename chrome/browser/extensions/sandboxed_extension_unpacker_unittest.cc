@@ -181,7 +181,7 @@ TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
   messages_file = GetInstallPath().Append(Extension::kLocaleFolder)
       .AppendASCII("en_US")
       .Append(Extension::kMessagesFilename);
-  file_util::FileInfo old_info;
+  base::PlatformFileInfo old_info;
   EXPECT_TRUE(file_util::GetFileInfo(messages_file, &old_info));
 
   // unpacker_->Run unpacks the extension. OnUnpackSucceeded overwrites some
@@ -191,7 +191,7 @@ TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
   OnUnpackSucceeded();
 
   // Check that there is newer _locales/en_US/messages.json file.
-  file_util::FileInfo new_info;
+  base::PlatformFileInfo new_info;
   EXPECT_TRUE(file_util::GetFileInfo(messages_file, &new_info));
 
   EXPECT_TRUE(new_info.last_modified > old_info.last_modified);

@@ -55,7 +55,7 @@ bool WebFileUtilitiesImpl::getFileModificationTime(const WebString& path,
     NOTREACHED();
     return false;
   }
-  file_util::FileInfo info;
+  base::PlatformFileInfo info;
   if (!file_util::GetFileInfo(WebStringToFilePath(path), &info))
     return false;
   result = info.last_modified.ToDoubleT();

@@ -327,8 +327,8 @@ struct ParamTraits<printing::NativeMetafile> {
 };
 
 template <>
-struct ParamTraits<file_util::FileInfo> {
-  typedef file_util::FileInfo param_type;
+struct ParamTraits<base::PlatformFileInfo> {
+  typedef base::PlatformFileInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -20,7 +20,7 @@ class FileSystemBackendClient {
   virtual void DidSucceed(int request_id) = 0;
 
   // Info about the file entry such as modification date and size.
-  virtual void DidReadMetadata(const file_util::FileInfo& info,
+  virtual void DidReadMetadata(const base::PlatformFileInfo& info,
                                int request_id) = 0;
 
   virtual void DidReadDirectory(

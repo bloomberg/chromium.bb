@@ -129,7 +129,7 @@ class BlobURLRequestJobTest : public testing::Test {
     ASSERT_EQ(static_cast<int>(arraysize(kTestFileData1) - 1),
               file_util::WriteFile(temp_file1_, kTestFileData1,
                                    arraysize(kTestFileData1) - 1));
-    file_util::FileInfo file_info1;
+    base::PlatformFileInfo file_info1;
     file_util::GetFileInfo(temp_file1_, &file_info1);
     temp_file_modification_time1_ = file_info1.last_modified;
 
@@ -137,7 +137,7 @@ class BlobURLRequestJobTest : public testing::Test {
     ASSERT_EQ(static_cast<int>(arraysize(kTestFileData2) - 1),
               file_util::WriteFile(temp_file2_, kTestFileData2,
                                    arraysize(kTestFileData2) - 1));
-    file_util::FileInfo file_info2;
+    base::PlatformFileInfo file_info2;
     file_util::GetFileInfo(temp_file2_, &file_info2);
     temp_file_modification_time2_ = file_info2.last_modified;
 

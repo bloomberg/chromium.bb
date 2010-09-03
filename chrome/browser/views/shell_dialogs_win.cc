@@ -846,7 +846,7 @@ bool SelectFileDialogImpl::RunOpenFileDialog(
   // Use lpstrInitialDir to specify the initial directory
   if (!path->empty()) {
     bool is_dir;
-    file_util::FileInfo file_info;
+    base::PlatformFileInfo file_info;
     if (file_util::GetFileInfo(*path, &file_info))
       is_dir = file_info.is_directory;
     else

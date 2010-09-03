@@ -450,7 +450,7 @@ static NPError PostURLNotify(NPP id,
           base::SysNativeMBToWide(file_path_ascii));
     }
 
-    file_util::FileInfo post_file_info = {0};
+    base::PlatformFileInfo post_file_info = {0};
     if (!file_util::GetFileInfo(file_path, &post_file_info) ||
         post_file_info.is_directory)
       return NPERR_FILE_NOT_FOUND;

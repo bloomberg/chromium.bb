@@ -110,7 +110,7 @@ void FileSystemDispatcher::DidSucceed(int request_id) {
 }
 
 void FileSystemDispatcher::DidReadMetadata(int request_id,
-    const file_util::FileInfo& file_info) {
+    const base::PlatformFileInfo& file_info) {
   WebFileSystemCallbacks* callbacks = callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   callbacks_.Remove(request_id);

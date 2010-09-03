@@ -76,7 +76,7 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
         // Extension state is not considered browsing data.
         continue;
       }
-      file_util::FileInfo file_info;
+      base::PlatformFileInfo file_info;
       bool ret = file_util::GetFileInfo(file_path, &file_info);
       if (ret) {
         local_storage_info_.push_back(LocalStorageInfo(

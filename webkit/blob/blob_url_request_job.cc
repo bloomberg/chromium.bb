@@ -105,7 +105,7 @@ void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
   // Otherwise, we use current thread, i.e. IO thread, as this is the case when
   // we run the unittest or test shell.
   // TODO(jianli): Consider using the proxy of current thread.
-  file_util::FileInfo file_info;
+  base::PlatformFileInfo file_info;
   bool exists = file_util::GetFileInfo(file_path, &file_info);
 
   // Continue asynchronously.
@@ -116,7 +116,7 @@ void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
 }
 
 void BlobURLRequestJob::DidResolve(base::PlatformFileError rv,
-                                   const file_util::FileInfo& file_info) {
+                                   const base::PlatformFileInfo& file_info) {
   // We may have been orphaned...
   if (!request_)
     return;

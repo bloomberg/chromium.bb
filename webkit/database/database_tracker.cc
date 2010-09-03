@@ -550,7 +550,7 @@ int DatabaseTracker::DeleteDataModifiedSince(
     for (std::vector<DatabaseDetails>::const_iterator db = details.begin();
          db != details.end(); ++db) {
       FilePath db_file = GetFullDBFilePath(*ori, db->database_name);
-      file_util::FileInfo file_info;
+      base::PlatformFileInfo file_info;
       file_util::GetFileInfo(db_file, &file_info);
       if (file_info.last_modified < cutoff)
         continue;

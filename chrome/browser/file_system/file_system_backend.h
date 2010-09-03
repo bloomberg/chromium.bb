@@ -59,13 +59,13 @@ class FileSystemBackend {
   void DidFinishFileOperation(base::PlatformFileError rv);
 
   void DidDirectoryExists(base::PlatformFileError rv,
-                          const file_util::FileInfo& file_info);
+                          const base::PlatformFileInfo& file_info);
 
   void DidFileExists(base::PlatformFileError rv,
-                     const file_util::FileInfo& file_info);
+                     const base::PlatformFileInfo& file_info);
 
   void DidGetMetadata(base::PlatformFileError rv,
-                      const file_util::FileInfo& file_info);
+                      const base::PlatformFileInfo& file_info);
 
   void DidReadDirectory(
       base::PlatformFileError rv,

@@ -220,7 +220,7 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
     }
 
     // Get mtime.
-    file_util::FileInfo info;
+    base::PlatformFileInfo info;
     if (!file_util::GetFileInfo(path, &info))
       continue;
 

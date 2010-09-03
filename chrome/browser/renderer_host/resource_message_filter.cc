@@ -199,12 +199,12 @@ class ClearCacheCompletion : public net::CompletionCallback {
 };
 
 void WriteFileSize(IPC::Message* reply_msg,
-                   const file_util::FileInfo& file_info) {
+                   const base::PlatformFileInfo& file_info) {
   ViewHostMsg_GetFileSize::WriteReplyParams(reply_msg, file_info.size);
 }
 
 void WriteFileModificationTime(IPC::Message* reply_msg,
-                               const file_util::FileInfo& file_info) {
+                               const base::PlatformFileInfo& file_info) {
   ViewHostMsg_GetFileModificationTime::WriteReplyParams(
       reply_msg, file_info.last_modified);
 }
@@ -1499,7 +1499,7 @@ void ResourceMessageFilter::OnGetFileInfoOnFileThread(
     FileInfoWriteFunc write_func) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  file_util::FileInfo file_info;
+  base::PlatformFileInfo file_info;
   file_info.size = 0;
   file_util::GetFileInfo(path, &file_info);
 

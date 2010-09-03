@@ -99,7 +99,7 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
   }
 
   // Check whether the event applies to |target_| and notify the delegate.
-  file_util::FileInfo file_info;
+  base::PlatformFileInfo file_info;
   bool file_exists = file_util::GetFileInfo(target_, &file_info);
   if (file_exists && (last_modified_.is_null() ||
       last_modified_ != file_info.last_modified)) {
@@ -183,7 +183,7 @@ bool FilePathWatcherImpl::UpdateWatch() {
   if (handle_ != INVALID_HANDLE_VALUE)
     DestroyWatch();
 
-  file_util::FileInfo file_info;
+  base::PlatformFileInfo file_info;
   if (file_util::GetFileInfo(target_, &file_info)) {
     last_modified_ = file_info.last_modified;
     first_notification_ = base::Time::Now();

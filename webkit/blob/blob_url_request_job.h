@@ -17,10 +17,7 @@
 
 namespace base {
 class MessageLoopProxy;
-}
-
-namespace file_util {
-struct FileInfo;
+struct PlatformFileInfo;
 }
 
 namespace webkit_blob {
@@ -59,7 +56,7 @@ class BlobURLRequestJob : public URLRequestJob {
 
   void DidStart();
   void DidResolve(base::PlatformFileError rv,
-                  const file_util::FileInfo& file_info);
+                  const base::PlatformFileInfo& file_info);
   void DidRead(int result);
 
   base::ScopedCallbackFactory<BlobURLRequestJob> callback_factory_;

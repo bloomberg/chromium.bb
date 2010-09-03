@@ -146,7 +146,7 @@ DictionaryValue* PolicyDirLoader::Load() {
 bool PolicyDirLoader::IsSafeToReloadPolicy(const base::Time& now,
                                            base::TimeDelta* delay) {
   DCHECK(delay);
-  file_util::FileInfo dir_info;
+  base::PlatformFileInfo dir_info;
 
   // Reading an empty directory or a file is always safe.
   if (!file_util::GetFileInfo(config_dir_, &dir_info) ||
