@@ -16,6 +16,9 @@
 
 - (void)awakeFromNib {
   DCHECK([[self cell] isKindOfClass:[FindBarTextFieldCell class]]);
+
+  [self registerForDraggedTypes:
+          [NSArray arrayWithObjects:NSStringPboardType, nil]];
 }
 
 - (FindBarTextFieldCell*)findBarTextFieldCell {
@@ -25,6 +28,13 @@
 
 - (ViewID)viewID {
   return VIEW_ID_FIND_IN_PAGE_TEXT_FIELD;
+}
+
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
+  // When a drag enters the text field, focus the field.  This will swap in the
+  // field editor, which will then handle the drag itself.
+  [[self window] makeFirstResponder:self];
+  return NSDragOperationNone;
 }
 
 @end

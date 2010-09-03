@@ -19,15 +19,18 @@
 
 @implementation URLDropTargetHandler
 
-- (id)initWithView:(NSView<URLDropTarget>*)view {
-  if ((self = [super init])) {
-    view_ = view;
-    [view_ registerForDraggedTypes:
-         [NSArray arrayWithObjects:kWebURLsWithTitlesPboardType,
++ (NSArray*)handledDragTypes {
+  return [NSArray arrayWithObjects:kWebURLsWithTitlesPboardType,
                                    NSURLPboardType,
                                    NSStringPboardType,
                                    NSFilenamesPboardType,
-                                   nil]];
+                                   nil];
+}
+
+- (id)initWithView:(NSView<URLDropTarget>*)view {
+  if ((self = [super init])) {
+    view_ = view;
+    [view_ registerForDraggedTypes:[URLDropTargetHandler handledDragTypes]];
   }
   return self;
 }

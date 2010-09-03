@@ -6,12 +6,18 @@
 
 #import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/view_id_util.h"
+#import "chrome/browser/cocoa/url_drop_target.h"
 
 namespace {
 CGFloat kCurveSize = 8;
 }  // end namespace
 
 @implementation FindBarView
+
+- (void)awakeFromNib {
+  // Register for all the drag types handled by the RWHVCocoa.
+  [self registerForDraggedTypes:[URLDropTargetHandler handledDragTypes]];
+}
 
 - (void)drawRect:(NSRect)rect {
   // TODO(rohitrao): Make this prettier.
@@ -111,6 +117,11 @@ CGFloat kCurveSize = 8;
 }
 
 - (void)otherMouseDragged:(NSEvent *)theEvent {
+}
+
+// Eat drag operations, to prevent drags from going through to the views below.
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
+  return NSDragOperationNone;
 }
 
 - (ViewID)viewID {

@@ -18,6 +18,9 @@
   NSView<URLDropTarget>* view_;  // weak
 }
 
+// Returns an array of drag types that can be handled.
++ (NSArray*)handledDragTypes;
+
 // Initialize the given view, which must implement the |URLDropTarget| (below),
 // to accept drops of URLs.
 - (id)initWithView:(NSView<URLDropTarget>*)view;

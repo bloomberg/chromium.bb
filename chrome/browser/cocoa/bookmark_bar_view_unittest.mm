@@ -8,6 +8,7 @@
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/bookmark_folder_target.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/url_drop_target.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -82,12 +83,7 @@ namespace {
 // NSPasteboard mocking functions.
 
 - (BOOL)containsURLData {
-  NSArray* urlTypes = [NSArray arrayWithObjects:
-                       kWebURLsWithTitlesPboardType,
-                       NSURLPboardType,
-                       NSFilenamesPboardType,
-                       NSStringPboardType,
-                       nil];
+  NSArray* urlTypes = [URLDropTargetHandler handledDragTypes];
   if (dragDataType_)
     return [urlTypes containsObject:dragDataType_];
   return NO;
@@ -186,36 +182,16 @@ TEST_F(BookmarkBarViewTest, URLDragAndDrop) {
   [view_ setController:info.get()];
   [info reset];
 
-  [info setDragDataType:kWebURLsWithTitlesPboardType];
-  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
-  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
-  EXPECT_FALSE([info dragButtonToPong]);
-  EXPECT_TRUE([info dragURLsPong]);
-  EXPECT_TRUE([info dragBookmarkDataPong]);
-  [info reset];
-
-  [info setDragDataType:NSURLPboardType];
-  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
-  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
-  EXPECT_FALSE([info dragButtonToPong]);
-  EXPECT_TRUE([info dragURLsPong]);
-  EXPECT_TRUE([info dragBookmarkDataPong]);
-  [info reset];
-
-  [info setDragDataType:NSFilenamesPboardType];
-  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
-  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
-  EXPECT_FALSE([info dragButtonToPong]);
-  EXPECT_TRUE([info dragURLsPong]);
-  EXPECT_TRUE([info dragBookmarkDataPong]);
-  [info reset];
-
-  [info setDragDataType:NSStringPboardType];
-  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
-  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
-  EXPECT_FALSE([info dragButtonToPong]);
-  EXPECT_TRUE([info dragURLsPong]);
-  EXPECT_TRUE([info dragBookmarkDataPong]);
+  NSArray* dragTypes = [URLDropTargetHandler handledDragTypes];
+  for (NSString* type in dragTypes) {
+    [info setDragDataType:type];
+    EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+    EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
+    EXPECT_FALSE([info dragButtonToPong]);
+    EXPECT_TRUE([info dragURLsPong]);
+    EXPECT_TRUE([info dragBookmarkDataPong]);
+    [info reset];
+  }
 }
 
 TEST_F(BookmarkBarViewTest, BookmarkButtonDropIndicator) {
