@@ -356,10 +356,11 @@ void PopupShowFunction::Run() {
 }
 
 bool PopupShowFunction::RunImpl() {
-  // Popups may only be displayed from TAB_CONTENTS.
+  // Popups may only be displayed from TAB_CONTENTS and EXTENSION_INFOBAR.
   ViewType::Type view_type =
       dispatcher()->render_view_host()->delegate()->GetRenderViewType();
-  if (ViewType::TAB_CONTENTS != view_type) {
+  if (ViewType::TAB_CONTENTS != view_type &&
+      ViewType::EXTENSION_INFOBAR != view_type) {
     error_ = kPopupsDisallowed;
     return false;
   }

@@ -1,0 +1,8 @@
+{
+  "name": "Extension API test for chrome.experimental.popups from infobars.",
+  "version": "1.0",
+  "background_page": "background.html",
+  "permissions": [
+    "experimental", "tabs"
+  ]
+}

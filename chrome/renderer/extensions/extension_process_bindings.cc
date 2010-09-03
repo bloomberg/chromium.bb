@@ -276,6 +276,7 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
 
     if (viewtype_to_find != ViewType::EXTENSION_POPUP &&
+        viewtype_to_find != ViewType::EXTENSION_INFOBAR &&
         viewtype_to_find != ViewType::TAB_CONTENTS) {
       NOTREACHED() << "Requesting invalid view type.";
     }
@@ -311,7 +312,11 @@ class ExtensionImpl : public ExtensionBase {
   }
 
   static v8::Handle<v8::Value> GetPopupParentWindow(const v8::Arguments& args) {
-    return PopupViewFinder(args, ViewType::TAB_CONTENTS);
+    v8::Handle<v8::Value> view = PopupViewFinder(args, ViewType::TAB_CONTENTS);
+    if (view == v8::Undefined()) {
+      view = PopupViewFinder(args, ViewType::EXTENSION_INFOBAR);
+    }
+    return view;
   }
 
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
