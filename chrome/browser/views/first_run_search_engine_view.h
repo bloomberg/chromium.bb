@@ -97,7 +97,7 @@ class FirstRunSearchEngineView
   views::View* GetContentsView() { return this; }
   bool CanResize() const { return false; }
   bool CanMaximize() const { return false; }
-  bool IsAlwaysOnTop() const { return false; }
+  bool IsAlwaysOnTop() const { return true; }
   bool HasAlwaysOnTopMenu() const { return false; }
 
   // Overridden from views::ButtonListener:
