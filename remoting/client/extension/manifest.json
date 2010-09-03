@@ -9,7 +9,7 @@
   "background_page": "background.html",
   "permissions": [
     "tabs",
-    "http://www-googleapis-test.sandbox.google.com/",
+    "https://www.googleapis.com/chromoting/",
     "https://www.google.com/accounts/"
   ]
 }
