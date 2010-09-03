@@ -57,7 +57,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
     // Initialize MockFFmpeg.
     MockFFmpeg::set(&mock_ffmpeg_);
 
-    test_engine_ = new FFmpegVideoDecodeEngine();
+    test_engine_.reset(new FFmpegVideoDecodeEngine());
     test_engine_->SetCodecContextForTest(&codec_context_);
 
     VideoFrame::CreateFrame(VideoFrame::YV12,
@@ -69,7 +69,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
   }
 
   ~FFmpegVideoDecodeEngineTest() {
-    test_engine_ = NULL;
+    test_engine_.reset();
     MockFFmpeg::set(NULL);
   }
 
@@ -112,7 +112,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
   VideoCodecConfig config_;
   VideoCodecInfo info_;
  protected:
-  scoped_refptr<FFmpegVideoDecodeEngine> test_engine_;
+  scoped_ptr<FFmpegVideoDecodeEngine> test_engine_;
   scoped_array<uint8_t> frame_buffer_;
   StrictMock<MockFFmpeg> mock_ffmpeg_;
 

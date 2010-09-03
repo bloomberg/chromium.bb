@@ -151,7 +151,7 @@ class MftH264DecoderHandler
     info_.stream_info_ = stream_info;
   }
   virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
-    if (reader_ && decoder_.get()) {
+    if (reader_ && decoder_) {
       scoped_refptr<DataBuffer> input;
       reader_->Read(&input);
       if (!input->IsEndOfStream())
@@ -169,8 +169,8 @@ class MftH264DecoderHandler
   virtual void SetReader(FFmpegFileReader* reader) {
     reader_ = reader;
   }
-  virtual void SetDecoder(scoped_refptr<MftH264Decoder> decoder) {
-    decoder_ = decoder;
+  virtual void SetDecoder(MftH264Decoder* decoder) {
+    decoder_= decoder;
   }
   virtual void DecodeSingleFrame() {
     scoped_refptr<VideoFrame> frame;
@@ -185,7 +185,7 @@ class MftH264DecoderHandler
   int frames_read_;
   int frames_decoded_;
   FFmpegFileReader* reader_;
-  scoped_refptr<MftH264Decoder> decoder_;
+  MftH264Decoder* decoder_;
 };
 
 class RenderToWindowHandler : public MftH264DecoderHandler {
@@ -295,7 +295,7 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
     }
   }
 
-  scoped_refptr<MftH264Decoder> mft(new MftH264Decoder(use_dxva));
+  scoped_ptr<MftH264Decoder> mft(new MftH264Decoder(use_dxva));
   if (!mft.get()) {
     LOG(ERROR) << "Failed to create fake MFT";
     return -1;
@@ -306,7 +306,7 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
     handler = new RenderToWindowHandler(window, MessageLoop::current());
   else
     handler = new MftH264DecoderHandler();
-  handler->SetDecoder(mft);
+  handler->SetDecoder(mft.get());
   handler->SetReader(reader.get());
   if (!handler.get()) {
     LOG(ERROR) << "FAiled to create handler";

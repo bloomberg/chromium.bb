@@ -7,12 +7,11 @@
 //
 // THREADING SEMANTICS
 //
-// This class is created by VideoDecoderImpl and lives on the thread
-// that VideoDecoderImpl lives. This class is given the message loop
+// This class is created by OmxVideoDecoder and lives on the thread
+// that it lives. This class is given the message loop
 // for the above thread. The OMX callbacks are guaranteed to be
-// executed on the hosting message loop. This essentially means that
-// all methods in this class are executed on the same thread as
-// VideoDecoderImpl. Because of that there's no need for locking anywhere.
+// executed on the hosting message loop. Because of that there's no need
+// for locking anywhere.
 
 #include "media/video/omx_video_decode_engine.h"
 
@@ -1337,3 +1336,7 @@ OMX_ERRORTYPE OmxVideoDecodeEngine::FillBufferCallback(
 }
 
 }  // namespace media
+
+// Disable refcounting for this object because this object only lives
+// on the video decoder thread and there's no need to refcount it.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(media::OmxVideoDecodeEngine);

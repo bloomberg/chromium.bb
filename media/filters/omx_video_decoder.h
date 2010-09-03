@@ -17,6 +17,7 @@ class MessageLoop;
 namespace media {
 
 class Buffer;
+class OmxVideoDecodeEngine;
 class VideoFrame;
 
 class OmxVideoDecoder : public VideoDecoder,
@@ -53,7 +54,7 @@ class OmxVideoDecoder : public VideoDecoder,
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
-  scoped_refptr<VideoDecodeEngine> omx_engine_;
+  scoped_ptr<VideoDecodeEngine> omx_engine_;
   MediaFormat media_format_;
   size_t width_;
   size_t height_;

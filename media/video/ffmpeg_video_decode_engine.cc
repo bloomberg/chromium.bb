@@ -357,3 +357,7 @@ VideoFrame::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {
 }
 
 }  // namespace media
+
+// Disable refcounting for this object because this object only lives
+// on the video decoder thread and there's no need to refcount it.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(media::FFmpegVideoDecodeEngine);

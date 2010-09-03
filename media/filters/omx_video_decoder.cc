@@ -254,3 +254,7 @@ void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
 }
 
 }  // namespace media
+
+// Disable refcounting for the decode engine because it only lives on the
+// video decoder thread.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(media::VideoDecodeEngine);

@@ -68,7 +68,7 @@ struct VideoCodecInfo {
   VideoStreamInfo stream_info_;
 };
 
-class VideoDecodeEngine : public base::RefCountedThreadSafe<VideoDecodeEngine> {
+class VideoDecodeEngine {
  public:
   struct EventHandler {
    public:
@@ -83,7 +83,6 @@ class VideoDecodeEngine : public base::RefCountedThreadSafe<VideoDecodeEngine> {
     virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) = 0;
   };
 
-  VideoDecodeEngine() {}
   virtual ~VideoDecodeEngine() {}
 
   // Initialized the engine with specified configuration. |message_loop| could
@@ -103,8 +102,9 @@ class VideoDecodeEngine : public base::RefCountedThreadSafe<VideoDecodeEngine> {
   // could be itself. ) then call EventHandler::OnFlushDone().
   virtual void Flush() = 0;
 
-  // Used in openmax to InitialReadBuffers().
-  virtual void Seek() = 0;  // TODO(jiesun): Do we need this?
+  // This method is used as a signal for the decode engine to prefoll and
+  // issue read requests after Flush() us made.
+  virtual void Seek() = 0;
 
   // Buffer exchange method for input and output stream.
   // These functions and callbacks could be used in two scenarios for both

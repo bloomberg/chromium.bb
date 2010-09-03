@@ -188,7 +188,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
     config.opaque_context_ = NULL;
     config.width_ = av_stream_->codec->width;
     config.height_ = av_stream_->codec->height;
-    engine_ = new OmxVideoDecodeEngine();
+    engine_.reset(new OmxVideoDecodeEngine());
     engine_->Initialize(&message_loop_, this, config);
 
     // Execute the message loop so that we can run tasks on it. This call
@@ -220,7 +220,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
     printf("\n");
   }
 
-  scoped_refptr<OmxVideoDecodeEngine> engine_;
+  scoped_ptr<OmxVideoDecodeEngine> engine_;
   MessageLoop message_loop_;
   scoped_ptr<AVStream> av_stream_;
   scoped_ptr<FileReader> file_reader_;
