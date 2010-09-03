@@ -26,6 +26,8 @@ class AdmWriter(template_writer.TemplateWriter):
   NEWLINE = '\r\n'
 
   def _AddGuiString(self, name, value):
+    # Escape newlines in the value.
+    value = value.replace('\n','\\n')
     line = '%s="%s"' % (name, value)
     self.str_list.append(line)
 

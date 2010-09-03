@@ -38,7 +38,7 @@ class PListStringsWriter(template_writer.TemplateWriter):
       msg = self._policy_group[msg_id]
     return msg
 
-  def _AddToStringTable(self, item_name, title, desc):
+  def _AddToStringTable(self, item_name, caption, desc):
     '''Add a title and a description of an item to the string table.
 
     Args:
@@ -47,9 +47,11 @@ class PListStringsWriter(template_writer.TemplateWriter):
       title: The text of the title to add.
       desc: The text of the description to add.
     '''
-    title = title.replace('"', '\\"')
+    caption = caption.replace('"', '\\"')
+    caption = caption.replace('\n','\\n')
     desc = desc.replace('"', '\\"')
-    self._out.append('%s.pfm_title = \"%s\";' % (item_name, title))
+    desc = desc.replace('\n','\\n')
+    self._out.append('%s.pfm_title = \"%s\";' % (item_name, caption))
     self._out.append('%s.pfm_description = \"%s\";' % (item_name, desc))
 
   def WritePolicy(self, policy):
@@ -65,8 +67,8 @@ class PListStringsWriter(template_writer.TemplateWriter):
       # Append the captions of enum items to the description string.
       item_descs = []
       for item in policy['items']:
-        item_descs.append( item['value'] + ' - ' + item['caption'] )
-      desc = '\\n'.join(item_descs) + '\\n' + desc
+        item_descs.append(item['value'] + ' - ' + item['caption'])
+      desc = '\n'.join(item_descs) + '\n' + desc
 
     self._AddToStringTable(policy['name'], caption, desc)
 

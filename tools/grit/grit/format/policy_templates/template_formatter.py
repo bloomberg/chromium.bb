@@ -118,7 +118,7 @@ class TemplateFormatter(interface.ItemFormatter):
     # Strip spaces and escape newlines.
     lines = msg_txt.split('\n')
     lines = [line.strip() for line in lines]
-    msg_txt = "\\n".join(lines)
+    msg_txt = "\n".join(lines)
     self._messages[msg_name] = msg_txt
 
   def _ParseGritNodes(self, item):
