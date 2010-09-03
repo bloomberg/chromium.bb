@@ -158,6 +158,16 @@ extern const char kPageNumScriptTagsGTSix[];
 // The fraction of images whose src attribute points to an external domain.
 extern const char kPageImgOtherDomainFreq[];
 
+////////////////////////////////////////////////////
+// Page term features
+////////////////////////////////////////////////////
+
+// Token feature for a term (whitespace-delimited) on a page.  Terms can be
+// single words or multi-word n-grams.  Rather than adding this feature for
+// every possible token on a page, only the terms that are mentioned in the
+// classification model are added.
+extern const char kPageTerm[];
+
 }  // namespace features
 }  // namepsace safe_browsing
 

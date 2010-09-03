@@ -80,5 +80,8 @@ const char kPageNumScriptTagsGTSix[] = "PageNumScriptTags>6";
 // Other DOM HTML features
 const char kPageImgOtherDomainFreq[] = "PageImgOtherDomainFreq";
 
+// Page term features
+const char kPageTerm[] = "PageTerm=";
+
 }  // namespace features
 }  // namespace safe_browsing

@@ -49,7 +49,8 @@ class PhishingDOMFeatureExtractor {
   // render thread for too long, the feature extractor may run in several
   // chunks of work, posting a task to the current MessageLoop to continue
   // processing.  Once feature extraction is complete, |done_callback|
-  // is run.  PhishingDOMFeatureExtractor takes ownership of the callback.
+  // is run on the current thread.  PhishingDOMFeatureExtractor takes
+  // ownership of the callback.
   void ExtractFeatures(FeatureMap* features, DoneCallback* done_callback);
 
   // Cancels any pending feature extraction.  The DoneCallback will not be run.
@@ -61,7 +62,7 @@ class PhishingDOMFeatureExtractor {
   struct FrameData;
   struct PageFeatureState;
 
-  // The maximum amount of time that we will spend on a single extraction
+  // The maximum amount of wall time that we will spend on a single extraction
   // iteration before pausing to let other MessageLoop tasks run.
   static const int kMaxTimePerChunkMs;
 

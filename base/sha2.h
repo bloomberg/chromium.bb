@@ -23,6 +23,10 @@ enum {
 // only 32 bytes (the full hash) are stored in the 'output' buffer.
 void SHA256HashString(const std::string& str, void* output, size_t len);
 
+// Convenience version of the above that returns the result in a 32-byte
+// string.
+std::string SHA256HashString(const std::string& str);
+
 }  // namespace base
 
 #endif  // BASE_SHA2_H_

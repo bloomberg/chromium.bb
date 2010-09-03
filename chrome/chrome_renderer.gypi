@@ -190,6 +190,8 @@
         'renderer/safe_browsing/features.h',
         'renderer/safe_browsing/phishing_dom_feature_extractor.cc',
         'renderer/safe_browsing/phishing_dom_feature_extractor.h',
+        'renderer/safe_browsing/phishing_term_feature_extractor.cc',
+        'renderer/safe_browsing/phishing_term_feature_extractor.h',
         'renderer/safe_browsing/phishing_url_feature_extractor.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor.h',
         'renderer/speech_input_dispatcher.cc',
