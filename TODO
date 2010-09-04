@@ -7,16 +7,7 @@ Core wayland protocol
  - generate pointer_focus (and drag focus) on raise/lower, move
    windows, all kinds of changes in surface stacking.
 
- - make a client side circular buffer of pending ping requests with
-   callbacks and data.  if buffer fills up, just iterate until an
-   entry becomes available.  wl_display_ping(dpy, func, data), basically.
-   func is called when the reply comes in for the ping request.
-
  - glyph cache
-
- - dnd, figure out large object transfer: through wayland protocol or
-   pass an fd through the compositor to the other client and let them
-   sort it out?
 
  - DnD issues:
 
@@ -41,7 +32,7 @@ Core wayland protocol
     - A touch input device doesn't have a pointer; indicate that
       somehow.
 
-    - Cursor themes
+    - Cursor themes, tie in with glyph/image cache.
 
  - copy-n-paste, store data in server (only one mime-type available)
    or do X style (content mime-type negotiation, but data goes away
@@ -89,22 +80,6 @@ Core wayland protocol
 
     - synaptics, 3-button emulation, scim
 
- - Figure out if we need the batch/commit scheme and what to do
-   instead.  Since dropping the "copy" request, we have a race between
-   copy from back to front and reporting damage.  "copy" did this
-   atomically, but copy is a rendering operation (wayland doesn't do
-   rendering) and requires synchronization between server and client
-   before client can reuse backbuffer.
-
-   The race condition happens when a client copies new content into
-   its window and then, before the client reports the damage, the
-   compositor then does a partial repaint (triggered by another
-   client) that only pulls in part of the repainted area.  It's only a
-   one-frame glitch, as the client will submit the damage and the
-   compositor will repaint the damaged area next frame.  And ideally
-   clients should do all rendering as early in the frame as possible
-   to avoid this race.
-
  - auth; We need to generate a random socket name and advertise that
    on dbus along with a connection cookie.  Something like a method
    that returns the socket name and a connection cookie.  The
@@ -137,11 +112,7 @@ Clients and ports
 
  - port gtk+
 
-    - eek, so much X legacy stuff there...
-
     - draw window decorations in gtkwindow.c
-
-    - start from alexl's client-side-windows branch
 
     - Details about pointer grabs. wayland doesn't have active grabs,
       menus will behave subtly different.  Under X, clicking a menu
