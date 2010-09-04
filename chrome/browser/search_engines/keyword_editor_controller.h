@@ -39,6 +39,9 @@ class KeywordEditorController {
                          const string16& keyword,
                          const std::string& url);
 
+  // Return true if the given |url| can be edited.
+  bool CanEdit(const TemplateURL* url) const;
+
   // Return true if the given |url| can be made the default.
   bool CanMakeDefault(const TemplateURL* url) const;
 

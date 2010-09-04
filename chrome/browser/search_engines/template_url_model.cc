@@ -464,6 +464,15 @@ const TemplateURL* TemplateURLModel::GetDefaultSearchProvider() {
   return prefs_default_search_provider_.get();
 }
 
+bool TemplateURLModel::IsDefaultSearchManaged() {
+  PrefService* prefs = GetPrefs();
+  if (!prefs)
+    return false;
+  const PrefService::Preference* pref =
+      prefs->FindPreference(prefs::kDefaultSearchProviderSearchURL);
+  return pref && pref->IsManaged();
+}
+
 void TemplateURLModel::AddObserver(TemplateURLModelObserver* observer) {
   model_observers_.AddObserver(observer);
 }

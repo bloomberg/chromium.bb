@@ -174,6 +174,9 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // NOTE: At least in unittest mode, this may return NULL.
   const TemplateURL* GetDefaultSearchProvider();
 
+  // Returns true if the default search is managed through group policy.
+  bool IsDefaultSearchManaged();
+
   // Observers used to listen for changes to the model.
   // TemplateURLModel does NOT delete the observers when deleted.
   void AddObserver(TemplateURLModelObserver* observer);

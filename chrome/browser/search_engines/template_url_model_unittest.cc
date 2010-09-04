@@ -19,6 +19,8 @@
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1111,3 +1113,15 @@ TEST_F(TemplateURLModelTest, FailedInit) {
 
   ASSERT_TRUE(model_->GetDefaultSearchProvider());
 }
+
+// Verifies that if the default search URL preference is managed, we report
+// the default search as managed.
+TEST_F(TemplateURLModelTest, ReportDefaultSearchIsManaged) {
+  TestingPrefService* service = profile_->GetTestingPrefService();
+  service->RegisterStringPref(prefs::kDefaultSearchProviderSearchURL,
+                              std::string());
+  service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,
+      Value::CreateStringValue("http://test.com/{searchTerms}"));
+  ASSERT_TRUE(model_->IsDefaultSearchManaged());
+}
+

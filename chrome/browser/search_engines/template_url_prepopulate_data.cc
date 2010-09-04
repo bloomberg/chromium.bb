@@ -3240,8 +3240,8 @@ void GetPrepopulatedTemplatefromPrefs(PrefService* prefs,
 void GetPrepopulatedEngines(PrefService* prefs,
                             std::vector<TemplateURL*>* t_urls,
                             size_t* default_search_provider_index) {
-  // If there if there is a set of search engines in the preferences
-  // file, it overrides the built-in set.
+  // If there is a set of search engines in the preferences file, it overrides
+  // the built-in set.
   *default_search_provider_index = 0;
   GetPrepopulatedTemplatefromPrefs(prefs, t_urls);
   if (!t_urls->empty())

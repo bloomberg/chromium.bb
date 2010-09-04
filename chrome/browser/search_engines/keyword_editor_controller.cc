@@ -78,10 +78,16 @@ void KeywordEditorController::ModifyTemplateURL(const TemplateURL* template_url,
                             profile_);
 }
 
+bool KeywordEditorController::CanEdit(const TemplateURL* url) const {
+  return !url_model()->IsDefaultSearchManaged() ||
+      url != url_model()->GetDefaultSearchProvider();
+}
+
 bool KeywordEditorController::CanMakeDefault(const TemplateURL* url) const {
   return (url != url_model()->GetDefaultSearchProvider() &&
           url->url() &&
-          url->url()->SupportsReplacement());
+          url->url()->SupportsReplacement() &&
+          !url_model()->IsDefaultSearchManaged());
 }
 
 bool KeywordEditorController::CanRemove(const TemplateURL* url) const {
