@@ -171,10 +171,12 @@ SafeBrowsingDatabase* SafeBrowsingDatabase::Create() {
     return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile);
   } else if (!value.compare("newsqlite")) {
     return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreSqlite);
-  } else {
-    DCHECK(value.empty() || !value.compare("old"));
-    // Default to the old implementation.
+  } else if (!value.compare("old")) {
     return new SafeBrowsingDatabaseBloom;
+  } else {
+    // Default.
+    DCHECK(value.empty());
+    return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreSqlite);
   }
 }
 
@@ -620,9 +622,6 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
                 << bloom_gen.InMilliseconds()
                 << " ms total.  prefix count: "<< add_prefixes.size();
   UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", bloom_gen);
-  UMA_HISTOGRAM_COUNTS("SB2.AddPrefixes", add_prefixes.size());
-  // TODO(shess): Push this line into |store_|?  Or ignore?
-  // UMA_HISTOGRAM_COUNTS("SB2.SubPrefixes", subs);
   UMA_HISTOGRAM_COUNTS("SB2.FilterSize", bloom_filter_->size());
   int64 size_64;
   if (file_util::GetFileSize(filename_, &size_64))

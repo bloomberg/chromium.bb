@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
 #include "base/callback.h"
+#include "base/histogram.h"
 #include "base/md5.h"
 
 // TODO(shess): Remove after migration.
@@ -521,6 +522,10 @@ bool SafeBrowsingStoreFile::DoUpdate(
   const FilePath new_filename = TemporaryFileForFilename(filename_);
   if (!file_util::Move(new_filename, filename_))
     return false;
+
+  // Record counts before swapping to caller.
+  UMA_HISTOGRAM_COUNTS("SB2.AddPrefixes", add_prefixes.size());
+  UMA_HISTOGRAM_COUNTS("SB2.SubPrefixes", sub_prefixes.size());
 
   // Pass the resulting data off to the caller.
   add_prefixes_result->swap(add_prefixes);

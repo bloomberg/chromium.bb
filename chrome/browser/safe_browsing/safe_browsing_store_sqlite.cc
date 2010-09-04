@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/sqlite_compiled_statement.h"
@@ -629,9 +630,13 @@ bool SafeBrowsingStoreSqlite::DoUpdate(
   int rv = insert_transaction_->Commit();
   if (rv != SQLITE_OK) {
     NOTREACHED() << "SafeBrowsing update transaction failed to commit.";
-    // UMA_HISTOGRAM_COUNTS("SB2.FailedUpdate", 1);
+    UMA_HISTOGRAM_COUNTS("SB2.FailedUpdate", 1);
     return false;
   }
+
+  // Record counts before swapping to caller.
+  UMA_HISTOGRAM_COUNTS("SB2.AddPrefixes", add_prefixes.size());
+  UMA_HISTOGRAM_COUNTS("SB2.SubPrefixes", sub_prefixes.size());
 
   add_prefixes_result->swap(add_prefixes);
   add_full_hashes_result->swap(add_full_hashes);
