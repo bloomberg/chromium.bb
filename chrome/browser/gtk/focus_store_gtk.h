@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,11 @@ class FocusStoreGtk {
   GtkWidget* widget() const { return widget_; }
 
   // Save the widget that is currently focused for |widget|'s toplevel (NOT
-  // |widget|). Call with NULL to clear |widget_|.
+  // |widget|).
   void Store(GtkWidget* widget);
+
+  // Save |widget| as the focus widget. Call with NULL to clear |widget_|.
+  void SetWidget(GtkWidget* widget);
 
  private:
   // Disconnect the previous destroy handler (if any).
