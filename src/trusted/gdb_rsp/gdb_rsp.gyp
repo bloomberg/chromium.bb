@@ -91,6 +91,14 @@
         'util.cc',
         'util.h',
     ],
+    'gdb_test_sources': [
+        'abi_test.cc',
+        'packet_test.cc',
+        'session_test.cc',
+        'util_test.cc',
+        'test.cc',
+        'test.h',
+    ],
   },
   'targets': [
     {
@@ -99,6 +107,16 @@
         'sources': [
           '<@(gdb_rsp_sources)',
         ],
+    },
+    {
+      'target_name': 'gdb_rsp_test',
+      'type': 'executable',
+        'sources': [
+          '<@(gdb_test_sources)',
+        ],
+      'dependencies': [
+        'gdb_rsp',
+      ]
     },
   ],
   'conditions': [

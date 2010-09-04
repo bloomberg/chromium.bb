@@ -28,6 +28,7 @@ int VerifyPacket(gdb_rsp::Packet *wr, gdb_rsp::Packet *rd,
 
 int TestAbi();
 int TestPacket();
+int TestSession();
 int TestUtil();
 
 #endif  // NATIVE_CLIENT_GDB_RSP_TEST_H_

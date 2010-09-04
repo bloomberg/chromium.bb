@@ -34,13 +34,13 @@ Session::Session(ITransport *io_ptr)
     io_(io_ptr),
     flags_(0),
     seq_(0) {
+  connected_ = (io_ptr != NULL);
   mutex_ = IMutex::Allocate();
   assert(io_);
   assert(mutex_);
 }
 
 Session::~Session() {
-  IPlatform::LogInfo("   **** DESTROYED SESSION %08Xh ***\n", this);
 }
 
 void Session::SetFlags(uint32_t flags) {
@@ -48,7 +48,7 @@ void Session::SetFlags(uint32_t flags) {
 }
 
 void Session::ClearFlags(uint32_t flags) {
-  flags &= ~flags;
+  flags_ &= ~flags;
 }
 
 uint32_t Session::GetFlags() {
@@ -59,14 +59,21 @@ bool Session::DataAvailable() {
   return io_->ReadWaitWithTimeout(kSessionTimeoutMs);
 }
 
+bool Session::Connected() {
+  return connected_;
+}
 
 Session::DPResult Session::GetChar(char *ch) {
   // Attempt to select this IO for reading.
   if (DataAvailable() == false) return DPR_NO_DATA;
 
   int32_t len = io_->Read(ch, 1);
-  if (len == -1) return DPR_ERROR;
   if (len == 0) return DPR_NO_DATA;
+  if (len == -1) {
+    io_->Disconnect();
+    connected_ = false;
+    return DPR_ERROR;
+  }
 
   return DPR_OK;
 }
@@ -165,6 +172,8 @@ Session::DPResult Session::SendStream(const char *out) {
 
     if (tx <= 0) {
       IPlatform::LogWarning("Send of %d bytes : '%s' failed.\n", len, out);
+      io_->Disconnect();
+      connected_ = false;
       return DPR_ERROR;
     }
 

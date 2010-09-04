@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "native_client/src/trusted/gdb_rsp/abi.h"
 
@@ -122,7 +123,9 @@ int TestAbi() {
   } else {
     if (def->bytes_ != sizeof(intptr_t)) {
       printf("Generic register %d != %d pointer size for %s\n",
-             def->bytes_, sizeof(intptr_t), abi->GetName());
+             static_cast<int>(def->bytes_),
+             static_cast<int>(sizeof(intptr_t)),
+             abi->GetName());
       errs++;
     }
   }
