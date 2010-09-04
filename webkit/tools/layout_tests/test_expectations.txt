@@ -35,6 +35,9 @@ BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
 // Temporary disable test.  Will investigate (antonm@chromium.org).
 BUGANTONM : fast/js/reserved-words-as-property.html = CRASH TEXT
 
+// FFmpeg buffer rotation is causing this hang.
+BUG54465 WIN SKIP : http/tests/media/video-play-suspend.html = FAIL
+
 // Temporarily marked as pass + fail until the fix for
 // https://bugs.webkit.org/show_bug.cgi?id=45155 lands and rolls in, at which
 // point this can be removed.
