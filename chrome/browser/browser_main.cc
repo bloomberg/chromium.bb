@@ -124,7 +124,6 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/views/user_data_dir_dialog.h"
-#include "chrome/common/env_vars.h"
 #include "chrome/common/sandbox_policy.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"

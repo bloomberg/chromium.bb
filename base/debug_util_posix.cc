@@ -25,7 +25,6 @@
 #endif
 
 #include <iostream>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/compat_execinfo.h"

@@ -17,7 +17,6 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
