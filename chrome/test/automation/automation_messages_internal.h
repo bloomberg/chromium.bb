@@ -1428,10 +1428,4 @@ IPC_BEGIN_MESSAGES(Automation)
   //   None expected
   IPC_MESSAGE_ROUTED2(AutomationMsg_SetZoomLevel, int, int)
 
-  // Waits for tab count to reach target value.
-  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_WaitForTabCountToBecome,
-                             int /* browser handle */,
-                             int /* target tab count */,
-                             bool /* success */)
-
 IPC_END_MESSAGES(Automation)

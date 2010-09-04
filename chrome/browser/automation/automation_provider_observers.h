@@ -19,7 +19,6 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
@@ -190,37 +189,6 @@ class TabClosedNotificationObserver : public TabStripNotificationObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabClosedNotificationObserver);
-};
-
-// Notifies when the tab count reaches the target number.
-class TabCountChangeObserver : public TabStripModelObserver {
- public:
-  TabCountChangeObserver(AutomationProvider* automation,
-                         Browser* browser,
-                         IPC::Message* reply_message,
-                         int target_tab_count);
-  // Implementation of TabStripModelObserver.
-  virtual void TabInsertedAt(TabContents* contents,
-                             int index,
-                             bool foreground);
-  virtual void TabClosingAt(TabContents* contents, int index);
-  virtual void TabStripModelDeleted();
-
- private:
-  ~TabCountChangeObserver();
-
-  // Checks if the current tab count matches our target, and if so,
-  // sends the reply message and deletes self.
-  void CheckTabCount();
-
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
-
-  TabStripModel* tab_strip_model_;
-
-  const int target_tab_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabCountChangeObserver);
 };
 
 // Observes when an extension has finished installing or possible install

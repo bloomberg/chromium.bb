@@ -340,49 +340,6 @@ void TabClosedNotificationObserver::set_for_browser_command(
   for_browser_command_ = for_browser_command;
 }
 
-TabCountChangeObserver::TabCountChangeObserver(AutomationProvider* automation,
-                                               Browser* browser,
-                                               IPC::Message* reply_message,
-                                               int target_tab_count)
-    : automation_(automation),
-      reply_message_(reply_message),
-      tab_strip_model_(browser->tabstrip_model()),
-      target_tab_count_(target_tab_count) {
-  tab_strip_model_->AddObserver(this);
-  CheckTabCount();
-}
-
-TabCountChangeObserver::~TabCountChangeObserver() {
-  tab_strip_model_->RemoveObserver(this);
-}
-
-void TabCountChangeObserver::TabInsertedAt(TabContents* contents,
-                                           int index,
-                                           bool foreground) {
-  CheckTabCount();
-}
-
-void TabCountChangeObserver::TabClosingAt(TabContents* contents, int index) {
-  CheckTabCount();
-}
-
-void TabCountChangeObserver::TabStripModelDeleted() {
-  AutomationMsg_WaitForTabCountToBecome::WriteReplyParams(reply_message_,
-                                                          false);
-  automation_->Send(reply_message_);
-  delete this;
-}
-
-void TabCountChangeObserver::CheckTabCount() {
-  if (tab_strip_model_->count() != target_tab_count_)
-    return;
-
-  AutomationMsg_WaitForTabCountToBecome::WriteReplyParams(reply_message_,
-                                                          true);
-  automation_->Send(reply_message_);
-  delete this;
-}
-
 bool DidExtensionHostsStopLoading(ExtensionProcessManager* manager) {
   for (ExtensionProcessManager::const_iterator iter = manager->begin();
        iter != manager->end(); ++iter) {

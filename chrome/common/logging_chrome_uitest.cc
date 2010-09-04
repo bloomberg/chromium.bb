@@ -183,7 +183,7 @@ TEST_F(RendererCrashTest, Crash) {
   } else {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
     ASSERT_TRUE(browser.get());
-    ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
+    ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
     expected_crashes_ = EXPECTED_CRASH_CRASHES;
   }
 }

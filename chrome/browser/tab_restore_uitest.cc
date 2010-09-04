@@ -568,12 +568,14 @@ TEST_F(TabRestoreUITest, MAYBE_RestoreWindow) {
   int initial_tab_count;
   ASSERT_TRUE(browser_proxy->GetTabCount(&initial_tab_count));
   ASSERT_TRUE(browser_proxy->AppendTab(url1_));
-  ASSERT_TRUE(browser_proxy->WaitForTabCountToBecome(initial_tab_count + 1));
+  ASSERT_TRUE(browser_proxy->WaitForTabCountToBecome(initial_tab_count + 1,
+                                                     action_max_timeout_ms()));
   scoped_refptr<TabProxy> new_tab(browser_proxy->GetTab(initial_tab_count));
   ASSERT_TRUE(new_tab.get());
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, new_tab->NavigateToURL(url1_));
   ASSERT_TRUE(browser_proxy->AppendTab(url2_));
-  ASSERT_TRUE(browser_proxy->WaitForTabCountToBecome(initial_tab_count + 2));
+  ASSERT_TRUE(browser_proxy->WaitForTabCountToBecome(initial_tab_count + 2,
+                                                     action_max_timeout_ms()));
   new_tab = browser_proxy->GetTab(initial_tab_count + 1);
   ASSERT_TRUE(new_tab.get());
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, new_tab->NavigateToURL(url2_));

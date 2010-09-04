@@ -192,14 +192,19 @@ bool BrowserProxy::SimulateDrag(const gfx::Point& start,
   return result;
 }
 
-bool BrowserProxy::WaitForTabCountToBecome(int count) {
-  bool success = false;
-  if (!sender_->Send(new AutomationMsg_WaitForTabCountToBecome(
-                         0, handle_, count, &success))) {
-    return false;
+bool BrowserProxy::WaitForTabCountToBecome(int count, int wait_timeout) {
+  const TimeTicks start = TimeTicks::Now();
+  const TimeDelta timeout = TimeDelta::FromMilliseconds(wait_timeout);
+  while (TimeTicks::Now() - start < timeout) {
+    PlatformThread::Sleep(automation::kSleepTime);
+    int new_count;
+    if (!GetTabCount(&new_count))
+      return false;
+    if (count == new_count)
+      return true;
   }
-
-  return success;
+  // If we get here, the tab count doesn't match.
+  return false;
 }
 
 bool BrowserProxy::WaitForTabToBecomeActive(int tab,
