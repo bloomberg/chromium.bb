@@ -24,7 +24,6 @@ class ResourceDispatcherHost;
 class ResourceRedirectDetails;
 class ResourceRequestDetails;
 class SSLPolicy;
-class Task;
 class URLRequest;
 
 // The SSLManager SSLManager controls the SSL UI elements in a TabContents.  It
@@ -98,36 +97,11 @@ class SSLManager : public NotificationObserver {
                        const NotificationDetails& details);
 
  private:
-  // SSLMessageInfo contains the information necessary for displaying a message
-  // in an info-bar.
-  struct SSLMessageInfo {
-   public:
-    explicit SSLMessageInfo(const std::wstring& text)
-        : message(text),
-          action(NULL) { }
-
-    SSLMessageInfo(const std::wstring& message,
-                   const std::wstring& link_text,
-                   Task* action)
-        : message(message), link_text(link_text), action(action) { }
-
-    // Overridden so that std::find works.
-    bool operator==(const std::wstring& other_message) const {
-      // We are uniquing SSLMessageInfo by their message only.
-      return message == other_message;
-    }
-
-    std::wstring message;
-    std::wstring link_text;
-    Task* action;
-  };
-
   // Entry points for notifications to which we subscribe. Note that
   // DidCommitProvisionalLoad uses the abstract NotificationDetails type since
   // the type we need is in NavigationController which would create a circular
   // header file dependency.
   void DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details);
-  void DidFailProvisionalLoadWithError(ProvisionalLoadDetails* details);
   void DidStartResourceResponse(ResourceRequestDetails* details);
   void DidReceiveResourceRedirect(ResourceRedirectDetails* details);
   void DidChangeSSLInternalState();
