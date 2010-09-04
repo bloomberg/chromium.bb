@@ -12,6 +12,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
@@ -134,7 +135,7 @@ class DateTimeSection : public SettingsPageSection,
       UTF16ToWide(name.getBuffer(), name.length(), &output);
       int hour_offset = timezones_[index]->getRawOffset() / 3600000;
       return WideToUTF16Hack(
-          StringPrintf(hour_offset == 0 ? L"(GMT) " : (hour_offset > 0 ?
+          base::StringPrintf(hour_offset == 0 ? L"(GMT) " : (hour_offset > 0 ?
           L"(GMT+%d) " : L"(GMT%d) "), hour_offset) + output);
     }
 

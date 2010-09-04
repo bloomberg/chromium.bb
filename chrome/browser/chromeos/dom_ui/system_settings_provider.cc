@@ -8,6 +8,7 @@
 
 #include "base/time.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/stl_util-inl.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -122,7 +123,7 @@ string16 SystemSettingsProvider::GetTimezoneName(
     format = L"(GMT) ";
   else
     format = L"(GMT%+d) ";
-  std::wstring offset = StringPrintf(format, hour_offset);
+  std::wstring offset = base::StringPrintf(format, hour_offset);
   return WideToUTF16(offset) + output;
 }
 

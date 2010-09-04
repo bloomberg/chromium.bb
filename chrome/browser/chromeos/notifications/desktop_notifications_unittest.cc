@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/notifications/desktop_notifications_unittest.h"
 
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages_params.h"
 
@@ -196,7 +197,7 @@ TEST_F(DesktopNotificationsTest, TestManyNotifications) {
   // Request lots of identical notifications.
   const int kLotsOfToasts = 20;
   for (int id = 1; id <= kLotsOfToasts; ++id) {
-    SCOPED_TRACE(StringPrintf("Creation loop: id=%d", id));
+    SCOPED_TRACE(base::StringPrintf("Creation loop: id=%d", id));
     ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
     params.notification_id = id;
     EXPECT_TRUE(service_->ShowDesktopNotification(
@@ -220,7 +221,7 @@ TEST_F(DesktopNotificationsTest, TestManyNotifications) {
   for (id = 1;
        id <= cancelled;
        ++id) {
-    SCOPED_TRACE(StringPrintf("Cancel half of notifications: id=%d", id));
+    SCOPED_TRACE(base::StringPrintf("Cancel half of notifications: id=%d", id));
     service_->CancelDesktopNotification(process_id, route_id, id);
     MessageLoopForUI::current()->RunAllPending();
     expected_log.append("notification closed by script\n");
@@ -231,7 +232,7 @@ TEST_F(DesktopNotificationsTest, TestManyNotifications) {
 
   // Now cancel the rest.  It should empty the balloon space.
   for (; id <= kLotsOfToasts; ++id) {
-    SCOPED_TRACE(StringPrintf("Cancel loop: id=%d", id));
+    SCOPED_TRACE(base::StringPrintf("Cancel loop: id=%d", id));
     service_->CancelDesktopNotification(process_id, route_id, id);
     expected_log.append("notification closed by script\n");
     MessageLoopForUI::current()->RunAllPending();
@@ -246,7 +247,7 @@ TEST_F(DesktopNotificationsTest, TestEarlyDestruction) {
   // Create some toasts and then prematurely delete the notification service,
   // just to make sure nothing crashes/leaks.
   for (int id = 0; id <= 3; ++id) {
-    SCOPED_TRACE(StringPrintf("Show Text loop: id=%d", id));
+    SCOPED_TRACE(base::StringPrintf("Show Text loop: id=%d", id));
 
     EXPECT_TRUE(service_->ShowDesktopNotification(
         StandardTestNotification(), 0, 0,

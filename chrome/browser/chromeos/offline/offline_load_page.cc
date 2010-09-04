@@ -9,6 +9,7 @@
 #include "base/histogram.h"
 #include "base/i18n/rtl.h"
 #include "base/string_piece.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
@@ -78,8 +79,8 @@ std::string OfflineLoadPage::GetHTMLContents() {
       kMaxBlankPeriod -
           NetworkStateNotifier::GetOfflineDuration().InMilliseconds());
   strings.SetString("on_load",
-                    WideToUTF16Hack(StringPrintf(L"startTimer(%ld)",
-                                                 time_to_wait)));
+                    WideToUTF16Hack(base::StringPrintf(L"startTimer(%ld)",
+                                                       time_to_wait)));
 
   // TODO(oshima): thumbnail is not working yet. fix this.
   const std::string url = "chrome://thumb/" + GetURL().spec();

@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/chrome_thread.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +33,7 @@ struct Input {  // Fields of chromeos::ProxyConfigServiceImpl::ProxyConfig.
 };
 
 // Builds an identifier for each test in an array.
-#define TEST_DESC(desc) StringPrintf("at line %d <%s>", __LINE__, desc)
+#define TEST_DESC(desc) base::StringPrintf("at line %d <%s>", __LINE__, desc)
 
 // Shortcuts to declare enums within chromeos's ProxyConfig.
 #define MK_MODE(mode) ProxyConfigServiceImpl::ProxyConfig::MODE_##mode
@@ -346,8 +347,8 @@ class ProxyConfigServiceImplTest : public PlatformTest {
 
 TEST_F(ProxyConfigServiceImplTest, ChromeosProxyConfigToNetProxyConfig) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
-                              tests[i].description.c_str()));
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
+                                    tests[i].description.c_str()));
 
     ProxyConfigServiceImpl::ProxyConfig init_config;
     InitConfigWithTestInput(tests[i].input, &init_config);
@@ -406,8 +407,8 @@ TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
   CreateConfigService(init_config);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
-                              tests[i].description.c_str()));
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
+                                    tests[i].description.c_str()));
 
     // Set config to tests[i].input via UI.
     net::ProxyBypassRules bypass_rules;

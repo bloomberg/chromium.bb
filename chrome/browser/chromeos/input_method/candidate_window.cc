@@ -20,6 +20,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/common/chrome_paths.h"
@@ -478,9 +479,9 @@ void CandidateView::SetShortcutTextFromInt(int index) {
     shortcut_character = kShortcutCharacters[index];
   }
   if (orientation_ == InputMethodLookupTable::kVertical) {
-    shortcut_label_->SetText(StringPrintf(L"%lc", shortcut_character));
+    shortcut_label_->SetText(base::StringPrintf(L"%lc", shortcut_character));
   } else {
-    shortcut_label_->SetText(StringPrintf(L"%lc.", shortcut_character));
+    shortcut_label_->SetText(base::StringPrintf(L"%lc.", shortcut_character));
   }
 }
 

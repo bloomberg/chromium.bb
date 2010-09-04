@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
@@ -435,8 +436,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
   // new notification is always visible
   for (int i = 0; i < create_count; i++) {
     {
-      SCOPED_TRACE(StringPrintf("new n%d", i));
-      std::string id = StringPrintf("n%d", i);
+      SCOPED_TRACE(base::StringPrintf("new n%d", i));
+      std::string id = base::StringPrintf("n%d", i);
       collection->Add(NewMockNotification(id), profile);
       EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
       BalloonViewImpl* view =
@@ -445,8 +446,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
       EXPECT_TRUE(tester->IsVisible(view));
     }
     {
-      SCOPED_TRACE(StringPrintf("new s%d", i));
-      std::string id = StringPrintf("s%d", i);
+      SCOPED_TRACE(base::StringPrintf("new s%d", i));
+      std::string id = base::StringPrintf("s%d", i);
       collection->AddSystemNotification(
           NewMockNotification(id), browser()->profile(), true, false);
       ui_test_utils::RunAllPendingInMessageLoop();
@@ -459,8 +460,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
   // Update should not change the visibility
   for (int i = 0; i < create_count; i++) {
     {
-      SCOPED_TRACE(StringPrintf("update n%d", i));
-      Notification notify = NewMockNotification(StringPrintf("n%d", i));
+      SCOPED_TRACE(base::StringPrintf("update n%d", i));
+      Notification notify = NewMockNotification(base::StringPrintf("n%d", i));
       // The last shown notification is sticky, which makes all non sticky
       // invisible.
       EXPECT_TRUE(collection->UpdateNotification(notify));
@@ -469,8 +470,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
       EXPECT_FALSE(tester->IsVisible(view));
     }
     {
-      SCOPED_TRACE(StringPrintf("update s%d", i));
-      Notification notify = NewMockNotification(StringPrintf("s%d", i));
+      SCOPED_TRACE(base::StringPrintf("update s%d", i));
+      Notification notify = NewMockNotification(base::StringPrintf("s%d", i));
       BalloonViewImpl* view = tester->GetBalloonView(collection, notify);
       bool currently_visible = tester->IsVisible(view);
       EXPECT_TRUE(collection->UpdateNotification(notify));
@@ -482,16 +483,16 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
   // UpdateAndShowNotification makes notification visible
   for (int i = 0; i < create_count; i++) {
     {
-      SCOPED_TRACE(StringPrintf("update and show n%d", i));
-      Notification notify = NewMockNotification(StringPrintf("n%d", i));
+      SCOPED_TRACE(base::StringPrintf("update and show n%d", i));
+      Notification notify = NewMockNotification(base::StringPrintf("n%d", i));
       EXPECT_TRUE(collection->UpdateAndShowNotification(notify));
       ui_test_utils::RunAllPendingInMessageLoop();
       BalloonViewImpl* view = tester->GetBalloonView(collection, notify);
       EXPECT_TRUE(tester->IsVisible(view));
     }
     {
-      SCOPED_TRACE(StringPrintf("update and show s%d", i));
-      Notification notify = NewMockNotification(StringPrintf("s%d", i));
+      SCOPED_TRACE(base::StringPrintf("update and show s%d", i));
+      Notification notify = NewMockNotification(base::StringPrintf("s%d", i));
       EXPECT_TRUE(collection->UpdateAndShowNotification(notify));
       ui_test_utils::RunAllPendingInMessageLoop();
       BalloonViewImpl* view = tester->GetBalloonView(collection, notify);
