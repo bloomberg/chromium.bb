@@ -102,9 +102,7 @@ global_config_flags = {
   'CPP_FLAGS' : cpp_flags,
   'LLVM_GCC_COMPILE': [
     '-nostdinc',
-    '-DNACL_TARGET_ARCH=arm',
-    # TODO: get rid of the next two lines
-    '-DNACL_TARGET_SUBARCH=32',
+    # TODO: get rid of the next line
     '-DNACL_LINUX=1'
   ] + cpp_flags,
 
