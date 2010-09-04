@@ -39,8 +39,18 @@ const gchar* kSearchEngineKey = "template-url-search-engine";
 // actual logo) in chromium.
 const int kLogoLabelHeight = 100;
 
+// Size of the small logo (for when we show 4 search engines).
+const int kLogoLabelWidthSmall = 132;
+const int kLogoLabelHeightSmall = 88;
+
+// The number of search engine options we normally show. It may be less than
+// this number if there are not enough search engines for the current locale,
+// or more if the user's imported default is not one of the top search engines
+// for the current locale.
+const size_t kNormalBallotSize = 3;
+
 // The width of the explanatory label. The 180 is the width of the large images.
-const int kExplanationWidth = 3 * 180;
+const int kExplanationWidth = kNormalBallotSize * 180;
 
 // Horizontal spacing between search engine choices.
 const int kSearchEngineSpacing = 6;
@@ -153,13 +163,16 @@ void FirstRunDialog::ShowSearchEngineWindow() {
   GtkWidget* explanation = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_FR_SEARCH_TEXT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
+  gtk_misc_set_alignment(GTK_MISC(explanation), 0, 0.5);
   gtk_util::SetLabelColor(explanation, &gfx::kGdkBlack);
   gtk_label_set_line_wrap(GTK_LABEL(explanation), TRUE);
   gtk_widget_set_size_request(explanation, kExplanationWidth, -1);
   gtk_box_pack_start(GTK_BOX(bubble_area_box), explanation, FALSE, FALSE, 0);
 
   // We will fill this in after the TemplateURLModel has loaded.
-  search_engine_hbox_ = gtk_hbox_new(FALSE, kSearchEngineSpacing);
+  // GtkHButtonBox because we want all children to have the same size.
+  search_engine_hbox_ = gtk_hbutton_box_new();
+  gtk_box_set_spacing(GTK_BOX(search_engine_hbox_), kSearchEngineSpacing);
   gtk_box_pack_start(GTK_BOX(bubble_area_box), search_engine_hbox_,
                      FALSE, FALSE, 0);
 
@@ -242,18 +255,26 @@ void FirstRunDialog::OnTemplateURLModelChanged() {
   // observer so we don't try to redraw if engines change under us.
   search_engines_model_->RemoveObserver(this);
 
-  // Add search engines in search_engines_model_ to buttons list.  The
-  // first three will always be from prepopulated data.
-  std::vector<const TemplateURL*> template_urls =
+  // Add search engines in |search_engines_model_| to buttons list.
+  std::vector<const TemplateURL*> ballot_engines =
       search_engines_model_->GetTemplateURLs();
+  // Drop any not in the first 3.
+  if (ballot_engines.size() > kNormalBallotSize)
+    ballot_engines.resize(kNormalBallotSize);
 
-  std::vector<const TemplateURL*>::iterator search_engine_iter;
+  const TemplateURL* default_search_engine =
+      search_engines_model_->GetDefaultSearchProvider();
+  if (std::find(ballot_engines.begin(),
+                ballot_engines.end(),
+                default_search_engine) ==
+      ballot_engines.end()) {
+    ballot_engines.push_back(default_search_engine);
+  }
 
   std::string choose_text = l10n_util::GetStringUTF8(IDS_FR_SEARCH_CHOOSE);
   for (std::vector<const TemplateURL*>::iterator search_engine_iter =
-           template_urls.begin();
-       search_engine_iter < template_urls.end() &&
-           search_engine_iter < template_urls.begin() + 3;
+           ballot_engines.begin();
+       search_engine_iter < ballot_engines.end();
        ++search_engine_iter) {
     // Create a container for the search engine widgets.
     GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
@@ -269,8 +290,18 @@ void FirstRunDialog::OnTemplateURLModelChanged() {
     if (show_images && logo_id > 0) {
       GdkPixbuf* pixbuf =
           ResourceBundle::GetSharedInstance().GetPixbufNamed(logo_id);
+      if (ballot_engines.size() > kNormalBallotSize) {
+        pixbuf = gdk_pixbuf_scale_simple(pixbuf,
+                                         kLogoLabelWidthSmall,
+                                         kLogoLabelHeightSmall,
+                                         GDK_INTERP_HYPER);
+      } else {
+        g_object_ref(pixbuf);
+      }
+
       GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
       gtk_box_pack_start(GTK_BOX(vbox), image, FALSE, FALSE, 0);
+      g_object_unref(pixbuf);
     } else {
       GtkWidget* logo_label = gtk_label_new(NULL);
       char* markup = g_markup_printf_escaped(
@@ -278,7 +309,9 @@ void FirstRunDialog::OnTemplateURLModelChanged() {
           WideToUTF8((*search_engine_iter)->short_name()).c_str());
       gtk_label_set_markup(GTK_LABEL(logo_label), markup);
       g_free(markup);
-      gtk_widget_set_size_request(logo_label, -1, kLogoLabelHeight);
+      gtk_widget_set_size_request(logo_label, -1,
+          ballot_engines.size() > kNormalBallotSize ? kLogoLabelHeightSmall :
+                                                      kLogoLabelHeight);
       gtk_box_pack_start(GTK_BOX(vbox), logo_label, FALSE, FALSE, 0);
     }
 
@@ -293,7 +326,7 @@ void FirstRunDialog::OnTemplateURLModelChanged() {
     gtk_box_pack_start(GTK_BOX(button_centerer), button, TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), button_centerer, FALSE, FALSE, 0);
 
-    gtk_box_pack_start(GTK_BOX(search_engine_hbox_), vbox, TRUE, TRUE, 0);
+    gtk_container_add(GTK_CONTAINER(search_engine_hbox_), vbox);
     gtk_widget_show_all(search_engine_hbox_);
   }
 }
@@ -327,9 +360,8 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
     if (report_crashes_ &&
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(report_crashes_))) {
 #if defined(USE_LINUX_BREAKPAD)
-      if (GoogleUpdateSettings::SetCollectStatsConsent(true)) {
+      if (GoogleUpdateSettings::SetCollectStatsConsent(true))
         InitCrashReporter();
-      }
 #endif
     } else {
       GoogleUpdateSettings::SetCollectStatsConsent(false);
