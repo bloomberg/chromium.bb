@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_BACKEND_CLIENT_H_
-#define CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_BACKEND_CLIENT_H_
+#ifndef CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_OPERATION_CLIENT_H_
+#define CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_OPERATION_CLIENT_H_
 
 #include <vector>
 
 #include "base/file_util_proxy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 
-// Interface for client of FileSystemBackend.
-class FileSystemBackendClient {
+// Interface for client of FileSystemOperation.
+class FileSystemOperationClient {
  public:
-  virtual ~FileSystemBackendClient() {}
+  virtual ~FileSystemOperationClient() {}
 
   virtual void DidFail(WebKit::WebFileError status, int request_id) = 0;
 
@@ -29,4 +29,5 @@ class FileSystemBackendClient {
       int request_id) = 0;
 };
 
-#endif  // CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_BACKEND_CLIENT_H_
+#endif  // CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_OPERATION_CLIENT_H_
+

@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/file_system/file_system_backend.h"
+#include "chrome/browser/file_system/file_system_operation.h"
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/file_system/file_system_backend_client.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/file_system/file_system_operation_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 
 namespace {
-int kDummyRequestId = 42;
+int kInvalidRequestId = -1;
 int kFileOperationStatusNotSet = 0;
 int kFileOperationSucceeded = 1;
 }
@@ -21,33 +23,43 @@ bool FileExists(FilePath path) {
   return file_util::PathExists(path) && !file_util::DirectoryExists(path);
 }
 
-class MockClient: public FileSystemBackendClient {
+class MockClient: public FileSystemOperationClient {
  public:
   MockClient()
-      : status_(kFileOperationStatusNotSet) { }
+      : status_(kFileOperationStatusNotSet),
+        request_id_(kInvalidRequestId) {
+  }
 
   ~MockClient() {}
 
-  void DidFail(WebKit::WebFileError status, int) {
+  virtual void DidFail(WebKit::WebFileError status, int request_id) {
     status_ = status;
+    request_id_ = request_id;
   }
 
-  void DidSucceed(int) {
+  virtual void DidSucceed(int request_id) {
     status_ = kFileOperationSucceeded;
+    request_id_ = request_id;
   }
 
-  virtual void DidReadMetadata(const base::PlatformFileInfo& info, int) {
+  virtual void DidReadMetadata(
+      const base::PlatformFileInfo& info,
+      int request_id) {
     info_ = info;
+    request_id_ = request_id;
   }
 
-  void DidReadDirectory(
+  virtual void DidReadDirectory(
       const std::vector<base::file_util_proxy::Entry>& entries,
-      bool has_more, int) {
+      bool has_more,
+      int request_id) {
     entries_ = entries;
+    request_id_ = request_id;
   }
 
   // Helpers for testing.
   int status() const { return status_; }
+  int request_id() const { return request_id_; }
   const base::PlatformFileInfo& info() const { return info_; }
   const std::vector<base::file_util_proxy::Entry>& entries() const {
     return entries_;
@@ -55,13 +67,14 @@ class MockClient: public FileSystemBackendClient {
 
  private:
   int status_;
+  int request_id_;
   base::PlatformFileInfo info_;
   std::vector<base::file_util_proxy::Entry> entries_;
 };
 
-class FileSystemBackendTest : public testing::Test {
+class FileSystemOperationTest : public testing::Test {
  public:
-     FileSystemBackendTest()
+     FileSystemOperationTest()
          : ui_thread_(ChromeThread::UI, &loop_),
            file_thread_(ChromeThread::FILE, &loop_) {
        base_.CreateUniqueTempDir();
@@ -70,55 +83,68 @@ class FileSystemBackendTest : public testing::Test {
  protected:
   virtual void SetUp() {
     mock_client_.reset(new MockClient());
-    backend_.reset(new FileSystemBackend());
-    backend_->set_client(mock_client_.get());
+    current_request_id_ = kInvalidRequestId;
     ASSERT_TRUE(base_.IsValid());
   }
 
-  scoped_ptr<FileSystemBackend> backend_;
+  // Returns a new operation pointer that is created each time it's called.
+  // The pointer is owned by the test class.
+  FileSystemOperation* operation() {
+    current_request_id_ = base::RandInt(0, kint32max);
+    operation_.reset(new FileSystemOperation(
+      current_request_id_, mock_client_.get()));
+    return operation_.get();
+  }
+
   scoped_ptr<MockClient> mock_client_;
+  int current_request_id_;
+
   MessageLoop loop_;
   ChromeThread ui_thread_;
   ChromeThread file_thread_;
+
   // Common temp base for all non-existing file/dir path test cases.
   // This is in case a dir on test machine exists. It's better to
   // create temp and then create non-existing file paths under it.
   ScopedTempDir base_;
 
  private:
+  scoped_ptr<FileSystemOperation> operation_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemBackendTest);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationTest);
 };
 
-TEST_F(FileSystemBackendTest, TestMoveFailureSrcDoesntExist) {
+TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
   FilePath src(base_.path().Append(FILE_PATH_LITERAL("a")));
   FilePath dest(base_.path().Append(FILE_PATH_LITERAL("b")));
-  backend_->Move(src, dest, kDummyRequestId);
+  operation()->Move(src, dest);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestMoveFailureContainsPath) {
+TEST_F(FileSystemOperationTest, TestMoveFailureContainsPath) {
   FilePath file_under_base = base_.path().Append(FILE_PATH_LITERAL("b"));
-  backend_->Move(base_.path(), file_under_base, kDummyRequestId);
+  operation()->Move(base_.path(), file_under_base);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(WebKit::WebFileErrorInvalidModification, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestMoveFailureSrcDirExistsDestFile) {
+TEST_F(FileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
   // Src exists and is dir. Dest is a file.
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
 
-  backend_->Move(base_.path(), dest_file, kDummyRequestId);
+  operation()->Move(base_.path(), dest_file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(),
-            WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestMoveFailureDestParentDoesntExist) {
+TEST_F(FileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
@@ -126,13 +152,13 @@ TEST_F(FileSystemBackendTest, TestMoveFailureDestParentDoesntExist) {
   FilePath nonexisting_file = nonexisting.Append(
       FILE_PATH_LITERAL("DontExistFile"));
 
-  backend_->Move(src_dir.path(), nonexisting_file, kDummyRequestId);
+  operation()->Move(src_dir.path(), nonexisting_file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(),
-            WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestMoveSuccessSrcFileAndOverwrite) {
+TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
   FilePath src_file;
@@ -142,13 +168,15 @@ TEST_F(FileSystemBackendTest, TestMoveSuccessSrcFileAndOverwrite) {
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
-  backend_->Move(src_file, dest_file, kDummyRequestId);
+
+  operation()->Move(src_file, dest_file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(FileExists(dest_file));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestMoveSuccessSrcFileAndNew) {
+TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
   FilePath src_file;
@@ -157,41 +185,45 @@ TEST_F(FileSystemBackendTest, TestMoveSuccessSrcFileAndNew) {
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
   FilePath dest_file(dest_dir.path().Append(FILE_PATH_LITERAL("NewFile")));
-  backend_->Move(src_file, dest_file, kDummyRequestId);
+
+  operation()->Move(src_file, dest_file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(FileExists(dest_file));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCopyFailureSrcDoesntExist) {
+TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
   FilePath src(base_.path().Append(FILE_PATH_LITERAL("a")));
   FilePath dest(base_.path().Append(FILE_PATH_LITERAL("b")));
-  backend_->Copy(src, dest, kDummyRequestId);
+  operation()->Copy(src, dest);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCopyFailureContainsPath) {
+TEST_F(FileSystemOperationTest, TestCopyFailureContainsPath) {
   FilePath file_under_base = base_.path().Append(FILE_PATH_LITERAL("b"));
-  backend_->Copy(base_.path(), file_under_base, kDummyRequestId);
+  operation()->Copy(base_.path(), file_under_base);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(WebKit::WebFileErrorInvalidModification, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCopyFailureSrcDirExistsDestFile) {
+TEST_F(FileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
   // Src exists and is dir. Dest is a file.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dir.path(), &dest_file);
 
-  backend_->Copy(base_.path(), dest_file, kDummyRequestId);
+  operation()->Copy(base_.path(), dest_file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(),
-            WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCopyFailureDestParentDoesntExist) {
+TEST_F(FileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
@@ -202,13 +234,13 @@ TEST_F(FileSystemBackendTest, TestCopyFailureDestParentDoesntExist) {
   FilePath nonexisting_file = nonexisting.Append(
       FILE_PATH_LITERAL("DontExistFile"));
 
-  backend_->Copy(src_dir, nonexisting_file, kDummyRequestId);
+  operation()->Copy(src_dir, nonexisting_file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(),
-            WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCopySuccessSrcFileAndOverwrite) {
+TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
   FilePath src_file;
@@ -218,13 +250,15 @@ TEST_F(FileSystemBackendTest, TestCopySuccessSrcFileAndOverwrite) {
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
-  backend_->Copy(src_file, dest_file, kDummyRequestId);
+
+  operation()->Copy(src_file, dest_file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(FileExists(dest_file));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCopySuccessSrcFileAndNew) {
+TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
   FilePath src_file;
@@ -233,25 +267,28 @@ TEST_F(FileSystemBackendTest, TestCopySuccessSrcFileAndNew) {
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
   FilePath dest_file(dest_dir.path().Append(FILE_PATH_LITERAL("NewFile")));
-  backend_->Copy(src_file, dest_file, kDummyRequestId);
+
+  operation()->Copy(src_file, dest_file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(FileExists(dest_file));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCopySuccessSrcDir) {
+TEST_F(FileSystemOperationTest, TestCopySuccessSrcDir) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
 
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
 
-  backend_->Copy(src_dir.path(), dest_dir.path(), kDummyRequestId);
+  operation()->Copy(src_dir.path(), dest_dir.path());
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCopyDestParentExistsSuccess) {
+TEST_F(FileSystemOperationTest, TestCopyDestParentExistsSuccess) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
   FilePath src_file;
@@ -259,183 +296,203 @@ TEST_F(FileSystemBackendTest, TestCopyDestParentExistsSuccess) {
 
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
-  backend_->Copy(src_file, dest_dir.path(), kDummyRequestId);
+
+  operation()->Copy(src_file, dest_dir.path());
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 
   FilePath src_filename(src_file.BaseName());
   EXPECT_TRUE(FileExists(dest_dir.path().Append(src_filename)));
 }
 
-TEST_F(FileSystemBackendTest, TestCreateFileFailure) {
+TEST_F(FileSystemOperationTest, TestCreateFileFailure) {
   // Already existing file and exclusive true.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file;
 
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
-  backend_->CreateFile(file, true, kDummyRequestId);
+  operation()->CreateFile(file, true);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(),
-            WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCreateFileSuccessFileExists) {
+TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileExists) {
   // Already existing file and exclusive false.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
 
-  backend_->CreateFile(file, false, kDummyRequestId);
+  operation()->CreateFile(file, false);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(FileExists(file));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCreateFileSuccessExclusive) {
+TEST_F(FileSystemOperationTest, TestCreateFileSuccessExclusive) {
   // File doesn't exist but exclusive is true.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file = dir.path().Append(FILE_PATH_LITERAL("FileDoesntExist"));
-  backend_->CreateFile(file, true, kDummyRequestId);
+  operation()->CreateFile(file, true);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(FileExists(file));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCreateFileSuccessFileDoesntExist) {
+TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileDoesntExist) {
   // Non existing file.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file = dir.path().Append(FILE_PATH_LITERAL("FileDoesntExist"));
-  backend_->CreateFile(file, false, kDummyRequestId);
+  operation()->CreateFile(file, false);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCreateDirFailureDestParentDoesntExist) {
+TEST_F(FileSystemOperationTest, TestCreateDirFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   FilePath nonexisting(base_.path().Append(
       FILE_PATH_LITERAL("DirDoesntExist")));
   file_util::EnsureEndsWithSeparator(&nonexisting);
   FilePath nonexisting_file = nonexisting.Append(
       FILE_PATH_LITERAL("FileDoesntExist"));
-  backend_->CreateDirectory(nonexisting_file, false, kDummyRequestId);
+  operation()->CreateDirectory(nonexisting_file, false);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCreateDirFailureDirExists) {
+TEST_F(FileSystemOperationTest, TestCreateDirFailureDirExists) {
   // Exclusive and dir existing at path.
-  backend_->CreateDirectory(base_.path(), true, kDummyRequestId);
+  operation()->CreateDirectory(base_.path(), true);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(WebKit::WebFileErrorInvalidModification, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCreateDirFailureFileExists) {
+TEST_F(FileSystemOperationTest, TestCreateDirFailureFileExists) {
   // Exclusive true and file existing at path.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
-  backend_->CreateDirectory(file, true, kDummyRequestId);
+  operation()->CreateDirectory(file, true);
   loop_.RunAllPending();
   EXPECT_EQ(mock_client_->status(),
             WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCreateDirSuccess) {
+TEST_F(FileSystemOperationTest, TestCreateDirSuccess) {
   // Dir exists and exclusive is false.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  backend_->CreateDirectory(dir.path(), false, kDummyRequestId);
+  operation()->CreateDirectory(dir.path(), false);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 
   // Dir doesn't exist.
   FilePath nonexisting_dir_path(FILE_PATH_LITERAL("nonexistingdir"));
-  backend_->CreateDirectory(nonexisting_dir_path, false, kDummyRequestId);
+  operation()->CreateDirectory(nonexisting_dir_path, false);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(file_util::DirectoryExists(nonexisting_dir_path));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestCreateDirSuccessExclusive) {
+TEST_F(FileSystemOperationTest, TestCreateDirSuccessExclusive) {
   // Dir doesn't exist.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath nonexisting_dir_path(dir.path().Append(
       FILE_PATH_LITERAL("nonexistingdir")));
-  backend_->CreateDirectory(nonexisting_dir_path, true, kDummyRequestId);
+
+  operation()->CreateDirectory(nonexisting_dir_path, true);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(file_util::DirectoryExists(nonexisting_dir_path));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestExistsAndMetadataFailure) {
+TEST_F(FileSystemOperationTest, TestExistsAndMetadataFailure) {
   FilePath nonexisting_dir_path(base_.path().Append(
       FILE_PATH_LITERAL("nonexistingdir")));
-  backend_->GetMetadata(nonexisting_dir_path, kDummyRequestId);
+  operation()->GetMetadata(nonexisting_dir_path);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
 
-  backend_->FileExists(nonexisting_dir_path, kDummyRequestId);
+  operation()->FileExists(nonexisting_dir_path);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 
   file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
-  backend_->DirectoryExists(nonexisting_dir_path, kDummyRequestId);
+  operation()->DirectoryExists(nonexisting_dir_path);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestExistsAndMetadataSuccess) {
+TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
 
-  backend_->DirectoryExists(dir.path(), kDummyRequestId);
+  operation()->DirectoryExists(dir.path());
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 
-  backend_->GetMetadata(dir.path(), kDummyRequestId);
+  operation()->GetMetadata(dir.path());
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_TRUE(mock_client_->info().is_directory);
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
-  backend_->FileExists(file, kDummyRequestId);
+  operation()->FileExists(file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 
-  backend_->GetMetadata(file, kDummyRequestId);
+  operation()->GetMetadata(file);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
   EXPECT_FALSE(mock_client_->info().is_directory);
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestReadDirFailure) {
+TEST_F(FileSystemOperationTest, TestReadDirFailure) {
   // Path doesn't exists
     FilePath nonexisting_dir_path(base_.path().Append(
         FILE_PATH_LITERAL("NonExistingDir")));
   file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
-  backend_->ReadDirectory(nonexisting_dir_path, kDummyRequestId);
+  operation()->ReadDirectory(nonexisting_dir_path);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 
   // File exists.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
-  backend_->ReadDirectory(file, kDummyRequestId);
+  operation()->ReadDirectory(file);
   loop_.RunAllPending();
-  // crbug.com/54309 to change the error code.
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  // TODO(kkanetkar) crbug.com/54309 to change the error code.
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestReadDirSuccess) {
+TEST_F(FileSystemOperationTest, TestReadDirSuccess) {
   //      parent_dir
   //       |       |
   //  child_dir  child_file
@@ -448,10 +505,12 @@ TEST_F(FileSystemBackendTest, TestReadDirSuccess) {
   ASSERT_TRUE(file_util::CreateTemporaryDirInDir(parent_dir.path(),
       FILE_PATH_LITERAL("child_dir"), &child_dir));
 
-  backend_->ReadDirectory(parent_dir.path(), kDummyRequestId);
+  operation()->ReadDirectory(parent_dir.path());
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationStatusNotSet);
-  EXPECT_EQ(mock_client_->entries().size(), 2u);
+  EXPECT_EQ(kFileOperationStatusNotSet, mock_client_->status());
+  EXPECT_EQ(2u, mock_client_->entries().size());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
+
   for (size_t i = 0; i < mock_client_->entries().size(); ++i) {
     if (mock_client_->entries()[i].is_directory)
       EXPECT_EQ(child_dir.BaseName().value(), mock_client_->entries()[i].name);
@@ -460,14 +519,16 @@ TEST_F(FileSystemBackendTest, TestReadDirSuccess) {
   }
 }
 
-TEST_F(FileSystemBackendTest, TestRemoveFailure) {
+TEST_F(FileSystemOperationTest, TestRemoveFailure) {
   // Path doesn't exist.
   FilePath nonexisting(base_.path().Append(
       FILE_PATH_LITERAL("NonExistingDir")));
   file_util::EnsureEndsWithSeparator(&nonexisting);
-  backend_->Remove(nonexisting, kDummyRequestId);
+
+  operation()->Remove(nonexisting);
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorNotFound);
+  EXPECT_EQ(WebKit::WebFileErrorNotFound, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 
   // By spec recursive is always false. Non-empty dir should fail.
   //      parent_dir
@@ -481,18 +542,21 @@ TEST_F(FileSystemBackendTest, TestRemoveFailure) {
   FilePath child_dir;
   ASSERT_TRUE(file_util::CreateTemporaryDirInDir(parent_dir.path(),
       FILE_PATH_LITERAL("child_dir"), &child_dir));
-  backend_->Remove(parent_dir.path(), kDummyRequestId);
+
+  operation()->Remove(parent_dir.path());
   loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), WebKit::WebFileErrorInvalidModification);
+  EXPECT_EQ(WebKit::WebFileErrorInvalidModification, mock_client_->status());
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
 }
 
-TEST_F(FileSystemBackendTest, TestRemoveSuccess) {
+TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
   ScopedTempDir empty_dir;
   ASSERT_TRUE(empty_dir.CreateUniqueTempDir());
   EXPECT_TRUE(file_util::DirectoryExists(empty_dir.path()));
-  backend_->Remove(empty_dir.path(), kDummyRequestId);
-  loop_.RunAllPending();
-  EXPECT_EQ(mock_client_->status(), kFileOperationSucceeded);
-  EXPECT_FALSE(file_util::DirectoryExists(empty_dir.path()));
-}
 
+  operation()->Remove(empty_dir.path());
+  loop_.RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_client_->status());
+  EXPECT_FALSE(file_util::DirectoryExists(empty_dir.path()));
+  EXPECT_EQ(current_request_id_, mock_client_->request_id());
+}
