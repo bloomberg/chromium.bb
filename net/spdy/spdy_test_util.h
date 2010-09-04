@@ -305,7 +305,7 @@ class SpdySessionDependencies {
         socket_factory(new MockClientSocketFactory),
         deterministic_socket_factory(new DeterministicMockClientSocketFactory),
         http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
-        spdy_session_pool(new SpdySessionPool()) {
+        spdy_session_pool(new SpdySessionPool(NULL)) {
           // Note: The CancelledTransaction test does cleanup by running all
           // tasks in the message loop (RunAllPending).  Unfortunately, that
           // doesn't clean up tasks on the host resolver thread; and
@@ -323,7 +323,7 @@ class SpdySessionDependencies {
         socket_factory(new MockClientSocketFactory),
         deterministic_socket_factory(new DeterministicMockClientSocketFactory),
         http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
-        spdy_session_pool(new SpdySessionPool()) {}
+        spdy_session_pool(new SpdySessionPool(NULL)) {}
 
   scoped_refptr<MockHostResolverBase> host_resolver;
   scoped_refptr<ProxyService> proxy_service;
@@ -363,7 +363,7 @@ class SpdyURLRequestContext : public URLRequestContext {
   SpdyURLRequestContext() {
     host_resolver_ = new MockHostResolver;
     proxy_service_ = ProxyService::CreateNull();
-    spdy_session_pool_ = new SpdySessionPool();
+    spdy_session_pool_ = new SpdySessionPool(NULL);
     ssl_config_service_ = new SSLConfigServiceDefaults;
     http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault();
     http_transaction_factory_ = new net::HttpCache(

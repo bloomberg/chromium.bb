@@ -107,7 +107,10 @@ void SSLConfigServiceWin::SetSSL2Enabled(bool enabled) {
 }
 
 void SSLConfigServiceWin::UpdateConfig(TimeTicks now) {
+  SSLConfig orig_config = config_info_;
   GetSSLConfigNow(&config_info_);
+  if (ever_updated_)
+    ProcessConfigUpdate(orig_config, config_info_);
   config_time_ = now;
   ever_updated_ = true;
 }

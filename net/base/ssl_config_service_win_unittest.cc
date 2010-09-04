@@ -10,6 +10,26 @@ using base::TimeTicks;
 
 namespace {
 
+// SSLClientConfig service caches settings for 10 seconds for performance.
+// So we use synthetic time values along with the 'GetSSLConfigAt' method
+// to ensure that the current settings are re-read.  By incrementing the time
+// value by 11 seconds, we ensure fresh config settings.
+const int kSSLConfigNextTimeInternal = 11;
+
+class SSLConfigServiceWinObserver : public net::SSLConfigService::Observer {
+ public:
+  SSLConfigServiceWinObserver() : change_was_observed_(false) {
+  }
+  bool change_was_observed() const {
+    return change_was_observed_;
+  }
+ protected:
+  virtual void OnSSLConfigChanged() {
+    change_was_observed_ = true;
+  }
+  bool change_was_observed_;
+};
+
 class SSLConfigServiceWinTest : public testing::Test {
 };
 
@@ -66,9 +86,9 @@ TEST(SSLConfigServiceWinTest, SetTest) {
 TEST(SSLConfigServiceWinTest, GetTest) {
   TimeTicks now = TimeTicks::Now();
   TimeTicks now_1 = now + TimeDelta::FromSeconds(1);
-  TimeTicks now_11 = now + TimeDelta::FromSeconds(11);
+  TimeTicks later = now + TimeDelta::FromSeconds(kSSLConfigNextTimeInternal);
 
-  net::SSLConfig config, config_1, config_11;
+  net::SSLConfig config, config_1, config_later;
   scoped_refptr<net::SSLConfigServiceWin> config_service(
       new net::SSLConfigServiceWin(now));
   config_service->GetSSLConfigAt(&config, now);
@@ -80,10 +100,45 @@ TEST(SSLConfigServiceWinTest, GetTest) {
   config_service->GetSSLConfigAt(&config_1, now_1);
   EXPECT_EQ(config.rev_checking_enabled, config_1.rev_checking_enabled);
 
-  config_service->GetSSLConfigAt(&config_11, now_11);
-  EXPECT_EQ(!config.rev_checking_enabled, config_11.rev_checking_enabled);
+  config_service->GetSSLConfigAt(&config_later, later);
+  EXPECT_EQ(!config.rev_checking_enabled, config_later.rev_checking_enabled);
 
   // Restore the original value.
   net::SSLConfigServiceWin::SetRevCheckingEnabled(
       config.rev_checking_enabled);
 }
+
+TEST(SSLConfigServiceWinTest, ObserverTest) {
+  TimeTicks now = TimeTicks::Now();
+  TimeTicks later = now + TimeDelta::FromSeconds(kSSLConfigNextTimeInternal);
+
+  scoped_refptr<net::SSLConfigServiceWin> config_service(
+      new net::SSLConfigServiceWin(now));
+
+  // Save the current settings so we can restore them after the tests.
+  net::SSLConfig config_save;
+  bool rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config_save);
+  EXPECT_TRUE(rv);
+
+  net::SSLConfig config;
+  net::SSLConfigServiceWin::SetSSL2Enabled(false);
+  config_service->GetSSLConfigAt(&config, now);
+
+  // Add an observer.
+  SSLConfigServiceWinObserver observer;
+  config_service->AddObserver(&observer);
+
+  // Toggle SSL2.
+  net::SSLConfigServiceWin::SetSSL2Enabled(!config_save.ssl2_enabled);
+  config_service->GetSSLConfigAt(&config, later);
+
+  // Verify that the observer was notified.
+  EXPECT_TRUE(observer.change_was_observed());
+
+  // Remove the observer.
+  config_service->RemoveObserver(&observer);
+
+  // Restore the original SSL2 setting.
+  net::SSLConfigServiceWin::SetSSL2Enabled(config_save.ssl2_enabled);
+}
+
