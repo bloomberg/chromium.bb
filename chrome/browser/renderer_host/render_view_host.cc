@@ -264,7 +264,8 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
       delegate_->DidStartLoading();
 
     const GURL& url = params.url;
-    if (url.SchemeIs("http") || url.SchemeIs("https"))
+    if (!delegate_->IsExternalTabContainer() &&
+        url.SchemeIs("http") || url.SchemeIs("https"))
       chrome_browser_net::PreconnectUrlAndSubresources(url);
   }
 }
