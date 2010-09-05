@@ -283,7 +283,8 @@ void TestShell::Dump(TestShell* shell) {
       }
     }
 
-    if (params->dump_pixels && !should_dump_as_text) {
+    if (params->dump_pixels
+        && shell->layout_test_controller()->ShouldGeneratePixelResults()) {
       // Image output: we write the image data to the file given on the
       // command line (for the dump pixels argument), and the MD5 sum to
       // stdout.

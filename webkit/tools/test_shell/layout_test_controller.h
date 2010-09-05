@@ -294,6 +294,7 @@ class LayoutTestController : public CppBoundClass {
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }
 
   bool ShouldDumpAsText() { return dump_as_text_; }
+  bool ShouldGeneratePixelResults() { return generate_pixel_results_; }
   bool ShouldDumpEditingCallbacks() { return dump_editing_callbacks_; }
   bool ShouldDumpFrameLoadCallbacks() { return dump_frame_load_callbacks_; }
   void SetShouldDumpFrameLoadCallbacks(bool value) {
@@ -394,6 +395,10 @@ class LayoutTestController : public CppBoundClass {
   // If true, the test_shell will produce a plain text dump rather than a
   // text representation of the renderer.
   static bool dump_as_text_;
+
+  // If true, dump pixel results. This can be true even if
+  // dump_as_text_ is true.
+  static bool generate_pixel_results_;
 
   // If true, the test_shell will write a descriptive line for each editing
   // command.

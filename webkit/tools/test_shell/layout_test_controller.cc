@@ -55,6 +55,7 @@ using WebKit::WebURL;
 TestShell* LayoutTestController::shell_ = NULL;
 // Most of these flags need to be cleared in Reset() so that they get turned
 // off between each test run.
+bool LayoutTestController::generate_pixel_results_ = true;
 bool LayoutTestController::dump_as_text_ = false;
 bool LayoutTestController::dump_editing_callbacks_ = false;
 bool LayoutTestController::dump_frame_load_callbacks_ = false;
@@ -256,8 +257,11 @@ void LayoutTestController::WorkQueue::AddWork(WorkItem* work) {
 }
 
 void LayoutTestController::dumpAsText(const CppArgumentList& args,
-                                                   CppVariant* result) {
+                                      CppVariant* result) {
   dump_as_text_ = true;
+  generate_pixel_results_ = false;
+  if (args.size() > 0 && args[0].isBool())
+      generate_pixel_results_ = args[0].value.boolValue;
   result->SetNull();
 }
 
@@ -494,6 +498,7 @@ void LayoutTestController::Reset() {
 #endif  // defined(TOOLKIT_GTK)
     shell_->webView()->removeAllUserContent();
   }
+  generate_pixel_results_ = true;
   dump_as_text_ = false;
   dump_editing_callbacks_ = false;
   dump_frame_load_callbacks_ = false;
