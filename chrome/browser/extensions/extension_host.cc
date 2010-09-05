@@ -417,20 +417,8 @@ void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,
   // Unlike for page alerts, navigations aren't a good signal for when to
   // resume showing alerts, so we can't reasonably stop showing them even if
   // the extension is spammy.
-  RunJavascriptMessageBox(this, frame_url, flags, message, default_prompt,
-                          false, reply_msg);
-}
-
-std::wstring ExtensionHost::GetMessageBoxTitle(const GURL& frame_url,
-                                               bool is_alert) {
-  if (extension_->name().empty())
-    return l10n_util::GetString(
-        is_alert ? IDS_EXTENSION_ALERT_DEFAULT_TITLE
-                 : IDS_EXTENSION_MESSAGEBOX_DEFAULT_TITLE);
-
-  return l10n_util::GetStringF(
-      is_alert ? IDS_EXTENSION_ALERT_TITLE : IDS_EXTENSION_MESSAGEBOX_TITLE,
-      UTF8ToWide(extension_->name()));
+  RunJavascriptMessageBox(profile_, this, frame_url, flags, message,
+                          default_prompt, false, reply_msg);
 }
 
 gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {

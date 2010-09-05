@@ -2690,8 +2690,8 @@ void TabContents::RunJavaScriptMessage(
         base::TimeDelta::FromMilliseconds(kJavascriptMessageExpectedDelay))
       show_suppress_checkbox = true;
 
-    RunJavascriptMessageBox(this, frame_url, flags, message, default_prompt,
-                            show_suppress_checkbox, reply_msg);
+    RunJavascriptMessageBox(profile(), this, frame_url, flags, message,
+                            default_prompt, show_suppress_checkbox, reply_msg);
   } else {
     // If we are suppressing messages, just reply as is if the user immediately
     // pressed "Cancel".
@@ -3092,34 +3092,6 @@ void TabContents::OnImageLoaded(SkBitmap* image, ExtensionResource resource,
     extension_app_icon_ = *image;
     NotifyNavigationStateChanged(INVALIDATE_TAB);
   }
-}
-
-std::wstring TabContents::GetMessageBoxTitle(const GURL& frame_url,
-                                             bool is_alert) {
-  if (!frame_url.has_host())
-    return l10n_util::GetString(
-        is_alert ? IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE
-                 : IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE);
-
-  // We really only want the scheme, hostname, and port.
-  GURL::Replacements replacements;
-  replacements.ClearUsername();
-  replacements.ClearPassword();
-  replacements.ClearPath();
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  GURL clean_url = frame_url.ReplaceComponents(replacements);
-
-  // TODO(brettw) it should be easier than this to do the correct language
-  // handling without getting the accept language from the profile.
-  string16 base_address = WideToUTF16(gfx::ElideUrl(clean_url, gfx::Font(), 0,
-      UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages))));
-  // Force URL to have LTR directionality.
-  base_address = base::i18n::GetDisplayStringInLTRDirectionality(base_address);
-
-  return UTF16ToWide(l10n_util::GetStringFUTF16(
-      is_alert ? IDS_JAVASCRIPT_ALERT_TITLE : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
-      base_address));
 }
 
 gfx::NativeWindow TabContents::GetMessageBoxRootWindow() {

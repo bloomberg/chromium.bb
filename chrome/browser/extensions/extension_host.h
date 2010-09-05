@@ -174,8 +174,6 @@ class ExtensionHost : public RenderViewHostDelegate,
                        const NotificationDetails& details);
 
   // JavaScriptMessageBoxClient
-  virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
-                                          bool is_alert);
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,

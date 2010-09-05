@@ -669,8 +669,6 @@ class TabContents : public PageNavigator,
   bool is_displaying_pdf_content() const { return displaying_pdf_content_; }
 
   // JavaScriptMessageBoxClient ------------------------------------------------
-  virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
-                                          bool is_alert);
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,

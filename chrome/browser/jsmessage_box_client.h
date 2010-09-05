@@ -27,10 +27,6 @@ class JavaScriptMessageBoxClient {
  public:
   virtual ~JavaScriptMessageBoxClient() {}
 
-  // Returns the title to use for the message box.
-  virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
-                                          bool is_alert) = 0;
-
   // Returns the root native window with which the message box is associated.
   virtual gfx::NativeWindow GetMessageBoxRootWindow() = 0;
 

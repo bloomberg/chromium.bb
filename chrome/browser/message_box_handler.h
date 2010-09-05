@@ -19,6 +19,7 @@ class GURL;
 class HostContentSettingsMap;
 class JavaScriptMessageBoxClient;
 class TabContents;
+class Profile;
 
 // Creates and runs a Javascript Message Box dialog.
 // The dialog type is specified within |dialog_flags|, the
@@ -26,7 +27,8 @@ class TabContents;
 // a user input prompt() box, the default text for the text field is in
 // |default_prompt_text|. The result of the operation is returned using
 // |reply_msg|.
-void RunJavascriptMessageBox(JavaScriptMessageBoxClient* client,
+void RunJavascriptMessageBox(Profile* profile,
+                             JavaScriptMessageBoxClient* client,
                              const GURL& frame_url,
                              int dialog_flags,
                              const std::wstring& message_text,
@@ -84,4 +86,3 @@ void RunAppCachePrompt(
     CookiePromptModalDialogDelegate* delegate);
 
 #endif  // CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
-

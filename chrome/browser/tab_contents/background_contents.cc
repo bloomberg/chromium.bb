@@ -114,12 +114,6 @@ void BackgroundContents::RunJavaScriptMessage(
   *did_suppress_message = true;
 }
 
-std::wstring BackgroundContents::GetMessageBoxTitle(const GURL& frame_url,
-                                                    bool is_alert) {
-  NOTIMPLEMENTED();
-  return L"";
-}
-
 gfx::NativeWindow BackgroundContents::GetMessageBoxRootWindow() {
   NOTIMPLEMENTED();
   return NULL;
