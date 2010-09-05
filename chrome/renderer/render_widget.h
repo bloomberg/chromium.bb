@@ -42,6 +42,7 @@ class PlatformCanvas;
 }
 
 namespace WebKit {
+class WebMouseEvent;
 class WebWidget;
 struct WebPopupMenuInfo;
 }
@@ -237,6 +238,10 @@ class RenderWidget : public IPC::Channel::Listener,
   // Called by OnHandleInputEvent() to notify subclasses that a key event was
   // just handled.
   virtual void DidHandleKeyEvent() {}
+
+  // Called by OnHandleInputEvent() to notify subclasses that a mouse event was
+  // just handled.
+  virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.

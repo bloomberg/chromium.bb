@@ -1352,6 +1352,7 @@
         'renderer/media/audio_renderer_impl_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',
         'renderer/net/renderer_predictor_unittest.cc',
+        'renderer/page_click_tracker_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',
         'renderer/password_autocomplete_manager_unittest.cc',
         'renderer/render_process_unittest.cc',

@@ -41,6 +41,7 @@
 using WebKit::WebCompositionUnderline;
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
+using WebKit::WebMouseEvent;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenu;
 using WebKit::WebPopupMenuInfo;
@@ -131,7 +132,7 @@ void RenderWidget::Init(int32 opener_id) {
 
 
 void RenderWidget::DoInit(int32 opener_id,
-                          WebKit::WebWidget* web_widget,
+                          WebWidget* web_widget,
                           IPC::SyncMessage* create_widget_message) {
   DCHECK(!webwidget_);
 
@@ -374,6 +375,8 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
 
   if (WebInputEvent::isKeyboardEventType(input_event->type))
     DidHandleKeyEvent();
+  if (WebInputEvent::isMouseEventType(input_event->type))
+    DidHandleMouseEvent(*(static_cast<const WebMouseEvent*>(input_event)));
 }
 
 void RenderWidget::OnMouseCaptureLost() {

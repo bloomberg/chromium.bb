@@ -8,14 +8,19 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/renderer/render_view.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/dom_operations.h"
 
+using WebKit::WebDocument;
+using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebScriptSource;
+using WebKit::WebString;
+using WebKit::WebView;
 
 // The delay in millliseconds that we'll wait before checking to see if the
 // translate library injected in the page is ready.
@@ -108,15 +113,15 @@ void TranslateHelper::CancelPendingTranslation() {
 }
 
 // static
-bool TranslateHelper::IsPageTranslatable(WebKit::WebDocument* document) {
-  std::vector<WebKit::WebElement> meta_elements;
+bool TranslateHelper::IsPageTranslatable(WebDocument* document) {
+  std::vector<WebElement> meta_elements;
   webkit_glue::GetMetaElementsWithAttribute(document,
                                             ASCIIToUTF16("name"),
                                             ASCIIToUTF16("google"),
                                             &meta_elements);
-  std::vector<WebKit::WebElement>::const_iterator iter;
+  std::vector<WebElement>::const_iterator iter;
   for (iter = meta_elements.begin(); iter != meta_elements.end(); ++iter) {
-    WebKit::WebString attribute = iter->getAttribute("value");
+    WebString attribute = iter->getAttribute("value");
     if (attribute.isNull())  // We support both 'value' and 'content'.
       attribute = iter->getAttribute("content");
     if (attribute.isNull())
@@ -128,13 +133,12 @@ bool TranslateHelper::IsPageTranslatable(WebKit::WebDocument* document) {
 }
 
 // static
-std::string TranslateHelper::GetPageLanguageFromMetaTag(
-    WebKit::WebDocument* document) {
+std::string TranslateHelper::GetPageLanguageFromMetaTag(WebDocument* document) {
   // The META language tag looks like:
   // <meta http-equiv="content-language" content="en">
   // It can contain more than one language:
   // <meta http-equiv="content-language" content="en, fr">
-  std::vector<WebKit::WebElement> meta_elements;
+  std::vector<WebElement> meta_elements;
   webkit_glue::GetMetaElementsWithAttribute(document,
                                             ASCIIToUTF16("http-equiv"),
                                             ASCIIToUTF16("content-language"),
@@ -144,7 +148,7 @@ std::string TranslateHelper::GetPageLanguageFromMetaTag(
 
   // We don't expect more than one such tag. If there are several, just use the
   // first one.
-  WebKit::WebString attribute = meta_elements[0].getAttribute("content");
+  WebString attribute = meta_elements[0].getAttribute("content");
   if (attribute.isEmpty())
     return std::string();
 
@@ -360,7 +364,7 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
 }
 
 WebFrame* TranslateHelper::GetMainFrame() {
-  WebKit::WebView* web_view = render_view_->webview();
+  WebView* web_view = render_view_->webview();
   if (!web_view) {
     // When the WebView is going away, the render view should have called
     // CancelPendingTranslation() which should have stopped any pending work, so

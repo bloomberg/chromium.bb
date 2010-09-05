@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/task.h"
+#include "chrome/renderer/page_click_listener.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 
@@ -21,7 +22,7 @@ class WebView;
 
 // This class is responsible for filling password forms.
 // There is one PasswordAutocompleteManager per RenderView.
-class PasswordAutocompleteManager {
+class PasswordAutocompleteManager : public PageClickListener {
  public:
   explicit PasswordAutocompleteManager(RenderView* render_view);
   virtual ~PasswordAutocompleteManager();
@@ -61,13 +62,6 @@ class PasswordAutocompleteManager {
   void TextFieldHandlingKeyDown(const WebKit::WebInputElement& element,
                                 const WebKit::WebKeyboardEvent& event);
 
-  // Called when an input element in the page has been clicked.
-  // |already_focused| is true if |element| was focused before it was clicked.
-  // Returns true if the call triggered a suggestion popup.
-  // TODO(jcivelli): http://crbug.com/51644 Implement behavior.
-  bool InputElementClicked(const WebKit::WebInputElement& element,
-                           bool already_focused);
-
  private:
   struct PasswordInfo {
     WebKit::WebInputElement password_field;
@@ -76,6 +70,11 @@ class PasswordAutocompleteManager {
     PasswordInfo() : backspace_pressed_last(false) {}
   };
   typedef std::map<WebKit::WebElement, PasswordInfo> LoginToPasswordInfoMap;
+
+  // PageClickListener implementation:
+  virtual bool InputElementClicked(const WebKit::WebInputElement& element,
+                                   bool was_focused,
+                                   bool is_focused);
 
   void GetSuggestions(
       const webkit_glue::PasswordFormFillData& fill_data,

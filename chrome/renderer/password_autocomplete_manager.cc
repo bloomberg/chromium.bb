@@ -305,11 +305,6 @@ void PasswordAutocompleteManager::TextFieldHandlingKeyDown(
       (win_key_code == app::VKEY_BACK || win_key_code == app::VKEY_DELETE);
 }
 
-bool PasswordAutocompleteManager::InputElementClicked(
-    const WebKit::WebInputElement& element, bool already_focused) {
-  return false;
-}
-
 bool PasswordAutocompleteManager::FillPassword(
     const WebKit::WebInputElement& user_input) {
   LoginToPasswordInfoMap::iterator iter =
@@ -383,6 +378,17 @@ void PasswordAutocompleteManager::SendPasswordForms(WebKit::WebFrame* frame,
     render_view_->Send(
       new ViewHostMsg_PasswordFormsFound(GetRoutingID(), password_forms));
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PageClickListener implementation:
+
+bool PasswordAutocompleteManager::InputElementClicked(
+    const WebKit::WebInputElement& element,
+    bool was_focused,
+    bool is_focused) {
+  // TODO(jcivelli): http://crbug.com/51644 Implement behavior.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

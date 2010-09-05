@@ -64,8 +64,17 @@ class RenderViewTest : public testing::Test {
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
   void VerifyPageCount(int count);
-  // Verify the rendered "printed page".
+  // Verifies the rendered "printed page".
   void VerifyPagesPrinted();
+
+  // Returns the bounds (coordinates and size) of the element with id
+  // |element_id|.  Returns an empty rect if such an element was not found.
+  gfx::Rect GetElementBounds(const std::string& element_id);
+
+  // Sends a left mouse click in the middle of the element with id |element_id|.
+  // Returns true if the event was sent, false otherwise (typically because
+  // the element was not found).
+  bool SimulateElementClick(const std::string& element_id);
 
   // testing::Test
   virtual void SetUp();

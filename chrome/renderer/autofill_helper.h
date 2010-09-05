@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/renderer/form_manager.h"
+#include "chrome/renderer/page_click_listener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 
 class RenderView;
@@ -26,7 +27,7 @@ class WebString;
 // - single text field suggestions, that we usually refer to as Autocomplete
 // - entire form fill based on one field entry, referred to as form AutoFill.
 
-class AutoFillHelper {
+class AutoFillHelper : public PageClickListener {
  public:
   explicit AutoFillHelper(RenderView* render_view);
 
@@ -98,6 +99,11 @@ class AutoFillHelper {
     AUTOFILL_FILL,     // Fill the AutoFill form data.
     AUTOFILL_PREVIEW,  // Preview the AutoFill form data.
   };
+
+  // PageClickListener implementation:
+  virtual bool InputElementClicked(const WebKit::WebInputElement& element,
+                                   bool was_focused,
+                                   bool is_focused);
 
   // Shows the autocomplete suggestions for |element|.
   // This call is asynchronous and may or may not lead to the showing of a

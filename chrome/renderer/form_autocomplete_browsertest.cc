@@ -6,6 +6,7 @@
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "webkit/glue/form_data.h"

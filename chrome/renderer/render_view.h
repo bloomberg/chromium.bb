@@ -28,11 +28,9 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
-#include "chrome/renderer/autofill_helper.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/dom_ui_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
-#include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
@@ -56,6 +54,7 @@
 #endif
 
 class AudioMessageFilter;
+class AutoFillHelper;
 class DictionaryValue;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
@@ -66,6 +65,8 @@ class GURL;
 class ListValue;
 class NavigationState;
 class NotificationProvider;
+class PageClickTracker;
+class PasswordAutocompleteManager;
 class PepperDeviceTest;
 class PluginGroup;
 class PrintWebViewHelper;
@@ -111,6 +112,7 @@ class WebInputElement;
 class WebKeyboardEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebMouseEvent;
 class WebNode;
 class WebPlugin;
 class WebSpeechInputController;
@@ -207,6 +209,10 @@ class RenderView : public RenderWidget,
 
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
+  }
+
+  PageClickTracker* page_click_tracker() const {
+    return page_click_tracker_.get();
   }
 
   // Called from JavaScript window.external.AddSearchProvider() to add a
@@ -592,6 +598,8 @@ class RenderView : public RenderWidget,
   virtual void DidInitiatePaint();
   virtual void DidFlushPaint();
   virtual void DidHandleKeyEvent();
+  virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
+
 #if OS_MACOSX
   virtual void OnSetFocus(bool enable);
   virtual void OnWasHidden();
@@ -1211,11 +1219,17 @@ class RenderView : public RenderWidget,
   TranslateHelper translate_helper_;
 
   // Responsible for automatically filling login and password textfields.
-  PasswordAutocompleteManager password_autocomplete_manager_;
+  scoped_ptr<PasswordAutocompleteManager> password_autocomplete_manager_;
 
   // Responsible for filling forms (AutoFill) and single text entries
   // (Autocomplete).
-  AutoFillHelper autofill_helper_;
+  scoped_ptr<AutoFillHelper> autofill_helper_;
+
+  // Tracks when text input controls get clicked.
+  // IMPORTANT: this should be declared after autofill_helper_ and
+  // password_autocomplete_manager_ so the tracker is deleted first (so we won't
+  // run the risk of notifying deleted objects).
+  scoped_ptr<PageClickTracker> page_click_tracker_;
 
   RendererWebCookieJarImpl cookie_jar_;
 

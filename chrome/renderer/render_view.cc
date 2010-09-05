@@ -44,6 +44,7 @@
 #include "chrome/common/window_container_type.h"
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/audio_message_filter.h"
+#include "chrome/renderer/autofill_helper.h"
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/device_orientation_dispatcher.h"
 #include "chrome/renderer/devtools_agent.h"
@@ -60,6 +61,8 @@
 #include "chrome/renderer/media/ipc_video_renderer.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/notification_provider.h"
+#include "chrome/renderer/page_click_tracker.h"
+#include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
@@ -458,13 +461,19 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(autofill_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(password_autocomplete_manager_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(autofill_helper_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           notification_provider_(new NotificationProvider(this))),
       session_storage_namespace_id_(session_storage_namespace_id),
       decrement_shared_popup_at_destruction_(false) {
+  password_autocomplete_manager_.reset(new PasswordAutocompleteManager(this));
+  autofill_helper_.reset(new AutoFillHelper(this));
+  page_click_tracker_.reset(new PageClickTracker(this));
+  // Note that the order of insertion of the listeners is important.
+  // The password_autocomplete_manager_ takes the first shot at processing the
+  // notification and can stop the propagation.
+  page_click_tracker_->AddListener(password_autocomplete_manager_.get());
+  page_click_tracker_->AddListener(autofill_helper_.get());
   ClearBlockedContentSettings();
 }
 
@@ -1605,13 +1614,13 @@ void RenderView::OnAutoFillSuggestionsReturned(
     const std::vector<string16>& labels,
     const std::vector<string16>& icons,
     const std::vector<int>& unique_ids) {
-  autofill_helper_.SuggestionsReceived(
+  autofill_helper_->SuggestionsReceived(
       query_id, values, labels, icons, unique_ids);
 }
 
 void RenderView::OnAutoFillFormDataFilled(int query_id,
                                           const webkit_glue::FormData& form) {
-  autofill_helper_.FormDataFilled(query_id, form);
+  autofill_helper_->FormDataFilled(query_id, form);
 }
 
 void RenderView::OnAllowScriptToClose(bool script_can_close) {
@@ -1873,7 +1882,7 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
 void RenderView::textFieldDidEndEditing(
     const WebKit::WebInputElement& element) {
 #if defined(WEBKIT_BUG_41283_IS_FIXED)
-  password_autocomplete_manager_.TextFieldDidEndEditing(element);
+  password_autocomplete_manager_->TextFieldDidEndEditing(element);
 #endif
 }
 
@@ -1892,16 +1901,16 @@ void RenderView::textFieldDidChange(const WebKit::WebInputElement& element) {
 
 void RenderView::TextFieldDidChangeImpl(
     const WebKit::WebInputElement& element) {
-  if (password_autocomplete_manager_.TextDidChangeInTextField(element))
+  if (password_autocomplete_manager_->TextDidChangeInTextField(element))
     return;
-  autofill_helper_.TextDidChangeInTextField(element);
+  autofill_helper_->TextDidChangeInTextField(element);
 }
 
 void RenderView::textFieldDidReceiveKeyDown(
     const WebKit::WebInputElement& element,
     const WebKit::WebKeyboardEvent& event) {
 #if defined(WEBKIT_BUG_41283_IS_FIXED)
-  password_autocomplete_manager_.TextFieldHandlingKeyDown(element, event);
+  password_autocomplete_manager_->TextFieldHandlingKeyDown(element, event);
 #endif
 }
 
@@ -1933,11 +1942,11 @@ bool RenderView::handleCurrentKeyboardEvent() {
 void RenderView::inputElementClicked(const WebKit::WebInputElement& element,
                                      bool already_focused) {
 #if defined(WEBKIT_BUG_41283_IS_FIXED)
-  if (password_autocomplete_manager_.InputElementClicked(element,
-                                                         already_focused)) {
+  if (password_autocomplete_manager_->InputElementClicked(element,
+                                                          already_focused)) {
     return;
   }
-  autofill_helper_.InputElementClicked(element, already_focused);
+  autofill_helper_->InputElementClicked(element, already_focused);
 #endif
 }
 
@@ -2198,12 +2207,12 @@ void RenderView::didUpdateInspectorSetting(const WebString& key,
 void RenderView::queryAutofillSuggestions(const WebNode& node,
                                           const WebString& name,
                                           const WebString& value) {
-  autofill_helper_.QueryAutoFillSuggestions(node, name, value);
+  autofill_helper_->QueryAutoFillSuggestions(node, name, value);
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,
                                            const WebString& value) {
-  autofill_helper_.RemoveAutocompleteSuggestion(name, value);
+  autofill_helper_->RemoveAutocompleteSuggestion(name, value);
 }
 
 void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
@@ -2211,25 +2220,25 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& label,
                                              int unique_id,
                                              unsigned index) {
-  autofill_helper_.DidAcceptAutoFillSuggestion(node, value, label, unique_id,
-                                               index);
+  autofill_helper_->DidAcceptAutoFillSuggestion(node, value, label, unique_id,
+                                                index);
 }
 
 void RenderView::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& value,
                                              const WebKit::WebString& label,
                                              int unique_id) {
-  autofill_helper_.DidSelectAutoFillSuggestion(node, value, label, unique_id);
+  autofill_helper_->DidSelectAutoFillSuggestion(node, value, label, unique_id);
 }
 
 void RenderView::didClearAutoFillSelection(const WebKit::WebNode& node) {
-  autofill_helper_.DidClearAutoFillSelection(node);
+  autofill_helper_->DidClearAutoFillSelection(node);
 }
 
 void RenderView::didAcceptAutocompleteSuggestion(
     const WebKit::WebInputElement& user_element) {
 #if defined(WEBKIT_BUG_41283_IS_FIXED)
-  bool result = password_autocomplete_manager_.FillPassword(user_element);
+  bool result = password_autocomplete_manager_->FillPassword(user_element);
   // Since this user name was selected from a suggestion list, we should always
   // have password for it.
   DCHECK(result);
@@ -2489,7 +2498,8 @@ WebCookieJar* RenderView::cookieJar() {
 }
 
 void RenderView::frameDetached(WebFrame* frame) {
-  autofill_helper_.FrameDetached(frame);
+  autofill_helper_->FrameDetached(frame);
+  page_click_tracker_->StopTrackingFrame(frame, true);
 }
 
 void RenderView::willClose(WebFrame* frame) {
@@ -2511,7 +2521,7 @@ void RenderView::willClose(WebFrame* frame) {
   navigation_state->user_script_idle_scheduler()->Cancel();
 
   // TODO(jhawkins): Remove once frameDetached is called by WebKit.
-  autofill_helper_.FrameWillClose(frame);
+  autofill_helper_->FrameWillClose(frame);
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
@@ -3089,10 +3099,11 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
 
   Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_));
 
+  page_click_tracker_->StartTrackingFrame(frame);
   // The document has now been fully loaded.  Scan for forms to be sent up to
   // the browser.
-  autofill_helper_.FrameContentsAvailable(frame);
-  password_autocomplete_manager_.SendPasswordForms(frame, false);
+  autofill_helper_->FrameContentsAvailable(frame);
+  password_autocomplete_manager_->SendPasswordForms(frame, false);
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -3139,7 +3150,7 @@ void RenderView::didFinishLoad(WebFrame* frame) {
   navigation_state->user_script_idle_scheduler()->DidFinishLoad();
 
   // Let the password manager know which password forms are actually visible.
-  password_autocomplete_manager_.SendPasswordForms(frame, true);
+  password_autocomplete_manager_->SendPasswordForms(frame, true);
 }
 
 void RenderView::didNavigateWithinPage(
@@ -4148,7 +4159,7 @@ void RenderView::OnDragSourceSystemDragEnded() {
 void RenderView::OnFillPasswordForm(
     const webkit_glue::PasswordFormFillData& form_data) {
 #if defined(WEBKIT_BUG_41283_IS_FIXED)
-  password_autocomplete_manager_.ReceivedPasswordFormFillData(webview(),
+  password_autocomplete_manager_->ReceivedPasswordFormFillData(webview(),
                                                               form_data);
 #else
   webkit_glue::FillPasswordForm(this->webview(), form_data);
@@ -5455,6 +5466,10 @@ void RenderView::DidHandleKeyEvent() {
   edit_commands_.clear();
 }
 
+void RenderView::DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+  page_click_tracker_->DidHandleMouseEvent(event);
+}
+
 #if defined(OS_MACOSX)
 void RenderView::OnWasHidden() {
   RenderWidget::OnWasHidden();
@@ -5589,7 +5604,7 @@ void RenderView::OnPageTranslated() {
     return;
 
   // The page is translated, so try to extract the form data again.
-  autofill_helper_.FrameContentsAvailable(frame);
+  autofill_helper_->FrameContentsAvailable(frame);
 }
 
 WebKit::WebGeolocationService* RenderView::geolocationService() {

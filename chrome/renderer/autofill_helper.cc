@@ -9,10 +9,12 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/form_data.h"
+#include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 
 using WebKit::WebFormControlElement;
@@ -216,11 +218,14 @@ void AutoFillHelper::TextDidChangeInTextField(const WebInputElement& element) {
   ShowSuggestions(element, false, true);
 }
 
-void AutoFillHelper::InputElementClicked(const WebInputElement& element,
-                                         bool already_focused) {
-  if (already_focused)
+bool AutoFillHelper::InputElementClicked(const WebInputElement& element,
+                                         bool was_focused,
+                                         bool is_focused) {
+  if (was_focused)
     ShowSuggestions(element, true, false);
+  return false;
 }
+
 
 void AutoFillHelper::ShowSuggestions(
     const WebInputElement& const_element,
