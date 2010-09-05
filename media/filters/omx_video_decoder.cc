@@ -215,27 +215,24 @@ void OmxVideoDecoder::OnFormatChange(VideoStreamInfo stream_info) {
   NOTIMPLEMENTED();
 }
 
-void OmxVideoDecoder::OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+void OmxVideoDecoder::ProduceVideoSample(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Issue more demux.
   demuxer_stream_->Read(NewCallback(this, &OmxVideoDecoder::DemuxCompleteTask));
 }
 
-void OmxVideoDecoder::OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+void OmxVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  // Invoke the FillBufferDoneCallback with the frame.
-  DCHECK(fill_buffer_done_callback());
-  fill_buffer_done_callback()->Run(frame);
+  VideoFrameReady(frame);
 }
 
-void OmxVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
+void OmxVideoDecoder::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
   DCHECK(omx_engine_.get());
   message_loop()->PostTask(
      FROM_HERE,
      NewRunnableMethod(omx_engine_.get(),
-                       &VideoDecodeEngine::FillThisBuffer, frame));
+                       &VideoDecodeEngine::ProduceVideoFrame, frame));
 }
 
 bool OmxVideoDecoder::ProvidesBuffer() {
@@ -250,7 +247,7 @@ void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
   message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(omx_engine_.get(),
-                        &VideoDecodeEngine::EmptyThisBuffer, ref_buffer));
+                        &VideoDecodeEngine::ConsumeVideoSample, ref_buffer));
 }
 
 }  // namespace media

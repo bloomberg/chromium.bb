@@ -127,15 +127,15 @@ class SimpleMftH264DecoderHandler : public VideoDecodeEngine::EventHandler {
     format_change_count_++;
     info_.stream_info_ = stream_info;
   }
-  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+  virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer) {
     if (reader_.get() && decoder_) {
       empty_buffer_callback_count_++;
       scoped_refptr<DataBuffer> input;
       reader_->ReadCallback(&input);
-      decoder_->EmptyThisBuffer(input);
+      decoder_->ConsumeVideoSample(input);
     }
   }
-  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
     fill_buffer_callback_count_++;
     current_frame_ = frame;
   }
@@ -279,7 +279,7 @@ TEST_F(MftH264DecoderTest, DrainOnEmptyBuffer) {
 
   // Decoder should switch to drain mode because of this NULL buffer, and then
   // switch to kStopped when it says it needs more input during drain mode.
-  decoder->EmptyThisBuffer(buffer);
+  decoder->ConsumeVideoSample(buffer);
   EXPECT_EQ(MftH264Decoder::kStopped, decoder->state());
 
   // Should have called back with one empty frame.
@@ -308,7 +308,7 @@ TEST_F(MftH264DecoderTest, NoOutputOnGarbageInput) {
   handler.SetDecoder(decoder.get());
   while (MftH264Decoder::kStopped != decoder->state()) {
     scoped_refptr<VideoFrame> frame;
-    decoder->FillThisBuffer(frame);
+    decoder->ProduceVideoFrame(frame);
   }
 
   // Output callback should only be invoked once - the empty frame to indicate
@@ -356,7 +356,7 @@ TEST_F(MftH264DecoderTest, NoFlushAtStopped) {
   handler.SetDecoder(decoder.get());
   while (MftH264Decoder::kStopped != decoder->state()) {
     scoped_refptr<VideoFrame> frame;
-    decoder->FillThisBuffer(frame);
+    decoder->ProduceVideoFrame(frame);
   }
   EXPECT_EQ(0, handler.flush_count_);
   int old_flush_count = handler.flush_count_;
@@ -399,7 +399,7 @@ void DecodeValidVideo(const std::string& filename, int num_frames, bool dxva) {
   handler.SetDecoder(decoder.get());
   while (MftH264Decoder::kStopped != decoder->state()) {
     scoped_refptr<VideoFrame> frame;
-    decoder->FillThisBuffer(frame);
+    decoder->ProduceVideoFrame(frame);
   }
 
   // We expect a format change when decoder receives enough data to determine

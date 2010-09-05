@@ -241,10 +241,10 @@ void MftH264Decoder::Seek() {
   event_handler_->OnSeekComplete();
 }
 
-void MftH264Decoder::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
-  LOG(INFO) << "MftH264Decoder::EmptyThisBuffer";
+void MftH264Decoder::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
+  LOG(INFO) << "MftH264Decoder::ConsumeVideoSample";
   if (state_ == kUninitialized) {
-    LOG(ERROR) << "EmptyThisBuffer: invalid state";
+    LOG(ERROR) << "ConsumeVideoSample: invalid state";
   }
   ScopedComPtr<IMFSample> sample;
   if (!buffer->IsEndOfStream()) {
@@ -277,14 +277,14 @@ void MftH264Decoder::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
   DoDecode();
 }
 
-void MftH264Decoder::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
-  LOG(INFO) << "MftH264Decoder::FillThisBuffer";
+void MftH264Decoder::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
+  LOG(INFO) << "MftH264Decoder::ProduceVideoFrame";
   if (state_ == kUninitialized) {
-    LOG(ERROR) << "FillThisBuffer: invalid state";
+    LOG(ERROR) << "ProduceVideoFrame: invalid state";
     return;
   }
   scoped_refptr<Buffer> buffer;
-  event_handler_->OnEmptyBufferCallback(buffer);
+  event_handler_->ProduceVideoSample(buffer);
 }
 
 // private methods
@@ -606,7 +606,7 @@ bool MftH264Decoder::DoDecode() {
         // No more output from the decoder. Notify EOS and stop playback.
         scoped_refptr<VideoFrame> frame;
         VideoFrame::CreateEmptyFrame(&frame);
-        event_handler_->OnFillBufferCallback(frame);
+        event_handler_->ConsumeVideoFrame(frame);
         state_ = MftH264Decoder::kStopped;
         return false;
       }
@@ -735,7 +735,7 @@ bool MftH264Decoder::DoDecode() {
     CHECK(SUCCEEDED(output_buffer->Unlock()));
   }
   // TODO(jiesun): non-System memory case
-  event_handler_->OnFillBufferCallback(frame);
+  event_handler_->ConsumeVideoFrame(frame);
   return true;
 }
 

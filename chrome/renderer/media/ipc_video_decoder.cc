@@ -253,13 +253,12 @@ void IpcVideoDecoder::ReadCompleteTask(
   gpu_video_decoder_host_->EmptyThisBuffer(buffer);
 }
 
-void IpcVideoDecoder::FillThisBuffer(
-    scoped_refptr<media::VideoFrame> video_frame) {
+void IpcVideoDecoder::ProduceVideoFrame(scoped_refptr<VideoFrame> video_frame) {
   if (MessageLoop::current() != renderer_thread_message_loop_) {
     renderer_thread_message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this,
-                          &IpcVideoDecoder::FillThisBuffer,
+                          &IpcVideoDecoder::ProduceVideoFrame,
                           video_frame));
     return;
   }
@@ -285,7 +284,7 @@ void IpcVideoDecoder::OnFillBufferDone(
 
   if (video_frame.get()) {
     --pending_requests_;
-    fill_buffer_done_callback()->Run(video_frame);
+    VideoFrameReady(video_frame);
     if (state_ == kFlushing && pending_reads_ == 0 && pending_requests_ == 0) {
       CHECK(flush_callback_.get());
       flush_callback_->Run();
@@ -298,9 +297,9 @@ void IpcVideoDecoder::OnFillBufferDone(
       // When in kFlushCodec, any errored decode, or a 0-lengthed frame,
       // is taken as a signal to stop decoding.
       state_ = kEnded;
-      scoped_refptr<media::VideoFrame> video_frame;
-      media::VideoFrame::CreateEmptyFrame(&video_frame);
-      fill_buffer_done_callback()->Run(video_frame);
+      scoped_refptr<VideoFrame> video_frame;
+      VideoFrame::CreateEmptyFrame(&video_frame);
+      VideoFrameReady(video_frame);
     }
   }
 }

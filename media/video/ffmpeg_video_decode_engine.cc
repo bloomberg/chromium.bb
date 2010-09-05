@@ -151,7 +151,7 @@ static void CopyPlane(size_t plane,
   }
 }
 
-void FFmpegVideoDecodeEngine::EmptyThisBuffer(
+void FFmpegVideoDecodeEngine::ConsumeVideoSample(
     scoped_refptr<Buffer> buffer) {
   pending_input_buffers_--;
   if (flush_pending_) {
@@ -162,7 +162,8 @@ void FFmpegVideoDecodeEngine::EmptyThisBuffer(
   }
 }
 
-void FFmpegVideoDecodeEngine::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
+void FFmpegVideoDecodeEngine::ProduceVideoFrame(
+    scoped_refptr<VideoFrame> frame) {
   // We should never receive NULL frame or EOS frame.
   DCHECK(frame.get() && !frame->IsEndOfStream());
 
@@ -216,7 +217,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
               << " , packet size: "
               << buffer->GetDataSize() << " bytes";
     // TODO(jiesun): call event_handler_->OnError() instead.
-    event_handler_->OnFillBufferCallback(video_frame);
+    event_handler_->ConsumeVideoFrame(video_frame);
     return;
   }
 
@@ -227,7 +228,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   // drained, we mark the flag. Otherwise we read from demuxer again.
   if (frame_decoded == 0) {
     if (buffer->IsEndOfStream()) {  // We had started flushing.
-      event_handler_->OnFillBufferCallback(video_frame);
+      event_handler_->ConsumeVideoFrame(video_frame);
       output_eos_reached_ = true;
     } else {
       ReadInput();
@@ -242,7 +243,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
       !av_frame_->data[VideoFrame::kUPlane] ||
       !av_frame_->data[VideoFrame::kVPlane]) {
     // TODO(jiesun): call event_handler_->OnError() instead.
-    event_handler_->OnFillBufferCallback(video_frame);
+    event_handler_->ConsumeVideoFrame(video_frame);
     return;
   }
 
@@ -290,7 +291,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   video_frame->SetDuration(duration);
 
   pending_output_buffers_--;
-  event_handler_->OnFillBufferCallback(video_frame);
+  event_handler_->ConsumeVideoFrame(video_frame);
 }
 
 void FFmpegVideoDecodeEngine::Uninitialize() {
@@ -334,7 +335,7 @@ void FFmpegVideoDecodeEngine::Seek() {
 void FFmpegVideoDecodeEngine::ReadInput() {
   DCHECK_EQ(output_eos_reached_, false);
   pending_input_buffers_++;
-  event_handler_->OnEmptyBufferCallback(NULL);
+  event_handler_->ProduceVideoSample(NULL);
 }
 
 VideoFrame::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {

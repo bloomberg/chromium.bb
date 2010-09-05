@@ -54,7 +54,7 @@ class AudioRendererBaseTest : public ::testing::Test {
     renderer_->set_host(&host_);
 
     // Queue all reads from the decoder.
-    EXPECT_CALL(*decoder_, FillThisBuffer(_))
+    EXPECT_CALL(*decoder_, ProduceAudioSamples(_))
         .WillRepeatedly(Invoke(this, &AudioRendererBaseTest::EnqueueCallback));
 
     // Sets the essential media format keys for this decoder.
@@ -152,7 +152,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
     scoped_refptr<DataBuffer> buffer = new DataBuffer(1024);
     buffer->SetDataSize(1024);
     --pending_reads_;
-    decoder_->fill_buffer_done_callback()->Run(buffer);
+    decoder_->consume_audio_samples_callback()->Run(buffer);
   }
 }
 
@@ -192,7 +192,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   while (pending_reads_) {
     scoped_refptr<DataBuffer> buffer = new DataBuffer(kDataSize);
     buffer->SetDataSize(kDataSize);
-    decoder_->fill_buffer_done_callback()->Run(buffer);
+    decoder_->consume_audio_samples_callback()->Run(buffer);
     --pending_reads_;
     bytes_buffered += kDataSize;
   }
@@ -219,7 +219,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
 
   // Fulfill the read with an end-of-stream packet.
   scoped_refptr<DataBuffer> last_buffer = new DataBuffer(0);
-  decoder_->fill_buffer_done_callback()->Run(last_buffer);
+  decoder_->consume_audio_samples_callback()->Run(last_buffer);
   --pending_reads_;
 
   // We shouldn't report ended until all data has been flushed out.

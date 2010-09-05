@@ -183,11 +183,11 @@ void GpuVideoDecoder::OnFormatChange(VideoStreamInfo stream_info) {
   NOTIMPLEMENTED();
 }
 
-void GpuVideoDecoder::OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+void GpuVideoDecoder::ProduceVideoSample(scoped_refptr<Buffer> buffer) {
   SendEmptyBufferDone();
 }
 
-void GpuVideoDecoder::OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
   GpuVideoDecoderOutputBufferParam output_param;
   output_param.timestamp_ = frame->GetTimestamp().InMicroseconds();
   output_param.duration_ = frame->GetDuration().InMicroseconds();
@@ -250,7 +250,7 @@ void GpuVideoDecoder::OnEmptyThisBuffer(
   memcpy(dst, src, buffer.size_);
   SendEmptyBufferACK();
 
-  decode_engine_->EmptyThisBuffer(input_buffer);
+  decode_engine_->ConsumeVideoSample(input_buffer);
 }
 void GpuVideoDecoder::OnFillThisBuffer(
     const GpuVideoDecoderOutputBufferParam& frame) {
@@ -258,10 +258,10 @@ void GpuVideoDecoder::OnFillThisBuffer(
     pending_output_requests_++;
     if (!output_transfer_buffer_busy_) {
       output_transfer_buffer_busy_ = true;
-      decode_engine_->FillThisBuffer(frame_);
+      decode_engine_->ProduceVideoFrame(frame_);
     }
   } else {
-    decode_engine_->FillThisBuffer(frame_);
+    decode_engine_->ProduceVideoFrame(frame_);
   }
 }
 
@@ -271,7 +271,7 @@ void GpuVideoDecoder::OnFillThisBufferDoneACK() {
     pending_output_requests_--;
     if (pending_output_requests_) {
       output_transfer_buffer_busy_ = true;
-      decode_engine_->FillThisBuffer(frame_);
+      decode_engine_->ProduceVideoFrame(frame_);
     }
   }
 }

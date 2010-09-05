@@ -42,14 +42,15 @@ class MockBuffer : public media::Buffer {
 class MockDecoder : public media::MediaFilter {
  public:
   typedef Callback1<scoped_refptr<MockDecoderOutput> >::Type
-      FillBufferDoneCallback;
-  void set_fill_buffer_done_callback_(FillBufferDoneCallback* callback) {
-    fill_buffer_done_callback_.reset(callback);
+      ConsumeAudioSamplesCallback;
+  void set_consume_audio_samples_callback(
+      ConsumeAudioSamplesCallback* callback) {
+    consume_audio_samples_callback_.reset(callback);
   }
-  FillBufferDoneCallback* fill_buffer_done_callback() {
-    return fill_buffer_done_callback_.get();
+  ConsumeAudioSamplesCallback* consume_audio_samples_callback() {
+    return consume_audio_samples_callback_.get();
   }
-  scoped_ptr<FillBufferDoneCallback> fill_buffer_done_callback_;
+  scoped_ptr<ConsumeAudioSamplesCallback> consume_audio_samples_callback_;
 };
 
 class MockDecoderCallback {
@@ -117,7 +118,7 @@ TEST(DecoderBaseTest, FlowControl) {
   MessageLoop message_loop;
   scoped_refptr<MockDecoderImpl> decoder = new MockDecoderImpl();
   MockDecoderCallback read_callback;
-  decoder->set_fill_buffer_done_callback_(
+  decoder->set_consume_audio_samples_callback(
       NewCallback(&read_callback, &MockDecoderCallback::OnReadComplete));
   scoped_refptr<MockDemuxerStream> demuxer_stream = new MockDemuxerStream();
   StrictMock<MockFilterCallback> callback;
@@ -140,8 +141,8 @@ TEST(DecoderBaseTest, FlowControl) {
       .Times(2)
       .WillRepeatedly(SaveDecodeRequest(&decode_requests));
   scoped_refptr<MockDecoderOutput> output;
-  decoder->FillThisBuffer(output);
-  decoder->FillThisBuffer(output);
+  decoder->ProduceAudioSamples(output);
+  decoder->ProduceAudioSamples(output);
   message_loop.RunAllPending();
 
   // Fulfill the decode request.

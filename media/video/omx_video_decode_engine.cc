@@ -119,7 +119,7 @@ void OmxVideoDecodeEngine::Initialize(
 }
 
 // This method handles only input buffer, without coupling with output
-void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
+void OmxVideoDecodeEngine::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK(!free_input_buffers_.empty());
   DCHECK_GT(input_pending_request_, 0);
@@ -304,7 +304,7 @@ void OmxVideoDecodeEngine::FinishEmptyBuffer(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!input_queue_has_eos_) {
-    event_handler_->OnEmptyBufferCallback(buffer);
+    event_handler_->ProduceVideoSample(buffer);
     ++input_pending_request_;
   }
 }
@@ -323,7 +323,7 @@ void OmxVideoDecodeEngine::FinishFillBuffer(OMX_BUFFERHEADERTYPE* buffer) {
   frame->SetTimestamp(base::TimeDelta::FromMicroseconds(buffer->nTimeStamp));
   frame->SetDuration(frame->GetTimestamp() - last_pts_);
   last_pts_ = frame->GetTimestamp();
-  event_handler_->OnFillBufferCallback(frame);
+  event_handler_->ConsumeVideoFrame(frame);
   output_pending_request_--;
 }
 
@@ -597,7 +597,7 @@ void OmxVideoDecodeEngine::DoneSetStateExecuting(OMX_STATETYPE state) {
 
 // Function for receiving output buffers. Hookup for buffer recycling
 // and outside allocator.
-void OmxVideoDecodeEngine::FillThisBuffer(
+void OmxVideoDecodeEngine::ProduceVideoFrame(
     scoped_refptr<VideoFrame> video_frame) {
   DCHECK(video_frame.get() && !video_frame->IsEndOfStream());
   output_pending_request_++;
@@ -605,7 +605,7 @@ void OmxVideoDecodeEngine::FillThisBuffer(
   if (!CanAcceptOutput()) {
     if (uses_egl_image_) {  // return it to owner.
       output_pending_request_--;
-      event_handler_->OnFillBufferCallback(video_frame);
+      event_handler_->ConsumeVideoFrame(video_frame);
     }
     return;
   }
@@ -617,7 +617,7 @@ void OmxVideoDecodeEngine::FillThisBuffer(
     } else if (kClientFlushing == client_state_) {
       if (uses_egl_image_) {  // return it to owner.
         output_pending_request_--;
-        event_handler_->OnFillBufferCallback(video_frame);
+        event_handler_->ConsumeVideoFrame(video_frame);
       }
       if (InputPortFlushed() && OutputPortFlushed())
         ComponentFlushDone();
@@ -1220,7 +1220,7 @@ void OmxVideoDecodeEngine::FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
     if (uses_egl_image_) {
       scoped_refptr<VideoFrame> frame;
       frame = static_cast<VideoFrame*>(buffer->pAppPrivate);
-      event_handler_->OnFillBufferCallback(frame);
+      event_handler_->ConsumeVideoFrame(frame);
       output_pending_request_--;
     }
     return;
@@ -1240,7 +1240,7 @@ void OmxVideoDecodeEngine::FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
     // Singal end of stream.
     scoped_refptr<VideoFrame> frame;
     VideoFrame::CreateEmptyFrame(&frame);
-    event_handler_->OnFillBufferCallback(frame);
+    event_handler_->ConsumeVideoFrame(frame);
   }
 
   if (client_state_ == kClientFlushing &&

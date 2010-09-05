@@ -33,6 +33,7 @@
 #include "base/time.h"
 #include "base/scoped_ptr.h"
 #include "media/base/media_format.h"
+#include "media/base/video_frame.h"
 
 namespace media {
 
@@ -40,7 +41,6 @@ class Buffer;
 class Decoder;
 class DemuxerStream;
 class FilterHost;
-class VideoFrame;
 class WritableBuffer;
 
 // Identifies the type of filter implementation.  Used in conjunction with some
@@ -292,24 +292,28 @@ class VideoDecoder : public MediaFilter {
   // |set_fill_buffer_done_callback| install permanent callback from downstream
   // filter (i.e. Renderer). The callback is used to deliver video frames at
   // runtime to downstream filter
-  typedef Callback1<scoped_refptr<VideoFrame> >::Type FillBufferDoneCallback;
-  void set_fill_buffer_done_callback(FillBufferDoneCallback* callback) {
-    fill_buffer_done_callback_.reset(callback);
-  }
-  FillBufferDoneCallback* fill_buffer_done_callback() {
-    return fill_buffer_done_callback_.get();
+  typedef Callback1<scoped_refptr<VideoFrame> >::Type ConsumeVideoFrameCallback;
+  void set_consume_video_frame_callback(ConsumeVideoFrameCallback* callback) {
+    consume_video_frame_callback_.reset(callback);
   }
 
-  // Render provides an output buffer for Decoder to write to. These buffers
-  // will be recycled to renderer by fill_buffer_done_callback_;
+  // Renderer provides an output buffer for Decoder to write to. These buffers
+  // will be recycled to renderer by |fill_buffer_done_callback_|.
   // We could also pass empty pointer here to let decoder provide buffers pool.
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame) = 0;
+  virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame) = 0;
 
   // Indicate whether decoder provides its own output buffers
   virtual bool ProvidesBuffer() = 0;
 
+ protected:
+  // A video frame is ready to be consumed. This method invoke
+  // |consume_video_frame_callback_| internally.
+  void VideoFrameReady(scoped_refptr<VideoFrame> frame) {
+    consume_video_frame_callback_->Run(frame);
+  }
+
  private:
-  scoped_ptr<FillBufferDoneCallback> fill_buffer_done_callback_;
+  scoped_ptr<ConsumeVideoFrameCallback> consume_video_frame_callback_;
 };
 
 
@@ -333,21 +337,22 @@ class AudioDecoder : public MediaFilter {
   // |set_fill_buffer_done_callback| install permanent callback from downstream
   // filter (i.e. Renderer). The callback is used to deliver buffers at
   // runtime to downstream filter.
-  typedef Callback1<scoped_refptr<Buffer> >::Type FillBufferDoneCallback;
-  void set_fill_buffer_done_callback(FillBufferDoneCallback* callback) {
-    fill_buffer_done_callback_.reset(callback);
+  typedef Callback1<scoped_refptr<Buffer> >::Type ConsumeAudioSamplesCallback;
+  void set_consume_audio_samples_callback(
+      ConsumeAudioSamplesCallback* callback) {
+    consume_audio_samples_callback_.reset(callback);
   }
-  FillBufferDoneCallback* fill_buffer_done_callback() {
-     return fill_buffer_done_callback_.get();
+  ConsumeAudioSamplesCallback* consume_audio_samples_callback() {
+     return consume_audio_samples_callback_.get();
    }
 
-  // Render provides an output buffer for Decoder to write to. These buffers
+  // Renderer provides an output buffer for Decoder to write to. These buffers
   // will be recycled to renderer by fill_buffer_done_callback_;
   // We could also pass empty pointer here to let decoder provide buffers pool.
-  virtual void FillThisBuffer(scoped_refptr<Buffer> buffer) = 0;
+  virtual void ProduceAudioSamples(scoped_refptr<Buffer> buffer) = 0;
 
  private:
-  scoped_ptr<FillBufferDoneCallback> fill_buffer_done_callback_;
+  scoped_ptr<ConsumeAudioSamplesCallback> consume_audio_samples_callback_;
 };
 
 

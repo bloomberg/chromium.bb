@@ -43,8 +43,8 @@ class MftH264Decoder : public media::VideoDecodeEngine {
   virtual void Uninitialize();
   virtual void Flush();
   virtual void Seek();
-  virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
+  virtual void ConsumeVideoSample(scoped_refptr<Buffer> buffer);
+  virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
 
   bool use_dxva() const { return use_dxva_; }
   State state() const { return state_; }

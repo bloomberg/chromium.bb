@@ -79,8 +79,35 @@ class VideoDecodeEngine {
     virtual void OnSeekComplete() = 0;
     virtual void OnError() = 0;
     virtual void OnFormatChange(VideoStreamInfo stream_info) = 0;
-    virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) = 0;
-    virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) = 0;
+
+    // TODO(hclam): The following two methods shouldn't belong to this class
+    // because they are not video decode events but used to send decoded
+    // video frames and request video packets.
+    //
+    // Signal the user of VideoDecodeEngine to provide a video sample.
+    //
+    // In the normal running state, this method is called by the video decode
+    // engine to request video samples used for decoding.
+    //
+    // In the case when the video decode engine is flushing, this method is
+    // called to return video samples acquired by the video decode engine.
+    //
+    // |buffer| can be NULL in which case this method call is purely for
+    // requesting new video samples. If |buffer| is non-NULL, the buffer is
+    // returned to the owner at the sample time as a request for video sample
+    // is made.
+    virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer) = 0;
+
+    // Signal the user of VideoDecodeEngine that a video frame is ready to
+    // be consumed or a video frame is returned to the owner.
+    //
+    // In the normal running state, this method is called to signal that
+    // |frame| contains a decoded video frame and is ready to be used.
+    //
+    // In the case of flushing and video frame is provided externally, this
+    // method is called to return the video frame object to the owner.
+    // The content of the video frame may be invalid.
+    virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) = 0;
   };
 
   virtual ~VideoDecodeEngine() {}
@@ -106,21 +133,27 @@ class VideoDecodeEngine {
   // issue read requests after Flush() us made.
   virtual void Seek() = 0;
 
-  // Buffer exchange method for input and output stream.
-  // These functions and callbacks could be used in two scenarios for both
-  // input and output streams:
-  // 1. Engine provide buffers.
-  // 2. Outside party provide buffers.
-  // The currently planned engine implementation:
-  // 1. provides the input buffer request inside engine through
-  // |EmptyThisBufferCallback|. The engine implementation has better knowledge
-  // of the decoder reordering delay and jittery removal requirements. Input
-  // buffers are returned into engine through |EmptyThisBuffer|.
-  // 2. Output buffers are provided from outside the engine, and feed into
-  // engine through |FillThisBuffer|. Output buffers are returned to outside
-  // by |FillThisBufferCallback|.
-  virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer) = 0;
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame) = 0;
+  // Provide a video sample to be used by the video decode engine.
+  //
+  // This method is called in response to ProvideVideoSample() called to the
+  // user.
+  virtual void ConsumeVideoSample(scoped_refptr<Buffer> buffer) = 0;
+
+  // Signal the video decode engine to produce a video frame or return the
+  // video frame object to the video decode engine.
+  //
+  // In the normal running state, this method is called by the user of the
+  // video decode engine to request a decoded video frame. If |frame| is
+  // NULL the video decode engine should allocate a video frame object.
+  // Otherwise video decode engine should try to use the video frame object
+  // provided as output.
+  //
+  // In flushing state and video frames are allocated internally this method
+  // is called by the user to return the video frame object.
+  //
+  // In response to this method call, ConsumeVideoFrame() is called with a
+  // video frame object containing decoded video content.
+  virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame) = 0;
 };
 
 }  // namespace media

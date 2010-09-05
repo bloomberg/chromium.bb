@@ -86,8 +86,8 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   scoped_ptr<FilterCallback> c(callback);
   decoder_ = decoder;
 
-  decoder_->set_fill_buffer_done_callback(
-      NewCallback(this, &AudioRendererBase::OnFillBufferDone));
+  decoder_->set_consume_audio_samples_callback(
+      NewCallback(this, &AudioRendererBase::ConsumeAudioSamples));
   // Get the media properties to initialize our algorithms.
   int channels = 0;
   int sample_rate = 0;
@@ -135,7 +135,7 @@ bool AudioRendererBase::HasEnded() {
   return recieved_end_of_stream_ && rendered_end_of_stream_;
 }
 
-void AudioRendererBase::OnFillBufferDone(scoped_refptr<Buffer> buffer_in) {
+void AudioRendererBase::ConsumeAudioSamples(scoped_refptr<Buffer> buffer_in) {
   AutoLock auto_lock(lock_);
   DCHECK(state_ == kPaused || state_ == kSeeking || state_ == kPlaying);
   DCHECK_GT(pending_reads_, 0u);
@@ -247,7 +247,7 @@ void AudioRendererBase::ScheduleRead_Locked() {
   // provide buffer pools. In the future, we may want to implement real
   // buffer pool to recycle buffers.
   scoped_refptr<Buffer> buffer;
-  decoder_->FillThisBuffer(buffer);
+  decoder_->ProduceAudioSamples(buffer);
 }
 
 // static

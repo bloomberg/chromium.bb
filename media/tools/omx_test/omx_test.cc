@@ -120,7 +120,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
                              input_format.video_header.height);
   }
 
-  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+  virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer) {
     // We receive this callback when the decoder has consumed an input buffer.
     // In this case, delete the previous buffer and enqueue a new one.
     // There are some conditions we don't want to enqueue, for example when
@@ -131,7 +131,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
       FeedInputBuffer();
   }
 
-  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
     // This callback is received when the decoder has completed a decoding
     // task and given us some output data. The frame is owned by the decoder.
     if (stopped_ || error_)
@@ -162,7 +162,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
     uint8* data;
     int read;
     file_reader_->Read(&data, &read);
-    engine_->EmptyThisBuffer(new DataBuffer(data, read));
+    engine_->ConsumeVideoSample(new DataBuffer(data, read));
   }
 
   void Run() {

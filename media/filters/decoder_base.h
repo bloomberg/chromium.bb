@@ -50,8 +50,10 @@ class DecoderBase : public Decoder {
 
   virtual const MediaFormat& media_format() { return media_format_; }
 
-  // Audio or video decoder.
-  virtual void FillThisBuffer(scoped_refptr<Output> output) {
+  // Audio decoder.
+  // Note that this class is only used by the audio decoder, this will
+  // eventually be merged into FFmpegAudioDecoder.
+  virtual void ProduceAudioSamples(scoped_refptr<Output> output) {
     this->message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &DecoderBase::ReadTask, output));
   }
@@ -277,7 +279,11 @@ class DecoderBase : public Decoder {
 
     // Execute the callback!
     --pending_requests_;
-    Decoder::fill_buffer_done_callback()->Run(output);
+
+    // TODO(hclam): We only inherit this class from FFmpegAudioDecoder so we
+    // are making this call. We should correct this by merging this class into
+    // FFmpegAudioDecoder.
+    Decoder::consume_audio_samples_callback()->Run(output);
     return true;
   }
 

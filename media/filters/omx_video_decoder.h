@@ -33,7 +33,7 @@ class OmxVideoDecoder : public VideoDecoder,
   virtual void Stop(FilterCallback* callback);
   virtual void Flush(FilterCallback* callback);
   virtual void Seek(base::TimeDelta time, FilterCallback* callback);
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
+  virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
   virtual bool ProvidesBuffer();
   virtual const MediaFormat& media_format() { return media_format_; }
 
@@ -45,8 +45,8 @@ class OmxVideoDecoder : public VideoDecoder,
   virtual void OnSeekComplete();
   virtual void OnError();
   virtual void OnFormatChange(VideoStreamInfo stream_info);
-  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer);
-  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame);
+  virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer);
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame);
 
   // TODO(hclam): This is very ugly that we keep reference instead of
   // scoped_refptr.

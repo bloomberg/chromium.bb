@@ -150,16 +150,16 @@ class MftH264DecoderHandler
   virtual void OnFormatChange(VideoStreamInfo stream_info) {
     info_.stream_info_ = stream_info;
   }
-  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+  virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer) {
     if (reader_ && decoder_) {
       scoped_refptr<DataBuffer> input;
       reader_->Read(&input);
       if (!input->IsEndOfStream())
         frames_read_++;
-      decoder_->EmptyThisBuffer(input);
+      decoder_->ConsumeVideoSample(input);
     }
   }
-  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
     if (frame.get()) {
       if (frame->format() != VideoFrame::EMPTY) {
         frames_decoded_++;
@@ -174,7 +174,7 @@ class MftH264DecoderHandler
   }
   virtual void DecodeSingleFrame() {
     scoped_refptr<VideoFrame> frame;
-    decoder_->FillThisBuffer(frame);
+    decoder_->ProduceVideoFrame(frame);
   }
   virtual void Start() {
     while (decoder_->state() != MftH264Decoder::kStopped)
@@ -197,7 +197,7 @@ class RenderToWindowHandler : public MftH264DecoderHandler {
         has_output_(false) {
   }
   virtual ~RenderToWindowHandler() {}
-  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
     has_output_ = true;
     if (frame.get()) {
       if (frame->format() != VideoFrame::EMPTY) {
@@ -251,7 +251,7 @@ class RenderToWindowHandler : public MftH264DecoderHandler {
     if (decoder_->state() != MftH264Decoder::kStopped) {
       while (decoder_->state() != MftH264Decoder::kStopped && !has_output_) {
         scoped_refptr<VideoFrame> frame;
-        decoder_->FillThisBuffer(frame);
+        decoder_->ProduceVideoFrame(frame);
       }
       if (decoder_->state() == MftH264Decoder::kStopped)
         loop_->QuitNow();

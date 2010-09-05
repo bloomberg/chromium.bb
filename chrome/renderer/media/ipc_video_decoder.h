@@ -38,7 +38,7 @@ class IpcVideoDecoder : public media::VideoDecoder,
   virtual void Initialize(media::DemuxerStream* demuxer_stream,
                           media::FilterCallback* callback);
   virtual const media::MediaFormat& media_format() { return media_format_; }
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> video_frame);
+  virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
 
   // GpuVideoDecoderHost::EventHandler.
   virtual void OnInitializeDone(bool success,

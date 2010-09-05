@@ -29,8 +29,8 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   virtual void Initialize(MessageLoop* message_loop,
                           VideoDecodeEngine::EventHandler* event_handler,
                           const VideoCodecConfig& config);
-  virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
+  virtual void ConsumeVideoSample(scoped_refptr<Buffer> buffer);
+  virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
   virtual void Uninitialize();
   virtual void Flush();
   virtual void Seek();

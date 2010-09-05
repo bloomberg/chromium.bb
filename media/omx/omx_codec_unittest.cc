@@ -351,8 +351,8 @@ class OmxCodecTest : public testing::Test {
   AVStream av_stream_;
   AVCodecContext av_codec_context_;
 
-  VideoDecodeEngine::EmptyThisBufferCallback* feed_done_cb_;
-  VideoDecodeEngine::FillThisBufferCallback* decode_done_cb_;
+  VideoDecodeEngine::ProduceVideoSampleCallback* feed_done_cb_;
+  VideoDecodeEngine::ConsumeVideoFrameCallback* decode_done_cb_;
   TaskMocker init_done_cb_task_;
 
   TaskMocker stop_task_;

@@ -45,8 +45,8 @@ class GpuVideoDecoder
   virtual void OnSeekComplete();
   virtual void OnError();
   virtual void OnFormatChange(VideoStreamInfo stream_info);
-  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer);
-  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame);
+  virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer);
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame);
 
   GpuVideoDecoder(const GpuVideoDecoderInfoParam* param,
                   GpuChannel* channel_,

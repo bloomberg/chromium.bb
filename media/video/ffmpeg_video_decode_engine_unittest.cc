@@ -96,9 +96,9 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
   }
 
  public:
-  MOCK_METHOD1(OnFillBufferCallback,
+  MOCK_METHOD1(ConsumeVideoFrame,
                void(scoped_refptr<VideoFrame> video_frame));
-  MOCK_METHOD1(OnEmptyBufferCallback,
+  MOCK_METHOD1(ProduceVideoSample,
                void(scoped_refptr<Buffer> buffer));
   MOCK_METHOD1(OnInitializeComplete,
                void(const VideoCodecInfo& info));
@@ -193,7 +193,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
 }
 
 ACTION_P2(DemuxComplete, engine, buffer) {
-  engine->EmptyThisBuffer(buffer);
+  engine->ConsumeVideoSample(buffer);
 }
 
 ACTION_P(DecodeComplete, decoder) {
@@ -217,11 +217,11 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
       .WillOnce(DoAll(SetArgumentPointee<2>(1),  // Simulate 1 byte frame.
                       Return(0)));
 
-  EXPECT_CALL(*this, OnEmptyBufferCallback(_))
+  EXPECT_CALL(*this, ProduceVideoSample(_))
       .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-  EXPECT_CALL(*this, OnFillBufferCallback(_))
+  EXPECT_CALL(*this, ConsumeVideoFrame(_))
       .WillOnce(DecodeComplete(this));
-  test_engine_->FillThisBuffer(video_frame_);
+  test_engine_->ProduceVideoFrame(video_frame_);
 
   // |video_frame_| timestamp is 0 because we set the timestamp based off
   // the buffer timestamp.
@@ -243,12 +243,12 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_0ByteFrame) {
       .WillOnce(DoAll(SetArgumentPointee<2>(1),  // Simulate 1 byte frame.
                       Return(0)));
 
-  EXPECT_CALL(*this, OnEmptyBufferCallback(_))
+  EXPECT_CALL(*this, ProduceVideoSample(_))
       .WillOnce(DemuxComplete(test_engine_.get(), buffer_))
       .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-  EXPECT_CALL(*this, OnFillBufferCallback(_))
+  EXPECT_CALL(*this, ConsumeVideoFrame(_))
       .WillOnce(DecodeComplete(this));
-  test_engine_->FillThisBuffer(video_frame_);
+  test_engine_->ProduceVideoFrame(video_frame_);
 
   EXPECT_TRUE(video_frame_.get());
 }
@@ -262,11 +262,11 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_DecodeError) {
               AVCodecDecodeVideo2(&codec_context_, &yuv_frame_, _, _))
       .WillOnce(Return(-1));
 
-  EXPECT_CALL(*this, OnEmptyBufferCallback(_))
+  EXPECT_CALL(*this, ProduceVideoSample(_))
       .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-  EXPECT_CALL(*this, OnFillBufferCallback(_))
+  EXPECT_CALL(*this, ConsumeVideoFrame(_))
       .WillOnce(DecodeComplete(this));
-  test_engine_->FillThisBuffer(video_frame_);
+  test_engine_->ProduceVideoFrame(video_frame_);
 
   EXPECT_FALSE(video_frame_.get());
 }
