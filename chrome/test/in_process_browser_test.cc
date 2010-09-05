@@ -139,6 +139,9 @@ void InProcessBrowserTest::SetUp() {
   // Turn off tip loading for tests; see http://crbug.com/17725
   command_line->AppendSwitch(switches::kDisableWebResources);
 
+  // Turn off preconnects because they break the brittle python webserver.
+  command_line->AppendSwitch(switches::kDisablePreconnect);
+
   command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
   // Don't show the first run ui.
