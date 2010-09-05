@@ -31,6 +31,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKeyPath.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
@@ -66,7 +69,10 @@ using WebKit::WebBlobRegistry;
 using WebKit::WebFileSystem;
 using WebKit::WebFrame;
 using WebKit::WebIDBFactory;
+using WebKit::WebIDBKey;
+using WebKit::WebIDBKeyPath;
 using WebKit::WebKitClient;
+using WebKit::WebSerializedScriptValue;
 using WebKit::WebStorageArea;
 using WebKit::WebStorageEventDispatcher;
 using WebKit::WebStorageNamespace;
@@ -283,6 +289,19 @@ WebIDBFactory* RendererWebKitClientImpl::idbFactory() {
       web_idb_factory_.reset(new RendererWebIDBFactoryImpl());
   }
   return web_idb_factory_.get();
+}
+
+void RendererWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
+    const WebVector<WebSerializedScriptValue>& values,
+    const WebString& keyPath,
+    WebVector<WebIDBKey>& keys_out) {
+  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
+  WebVector<WebIDBKey> keys(values.size());
+  for (size_t i = 0; i < values.size(); ++i) {
+    keys[i] = WebIDBKey::createFromValueAndKeyPath(
+        values[i], WebIDBKeyPath::create(keyPath));
+  }
+  keys_out.swap(keys);
 }
 
 //------------------------------------------------------------------------------

@@ -8,6 +8,9 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKeyPath.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
@@ -117,6 +120,18 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebIDBFactory* idbFactory() {
     return WebKit::WebIDBFactory::create();
+  }
+
+  virtual void createIDBKeysFromSerializedValuesAndKeyPath(
+      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+      const WebKit::WebString& keyPath,
+      WebKit::WebVector<WebKit::WebIDBKey>& keys_out) {
+    WebKit::WebVector<WebKit::WebIDBKey> keys(values.size());
+    for (size_t i = 0; i < values.size(); ++i) {
+      keys[i] = WebKit::WebIDBKey::createFromValueAndKeyPath(
+          values[i], WebKit::WebIDBKeyPath::create(keyPath));
+    }
+    keys_out.swap(keys);
   }
 
 #if defined(OS_WIN)

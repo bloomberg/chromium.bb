@@ -62,6 +62,10 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& challenge,
       const WebKit::WebURL& url);
   virtual WebKit::WebIDBFactory* idbFactory();
+  virtual void createIDBKeysFromSerializedValuesAndKeyPath(
+      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+      const WebKit::WebString& keyPath,
+      WebKit::WebVector<WebKit::WebIDBKey>& keys);
   virtual WebKit::WebFileSystem* fileSystem();
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();

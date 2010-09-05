@@ -94,7 +94,8 @@ WebKit::WebURLLoader* BrowserWebKitClientImpl::createURLLoader() {
   return NULL;
 }
 
-WebKit::WebSocketStreamHandle* BrowserWebKitClientImpl::createSocketStreamHandle() {
+WebKit::WebSocketStreamHandle*
+    BrowserWebKitClientImpl::createSocketStreamHandle() {
   NOTREACHED();
   return NULL;
 }
@@ -156,10 +157,8 @@ void BrowserWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
   std::vector<SerializedScriptValue> std_values;
   size_t size = values.size();
   std_values.reserve(size);
-  for (size_t i = 0; i < size; ++i) {
-    SerializedScriptValue std_value(values[i]);
-    std_values.push_back(std_value);
-  }
+  for (size_t i = 0; i < size; ++i)
+    std_values.push_back(SerializedScriptValue(values[i]));
 
   std::vector<IndexedDBKey> std_keys;
   indexed_db_key_utility_client->CreateIDBKeysFromSerializedValuesAndKeyPath(
