@@ -39,10 +39,11 @@ URLRequestJob* ConnectInterceptor::MaybeIntercept(URLRequest* request) {
     }
     LearnFromNavigation(referring_url, request_url);
   }
-  bool is_frame = 0 != (request->load_flags() & (net::LOAD_SUB_FRAME |
-                                                 net::LOAD_MAIN_FRAME));
-  // Now we use previous learning and setup for our subresources.
-  if (is_frame && !request->was_fetched_via_proxy())
+
+  // Subresources for main frames usually get loaded when we detected the main
+  // frame - way back in RenderViewHost::Navigate.  So only use subresource
+  // prediction here for subframes.
+  if (request->load_flags() & net::LOAD_SUB_FRAME)
     PredictFrameSubresources(request->url().GetWithEmptyPath());
   return NULL;
 }
