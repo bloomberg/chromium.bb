@@ -74,9 +74,6 @@ void TestShellDevToolsAgent::sendMessageToInspectorFrontend(
     dev_tools_client_->AsyncCall(TestShellDevToolsCallArgs(data));
 }
 
-void TestShellDevToolsAgent::forceRepaint() {
-}
-
 void TestShellDevToolsAgent::runtimePropertyChanged(
     const WebKit::WebString& name,
     const WebKit::WebString& value) {

@@ -32,7 +32,6 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   virtual void sendMessageToInspectorFrontend(
       const WebKit::WebString& data);
   virtual int hostIdentifier() { return routing_id_; }
-  virtual void forceRepaint();
   virtual void runtimePropertyChanged(const WebKit::WebString& name,
                                       const WebKit::WebString& value);
   virtual WebKit::WebCString debuggerScriptSource();

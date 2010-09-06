@@ -44,7 +44,6 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
   virtual void sendDispatchToAPU(const WebKit::WebString& data);
 
   virtual int hostIdentifier();
-  virtual void forceRepaint();
   virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,
                                           bool enabled);
   virtual void runtimePropertyChanged(const WebKit::WebString& name,

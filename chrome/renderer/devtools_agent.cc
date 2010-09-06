@@ -116,10 +116,6 @@ int DevToolsAgent::hostIdentifier() {
   return routing_id_;
 }
 
-void DevToolsAgent::forceRepaint() {
-  render_view_->GenerateFullRepaint();
-}
-
 void DevToolsAgent::runtimeFeatureStateChanged(
     const WebKit::WebString& feature,
     bool enabled) {
