@@ -19,6 +19,7 @@ ClientSocketPoolBaseTest.CancelPendingSocketAtSocketLimit
 
 # See http://crbug.com/51145
 HttpNetworkTransactionTest.*
+HttpNetworkLayerTest.GET
 
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
