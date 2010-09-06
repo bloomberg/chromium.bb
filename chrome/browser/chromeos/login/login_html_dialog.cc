@@ -4,19 +4,20 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "gfx/native_widget_types.h"
+#include "gfx/rect.h"
 #include "gfx/size.h"
 #include "views/window/window.h"
 
 namespace chromeos {
 
 namespace {
-
-const int kDefaultWidth = 800;
-const int kDefaultHeight = 600;
-
+// Default width/height ratio of screen size.
+const float kDefaultWidthRatio = 0.8;
+const float kDefaultHeightRatio = 0.8;
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,6 +31,9 @@ LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
       parent_window_(parent_window),
       title_(title),
       url_(url) {
+  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size(0, 0)));
+  width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());
+  height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
 }
 
 LoginHtmlDialog::~LoginHtmlDialog() {
@@ -40,6 +44,12 @@ void LoginHtmlDialog::Show() {
   browser::ShowHtmlDialogView(parent_window_,
                               ProfileManager::GetDefaultProfile(),
                               this);
+}
+
+void LoginHtmlDialog::SetDialogSize(int width, int height) {
+  DCHECK(width >= 0 && height >= 0);
+  width_ = width;
+  height_ = height;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,7 +67,7 @@ void LoginHtmlDialog::OnCloseContents(TabContents* source,
 }
 
 void LoginHtmlDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kDefaultWidth, kDefaultHeight);
+  size->SetSize(width_, height_);
 }
 
 }  // namespace chromeos

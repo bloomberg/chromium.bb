@@ -503,6 +503,8 @@
         'browser/chromeos/login/issue_response_handler.h',
         'browser/chromeos/login/google_authenticator.cc',
         'browser/chromeos/login/google_authenticator.h',
+        'browser/chromeos/login/help_app_launcher.cc',
+        'browser/chromeos/login/help_app_launcher.h',
         'browser/chromeos/login/helper.cc',
         'browser/chromeos/login/html_page_screen.cc',
         'browser/chromeos/login/html_page_screen.h',

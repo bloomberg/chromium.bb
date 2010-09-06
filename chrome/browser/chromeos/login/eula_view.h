@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EULA_VIEW_H_
 #pragma once
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "gfx/native_widget_types.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/view.h"
@@ -24,6 +26,8 @@ class NativeButton;
 class DOMView;
 
 namespace chromeos {
+
+class HelpAppLauncher;
 
 // Delegate for TabContents that will show EULA.
 // Blocks context menu and other actions.
@@ -98,6 +102,9 @@ class EulaView
                                       unsigned changed_flags);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+  // Returns corresponding native window.
+  gfx::NativeWindow GetNativeWindow() const;
+
   // Loads specified URL to the specified DOMView and updates specified
   // label with its title.
   void LoadEulaView(DOMView* eula_view,
@@ -117,7 +124,11 @@ class EulaView
 
   chromeos::ScreenObserver* observer_;
 
+  // URL of the OEM EULA page (on disk).
   GURL oem_eula_page_;
+
+  // Help application used for help dialogs.
+  scoped_ptr<HelpAppLauncher> help_app_;
 
   DISALLOW_COPY_AND_ASSIGN(EulaView);
 };

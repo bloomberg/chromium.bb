@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -39,6 +40,8 @@
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
 #endif
+
+using views::WidgetGtk;
 
 namespace {
 
@@ -75,6 +78,9 @@ struct FillLayoutWithBorder : public views::LayoutManager {
 }  // namespace
 
 namespace chromeos {
+
+////////////////////////////////////////////////////////////////////////////////
+// EulaView, public:
 
 EulaView::EulaView(chromeos::ScreenObserver* observer)
     : google_eula_label_(NULL),
@@ -236,16 +242,6 @@ void EulaView::Init() {
   UpdateLocalizedStrings();
 }
 
-void EulaView::LoadEulaView(DOMView* eula_view,
-                            views::Label* eula_label,
-                            const GURL& eula_url) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  eula_view->Init(profile,
-                  SiteInstance::CreateSiteInstanceForURL(profile, eula_url));
-  eula_view->LoadURL(eula_url);
-  eula_view->tab_contents()->set_delegate(this);
-}
-
 void EulaView::UpdateLocalizedStrings() {
   // Load Google EULA and its title.
   LoadEulaView(google_eula_view_, google_eula_label_, GURL(kGoogleEulaUrl));
@@ -274,7 +270,7 @@ void EulaView::UpdateLocalizedStrings() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::View: implementation:
+// EulaView, protected, views::View implementation:
 
 void EulaView::OnLocaleChanged() {
   UpdateLocalizedStrings();
@@ -304,7 +300,12 @@ void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
 // views::LinkController implementation:
 
 void EulaView::LinkActivated(views::Link* source, int event_flags) {
-  // TODO(glotov): handle link clicks.
+  if (source == learn_more_link_) {
+    help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
+    help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
+  } else if (source == system_security_settings_link_) {
+    // TODO(glotov): Handle TPM link click.
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -336,6 +337,23 @@ void EulaView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   views::Widget* widget = GetWidget();
   if (widget && event.os_event && !event.skip_in_browser)
     static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(event.os_event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EulaView, private:
+
+gfx::NativeWindow EulaView::GetNativeWindow() const {
+  return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
+}
+
+void EulaView::LoadEulaView(DOMView* eula_view,
+                            views::Label* eula_label,
+                            const GURL& eula_url) {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  eula_view->Init(profile,
+                  SiteInstance::CreateSiteInstanceForURL(profile, eula_url));
+  eula_view->LoadURL(eula_url);
+  eula_view->tab_contents()->set_delegate(this);
 }
 
 }  // namespace chromeos
