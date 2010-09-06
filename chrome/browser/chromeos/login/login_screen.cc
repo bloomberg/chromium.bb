@@ -103,7 +103,6 @@ void LoginScreen::OnLoginSuccess(const std::string& username,
 
 void LoginScreen::OnOffTheRecordLoginSuccess() {
   delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_GUEST_SELECTED);
-  LoginUtils::Get()->CompleteOffTheRecordLogin(start_url_);
 }
 
 void LoginScreen::OnHelpLinkActivated() {

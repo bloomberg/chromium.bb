@@ -262,6 +262,7 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   background_window_ = NULL;
 
   controller->Init(screen_name, background_bounds_);
+  controller->set_start_url(start_url_);
   controller->Show();
 
   // And schedule us for deletion. We delay for a second as the window manager
@@ -415,7 +416,12 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
 }
 
 void ExistingUserController::OnOffTheRecordLoginSuccess() {
-  LoginUtils::Get()->CompleteOffTheRecordLogin(start_url_);
+  if (WizardController::IsDeviceRegistered()) {
+    LoginUtils::Get()->CompleteOffTheRecordLogin(start_url_);
+  } else {
+    // Postpone CompleteOffTheRecordLogin until registration completion.
+    ActivateWizard(WizardController::kRegistrationScreenName);
+  }
 }
 
 void ExistingUserController::OnPasswordChangeDetected(

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class PrefService;
@@ -115,6 +116,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Overrides observer for testing.
   void set_observer(ScreenObserver* observer) { observer_ = observer; }
+
+  // Set URL to open on browser launch.
+  void set_start_url(const GURL& start_url) { start_url_ = start_url; }
 
   // Sets partner startup customization. WizardController takes ownership
   // of the document object.
@@ -224,6 +228,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Partner startup customizations.
   scoped_ptr<const chromeos::StartupCustomizationDocument> customization_;
+
+  // URL to open on browser launch.
+  GURL start_url_;
 
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorNetwork);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorUpdate);

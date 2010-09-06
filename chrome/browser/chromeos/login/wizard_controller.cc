@@ -632,7 +632,11 @@ void WizardController::OnUserImageSkipped() {
 
 void WizardController::OnRegistrationSuccess() {
   MarkDeviceRegistered();
-  ShowUserImageScreen();
+  if (chromeos::UserManager::Get()->logged_in_user().email().empty()) {
+    chromeos::LoginUtils::Get()->CompleteOffTheRecordLogin(start_url_);
+  } else {
+    ShowUserImageScreen();
+  }
 }
 
 void WizardController::OnRegistrationSkipped() {
@@ -840,7 +844,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
     // Fix for users who updated device and thus never passed register screen.
     // If we already have user we assume that it is not a second part of OOBE.
-    // See http://corbug.com/6289
+    // See http://crosbug.com/6289
     if (!WizardController::IsDeviceRegistered() && !users.empty()) {
       LOG(INFO) << "Mark device registered because there are remembered users: "
                 << users.size();
