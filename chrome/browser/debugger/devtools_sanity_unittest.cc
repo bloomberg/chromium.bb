@@ -62,8 +62,6 @@ const char kResourceTestPage[] = "files/devtools/resource_test_page.html";
 const char kSimplePage[] = "files/devtools/simple_page.html";
 const char kSyntaxErrorTestPage[] =
     "files/devtools/script_syntax_error.html";
-const char kDebuggerClosurePage[] =
-    "files/devtools/debugger_closure.html";
 const char kCompletionOnPause[] =
     "files/devtools/completion_on_pause.html";
 const char kPageWithContentScript[] =
@@ -343,13 +341,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        DISABLED_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
-}
-
-// Tests that scope can be expanded and contains expected variables.
-// TODO(japhet): Disabled during webkit landing per bug http://crbug.com/52085
-// Failing: http://crbug.com/53664
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestExpandScope) {
-  RunTest("testExpandScope", kDebuggerClosurePage);
 }
 
 // Tests that execution continues automatically when there is a syntax error in
