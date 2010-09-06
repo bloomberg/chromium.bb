@@ -244,6 +244,33 @@ std::wstring GoogleUpdateSettings::GetNewGoogleUpdateApKey(
   return new_value;
 }
 
+int GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey() {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring reg_path = dist->GetStateKey();
+
+  // Minimum access needed is to be able to write to this key.
+  RegKey reg_key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_SET_VALUE);
+  if (!reg_key.Valid())
+    return 0;
+
+  HANDLE target_handle = 0;
+  if (!DuplicateHandle(GetCurrentProcess(), reg_key.Handle(),
+                       GetCurrentProcess(), &target_handle, KEY_SET_VALUE,
+                       TRUE, DUPLICATE_SAME_ACCESS)) {
+    return 0;
+  }
+  return reinterpret_cast<int>(target_handle);
+}
+
+bool GoogleUpdateSettings::WriteGoogleUpdateSystemClientKey(
+    int handle, const std::wstring& key, const std::wstring& value) {
+  HKEY reg_key = reinterpret_cast<HKEY>(reinterpret_cast<void*>(handle));
+  DWORD size = static_cast<DWORD>(value.size()) * sizeof(wchar_t);
+  LSTATUS status = RegSetValueEx(reg_key, key.c_str(), 0, REG_SZ,
+      reinterpret_cast<const BYTE*>(value.c_str()), size);
+  return status == ERROR_SUCCESS;
+}
+
 bool GoogleUpdateSettings::IsOrganic(const std::wstring& brand) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kOrganicInstall))
