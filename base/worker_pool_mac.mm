@@ -4,6 +4,7 @@
 
 #include "base/worker_pool_mac.h"
 
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #import "base/scoped_nsautorelease_pool.h"
@@ -103,9 +104,12 @@ size_t outstanding_ = 0;           // Operations posted but not completed.
 }
 
 - (void)dealloc {
+  // Getting the task_ contents without a lock can lead to a benign data race.
+  // We annotate it to stay silent under ThreadSanitizer.
+  ANNOTATE_IGNORE_READS_BEGIN();
   DCHECK(!task_.get())
       << "-[TaskOperation dealloc] called without running task";
-
+  ANNOTATE_IGNORE_READS_END();
   [super dealloc];
 }
 
