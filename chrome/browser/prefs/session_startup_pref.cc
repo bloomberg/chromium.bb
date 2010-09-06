@@ -9,6 +9,7 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/browser/profile.h"
@@ -102,8 +103,10 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
     Value* value = NULL;
     if (url_pref_list->Get(i, &value)) {
       std::string url_text;
-      if (value->GetAsString(&url_text))
-        pref.urls.push_back(GURL(url_text));
+      if (value->GetAsString(&url_text)) {
+        GURL fixed_url = URLFixerUpper::FixupURL(url_text, "");
+        pref.urls.push_back(fixed_url);
+      }
     }
   }
   return pref;
