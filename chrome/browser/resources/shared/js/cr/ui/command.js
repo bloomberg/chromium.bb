@@ -282,7 +282,7 @@ cr.define('cr.ui', function() {
       return this.canExecute_;
     },
     set canExecute(canExecute) {
-      this.canExecute_ = canExecute;
+      this.canExecute_ = !!canExecute;
       this.stopPropagation();
     }
   };

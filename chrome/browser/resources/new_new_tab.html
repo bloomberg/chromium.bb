@@ -4,8 +4,7 @@
   bookmarkbarattached:bookmarkbarattached;
   hasattribution:hasattribution;
   anim:anim;
-  syncispresent:syncispresent;
-  has_3d:has_3d">
+  syncispresent:syncispresent">
 <head>
 <meta charset="utf-8">
 <title i18n-content="title"></title>
@@ -123,10 +122,6 @@ if ('mode' in hashParams) {
 </div>
 
 <div id="main">
-  <menu id="option-menu">
-    <div command="clear-all-blacklisted"
-         i18n-content="restorethumbnails"></div>
-  </menu>
 
   <div id="notification">
     <span>&nbsp;</span>
@@ -152,7 +147,9 @@ if ('mode' in hashParams) {
         <img class="disclosure" src="ntp/ntp_disclosure_triangle.png">
         <div class="back"></div>
         <span i18n-content="mostvisited"></span>
-        <div class="settings-wrapper"><div class="settings"></div></div>
+        <div class="settings-wrapper">
+          <button class="settings" menu="#option-menu"></button>
+        </div>
       </h2>
       <div class="miniview"></div>
     </div>
@@ -179,6 +176,22 @@ if ('mode' in hashParams) {
 
 <div class="window-menu" id="window-tooltip"></div>
 
+<command id="clear-all-blacklisted" i18n-values=".label:restorethumbnails">
+<command id="apps-launch-command">
+<command id="apps-options-command" i18n-values=".label:appoptions">
+<command id="apps-uninstall-command" i18n-values=".label:appuninstall">
+
+<menu id="option-menu">
+  <button command="#clear-all-blacklisted"></button>
+</menu>
+
+<menu id="app-context-menu">
+  <button class="default" command="#apps-launch-command"></button>
+  <hr>
+  <button command="#apps-options-command"></button>
+  <button command="#apps-uninstall-command"></button>
+</menu>
+
 </body>
 
 <script src="shared/js/i18n_template.js"></script>
@@ -188,10 +201,27 @@ i18nTemplate.process(document, templateData);
 <script src="shared/js/local_strings.js"></script>
 <script src="shared/js/class_list.js"></script>
 <script src="shared/js/parse_html_subset.js"></script>
+
+<script src="shared/js/cr.js"></script>
+<script src="shared/js/cr/ui.js"></script>
+<script src="shared/js/cr/ui/command.js"></script>
+<script src="shared/js/cr/ui/menu_item.js"></script>
+<script src="shared/js/cr/ui/menu.js"></script>
+<script src="shared/js/cr/ui/position_util.js"></script>
+<script src="shared/js/cr/ui/menu_button.js"></script>
+<script src="shared/js/cr/ui/context_menu_button.js"></script>
+<script src="shared/js/cr/ui/context_menu_handler.js"></script>
+
 <script src="ntp/util.js"></script>
 <script src="ntp/most_visited.js"></script>
 <script src="new_new_tab.js"></script>
 <script src="ntp/apps.js"></script>
+
+<script>
+cr.ui.decorate('menu', cr.ui.Menu);
+cr.ui.decorate('command', cr.ui.Command);
+cr.ui.decorate('button[menu]', cr.ui.MenuButton);
+</script>
 
 <script>
   updateSimpleSection('apps', Section.APPS);

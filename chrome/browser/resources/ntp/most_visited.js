@@ -56,6 +56,10 @@ var MostVisited = (function() {
     document.addEventListener('DOMContentLoaded',
                               bind(this.ensureSmallGridCorrect, this));
 
+    // Commands
+    document.addEventListener('command', bind(this.handleCommand_, this));
+    document.addEventListener('canExecute', bind(this.handleCanExecute_, this));
+
     // DND
     el.addEventListener('dragstart', bind(this.handleDragStart_, this));
     el.addEventListener('dragenter', bind(this.handleDragEnter_, this));
@@ -298,6 +302,23 @@ var MostVisited = (function() {
 
     getRectByIndex_: function(index) {
       return this.getMostVisitedLayoutRects_()[index];
+    },
+
+    // Commands
+
+    handleCommand_: function(e) {
+      var commandId = e.command.id;
+      switch (commandId) {
+        case 'clear-all-blacklisted':
+          this.clearAllBlacklisted();
+          chrome.send('getMostVisited');
+          break;
+      }
+    },
+
+    handleCanExecute_: function(e) {
+      if (e.command.id == 'clear-all-blacklisted')
+        e.canExecute = true;
     },
 
     // DND

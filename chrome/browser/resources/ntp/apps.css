@@ -13,8 +13,6 @@
   width: 124px; /* 920 / 7 - margin * 2 */
 }
 
-.app > .front,
-.app > .back,
 .app a {
   border-radius: 10px;
   bottom: 0;
@@ -22,12 +20,6 @@
   position: absolute;
   right: 0;
   top: 0;
-}
-
-.app > .front,
-.app > .back {
-  -webkit-backface-visibility: hidden;
-  -webkit-transition: -webkit-transform .15s;
 }
 
 .app a {
@@ -45,8 +37,9 @@
   white-space: nowrap;
 }
 
-.app .flip {
+.app .app-settings {
   background-color: transparent;
+  background-position: center center;
   border: 0;
   height: 14px;
   padding: 0;
@@ -56,47 +49,22 @@
   width: 14px;
 }
 
-.app > .front > .flip {
+.app > .app-settings {
   -webkit-transition: opacity .3s;
   -webkit-transition-delay: 0;
   background-image: url(chrome://theme/IDR_BALLOON_WRENCH);
   opacity: 0;
 }
 
-.app > .front > .flip:hover {
+.app > .app-settings:hover {
   -webkit-transition: none;
   background-image: url(chrome://theme/IDR_BALLOON_WRENCH_H);
 }
 
-.app:hover > .front > .flip,
-.app > .front > .flip:focus {
+.app:hover > .app-settings,
+.app > .app-settings:focus {
   -webkit-transition-delay: .5s;
   opacity: .9;
-}
-
-.app > .back > .flip {
-  background-image: url(chrome://theme/IDR_BALLOON_CLOSE);
-  opacity: .9;
-}
-
-.app > .back > .flip:hover {
-  background-image: url(chrome://theme/IDR_BALLOON_CLOSE_HOVER);
-}
-
-.app > .back {
-  padding: 10px;
-}
-
-.app > .back > h2 {
-  font-size: 100%;
-  margin: 10px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.app > .back > button:not(.flip) {
-  width: 100%;
 }
 
 @-webkit-keyframes bounce {
@@ -122,37 +90,10 @@
   -webkit-transition: opacity .5s;
 }
 
-a[app_id=web-store-entry] {
+a[app-id=web-store-entry] {
   background-image: url("web_store_icon.png");
 }
 
-/* Make items on the wrong side non focusable by hiding them. */
-.app:not(.config) > .back button,
-.app.config > .front button,
-.app.config > .front a {
-  display: none;
-}
-
-html[has_3d=true] .app.config > .front {
-  -webkit-transform: rotateY(180deg);
-}
-
-html[has_3d=true] .app > .back {
-  -webkit-transform: rotateY(-180deg);
-}
-
-html[has_3d=true] .app.config > .back {
-  -webkit-transform: rotateY(0deg);
-}
-
-html[has_3d=false] .app.config > .front {
-  display: none;
-}
-
-html[has_3d=false] .app > .back {
-  display: none;
-}
-
-html[has_3d=false] .app.config > .back {
-  display: block;
+menu > button.default {
+  font-weight: bold;
 }

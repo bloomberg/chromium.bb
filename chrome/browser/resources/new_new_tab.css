@@ -129,7 +129,7 @@ html[anim=false] *,
   background: no-repeat 0% 50%;
   padding: 2px;
   padding-left: 18px;
-  background-size: 16px;
+  background-size: 16px 16px;
   background-color: hsla(213, 63%, 93%, 0);
   display: block;
   line-height: 20px;
@@ -217,47 +217,6 @@ html[dir=rtl] .item {
 .notification.hidden {
   opacity: 0;
   pointer-events: none;
-}
-
-#option-menu {
-  right: 0;
-  left: auto;
-  min-width: 175px;
-  z-index: 3;
-}
-
-html[dir=rtl] #option-button,
-html[dir=rtl] #option-menu {
-  right: auto;
-  left: 0;
-}
-
-#option-menu > * {
-  /* Work around rendering bug. */
-  outline: 1px solid transparent;
-}
-
-#option-menu > [command=show]:before,
-#option-menu > [command=hide]:before {
-  -webkit-margin-start: -14px;
-  content: '\00a0'; /* non breaking space */
-  display: inline-block;
-  background-position: 0 50%;
-  background-repeat: no-repeat;
-  width: 14px;
-}
-
-html[dir=rtl] #option-menu > [command=show]:before,
-html[dir=rtl] #option-menu > [command=hide]:before {
-  background-position-x: 100%;
-}
-
-#option-menu > [command=hide]:before {
-  background-image: url('ntp/checkbox_black.png');
-}
-
-#option-menu > [selected][command=hide]:active:before {
-  background-image: url('ntp/checkbox_white.png');
 }
 
 #attribution {
@@ -367,17 +326,18 @@ html[dir=rtl] .section > h2 .settings-wrapper {
 }
 
 .section > h2 .settings {
-  position: absolute;
-  left: 5px;
-  top: 5px;
-  width: 11px;
-  height: 11px;
   /* TODO(aa): Need a better image. This one is semi-transparent. Also, I think
   a gear would be better. */
+  background-color: transparent;
   background-image: url(chrome://theme/IDR_BALLOON_WRENCH);
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: 100%;
+  border: 0;
+  height: 11px;
+  left: 5px;
+  position: absolute;
+  top: 5px;
+  width: 11px;
 }
 
 .section.hidden > h2 .settings-wrapper {

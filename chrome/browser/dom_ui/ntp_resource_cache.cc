@@ -11,7 +11,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
 #include "base/string16.h"
@@ -303,11 +302,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   std::string anim =
       Animation::ShouldRenderRichAnimation() ? "true" : "false";
   localized_strings.SetString("anim", anim);
-
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  bool has_3d =
-      command_line->HasSwitch(switches::kEnableAcceleratedCompositing);
-  localized_strings.SetString("has_3d", has_3d ? "true" : "false");
 
   // Pass the shown_sections pref early so that we can prevent flicker.
   const int shown_sections = ShownSectionsHandler::GetShownSections(
