@@ -6,6 +6,7 @@
 
 #include "app/theme_provider.h"
 #include "base/logging.h"
+#import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/themed_window.h"
 
@@ -193,13 +194,21 @@
     [overlayWindow_ setDelegate:self];
     cachedContentView_ = [window contentView];
     [window addChildWindow:overlayWindow_ ordered:NSWindowAbove];
+    // Sets explictly nil to the responder and then restores it.
+    // Leaving the first responder non-null here
+    // causes [RenderWidgethostViewCocoa resignFirstResponder] and
+    // following RenderWidgetHost::Blur(), which results unexpected
+    // focus lost.
+    focusBeforeOverlay_.reset([[FocusTracker alloc] initWithWindow:window]);
+    [window makeFirstResponder:nil];
     [self moveViewsBetweenWindowAndOverlay:useOverlay];
     [overlayWindow_ orderFront:nil];
   } else if (!useOverlay && overlayWindow_) {
     DCHECK(cachedContentView_);
     [window setContentView:cachedContentView_];
     [self moveViewsBetweenWindowAndOverlay:useOverlay];
-    [window makeFirstResponder:cachedContentView_];
+    [focusBeforeOverlay_ restoreFocusInWindow:window];
+    focusBeforeOverlay_.reset(nil);
     [window display];
     [window removeChildWindow:overlayWindow_];
     [overlayWindow_ orderOut:nil];
