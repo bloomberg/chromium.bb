@@ -871,11 +871,11 @@
         "feed.html", 
         "manifest.json"
       ], 
-      "path": "examples/extensions/news_a11y/", 
+      "path": "examples/extensions/news/", 
       "api_calls": [
         "chrome.tabs.create"
       ], 
-      "id": "597015d3bcce3da693b02314afd607bec4f55291", 
+      "id": "3aea027164cb9b732ba4a8c51cb93708891726ef", 
       "protocols": [
         "http://"
       ], 
@@ -894,11 +894,11 @@
         "feed.html", 
         "manifest.json"
       ], 
-      "path": "examples/extensions/news/", 
+      "path": "examples/extensions/news_a11y/", 
       "api_calls": [
         "chrome.tabs.create"
       ], 
-      "id": "3aea027164cb9b732ba4a8c51cb93708891726ef", 
+      "id": "597015d3bcce3da693b02314afd607bec4f55291", 
       "protocols": [
         "http://"
       ], 
