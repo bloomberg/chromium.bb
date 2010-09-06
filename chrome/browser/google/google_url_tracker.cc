@@ -63,6 +63,11 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
     return true;
   }
 
+  virtual bool Cancel() {
+    google_url_tracker_->CancelGoogleURL(new_google_url_);
+    return true;
+  }
+
   virtual void InfoBarClosed() {
     google_url_tracker_->InfoBarClosed();
     delete this;
@@ -251,10 +256,17 @@ void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
   google_url_ = new_google_url;
   g_browser_process->local_state()->SetString(prefs::kLastKnownGoogleURL,
                                               google_url_.spec());
+  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
+                                              new_google_url.spec());
   NotificationService::current()->Notify(NotificationType::GOOGLE_URL_UPDATED,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
   need_to_prompt_ = false;
+}
+
+void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
+  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
+                                              new_google_url.spec());
 }
 
 void GoogleURLTracker::InfoBarClosed() {
@@ -343,6 +355,4 @@ void GoogleURLTracker::ShowGoogleURLInfoBarIfNecessary(
   infobar_ = infobar_factory_->CreateInfoBar(tab_contents,
                                              this,
                                              fetched_google_url_);
-  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
-                                              fetched_google_url_.spec());
 }

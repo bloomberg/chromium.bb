@@ -85,6 +85,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
 
   // Methods called from InfoBar delegate.
   void AcceptGoogleURL(const GURL& google_url);
+  void CancelGoogleURL(const GURL& google_url);
   void InfoBarClosed();
   void RedoSearch();
 
