@@ -228,3 +228,6 @@ BUG54465 WIN SKIP : http/tests/media/video-play-suspend.html = FAIL
 // https://bugs.webkit.org/show_bug.cgi?id=45155 lands and rolls in, at which
 // point this can be removed.
 BUGPKASTING : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TEXT PASS
+
+// WebKit 66795. missing one newline (\n) at the end.
+BUG54591 MAC : svg/custom/use-invalid-style.svg = TEXT
