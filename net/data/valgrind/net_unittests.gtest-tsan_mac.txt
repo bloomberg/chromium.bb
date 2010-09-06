@@ -1,20 +1,7 @@
-# Former aspacem warnings on Valgrind.
-# Tsan still tends to hang on these tests unexpectedly on Mac OS.
-# (see https://bugs.kde.org/show_bug.cgi?id=192634 and
-# http://code.google.com/p/data-race-test/issues/detail?id=11)
-HttpNetworkLayerTest.GET
-HttpNetworkLayerTest.SimpleGET
-
 # WebSocketTest tests are extraordinary slow under ThreadSanitizer,
 # (see http://crbug.com/25392)
 # TODO(glider): investigate this.
 WebSocketTest.*
-
-# These tests die because of unhandled shm_unlink call
-# (see http://crbug.com/36657)
-DiskCacheBackendTest.*InvalidRankings*
-DiskCacheBackendTest.*DisableSuccess*
-DiskCacheBackendTest.*DisableFailure*
 
 # Strange reports from __NSThread__main__ appeared with the new TSan binaries
 # See http://crbug.com/38926
