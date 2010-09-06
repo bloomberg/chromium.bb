@@ -27,6 +27,7 @@ class BlockedPluginManager : public RenderViewHostDelegate::BlockedPlugin,
   virtual SkBitmap* GetIcon() const;
   virtual bool Accept();
   virtual bool Cancel();
+  virtual void InfoBarDismissed();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  private:

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -25,6 +26,7 @@ void BlockedPluginManager::OnNonSandboxedPluginBlocked(
     const string16& name) {
   plugin_ = plugin;
   name_ = name;
+  UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_InfobarShown"));
   tab_contents_->AddInfoBar(this);
 }
 
@@ -62,6 +64,7 @@ SkBitmap* BlockedPluginManager::GetIcon() const {
 }
 
 bool BlockedPluginManager::Accept() {
+  UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Infobar"));
   tab_contents_->render_view_host()->LoadBlockedPlugins();
   return true;
 }
@@ -69,11 +72,16 @@ bool BlockedPluginManager::Accept() {
 bool BlockedPluginManager::Cancel() {
   DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableResourceContentSettings));
+  UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_AllowAlways"));
   tab_contents_->profile()->GetHostContentSettingsMap()->AddExceptionForURL(
       tab_contents_->GetURL(), CONTENT_SETTINGS_TYPE_PLUGINS, plugin_,
       CONTENT_SETTING_ALLOW);
   tab_contents_->render_view_host()->LoadBlockedPlugins();
   return true;
+}
+
+void BlockedPluginManager::InfoBarDismissed() {
+  UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_Dismiss_Infobar"));
 }
 
 bool BlockedPluginManager::LinkClicked(WindowOpenDisposition disposition) {
