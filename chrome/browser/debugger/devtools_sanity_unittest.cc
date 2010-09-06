@@ -331,22 +331,22 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests set breakpoint.
 // Fails after WebKit roll 66724:66804, http://crbug.com/54592
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_TestSetBreakpoint FAILS_TestSetBreakpoint
 #else
 #define MAYBE_TestSetBreakpoint TestSetBreakpoint
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
 // Tests pause on exception.
 // Fails after WebKit roll 66724:66804, http://crbug.com/54592
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_TestPauseOnException FAILS_TestPauseOnException
 #else
 #define MAYBE_TestPauseOnException TestPauseOnException
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseOnException) {
   RunTest("testPauseOnException", kPauseOnExceptionTestPage);
 }
@@ -383,11 +383,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
 }
 
 // Fails after WebKit roll 66724:66804, http://crbug.com/54592
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_TestCompletionOnPause FAILS_TestCompletionOnPause
 #else
 #define MAYBE_TestCompletionOnPause TestCompletionOnPause
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestCompletionOnPause) {
   RunTest("testCompletionOnPause", kCompletionOnPause);
 }
