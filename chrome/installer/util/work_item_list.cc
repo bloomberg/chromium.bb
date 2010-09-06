@@ -135,8 +135,10 @@ bool WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
 }
 
 bool WorkItemList::AddSelfRegWorkItem(const std::wstring& dll_path,
-                                      bool do_register) {
+                                      bool do_register,
+                                      bool user_level_registration) {
   WorkItem* item = reinterpret_cast<WorkItem*>(
-      WorkItem::CreateSelfRegWorkItem(dll_path, do_register));
+      WorkItem::CreateSelfRegWorkItem(dll_path, do_register,
+                                      user_level_registration));
   return AddWorkItem(item);
 }

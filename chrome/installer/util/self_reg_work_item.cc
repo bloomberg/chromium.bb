@@ -6,28 +6,38 @@
 
 #include "chrome/installer/util/logging_installer.h"
 
+// Default registration export names.
+const char kDefaultRegistrationEntryPoint[] = "DllRegisterServer";
+const char kDefaultUnregistrationEntryPoint[] = "DllUnregisterServer";
+
+// User-level registration export names.
+const char kUserRegistrationEntryPoint[] = "DllRegisterUserServer";
+const char kUserUnregistrationEntryPoint[] = "DllUnregisterUserServer";
+
 SelfRegWorkItem::SelfRegWorkItem(const std::wstring& dll_path,
-                                 bool do_register)
-    : do_register_(do_register), dll_path_(dll_path) {
+                                 bool do_register,
+                                 bool user_level_registration)
+    : do_register_(do_register), dll_path_(dll_path),
+      user_level_registration_(user_level_registration) {
 }
 
 SelfRegWorkItem::~SelfRegWorkItem() {
 }
-
-typedef HRESULT (STDAPICALLTYPE *DllRegisterServerFunc)();
 
 bool SelfRegWorkItem::RegisterDll(bool do_register) {
   HMODULE dll_module = ::LoadLibraryEx(dll_path_.c_str(), NULL,
                                        LOAD_WITH_ALTERED_SEARCH_PATH);
   bool success = false;
   if (NULL != dll_module) {
-    DllRegisterServerFunc register_server_func = NULL;
+    PROC register_server_func = NULL;
     if (do_register) {
-      register_server_func = reinterpret_cast<DllRegisterServerFunc>(
-          ::GetProcAddress(dll_module, "DllRegisterServer"));
+      register_server_func = ::GetProcAddress(dll_module,
+          user_level_registration_ ? kUserRegistrationEntryPoint :
+                                     kDefaultRegistrationEntryPoint);
     } else {
-      register_server_func = reinterpret_cast<DllRegisterServerFunc>(
-          ::GetProcAddress(dll_module, "DllUnregisterServer"));
+      register_server_func = ::GetProcAddress(dll_module,
+          user_level_registration_ ? kUserUnregistrationEntryPoint :
+                                     kDefaultUnregistrationEntryPoint);
     }
 
     if (NULL != register_server_func) {

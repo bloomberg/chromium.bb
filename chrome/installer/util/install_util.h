@@ -91,6 +91,8 @@ class InstallUtil {
   // dll_names: the array of strings containing dll_names
   // dll_names_count: the number of DLL names in dll_names
   // do_register: whether to register or unregister the DLLs
+  // user_level_registration: whether to use alternate DLL entry point names to
+  //     perform non-admin registration.
   // registration_list: the WorkItemList that this method populates
   //
   // Returns true if at least one DLL was successfully added to
@@ -99,6 +101,7 @@ class InstallUtil {
                                        const wchar_t** const dll_names,
                                        int dll_names_count,
                                        bool do_register,
+                                       bool user_level_registration,
                                        WorkItemList* registration_list);
 
   // Deletes the registry key at path key_path under the key given by root_key.

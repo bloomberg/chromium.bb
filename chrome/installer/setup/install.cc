@@ -27,8 +27,8 @@
 #include "chrome/installer/util/work_item_list.h"
 
 // Build-time generated include file.
-#include "installer_util_strings.h"
-#include "registered_dlls.h"
+#include "installer_util_strings.h"  // NOLINT
+#include "registered_dlls.h"  // NOLINT
 
 namespace {
 
@@ -473,6 +473,7 @@ bool DoPostInstallTasks(HKEY reg_root,
       scoped_ptr<WorkItemList> old_dll_list(WorkItem::CreateWorkItemList());
       if (InstallUtil::BuildDLLRegistrationList(old_dll_path, kDllsToRegister,
                                                 kNumDllsToRegister, false,
+                                                !is_system_install,
                                                 old_dll_list.get())) {
         // Don't abort the install as a result of a failure to unregister old
         // DLLs.
@@ -485,6 +486,7 @@ bool DoPostInstallTasks(HKEY reg_root,
     scoped_ptr<WorkItemList> dll_list(WorkItem::CreateWorkItemList());
     if (InstallUtil::BuildDLLRegistrationList(dll_path, kDllsToRegister,
                                               kNumDllsToRegister, true,
+                                              !is_system_install,
                                               dll_list.get())) {
       if (!dll_list->Do()) {
         dll_list->Rollback();

@@ -80,8 +80,9 @@ SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(
 }
 
 SelfRegWorkItem* WorkItem::CreateSelfRegWorkItem(const std::wstring& dll_path,
-                                                 bool do_register) {
-  return new SelfRegWorkItem(dll_path, do_register);
+                                                 bool do_register,
+                                                 bool user_level_registration) {
+  return new SelfRegWorkItem(dll_path, do_register, user_level_registration);
 }
 
 WorkItemList* WorkItem::CreateWorkItemList() {

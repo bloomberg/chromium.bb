@@ -240,6 +240,7 @@ bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
                                            const wchar_t** const dll_names,
                                            int dll_names_count,
                                            bool do_register,
+                                           bool user_level_registration,
                                            WorkItemList* registration_list) {
   DCHECK(NULL != registration_list);
   bool success = true;
@@ -247,7 +248,7 @@ bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
     std::wstring dll_file_path(install_path);
     file_util::AppendToPath(&dll_file_path, dll_names[i]);
     success = registration_list->AddSelfRegWorkItem(dll_file_path,
-        do_register) && success;
+        do_register, user_level_registration) && success;
   }
   return (dll_names_count > 0) && success;
 }

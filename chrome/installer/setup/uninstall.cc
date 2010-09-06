@@ -28,7 +28,7 @@
 #include "chrome/installer/util/version.h"
 
 // Build-time generated include file.
-#include "registered_dlls.h"
+#include "registered_dlls.h"  // NOLINT
 
 namespace {
 
@@ -542,6 +542,7 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
       scoped_ptr<WorkItemList> dll_list(WorkItem::CreateWorkItemList());
       if (InstallUtil::BuildDLLRegistrationList(dll_path, kDllsToRegister,
                                                 kNumDllsToRegister, false,
+                                                !system_uninstall,
                                                 dll_list.get())) {
         dll_list->Do();
       }

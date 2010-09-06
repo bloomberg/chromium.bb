@@ -85,8 +85,11 @@ class WorkItemList : public WorkItem {
                               bool overwrite);
 
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
-  // specified path.
-  bool AddSelfRegWorkItem(const std::wstring& dll_path, bool do_register);
+  // specified path. If user_level_registration is true, then alternate
+  // registration and unregistration entry point names will be used.
+  bool AddSelfRegWorkItem(const std::wstring& dll_path,
+                          bool do_register,
+                          bool user_level_registration);
 
  private:
   friend class WorkItem;

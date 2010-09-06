@@ -100,7 +100,8 @@ class WorkItem {
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path.
   static SelfRegWorkItem* CreateSelfRegWorkItem(const std::wstring& dll_path,
-                                                bool do_register);
+                                                bool do_register,
+                                                bool user_level_registration);
 
   // Create an empty WorkItemList. A WorkItemList can recursively contains
   // a list of WorkItems.
