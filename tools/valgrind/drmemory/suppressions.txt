@@ -105,6 +105,26 @@ LEAK
 ...
 WINSPOOL.DRV!*
 
+# http://code.google.com/p/drmemory/issues/detail?id=45
+UNINITIALIZED READ
+drmemorylib.dll!replace_strlen
+*!*length
+*!*assign
+
+UNINITIALIZED READ
+drmemorylib.dll!replace_strcmp
+
+UNINITIALIZED READ
+...
+*!*cmp
+...
+*!*lipboard*
+
+UNADDRESSABLE ACCESS
+drmemorylib.dll!replace_*
+...
+*!*lipboard*
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -150,6 +170,15 @@ SHELL32.dll!Ordinal*
 UNADDRESSABLE ACCESS
 ...
 GDI32.dll!CreateDC*
+
+UNINITIALIZED READ
+...
+USER32.dll!DrawText*
+
+# This one looks interesting
+INVALID HEAP ARGUMENT
+...
+KERNEL32.dll!ExitProcess
 
 ############################
 # Real issues in Chromium

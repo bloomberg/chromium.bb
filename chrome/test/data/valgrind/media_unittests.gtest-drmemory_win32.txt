@@ -1,10 +1,4 @@
 # http://code.google.com/p/drmemory/issues/detail?id=23
 PipelineImplTest.*
 VideoRendererBaseTest.Initialize_Successful
-Audio*ControllerTest.*Close*
-AudioOutputControllerTest.*
-
-# http://code.google.com/p/drmemory/issues/detail?id=32
-*BufferTest.*
-AudioRendererAlgorithmOLATest.*
-AudioRendererBaseTest.OneCompleteReadCycle
+*Audio*
