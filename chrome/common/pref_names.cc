@@ -128,21 +128,8 @@ const char kDefaultSearchProviderSearchURL[] =
 const char kDefaultSearchProviderSuggestURL[] =
     "default_search_provider.suggest_url";
 
-// The Fav Icon URL (as understood by TemplateURLRef) of the default search
-// provider.
-const char kDefaultSearchProviderIconURL[] =
-    "default_search_provider.icon_url";
-
-// The input encoding (as understood by TemplateURLRef) supported by the default
-// search provider.  The various encodings are separated by ';'
-const char kDefaultSearchProviderEncodings[] =
-    "default_search_provider.encodings";
-
 // The name of the default search provider.
 const char kDefaultSearchProviderName[] = "default_search_provider.name";
-
-// The keyword of the default search provider.
-const char kDefaultSearchProviderKeyword[] = "default_search_provider.keyword";
 
 // The id of the default search provider.
 const char kDefaultSearchProviderID[] = "default_search_provider.id";

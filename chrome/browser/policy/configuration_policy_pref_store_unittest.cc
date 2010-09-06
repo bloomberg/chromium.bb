@@ -201,21 +201,6 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyRestoreOnStartup) {
       ConfigurationPolicyPrefStore::kPolicyURLsToRestoreOnStartup);
 }
 
-TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyDefaultSearchProvider) {
-  TestStringPolicy(prefs::kDefaultSearchProviderName,
-      ConfigurationPolicyPrefStore::kPolicyDefaultSearchProviderName);
-  TestStringPolicy(prefs::kDefaultSearchProviderKeyword,
-      ConfigurationPolicyPrefStore::kPolicyDefaultSearchProviderKeyword);
-  TestStringPolicy(prefs::kDefaultSearchProviderSearchURL,
-      ConfigurationPolicyPrefStore::kPolicyDefaultSearchProviderSearchURL);
-  TestStringPolicy(prefs::kDefaultSearchProviderSuggestURL,
-      ConfigurationPolicyPrefStore::kPolicyDefaultSearchProviderSuggestURL);
-  TestStringPolicy(prefs::kDefaultSearchProviderIconURL,
-      ConfigurationPolicyPrefStore::kPolicyDefaultSearchProviderIconURL);
-  TestStringPolicy(prefs::kDefaultSearchProviderEncodings,
-      ConfigurationPolicyPrefStore::kPolicyDefaultSearchProviderEncodings);
-}
-
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyAlternateErrorPagesEnabled) {
   TestBooleanPolicy(prefs::kAlternateErrorPagesEnabled,
       ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled);
@@ -262,7 +247,8 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingProxyBypassList) {
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingsProxyConfig) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
   command_line.AppendSwitch(switches::kNoProxyServer);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
   command_line.AppendSwitchASCII(switches::kProxyPacUrl,
@@ -295,7 +281,8 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingsProxyConfig) {
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigManualOverride) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
   command_line.AppendSwitch(switches::kNoProxyServer);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
   command_line.AppendSwitchASCII(switches::kProxyPacUrl,
@@ -334,7 +321,8 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigManualOverride) {
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigNoProxy) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
@@ -362,7 +350,8 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigNoProxy) {
 
 TEST_F(ConfigurationPolicyPrefStoreTest,
     TestPolicyProxyConfigNoProxyReversedApplyOrder) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
@@ -389,7 +378,8 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigAutoDetect) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
@@ -419,7 +409,8 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigAutoDetect) {
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfiguseSystem) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
@@ -446,7 +437,8 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfiguseSystem) {
 
 TEST_F(ConfigurationPolicyPrefStoreTest,
     TestPolicyProxyConfiguseSystemReversedApplyOrder) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
@@ -470,211 +462,3 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
                                          &bool_result));
 }
-
-// Checks that if the policy for default search is valid, i.e. there's a
-// search URL, that all the elements have been given proper defaults.
-TEST_F(ConfigurationPolicyPrefStoreTest, MinimallyDefinedDefaultSearchPolicy) {
-  const char* search_url = "http://test.com/search?t={searchTerms}";
-  scoped_ptr<MockConfigurationPolicyProvider> provider(
-      new MockConfigurationPolicyProvider());
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
-      Value::CreateStringValue(search_url));
-
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
-  ConfigurationPolicyPrefStore store(&command_line, provider.get());
-
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
-  DictionaryValue* prefs = store.prefs();
-
-  std::string string_result;
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderSearchURL,
-                               &string_result));
-  EXPECT_EQ(string_result, search_url);
-
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderName,
-                               &string_result));
-  EXPECT_EQ(string_result, "test.com");
-
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderKeyword,
-                               &string_result));
-  EXPECT_EQ(string_result, "");
-
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderSuggestURL,
-                               &string_result));
-  EXPECT_EQ(string_result, "");
-
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderIconURL,
-                               &string_result));
-  EXPECT_EQ(string_result, "");
-
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderEncodings,
-                               &string_result));
-  EXPECT_EQ(string_result, "");
-}
-
-// Checks that for a fully defined search policy, all elements have been
-// read properly.
-TEST_F(ConfigurationPolicyPrefStoreTest, FullyDefinedDefaultSearchPolicy) {
-  const char* search_url = "http://test.com/search?t={searchTerms}";
-  const char* suggest_url = "http://test.com/sugg?={searchTerms}";
-  const char* icon_url = "http://test.com/icon.jpg";
-  const char* name = "MyName";
-  const char* keyword = "MyKeyword";
-  const char* encodings = "UTF-16;UTF-8";
-  scoped_ptr<MockConfigurationPolicyProvider> provider(
-      new MockConfigurationPolicyProvider());
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
-      Value::CreateStringValue(search_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
-      Value::CreateStringValue(search_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
-      Value::CreateStringValue(name));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
-      Value::CreateStringValue(keyword));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderSuggestURL,
-      Value::CreateStringValue(suggest_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderIconURL,
-      Value::CreateStringValue(icon_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderEncodings,
-      Value::CreateStringValue(encodings));
-
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
-  ConfigurationPolicyPrefStore store(&command_line, provider.get());
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
-  DictionaryValue* prefs = store.prefs();
-
-  std::string result_search_url;
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderSearchURL,
-                               &result_search_url));
-  EXPECT_EQ(result_search_url, search_url);
-
-  std::string result_name;
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderName,
-                               &result_name));
-  EXPECT_EQ(result_name, name);
-
-  std::string result_keyword;
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderKeyword,
-                               &result_keyword));
-  EXPECT_EQ(result_keyword, keyword);
-
-  std::string result_suggest_url;
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderSuggestURL,
-                               &result_suggest_url));
-  EXPECT_EQ(result_suggest_url, suggest_url);
-
-  std::string result_icon_url;
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderIconURL,
-                               &result_icon_url));
-  EXPECT_EQ(result_icon_url, icon_url);
-
-  std::string result_encodings;
-  EXPECT_TRUE(prefs->GetString(prefs::kDefaultSearchProviderEncodings,
-                               &result_encodings));
-  EXPECT_EQ(result_encodings, encodings);
-}
-
-// Checks that if the default search policy is missing, that no elements of the
-// default search policy will be present.
-TEST_F(ConfigurationPolicyPrefStoreTest, MissingUrlDefaultSearchPolicy) {
-  const char* suggest_url = "http://test.com/sugg?t={searchTerms}";
-  const char* icon_url = "http://test.com/icon.jpg";
-  const char* name = "MyName";
-  const char* keyword = "MyKeyword";
-  const char* encodings = "UTF-16;UTF-8";
-  scoped_ptr<MockConfigurationPolicyProvider> provider(
-      new MockConfigurationPolicyProvider());
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
-      Value::CreateStringValue(name));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
-      Value::CreateStringValue(keyword));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderSuggestURL,
-      Value::CreateStringValue(suggest_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderIconURL,
-      Value::CreateStringValue(icon_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderEncodings,
-      Value::CreateStringValue(encodings));
-
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
-  ConfigurationPolicyPrefStore store(&command_line, provider.get());
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
-  DictionaryValue* prefs = store.prefs();
-
-  std::string string_result;
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderSearchURL,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderName,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderKeyword,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderSuggestURL,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderIconURL,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderEncodings,
-                               &string_result));
-}
-
-// Checks that if the default search policy is invalid, that no elements of the
-// default search policy will be present.
-TEST_F(ConfigurationPolicyPrefStoreTest, InvalidDefaultSearchPolicy) {
-  const char* bad_search_url = "http://test.com/noSearchTerms";
-  const char* suggest_url = "http://test.com/sugg?t={searchTerms}";
-  const char* icon_url = "http://test.com/icon.jpg";
-  const char* name = "MyName";
-  const char* keyword = "MyKeyword";
-  const char* encodings = "UTF-16;UTF-8";
-  scoped_ptr<MockConfigurationPolicyProvider> provider(
-      new MockConfigurationPolicyProvider());
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
-      Value::CreateStringValue(bad_search_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
-      Value::CreateStringValue(name));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
-      Value::CreateStringValue(keyword));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderSuggestURL,
-      Value::CreateStringValue(suggest_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderIconURL,
-      Value::CreateStringValue(icon_url));
-  provider->AddPolicy(
-      ConfigurationPolicyStore::kPolicyDefaultSearchProviderEncodings,
-      Value::CreateStringValue(encodings));
-
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
-  ConfigurationPolicyPrefStore store(&command_line, provider.get());
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
-  DictionaryValue* prefs = store.prefs();
-
-  std::string string_result;
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderSearchURL,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderName,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderKeyword,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderSuggestURL,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderIconURL,
-                               &string_result));
-  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderEncodings,
-                               &string_result));
-}
-

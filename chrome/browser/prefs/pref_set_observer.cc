@@ -58,21 +58,6 @@ PrefSetObserver* PrefSetObserver::CreateProxyPrefSetObserver(
   return pref_set;
 }
 
-// static
-PrefSetObserver* PrefSetObserver::CreateDefaultSearchPrefSetObserver(
-    PrefService* pref_service,
-    NotificationObserver* observer) {
-  PrefSetObserver* pref_set = new PrefSetObserver(pref_service, observer);
-  pref_set->AddPref(prefs::kDefaultSearchProviderName);
-  pref_set->AddPref(prefs::kDefaultSearchProviderKeyword);
-  pref_set->AddPref(prefs::kDefaultSearchProviderSearchURL);
-  pref_set->AddPref(prefs::kDefaultSearchProviderSuggestURL);
-  pref_set->AddPref(prefs::kDefaultSearchProviderIconURL);
-  pref_set->AddPref(prefs::kDefaultSearchProviderEncodings);
-
-  return pref_set;
-}
-
 void PrefSetObserver::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
