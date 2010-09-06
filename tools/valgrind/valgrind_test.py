@@ -659,7 +659,7 @@ class ThreadSanitizerPosix(ThreadSanitizerBase, ValgrindTool):
 
   def CreateAnalyzer(self):
     use_gdb = common.IsMac()
-    return tsan_analyze.TsanAnalyzer(self._source_dir)
+    return tsan_analyze.TsanAnalyzer(self._source_dir, use_gdb)
 
   def Analyze(self, check_sanity=False):
     ret = self.GetAnalyzeResults(check_sanity)
