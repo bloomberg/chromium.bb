@@ -21,6 +21,8 @@
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #endif
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -120,6 +122,22 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
 };
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
+    ConfigurationPolicyPrefStore::default_search_policy_map_[] = {
+  { Value::TYPE_STRING, kPolicyDefaultSearchProviderName,
+      prefs::kDefaultSearchProviderName },
+  { Value::TYPE_STRING, kPolicyDefaultSearchProviderKeyword,
+      prefs::kDefaultSearchProviderKeyword },
+  { Value::TYPE_STRING, kPolicyDefaultSearchProviderSearchURL,
+      prefs::kDefaultSearchProviderSearchURL },
+  { Value::TYPE_STRING, kPolicyDefaultSearchProviderSuggestURL,
+      prefs::kDefaultSearchProviderSuggestURL },
+  { Value::TYPE_STRING, kPolicyDefaultSearchProviderIconURL,
+      prefs::kDefaultSearchProviderIconURL },
+  { Value::TYPE_STRING, kPolicyDefaultSearchProviderEncodings,
+      prefs::kDefaultSearchProviderEncodings },
+};
+
+const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
     ConfigurationPolicyPrefStore::proxy_policy_map_[] = {
   { Value::TYPE_STRING, kPolicyProxyServer, prefs::kProxyServer },
   { Value::TYPE_STRING, kPolicyProxyPacUrl, prefs::kProxyPacUrl },
@@ -182,8 +200,10 @@ PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
   proxy_configuration_specified_ = false;
   command_line_proxy_settings_cleared_ = false;
 
-  return (provider_ == NULL || provider_->Provide(this)) ?
-      PrefStore::PREF_READ_ERROR_NONE : PrefStore::PREF_READ_ERROR_OTHER;
+  bool success = (provider_ == NULL || provider_->Provide(this));
+  FinalizeDefaultSearchPolicySettings();
+  return success ? PrefStore::PREF_READ_ERROR_NONE :
+                   PrefStore::PREF_READ_ERROR_OTHER;
 }
 
 // static
@@ -202,46 +222,52 @@ ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
       manager->recommended_provider());
 }
 
+const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry*
+ConfigurationPolicyPrefStore::FindPolicyInMap(PolicyType policy,
+    const PolicyToPreferenceMapEntry* map, int table_size) {
+  for (int i = 0; i < table_size; ++i) {
+    if (map[i].policy_type == policy)
+      return map + i;
+  }
+  return NULL;
+}
+
+bool ConfigurationPolicyPrefStore::RemovePreferencesOfMap(
+    const PolicyToPreferenceMapEntry* map, int table_size) {
+  bool found_one = false;
+  for (int i = 0; i < table_size; ++i) {
+    if (prefs_->Remove(map[i].preference_path, NULL))
+      found_one = true;
+  }
+  return found_one;
+}
+
 bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
                                                     Value* value) {
   bool result = false;
   bool warn_about_proxy_disable_config = false;
   bool warn_about_proxy_system_config = false;
 
-  const PolicyToPreferenceMapEntry* match_entry_ = NULL;
-  for (const PolicyToPreferenceMapEntry* current = proxy_policy_map_;
-       current != proxy_policy_map_ + arraysize(proxy_policy_map_); ++current) {
-    if (current->policy_type == policy) {
-      match_entry_ = current;
-    }
-  }
+  const PolicyToPreferenceMapEntry* match_entry =
+      FindPolicyInMap(policy, proxy_policy_map_, arraysize(proxy_policy_map_));
 
   // When the first proxy-related policy is applied, ALL proxy-related
   // preferences that have been set by command-line switches must be
   // removed. Otherwise it's possible for a user to interfere with proxy
   // policy by using proxy-related switches that are related to, but not
   // identical, to the ones set through policy.
-  if ((match_entry_ ||
+  if ((match_entry ||
       policy == ConfigurationPolicyPrefStore::kPolicyProxyServerMode) &&
-          !command_line_proxy_settings_cleared_) {
-    for (const PolicyToPreferenceMapEntry* i = proxy_policy_map_;
-        i != proxy_policy_map_ + arraysize(proxy_policy_map_); ++i) {
-      if (prefs_->Get(i->preference_path, NULL)) {
-        LOG(WARNING) << "proxy configuration options were specified on the"
-                     << " command-line but will be ignored because an"
-                     << " explicit proxy configuration has been specified"
-                     << " through a centrally-administered policy.";
-        break;
-      }
+      !command_line_proxy_settings_cleared_) {
+    if (RemovePreferencesOfMap(proxy_policy_map_,
+                               arraysize(proxy_policy_map_))) {
+      LOG(WARNING) << "proxy configuration options were specified on the"
+                      " command-line but will be ignored because an"
+                      " explicit proxy configuration has been specified"
+                      " through a centrally-administered policy.";
     }
-
-    // Now actually do the preference removal.
-    for (const PolicyToPreferenceMapEntry* current = proxy_policy_map_;
-        current != proxy_policy_map_ + arraysize(proxy_policy_map_); ++current)
-      prefs_->Remove(current->preference_path, NULL);
     prefs_->Remove(prefs::kNoProxyServer, NULL);
     prefs_->Remove(prefs::kProxyAutoDetect, NULL);
-
     command_line_proxy_settings_cleared_ = true;
   }
 
@@ -294,7 +320,7 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
           prefs_->Remove(current->preference_path, NULL);
       }
     }
-  } else if (match_entry_) {
+  } else if (match_entry) {
     // Determine if the applied proxy policy settings conflict and issue
     // a corresponding warning if they do.
     if (!proxy_configuration_specified_) {
@@ -305,7 +331,7 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
       proxy_configuration_specified_ = true;
     }
     if (!use_system_proxy_ && !proxy_disabled_) {
-      prefs_->Set(match_entry_->preference_path, value);
+      prefs_->Set(match_entry->preference_path, value);
       // The ownership of value has been passed on to |prefs_|,
       // don't clean it up later.
       value = NULL;
@@ -358,14 +384,13 @@ bool ConfigurationPolicyPrefStore::ApplyAutoFillPolicy(PolicyType policy,
 
 bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(PolicyType policy,
     Value* value, const PolicyToPreferenceMapEntry map[], int size) {
-  const PolicyToPreferenceMapEntry* end = map + size;
-  for (const PolicyToPreferenceMapEntry* current = map;
-       current != end; ++current) {
-    if (current->policy_type == policy) {
-      DCHECK(current->value_type == value->GetType());
-      prefs_->Set(current->preference_path, value);
-      return true;
-    }
+
+  const PolicyToPreferenceMapEntry* match_entry =
+      FindPolicyInMap(policy, map, size);
+  if (match_entry) {
+    DCHECK(match_entry->value_type == value->GetType());
+    prefs_->Set(match_entry->preference_path, value);
+    return true;
   }
   return false;
 }
@@ -380,6 +405,10 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
   if (ApplyAutoFillPolicy(policy, value))
     return;
 
+  if (ApplyPolicyFromMap(policy, value, default_search_policy_map_,
+                         arraysize(default_search_policy_map_)))
+    return;
+
   if (ApplyPolicyFromMap(policy, value, simple_policy_map_,
                          arraysize(simple_policy_map_)))
     return;
@@ -387,4 +416,65 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
   // Other policy implementations go here.
   NOTIMPLEMENTED();
   delete value;
+}
+
+void ConfigurationPolicyPrefStore::EnsureStringPrefExists(
+    const std::string& path) {
+  std::string value;
+  if (!prefs_->GetString(path, &value))
+    prefs_->SetString(path, value);
+}
+
+// Implementation of SearchTermsData just for validation.
+class SearchTermsDataForValidation : public SearchTermsData {
+ public:
+  SearchTermsDataForValidation() {}
+
+  // Implementation of SearchTermsData.
+  virtual std::string GoogleBaseURLValue() const {
+    return "http://www.google.com/";
+  }
+  virtual std::string GetApplicationLocale() const {
+    return "en";
+  }
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  virtual std::wstring GetRlzParameterValue() const {
+    return "";
+  }
+#endif
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SearchTermsDataForValidation);
+};
+
+void ConfigurationPolicyPrefStore::FinalizeDefaultSearchPolicySettings() {
+  std::string search_url;
+  // The search URL is required.
+  if (prefs_->GetString(prefs::kDefaultSearchProviderSearchURL, &search_url) &&
+      !search_url.empty()) {
+    SearchTermsDataForValidation search_terms_data;
+    TemplateURLRef search_url_ref(search_url, 0, 0);
+    // It must support replacement (which implies it is valid).
+    if (search_url_ref.SupportsReplacementUsingTermsData(search_terms_data)) {
+      // The other entries are optional.  Just make sure that they are all
+      // specified via policy, so that we don't use regular prefs.
+      EnsureStringPrefExists(prefs::kDefaultSearchProviderSuggestURL);
+      EnsureStringPrefExists(prefs::kDefaultSearchProviderIconURL);
+      EnsureStringPrefExists(prefs::kDefaultSearchProviderEncodings);
+      EnsureStringPrefExists(prefs::kDefaultSearchProviderKeyword);
+
+      // For the name, default to the host if not specified.
+      std::string name;
+      if (!prefs_->GetString(prefs::kDefaultSearchProviderName, &name))
+        prefs_->SetString(prefs::kDefaultSearchProviderName,
+                          search_url_ref.GetHost());
+
+      // And clear the IDs since these are not specified via policy.
+      prefs_->SetString(prefs::kDefaultSearchProviderID, "");
+      prefs_->SetString(prefs::kDefaultSearchProviderPrepopulateID, "");
+      return;
+    }
+  }
+  // Required entries are not there.  Remove any related entries.
+  RemovePreferencesOfMap(default_search_policy_map_,
+                         arraysize(default_search_policy_map_));
 }
