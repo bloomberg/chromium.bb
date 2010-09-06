@@ -53,8 +53,6 @@ const char kConsoleTestPage[] = "files/devtools/console_test_page.html";
 const char kDebuggerTestPage[] = "files/devtools/debugger_test_page.html";
 const char kJsPage[] = "files/devtools/js_page.html";
 const char kHeapProfilerPage[] = "files/devtools/heap_profiler.html";
-const char kPauseOnExceptionTestPage[] =
-    "files/devtools/pause_on_exception.html";
 const char kPauseWhenLoadingDevTools[] =
     "files/devtools/pause_when_loading_devtools.html";
 const char kPauseWhenScriptIsRunning[] =
@@ -327,28 +325,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionDebugTest,
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        TestNoScriptDuplicatesOnPanelSwitch) {
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
-}
-
-// Tests set breakpoint.
-// Fails after WebKit roll 66724:66804, http://crbug.com/54592
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestSetBreakpoint FAILS_TestSetBreakpoint
-#else
-#define MAYBE_TestSetBreakpoint TestSetBreakpoint
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestSetBreakpoint) {
-  RunTest("testSetBreakpoint", kDebuggerTestPage);
-}
-
-// Tests pause on exception.
-// Fails after WebKit roll 66724:66804, http://crbug.com/54592
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestPauseOnException FAILS_TestPauseOnException
-#else
-#define MAYBE_TestPauseOnException TestPauseOnException
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseOnException) {
-  RunTest("testPauseOnException", kPauseOnExceptionTestPage);
 }
 
 // Tests that debugger works correctly if pause event occurs when DevTools
