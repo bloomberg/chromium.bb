@@ -131,6 +131,14 @@
   fun:AudioQueueDispose
 }
 
+{
+  Destroying invalid lock in krb5int_getaddrinfo while terminating Kerberos.
+  ThreadSanitizer:InvalidLock
+  fun:pthread_mutex_destroy
+  fun:krb5int_getaddrinfo
+  fun:ImageLoaderMachO::doTermination*
+}
+
 #-----------------------------------------------------------------------
 # 2. Intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
@@ -161,3 +169,4 @@
   ...
   fun:YUVConvertTest_YV12_Test*
 }
+
