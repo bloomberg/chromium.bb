@@ -7,22 +7,24 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationServiceBridge.h"
 
 TestGeolocationService::TestGeolocationService()
-    : allowed_(false) {
+    : allowed_(false),
+      permission_set_(false) {
 }
 
 TestGeolocationService::~TestGeolocationService() {
-
 }
 
 void TestGeolocationService::SetGeolocationPermission(bool allowed) {
   allowed_ = allowed;
+  permission_set_ = true;
+  TryToSendPermissions();
 }
 
 void TestGeolocationService::requestPermissionForFrame(
     int bridgeId, const WebKit::WebURL& url) {
-  pending_permissions_.push_back(std::make_pair(bridgeId, allowed_));
-  permission_timer_.Start(base::TimeDelta::FromMilliseconds(0),
-                          this, &TestGeolocationService::SendPermission);
+  DCHECK(bridges_map_.Lookup(bridgeId)) << "Unknown bridge " << bridgeId;
+  pending_permissions_.push_back(bridgeId);
+  TryToSendPermissions();
 }
 
 int TestGeolocationService::attachBridge(
@@ -32,15 +34,30 @@ int TestGeolocationService::attachBridge(
 
 void TestGeolocationService::detachBridge(int bridgeId) {
   bridges_map_.Remove(bridgeId);
+  std::vector<int>::iterator i = pending_permissions_.begin();
+  while (i != pending_permissions_.end()) {
+    if (*i == bridgeId)
+      pending_permissions_.erase(i);
+    else
+      ++i;
+  }
+}
+
+void TestGeolocationService::TryToSendPermissions() {
+  if (permission_set_ && !permission_timer_.IsRunning())
+    permission_timer_.Start(base::TimeDelta::FromMilliseconds(0),
+                            this, &TestGeolocationService::SendPermission);
 }
 
 void TestGeolocationService::SendPermission() {
-  for (std::vector<std::pair<int, bool> >::const_iterator i =
-      pending_permissions_.begin(); i != pending_permissions_.end(); ++i) {
+  DCHECK(permission_set_);
+  std::vector<int> pending_permissions;
+  pending_permissions.swap(pending_permissions_);
+  for (std::vector<int>::const_iterator i = pending_permissions.begin();
+      i != pending_permissions.end(); ++i) {
     WebKit::WebGeolocationServiceBridge* bridge =
-       bridges_map_.Lookup(i->first);
+       bridges_map_.Lookup(*i);
     DCHECK(bridge);
-    bridge->setIsAllowed(i->second);
+    bridge->setIsAllowed(allowed_);
   }
-  pending_permissions_.clear();
 }

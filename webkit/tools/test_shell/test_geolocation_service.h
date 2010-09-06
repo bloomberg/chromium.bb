@@ -45,15 +45,21 @@ class TestGeolocationService : public WebKit::WebGeolocationService {
   virtual void detachBridge(int bridgeId);
 
  private:
+  void TryToSendPermissions();
   void SendPermission();
 
+  // Holds the value of |allowed| in most recent SetGeolocationPermission call.
   bool allowed_;
+  // Remains false until the first SetGeolocationPermission call.
+  bool permission_set_;
 
   IDMap<WebKit::WebGeolocationServiceBridge> bridges_map_;
 
   base::OneShotTimer<TestGeolocationService> permission_timer_;
 
-  std::vector<std::pair<int, bool> > pending_permissions_;
+  // In-order vector of pending bridge IDs. Is not pumped by
+  // TryToSendPermissions until the first call to SetGeolocationPermission.
+  std::vector<int> pending_permissions_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGeolocationService);
 };
