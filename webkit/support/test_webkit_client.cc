@@ -42,6 +42,7 @@
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
+#include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -105,6 +106,8 @@ TestWebKitClient::TestWebKitClient(bool unit_test_mode)
 
   WebKit::WebDatabase::setObserver(&database_system_);
 
+  blob_registry_ = new TestShellWebBlobRegistryImpl();
+
   file_utilities_.set_sandbox_enabled(false);
 
 #if defined(OS_WIN)
@@ -149,6 +152,10 @@ WebKit::WebSandboxSupport* TestWebKitClient::sandboxSupport() {
 
 WebKit::WebCookieJar* TestWebKitClient::cookieJar() {
   return &cookie_jar_;
+}
+
+WebKit::WebBlobRegistry* TestWebKitClient::blobRegistry() {
+  return blob_registry_.get();
 }
 
 bool TestWebKitClient::sandboxEnabled() {

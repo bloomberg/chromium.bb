@@ -14,6 +14,8 @@
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 
+class TestShellWebBlobRegistryImpl;
+
 // An implementation of WebKitClient for tests.
 class TestWebKitClient : public webkit_glue::WebKitClientImpl {
  public:
@@ -25,6 +27,8 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebCookieJar* cookieJar();
+  virtual WebKit::WebBlobRegistry* blobRegistry();
+
   virtual bool sandboxEnabled();
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
@@ -71,6 +75,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;
   SimpleWebCookieJarImpl cookie_jar_;
+  scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
 
