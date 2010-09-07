@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "jingle/notifier/base/notifier_options.h"
 
 class NotificationDetails;
 class NotificationSource;
@@ -428,12 +428,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   std::string unrecoverable_error_message_;
   scoped_ptr<tracked_objects::Location> unrecoverable_error_location_;
 
-  // Whether to use the (new, untested) Chrome-socket-based
-  // buzz::AsyncSocket implementation for notifications.
-  bool use_chrome_async_socket_;
-
-  // Which peer-to-peer notification method to use.
-  browser_sync::NotificationMethod notification_method_;
+  // Contains options specific to how sync clients send and listen to
+  // notifications.
+  notifier::NotifierOptions notifier_options_;
 
   // Manages the start and stop of the various data types.
   scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;

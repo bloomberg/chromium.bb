@@ -284,6 +284,7 @@ extern const char kSyncDisableTls[];
 extern const char kSyncEmail[];
 extern const char kSyncerThreadTimedStop[];
 extern const char kSyncNotificationMethod[];
+extern const char kSyncNotificationHost[];
 extern const char kSyncPassword[];
 extern const char kSyncPort[];
 extern const char kSyncServer[];

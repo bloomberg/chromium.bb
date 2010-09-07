@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NOTIFICATION_METHOD_H_
-#define CHROME_BROWSER_SYNC_NOTIFICATION_METHOD_H_
+#ifndef JINGLE_NOTIFIER_BASE_NOTIFICATION_METHOD_H_
+#define JINGLE_NOTIFIER_BASE_NOTIFICATION_METHOD_H_
 #pragma once
 
 #include <string>
 
-namespace browser_sync {
+namespace notifier {
 
 // This is the matrix for the interaction between clients with
 // different notification methods (except for NOTIFICATION_SERVER):
@@ -62,7 +62,7 @@ std::string NotificationMethodToString(
 // or "server", returns kDefaultNotificationMethod.
 NotificationMethod StringToNotificationMethod(const std::string& str);
 
-}  // namespace browser_sync
+}  // namespace notifier
 
-#endif  // CHROME_BROWSER_SYNC_NOTIFICATION_METHOD_H_
+#endif  // JINGLE_NOTIFIER_BASE_NOTIFICATION_METHOD_H_
 

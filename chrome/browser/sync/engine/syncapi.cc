@@ -915,8 +915,6 @@ class SyncManager::SyncInternal
         registrar_(NULL),
         notification_pending_(false),
         initialized_(false),
-        use_chrome_async_socket_(false),
-        notification_method_(browser_sync::kDefaultNotificationMethod),
         ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   }
@@ -940,9 +938,7 @@ class SyncManager::SyncInternal
             bool invalidate_xmpp_auth_token,
             const char* user_agent,
             const std::string& lsid,
-            const bool use_chrome_async_socket,
-            const bool try_ssltcp_first,
-            browser_sync::NotificationMethod notification_method,
+            const notifier::NotifierOptions& notifier_options,
             const std::string& restored_key_for_bootstrapping);
 
   // Tell sync engine to submit credentials to GAIA for verification.
@@ -1246,8 +1242,7 @@ class SyncManager::SyncInternal
   bool initialized_;
   mutable Lock initialized_mutex_;
 
-  bool use_chrome_async_socket_;
-  browser_sync::NotificationMethod notification_method_;
+  notifier::NotifierOptions notifier_options_;
 
   ScopedRunnableMethodFactory<SyncManager::SyncInternal> method_factory_;
 };
@@ -1272,9 +1267,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        bool invalidate_xmpp_auth_token,
                        const char* user_agent,
                        const char* lsid,
-                       bool use_chrome_async_socket,
-                       bool try_ssltcp_first,
-                       browser_sync::NotificationMethod notification_method,
+                       const notifier::NotifierOptions& notifier_options,
                        const std::string& restored_key_for_bootstrapping) {
   DCHECK(post_factory);
   LOG(INFO) << "SyncManager starting Init...";
@@ -1293,9 +1286,7 @@ bool SyncManager::Init(const FilePath& database_location,
                      invalidate_xmpp_auth_token,
                      user_agent,
                      lsid,
-                     use_chrome_async_socket,
-                     try_ssltcp_first,
-                     notification_method,
+                     notifier_options,
                      restored_key_for_bootstrapping);
 }
 
@@ -1349,16 +1340,14 @@ bool SyncManager::SyncInternal::Init(
     bool invalidate_xmpp_auth_token,
     const char* user_agent,
     const std::string& lsid,
-    bool use_chrome_async_socket,
-    bool try_ssltcp_first,
-    browser_sync::NotificationMethod notification_method,
+    const notifier::NotifierOptions& notifier_options,
     const std::string& restored_key_for_bootstrapping) {
 
   LOG(INFO) << "Starting SyncInternal initialization.";
 
   core_message_loop_ = MessageLoop::current();
   DCHECK(core_message_loop_);
-  notification_method_ = notification_method;
+  notifier_options_ = notifier_options;
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
   FilePath settings_db_file =
@@ -1396,18 +1385,17 @@ bool SyncManager::SyncInternal::Init(
   // it has its own MediatorThread implementation.  Everything else just uses
   // MediatorThreadImpl.
   notifier::MediatorThread* mediator_thread =
-      (notification_method == browser_sync::NOTIFICATION_SERVER) ?
-      new sync_notifier::ServerNotifierThread(use_chrome_async_socket,
-                                              try_ssltcp_first) :
-      new notifier::MediatorThreadImpl(use_chrome_async_socket,
-                                       try_ssltcp_first);
+      (notifier_options_.notification_method == notifier::NOTIFICATION_SERVER) ?
+      new sync_notifier::ServerNotifierThread(notifier_options) :
+      new notifier::MediatorThreadImpl(notifier_options);
   const bool kInitializeSsl = true;
   const bool kConnectImmediately = false;
   talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, kInitializeSsl,
       kConnectImmediately, invalidate_xmpp_auth_token));
-  if (notification_method != browser_sync::NOTIFICATION_LEGACY &&
-      notification_method != browser_sync::NOTIFICATION_SERVER) {
-    if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
+  if (notifier_options_.notification_method != notifier::NOTIFICATION_LEGACY &&
+      notifier_options_.notification_method != notifier::NOTIFICATION_SERVER) {
+    if (notifier_options_.notification_method ==
+        notifier::NOTIFICATION_TRANSITIONAL) {
       talk_mediator_->AddSubscribedServiceUrl(
           browser_sync::kSyncLegacyServiceUrl);
     }
@@ -1496,7 +1484,8 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
 void SyncManager::SyncInternal::SendPendingXMPPNotification(
     bool new_pending_notification) {
   DCHECK_EQ(MessageLoop::current(), core_message_loop_);
-  DCHECK_NE(notification_method_, browser_sync::NOTIFICATION_SERVER);
+  DCHECK_NE(notifier_options_.notification_method,
+            notifier::NOTIFICATION_SERVER);
   notification_pending_ = notification_pending_ || new_pending_notification;
   if (!notification_pending_) {
     LOG(INFO) << "Not sending notification: no pending notification";
@@ -1509,7 +1498,7 @@ void SyncManager::SyncInternal::SendPendingXMPPNotification(
   }
   LOG(INFO) << "Sending XMPP notification...";
   OutgoingNotificationData notification_data;
-  if (notification_method_ == browser_sync::NOTIFICATION_LEGACY) {
+  if (notifier_options_.notification_method == notifier::NOTIFICATION_LEGACY) {
     notification_data.service_id = browser_sync::kSyncLegacyServiceId;
     notification_data.service_url = browser_sync::kSyncLegacyServiceUrl;
     notification_data.send_content = false;
@@ -1519,7 +1508,7 @@ void SyncManager::SyncInternal::SendPendingXMPPNotification(
     notification_data.send_content = true;
     notification_data.priority = browser_sync::kSyncPriority;
     notification_data.write_to_cache_only = true;
-    if (notification_method_ == browser_sync::NOTIFICATION_NEW) {
+    if (notifier_options_.notification_method == notifier::NOTIFICATION_NEW) {
       notification_data.service_specific_data =
           browser_sync::kSyncServiceSpecificData;
       notification_data.require_subscription = true;
@@ -1953,7 +1942,8 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
       observer_->OnSyncCycleCompleted(event.snapshot);
     }
 
-    if (notification_method_ != browser_sync::NOTIFICATION_SERVER) {
+    if (notifier_options_.notification_method !=
+        notifier::NOTIFICATION_SERVER) {
       // TODO(chron): Consider changing this back to track has_more_to_sync
       // only notify peers if a successful commit has occurred.
       bool new_pending_notification =
@@ -2090,8 +2080,8 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
   if (syncer_thread()) {
     syncer_thread()->SetNotificationsEnabled(notifications_enabled);
   }
-  if ((notification_method_ != browser_sync::NOTIFICATION_SERVER) &&
-      notifications_enabled) {
+  if ((notifier_options_.notification_method !=
+       notifier::NOTIFICATION_SERVER) && notifications_enabled) {
     // Nudge the syncer thread when notifications are enabled, in case there is
     // any data that has not yet been synced. If we are listening to
     // server-issued notifications, we are already guaranteed to receive a
@@ -2132,7 +2122,8 @@ void SyncManager::SyncInternal::OnIncomingNotification(
   // Check if the service url is a sync URL.  An empty service URL is
   // treated as a legacy sync notification.  If we're listening to
   // server-issued notifications, no need to check the service_url.
-  if ((notification_method_ == browser_sync::NOTIFICATION_SERVER) ||
+  if ((notifier_options_.notification_method ==
+       notifier::NOTIFICATION_SERVER) ||
       notification_data.service_url.empty() ||
       (notification_data.service_url ==
        browser_sync::kSyncLegacyServiceUrl) ||
@@ -2150,7 +2141,8 @@ void SyncManager::SyncInternal::OnIncomingNotification(
 }
 
 void SyncManager::SyncInternal::OnOutgoingNotification() {
-  DCHECK_NE(notification_method_, browser_sync::NOTIFICATION_SERVER);
+  DCHECK_NE(notifier_options_.notification_method,
+            notifier::NOTIFICATION_SERVER);
   allstatus_.IncrementNotificationsSent();
 }
 

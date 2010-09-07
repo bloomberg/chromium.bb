@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/mediator_thread_mock.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"
 #include "jingle/notifier/listener/talk_mediator_impl.h"
@@ -38,14 +39,13 @@ class TalkMediatorImplTest : public testing::Test {
   virtual ~TalkMediatorImplTest() {}
 
   TalkMediatorImpl* NewTalkMediator() {
-    const bool kUseChromeAsyncSocket = false;
-    const bool kTrySslTcpFirst = false;
+    const notifier::NotifierOptions kNotifierOptions;
     const bool kInitializeSsl = true;
     const bool kConnectImmediately = false;
     const bool kInvalidateXmppAuthToken = false;
     return new TalkMediatorImpl(
-        new MediatorThreadImpl(kUseChromeAsyncSocket, kTrySslTcpFirst),
-        kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken);
+        new MediatorThreadImpl(kNotifierOptions), kInitializeSsl,
+        kConnectImmediately, kInvalidateXmppAuthToken);
   }
 
   TalkMediatorImpl* NewMockedTalkMediator(

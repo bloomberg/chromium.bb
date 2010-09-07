@@ -21,13 +21,18 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"
 
+namespace notifier {
+struct NotifierOptions;
+}
+
 namespace sync_notifier {
 
 class ServerNotifierThread
     : public notifier::MediatorThreadImpl,
       public ChromeInvalidationClient::Listener {
  public:
-  ServerNotifierThread(bool use_chrome_async_socket, bool try_ssltcp_first);
+  explicit ServerNotifierThread(
+      const notifier::NotifierOptions& notifier_options);
 
   virtual ~ServerNotifierThread();
 

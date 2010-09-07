@@ -46,7 +46,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -60,6 +59,10 @@ class ModelSafeWorkerRegistrar;
 namespace sessions {
 struct SyncSessionSnapshot;
 }
+}
+
+namespace notifier {
+struct NotifierOptions;
 }
 
 // Forward declarations of internal class types so that sync API objects
@@ -744,9 +747,7 @@ class SyncManager {
   // used to log into XMPP is invalidated.  This is used for testing
   // code paths related to authentication failures for XMPP only.
   //
-  // |try_ssltcp_first| indicates that the SSLTCP port (443) is tried before the
-  // the XMPP port (5222) during login. It is used by the sync tests that are
-  // run on the chromium builders because port 5222 is blocked.
+  // |notifier_options| contains options specific to sync notifications.
   bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,
@@ -761,9 +762,7 @@ class SyncManager {
             bool invalidate_xmpp_auth_token,
             const char* user_agent,
             const char* lsid,
-            bool use_chrome_async_socket,
-            bool try_ssltcp_first,
-            browser_sync::NotificationMethod notification_method,
+            const notifier::NotifierOptions& notifier_options,
             const std::string& restored_key_for_bootstrapping);
 
   // Returns the username last used for a successful authentication.
