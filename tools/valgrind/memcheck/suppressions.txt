@@ -4265,3 +4265,20 @@
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base16MessagePumpForUI14HandleDispatchEv
 }
+{
+   bug_54689
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF13FastAllocBasenwEm
+   fun:_ZN7WebCore10MouseEvent6createERKN3WTF12AtomicStringEbbNS1_10PassRefPtrINS_9DOMWindowEEEiiiiibbbbtNS5_INS_11EventTargetEEENS5_INS_9ClipboardEEEb
+   fun:_ZN7WebCore4Node18dispatchMouseEventERKN3WTF12AtomicStringEiiiiiibbbbbPS0_NS1_10PassRefPtrINS_5EventEEE
+   fun:_ZN7WebCore4Node18dispatchMouseEventERKNS_18PlatformMouseEventERKN3WTF12AtomicStringEiPS0_
+   fun:_ZN7WebCore12EventHandler18dispatchMouseEventERKN3WTF12AtomicStringEPNS_4NodeEbiRKNS_18PlatformMouseEventEb
+   fun:_ZN7WebCore12EventHandler21handleMousePressEventERKNS_18PlatformMouseEventE
+   fun:_ZN6WebKit11WebViewImpl9mouseDownERKNS_13WebMouseEventE
+   fun:_ZN6WebKit11WebViewImpl16handleInputEventERKNS_13WebInputEventE
+   fun:_ZN12RenderWidget18OnHandleInputEventERKN3IPC7MessageE
+   fun:_ZN14RenderViewTest20SimulateElementClickERKSs
+   fun:_ZN36RenderViewTest_PageClickTracker_Test8TestBodyEv
+}
