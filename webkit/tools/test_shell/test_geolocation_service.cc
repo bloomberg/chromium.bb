@@ -49,6 +49,12 @@ void TestGeolocationService::TryToSendPermissions() {
                             this, &TestGeolocationService::SendPermission);
 }
 
+void TestGeolocationService::TryToSendPermissions() {
+  if (permission_set_ && !permission_timer_.IsRunning())
+    permission_timer_.Start(base::TimeDelta::FromMilliseconds(0),
+                            this, &TestGeolocationService::SendPermission);
+}
+
 void TestGeolocationService::SendPermission() {
   DCHECK(permission_set_);
   std::vector<int> pending_permissions;
