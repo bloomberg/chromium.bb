@@ -738,7 +738,7 @@ each locale. -->
           &amp;Print...
         </message>
         <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
-          &amp;Tools
+          Too&amp;ls
         </message>
         <message name="IDS_ZOOM_MENU" desc="The text label of the Zoom submenu">
           &amp;Zoom
@@ -815,7 +815,7 @@ each locale. -->
           &amp;Print...
         </message>
         <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
-          &amp;Tools
+          Too&amp;ls
         </message>
         <message name="IDS_ZOOM_MENU" desc="In Title Case: The text label of the Zoom submenu">
           &amp;Zoom
