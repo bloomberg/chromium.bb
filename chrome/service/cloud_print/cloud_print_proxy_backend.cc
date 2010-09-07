@@ -417,19 +417,10 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
           kPrinterStatusValue, StringPrintf("%d", info.printer_status),
           mime_boundary, std::string(), &post_data);
       // Add printer options as tags.
-      std::map<std::string, std::string>::const_iterator it;
-      for (it = info.options.begin(); it != info.options.end(); ++it) {
-        // TODO(gene) Escape '=' char from name. Warning for now.
-        if (it->first.find('=') != std::string::npos) {
-          LOG(WARNING) << "CP_PROXY: CUPS option name contains '=' character";
-          NOTREACHED();
-        }
-        std::string msg(it->first);
-        msg += "=";
-        msg += it->second;
-        CloudPrintHelpers::AddMultipartValueForUpload(
-            kPrinterTagValue, msg, mime_boundary, std::string(), &post_data);
-      }
+      CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(info.options,
+                                                                 mime_boundary,
+                                                                 &post_data);
+
       CloudPrintHelpers::AddMultipartValueForUpload(
           kPrinterCapsValue, last_uploaded_printer_info_.printer_capabilities,
           mime_boundary, last_uploaded_printer_info_.caps_mime_type,
@@ -547,11 +538,13 @@ void CloudPrintProxyBackend::Core::HandlePrinterListResponse(
 void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
     DictionaryValue* printer_data) {
   DCHECK(printer_data);
-  std::string printer_id;
-  printer_data->GetString(kIdValue, &printer_id);
-  DCHECK(!printer_id.empty());
-  LOG(INFO) << "CP_PROXY: Init job handler for printer id: " << printer_id;
-  JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
+  PrinterJobHandler::PrinterInfoFromCloud printer_info_cloud;
+  printer_data->GetString(kIdValue, &printer_info_cloud.printer_id);
+  DCHECK(!printer_info_cloud.printer_id.empty());
+  LOG(INFO) << "CP_PROXY: Init job handler for printer id: " <<
+      printer_info_cloud.printer_id;
+  JobHandlerMap::iterator index = job_handler_map_.find(
+      printer_info_cloud.printer_id);
   // We might already have a job handler for this printer
   if (index == job_handler_map_.end()) {
     cloud_print::PrinterBasicInfo printer_info;
@@ -561,13 +554,29 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
                             &printer_info.printer_description);
     printer_data->GetInteger(kPrinterStatusValue,
                              &printer_info.printer_status);
-    std::string caps_hash;
-    printer_data->GetString(kPrinterCapsHashValue, &caps_hash);
+    printer_data->GetString(kPrinterCapsHashValue,
+        &printer_info_cloud.caps_hash);
+    ListValue* tags_list = NULL;
+    printer_data->GetList(kPrinterTagsValue, &tags_list);
+    if (tags_list) {
+      for (size_t index = 0; index < tags_list->GetSize(); index++) {
+        std::string tag;
+        tags_list->GetString(index, &tag);
+        if (StartsWithASCII(tag, kTagsHashTagName, false)) {
+          std::vector<std::string> tag_parts;
+          SplitStringDontTrim(tag, '=', &tag_parts);
+          DCHECK(tag_parts.size() == 2);
+          if (tag_parts.size() == 2) {
+            printer_info_cloud.tags_hash = tag_parts[1];
+          }
+        }
+      }
+    }
     scoped_refptr<PrinterJobHandler> job_handler;
-    job_handler = new PrinterJobHandler(printer_info, printer_id, caps_hash,
+    job_handler = new PrinterJobHandler(printer_info, printer_info_cloud,
                                         auth_token_, cloud_print_server_url_,
                                         print_system_.get(), this);
-    job_handler_map_[printer_id] = job_handler;
+    job_handler_map_[printer_info_cloud.printer_id] = job_handler;
     job_handler->Initialize();
   }
 }

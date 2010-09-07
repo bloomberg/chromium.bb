@@ -13,6 +13,7 @@ const char kPrinterCapsValue[] = "capabilities";
 const char kPrinterDefaultsValue[] = "defaults";
 const char kPrinterStatusValue[] = "status";
 const char kPrinterTagValue[] = "tag";
+const char kPrinterRemoveTagValue[] = "remove_tag";
 
 // Values in the respone JSON from the cloud print server
 const char kPrinterListValue[] = "printers";
@@ -24,6 +25,12 @@ const char kFileUrlValue[] = "fileUrl";
 const char kJobListValue[] = "jobs";
 const char kTitleValue[] = "title";
 const char kPrinterCapsHashValue[] = "capsHash";
+const char kPrinterTagsValue[] = "tags";
+const char kProxyTagPrefix[] = "__cp__";
+const char kTagsHashTagName[] = "__cp__tagshash";
+const char kLocationTagName[] = "location";
+const char kDriverNameTagName[] = "drivername";
+
 
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
 const char kCloudPrintTalkServiceUrl[] = "http://www.google.com/cloudprint";

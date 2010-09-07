@@ -16,6 +16,7 @@ extern const char kPrinterCapsValue[];
 extern const char kPrinterDefaultsValue[];
 extern const char kPrinterStatusValue[];
 extern const char kPrinterTagValue[];
+extern const char kPrinterRemoveTagValue[];
 // Values in the respone JSON from the cloud print server
 extern const char kPrinterListValue[];
 extern const char kSuccessValue[];
@@ -26,7 +27,11 @@ extern const char kFileUrlValue[];
 extern const char kJobListValue[];
 extern const char kTitleValue[];
 extern const char kPrinterCapsHashValue[];
-
+extern const char kPrinterTagsValue[];
+extern const char kProxyTagPrefix[];
+extern const char kTagsHashTagName[];
+extern const char kLocationTagName[];
+extern const char kDriverNameTagName[];
 extern const char kDefaultCloudPrintServerUrl[];
 extern const char kCloudPrintTalkServiceUrl[];
 extern const char kGaiaUrl[];

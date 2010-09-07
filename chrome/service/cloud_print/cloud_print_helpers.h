@@ -6,6 +6,7 @@
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "chrome/service/cloud_print/print_system.h"
@@ -68,6 +69,13 @@ class CloudPrintHelpers {
       std::string* post_data);
 // Create a MIME boundary marker (27 '-' characters followed by 16 hex digits).
   static void CreateMimeBoundaryForUpload(std::string *out);
+  // Generates an MD5 hash of the contents of a string map.
+  static std::string GenerateHashOfStringMap(
+      const std::map<std::string, std::string>& string_map);
+  static void GenerateMultipartPostDataForPrinterTags(
+      const std::map<std::string, std::string>& printer_tags,
+      const std::string& mime_boundary,
+      std::string* post_data);
 
  private:
   CloudPrintHelpers() {

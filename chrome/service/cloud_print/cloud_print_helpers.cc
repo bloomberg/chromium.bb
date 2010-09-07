@@ -5,6 +5,7 @@
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 
 #include "base/json/json_reader.h"
+#include "base/md5.h"
 #include "base/rand_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -207,5 +208,54 @@ void CloudPrintHelpers::CreateMimeBoundaryForUpload(std::string* out) {
   int r1 = base::RandInt(0, kint32max);
   int r2 = base::RandInt(0, kint32max);
   SStringPrintf(out, "---------------------------%08X%08X", r1, r2);
+}
+
+std::string CloudPrintHelpers::GenerateHashOfStringMap(
+    const std::map<std::string, std::string>& string_map) {
+  std::string values_list;
+  std::map<std::string, std::string>::const_iterator it;
+  for (it = string_map.begin(); it != string_map.end(); ++it) {
+    values_list.append(it->first);
+    values_list.append(it->second);
+  }
+  return MD5String(values_list);
+}
+
+void CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(
+    const std::map<std::string, std::string>& printer_tags,
+    const std::string& mime_boundary,
+    std::string* post_data) {
+  // We do not use the GenerateHashOfStringMap to compute the hash because that
+  // method iterates through the map again. Since we are already iterating here
+  // we just compute it on the fly.
+  // Also, in some cases, the code that calls this has already computed the
+  // hash. We could take in the precomputed hash as an argument but that just
+  // makes the code more complicated.
+  std::string tags_list;
+  std::map<std::string, std::string>::const_iterator it;
+  for (it = printer_tags.begin(); it != printer_tags.end(); ++it) {
+    // TODO(gene) Escape '=' char from name. Warning for now.
+    if (it->first.find('=') != std::string::npos) {
+      LOG(WARNING) <<
+          "CP_PROXY: Printer option name contains '=' character";
+      NOTREACHED();
+    }
+    tags_list.append(it->first);
+    tags_list.append(it->second);
+
+    // All our tags have a special prefix to identify them as such.
+    std::string msg(kProxyTagPrefix);
+    msg += it->first;
+    msg += "=";
+    msg += it->second;
+    AddMultipartValueForUpload(kPrinterTagValue, msg, mime_boundary,
+                               std::string(), post_data);
+  }
+  std::string tags_hash = MD5String(tags_list);
+  std::string tags_hash_msg(kTagsHashTagName);
+  tags_hash_msg += "=";
+  tags_hash_msg += tags_hash;
+  AddMultipartValueForUpload(kPrinterTagValue, tags_hash_msg, mime_boundary,
+                             std::string(), post_data);
 }
 

@@ -18,17 +18,15 @@
 
 PrinterJobHandler::PrinterJobHandler(
     const cloud_print::PrinterBasicInfo& printer_info,
-    const std::string& printer_id,
-    const std::string& caps_hash,
+    const PrinterInfoFromCloud& printer_info_cloud,
     const std::string& auth_token,
     const GURL& cloud_print_server_url,
     cloud_print::PrintSystem* print_system,
     Delegate* delegate)
     : print_system_(print_system),
       printer_info_(printer_info),
-      printer_id_(printer_id),
+      printer_info_cloud_(printer_info_cloud),
       auth_token_(auth_token),
-      last_caps_hash_(caps_hash),
       cloud_print_server_url_(cloud_print_server_url),
       delegate_(delegate),
       local_job_id_(-1),
@@ -71,8 +69,9 @@ void PrinterJobHandler::Reset() {
 }
 
 void PrinterJobHandler::Start() {
-  LOG(INFO) << "CP_PROXY: Start printer job handler, id: " << printer_id_ <<
-    ", task in progress: " << task_in_progress_;
+  LOG(INFO) << "CP_PROXY: Start printer job handler, id: " <<
+      printer_info_cloud_.printer_id << ", task in progress: " <<
+      task_in_progress_;
   if (task_in_progress_) {
     // Multiple Starts can get posted because of multiple notifications
     // We want to ignore the other ones that happen when a task is in progress.
@@ -86,8 +85,8 @@ void PrinterJobHandler::Start() {
         printer_delete_pending_ = false;
         task_in_progress_ = true;
         MakeServerRequest(
-            CloudPrintHelpers::GetUrlForPrinterDelete(cloud_print_server_url_,
-                                                      printer_id_),
+            CloudPrintHelpers::GetUrlForPrinterDelete(
+                cloud_print_server_url_, printer_info_cloud_.printer_id),
             &PrinterJobHandler::HandlePrinterDeleteResponse,
             &PrinterJobHandler::Stop);
       }
@@ -101,7 +100,7 @@ void PrinterJobHandler::Start() {
         // We need to fetch any pending jobs for this printer
         MakeServerRequest(
             CloudPrintHelpers::GetUrlForJobFetch(
-                cloud_print_server_url_, printer_id_),
+                cloud_print_server_url_, printer_info_cloud_.printer_id),
             &PrinterJobHandler::HandleJobMetadataResponse,
             &PrinterJobHandler::Stop);
       }
@@ -110,7 +109,8 @@ void PrinterJobHandler::Start() {
 }
 
 void PrinterJobHandler::Stop() {
-  LOG(INFO) << "CP_PROXY: Stop printer job handler, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Stop printer job handler, id: " <<
+      printer_info_cloud_.printer_id;
   task_in_progress_ = false;
   Reset();
   if (HavePendingTasks()) {
@@ -120,8 +120,9 @@ void PrinterJobHandler::Stop() {
 }
 
 void PrinterJobHandler::NotifyJobAvailable() {
-  LOG(INFO) << "CP_PROXY: Notify job available, id: " << printer_id_ <<
-    ", task in progress: " << task_in_progress_;
+  LOG(INFO) << "CP_PROXY: Notify job available, id: " <<
+      printer_info_cloud_.printer_id << ", task in progress: " <<
+      task_in_progress_;
   server_job_available_ = true;
   if (!task_in_progress_) {
     MessageLoop::current()->PostTask(
@@ -130,7 +131,8 @@ void PrinterJobHandler::NotifyJobAvailable() {
 }
 
 bool PrinterJobHandler::UpdatePrinterInfo() {
-  LOG(INFO) << "CP_PROXY: Update printer info, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Update printer info, id: " <<
+      printer_info_cloud_.printer_id;
   // We need to update the parts of the printer info that have changed
   // (could be printer name, description, status or capabilities).
   cloud_print::PrinterBasicInfo printer_info;
@@ -138,14 +140,14 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
   cloud_print::PrinterCapsAndDefaults printer_caps;
   std::string post_data;
   std::string mime_boundary;
+  CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
   if (print_system_->GetPrinterCapsAndDefaults(printer_info.printer_name,
                                                &printer_caps)) {
     std::string caps_hash = MD5String(printer_caps.printer_capabilities);
-    CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
-    if (caps_hash != last_caps_hash_) {
+    if (caps_hash != printer_info_cloud_.caps_hash) {
       // Hashes don't match, we need to upload new capabilities (the defaults
       // go for free along with the capabilities)
-      last_caps_hash_ = caps_hash;
+      printer_info_cloud_.caps_hash = caps_hash;
       CloudPrintHelpers::AddMultipartValueForUpload(
           kPrinterCapsValue, printer_caps.printer_capabilities,
           mime_boundary, printer_caps.caps_mime_type, &post_data);
@@ -158,6 +160,20 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
           &post_data);
     }
   }
+  std::string tags_hash =
+      CloudPrintHelpers::GenerateHashOfStringMap(printer_info.options);
+  if (tags_hash != printer_info_cloud_.tags_hash) {
+    printer_info_cloud_.tags_hash = tags_hash;
+    CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(
+        printer_info.options, mime_boundary, &post_data);
+    // Remove all the exising proxy tags.
+    std::string cp_tag_wildcard(kProxyTagPrefix);
+    cp_tag_wildcard += ".*";
+    CloudPrintHelpers::AddMultipartValueForUpload(
+        kPrinterRemoveTagValue, cp_tag_wildcard, mime_boundary, std::string(),
+        &post_data);
+  }
+
   if (printer_info.printer_name != printer_info_.printer_name) {
     CloudPrintHelpers::AddMultipartValueForUpload(kPrinterNameValue,
                                                   printer_info.printer_name,
@@ -183,7 +199,8 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
     mime_type += mime_boundary;
     request_.reset(
         new URLFetcher(CloudPrintHelpers::GetUrlForPrinterUpdate(
-                           cloud_print_server_url_, printer_id_),
+                           cloud_print_server_url_,
+                           printer_info_cloud_.printer_id),
                        URLFetcher::POST, this));
     CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
     request_->set_upload_data(mime_type, post_data);
@@ -264,7 +281,8 @@ bool PrinterJobHandler::HandlePrinterUpdateResponse(
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
   bool ret = false;
-  LOG(INFO) << "CP_PROXY: Handle printer update response, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Handle printer update response, id: " <<
+      printer_info_cloud_.printer_id;
   // If there was a network error or a non-200 response (which, for our purposes
   // is the same as a network error), we want to retry.
   if (status.is_success() && (response_code == 200)) {
@@ -292,7 +310,8 @@ bool PrinterJobHandler::HandlePrinterDeleteResponse(
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
   bool ret = false;
-  LOG(INFO) << "CP_PROXY: Handler printer delete response, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Handler printer delete response, id: " <<
+      printer_info_cloud_.printer_id;
   // If there was a network error or a non-200 response (which, for our purposes
   // is the same as a network error), we want to retry.
   if (status.is_success() && (response_code == 200)) {
@@ -319,7 +338,8 @@ bool PrinterJobHandler::HandleJobMetadataResponse(
     const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
-  LOG(INFO) << "CP_PROXY: Handle job metadata response, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Handle job metadata response, id: " <<
+      printer_info_cloud_.printer_id;
   // If there was a network error or a non-200 response (which, for our purposes
   // is the same as a network error), we want to retry.
   if (!status.is_success() || (response_code != 200)) {
@@ -368,7 +388,8 @@ bool PrinterJobHandler::HandlePrintTicketResponse(
     const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
-  LOG(INFO) << "CP_PROXY: Handle print ticket response, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Handle print ticket response, id: " <<
+      printer_info_cloud_.printer_id;
   // If there was a network error or a non-200 response (which, for our purposes
   // is the same as a network error), we want to retry.
   if (!status.is_success() || (response_code != 200)) {
@@ -396,7 +417,8 @@ bool PrinterJobHandler::HandlePrintDataResponse(const URLFetcher* source,
                                                 int response_code,
                                                 const ResponseCookies& cookies,
                                                 const std::string& data) {
-  LOG(INFO) << "CP_PROXY: Handle print data response, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Handle print data response, id: " <<
+      printer_info_cloud_.printer_id;
   // If there was a network error or a non-200 response (which, for our purposes
   // is the same as a network error), we want to retry.
   if (!status.is_success() || (response_code != 200)) {
@@ -425,7 +447,8 @@ bool PrinterJobHandler::HandlePrintDataResponse(const URLFetcher* source,
 }
 
 void PrinterJobHandler::StartPrinting() {
-  LOG(INFO) << "CP_PROXY: Start printing, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Start printing, id: " <<
+      printer_info_cloud_.printer_id;
   // We are done with the request object for now.
   request_.reset();
   if (!shutting_down_) {
@@ -441,15 +464,15 @@ void PrinterJobHandler::StartPrinting() {
 }
 
 void PrinterJobHandler::JobFailed(PrintJobError error) {
-  LOG(INFO) << "CP_PROXY: Job failed, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Job failed, id: " << printer_info_cloud_.printer_id;
   if (!shutting_down_) {
     UpdateJobStatus(cloud_print::PRINT_JOB_STATUS_ERROR, error);
   }
 }
 
 void PrinterJobHandler::JobSpooled(cloud_print::PlatformJobId local_job_id) {
-  LOG(INFO) << "CP_PROXY: Job spooled, printer id: " << printer_id_ <<
-      ", job id: " << local_job_id;
+  LOG(INFO) << "CP_PROXY: Job spooled, printer id: " <<
+    printer_info_cloud_.printer_id << ", job id: " << local_job_id;
   if (!shutting_down_) {
     local_job_id_ = local_job_id;
     UpdateJobStatus(cloud_print::PRINT_JOB_STATUS_IN_PROGRESS, SUCCESS);
@@ -458,7 +481,8 @@ void PrinterJobHandler::JobSpooled(cloud_print::PlatformJobId local_job_id) {
 }
 
 void PrinterJobHandler::Shutdown() {
-  LOG(INFO) << "CP_PROXY: Printer job handler shutdown, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Printer job handler shutdown, id: " <<
+      printer_info_cloud_.printer_id;
   Reset();
   shutting_down_ = true;
   while (!job_status_updater_list_.empty()) {
@@ -467,13 +491,14 @@ void PrinterJobHandler::Shutdown() {
     job_status_updater_list_.front()->Stop();
   }
   if (delegate_) {
-    delegate_->OnPrinterJobHandlerShutdown(this, printer_id_);
+    delegate_->OnPrinterJobHandlerShutdown(this,
+                                           printer_info_cloud_.printer_id);
   }
 }
 
 void PrinterJobHandler::HandleServerError(const GURL& url) {
-  LOG(INFO) << "CP_PROXY: Handle server error, printer id: " << printer_id_ <<
-      ", url: " << url;
+  LOG(INFO) << "CP_PROXY: Handle server error, printer id: " <<
+      printer_info_cloud_.printer_id << ", url: " << url;
   Task* task_to_retry = NewRunnableMethod(this,
                                           &PrinterJobHandler::FetchURL, url);
   Task* task_on_give_up = NewRunnableMethod(this, next_failure_handler_);
@@ -484,7 +509,8 @@ void PrinterJobHandler::HandleServerError(const GURL& url) {
 
 void PrinterJobHandler::UpdateJobStatus(cloud_print::PrintJobStatus status,
                                         PrintJobError error) {
-  LOG(INFO) << "CP_PROXY: Update job status, id: " << printer_id_;
+  LOG(INFO) << "CP_PROXY: Update job status, id: " <<
+      printer_info_cloud_.printer_id;
   if (!shutting_down_) {
     if (!job_details_.job_id_.empty()) {
       LOG(INFO) << "CP_PROXY: Updating status, jod id: " <<
@@ -513,7 +539,7 @@ bool PrinterJobHandler::HandleSuccessStatusUpdateResponse(
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
   LOG(INFO) << "CP_PROXY: Handle success status update response, id: " <<
-      printer_id_;
+      printer_info_cloud_.printer_id;
   // If there was a network error or a non-200 response (which, for our purposes
   // is the same as a network error), we want to retry.
   if (!status.is_success() || (response_code != 200)) {
@@ -545,7 +571,7 @@ bool PrinterJobHandler::HandleFailureStatusUpdateResponse(
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
   LOG(INFO) << "CP_PROXY: Handle failure status update response, id: " <<
-      printer_id_;
+      printer_info_cloud_.printer_id;
   // If there was a network error or a non-200 response (which, for our purposes
   // is the same as a network error), we want to retry.
   if (!status.is_success() || (response_code != 200)) {
@@ -560,7 +586,7 @@ void PrinterJobHandler::MakeServerRequest(const GURL& url,
                                           ResponseHandler response_handler,
                                           FailureHandler failure_handler) {
   LOG(INFO) << "CP_PROXY: Printer job handle, make server request, id: " <<
-    printer_id_ << ", url: " << url;
+    printer_info_cloud_.printer_id << ", url: " << url;
   if (!shutting_down_) {
     server_error_count_ = 0;
     // Set up the next response handler

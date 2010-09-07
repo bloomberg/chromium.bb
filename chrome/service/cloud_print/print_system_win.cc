@@ -19,6 +19,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
 #include "gfx/rect.h"
@@ -221,8 +222,15 @@ class PrintSystemWatcherWin
         PRINTER_INFO_2* printer_info_win =
             reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
         printer_info->printer_name = WideToUTF8(printer_info_win->pPrinterName);
-        printer_info->printer_description =
-            WideToUTF8(printer_info_win->pComment);
+        if (printer_info_win->pComment)
+          printer_info->printer_description =
+              WideToUTF8(printer_info_win->pComment);
+        if (printer_info_win->pLocation)
+          printer_info->options[kLocationTagName] =
+              WideToUTF8(printer_info_win->pLocation);
+        if (printer_info_win->pDriverName)
+          printer_info->options[kDriverNameTagName] =
+              WideToUTF8(printer_info_win->pDriverName);
         printer_info->printer_status = printer_info_win->Status;
         ret = true;
       }
@@ -534,6 +542,12 @@ void PrintSystemWin::EnumeratePrinters(PrinterList* printer_list) {
       if (printer_info[index].pComment)
         info.printer_description = WideToUTF8(printer_info[index].pComment);
       info.printer_status = printer_info[index].Status;
+      if (printer_info[index].pLocation)
+        info.options[kLocationTagName] =
+            WideToUTF8(printer_info[index].pLocation);
+      if (printer_info[index].pDriverName)
+        info.options[kDriverNameTagName] =
+            WideToUTF8(printer_info[index].pDriverName);
       printer_list->push_back(info);
     }
   }
