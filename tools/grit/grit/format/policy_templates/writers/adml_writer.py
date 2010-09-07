@@ -220,13 +220,16 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     ''' Adds ADML "string" elements to the string-table that are referenced by
     the ADMX file but not related to any specific Policy-Group or Policy.
     '''
-    self._AddString(string_table_elem, 'SUPPORTED_WINXPSP2',
-                    self.messages['IDS_POLICY_WIN_SUPPORTED_WINXPSP2'])
+    self._AddString(string_table_elem, self.config['win_supported_os'],
+                    self.messages[self.config['win_supported_os_msg']])
     if build == 'chrome':
-      self._AddString(string_table_elem, 'google', 'Google')
-      self._AddString(string_table_elem, 'googlechrome', 'Google Chrome')
+      self._AddString(string_table_elem, self.config['win_category_path'][0],
+                      'Google')
+      self._AddString(string_table_elem, self.config['win_category_path'][1],
+                      self.config['app_name'])
     elif build == 'chromium':
-      self._AddString(string_table_elem, 'chromium', 'Chromium')
+      self._AddString(string_table_elem, self.config['win_category_path'][0],
+                      self.config['app_name'])
 
   def BeginTemplate(self):
     dom_impl = minidom.getDOMImplementation('')
@@ -241,7 +244,7 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     resources_elem = self.AddElement(policy_definitions_resources_elem,
                                      'resources')
     self._string_table_elem = self.AddElement(resources_elem, 'stringTable')
-    self._AddBaseStrings(self._string_table_elem, self.info['build'])
+    self._AddBaseStrings(self._string_table_elem, self.config['build'])
     self._presentation_table_elem = self.AddElement(resources_elem,
                                                    'presentationTable')
 

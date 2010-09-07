@@ -7,12 +7,12 @@ from xml.dom import minidom
 from grit.format.policy_templates.writers import xml_formatted_writer
 
 
-def GetWriter(info, messages):
+def GetWriter(config, messages):
   '''Factory method for creating PListWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return PListWriter(info, messages)
+  return PListWriter(config, messages)
 
 
 class PListWriter(xml_formatted_writer.XMLFormattedWriter):
@@ -99,11 +99,12 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
     self._plist.attributes['version'] = '1'
     dict = self.AddElement(self._plist, 'dict')
 
-    self._AddStringKeyValuePair(dict, 'pfm_name', self.info['app_name'])
+    self._AddStringKeyValuePair(dict, 'pfm_name', self.config['app_name'])
     self._AddStringKeyValuePair(dict, 'pfm_description', '')
     self._AddStringKeyValuePair(dict, 'pfm_title', '')
     self._AddStringKeyValuePair(dict, 'pfm_version', '1')
-    self._AddStringKeyValuePair(dict, 'pfm_domain', self.info['mac_bundle_id'])
+    self._AddStringKeyValuePair(dict, 'pfm_domain',
+                                self.config['mac_bundle_id'])
 
     self._array = self._AddKeyValuePair(dict, 'pfm_subkeys', 'array')
 

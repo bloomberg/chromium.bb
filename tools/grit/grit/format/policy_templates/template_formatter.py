@@ -3,14 +3,16 @@
 # found in the LICENSE file.
 
 
+import os
+import sys
+import types
+
 from grit.format import interface
+from grit.format.policy_templates import policy_template_generator
+from grit.format.policy_templates import writer_configuration
 from grit.node import structure
 from grit.node import message
 from grit.node import misc
-from policy_template_generator import PolicyTemplateGenerator
-import types
-import os
-import sys
 
 
 class TemplateFormatter(interface.ItemFormatter):
@@ -58,7 +60,7 @@ class TemplateFormatter(interface.ItemFormatter):
       return ''
 
     self._lang = lang
-    self._GetFlags(item)
+    self._config = writer_configuration.GetConfigurationForBuild(item.defines)
     self._policy_data = None
     self._messages = {}
     self._ParseGritNodes(item)
@@ -72,33 +74,12 @@ class TemplateFormatter(interface.ItemFormatter):
       The text of the policy template based on the parameters passed
       to __init__() and Format().
     '''
-    policy_generator = PolicyTemplateGenerator(
+    policy_generator = policy_template_generator.PolicyTemplateGenerator(
         self._messages,
         self._policy_data['policy_groups'])
-    writer = self._writer_module.GetWriter(self._info, self._messages)
+    writer = self._writer_module.GetWriter(self._config, self._messages)
     str = policy_generator.GetTemplateText(writer)
     return str
-
-  def _GetFlags(self, item):
-    '''Sets values in self._info based on the -D flags
-    passed to grit.
-
-    Args:
-      item: The <grit> root node of the grit tree.
-    '''
-    defines = item.defines
-
-    self._info = {}
-    if 'mac_bundle_id' in defines:
-      self._info['mac_bundle_id'] = defines['mac_bundle_id']
-    if '_chromium' in defines:
-      self._info['app_name'] = 'Chromium'
-      self._info['build'] = 'chromium'
-    elif '_google_chrome' in defines:
-      self._info['app_name'] = 'Google Chrome'
-      self._info['build'] = 'chrome'
-    else:
-      raise Exception('Unknown build')
 
   def _ImportMessage(self, message):
     '''Takes a grit message node and adds its translated content to
@@ -111,7 +92,7 @@ class TemplateFormatter(interface.ItemFormatter):
     # Get translation of message.
     msg_txt = message.Translate(self._lang)
     # Replace the placeholder of app name.
-    msg_txt = msg_txt.replace('$1', self._info['app_name'])
+    msg_txt = msg_txt.replace('$1', self._config['app_name'])
     # Replace other placeholders.
     for placeholder in self._policy_data['placeholders']:
       msg_txt = msg_txt.replace(placeholder['key'], placeholder['value'])

@@ -86,7 +86,7 @@ chromium="Chromium"'''
     expected_output = '''CLASS MACHINE
   CATEGORY !!google
     CATEGORY !!googlechrome
-      KEYNAME "Software\\Policies\\Google\\Google Chrome"
+      KEYNAME "Software\\Policies\\Google\\Chrome"
 
       POLICY !!MainGroup_Policy
         #if version >= 4
@@ -192,7 +192,7 @@ StringPolicy_Part="Caption of policy."
     expected_output = '''CLASS MACHINE
   CATEGORY !!google
     CATEGORY !!googlechrome
-      KEYNAME "Software\\Policies\\Google\\Google Chrome"
+      KEYNAME "Software\\Policies\\Google\\Chrome"
 
       POLICY !!EnumGroup_Policy
         #if version >= 4

@@ -6,22 +6,18 @@ from xml.dom import minidom
 from grit.format.policy_templates.writers import xml_formatted_writer
 
 
-def GetWriter(info, messages):
+def GetWriter(config, messages):
   '''Factory method for instanciating the ADMXWriter. Every Writer needs a
   GetWriter method because the TemplateFormatter uses this method to
   instantiate a Writer.
   '''
-  return ADMXWriter(info, messages)
+  return ADMXWriter(config, messages)
 
 
 class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
   '''Class for generating an ADMX policy template. It is used by the
   PolicyTemplateGenerator to write the admx file.
   '''
-
-  # The configuration dict contains build (chrome, chromium) specific
-  # information, that is needed for the generation of the ADMX template.
-  _configuration = None
 
   # DOM root node of the generated ADMX document.
   _doc = None
@@ -34,37 +30,6 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
   # element contains the element being generated for the Policy-Group currently
   # being processed.
   _active_policy_elem = None
-
-  def _GetConfigurationForBuild(self, build):
-    '''Returns a configuration dictionary for the given build that contains
-    build-specific settings and information.
-
-    Args:
-      build: The build type ('chrome' or 'chromium')
-
-    Raises:
-      Exception: Build contains an unknown build-type.
-    '''
-    if build == 'chromium':
-      return {
-        'CATEGORY_PATH': 'chromium',
-        'SUPPORTED_OS': 'SUPPORTED_WINXPSP2',
-        'REGISTRY_KEY': 'Software\Policies\Chromium',
-        'GROUP_POLICY_CLASS': 'Machine',
-        'ADMX_NAMESPACE': 'Chromium.Policies.Chromium',
-        'ADMX_PREFIX': 'chromium',
-      }
-    elif build == 'chrome':
-      return {
-        'CATEGORY_PATH': 'google/googlechrome',
-        'SUPPORTED_OS': 'SUPPORTED_WINXPSP2',
-        'REGISTRY_KEY': 'Software\Policies\Google\Chrome',
-        'GROUP_POLICY_CLASS': 'Machine',
-        'ADMX_NAMESPACE': 'Google.Policies.Chrome',
-        'ADMX_PREFIX': 'chrome',
-      }
-    else:
-      raise Exception('Unknown build type %s.' % build)
 
   def _AdmlString(self, name):
     '''Creates a reference to the named string in an ADML file.
@@ -135,7 +100,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
       attributes = {'ref': parent_category_name}
       self.AddElement(category_elem, 'parentCategory', attributes)
 
-  def _AddCategories(self, parent, categories_path):
+  def _AddCategories(self, parent, categories):
     '''Generates the ADMX "categories" element and adds it to the passed parent
     node. The "categories" element defines the category for the policies defined
     in this ADMX document. Here is an example of an ADMX "categories" element:
@@ -143,19 +108,18 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     <categories>
       <category displayName="$(string.google)" name="google"/>
       <category displayName="$(string.googlechrome)" name="googlechrome">
-        <parentCategory ref="google"/> 
+        <parentCategory ref="google"/>
       </category>
     </categories>
 
     Args:
       parent: The parent node to which all generated elements are added.
-      categories_path: The categories path e.g. google/googlechrome. For each
-        level in the path a "category" element will be generated. Except for
-        the root level, each level refers to its parent. Since the root level
-        category has no parent it does not require a parent reference.
+      categories_path: The categories path e.g. ['google', 'googlechrome']. For
+        each level in the path a "category" element will be generated. Except
+        for the root level, each level refers to its parent. Since the root
+        level category has no parent it does not require a parent reference.
     '''
     categories_elem = self.AddElement(parent, 'categories')
-    categories = categories_path.split('/')
     category_name = None
     for category in categories:
       parent_category_name = category_name
@@ -303,7 +267,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
       # file.
       'id': name + 'Desc',
       'valuePrefix': '',
-      'key': self._configuration['REGISTRY_KEY'] + '\\' + name,
+      'key': self.config['win_reg_key_name'] + '\\' + name,
     }
     self.AddElement(parent, 'list', attributes)
 
@@ -368,11 +332,11 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     policy_group_name = group['name']
     attributes = {
       'name': policy_group_name,
-      'class': self._configuration['GROUP_POLICY_CLASS'],
+      'class': self.config['win_group_policy_class'],
       'displayName': self._AdmlString(policy_group_name),
       'explainText': self._AdmlStringExplain(policy_group_name),
       'presentation': self._AdmlPresentation(policy_group_name),
-      'key': self._configuration['REGISTRY_KEY'],
+      'key': self.config['win_reg_key_name'],
       'valueName': policy_group_name,
     }
     # Store the current "policy" AMDX element in self for later use by the
@@ -380,9 +344,9 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     self._active_policy_elem = self.AddElement(policies_elem, 'policy',
                                                attributes)
     self.AddElement(self._active_policy_elem, 'parentCategory',
-                    {'ref':self._configuration['CATEGORY_PATH'].split('/')[-1]})
+                    {'ref': self.config['win_category_path'][-1]})
     self.AddElement(self._active_policy_elem, 'supportedOn',
-                    {'ref': self._configuration['SUPPORTED_OS']})
+                    {'ref': self.config['win_supported_os']})
 
   def EndPolicyGroup(self):
     return
@@ -400,14 +364,14 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     policy_definitions_elem.attributes['schemaVersion'] = '1.0'
 
     self._AddPolicyNamespaces(policy_definitions_elem,
-                              self._configuration['ADMX_PREFIX'],
-                              self._configuration['ADMX_NAMESPACE'])
+                              self.config['admx_prefix'],
+                              self.config['admx_namespace'])
     self.AddElement(policy_definitions_elem, 'resources',
                     {'minRequiredRevision' : '1.0'})
     self._AddSupportedOn(policy_definitions_elem,
-                         self._configuration['SUPPORTED_OS'])
+                         self.config['win_supported_os'])
     self._AddCategories(policy_definitions_elem,
-                        self._configuration['CATEGORY_PATH'])
+                        self.config['win_category_path'])
     self._active_policies_elem = self.AddElement(policy_definitions_elem,
                                                  'policies')
 
@@ -415,7 +379,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     pass
 
   def Prepare(self):
-    self._configuration = self._GetConfigurationForBuild(self.info['build'])
+    pass
 
   def GetTemplateText(self):
     return self._doc.toprettyxml(indent='  ')

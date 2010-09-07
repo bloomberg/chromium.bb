@@ -75,7 +75,8 @@ class AdmWriter(template_writer.TemplateWriter):
     if policy_type == 'list':
       # Note that the following line causes FullArmor ADMX Migrator to create
       # corrupt ADMX files. Please use admx_writer to get ADMX files.
-      self._PrintLine('KEYNAME "%s\\%s"' % (self._key_name, policy_name))
+      self._PrintLine('KEYNAME "%s\\%s"' %
+                      (self.config['win_reg_key_name'], policy_name))
       self._PrintLine('VALUEPREFIX ""')
     else:
       self._PrintLine('VALUENAME "%s"' % policy_name)
@@ -102,28 +103,29 @@ class AdmWriter(template_writer.TemplateWriter):
     self._PrintLine()
 
   def BeginTemplate(self):
-    self._AddGuiString('SUPPORTED_WINXPSP2',
-                       self.messages['IDS_POLICY_WIN_SUPPORTED_WINXPSP2'])
-    self._PrintLine('CLASS MACHINE', 1)
-    if self.info['build'] == 'chrome':
-      self._AddGuiString('google', 'Google')
-      self._AddGuiString('googlechrome', 'Google Chrome')
-      self._PrintLine('CATEGORY !!google', 1)
-      self._PrintLine('CATEGORY !!googlechrome', 1)
-      self._key_name = 'Software\\Policies\\Google\\Google Chrome'
-    elif self.info['build'] == 'chromium':
-      self._AddGuiString('chromium', 'Chromium')
-      self._PrintLine('CATEGORY !!chromium', 1)
-      self._key_name = 'Software\\Policies\\Chromium'
-    self._PrintLine('KEYNAME "%s"' % self._key_name)
+    category_path = self.config['win_category_path']
+    self._AddGuiString(self.config['win_supported_os'],
+                       self.messages[self.config['win_supported_os_msg']])
+    self._PrintLine(
+        'CLASS ' + self.config['win_group_policy_class'].upper(),
+        1)
+    if self.config['build'] == 'chrome':
+      self._AddGuiString(category_path[0], 'Google')
+      self._AddGuiString(category_path[1], self.config['app_name'])
+      self._PrintLine('CATEGORY !!' + category_path[0], 1)
+      self._PrintLine('CATEGORY !!' + category_path[1], 1)
+    elif self.config['build'] == 'chromium':
+      self._AddGuiString(category_path[0], self.config['app_name'])
+      self._PrintLine('CATEGORY !!' + category_path[0], 1)
+    self._PrintLine('KEYNAME "%s"' % self.config['win_reg_key_name'])
     self._PrintLine()
 
   def EndTemplate(self):
-    if self.info['build'] == 'chrome':
+    if self.config['build'] == 'chrome':
       self._PrintLine('END CATEGORY', -1)
       self._PrintLine('END CATEGORY', -1)
       self._PrintLine('', -1)
-    elif self.info['build'] == 'chromium':
+    elif self.config['build'] == 'chromium':
       self._PrintLine('END CATEGORY', -1)
       self._PrintLine('', -1)
 

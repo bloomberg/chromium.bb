@@ -8,12 +8,12 @@ class TemplateWriter(object):
   The methods of this class will be called by PolicyTemplateGenerator.
   '''
 
-  def __init__(self, info, messages):
+  def __init__(self, config, messages):
     '''Initializes a TemplateWriter object.
 
     Args:
-      info: A dictionary of extra information required to generate the template.
-        Currently it contains three keys:
+      config: A dictionary of information required to generate the template.
+        It contains some key-value pairs, including the following examples:
           'build': 'chrome' or 'chromium'
           'branding': 'Google Chrome' or 'Chromium'
           'mac_bundle_id': The Mac bundle id of Chrome. (Only set when building
@@ -23,9 +23,9 @@ class TemplateWriter(object):
         methods. That is the preferred way of accessing them, this should only
         be used in exceptional cases. An example for its use is the
         IDS_POLICY_WIN_SUPPORTED_WINXPSP2 message in ADM files, because that
-        can not be associated with any policy or group.
+        cannot be associated with any policy or group.
     '''
-    self.info = info
+    self.config = config
     self.messages = messages
 
   def Prepare(self):

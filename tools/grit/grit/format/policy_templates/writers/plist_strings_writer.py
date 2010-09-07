@@ -6,12 +6,12 @@
 from grit.format.policy_templates.writers import template_writer
 
 
-def GetWriter(info, messages):
+def GetWriter(config, messages):
   '''Factory method for creating PListStringsWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return PListStringsWriter(info, messages)
+  return PListStringsWriter(config, messages)
 
 
 class PListStringsWriter(template_writer.TemplateWriter):
@@ -80,8 +80,8 @@ class PListStringsWriter(template_writer.TemplateWriter):
 
   def BeginTemplate(self):
     self._AddToStringTable(
-        self.info['app_name'],
-        self.info['app_name'],
+        self.config['app_name'],
+        self.config['app_name'],
         self.messages['IDS_POLICY_MAC_CHROME_PREFERENCES'])
 
   def EndTemplate(self):
