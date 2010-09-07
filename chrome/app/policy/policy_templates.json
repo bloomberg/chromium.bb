@@ -143,6 +143,13 @@
       }]
     },
     {
+      'name': 'PasswordManagerAllowShowPasswords',
+      'policies': [{
+        'name': 'PasswordManagerAllowShowPasswords',
+        'type': 'main',
+      }]
+    },
+    {
       'name' : 'AutoFillEnabled',
       'policies': [{
         'name': 'AutoFillEnabled',

@@ -25,6 +25,7 @@ using webkit_glue::PasswordFormMap;
 // static
 void PasswordManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPasswordManagerEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords, true);
 }
 
 // This routine is called when PasswordManagers are constructed.

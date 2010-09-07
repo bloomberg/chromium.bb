@@ -47,6 +47,7 @@ extern const char kWebKitTextAreasAreResizable[];
 extern const char kWebKitJavaEnabled[];
 extern const char kWebkitTabsToLinks[];
 extern const char kPasswordManagerEnabled[];
+extern const char kPasswordManagerAllowShowPasswords[];
 extern const char kFormAutofillEnabled[];  // OBSOLETE
 extern const char kSafeBrowsingEnabled[];
 extern const char kSearchSuggestEnabled[];

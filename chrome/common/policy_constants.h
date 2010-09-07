@@ -32,6 +32,7 @@ extern const char kDnsPrefetchingEnabled[];
 extern const char kSafeBrowsingEnabled[];
 extern const char kMetricsReportingEnabled[];
 extern const char kPasswordManagerEnabled[];
+extern const char kPasswordManagerAllowShowPasswords[];
 extern const char kDisabledPlugins[];
 extern const char kAutoFillEnabled[];
 extern const char kApplicationLocaleValue[];

@@ -30,6 +30,8 @@ const char kDnsPrefetchingEnabled[] = "DnsPrefetchingEnabled";
 const char kSafeBrowsingEnabled[] = "SafeBrowsingEnabled";
 const char kMetricsReportingEnabled[] = "MetricsReportingEnabled";
 const char kPasswordManagerEnabled[] = "PasswordManagerEnabled";
+const char kPasswordManagerAllowShowPasswords[] =
+    "PasswordManagerAllowShowPasswords";
 const char kDisabledPlugins[] = "DisabledPlugins";
 const char kAutoFillEnabled[] = "AutoFillEnabled";
 const char kApplicationLocaleValue[] = "ApplicationLocaleValue";

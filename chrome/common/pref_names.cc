@@ -98,6 +98,11 @@ const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
 // passwords and fill in known passwords).
 const char kPasswordManagerEnabled[] = "profile.password_manager_enabled";
 
+// Boolean controlling whether the password manager allows to retrieve passwords
+// in clear text.
+const char kPasswordManagerAllowShowPasswords[] =
+    "profile.password_manager_allow_show_passwords";
+
 // OBSOLETE.  Boolean that is true if the form AutoFill is on (will record
 // values entered in text inputs in forms and shows them in a popup when user
 // type in a text input with the same name later on).  This has been superseded

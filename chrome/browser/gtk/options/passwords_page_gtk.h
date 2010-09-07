@@ -12,9 +12,11 @@
 
 #include "app/gtk_signal.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_observer.h"
 
-class PasswordsPageGtk {
+class PasswordsPageGtk : public NotificationObserver {
  public:
   explicit PasswordsPageGtk(Profile* profile);
   virtual ~PasswordsPageGtk();
@@ -31,6 +33,17 @@ class PasswordsPageGtk {
   // Sets the password list contents to the given data. We take ownership of
   // the PasswordForms in the vector.
   void SetPasswordList(const std::vector<webkit_glue::PasswordForm*>& result);
+
+  // Helper that hides the password.
+  void HidePassword();
+
+  // NotificationObserver implementation.
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details);
+
+  // Handles changes to the observed preferences and updates the UI.
+  void OnPrefChanged(const std::string& pref_name);
 
   CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnRemoveButtonClicked);
   CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnRemoveAllButtonClicked);
@@ -91,6 +104,7 @@ class PasswordsPageGtk {
   GtkWidget* page_;
 
   Profile* profile_;
+  BooleanPrefMember allow_show_passwords_;
   std::vector<webkit_glue::PasswordForm*> password_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsPageGtk);

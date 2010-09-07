@@ -374,6 +374,17 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
+    <message name="IDS_POLICY_GROUP_PASSWORDMANAGERALLOWSHOWPASSWORDS_CAPTION" desc="Caption of the 'allow show passwords in password manager' policy settings page.">
+      Allow to show passwords in Password Manager
+    </message>
+    <message name="IDS_POLICY_GROUP_PASSWORDMANAGERALLOWSHOWPASSWORDS_DESC" desc="Description of the 'allow show passwords in password manager' policy settings page.">
+      Controls whether the user may show passwords in clear text in the password manager.
+
+      If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
+
+      If you enable or do not configure this setting, users can view their passwords in clear text in the password manager.
+    </message>
+
     <message name="IDS_POLICY_GROUP_DISABLEDPLUGINS_CAPTION" desc="Caption of the 'disable plugins' policy settings page.">
       Specify a list of plugins that are disabled
     </message>

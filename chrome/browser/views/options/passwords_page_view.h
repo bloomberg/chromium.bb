@@ -14,6 +14,7 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/views/confirm_message_box_dialog.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/button/native_button.h"
@@ -174,6 +175,12 @@ class PasswordsPageView : public OptionsPageView,
   // Helper to configure our table view.
   void SetupTable();
 
+  // Helper that hides the password.
+  void HidePassword();
+
+  // Handles changes to the observed preferences and updates the UI.
+  void NotifyPrefChanged(const std::string* pref_name);
+
   PasswordsTableModel table_model_;
   views::TableView* table_view_;
 
@@ -183,6 +190,9 @@ class PasswordsPageView : public OptionsPageView,
   views::NativeButton remove_all_button_;
   views::Label password_label_;
   webkit_glue::PasswordForm* current_selected_password_;
+
+  // Tracks the preference that controls whether showing passwords is allowed.
+  BooleanPrefMember allow_show_passwords_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsPageView);
 };
