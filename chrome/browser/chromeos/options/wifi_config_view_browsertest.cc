@@ -39,7 +39,10 @@ IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, NoChangeSaveTest) {
 // Test that if autoconnect was changed, we call SaveWifiNetwork.
 IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, ChangeAutoConnectSaveTest) {
   EXPECT_CALL(*mock_network_library_, SaveWifiNetwork(_)).Times(1);
-  WifiConfigView* view = new WifiConfigView(NULL, WifiNetwork());
+  WifiNetwork remembered_network = WifiNetwork();
+  remembered_network.set_favorite(true);
+  WifiConfigView* view = new WifiConfigView(NULL, remembered_network);
+  ASSERT_TRUE(view->autoconnect_checkbox_ != NULL);
   view->autoconnect_checkbox_->SetChecked(
       !view->autoconnect_checkbox_->checked());
   view->Save();

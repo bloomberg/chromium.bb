@@ -124,7 +124,7 @@ bool WifiConfigView::Login() {
     CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
         GetSSID(), GetPassphrase(),
         identity_string, certificate_path_,
-        autoconnect_checkbox_->checked());
+        autoconnect_checkbox_ ? autoconnect_checkbox_->checked() : true);
   } else {
     Save();
     CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
@@ -139,10 +139,12 @@ bool WifiConfigView::Save() {
   if (!other_network_) {
     bool changed = false;
 
-    bool auto_connect = autoconnect_checkbox_->checked();
-    if (auto_connect != wifi_.auto_connect()) {
-      wifi_.set_auto_connect(auto_connect);
-      changed = true;
+    if (autoconnect_checkbox_) {
+      bool auto_connect = autoconnect_checkbox_->checked();
+      if (auto_connect != wifi_.auto_connect()) {
+        wifi_.set_auto_connect(auto_connect);
+        changed = true;
+      }
     }
 
     if (passphrase_textfield_) {
@@ -320,14 +322,17 @@ void WifiConfigView::Init() {
   }
 
   // Autoconnect checkbox
-  autoconnect_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
-  // For other network, default to autoconnect.
-  bool autoconnect = other_network_ || wifi_.auto_connect();
-  autoconnect_checkbox_->SetChecked(autoconnect);
-  layout->StartRow(0, column_view_set_id);
-  layout->AddView(autoconnect_checkbox_, 3, 1);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  // Only show if this network is already remembered (a favorite).
+  if (wifi_.favorite()) {
+    autoconnect_checkbox_ = new views::Checkbox(l10n_util::GetString(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
+    // For other network, default to autoconnect.
+    bool autoconnect = other_network_ || wifi_.auto_connect();
+    autoconnect_checkbox_->SetChecked(autoconnect);
+    layout->StartRow(0, column_view_set_id);
+    layout->AddView(autoconnect_checkbox_, 3, 1);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
 }
 
 }  // namespace chromeos

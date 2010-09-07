@@ -90,10 +90,12 @@ class WirelessNetwork : public Network {
   const std::string& name() const { return name_; }
   int strength() const { return strength_; }
   bool auto_connect() const { return auto_connect_; }
+  bool favorite() const { return favorite_; }
 
   void set_name(const std::string& name) { name_ = name; }
   void set_strength(int strength) { strength_ = strength; }
   void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
+  void set_favorite(bool favorite) { favorite_ = favorite; }
 
   // Network overrides.
   virtual void Clear();
@@ -103,11 +105,13 @@ class WirelessNetwork : public Network {
   WirelessNetwork()
       : Network(),
         strength_(0),
-        auto_connect_(false) {}
+        auto_connect_(false),
+        favorite_(false) {}
 
   std::string name_;
   int strength_;
   bool auto_connect_;
+  bool favorite_;
 };
 
 class CellularNetwork : public WirelessNetwork {

@@ -145,6 +145,7 @@ void WirelessNetwork::Clear() {
   name_.clear();
   strength_ = 0;
   auto_connect_ = false;
+  favorite_ = false;
 }
 
 void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
@@ -152,6 +153,7 @@ void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
   name_ = service.name;
   strength_ = service.strength;
   auto_connect_ = service.auto_connect;
+  favorite_ = service.favorite;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
