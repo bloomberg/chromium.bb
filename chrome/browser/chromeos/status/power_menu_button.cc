@@ -54,14 +54,12 @@ string16 PowerMenuButton::GetLabelAt(int index) const {
   if (index == 0) {
     return l10n_util::GetStringFUTF16(IDS_STATUSBAR_BATTERY_PERCENTAGE,
         base::IntToString16(static_cast<int>(battery_percentage_)));
-  }
-
-  if (index == 1) {
+  } else if (index == 1) {
     // The second item shows the battery is charged if it is.
     if (battery_fully_charged_)
       return l10n_util::GetStringUTF16(IDS_STATUSBAR_BATTERY_IS_CHARGED);
 
-    // If battery is in an intermediate charge state, we show how much time left.
+    // If battery is in an intermediate charge state, show how much time left.
     base::TimeDelta time = line_power_on_ ? battery_time_to_full_ :
         battery_time_to_empty_;
     if (time.InSeconds() == 0) {
@@ -87,9 +85,10 @@ string16 PowerMenuButton::GetLabelAt(int index) const {
         min_str = ASCIIToUTF16("0") + min_str;
       return l10n_util::GetStringFUTF16(msg, hour_str, min_str);
     }
+  } else {
+    NOTREACHED();
+    return string16();
   }
-
-  return string16();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
