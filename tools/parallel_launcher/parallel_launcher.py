@@ -16,7 +16,48 @@ import optparse
 import os
 import subprocess
 import sys
-import tempfile
+import threading
+import time
+
+
+def StreamCopyWindows(stream_from, stream_to):
+  """Copies stream_from to stream_to."""
+
+  while True:
+    buf = stream_from.read(1024)
+    if not buf:
+      break
+    stream_to.write(buf)
+    stream_to.flush()
+
+def StreamCopyPosix(stream_from, stream_to, child_exited):
+  """
+  Copies stream_from to stream_to, and exits if child_exited
+  is signaled.
+  """
+
+  import fcntl
+
+  # Put the source stream in a non-blocking mode, so we can check
+  # child_exited when there is no data.
+  fd = stream_from.fileno()
+  fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+  fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+  while True:
+    try:
+      buf = os.read(fd, 1024)
+    except OSError, e:
+      if e.errno == 11:
+        if child_exited.isSet():
+          break
+        time.sleep(0.1)
+        continue
+      raise
+    if not buf:
+      break
+    stream_to.write(buf)
+    stream_to.flush()
 
 class TestLauncher(object):
   def __init__(self, args, executable, num_shards, shard):
@@ -25,7 +66,6 @@ class TestLauncher(object):
     self._num_shards = num_shards
     self._shard = shard
     self._test = None
-    self._tempfile = tempfile.TemporaryFile()
 
   def launch(self):
     env = os.environ.copy()
@@ -33,16 +73,29 @@ class TestLauncher(object):
     env['GTEST_SHARD_INDEX'] = str(self._shard)
     self._test = subprocess.Popen(args=self._args,
                                   executable=self._executable,
-                                  stdout=self._tempfile,
+                                  stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT,
                                   env=env)
 
   def wait(self):
-    code = self._test.wait()
-    self._tempfile.seek(0)
-    print self._tempfile.read()
-    self._tempfile.close()
-    return code
+    if subprocess.mswindows:
+      stdout_thread = threading.Thread(
+          target=StreamCopyWindows,
+          args=[self._test.stdout, sys.stdout])
+      stdout_thread.start()
+      code = self._test.wait()
+      stdout_thread.join()
+      return code
+    else:
+      child_exited = threading.Event()
+      stdout_thread = threading.Thread(
+          target=StreamCopyPosix,
+          args=[self._test.stdout, sys.stdout, child_exited])
+      stdout_thread.start()
+      code = self._test.wait()
+      child_exited.set()
+      stdout_thread.join()
+      return code
 
 def main(argv):
   parser = optparse.OptionParser()
