@@ -131,14 +131,15 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // so are handled separately.
   enum SafeBrowsingRequestType {
     NO_REQUEST = 0,     // No requests in progress
-    UPDATE_REQUEST,   // Request for redirect URLs
+    UPDATE_REQUEST,     // Request for redirect URLs
     CHUNK_REQUEST,      // Request for a specific chunk
     GETKEY_REQUEST      // Update the client's MAC key
   };
 
   // Composes a URL using |prefix|, |method| (e.g.: gethash, download,
   // newkey, report), |client_name| and |version|. When not empty,
-  // |additional_query| is appended to the URL.
+  // |additional_query| is appended to the URL with an additional "&"
+  // in the front.
   static std::string ComposeUrl(const std::string& prefix,
                                 const std::string& method,
                                 const std::string& client_name,

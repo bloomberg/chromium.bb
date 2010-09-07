@@ -649,6 +649,8 @@ std::string SafeBrowsingProtocolManager::ComposeUrl(
                                  prefix.c_str(), method.c_str(),
                                  client_name.c_str(), version.c_str());
   if (!additional_query.empty()) {
+    DCHECK(url.find("?") != std::string::npos);
+    url.append("&");
     url.append(additional_query);
   }
   return url;
@@ -695,11 +697,18 @@ GURL SafeBrowsingProtocolManager::NextChunkUrl(const std::string& url) const {
   std::string next_url;
   if (!StartsWithASCII(url, "http://", false) &&
       !StartsWithASCII(url, "https://", false)) {
-    next_url = "http://" + url;
+    next_url.append("http://");
+    next_url.append(url);
   } else {
     next_url = url;
   }
-  if (!additional_query_.empty())
-    next_url += additional_query_;
+  if (!additional_query_.empty()) {
+    if (next_url.find("?") != std::string::npos) {
+      next_url.append("&");
+    } else {
+      next_url.append("?");
+    }
+    next_url.append(additional_query_);
+  }
   return GURL(next_url);
 }
