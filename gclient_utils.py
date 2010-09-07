@@ -27,13 +27,19 @@ import xml.dom.minidom
 import xml.parsers.expat
 
 
-class CheckCallError(OSError):
+class Error(Exception):
+  """gclient exception class."""
+  pass
+
+
+class CheckCallError(OSError, Error):
   """CheckCall() returned non-0."""
-  def __init__(self, command, cwd, retcode, stdout, stderr=None):
-    OSError.__init__(self, command, cwd, retcode, stdout, stderr)
+  def __init__(self, command, cwd, returncode, stdout, stderr=None):
+    OSError.__init__(self, command, cwd, returncode, stdout, stderr)
+    Error.__init__(self)
     self.command = command
     self.cwd = cwd
-    self.retcode = retcode
+    self.returncode = returncode
     self.stdout = stdout
     self.stderr = stderr
 
@@ -109,12 +115,6 @@ def GetNodeNamedAttributeText(node, node_name, attribute_name):
     return None
   assert len(child_nodes) == 1
   return child_nodes[0].getAttribute(attribute_name)
-
-
-class Error(Exception):
-  """gclient exception class."""
-  # TODO(maruel): Merge with CheckCallError.
-  pass
 
 
 def SyntaxErrorToError(filename, e):

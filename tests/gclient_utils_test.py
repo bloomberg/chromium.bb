@@ -65,7 +65,7 @@ class CheckCallTestCase(GclientUtilBase):
     except gclient_utils.CheckCallError, e:
       self.assertEqual(e.command, args)
       self.assertEqual(e.cwd, None)
-      self.assertEqual(e.retcode, 42)
+      self.assertEqual(e.returncode, 42)
       self.assertEqual(e.stdout, 'bleh')
       self.assertEqual(e.stderr, 'foo')
 

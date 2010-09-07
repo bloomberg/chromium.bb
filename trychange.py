@@ -430,10 +430,10 @@ def GuessVCS(options, path):
                             real_path)
     return GIT(options, path)
   except gclient_utils.CheckCallError, e:
-    if e.retcode != errno.ENOENT and e.retcode != 128:
+    if e.returncode != errno.ENOENT and e.returncode != 128:
       # ENOENT == 2 = they don't have git installed.
       # 128 = git error code when not in a repo.
-      logging.warn(e.retcode)
+      logging.warn(e.returncode)
       raise
   raise NoTryServerAccess("Could not guess version control system. "
                           "Are you in a working copy directory?")

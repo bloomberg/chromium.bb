@@ -596,7 +596,7 @@ class FakeReposTestBase(unittest.TestCase):
     self.assertEquals(expected, result, msg)
 
   def check(self, expected, results):
-    """Checks stdout, stderr, retcode."""
+    """Checks stdout, stderr, returncode."""
     self.checkString(expected[0], results[0])
     self.checkString(expected[1], results[1])
     self.assertEquals(expected[2], results[2])
