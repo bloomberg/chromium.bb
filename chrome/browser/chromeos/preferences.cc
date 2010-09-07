@@ -36,7 +36,8 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             language_prefs::kHotkeyNextEngineInMenu);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
                             language_prefs::kHotkeyPreviousEngine);
-  prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages, "");
+  prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages,
+                            kFallbackInputMethodLocale);
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             kFallbackInputMethodId);  // EN layout
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
