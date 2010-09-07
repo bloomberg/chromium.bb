@@ -43,6 +43,18 @@ class CheckCallError(OSError, Error):
     self.stdout = stdout
     self.stderr = stderr
 
+  def __str__(self):
+    out = ' '.join(self.command)
+    if self.cwd:
+      out += ' in ' + self.cwd
+    if self.returncode is not None:
+      out += ' returned %d' % self.returncode
+    if self.stdout is not None:
+      out += '\nstdout: %s\n' % self.stdout
+    if self.stderr is not None:
+      out += '\nstderr: %s\n' % self.stderr
+    return out
+
 
 def Popen(args, **kwargs):
   """Calls subprocess.Popen() with hacks to work around certain behaviors.
@@ -330,7 +342,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       filter_fn(in_line)
   rv = kid.wait()
   if rv:
-    raise Error('failed to run command: %s' % ' '.join(args))
+    raise CheckCallError(args, kwargs.get('cwd', None), rv, None)
   return 0
 
 
