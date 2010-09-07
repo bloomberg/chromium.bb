@@ -21,12 +21,11 @@ struct CookieStoreCommand {
   };
 
   CookieStoreCommand(Type type,
-                     const std::string& key,
                      const net::CookieMonster::CanonicalCookie& cookie)
-      : type(type), key(key), cookie(cookie) {}
+      : type(type),
+        cookie(cookie) {}
 
   Type type;
-  std::string key;  // Only applicable to the ADD command.
   net::CookieMonster::CanonicalCookie cookie;
 };
 
@@ -49,22 +48,21 @@ class MockPersistentCookieStore
     return ok;
   }
 
-  virtual void AddCookie(const std::string& key,
-                         const net::CookieMonster::CanonicalCookie& cookie) {
+  virtual void AddCookie(const net::CookieMonster::CanonicalCookie& cookie) {
     commands_.push_back(
-        CookieStoreCommand(CookieStoreCommand::ADD, key, cookie));
+        CookieStoreCommand(CookieStoreCommand::ADD, cookie));
   }
 
   virtual void UpdateCookieAccessTime(
       const net::CookieMonster::CanonicalCookie& cookie) {
     commands_.push_back(CookieStoreCommand(
-        CookieStoreCommand::UPDATE_ACCESS_TIME, std::string(), cookie));
+        CookieStoreCommand::UPDATE_ACCESS_TIME, cookie));
   }
 
   virtual void DeleteCookie(
       const net::CookieMonster::CanonicalCookie& cookie) {
     commands_.push_back(
-        CookieStoreCommand(CookieStoreCommand::REMOVE, std::string(), cookie));
+        CookieStoreCommand(CookieStoreCommand::REMOVE, cookie));
   }
 
   void SetLoadExpectation(

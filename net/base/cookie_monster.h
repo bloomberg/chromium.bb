@@ -43,6 +43,42 @@ class CookieMonster : public CookieStore {
   class ParsedCookie;
   class PersistentCookieStore;
 
+  // Terminology:
+  //    * The 'top level domain' (TLD) of an internet domain name is
+  //      the terminal "." free substring (e.g. "com" for google.com
+  //      or world.std.com).
+  //    * The 'effective top level domain' (eTLD) is the longest
+  //      "." initiated terminal substring of an internet domain name
+  //      that is controlled by a general domain registrar.
+  //      (e.g. "co.uk" for news.bbc.co.uk).
+  //    * The 'effective top level domain plus one' (eTLD+1) is the
+  //      shortest "." delimited terminal substring of an internet
+  //      domain name that is not controlled by a general domain
+  //      registrar (e.g. "bbc.co.uk" for news.bbc.co.uk, or
+  //      "google.com" for news.google.com).  The general assumption
+  //      is that all hosts and domains under an eTLD+1 share some
+  //      administrative control.
+
+  // CookieMap is the central data structure of the CookieMonster.  It
+  // is a map whose values are pointers to CanonicalCookie data
+  // structures (the data structures are owned by the CookieMonster
+  // and must be destroyed when removed from the map).  There are two
+  // possible keys for the map, controlled on a per-CookieMonster basis
+  // by use_effective_domain_key_scheme_/SetKeyScheme()
+  // (defaulted by use_effective_domain_key_default_):
+
+  // If use_effective_domain_key_scheme_ is true (default), then the key is
+  // based on the effective domain of the cookies.  If the domain
+  // of the cookie has an eTLD+1, that is the key for the map.  If the
+  // domain of the cookie does not have an eTLD+1, the key of the map
+  // is the host the cookie applies to (it is not legal to have domain
+  // cookies without an eTLD+1).  This rule excludes cookies for,
+  // e.g, ".com", ".co.uk", or ".internalnetwork".
+
+  // If use_effective_domain_key_scheme_ is false, then the key is
+  // just the domain of the cookie.  Eventually, this option will be
+  // removed.
+
   // NOTE(deanm):
   // I benchmarked hash_multimap vs multimap.  We're going to be query-heavy
   // so it would seem like hashing would help.  However they were very
@@ -50,6 +86,8 @@ class CookieMonster : public CookieStore {
   // our map is at max around 1000 entries, and the additional complexity
   // for the hashing might not overcome the O(log(1000)) for querying
   // a multimap.  Also, multimap is standard, another reason to use it.
+  // TODO(rdsmith): This benchmark should be re-done now that we're allowing
+  // subtantially more entries in the map.
   typedef std::multimap<std::string, CanonicalCookie*> CookieMap;
   typedef std::pair<CookieMap::iterator, CookieMap::iterator> CookieMapItPair;
   typedef std::vector<CanonicalCookie> CookieList;
@@ -67,6 +105,7 @@ class CookieMonster : public CookieStore {
                 Delegate* delegate,
                 int last_access_threshold_milliseconds)
       : initialized_(false),
+        use_effective_domain_key_scheme_(use_effective_domain_key_default_),
         store_(store),
         last_access_threshold_(base::TimeDelta::FromMilliseconds(
             last_access_threshold_milliseconds)),
@@ -77,7 +116,7 @@ class CookieMonster : public CookieStore {
   }
 #endif
 
-  // Parse the string with the cookie time (very forgivingly).
+  // Parses the string with the cookie time (very forgivingly).
   static base::Time ParseCookieTime(const std::string& time_string);
 
   // Returns true if a domain string represents a host-only cookie,
@@ -85,14 +124,22 @@ class CookieMonster : public CookieStore {
   static bool DomainIsHostOnly(const std::string& domain_string);
 
   // CookieStore implementation.
+
+  // Sets the cookies specified by |cookie_list| returned from |url|
+  // with options |options| in effect.
   virtual bool SetCookieWithOptions(const GURL& url,
                                     const std::string& cookie_line,
                                     const CookieOptions& options);
+
+  // Gets all cookies that apply to |url| given |options|.
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const CookieOptions& options);
+
+  // Deletes all cookies with that might apply to |url| that has |cookie_name|.
   virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
+
   virtual CookieMonster* GetCookieMonster() { return this; }
 
   // Sets a cookie given explicit user-provided cookie attributes. The cookie
@@ -111,7 +158,7 @@ class CookieMonster : public CookieStore {
 
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed.
-  // The returned cookies are ordered by longest path, then earliest
+  // The returned cookies are ordered by longest path, then by earliest
   // creation date.
   CookieList GetAllCookies();
 
@@ -146,8 +193,12 @@ class CookieMonster : public CookieStore {
   // this cookie store.  Calling his overrides the value of
   // "enable_file_scheme_".
   // If this this method is called, it must be called before first use of
-  // the instance (i.e. as part of the instance initialization process.)
+  // the instance (i.e. as part of the instance initialization process).
   void SetCookieableSchemes(const char* schemes[], size_t num_schemes);
+
+  // Overrides the default key scheme.  This function must be called
+  // before initialization.
+  void SetKeyScheme(bool use_effective_domain_key);
 
   // There are some unknowns about how to correctly handle file:// cookies,
   // and our implementation for this is not robust enough. This allows you
@@ -160,11 +211,45 @@ class CookieMonster : public CookieStore {
   ~CookieMonster();
 
   // Testing support.
-  friend class CookieMonsterTest;
+  // For SetCookieWithCreationTime.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
                            TestCookieDeleteAllCreatedAfterTimestamp);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
                            TestCookieDeleteAllCreatedBetweenTimestamps);
+
+  // For gargage collection constants.
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestTotalGarbageCollection);
+
+  // For validation of key values.
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestDomainTree);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestImport);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, GetKey);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestGetKey);
+
+  // Cookie garbage collection thresholds.  Based off of the Mozilla defaults.
+  // When the number of cookies gets to k{Domain,}MaxCookies
+  // purge down to k{Domain,}MaxCookies - k{Domain,}PurgeCookies.
+  // It might seem scary to have a high purge value, but really it's not.
+  // You just make sure that you increase the max to cover the increase
+  // in purge, and we would have been purging the same amount of cookies.
+  // We're just going through the garbage collection process less often.
+  // Note that the DOMAIN values are per eTLD+1; see comment for the
+  // CookieMap typedef.  So, e.g., the maximum number of cookies allowed for
+  // google.com and all of its subdomains will be 150-180.
+  //
+  // Present in .h file to make accessible to tests through FRIEND_TEST.
+  // Actual definitions are in cookie_monster.cc.
+  static const size_t kDomainMaxCookies;
+  static const size_t kDomainPurgeCookies;
+  static const size_t kMaxCookies;
+  static const size_t kPurgeCookies;
+
+  // Default value for key scheme.  true means to use the new
+  // key scheme based on effective domain; false to use the
+  // old key scheme based on full domain.
+  static const bool use_effective_domain_key_default_ = true;
+
   bool SetCookieWithCreationTime(const GURL& url,
                                  const std::string& cookie_line,
                                  const base::Time& creation_time);
@@ -189,12 +274,12 @@ class CookieMonster : public CookieStore {
   // inconsistencies. (In other words, it does not have duplicate cookies).
   void EnsureCookiesMapIsValid();
 
-  // Checks for any duplicate cookies for host |key|, which lie between
+  // Checks for any duplicate cookies for CookieMap key |key| which lie between
   // |begin| and |end|. If any are found, all but the most recent are deleted.
   // Returns the number of duplicate cookies that were deleted.
-  int TrimDuplicateCookiesForHost(const std::string& key,
-                                  CookieMap::iterator begin,
-                                  CookieMap::iterator end);
+  int TrimDuplicateCookiesForKey(const std::string& key,
+                                 CookieMap::iterator begin,
+                                 CookieMap::iterator end);
 
   void SetDefaultCookieableSchemes();
 
@@ -210,14 +295,17 @@ class CookieMonster : public CookieStore {
                          bool update_access_time,
                          std::vector<CanonicalCookie*>* cookies);
 
-  // Delete any cookies that are equivalent to |ecc| (same path, key, etc).
+  // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
   // If |skip_httponly| is true, httponly cookies will not be deleted.  The
   // return value with be true if |skip_httponly| skipped an httponly cookie.
+  // |key| is the key to find the cookie in cookies_; see the comment before
+  // the CookieMap typedef for details.
   // NOTE: There should never be more than a single matching equivalent cookie.
   bool DeleteAnyEquivalentCookie(const std::string& key,
                                  const CanonicalCookie& ecc,
                                  bool skip_httponly);
 
+  // Takes ownership of *cc.
   void InternalInsertCookie(const std::string& key,
                             CanonicalCookie* cc,
                             bool sync_to_store);
@@ -237,7 +325,8 @@ class CookieMonster : public CookieStore {
                           const base::Time& creation_time,
                           const CookieOptions& options);
 
-  void InternalUpdateCookieAccessTime(CanonicalCookie* cc);
+  void InternalUpdateCookieAccessTime(CanonicalCookie* cc,
+                                      const base::Time& current_time);
 
   enum DeletionCause {
     DELETE_COOKIE_EXPLICIT,
@@ -245,32 +334,22 @@ class CookieMonster : public CookieStore {
     DELETE_COOKIE_EXPIRED,
     DELETE_COOKIE_EVICTED,
     DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE,
-    DELETE_COOKIE_DONT_RECORD,
-    DELETE_COOKIE_LAST_ENTRY = DELETE_COOKIE_DONT_RECORD
+    DELETE_COOKIE_DONT_RECORD,  // e.g. For final cleanup after flush to store.
+    DELETE_COOKIE_EVICTED_DOMAIN,
+    DELETE_COOKIE_EVICTED_GLOBAL,
+    DELETE_COOKIE_LAST_ENTRY = DELETE_COOKIE_EVICTED_GLOBAL
   };
 
   // |deletion_cause| argument is for collecting statistics.
   void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store,
                             DeletionCause deletion_cause);
 
-  // If the number of cookies for host |key|, or globally, are over preset
-  // maximums, garbage collects, first for the host and then globally, as
-  // described by GarbageCollectRange().  The limits can be found as constants
-  // at the top of the function body.
+  // If the number of cookies for CookieMap key |key|, or globally, are
+  // over the preset maximums above, garbage collect, first for the host and
+  // then globally, as described by GarbageCollectRange().
   //
   // Returns the number of cookies deleted (useful for debugging).
   int GarbageCollect(const base::Time& current, const std::string& key);
-
-  // Deletes all expired cookies in |itpair|;
-  // then, if the number of remaining cookies is greater than |num_max|,
-  // collects the least recently accessed cookies until
-  // (|num_max| - |num_purge|) cookies remain.
-  //
-  // Returns the number of cookies deleted.
-  int GarbageCollectRange(const base::Time& current,
-                          const CookieMapItPair& itpair,
-                          size_t num_max,
-                          size_t num_purge);
 
   // Helper for GarbageCollectRange(); can be called directly as well.  Deletes
   // all expired cookies in |itpair|.  If |cookie_its| is non-NULL, it is
@@ -280,6 +359,19 @@ class CookieMonster : public CookieStore {
   int GarbageCollectExpired(const base::Time& current,
                             const CookieMapItPair& itpair,
                             std::vector<CookieMap::iterator>* cookie_its);
+
+  // If needed, evicts least recently accessed cookies in iterator
+  // list until (|num_max| - |num_purge|) cookies remain.
+  int GarbageCollectEvict(
+      const base::Time& current,
+      size_t num_max,
+      size_t num_purge,
+      DeletionCause cause,
+      std::vector<CookieMap::iterator>* cookie_its);
+
+  // Find the key (for lookup in cookies_) based on the given domain.
+  // See comment on keys before the CookieMap typedef.
+  std::string GetKey(const std::string& domain) const;
 
   bool HasCookieableScheme(const GURL& url);
 
@@ -297,8 +389,13 @@ class CookieMonster : public CookieStore {
   scoped_refptr<Histogram> histogram_between_access_interval_minutes_;
   scoped_refptr<Histogram> histogram_evicted_last_access_minutes_;
   scoped_refptr<Histogram> histogram_count_;
+  scoped_refptr<Histogram> histogram_domain_count_;
+  scoped_refptr<Histogram> histogram_etldp1_count_;
+  scoped_refptr<Histogram> histogram_domain_per_etldp1_count_;
   scoped_refptr<Histogram> histogram_number_duplicate_db_cookies_;
   scoped_refptr<Histogram> histogram_cookie_deletion_cause_;
+  scoped_refptr<Histogram> histogram_time_get_;
+  scoped_refptr<Histogram> histogram_time_load_;
 
   // Initialize the above variables; should only be called from
   // the constructor.
@@ -309,6 +406,10 @@ class CookieMonster : public CookieStore {
   // Indicates whether the cookie store has been initialized. This happens
   // lazily in InitStoreIfNecessary().
   bool initialized_;
+
+  // Indicates whether this cookie monster uses the new effective domain
+  // key scheme or not.
+  bool use_effective_domain_key_scheme_;
 
   scoped_refptr<PersistentCookieStore> store_;
 
@@ -390,6 +491,9 @@ class CookieMonster::CanonicalCookie {
   const base::Time& ExpiryDate() const { return expiry_date_; }
   bool IsSecure() const { return secure_; }
   bool IsHttpOnly() const { return httponly_; }
+  bool IsDomainCookie() const {
+    return !domain_.empty() && domain_[0] == '.'; }
+  bool IsHostCookie() const { return !IsDomainCookie(); }
 
   bool IsExpired(const base::Time& current) {
     return has_expires_ && current >= expiry_date_;
@@ -400,7 +504,7 @@ class CookieMonster::CanonicalCookie {
   // match (case insensitive), and path must match (case sensitive).
   // For the case insensitive domain compare, we rely on the domain
   // having been canonicalized (in
-  // GetCookieDomainKeyWithString->CanonicalizeHost).
+  // GetCookieDomainWithString->CanonicalizeHost).
   bool IsEquivalent(const CanonicalCookie& ecc) const {
     // It seems like it would make sense to take secure and httponly into
     // account, but the RFC doesn't specify this.
@@ -414,6 +518,7 @@ class CookieMonster::CanonicalCookie {
   }
 
   bool IsOnPath(const std::string& url_path) const;
+  bool IsDomainMatch(const std::string& scheme, const std::string& host) const;
 
   std::string DebugString() const;
  private:
@@ -547,7 +652,7 @@ class CookieMonster::PersistentCookieStore
   // called only once at startup.
   virtual bool Load(std::vector<CookieMonster::CanonicalCookie*>*) = 0;
 
-  virtual void AddCookie(const std::string&, const CanonicalCookie&) = 0;
+  virtual void AddCookie(const CanonicalCookie&) = 0;
   virtual void UpdateCookieAccessTime(const CanonicalCookie&) = 0;
   virtual void DeleteCookie(const CanonicalCookie&) = 0;
 

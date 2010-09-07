@@ -30,8 +30,7 @@ class SQLitePersistentCookieStore
 
   virtual bool Load(std::vector<net::CookieMonster::CanonicalCookie*>*);
 
-  virtual void AddCookie(const std::string&,
-                         const net::CookieMonster::CanonicalCookie&);
+  virtual void AddCookie(const net::CookieMonster::CanonicalCookie&);
   virtual void UpdateCookieAccessTime(
       const net::CookieMonster::CanonicalCookie&);
   virtual void DeleteCookie(const net::CookieMonster::CanonicalCookie&);
