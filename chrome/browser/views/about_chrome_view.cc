@@ -775,12 +775,9 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"),
                                   profile_);
       restart_button_visible_ = true;
-      const std::wstring& update_string = new_version_available_.empty()
-          ? l10n_util::GetStringF(IDS_UPGRADE_SUCCESSFUL_NOVERSION_RESTART,
-                                  l10n_util::GetString(IDS_PRODUCT_NAME))
-          : l10n_util::GetStringF(IDS_UPGRADE_SUCCESSFUL_RESTART,
-                                  l10n_util::GetString(IDS_PRODUCT_NAME),
-                                  new_version_available_);
+      const std::wstring& update_string =
+          l10n_util::GetStringF(IDS_UPGRADE_SUCCESSFUL_RESTART,
+                                l10n_util::GetString(IDS_PRODUCT_NAME));
       update_label_.SetText(update_string);
       show_success_indicator = true;
       break;
