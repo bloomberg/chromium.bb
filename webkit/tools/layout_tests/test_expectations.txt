@@ -34,9 +34,6 @@ BUG54465 WIN SKIP : http/tests/media/video-play-stall-seek.html = FAIL
 // point this can be removed.
 BUGPKASTING : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TEXT PASS
 
-// WebKit 66795. missing one newline (\n) at the end.
-BUG54591 MAC : svg/custom/use-invalid-style.svg = TEXT
-
 // WebKit 66847. new test.
 BUG54656 WIN LINUX : svg/custom/use-invalid-pattern.svg = MISSING
 BUG54656 MAC : svg/custom/use-invalid-pattern.svg = TEXT
