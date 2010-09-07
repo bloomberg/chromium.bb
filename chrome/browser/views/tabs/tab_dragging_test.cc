@@ -83,8 +83,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab1Tab2) {
   ASSERT_TRUE(tab3.get());
 
   // Make sure 3 tabs are open.
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(initial_tab_count + 2,
-                                               10000));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(initial_tab_count + 2));
 
   // Get bounds for the tabs.
   gfx::Rect bounds1;
@@ -182,8 +181,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab1Tab3) {
   ASSERT_TRUE(tab3.get());
 
   // Make sure 3 tabs are open.
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(initial_tab_count + 2,
-                                               10000));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(initial_tab_count + 2));
 
   // Get bounds for the tabs.
   gfx::Rect bounds1;
@@ -290,8 +288,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab1Tab3Escape) {
   ASSERT_TRUE(tab3.get());
 
   // Make sure 3 tabs are open.
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(initial_tab_count + 2,
-                                               10000));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(initial_tab_count + 2));
 
   // Get bounds for the tabs.
   gfx::Rect bounds1;
@@ -401,8 +398,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab2OutOfTabStrip) {
   ASSERT_TRUE(tab3.get());
 
   // Make sure 3 tabs are opened.
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(initial_tab_count + 2,
-                                               10000));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(initial_tab_count + 2));
 
   // Make sure all the tab URL specs are different.
   ASSERT_TRUE(tab1_url != tab2_url);

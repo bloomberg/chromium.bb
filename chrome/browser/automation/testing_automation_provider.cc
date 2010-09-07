@@ -403,6 +403,8 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SendJSONRequest,
                                     SendJSONRequest)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabCountToBecome,
+                                    WaitForTabCountToBecome)
 
     IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
   IPC_END_MESSAGE_MAP()
@@ -3687,6 +3689,23 @@ std::map<AutoFillFieldType, std::wstring>
   credit_card_type_to_string[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
       L"CREDIT_CARD_EXP_4_DIGIT_YEAR";
   return credit_card_type_to_string;
+}
+
+void TestingAutomationProvider::WaitForTabCountToBecome(
+    int browser_handle,
+    int target_tab_count,
+    IPC::Message* reply_message) {
+  if (!browser_tracker_->ContainsHandle(browser_handle)) {
+    AutomationMsg_WaitForTabCountToBecome::WriteReplyParams(reply_message,
+                                                            false);
+    Send(reply_message);
+    return;
+  }
+
+  Browser* browser = browser_tracker_->GetResource(browser_handle);
+
+  // The observer will delete itself.
+  new TabCountChangeObserver(this, browser, reply_message, target_tab_count);
 }
 
 // TODO(brettw) change this to accept GURLs when history supports it

@@ -433,7 +433,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseTabWhenOtherTabHasListener) {
   // popup will be constrained, which isn't what we want to test.
   ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
                                       views::Event::EF_LEFT_BUTTON_DOWN));
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(2, action_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(2));
 
   scoped_refptr<TabProxy> popup_tab(browser->GetActiveTab());
   ASSERT_TRUE(popup_tab.get());
@@ -442,7 +442,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseTabWhenOtherTabHasListener) {
   EXPECT_EQ(std::wstring(L"popup"), popup_title);
   EXPECT_TRUE(popup_tab->Close(true));
 
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
   scoped_refptr<TabProxy> main_tab(browser->GetActiveTab());
   ASSERT_TRUE(main_tab.get());
   std::wstring main_title;

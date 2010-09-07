@@ -86,8 +86,9 @@ class TabSwitchingUITest : public UIPerfTest {
       int initial_tab_count = 0;
       ASSERT_TRUE(browser_proxy_->GetTabCount(&initial_tab_count));
       int new_tab_count = OpenTabs();
-      ASSERT_TRUE(browser_proxy_->WaitForTabCountToBecome(
-          initial_tab_count + new_tab_count, 10000));
+      int tab_count = -1;
+      ASSERT_TRUE(browser_proxy_->GetTabCount(&tab_count));
+      ASSERT_EQ(initial_tab_count + new_tab_count, tab_count);
 
       // Switch linearly between tabs.
       ASSERT_TRUE(browser_proxy_->ActivateTab(0));

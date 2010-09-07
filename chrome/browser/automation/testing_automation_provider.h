@@ -596,6 +596,10 @@ class TestingAutomationProvider : public AutomationProvider,
   static std::map<AutoFillFieldType, std::wstring>
       GetCreditCardFieldToStringMap();
 
+  void WaitForTabCountToBecome(int browser_handle,
+                               int target_tab_count,
+                               IPC::Message* reply_message);
+
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
       HistoryService::Handle request_handle,

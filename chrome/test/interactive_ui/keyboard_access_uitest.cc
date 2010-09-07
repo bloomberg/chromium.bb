@@ -87,7 +87,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
   ASSERT_TRUE(window->SimulateOSKeyPress(app::VKEY_RETURN, 0));
 
   // Wait for the new tab to appear.
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(2, action_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(2));
 
   // Make sure that the new tab index is 1.
   ASSERT_TRUE(browser->GetActiveTabIndex(&tab_index));
@@ -132,7 +132,7 @@ TEST_F(KeyboardAccessTest, FAILS_ReserveKeyboardAccelerators) {
   ASSERT_TRUE(browser->ActivateTab(1));
   ASSERT_TRUE(window->SimulateOSKeyPress(
       app::VKEY_F4, views::Event::EF_CONTROL_DOWN));
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
 #endif
 }
 
