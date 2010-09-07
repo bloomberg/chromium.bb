@@ -989,3 +989,19 @@
    fun:RenderViewTest::SimulateElementClick
    fun:RenderViewTest_PageClickTracker_Test::TestBody
 }
+{
+   bug_54689_b
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   fun:WTF::FastAllocBase::operator new
+   fun:WebCore::MouseEvent::create
+   fun:WebCore::Node::dispatchMouseEvent
+   fun:WebCore::Node::dispatchMouseEvent
+   fun:WebCore::EventHandler::dispatchMouseEvent
+   fun:WebCore::EventHandler::handleMousePressEvent
+   fun:WebKit::WebViewImpl::mouseDown
+   fun:WebKit::WebViewImpl::handleInputEvent
+   fun:RenderWidget::OnHandleInputEvent
+   fun:RenderViewTest::SimulateElementClick
+   fun:RenderViewTest_PageClickTracker_Test::TestBody
+}
