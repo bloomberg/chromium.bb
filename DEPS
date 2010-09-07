@@ -56,7 +56,7 @@ deps = {
     (Var("googlecode_url") % "gyp") + "/trunk@840",
 
   "src/v8":
-    (Var("googlecode_url") % "v8") + "/trunk@5388",
+    (Var("googlecode_url") % "v8") + "/trunk@5412",
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
