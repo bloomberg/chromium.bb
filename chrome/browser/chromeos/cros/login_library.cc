@@ -13,7 +13,9 @@ namespace chromeos {
 class LoginLibraryImpl : public LoginLibrary {
  public:
   LoginLibraryImpl()
-      : set_owner_key_callback_(NULL) {
+      : set_owner_key_callback_(NULL),
+        whitelist_op_callback_(NULL),
+        property_op_callback_(NULL) {
     if (CrosLibrary::Get()->EnsureLoaded())
       Init();
   }

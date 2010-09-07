@@ -13,10 +13,14 @@
 #include "base/singleton.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
+#include "chrome/browser/chromeos/login/signed_settings.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 namespace chromeos {
 
-class OwnershipService {
+class OwnershipService : public SignedSettings::Delegate<bool>,
+                         public NotificationObserver {
  public:
   // Returns the singleton instance of the OwnershipService.
   static OwnershipService* GetSharedInstance();
@@ -37,9 +41,12 @@ class OwnershipService {
   // places.  Keeps them in memory as well, for later use.
   // Returns true if the attempt was initiated, false otherwise.
   //
-  // Sends out a OWNER_KEY_FETCH_ATTEMPT_SUCCESS notification on success,
-  // OWNER_KEY_FETCH_ATTEMPT_FAILED on failure.
-  virtual bool StartTakeOwnershipAttempt();
+  // Upon failure, sends out OWNER_KEY_FETCH_ATTEMPT_FAILED.
+  // Upon success, sends out OWNER_KEY_FETCH_ATTEMPT_SUCCESS and kicks off an
+  // asynchronous call to whitelist the owner.
+  // If no attempt is started (if the device is already owned), no
+  // notification is sent.
+  virtual bool StartTakeOwnershipAttempt(const std::string& owner);
 
   // Initiate an attempt to sign |data| with |private_key_|.  Will call
   // d->OnKeyOpComplete() when done.  Upon success, the signature will be passed
@@ -64,6 +71,16 @@ class OwnershipService {
 
   virtual bool CurrentUserIsOwner();
 
+  // SignedSettings::Delegate<bool> implementation.
+  // These methods will be called on the UI thread.
+  virtual void OnSettingsOpSucceeded(bool value);
+  virtual void OnSettingsOpFailed();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  protected:
   OwnershipService();
 
@@ -73,6 +90,9 @@ class OwnershipService {
 
   scoped_refptr<OwnerManager> manager_;
   scoped_refptr<OwnerKeyUtils> utils_;
+  scoped_refptr<SignedSettings> whitelister_;
+
+  NotificationRegistrar registrar_;
 };
 
 }  // namespace chromeos

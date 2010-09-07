@@ -182,7 +182,8 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   }
 
   // Attempt to take ownership; this will fail if device is already owned.
-  OwnershipService::GetSharedInstance()->StartTakeOwnershipAttempt();
+  OwnershipService::GetSharedInstance()->StartTakeOwnershipAttempt(
+      UserManager::Get()->logged_in_user().email());
 
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is

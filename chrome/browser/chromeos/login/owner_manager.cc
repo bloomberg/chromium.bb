@@ -51,12 +51,13 @@ void OwnerManager::GenerateKeysAndExportPublic() {
 
   private_key_.reset(utils_->GenerateKeyPair());
 
-  if (private_key_.get()) {
+  if (private_key_.get() && private_key_->ExportPublicKey(&public_key_)) {
     // If we generated the keys successfully, export them.
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &OwnerManager::ExportKey));
   } else {
+    private_key_.reset(NULL);
     // If we didn't generate the key, send along a notification of failure.
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
@@ -68,18 +69,16 @@ void OwnerManager::GenerateKeysAndExportPublic() {
 }
 
 void OwnerManager::ExportKey() {
-  NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
   LOG(INFO) << "Exporting public key";
   if (!utils_->ExportPublicKeyViaDbus(private_key_.get(), this)) {
     private_key_.reset(NULL);
-    result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &OwnerManager::SendNotification,
+                          NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
+                          NotificationService::NoDetails()));
   }
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &OwnerManager::SendNotification,
-                        result,
-                        NotificationService::NoDetails()));
 }
 
 void OwnerManager::Run(bool value) {
@@ -142,7 +141,7 @@ void OwnerManager::Sign(const ChromeThread::ID thread_id,
       thread_id, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::CallDelegate,
-                        d, return_code, std::vector<uint8>()));
+                        d, return_code, signature));
 }
 
 void OwnerManager::Verify(const ChromeThread::ID thread_id,

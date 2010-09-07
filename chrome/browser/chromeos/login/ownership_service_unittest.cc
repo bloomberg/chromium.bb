@@ -134,7 +134,7 @@ TEST_F(OwnershipServiceTest, LoadOwnerKey) {
 TEST_F(OwnershipServiceTest, TakeOwnershipAlreadyOwned) {
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
-  EXPECT_FALSE(service_->StartTakeOwnershipAttempt());
+  EXPECT_FALSE(service_->StartTakeOwnershipAttempt("you"));
 }
 
 TEST_F(OwnershipServiceTest, AttemptKeyGeneration) {
@@ -150,7 +150,7 @@ TEST_F(OwnershipServiceTest, AttemptKeyGeneration) {
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
 
-  EXPECT_TRUE(service_->StartTakeOwnershipAttempt());
+  EXPECT_TRUE(service_->StartTakeOwnershipAttempt("me"));
 
   message_loop_.Run();
 }
