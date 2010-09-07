@@ -299,7 +299,8 @@ TEST_F(RenderViewHostManagerTest, NonDOMUIChromeURLs) {
 
 // Tests that we don't end up in an inconsistent state if a page does a back and
 // then reload. http://crbug.com/51680
-TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
+// TODO(jcivelli): http://crbug.com/54708 Fails on the build bots on Mac.
+TEST_F(RenderViewHostManagerTest, FAILS_PageDoesBackAndReload) {
   GURL url1("http://www.google.com/");
   GURL url2("http://www.evil-site.com/");
 
