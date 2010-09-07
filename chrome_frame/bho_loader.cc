@@ -35,6 +35,10 @@ void BHOLoader::OnHookEvent(DWORD event, HWND window) {
     // in our simulation on BHO loading, we watch for the status bar to be
     // created and do our simulated BHO loading at that time.
     if (IsWindowOfClass(window, kStatusBarWindowClass)) {
+      // Check that the window was created on the current thread.
+      DWORD thread_id = GetWindowThreadProcessId(window, NULL);
+      _ASSERTE(thread_id == GetCurrentThreadId());
+
       HWND parent_window = GetParent(window);
       // Step 3:
       // Parent window of status bar window is the web browser window. Try to
@@ -43,35 +47,39 @@ void BHOLoader::OnHookEvent(DWORD event, HWND window) {
       UtilGetWebBrowserObjectFromWindow(parent_window, __uuidof(browser),
                                         reinterpret_cast<void**>(&browser));
       if (browser) {
-        // TODO(robertshield): We may need to find a way to prevent doing this
-        // twice. A marker of some kind would do. Ask during review for good
-        // suggestions.
+        // Figure out if we're already in the property map.
+        wchar_t bho_clsid_as_string[MAX_PATH] = {0};
+        StringFromGUID2(CLSID_ChromeFrameBHO, bho_clsid_as_string,
+                        ARRAYSIZE(bho_clsid_as_string));
+        CComBSTR bho_clsid_as_string_bstr(bho_clsid_as_string);
 
-        // Step 4:
-        // We have the IWebBrowser2 interface. Now create the BHO instance
-        CComPtr<IObjectWithSite> bho_object;
-        HRESULT error_code =  bho_object.CoCreateInstance(CLSID_ChromeFrameBHO,
-                                                          NULL,
-                                                          CLSCTX_INPROC_SERVER);
+        CComVariant existing_bho;
+        HRESULT hr = browser->GetProperty(bho_clsid_as_string_bstr,
+                                          &existing_bho);
 
-        if (SUCCEEDED(error_code) && bho_object) {
-          // Step 5:
-          // Initialize the BHO by calling SetSite and passing it IWebBrowser2
-          error_code = bho_object->SetSite(browser);
-          if (SUCCEEDED(error_code)) {
-            // Step 6:
-            // Now add the BHO to the collection of automation objects. This
-            // will ensure that BHO will be accessible from the web pages as
-            // any other BHO. Importantly, it will make sure that our BHO
-            // will be cleaned up at the right time along with other BHOs.
-            wchar_t bho_clsid_as_string[MAX_PATH] = {0};
-            StringFromGUID2(CLSID_ChromeFrameBHO, bho_clsid_as_string,
-                            ARRAYSIZE(bho_clsid_as_string));
+        if (existing_bho.vt != VT_DISPATCH || existing_bho.pdispVal == NULL) {
+          // Step 4:
+          // We have the IWebBrowser2 interface. Now create the BHO instance
+          CComPtr<IObjectWithSite> bho_object;
+          hr =  bho_object.CoCreateInstance(CLSID_ChromeFrameBHO,
+                                            NULL,
+                                            CLSCTX_INPROC_SERVER);
 
-            CComBSTR bho_clsid_as_string_bstr(bho_clsid_as_string);
-            CComVariant object_variant(bho_object);
-
-            browser->PutProperty(bho_clsid_as_string_bstr, object_variant);
+          _ASSERTE(bho_object);
+          if (SUCCEEDED(hr) && bho_object) {
+            // Step 5:
+            // Initialize the BHO by calling SetSite and passing it IWebBrowser2
+            hr = bho_object->SetSite(browser);
+            _ASSERTE(bho_object);
+            if (SUCCEEDED(hr)) {
+              // Step 6:
+              // Now add the BHO to the collection of automation objects. This
+              // will ensure that BHO will be accessible from the web pages as
+              // any other BHO. Importantly, it will make sure that our BHO
+              // will be cleaned up at the right time along with other BHOs.
+              CComVariant object_variant(bho_object);
+              browser->PutProperty(bho_clsid_as_string_bstr, object_variant);
+            }
           }
         }
       }
