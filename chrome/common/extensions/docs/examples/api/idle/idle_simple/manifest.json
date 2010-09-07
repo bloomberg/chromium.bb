@@ -1,0 +1,15 @@
+{
+  "name" : "Idle - Simple Example",
+  "version" : "1.0.0",
+  "description" : "Demonstrates the Idle API",
+  "background_page" : "background.html",
+  "permissions" : [ "idle" ],
+  "browser_action" : {
+    "default_icon" : "sample-19.png"
+  },
+  "icons" : {
+    "16" : "sample-16.png",
+    "48" : "sample-48.png",
+    "128" : "sample-128.png"
+  }
+}

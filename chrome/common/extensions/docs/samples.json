@@ -727,6 +727,31 @@
     }, 
     {
       "features": [
+        "background_page", 
+        "browser_action", 
+        "idle"
+      ], 
+      "icon": "sample-128.png", 
+      "description": "Demonstrates the Idle API", 
+      "search_string": "IDLE - SIMPLE EXAMPLE DEMONSTRATES THE IDLE API BACKGROUND_PAGE BROWSER_ACTION IDLE CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.IDLE.ONSTATECHANGED CHROME.IDLE.QUERYSTATE", 
+      "source_files": [
+        "background.html", 
+        "history.html", 
+        "manifest.json"
+      ], 
+      "path": "examples/api/idle/idle_simple/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.extension.getBackgroundPage", 
+        "chrome.idle.onStateChanged", 
+        "chrome.idle.queryState"
+      ], 
+      "id": "2020d72f2577f53caf8e94e3dbac0fb849ceaa4d", 
+      "protocols": [], 
+      "name": "Idle - Simple Example"
+    }, 
+    {
+      "features": [
         "chrome_url_overrides"
       ], 
       "icon": null, 
