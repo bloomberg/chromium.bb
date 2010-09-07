@@ -25,6 +25,8 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 
+#include "native_client/src/trusted/base/nacl_refcount.h"
+
 EXTERN_C_BEGIN
 
 struct NaClDesc;
@@ -151,7 +153,7 @@ extern char const *NaClDescTypeString(enum NaClDescTypeTag type_tag);
  */
 
 struct NaClDescVtbl {
-  void (*Dtor)(struct NaClDesc  *vself);
+  struct NaClRefCountVtbl vbase;
 
   /*
    * Essentially mmap.  Note that untrusted code should always use
@@ -320,9 +322,7 @@ struct NaClDescVtbl {
 };
 
 struct NaClDesc {
-  struct NaClDescVtbl const *vtbl;
-  struct NaClMutex          mu;
-  unsigned                  ref_count;
+  struct NaClRefCount base;
 };
 
 /*
@@ -333,8 +333,7 @@ struct NaClDesc {
  */
 int NaClDescCtor(struct NaClDesc *ndp) NACL_WUR;
 
-/* Typically it is incorrect to call the dtor directly; see NaClDescUnref */
-void NaClDescDtor(struct NaClDesc *ndp);
+extern struct NaClDescVtbl const kNaClDescVtbl;
 
 struct NaClDesc *NaClDescRef(struct NaClDesc *ndp);
 

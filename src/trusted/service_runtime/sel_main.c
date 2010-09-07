@@ -187,6 +187,7 @@ int main(int  ac,
   int                           main_thread_only = 1;
   int                           export_addr_to = -2;
   enum NaClAbiCheckOption       check_abi = NACL_ABI_CHECK_OPTION_CHECK;
+  int32_t                       srpc_fd = -1;
 
   struct NaClApp                *nap;
 
@@ -319,7 +320,7 @@ int main(int  ac,
         break;
       case 'P':
         /* Conduit to convey the descriptor ID to the application code. */
-        NaClSrpcFileDescriptor = strtol(optarg, (char **) 0, 0);
+        srpc_fd = strtol(optarg, (char **) 0, 0);
         break;
       case 'v':
         ++verbosity;
@@ -421,6 +422,7 @@ int main(int  ac,
   state.restrict_to_main_thread = main_thread_only;
   state.ignore_validator_result = debug_mode_ignore_validator;
   state.validator_stub_out_mode = stub_out_mode;
+  state.srpc_fd = srpc_fd;
 
   nap = &state;
   errcode = LOAD_OK;

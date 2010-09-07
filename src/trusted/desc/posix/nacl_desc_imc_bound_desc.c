@@ -34,12 +34,13 @@ int NaClDescImcBoundDescCtor(struct NaClDescImcBoundDesc  *self,
                              NaClHandle                   h) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
   self->h = h;
-  basep->vtbl = &kNaClDescImcBoundDescVtbl;
+  basep->base.vtbl =
+      (struct NaClRefCountVtbl const *) &kNaClDescImcBoundDescVtbl;
   return 1;
 }
 
@@ -48,8 +49,8 @@ void NaClDescImcBoundDescDtor(struct NaClDesc *vself) {
 
   NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(vself);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
@@ -154,7 +155,9 @@ cleanup:
 }
 
 static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
-  NaClDescImcBoundDescDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescImcBoundDescDtor,
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,

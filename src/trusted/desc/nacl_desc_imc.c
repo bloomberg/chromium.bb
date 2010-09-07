@@ -51,13 +51,14 @@ int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,
                                  NaClHandle                       h) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
 
   if (!NaClDescCtor(basep)) {
     return 0;
   }
   self->h = h;
-  self->base.vtbl = &kNaClDescImcConnectedDescVtbl;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *)
+      &kNaClDescImcConnectedDescVtbl;
 
   return 1;
 }
@@ -67,8 +68,8 @@ static void NaClDescImcConnectedDescDtor(struct NaClDesc *vself) {
                                            vself);
   (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
-  self->base.vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(vself);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 int NaClDescImcDescCtor(struct NaClDescImcDesc  *self,
@@ -88,7 +89,8 @@ int NaClDescImcDescCtor(struct NaClDescImcDesc  *self,
     NaClDescUnref((struct NaClDesc *) self);
     return 0;
   }
-  self->base.base.vtbl = &kNaClDescImcDescVtbl;
+  self->base.base.base.vtbl = (struct NaClRefCountVtbl const *)
+      &kNaClDescImcDescVtbl;
 
   return retval;
 }
@@ -99,8 +101,9 @@ static void NaClDescImcDescDtor(struct NaClDesc *vself) {
   NaClMutexDtor(&self->sendmsg_mu);
   NaClMutexDtor(&self->recvmsg_mu);
 
-  self->base.base.vtbl = &kNaClDescImcConnectedDescVtbl;
-  (*self->base.base.vtbl->Dtor)(vself);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *)
+      &kNaClDescImcConnectedDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 int NaClDescXferableDataDescCtor(struct NaClDescXferableDataDesc  *self,
@@ -110,17 +113,16 @@ int NaClDescXferableDataDescCtor(struct NaClDescXferableDataDesc  *self,
   if (!retval) {
     return 0;
   }
-  self->base.base.vtbl = &kNaClDescXferableDataDescVtbl;
+  self->base.base.base.vtbl = (struct NaClRefCountVtbl const *)
+      &kNaClDescXferableDataDescVtbl;
 
   return retval;
 }
 
 static void NaClDescXferableDataDescDtor(struct NaClDesc *vself) {
-  struct NaClDescXferableDataDesc  *self = ((struct NaClDescXferableDataDesc *)
-                                            vself);
-
-  self->base.base.vtbl = &kNaClDescImcConnectedDescVtbl;
-  (*self->base.base.vtbl->Dtor)(vself);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *)
+      &kNaClDescImcConnectedDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 int NaClDescImcDescFstat(struct NaClDesc          *vself,
@@ -337,7 +339,9 @@ static ssize_t NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
 
 
 static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
-  NaClDescImcConnectedDescDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescImcConnectedDescDtor,
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,
@@ -369,7 +373,9 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
 
 
 static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
-  NaClDescImcDescDtor,  /* diff */
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescImcDescDtor,  /* diff */
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,
@@ -401,7 +407,9 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
 
 
 static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
-  NaClDescXferableDataDescDtor,  /* diff */
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescXferableDataDescDtor,  /* diff */
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,

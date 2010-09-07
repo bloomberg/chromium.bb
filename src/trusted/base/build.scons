@@ -7,6 +7,13 @@
 
 Import('env')
 
+nacl_base_lib_inputs = [
+  'nacl_refcount.c',
+]
+
+env.DualLibrary('nacl_base', nacl_base_lib_inputs,
+                EXTRA_LIBS=['platform'])
+
 nacl_base_test_exe = env.ComponentProgram('nacl_base_test',
                                           ['nacl_base_test.c'])
 

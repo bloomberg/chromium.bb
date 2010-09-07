@@ -575,7 +575,8 @@ int32_t NaClCommonSysClose(struct NaClAppThread *natp,
   NaClLog(5, "Invoking Close virtual function of object 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) ndp);
   if (NULL != ndp) {
-    retval = (*ndp->vtbl->Close)(ndp);  /* Unref */
+    retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->Close)(ndp);
+    /* Unref */
   }
 
   NaClSysCommonThreadSyscallLeave(natp);
@@ -618,9 +619,10 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread *natp,
   if (count > INT32_MAX) {
     count = INT32_MAX;
   }
-  getdents_ret = (*ndp->vtbl->Getdents)(ndp,
-                                        (void *) sysaddr,
-                                        count);
+  getdents_ret = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+                  Getdents)(ndp,
+                            (void *) sysaddr,
+                            count);
   if ((getdents_ret < INT32_MIN && !NaClIsNegErrno(getdents_ret))
       || INT32_MAX < getdents_ret) {
     /* This should never happen, because we already clamped the input count */
@@ -672,7 +674,8 @@ int32_t NaClCommonSysRead(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  read_result = (*ndp->vtbl->Read)(ndp, (void *) sysaddr, count);
+  read_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+                 Read)(ndp, (void *) sysaddr, count);
   if (read_result > 0) {
     NaClLog(4, "read returned %"NACL_PRIdS" bytes\n", read_result);
     NaClLog(8, "read result: %.*s\n",
@@ -732,7 +735,8 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
     count = INT32_MAX;
   }
 
-  write_result = (*ndp->vtbl->Write)(ndp, (void *) sysaddr, count);
+  write_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+                  Write)(ndp, (void *) sysaddr, count);
 
   NaClDescUnref(ndp);
 
@@ -770,7 +774,8 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  retval64 = (*ndp->vtbl->Seek)(ndp, offset, whence);
+  retval64 = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+              Seek)(ndp, offset, whence);
   if (INT32_MAX < retval64) {
     retval = -NACL_ABI_EOVERFLOW;
   } else {
@@ -822,7 +827,8 @@ int32_t NaClCommonSysIoctl(struct NaClAppThread *natp,
     goto cleanup_unref;
   }
 
-  retval = (*ndp->vtbl->Ioctl)(ndp, request, (void *) sysaddr);
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+            Ioctl)(ndp, request, (void *) sysaddr);
 cleanup_unref:
   NaClDescUnref(ndp);
 cleanup:
@@ -856,7 +862,8 @@ int32_t NaClCommonSysFstat(struct NaClAppThread *natp,
     retval = -NACL_ABI_EBADF;
     goto cleanup;
   }
-  retval = (*ndp->vtbl->Fstat)(ndp, (struct nacl_abi_stat *) sysaddr);
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+            Fstat)(ndp, (struct nacl_abi_stat *) sysaddr);
 
   NaClDescUnref(ndp);
 cleanup:
@@ -1133,7 +1140,8 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
      * 4K system page containing file data and the rest of the
      * simulated windows allocation 64K page.
      */
-    map_result = (*ndp->vtbl->Fstat)(ndp, &stbuf);
+    map_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+                  Fstat)(ndp, &stbuf);
     if (0 != map_result) {
       goto cleanup;
     }
@@ -1345,17 +1353,18 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
       size_t length_to_map = size_min(length, (size_t) file_bytes);
 
       NaClLog(4,
-              ("NaClSysMmap: (*ndp->vtbl->Map)(,,0x%08"NACL_PRIxPTR","
+              ("NaClSysMmap: (*ndp->Map)(,,0x%08"NACL_PRIxPTR","
                "0x%08"NACL_PRIxS",0x%x,0x%x,0x%08"NACL_PRIxPTR")\n"),
               sysaddr, length, prot, flags, (uintptr_t) offset);
 
-      map_result = (*ndp->vtbl->Map)(ndp,
-                                     natp->effp,
-                                     (void *) sysaddr,
-                                     length_to_map,
-                                     prot,
-                                     flags,
-                                     (off_t) offset);
+      map_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+                    Map)(ndp,
+                         natp->effp,
+                         (void *) sysaddr,
+                         length_to_map,
+                         prot,
+                         flags,
+                         (off_t) offset);
     }
     /*
      * "Small" negative integers are errno values.  Larger ones are
@@ -1532,7 +1541,8 @@ int32_t NaClCommonSysImc_Accept(struct NaClAppThread  *natp,
     retval = -NACL_ABI_EBADF;
   } else {
     struct NaClDesc *result_desc;
-    retval = (*ndp->vtbl->AcceptConn)(ndp, &result_desc);
+    retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+              AcceptConn)(ndp, &result_desc);
     if (retval == 0) {
       retval = NaClSetAvail(natp->nap, result_desc);
     }
@@ -1558,7 +1568,8 @@ int32_t NaClCommonSysImc_Connect(struct NaClAppThread *natp,
     retval = -NACL_ABI_EBADF;
   } else {
     struct NaClDesc *result;
-    retval = (*ndp->vtbl->ConnectAddr)(ndp, &result);
+    retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+              ConnectAddr)(ndp, &result);
     if (retval == 0) {
       retval = NaClSetAvail(natp->nap, result);
     }
@@ -2428,7 +2439,7 @@ int32_t NaClCommonSysMutex_Lock(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  retval = (*desc->vtbl->Lock)(desc);
+  retval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->Lock)(desc);
   NaClDescUnref(desc);
 
 cleanup:
@@ -2450,7 +2461,7 @@ int32_t NaClCommonSysMutex_Unlock(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  retval = (*desc->vtbl->Unlock)(desc);
+  retval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->Unlock)(desc);
   NaClDescUnref(desc);
 
 cleanup:
@@ -2472,7 +2483,7 @@ int32_t NaClCommonSysMutex_Trylock(struct NaClAppThread   *natp,
     goto cleanup;
   }
 
-  retval = (*desc->vtbl->TryLock)(desc);
+  retval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->TryLock)(desc);
   NaClDescUnref(desc);
 
 cleanup:
@@ -2524,7 +2535,8 @@ int32_t NaClCommonSysCond_Wait(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  retval = (*cv_desc->vtbl->Wait)(cv_desc, mutex_desc);
+  retval = (*((struct NaClDescVtbl const *) cv_desc->base.vtbl)->
+            Wait)(cv_desc, mutex_desc);
   NaClDescUnref(cv_desc);
   NaClDescUnref(mutex_desc);
 
@@ -2547,7 +2559,7 @@ int32_t NaClCommonSysCond_Signal(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  retval = (*desc->vtbl->Signal)(desc);
+  retval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->Signal)(desc);
   NaClDescUnref(desc);
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -2568,7 +2580,7 @@ int32_t NaClCommonSysCond_Broadcast(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  retval = (*desc->vtbl->Broadcast)(desc);
+  retval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->Broadcast)(desc);
   NaClDescUnref(desc);
 
 cleanup:
@@ -2611,7 +2623,10 @@ int32_t NaClCommonSysCond_Timed_Wait_Abs(struct NaClAppThread     *natp,
     goto cleanup;
   }
 
-  retval = (*cv_desc->vtbl->TimedWaitAbs)(cv_desc, mutex_desc, &trusted_ts);
+  retval = (*((struct NaClDescVtbl const *) cv_desc->base.vtbl)->
+            TimedWaitAbs)(cv_desc,
+                          mutex_desc,
+                          &trusted_ts);
   NaClDescUnref(cv_desc);
   NaClDescUnref(mutex_desc);
 cleanup:
@@ -2662,7 +2677,7 @@ int32_t NaClCommonSysSem_Wait(struct NaClAppThread *natp,
    * detailed API. Anyway, using a single syscall for waiting on all
    * synchronization objects makes sense.
    */
-  retval = (*desc->vtbl->SemWait)(desc);
+  retval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->SemWait)(desc);
   NaClDescUnref(desc);
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -2683,7 +2698,7 @@ int32_t NaClCommonSysSem_Post(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  retval = (*desc->vtbl->Post)(desc);
+  retval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->Post)(desc);
   NaClDescUnref(desc);
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -2704,7 +2719,7 @@ int32_t NaClCommonSysSem_Get_Value(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  retval = (*desc->vtbl->GetValue)(desc);
+  retval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->GetValue)(desc);
   NaClDescUnref(desc);
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);

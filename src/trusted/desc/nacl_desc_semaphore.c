@@ -42,16 +42,16 @@ static struct NaClDescVtbl const kNaClDescSemaphoreVtbl;  /* fwd */
 int NaClDescSemaphoreCtor(struct NaClDescSemaphore  *self, int value) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
   if (!NaClSemCtor(&self->sem, value)) {
-    NaClDescDtor(basep);
+    (*basep->base.vtbl->Dtor)(&basep->base);
     return 0;
   }
 
-  basep->vtbl = &kNaClDescSemaphoreVtbl;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescSemaphoreVtbl;
   return 1;
 }
 
@@ -61,8 +61,8 @@ void NaClDescSemaphoreDtor(struct NaClDesc *vself) {
   NaClLog(4, "NaClDescSemaphoreDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClSemDtor(&self->sem);
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(&self->base);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 int NaClDescSemaphoreFstat(struct NaClDesc          *vself,
@@ -111,7 +111,9 @@ int NaClDescSemaphoreGetValue(struct NaClDesc         *vself) {
 
 
 static struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
-  NaClDescSemaphoreDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescSemaphoreDtor,
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,

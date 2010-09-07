@@ -18,6 +18,7 @@
         '../src/shared/utils/utils.gyp:*',
         '../src/trusted/debug_stub/debug_stub.gyp:*',
         '../src/trusted/desc/desc.gyp:*',
+        '../src/trusted/base/base.gyp:*',
         '../src/trusted/gdb_rsp/gdb_rsp.gyp:*',
         '../src/trusted/nacl_breakpad/nacl_breakpad.gyp:*',
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',

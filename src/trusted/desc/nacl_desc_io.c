@@ -50,12 +50,12 @@ int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
                        struct NaClHostDesc    *hd) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
   self->hd = hd;
-  basep->vtbl = &kNaClDescIoDescVtbl;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescIoDescVtbl;
   return 1;
 }
 
@@ -67,8 +67,8 @@ static void NaClDescIoDescDtor(struct NaClDesc *vself) {
   NaClHostDescClose(self->hd);
   free(self->hd);
   self->hd = NULL;
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(&self->base);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp) {
@@ -278,7 +278,9 @@ static int NaClDescIoDescExternalize(struct NaClDesc           *vself,
 }
 
 static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
-  NaClDescIoDescDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescIoDescDtor,
+  },
   NaClDescIoDescMap,
   NaClDescIoDescUnmapUnsafe,
   NaClDescIoDescUnmap,

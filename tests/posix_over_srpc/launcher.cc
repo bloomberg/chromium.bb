@@ -65,7 +65,8 @@ void PosixOverSrpcLauncher::CloseUnusedDescs(int child_id) {
       }
     } else if (IO_DESC == cur.second) {
       io_desc = reinterpret_cast<NaClDescIoDesc*>(cur.first);
-      if (io_desc->base.vtbl->Close(reinterpret_cast<NaClDesc*>(io_desc))) {
+      if (reinterpret_cast<struct NaClDescVtbl const *>(io_desc->base.base.vtbl)
+          ->Close(reinterpret_cast<NaClDesc*>(io_desc))) {
         std::cerr << "NaClDescIoDesc Close failed\n";
       }
     }

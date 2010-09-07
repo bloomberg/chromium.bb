@@ -78,60 +78,24 @@ int NaClDescCtor(struct NaClDesc *ndp) {
             "Internal error.  NaClInternalHeader size not a"
             " multiple of 16\n");
   }
-  ndp->ref_count = 1;
-  return NaClMutexCtor(&ndp->mu);
+  return NaClRefCountCtor(&ndp->base);
 }
 
-void NaClDescDtor(struct NaClDesc *ndp) {
-  if (0 != ndp->ref_count) {
-    NaClLog(LOG_FATAL, ("NaClDescDtor invoked on a generic descriptor"
-                        " at 0x%08"NACL_PRIxPTR" with non-zero"
-                        " reference count (%d)\n"),
-            (uintptr_t) ndp,
-            ndp->ref_count);
-  }
-  NaClLog(4, "NaClDescDtor(0x%08"NACL_PRIxPTR"), refcount 0, destroying.\n",
-          (uintptr_t) ndp);
-  NaClMutexDtor(&ndp->mu);
+static void NaClDescDtor(struct NaClDesc *ndp) {
+  ndp->base.vtbl = &kNaClRefCountVtbl;
+  (*ndp->base.vtbl->Dtor)(&ndp->base);
 }
 
 struct NaClDesc *NaClDescRef(struct NaClDesc *ndp) {
-  NaClLog(4, "NaClDescRef(0x%08"NACL_PRIxPTR").\n",
-          (uintptr_t) ndp);
-  NaClXMutexLock(&ndp->mu);
-  if (0 == ++ndp->ref_count) {
-    NaClLog(LOG_FATAL, "NaClDescRef integer overflow\n");
-  }
-  NaClXMutexUnlock(&ndp->mu);
-  return ndp;
+  return (struct NaClDesc *) NaClRefCountRef(&ndp->base);
 }
 
 void NaClDescUnref(struct NaClDesc *ndp) {
-  int destroy;
-
-  NaClLog(4, "NaClDescUnref(0x%08"NACL_PRIxPTR").\n",
-          (uintptr_t) ndp);
-  NaClXMutexLock(&ndp->mu);
-  if (0 == ndp->ref_count) {
-    NaClLog(LOG_FATAL,
-            "NaClDescUnref on 0x%08"NACL_PRIxPTR", refcount already zero!\n",
-            (uintptr_t) ndp);
-  }
-  destroy = (0 == --ndp->ref_count);
-  NaClXMutexUnlock(&ndp->mu);
-  if (destroy) {
-    (*ndp->vtbl->Dtor)(ndp);
-    free(ndp);
-  }
+  NaClRefCountUnref(&ndp->base);
 }
 
 void NaClDescSafeUnref(struct NaClDesc *ndp) {
-  NaClLog(4, "NaClDescSafeUnref(0x%08"NACL_PRIxPTR").\n",
-          (uintptr_t) ndp);
-  if (NULL == ndp) {
-    return;
-  }
-  NaClDescUnref(ndp);
+  NaClRefCountSafeUnref(&ndp->base);
 }
 
 int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
@@ -208,7 +172,8 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
 
   NaClLog(LOG_ERROR,
           "Map method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -222,7 +187,8 @@ int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
 
   NaClLog(LOG_ERROR,
     "Map method is not implemented for object of type %s\n",
-    NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -236,7 +202,8 @@ int NaClDescUnmapNotImplemented(struct NaClDesc         *vself,
 
   NaClLog(LOG_ERROR,
           "Unmap method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -248,7 +215,8 @@ ssize_t NaClDescReadNotImplemented(struct NaClDesc          *vself,
 
   NaClLog(LOG_ERROR,
           "Read method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -260,7 +228,8 @@ ssize_t NaClDescWriteNotImplemented(struct NaClDesc         *vself,
 
   NaClLog(LOG_ERROR,
           "Write method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -272,7 +241,8 @@ nacl_off64_t NaClDescSeekNotImplemented(struct NaClDesc          *vself,
 
   NaClLog(LOG_ERROR,
           "Seek method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -284,7 +254,8 @@ int NaClDescIoctlNotImplemented(struct NaClDesc         *vself,
 
   NaClLog(LOG_ERROR,
           "Ioctl method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -294,14 +265,16 @@ int NaClDescFstatNotImplemented(struct NaClDesc         *vself,
 
   NaClLog(LOG_ERROR,
           "Fstat method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescCloseNotImplemented(struct NaClDesc         *vself) {
   NaClLog(LOG_ERROR,
           "Close method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -313,7 +286,8 @@ ssize_t NaClDescGetdentsNotImplemented(struct NaClDesc          *vself,
 
   NaClLog(LOG_ERROR,
           "Getdents method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -325,7 +299,8 @@ int NaClDescExternalizeSizeNotImplemented(struct NaClDesc *vself,
 
   NaClLog(LOG_ERROR,
           "ExternalizeSize method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -335,28 +310,32 @@ int NaClDescExternalizeNotImplemented(struct NaClDesc          *vself,
 
   NaClLog(LOG_ERROR,
           "Externalize method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescLockNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "Lock method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescTryLockNotImplemented(struct NaClDesc *vself) {
   NaClLog(LOG_ERROR,
           "TryLock method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescUnlockNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "Unlock method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -366,7 +345,8 @@ int NaClDescWaitNotImplemented(struct NaClDesc  *vself,
 
   NaClLog(LOG_ERROR,
           "Wait method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -378,21 +358,24 @@ int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc                *vself,
 
   NaClLog(LOG_ERROR,
           "TimedWaitAbs method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescSignalNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "Signal method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescBroadcastNotImplemented(struct NaClDesc *vself) {
   NaClLog(LOG_ERROR,
           "Broadcast method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -404,7 +387,8 @@ ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
 
   NaClLog(LOG_ERROR,
           "SendMsg method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -416,7 +400,8 @@ ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
 
   NaClLog(LOG_ERROR,
           "RecvMsg method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -426,7 +411,8 @@ int NaClDescConnectAddrNotImplemented(struct NaClDesc *vself,
 
   NaClLog(LOG_ERROR,
           "ConnectAddr method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -436,28 +422,32 @@ int NaClDescAcceptConnNotImplemented(struct NaClDesc *vself,
 
   NaClLog(LOG_ERROR,
           "AcceptConn method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescPostNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "Post method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescSemWaitNotImplemented(struct NaClDesc *vself) {
   NaClLog(LOG_ERROR,
           "SemWait method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
 int NaClDescGetValueNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "GetValue method is not implemented for object of type %s\n",
-          NaClDescTypeString(vself->vtbl->typeTag));
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
@@ -486,7 +476,7 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
   *addr = NULL;
   *size = 0;
 
-  rval = (*desc->vtbl->Fstat)(desc, &st);
+  rval = (*((struct NaClDescVtbl const *) desc->base.vtbl)->Fstat)(desc, &st);
   if (0 != rval) {
     /* Failed to get the size - return failure. */
     return rval;
@@ -539,13 +529,15 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
     NaClLog(4,
             "NaClDescMapDescriptor: mapping to address %"NACL_PRIxPTR"\n",
             (uintptr_t) map_addr);
-    rval_ptr = (*desc->vtbl->Map)(desc,
-                                  effector,
-                                  map_addr,
-                                  rounded_size,
-                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                                  NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
-                                  0);
+    rval_ptr = (*((struct NaClDescVtbl const *)
+                  desc->base.vtbl)->Map)
+        (desc,
+         effector,
+         map_addr,
+         rounded_size,
+         NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+         NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
+         0);
     NaClLog(4,
             "NaClDescMapDescriptor: result is %"NACL_PRIxPTR"\n",
             rval_ptr);
@@ -584,3 +576,37 @@ int NaClSafeCloseNaClHandle(NaClHandle h) {
   }
   return 0;
 }
+
+
+struct NaClDescVtbl const kNaClDescVtbl = {
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescDtor,
+  },
+  NaClDescMapNotImplemented,
+  NaClDescUnmapUnsafeNotImplemented,
+  NaClDescUnmapNotImplemented,
+  NaClDescReadNotImplemented,
+  NaClDescWriteNotImplemented,
+  NaClDescSeekNotImplemented,
+  NaClDescIoctlNotImplemented,
+  NaClDescFstatNotImplemented,
+  NaClDescCloseNotImplemented,
+  NaClDescGetdentsNotImplemented,
+  (enum NaClDescTypeTag) -1,  /* NaClDesc is an abstract base class */
+  NaClDescExternalizeSizeNotImplemented,
+  NaClDescExternalizeNotImplemented,
+  NaClDescLockNotImplemented,
+  NaClDescTryLockNotImplemented,
+  NaClDescUnlockNotImplemented,
+  NaClDescWaitNotImplemented,
+  NaClDescTimedWaitAbsNotImplemented,
+  NaClDescSignalNotImplemented,
+  NaClDescBroadcastNotImplemented,
+  NaClDescSendMsgNotImplemented,
+  NaClDescRecvMsgNotImplemented,
+  NaClDescConnectAddrNotImplemented,
+  NaClDescAcceptConnNotImplemented,
+  NaClDescPostNotImplemented,
+  NaClDescSemWaitNotImplemented,
+  NaClDescGetValueNotImplemented,
+};

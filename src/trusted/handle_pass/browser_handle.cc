@@ -107,10 +107,13 @@ static void WINAPI HandleServer(void* dummy) {
   struct NaClSrpcHandlerDesc handlers[] = {
       { "lookup:ii:i", Lookup },
       { "shutdown::", Shutdown },
-      { (char const *) NULL, (NaClSrpcMethod) 0, },};
+      { (char const *) NULL, (NaClSrpcMethod) 0 },
+  };
 
   // Accept on the bound socket.
-  if (0 == (handle_descs[0]->vtbl->AcceptConn)(handle_descs[0], &lookup_desc)) {
+  if (0 == (reinterpret_cast<struct NaClDescVtbl const *>(
+          handle_descs[0]->base.vtbl)->
+            AcceptConn)(handle_descs[0], &lookup_desc)) {
     // Create an SRPC client and start the message loop.
     NaClSrpcServerLoop(lookup_desc, handlers, NULL);
   }

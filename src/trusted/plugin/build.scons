@@ -126,6 +126,7 @@ common_libs = [
     'nonnacl_srpc',
     'gio_shm',
     'nrd_xfer',
+    'nacl_base',
     'google_nacl_imc_c',
     'platform',
     'platform_qual_lib',

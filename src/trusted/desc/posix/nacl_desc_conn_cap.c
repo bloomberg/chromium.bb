@@ -32,12 +32,12 @@ int NaClDescConnCapFdCtor(struct NaClDescConnCapFd  *self,
                           NaClHandle                endpt) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
   self->connect_fd = endpt;
-  basep->vtbl = &kNaClDescConnCapFdVtbl;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescConnCapFdVtbl;
   return 1;
 }
 
@@ -47,8 +47,8 @@ static void NaClDescConnCapFdDtor(struct NaClDesc *vself) {
 
   (void) NaClClose(self->connect_fd);
   self->connect_fd = NACL_INVALID_HANDLE;
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(vself);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
   return;
 }
 
@@ -170,7 +170,9 @@ static int NaClDescConnCapFdAcceptConn(struct NaClDesc  *vself,
 }
 
 static struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
-  NaClDescConnCapFdDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescConnCapFdDtor,
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,
@@ -215,7 +217,8 @@ int NaClDescConnCapFdInternalize(struct NaClDesc          **out_desc,
     free(conn_cap);
     return -NACL_ABI_ENOMEM;
   }
-  conn_cap->base.vtbl = &kNaClDescConnCapFdVtbl;
+  conn_cap->base.base.vtbl =
+      (struct NaClRefCountVtbl const *) &kNaClDescConnCapFdVtbl;
   conn_cap->connect_fd = *xfer->next_handle;
   *xfer->next_handle++ = NACL_INVALID_HANDLE;
   *out_desc = &conn_cap->base;

@@ -43,7 +43,9 @@ static int NaClDescInvalidExternalize(struct NaClDesc          *vself,
  */
 
 static struct NaClDescVtbl const kNaClDescInvalidVtbl = {
-  NaClDescDtorNotImplemented,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescDtorNotImplemented,
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,
@@ -116,7 +118,8 @@ struct NaClDescInvalid const *NaClDescInvalidMake() {
         break;
       }
       /* Construct the derived class (simply set the vtbl). */
-      singleton->base.vtbl = &kNaClDescInvalidVtbl;
+      singleton->base.base.vtbl =
+          (struct NaClRefCountVtbl const *) &kNaClDescInvalidVtbl;
     } while (0);
   }
   NaClXMutexUnlock(mutex);

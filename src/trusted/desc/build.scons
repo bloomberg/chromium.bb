@@ -100,7 +100,8 @@ else:
       ]
 
 env.DualLibrary('nrd_xfer', nrd_lib_inputs,
-                EXTRA_LIBS=['platform'])
+                EXTRA_LIBS=['platform',
+                            'nacl_base'])
 
 # TODO(robertm): is this still needed?
 # Make a copy of debug CRT for now.

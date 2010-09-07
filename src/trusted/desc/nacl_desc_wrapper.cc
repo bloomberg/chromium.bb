@@ -418,66 +418,87 @@ int DescWrapper::Map(void** addr, size_t* size) {
 }
 
 int DescWrapper::Unmap(void* start_addr, size_t len) {
-  return desc_->vtbl->Unmap(desc_, common_data_->effp(), start_addr, len);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Unmap(desc_,
+            common_data_->effp(),
+            start_addr, len);
 }
 
 ssize_t DescWrapper::Read(void* buf, size_t len) {
-  return desc_->vtbl->Read(desc_, buf, len);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Read(desc_, buf, len);
 }
 
 ssize_t DescWrapper::Write(const void* buf, size_t len) {
-  return desc_->vtbl->Write(desc_, buf, len);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Write(desc_, buf, len);
 }
 
 nacl_off64_t DescWrapper::Seek(nacl_off64_t offset, int whence) {
-  return desc_->vtbl->Seek(desc_, offset, whence);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Seek(desc_,
+           offset,
+           whence);
 }
 
 int DescWrapper::Ioctl(int request, void* arg) {
-  return desc_->vtbl->Ioctl(desc_, request, arg);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Ioctl(desc_, request, arg);
 }
 
 int DescWrapper::Fstat(struct nacl_abi_stat* statbuf) {
-  return desc_->vtbl->Fstat(desc_, statbuf);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Fstat(desc_, statbuf);
 }
 
 int DescWrapper::Close() {
-  return desc_->vtbl->Close(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Close(desc_);
 }
 
 ssize_t DescWrapper::Getdents(void* dirp, size_t count) {
-  return desc_->vtbl->Getdents(desc_, dirp, count);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Getdents(desc_,
+               dirp,
+               count);
 }
 
 int DescWrapper::Lock() {
-  return desc_->vtbl->Lock(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Lock(desc_);
 }
 
 int DescWrapper::TryLock() {
-  return desc_->vtbl->TryLock(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      TryLock(desc_);
 }
 
 int DescWrapper::Unlock() {
-  return desc_->vtbl->Unlock(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Unlock(desc_);
 }
 
 int DescWrapper::Wait(DescWrapper* mutex) {
-  return desc_->vtbl->Wait(desc_, mutex->desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Wait(desc_, mutex->desc_);
 }
 
 int DescWrapper::TimedWaitAbs(DescWrapper* mutex,
                               struct nacl_abi_timespec* ts) {
-  return desc_->vtbl->TimedWaitAbs(desc_,
-                                   mutex->desc_,
-                                   ts);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      TimedWaitAbs(desc_,
+                   mutex->desc_,
+                   ts);
 }
 
 int DescWrapper::Signal() {
-  return desc_->vtbl->Signal(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Signal(desc_);
 }
 
 int DescWrapper::Broadcast() {
-  return desc_->vtbl->Broadcast(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Broadcast(desc_);
 }
 
 ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
@@ -598,7 +619,9 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
 
 DescWrapper* DescWrapper::Connect() {
   struct NaClDesc* connected_desc;
-  int rv = desc_->vtbl->ConnectAddr(desc_, &connected_desc);
+  int rv = reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      ConnectAddr(desc_,
+                  &connected_desc);
   if (0 != rv) {
     // Connect failed.
     return NULL;
@@ -613,7 +636,8 @@ DescWrapper* DescWrapper::Connect() {
 
 DescWrapper* DescWrapper::Accept() {
   struct NaClDesc* connected_desc;
-  int rv = desc_->vtbl->AcceptConn(desc_, &connected_desc);
+  int rv = reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      AcceptConn(desc_, &connected_desc);
   if (0 != rv) {
     // Accept failed.
     return NULL;
@@ -627,15 +651,18 @@ DescWrapper* DescWrapper::Accept() {
 }
 
 int DescWrapper::Post() {
-  return desc_->vtbl->Post(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      Post(desc_);
 }
 
 int DescWrapper::SemWait() {
-  return desc_->vtbl->SemWait(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      SemWait(desc_);
 }
 
 int DescWrapper::GetValue() {
-  return desc_->vtbl->GetValue(desc_);
+  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+      GetValue(desc_);
 }
 
 }  // namespace nacl

@@ -73,6 +73,8 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_mem_map;
   }
 
+  nap->srpc_fd = -1;
+
   nap->service_port = NULL;
   nap->service_address = NULL;
   nap->secure_channel = NULL;
@@ -822,7 +824,8 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
    * least 4K, and we can map it in with uninitialized data (should be
    * zero filled) at the end.
    */
-  rval = (*nexe_binary->vtbl->Fstat)(nexe_binary, &stbuf);
+  rval = (*((struct NaClDescVtbl const *)
+            nexe_binary->base.vtbl)->Fstat)(nexe_binary, &stbuf);
   if (0 != rval) {
     goto cleanup;
   }
@@ -866,7 +869,8 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
 
  cleanup:
 
-  rval = (*nexe_binary->vtbl->Close)(nexe_binary);
+  rval = (*((struct NaClDescVtbl const *) nexe_binary->base.vtbl)->
+          Close)(nexe_binary);
   if (0 != rval) {
     /* Fail the request even though we could go on. */
     errcode = NACL_SRPC_RESULT_NO_MEMORY;
@@ -978,8 +982,8 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
   /*
    * this block until the plugin connects
    */
-  status = (*nap->service_port->vtbl->AcceptConn)
-            (nap->service_port, &nap->secure_channel);
+  status = (*((struct NaClDescVtbl const *) nap->service_port->base.vtbl)->
+            AcceptConn)(nap->service_port, &nap->secure_channel);
   if (status != 0) {
     NaClLog(LOG_FATAL,
             "NaClSecureCommandChannel: unable to establish channel\n");

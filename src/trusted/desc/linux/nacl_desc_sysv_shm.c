@@ -52,9 +52,10 @@
  *    it for use by Chrome.
  */
 
-int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,
-                              int                     id,
-                              nacl_off64_t            size) {
+static int NaClDescSysvShmCtorIntern(struct NaClDescSysvShm *self,
+                                     int                    id,
+                                     nacl_off64_t           size,
+                                     int                    rmid_in_dtor) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
   /*
@@ -64,7 +65,7 @@ int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,
    * that are silently converted to negative values.  Additionally,
    * the size must be a multiple of 4K.
    */
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if ((size_t) size != NaClRoundPage((size_t) size)
       || size < 0
       || SIZE_T_MAX < (uint64_t) size) {
@@ -76,8 +77,15 @@ int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,
   }
   self->id = id;
   self->size = size;
-  basep->vtbl = &kNaClDescSysvShmVtbl;
+  self->rmid_in_dtor = rmid_in_dtor;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescSysvShmVtbl;
   return 1;
+}
+
+int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,
+                              int                     id,
+                              nacl_off64_t            size) {
+  return NaClDescSysvShmCtorIntern(self, id, size, 0);
 }
 
 /*
@@ -105,10 +113,10 @@ int NaClDescSysvShmCtor(struct NaClDescSysvShm  *self,
     return 0;
   }
   /* Construct the descriptor. */
-  retval = NaClDescSysvShmImportCtor(self, id, size);
+  retval = NaClDescSysvShmCtorIntern(self, id, size, 1);
   /* If the constructor failed, mark the region for freeing. */
   if (0 == retval) {
-    shmctl(id, IPC_RMID, NULL);
+    (void) shmctl(id, IPC_RMID, NULL);
     return 0;
   }
   /* Return success. */
@@ -122,10 +130,13 @@ static void NaClDescSysvShmDtor(struct NaClDesc *vself) {
    * Importing does NOT confer ownership of the id. Hence the Dtor does not
    * do the shmctl(IPC_RMID).
    */
+  if (self->rmid_in_dtor) {
+    (void) shmctl(self->id, IPC_RMID, NULL);
+  }
   /* NACL_INVALID_HANDLE is also an invalid id for shmat. */
   self->id = NACL_INVALID_HANDLE;
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(vself);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 /*
@@ -398,7 +409,9 @@ static int NaClDescSysvShmExternalize(struct NaClDesc           *vself,
 }
 
 struct NaClDescVtbl const kNaClDescSysvShmVtbl = {
-  NaClDescSysvShmDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescSysvShmDtor,
+  },
   NaClDescSysvShmMap,
   NaClDescSysvShmUnmapUnsafe,
   NaClDescSysvShmUnmap,

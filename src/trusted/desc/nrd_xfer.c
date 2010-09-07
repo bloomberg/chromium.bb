@@ -112,7 +112,8 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
    * ExternalizeSize virtual function call).
    */
   if (0 != nitmhp->ndesc_length
-      && NACL_DESC_IMC_SOCKET != channel->vtbl->typeTag) {
+      && NACL_DESC_IMC_SOCKET != ((struct NaClDescVtbl const *)
+                                  channel->base.vtbl)->typeTag) {
     NaClLog(4, "not an IMC socket and trying to send descriptors!\n");
     return -NACL_ABI_EINVAL;
   }
@@ -177,9 +178,10 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     sys_handles = 0;
     /* nitmhp->desc_length <= NACL_ABI_IMC_USER_DESC_MAX */
     for (i = 0; i < nitmhp->ndesc_length; ++i) {
-      retval = (*kern_desc[i]->vtbl->ExternalizeSize)(kern_desc[i],
-                                                      &desc_bytes,
-                                                      &desc_handles);
+      retval = (*((struct NaClDescVtbl const *) kern_desc[i]->base.vtbl)->
+                ExternalizeSize)(kern_desc[i],
+                                 &desc_bytes,
+                                 &desc_handles);
       if (retval < 0) {
         NaClLog(1,
                 ("NaClImcSendTypedMessage: ExternalizeSize"
@@ -246,7 +248,8 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
         + NACL_ABI_IMC_DESC_MAX;
 
     for (i = 0; i < nitmhp->ndesc_length; ++i) {
-      *xfer_state.next_byte++ = (char) kern_desc[i]->vtbl->typeTag;
+      *xfer_state.next_byte++ = (char) ((struct NaClDescVtbl const *)
+                                        kern_desc[i]->base.vtbl)->typeTag;
       /*
        * Externalize should expose the object as NaClHandles that must
        * be sent, but no ownership is transferred.  The NaClHandle
@@ -257,8 +260,9 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
        * their refcount incremented, and the NaClHandles will not be
        * closed until the NaClDesc objects' refcount goes to zero.
        */
-      retval = (*kern_desc[i]->vtbl->Externalize)(kern_desc[i],
-                                                  &xfer_state);
+      retval = (*((struct NaClDescVtbl const *) kern_desc[i]->base.vtbl)->
+                Externalize)(kern_desc[i],
+                             &xfer_state);
       if (0 != retval) {
         NaClLog(4,
                 ("NaClImcSendTypedMessage: Externalize for"
@@ -282,7 +286,8 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
 
   NaClLog(4, "Invoking SendMsg, flags 0x%x\n", flags);
 
-  retval = (*channel->vtbl->SendMsg)(channel, &kern_msg_hdr, flags);
+  retval = (*((struct NaClDescVtbl const *) channel->base.vtbl)->
+            SendMsg)(channel, &kern_msg_hdr, flags);
   NaClLog(4, "SendMsg returned %"NACL_PRIdS"\n", retval);
   if (NaClIsNegErrno(retval)) {
     /*
@@ -413,7 +418,8 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
     kern_handle[i] = NACL_INVALID_HANDLE;
   }
 
-  if (NACL_DESC_IMC_SOCKET == channel->vtbl->typeTag) {
+  if (NACL_DESC_IMC_SOCKET == ((struct NaClDescVtbl const *)
+                               channel->base.vtbl)->typeTag) {
     /*
      * Channel can transfer access rights.
      */
@@ -434,9 +440,10 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
 
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
-  total_recv_bytes = (*channel->vtbl->RecvMsg)(channel,
-                                               &recv_hdr,
-                                               flags);
+  total_recv_bytes = (*((struct NaClDescVtbl const *) channel->base.vtbl)->
+                      RecvMsg)(channel,
+                               &recv_hdr,
+                               flags);
   if (NaClIsNegErrno(total_recv_bytes)) {
     NaClLog(1, "RecvMsg failed, returned %"NACL_PRIdS"\n", total_recv_bytes);
     retval = total_recv_bytes;

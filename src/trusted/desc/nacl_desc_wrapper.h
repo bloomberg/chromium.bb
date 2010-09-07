@@ -93,7 +93,10 @@ class DescWrapper {
   struct NaClDesc* desc() const { return desc_; }
 
   // Get the type of the wrapped NaClDesc.
-  enum NaClDescTypeTag type_tag() const { return desc_->vtbl->typeTag; }
+  enum NaClDescTypeTag type_tag() const {
+    return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
+        typeTag;
+  }
 
   // We do not replicate the underlying NaClDesc object hierarchy, so there
   // are obviously many more methods than a particular derived class

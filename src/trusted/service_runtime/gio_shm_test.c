@@ -378,13 +378,14 @@ int main(int ac,
   dp = &shmp->base;
   effp = &eff.base;
 
-  addr = (*dp->vtbl->Map)(dp,
-                          effp,
-                          NULL,
-                          nbytes,
-                          NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                          NACL_ABI_MAP_SHARED,
-                          0);
+  addr = (*((struct NaClDescVtbl const *) dp->base.vtbl)->
+          Map)(dp,
+               effp,
+               NULL,
+               nbytes,
+               NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+               NACL_ABI_MAP_SHARED,
+               0);
   if (NaClIsNegErrno(addr)) {
     printf("Map failed\n");
     return EXIT_FAILURE;
@@ -398,13 +399,14 @@ int main(int ac,
     return EXIT_FAILURE;
   }
 
-  addr2 = (*dp->vtbl->Map)(dp,
-                           effp,
-                           NULL,
-                           nbytes,
-                           NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                           NACL_ABI_MAP_SHARED,
-                           0);
+  addr2 = (*((struct NaClDescVtbl const *) dp->base.vtbl)->
+           Map)(dp,
+                effp,
+                NULL,
+                nbytes,
+                NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                NACL_ABI_MAP_SHARED,
+                0);
   if (NaClIsNegErrno(addr2)) {
     printf("Second Map failed\n");
     return EXIT_FAILURE;
@@ -415,7 +417,8 @@ int main(int ac,
     printf("FAILED\n");
     return EXIT_FAILURE;
   }
-  if (0 != (rv = (*dp->vtbl->UnmapUnsafe)(dp, effp, (void *) addr2, nbytes))) {
+  if (0 != (rv = (*((struct NaClDescVtbl const *) dp->base.vtbl)->
+                  UnmapUnsafe)(dp, effp, (void *) addr2, nbytes))) {
     printf("UnmapUnsafe failed, returned %d\n", rv);
     printf("FAILED\n");
     return EXIT_FAILURE;

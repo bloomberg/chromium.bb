@@ -30,7 +30,7 @@ struct NaClDescEffectorVtbl;
 
 /* virtual base class; no ctor, no vtbl */
 struct NaClDescEffector {
-  struct NaClDescEffectorVtbl *vtbl;
+  struct NaClDescEffectorVtbl const *vtbl;
 };
 
 /*

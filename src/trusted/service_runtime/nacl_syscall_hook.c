@@ -25,10 +25,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-/*
- * Simple RPC support.  The default socket file descriptor is invalid.
- */
-int NaClSrpcFileDescriptor = -1;
 
 int NaClArtificialDelay = -1;
 

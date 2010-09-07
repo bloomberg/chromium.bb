@@ -32,18 +32,18 @@ int NaClDescConnCapCtor(struct NaClDescConnCap          *self,
                         struct NaClSocketAddress const  *nsap) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
   self->cap = *nsap;
-  basep->vtbl = &kNaClDescConnCapVtbl;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescConnCapVtbl;
   return 1;
 }
 
 static void NaClDescConnCapDtor(struct NaClDesc *vself) {
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(vself);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
   return;
 }
 
@@ -165,7 +165,9 @@ static int NaClDescConnCapAcceptConn(struct NaClDesc *vself,
 }
 
 static struct NaClDescVtbl const kNaClDescConnCapVtbl = {
-  NaClDescConnCapDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescConnCapDtor,
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,

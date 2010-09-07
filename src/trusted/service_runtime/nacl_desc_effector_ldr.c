@@ -18,7 +18,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 
 
-static struct NaClDescEffectorVtbl NaClDescEffectorLdrVtbl;  /* fwd */
+static struct NaClDescEffectorVtbl const NaClDescEffectorLdrVtbl;  /* fwd */
 
 int NaClDescEffectorLdrCtor(struct NaClDescEffectorLdr *self,
                             struct NaClAppThread       *natp) {
@@ -32,7 +32,7 @@ static void NaClDescEffLdrDtor(struct NaClDescEffector *vself) {
 
   self->natp = NULL;
   /* we did not take ownership of natp */
-  vself->vtbl = (struct NaClDescEffectorVtbl *) NULL;
+  vself->vtbl = (struct NaClDescEffectorVtbl const *) NULL;
 }
 
 #if NACL_WINDOWS
@@ -72,10 +72,11 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
 
       backing_ndp = map_region->nmop->ndp;
 
-      retval = (*backing_ndp->vtbl->UnmapUnsafe)(backing_ndp,
-                                                 vself,
-                                                 (void *) addr,
-                                                 NACL_MAP_PAGESIZE);
+      retval = (*((struct NaClDescVtbl const *) backing_ndp->base.vtbl)->
+                UnmapUnsafe)(backing_ndp,
+                             vself,
+                             (void *) addr,
+                             NACL_MAP_PAGESIZE);
       if (0 != retval) {
         NaClLog(LOG_FATAL,
                 ("NaClMMap: UnmapUnsafe failed at user addr 0x%08"NACL_PRIxPTR
@@ -117,7 +118,7 @@ static uintptr_t NaClDescEffLdrMapAnonMem(struct NaClDescEffector *vself,
                          (off_t) 0);
 }
 
-static struct NaClDescEffectorVtbl NaClDescEffectorLdrVtbl = {
+static struct NaClDescEffectorVtbl const NaClDescEffectorLdrVtbl = {
   NaClDescEffLdrDtor,
   NaClDescEffLdrUnmapMemory,
   NaClDescEffLdrMapAnonMem,

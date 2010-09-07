@@ -41,16 +41,16 @@ static struct NaClDescVtbl const kNaClDescCondVarVtbl;  /* fwd */
 int NaClDescCondVarCtor(struct NaClDescCondVar  *self) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
   if (!NaClIntrCondVarCtor(&self->cv)) {
-    NaClDescDtor(basep);
+    (*basep->base.vtbl->Dtor)(&basep->base);
     return 0;
   }
 
-  basep->vtbl = &kNaClDescCondVarVtbl;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescCondVarVtbl;
   return 1;
 }
 
@@ -61,8 +61,8 @@ static void NaClDescCondVarDtor(struct NaClDesc *vself) {
           (uintptr_t) vself);
   NaClIntrCondVarDtor(&self->cv);
 
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(&self->base);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 static int NaClDescCondVarFstat(struct NaClDesc          *vself,
@@ -87,7 +87,8 @@ static int NaClDescCondVarWait(struct NaClDesc         *vself,
   struct NaClDescMutex    *mutex_desc;
   NaClSyncStatus          status;
 
-  if (mutex->vtbl->typeTag != NACL_DESC_MUTEX) {
+  if (((struct NaClDescVtbl const *) mutex->base.vtbl)->
+      typeTag != NACL_DESC_MUTEX) {
     return -NACL_ABI_EINVAL;
   }
   mutex_desc = (struct NaClDescMutex *)mutex;
@@ -104,7 +105,8 @@ static int NaClDescCondVarTimedWaitAbs(struct NaClDesc                *vself,
   struct NaClDescMutex    *mutex_desc;
   NaClSyncStatus          status;
 
-  if (mutex->vtbl->typeTag != NACL_DESC_MUTEX) {
+  if (((struct NaClDescVtbl const *) mutex->base.vtbl)->
+      typeTag != NACL_DESC_MUTEX) {
     return -NACL_ABI_EINVAL;
   }
   mutex_desc = (struct NaClDescMutex *) mutex;
@@ -130,7 +132,9 @@ static int NaClDescCondVarBroadcast(struct NaClDesc          *vself) {
 }
 
 static struct NaClDescVtbl const kNaClDescCondVarVtbl = {
-  NaClDescCondVarDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescCondVarDtor,
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,

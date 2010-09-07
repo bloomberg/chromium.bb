@@ -285,10 +285,11 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
        * the size of the memory window is only 64KB, rather than
        * whatever size the user is unmapping.
        */
-      retval = (*entry->nmop->ndp->vtbl->Unmap)(entry->nmop->ndp,
-                                                natp->effp,
-                                                (void*) addr,
-                                                NACL_MAP_PAGESIZE);
+      retval = (*((struct NaClDescVtbl const *) entry->nmop->ndp->base.vtbl)->
+                Unmap)(entry->nmop->ndp,
+                       natp->effp,
+                       (void*) addr,
+                       NACL_MAP_PAGESIZE);
       if (0 != retval) {
         NaClLog(LOG_FATAL,
                 ("NaClSysMunmap: Could not unmap via ndp->Unmap 0x%08x"
@@ -468,10 +469,7 @@ int32_t NaClSysAudio_Shutdown(struct NaClAppThread *natp) {
 #endif /* HAVE_SDL */
 
 int32_t NaClSysSrpc_Get_Fd(struct NaClAppThread *natp) {
-  extern int NaClSrpcFileDescriptor;
-  UNREFERENCED_PARAMETER(natp);
-
-  return NaClSrpcFileDescriptor;
+  return natp->nap->srpc_fd;
 }
 
 int32_t NaClSysImc_MakeBoundSock(struct NaClAppThread *natp,

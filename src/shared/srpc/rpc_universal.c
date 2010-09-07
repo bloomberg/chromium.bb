@@ -169,7 +169,8 @@ static NaClSrpcImcDescType SysvShmDesc() {
    * Attach to the region.  There is no explicit detach, because the Linux
    * man page says one will be done at process exit.
    */
-  kSysvShmAddr = (void *) (*((struct NaClDesc*) shm_desc)->vtbl->Map)(
+  kSysvShmAddr = (void *) (*((struct NaClDescVtbl *)
+                             ((struct NaClRefCount *) shm_desc)->vtbl)->Map)(
       (struct NaClDesc *) shm_desc,
       (struct NaClDescEffector*) NULL,
       aligned_mapaddr,

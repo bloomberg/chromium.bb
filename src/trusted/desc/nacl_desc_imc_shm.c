@@ -55,7 +55,7 @@ int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
    * st_size member.  This runtime test detects large object sizes
    * that are silently converted to negative values.
    */
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (size < 0 || SIZE_T_MAX < (uint64_t) size) {
     return 0;
   }
@@ -65,7 +65,7 @@ int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
   }
   self->h = h;
   self->size = size;
-  basep->vtbl = &kNaClDescImcShmVtbl;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescImcShmVtbl;
   return 1;
 }
 
@@ -96,8 +96,8 @@ static void NaClDescImcShmDtor(struct NaClDesc *vself) {
 
   (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(vself);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
@@ -388,7 +388,9 @@ static int NaClDescImcShmExternalize(struct NaClDesc           *vself,
 }
 
 static struct NaClDescVtbl const kNaClDescImcShmVtbl = {
-  NaClDescImcShmDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescImcShmDtor,
+  },
   NaClDescImcShmMap,
   NaClDescImcShmUnmapUnsafe,
   NaClDescImcShmUnmap,

@@ -38,6 +38,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/web_worker_stub.h"
 
+static int const kSrpcFd = 5;
 
 int verbosity = 0;
 
@@ -101,11 +102,6 @@ int NaClStartNativeWebWorker(char *buffer,
     return -1;
   }
 
-  /*
-   * Set a flag making it look like this is embedded in the browser.
-   * TODO(sehr): eliminate this flag.
-   */
-  NaClSrpcFileDescriptor = 5;
 
   /*
    * AllModulesInit/Fini are used for per-process initialization, and hence
@@ -127,6 +123,11 @@ int NaClStartNativeWebWorker(char *buffer,
   }
 
   state->restrict_to_main_thread = 1;
+  /*
+   * Set a flag making it look like this is embedded in the browser.
+   * TODO(sehr): eliminate this flag.
+   */
+  state->srpc_fd = kSrpcFd;
 
   *nap = state;
 

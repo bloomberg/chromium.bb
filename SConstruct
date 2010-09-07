@@ -1036,11 +1036,7 @@ base_env.Append(
 
 base_env.Append(
   BUILD_SCONSCRIPTS = [
-    'src/trusted/sel_universal/build.scons',
-    'src/trusted/service_runtime/build.scons',
-    'src/trusted/perf_counter/build.scons',
-    'src/trusted/base/build.scons',
-    'src/trusted/gdb_rsp/build.scons',
+    # KEEP THIS SORTED PLEASE
     'src/shared/gio/build.scons',
     'src/shared/imc/build.scons',
     'src/shared/npruntime/build.scons',
@@ -1050,12 +1046,17 @@ base_env.Append(
     'src/shared/srpc/build.scons',
     'src/shared/utils/build.scons',
     'src/third_party_mod/gtest/build.scons',
+    'src/trusted/base/build.scons',
     'src/trusted/desc/build.scons',
+    'src/trusted/gdb_rsp/build.scons',
     'src/trusted/handle_pass/build.scons',
     'src/trusted/nonnacl_util/build.scons',
-    'src/trusted/plugin/build.scons',
+    'src/trusted/perf_counter/build.scons',
     'src/trusted/platform_qualify/build.scons',
+    'src/trusted/plugin/build.scons',
     'src/trusted/sandbox/build.scons',
+    'src/trusted/sel_universal/build.scons',
+    'src/trusted/service_runtime/build.scons',
     # TODO: This file has an early out in case we are building for ARM
     #       but provides nchelper lib. Needs to be cleaned up
     'src/trusted/validator_x86/build.scons',

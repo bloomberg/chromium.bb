@@ -24,6 +24,8 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
+static int const kSrpcFd = 5;
+
 int verbosity = 0;
 
 #ifdef __GNUC__
@@ -60,7 +62,7 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles) {
   const char **envp;
   struct NaClApp state;
   int main_thread_only = 1;
-  int export_addr_to = 5; /* Used to be set by -X. */
+  int export_addr_to = kSrpcFd; /* Used to be set by -X. */
   struct NaClApp *nap;
   NaClErrorCode errcode;
   int ret_code = 1;
@@ -75,9 +77,6 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles) {
 
   NaClAllModulesInit();
 
-  /* Used to be set by -P. */
-  NaClSrpcFileDescriptor = export_addr_to;
-
   /* to be passed to NaClMain, eventually... */
   av[0] = "NaClMain";
 
@@ -87,6 +86,7 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles) {
   }
 
   state.restrict_to_main_thread = main_thread_only;
+  state.srpc_fd = export_addr_to;
 
   nap = &state;
   errcode = LOAD_OK;

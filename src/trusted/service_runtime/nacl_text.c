@@ -184,23 +184,27 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
             NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
             NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
             shm_offset);
-    mmap_ret = (*shm->base.vtbl->Map)((struct NaClDesc *) shm,
-                                      (struct NaClDescEffector *) &shm_effector,
-                                      (void *) text_sysaddr,
-                                      NACL_MAP_PAGESIZE,
-                                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                                      NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
-                                      shm_offset);
+    mmap_ret = (*((struct NaClDescVtbl const *)
+                  shm->base.base.vtbl)->
+                Map)((struct NaClDesc *) shm,
+                     (struct NaClDescEffector *) &shm_effector,
+                     (void *) text_sysaddr,
+                     NACL_MAP_PAGESIZE,
+                     NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                     NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
+                     shm_offset);
     if (text_sysaddr != mmap_ret) {
       NaClLog(LOG_FATAL,
               "Could not map in shm for dynamic text region, HLT filling.\n");
     }
     NaClFillMemoryRegionWithHalt((void *) text_sysaddr, NACL_MAP_PAGESIZE);
-    if (-1 == (*shm->base.vtbl->UnmapUnsafe)((struct NaClDesc *) shm,
-                                             ((struct NaClDescEffector *)
-                                              &shm_effector),
-                                             (void *) text_sysaddr,
-                                             NACL_MAP_PAGESIZE)) {
+    if (-1 == (*((struct NaClDescVtbl const *)
+                 shm->base.base.vtbl)->
+               UnmapUnsafe)((struct NaClDesc *) shm,
+                            ((struct NaClDescEffector *)
+                             &shm_effector),
+                            (void *) text_sysaddr,
+                            NACL_MAP_PAGESIZE)) {
       NaClLog(LOG_FATAL,
               "Could not unmap shm for dynamic text region, post HLT fill.\n");
     }
@@ -212,13 +216,15 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
             NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
             NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
             shm_offset);
-    mmap_ret = (*shm->base.vtbl->Map)((struct NaClDesc *) shm,
-                                      (struct NaClDescEffector *) &shm_effector,
-                                      (void *) text_sysaddr,
-                                      NACL_MAP_PAGESIZE,
-                                      NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
-                                      NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
-                                      shm_offset);
+    mmap_ret = (*((struct NaClDescVtbl const *)
+                  shm->base.base.vtbl)->
+                Map)((struct NaClDesc *) shm,
+                     (struct NaClDescEffector *) &shm_effector,
+                     (void *) text_sysaddr,
+                     NACL_MAP_PAGESIZE,
+                     NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
+                     NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
+                     shm_offset);
     if (text_sysaddr != mmap_ret) {
       NaClLog(LOG_FATAL, "Could not map in shm for dynamic text region\n");
     }
@@ -433,10 +439,12 @@ int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
             "shm effector initialization failed\n");
   }
 
-  mmap_ret = (*shm->vtbl->Map)(shm, (struct NaClDescEffector *) &shm_effector,
-                               NULL, shm_map_size,
-                               NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                               NACL_ABI_MAP_SHARED, shm_map_offset);
+  mmap_ret = (*((struct NaClDescVtbl const *)
+                shm->base.vtbl)->
+              Map)(shm, (struct NaClDescEffector *) &shm_effector,
+                   NULL, shm_map_size,
+                   NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                   NACL_ABI_MAP_SHARED, shm_map_offset);
   if (NaClIsNegErrno(mmap_ret)) {
     return (int32_t) mmap_ret;
   }
@@ -533,9 +541,11 @@ cleanup_free:
   free(code_copy);
 
 cleanup_unmap:
-  if (0 != (*shm->vtbl->UnmapUnsafe)(shm,
-                                     (struct NaClDescEffector *) &shm_effector,
-                                     mmap_result, shm_map_size)) {
+  if (0 != (*((struct NaClDescVtbl const *)
+              shm->base.vtbl)->
+            UnmapUnsafe)(shm,
+                         (struct NaClDescEffector *) &shm_effector,
+                         mmap_result, shm_map_size)) {
     NaClLog(LOG_FATAL, "NaClTextSysDyncode_Copy: Failed to unmap\n");
   }
   return retval;

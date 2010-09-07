@@ -8,8 +8,8 @@
  * NaCl Server Runtime globals.
  */
 
-#ifndef SERVICE_RUNTIME_NACL_GLOBALS_H__
-#define SERVICE_RUNTIME_NACL_GLOBALS_H__  1
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_GLOBALS_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_GLOBALS_H__
 
 #include "native_client/src/include/portability.h"
 
@@ -52,7 +52,6 @@ extern uintptr_t nacl_global_xlate_base;
 struct NaClApp        *GetCurProc(void);
 struct NaClAppThread  *GetCurThread(void);
 
-extern int NaClSrpcFileDescriptor;
-
 EXTERN_C_END
-#endif
+
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_GLOBALS_H__ */

@@ -33,10 +33,27 @@ struct nacl_abi_stat;
  */
 extern struct NaClDescVtbl const kNaClDescSysvShmVtbl;
 
+/*
+ * SysV shared memory objects have weird semantics.  There is no way
+ * for untrusted code to create one.  These are normally imported --
+ * from the GPU process when we are embedded in Chrome -- and the shm
+ * object is externally owned, and we do not have to worry about its
+ * lifetime.  The normal Ctor is here primarily for completeness.
+ * Note, however, the following semantics: the process that Ctor'd the
+ * SysV shm object is the owner; the SysV shm object may be
+ * externalized (its ID sent) and internalized in another process;
+ * however, there is no sharing of ownership nor reference counting --
+ * the receiving process can access the SysV shm object as long as it
+ * is live, but when the owner Dtors its object, the ID will get
+ * invalidated, and the receiving process's accesses will fail.  The
+ * RMID only occurs in the Dtor of the owner, not in the processes
+ * that internalized the SysV shm object in a nrd xfer.
+ */
 struct NaClDescSysvShm {
   struct NaClDesc           base;
   int                       id;
   size_t                    size;
+  int                       rmid_in_dtor;
 };
 
 extern int NaClDescSysvShmInternalize(struct NaClDesc          **baseptr,

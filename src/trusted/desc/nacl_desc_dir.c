@@ -47,12 +47,12 @@ int NaClDescDirDescCtor(struct NaClDescDirDesc  *self,
                         struct NaClHostDir      *hd) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
   self->hd = hd;
-  basep->vtbl = &kNaClDescDirDescVtbl;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescDirDescVtbl;
   return 1;
 }
 
@@ -64,8 +64,8 @@ static void NaClDescDirDescDtor(struct NaClDesc *vself) {
   NaClHostDirClose(self->hd);
   free(self->hd);
   self->hd = NULL;
-  vself->vtbl = (struct NaClDescVtbl *) NULL;
-  NaClDescDtor(&self->base);
+  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->base.vtbl->Dtor)(&vself->base);
 }
 
 struct NaClDescDirDesc *NaClDescDirDescMake(struct NaClHostDir *nhdp) {
@@ -160,7 +160,9 @@ static int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
 }
 
 static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
-  NaClDescDirDescDtor,
+  {
+    (void (*)(struct NaClRefCount *)) NaClDescDirDescDtor,
+  },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
   NaClDescUnmapNotImplemented,

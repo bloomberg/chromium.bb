@@ -60,11 +60,11 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
   }
 
   if (NULL != self->cur_window) {
-    rv = (*self->shmp
-          ->vtbl->UnmapUnsafe)(self->shmp,
-                               (struct NaClDescEffector *) &self->eff,
-                               (void *) self->cur_window,
-                               self->window_size);
+    rv = (*((struct NaClDescVtbl const *) self->shmp->base.vtbl)->
+          UnmapUnsafe)(self->shmp,
+                       (struct NaClDescEffector *) &self->eff,
+                       (void *) self->cur_window,
+                       self->window_size);
     if (0 != rv) {
       NaClLog(LOG_FATAL,
               "NaClGioShmSetWindow: UnmapUnsafe returned %d\n",
@@ -90,13 +90,14 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
     actual_len = self->shm_sz - new_win_offset;
   }
   map_result =
-      (*self->shmp->vtbl->Map)(self->shmp,
-                               (struct NaClDescEffector *) &self->eff,
-                               (void *) NULL,
-                               actual_len,
-                               NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                               NACL_ABI_MAP_SHARED,
-                               (nacl_off64_t) new_win_offset);
+      (*((struct NaClDescVtbl const *) self->shmp->base.vtbl)->
+       Map)(self->shmp,
+            (struct NaClDescEffector *) &self->eff,
+            (void *) NULL,
+            actual_len,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+            NACL_ABI_MAP_SHARED,
+            (nacl_off64_t) new_win_offset);
   NaClLog(4,
           "NaClGioShmSetWindow: Map returned 0x%"NACL_PRIxPTR"\n",
           map_result);
@@ -282,11 +283,11 @@ static int NaClGioShmClose(struct Gio *vself) {
   int               ret;
 
   if (NULL != self->cur_window) {
-    ret = (*self->shmp
-           ->vtbl->UnmapUnsafe)(self->shmp,
-                                (struct NaClDescEffector *) &self->eff,
-                                (void *) self->cur_window,
-                                NACL_MAP_PAGESIZE);
+    ret = (*((struct NaClDescVtbl const *) self->shmp->base.vtbl)->
+           UnmapUnsafe)(self->shmp,
+                        (struct NaClDescEffector *) &self->eff,
+                        (void *) self->cur_window,
+                        NACL_MAP_PAGESIZE);
     if (ret < 0) {
       errno = EIO;
       return -1;
@@ -305,7 +306,8 @@ static int NaClGioShmClose(struct Gio *vself) {
    * explicit Dtor or NaClDescUnref is needed.  (Last Close actually
    * Dtors.)
    */
-  ret = (*self->shmp->vtbl->Close)(self->shmp);
+  ret = (*((struct NaClDescVtbl const *) self->shmp->base.vtbl)->
+         Close)(self->shmp);
   if (ret < 0) {
     errno = EIO;
     return -1;
@@ -322,7 +324,7 @@ static void NaClGioShmDtor(struct Gio *vself) {
    * should cleanup regardless.
    */
   if (NULL != self->shmp) {
-    if (-1 == (vself->vtbl->Close)(vself)) {
+    if (-1 == (*vself->vtbl->Close)(vself)) {
       NaClLog(LOG_ERROR, "NaClGioShmDtor: auto Close failed!\n");
     }
   }
@@ -355,7 +357,8 @@ static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
   self->shmp = NULL;
   self->cur_window = NULL;
 
-  if (0 != (vfret = (*shmp->vtbl->Fstat)(shmp, &stbuf))) {
+  if (0 != (vfret = (*((struct NaClDescVtbl const *) shmp->base.vtbl)->
+                     Fstat)(shmp, &stbuf))) {
     NaClLog(1, "NaClGioShmCtorIntern: Fstat virtual function returned %d\n",
             vfret);
     goto cleanup;
@@ -486,7 +489,9 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
 
   if (!rv) {
     int close_result;
-    if (0 != (close_result = (*shmp->base.vtbl->Close)(&shmp->base))) {
+    if (0 !=
+        (close_result = (*((struct NaClDescVtbl const *) shmp->base.base.vtbl)->
+                         Close)(&shmp->base))) {
       NaClLog(LOG_ERROR,
               ("NaClGioShmAllocCtor: failure cleanup close of shm failed,"
                " returned %d\n"),

@@ -15,6 +15,7 @@ launcher = env.ComponentProgram(
         'nonnacl_srpc',
         'nonnacl_util',
         'nrd_xfer',
+        'nacl_base',
         'platform',
         'google_nacl_imc_c',
         'gio',
