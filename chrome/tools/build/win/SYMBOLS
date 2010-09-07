@@ -1,4 +1,6 @@
 chrome_dll.pdb
 chrome_exe.pdb
+libEGL.pdb
+libGLESv2.pdb
 mini_installer.pdb
 setup.pdb
