@@ -390,8 +390,10 @@ void BackgroundView::InitGoIncognitoButton() {
 }
 
 void BackgroundView::UpdateLocalizedStrings() {
-  go_incognito_button_->SetText(
-      UTF8ToWide(l10n_util::GetStringUTF8(IDS_GO_INCOGNITO_BUTTON)));
+  if (go_incognito_button_) {
+    go_incognito_button_->SetText(
+        UTF8ToWide(l10n_util::GetStringUTF8(IDS_GO_INCOGNITO_BUTTON)));
+  }
 }
 
 void BackgroundView::UpdateWindowType() {
