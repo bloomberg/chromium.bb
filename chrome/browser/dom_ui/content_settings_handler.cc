@@ -9,7 +9,9 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -230,17 +232,24 @@ void ContentSettingsHandler::Initialize() {
   for (int i = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
        i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    ContentSetting default_setting = settings_map->
-        GetDefaultContentSetting(type);
+    ContentSetting default_setting;
+    if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+      default_setting = settings_map->GetDefaultContentSetting(type);
+      if (settings_map->GetBlockNonsandboxedPlugins())
+        default_setting = CONTENT_SETTING_ASK;
+    } else if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+      default_setting = dom_ui_->GetProfile()->
+          GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
+    } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      default_setting = dom_ui_->GetProfile()->
+          GetDesktopNotificationService()->GetDefaultContentSetting();
+    } else {
+      default_setting = dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+          GetDefaultContentSetting(type);
+    }
 
     filter_settings.SetString(ContentSettingsTypeToGroupName(type),
                               ContentSettingToString(default_setting));
-  }
-
-  if (settings_map->GetBlockNonsandboxedPlugins()) {
-    filter_settings.SetString(
-        ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_PLUGINS),
-        ContentSettingToString(CONTENT_SETTING_ASK));
   }
 
   dom_ui_->CallJavascriptFunction(
@@ -334,20 +343,29 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
     return;
   }
 
-  if (ContentSettingsTypeFromGroupName(group) ==
-      CONTENT_SETTINGS_TYPE_PLUGINS) {
-    bool block_nonsandboxed_plugins = false;
-    if (ContentSettingFromString(setting) == CONTENT_SETTING_ASK) {
-      setting = ContentSettingToString(CONTENT_SETTING_ALLOW);
-      block_nonsandboxed_plugins = true;
+  ContentSetting default_setting = ContentSettingFromString(setting);
+  ContentSettingsType content_type = ContentSettingsTypeFromGroupName(group);
+  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    if (default_setting == CONTENT_SETTING_ASK) {
+      default_setting = CONTENT_SETTING_ALLOW;
+      dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+          SetBlockNonsandboxedPlugins(true);
+    } else {
+      dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+          SetBlockNonsandboxedPlugins(false);
     }
     dom_ui_->GetProfile()->GetHostContentSettingsMap()->
-        SetBlockNonsandboxedPlugins(block_nonsandboxed_plugins);
+        SetDefaultContentSetting(content_type, default_setting);
+  } else if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    dom_ui_->GetProfile()->GetGeolocationContentSettingsMap()->
+        SetDefaultContentSetting(default_setting);
+  } else if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    dom_ui_->GetProfile()->GetDesktopNotificationService()->
+        SetDefaultContentSetting(default_setting);
+  } else {
+    dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+        SetDefaultContentSetting(content_type, default_setting);
   }
-
-  dom_ui_->GetProfile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      ContentSettingsTypeFromGroupName(group),
-      ContentSettingFromString(setting));
 }
 
 void ContentSettingsHandler::SetAllowThirdPartyCookies(const ListValue* args) {
@@ -362,17 +380,46 @@ void ContentSettingsHandler::RemoveExceptions(const ListValue* args) {
   std::string type_string;
   CHECK(args->GetString(arg_i++, &type_string));
 
-  HostContentSettingsMap* settings_map =
-      dom_ui_->GetProfile()->GetHostContentSettingsMap();
+  ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
   while (arg_i < args->GetSize()) {
-    std::string pattern;
-    bool rv = args->GetString(arg_i++, &pattern);
-    DCHECK(rv);
-    settings_map->SetContentSetting(
-        HostContentSettingsMap::Pattern(pattern),
-        ContentSettingsTypeFromGroupName(type_string),
-        "",
-        CONTENT_SETTING_DEFAULT);
+    if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+      std::string origin;
+      std::string embedding_origin;
+      bool rv = args->GetString(arg_i++, &origin);
+      DCHECK(rv);
+      rv = args->GetString(arg_i++, &embedding_origin);
+      DCHECK(rv);
+
+      dom_ui_->GetProfile()->GetGeolocationContentSettingsMap()->
+          SetContentSetting(GURL(origin),
+                            GURL(embedding_origin),
+                            CONTENT_SETTING_DEFAULT);
+    } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      std::string origin;
+      std::string setting;
+      bool rv = args->GetString(arg_i++, &origin);
+      DCHECK(rv);
+      rv = args->GetString(arg_i++, &setting);
+      DCHECK(rv);
+      ContentSetting content_setting = ContentSettingFromString(setting);
+      if (content_setting == CONTENT_SETTING_ALLOW) {
+        dom_ui_->GetProfile()->GetDesktopNotificationService()->
+            ResetAllowedOrigin(GURL(origin));
+      } else {
+        DCHECK_EQ(content_setting, CONTENT_SETTING_BLOCK);
+        dom_ui_->GetProfile()->GetDesktopNotificationService()->
+            ResetBlockedOrigin(GURL(origin));
+      }
+    } else {
+      std::string pattern;
+      bool rv = args->GetString(arg_i++, &pattern);
+      DCHECK(rv);
+      dom_ui_->GetProfile()->GetHostContentSettingsMap()->SetContentSetting(
+          HostContentSettingsMap::Pattern(pattern),
+          ContentSettingsTypeFromGroupName(type_string),
+          "",
+          CONTENT_SETTING_DEFAULT);
+    }
   }
 }
 
@@ -385,12 +432,17 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
   std::string setting;
   CHECK(args->GetString(arg_i++, &setting));
 
-  HostContentSettingsMap* settings_map =
-      dom_ui_->GetProfile()->GetHostContentSettingsMap();
-  settings_map->SetContentSetting(HostContentSettingsMap::Pattern(pattern),
-                                  ContentSettingsTypeFromGroupName(type_string),
-                                  "",
-                                  ContentSettingFromString(setting));
+  ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
+      type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    NOTREACHED();
+    return;
+  }
+  dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+      SetContentSetting(HostContentSettingsMap::Pattern(pattern),
+                        type,
+                        "",
+                        ContentSettingFromString(setting));
 }
 
 void ContentSettingsHandler::CheckExceptionPatternValidity(
@@ -403,10 +455,8 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
 
   HostContentSettingsMap::Pattern pattern(pattern_string);
 
-  scoped_ptr<Value> pattern_value(Value::CreateStringValue(
-      pattern_string));
-  scoped_ptr<Value> valid_value(Value::CreateBooleanValue(
-      pattern.IsValid()));
+  scoped_ptr<Value> pattern_value(Value::CreateStringValue(pattern_string));
+  scoped_ptr<Value> valid_value(Value::CreateBooleanValue(pattern.IsValid()));
 
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.patternValidityCheckComplete", *type,

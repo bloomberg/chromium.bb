@@ -173,6 +173,17 @@ cr.define('options.contentSettings', function() {
     },
 
     /**
+     * The embedding origin for the location exception.
+     * @type {string}
+     */
+    get embeddingOrigin() {
+      return this.dataItem[2];
+    },
+    set embeddingOrigin(url) {
+      this.dataItem[2] = url;
+    },
+
+    /**
      * Gets a human-readable setting string.
      * @type {string}
      */
@@ -393,7 +404,15 @@ cr.define('options.contentSettings', function() {
       var args = [this.contentType];
       var selectedItems = this.selectedItems;
       for (var i = 0; i < selectedItems.length; i++) {
-        args.push(selectedItems[i][0]);
+        if (this.contentType == 'location') {
+          args.push(selectedItems[i][0]);   // origin (pattern)
+          args.push(selectedItems[i][2]);   // embedded origin
+        } else if (this.contentType == 'notifications') {
+          args.push(selectedItems[i][0]);   // origin (pattern)
+          args.push(selectedItems[i][1]);   // setting
+        } else {
+          args.push(selectedItems[i][0]);   // pattern
+        }
       }
 
       chrome.send('removeExceptions', args);
@@ -424,28 +443,31 @@ cr.define('options.contentSettings', function() {
       this.exceptionsList.selectionModel.addEventListener(
           'change', cr.bind(this.handleOnSelectionChange_, this));
 
-      var addRow = cr.doc.createElement('button');
-      addRow.textContent = templateData.addExceptionRow;
-      this.appendChild(addRow);
+      var self = this;
+      if (this.contentType != 'location' &&
+          this.contentType != 'notifications') {
+        var addRow = cr.doc.createElement('button');
+        addRow.textContent = templateData.addExceptionRow;
+        this.appendChild(addRow);
 
-      var editRow = cr.doc.createElement('button');
-      editRow.textContent = templateData.editExceptionRow;
-      this.appendChild(editRow);
-      this.editRow = editRow;
+        addRow.onclick = function(event) {
+          self.exceptionsList.addException(['', '']);
+        };
+
+        var editRow = cr.doc.createElement('button');
+        editRow.textContent = templateData.editExceptionRow;
+        this.appendChild(editRow);
+        this.editRow = editRow;
+
+        editRow.onclick = function(event) {
+          self.exceptionsList.editSelectedRow();
+        };
+      }
 
       var removeRow = cr.doc.createElement('button');
       removeRow.textContent = templateData.removeExceptionRow;
       this.appendChild(removeRow);
       this.removeRow = removeRow;
-
-      var self = this;
-      addRow.onclick = function(event) {
-        self.exceptionsList.addException(['', '']);
-      };
-
-      editRow.onclick = function(event) {
-        self.exceptionsList.editSelectedRow();
-      };
 
       removeRow.onclick = function(event) {
         self.exceptionsList.removeSelectedRows();
@@ -473,7 +495,8 @@ cr.define('options.contentSettings', function() {
      */
     updateButtonSensitivity: function() {
       var selectionSize = this.exceptionsList.selectedItems.length;
-      this.editRow.disabled = selectionSize != 1;
+      if (this.editRow)
+        this.editRow.disabled = selectionSize != 1;
       this.removeRow.disabled = selectionSize == 0;
     },
 
