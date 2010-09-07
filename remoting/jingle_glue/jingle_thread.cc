@@ -15,21 +15,66 @@ namespace remoting {
 const uint32 kRunTasksMessageId = 1;
 const uint32 kStopMessageId = 2;
 
-class JingleThread::JingleMessagePump : public base::MessagePump {
+class JingleThread::JingleMessagePump : public base::MessagePump,
+                                        public talk_base::MessageHandler {
  public:
   JingleMessagePump(JingleThread* thread) : thread_(thread) { }
 
-  virtual void Run(Delegate* delegate) { NOTIMPLEMENTED() ;}
+  virtual void Run(Delegate* delegate) { NOTIMPLEMENTED(); }
   virtual void Quit() { NOTIMPLEMENTED(); }
   virtual void ScheduleWork() {
-    thread_->Post(thread_, kRunTasksMessageId);
+    thread_->Post(this, kRunTasksMessageId);
   }
   virtual void ScheduleDelayedWork(const base::Time& time) {
-    NOTIMPLEMENTED();
+    delayed_work_time_ = time;
+    ScheduleNextDelayedTask();
+  }
+
+  void OnMessage(talk_base::Message* msg) {
+    DCHECK(msg->message_id == kRunTasksMessageId);
+
+    // This code is executed whenever we get new message in |message_loop_|.
+    // JingleMessagePump posts new tasks in the jingle thread.
+    // TODO(sergeyu): Remove it when JingleThread moved on Chromium's
+    // base::Thread.
+    base::MessagePump::Delegate* delegate = thread_->message_loop();
+    // Loop until we run out of work.
+    while (true) {
+      if (!delegate->DoWork())
+        break;
+    }
+
+    // Process all pending tasks.
+    while (true) {
+      if (delegate->DoWork())
+        continue;
+      if (delegate->DoDelayedWork(&delayed_work_time_))
+        continue;
+      break;
+    }
+
+    ScheduleNextDelayedTask();
   }
 
  private:
+
+  void ScheduleNextDelayedTask() {
+    DCHECK_EQ(thread_->message_loop(), MessageLoop::current());
+
+    thread_->Clear(this, kRunTasksMessageId);
+    if (!delayed_work_time_.is_null()) {
+      base::Time now = base::Time::Now();
+      int delay = static_cast<int>((delayed_work_time_ - now).InMilliseconds());
+      if (delay > 0) {
+        thread_->PostDelayed(delay, this, kRunTasksMessageId);
+      } else {
+        thread_->Post(this, kRunTasksMessageId);
+      }
+    }
+  }
+
   JingleThread* thread_;
+  base::Time delayed_work_time_;
 };
 
 class JingleThread::JingleMessageLoop : public MessageLoop {
@@ -107,25 +152,14 @@ TaskPump* JingleThread::task_pump() {
 }
 
 void JingleThread::OnMessage(talk_base::Message* msg) {
-  if (msg->message_id == kRunTasksMessageId) {
-    // This code is executed whenever we get new message in |message_loop_|.
-    // JingleMessagePump posts new tasks in the jingle thread.
-    // TODO(sergeyu): Remove it when JingleThread moved on Chromium's
-    // base::Thread.
-    base::MessagePump::Delegate* delegate = message_loop_;
-    // Loop until we run out of work.
-    while (true) {
-      if (!delegate->DoWork())
-        break;
-    }
-  } else if (msg->message_id == kStopMessageId) {
-    // Stop the thread only if there are no more messages left in the queue,
-    // otherwise post another task to try again later.
-    if (msgq_.size() > 0 || fPeekKeep_) {
-      Post(this, kStopMessageId);
-    } else {
-      MessageQueue::Quit();
-    }
+  DCHECK(msg->message_id == kStopMessageId);
+
+  // Stop the thread only if there are no more messages left in the queue,
+  // otherwise post another task to try again later.
+  if (msgq_.size() > 0 || fPeekKeep_) {
+    Post(this, kStopMessageId);
+  } else {
+    MessageQueue::Quit();
   }
 }
 
