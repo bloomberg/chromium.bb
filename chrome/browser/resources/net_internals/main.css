@@ -231,3 +231,21 @@ table.styledTable,
   background: rgb(224,236,255);
 }
 
+/* 
+ * This is the box in the top right of the Data tab which shows how many
+ * events have been captured so far.
+ */
+.capturingBox {
+  border: 1px dashed black;
+  display: inline-block;
+  text-align: left;
+  padding: 5px;
+}
+
+/**
+ * Styling for an emphasized button.
+ */
+.bigButton {
+  font-size: 100%;
+  font-weight: bold;
+}

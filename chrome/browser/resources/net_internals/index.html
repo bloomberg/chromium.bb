@@ -134,16 +134,65 @@ found in the LICENSE file.
     <!-- Import/Export data -->
     <div id=dataTabContent>
 
+    <table width=100%>
+    <tr>
+    <td valign=top>
+      <h2>Dump data</h2>
+      <div style="margin: 8px">
+        <p>
+          <input id=stripCookiesCheckbox type=checkbox checked=yes>
+          Strip cookies
+        </p>
+        <p>
+          <a href="javascript:displayHelpForBugDump()">
+            Help: How to get data for bug reports?
+          </a>
+        </p>
+        <button id=exportToText class=bigButton>Dump to text</button>
+      </div>
+    </td>
+
+    <td align=right valign=top>
+      <div class="capturingBox">
+        <b>Capturing all events...</b>
+        <table style="margin: 8px">
+          <tr>
+            <td>Pasively captured:</td>
+            <td align=right id=passivelyCapturedCount></td>
+          </tr>
+          <tr>
+            <td>Actively captured:</td>
+            <td align=right id=activelyCapturedCount></td>
+          </tr>
+        </table>
+      </div>
+    </td>
+
+    </tr>
+    </table>
+
+    <pre id=exportedDataText></pre>
+    </div>
+
+<!-- START OF HELP TEXT -->
+<script>
+function displayHelpForBugDump() {
+  // We can't access the popups loaded from DOMUI pages, so we instead populate
+  // its contents using a data:URL. YUCK!
+  // TODO(eroman): do something less hacky, like exposing a new URL.
+  var helpContents =
+      document.getElementById('howtoDumpForBugsHelpContent').innerHTML;
+  window.open('data:text/html,' + encodeURIComponent(helpContents));
+}
+</script>
+<div id=howtoDumpForBugsHelpContent style="display: none">
 <h2>How to get data for bug reports</h2>
 
 <ol>
 <li>Reproduce the network problem.</li>
-<li>Click this button:
-  <button id=exportToText style="font-size: 110%"><b>Dump to text</b> </button><br>
-  (<input id=stripCookiesCheckbox type=checkbox checked=yes> Remove cookies)
-</li>
+<li>Click the <i>Dump to text</i> button in the <i>Data</i> tab.</li>
 
-<li>Copy-paste the data on this page to a text file.</li>
+<li>Copy-paste the resulting selected text to a file.</li>
 
 <li>Email the text file to the bug investigator,
   <b>along with an explanation of what went wrong.</b>
@@ -151,20 +200,6 @@ found in the LICENSE file.
 
 </ol>
 
-<script>
-function toggleMoreExplanation() {
-  var div = document.getElementById('moreExplanation');
-  var isToggled = div.style.display == '';
-  document.getElementById('moreExplanationIcon').innerText =
-      isToggled ? 'Show' : 'Hide';
-  setNodeDisplay(div, !isToggled);
-}
-</script>
-
-<a href="javascript:toggleMoreExplanation()">
-  <span id=moreExplanationIcon>Show</span> more explanation</a>
-
-<div style="display:none; margin-left: 15px;" id=moreExplanation>
 
 <ul>
 <li>The network log <b>may contain personally identifying information</b> like
@@ -175,7 +210,7 @@ function toggleMoreExplanation() {
 <li>If you choose not to have cookies removed from the log, you must toggle
   the checkbox before clicking the button.</li>
 </ul>
-<li>Ideally you would have this tool running <b>before</b> you reproduce the 
+<li>Ideally you would have the tool running <b>before</b> you reproduce the 
   bug.
   If that isn't possible (perhaps the bug happens unpredictably), then the
   next best thing is to load chrome://net-internals/ <b>as soon as you can
@@ -185,22 +220,25 @@ function toggleMoreExplanation() {
 <h2>How it works</h2>
 
 <ul>
-<li>While this page is open, it will capture the network events that are
-  happening in Chrome. You can view that in real-time by going to the
-  <a href='#requests'>Requests</a> tab.</li>
-<li>Once you close this window, the data it had captured is discarded.</li>
+  <li>While the net-internals page is open, it will capture the network events
+  that are happening in Chrome. You can view that in real-time by going to
+  the <i>Requests</i> tab.</li>
+  <li>Once you close the net-internals window, the data it had captured will be
+  discarded.</li>
 <li>Chrome keeps around a small buffer of network events for the
-  <b>most recent</b> requests. That way if you open chrome://net-internals/
-  <b>shortly after</b> encountering a problem, you can still find the relevant
+  most recent requests even when the net-internals window is not open.
+  That way if you open chrome://net-internals/
+  <b>shortly after</b> encountering a problem, you may still find the relevant
   data.
-  These <b>passively captured</b> events are less accurate however, and will
+  These <i>passively captured</i> events are less accurate however, and will
   be prefixed in the log with <span style="font-family: monospace;">(P)</span>.
 </li>
 </ul>
+
+<button onclick='window.close()'>Close this popup</button>
+<!-- END OF HELP TEXT -->
 </div>
 
-       <pre id=exportedDataText></pre>
-    </div>
     <!-- Connection tests -->
     <div id=testTabContent>
       <p>Input a URL which failed to load, and then click the button to run some

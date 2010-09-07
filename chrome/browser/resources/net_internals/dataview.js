@@ -8,12 +8,16 @@
  * to read format for bug reports.
  *
  *   - Has a button to generate a text report.
- *   - Has a button to generate a raw JSON dump (most useful for testing).
  *
+ *   - Shows how many events have been captured.
  *  @constructor
  */
-function DataView(mainBoxId, outputTextBoxId,
-                  exportTextButtonId, stripCookiesCheckboxId) {
+function DataView(mainBoxId,
+                  outputTextBoxId,
+                  exportTextButtonId,
+                  stripCookiesCheckboxId,
+                  passivelyCapturedCountId,
+                  activelyCapturedCountId) {
   DivView.call(this, mainBoxId);
 
   this.textPre_ = document.getElementById(outputTextBoxId);
@@ -21,9 +25,35 @@ function DataView(mainBoxId, outputTextBoxId,
 
   var exportTextButton = document.getElementById(exportTextButtonId);
   exportTextButton.onclick = this.onExportToText_.bind(this);
+
+  this.activelyCapturedCountBox_ =
+      document.getElementById(activelyCapturedCountId);
+  this.passivelyCapturedCountBox_ =
+      document.getElementById(passivelyCapturedCountId);
+  this.updateEventCounts_();
+
+  g_browser.addLogObserver(this);
 }
 
 inherits(DataView, DivView);
+
+/**
+ * Called whenever a new event is received.
+ */
+DataView.prototype.onLogEntryAdded = function(logEntry) {
+  this.updateEventCounts_();
+};
+
+/**
+ * Updates the counters showing how many events have been captured.
+ */
+DataView.prototype.updateEventCounts_ = function() {
+  var active = g_browser.getAllActivelyCapturedEvents();
+  var passive = g_browser.getAllPassivelyCapturedEvents();
+
+  this.activelyCapturedCountBox_.innerText = active.length;
+  this.passivelyCapturedCountBox_.innerText = passive.length;
+};
 
 /**
  * Presents the captured data as formatted text.
