@@ -178,7 +178,14 @@ END_MSG_MAP()
         // browser that we now have the focus.
         HWND focus = ::GetFocus();
         HWND plugin_window = GetWindow();
-        if (focus != plugin_window && !IsChild(plugin_window, focus)) {
+
+        // The Chrome-Frame instance may have launched a popup which currently
+        // has focus.  Because experimental extension popups are top-level
+        // windows, we have to check that the focus has shifted to a window
+        // that does not share the same GA_ROOTOWNER as the plugin.
+        if (focus != plugin_window &&
+            ::GetAncestor(plugin_window, GA_ROOTOWNER) !=
+                ::GetAncestor(focus, GA_ROOTOWNER)) {
           ignore_setfocus_ = true;
           SetFocus(plugin_window);
           ignore_setfocus_ = false;
