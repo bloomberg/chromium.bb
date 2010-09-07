@@ -117,10 +117,6 @@ const char kDebugPrint[]                    = "debug-print";
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
-// Disables accelerated compositing.
-const char kDisableAcceleratedCompositing[]  =
-    "disable-accelerated-compositing";
-
 // Disables the alternate window station for the renderer.
 const char kDisableAltWinstation[]          = "disable-winsta";
 
@@ -177,9 +173,6 @@ const char kDisableDevTools[]               = "disable-dev-tools";
 
 // Disables device orientation events.
 const char kDisableDeviceOrientation[]      = "disable-device-orientation";
-
-// Disable experimental WebGL support.
-const char kDisableExperimentalWebGL[]       = "disable-webgl";
 
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
@@ -346,8 +339,6 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 extern const char kLogNetLog[]              = "log-net-log";
 
 // Enable gpu-accelerated compositing.
-// TODO(vangelis): Remove the flag once accelerated compositing is enabled by
-// default on all platforms.
 const char kEnableAcceleratedCompositing[]  = "enable-accelerated-compositing";
 
 // Enable gpu-accelerated 2d canvas.
@@ -399,6 +390,9 @@ const char kEnableDNSSECCerts[]             = "enable-dnssec-certs";
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
+
+// Enable experimental WebGL support.
+const char kEnableExperimentalWebGL[]       = "enable-webgl";
 
 // Enable experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";

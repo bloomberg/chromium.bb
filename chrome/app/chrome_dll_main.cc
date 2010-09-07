@@ -566,21 +566,6 @@ int ChromeMain(int argc, char** argv) {
     singleton_command_line->AppendSwitch(switches::kEnableGPUPlugin);
   }
 
-  // TODO(vangelis): Remove this block once accelerated compositing is enabled
-  // on all platforms.
-#if defined(OS_MACOSX)
-  // Accelerated compositing is currently disabled by default on the mac, as it
-  // is less stable than other platforms. We disable it by adding a disable
-  // to the command line switches. Note that the rest of the code only checks
-  // for the disable flag, never for enable.
-  if (!parsed_command_line.HasSwitch(
-      switches::kEnableAcceleratedCompositing)) {
-    CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
-    singleton_command_line->AppendSwitch(
-        switches::kDisableAcceleratedCompositing);
-  }
-#endif
-
 #if defined(OS_CHROMEOS)
   if (parsed_command_line.HasSwitch(switches::kBWSI)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.

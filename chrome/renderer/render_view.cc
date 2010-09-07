@@ -2437,7 +2437,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   }
 
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
-      !cmd_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
+      cmd_line->HasSwitch(switches::kEnableAcceleratedCompositing)) {
     // Add the hardware video decoder factory.
     factory->AddFactory(IpcVideoDecoder::CreateFactory(
         MessageLoop::current(),
