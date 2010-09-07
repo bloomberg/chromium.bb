@@ -1447,7 +1447,7 @@ void ResourceMessageFilter::OnCacheableMetadataAvailable(
 // when needed.
 void ResourceMessageFilter::OnEnableSpdy(bool enable) {
   if (enable) {
-    net::HttpNetworkLayer::EnableSpdy("npn");
+    net::HttpNetworkLayer::EnableSpdy("npn,force-alt-protocols");
   } else {
     net::HttpNetworkLayer::EnableSpdy("npn-http");
   }
