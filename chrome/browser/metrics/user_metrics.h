@@ -32,8 +32,9 @@ class UserMetrics {
   //   not good: "SSLDialogShown", "PageLoaded", "DiskFull"
   // We use this to gather anonymized information about how users are
   // interacting with the browser.
-  // WARNING: Call this function exactly like this:
-  //   UserMetrics::RecordAction(UserMetricsAction("foo bar"));
+  // WARNING: Call this function exactly like this, with the string literal
+  // inline:
+  //   UserMetrics::RecordAction("foo bar", profile);
   // because otherwise our processing scripts won't pick up on new actions.
   //
   // For more complicated situations (like when there are many different

@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/prefs/scoped_pref_update.h"
@@ -702,17 +701,11 @@ void HostContentSettingsMap::SetBlockNonsandboxedPlugins(bool block) {
     block_nonsandboxed_plugins_ = block;
   }
 
-
   PrefService* prefs = profile_->GetPrefs();
-  if (block) {
-    UserMetrics::RecordAction(
-        UserMetricsAction("BlockNonsandboxedPlugins_Enable"));
+  if (block)
     prefs->SetBoolean(prefs::kBlockNonsandboxedPlugins, true);
-  } else {
-    UserMetrics::RecordAction(
-        UserMetricsAction("BlockNonsandboxedPlugins_Disable"));
+  else
     prefs->ClearPref(prefs::kBlockNonsandboxedPlugins);
-  }
 }
 
 void HostContentSettingsMap::ResetToDefaults() {
