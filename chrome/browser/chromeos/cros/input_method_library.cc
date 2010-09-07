@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 
 namespace {
@@ -452,9 +453,13 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   void StopInputMethodProcesses() {
     ime_running_ = false;
     if (ime_handle_) {
-      chromeos::ChangeInputMethod(
-          input_method_status_connection_,
-          chromeos::GetHardwareKeyboardLayoutName().c_str());
+      const std::string xkb_engine_name =
+          chromeos::GetHardwareKeyboardLayoutName();
+      // We should not use chromeos::ChangeInputMethod() here since without the
+      // ibus-daemon process, UpdateCurrentInputMethod() callback function which
+      // actually changes the XKB layout will not be called.
+      CrosLibrary::Get()->GetKeyboardLibrary()->SetCurrentKeyboardLayoutByName(
+          chromeos::input_method::GetKeyboardLayoutName(xkb_engine_name));
       kill(ime_handle_, SIGTERM);
       ime_handle_ = 0;
     }
