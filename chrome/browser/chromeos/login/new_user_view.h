@@ -168,6 +168,10 @@ class NewUserView : public views::View,
   // Whether browse without signin is needed.
   bool need_browse_without_signin_;
 
+  // Whether create account link is needed. Set to false for now but we may
+  // need it back in near future.
+  bool need_create_account_;
+
   FRIEND_TEST_ALL_PREFIXES(LoginScreenTest, IncognitoLogin);
   friend class LoginScreenTest;
 

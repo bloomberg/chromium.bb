@@ -90,7 +90,8 @@ NewUserView::NewUserView(Delegate* delegate,
       focus_delayed_(false),
       login_in_process_(false),
       need_border_(need_border),
-      need_browse_without_signin_(need_browse_without_signin) {
+      need_browse_without_signin_(need_browse_without_signin),
+      need_create_account_(false) {
 }
 
 NewUserView::~NewUserView() {
@@ -124,7 +125,9 @@ void NewUserView::Init() {
   throbber_ = CreateDefaultSmoothedThrobber();
   AddChildView(throbber_);
 
-  InitLink(&create_account_link_);
+  if (need_create_account_) {
+    InitLink(&create_account_link_);
+  }
   if (need_browse_without_signin_) {
     InitLink(&browse_without_signin_link_);
   }
@@ -184,8 +187,10 @@ void NewUserView::UpdateLocalizedStrings() {
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
   sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
-  create_account_link_->SetText(
-      l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
+  if (need_create_account_) {
+    create_account_link_->SetText(
+        l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
+  }
   if (need_browse_without_signin_) {
     browse_without_signin_link_->SetText(
         l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
@@ -274,6 +279,8 @@ void NewUserView::Layout() {
   int max_width = this->width() - x - insets.right();
   title_label_->SizeToFit(max_width);
 
+  int create_account_link_height = need_create_account_ ?
+      create_account_link_->GetPreferredSize().height() : 0;
   int browse_without_signin_link_height = need_browse_without_signin_ ?
       browse_without_signin_link_->GetPreferredSize().height() : 0;
 
@@ -281,7 +288,7 @@ void NewUserView::Layout() {
            username_field_->GetPreferredSize().height() +
            password_field_->GetPreferredSize().height() +
            sign_in_button_->GetPreferredSize().height() +
-           create_account_link_->GetPreferredSize().height() +
+           create_account_link_height +
            browse_without_signin_link_height +
            4 * kRowPad;
   y = (this->height() - height) / 2;
@@ -297,7 +304,9 @@ void NewUserView::Layout() {
                               throbber_->GetPreferredSize().height()) / 2,
                 width,
                 false);
-  y += setViewBounds(create_account_link_, x, y, max_width, false);
+  if (need_create_account_) {
+    y += setViewBounds(create_account_link_, x, y, max_width, false);
+  }
 
   if (need_browse_without_signin_) {
     y += setViewBounds(browse_without_signin_link_, x, y, max_width, false);
@@ -407,7 +416,9 @@ void NewUserView::EnableInputControls(bool enabled) {
   username_field_->SetEnabled(enabled);
   password_field_->SetEnabled(enabled);
   sign_in_button_->SetEnabled(enabled);
-  create_account_link_->SetEnabled(enabled);
+  if (need_create_account_) {
+    create_account_link_->SetEnabled(enabled);
+  }
   if (need_browse_without_signin_) {
     browse_without_signin_link_->SetEnabled(enabled);
   }
