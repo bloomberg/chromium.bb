@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -636,7 +637,9 @@ void ScreenLocker::EnableInput() {
 void ScreenLocker::Signout() {
   if (!error_info_) {
     // TODO(oshima): record this action in user metrics.
-    BrowserList::CloseAllBrowsersAndExit();
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
+    }
 
     // Don't hide yet the locker because the chrome screen may become visible
     // briefly.

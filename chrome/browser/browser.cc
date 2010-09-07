@@ -120,6 +120,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/views/app_launcher.h"
 #endif
@@ -1444,6 +1446,13 @@ void Browser::Search() {
 
 void Browser::Exit() {
   UserMetrics::RecordAction(UserMetricsAction("Exit"), profile_);
+#if defined(OS_CHROMEOS)
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
+    return;
+  }
+  // If running the Chrome OS build, but we're not on the device, fall through
+#endif
   BrowserList::CloseAllBrowsersAndExit();
 }
 
