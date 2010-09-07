@@ -199,6 +199,11 @@ const CGFloat kFloatingBarVerticalOffset = 22;
            object:window];
 
   [nc addObserver:self
+         selector:@selector(windowDidMove:)
+             name:NSWindowDidMoveNotification
+           object:window];
+
+  [nc addObserver:self
          selector:@selector(windowDidBecomeMain:)
              name:NSWindowDidBecomeMainNotification
            object:window];
@@ -219,6 +224,10 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)windowDidChangeScreen:(NSNotification*)notification {
+  [browserController_ resizeFullscreenWindow];
+}
+
+- (void)windowDidMove:(NSNotification*)notification {
   [browserController_ resizeFullscreenWindow];
 }
 
