@@ -24,7 +24,7 @@ class StopParsingException(Exception):
 
 
 class GrdContentHandler(xml.sax.handler.ContentHandler):
-  def __init__(self, stop_after=None, debug=False):
+  def __init__(self, stop_after=None, debug=False, defines=None):
     # Invariant of data:
     # 'root' is the root of the parse tree being created, or None if we haven't
     # parsed out any elements.
@@ -35,6 +35,7 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
     self.stack = []
     self.stop_after = stop_after
     self.debug = debug
+    self.defines = defines
 
   def startElement(self, name, attrs):
     assert not self.root or len(self.stack) > 0
@@ -55,6 +56,8 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
 
     if not self.root:
       self.root = node
+      if self.defines:
+        self.root.SetDefines(self.defines)
 
     if len(self.stack) > 0:
       self.stack[-1].AddChild(node)
@@ -88,7 +91,8 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
 
 
 def Parse(filename_or_stream, dir=None, flexible_root=False,
-          stop_after=None, debug=False, first_id_filename=None):
+          stop_after=None, debug=False, first_id_filename=None,
+          defines=None):
   '''Parses a GRD file into a tree of nodes (from grit.node).
 
   If flexible_root is False, the root node must be a <grit> element.  Otherwise
@@ -114,6 +118,7 @@ def Parse(filename_or_stream, dir=None, flexible_root=False,
     stop_after: 'inputs'
     debug: False
     first_id_filename: None
+    defines: dictionary of defines, like {'chromeos': '1'}
 
   Return:
     Subclass of grit.node.base.Node
@@ -121,7 +126,8 @@ def Parse(filename_or_stream, dir=None, flexible_root=False,
   Throws:
     grit.exception.Parsing
   '''
-  handler = GrdContentHandler(stop_after=stop_after, debug=debug)
+  handler = GrdContentHandler(stop_after=stop_after, debug=debug,
+                              defines=defines)
   try:
     xml.sax.parse(filename_or_stream, handler)
   except StopParsingException:
@@ -149,4 +155,3 @@ def Parse(filename_or_stream, dir=None, flexible_root=False,
 if __name__ == '__main__':
   util.ChangeStdoutEncoding()
   print unicode(Parse(sys.argv[1]))
-

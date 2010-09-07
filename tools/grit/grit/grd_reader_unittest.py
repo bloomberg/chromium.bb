@@ -145,6 +145,26 @@ class GrdReaderUnittest(unittest.TestCase):
     self.failUnless(isinstance(messages_node, empty.MessagesNode))
     self.failUnless(messages_node.attrs["first_id"] == 10000)
 
+  def testUseNameForIdAndPpIfdef(self):
+    input = u'''<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
+  <release seq="3">
+    <messages>
+      <if expr="pp_ifdef('hello')">
+        <message name="IDS_HELLO" use_name_for_id="true">
+          Hello!
+        </message>
+      </if>
+    </messages>
+  </release>
+</grit>'''
+    pseudo_file = StringIO.StringIO(input)
+    root = grd_reader.Parse(pseudo_file, '.', defines={'hello': '1'})
+
+    # Check if the ID is set to the name. In the past, there was a bug
+    # that caused the ID to be a generated number.
+    hello = root.GetNodeById('IDS_HELLO')
+    self.failUnless(hello.GetCliques()[0].GetId() == 'IDS_HELLO')
+
 if __name__ == '__main__':
   unittest.main()
-
