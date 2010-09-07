@@ -2436,6 +2436,9 @@ WebMediaPlayer* RenderView::createMediaPlayer(
         AudioRendererImpl::CreateFactory(audio_message_filter()));
   }
 
+  // TODO(hclam): Need to inject Gles2VideoDecodeContext here. Also I need
+  // to create a factory for FFmpegVideoDecoder here so that it can use
+  // the Gles2VideoDecodeContext.
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
       cmd_line->HasSwitch(switches::kEnableAcceleratedCompositing)) {
     // Add the hardware video decoder factory.

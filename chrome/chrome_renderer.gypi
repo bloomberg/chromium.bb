@@ -69,6 +69,8 @@
         'renderer/loadtimes_extension_bindings.cc',
         'renderer/media/audio_renderer_impl.cc',
         'renderer/media/audio_renderer_impl.h',
+        'renderer/media/gles2_video_decode_context.cc',
+        'renderer/media/gles2_video_decode_context.h',
         'renderer/media/ipc_video_decoder.cc',
         'renderer/media/ipc_video_decoder.h',
         'renderer/media/ipc_video_renderer.cc',
