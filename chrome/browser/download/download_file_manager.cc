@@ -96,25 +96,12 @@ void DownloadFileManager::CreateDownloadFile(
   // TODO(phajdan.jr): fix the duplication of path info below.
   info->path = info->save_info.file_path;
 
-  // The file is now ready, we can un-pause the request and start saving data.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &DownloadFileManager::ResumeDownloadRequest,
-                        info->child_id, info->request_id));
-
   StartUpdateTimer();
 
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(download_manager,
                         &DownloadManager::StartDownload, info));
-}
-
-void DownloadFileManager::ResumeDownloadRequest(int child_id, int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-
-  // This balances the pause in DownloadResourceHandler::OnResponseStarted.
-  resource_dispatcher_host_->PauseRequest(child_id, request_id, false);
 }
 
 DownloadFile* DownloadFileManager::GetDownloadFile(int id) {

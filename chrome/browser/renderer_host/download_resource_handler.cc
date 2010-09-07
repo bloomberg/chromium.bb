@@ -95,11 +95,6 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(
           download_file_manager_, &DownloadFileManager::StartDownload, info));
-
-  // We can't start saving the data before we create the file on disk.
-  // The request will be un-paused in DownloadFileManager::CreateDownloadFile.
-  rdh_->PauseRequest(global_id_.child_id, global_id_.request_id, true);
-
   return true;
 }
 
