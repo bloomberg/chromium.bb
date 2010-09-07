@@ -45,6 +45,8 @@ Resources\calendar_app\*.*: %(VersionDir)s\Resources\calendar_app
 Resources\docs_app\*.*: %(VersionDir)s\Resources\docs_app
 servers\*.dll: %(VersionDir)s\
 servers\*.exe: %(VersionDir)s\
+chrome_frame_helper.exe: %(VersionDir)s\
+chrome_frame_helper.dll: %(VersionDir)s\
 Extensions\*.*: %(VersionDir)s\Extensions\
 av*.dll: %(VersionDir)s\
 pdf.dll: %(VersionDir)s\
