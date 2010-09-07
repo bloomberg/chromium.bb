@@ -19,7 +19,10 @@ NaClSrpcError TestMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("test_method::s", TestMethod);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "test_method::s", TestMethod },
+  { NULL, NULL },
+};
 
 
 /* We override __srpc_init() and __srpc_wait() from libsrpc's
@@ -55,7 +58,7 @@ int main() {
   /* But the third connection was just right!  We accept it. */
   fd = imc_accept(3);
   assert(fd >= 0);
-  NaClSrpcServerLoop(fd, __kNaClSrpcHandlers, NULL);
+  NaClSrpcServerLoop(fd, srpc_methods, NULL);
 
   return 0;
 }
