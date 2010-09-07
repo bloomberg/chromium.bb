@@ -40,6 +40,13 @@ class HistoryModelWorker : public browser_sync::ModelSafeWorker,
 
   virtual void OnRequestRemoved(CancelableRequestProvider* provider,
                                 CancelableRequestProvider::Handle handle) {}
+
+  virtual void WillExecute(CancelableRequestProvider* provider,
+                           CancelableRequestProvider::Handle handle) {}
+
+  virtual void DidExecute(CancelableRequestProvider* provider,
+                          CancelableRequestProvider::Handle handle) {}
+
  private:
   scoped_refptr<HistoryService> history_service_;
   DISALLOW_COPY_AND_ASSIGN(HistoryModelWorker);

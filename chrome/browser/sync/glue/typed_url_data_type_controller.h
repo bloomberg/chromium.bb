@@ -81,6 +81,13 @@ class TypedUrlDataTypeController : public DataTypeController,
 
   virtual void OnRequestRemoved(CancelableRequestProvider* provider,
                                 CancelableRequestProvider::Handle handle) {}
+
+  virtual void WillExecute(CancelableRequestProvider* provider,
+                           CancelableRequestProvider::Handle handle) {}
+
+  virtual void DidExecute(CancelableRequestProvider* provider,
+                          CancelableRequestProvider::Handle handle) {}
+
  private:
   friend class ControlTask;
   void StartImpl(history::HistoryBackend* backend);

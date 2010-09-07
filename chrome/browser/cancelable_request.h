@@ -176,6 +176,7 @@ class CancelableRequestProvider {
 // Base class used to notify of new requests.
 class CancelableRequestConsumerBase {
  protected:
+  friend class CancelableRequestBase;
   friend class CancelableRequestProvider;
 
   virtual ~CancelableRequestConsumerBase() {
@@ -191,6 +192,14 @@ class CancelableRequestConsumerBase {
   // given request, and by the provider when a request is canceled.
   virtual void OnRequestRemoved(CancelableRequestProvider* provider,
                                 CancelableRequestProvider::Handle handle) = 0;
+
+  // Sent to provider before executing a callback.
+  virtual void WillExecute(CancelableRequestProvider* provider,
+                           CancelableRequestProvider::Handle handle) = 0;
+
+  // Sent after executing a callback.
+  virtual void DidExecute(CancelableRequestProvider* provider,
+                          CancelableRequestProvider::Handle handle) = 0;
 };
 
 // Template for clients to use. It allows them to associate random "client
@@ -232,6 +241,13 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
     return pending_requests_[request];
   }
 
+  // Returns the data associated with the current request being processed. This
+  // is only valid during the time a callback is being processed.
+  T GetClientDataForCurrentRequest() {
+    DCHECK(current_request_.is_valid());
+    return GetClientData(current_request_.provider, current_request_.handle);
+  }
+
   // Returns true if there are any pending requests.
   bool HasPendingRequests() const {
     return !pending_requests_.empty();
@@ -254,6 +270,22 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
     DCHECK(pending_requests_.empty());
   }
 
+  // Returns the handle for the first request that has the specified client data
+  // (in |handle|). Returns true if there is a request for the specified client
+  // data, false otherwise.
+  bool GetFirstHandleForClientData(T client_data,
+                                   CancelableRequestProvider::Handle* handle) {
+    for (typename PendingRequestList::const_iterator i =
+             pending_requests_.begin(); i != pending_requests_.end(); ++i) {
+      if (i->second == client_data) {
+        *handle = i->first.handle;
+        return true;
+      }
+    }
+    *handle = 0;
+    return false;
+  }
+
   // Gets the client data for all pending requests.
   void GetAllClientData(std::vector<T>* data) {
     DCHECK(data);
@@ -269,12 +301,16 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
         : provider(p), handle(h) {
     }
 
+    PendingRequest() : provider(NULL), handle(0) {}
+
     // Comparison operator for stl.
     bool operator<(const PendingRequest& other) const {
       if (provider != other.provider)
         return provider < other.provider;
       return handle < other.handle;
     }
+
+    bool is_valid() const { return provider != NULL; }
 
     CancelableRequestProvider* provider;
     CancelableRequestProvider::Handle handle;
@@ -304,8 +340,22 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
     pending_requests_.erase(i);
   }
 
+  virtual void WillExecute(CancelableRequestProvider* provider,
+                           CancelableRequestProvider::Handle handle) {
+    current_request_ = PendingRequest(provider, handle);
+  }
+
+  virtual void DidExecute(CancelableRequestProvider* provider,
+                          CancelableRequestProvider::Handle handle) {
+    current_request_ = PendingRequest();
+  }
+
   // Lists all outstanding requests.
   PendingRequestList pending_requests_;
+
+  // This is valid while processing a request and is used to identify the
+  // provider/handle of request.
+  PendingRequest current_request_;
 };
 
 // See CancelableRequestConsumerTSimple. The default value for T
@@ -414,6 +464,12 @@ class CancelableRequestBase
   // consumer.
   void NotifyCompleted() const {
     provider_->RequestCompleted(handle());
+    consumer_->DidExecute(provider_, handle_);
+  }
+
+  // Cover method for CancelableRequestConsumerBase::WillExecute.
+  void WillExecute() {
+    consumer_->WillExecute(provider_, handle_);
   }
 
   // The message loop that this request was created on. The callback will
@@ -521,6 +577,8 @@ class CancelableRequest : public CancelableRequestBase {
   // request has been completed. This must be called on the callback_thread_.
   void ExecuteCallback(const TupleType& param) {
     if (!canceled_.IsSet()) {
+      WillExecute();
+
       // Execute the callback.
       callback_->RunWithParams(param);
 
