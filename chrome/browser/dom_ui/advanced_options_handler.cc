@@ -211,8 +211,7 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
       SetupDownloadLocationPath();
     } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
       SetupAutoOpenFileTypesDisabledAttribute();
-    } else {
-      // Assume that one of the proxy settings may have changed.
+    } else if (proxy_prefs_->IsObserved(*pref_name)) {
       SetupProxySettingsSection();
     }
   }
