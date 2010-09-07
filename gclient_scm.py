@@ -127,8 +127,8 @@ class GitWrapper(SCMWrapper):
     """
 
   def diff(self, options, args, file_list):
-    merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
-    self._Run(['diff', merge_base], redirect_stdout=False)
+    merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
+    self._Run(['diff', merge_base])
 
   def export(self, options, args, file_list):
     """Export a clean directory tree into the given path.
@@ -140,8 +140,7 @@ class GitWrapper(SCMWrapper):
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     if not os.path.exists(export_path):
       os.makedirs(export_path)
-    self._Run(['checkout-index', '-a', '--prefix=%s/' % export_path],
-              redirect_stdout=False)
+    self._Run(['checkout-index', '-a', '--prefix=%s/' % export_path])
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
@@ -150,7 +149,7 @@ class GitWrapper(SCMWrapper):
     The patch file is generated from a diff of the merge base of HEAD and
     its upstream branch.
     """
-    merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
+    merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
     gclient_utils.CheckCallAndFilter(
         ['git', 'diff', merge_base],
         cwd=self.checkout_path,
@@ -202,7 +201,7 @@ class GitWrapper(SCMWrapper):
 
     if not os.path.exists(self.checkout_path):
       self._Clone(revision, url, options)
-      files = self._Run(['ls-files']).split()
+      files = self._Capture(['ls-files']).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       if not verbose:
         # Make the output a little prettier. It's nice to have some whitespace
@@ -283,13 +282,13 @@ class GitWrapper(SCMWrapper):
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
-      self._Run(['reset', '--hard', 'HEAD'], redirect_stdout=False)
+      self._Run(['reset', '--hard', 'HEAD'])
 
     if current_type == 'detached':
       # case 0
       self._CheckClean(rev_str)
       self._CheckDetachedHead(rev_str, options)
-      self._Run(['checkout', '--quiet', '%s^0' % revision])
+      self._Capture(['checkout', '--quiet', '%s^0' % revision])
       if not printed_path:
         options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
     elif current_type == 'hash':
@@ -327,7 +326,7 @@ class GitWrapper(SCMWrapper):
       raise gclient_utils.Error(switch_error)
     else:
       # case 3 - the default case
-      files = self._Run(['diff', upstream_branch, '--name-only']).split()
+      files = self._Capture(['diff', upstream_branch, '--name-only']).split()
       if verbose:
         options.stdout.write('Trying fast-forward merge to branch : %s\n' %
             upstream_branch)
@@ -426,13 +425,13 @@ class GitWrapper(SCMWrapper):
     if deps_revision.startswith('refs/heads/'):
       deps_revision = deps_revision.replace('refs/heads/', 'origin/')
 
-    files = self._Run(['diff', deps_revision, '--name-only']).split()
-    self._Run(['reset', '--hard', deps_revision], redirect_stdout=False)
+    files = self._Capture(['diff', deps_revision, '--name-only']).split()
+    self._Run(['reset', '--hard', deps_revision])
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def revinfo(self, options, args, file_list):
-    """Display revision"""
-    return self._Run(['rev-parse', 'HEAD'])
+    """Returns revision"""
+    return self._Capture(['rev-parse', 'HEAD'])
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
@@ -444,9 +443,9 @@ class GitWrapper(SCMWrapper):
           ('\n________ couldn\'t run status in %s:\nThe directory '
            'does not exist.\n') % self.checkout_path)
     else:
-      merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
-      self._Run(['diff', '--name-status', merge_base], redirect_stdout=False)
-      files = self._Run(['diff', '--name-only', merge_base]).split()
+      merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
+      self._Run(['diff', '--name-status', merge_base])
+      files = self._Capture(['diff', '--name-only', merge_base]).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def FullUrlForRelativeUrl(self, url):
@@ -481,7 +480,7 @@ class GitWrapper(SCMWrapper):
 
     for _ in range(3):
       try:
-        self._Run(clone_cmd, cwd=self._root_dir, redirect_stdout=False)
+        self._Run(clone_cmd, cwd=self._root_dir)
         break
       except gclient_utils.Error, e:
         # TODO(maruel): Hackish, should be fixed by moving _Run() to
@@ -498,7 +497,7 @@ class GitWrapper(SCMWrapper):
 
     if detach_head:
       # Squelch git's very verbose detached HEAD warning and use our own
-      self._Run(['checkout', '--quiet', '%s^0' % revision])
+      self._Capture(['checkout', '--quiet', '%s^0' % revision])
       options.stdout.write(
         ('Checked out %s to a detached HEAD. Before making any commits\n'
          'in this repo, you should use \'git checkout <branch>\' to switch to\n'
@@ -508,7 +507,7 @@ class GitWrapper(SCMWrapper):
   def _AttemptRebase(self, upstream, files, options, newbase=None,
                      branch=None, printed_path=False):
     """Attempt to rebase onto either upstream or, if specified, newbase."""
-    files.extend(self._Run(['diff', upstream, '--name-only']).split())
+    files.extend(self._Capture(['diff', upstream, '--name-only']).split())
     revision = upstream
     if newbase:
       revision = newbase
@@ -545,7 +544,7 @@ class GitWrapper(SCMWrapper):
                                         "work in your current branch!"
                                         " (y)es / (q)uit / (s)how : "))
           if re.match(r'yes|y', rebase_action, re.I):
-            self._Run(['reset', '--hard', 'HEAD'], redirect_stdout=False)
+            self._Run(['reset', '--hard', 'HEAD'])
             # Should this be recursive?
             rebase_output, rebase_err = scm.GIT.Capture(rebase_cmd,
                                                         self.checkout_path)
@@ -638,41 +637,31 @@ class GitWrapper(SCMWrapper):
                                   '\tSee man git-rebase for details.\n'
                                    % (self.relpath, rev_str))
       # Let's just save off the commit so we can proceed.
-      name = "saved-by-gclient-" + self._Run(["rev-parse", "--short", "HEAD"])
-      self._Run(["branch", name])
+      name = ('saved-by-gclient-' +
+              self._Capture(['rev-parse', '--short', 'HEAD']))
+      self._Capture(['branch', name])
       options.stdout.write(
           '\n_____ found an unreferenced commit and saved it as \'%s\'\n' %
           name)
 
   def _GetCurrentBranch(self):
     # Returns name of current branch or None for detached HEAD
-    branch = self._Run(['rev-parse', '--abbrev-ref=strict', 'HEAD'])
+    branch = self._Capture(['rev-parse', '--abbrev-ref=strict', 'HEAD'])
     if branch == 'HEAD':
       return None
     return branch
 
-  def _Run(self, args, cwd=None, redirect_stdout=True):
-    # TODO(maruel): Merge with Capture or better gclient_utils.CheckCall().
-    if cwd is None:
-      cwd = self.checkout_path
-    stdout = None
-    if redirect_stdout:
-      stdout = subprocess.PIPE
-    if cwd == None:
-      cwd = self.checkout_path
-    cmd = ['git'] + args
-    logging.debug(cmd)
+  def _Capture(self, args):
+    return gclient_utils.CheckCall(['git'] + args,
+                                   cwd=self.checkout_path)[0].strip()
+
+  def _Run(self, args, **kwargs):
+    kwargs.setdefault('cwd', self.checkout_path)
     try:
-      sp = gclient_utils.Popen(cmd, cwd=cwd, stdout=stdout)
-      output = sp.communicate()[0]
+      gclient_utils.Popen(['git'] + args, **kwargs).communicate()
     except OSError:
       raise gclient_utils.Error("git command '%s' failed to run." %
               ' '.join(cmd) + "\nCheck that you have git installed.")
-    if sp.returncode:
-      raise gclient_utils.Error('git command %s returned %d' %
-                                (args[0], sp.returncode))
-    if output is not None:
-      return output.strip()
 
 
 class SVNWrapper(SCMWrapper):
