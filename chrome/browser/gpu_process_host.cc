@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_channel_handle.h"
@@ -148,7 +149,7 @@ void GpuProcessHost::EstablishGpuChannel(int renderer_id,
   if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
     sent_requests_.push(ChannelRequest(filter));
   } else {
-    ReplyToRenderer(IPC::ChannelHandle(), filter);
+    ReplyToRenderer(IPC::ChannelHandle(), GPUInfo(), filter);
   }
 }
 
@@ -182,7 +183,7 @@ void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle,
     const GPUInfo& gpu_info) {
   const ChannelRequest& request = sent_requests_.front();
-  ReplyToRenderer(channel_handle, request.filter);
+  ReplyToRenderer(channel_handle, gpu_info, request.filter);
   sent_requests_.pop();
   gpu_info_ = gpu_info;
   child_process_logging::SetGpuInfo(gpu_info);
@@ -288,9 +289,10 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
 void GpuProcessHost::ReplyToRenderer(
     const IPC::ChannelHandle& channel,
+    const GPUInfo& gpu_info,
     ResourceMessageFilter* filter) {
   ViewMsg_GpuChannelEstablished* message =
-      new ViewMsg_GpuChannelEstablished(channel);
+      new ViewMsg_GpuChannelEstablished(channel, gpu_info);
   // If the renderer process is performing synchronous initialization,
   // it needs to handle this message before receiving the reply for
   // the synchronous ViewHostMsg_SynchronizeGpu message.

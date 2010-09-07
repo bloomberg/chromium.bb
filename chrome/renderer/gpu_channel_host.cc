@@ -28,6 +28,14 @@ void GpuChannelHost::Connect(const std::string& channel_name) {
   state_ = CONNECTED;
 }
 
+void GpuChannelHost::set_gpu_info(const GPUInfo& gpu_info) {
+  gpu_info_ = gpu_info;
+}
+
+const GPUInfo& GpuChannelHost::gpu_info() const {
+  return gpu_info_;
+}
+
 void GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(message.routing_id() != MSG_ROUTING_CONTROL);
   if (!router_.RouteMessage(message)) {

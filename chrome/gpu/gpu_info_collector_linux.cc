@@ -6,8 +6,12 @@
 
 namespace gpu_info_collector {
 
-bool CollectGraphicsInfo(GPUInfo& gpu_info) {
+bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   // TODO(rlp): complete this function
+  // TODO(apatrick): this illustrates how can_lose_context will be implemented
+  // on this platform in the future.
+  // bool can_lose_context =
+  //     gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
   return true;
 }
 

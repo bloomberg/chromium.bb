@@ -16,6 +16,7 @@
 #include "gfx/native_widget_types.h"
 
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
+class GPUInfo;
 
 namespace IPC {
 struct ChannelHandle;
@@ -96,6 +97,7 @@ class GpuProcessHost : public BrowserChildProcessHost {
 #endif
 
   void ReplyToRenderer(const IPC::ChannelHandle& channel,
+                       const GPUInfo& gpu_info,
                        ResourceMessageFilter* filter);
 
   // ResourceDispatcherHost::Receiver implementation:

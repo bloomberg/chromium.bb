@@ -63,6 +63,7 @@
           'common/gpu_messages.cc',
           'common/gpu_messages.h',
           'common/gpu_messages_internal.h',
+          'common/gpu_param_traits.h',
           'common/gpu_video_common.cc',
           'common/gpu_video_common.h',
           'common/indexed_db_key.cc',

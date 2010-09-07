@@ -92,38 +92,39 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
 void GpuThread::OnEstablishChannel(int renderer_id) {
   scoped_refptr<GpuChannel> channel;
   IPC::ChannelHandle channel_handle;
+  GPUInfo gpu_info;
 
   // Fail to establish a channel if some implementation of GL cannot be
   // initialized.
   if (gfx::GLContext::InitializeOneOff()) {
-    GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-    if (iter == gpu_channels_.end()) {
-      channel = new GpuChannel(renderer_id);
-    } else {
-      channel = iter->second;
-    }
+    // Fail to establish channel if GPU stats cannot be retreived.
+    if (gpu_info_collector::CollectGraphicsInfo(&gpu_info)) {
+      GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+      if (iter == gpu_channels_.end()) {
+        channel = new GpuChannel(renderer_id);
+      } else {
+        channel = iter->second;
+      }
 
-    DCHECK(channel != NULL);
+      DCHECK(channel != NULL);
 
-    if (channel->Init()) {
-      gpu_channels_[renderer_id] = channel;
-    } else {
-      channel = NULL;
-    }
+      if (channel->Init()) {
+        gpu_channels_[renderer_id] = channel;
+      } else {
+        channel = NULL;
+      }
 
-    if (channel.get()) {
-      channel_handle.name = channel->GetChannelName();
+      if (channel.get()) {
+        channel_handle.name = channel->GetChannelName();
 #if defined(OS_POSIX)
-      // On POSIX, pass the renderer-side FD. Also mark it as auto-close so that
-      // it gets closed after it has been sent.
-      int renderer_fd = channel->DisownRendererFd();
-      channel_handle.socket = base::FileDescriptor(renderer_fd, true);
+        // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
+        // that it gets closed after it has been sent.
+        int renderer_fd = channel->DisownRendererFd();
+        channel_handle.socket = base::FileDescriptor(renderer_fd, true);
 #endif
+      }
     }
   }
-
-  GPUInfo gpu_info;
-  gpu_info_collector::CollectGraphicsInfo(gpu_info);
 
   Send(new GpuHostMsg_ChannelEstablished(channel_handle, gpu_info));
 }

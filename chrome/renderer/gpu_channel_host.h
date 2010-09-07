@@ -10,6 +10,7 @@
 
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/common/message_router.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
@@ -44,6 +45,10 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   State state() const { return state_; }
 
+  // The GPU stats reported by the GPU process.
+  void set_gpu_info(const GPUInfo& gpu_info);
+  const GPUInfo& gpu_info() const;
+
   // IPC::Channel::Listener implementation:
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);
@@ -66,6 +71,8 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
  private:
   State state_;
+
+  GPUInfo gpu_info_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
 

@@ -41,6 +41,7 @@
 // Substitution map for l10n messages.
 typedef std::map<std::string, std::string> SubstitutionMap;
 
+class GPUInfo;
 class SerializedScriptValue;
 class SkBitmap;
 struct ThumbnailScore;
@@ -606,8 +607,9 @@ IPC_BEGIN_MESSAGES(View)
 
   // The browser sends this to a renderer process in response to a
   // ViewHostMsg_EstablishGpuChannel message.
-  IPC_MESSAGE_CONTROL1(ViewMsg_GpuChannelEstablished,
-                       IPC::ChannelHandle /* handle to channel */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_GpuChannelEstablished,
+                       IPC::ChannelHandle /* handle to channel */,
+                       GPUInfo /* stats about GPU process*/)
 
   // Notifies the renderer of the appcache that has been selected for a
   // a particular host. This is sent in reply to AppCacheMsg_SelectCache.

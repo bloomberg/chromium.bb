@@ -9,7 +9,8 @@
 #include "gfx/size.h"
 #include "app/gfx/gl/gl_context.h"
 
-typedef void *EGLContext;
+typedef void* EGLDisplay;
+typedef void* EGLContext;
 typedef void* EGLSurface;
 
 namespace gfx {
@@ -25,6 +26,8 @@ class BaseEGLContext : public GLContext {
   virtual EGLSurface GetSurface() = 0;
 
   static bool InitializeOneOff();
+
+  static EGLDisplay GetDisplay();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseEGLContext);

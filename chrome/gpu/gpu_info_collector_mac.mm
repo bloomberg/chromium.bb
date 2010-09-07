@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/gpu/gpu_info_collector.h"
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 #include "app/gfx/gl/gl_context.h"
@@ -125,7 +127,7 @@ static std::wstring CollectGLInfo(int *out_gl_version,
 }
 
 
-bool CollectGraphicsInfo(GPUInfo& gpu_info) {
+bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   // Video Card data.
   int vendor_id = 0, device_id = 0;
   // OpenGL data.
@@ -136,8 +138,9 @@ bool CollectGraphicsInfo(GPUInfo& gpu_info) {
 
   // Temporarily make an offscreen GL context so we can gather info from it.
   if (gfx::GLContext::InitializeOneOff()) {
-    gfx::GLContext* ctx = gfx::GLContext::CreateOffscreenGLContext(NULL);
-    if (ctx) {
+    scoped_ptr<gfx::GLContext> ctx(
+        gfx::GLContext::CreateOffscreenGLContext(NULL));
+    if (ctx.get()) {
       if (ctx->MakeCurrent()) {
         driver_version = CollectGLInfo(&gl_version, &shader_version);
       }
@@ -148,10 +151,13 @@ bool CollectGraphicsInfo(GPUInfo& gpu_info) {
 
   // OpenGL doesn't have separate versions for pixel and vertex shader
   // languages, so we just pass the shader_version for both.
-  gpu_info.SetGraphicsInfo(vendor_id, device_id,
-                           driver_version,
-                           shader_version, shader_version,
-                           gl_version);
+  gpu_info->SetGraphicsInfo(vendor_id,
+                            device_id,
+                            driver_version,
+                            shader_version,
+                            shader_version,
+                            gl_version,
+                            false);
 
   return true;
 }

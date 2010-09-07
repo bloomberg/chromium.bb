@@ -46,12 +46,17 @@ class GPUInfo {
   // D3D instead.
   uint32 gl_version() const;
 
+  // Return the device semantics, i.e. whether the Vista and Windows 7 specific
+  // semantics are available.
+  bool can_lose_context() const;
+
   // Populate variables with passed in values
   void SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
                        const std::wstring& driver_version,
                        uint32 pixel_shader_version,
                        uint32 vertex_shader_version,
-                       uint32 gl_version);
+                       uint32 gl_version,
+                       bool can_lose_context);
  private:
   uint32 vendor_id_;
   uint32 device_id_;
@@ -59,6 +64,7 @@ class GPUInfo {
   uint32 pixel_shader_version_;
   uint32 vertex_shader_version_;
   uint32 gl_version_;
+  bool can_lose_context_;
 };
 
 #endif  // CHROME_COMMON_GPU_INFO_H__

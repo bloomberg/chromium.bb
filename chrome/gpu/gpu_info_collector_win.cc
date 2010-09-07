@@ -7,34 +7,38 @@
 #include <windows.h>
 #include <d3d9.h>
 
+#include "app/gfx/gl/gl_context_egl.h"
+#include "app/gfx/gl/gl_implementation.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/scoped_native_library.h"
 #include "base/string_util.h"
 
+// ANGLE seems to require that main.h be included before any other ANGLE header.
+#include "libEGL/main.h"
+#include "libEGL/Display.h"
+
 namespace gpu_info_collector {
 
-bool CollectGraphicsInfo(GPUInfo& gpu_info) {
-  FilePath d3d_path(base::GetNativeLibraryName(L"d3d9"));
-  base::ScopedNativeLibrary d3dlib(d3d_path);
+bool CollectGraphicsInfo(GPUInfo* gpu_info) {
+  // TODO: collect OpenGL info if not using ANGLE?
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2)
+    return true;
 
-  typedef IDirect3D9* (WINAPI *Direct3DCreate9Proc)(UINT);
-  Direct3DCreate9Proc d3d_create_proc =
-      static_cast<Direct3DCreate9Proc>(
-      d3dlib.GetFunctionPointer("Direct3DCreate9"));
+  egl::Display* display = static_cast<egl::Display*>(
+      gfx::BaseEGLContext::GetDisplay());
+  IDirect3DDevice9* device = display->getDevice();
+  IDirect3D9* d3d = NULL;
+  if (FAILED(device->GetDirect3D(&d3d)))
+    return false;
 
-  if (!d3d_create_proc) {
-    return false;
-  }
-  IDirect3D9 *d3d = d3d_create_proc(D3D_SDK_VERSION);
-  if (!d3d) {
-    return false;
-  }
   return CollectGraphicsInfoD3D(d3d, gpu_info);
 }
 
-bool CollectGraphicsInfoD3D(IDirect3D9* d3d,
-                                              GPUInfo& gpu_info) {
+bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
+  DCHECK(d3d);
+  DCHECK(gpu_info);
+
   // Get device information
   D3DADAPTER_IDENTIFIER9 identifier;
   HRESULT hr = d3d->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &identifier);
@@ -63,18 +67,33 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d,
                                              driver_major_version_lo,
                                              driver_minor_version_hi,
                                              driver_minor_version_lo);
+
+  bool can_lose_context = false;
+  IDirect3D9Ex* d3dex = NULL;
+  if (SUCCEEDED(d3d->QueryInterface(__uuidof(IDirect3D9Ex),
+                                    reinterpret_cast<void**>(&d3dex)))) {
+    d3dex->Release();
+  } else {
+    can_lose_context = true;
+  }
+
   d3d->Release();
 
   // Get shader versions
   uint32 pixel_shader_version = d3d_caps.PixelShaderVersion;
   uint32 vertex_shader_version = d3d_caps.VertexShaderVersion;
 
-  gpu_info.SetGraphicsInfo(vendor_id, device_id, driver_version,
-                           pixel_shader_version, vertex_shader_version, 0);
+  gpu_info->SetGraphicsInfo(vendor_id,
+                           device_id,
+                           driver_version,
+                           pixel_shader_version,
+                           vertex_shader_version,
+                           0,
+                           can_lose_context);
   return true;
 }
 
-bool CollectGraphicsInfoGL(GPUInfo& gpu_info) {
+bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   // Taken from http://developer.nvidia.com/object/device_ids.html
   DISPLAY_DEVICE dd;
   dd.cb = sizeof(DISPLAY_DEVICE);
@@ -99,8 +118,11 @@ bool CollectGraphicsInfoGL(GPUInfo& gpu_info) {
   std::wstring driver_version = L"";
   uint32 pixel_shader_version = 0;
   uint32 vertex_shader_version = 0;
-  gpu_info.SetGraphicsInfo(vendor_id, device_id, driver_version,
-                           pixel_shader_version, vertex_shader_version, 0);
+  gpu_info->SetGraphicsInfo(vendor_id, device_id, driver_version,
+                            pixel_shader_version,
+                            vertex_shader_version,
+                            0,  // GL version of 0 indicates D3D
+                            false);
   return true;
 
   // TODO(rlp): Add driver and pixel versions

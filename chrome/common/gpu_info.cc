@@ -6,8 +6,10 @@
 
 GPUInfo::GPUInfo()
     : vendor_id_(0), device_id_(0), driver_version_(L""),
-      pixel_shader_version_(0), vertex_shader_version_(0),
-      gl_version_(0) {
+      pixel_shader_version_(0),
+      vertex_shader_version_(0),
+      gl_version_(0),
+      can_lose_context_(false) {
 }
 
 uint32 GPUInfo::vendor_id() const {
@@ -35,15 +37,21 @@ uint32 GPUInfo::gl_version() const {
 }
 
 
+bool GPUInfo::can_lose_context() const {
+  return can_lose_context_;
+}
+
 void GPUInfo::SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
                               const std::wstring& driver_version,
                               uint32 pixel_shader_version,
                               uint32 vertex_shader_version,
-                              uint32 gl_version) {
+                              uint32 gl_version,
+                              bool can_lose_context) {
   vendor_id_ = vendor_id;
   device_id_ = device_id;
   driver_version_ = driver_version;
   pixel_shader_version_ = pixel_shader_version;
   vertex_shader_version_ = vertex_shader_version;
   gl_version_ = gl_version;
+  can_lose_context_ = can_lose_context;
 }

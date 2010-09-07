@@ -85,6 +85,10 @@ bool BaseEGLContext::InitializeOneOff() {
   return true;
 }
 
+EGLDisplay BaseEGLContext::GetDisplay() {
+  return g_display;
+}
+
 NativeViewEGLContext::NativeViewEGLContext(void* window)
     : window_(window),
       surface_(NULL),

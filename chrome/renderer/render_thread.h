@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -289,7 +290,8 @@ class RenderThread : public RenderThreadBase,
   void OnSpellCheckWordAdded(const std::string& word);
   void OnSpellCheckEnableAutoSpellCorrect(bool enable);
 
-  void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle);
+  void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle,
+                               const GPUInfo& gpu_info);
 
   void OnGetAccessibilityTree();
 
