@@ -110,6 +110,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
       views::MenuItemView::AnchorPosition* anchor,
       bool* has_mnemonics,
       views::MenuButton** button);
+  virtual int GetMaxWidthForMenu();
 
   // BookmarkModelObserver methods.
   virtual void BookmarkModelChanged();

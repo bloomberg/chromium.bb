@@ -38,12 +38,6 @@ static const int kShowDelay = 400;
 // Amount of time from when the drop exits the menu and the menu is hidden.
 static const int kCloseOnExitTime = 1200;
 
-// Max width of a menu. There does not appear to be an OS value for this, yet
-// both IE and FF restrict the max width of a menu.
-// NOTE: this needs to be large enough to accommodate the wrench menu with big
-// fonts.
-static const int kMaxMenuWidth = 800;
-
 // Amount to inset submenus.
 static const int kSubmenuHorizontalInset = 3;
 
@@ -1403,9 +1397,9 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
 
   gfx::Size pref = submenu->GetScrollViewContainer()->GetPreferredSize();
 
-  // Don't let the menu go to wide. This is some where between what IE and FF
-  // do.
-  pref.set_width(std::min(pref.width(), kMaxMenuWidth));
+  // Don't let the menu go to wide.
+  pref.set_width(std::min(pref.width(),
+                          item->GetDelegate()->GetMaxWidthForMenu()));
   if (!state_.monitor_bounds.IsEmpty())
     pref.set_width(std::min(pref.width(), state_.monitor_bounds.width()));
 

@@ -24,6 +24,10 @@
 
 using views::MenuItemView;
 
+// Max width of a menu. There does not appear to be an OS value for this, yet
+// both IE and FF restrict the max width of a menu.
+static const int kMaxMenuWidth = 400;
+
 BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                Profile* profile,
                                                PageNavigator* navigator,
@@ -256,6 +260,10 @@ views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
       *button, anchor, &start_index);
   *has_mnemonics = false;
   return alt_menu;
+}
+
+int BookmarkMenuController::GetMaxWidthForMenu() {
+  return kMaxMenuWidth;
 }
 
 void BookmarkMenuController::BookmarkModelChanged() {
