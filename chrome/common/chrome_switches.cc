@@ -188,7 +188,9 @@ const char kDisableGeolocation[]            = "disable-geolocation";
 // Disable the GLSL translator.
 const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 
-// Suppresses hang monitor dialogs in renderer processes.
+// Suppresses hang monitor dialogs in renderer processes.  This may allow slow
+// unload handlers on a page to prevent the tab from closing, but the Task
+// Manager can be used to terminate the offending process in this case.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
 // Disable the internal Flash Player.

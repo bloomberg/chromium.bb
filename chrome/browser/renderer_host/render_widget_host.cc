@@ -370,6 +370,11 @@ void RenderWidgetHost::DonePaintingToBackingStore() {
 }
 
 void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHangMonitor)) {
+    return;
+  }
+
   // If we already have a timer that will expire at or before the given delay,
   // then we have nothing more to do now.  If we have set our end time to null
   // by calling StopHangMonitorTimeout, though, we will need to restart the
