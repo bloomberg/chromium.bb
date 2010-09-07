@@ -25,6 +25,7 @@ class InputHandler {
   virtual void Initialize() = 0;
 
  protected:
+  void SendKeyEvent(bool press, int keycode);
   void SendMouseMoveEvent(int x, int y);
   void SendMouseButtonEvent(bool down, MouseButton button);
 

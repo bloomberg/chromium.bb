@@ -18,6 +18,15 @@ PepperInputHandler::~PepperInputHandler() {
 void PepperInputHandler::Initialize() {
 }
 
+void PepperInputHandler::HandleKeyEvent(bool keydown,
+                                        const PP_Event_Key& event) {
+  SendKeyEvent(keydown, event.normalizedKeyCode);
+}
+
+void PepperInputHandler::HandleCharacterEvent(const PP_Event_Character& event) {
+  // TODO(garykac): Coordinate key and char events.
+}
+
 void PepperInputHandler::HandleMouseMoveEvent(const PP_Event_Mouse& event) {
   SendMouseMoveEvent(static_cast<int>(event.x),
                      static_cast<int>(event.y));

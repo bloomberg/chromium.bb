@@ -20,6 +20,9 @@ class PepperInputHandler : public InputHandler {
 
   void Initialize();
 
+  void HandleKeyEvent(bool keydown, const PP_Event_Key& event);
+  void HandleCharacterEvent(const PP_Event_Character& event);
+
   void HandleMouseMoveEvent(const PP_Event_Mouse& event);
   void HandleMouseButtonEvent(bool button_down,
                               const PP_Event_Mouse& event);

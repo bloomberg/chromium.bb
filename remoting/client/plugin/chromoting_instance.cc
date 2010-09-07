@@ -121,20 +121,26 @@ bool ChromotingInstance::HandleEvent(const PP_Event& event) {
   switch (event.type) {
     case PP_EVENT_TYPE_MOUSEDOWN:
       pih->HandleMouseButtonEvent(true, event.u.mouse);
-      break;
+      return true;
+
     case PP_EVENT_TYPE_MOUSEUP:
       pih->HandleMouseButtonEvent(false, event.u.mouse);
-      break;
+      return true;
+
     case PP_EVENT_TYPE_MOUSEMOVE:
     case PP_EVENT_TYPE_MOUSEENTER:
     case PP_EVENT_TYPE_MOUSELEAVE:
       pih->HandleMouseMoveEvent(event.u.mouse);
-      break;
+      return true;
 
     case PP_EVENT_TYPE_KEYDOWN:
+    case PP_EVENT_TYPE_KEYUP:
+      pih->HandleKeyEvent(event.type == PP_EVENT_TYPE_KEYDOWN, event.u.key);
+      return true;
+
     case PP_EVENT_TYPE_CHAR:
-      // client_->handle_char_event(npevent);
-      break;
+      pih->HandleCharacterEvent(event.u.character);
+      return true;
 
     default:
       break;

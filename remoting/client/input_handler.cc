@@ -20,6 +20,16 @@ InputHandler::InputHandler(ClientContext* context,
       mouse_y_(0) {
 }
 
+void InputHandler::SendKeyEvent(bool press, int keycode) {
+  ChromotingClientMessage msg;
+
+  KeyEvent *event = msg.mutable_key_event();
+  event->set_key(keycode);
+  event->set_pressed(press);
+
+  connection_->SendEvent(msg);
+}
+
 void InputHandler::SendMouseMoveEvent(int x, int y) {
   ChromotingClientMessage msg;
 

@@ -27,6 +27,10 @@ class X11InputHandler : public InputHandler {
 
   void ScheduleX11EventHandler();
 
+  // This is really an XEvent, but if we include Xlib.h in this file, it will
+  // cause conflicts with other headers. See note at top of
+  // x11_input_handler.cc.
+  void HandleKeyEvent(void* event);
   void HandleMouseMoveEvent(int x, int y);
   void HandleMouseButtonEvent(bool button_down, int xbutton_id);
 

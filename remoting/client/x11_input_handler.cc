@@ -12,6 +12,7 @@
 // Include Xlib at the end because it clashes with Status in
 // base/tracked_objects.h.
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 namespace remoting {
 
@@ -42,7 +43,7 @@ void X11InputHandler::DoProcessX11Events() {
         break;
       case KeyPress:
       case KeyRelease:
-        // TODO(garykac) Implement.
+        HandleKeyEvent(&e);
         break;
       case ButtonPress:
         HandleMouseButtonEvent(true, e.xbutton.button);
@@ -71,6 +72,15 @@ void X11InputHandler::ScheduleX11EventHandler() {
       FROM_HERE,
       NewRunnableMethod(this, &X11InputHandler::DoProcessX11Events),
       kProcessEventsInterval);
+}
+
+void X11InputHandler::HandleKeyEvent(void* event) {
+  XEvent* e = reinterpret_cast<XEvent*>(event);
+  char buffer[128];
+  int buffsize = sizeof(buffer) - 1;
+  KeySym keysym;
+  XLookupString(&e->xkey, buffer, buffsize, &keysym, NULL);
+  SendKeyEvent(e->type == KeyPress, static_cast<int>(keysym));
 }
 
 void X11InputHandler::HandleMouseMoveEvent(int x, int y) {
