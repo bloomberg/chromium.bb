@@ -66,7 +66,18 @@ const wchar_t kProtocolHandlers[] =
 const wchar_t kRunOnce[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
 
-const wchar_t kBhoNoLoadExplorerValue[] = L"NoExplorer";
+const wchar_t kRunKeyName[] = L"ChromeFrameHelper";
+
+const wchar_t kChromeFrameHelperExe[] = L"chrome_frame_helper.exe";
+
+// Window class and window names.
+// TODO(robertshield): These and other constants need to be refactored into
+// a common chrome_frame_constants.h|cc and built into a separate lib
+// (either chrome_frame_utils or make another one).
+const wchar_t kChromeFrameHelperWindowClassName[] =
+    L"ChromeFrameHelperWindowClass";
+const wchar_t kChromeFrameHelperWindowName[] =
+    L"ChromeFrameHelperWindowName";
 
 // {0562BFC3-2550-45b4-BD8E-A310583D3A6F}
 static const GUID kChromeFrameProvider =
@@ -317,6 +328,59 @@ HRESULT SetupRunOnce() {
   return S_OK;
 }
 
+// Helper method called for user-level installs where we don't have admin
+// permissions. Starts up the long running process and registers it to get it
+// started at next boot.
+void SetupUserLevelHelper() {
+  // Remove existing run-at-startup entry.
+  win_util::RemoveCommandFromAutoRun(HKEY_CURRENT_USER, kRunKeyName);
+
+  // Build the chrome_frame_helper command line.
+  FilePath module_path;
+  FilePath helper_path;
+  if (PathService::Get(base::FILE_MODULE, &module_path)) {
+    module_path = module_path.DirName();
+    helper_path = module_path.Append(kChromeFrameHelperExe);
+    if (!file_util::PathExists(helper_path)) {
+      // If we can't find the helper in the current directory, try looking
+      // one up (this is the layout in the build output folder).
+      module_path = module_path.DirName();
+      helper_path = module_path.Append(kChromeFrameHelperExe);
+      DCHECK(file_util::PathExists(helper_path)) <<
+          "Could not find chrome_frame_helper.exe.";
+    }
+  } else {
+    NOTREACHED();
+  }
+
+  // Find window handle of existing instance.
+  HWND old_window = FindWindow(kChromeFrameHelperWindowClassName,
+                               kChromeFrameHelperWindowName);
+
+  if (file_util::PathExists(helper_path)) {
+    // Add new run-at-startup entry.
+    win_util::AddCommandToAutoRun(HKEY_CURRENT_USER, kRunKeyName,
+                                  helper_path.value());
+
+    // Start new instance.
+    bool launched = base::LaunchApp(helper_path.value(), false, true, NULL);
+    if (!launched) {
+      NOTREACHED();
+      LOG(ERROR) << "Could not launch helper process.";
+    }
+
+    // Kill old instance using window handle.
+    if (IsWindow(old_window)) {
+      BOOL result = PostMessage(old_window, WM_CLOSE, 0, 0);
+      if (!result) {
+        LOG(ERROR) << "Failed to post close message to old helper process: "
+                   << GetLastError();
+      }
+    }
+  }
+}
+
+
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow() {
   return _AtlModule.DllCanUnloadNow();
@@ -391,8 +455,21 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
     hr = Bho::UpdateRegistry(reg);
   }
 
-  if ((hr == S_OK) && (flags & BHO_REGISTRATION) && is_system) {
-    _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, reg);
+  if ((hr == S_OK) && (flags & BHO_REGISTRATION)) {
+    if (is_system) {
+      _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, reg);
+    } else {
+      if (reg) {
+        // Setup the long running process:
+        SetupUserLevelHelper();
+      } else {
+        // Unschedule the user-level helper. Note that we don't kill it here so
+        // that during updates we don't have a time window with no running
+        // helper. Uninstalls and updates will explicitly kill the helper from
+        // within the installer. Unregister existing run-at-startup entry.
+        win_util::RemoveCommandFromAutoRun(HKEY_CURRENT_USER, kRunKeyName);
+      }
+    }
   }
 
   if ((hr == S_OK) && (flags & TYPELIB)) {
