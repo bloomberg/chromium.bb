@@ -24,6 +24,7 @@ static BOOL gCanGetCornerRadius = NO;
 - (void)drawRectOriginal:(NSRect)rect;
 - (BOOL)_mouseInGroup:(NSButton*)widget;
 - (void)updateTrackingAreas;
+- (NSUInteger)_shadowFlagsOriginal;
 @end
 
 // Undocumented APIs. They are really on NSGrayFrame rather than
@@ -33,6 +34,7 @@ static BOOL gCanGetCornerRadius = NO;
 - (float)roundedCornerRadius;
 - (CGRect)_titlebarTitleRect;
 - (void)_drawTitleStringIn:(struct CGRect)arg1 withColor:(id)color;
+- (NSUInteger)_shadowFlags;
 
 @end
 
@@ -49,7 +51,7 @@ static BOOL gCanGetCornerRadius = NO;
   DCHECK(grayFrameClass);
   if (!grayFrameClass) return;
 
-  // Exchange draw rect
+  // Exchange draw rect.
   Method m0 = class_getInstanceMethod([self class], @selector(drawRect:));
   DCHECK(m0);
   if (m0) {
@@ -69,7 +71,7 @@ static BOOL gCanGetCornerRadius = NO;
     }
   }
 
-  // Add _mouseInGroup
+  // Add _mouseInGroup.
   m0 = class_getInstanceMethod([self class], @selector(_mouseInGroup:));
   DCHECK(m0);
   if (m0) {
@@ -79,7 +81,7 @@ static BOOL gCanGetCornerRadius = NO;
                                   method_getTypeEncoding(m0));
     DCHECK(didAdd);
   }
-  // Add updateTrackingArea
+  // Add updateTrackingArea.
   m0 = class_getInstanceMethod([self class], @selector(updateTrackingAreas));
   DCHECK(m0);
   if (m0) {
@@ -98,6 +100,31 @@ static BOOL gCanGetCornerRadius = NO;
   gCanGetCornerRadius =
       [grayFrameClass
         instancesRespondToSelector:@selector(roundedCornerRadius)];
+
+  // Add _shadowFlags. This is a method on NSThemeFrame, not on NSGrayFrame.
+  // NSThemeFrame is NSGrayFrame's superclass.
+  Class themeFrameClass = NSClassFromString(@"NSThemeFrame");
+  DCHECK(themeFrameClass);
+  if (!themeFrameClass) return;
+  m0 = class_getInstanceMethod([self class], @selector(_shadowFlags));
+  DCHECK(m0);
+  if (m0) {
+    BOOL didAdd = class_addMethod(themeFrameClass,
+                                  @selector(_shadowFlagsOriginal),
+                                  method_getImplementation(m0),
+                                  method_getTypeEncoding(m0));
+    DCHECK(didAdd);
+    if (didAdd) {
+      Method m1 = class_getInstanceMethod(themeFrameClass,
+                                          @selector(_shadowFlags));
+      Method m2 = class_getInstanceMethod(themeFrameClass,
+                                          @selector(_shadowFlagsOriginal));
+      DCHECK(m1 && m2);
+      if (m1 && m2) {
+        method_exchangeImplementations(m1, m2);
+      }
+    }
+  }
 }
 
 - (id)initWithFrame:(NSRect)frame {
@@ -345,6 +372,28 @@ static BOOL gCanGetCornerRadius = NO;
         static_cast<FramedBrowserWindow*>([self window]);
     [window updateTrackingAreas];
   }
+}
+
+// When the compositor is active, the whole content area is transparent (with
+// an OpenGL surface behind it), so Cocoa draws the shadow only around the
+// toolbar area.
+// Tell the window server that we want a shadow as if none of the content
+// area is transparent.
+- (NSUInteger)_shadowFlags {
+  // A slightly less intrusive hack would be to call
+  // _setContentHasShadow:NO on the window. That seems to be what Terminal.app
+  // is doing. However, it leads to this function returning 'code | 64', which
+  // doesn't do what we want. For some reason, it does the right thing in
+  // Terminal.app.
+  // TODO(thakis): Figure out why -_setContentHasShadow: works in Terminal.app
+  // and use that technique instead. http://crbug.com/53382
+
+  // If this isn't the window class we expect, then pass it on to the
+  // original implementation.
+  if (![[self window] isKindOfClass:[FramedBrowserWindow class]])
+    return [self _shadowFlagsOriginal];
+
+  return [self _shadowFlagsOriginal] | 128;
 }
 
 @end
