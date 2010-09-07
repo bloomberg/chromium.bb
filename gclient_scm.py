@@ -128,7 +128,7 @@ class GitWrapper(SCMWrapper):
 
   def diff(self, options, args, file_list):
     merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
-    self._Run(['diff', merge_base])
+    self._Run(['diff', merge_base], options)
 
   def export(self, options, args, file_list):
     """Export a clean directory tree into the given path.
@@ -140,7 +140,8 @@ class GitWrapper(SCMWrapper):
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     if not os.path.exists(export_path):
       os.makedirs(export_path)
-    self._Run(['checkout-index', '-a', '--prefix=%s/' % export_path])
+    self._Run(['checkout-index', '-a', '--prefix=%s/' % export_path],
+              options)
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
@@ -282,7 +283,7 @@ class GitWrapper(SCMWrapper):
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
-      self._Run(['reset', '--hard', 'HEAD'])
+      self._Run(['reset', '--hard', 'HEAD'], options)
 
     if current_type == 'detached':
       # case 0
@@ -426,7 +427,7 @@ class GitWrapper(SCMWrapper):
       deps_revision = deps_revision.replace('refs/heads/', 'origin/')
 
     files = self._Capture(['diff', deps_revision, '--name-only']).split()
-    self._Run(['reset', '--hard', deps_revision])
+    self._Run(['reset', '--hard', deps_revision], options)
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def revinfo(self, options, args, file_list):
@@ -444,7 +445,7 @@ class GitWrapper(SCMWrapper):
            'does not exist.\n') % self.checkout_path)
     else:
       merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
-      self._Run(['diff', '--name-status', merge_base])
+      self._Run(['diff', '--name-status', merge_base], options)
       files = self._Capture(['diff', '--name-only', merge_base]).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
@@ -480,7 +481,7 @@ class GitWrapper(SCMWrapper):
 
     for _ in range(3):
       try:
-        self._Run(clone_cmd, cwd=self._root_dir)
+        self._Run(clone_cmd, options, cwd=self._root_dir)
         break
       except gclient_utils.Error, e:
         # TODO(maruel): Hackish, should be fixed by moving _Run() to
@@ -544,7 +545,7 @@ class GitWrapper(SCMWrapper):
                                         "work in your current branch!"
                                         " (y)es / (q)uit / (s)how : "))
           if re.match(r'yes|y', rebase_action, re.I):
-            self._Run(['reset', '--hard', 'HEAD'])
+            self._Run(['reset', '--hard', 'HEAD'], options)
             # Should this be recursive?
             rebase_output, rebase_err = scm.GIT.Capture(rebase_cmd,
                                                         self.checkout_path)
@@ -655,13 +656,10 @@ class GitWrapper(SCMWrapper):
     return gclient_utils.CheckCall(['git'] + args,
                                    cwd=self.checkout_path)[0].strip()
 
-  def _Run(self, args, **kwargs):
+  def _Run(self, args, options, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
-    try:
-      gclient_utils.Popen(['git'] + args, **kwargs).communicate()
-    except OSError:
-      raise gclient_utils.Error("git command '%s' failed to run." %
-              ' '.join(cmd) + "\nCheck that you have git installed.")
+    gclient_utils.CheckCallAndFilterAndHeader(['git'] + args,
+        always=options.verbose, stdout=options.stdout, **kwargs)
 
 
 class SVNWrapper(SCMWrapper):

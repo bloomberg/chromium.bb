@@ -433,7 +433,7 @@ def GuessVCS(options, path):
     if e.returncode != errno.ENOENT and e.returncode != 128:
       # ENOENT == 2 = they don't have git installed.
       # 128 = git error code when not in a repo.
-      logging.warn(e.returncode)
+      logging.warn('Unexpected error code: %s' % e.returncode)
       raise
   raise NoTryServerAccess("Could not guess version control system. "
                           "Are you in a working copy directory?")

@@ -49,10 +49,10 @@ class GClientSmokeBase(FakeReposTestBase):
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 
-  def parseGclient(self, cmd, items):
+  def parseGclient(self, cmd, items, expected_stderr=''):
     """Parse gclient's output to make it easier to test."""
     (stdout, stderr, returncode) = self.gclient(cmd)
-    self.checkString('', stderr)
+    self.checkString(expected_stderr, stderr)
     self.assertEquals(0, returncode)
     return self.checkBlock(stdout, items)
 
@@ -103,7 +103,7 @@ class GClientSmokeBase(FakeReposTestBase):
         path = self.root_dir
       self.checkString(results[i][0][0], verb, (i, results[i][0][0], verb))
       self.checkString(results[i][0][2], path, (i, results[i][0][2], path))
-    self.assertEquals(len(results), len(items), (stdout, items))
+    self.assertEquals(len(results), len(items), (stdout, items, len(results)))
     return results
 
   def svnBlockCleanup(self, out):
@@ -473,12 +473,10 @@ class GClientSmokeGIT(GClientSmokeBase):
     # TODO(maruel): safesync.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
-    results = self.gclient(['sync', '--deps', 'mac'])
-    self.checkBlock(results[0], ['running', 'running'])
+    self.parseGclient(['sync', '--deps', 'mac'],
+                      ['running', 'running', 'running', 'running', 'running'])
     # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
     # add sync parsing to get the list of updated files.
-    #self.assertTrue(results[1].startswith('Switched to a new branch \''))
-    self.assertEquals(0, results[2])
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
@@ -525,18 +523,12 @@ class GClientSmokeGIT(GClientSmokeBase):
     if not self.enabled:
       return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
-    results = self.gclient(['sync', '--deps', 'mac', '--revision',
-                            'invalid@' + self.githash('repo_1', 1)])
-    self.checkBlock(results[0], ['running', 'running'])
-    # TODO(maruel): git shouldn't output to stderr...
-    self.checkString('Please fix your script, having invalid --revision flags '
-        'will soon considered an error.\n',
-        results[1])
-    #self.checkString('Please fix your script, having invalid --revision flags '
-    #    'will soon considered an error.\nSwitched to a new branch \'%s\'\n' %
-    #        self.githash('repo_2', 1)[:7],
-    #    results[1])
-    self.assertEquals(0, results[2])
+    self.parseGclient(
+        ['sync', '--deps', 'mac',
+         '--revision', 'invalid@' + self.githash('repo_1', 1)],
+        ['running', 'running', 'running', 'running', 'running'],
+        'Please fix your script, having invalid --revision flags '
+            'will soon considered an error.\n')
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
@@ -549,14 +541,9 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     # When no solution name is provided, gclient uses the first solution listed.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
-    results = self.gclient(['sync', '--deps', 'mac',
-                            '--revision', self.githash('repo_1', 1)])
-    self.checkBlock(results[0], [])
-    # TODO(maruel): git shouldn't output to stderr...
-    #self.checkString('Switched to a new branch \'%s\'\n'
-    #    % self.githash('repo_1', 1), results[1])
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
+    self.parseGclient(['sync', '--deps', 'mac',
+                       '--revision', self.githash('repo_1', 1)],
+                      ['running', 'running', 'running', 'running'])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -572,8 +559,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     write(join(self.root_dir, 'src', 'repo2', 'hi'), 'Hey!')
 
-    results = self.gclient(['status', '--deps', 'mac'])
-    out = results[0].splitlines(False)
+    out = self.parseGclient(['status', '--deps', 'mac'], [])
     # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
     # files.
     self.assertEquals(0, len(out))
@@ -583,7 +569,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     results = self.gclient(['revert', '--deps', 'mac'])
     out = results[0].splitlines(False)
     # TODO(maruel): http://crosbug.com/3583 It just runs the hooks right now.
-    self.assertEquals(7, len(out))
+    self.assertEquals(13, len(out))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
@@ -671,19 +657,13 @@ class GClientSmokeBoth(GClientSmokeBase):
         ' "url": "' + self.svn_base + 'trunk/src/"},'
         '{"name": "src-git",'
         '"url": "' + self.git_base + 'repo_1"}]'])
-    results = self.gclient(['sync', '--deps', 'mac'])
-    # 3x svn checkout, 3x run hooks
-    self.checkBlock(results[0],
-                    ['running', 'running',
-                     # This is due to the way svn update is called for a single
-                     # file when File() is used in a DEPS file.
-                     ('running', self.root_dir + '/src/file/other'),
-                     'running', 'running', 'running', 'running', 'running',
-                     'running'])
-    # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
-    # new branch \'hash\''.
-    #self.checkString('', results[1])
-    self.assertEquals(0, results[2])
+    self.parseGclient(['sync', '--deps', 'mac'],
+        ['running', 'running', 'running',
+         # This is due to the way svn update is called for a single
+         # file when File() is used in a DEPS file.
+         ('running', self.root_dir + '/src/file/other'),
+         'running', 'running', 'running', 'running', 'running', 'running',
+         'running', 'running'])
     tree = self.mangle_git_tree(('repo_1@2', 'src-git'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
@@ -707,13 +687,11 @@ class GClientSmokeBoth(GClientSmokeBase):
         ' "url": "' + self.svn_base + 'trunk/src/"},'
         '{"name": "src-git",'
         '"url": "' + self.git_base + 'repo_1"}]'])
-    results = self.gclient(['sync', '--deps', 'mac', '--revision', '1',
-                            '-r', 'src-git@' + self.githash('repo_1', 1)])
-    self.checkBlock(results[0], ['running', 'running', 'running', 'running'])
-    # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
-    # new branch \'hash\''.
-    #self.checkString('', results[1])
-    self.assertEquals(0, results[2])
+    self.parseGclient(
+        ['sync', '--deps', 'mac', '--revision', '1',
+         '-r', 'src-git@' + self.githash('repo_1', 1)],
+        ['running', 'running', 'running', 'running',
+         'running', 'running', 'running', 'running'])
     tree = self.mangle_git_tree(('repo_1@1', 'src-git'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
