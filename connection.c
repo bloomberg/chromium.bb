@@ -222,7 +222,7 @@ close_fds(struct wl_buffer *buffer)
 		return;
 
 	wl_buffer_copy(buffer, fds, size);
-	count = size / 4;
+	count = size / sizeof fds[0];
 	for (i = 0; i < count; i++)
 		close(fds[i]);
 	buffer->tail += size;
@@ -340,7 +340,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	struct wl_closure *closure = &connection->closure;
 	struct wl_object *object;
 	uint32_t length, *p, size;
-	int32_t dup_fd;
+	int dup_fd;
 	struct wl_array *array;
 	const char *s;
 	int i, count, fd;
@@ -350,8 +350,10 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	for (i = 0; i < count; i++) {
 		switch (message->signature[i]) {
 		case 'u':
-		case 'i':
 			*p++ = va_arg(ap, uint32_t);
+			break;
+		case 'i':
+			*p++ = va_arg(ap, int32_t);
 			break;
 		case 's':
 			s = va_arg(ap, const char *);
@@ -428,7 +430,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 			struct wl_hash_table *objects,
 			const struct wl_message *message)
 {
-	uint32_t *p, *next, *end, length, *uint;
+	uint32_t *p, *next, *end, length;
+	int *fd;
 	char *extra, **s;
 	int i, count, extra_space;
 	struct wl_object **object;
@@ -466,8 +469,11 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 		switch (message->signature[i - 2]) {
 		case 'u':
-		case 'i':
 			closure->types[i] = &ffi_type_uint32;
+			closure->args[i] = p++;
+			break;
+		case 'i':
+			closure->types[i] = &ffi_type_sint32;
 			closure->args[i] = p++;
 			break;
 		case 's':
@@ -557,15 +563,14 @@ wl_connection_demarshal(struct wl_connection *connection,
 			p = next;
 			break;
 		case 'h':
-			closure->types[i] = &ffi_type_uint32;
+			closure->types[i] = &ffi_type_sint;
 
-			uint = (uint32_t *) extra;
-			extra += sizeof *uint;
-			closure->args[i] = uint;
+			fd = (int *) extra;
+			extra += sizeof *fd;
+			closure->args[i] = fd;
 
-			wl_buffer_copy(&connection->fds_in,
-				       uint, sizeof *uint);
-			connection->fds_in.tail += sizeof *uint;
+			wl_buffer_copy(&connection->fds_in, fd, sizeof *fd);
+			connection->fds_in.tail += sizeof *fd;
 			break;
 		default:
 			printf("unknown type\n");
