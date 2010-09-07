@@ -668,6 +668,10 @@ installer_util::InstallStatus InstallNewVersion(
                                        product_name,
                                        true);    // overwrite name also
   install_list->AddSetRegValueWorkItem(reg_root, version_key,
+                                       google_update::kRegOopcrashesField,
+                                       1,
+                                       false);   // set during first install
+  install_list->AddSetRegValueWorkItem(reg_root, version_key,
                                        google_update::kRegVersionField,
                                        new_version.GetString(),
                                        true);    // overwrite version

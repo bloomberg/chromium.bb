@@ -23,6 +23,7 @@ const wchar_t kRegLastCheckedField[] = L"LastChecked";
 const wchar_t kRegMetricsId[] = L"metricsid";
 const wchar_t kRegMSIField[] = L"msi";
 const wchar_t kRegNameField[] = L"name";
+const wchar_t kRegOopcrashesField[] = L"oopcrashes";
 const wchar_t kRegOldVersionField[] = L"opv";
 const wchar_t kRegRenameCmdField[] = L"cmd";
 const wchar_t kRegRLZBrandField[] = L"brand";
