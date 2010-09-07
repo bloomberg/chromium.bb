@@ -25,6 +25,9 @@ typedef enum {
   NaClRunModeSize
 } NaClRunMode;
 
+/* Defines the run mode files that should be generated. */
+extern NaClRunMode NACL_FLAGS_run_mode;
+
 /* Change the current opcode prefix to the given value. */
 void NaClDefInstPrefix(const NaClInstPrefix prefix);
 
@@ -139,8 +142,13 @@ void NaClDefInvalid(const uint8_t opcode);
 /* Defines an invalid instruction for the given prefix. */
 void NaClDefInvalidIcode(NaClInstPrefix prefix, const uint8_t opcode);
 
-/* Add additional opcode flags to the current instruction being processed. */
+/* Add additional instruction flags to the current instruction being
+ * processed.
+ */
 void NaClAddIFlags(NaClIFlags more_flags);
+
+/* Remove instruction flags from the current instruction being processed. */
+void NaClRemoveIFlags(NaClIFlags less_flags);
 
 /*
  * Define the next operand of the current opcode to have the given kind

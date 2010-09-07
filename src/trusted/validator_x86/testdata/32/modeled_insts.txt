@@ -73,7 +73,7 @@ Target: x86-32 bit mode
 *** NoPrefix ***
 
   --- 00 ---
-  00                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  00                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Add $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -83,7 +83,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- 02 ---
-  02                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  02                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Add $G, $E
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -117,7 +117,7 @@ Target: x86-32 bit mode
       RegESP                  OpUse OpSet OpImplicit
       RegES                   OpSet
   --- 08 ---
-  08                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  08                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Or $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -127,7 +127,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- 0a ---
-  0a                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  0a                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Or $G, $E
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -156,7 +156,7 @@ Target: x86-32 bit mode
       RegESP                  OpUse OpSet OpImplicit
       RegCS                   OpUse
   --- 10 ---
-  10                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  10                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Adc $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -166,7 +166,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- 12 ---
-  12                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  12                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Adc $G, $E
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -200,7 +200,7 @@ Target: x86-32 bit mode
       RegRESP                 OpUse OpSet OpImplicit
       RegSS                   OpSet
   --- 18 ---
-  18                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  18                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Sbb $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -210,7 +210,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- 1a ---
-  1a                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  1a                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Sbb $G, $E
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -244,7 +244,7 @@ Target: x86-32 bit mode
       RegESP                  OpUse OpSet OpImplicit
       RegDS                   OpSet
   --- 20 ---
-  20                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  20                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     And $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -254,7 +254,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- 22 ---
-  22                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  22                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     And $G, $E
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -281,7 +281,7 @@ Target: x86-32 bit mode
   27                          ILLEGAL 
     Daa
   --- 28 ---
-  28                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  28                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Sub $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -291,7 +291,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- 2a ---
-  2a                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  2a                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Sub $G, $E
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -318,7 +318,7 @@ Target: x86-32 bit mode
   2f                          ILLEGAL 
     Das
   --- 30 ---
-  30                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  30                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Xor $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -328,7 +328,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- 32 ---
-  32                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  32                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Xor $G, $E
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -356,7 +356,7 @@ Target: x86-32 bit mode
     Aaa
       RegAL                   OpUse OpSet OpImplicit
   --- 38 ---
-  38                          386 OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  38                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
     Cmp $E, $G
       E_Operand               OpUse
       G_Operand               OpUse
@@ -366,7 +366,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OperandZeroExtends_v
       G_Operand               OpUse
   --- 3a ---
-  3a                          386 OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
+  3a                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
     Cmp $G, $E
       G_Operand               OpUse
       E_Operand               OpUse
@@ -754,35 +754,35 @@ Target: x86-32 bit mode
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 80 ---
-  80 / 0                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
+  80 / 0                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     Add $E, $I
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 1                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
+  80 / 1                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     Or $E, $I
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 2                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
+  80 / 2                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     Adc $E, $I
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 3                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
+  80 / 3                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     Sbb $E, $I
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 4                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
+  80 / 4                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     And $E, $I
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 5                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
+  80 / 5                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     Sub $E, $I
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 6                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
+  80 / 6                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     Xor $E, $I
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 7                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
+  80 / 7                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     Cmp $E, $I
       E_Operand               OpUse
       I_Operand               OpUse
@@ -917,7 +917,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OperandZeroExtends_v
       I_Operand               OpUse
   --- 84 ---
-  84                          386 OpcodeUsesModRm OpcodeRex OperandSize_b
+  84                          386 OpcodeUsesModRm OperandSize_b
     Test $E, $G
       E_Operand               OpUse
       G_Operand               OpUse
@@ -937,7 +937,7 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
   --- 88 ---
-  88                          386 OpcodeUsesModRm OpcodeRex OperandSize_b
+  88                          386 OpcodeUsesModRm OperandSize_b
     Mov $E, $G
       E_Operand               OpSet
       G_Operand               OpUse
@@ -947,7 +947,7 @@ Target: x86-32 bit mode
       E_Operand               OpSet OperandZeroExtends_v
       G_Operand               OpUse
   --- 8a ---
-  8a                          386 OpcodeUsesModRm OpcodeRex OperandSize_b
+  8a                          386 OpcodeUsesModRm OperandSize_b
     Mov $G, $E
       G_Operand               OpSet
       E_Operand               OpUse
@@ -1323,31 +1323,31 @@ Target: x86-32 bit mode
       G_OpcodeBase            OpSet
       I_Operand               OpUse
   --- c0 ---
-  c0 / 0                      OPINMRM OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  c0 / 0                      OPINMRM OpcodeInModRm OpcodeHasImmed OperandSize_b
     Rol $E, $I
       E_Operand               OpUse OpSet
       I_Operand
-  c0 / 1                      OPINMRM OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  c0 / 1                      OPINMRM OpcodeInModRm OpcodeHasImmed OperandSize_b
     Ror $E, $I
       E_Operand               OpUse OpSet
       I_Operand
-  c0 / 2                      OPINMRM OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  c0 / 2                      OPINMRM OpcodeInModRm OpcodeHasImmed OperandSize_b
     Rcl $E, $I
       E_Operand               OpUse OpSet
       I_Operand
-  c0 / 3                      OPINMRM OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  c0 / 3                      OPINMRM OpcodeInModRm OpcodeHasImmed OperandSize_b
     Rcr $E, $I
       E_Operand               OpUse OpSet
       I_Operand
-  c0 / 4                      OPINMRM OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  c0 / 4                      OPINMRM OpcodeInModRm OpcodeHasImmed OperandSize_b
     Shl $E, $I
       E_Operand               OpUse OpSet
       I_Operand
-  c0 / 5                      OPINMRM OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  c0 / 5                      OPINMRM OpcodeInModRm OpcodeHasImmed OperandSize_b
     Shr $E, $I
       E_Operand               OpUse OpSet
       I_Operand
-  c0 / 7                      OPINMRM OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  c0 / 7                      OPINMRM OpcodeInModRm OpcodeHasImmed OperandSize_b
     Sar $E, $I
       E_Operand               OpUse OpSet
       I_Operand
@@ -1413,7 +1413,7 @@ Target: x86-32 bit mode
       G_Operand               OpUse
       I_Operand               OpUse
   --- c6 ---
-  c6 / 0                      386 OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  c6 / 0                      386 OpcodeInModRm OpcodeHasImmed OperandSize_b
     Mov $E, $I
       E_Operand               OpSet
       I_Operand               OpUse
@@ -1461,31 +1461,31 @@ Target: x86-32 bit mode
   cf                          SYSTEM 
     Iret
   --- d0 ---
-  d0 / 0                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d0 / 0                      OPINMRM OpcodeInModRm OperandSize_b
     Rol $E, 1
       E_Operand               OpUse OpSet
       Const_1
-  d0 / 1                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d0 / 1                      OPINMRM OpcodeInModRm OperandSize_b
     Ror $E, 1
       E_Operand               OpUse OpSet
       Const_1
-  d0 / 2                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d0 / 2                      OPINMRM OpcodeInModRm OperandSize_b
     Rcl $E, 1
       E_Operand               OpUse OpSet
       Const_1
-  d0 / 3                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d0 / 3                      OPINMRM OpcodeInModRm OperandSize_b
     Rcr $E, 1
       E_Operand               OpUse OpSet
       Const_1
-  d0 / 4                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d0 / 4                      OPINMRM OpcodeInModRm OperandSize_b
     Shl $E, 1
       E_Operand               OpUse OpSet
       Const_1
-  d0 / 5                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d0 / 5                      OPINMRM OpcodeInModRm OperandSize_b
     Shr $E, 1
       E_Operand               OpUse OpSet
       Const_1
-  d0 / 7                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d0 / 7                      OPINMRM OpcodeInModRm OperandSize_b
     Sar $E, 1
       E_Operand               OpUse OpSet
       Const_1
@@ -1519,31 +1519,31 @@ Target: x86-32 bit mode
       E_Operand               OpUse OpSet
       Const_1
   --- d2 ---
-  d2 / 0                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d2 / 0                      OPINMRM OpcodeInModRm OperandSize_b
     Rol $E, %CL
       E_Operand               OpUse OpSet
       RegCL                   OpUse
-  d2 / 1                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d2 / 1                      OPINMRM OpcodeInModRm OperandSize_b
     Ror $E, %CL
       E_Operand               OpUse OpSet
       RegCL                   OpUse
-  d2 / 2                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d2 / 2                      OPINMRM OpcodeInModRm OperandSize_b
     Rcl $E, %CL
       E_Operand               OpUse OpSet
       RegCL                   OpUse
-  d2 / 3                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d2 / 3                      OPINMRM OpcodeInModRm OperandSize_b
     Rcr $E, %CL
       E_Operand               OpUse OpSet
       RegCL                   OpUse
-  d2 / 4                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d2 / 4                      OPINMRM OpcodeInModRm OperandSize_b
     Shl $E, %CL
       E_Operand               OpUse OpSet
       RegCL                   OpUse
-  d2 / 5                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d2 / 5                      OPINMRM OpcodeInModRm OperandSize_b
     Shr $E, %CL
       E_Operand               OpUse OpSet
       RegCL                   OpUse
-  d2 / 7                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
+  d2 / 7                      OPINMRM OpcodeInModRm OperandSize_b
     Sar $E, %CL
       E_Operand               OpUse OpSet
       RegCL                   OpUse
@@ -1891,17 +1891,17 @@ Target: x86-32 bit mode
   f4                          386 
     Hlt
   --- f6 ---
-  f6 / 0                      386 OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
+  f6 / 0                      386 OpcodeInModRm OpcodeHasImmed OperandSize_b
     Test $E, $I
       E_Operand               OpUse
       I_Operand               OpUse
-  f6 / 2                      386L OpcodeInModRm OpcodeRex OpcodeLockable OperandSize_b
+  f6 / 2                      386L OpcodeInModRm OpcodeLockable OperandSize_b
     Not $E
       E_Operand               OpUse OpSet OpDest
-  f6 / 3                      386L OpcodeInModRm OpcodeRex OpcodeLockable OperandSize_b
+  f6 / 3                      386L OpcodeInModRm OpcodeLockable OperandSize_b
     Neg $E
       E_Operand               OpUse OpSet OpDest
-  f6 / 4                      386 OpcodeInModRm OpcodeRex OperandSize_b
+  f6 / 4                      386 OpcodeInModRm OperandSize_b
     Mul $E
       RegAX                   OpSet OpImplicit
       RegAL                   OpUse OpImplicit
@@ -1911,12 +1911,12 @@ Target: x86-32 bit mode
       RegAX                   OpSet OpImplicit
       RegAL                   OpUse OpImplicit
       E_Operand               OpUse
-  f6 / 6                      386 OpcodeInModRm OpcodeRex OperandSize_b
+  f6 / 6                      386 OpcodeInModRm OperandSize_b
     Div $E
       RegAX                   OpSet OpImplicit
       RegAL                   OpUse OpImplicit
       E_Operand               OpUse
-  f6 / 7                      386 OpcodeInModRm OpcodeRex OperandSize_b
+  f6 / 7                      386 OpcodeInModRm OperandSize_b
     Idiv $E
       RegAL                   OpSet OpImplicit
       RegAH                   OpSet OpImplicit

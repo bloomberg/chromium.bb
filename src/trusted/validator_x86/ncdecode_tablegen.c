@@ -69,7 +69,7 @@ static const char* NaClRunModeName(NaClRunMode mode) {
 }
 
 /* Defines the run mode files that should be generated. */
-static NaClRunMode FLAGS_run_mode = NaClRunModeSize;
+NaClRunMode NACL_FLAGS_run_mode = NaClRunModeSize;
 
 /* Defines whether the output of the instruction set should
  * be as a header file, or human readable (for documentation).
@@ -157,14 +157,14 @@ static void NaClFatalOp(int index, const char* message) {
 /* Define the prefix name for the given opcode, for the given run mode. */
 static void NaClEncodeModedPrefixName(const uint8_t byte, const char* name,
                                       const NaClRunMode mode) {
-  if (FLAGS_run_mode == mode) {
+  if (NACL_FLAGS_run_mode == mode) {
     NaClPrefixTable[byte] = name;
   }
 }
 
 /* Define the prefix name for the given opcode, for all run modes. */
 static void NaClEncodePrefixName(const uint8_t byte, const char* name) {
-  NaClEncodeModedPrefixName(byte, name, FLAGS_run_mode);
+  NaClEncodeModedPrefixName(byte, name, NACL_FLAGS_run_mode);
 }
 
 /* Change the current opcode prefix to the given value. */
@@ -290,11 +290,20 @@ static void NaClCheckIfIRepeated(int index) {
   }
 }
 
+/* Returns the set of operand size flags defined for the given instruction. */
+static NaClIFlags NaClOperandSizes(NaClInst* inst) {
+  return inst->flags & (NACL_IFLAG(OperandSize_b) |
+                        NACL_IFLAG(OperandSize_w) |
+                        NACL_IFLAG(OperandSize_v) |
+                        NACL_IFLAG(OperandSize_o));
+}
+
 /* Check that the operand being defined (via the given index), does not
  * specify any inconsistent flags.
  */
 static void NaClApplySanityChecksToOp(int index) {
   NaClOp* operand = &current_inst->operands[index];
+  const NaClIFlags operand_sizes = NaClOperandSizes(current_inst);
 
   if (!apply_sanity_checks) return;
 
@@ -339,29 +348,40 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfERepeated(index);
       break;
     case Eb_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_b)) {
+      if (NACL_IFLAG(OperandSize_b) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_b, use E_Operand instead");
       }
       NaClCheckIfERepeated(index);
       break;
     case Ew_Operand:
-      if ((current_inst->flags & NACL_IFLAG(OperandSize_w)) &&
-          !(current_inst->flags & NACL_IFLAG(OperandSize_v))) {
+      if (NACL_IFLAG(OperandSize_w) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_w, use E_Operand instead");
       }
       NaClCheckIfERepeated(index);
       break;
     case Ev_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_v)) {
+      if (NACL_IFLAG(OperandSize_v) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_v, use E_Operand instead");
       }
       NaClCheckIfERepeated(index);
       break;
     case Eo_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+      if (NACL_IFLAG(OperandSize_o) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_o, use E_Operand instead");
       }
@@ -375,7 +395,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfERepeated(index);
       break;
     case Xmm_Eo_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+      if (NACL_IFLAG(OperandSize_o) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp
             (index,
              "Size implied by OperandSize_o, use Xmm_E_Operand instead");
@@ -387,7 +410,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfOpcodeInModRm(index);
       break;
     case Gb_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_b)) {
+      if (NACL_IFLAG(OperandSize_b) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_b, use G_Operand instead");
       }
@@ -395,7 +421,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfOpcodeInModRm(index);
       break;
     case Gw_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_w)) {
+      if (NACL_IFLAG(OperandSize_w) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_w, use G_Operand instead");
       }
@@ -403,7 +432,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfOpcodeInModRm(index);
       break;
     case Gv_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_v)) {
+      if (NACL_IFLAG(OperandSize_v) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_v, use G_Operand instead");
       }
@@ -411,7 +443,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfOpcodeInModRm(index);
       break;
     case Go_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+      if (NACL_IFLAG(OperandSize_o) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_o, use G_Operand instead");
       }
@@ -428,7 +463,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfOpcodeInModRm(index);
       break;
     case Xmm_Go_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+      if (NACL_IFLAG(OperandSize_o) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp
             (index,
              "Size implied by OperandSize_o, use Xmm_G_Operand instead");
@@ -440,7 +478,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfIRepeated(index);
       break;
     case Ib_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_b)) {
+      if (NACL_IFLAG(OperandSize_b) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_b, use I_Operand instead");
       }
@@ -451,7 +492,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfIRepeated(index);
       break;
     case Iw_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_w)) {
+      if (NACL_IFLAG(OperandSize_w) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_w, use I_Operand instead");
       }
@@ -462,7 +506,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfIRepeated(index);
       break;
     case Iv_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_v)) {
+      if (NACL_IFLAG(OperandSize_v) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_v, use I_Operand instead");
       }
@@ -473,7 +520,10 @@ static void NaClApplySanityChecksToOp(int index) {
       NaClCheckIfIRepeated(index);
       break;
     case Io_Operand:
-      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+      if (NACL_IFLAG(OperandSize_o) == operand_sizes) {
+        /* Singlton set already specifies size, so no need for extra
+         * size specification.
+         */
         NaClFatalOp(index,
                      "Size implied by OperandSize_o, use I_Operand instead");
       }
@@ -742,18 +792,18 @@ void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
 }
 
 /* Returns true if the given opcode flags are consistent
- * with the value of FLAGS_run_mode.
+ * with the value of NACL_FLAGS_run_mode.
  */
 static Bool NaClIFlagsMatchesRunMode(NaClIFlags flags) {
   if (flags & NACL_IFLAG(Opcode32Only)) {
     if (flags & NACL_IFLAG(Opcode64Only)) {
       NaClFatal("Can't specify both Opcode32Only and Opcode64Only");
     }
-    return FLAGS_run_mode == X86_32;
+    return NACL_FLAGS_run_mode == X86_32;
   } else if (flags & NACL_IFLAG(Opcode64Only)) {
-    return FLAGS_run_mode == X86_64;
+    return NACL_FLAGS_run_mode == X86_64;
   } else if (flags & NACL_IFLAG(Opcode32Only)) {
-    return FLAGS_run_mode == X86_32;
+    return NACL_FLAGS_run_mode == X86_32;
   } else {
     return TRUE;
   }
@@ -939,9 +989,9 @@ void NaClDefPrefixInstMrmChoices_32_64(const NaClInstPrefix prefix,
     NaClPrintInstDescriptor(NaClLogGetGio(), prefix, opcode, modrm_index);
     NaClFatal("Redefining NaClOpcode choice count");
   }
-  if (FLAGS_run_mode == X86_32) {
+  if (NACL_FLAGS_run_mode == X86_32) {
     NaClInstCount[opcode][prefix][modrm_index] = count_32;
-  } else if (FLAGS_run_mode == X86_64) {
+  } else if (NACL_FLAGS_run_mode == X86_64) {
     NaClInstCount[opcode][prefix][modrm_index] = count_64;
   }
 }
@@ -1022,7 +1072,7 @@ static void NaClDefInstInternal(
     flags |= NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3);
   }
 
-  DEBUG(NaClLog(LOG_INFO, "Define %s %"NACL_PRIx8": %s(%d)",
+  DEBUG(NaClLog(LOG_INFO, "Define %s %"NACL_PRIx8": %s(%d)\n",
                 NaClInstPrefixName(current_opcode_prefix),
                 opcode, NaClMnemonicName(name), name);
         NaClIFlagsPrint(NaClLogGetGio(), flags));
@@ -1176,18 +1226,35 @@ void NaClDefInstSeq(const char* opcode_seq) {
       NaClInstallInstSeq(0, opcode_seq, opcode_seq, &inst_node_root);
 }
 
-void NaClAddIFlags(NaClIFlags more_flags) {
-  DEBUG(
-      struct Gio* g = NaClLogGetGio();
-      NaClLog(LOG_INFO, "Adding instruction flags:");
-      NaClIFlagsPrint(g, more_flags);
-      gprintf(g, "\n"));
-  current_inst->flags |= more_flags;
-  if (!NaClIFlagsMatchesRunMode(more_flags)) {
+/* Apply checks to current instruction flags, and update model as
+ * appropriate.
+ */
+static void NaClRecheckIFlags() {
+  if (!NaClIFlagsMatchesRunMode(current_inst->flags)) {
     NaClRemoveCurrentInstMrmFromInstTable();
     NaClRemoveCurrentInstMrmFromInstMrmTable();
   }
   NaClApplySanityChecksToInst();
+}
+
+void NaClAddIFlags(NaClIFlags more_flags) {
+  DEBUG(
+      struct Gio* g = NaClLogGetGio();
+      NaClLog(LOG_INFO, "Adding instruction flags: ");
+      NaClIFlagsPrint(g, more_flags);
+      gprintf(g, "\n"));
+  current_inst->flags |= more_flags;
+  NaClRecheckIFlags();
+}
+
+void NaClRemoveIFlags(NaClIFlags less_flags) {
+  DEBUG(
+      struct Gio* g = NaClLogGetGio();
+      NaClLog(LOG_INFO, "Removing instruction flags: ");
+      NaClIFlagsPrint(g, less_flags);
+      gprintf(g, "\n"));
+  current_inst->flags &= ~less_flags;
+  NaClRecheckIFlags();
 }
 
 void NaClDelaySanityChecks() {
@@ -1243,7 +1310,7 @@ static void NaClDefPrefixBytes() {
   NaClEncodePrefixName(0xf2, "kPrefixREPNE");
   NaClEncodePrefixName(0xf3, "kPrefixREP");
 
-  if (FLAGS_run_mode == X86_64) {
+  if (NACL_FLAGS_run_mode == X86_64) {
     int i;
     for (i = 0; i < 16; ++i) {
       NaClEncodePrefixName(0x40+i, "kPrefixREX");
@@ -1401,7 +1468,8 @@ static void NaClInstRemove32Stuff(NaClInst* inst) {
 /* Removes X86-64 specific flags from the given instruction. */
 static void NaClInstRemove64Stuff(NaClInst* inst) {
   inst->flags &=
-      ~(NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeHasRexR) |
+      ~(NACL_IFLAG(OpcodeRex) |
+        NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeHasRexR) |
         NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
         NACL_IFLAG(AddressSize_o) | NACL_IFLAG(OperandSizeDefaultIs64) |
         NACL_IFLAG(OperandSizeForce64) | NACL_IFLAG(AddressSizeDefaultIs32));
@@ -1417,10 +1485,10 @@ static void NaClSimplifyIfApplicable() {
     for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
       NaClInst* next = NaClInstTable[i][prefix];
       while (NULL != next) {
-        if (X86_64 != FLAGS_run_mode) {
+        if (X86_64 != NACL_FLAGS_run_mode) {
           NaClInstRemove64Stuff(next);
         }
-        if (X86_32 != FLAGS_run_mode) {
+        if (X86_32 != NACL_FLAGS_run_mode) {
           NaClInstRemove32Stuff(next);
         }
         /* Remove size only flags, since already compiled into tables. */
@@ -1543,7 +1611,7 @@ static void NaClPrintHeader(struct Gio* f, const char* argv0,
   gprintf(f, " * This file was auto-generated by %s\n", argv0);
   gprintf(f, " * on: %s\n", ctime(&timeofday));
   gprintf(f, " *\n");
-  gprintf(f, " * Compiled for %s.\n", NaClRunModeName(FLAGS_run_mode));
+  gprintf(f, " * Compiled for %s.\n", NaClRunModeName(NACL_FLAGS_run_mode));
   gprintf(f, " *\n");
   gprintf(f, " * You must include ncopcode_desc.h before this file.\n");
   gprintf(f, " */\n\n");
@@ -1786,7 +1854,7 @@ static void NaClPrintHardCodedInstructions(struct Gio* f) {
 static void NaClPrintInstructionSet(struct Gio* f) {
   NaClInstPrefix prefix;
   int i;
-  gprintf(f, "Target: %s\n", NaClRunModeName(FLAGS_run_mode));
+  gprintf(f, "Target: %s\n", NaClRunModeName(NACL_FLAGS_run_mode));
   gprintf(f, "\n");
   gprintf(f, "*** Hard coded instructions ***\n");
   gprintf(f, "\n");
@@ -1832,9 +1900,9 @@ static int NaClGrokFlags(int argc, const char* argv[]) {
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
     if (0 == strcmp("-m32", argv[i])) {
-      FLAGS_run_mode = X86_32;
+      NACL_FLAGS_run_mode = X86_32;
     } else if (0 == strcmp("-m64", argv[i])) {
-      FLAGS_run_mode = X86_64;
+      NACL_FLAGS_run_mode = X86_64;
     } else if (GrokBoolFlag("-documentation", argv[i],
                             &NACL_FLAGS_human_readable)) {
       continue;
@@ -1861,7 +1929,7 @@ int main(const int argc, const char* argv[]) {
   struct Gio* g = (struct Gio*) &gfile;
   int new_argc = NaClGrokFlags(argc, argv);
   if ((new_argc < 1) || (new_argc > 2) ||
-      (FLAGS_run_mode == NaClRunModeSize)) {
+      (NACL_FLAGS_run_mode == NaClRunModeSize)) {
     fprintf(stderr,
             "ERROR: usage: ncdecode_tablegen <architecture_flag> "
             "[-documentation] [file]\n");
