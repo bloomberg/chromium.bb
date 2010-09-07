@@ -34,10 +34,7 @@ struct IdMaps {
   scoped_ptr<std::map<std::string, std::string> > id_to_language_code;
   scoped_ptr<std::map<std::string, std::string> > id_to_display_name;
 
- private:
-  IdMaps() : language_code_to_ids(NULL),
-             id_to_language_code(NULL),
-             id_to_display_name(NULL) {
+  void ReloadMaps() {
     chromeos::InputMethodLibrary* library =
         chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
     scoped_ptr<chromeos::InputMethodDescriptors> supported_input_methods(
@@ -47,9 +44,9 @@ struct IdMaps {
       // TODO(yusukes): Handle this error in nicer way.
     }
 
-    language_code_to_ids.reset(new LanguageCodeToIdsMap);
-    id_to_language_code.reset(new std::map<std::string, std::string>);
-    id_to_display_name.reset(new std::map<std::string, std::string>);
+    language_code_to_ids->clear();
+    id_to_language_code->clear();
+    id_to_display_name->clear();
 
     // Build the id to descriptor map for handling kExtraLanguages later.
     typedef std::map<std::string,
@@ -80,6 +77,13 @@ struct IdMaps {
         AddInputMethodToMaps(language_code, input_method);
       }
     }
+  }
+
+ private:
+  IdMaps() : language_code_to_ids(new LanguageCodeToIdsMap),
+             id_to_language_code(new std::map<std::string, std::string>),
+             id_to_display_name(new std::map<std::string, std::string>) {
+    ReloadMaps();
   }
 
   void AddInputMethodToMaps(
@@ -583,6 +587,10 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   if (!initial_input_method_id.empty()) {
     library->ChangeInputMethod(initial_input_method_id);
   }
+}
+
+void OnLocaleChanged() {
+  Singleton<IdMaps>::get()->ReloadMaps();
 }
 
 }  // namespace input_method

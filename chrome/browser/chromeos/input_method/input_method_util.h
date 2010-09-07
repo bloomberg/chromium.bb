@@ -150,6 +150,8 @@ bool GetInputMethodIdsFromLanguageCodeInternal(
     InputMethodType type,
     std::vector<std::string>* out_input_method_ids);
 
+void OnLocaleChanged();
+
 }  // namespace input_method
 }  // namespace chromeos
 

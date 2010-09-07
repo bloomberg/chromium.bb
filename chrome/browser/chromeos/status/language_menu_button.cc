@@ -454,6 +454,7 @@ void LanguageMenuButton::ImePropertiesChanged(InputMethodLibrary* obj) {
 // views::View implementation:
 
 void LanguageMenuButton::OnLocaleChanged() {
+  input_method::OnLocaleChanged();
   const InputMethodDescriptor& input_method =
       CrosLibrary::Get()->GetInputMethodLibrary()->current_input_method();
   UpdateIndicatorFromInputMethod(input_method);
