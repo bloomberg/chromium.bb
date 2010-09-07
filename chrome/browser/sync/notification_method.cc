@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/base/notification_method.h"
+#include "chrome/browser/sync/notification_method.h"
 
 #include "base/logging.h"
 
-namespace notifier {
+namespace browser_sync {
 
-const NotificationMethod kDefaultNotificationMethod = NOTIFICATION_SERVER;
+const NotificationMethod kDefaultNotificationMethod =
+    NOTIFICATION_SERVER;
 
 std::string NotificationMethodToString(
     NotificationMethod notification_method) {
@@ -49,4 +50,4 @@ NotificationMethod StringToNotificationMethod(const std::string& str) {
   return kDefaultNotificationMethod;
 }
 
-}  // namespace notifier
+}  // namespace browser_sync

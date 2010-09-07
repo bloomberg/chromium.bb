@@ -79,7 +79,9 @@ void SyncBackendHost::Initialize(
     bool delete_sync_data_folder,
     bool invalidate_sync_login,
     bool invalidate_sync_xmpp_login,
-    const notifier::NotifierOptions& notifier_options) {
+    bool use_chrome_async_socket,
+    bool try_ssltcp_first,
+    NotificationMethod notification_method) {
   if (!core_thread_.Start())
     return;
 
@@ -115,7 +117,9 @@ void SyncBackendHost::Initialize(
       delete_sync_data_folder,
       invalidate_sync_login,
       invalidate_sync_xmpp_login,
-      notifier_options,
+      use_chrome_async_socket,
+      try_ssltcp_first,
+      notification_method,
       RestoreEncryptionBootstrapToken()));
 }
 
@@ -452,7 +456,9 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.invalidate_sync_xmpp_login,
       MakeUserAgentForSyncapi().c_str(),
       options.lsid.c_str(),
-      options.notifier_options,
+      options.use_chrome_async_socket,
+      options.try_ssltcp_first,
+      options.notification_method,
       options.restored_key_for_bootstrapping);
   DCHECK(success) << "Syncapi initialization failed!";
 }

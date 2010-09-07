@@ -155,7 +155,8 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
         user,
         options.http_bridge_factory,
         options.auth_http_bridge_factory,
-        options.delete_sync_data_folder));
+        options.delete_sync_data_folder,
+        browser_sync::kDefaultNotificationMethod));
 
     // TODO(akalin): Figure out a better way to do this.
     if (synchronous_init_) {

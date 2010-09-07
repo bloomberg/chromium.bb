@@ -12,13 +12,13 @@
 #include "base/platform_thread.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "jingle/notifier/base/chrome_async_socket.h"
-#include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/base/xmpp_client_socket_factory.h"
 #include "jingle/notifier/communicator/xmpp_socket_adapter.h"
@@ -178,11 +178,11 @@ class LegacyNotifierDelegate : public XmppNotificationClient::Delegate {
       const buzz::XmppClientSettings& xmpp_client_settings,
       buzz::XmppClient* xmpp_client) {
     LOG(INFO) << "Logged in";
-    notifier::NotificationMethod notification_method =
-        notifier::NOTIFICATION_TRANSITIONAL;
+    browser_sync::NotificationMethod notification_method =
+        browser_sync::NOTIFICATION_TRANSITIONAL;
     std::vector<std::string> subscribed_services_list;
-    if (notification_method != notifier::NOTIFICATION_LEGACY) {
-      if (notification_method == notifier::NOTIFICATION_TRANSITIONAL) {
+    if (notification_method != browser_sync::NOTIFICATION_LEGACY) {
+      if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
         subscribed_services_list.push_back(
             browser_sync::kSyncLegacyServiceUrl);
       }

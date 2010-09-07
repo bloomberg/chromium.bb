@@ -9,18 +9,14 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
-#include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/notification_defines.h"
 
 namespace sync_notifier {
 
-ServerNotifierThread::ServerNotifierThread(
-    const notifier::NotifierOptions& notifier_options)
-    : notifier::MediatorThreadImpl(notifier_options),
-      state_(notifier::STATE_DISCONNECTED) {
-  DCHECK_EQ(notifier::NOTIFICATION_SERVER,
-            notifier_options.notification_method);
-}
+ServerNotifierThread::ServerNotifierThread(bool use_chrome_async_socket,
+                                           bool try_ssltcp_first)
+    : notifier::MediatorThreadImpl(use_chrome_async_socket, try_ssltcp_first),
+      state_(notifier::STATE_DISCONNECTED) {}
 
 ServerNotifierThread::~ServerNotifierThread() {}
 

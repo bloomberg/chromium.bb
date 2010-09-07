@@ -123,8 +123,6 @@ void LiveSyncTest::SetUp() {
                           "transitional");
   }
 
-  // TODO(akalin): Delete this block of code once a local python notification
-  // server is implemented.
   // The chrome sync builders are behind a firewall that blocks port 5222, the
   // default port for XMPP notifications. This causes the tests to spend up to a
   // minute waiting for a connection on port 5222 before they fail over to port
@@ -251,9 +249,6 @@ void LiveSyncTest::SetUpLocalTestServer() {
       StringPrintf("http://%s:%d/chromiumsync",
                    test_server_.host_port_pair().host().c_str(),
                    test_server_.host_port_pair().port()));
-
-  // TODO(akalin): Set the kSyncNotificationHost switch here once a local python
-  // notification server is implemented.
 }
 
 void LiveSyncTest::TearDownLocalTestServer() {

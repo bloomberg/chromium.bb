@@ -2616,6 +2616,8 @@
         'browser/sync/glue/typed_url_model_associator.h',
         'browser/sync/glue/ui_model_worker.cc',
         'browser/sync/glue/ui_model_worker.h',
+        'browser/sync/notification_method.h',
+        'browser/sync/notification_method.cc',
         'browser/sync/profile_sync_service.cc',
         'browser/sync/profile_sync_service.h',
         'browser/sync/profile_sync_factory.h',

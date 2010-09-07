@@ -26,10 +26,12 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 
 namespace notifier {
 
-MediatorThreadImpl::MediatorThreadImpl(const NotifierOptions& notifier_options)
+MediatorThreadImpl::MediatorThreadImpl(bool use_chrome_async_socket,
+                                       bool try_ssltcp_first)
     : delegate_(NULL),
       parent_message_loop_(MessageLoop::current()),
-      notifier_options_(notifier_options),
+      use_chrome_async_socket_(use_chrome_async_socket),
+      try_ssltcp_first_(try_ssltcp_first),
       worker_thread_("MediatorThread worker thread") {
   DCHECK(parent_message_loop_);
 }
@@ -51,7 +53,7 @@ void MediatorThreadImpl::Start() {
   // TODO(akalin): Make this function return a bool and remove this
   // CHECK().
   CHECK(worker_thread_.StartWithOptions(options));
-  if (!notifier_options_.use_chrome_async_socket) {
+  if (!use_chrome_async_socket_) {
     worker_message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &MediatorThreadImpl::StartLibjingleThread));
@@ -60,7 +62,7 @@ void MediatorThreadImpl::Start() {
 
 void MediatorThreadImpl::StartLibjingleThread() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  DCHECK(!notifier_options_.use_chrome_async_socket);
+  DCHECK(!use_chrome_async_socket_);
   socket_server_.reset(new talk_base::PhysicalSocketServer());
   libjingle_thread_.reset(new talk_base::Thread());
   talk_base::ThreadManager::SetCurrent(libjingle_thread_.get());
@@ -71,7 +73,7 @@ void MediatorThreadImpl::StartLibjingleThread() {
 
 void MediatorThreadImpl::StopLibjingleThread() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  DCHECK(!notifier_options_.use_chrome_async_socket);
+  DCHECK(!use_chrome_async_socket_);
   talk_base::ThreadManager::SetCurrent(NULL);
   libjingle_thread_.reset();
   socket_server_.reset();
@@ -79,7 +81,7 @@ void MediatorThreadImpl::StopLibjingleThread() {
 
 void MediatorThreadImpl::PumpLibjingleLoop() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  DCHECK(!notifier_options_.use_chrome_async_socket);
+  DCHECK(!use_chrome_async_socket_);
   // Pump the libjingle message loop 100ms at a time.
   if (!libjingle_thread_.get()) {
     // StopLibjingleThread() was called.
@@ -103,7 +105,7 @@ void MediatorThreadImpl::Logout() {
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &MediatorThreadImpl::DoDisconnect));
-  if (!notifier_options_.use_chrome_async_socket) {
+  if (!use_chrome_async_socket_) {
     worker_message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &MediatorThreadImpl::StopLibjingleThread));
@@ -180,24 +182,15 @@ void MediatorThreadImpl::DoLogin(
   pump_.reset(new notifier::TaskPump());
 
   notifier::ServerInformation server_list[2];
-  int server_list_count = 0;
+  int server_list_count = 2;
 
-  // Override the default servers with a test notification server if one was
-  // provided.
-  if(!notifier_options_.xmpp_host_port.host().empty()) {
-    server_list[0].server = notifier_options_.xmpp_host_port;
-    server_list[0].special_port_magic = false;
-    server_list_count = 1;
-  } else {
-    // The default servers know how to serve over port 443 (that's the magic).
-    server_list[0].server = net::HostPortPair("talk.google.com",
-                                              notifier::kDefaultXmppPort);
-    server_list[0].special_port_magic = true;
-    server_list[1].server = net::HostPortPair("talkx.l.google.com",
-                                              notifier::kDefaultXmppPort);
-    server_list[1].special_port_magic = true;
-    server_list_count = 2;
-  }
+  // The default servers know how to serve over port 443 (that's the magic).
+  server_list[0].server = net::HostPortPair("talk.google.com",
+                                            notifier::kDefaultXmppPort);
+  server_list[0].special_port_magic = true;
+  server_list[1].server = net::HostPortPair("talkx.l.google.com",
+                                            notifier::kDefaultXmppPort);
+  server_list[1].special_port_magic = true;
 
   // Autodetect proxy is on by default.
   notifier::ConnectionOptions options;
@@ -205,7 +198,7 @@ void MediatorThreadImpl::DoLogin(
   // Language is not used in the stanza so we default to |en|.
   std::string lang = "en";
   login_.reset(new notifier::Login(pump_.get(),
-                                   notifier_options_.use_chrome_async_socket,
+                                   use_chrome_async_socket_,
                                    settings,
                                    options,
                                    lang,
@@ -214,7 +207,7 @@ void MediatorThreadImpl::DoLogin(
                                    server_list_count,
                                    // talk_base::FirewallManager* is NULL.
                                    NULL,
-                                   notifier_options_.try_ssltcp_first,
+                                   try_ssltcp_first_,
                                    // Both the proxy and a non-proxy route
                                    // will be attempted.
                                    false));
