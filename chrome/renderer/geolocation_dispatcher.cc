@@ -20,6 +20,10 @@ GeolocationDispatcher::GeolocationDispatcher(RenderView* render_view)
 }
 
 GeolocationDispatcher::~GeolocationDispatcher() {
+  for (IDMap<WebKit::WebGeolocationServiceBridge>::iterator it(&bridges_map_);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->onWebGeolocationServiceDestroyed();
+  }
   render_view_->Send(new ViewHostMsg_Geolocation_UnregisterDispatcher(
       render_view_->routing_id()));
 }
@@ -89,9 +93,9 @@ void GeolocationDispatcher::OnGeolocationPermissionSet(int bridge_id,
 
 void GeolocationDispatcher::OnGeolocationPositionUpdated(
     const Geoposition& geoposition) {
+  DCHECK(geoposition.IsInitialized());
   for (IDMap<WebKit::WebGeolocationServiceBridge>::iterator it(&bridges_map_);
        !it.IsAtEnd(); it.Advance()) {
-    DCHECK(geoposition.IsInitialized());
     if (geoposition.IsValidFix()) {
       it.GetCurrentValue()->setLastPosition(
           geoposition.latitude, geoposition.longitude,
