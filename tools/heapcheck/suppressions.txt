@@ -977,3 +977,15 @@
    fun:Browser
    fun:BookmarkBarGtkUnittest
 }
+{
+   bug_54689
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   fun:WTF::StringImpl::createUninitialized
+   fun:WTF::String::fromUTF8
+   fun:WebKit::WebString::fromUTF8
+   fun:WebKit::WebString::fromUTF8
+   fun:RenderViewTest::GetElementBounds
+   fun:RenderViewTest::SimulateElementClick
+   fun:RenderViewTest_PageClickTracker_Test::TestBody
+}
