@@ -2270,7 +2270,7 @@ llvm-fake-install() {
   # TODO(robertm): move the driver to their own dir
   # rm -rf  ${INSTALL_DIR}
   cp tools/llvm/llvm-fake.py ${INSTALL_DIR}
-  for s in sfigcc sfig++ bcld bcfinal translate illegal nop ; do
+  for s in sfigcc sfig++ bcld translate illegal nop ; do
     local t="llvm-fake-$s"
     rm -f ${INSTALL_DIR}/$t
     ln -fs llvm-fake.py ${INSTALL_DIR}/$t
@@ -2286,7 +2286,7 @@ llvm-wrapper-install() {
   else
     cp tools/llvm/llvm-fake.py ${INSTALL_DIR}
   fi
-  for s in sfigcc sfig++ bcld bcfinal illegal nop ; do
+  for s in sfigcc sfig++ bcld illegal nop ; do
     local t="llvm-wrapper-$s"
     rm -f ${INSTALL_DIR}/$t
     ln -fs llvm-wrapper.py ${INSTALL_DIR}/$t

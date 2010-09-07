@@ -189,7 +189,7 @@ $(IT).pnacl.opt.x8664: $(IT).opt.bc
 # tools/llvm/utman.sh install-translators
 ######################################################################
 # Note: we are using -arch arm here, BUT the actual arch should be irrelevant
-BC_PRELINK=$(LLVM_FAKE_ROOT)/llvm-fake-bcfinal -L$(LIB_BC_PATH)  -arch arm
+BC_PRELINK=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -emit-llvm -L$(LIB_BC_PATH)  -arch arm
 
 # optimized llvm bit code combined and interprocedurally optimized
 $(IT).opt.prelinked.bc: $(IT).opt.bc

@@ -565,6 +565,8 @@ def GenerateCombinedBitcodeFile(argv, arch):
     if a in ['-o', '-T']:
       # combine two arg items into one arg
       last = a
+    elif a == '-emit-llvm':
+        pass
     elif a.endswith('.bc'):
        args_bit_ld.append(a)
        last_bitcode_pos = len(args_bit_ld)
@@ -642,26 +644,12 @@ def Translate(combined_bitcode_file, argv, arch):
   Run([ELF_LD] +  args_native_ld)
 
 
-def BitcodeToNative(argv, arch):
-  """Combine bitcode files then translate.
-     Some complications arise from linker options that have to be
-     passed through.
-  """
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv, arch)
-  Translate(output + ".bc", args_native_ld, arch)
-
-  return output
-
-
 def Incarnation_bcld_generic(argv):
   arch, argv = ExtractArch(argv)
-  output = BitcodeToNative(argv, arch)
-
-
-def Incarnation_bc_final(argv):
-  arch, argv = ExtractArch(argv)
-  # second return value is ignored
   output, args_native_ld = GenerateCombinedBitcodeFile(argv, arch)
+  if '-emit-llvm' in argv:
+      return
+  Translate(output + ".bc", args_native_ld, arch)
 
 
 def Incarnation_translate(argv):
@@ -686,9 +674,6 @@ INCARNATIONS = {
    'llvm-fake-sfig++': Incarnation_gcclike,
 
    'llvm-fake-bcld' : Incarnation_bcld_generic,
-
-   # final bc i.e. translator ready
-   'llvm-fake-bcfinal' : Incarnation_bc_final,
 
    'llvm-fake-translate' : Incarnation_translate,
 
