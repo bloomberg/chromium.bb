@@ -403,6 +403,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			const struct wl_message *message)
 {
 	uint32_t *p, *next, *end, length;
+	char *extra;
 	int i, count;
 	struct wl_object *object;
 	struct wl_closure *closure = &connection->closure;
@@ -428,6 +429,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 	wl_connection_copy(connection, closure->buffer, size);
 	p = &closure->buffer[2];
 	end = (uint32_t *) ((char *) (p + size));
+	extra = (char *) end;
 	for (i = 2; i < count; i++) {
 		if (p + 1 > end) {
 			printf("message too short, "
@@ -459,12 +461,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			if (length == 0) {
 				closure->values[i].string = NULL;
 			} else {
-				closure->values[i].string = malloc(length);
-				if (closure->values[i].string == NULL) {
-					errno = ENOMEM;
-					goto err;
-				}
-				memcpy(closure->values[i].string, p, length);
+				closure->values[i].string = (char *) p;
 				if (closure->values[i].string[length - 1] != '\0') {
 					printf("string not nul-terminated, "
 					       "message %s(%s)\n",
@@ -514,16 +511,11 @@ wl_connection_demarshal(struct wl_connection *connection,
 				goto err;
 			}
 
-			closure->values[i].array =
-				malloc(length + sizeof *closure->values[i].array);
-			if (closure->values[i].array == NULL) {
-				errno = ENOMEM;
-				goto err;
-			}
+			closure->values[i].array = (struct wl_array *) extra;
+			extra += sizeof *closure->values[i].array;
 			closure->values[i].array->size = length;
 			closure->values[i].array->alloc = 0;
-			closure->values[i].array->data = closure->values[i].array + 1;
-			memcpy(closure->values[i].array->data, p, length);
+			closure->values[i].array->data = p;
 			p = next;
 			break;
 		case 'h':
@@ -615,16 +607,4 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target)
 void
 wl_closure_destroy(struct wl_closure *closure)
 {
-	int i;
-
-	for (i = 2; i < closure->count; i++) {
-		switch (closure->message->signature[i - 2]) {
-		case 's':
-			free(closure->values[i].string);
-			break;
-		case 'a':
-			free(closure->values[i].array);
-			break;
-		}
-	}
 }
