@@ -418,6 +418,13 @@ void DesktopNotificationService::SetDefaultContentSetting(
   // The cache is updated through the notification observer.
 }
 
+void DesktopNotificationService::ResetToDefaultContentSetting() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->ClearPref(prefs::kDesktopNotificationDefaultContentSetting);
+}
+
 std::vector<GURL> DesktopNotificationService::GetAllowedOrigins() {
   std::vector<GURL> allowed_origins;
   PrefService* prefs = profile_->GetPrefs();

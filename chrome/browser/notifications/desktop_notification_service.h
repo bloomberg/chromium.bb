@@ -87,6 +87,9 @@ class DesktopNotificationService : public NotificationObserver {
   ContentSetting GetDefaultContentSetting();
   void SetDefaultContentSetting(ContentSetting setting);
 
+  // NOTE: This should only be called on the UI thread.
+  void ResetToDefaultContentSetting();
+
   // Returns all origins that explicitly have been allowed.
   std::vector<GURL> GetAllowedOrigins();
 

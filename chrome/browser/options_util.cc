@@ -11,6 +11,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -73,6 +74,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
   profile->GetHostContentSettingsMap()->ResetToDefaults();
   profile->GetGeolocationContentSettingsMap()->ResetToDefault();
   profile->GetHostZoomMap()->ResetToDefaults();
+  profile->GetDesktopNotificationService()->ResetToDefaultContentSetting();
   for (size_t i = 0; i < arraysize(kUserPrefs); ++i)
     prefs->ClearPref(kUserPrefs[i]);
 
