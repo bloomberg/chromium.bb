@@ -354,7 +354,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			break;
 		case 's':
 			s = va_arg(ap, const char *);
-			length = s ? strlen(s) : 0;
+			length = s ? strlen(s) + 1: 0;
 			*p++ = length;
 			memcpy(p, s, length);
 			p += DIV_ROUNDUP(length, sizeof(*p));
@@ -459,13 +459,20 @@ wl_connection_demarshal(struct wl_connection *connection,
 			if (length == 0) {
 				closure->values[i].string = NULL;
 			} else {
-				closure->values[i].string = malloc(length + 1);
+				closure->values[i].string = malloc(length);
 				if (closure->values[i].string == NULL) {
 					errno = ENOMEM;
 					goto err;
 				}
 				memcpy(closure->values[i].string, p, length);
-				closure->values[i].string[length] = '\0';
+				if (closure->values[i].string[length - 1] != '\0') {
+					printf("string not nul-terminated, "
+					       "message %s(%s)\n",
+					       message->name,
+					       message->signature);
+					errno = EINVAL;
+					goto err;
+				}
 			}
 			p = next;
 			break;
