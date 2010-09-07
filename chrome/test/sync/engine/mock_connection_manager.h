@@ -185,6 +185,9 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   }
 
   void set_store_birthday(string new_birthday) {
+    // Multiple threads can set store_birthday_ in our tests, need to lock it to
+    // ensure atomic read/writes and avoid race conditions.
+    AutoLock lock(store_birthday_lock_);
     store_birthday_ = new_birthday;
   }
 
@@ -209,7 +212,12 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void SetServerNotReachable();
 
-  std::string store_birthday() { return store_birthday_; }
+  // Const necessary to avoid any hidden copy-on-write issues that would break
+  // in multithreaded scenarios (see |set_store_birthday|).
+  const std::string& store_birthday() {
+    AutoLock lock(store_birthday_lock_);
+    return store_birthday_;
+  }
 
   // Locate the most recent update message for purpose of alteration.
   sync_pb::SyncEntity* GetMutableLastUpdate();
@@ -265,6 +273,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // The store birthday we send to the client.
   string store_birthday_;
+  Lock store_birthday_lock_;
   bool store_birthday_sent_;
   bool client_stuck_;
   string commit_time_rename_prepended_string_;

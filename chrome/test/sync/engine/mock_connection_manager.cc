@@ -105,8 +105,10 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
 
   // Default to an ok connection.
   params->response->server_status = HttpResponse::SERVER_CONNECTION_OK;
-  response.set_store_birthday(store_birthday_);
-  if (post.has_store_birthday() && post.store_birthday() != store_birthday_) {
+  const string current_store_birthday = store_birthday();
+  response.set_store_birthday(current_store_birthday);
+  if (post.has_store_birthday() && post.store_birthday() !=
+      current_store_birthday) {
     response.set_error_code(ClientToServerResponse::NOT_MY_BIRTHDAY);
     response.set_error_message("Merry Unbirthday!");
     response.SerializeToString(params->buffer_out);
