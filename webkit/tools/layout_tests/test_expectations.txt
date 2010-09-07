@@ -37,9 +37,6 @@ BUGPKASTING : fast/events/continuous-platform-wheelevent-in-scrolling-div.html =
 // WebKit 66795. missing one newline (\n) at the end.
 BUG54591 MAC : svg/custom/use-invalid-style.svg = TEXT
 
-// WebKit 66828. missing layoutTestController.setEditingBehavior
-BUG54655 : editing/selection/shift-click.html = TEXT
-
 // WebKit 66847. new test.
 BUG54656 WIN LINUX : svg/custom/use-invalid-pattern.svg = MISSING
 BUG54656 MAC : svg/custom/use-invalid-pattern.svg = TEXT

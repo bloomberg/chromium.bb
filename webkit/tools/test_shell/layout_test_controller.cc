@@ -25,6 +25,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
@@ -185,6 +186,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setTimelineProfilingEnabled", &LayoutTestController::setTimelineProfilingEnabled);
   BindMethod("evaluateInWebInspector", &LayoutTestController::evaluateInWebInspector);
   BindMethod("forceRedSelectionColors", &LayoutTestController::forceRedSelectionColors);
+  BindMethod("setEditingBehavior", &LayoutTestController::setEditingBehavior);
 
   BindMethod("setGeolocationPermission", &LayoutTestController::setGeolocationPermission);
   BindMethod("setMockGeolocationPosition", &LayoutTestController::setMockGeolocationPosition);
@@ -1357,6 +1359,22 @@ void LayoutTestController::addUserStyleSheet(const CppArgumentList& args,
   if (args.size() < 1 || !args[0].isString())
     return;
   shell_->webView()->addUserStyleSheet(WebString::fromUTF8(args[0].ToString()));
+}
+
+void LayoutTestController::setEditingBehavior(const CppArgumentList& args,
+                                              CppVariant* result) {
+  result->SetNull();
+  WebString key = WebString::fromUTF8(args[0].ToString());
+  if (key == "mac") {
+    shell_->webView()->settings()->setEditingBehavior(
+        WebKit::WebSettings::EditingBehaviorMac);
+  } else if (key == "win") {
+    shell_->webView()->settings()->setEditingBehavior(
+        WebKit::WebSettings::EditingBehaviorWin);
+  } else {
+    LogErrorToConsole("Passed invalid editing bahavior. "
+                      "Should be 'mac' or 'win'.");
+  }
 }
 
 void LayoutTestController::setGeolocationPermission(const CppArgumentList& args,
