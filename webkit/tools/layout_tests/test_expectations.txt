@@ -41,4 +41,5 @@ BUG54591 MAC : svg/custom/use-invalid-style.svg = TEXT
 BUG54655 : editing/selection/shift-click.html = TEXT
 
 // WebKit 66847. new test.
-BUG54656 : svg/custom/use-invalid-pattern.svg = MISSING
+BUG54656 WIN LINUX : svg/custom/use-invalid-pattern.svg = MISSING
+BUG54656 MAC : svg/custom/use-invalid-pattern.svg = TEXT
