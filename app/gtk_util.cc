@@ -74,6 +74,26 @@ void GetWidgetSizeFromCharacters(
   g_object_unref(context);
 }
 
+int GetCharacterWidthForPixels(GtkWidget* widget, int pixel_width) {
+  DCHECK(GTK_WIDGET_REALIZED(widget))
+      << " widget must be realized to compute font metrics correctly";
+
+  PangoContext* context = gtk_widget_create_pango_context(widget);
+  PangoFontMetrics* metrics = pango_context_get_metrics(context,
+      widget->style->font_desc, pango_context_get_language(context));
+
+  // This technique (max of char and digit widths) matches the code in
+  // gtklabel.c.
+  int char_width = pixel_width * PANGO_SCALE /
+      std::max(pango_font_metrics_get_approximate_char_width(metrics),
+               pango_font_metrics_get_approximate_digit_width(metrics));
+
+  pango_font_metrics_unref(metrics);
+  g_object_unref(context);
+
+  return char_width;
+}
+
 void ApplyMessageDialogQuirks(GtkWidget* dialog) {
   if (gtk_window_get_modal(GTK_WINDOW(dialog))) {
     // Work around a KDE 3 window manager bug.

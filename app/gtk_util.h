@@ -27,6 +27,10 @@ void GetWidgetSizeFromCharacters(
     GtkWidget* widget, double width_chars, double height_lines,
     int* width, int* height);
 
+// Returns the approximate number of characters that can horizontally
+// fit in |pixel_width| pixels.
+int GetCharacterWidthForPixels(GtkWidget* widget, int pixel_width);
+
 // A helper function for gtk_message_dialog_new() to work around a KDE 3
 // window manager bugs. You should always call it after creating a dialog
 // with gtk_message_dialog_new.
