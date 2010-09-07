@@ -50,13 +50,6 @@ struct wl_closure {
 	const struct wl_message *message;
 	ffi_type *types[20];
 	ffi_cif cif;
-	union {
-		uint32_t uint32;
-		char *string;
-		void *object;
-		uint32_t new_id;
-		struct wl_array *array;
-	} values[20];
 	void *args[20];
 	uint32_t buffer[64];
 };
@@ -69,6 +62,14 @@ struct wl_connection {
 	void *data;
 	wl_connection_update_func_t update;
 	struct wl_closure closure;
+};
+
+union wl_value {
+	uint32_t uint32;
+	char *string;
+	struct wl_object *object;
+	uint32_t new_id;
+	struct wl_array *array;
 };
 
 static void
@@ -396,16 +397,42 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	wl_connection_write(connection, closure->buffer, size);
 }
 
+static int
+wl_message_size_extra(const struct wl_message *message)
+{
+	int i, extra;
+
+	for (i = 0, extra = 0; message->signature[i]; i++) {
+
+		switch (message->signature[i - 2]) {
+		case 's':
+		case 'o':
+			extra += sizeof (void *);
+			break;
+		case 'a':
+			extra += sizeof (void *) + sizeof (struct wl_array);
+			break;
+		case 'h':
+			extra += sizeof (uint32_t);
+		default:
+			break;
+		}
+	}
+
+	return extra;
+}
+
 struct wl_closure *
 wl_connection_demarshal(struct wl_connection *connection,
 			uint32_t size,
 			struct wl_hash_table *objects,
 			const struct wl_message *message)
 {
-	uint32_t *p, *next, *end, length;
-	char *extra;
-	int i, count;
-	struct wl_object *object;
+	uint32_t *p, *next, *end, length, *uint;
+	char *extra, **s;
+	int i, count, extra_space;
+	struct wl_object **object;
+	struct wl_array **array;
 	struct wl_closure *closure = &connection->closure;
 
 	count = strlen(message->signature) + 2;
@@ -414,17 +441,15 @@ wl_connection_demarshal(struct wl_connection *connection,
 		assert(0);
 	}
 
-	if (sizeof closure->buffer < size) {
+	extra_space = wl_message_size_extra(message);
+	if (sizeof closure->buffer < size + extra_space) {
 		printf("request too big, should malloc tmp buffer here\n");
 		assert(0);
 	}
 
 	closure->message = message;
 	closure->types[0] = &ffi_type_pointer;
-	closure->args[0] =  &closure->values[0];
-
 	closure->types[1] = &ffi_type_pointer;
-	closure->args[1] =  &closure->values[1];
 
 	wl_connection_copy(connection, closure->buffer, size);
 	p = &closure->buffer[2];
@@ -443,7 +468,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 'u':
 		case 'i':
 			closure->types[i] = &ffi_type_uint32;
-			closure->values[i].uint32 = *p++;
+			closure->args[i] = p++;
 			break;
 		case 's':
 			closure->types[i] = &ffi_type_pointer;
@@ -458,36 +483,44 @@ wl_connection_demarshal(struct wl_connection *connection,
 				goto err;
 			}
 
+			s = (char **) extra;
+			extra += sizeof *s;
+			closure->args[i] = s;
+
 			if (length == 0) {
-				closure->values[i].string = NULL;
+				*s = NULL;
 			} else {
-				closure->values[i].string = (char *) p;
-				if (closure->values[i].string[length - 1] != '\0') {
-					printf("string not nul-terminated, "
-					       "message %s(%s)\n",
-					       message->name,
-					       message->signature);
-					errno = EINVAL;
-					goto err;
-				}
+				*s = (char *) p;
+			}
+
+			if (length > 0 && (*s)[length - 1] != '\0') {
+				printf("string not nul-terminated, "
+				       "message %s(%s)\n",
+				       message->name, message->signature);
+				errno = EINVAL;
+				goto err;
 			}
 			p = next;
 			break;
 		case 'o':
 			closure->types[i] = &ffi_type_pointer;
-			object = wl_hash_table_lookup(objects, *p);
-			if (object == NULL && *p != 0) {
+			object = (struct wl_object **) extra;
+			extra += sizeof *object;
+			closure->args[i] = object;
+
+			*object = wl_hash_table_lookup(objects, *p);
+			if (*object == NULL && *p != 0) {
 				printf("unknown object (%d), message %s(%s)\n",
 				       *p, message->name, message->signature);
 				errno = EINVAL;
 				goto err;
 			}
-			closure->values[i].object = object;
+
 			p++;
 			break;
 		case 'n':
 			closure->types[i] = &ffi_type_uint32;
-			closure->values[i].new_id = *p;
+			closure->args[i] = p;
 			object = wl_hash_table_lookup(objects, *p);
 			if (object != NULL) {
 				printf("not a new object (%d), "
@@ -511,27 +544,34 @@ wl_connection_demarshal(struct wl_connection *connection,
 				goto err;
 			}
 
-			closure->values[i].array = (struct wl_array *) extra;
-			extra += sizeof *closure->values[i].array;
-			closure->values[i].array->size = length;
-			closure->values[i].array->alloc = 0;
-			closure->values[i].array->data = p;
+			array = (struct wl_array **) extra;
+			extra += sizeof *array;
+			closure->args[i] = array;
+
+			*array = (struct wl_array *) extra;
+			extra += sizeof **array;
+
+			(*array)->size = length;
+			(*array)->alloc = 0;
+			(*array)->data = p;
 			p = next;
 			break;
 		case 'h':
 			closure->types[i] = &ffi_type_uint32;
+
+			uint = (uint32_t *) extra;
+			extra += sizeof *uint;
+			closure->args[i] = uint;
+
 			wl_buffer_copy(&connection->fds_in,
-				       &closure->values[i].uint32,
-				       sizeof closure->values[i].uint32);
-			connection->fds_in.tail +=
-				sizeof closure->values[i].uint32;
+				       uint, sizeof *uint);
+			connection->fds_in.tail += sizeof *uint;
 			break;
 		default:
 			printf("unknown type\n");
 			assert(0);
 			break;
 		}
-		closure->args[i] = &closure->values[i];
 	}
 
 	closure->count = i;
@@ -555,8 +595,8 @@ wl_closure_invoke(struct wl_closure *closure,
 {
 	int result;
 
-	closure->values[0].object = data;
-	closure->values[1].object = target;
+	closure->args[0] = &data;
+	closure->args[1] = &target;
 
 	ffi_call(&closure->cif, func, &result, closure->args);
 }
@@ -564,7 +604,7 @@ wl_closure_invoke(struct wl_closure *closure,
 void
 wl_closure_print(struct wl_closure *closure, struct wl_object *target)
 {
-	struct wl_object *object;
+	union wl_value *value;
 	int i;
 
 	fprintf(stderr, "%s(%d).%s(",
@@ -574,29 +614,30 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target)
 	for (i = 2; i < closure->count; i++) {
 		if (i > 2)
 			fprintf(stderr, ", ");
+
+		value = closure->args[i];
 		switch (closure->message->signature[i - 2]) {
 		case 'u':
-			fprintf(stderr, "%u", closure->values[i].uint32);
+			fprintf(stderr, "%u", value->uint32);
 			break;
 		case 'i':
-			fprintf(stderr, "%d", closure->values[i].uint32);
+			fprintf(stderr, "%d", value->uint32);
 			break;
 		case 's':
-			fprintf(stderr, "\"%s\"", closure->values[i].string);
+			fprintf(stderr, "\"%s\"", value->string);
 			break;
 		case 'o':
-			object = closure->values[i].object;
-			fprintf(stderr, "object %u", object ? object->id : 0);
+			fprintf(stderr, "object %u",
+				value->object ? value->object->id : 0);
 			break;
 		case 'n':
-			fprintf(stderr, "new id %u",
-				closure->values[i].uint32);
+			fprintf(stderr, "new id %u", value->uint32);
 			break;
 		case 'a':
 			fprintf(stderr, "array");
 			break;
 		case 'h':
-			fprintf(stderr, "fd %d", closure->values[i].uint32);
+			fprintf(stderr, "fd %d", value->uint32);
 			break;
 		}
 	}
