@@ -351,6 +351,11 @@ chrome.extension.onConnect.addListener(function(port) {
         alert("blank page loaded!");
       }
       var benchmark = findBenchmark(data.url);
+      if (benchmark == undefined) {
+        alert("Error: Loaded url(" + data.url + ") is not the same as what "
+              "you set in url box. This could happen if the request is "
+              "redirected. Please use the redirected url for testing.");
+      }
       if (benchmark != undefined && benchmark.isRunning()) {
         benchmark.pageFinished(data.values);
       }
@@ -369,7 +374,7 @@ function run() {
             "between runs because Chrome is running in single-process mode.");
     }
   }
-
+  benchmarks = [];
   var urls = testUrl.split(",");
   for (var i = 0; i < urls.length; i++) {
     var benchmark = new Benchmark();
