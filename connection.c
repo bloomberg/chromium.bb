@@ -564,6 +564,49 @@ wl_closure_invoke(struct wl_closure *closure,
 }
 
 void
+wl_closure_print(struct wl_closure *closure, struct wl_object *target)
+{
+	struct wl_object *object;
+	int i;
+
+	fprintf(stderr, "%s(%d).%s(",
+		target->interface->name, target->id,
+		closure->message->name);
+
+	for (i = 2; i < closure->count; i++) {
+		if (i > 2)
+			fprintf(stderr, ", ");
+		switch (closure->message->signature[i - 2]) {
+		case 'u':
+			fprintf(stderr, "%u", closure->values[i].uint32);
+			break;
+		case 'i':
+			fprintf(stderr, "%d", closure->values[i].uint32);
+			break;
+		case 's':
+			fprintf(stderr, "\"%s\"", closure->values[i].string);
+			break;
+		case 'o':
+			object = closure->values[i].object;
+			fprintf(stderr, "object %u", object ? object->id : 0);
+			break;
+		case 'n':
+			fprintf(stderr, "new id %u",
+				closure->values[i].uint32);
+			break;
+		case 'a':
+			fprintf(stderr, "array");
+			break;
+		case 'h':
+			fprintf(stderr, "fd %d", closure->values[i].uint32);
+			break;
+		}
+	}
+
+	fprintf(stderr, ")\n");
+}
+
+void
 wl_closure_destroy(struct wl_closure *closure)
 {
 	int i;

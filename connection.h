@@ -58,6 +58,8 @@ void
 wl_closure_invoke(struct wl_closure *closure,
 		  struct wl_object *target, void (*func)(void), void *data);
 void
+wl_closure_print(struct wl_closure *closure, struct wl_object *target);
+void
 wl_closure_destroy(struct wl_closure *closure);
 
 #endif

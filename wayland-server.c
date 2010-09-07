@@ -73,6 +73,8 @@ struct wl_global {
 
 WL_EXPORT struct wl_surface wl_grab_surface;
 
+static int wl_debug = 0;
+
 WL_EXPORT void
 wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 		     uint32_t opcode, ...)
@@ -148,6 +150,10 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			wl_client_post_no_memory(client);
 			continue;
 		}
+
+
+		if (wl_debug)
+			wl_closure_print(closure, object);
 
 		wl_closure_invoke(closure, object,
 				  object->implementation[opcode], client);
@@ -331,6 +337,11 @@ WL_EXPORT struct wl_display *
 wl_display_create(void)
 {
 	struct wl_display *display;
+	const char *debug;
+
+	debug = getenv("WAYLAND_DEBUG");
+	if (debug)
+		wl_debug = 1;
 
 	display = malloc(sizeof *display);
 	if (display == NULL)
