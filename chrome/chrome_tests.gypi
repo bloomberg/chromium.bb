@@ -2367,7 +2367,6 @@
         'test/ui_test_utils_linux.cc',
         'test/ui_test_utils_mac.mm',
         'test/ui_test_utils_win.cc',
-        'test/data/resource.h',
         'test/data/resource.rc',
       ],
       'conditions': [

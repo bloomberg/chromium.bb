@@ -998,7 +998,6 @@
         'browser/sync/util/fast_dump.h',
         'browser/sync/util/nigori.cc',
         'browser/sync/util/nigori.h',
-        'browser/sync/util/sync_types.h',
         'browser/sync/util/user_settings.cc',
         'browser/sync/util/user_settings.h',
         'browser/sync/util/user_settings_posix.cc',

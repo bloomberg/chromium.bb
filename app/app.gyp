@@ -52,9 +52,10 @@
         'sql/transaction_unittest.cc',
         'system_monitor_unittest.cc',
         'test_suite.h',
+        'test/data/resource.h',
         'text_elider_unittest.cc',
         'tree_node_iterator_unittest.cc',
-	'tree_node_model_unittest.cc',
+        'tree_node_model_unittest.cc',
         'win_util_unittest.cc',
       ],
       'include_dirs': [
