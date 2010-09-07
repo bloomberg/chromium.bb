@@ -290,7 +290,7 @@ void NaClDef0FInsts() {
   NaClDefOp(RegAL, NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest));
   NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
-  NaClSetInstCat(Binary);
+  NaClSetInstCat(Exchange);
 
   NaClDefInstChoices_32_64(0xb1, 1, 2);
   NaClDefInst(0xB1, NACLi_386L,
@@ -300,7 +300,7 @@ void NaClDef0FInsts() {
   NaClDefOp(RegREAX, NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest));
   NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
-  NaClSetInstCat(Binary);
+  NaClSetInstCat(Exchange);
 
   NaClDefInst(0xB1, NACLi_386L,
               NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) |
@@ -309,7 +309,7 @@ void NaClDef0FInsts() {
   NaClDefOp(RegRAX, NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest));
   NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
-  NaClSetInstCat(Binary);
+  NaClSetInstCat(Exchange);
 
   /* ISE reviewers suggested omitting btr */
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xb3, Prefix0F, InstBtr, Binary);

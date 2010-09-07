@@ -3000,20 +3000,20 @@ Target: x86-64 bit mode
       RegECX                  OpSet OpImplicit
       RegEDX                  OpSet OpImplicit
   --- a3 ---
-  0f a3                       386 OpcodeUsesModRm NaClIllegal AddressSizeDefaultIs32
+  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
     Bt $E, $G
       E_Operand               OpUse
       G_Operand               OpUse
   --- a4 ---
   0f a4                       386 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v OperandSize_o
     Shld $E, $G, $I
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
       I_Operand               OpUse
   --- a5 ---
   0f a5                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o
     Shld $E, $G, %CL
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
       RegCL                   OpUse
   --- a6 ---
@@ -3021,9 +3021,9 @@ Target: x86-64 bit mode
   --- a7 ---
   0f a7                       INVALID 
   --- ab ---
-  0f ab                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
+  0f ab                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
     Bts $E, $G
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- ae ---
   0f ae / 5                   SSE2 OpcodeInModRm ModRmModIs0x3
@@ -3062,9 +3062,9 @@ Target: x86-64 bit mode
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- b3 ---
-  0f b3                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
+  0f b3                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
     Btr $E, $G
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- b6 ---
   0f b6                       386 OpcodeUsesModRm OperandSize_w OperandSize_v
@@ -3087,26 +3087,26 @@ Target: x86-64 bit mode
   --- b8 ---
   0f b8                       INVALID 
   --- ba ---
-  0f ba / 4                   386 OpcodeInModRm OpcodeHasImmed_b
+  0f ba / 4                   386 OpcodeInModRm OpcodeHasImmed_b OperandSize_w OperandSize_v OperandSize_o
     Bt $E, $I
       E_Operand               OpUse
-      Ib_Operand              OpUse
-  0f ba / 5                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable
+      I_Operand               OpUse
+  0f ba / 5                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
     Bts $E, $I
-      E_Operand               OpUse OpSet OpDest
-      Ib_Operand              OpUse
-  0f ba / 6                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      I_Operand               OpUse
+  0f ba / 6                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
     Btr $E, $I
-      E_Operand               OpUse OpSet OpDest
-      Ib_Operand              OpUse
-  0f ba / 7                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      I_Operand               OpUse
+  0f ba / 7                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
     Btc $E, $I
-      E_Operand               OpUse OpSet OpDest
-      Ib_Operand              OpUse
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      I_Operand               OpUse
   --- bb ---
-  0f bb                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
+  0f bb                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
     Btc $E, $G
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
   --- bc ---
   0f bc                       386 OpcodeUsesModRm OperandSize_w OperandSize_v
@@ -3147,15 +3147,15 @@ Target: x86-64 bit mode
   --- c0 ---
   0f c0                       386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Xadd $E, $G
-      Eb_Operand              OpUse OpSet OpDest
-      Gb_Operand              OpUse OpSet OpDest
-  --- c1 ---
-  0f c1                       386L OpcodeUsesModRm OpcodeLockable
-    Xadd $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse OpSet OpDest
+  --- c1 ---
+  0f c1                       386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xadd $E, $G
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
   --- c3 ---
-  0f c3                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
+  0f c3                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_v OperandSize_o
     Movnti $M, $G
       M_Operand               OpSet OpDest
       G_Operand               OpUse
@@ -3502,12 +3502,12 @@ Target: x86-64 bit mode
       Mo_Operand              OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 2c ---
-  f2 0f 2c                    SSE2 OpcodeUsesModRm
+  f2 0f 2c                    SSE2 OpcodeUsesModRm OperandSize_v OperandSize_o
     Cvttsd2si $G, $E(xmm)
       G_Operand               OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 2d ---
-  f2 0f 2d                    SSE2 OpcodeUsesModRm
+  f2 0f 2d                    SSE2 OpcodeUsesModRm OperandSize_v OperandSize_o
     Cvtsd2si $G, $E(xmm)
       G_Operand               OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -3823,12 +3823,12 @@ Target: x86-64 bit mode
       Mv_Operand              OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 2c ---
-  f3 0f 2c                    SSE OpcodeUsesModRm
+  f3 0f 2c                    SSE OpcodeUsesModRm OperandSize_v OperandSize_o
     Cvttss2si $G, $E(xmm)
       G_Operand               OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 2d ---
-  f3 0f 2d                    SSE OpcodeUsesModRm
+  f3 0f 2d                    SSE OpcodeUsesModRm OperandSize_v OperandSize_o
     Cvtss2si $G, $E(xmm)
       G_Operand               OpSet OpDest
       Xmm_E_Operand           OpUse

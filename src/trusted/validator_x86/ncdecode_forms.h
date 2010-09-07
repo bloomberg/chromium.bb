@@ -65,6 +65,10 @@ typedef enum NaClInstCat {
                * value of the Dest argument.
                */
   Uses,       /* All arguments are uses. */
+  Lea,        /* Address calculation, and hence, operand 2 is neither used
+               * nor set.
+               */
+  Other,      /* No implicit set/use implications. */
 } NaClInstCat;
 
 /* Returns the name for the given enumerated value. */
@@ -161,7 +165,7 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
  * q - A quadword, irrespective of effective operand size.
  * sd - A scalar double-precision floating-point operand (scalar double).
  * ss - A scalar single-precision floating-point operand (scalar single).
- * v - A word, doubleword, or quadword, depending on the effective opreand size.
+ * v - A word, doubleword, or quadword, depending on the effective operand size.
  *
  * Note: These character encodings come from Appendix A of the AMD manual.
  */
@@ -175,7 +179,7 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
  * the type it should recognize.
  */
 #define DECLARE_OPERAND(XXX) \
-  void DEF_OPERAND(XXX)(NaClInstCat icat, int operand_index)
+  void DEF_OPERAND(XXX)()
 
 /* The following list are the current set of known (i.e. implemented
  * operand types.
@@ -289,8 +293,8 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
                            NaClInstPrefix prefix, NaClMnemonic inst,    \
                            NaClInstCat icat)
 
-/* Generic macro to define the name of a unary instruction with two type
- * arguments, and used the modrm field of the modrm byt to refine
+/* Generic macro to define the name of a unary instruction with one type
+ * argument, and uses the modrm field of the modrm byt to refine
  * the opcode being defined.
  */
 #define DEF_USUBO_INST(XXX) NaClDef ## XXX ## SubInst
