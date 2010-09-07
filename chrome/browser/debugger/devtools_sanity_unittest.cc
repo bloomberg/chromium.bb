@@ -369,9 +369,4 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowStoragePanel) {
   RunTest("testShowStoragePanel", kDebuggerTestPage);
 }
 
-// Disabled. See http://code.google.com/p/chromium/issues/detail?id=53406
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestMessageLoopReentrant) {
-  RunTest("testMessageLoopReentrant", kDebuggerTestPage);
-}
-
 }  // namespace
