@@ -9,7 +9,7 @@
 #include "net/base/file_stream.h"
 
 SaveFile::SaveFile(const SaveFileCreateInfo* info)
-    : BaseFile(FilePath(), info->url, GURL(), 0, linked_ptr<net::FileStream>()),
+    : BaseFile(FilePath(), info->url, GURL(), linked_ptr<net::FileStream>()),
       info_(info) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
