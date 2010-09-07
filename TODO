@@ -11,12 +11,10 @@ Core wayland protocol
 
  - DnD issues:
 
-   How to handle drop decline (accept with type=NULL)
-
-    - Targets must send a NULL type in accept if they don't accept a
-      drop at the drag_focus/drag_motion position.  Root window will
-      send a NULL type or x-wayland/root-something type if the source
-      offers that.
+   Root window must send NULL type (to decline drop) or
+   x-wayland/root-something type if the source offers that.  But the
+   target deletes the drag_offer object when drag.pointer_focus leaves
+   the surface...
 
    How do we animate the drag icon back to the drag origin in case of
    a failed drag?
