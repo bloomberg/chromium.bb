@@ -114,10 +114,6 @@ const char kInactiveUserToast[] = "inactive-user-toast";
 // User toast experiment switch from system context to user context.
 const wchar_t kSystemLevelToast[] = L"system-level-toast";
 
-// A handle value of the key to write the results of the toast experiment
-// to. See DuplicateGoogleUpdateSystemClientKey for details.
-const wchar_t kToastResultsKey[] = L"toast-results-key";
-
 }  // namespace switches
 
 const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";

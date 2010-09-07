@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,23 +104,6 @@ class GoogleUpdateSettings {
   static std::wstring GetNewGoogleUpdateApKey(bool diff_install,
                                               int install_return_code,
                                               const std::wstring& value);
-
-  // For system-level installs, we need to be able to communicate the results
-  // of the Toast Experiments back to Google Update. The problem is just that
-  // the experiment is run in the context of the user, which doesn't have
-  // write access to the HKLM key that Google Update expects the results in.
-  // However, when we are about to switch contexts from system to user, we can
-  // duplicate the handle to the registry key and pass it (through handle
-  // inheritance) to the newly created child process that is launched as the
-  // user, allowing the child process to write to the key, with the
-  // WriteGoogleUpdateSystemClientKey function below.
-  static int DuplicateGoogleUpdateSystemClientKey();
-
-  // Takes a |handle| to a registry key and writes |value| string into the
-  // specified |key|. See DuplicateGoogleUpdateSystemClientKey for details.
-  static bool WriteGoogleUpdateSystemClientKey(int handle,
-                                               const std::wstring& key,
-                                               const std::wstring& value);
 
   // True if a build is strictly organic, according to its brand code.
   static bool IsOrganic(const std::wstring& brand);
