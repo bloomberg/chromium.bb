@@ -36,7 +36,7 @@ cr.define('options', function() {
       $('clearBrowsingDataTimePeriod').initializeValues(
           templateData.clearBrowsingDataTimeList);
 
-      var f = cr.bind(this.updateButtonState_, this);
+      var f = cr.bind(this.updateCommitButtonState_, this);
       var types = ['browser.clear_data.browsing_history',
                    'browser.clear_data.download_history',
                    'browser.clear_data.cache',
@@ -52,7 +52,7 @@ cr.define('options', function() {
       for (var i = 0; i < checkboxes.length; i++) {
         checkboxes[i].onclick = f;
       }
-      this.updateButtonState_();
+      this.updateCommitButtonState_();
 
       // Setup click handler for the clear(Ok) button.
       $('clearBrowsingDataCommit').onclick = function(event) {
@@ -60,7 +60,8 @@ cr.define('options', function() {
       };
     },
 
-    updateButtonState_: function() {
+    // Set the enabled state of the commit button.
+    updateCommitButtonState_: function() {
       var checkboxes = document.querySelectorAll(
           '#checkboxListData input[type=checkbox]');
       var isChecked = false;
@@ -85,9 +86,13 @@ cr.define('options', function() {
     $('deletePasswordsCheckbox').disabled = state;
     $('deleteFormDataCheckbox').disabled = state;
     $('clearBrowsingDataTimePeriod').disabled = state;
-    $('clearBrowsingDataCommit').disabled = state;
     $('clearBrowsingDataDismiss').disabled = state;
     $('cbdThrobber').style.visibility = state ? 'visible' : 'hidden';
+
+    if (state)
+      $('clearBrowsingDataCommit').disabled = true;
+    else
+      AlertOverlay.getInstance().updateCommitButtonState_();
 
     function advanceThrobber() {
       var throbber = $('cbdThrobber');
