@@ -460,7 +460,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     in_sandbox = false;
   }
 #endif
-  if (browser_command_line.HasSwitch(switches::kEnableExperimentalWebGL) &&
+  if (!browser_command_line.HasSwitch(switches::kDisableExperimentalWebGL) &&
       browser_command_line.HasSwitch(switches::kInProcessWebGL)) {
     // In process WebGL won't work if the sandbox is enabled.
     in_sandbox = false;

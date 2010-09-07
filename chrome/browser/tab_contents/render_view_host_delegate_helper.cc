@@ -275,7 +275,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.databases_enabled =
         !command_line.HasSwitch(switches::kDisableDatabases);
     web_prefs.experimental_webgl_enabled =
-        command_line.HasSwitch(switches::kEnableExperimentalWebGL);
+        !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
     web_prefs.site_specific_quirks_enabled =
         !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
     web_prefs.allow_file_access_from_file_urls =
@@ -283,7 +283,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.show_composited_layer_borders =
         command_line.HasSwitch(switches::kShowCompositedLayerBorders);
     web_prefs.accelerated_compositing_enabled =
-        command_line.HasSwitch(switches::kEnableAcceleratedCompositing);
+        !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
     web_prefs.accelerated_2d_canvas_enabled =
         command_line.HasSwitch(switches::kEnableAccelerated2dCanvas);
     web_prefs.memory_info_enabled =
