@@ -49,6 +49,26 @@ static const int kSubmenuHorizontalInset = 3;
 
 namespace views {
 
+namespace {
+
+// Returns true if the mnemonic of |menu| matches key.
+bool MatchesMnemonic(MenuItemView* menu, wchar_t key) {
+  return menu->GetMnemonic() == key;
+}
+
+// Returns true if |menu| doesn't have a mnemonic and first character of the its
+// title is |key|.
+bool TitleMatchesMnemonic(MenuItemView* menu, wchar_t key) {
+  if (menu->GetMnemonic())
+    return false;
+
+  std::wstring lower_title = UTF16ToWide(
+      l10n_util::ToLower(WideToUTF16(menu->GetTitle())));
+  return !lower_title.empty() && lower_title[0] == key;
+}
+
+}  // namespace
+
 // Convenience for scrolling the view such that the origin is visible.
 static void ScrollToVisible(View* view) {
   view->ScrollRectToVisible(gfx::Rect(gfx::Point(), view->size()));
@@ -198,6 +218,31 @@ class MenuController::MenuScrollTask {
   int start_y_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuScrollTask);
+};
+
+// MenuController:SelectByCharDetails ----------------------------------------
+
+struct MenuController::SelectByCharDetails {
+  SelectByCharDetails()
+      : first_match(-1),
+        has_multiple(false),
+        index_of_item(-1),
+        next_match(-1) {
+  }
+
+  // Index of the first menu with the specified mnemonic.
+  int first_match;
+
+  // If true there are multiple menu items with the same mnemonic.
+  bool has_multiple;
+
+  // Index of the selected item; may remain -1.
+  int index_of_item;
+
+  // If there are multiple matches this is the index of the item after the
+  // currently selected item whose mnemonic matches. This may remain -1 even
+  // though there are matches.
+  int next_match;
 };
 
 // MenuController ------------------------------------------------------------
@@ -1527,6 +1572,57 @@ void MenuController::CloseSubmenu() {
   }
 }
 
+MenuController::SelectByCharDetails MenuController::FindChildForMnemonic(
+    MenuItemView* parent,
+    wchar_t key,
+    bool (*match_function)(MenuItemView* menu, wchar_t mnemonic)) {
+  SubmenuView* submenu = parent->GetSubmenu();
+  DCHECK(submenu);
+  SelectByCharDetails details;
+
+  for (int i = 0, menu_item_count = submenu->GetMenuItemCount();
+       i < menu_item_count; ++i) {
+    MenuItemView* child = submenu->GetMenuItemAt(i);
+    if (child->IsEnabled() && child->IsVisible()) {
+      if (child == pending_state_.item)
+        details.index_of_item = i;
+      if (match_function(child, key)) {
+        if (details.first_match == -1)
+          details.first_match = i;
+        else
+          details.has_multiple = true;
+        if (details.next_match == -1 && details.index_of_item != -1 &&
+            i > details.index_of_item)
+          details.next_match = i;
+      }
+    }
+  }
+  return details;
+}
+
+bool MenuController::AcceptOrSelect(MenuItemView* parent,
+                                    const SelectByCharDetails& details) {
+  // This should only be invoked if there is a match.
+  DCHECK(details.first_match != -1);
+  DCHECK(parent->HasSubmenu());
+  SubmenuView* submenu = parent->GetSubmenu();
+  DCHECK(submenu);
+  if (!details.has_multiple) {
+    // There's only one match, activate it (or open if it has a submenu).
+    if (submenu->GetMenuItemAt(details.first_match)->HasSubmenu()) {
+      SetSelection(submenu->GetMenuItemAt(details.first_match), true, false);
+    } else {
+      Accept(submenu->GetMenuItemAt(details.first_match), 0);
+      return true;
+    }
+  } else if (details.index_of_item == -1 || details.next_match == -1) {
+    SetSelection(submenu->GetMenuItemAt(details.first_match), false, false);
+  } else {
+    SetSelection(submenu->GetMenuItemAt(details.next_match), false, false);
+  }
+  return false;
+}
+
 bool MenuController::SelectByChar(wchar_t character) {
   wchar_t char_array[1] = { character };
   wchar_t key = UTF16ToWide(l10n_util::ToLower(WideToUTF16(char_array)))[0];
@@ -1535,61 +1631,26 @@ bool MenuController::SelectByChar(wchar_t character) {
     item = item->GetParentMenuItem();
   DCHECK(item);
   DCHECK(item->HasSubmenu());
-  SubmenuView* submenu = item->GetSubmenu();
-  DCHECK(submenu);
-  int menu_item_count = submenu->GetMenuItemCount();
-  if (!menu_item_count)
+  DCHECK(item->GetSubmenu());
+  if (item->GetSubmenu()->GetMenuItemCount() == 0)
     return false;
-  for (int i = 0; i < menu_item_count; ++i) {
-    MenuItemView* child = submenu->GetMenuItemAt(i);
-    if (child->GetMnemonic() == key && child->IsEnabled()) {
-      Accept(child, 0);
-      return true;
-    }
-  }
+
+  // Look for matches based on mnemonic first.
+  SelectByCharDetails details =
+      FindChildForMnemonic(item, key, &MatchesMnemonic);
+  if (details.first_match != -1)
+    return AcceptOrSelect(item, details);
 
   if (item->GetRootMenuItem()->has_mnemonics()) {
     // Don't guess at mnemonics if the menu explicitly has them.
     return false;
   }
 
-  // No matching mnemonic, search through items that don't have mnemonic
-  // based on first character of the title.
-  int first_match = -1;
-  bool has_multiple = false;
-  int next_match = -1;
-  int index_of_item = -1;
-  for (int i = 0; i < menu_item_count; ++i) {
-    MenuItemView* child = submenu->GetMenuItemAt(i);
-    if (!child->GetMnemonic() && child->IsEnabled()) {
-      std::wstring lower_title = UTF16ToWide(
-          l10n_util::ToLower(WideToUTF16(child->GetTitle())));
-      if (child == pending_state_.item)
-        index_of_item = i;
-      if (lower_title.length() && lower_title[0] == key) {
-        if (first_match == -1)
-          first_match = i;
-        else
-          has_multiple = true;
-        if (next_match == -1 && index_of_item != -1 && i > index_of_item)
-          next_match = i;
-      }
-    }
-  }
-  if (first_match != -1) {
-    if (!has_multiple) {
-      if (submenu->GetMenuItemAt(first_match)->HasSubmenu()) {
-        SetSelection(submenu->GetMenuItemAt(first_match), true, false);
-      } else {
-        Accept(submenu->GetMenuItemAt(first_match), 0);
-        return true;
-      }
-    } else if (index_of_item == -1 || next_match == -1) {
-      SetSelection(submenu->GetMenuItemAt(first_match), false, false);
-    } else {
-      SetSelection(submenu->GetMenuItemAt(next_match), false, false);
-    }
-  }
+  // If no mnemonics found, look at first character of titles.
+  details = FindChildForMnemonic(item, key, &TitleMatchesMnemonic);
+  if (details.first_match != -1)
+    return AcceptOrSelect(item, details);
+
   return false;
 }
 

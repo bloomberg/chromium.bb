@@ -120,6 +120,8 @@ class MenuController : public MessageLoopForUI::Dispatcher {
  private:
   class MenuScrollTask;
 
+  struct SelectByCharDetails;
+
   // Tracks selection information.
   struct State {
     State() : item(NULL), submenu_open(false) {}
@@ -315,6 +317,18 @@ class MenuController : public MessageLoopForUI::Dispatcher {
 
   // If possible, closes the submenu.
   void CloseSubmenu();
+
+  // Returns details about which menu items match the mnemonic |key|.
+  // |match_function| is used to determine which menus match.
+  SelectByCharDetails FindChildForMnemonic(
+      MenuItemView* parent,
+      wchar_t key,
+      bool (*match_function)(MenuItemView* menu, wchar_t mnemonic));
+
+  // Selects or accepts the appropriate menu item based on |details|. Returns
+  // true if |Accept| was invoked (which happens if there aren't multiple item
+  // with the same mnemonic and the item to select does not have a submenu).
+  bool AcceptOrSelect(MenuItemView* parent, const SelectByCharDetails& details);
 
   // Selects by mnemonic, and if that doesn't work tries the first character of
   // the title. Returns true if a match was selected and the menu should exit.
