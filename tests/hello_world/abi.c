@@ -160,12 +160,9 @@ int CheckBitfields() {
                  "\x01\xc1\0\0");
   CHECK_BITFIELD(11, 11, 11,  1, 2, 3,  8,
                  "\x01\x10\x00\x00\x03\x00\x00\x00");
-/* this seems to trigger a seg-fault on ARM */
-/* c.f.: http://code.google.com/p/nativeclient/issues/detail?id=859 */
-#if 0
   CHECK_BITFIELD(31, 31, 31,  1, 2, 3,  12,
                  "\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00");
-#endif
+
   return nerror;
 }
 
