@@ -10,8 +10,8 @@
 
 namespace {
 
-// TODO(avi): Use this mapping to auto-generate MCX manifests and Windows
-// ADM/ADMX files. http://crbug.com/49316
+// TODO(avi): Generate this mapping from the template metafile
+// (chrome/app/policy/policy_templates.json). http://crbug.com/54711
 
 struct InternalPolicyValueMapEntry {
   ConfigurationPolicyStore::PolicyType policy_type;
