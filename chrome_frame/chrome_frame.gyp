@@ -297,6 +297,7 @@
             },
           },
           'dependencies': [
+	        '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:automation',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
@@ -374,6 +375,7 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
+	        '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
           ],
@@ -445,6 +447,7 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
+	        '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:chrome_dll_version',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
