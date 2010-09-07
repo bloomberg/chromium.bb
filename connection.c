@@ -58,6 +58,7 @@ struct wl_closure {
 		struct wl_array *array;
 	} values[20];
 	void *args[20];
+	uint32_t buffer[64];
 };
 
 struct wl_connection {
@@ -335,17 +336,16 @@ wl_connection_vmarshal(struct wl_connection *connection,
 		       uint32_t opcode, va_list ap,
 		       const struct wl_message *message)
 {
+	struct wl_closure *closure = &connection->closure;
 	struct wl_object *object;
-	uint32_t args[32], length, *p, size;
+	uint32_t length, *p, size;
 	int32_t dup_fd;
 	struct wl_array *array;
 	const char *s;
 	int i, count, fd;
 
 	count = strlen(message->signature);
-	assert(count <= ARRAY_LENGTH(args));
-
-	p = &args[2];
+	p = &closure->buffer[2];
 	for (i = 0; i < count; i++) {
 		switch (message->signature[i]) {
 		case 'u':
@@ -390,10 +390,10 @@ wl_connection_vmarshal(struct wl_connection *connection,
 		}
 	}
 
-	size = (p - args) * sizeof *p;
-	args[0] = sender->id;
-	args[1] = opcode | (size << 16);
-	wl_connection_write(connection, args, size);
+	size = (p - closure->buffer) * sizeof *p;
+	closure->buffer[0] = sender->id;
+	closure->buffer[1] = opcode | (size << 16);
+	wl_connection_write(connection, closure->buffer, size);
 }
 
 struct wl_closure *
@@ -405,7 +405,6 @@ wl_connection_demarshal(struct wl_connection *connection,
 	uint32_t *p, *next, *end, length;
 	int i, count;
 	struct wl_object *object;
-	uint32_t buffer[64];
 	struct wl_closure *closure = &connection->closure;
 
 	count = strlen(message->signature) + 2;
@@ -414,7 +413,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		assert(0);
 	}
 
-	if (sizeof buffer < size) {
+	if (sizeof closure->buffer < size) {
 		printf("request too big, should malloc tmp buffer here\n");
 		assert(0);
 	}
@@ -426,8 +425,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 	closure->types[1] = &ffi_type_pointer;
 	closure->args[1] =  &closure->values[1];
 
-	wl_connection_copy(connection, buffer, size);
-	p = &buffer[2];
+	wl_connection_copy(connection, closure->buffer, size);
+	p = &closure->buffer[2];
 	end = (uint32_t *) ((char *) (p + size));
 	for (i = 2; i < count; i++) {
 		if (p + 1 > end) {
