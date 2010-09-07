@@ -349,21 +349,11 @@ int main() {
       compiler=["nacl-glibc-gcc"])
   module_list.append(modules["hello_glibc"])
 
-  # TODO(mseaborn): Change the following to use "extra_sdk_update",
-  # instead of specifying individual libraries, once we omit stuff
-  # that we do not want such as libnacl.
   AddSconsModule(
       "nacl_libs_glibc",
       deps=glibc_toolchain_deps + ["libnacl_headers"],
       scons_args=["MODE=nacl_extra_sdk", "--nacl_glibc",
-                  "gio",
-                  "google_nacl_gpu",
-                  "google_nacl_imc",
-                  "google_nacl_npruntime",
-                  "google_nacl_pgl",
-                  "google_nacl_platform",
-                  "libav",
-                  "libsrpc"])
+                  "extra_sdk_update", "extra_sdk_update_header"])
 
   # TODO(mseaborn): Enable this for other platforms.  This involves
   # sorting out the MODE argument.

@@ -8,6 +8,7 @@
  * Native Client support for thread local storage
  */
 
+#include <stdint.h>
 #include <sys/unistd.h>
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"

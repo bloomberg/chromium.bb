@@ -12,6 +12,8 @@ extern "C" {
 #endif
 
 #include <sys/types.h>
+#include <time.h>
+
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 

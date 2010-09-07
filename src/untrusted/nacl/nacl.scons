@@ -31,7 +31,6 @@ sources = [
     'imc_recvmsg.c',
     'imc_sendmsg.c',
     'imc_socketpair.c',
-    'lock.c',
     'lseek.c',
     'mmap.c',
     'munmap.c',
@@ -50,6 +49,9 @@ sources = [
     'tls.c',
     'write.c',
     ]
+
+if not env.Bit('nacl_glibc'):
+  sources.append('lock.c')
 
 env.ComponentLibrary('libnacl', sources)
 

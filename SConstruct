@@ -1730,6 +1730,22 @@ if not ARGUMENTS.get('nocpp'):
       ],
   )
 
+if not nacl_extra_sdk_env.Bit('nacl_glibc'):
+  # These are all specific to nacl-newlib so we do not include them
+  # when building against nacl-glibc.  The functionality of
+  # pthread/startup/stubs/nosys is provided by glibc.  The valgrind
+  # code currently assumes nc_threads.
+  nacl_extra_sdk_env.Append(
+      BUILD_SCONSCRIPTS = [
+        ####  ALPHABETICALLY SORTED ####
+        'src/untrusted/pthread/nacl.scons',
+        'src/untrusted/startup/nacl.scons',
+        'src/untrusted/stubs/nacl.scons',
+        'src/untrusted/nosys/nacl.scons',
+        'src/untrusted/valgrind/nacl.scons',
+        ####  ALPHABETICALLY SORTED ####
+        ])
+
 nacl_extra_sdk_env.Append(
     BUILD_SCONSCRIPTS = [
       ####  ALPHABETICALLY SORTED ####
@@ -1740,11 +1756,6 @@ nacl_extra_sdk_env.Append(
       'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       'src/untrusted/posix_over_srpc/nacl.scons',
-      'src/untrusted/pthread/nacl.scons',
-      'src/untrusted/startup/nacl.scons',
-      'src/untrusted/stubs/nacl.scons',
-      'src/untrusted/nosys/nacl.scons',
-      'src/untrusted/valgrind/nacl.scons',
       ####  ALPHABETICALLY SORTED ####
    ],
 )
