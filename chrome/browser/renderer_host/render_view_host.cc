@@ -21,6 +21,7 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -261,6 +262,11 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
     // don't want to either.
     if (!params.url.SchemeIs(chrome::kJavaScriptScheme))
       delegate_->DidStartLoading();
+
+    const GURL& url = params.url;
+    if (!delegate_->IsExternalTabContainer() &&
+        (url.SchemeIs("http") || url.SchemeIs("https")))
+      chrome_browser_net::PreconnectUrlAndSubresources(url);
   }
 }
 

@@ -172,7 +172,6 @@ void AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
 }
 
 void PreconnectUrlAndSubresources(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!predictor_enabled || NULL == g_predictor)
     return;
   if (!url.is_valid() || !url.has_host())
