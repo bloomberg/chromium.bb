@@ -20,7 +20,7 @@ class TestTabContents : public TabContents {
   // The render view host factory will be passed on to the
   TestTabContents(Profile* profile, SiteInstance* instance);
 
-  TestRenderViewHost* pending_rvh();
+  TestRenderViewHost* pending_rvh() const;
 
   // State accessor.
   bool cross_navigation_pending() {
@@ -61,6 +61,15 @@ class TestTabContents : public TabContents {
   // and then commits the load with a page ID one larger than any seen. This
   // emulates what happens on a new navigation.
   void NavigateAndCommit(const GURL& url);
+
+  // Simulates the appropriate RenderView (pending if any, current otherwise)
+  // sending a navigate notification for the NavigationController pending entry.
+  void CommitPendingNavigation();
+
+  // Simulates the current RVH notifying that it has unloaded so that the
+  // pending RVH navigation can proceed.
+  // Does nothing if no cross-navigation is pending.
+  void ProceedWithCrossSiteNavigation();
 
   // Set by individual tests.
   bool transition_cross_site;
