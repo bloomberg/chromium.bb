@@ -850,6 +850,23 @@ void RecordLastRunAppBundlePath() {
   if (flag)
     return YES;
 
+  // If launched as a hidden login item (due to installation of a persistent app
+  // or by the user, for example in System Preferenecs->Accounts->Login Items),
+  // allow session to be restored first time the user clicks on a Dock icon.
+  // Normally, it'd just open a new empty page.
+  {
+      static BOOL doneOnce = NO;
+      if (!doneOnce) {
+        doneOnce = YES;
+        if (mac_util::WasLaunchedAsHiddenLoginItem()) {
+          SessionService* sessionService =
+              [self defaultProfile]->GetSessionService();
+          if (sessionService &&
+              sessionService->RestoreIfNecessary(std::vector<GURL>()))
+            return NO;
+        }
+      }
+  }
   // Otherwise open a new window.
   {
     AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
