@@ -1,8 +1,5 @@
-All sourcecode in this file is generated using the .proto and protoc from
-the protobuf project (http://code.google.com/p/protobuf/).
-
-To make changes edit the .proto file and regenerate the dependent files for
-check in.
+If you wish to use these protobufs, you must generate their source files
+using  protoc from the protobuf project (http://code.google.com/p/protobuf/).
 
 -----
 Troubleshooting for Protobuf:
