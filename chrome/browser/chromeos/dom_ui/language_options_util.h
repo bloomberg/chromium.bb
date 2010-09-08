@@ -15,7 +15,7 @@
 
 class ListValue;
 
-namespace {
+namespace chromeos {
 
 // Returns an i18n-content value corresponding to |preference|.
 template <typename T>
@@ -47,18 +47,8 @@ std::string GetTemplateDataMaxName(const T& preference, const char* prefix) {
 // Creates a Value object from the given value. Here we use function
 // overloading to handle string and integer preferences in
 // CreateMultipleChoiceList.
-Value* CreateValue(const char* in_value) {
-  return Value::CreateStringValue(in_value);
-}
-
-// See comments above.
-Value* CreateValue(int in_value) {
-  return Value::CreateIntegerValue(in_value);
-}
-
-}  // namespace
-
-namespace chromeos {
+Value* CreateValue(const char* in_value);
+Value* CreateValue(int in_value);
 
 // Creates a multiple choice list from the given preference.
 template <typename T>

@@ -440,6 +440,7 @@
         'browser/chromeos/dom_ui/language_mozc_options_handler.h',
         'browser/chromeos/dom_ui/language_options_handler.cc',
         'browser/chromeos/dom_ui/language_options_handler.h',
+        'browser/chromeos/dom_ui/language_options_util.cc',
         'browser/chromeos/dom_ui/language_options_util.h',
         'browser/chromeos/dom_ui/language_pinyin_options_handler.cc',
         'browser/chromeos/dom_ui/language_pinyin_options_handler.h',
