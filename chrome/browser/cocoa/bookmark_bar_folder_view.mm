@@ -6,6 +6,7 @@
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_folder_target.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
 @implementation BookmarkBarFolderView
@@ -182,6 +183,7 @@
     doDrag = [[self controller] dragButton:button
                                         to:[info draggingLocation]
                                       copy:copy];
+    UserMetrics::RecordAction(UserMetricsAction("BookmarkBarFolder_DragEnd"));
   }
   return doDrag;
 }

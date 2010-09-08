@@ -31,7 +31,6 @@ class BookmarkNode;
 class Browser;
 class GURL;
 class PrefService;
-class Profile;
 class TabContents;
 @class ToolbarController;
 @protocol ViewResizer;

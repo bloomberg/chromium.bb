@@ -9,6 +9,7 @@
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/view_id_util.h"
+#include "chrome/browser/metrics/user_metrics.h"
 
 // The opacity of the bookmark button drag image.
 static const CGFloat kDragImageOpacity = 0.7;
@@ -106,6 +107,12 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
                                        withAnimation:NO
                                                delay:NO];
     }
+    const BookmarkNode* node = [self bookmarkNode];
+    const BookmarkNode* parent = node ? node->GetParent() : NULL;
+    BOOL isWithinFolder = parent && parent->type() == BookmarkNode::FOLDER;
+    UserMetrics::RecordAction(UserMetricsAction(
+        isWithinFolder ? "BookmarkBarFolder_DragStart" :
+            "BookmarkBar_DragStart"));
 
     CGFloat yAt = [self bounds].size.height;
     NSSize dragOffset = NSMakeSize(0.0, 0.0);
