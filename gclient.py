@@ -1197,8 +1197,8 @@ def Main(argv):
       options.entries_filename = options.config_filename + '_entries'
       if options.jobs < 1:
         parser.error('--jobs must be 1 or higher')
-      # Useful for --jobs.
-      options.stdout = sys.stdout
+      # Always autoflush so buildbot doesn't kill us during lengthy operations.
+      options.stdout = gclient_utils.StdoutAutoFlush(sys.stdout)
 
       # These hacks need to die.
       if not hasattr(options, 'revisions'):

@@ -28,7 +28,7 @@ class GclientUtilsUnittest(GclientUtilBase):
         'GetGClientRootAndEntries', 'GetNamedNodeText',
         'GetNodeNamedAttributeText', 'PathDifference', 'ParseXML', 'Popen',
         'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
-        'SyntaxErrorToError', 'WorkItem',
+        'StdoutAutoFlush', 'SyntaxErrorToError', 'WorkItem',
         'errno', 'logging', 'os', 're', 'stat', 'subprocess', 'sys',
         'threading', 'time', 'xml',
     ]

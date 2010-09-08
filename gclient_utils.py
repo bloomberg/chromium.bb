@@ -285,6 +285,30 @@ def CheckCallAndFilterAndHeader(args, always=False, **kwargs):
   return CheckCallAndFilter(args, **kwargs)
 
 
+class StdoutAutoFlush(object):
+  """Automatically flush after N seconds."""
+  def __init__(self, stdout, delay=10):
+    self.lock = threading.Lock()
+    self.stdout = stdout
+    self.delay = delay
+    self.last_flushed_at = time.time()
+    self.stdout.flush()
+
+  def write(self, out):
+    """Thread-safe."""
+    self.stdout.write(out)
+    should_flush = False
+    with self.lock:
+      if (time.time() - self.last_flushed_at) > self.delay:
+        should_flush = True
+        self.last_flushed_at = time.time()
+    if should_flush:
+      self.stdout.flush()
+
+  def flush(self):
+    self.stdout.flush()
+
+
 def CheckCallAndFilter(args, stdout=None, filter_fn=None,
                        print_stdout=None, call_filter_on_first_line=False,
                        **kwargs):
@@ -308,7 +332,6 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
               **kwargs)
 
   # Do a flush of stdout before we begin reading from the subprocess's stdout
-  last_flushed_at = time.time()
   stdout.flush()
 
   # Also, we need to forward stdout to prevent weird re-ordering of output.
@@ -329,12 +352,6 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
         else:
           filter_fn(in_line)
           in_line = ''
-          # Flush at least 10 seconds between line writes.  We wait at least 10
-          # seconds to avoid overloading the reader that called us with output,
-          # which can slow busy readers down.
-          if (time.time() - last_flushed_at) > 10:
-            last_flushed_at = time.time()
-            stdout.flush()
       in_byte = kid.stdout.read(1)
     # Flush the rest of buffered output. This is only an issue with
     # stdout/stderr not ending with a \n.
