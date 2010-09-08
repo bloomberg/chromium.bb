@@ -4,127 +4,18 @@
 //
 // This file defines a unit test for the profile's token service.
 
-#include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/password_manager/encryptor.h"
-#include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/browser/net/gaia/token_service_unittest.h"
+
 #include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
-#include "chrome/test/signaling_task.h"
-#include "chrome/test/test_notification_tracker.h"
-#include "chrome/test/testing_profile.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
-// TestNotificationTracker doesn't do a deep copy on the notification details.
-// We have to in order to read it out, or we have a bad ptr, since the details
-// are a reference on the stack.
-class TokenAvailableTracker : public TestNotificationTracker {
+class TokenServiceTest : public TokenServiceTestHarness {
  public:
-  const TokenService::TokenAvailableDetails& get_last_token_details() {
-    return details_;
-  }
-
- private:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    TestNotificationTracker::Observe(type, source, details);
-    if (type == NotificationType::TOKEN_AVAILABLE) {
-      Details<const TokenService::TokenAvailableDetails> full = details;
-      details_ = *full.ptr();
-    }
-  }
-
-  TokenService::TokenAvailableDetails details_;
-};
-
-class TokenFailedTracker : public TestNotificationTracker {
- public:
-  const TokenService::TokenRequestFailedDetails& get_last_token_details() {
-    return details_;
-  }
-
- private:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    TestNotificationTracker::Observe(type, source, details);
-    if (type == NotificationType::TOKEN_REQUEST_FAILED) {
-      Details<const TokenService::TokenRequestFailedDetails> full = details;
-      details_ = *full.ptr();
-    }
-  }
-
-  TokenService::TokenRequestFailedDetails details_;
-};
-
-class TokenServiceTest : public testing::Test {
- public:
-  TokenServiceTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        db_thread_(ChromeThread::DB) {
-  }
-
   virtual void SetUp() {
-#if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
-#endif
-    credentials_.sid = "sid";
-    credentials_.lsid = "lsid";
-    credentials_.token = "token";
-    credentials_.data = "data";
-
-    ASSERT_TRUE(db_thread_.Start());
-
-    profile_.reset(new TestingProfile());
-    profile_->CreateWebDataService(false);
-    WaitForDBLoadCompletion();
-
-    success_tracker_.ListenFor(NotificationType::TOKEN_AVAILABLE,
-                               Source<TokenService>(&service_));
-    failure_tracker_.ListenFor(NotificationType::TOKEN_REQUEST_FAILED,
-                               Source<TokenService>(&service_));
-
-    service_.Initialize("test", profile_.get());
+    TokenServiceTestHarness::SetUp();
     service_.UpdateCredentials(credentials_);
-
-    URLFetcher::set_factory(NULL);
   }
-
-  virtual void TearDown() {
-    // You have to destroy the profile before the db_thread_ stops.
-    if (profile_.get()) {
-      profile_.reset(NULL);
-    }
-
-    db_thread_.Stop();
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
-    MessageLoop::current()->Run();
-  }
-
-  void WaitForDBLoadCompletion() {
-    // The WebDB does all work on the DB thread. This will add an event
-    // to the end of the DB thread, so when we reach this task, all DB
-    // operations should be complete.
-    WaitableEvent done(false, false);
-    ChromeThread::PostTask(
-        ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
-    done.Wait();
-
-    // Notifications should be returned from the DB thread onto the UI thread.
-    message_loop_.RunAllPending();
-  }
-
-  MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;  // Mostly so DCHECKS pass.
-  ChromeThread db_thread_;  // WDS on here
-
-  TokenService service_;
-  TokenAvailableTracker success_tracker_;
-  TokenFailedTracker failure_tracker_;
-  GaiaAuthConsumer::ClientLoginResult credentials_;
-  scoped_ptr<TestingProfile> profile_;
 };
 
 TEST_F(TokenServiceTest, SanityCheck) {
@@ -145,8 +36,7 @@ TEST_F(TokenServiceTest, NotificationSuccess) {
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_EQ(0U, failure_tracker_.size());
 
-  TokenService::TokenAvailableDetails details =
-      success_tracker_.get_last_token_details();
+  TokenService::TokenAvailableDetails details = success_tracker_.details();
   // MSVC doesn't like this comparison as EQ.
   EXPECT_TRUE(details.service() == GaiaConstants::kSyncService);
   EXPECT_EQ(details.token(), "token");
@@ -160,8 +50,7 @@ TEST_F(TokenServiceTest, NotificationFailed) {
   EXPECT_EQ(0U, success_tracker_.size());
   EXPECT_EQ(1U, failure_tracker_.size());
 
-  TokenService::TokenRequestFailedDetails details =
-      failure_tracker_.get_last_token_details();
+  TokenService::TokenRequestFailedDetails details = failure_tracker_.details();
 
   // MSVC doesn't like this comparison as EQ.
   EXPECT_TRUE(details.service() == GaiaConstants::kSyncService);
@@ -275,8 +164,7 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
   service_.LoadTokensIntoMemory(db_tokens, &memory_tokens);
   EXPECT_EQ(1U, success_tracker_.size());
 
-  TokenService::TokenAvailableDetails details =
-      success_tracker_.get_last_token_details();
+  TokenService::TokenAvailableDetails details = success_tracker_.details();
   // MSVC doesn't like this comparison as EQ.
   EXPECT_TRUE(details.service() == GaiaConstants::kSyncService);
   EXPECT_EQ(details.token(), "token");

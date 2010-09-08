@@ -31,14 +31,11 @@ namespace syncable {
 
 struct DirectoryManagerEvent {
   enum {
-    OPEN_FAILED,
-    OPENED,
     CLOSED,
     CLOSED_ALL,
     SHUTDOWN,
   } what_happened;
   std::string dirname;
-  DirOpenResult error;  // Only for OPEN_FAILED.
   typedef DirectoryManagerEvent EventType;
   static inline bool IsChannelShutdownEvent(const EventType& event) {
     return SHUTDOWN == event.what_happened;

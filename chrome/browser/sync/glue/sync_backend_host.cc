@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -21,24 +22,25 @@
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "webkit/glue/webkit_glue.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
-static const char kGaiaServiceId[] = "chromiumsync";
-static const char kGaiaSourceForChrome[] = "ChromiumBrowser";
 static const FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
 
 using browser_sync::DataTypeController;
+typedef TokenService::TokenAvailableDetails TokenAvailableDetails;
 
 typedef GoogleServiceAuthError AuthError;
 
 namespace browser_sync {
 
 using sessions::SyncSessionSnapshot;
+using sync_api::SyncCredentials;
 
 SyncBackendHost::SyncBackendHost(
     SyncFrontend* frontend,
@@ -75,10 +77,8 @@ void SyncBackendHost::Initialize(
     const GURL& sync_service_url,
     const syncable::ModelTypeSet& types,
     URLRequestContextGetter* baseline_context_getter,
-    const std::string& lsid,
+    const SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    bool invalidate_sync_login,
-    bool invalidate_sync_xmpp_login,
     bool use_chrome_async_socket,
     bool try_ssltcp_first,
     NotificationMethod notification_method) {
@@ -110,13 +110,10 @@ void SyncBackendHost::Initialize(
   }
 
   InitCore(Core::DoInitializeOptions(
-      sync_service_url, lsid.empty(),
+      sync_service_url,
       MakeHttpBridgeFactory(baseline_context_getter),
-      MakeHttpBridgeFactory(baseline_context_getter),
-      lsid,
+      credentials,
       delete_sync_data_folder,
-      invalidate_sync_login,
-      invalidate_sync_xmpp_login,
       use_chrome_async_socket,
       try_ssltcp_first,
       notification_method,
@@ -148,12 +145,11 @@ void SyncBackendHost::InitCore(const Core::DoInitializeOptions& options) {
                         options));
 }
 
-void SyncBackendHost::Authenticate(const std::string& username,
-                                   const std::string& password,
-                                   const std::string& captcha) {
+void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
   core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoAuthenticate,
-                        username, password, captcha));
+      NewRunnableMethod(core_.get(),
+                        &SyncBackendHost::Core::DoUpdateCredentials,
+                        credentials));
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
@@ -344,6 +340,15 @@ void SyncBackendHost::Core::NotifyPassphraseAccepted(
       NotificationService::NoDetails());
 }
 
+void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  TokenAvailableDetails details(GaiaConstants::kSyncService, token);
+  NotificationService::current()->Notify(
+      NotificationType::TOKEN_UPDATED,
+      NotificationService::AllSources(),
+      Details<const TokenAvailableDetails>(&details));
+}
+
 SyncBackendHost::UserShareHandle SyncBackendHost::GetUserShareHandle() const {
   DCHECK(syncapi_initialized_);
   return core_->syncapi()->GetUserShare();
@@ -432,8 +437,9 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.
-  if (options.delete_sync_data_folder)
+  if (options.delete_sync_data_folder) {
     DeleteSyncDataFolder();
+  }
 
   // Make sure that the directory exists before initializing the backend.
   // If it already exists, this will do no harm.
@@ -445,17 +451,11 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   success = syncapi_->Init(path_str,
       (options.service_url.host() + options.service_url.path()).c_str(),
       options.service_url.EffectiveIntPort(),
-      kGaiaServiceId,
-      kGaiaSourceForChrome,
       options.service_url.SchemeIsSecure(),
       options.http_bridge_factory,
-      options.auth_http_bridge_factory,
       host_,  // ModelSafeWorkerRegistrar.
-      options.attempt_last_user_authentication,
-      options.invalidate_sync_login,
-      options.invalidate_sync_xmpp_login,
       MakeUserAgentForSyncapi().c_str(),
-      options.lsid.c_str(),
+      options.credentials,
       options.use_chrome_async_socket,
       options.try_ssltcp_first,
       options.notification_method,
@@ -463,11 +463,10 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   DCHECK(success) << "Syncapi initialization failed!";
 }
 
-void SyncBackendHost::Core::DoAuthenticate(const std::string& username,
-                                           const std::string& password,
-                                           const std::string& captcha) {
+void SyncBackendHost::Core::DoUpdateCredentials(
+    const SyncCredentials& credentials) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
-  syncapi_->Authenticate(username.c_str(), password.c_str(), captcha.c_str());
+  syncapi_->UpdateCredentials(credentials);
 }
 
 void SyncBackendHost::Core::DoStartSyncing() {
@@ -624,8 +623,7 @@ bool SyncBackendHost::Core::IsCurrentThreadSafeForModel(
 
 
 void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
-  // We could be on SyncEngine_AuthWatcherThread.  Post to our core loop so
-  // we can modify state.
+  // Post to our core loop so we can modify state. Could be on another thread.
   host_->frontend_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Core::HandleAuthErrorEventOnFrontendLoop,
       auth_error));
@@ -658,6 +656,11 @@ void SyncBackendHost::Core::OnResumed() {
 void SyncBackendHost::Core::OnStopSyncingPermanently() {
   host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &Core::HandleStopSyncingPermanentlyOnFrontendLoop));
+}
+
+void SyncBackendHost::Core::OnUpdatedToken(const std::string& token) {
+  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &Core::NotifyUpdatedToken, token));
 }
 
 void SyncBackendHost::Core::HandleStopSyncingPermanentlyOnFrontendLoop() {

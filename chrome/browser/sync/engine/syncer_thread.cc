@@ -17,12 +17,10 @@
 
 #include "base/rand_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "jingle/notifier/listener/notification_constants.h"
 
@@ -75,18 +73,11 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context)
       syncer_long_poll_interval_seconds_(kDefaultLongPollIntervalSeconds),
       syncer_polling_interval_(kDefaultShortPollIntervalSeconds),
       syncer_max_interval_(kDefaultMaxPollIntervalMs),
-      directory_manager_hookup_(NULL),
       syncer_events_(NULL),
       session_context_(context),
       disable_idle_detection_(false) {
   DCHECK(context);
   syncer_event_relay_channel_.reset(new SyncerEventChannel());
-
-  if (context->directory_manager()) {
-    directory_manager_hookup_.reset(NewEventListenerHookup(
-        context->directory_manager()->channel(), this,
-            &SyncerThread::HandleDirectoryManagerEvent));
-  }
 
   if (context->connection_manager())
     WatchConnectionManager(context->connection_manager());
@@ -98,7 +89,6 @@ SyncerThread::~SyncerThread() {
   syncer_event_relay_channel_->Notify(SyncerEvent(
       SyncerEvent::SHUTDOWN_USE_WITH_CARE));
   syncer_event_relay_channel_.reset();
-  directory_manager_hookup_.reset();
   syncer_events_.reset();
   delete vault_.syncer_;
   CHECK(!thread_.IsRunning());
@@ -587,22 +577,18 @@ void SyncerThread::HandleChannelEvent(const SyncerEvent& event) {
   NudgeSyncImpl(event.nudge_delay_milliseconds, kUnknown);
 }
 
-void SyncerThread::HandleDirectoryManagerEvent(
-    const syncable::DirectoryManagerEvent& event) {
-  LOG(INFO) << "Handling a directory manager event";
-  if (syncable::DirectoryManagerEvent::OPENED == event.what_happened) {
-    AutoLock lock(lock_);
-    LOG(INFO) << "Syncer starting up for: " << event.dirname;
-    // The underlying database structure is ready, and we should create
-    // the syncer.
-    CHECK(vault_.syncer_ == NULL);
-    session_context_->set_account_name(event.dirname);
-    vault_.syncer_ = new Syncer(session_context_.get());
+void SyncerThread::CreateSyncer(const std::string& dirname) {
+  AutoLock lock(lock_);
+  LOG(INFO) << "Creating syncer up for: " << dirname;
+  // The underlying database structure is ready, and we should create
+  // the syncer.
+  CHECK(vault_.syncer_ == NULL);
+  session_context_->set_account_name(dirname);
+  vault_.syncer_ = new Syncer(session_context_.get());
 
-    syncer_events_.reset(
-        session_context_->syncer_event_channel()->AddObserver(this));
-    vault_field_changed_.Broadcast();
-  }
+  syncer_events_.reset(
+      session_context_->syncer_event_channel()->AddObserver(this));
+  vault_field_changed_.Broadcast();
 }
 
 // Sets |*connected| to false if it is currently true but |code| suggests that

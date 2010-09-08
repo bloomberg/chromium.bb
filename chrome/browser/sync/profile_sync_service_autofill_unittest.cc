@@ -31,6 +31,7 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/profile_mock.h"
@@ -137,7 +138,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   void StartSyncService(Task* task, bool will_fail_association) {
     if (!service_.get()) {
       service_.reset(
-          new TestProfileSyncService(&factory_, &profile_, false, false,
+          new TestProfileSyncService(&factory_, &profile_, "test_user", false,
                                      task));
       AutofillDataTypeController* data_type_controller =
           new AutofillDataTypeController(&factory_,
@@ -163,6 +164,13 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
       EXPECT_CALL(*personal_data_manager_, IsDataLoaded()).
           WillRepeatedly(Return(true));
+
+       // We need tokens to get the tests going
+      token_service_.IssueAuthTokenForTest(
+          GaiaConstants::kSyncService, "token");
+
+      EXPECT_CALL(profile_, GetTokenService()).
+          WillRepeatedly(Return(&token_service_));
 
       service_->set_num_expected_resumes(will_fail_association ? 0 : 1);
       service_->RegisterDataTypeController(data_type_controller);

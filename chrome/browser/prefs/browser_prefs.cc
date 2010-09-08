@@ -42,6 +42,7 @@
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/ssl/ssl_manager.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/task_manager.h"
@@ -139,6 +140,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
   BackgroundContentsService::RegisterUserPrefs(user_prefs);
   CookiePromptModalDialog::RegisterUserPrefs(user_prefs);
+  SigninManager::RegisterUserPrefs(user_prefs);
 }
 
 }  // namespace browser

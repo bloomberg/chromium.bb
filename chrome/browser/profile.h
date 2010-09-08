@@ -377,6 +377,11 @@ class Profile {
   // Returns the ProfileSyncService, creating if not yet created.
   virtual ProfileSyncService* GetProfileSyncService() = 0;
 
+  // Returns the ProfileSyncService, creating if not yet created, with
+  // the specified CrOS username.
+  virtual ProfileSyncService* GetProfileSyncService(
+      const std::string& cros_user) = 0;
+
   // Returns the CloudPrintProxyService, creating if not yet created.
   virtual CloudPrintProxyService* GetCloudPrintProxyService() = 0;
 

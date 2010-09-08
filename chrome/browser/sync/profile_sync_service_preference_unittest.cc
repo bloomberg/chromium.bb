@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
@@ -68,7 +69,7 @@ class ProfileSyncServicePreferenceTest
       return false;
 
     service_.reset(new TestProfileSyncService(
-        &factory_, profile_.get(), false, false, task));
+        &factory_, profile_.get(), "test", false, task));
 
     // Register the preference data type.
     model_associator_ =
@@ -87,6 +88,8 @@ class ProfileSyncServicePreferenceTest
     service_->RegisterDataTypeController(
         new PreferenceDataTypeController(&factory_,
                                          service_.get()));
+    profile_->GetTokenService()->IssueAuthTokenForTest(
+        GaiaConstants::kSyncService, "token");
     service_->Initialize();
     MessageLoop::current()->Run();
     return true;

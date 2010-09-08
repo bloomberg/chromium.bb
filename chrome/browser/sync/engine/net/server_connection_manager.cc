@@ -135,11 +135,9 @@ ServerConnectionManager::ServerConnectionManager(
     const string& server,
     int port,
     bool use_ssl,
-    const string& user_agent,
-    const string& client_id)
+    const string& user_agent)
     : sync_server_(server),
       sync_server_port_(port),
-      client_id_(client_id),
       user_agent_(user_agent),
       use_ssl_(use_ssl),
       proto_sync_path_(kSyncServerSyncPath),
@@ -163,20 +161,11 @@ void ServerConnectionManager::NotifyStatusChanged() {
   channel_->NotifyListeners(event);
 }
 
-// Uses currently set auth token. Set by AuthWatcher.
 bool ServerConnectionManager::PostBufferWithCachedAuth(
     const PostBufferParams* params, ScopedServerStatusWatcher* watcher) {
   string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
   return PostBufferToPath(params, path, auth_token(), watcher);
-}
-
-bool ServerConnectionManager::PostBufferWithAuth(const PostBufferParams* params,
-    const string& auth_token, ScopedServerStatusWatcher* watcher) {
-  string path = MakeSyncServerPath(proto_sync_path(),
-                                   MakeSyncQueryString(client_id_));
-
-  return PostBufferToPath(params, path, auth_token, watcher);
 }
 
 bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,

@@ -224,6 +224,7 @@ class TestingProfile : public Profile {
   virtual void InitExtensions() {}
   virtual void InitWebResources() {}
   virtual NTPResourceCache* GetNTPResourceCache();
+
   virtual DesktopNotificationService* GetDesktopNotificationService();
   virtual BackgroundContentsService* GetBackgroundContentsService() {
     return NULL;
@@ -252,6 +253,8 @@ class TestingProfile : public Profile {
   // Creates and initializes a profile sync service if the tests require one.
   virtual TokenService* GetTokenService();
   virtual ProfileSyncService* GetProfileSyncService();
+  virtual ProfileSyncService* GetProfileSyncService(
+      const std::string& cros_notes);
   virtual CloudPrintProxyService* GetCloudPrintProxyService() { return NULL; }
 
   virtual ChromeBlobStorageContext* GetBlobStorageContext() {

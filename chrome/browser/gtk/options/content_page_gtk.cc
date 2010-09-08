@@ -595,7 +595,7 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
     gtk_util::ShowDialog(dialog);
     return;
   } else {
-    sync_service_->EnableForUser(NULL);
+    sync_service_->ShowLoginDialog(NULL);
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
   }
 }

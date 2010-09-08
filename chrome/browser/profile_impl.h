@@ -100,8 +100,10 @@ class ProfileImpl : public Profile,
   virtual FilePath last_selected_directory();
   virtual void set_last_selected_directory(const FilePath& path);
   virtual ProfileSyncService* GetProfileSyncService();
+  virtual ProfileSyncService* GetProfileSyncService(
+      const std::string& cros_user);
   virtual TokenService* GetTokenService();
-  void InitSyncService();
+  void InitSyncService(const std::string& cros_user);
   virtual CloudPrintProxyService* GetCloudPrintProxyService();
   void InitCloudPrintProxyService();
   virtual ChromeBlobStorageContext* GetBlobStorageContext();

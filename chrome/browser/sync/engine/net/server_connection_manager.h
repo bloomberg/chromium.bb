@@ -213,8 +213,7 @@ class ServerConnectionManager {
   ServerConnectionManager(const std::string& server,
                           int port,
                           bool use_ssl,
-                          const std::string& user_agent,
-                          const std::string& client_id);
+                          const std::string& user_agent);
 
   virtual ~ServerConnectionManager();
 
@@ -224,14 +223,6 @@ class ServerConnectionManager {
   // Returns true if executed successfully.
   virtual bool PostBufferWithCachedAuth(const PostBufferParams* params,
                                         ScopedServerStatusWatcher* watcher);
-
-  // POSTS buffer_in and reads a response into buffer_out. Add a specific auth
-  // token to http headers.
-  //
-  // Returns true if executed successfully.
-  virtual bool PostBufferWithAuth(const PostBufferParams* params,
-                                  const std::string& auth_token,
-                                  ScopedServerStatusWatcher* watcher);
 
   // Checks the time on the server. Returns false if the request failed. |time|
   // is an out parameter that stores the value returned from the server.
@@ -289,6 +280,11 @@ class ServerConnectionManager {
     return NULL;  // For testing.
   };
 
+  void set_client_id(const std::string& client_id) {
+    DCHECK(client_id_.empty());
+    client_id_.assign(client_id);
+  }
+
   void set_auth_token(const std::string& auth_token) {
     // TODO(chron): Consider adding a message loop check here.
     AutoLock lock(auth_token_mutex_);
@@ -333,7 +329,7 @@ class ServerConnectionManager {
   int sync_server_port_;
 
   // The unique id of the user's client.
-  const std::string client_id_;
+  std::string client_id_;
 
   // The user-agent string for HTTP.
   std::string user_agent_;

@@ -7,9 +7,11 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
@@ -84,7 +86,8 @@ bool StateChangeTimeoutEvent::Abort() {
 
 ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(Profile* p,
     const std::string& username, const std::string& password, int id)
-    : wait_state_(WAITING_FOR_ON_AUTH_ERROR), profile_(p), service_(NULL),
+    : wait_state_(WAITING_FOR_ON_BACKEND_INITIALIZED),
+      profile_(p), service_(NULL),
       last_status_(kInvalidStatus),
       last_timestamp_(0),
       min_timestamp_needed_(kMinTimestampNeededNone),
@@ -95,15 +98,11 @@ ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(Profile* p,
 }
 
 bool ProfileSyncServiceTestHarness::SetupSync() {
-  service_ = profile_->GetProfileSyncService();
-  service_->StartUp();
+  service_ = profile_->GetProfileSyncService("");
   service_->AddObserver(this);
-  return WaitForServiceInit(false);
-}
+  service_->signin_.StartSignIn(username_, password_, "", "");
 
-bool ProfileSyncServiceTestHarness::RetryAuthentication() {
-  wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
-  return WaitForServiceInit(true);
+  return WaitForServiceInit();
 }
 
 void ProfileSyncServiceTestHarness::SignalStateCompleteWithNextState(
@@ -121,11 +120,6 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
   WaitState state = wait_state_;
   ProfileSyncService::Status status(service_->QueryDetailedSyncStatus());
   switch (wait_state_) {
-    case WAITING_FOR_ON_AUTH_ERROR: {
-      LogClientInfo("WAITING_FOR_ON_AUTH_ERROR");
-      SignalStateCompleteWithNextState(WAITING_FOR_ON_BACKEND_INITIALIZED);
-      break;
-    }
     case WAITING_FOR_ON_BACKEND_INITIALIZED: {
       LogClientInfo("WAITING_FOR_ON_BACKEND_INITIALIZED");
       if (service_->GetAuthError().state() != GoogleServiceAuthError::NONE) {
@@ -143,6 +137,21 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       }
       break;
     }
+    case WAITING_FOR_SERVER_REACHABLE: {
+      LogClientInfo("WAITING_FOR_SERVER_REACHABLE");
+      const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
+      if (!status.server_reachable) {
+        break;
+      }
+      if (service()->backend()->HasUnsyncedItems() ||
+          snap->has_more_to_sync || snap->unsynced_count != 0) {
+        SignalStateCompleteWithNextState(WAITING_FOR_SYNC_TO_FINISH);
+        break;
+      }
+      last_timestamp_ = snap->max_local_timestamp;
+      SignalStateCompleteWithNextState(FULLY_SYNCED);
+      break;
+    }
     case WAITING_FOR_SYNC_TO_FINISH: {
       LogClientInfo("WAITING_FOR_SYNC_TO_FINISH");
       const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
@@ -151,7 +160,10 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       // be a sufficient condition for sync to have completed. However, the
       // additional check of snap->unsynced_count is required due to
       // http://crbug.com/48989.
-      if (snap->has_more_to_sync || snap->unsynced_count != 0) {
+      if (service()->backend()->HasUnsyncedItems() ||
+          snap->has_more_to_sync || snap->unsynced_count != 0) {
+        if (!status.server_reachable)
+          SignalStateCompleteWithNextState(WAITING_FOR_SERVER_REACHABLE);
         break;
       }
       EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
@@ -286,18 +298,10 @@ bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
   return timeout_signal->Abort();
 }
 
-bool ProfileSyncServiceTestHarness::WaitForServiceInit(bool is_auth_retry) {
+bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
   LogClientInfo("WaitForServiceInit");
-  if (!is_auth_retry) {
-    // Wait for the OnAuthError() callback.
-    EXPECT_EQ(wait_state_, WAITING_FOR_ON_AUTH_ERROR);
-    EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
-        "Waiting for the OnAuthError() callback.")) <<
-        "OnAuthError() not seen after 30 seconds.";
-  }
 
-  // Enter GAIA credentials and wait for the OnBackendInitialized() callback.
-  service_->backend()->Authenticate(username_, password_, std::string());
+  // Wait for the OnBackendInitialized() callback.
   EXPECT_EQ(wait_state_, WAITING_FOR_ON_BACKEND_INITIALIZED);
   EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
       "Waiting for OnBackendInitialized().")) <<
@@ -307,15 +311,13 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit(bool is_auth_retry) {
     return false;
   }
 
-  // Choose datatypes to be synced. Note: This is unnecessary on Chrome OS.
-  if (!browser_defaults::kBootstrapSyncAuthentication) {
-    syncable::ModelTypeSet set;
-    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-        i < syncable::MODEL_TYPE_COUNT; ++i) {
-      set.insert(syncable::ModelTypeFromInt(i));
-    }
-    service_->OnUserChoseDatatypes(true, set);
+  // Choose datatypes to be synced.
+  syncable::ModelTypeSet set;
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+      i < syncable::MODEL_TYPE_COUNT; ++i) {
+    set.insert(syncable::ModelTypeFromInt(i));
   }
+  service_->OnUserChoseDatatypes(true, set);
 
   // Wait for notifications_enabled to be set to true.
   EXPECT_EQ(wait_state_, WAITING_FOR_NOTIFICATIONS_ENABLED);
@@ -329,7 +331,10 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit(bool is_auth_retry) {
 const SyncSessionSnapshot*
     ProfileSyncServiceTestHarness::GetLastSessionSnapshot() const {
   EXPECT_FALSE(service_ == NULL) << "Sync service has not yet been set up.";
-  return service_->backend()->GetLastSessionSnapshot();
+  if (service_->backend()) {
+    return service_->backend()->GetLastSessionSnapshot();
+  }
+  return NULL;
 }
 
 void ProfileSyncServiceTestHarness::LogClientInfo(std::string message) {

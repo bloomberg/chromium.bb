@@ -29,11 +29,6 @@
 
 class EventListenerHookup;
 
-namespace syncable {
-class DirectoryManager;
-struct DirectoryManagerEvent;
-}
-
 namespace browser_sync {
 
 class ModelSafeWorker;
@@ -138,6 +133,9 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   virtual SyncerEventChannel* relay_channel();
 
+  // Call this when a directory is opened
+  void CreateSyncer(const std::string& dirname);
+
   // DDOS avoidance function.  The argument and return value is in seconds
   static int GetRecommendedDelaySeconds(int base_delay_seconds);
 
@@ -230,8 +228,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   friend void* RunSyncerThread(void* syncer_thread);
   void* Run();
-  void HandleDirectoryManagerEvent(
-      const syncable::DirectoryManagerEvent& event);
   void HandleChannelEvent(const SyncerEvent& event);
 
   // SyncSession::Delegate implementation.
@@ -323,7 +319,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // this is called.
   void NudgeSyncImpl(int milliseconds_from_now, NudgeSource source);
 
-  scoped_ptr<EventListenerHookup> directory_manager_hookup_;
   scoped_ptr<ChannelHookup<SyncerEvent> > syncer_events_;
 
 #if defined(OS_LINUX)
