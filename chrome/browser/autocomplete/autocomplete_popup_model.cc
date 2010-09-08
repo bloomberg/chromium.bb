@@ -298,6 +298,6 @@ const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(
   if (!match.template_url || !match.template_url->IsExtensionKeyword())
     return NULL;
 
-  return &profile_->GetExtensionsService()->GetOmniboxIcon(
+  return &profile_->GetExtensionsService()->GetOmniboxPopupIcon(
       match.template_url->GetExtensionId());
 }

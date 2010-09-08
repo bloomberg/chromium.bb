@@ -68,6 +68,17 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
+#if defined(OS_LINUX)
+static const int kOmniboxIconPaddingLeft = 2;
+static const int kOmniboxIconPaddingRight = 2;
+#elif defined(OS_MACOSX)
+static const int kOmniboxIconPaddingLeft = 0;
+static const int kOmniboxIconPaddingRight = 2;
+#else
+static const int kOmniboxIconPaddingLeft = 0;
+static const int kOmniboxIconPaddingRight = 0;
+#endif
+
 bool ShouldReloadExtensionManifest(const ExtensionInfo& info) {
   // Always reload LOAD extension manifests, because they can change on disk
   // independent of the manifest in our prefs.
@@ -233,7 +244,10 @@ ExtensionsService::ExtensionsService(Profile* profile,
   backend_ = new ExtensionsServiceBackend(install_directory_);
 
   // Use monochrome icons for Omnibox icons.
+  omnibox_popup_icon_manager_.set_monochrome(true);
   omnibox_icon_manager_.set_monochrome(true);
+  omnibox_icon_manager_.set_padding(gfx::Insets(0, kOmniboxIconPaddingLeft,
+                                                0, kOmniboxIconPaddingRight));
 }
 
 ExtensionsService::~ExtensionsService() {
@@ -1118,8 +1132,10 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
 
   // Load the icon for omnibox-enabled extensions so it will be ready to display
   // in the URL bar.
-  if (!extension->omnibox_keyword().empty())
+  if (!extension->omnibox_keyword().empty()) {
+    omnibox_popup_icon_manager_.LoadIcon(extension);
     omnibox_icon_manager_.LoadIcon(extension);
+  }
 }
 
 void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
@@ -1321,6 +1337,11 @@ Extension* ExtensionsService::GetExtensionByOverlappingWebExtent(
 const SkBitmap& ExtensionsService::GetOmniboxIcon(
     const std::string& extension_id) {
   return omnibox_icon_manager_.GetIcon(extension_id);
+}
+
+const SkBitmap& ExtensionsService::GetOmniboxPopupIcon(
+    const std::string& extension_id) {
+  return omnibox_popup_icon_manager_.GetIcon(extension_id);
 }
 
 void ExtensionsService::ClearProvidersForTesting() {

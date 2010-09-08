@@ -296,6 +296,10 @@ class ExtensionsService
   // Returns the icon to display in the omnibox for the given extension.
   const SkBitmap& GetOmniboxIcon(const std::string& extension_id);
 
+  // Returns the icon to display in the omnibox popup window for the given
+  // extension.
+  const SkBitmap& GetOmniboxPopupIcon(const std::string& extension_id);
+
   // Clear all ExternalExtensionProviders.
   void ClearProvidersForTesting();
 
@@ -484,6 +488,7 @@ class ExtensionsService
 
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;
+  ExtensionIconManager omnibox_popup_icon_manager_;
 
   // List of registered component extensions (see Extension::Location).
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
