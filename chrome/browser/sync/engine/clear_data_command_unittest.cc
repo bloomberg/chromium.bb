@@ -66,10 +66,11 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectFailed) {
   ASSERT_TRUE(dir.good());
 
   ConfigureMockServerConnection();
-  SyncerEventChannel* channel = new SyncerEventChannel();
-  ClearEventHandler* handler = new ClearEventHandler();
-  channel->AddObserver(handler);
-  ScopedSessionContextSyncerEventChannel s_channel(context(), channel);
+  scoped_ptr<SyncerEventChannel> channel(new SyncerEventChannel());
+  scoped_ptr<ClearEventHandler> handler(new ClearEventHandler());
+  scoped_ptr<browser_sync::ChannelHookup<SyncerEvent> > hookup(
+      channel.get()->AddObserver(handler.get()));
+  ScopedSessionContextSyncerEventChannel s_channel(context(), channel.get());
 
   dir->set_store_birthday(mock_server()->store_birthday());
   mock_server()->SetClearUserDataResponseStatus(sync_pb::RETRIABLE_ERROR);
@@ -93,9 +94,9 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectFailed) {
   const sync_pb::ClientToServerMessage& r = mock_server()->last_request();
   EXPECT_TRUE(r.has_clear_user_data());
 
-  EXPECT_TRUE(handler->ReceievedClearFailedEvent());
+  EXPECT_TRUE(handler.get()->ReceievedClearFailedEvent());
 
-  EXPECT_FALSE(handler->ReceievedClearSuccessEvent());
+  EXPECT_FALSE(handler.get()->ReceievedClearSuccessEvent());
   EXPECT_FALSE(on_should_stop_syncing_permanently_called_);
 }
 
@@ -104,10 +105,11 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectSucess) {
   ASSERT_TRUE(dir.good());
 
   ConfigureMockServerConnection();
-  SyncerEventChannel* channel = new SyncerEventChannel();
-  ClearEventHandler* handler = new ClearEventHandler();
-  channel->AddObserver(handler);
-  ScopedSessionContextSyncerEventChannel s_channel(context(), channel);
+  scoped_ptr<SyncerEventChannel> channel(new SyncerEventChannel());
+  scoped_ptr<ClearEventHandler> handler(new ClearEventHandler());
+  scoped_ptr<browser_sync::ChannelHookup<SyncerEvent> > hookup(
+      channel.get()->AddObserver(handler.get()));
+  ScopedSessionContextSyncerEventChannel s_channel(context(), channel.get());
 
   dir->set_store_birthday(mock_server()->store_birthday());
   mock_server()->SetClearUserDataResponseStatus(sync_pb::SUCCESS);
@@ -120,7 +122,7 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectSucess) {
   const sync_pb::ClientToServerMessage& r = mock_server()->last_request();
   EXPECT_TRUE(r.has_clear_user_data());
 
-  EXPECT_TRUE(handler->ReceievedClearSuccessEvent());
+  EXPECT_TRUE(handler.get()->ReceievedClearSuccessEvent());
   EXPECT_TRUE(on_should_stop_syncing_permanently_called_);
 
   EXPECT_FALSE(handler->ReceievedClearFailedEvent());
