@@ -70,12 +70,44 @@ class HookDllLoader {
   PROC stop_proc_;
 };
 
+// Checks the window title and then class of hwnd. If they match with that
+// of a chrome_frame_helper.exe window, then add it to the list of windows
+// pointed to by lparam.
+BOOL CALLBACK CloseHelperWindowsEnumProc(HWND hwnd, LPARAM lparam) {
+  _ASSERTE(lparam != 0);
+
+  wchar_t title_buffer[MAX_PATH] = {0};
+  if (GetWindowText(hwnd, title_buffer, MAX_PATH)) {
+    if (lstrcmpiW(title_buffer, kChromeFrameHelperWindowName) == 0) {
+      wchar_t class_buffer[MAX_PATH] = {0};
+      if (GetClassName(hwnd, class_buffer, MAX_PATH)) {
+        if (lstrcmpiW(class_buffer, kChromeFrameHelperWindowClassName) == 0) {
+          if (hwnd != reinterpret_cast<HWND>(lparam)) {
+            PostMessage(hwnd, WM_CLOSE, 0, 0);
+          }
+        }
+      }
+    }
+  }
+
+  return TRUE;
+}
+
+// Enumerates all top level windows, looking for those that look like a
+// Chrome Frame helper window. It then closes all of them except for
+// except_me.
+void CloseAllHelperWindowsApartFrom(HWND except_me) {
+  EnumWindows(CloseHelperWindowsEnumProc, reinterpret_cast<LPARAM>(except_me));
+}
 
 LRESULT CALLBACK ChromeFrameHelperWndProc(HWND hwnd,
                                           UINT message,
                                           WPARAM wparam,
                                           LPARAM lparam) {
   switch (message) {
+    case WM_CREATE:
+      CloseAllHelperWindowsApartFrom(hwnd);
+      break;
     case WM_DESTROY:
       PostQuitMessage(0);
       break;
