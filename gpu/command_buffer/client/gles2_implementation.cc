@@ -322,7 +322,7 @@ class ClientSideBufferHelper {
             ii, info.size(), info.type(), info.normalized(), 0,
             array_buffer_offset_);
         array_buffer_offset_ += RoundUpToMultipleOf4(bytes_collected);
-        DCHECK_LE(array_buffer_offset_, array_buffer_size_);
+        GPU_DCHECK_LE(array_buffer_offset_, array_buffer_size_);
       }
     }
   }
@@ -388,7 +388,7 @@ class ClientSideBufferHelper {
 #endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
 
 
-#if !defined(COMPILER_MSVC)
+#if !defined(_MSC_VER)
 const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
 #endif
 
@@ -502,7 +502,7 @@ void GLES2Implementation::SetGLError(GLenum error, const char* msg) {
 
 void GLES2Implementation::GetBucketContents(uint32 bucket_id,
                                             std::vector<int8>* data) {
-  DCHECK(data);
+  GPU_DCHECK(data);
   typedef cmd::GetBucketSize::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
@@ -534,7 +534,7 @@ void GLES2Implementation::GetBucketContents(uint32 bucket_id,
 
 void GLES2Implementation::SetBucketContents(
     uint32 bucket_id, const void* data, size_t size) {
-  DCHECK(data);
+  GPU_DCHECK(data);
   helper_->SetBucketSize(bucket_id, size);
   if (size > 0u) {
     uint32 max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
@@ -566,7 +566,7 @@ void GLES2Implementation::SetBucketAsCString(
 
 bool GLES2Implementation::GetBucketAsString(
     uint32 bucket_id, std::string* str) {
-  DCHECK(str);
+  GPU_DCHECK(str);
   std::vector<int8> data;
   // NOTE: strings are passed NULL terminated. That means the empty
   // string will have a size of 1 and no-string will have a size of 0
@@ -842,7 +842,7 @@ void GLES2Implementation::ShaderSource(
     }
   }
 
-  DCHECK_EQ(total_size, offset);
+  GPU_DCHECK_EQ(total_size, offset);
 
   helper_->ShaderSourceBucket(shader, kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
@@ -1155,7 +1155,7 @@ const GLubyte* GLES2Implementation::GetString(GLenum name) {
     if (GetBucketAsString(kResultBucketId, &str)) {
       std::pair<GLStringMap::const_iterator, bool> insert_result =
           gl_strings_.insert(std::make_pair(name, str));
-      DCHECK(insert_result.second);
+      GPU_DCHECK(insert_result.second);
       result = insert_result.first->second.c_str();
     } else {
       result = NULL;

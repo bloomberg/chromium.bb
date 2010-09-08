@@ -44,9 +44,7 @@
 #include <stdlib.h>
 #include <cstddef>
 
-#ifndef __native_client__
-#include "base/scoped_ptr.h"
-#else
+namespace gpu {
 
 // A scoped_ptr<T> is like a T*, except that the destructor of scoped_ptr<T>
 // automatically deletes the pointer it holds (if any).
@@ -381,5 +379,6 @@ bool operator!=(C* p, const scoped_ptr_malloc<C, FP>& b) {
   return p != b.get();
 }
 
-#endif  // __native_client__
+}  // namespace gpu
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_SCOPED_PTR_H_

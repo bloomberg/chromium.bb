@@ -40,7 +40,7 @@ struct CommandHeader {
   static const int32 kMaxSize = (1 << 21) - 1;
 
   void Init(uint32 _command, int32 _size) {
-    DCHECK_LE(_size, kMaxSize);
+    GPU_DCHECK_LE(_size, kMaxSize);
     command = _command;
     size = _size;
   }
@@ -65,7 +65,7 @@ struct CommandHeader {
   template <typename T>
   void SetCmdByTotalSize(uint32 size_in_bytes) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-    DCHECK_GE(size_in_bytes, sizeof(T));  // NOLINT
+    GPU_DCHECK_GE(size_in_bytes, sizeof(T));  // NOLINT
     Init(T::kCmdId, ComputeNumEntries(size_in_bytes));
   }
 };
@@ -130,7 +130,7 @@ void* NextImmediateCmdAddress(void* cmd, uint32 size_of_data_in_bytes) {
 template <typename T>
 void* NextImmediateCmdAddressTotalSize(void* cmd, uint32 total_size_in_bytes) {
   COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-  DCHECK_GE(total_size_in_bytes, sizeof(T));  // NOLINT
+  GPU_DCHECK_GE(total_size_in_bytes, sizeof(T));  // NOLINT
   return reinterpret_cast<char*>(cmd) +
       RoundSizeToMultipleOfEntries(total_size_in_bytes);
 }
@@ -181,7 +181,7 @@ struct Noop {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   void SetHeader(uint32 skip_count) {
-    DCHECK_GT(skip_count, 0u);
+    GPU_DCHECK_GT(skip_count, 0u);
     header.Init(kCmdId, skip_count);
   }
 

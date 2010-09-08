@@ -27,9 +27,9 @@ RingBuffer::~RingBuffer() {
 }
 
 void RingBuffer::FreeOldestBlock() {
-  DCHECK(!blocks_.empty()) << "no free blocks";
+  GPU_DCHECK(!blocks_.empty()) << "no free blocks";
   Block& block = blocks_.front();
-  DCHECK(block.valid) << "attempt to allocate more than maximum memory";
+  GPU_DCHECK(block.valid) << "attempt to allocate more than maximum memory";
   helper_->WaitForToken(block.token);
   in_use_offset_ += block.size;
   if (in_use_offset_ == size_) {
@@ -44,8 +44,8 @@ void RingBuffer::FreeOldestBlock() {
 }
 
 RingBuffer::Offset RingBuffer::Alloc(unsigned int size) {
-  DCHECK_LE(size, size_) << "attempt to allocate more than maximum memory";
-  DCHECK(blocks_.empty() || blocks_.back().valid)
+  GPU_DCHECK_LE(size, size_) << "attempt to allocate more than maximum memory";
+  GPU_DCHECK(blocks_.empty() || blocks_.back().valid)
       << "Attempt to alloc another block before freeing the previous.";
   // Similarly to malloc, an allocation of 0 allocates at least 1 byte, to
   // return different pointers every time.
@@ -68,19 +68,20 @@ RingBuffer::Offset RingBuffer::Alloc(unsigned int size) {
 void RingBuffer::FreePendingToken(RingBuffer::Offset offset,
                                   unsigned int token) {
   offset -= base_offset_;
-  DCHECK(!blocks_.empty()) << "no allocations to free";
+  GPU_DCHECK(!blocks_.empty()) << "no allocations to free";
   for (Container::reverse_iterator it = blocks_.rbegin();
         it != blocks_.rend();
         ++it) {
     Block& block = *it;
     if (block.offset == offset) {
-      DCHECK(!block.valid) << "block that corresponds to offset already freed";
+      GPU_DCHECK(!block.valid)
+          << "block that corresponds to offset already freed";
       block.token = token;
       block.valid = true;
       return;
     }
   }
-  NOTREACHED() << "attempt to free non-existant block";
+  GPU_NOTREACHED() << "attempt to free non-existant block";
 }
 
 unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
@@ -89,7 +90,7 @@ unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
   if (free_offset_ == in_use_offset_) {
     if (blocks_.empty()) {
       // The entire buffer is free.
-      DCHECK_EQ(free_offset_, 0u);
+      GPU_DCHECK_EQ(free_offset_, 0u);
       return size_;
     } else {
       // The entire buffer is in use.

@@ -8,7 +8,7 @@
 #include "../common/cmd_buffer_common.h"
 
 namespace gpu {
-#if !defined(OS_WIN)
+#if !defined(_WIN32)
 // gcc needs this to link, but MSVC requires it not be present
 const int32 CommandHeader::kMaxSize;
 #endif

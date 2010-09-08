@@ -30,6 +30,11 @@
         'framework/demo.h',
         'framework/demo_factory.h',
       ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '../..',
+        ],
+      },
     },
     {
       'target_name': 'gpu_demo_framework_exe',

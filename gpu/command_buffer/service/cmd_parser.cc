@@ -6,6 +6,8 @@
 
 #include "gpu/command_buffer/service/cmd_parser.h"
 
+#include "base/logging.h"
+
 namespace gpu {
 
 CommandParser::CommandParser(void *shm_address,

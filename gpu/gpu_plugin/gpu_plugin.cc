@@ -6,7 +6,6 @@
 #include <windows.h>
 #endif
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "gpu/gpu_plugin/gpu_plugin.h"
 #include "third_party/npapi/bindings/nphostapi.h"

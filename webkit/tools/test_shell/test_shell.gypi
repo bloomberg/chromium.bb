@@ -637,6 +637,9 @@
             '../npapi_pepper_test_plugin/plugin.rc',
             '../npapi_pepper_test_plugin/test_factory.cc',
           ],
+          'include_dirs': [
+            '../../..',
+          ],
           'conditions': [
             ['OS!="win"', {
               # windows-specific resources

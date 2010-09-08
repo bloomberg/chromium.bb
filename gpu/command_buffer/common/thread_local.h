@@ -7,9 +7,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_THREAD_LOCAL_H_
 #define GPU_COMMAND_BUFFER_COMMON_THREAD_LOCAL_H_
 
-#include <build/build_config.h>
-
-#if defined(OS_WIN)
+#if defined(_WIN32)
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -17,14 +15,14 @@
 
 namespace gpu {
 
-#if defined(OS_WIN)
+#if defined(_WIN32)
 typedef DWORD ThreadLocalKey;
 #else
 typedef pthread_key_t ThreadLocalKey;
 #endif
 
 inline ThreadLocalKey ThreadLocalAlloc() {
-#if defined(OS_WIN)
+#if defined(_WIN32)
   return TlsAlloc();
 #else
   ThreadLocalKey key;
@@ -34,7 +32,7 @@ inline ThreadLocalKey ThreadLocalAlloc() {
 }
 
 inline void ThreadLocalFree(ThreadLocalKey key) {
-#if defined(OS_WIN)
+#if defined(_WIN32)
   TlsFree(key);
 #else
   pthread_key_delete(key);
@@ -42,7 +40,7 @@ inline void ThreadLocalFree(ThreadLocalKey key) {
 }
 
 inline void ThreadLocalSetValue(ThreadLocalKey key, void* value) {
-#if defined(OS_WIN)
+#if defined(_WIN32)
   TlsSetValue(key, value);
 #else
   pthread_setspecific(key, value);
@@ -50,7 +48,7 @@ inline void ThreadLocalSetValue(ThreadLocalKey key, void* value) {
 }
 
 inline void* ThreadLocalGetValue(ThreadLocalKey key) {
-#if defined(OS_WIN)
+#if defined(_WIN32)
   return TlsGetValue(key);
 #else
   return pthread_getspecific(key);

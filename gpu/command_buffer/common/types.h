@@ -7,15 +7,10 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_TYPES_H_
 #define GPU_COMMAND_BUFFER_COMMON_TYPES_H_
 
-#include <build/build_config.h>
-#if !defined(COMPILER_MSVC)
+#if !defined(_MSC_VER)
 #include <stdint.h>
 #endif
 #include <string>
-
-#ifndef __native_client__
-#include "base/basictypes.h"
-#else
 
 typedef signed char         schar;
 typedef signed char         int8;
@@ -170,11 +165,8 @@ struct GpuCompileAssert {
 //   This is to avoid running into a bug in MS VC 7.1, which
 //   causes ((0.0) ? 1 : -1) to incorrectly evaluate to 1.
 
-
-#endif
-
 namespace gpu {
-#if defined(COMPILER_MSVC)
+#if defined(_MSC_VER)
 typedef short Int16;
 typedef unsigned short Uint16;
 typedef int Int32;

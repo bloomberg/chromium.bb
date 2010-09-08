@@ -12,17 +12,12 @@
       'type': 'static_library',
       'include_dirs': [
         '.',
-        '..',
       ],
       'all_dependent_settings': {
         'include_dirs': [
           '.',
-          '..',
         ],
       },
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
       'sources': [
         'command_buffer/common/bitfield_helpers.h',
         'command_buffer/common/buffer.h',
@@ -136,6 +131,7 @@
       'dependencies': [
         'command_buffer_common',
         '../app/app.gyp:app_base',
+        '../base/base.gyp:base',
         '../gfx/gfx.gyp:gfx',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
       ],
@@ -288,6 +284,9 @@
         'command_buffer_client',
         'gles2_c_lib',
         '../third_party/npapi/npapi.gyp:npapi',
+      ],
+      'include_dirs': [
+        '..',
       ],
       'all_dependent_settings': {
         'include_dirs': [

@@ -6,20 +6,18 @@
 #define GPU_COMMAND_BUFFER_CLIENT_MAPPED_MEMORY_H_
 
 #include <vector>
-#include "base/basictypes.h"
-#include "base/ref_counted.h"
-#include "gpu/command_buffer/client/fenced_allocator.h"
-#include "gpu/command_buffer/common/buffer.h"
+
+#include "../common/types.h"
+#include "../client/fenced_allocator.h"
+#include "../common/buffer.h"
 
 namespace gpu {
 
 class CommandBufferHelper;
 
 // Manages a shared memory segment.
-class MemoryChunk : public base::RefCounted<MemoryChunk> {
+class MemoryChunk {
  public:
-  typedef scoped_refptr<MemoryChunk> Ref;
-
   MemoryChunk(int32 shm_id, gpu::Buffer shm, CommandBufferHelper* helper);
 
   // Gets the size of the largest free block that is available without waiting.
@@ -107,6 +105,8 @@ class MappedMemoryManager {
       : helper_(helper) {
   }
 
+  ~MappedMemoryManager();
+
   // Allocates a block of memory
   // Parameters:
   //   size: size of memory to allocate.
@@ -132,7 +132,7 @@ class MappedMemoryManager {
   void FreePendingToken(void* pointer, int32 token);
 
  private:
-  typedef std::vector<MemoryChunk::Ref> MemoryChunkVector;
+  typedef std::vector<MemoryChunk*> MemoryChunkVector;
 
   CommandBufferHelper* helper_;
   MemoryChunkVector chunks_;

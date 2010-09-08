@@ -76,7 +76,7 @@ class BaseRingBufferTest : public testing::Test {
   scoped_ptr<CommandBufferHelper> helper_;
 };
 
-#ifndef COMPILER_MSVC
+#ifndef _MSC_VER
 const unsigned int BaseRingBufferTest::kBaseOffset;
 const unsigned int BaseRingBufferTest::kBufferSize;
 #endif

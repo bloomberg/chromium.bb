@@ -4,6 +4,7 @@
 
 // Tests for the command parser.
 
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/mocks.h"

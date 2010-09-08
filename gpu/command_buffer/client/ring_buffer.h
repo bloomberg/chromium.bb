@@ -155,7 +155,7 @@ class RingBufferWrapper {
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
   void FreePendingToken(void* pointer, unsigned int token) {
-    DCHECK(pointer);
+    GPU_DCHECK(pointer);
     allocator_.FreePendingToken(GetOffset(pointer), token);
   }
 

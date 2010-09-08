@@ -458,7 +458,7 @@ uint32 GLES2Util::GLErrorToErrorBit(uint32 error) {
     case GL_INVALID_FRAMEBUFFER_OPERATION:
       return gl_error_bit::kInvalidFrameBufferOperation;
     default:
-      NOTREACHED();
+      GPU_NOTREACHED();
       return gl_error_bit::kNoError;
   }
 }
@@ -476,7 +476,7 @@ uint32 GLES2Util::GLErrorBitToGLError(uint32 error_bit) {
     case gl_error_bit::kInvalidFrameBufferOperation:
       return GL_INVALID_FRAMEBUFFER_OPERATION;
     default:
-      NOTREACHED();
+      GPU_NOTREACHED();
       return GL_NO_ERROR;
   }
 }

@@ -25,7 +25,7 @@ ResourceId IdAllocator::FindFirstFree() const {
 }
 
 ResourceId IdAllocator::AllocateIDAtOrAbove(ResourceId desired_id) {
-  DCHECK_LT(static_cast<ResourceId>(used_ids_.size()),
+  GPU_DCHECK_LT(static_cast<ResourceId>(used_ids_.size()),
             static_cast<ResourceId>(-1));
   for (; InUse(desired_id); ++desired_id) {}
   MarkAsUsed(desired_id);

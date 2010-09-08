@@ -7,6 +7,7 @@
 #ifndef GPU_DEMOS_GLES2_BOOK_EXAMPLE_H_
 #define GPU_DEMOS_GLES2_BOOK_EXAMPLE_H_
 
+#include "base/logging.h"
 #include "gpu/command_buffer/common/logging.h"
 #include "gpu/demos/framework/demo.h"
 #include "third_party/gles2_book/Common/Include/esUtil.h"

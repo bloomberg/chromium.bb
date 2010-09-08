@@ -5,8 +5,8 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
-#include "gpu/command_buffer/client/gles2_demo_cc.h"
-#include "gpu/command_buffer/common/logging.h"
+#include "../client/gles2_demo_cc.h"
+#include "../common/logging.h"
 
 #include <math.h>
 #include <string>
@@ -14,7 +14,7 @@
 // This is here so we have at least some idea that the inline path is working.
 #define GLES2_INLINE_OPTIMIZATION
 #include <GLES2/gl2.h>
-#include "gpu/command_buffer/common/logging.h"
+#include "../common/logging.h"
 
 namespace {
 
@@ -30,8 +30,8 @@ void CheckGLError(const char* func_name, int line_no) {
 #ifndef NDEBUG
   GLenum error = GL_NO_ERROR;
   while ((error = glGetError()) != GL_NO_ERROR) {
-    DLOG(ERROR) << "GL Error in " << func_name << " at line " << line_no
-        << ": " << error;
+    GPU_DLOG(gpu::ERROR) << "GL Error in " << func_name << " at line "
+        << line_no << ": " << error;
   }
 #endif
 }
@@ -54,7 +54,7 @@ GLuint LoadShader(GLenum type, const char* shaderSrc) {
     GLsizei length = 0;
     glGetShaderInfoLog(shader, sizeof(buffer), &length, buffer);
     std::string log(buffer, length);
-    DLOG(ERROR) << "Error compiling shader:" << log;
+    GPU_DLOG(gpu::ERROR) << "Error compiling shader:" << log;
     glDeleteShader(shader);
     return 0;
   }
@@ -88,7 +88,7 @@ void InitShaders() {
   // Create the program object
   GLuint programObject = glCreateProgram();
   if (programObject == 0) {
-    DLOG(ERROR) << "Creating program failed";
+    GPU_DLOG(gpu::ERROR) << "Creating program failed";
     return;
   }
   glAttachShader(programObject, vertexShader);
@@ -107,7 +107,7 @@ void InitShaders() {
     GLsizei length = 0;
     glGetProgramInfoLog(programObject, sizeof(buffer), &length, buffer);
     std::string log(buffer, length);
-    DLOG(ERROR) << "Error linking program:" << log;
+    GPU_DLOG(gpu::ERROR) << "Error linking program:" << log;
     glDeleteProgram(programObject);
     return;
   }

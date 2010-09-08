@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsautorelease_pool.h"
+#include "base/scoped_ptr.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -89,7 +90,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
     gpu::Buffer buf;
     buf.size = kBufferSize;
     buf.ptr = buffer_.get();
-    chunk_ = new MemoryChunk(kShmId, buf, helper_.get());
+    chunk_.reset(new MemoryChunk(kShmId, buf, helper_.get()));
   }
 
   virtual void TearDown() {
@@ -99,7 +100,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
     MappedMemoryTestBase::TearDown();
   }
 
-  MemoryChunk::Ref chunk_;
+  scoped_ptr<MemoryChunk> chunk_;
   scoped_array<uint8> buffer_;
 };
 

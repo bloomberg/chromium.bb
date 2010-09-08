@@ -6,7 +6,7 @@
 // includes where appropriate.
 
 #include <GLES2/gl2.h>
-#include "gpu/command_buffer/client/gles2_demo_c.h"
+#include "command_buffer/client/gles2_demo_c.h"
 
 void GLFromCDraw() {
   // glClear(GL_COLOR_BUFFER_BIT);

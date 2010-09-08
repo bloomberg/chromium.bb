@@ -182,7 +182,7 @@ class FencedAllocatorWrapper {
   // Parameters:
   //   pointer: the pointer to the memory block to free.
   void Free(void *pointer) {
-    DCHECK(pointer);
+    GPU_DCHECK(pointer);
     allocator_.Free(GetOffset(pointer));
   }
 
@@ -193,7 +193,7 @@ class FencedAllocatorWrapper {
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
   void FreePendingToken(void *pointer, int32 token) {
-    DCHECK(pointer);
+    GPU_DCHECK(pointer);
     allocator_.FreePendingToken(GetOffset(pointer), token);
   }
 

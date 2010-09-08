@@ -77,7 +77,7 @@ int32 CommandBufferHelper::InsertToken() {
   if (token_ == 0) {
     // we wrapped
     Finish();
-    DCHECK_EQ(token_, last_token_read_);
+    GPU_DCHECK_EQ(token_, last_token_read_);
   }
   return token_;
 }
@@ -93,7 +93,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   Flush();
   while (last_token_read_ < token) {
     if (get_ == put_) {
-      LOG(FATAL) << "Empty command buffer while waiting on a token.";
+      GPU_LOG(FATAL) << "Empty command buffer while waiting on a token.";
       return;
     }
     // Do not loop forever if the flush fails, meaning the command buffer reader
@@ -109,13 +109,13 @@ void CommandBufferHelper::WaitForToken(int32 token) {
 // function will return early if an error occurs, in which case the available
 // space may not be available.
 void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
-  CHECK(count < usable_entry_count_);
+  GPU_CHECK(count < usable_entry_count_);
   if (put_ + count > usable_entry_count_) {
     // There's not enough room between the current put and the end of the
     // buffer, so we need to wrap. We will add a jump back to the start, but we
     // need to make sure get wraps first, actually that get is 1 or more (since
     // put will wrap to 0 after we add the jump).
-    DCHECK_LE(1, put_);
+    GPU_DCHECK_LE(1, put_);
     Flush();
     while (get_ > put_ || get_ == 0) {
       // Do not loop forever if the flush fails, meaning the command buffer
@@ -143,7 +143,7 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   WaitForAvailableEntries(entries);
   CommandBufferEntry* space = &entries_[put_];
   put_ += entries;
-  DCHECK_LE(put_, usable_entry_count_);
+  GPU_DCHECK_LE(put_, usable_entry_count_);
   if (put_ == usable_entry_count_) {
     cmd::Jump::Set(&entries_[put_], 0);
     put_ = 0;

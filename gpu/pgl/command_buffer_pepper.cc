@@ -4,6 +4,7 @@
 
 #include "gpu/pgl/command_buffer_pepper.h"
 
+#include "base/logging.h"
 #include "gpu/command_buffer/common/logging.h"
 
 using base::SharedMemory;

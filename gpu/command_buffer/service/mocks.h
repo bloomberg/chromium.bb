@@ -12,9 +12,11 @@
 #define GPU_COMMAND_BUFFER_SERVICE_MOCKS_H_
 
 #include <vector>
-#include "testing/gmock/include/gmock/gmock.h"
+
+#include "base/logging.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace gpu {
 

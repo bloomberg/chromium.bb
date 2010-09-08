@@ -57,21 +57,21 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
   }
 
   virtual void DestroyTransferBuffer(int32) {  // NOLINT
-    NOTREACHED();
+    GPU_NOTREACHED();
   }
 
   virtual Buffer GetTransferBuffer(int32 id) {
-    DCHECK_EQ(id, kTransferBufferId);
+    GPU_DCHECK_EQ(id, kTransferBufferId);
     return transfer_buffer_buffer_;
   }
 
   virtual void SetToken(int32 token) {
-    NOTREACHED();
+    GPU_NOTREACHED();
     state_.token = token;
   }
 
   virtual void SetParseError(error::Error error) {
-    NOTREACHED();
+    GPU_NOTREACHED();
     state_.error = error;
   }
 
@@ -93,6 +93,11 @@ class MockGLES2CommandBuffer : public GLES2MockCommandBufferHelper {
   // This is so we can use all the gmock functions when Flush is called.
   MOCK_METHOD1(OnFlush, void(void* result));
 };
+
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef _MSC_VER
+const int32 GLES2MockCommandBufferHelper::kTransferBufferId;
+#endif
 
 namespace gles2 {
 
@@ -202,7 +207,7 @@ class GLES2ImplementationTest : public testing::Test {
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
-#ifndef COMPILER_MSVC
+#ifndef _MSC_VER
 const int32 GLES2ImplementationTest::kTransferBufferId;
 #endif
 
