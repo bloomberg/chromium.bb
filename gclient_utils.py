@@ -298,10 +298,13 @@ class StdoutAutoFlush(object):
     """Thread-safe."""
     self.stdout.write(out)
     should_flush = False
-    with self.lock:
+    self.lock.acquire()
+    try:
       if (time.time() - self.last_flushed_at) > self.delay:
         should_flush = True
         self.last_flushed_at = time.time()
+    finally:
+      self.lock.release()
     if should_flush:
       self.stdout.flush()
 
