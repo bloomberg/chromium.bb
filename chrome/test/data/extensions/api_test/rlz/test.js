@@ -139,16 +139,7 @@ chrome.test.runTests([
     chrome.experimental.rlz.sendFinancialPing('D', ['D3'], 'sig', 'TEST',
                                               'id', 'en', false);
 
-    // try another call, this time the ping should not be sent.
-    chrome.experimental.rlz.sendFinancialPing('D', ['D3'], 'sig', 'TEST',
-                                              'id', 'en', false,
-                                              function(sent) {
-                                                if (sent) {
-                                                  chrome.test.fail();
-                                                } else {
-                                                  chrome.test.succeed();
-                                                }
-                                              });
+    chrome.test.succeed();
   }
 ]);
 
