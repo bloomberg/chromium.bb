@@ -671,7 +671,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target)
 	union wl_value *value;
 	int i;
 
-	fprintf(stderr, "%s(%d).%s(",
+	fprintf(stderr, "%s@%d.%s(",
 		target->interface->name, target->id,
 		closure->message->name);
 
