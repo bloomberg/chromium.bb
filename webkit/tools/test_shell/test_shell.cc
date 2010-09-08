@@ -367,6 +367,8 @@ std::string TestShell::DumpImage(skia::PlatformCanvas* canvas,
   bool discard_transparency = false;
 #elif defined(OS_POSIX)
   bool discard_transparency = true;
+  if (WebKit::areLayoutTestImagesOpaque())
+    device.makeOpaque(0, 0, src_bmp.width(), src_bmp.height());
 #endif
 
   // Compute MD5 sum.  We should have done this before calling
