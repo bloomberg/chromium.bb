@@ -45,7 +45,7 @@ chrome.tabs.getSelected(null, function(tab) {
         },
 
         /* Navigates to a.html that redirects to b.html (using javascript)
-           after a delay of 500ms, so the initial navigation is completed and
+           after a delay of 1s, so the initial navigation is completed and
            the redirection is marked as client_redirect */
         function clientRedirect() {
           expect([
