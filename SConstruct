@@ -107,6 +107,8 @@ ACCEPTABLE_ARGUMENTS = {
     # NB: no way to use tools the names or the args of
     # which contains a comma.
     'run_under': None,
+    # More args for the tool.
+    'run_under_extra_args': None,
     # Multiply timeout values by this number.
     'scale_timeout': None,
     # enable use of SDL
@@ -151,7 +153,7 @@ def SetArgument(key, value):
 # Expands "macro" command line arguments.
 def ExpandArguments():
   if ARGUMENTS.get('buildbot') == 'memcheck':
-    print 'builbot=memcheck expands to the following arguments:'
+    print 'buildbot=memcheck expands to the following arguments:'
     SetArgument('run_under',
                 'src/third_party/valgrind/memcheck.sh,' +
                 '--error-exitcode=1')
@@ -159,7 +161,15 @@ def ExpandArguments():
     SetArgument('running_on_valgrind', True)
     SetArgument('with_valgrind', True)
   elif ARGUMENTS.get('buildbot') == 'tsan':
-    print 'builbot=tsan expands to the following arguments:'
+    print 'buildbot=tsan expands to the following arguments:'
+    SetArgument('run_under',
+                'src/third_party/valgrind/tsan.sh,' +
+                '--nacl-untrusted,--error-exitcode=1')
+    SetArgument('scale_timeout', 20)
+    SetArgument('running_on_valgrind', True)
+    SetArgument('with_valgrind', True)
+  elif ARGUMENTS.get('buildbot') == 'tsan-trusted':
+    print 'buildbot=tsan-trusted expands to the following arguments:'
     SetArgument('run_under',
                 'src/third_party/valgrind/tsan.sh,' +
                 '--error-exitcode=1')
@@ -905,6 +915,9 @@ def CommandTest(env, name, command, size='small',
 
   run_under = ARGUMENTS.get('run_under')
   if run_under:
+    run_under_extra_args = ARGUMENTS.get('run_under_extra_args')
+    if run_under_extra_args:
+      run_under = run_under + ',' + run_under_extra_args
     script_flags.append('--run_under');
     script_flags.append(run_under);
 

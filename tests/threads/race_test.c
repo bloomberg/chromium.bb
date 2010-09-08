@@ -76,7 +76,8 @@ void positive_race_on_global_test() {
   ThreadCallback t[] = {simple_race_write, simple_race_write,
     simple_race_write};
   SHOW_ME;
-  ANNOTATE_EXPECT_RACE(&simple_race_obj, "positive_race_on_global_test");
+  ANNOTATE_EXPECT_RACE(&simple_race_obj,
+      "positive_race_on_global_test. NACL_UNTRUSTED.");
   create_and_join_threads(t, 3);
 }
 
@@ -104,7 +105,8 @@ void positive_race_on_heap_test() {
   ThreadCallback t[2] = {race_on_heap_write, race_on_heap_write};
   SHOW_ME;
   race_on_heap_obj = (int*)malloc(sizeof(int));
-  ANNOTATE_EXPECT_RACE(race_on_heap_obj, "positive_race_on_heap_test");
+  ANNOTATE_EXPECT_RACE(race_on_heap_obj,
+      "positive_race_on_heap_test. NACL_UNTRUSTED.");
   create_and_join_threads(t, 2);
   free(race_on_heap_obj);
 }
@@ -135,14 +137,15 @@ void positive_wrong_lock_test() {
   pthread_mutex_init(&wrong_lock_test_mu_1, NULL);
   pthread_mutex_init(&wrong_lock_test_mu_2, NULL);
   SHOW_ME;
-  ANNOTATE_EXPECT_RACE(&wrong_lock_test_obj, "positive_wrong_lock_test");
+  ANNOTATE_EXPECT_RACE(&wrong_lock_test_obj,
+      "positive_wrong_lock_test. NACL_UNTRUSTED.");
   create_and_join_threads(t, 2);
 }
 
 /* -------------------------------------------------------------------------- */
 /* negative_locked_access_test
    Correctly synchronized code: an object is accessed
-   by diffferent threads under the same lock. */
+   by different threads under the same lock. */
 pthread_mutex_t locked_access_test_mu;
 int locked_access_test_obj;
 
