@@ -93,6 +93,7 @@ BackgroundView::BackgroundView()
       progress_bar_(NULL),
       go_incognito_button_(NULL),
       did_paint_(false),
+      delegate_(NULL),
       background_area_(NULL) {
 }
 
