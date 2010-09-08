@@ -33,8 +33,6 @@ NaClSrpcError SetUpcallServices(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("set_upcall_services:s:", SetUpcallServices);
-
 
 /*
  * TestUpcall requests a server test of a named client method.
@@ -52,4 +50,12 @@ NaClSrpcError TestUpcall(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("test_upcall:s:i", TestUpcall);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "set_upcall_services:s:", SetUpcallServices },
+  { "test_upcall:s:i", TestUpcall },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

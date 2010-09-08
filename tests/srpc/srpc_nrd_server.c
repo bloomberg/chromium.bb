@@ -73,8 +73,6 @@ NaClSrpcError StartServer(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("start_server::h", StartServer);
-
 /* GetMsg simply returns a string in a character array. */
 static NaClSrpcError GetMsg(NaClSrpcChannel *channel,
                             NaClSrpcArg **in_args,
@@ -201,8 +199,6 @@ NaClSrpcError TestSharedMemory(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("test_shared_memory:hs:i", TestSharedMemory);
-
 /* Report reports the number of errors seen during the tests. */
 NaClSrpcError Report(NaClSrpcChannel *channel,
                      NaClSrpcArg **in_args,
@@ -211,4 +207,13 @@ NaClSrpcError Report(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("report::i", Report);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "start_server::h", StartServer },
+  { "test_shared_memory:hs:i", TestSharedMemory },
+  { "report::i", Report },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

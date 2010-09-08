@@ -42,8 +42,6 @@ NaClSrpcError GetShmHandle(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("get_shm_handle:i:h", GetShmHandle);
-
 /*
  * GetInvalidHandle creates and returns a shared memory region.
  */
@@ -54,8 +52,6 @@ NaClSrpcError GetInvalidHandle(NaClSrpcChannel *channel,
   out_args[0]->u.ival = -1;
   return NACL_SRPC_RESULT_OK;
 }
-
-NACL_SRPC_METHOD("get_invalid_handle::h", GetInvalidHandle);
 
 /*
  * MapSysvHandle maps a SysV shared memory handle and prints its contents.
@@ -85,4 +81,13 @@ NaClSrpcError MapSysvHandle(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("map_sysv_handle:h:", MapSysvHandle);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "get_shm_handle:i:h", GetShmHandle },
+  { "get_invalid_handle::h", GetInvalidHandle },
+  { "map_sysv_handle:h:", MapSysvHandle },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

@@ -141,8 +141,11 @@ NaClSrpcError AVTest(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-/*
- * Export the method as taking no arguments and returning one integer.
- */
-NACL_SRPC_METHOD("avtest::s", AVTest);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "avtest::s", AVTest },
+  { NULL, NULL },
+};
 
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

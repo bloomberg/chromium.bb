@@ -14,7 +14,6 @@ RPC Name                 Input args Output args
  12 handleret                       h         
  13 invalid_handle       h                    
  14 invalid_handle_ret              h         
- 15 __shutdown                                
 bool RESULTS:   b(1)
 bool RESULTS:   b(0)
 double RESULTS:   d(-1.000000)

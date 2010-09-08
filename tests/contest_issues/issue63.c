@@ -23,11 +23,6 @@ NaClSrpcError FortyTwo(NaClSrpcChannel *channel,
 }
 
 /*
- * Export the method as taking no arguments and returning one integer.
- */
-NACL_SRPC_METHOD("fortytwo:h:i", FortyTwo);
-
-/*
  *  Return a clever string.
  */
 NaClSrpcError HelloWorld(NaClSrpcChannel *channel,
@@ -40,7 +35,12 @@ NaClSrpcError HelloWorld(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-/*
- * Export the method as taking no arguments and returning one integer.
- */
-NACL_SRPC_METHOD("helloworld::s", HelloWorld);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "fortytwo:h:i", FortyTwo },
+  { "helloworld::s", HelloWorld },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

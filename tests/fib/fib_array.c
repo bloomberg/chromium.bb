@@ -41,4 +41,14 @@ NaClSrpcError FibonacciArray(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("fib:ii:I", FibonacciArray);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "fib:ii:I", FibonacciArray },
+  /* __shutdown is only here to avoid changing the stdout golden file
+     and the checked-in version of the executable. */
+  { "__shutdown::", NULL },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

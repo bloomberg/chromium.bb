@@ -79,4 +79,14 @@ NaClSrpcError Mandel(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("mandel:dddd:iii", Mandel);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "mandel:dddd:iii", Mandel },
+  /* __shutdown is only here to avoid changing the stdout golden file
+     and the checked-in version of the executable. */
+  { "__shutdown::", NULL },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

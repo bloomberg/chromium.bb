@@ -31,8 +31,10 @@ NaClSrpcError FibonacciScalar(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("fib:iii:i", FibonacciScalar);
-
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "fib:iii:i", FibonacciScalar },
+  { NULL, NULL },
+};
 
 /* NOTE: we "overwrite" a bunch of weak functions here some of them are
  * already doing "nothing" in their weak version but we want to force a
@@ -52,3 +54,7 @@ void __av_wait() {}
 void __pthread_initialize() {}
 void __pthread_shutdown() {}
 #endif
+
+int main() {
+  return NaClSrpcCommandLoopMain(srpc_methods);
+}

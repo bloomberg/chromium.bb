@@ -53,8 +53,6 @@ NaClSrpcError SetupSharedMemory(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("setup:h:", SetupSharedMemory);
-
 NaClSrpcError ShutdownSharedMemory(NaClSrpcChannel *channel,
                                    NaClSrpcArg **in_args,
                                    NaClSrpcArg **out_args) {
@@ -69,8 +67,6 @@ NaClSrpcError ShutdownSharedMemory(NaClSrpcChannel *channel,
   /* Return success. */
   return NACL_SRPC_RESULT_OK;
 }
-
-NACL_SRPC_METHOD("shutdown::", ShutdownSharedMemory);
 
 /*
  * Sample application-specific RPC code.
@@ -159,4 +155,13 @@ NaClSrpcError MandelTiled(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("tiled:dddd:", MandelTiled);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "setup:h:", SetupSharedMemory },
+  { "shutdown::", ShutdownSharedMemory },
+  { "tiled:dddd:", MandelTiled },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

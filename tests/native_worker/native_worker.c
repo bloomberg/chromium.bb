@@ -26,11 +26,6 @@ NaClSrpcError SetUpcallDesc(NaClSrpcChannel *channel,
 }
 
 /*
- * Export the method as taking a handle.
- */
-NACL_SRPC_METHOD("setUpcallDesc:h:", SetUpcallDesc);
-
-/*
  *  Send a string to a native web worker
  */
 static char* message_string;
@@ -56,7 +51,12 @@ NaClSrpcError PostMessage(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-/*
- * Export the method as taking a string.
- */
-NACL_SRPC_METHOD("postMessage:s:", PostMessage);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "setUpcallDesc:h:", SetUpcallDesc },
+  { "postMessage:s:", PostMessage },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

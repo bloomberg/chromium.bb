@@ -38,8 +38,6 @@ NaClSrpcError SetUpcallDesc(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("setUpcallDesc:h:", SetUpcallDesc);
-
 /*
  * Sample application-specific RPC code.
  */
@@ -153,4 +151,12 @@ NaClSrpcError MandelWorker(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("postMessage:s:", MandelWorker);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "setUpcallDesc:h:", SetUpcallDesc },
+  { "postMessage:s:", MandelWorker },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

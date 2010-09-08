@@ -70,4 +70,11 @@ NaClSrpcError Cat(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("cat:h:C", Cat);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "cat:h:C", Cat },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

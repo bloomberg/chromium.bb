@@ -91,9 +91,6 @@ NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("sock_addr_client:h:i", SockAddrClient);
-
-
 /* SharedMemoryClient creates and returns a shared memory region. */
 NaClSrpcError SharedMemoryClient(NaClSrpcChannel *channel,
                                  NaClSrpcArg **in_args,
@@ -127,4 +124,12 @@ NaClSrpcError SharedMemoryClient(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("shared_memory_client:i:hsi", SharedMemoryClient);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "sock_addr_client:h:i", SockAddrClient },
+  { "shared_memory_client:i:hsi", SharedMemoryClient },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}

@@ -43,8 +43,6 @@ NaClSrpcError BoolMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("bool:b:b", BoolMethod);
-
 /*
  *  The test for double negates the input and returns it.
  */
@@ -54,8 +52,6 @@ NaClSrpcError DoubleMethod(NaClSrpcChannel *channel,
   out_args[0]->u.dval = -in_args[0]->u.dval;
   return NACL_SRPC_RESULT_OK;
 }
-
-NACL_SRPC_METHOD("double:d:d", DoubleMethod);
 
 /*
  *  The test for returning signalling NaNs takes no input.
@@ -73,8 +69,6 @@ NaClSrpcError NaNMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("nan::d", NaNMethod);
-
 /*
  *  The test for int negates the input and returns it.
  */
@@ -85,8 +79,6 @@ NaClSrpcError IntMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("int:i:i", IntMethod);
-
 /*
  *  The test for string returns the length of the string.
  */
@@ -96,8 +88,6 @@ NaClSrpcError StringMethod(NaClSrpcChannel *channel,
   out_args[0]->u.ival = strlen(in_args[0]->u.sval);
   return NACL_SRPC_RESULT_OK;
 }
-
-NACL_SRPC_METHOD("string:s:i", StringMethod);
 
 /*
  *  Second, tests for array argument passing and return.
@@ -121,8 +111,6 @@ NaClSrpcError CharArrayMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("char_array:C:C", CharArrayMethod);
-
 NaClSrpcError DoubleArrayMethod(NaClSrpcChannel *channel,
                                 NaClSrpcArg **in_args,
                                 NaClSrpcArg **out_args) {
@@ -136,8 +124,6 @@ NaClSrpcError DoubleArrayMethod(NaClSrpcChannel *channel,
   }
   return NACL_SRPC_RESULT_OK;
 }
-
-NACL_SRPC_METHOD("double_array:D:D", DoubleArrayMethod);
 
 NaClSrpcError IntArrayMethod(NaClSrpcChannel *channel,
                              NaClSrpcArg **in_args,
@@ -153,8 +139,6 @@ NaClSrpcError IntArrayMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("int_array:I:I", IntArrayMethod);
-
 /*
  * A null RPC to test throughput and latency.
  */
@@ -163,8 +147,6 @@ NaClSrpcError NullMethod(NaClSrpcChannel *channel,
                          NaClSrpcArg **out_args) {
   return NACL_SRPC_RESULT_OK;
 }
-
-NACL_SRPC_METHOD("null_method::", NullMethod);
 
 /*
  * A method to return a string.
@@ -192,8 +174,6 @@ NaClSrpcError ReturnStringMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("stringret:i:s", ReturnStringMethod);
-
 /*
  * A method to receive a handle (descriptor).
  */
@@ -204,8 +184,6 @@ NaClSrpcError HandleMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("handle:h:", HandleMethod);
-
 /*
  * A method to return a handle (descriptor).
  */
@@ -215,8 +193,6 @@ NaClSrpcError ReturnHandleMethod(NaClSrpcChannel *channel,
   out_args[0]->u.hval = kSrpcSocketAddressDescriptorNumber;
   return NACL_SRPC_RESULT_OK;
 }
-
-NACL_SRPC_METHOD("handleret::h", ReturnHandleMethod);
 
 /*
  * A method to accept an invalid handle (descriptor).
@@ -231,8 +207,6 @@ NaClSrpcError InvalidHandleMethod(NaClSrpcChannel *channel,
   }
 }
 
-NACL_SRPC_METHOD("invalid_handle:h:", InvalidHandleMethod);
-
 /*
  * A method to return an invalid handle (descriptor).
  */
@@ -243,4 +217,24 @@ NaClSrpcError ReturnInvalidHandleMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("invalid_handle_ret::h", ReturnInvalidHandleMethod);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  { "bool:b:b", BoolMethod },
+  { "double:d:d", DoubleMethod },
+  { "nan::d", NaNMethod },
+  { "int:i:i", IntMethod },
+  { "string:s:i", StringMethod },
+  { "char_array:C:C", CharArrayMethod },
+  { "double_array:D:D", DoubleArrayMethod },
+  { "int_array:I:I", IntArrayMethod },
+  { "null_method::", NullMethod },
+  { "stringret:i:s", ReturnStringMethod },
+  { "handle:h:", HandleMethod },
+  { "handleret::h", ReturnHandleMethod },
+  { "invalid_handle:h:", InvalidHandleMethod },
+  { "invalid_handle_ret::h", ReturnInvalidHandleMethod },
+  { NULL, NULL },
+};
+
+int main() {
+  return NaClSrpcMain(srpc_methods);
+}
