@@ -347,6 +347,11 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 // Enable displaying net log events on the command line.
 extern const char kLogNetLog[]              = "log-net-log";
 
+// Enable gpu-accelerated compositing.
+// TODO(vangelis): Remove the flag once accelerated compositing is enabled by
+// default on all platforms.
+const char kEnableAcceleratedCompositing[]  = "enable-accelerated-compositing";
+
 // Enable gpu-accelerated 2d canvas.
 const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
