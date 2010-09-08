@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   // Now run all the tests.
   ASSERT_TRUE(RunExtensionTest("rlz")) << message_;
 
-  ASSERT_EQ(1, MockRlzSendFinancialPingFunction::expected_count());
+  ASSERT_EQ(2, MockRlzSendFinancialPingFunction::expected_count());
   ExtensionFunctionDispatcher::ResetFunctions();
 
   // Now make sure we recorded what was expected.  If the code in test.js
