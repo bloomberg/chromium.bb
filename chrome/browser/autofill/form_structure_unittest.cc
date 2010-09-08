@@ -90,34 +90,13 @@ TEST(FormStructureTest, AutoFillCount) {
   EXPECT_EQ(1U, form_structure.autofill_count());
 }
 
-TEST(FormStructureTest, ConvertToFormData) {
+TEST(FormStructureTest, SourceURL) {
   FormData form;
+  form.origin = GURL("http://www.foo.com/");
   form.method = ASCIIToUTF16("post");
-  form.user_submitted = true;
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
-                                               ASCIIToUTF16("username"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("password"),
-                                               ASCIIToUTF16("password"),
-                                               string16(),
-                                               ASCIIToUTF16("password"),
-                                               0));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("state"),
-                                               ASCIIToUTF16("state"),
-                                               string16(),
-                                               ASCIIToUTF16("select"),
-                                               0));
-  form.fields.push_back(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("Submit"),
-                                               string16(),
-                                               ASCIIToUTF16("submit"),
-                                               0));
   FormStructure form_structure(form);
 
-  FormData converted = form_structure.ConvertToFormData();
-  EXPECT_EQ(form, converted);
+  EXPECT_EQ(form.origin, form_structure.source_url());
 }
 
 TEST(FormStructureTest, HasAutoFillableValues) {

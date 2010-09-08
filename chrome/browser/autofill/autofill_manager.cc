@@ -87,7 +87,7 @@ void RemoveDuplicateElements(
 }
 
 bool FormIsHTTPS(FormStructure* form) {
-  return form->ConvertToFormData().origin.SchemeIs(chrome::kHttpsScheme);
+  return form->source_url().SchemeIs(chrome::kHttpsScheme);
 }
 
 }  // namespace

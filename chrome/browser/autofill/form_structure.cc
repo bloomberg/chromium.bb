@@ -327,30 +327,6 @@ size_t FormStructure::field_count() const {
   return (field_size == 0) ? 0 : field_size - 1;
 }
 
-FormData FormStructure::ConvertToFormData() const {
-  FormData form;
-  form.name = form_name_;
-  form.origin = source_url_;
-  form.action = target_url_;
-
-  // FormStructures can't be created by forms not submitted by the user.
-  form.user_submitted = true;
-
-  if (method_ == GET)
-    form.method = ASCIIToUTF16("GET");
-  else if (method_ == POST)
-    form.method = ASCIIToUTF16("POST");
-  else
-    NOTREACHED();
-
-  for (std::vector<AutoFillField*>::const_iterator iter = fields_.begin();
-       iter != fields_.end() && *iter; ++iter) {
-    form.fields.push_back(static_cast<webkit_glue::FormField>(**iter));
-  }
-
-  return form;
-}
-
 bool FormStructure::operator==(const FormData& form) const {
   // TODO(jhawkins): Is this enough to differentiate a form?
   if (form_name_ == form.name &&

@@ -93,9 +93,6 @@ class FormStructure {
   // Returns the number of fields that are able to be autofilled.
   size_t autofill_count() const { return autofill_count_; }
 
-  // Converts this object to a FormData object.
-  webkit_glue::FormData ConvertToFormData() const;
-
   // Used for iterating over the fields.
   std::vector<AutoFillField*>::const_iterator begin() const {
     return fields_.begin();
@@ -103,6 +100,8 @@ class FormStructure {
   std::vector<AutoFillField*>::const_iterator end() const {
     return fields_.end();
   }
+
+  const GURL& source_url() const { return source_url_; }
 
   bool operator==(const webkit_glue::FormData& form) const;
   bool operator!=(const webkit_glue::FormData& form) const;
