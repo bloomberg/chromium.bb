@@ -374,7 +374,6 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	int i, count, fd, extra_size;
 
 	extra_size = wl_message_size_extra(message);
-	closure->message = message;
 	count = strlen(message->signature) + 2;
 	extra = (char *) closure->buffer;
 	start = &closure->buffer[DIV_ROUNDUP(extra_size, sizeof *p)];
@@ -467,7 +466,10 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	size = (p - start) * sizeof *p;
 	start[0] = sender->id;
 	start[1] = opcode | (size << 16);
+
 	closure->start = start;
+	closure->message = message;
+	closure->count = count;
 
 	return closure;
 }

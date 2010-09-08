@@ -93,6 +93,12 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 	va_end(ap);
 
 	wl_closure_send(closure, client->connection);
+
+	if (wl_debug) {
+		fprintf(stderr, " -> ");
+		wl_closure_print(closure, sender);
+	}
+
 	wl_closure_destroy(closure);
 }
 
