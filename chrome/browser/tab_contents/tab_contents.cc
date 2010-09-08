@@ -2828,7 +2828,17 @@ GURL TabContents::GetAlternateErrorPageURL() const {
 WebPreferences TabContents::GetWebkitPrefs() {
   Profile* profile = render_view_host()->process()->profile();
   bool is_dom_ui = false;
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_dom_ui);
+  WebPreferences web_prefs =
+      RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_dom_ui);
+
+  // Force accelerated compositing off for chrome: and chrome-extension:
+  // pages.
+  if (GetURL().SchemeIs(chrome::kChromeUIScheme) ||
+      GetURL().SchemeIs(chrome::kExtensionScheme)) {
+    web_prefs.accelerated_compositing_enabled = false;
+  }
+
+  return web_prefs;
 }
 
 void TabContents::OnIgnoredUIEvent() {
