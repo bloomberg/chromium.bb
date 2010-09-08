@@ -28,18 +28,43 @@ SocketsView.prototype.onSocketPoolInfoChanged = function(socketPoolInfo) {
   if (!socketPoolInfo)
     return;
 
-  for (var i = 0; i < socketPoolInfo.length; ++i) {
-    this.addSocketPool_(socketPoolInfo[i]);
+  socketPoolGroups = this.groupSocketPoolsByName_(socketPoolInfo);
+
+  for (var i = 0; i < socketPoolGroups.length; ++i) {
+    for (var j = 0; j < socketPoolGroups[i].length; ++j)
+      this.addSocketPool_(socketPoolGroups[i][j], '');
   }
 };
 
-// Adds the socket pool to the bottom of the main table and, if there are
-// any groups, creates a table at the bottom listing those as well.
-SocketsView.prototype.addSocketPool_ = function(socketPool) {
+/**
+ * Puts socket pools with the same name in lists contained within a new list.
+ */
+SocketsView.prototype.groupSocketPoolsByName_ = function(socketPoolInfo) {
+  var socketPoolGroups = [];
+  var socketPoolNameLists = {};
+  for (var i = 0; i < socketPoolInfo.length; ++i) {
+    var name = socketPoolInfo[i].name;
+    if (!socketPoolNameLists[name]) {
+      socketPoolNameLists[name] = [];
+      socketPoolGroups.push(socketPoolNameLists[name]);
+    }
+    socketPoolNameLists[name].push(socketPoolInfo[i]);
+  }
+  return socketPoolGroups;
+};
+
+/**
+ * Adds the socket pool to the bottom of the main table and, if there are
+ * any groups, creates a table at the bottom listing those as well.
+ * Recursively called on nested socket pools, if any.
+ * |prefix| is added before a socket pool's name to indicate nesting
+ * relationships.
+ */
+SocketsView.prototype.addSocketPool_ = function(socketPool, prefix) {
   var socketPoolRow = addNode(this.socketPoolsTbody_, 'tr');
 
-  var socketPoolName = socketPool.name;
-  if (socketPoolName != socketPool.type)
+  var socketPoolName = prefix + socketPool.name;
+  if (socketPool.name != socketPool.type)
     socketPoolName += ' (' + socketPool.type + ')';
 
   addNodeWithText(socketPoolRow, 'td', socketPoolName);
@@ -52,16 +77,30 @@ SocketsView.prototype.addSocketPool_ = function(socketPool) {
 
   if (socketPool.groups != undefined)
     this.addSocketPoolGroupTable_(socketPoolName, socketPool);
+
+  if (socketPool.nested_pools) {
+    for (var i = 0; i < socketPool.nested_pools.length; ++i) {
+      this.addSocketPool_(socketPool.nested_pools[i], socketPoolName + ' ->');
+    }
+  }
 };
 
-// Creates a table at the bottom listing all a table's groups.
+/**
+ * Creates a table at the bottom listing all a socket pool's groups.
+ */
 SocketsView.prototype.addSocketPoolGroupTable_ = function(socketPoolName,
                                                           socketPool) {
-  addNodeWithText(this.socketPoolGroupsDiv_, 'h4', socketPoolName);
-  var table = addNode(this.socketPoolGroupsDiv_, 'table');
+  var p = addNode(this.socketPoolGroupsDiv_, 'p');
+  var br = addNode(p, 'br');
+  var table = addNode(p, 'table');
   table.setAttribute('class', 'styledTable');
 
   var thead = addNode(table, 'thead');
+  var tableTitleRow = addNode(thead, 'tr');
+  var tableTitle = addNodeWithText(tableTitleRow, 'th', socketPoolName);
+  tableTitle.colSpan = 8;
+  changeClassName(tableTitle, 'title', true);
+
   var headerRow = addNode(thead, 'tr');
   addNodeWithText(headerRow, 'th', 'Name');
   addNodeWithText(headerRow, 'th', 'Pending');

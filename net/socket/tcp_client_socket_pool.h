@@ -149,8 +149,9 @@ class TCPClientSocketPool : public ClientSocketPool {
   virtual LoadState GetLoadState(const std::string& group_name,
                                  const ClientSocketHandle* handle) const;
 
-  virtual Value* GetInfoAsValue(const std::string& name,
-                                const std::string& type) const {
+  virtual DictionaryValue* GetInfoAsValue(const std::string& name,
+                                          const std::string& type,
+                                          bool include_nested_pools) const {
     return base_.GetInfoAsValue(name, type);
   }
 

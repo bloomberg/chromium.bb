@@ -231,6 +231,10 @@ table.styledTable,
   background: rgb(224,236,255);
 }
 
+.styledTable th.title {
+  background: rgb(255,217,217);
+}
+
 /* 
  * This is the box in the top right of the Data tab which shows how many
  * events have been captured so far.
