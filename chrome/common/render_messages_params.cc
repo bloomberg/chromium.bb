@@ -1241,6 +1241,7 @@ void ParamTraits<ViewHostMsg_RunFileChooser_Params>::Write(
   WriteParam(m, static_cast<int>(p.mode));
   WriteParam(m, p.title);
   WriteParam(m, p.default_file_name);
+  WriteParam(m, p.accept_types);
 }
 
 bool ParamTraits<ViewHostMsg_RunFileChooser_Params>::Read(
@@ -1258,7 +1259,8 @@ bool ParamTraits<ViewHostMsg_RunFileChooser_Params>::Read(
   p->mode = static_cast<param_type::Mode>(mode);
   return
       ReadParam(m, iter, &p->title) &&
-      ReadParam(m, iter, &p->default_file_name);
+      ReadParam(m, iter, &p->default_file_name) &&
+      ReadParam(m, iter, &p->accept_types);
 };
 
 void ParamTraits<ViewHostMsg_RunFileChooser_Params>::Log(
@@ -1283,6 +1285,8 @@ void ParamTraits<ViewHostMsg_RunFileChooser_Params>::Log(
   LogParam(p.title, l);
   l->append(", ");
   LogParam(p.default_file_name, l);
+  l->append(", ");
+  LogParam(p.accept_types, l);
 }
 
 void ParamTraits<ViewMsg_ExtensionRendererInfo>::Write(Message* m,

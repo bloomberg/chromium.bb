@@ -2007,6 +2007,7 @@ bool RenderView::runFileChooser(
   ipc_params.title = params.title;
   ipc_params.default_file_name =
       webkit_glue::WebStringToFilePath(params.initialValue);
+  ipc_params.accept_types = params.acceptTypes;
 
   return ScheduleFileChooser(ipc_params, chooser_completion);
 }

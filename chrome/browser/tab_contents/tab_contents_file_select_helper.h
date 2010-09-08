@@ -46,6 +46,12 @@ class TabContentsFileSelectHelper
   // Helper method for handling the SelectFileDialog::Listener callbacks.
   void DirectorySelected(const FilePath& path);
 
+  // Helper method to get allowed extensions for select file dialog from
+  // the specified accept types as defined in the spec:
+  //   http://whatwg.org/html/number-state.html#attr-input-accept
+  SelectFileDialog::FileTypeInfo* GetFileTypesFromAcceptType(
+      const string16& accept_types);
+
   // The tab contents this class is helping.  |tab_contents_| owns this object,
   // so this pointer is guaranteed to be valid.
   TabContents* tab_contents_;

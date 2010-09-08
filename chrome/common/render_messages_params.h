@@ -775,6 +775,10 @@ struct ViewHostMsg_RunFileChooser_Params {
 
   // Default file name to select in the dialog.
   FilePath default_file_name;
+
+  // A comma-separated MIME types such as "audio/*,text/plain", that is used
+  // to restrict selectable files to such types.
+  string16 accept_types;
 };
 
 struct ViewMsg_ExtensionRendererInfo {
