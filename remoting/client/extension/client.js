@@ -2,65 +2,100 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function initParams() {
-  var hash;
-  var hashes = window.location.href.slice(
-      window.location.href.indexOf('?') + 1).split('&');
+var BAD_AUTH_TOKEN = 'bad_token';
 
-  // Prepopulate via cookies first.
-  document.getElementById('xmpp_auth').value = getCookie('xmpp_auth');
-  document.getElementById('chromoting_auth').value =
-      getCookie('chromoting_auth');
-  document.getElementById('username').value = getCookie('username');
+function init() {
+  updateLoginStatus();
 
-  for(var i = 0; i < hashes.length; i++)
-  {
-    hash = hashes[i].split('=');
-    if (hash[0] == 'xmpp_auth') {
-      document.getElementById('xmpp_auth').value = hash[1];
-      setCookie('xmpp_auth', hash[1]);
+  // Defer getting the host list for a little bit so that we don't
+  // block the display of the extension popup.
+  window.setTimeout(listHosts, 100);
+}
 
-    } else if (hash[0] == "chromoting_auth") {
-      document.getElementById('chromoting_auth').value = hash[1];
-      setCookie('chromoting_auth', hash[1]);
+// Update the login status region (at the bottom of the popup) with the
+// current account and links to sign in/out.
+function updateLoginStatus() {
+  var username = getCookie('username');
 
-    } else if (hash[0] == 'username') {
-      document.getElementById('username').value = hash[1];
-      setCookie('username', hash[1]);
+  var loginDiv = document.getElementById('login_div');
+  clear(loginDiv);
 
-    } else if (hash[0] == 'password') {
-      document.getElementById('password').value = hash[1];
+  if (!username) {
+    var signinLink = document.createElement('a');
+    signinLink.setAttribute('href',
+        "javascript:window.open('login.html', 'Sign In', " +
+        "'width=400,height=200,scrollbars=no'); return false;");
+    signinLink.appendChild(document.createTextNode('Sign In'));
+    loginDiv.appendChild(signinLink);
+  } else {
+    var email = document.createElement('span');
+    email.setAttribute('class', 'login_email');
+    email.appendChild(document.createTextNode(username));
+    loginDiv.appendChild(email);
 
-    } else if (hash[0] == 'host_jid') {
-      document.getElementById('host_jid').value = hash[1];
-    }
+    loginDiv.appendChild(document.createTextNode(' | '));
+
+    var signoutLink = document.createElement('a');
+    signoutLink.setAttribute('href', 'javascript:logout(this.form);');
+    signoutLink.appendChild(document.createTextNode('Sign Out'));
+    loginDiv.appendChild(signoutLink);
   }
 }
 
-function findHosts(form) {
-  // If either cookie is missing, login first.
-  if (getCookie('chromoting_auth') == null ||
-      getCookie('xmpp_auth') == null) {
-    doLogin(form.username.value, form.username.password, doListHosts);
-  } else {
-    doListHosts();
-  }
+// Sign out the current user by erasing the auth cookies.
+function logout(form) {
+  setCookie('username', '', 100);
+  setCookie('chromoting_auth', '', 100);
+  setCookie('xmpp_auth', '', 100);
+
+  updateLoginStatus();
+  listHosts();
 }
 
 function login(form) {
-  doLogin(form.username.value, form.password.value);
+  var status = document.getElementById('login_status');
+  clear(status);
+  doLogin(form.username.value, form.password.value, checkLogin);
 }
 
-function extractAuthToken(message) {
-  var lines = message.split('\n');
-  for (var i = 0; i < lines.length; i++) {
-    if (lines[i].match('^Auth=.*')) {
-      return lines[i].split('=')[1];
+// Check to see if the login was successful.
+function checkLogin() {
+  var username = getCookie('username');
+  var cauth = getCookie('chromoting_auth');
+  var xauth = getCookie('xmpp_auth');
+
+  // Verify login and show login status.
+  var status = document.getElementById('login_status');
+  if (cauth == BAD_AUTH_TOKEN || xauth == BAD_AUTH_TOKEN) {
+    appendMessage(status, '', 'Sign in failed!');
+    if (username) {
+      setCookie('username', '', 100);
+    }
+  } else {
+    appendMessage(status, '', 'Successfully signed in as ' + username);
+  }
+}
+
+function doLogin(username, password, done) {
+  // Don't call |done| callback until both login requests have completed.
+  var count = 2;
+  var barrier = function() {
+    count--;
+    if (done && count == 0) {
+      done();
     }
   }
-
-  console.log('Could not parse auth token in : "' + message + '"');
-  return 'bad_token';
+  setCookie('username', username, 100);
+  doGaiaLogin(username, password, 'chromoting',
+              function(cAuthToken) {
+                setCookie('chromoting_auth', cAuthToken, 100);
+                barrier();
+              });
+  doGaiaLogin(username, password, 'chromiumsync',
+              function(xAuthToken) {
+                setCookie('xmpp_auth', xAuthToken, 100);
+                barrier();
+              });
 }
 
 function doGaiaLogin(username, password, service, done) {
@@ -82,54 +117,90 @@ function doGaiaLogin(username, password, service, done) {
            password + '&service=' + service + '&source=chromoclient');
 }
 
-function doLogin(username, password, done) {
-  var count = 2;
-  var barrier = function() {
-    count--;
-    if (done && count == 0) {
-      done();
+function extractAuthToken(message) {
+  var lines = message.split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    if (lines[i].match('^Auth=.*')) {
+      return lines[i].split('=')[1];
     }
   }
-  setCookie('username', username, 100);
-  doGaiaLogin(username, password, 'chromoting',
-              function(token1) {
-                setCookie('chromoting_auth', token1, 100);
-                document.getElementById('chromoting_auth').value = token1;
-                barrier();
-              });
-  doGaiaLogin(username, password, 'chromiumsync',
-              function(token) {
-                setCookie('xmpp_auth', token, 100);
-                document.getElementById('xmpp_auth').value = token;
-                barrier();
-              });
+
+  console.log('Could not parse auth token in : "' + message + '"');
+  return BAD_AUTH_TOKEN;
 }
 
-function doListHosts() {
+// Open a chromoting connection in a new tab.
+function openChromotingTab(host_jid) {
+  var background = chrome.extension.getBackgroundPage();
+  background.openChromotingTab(host_jid);
+}
+
+// Erase the content of the specified element.
+function clear(e) {
+  e.innerHTML = '';
+}
+
+// Clear out the specified element and show the message to the user.
+function displayMessage(e, classname, message) {
+  clear(e);
+  appendMessage(e, classname, message);
+}
+
+// Append the message text to the specified element.
+function appendMessage(e, classname, message) {
+  var p = document.createElement('p');
+  if (classname.length != 0) {
+    p.setAttribute('class', classname);
+  }
+
+  p.appendChild(document.createTextNode(message));
+
+  e.appendChild(p);
+}
+
+function listHosts() {
+  var username = getCookie('username');
+
+  var hostlistDiv = document.getElementById('hostlist_div');
+  if (!username) {
+    displayMessage(hostlistDiv, 'message',
+                   'Please sign in to see a list of available hosts.');
+    return;
+  }
+
   var xhr = new XMLHttpRequest();
   var token = getCookie('chromoting_auth');
 
   // Unhide host list.
-  var hostlist_div = document.getElementById('hostlist_div');
-  hostlist_div.style.display = "block";
+  hostlistDiv.style.display = "block";
 
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 1) {
-      hostlist_div.appendChild(document.createTextNode('Finding..'));
-      hostlist_div.appendChild(document.createElement('br'));
+      displayMessage(hostlistDiv, 'message', 'Loading host list for ' +
+                     username);
     }
     if (xhr.readyState != 4) {
       return;
     }
     if (xhr.status == 200) {
-      parsed_response = JSON.parse(xhr.responseText);
-      hostlist_div.appendChild(document.createTextNode('--Found Hosts--'));
-      hostlist_div.appendChild(document.createElement('br'));
+      var parsed_response = JSON.parse(xhr.responseText);
       appendHostLinks(parsed_response.data.items);
     } else {
-      console.log('bad status on host list query: "' + xhr.status + ' ' +
-                  xhr.statusText);
-      hostlist_div.appendChild(document.createTextNode('!! Failed !!.  :\'('));
+      var errorResponse = JSON.parse(xhr.responseText);
+
+      console.log('Error: Bad status on host list query: "' +
+                  xhr.status + ' ' + xhr.statusText);
+      console.log('Error code ' + errorResponse.error.code);
+      console.log('Error message ' + errorResponse.error.message);
+
+      clear(hostlistDiv);
+      appendMessage(hostlistDiv, 'message',
+                    'Unable to load host list for ' + username + '. ' +
+                    'Please try again later.');
+      appendMessage(hostlistDiv, 'message',
+                    'Error code: ' + errorResponse.error.code);
+      appendMessage(hostlistDiv, 'message',
+                    'Message: ' + errorResponse.error.message);
     }
   };
 
@@ -139,47 +210,64 @@ function doListHosts() {
   xhr.send(null);
 }
 
+// Populate the 'hostlist_div' element with the list of hosts for this user.
 function appendHostLinks(hostlist) {
-  // A host link entry should look like:
-  //   - Host: <a onclick="openChromotingTab(host_jid); return false;">
-  //   NAME (JID) </a> <br />
-  var host;
-  var host_link;
-  var hostlist_div = document.getElementById('hostlist_div');
+  var hostlistDiv = document.getElementById('hostlist_div');
 
-  // Cleanup the div
-  hostlist_div.innerHTML = "";
+  // Clear the div before adding the host info.
+  clear(hostlistDiv);
 
   // Add the hosts.
-  for(var i = 0; i < hostlist.length; ++i) {
-    hostlist_div.appendChild(document.createTextNode('-*- Host: '));
-    host = hostlist[i];
-    host_link = document.createElement('a');
-    // TODO(ajwong): Reenable once we figure out how to control a new tab.
-    host_link.setAttribute('onclick', 'openChromotingTab(\'' + host.jabberId +
-                           '\'); return false;');
-    host_link.setAttribute('href', 'javascript:void(0)');
-    host_link.appendChild(
-        document.createTextNode(host.hostName + ' (' + host.hostId  + ', ' +
-                                host.jabberId + ')'));
-    hostlist_div.appendChild(host_link);
-    hostlist_div.appendChild(document.createElement('br'));
+  // TODO(garykac): We should have some sort of MRU list here.
+  // First, add all of the connected hosts.
+  for (var i = 0; i < hostlist.length; ++i) {
+    if (hostlist[i].status == "ONLINE") {
+      hostlistDiv.appendChild(addHostInfo(hostlist[i]));
+    }
+  }
+  // Add non-online hosts at the end.
+  for (var i = 0; i < hostlist.length; ++i) {
+    if (hostlist[i].status != "ONLINE") {
+      hostlistDiv.appendChild(addHostInfo(hostlist[i]));
+    }
   }
 }
 
-function connect(form) {
-  openChromotingTab(form.host_jid);
-}
+// Create a single host description element.
+function addHostInfo(host) {
+  var hostEntry = document.createElement('div');
+  hostEntry.setAttribute('class', 'hostentry');
 
-function openChromotingTab(host_jid) {
-  var background = chrome.extension.getBackgroundPage();
-  background.openChromotingTab(host_jid);
-}
+  var hostIcon = document.createElement('img');
+  hostIcon.setAttribute('src', 'machine.png');
+  hostIcon.setAttribute('class', 'hosticon');
+  hostEntry.appendChild(hostIcon);
 
-function setAuthCookies(form) {
-  var now = new Date();
-  now.setTime(now.getTime() + 1000 * 60 * 60 * 24 * 365)
+  var span = document.createElement('span');
+  span.setAttribute('class', 'connect');
+  var connect = document.createElement('input');
+  connect.setAttribute('type', 'button');
+  connect.setAttribute('value', 'Connect');
+  connect.setAttribute('onclick', 'openChromotingTab(\'' + host.jabberId +
+                       '\'); return false;');
+  span.appendChild(connect);
+  hostEntry.appendChild(span);
 
-  setCookie('xmpp_auth', form.xmpp_auth.value, 100);
-  setCookie('chromoting_auth', form.chromoting_auth.value, 100);
+  var hostName = document.createElement('p');
+  hostName.setAttribute('class', 'hostname');
+  hostName.appendChild(document.createTextNode(host.hostName));
+  hostEntry.appendChild(hostName);
+
+  var hostStatus = document.createElement('p');
+  hostStatus.setAttribute('class', 'hostinfo hoststatus_' +
+                          ((host.status == 'ONLINE') ? 'good' : 'bad'));
+  hostStatus.appendChild(document.createTextNode(host.status));
+  hostEntry.appendChild(hostStatus);
+
+  var hostInfo = document.createElement('p');
+  hostInfo.setAttribute('class', 'hostinfo');
+  hostInfo.appendChild(document.createTextNode(host.jabberId));
+  hostEntry.appendChild(hostInfo);
+
+  return hostEntry;
 }

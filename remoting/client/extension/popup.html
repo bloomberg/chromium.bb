@@ -8,40 +8,22 @@ found in the LICENSE file.
   <head>
     <script type="text/javascript" src="base.js"></script>
     <script type="text/javascript" src="client.js"></script>
-    <title>Get hosts</title>
+    <link rel="stylesheet" type="text/css" href="main.css" />
+    <title>Remote Access</title>
   </head>
-  <body onload="initParams();" style="width:250;">
+  <body onload="init();">
 
-    <div style="border: blue 1px dotted;">
-    <form name="hostqueryform" action="" method="GET">
-    Fill-in to reauthenticate. <br />
-    U: <input type="text" name="username" id="username" value="" /> <br />
-    P: <input type="password" name="password" id="password" value="" /> <br />
-    <input type="button" name="login_button" value="Log In" onclick="login(this.form)" />
-    </form>
+    <h1>Remote Access</h1>
+
+    <div id="hostlist_div" class="hostlist">
+      <p class='message'>Initializing...</p>
     </div>
 
-    <div style="border: blue 1px dotted;">
-    Use to manually override the cookies. <br />
-    <form name="connectparamsform" action="" method="GET">
-    chromoting: <input type="text" name="chromoting_auth" id="chromoting_auth" value="" /> <br />
-    xmpp: <input type="text" name="xmpp_auth" id="xmpp_auth" value="" />
-    <input type="button" name="set_cookie_button" value="Set Auth Cookies" onclick="setAuthCookies(this.form)" />
-    </form>
-    </div>
+    <p class="reload">
+    <a href="javascript:listHosts()">Reload host list</a>
+    </p>
 
-    <div style="border: blue 1px dotted;">
-    <form name="connectform" action="" method="GET">
-    Conenct directly to host using auth cookies. Find Hosts doesn't require the host_jid to be filled out. <br />
-    host_jid: <input type="text" name="host_jid" id="host_jid" value="" /> <br />
-    <input type="button" name="connect_button" value="Connect" onclick="connect(this.form)" />
-    <input type="button" name="find_host_button" value="Find Hosts" onclick="findHosts(this.form)" />
-    </form>
-    </div>
-
-    <br />
-
-    <div id="hostlist_div" style="border: blue 1px solid; display: none;">
+    <div id="login_div" class="login">
     </div>
 
     <br />
