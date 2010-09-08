@@ -362,12 +362,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker button_checker(L"push", ROLE_SYSTEM_PUSHBUTTON, L"push");
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
 
-  AccessibleChecker grouping_checker(L"", L"div", L"");
-  grouping_checker.AppendExpectedChild(&button_checker);
-  grouping_checker.AppendExpectedChild(&checkbox_checker);
+  AccessibleChecker body_checker(L"", L"BODY", L"");
+  body_checker.AppendExpectedChild(&button_checker);
+  body_checker.AppendExpectedChild(&checkbox_checker);
 
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  document_checker.AppendExpectedChild(&grouping_checker);
+  document_checker.AppendExpectedChild(&body_checker);
 
   // Check the accessible tree of the renderer.
   document_checker.CheckAccessible(document_accessible);
@@ -406,14 +406,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   AccessibleChecker text_checker(L"", ROLE_SYSTEM_TEXT, L"old text");
 
-  AccessibleChecker div1_checker(L"", L"div", L"");
+  AccessibleChecker div1_checker(L"", L"DIV", L"");
   div1_checker.AppendExpectedChild(&text_checker);
 
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
   checkbox_checker.SetExpectedState(
       STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
 
-  AccessibleChecker div2_checker(L"", L"div", L"");
+  AccessibleChecker div2_checker(L"", L"DIV", L"");
   div2_checker.AppendExpectedChild(&checkbox_checker);
 
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
