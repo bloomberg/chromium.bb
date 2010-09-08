@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/engine/build_and_process_conflict_sets_command.h"
 #include "chrome/browser/sync/engine/build_commit_command.h"
 #include "chrome/browser/sync/engine/cleanup_disabled_types_command.h"
+#include "chrome/browser/sync/engine/clear_data_command.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/download_updates_command.h"
 #include "chrome/browser/sync/engine/get_commit_ids_command.h"
@@ -96,20 +97,27 @@ bool Syncer::SyncShare(sessions::SyncSession::Delegate* delegate) {
 }
 
 bool Syncer::SyncShare(sessions::SyncSession* session) {
-  session->set_source(TestAndSetUpdatesSource());
-  // This isn't perfect, as we can end up bundling extensions activity
-  // intended for the next session into the current one.  We could do a
-  // test-and-reset as with the source, but note that also falls short if
-  // the commit request fails (due to lost connection, for example), as we will
-  // fall all the way back to the syncer thread main loop in that case, and
-  // wind up creating a new session when a connection is established, losing
-  // the records set here on the original attempt.  This should provide us
-  // with the right data "most of the time", and we're only using this for
-  // analysis purposes, so Law of Large Numbers FTW.
-  context_->extensions_monitor()->GetAndClearRecords(
-      session->mutable_extensions_activity());
-  SyncShare(session, SYNCER_BEGIN, SYNCER_END);
-  return session->HasMoreToSync();
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source =
+      TestAndSetUpdatesSource();
+  session->set_source(source);
+  if (sync_pb::GetUpdatesCallerInfo::CLEAR_PRIVATE_DATA == source) {
+    SyncShare(session, CLEAR_PRIVATE_DATA, SYNCER_END);
+    return false;
+  } else {
+    // This isn't perfect, as we can end up bundling extensions activity
+    // intended for the next session into the current one.  We could do a
+    // test-and-reset as with the source, but note that also falls short if
+    // the commit request fails (e.g. due to lost connection), as we will
+    // fall all the way back to the syncer thread main loop in that case, and
+    // wind up creating a new session when a connection is established, losing
+    // the records set here on the original attempt.  This should provide us
+    // with the right data "most of the time", and we're only using this for
+    // analysis purposes, so Law of Large Numbers FTW.
+    context_->extensions_monitor()->GetAndClearRecords(
+        session->mutable_extensions_activity());
+    SyncShare(session, SYNCER_BEGIN, SYNCER_END);
+    return session->HasMoreToSync();
+  }
 }
 
 bool Syncer::SyncShare(SyncerStep first_step, SyncerStep last_step,
@@ -275,6 +283,12 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         else
           next_step = SYNCER_END;
         break;
+      }
+      case CLEAR_PRIVATE_DATA: {
+        LOG(INFO) << "Clear Private Data";
+        ClearDataCommand clear_data_command;
+        clear_data_command.Execute(session);
+        next_step = SYNCER_END;
       }
       case SYNCER_END: {
         LOG(INFO) << "Syncer End";

@@ -700,6 +700,11 @@ class SyncManager {
     // global stop syncing operation has wiped the store.
     virtual void OnStopSyncingPermanently() = 0;
 
+    // After a request to clear server data, these callbacks are invoked to
+    // indicate success or failure
+    virtual void OnClearServerDataSucceeded() = 0;
+    virtual void OnClearServerDataFailed() = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
@@ -813,6 +818,9 @@ class SyncManager {
   // Request a nudge of the syncer, which will cause the syncer thread
   // to run at the next available opportunity.
   void RequestNudge();
+
+  // Request a clearing of all data on the server
+  void RequestClearServerData();
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before

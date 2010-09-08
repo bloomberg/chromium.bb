@@ -115,6 +115,11 @@ struct SyncerEvent {
     // data (i.e. as if the user clicked 'Stop Syncing' in the browser.
     STOP_SYNCING_PERMANENTLY,
 
+    // These events are sent to indicate when we know the clearing of
+    // server data have failed or succeeded.
+    CLEAR_SERVER_DATA_SUCCEEDED,
+    CLEAR_SERVER_DATA_FAILED,
+
     // Sent when the main syncer loop finishes.
     SYNCER_THREAD_EXITING,
   };

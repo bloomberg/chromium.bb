@@ -126,6 +126,8 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
     ProcessGetUpdates(&post, &response);
   } else if (post.message_contents() == ClientToServerMessage::AUTHENTICATE) {
     ProcessAuthenticate(&post, &response, auth_token);
+  } else if (post.message_contents() == ClientToServerMessage::CLEAR_DATA) {
+    ProcessClearData(&post, &response);
   } else {
     EXPECT_TRUE(false) << "Unknown/unsupported ClientToServerMessage";
     return false;
@@ -357,6 +359,20 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   // TODO(sync): filter results dependant on timestamp? or check limits?
   response->mutable_get_updates()->CopyFrom(updates_);
   ResetUpdates();
+}
+
+void MockConnectionManager::SetClearUserDataResponseStatus(
+    sync_pb::UserDataStatus status) {
+  // Note: this is not a thread-safe set, ok for now.  NOT ok if tests
+  // run the syncer on the background thread while this method is called.
+  clear_user_data_response_.set_status(status);
+}
+
+void MockConnectionManager::ProcessClearData(ClientToServerMessage* csm,
+  ClientToServerResponse* response) {
+  CHECK(csm->has_clear_user_data());
+  ASSERT_EQ(csm->message_contents(), ClientToServerMessage::CLEAR_DATA);
+  response->mutable_clear_user_data()->CopyFrom(clear_user_data_response_);
 }
 
 void MockConnectionManager::ProcessAuthenticate(

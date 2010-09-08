@@ -62,6 +62,10 @@ class SyncFrontend {
   // be disabled and state cleaned up at once.
   virtual void OnStopSyncingPermanently() = 0;
 
+  // Called to handle success/failure of clearing server data
+  virtual void OnClearServerDataSucceeded() = 0;
+  virtual void OnClearServerDataFailed() = 0;
+
  protected:
   // Don't delete through SyncFrontend interface.
   virtual ~SyncFrontend() {
@@ -155,6 +159,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // notification is sent to the notification service.
   virtual bool RequestResume();
 
+  // Asks the server to clear all data associated with ChromeSync.
+  virtual bool RequestClearServerData();
+
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed
   // for creating transactions.
   UserShareHandle GetUserShareHandle() const;
@@ -208,6 +215,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnPaused();
     virtual void OnResumed();
     virtual void OnStopSyncingPermanently();
+    virtual void OnClearServerDataFailed();
+    virtual void OnClearServerDataSucceeded();
 
     struct DoInitializeOptions {
       DoInitializeOptions(
@@ -275,6 +284,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoRequestNudge();
     void DoRequestPause();
     void DoRequestResume();
+    void DoRequestClearServerData();
 
     // Called on our SyncBackendHost's |core_thread_| to set the passphrase
     // on behalf of SyncBackendHost::SupplyPassphrase.
@@ -364,6 +374,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         sessions::SyncSessionSnapshot* snapshot);
 
     void HandleStopSyncingPermanentlyOnFrontendLoop();
+
+    // Called to handle success/failure of clearing server data
+    void HandleClearServerDataSucceededOnFrontendLoop();
+    void HandleClearServerDataFailedOnFrontendLoop();
 
     // Called from Core::OnInitializationComplete to handle updating
     // frontend thread components.

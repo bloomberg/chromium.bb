@@ -569,6 +569,9 @@ void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
       case kContinuation:
         updates_source = sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION;
         break;
+      case kClearPrivateData:
+        updates_source = sync_pb::GetUpdatesCallerInfo::CLEAR_PRIVATE_DATA;
+        break;
       case kUnknown:
       default:
         updates_source = sync_pb::GetUpdatesCallerInfo::UNKNOWN;

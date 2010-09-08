@@ -313,6 +313,13 @@ bool SyncBackendHost::RequestResume() {
   return true;
 }
 
+bool SyncBackendHost::RequestClearServerData() {
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+     NewRunnableMethod(core_.get(),
+     &SyncBackendHost::Core::DoRequestClearServerData));
+  return true;
+}
+
 SyncBackendHost::Core::~Core() {
 }
 
@@ -660,10 +667,32 @@ void SyncBackendHost::Core::OnStopSyncingPermanently() {
       &Core::HandleStopSyncingPermanentlyOnFrontendLoop));
 }
 
+void SyncBackendHost::Core::OnClearServerDataSucceeded() {
+  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &Core::HandleClearServerDataSucceededOnFrontendLoop));
+}
+
+void SyncBackendHost::Core::OnClearServerDataFailed() {
+  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &Core::HandleClearServerDataFailedOnFrontendLoop));
+}
+
 void SyncBackendHost::Core::HandleStopSyncingPermanentlyOnFrontendLoop() {
   if (!host_ || !host_->frontend_)
     return;
   host_->frontend_->OnStopSyncingPermanently();
+}
+
+void SyncBackendHost::Core::HandleClearServerDataSucceededOnFrontendLoop() {
+  if (!host_ || !host_->frontend_)
+    return;
+  host_->frontend_->OnClearServerDataSucceeded();
+}
+
+void SyncBackendHost::Core::HandleClearServerDataFailedOnFrontendLoop() {
+  if (!host_ || !host_->frontend_)
+    return;
+  host_->frontend_->OnClearServerDataFailed();
 }
 
 void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
@@ -685,6 +714,10 @@ void SyncBackendHost::Core::StartSavingChanges() {
 
 void SyncBackendHost::Core::DoRequestNudge() {
   syncapi_->RequestNudge();
+}
+
+void SyncBackendHost::Core::DoRequestClearServerData() {
+  syncapi_->RequestClearServerData();
 }
 
 void SyncBackendHost::Core::DoRequestResume() {

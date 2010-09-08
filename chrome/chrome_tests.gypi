@@ -2172,6 +2172,7 @@
         'app/breakpad_mac_stubs.mm',
         'browser/sync/engine/apply_updates_command_unittest.cc',
         'browser/sync/engine/auth_watcher_unittest.cc',
+        'browser/sync/engine/clear_data_command_unittest.cc',
         'browser/sync/engine/cleanup_disabled_types_command_unittest.cc',
         'browser/sync/engine/download_updates_command_unittest.cc',
         'browser/sync/engine/mock_model_safe_workers.h',

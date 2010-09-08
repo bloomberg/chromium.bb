@@ -91,7 +91,8 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     kUnknown = 0,
     kNotification,
     kLocal,
-    kContinuation
+    kContinuation,
+    kClearPrivateData
   };
   // Server can overwrite these values via client commands.
   // Standard short poll. This is used when XMPP is off.

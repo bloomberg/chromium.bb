@@ -264,8 +264,10 @@ message GetUpdatesCallerInfo {
     NOTIFICATION = 3;  // The source of the update was a p2p notification.
     PERIODIC = 4;  // The source of the update was periodic polling.
     SYNC_CYCLE_CONTINUATION = 5;  // The source of the update was a
-  }                               // continuation of a previous update.
-
+                                  // continuation of a previous update.
+    CLEAR_PRIVATE_DATA = 6;       // Source is a call to remove all private data                                  
+  }
+  
   required GetUpdatesSource source = 1;
 
   // True only if notifications were enabled for this GetUpdateMessage.
@@ -297,6 +299,26 @@ message AuthenticateMessage {
   required string auth_token = 1;
 };
 
+enum UserDataStatus {
+  SUCCESS = 0;
+
+  // A transient error happened, e.g. network error.  Clear can be called again.
+  RETRIABLE_ERROR = 1;
+
+  // An internal error happened
+  INTERNAL_SERVER_ERROR = 2;
+}
+
+// This message is sent to the server to clear data.  An asynchronous
+// response is returned to the client indicating that the server has received
+// the request and has begun to clear data.
+message ClearUserDataRequest {
+}
+
+message ClearUserDataResponse {
+ optional UserDataStatus status = 1;
+}
+
 message ClientToServerMessage {
   required string share = 1;
   optional int32 protocol_version = 2 [default = 24];
@@ -304,6 +326,7 @@ message ClientToServerMessage {
     COMMIT = 1;
     GET_UPDATES = 2;
     AUTHENTICATE = 3;
+    CLEAR_DATA = 4;
   }
 
   required Contents message_contents = 3;
@@ -315,6 +338,9 @@ message ClientToServerMessage {
   // The client sets this if it detects a sync issue. The server will tell it
   // if it should perform a refresh.
   optional bool sync_problem_detected = 8 [default = false];
+  
+  // Request to clear all Chromium data from the server
+  optional ClearUserDataRequest clear_user_data = 9;
 };
 
 message CommitResponse {
@@ -437,5 +463,6 @@ message ClientToServerResponse {
 
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
+  optional ClearUserDataResponse clear_user_data = 9;
 };
 

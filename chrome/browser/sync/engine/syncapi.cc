@@ -1329,6 +1329,10 @@ void SyncManager::RequestNudge() {
   data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kLocal);
 }
 
+void SyncManager::RequestClearServerData() {
+  data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kClearPrivateData);
+}
+
 const std::string& SyncManager::GetAuthenticatedUsername() {
   DCHECK(data_);
   return data_->username_for_share();
@@ -1979,6 +1983,16 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
 
   if (event.what_happened == SyncerEvent::STOP_SYNCING_PERMANENTLY) {
     observer_->OnStopSyncingPermanently();
+    return;
+  }
+
+  if (event.what_happened == SyncerEvent::CLEAR_SERVER_DATA_SUCCEEDED) {
+    observer_->OnClearServerDataSucceeded();
+    return;
+  }
+
+  if (event.what_happened == SyncerEvent::CLEAR_SERVER_DATA_FAILED) {
+    observer_->OnClearServerDataFailed();
     return;
   }
 }

@@ -372,6 +372,10 @@ void ProfileSyncService::EnableForUser(gfx::NativeWindow parent_window) {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
+void ProfileSyncService::ClearServerData() {
+  backend_->RequestClearServerData();
+}
+
 void ProfileSyncService::DisableForUser() {
   LOG(INFO) << "Clearing Sync DB.";
 
@@ -530,6 +534,14 @@ void ProfileSyncService::OnStopSyncingPermanently() {
   }
   profile_->GetPrefs()->SetBoolean(prefs::kSyncSuppressStart, true);
   DisableForUser();
+}
+
+void ProfileSyncService::OnClearServerDataFailed() {
+  // TODO(raz): Bug#54349 Wire up to ui when available
+}
+
+void ProfileSyncService::OnClearServerDataSucceeded() {
+    // TODO(raz): Bug#54349 Wire up to ui when available
 }
 
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {

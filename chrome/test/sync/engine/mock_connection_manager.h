@@ -128,6 +128,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
 
+  void SetClearUserDataResponseStatus(sync_pb::UserDataStatus status);
+
   // A visitor class to allow a test to change some monitoring state atomically
   // with the action of overriding the response codes sent back to the Syncer
   // (for example, so you can say "ThrottleNextRequest, and assert no more
@@ -238,7 +240,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                            const std::string& auth_token);
   void ProcessCommit(sync_pb::ClientToServerMessage* csm,
                      sync_pb::ClientToServerResponse* response_buffer);
-
+  void ProcessClearData(sync_pb::ClientToServerMessage* csm,
+                        sync_pb::ClientToServerResponse* response);
   void AddDefaultBookmarkData(sync_pb::SyncEntity* entity, bool is_folder);
 
   // Determine if one entry in a commit should be rejected with a conflict.
@@ -289,6 +292,9 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   sync_pb::GetUpdatesResponse updates_;
   scoped_ptr<Callback0::Type> mid_commit_callback_;
   MidCommitObserver* mid_commit_observer_;
+
+  // The clear data response we'll return in the next response
+  sync_pb::ClearUserDataResponse clear_user_data_response_;
 
   // The AUTHENTICATE response we'll return for auth requests.
   sync_pb::AuthenticateResponse auth_response_;

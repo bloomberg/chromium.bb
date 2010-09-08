@@ -142,6 +142,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void EnableForUser(gfx::NativeWindow parent_window);
   virtual void DisableForUser();
 
+  // Clears all Chromesync data from the server.
+  void ClearServerData();
+
   // Whether sync is enabled by user or not.
   virtual bool HasSyncSetupCompleted() const;
   void SetSyncSetupCompleted();
@@ -151,6 +154,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnSyncCycleCompleted();
   virtual void OnAuthError();
   virtual void OnStopSyncingPermanently();
+  virtual void OnClearServerDataFailed();
+  virtual void OnClearServerDataSucceeded();
 
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,

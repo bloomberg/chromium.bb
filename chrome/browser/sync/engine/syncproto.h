@@ -84,6 +84,7 @@ typedef sync_pb::ClientToServerResponse ClientToServerResponse;
 typedef sync_pb::CommitResponse CommitResponse;
 typedef sync_pb::GetUpdatesResponse GetUpdatesResponse;
 typedef sync_pb::GetUpdatesMessage GetUpdatesMessage;
+typedef sync_pb::ClearUserDataRequest ClearDataRequest;
 
 }  // namespace browser_sync
 
