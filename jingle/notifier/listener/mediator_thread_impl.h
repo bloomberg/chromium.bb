@@ -27,6 +27,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
+#include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
 #include "jingle/notifier/communicator/login_connection_state.h"
 #include "jingle/notifier/communicator/login_failure.h"
@@ -59,7 +60,7 @@ class MediatorThreadImpl
     : public MediatorThread,
       public sigslot::has_slots<> {
  public:
-  MediatorThreadImpl(bool use_chrome_async_socket, bool try_ssltcp_first);
+  explicit MediatorThreadImpl(const NotifierOptions& notifier_options);
   virtual ~MediatorThreadImpl();
 
   virtual void SetDelegate(Delegate* delegate);
@@ -124,8 +125,7 @@ class MediatorThreadImpl
   void OnSubscriptionStateChangeOnParentThread(
       bool success);
 
-  const bool use_chrome_async_socket_;
-  const bool try_ssltcp_first_;
+  const NotifierOptions notifier_options_;
 
   base::Thread worker_thread_;
   scoped_refptr<net::HostResolver> host_resolver_;

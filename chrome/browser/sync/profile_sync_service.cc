@@ -38,6 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
+#include "jingle/notifier/communicator/const_communicator.h"
 #include "net/base/cookie_monster.h"
 
 using browser_sync::ChangeProcessor;
@@ -66,8 +67,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
-      use_chrome_async_socket_(false),
-      notification_method_(browser_sync::kDefaultNotificationMethod),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)) {
   DCHECK(factory);
   DCHECK(profile);
@@ -116,8 +115,6 @@ ProfileSyncService::ProfileSyncService()
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
-      use_chrome_async_socket_(false),
-      notification_method_(browser_sync::kDefaultNotificationMethod),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
       expect_sync_configuration_aborted_(false) {
 }
@@ -211,17 +208,35 @@ void ProfileSyncService::InitSettings() {
 
   LOG(INFO) << "Using " << sync_service_url_ << " for sync server URL.";
 
-  use_chrome_async_socket_ =
+  // Override the notification server host from the command-line, if provided.
+  if (command_line.HasSwitch(switches::kSyncNotificationHost)) {
+    std::string value(command_line.GetSwitchValueASCII(
+        switches::kSyncNotificationHost));
+    if (!value.empty()) {
+      notifier_options_.xmpp_host_port.set_host(value);
+      notifier_options_.xmpp_host_port.set_port(notifier::kDefaultXmppPort);
+    }
+    LOG(INFO) << "Using " << notifier_options_.xmpp_host_port.ToString()
+        << " for test sync notification server.";
+  }
+
+  notifier_options_.use_chrome_async_socket =
       !command_line.HasSwitch(switches::kSyncDisableChromeAsyncSocket);
-  if (use_chrome_async_socket_) {
+  if (notifier_options_.use_chrome_async_socket) {
     LOG(INFO) << "Using ChromeAsyncSocket";
+  }
+
+  notifier_options_.try_ssltcp_first =
+      command_line.HasSwitch(switches::kSyncUseSslTcp);
+  if (notifier_options_.try_ssltcp_first) {
+    LOG(INFO) << "Trying SSL/TCP port before XMPP port for notifications.";
   }
 
   if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
     const std::string notification_method_str(
         command_line.GetSwitchValueASCII(switches::kSyncNotificationMethod));
-    notification_method_ =
-        browser_sync::StringToNotificationMethod(notification_method_str);
+    notifier_options_.notification_method =
+        notifier::StringToNotificationMethod(notification_method_str);
   }
 }
 
@@ -280,14 +295,11 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 
   bool invalidate_sync_login = false;
   bool invalidate_sync_xmpp_login = false;
-  bool try_ssltcp_first = false;
 #if !defined(NDEBUG)
   invalidate_sync_login = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kInvalidateSyncLogin);
   invalidate_sync_xmpp_login = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kInvalidateSyncXmppLogin);
-  try_ssltcp_first = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSyncUseSslTcp);
 #endif
 
   syncable::ModelTypeSet types;
@@ -303,9 +315,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
                        delete_sync_data_folder,
                        invalidate_sync_login,
                        invalidate_sync_xmpp_login,
-                       use_chrome_async_socket_,
-                       try_ssltcp_first,
-                       notification_method_);
+                       notifier_options_);
 }
 
 void ProfileSyncService::CreateBackend() {
