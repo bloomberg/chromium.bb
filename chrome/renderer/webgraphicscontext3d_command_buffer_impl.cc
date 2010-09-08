@@ -40,8 +40,8 @@ WebGraphicsContext3DCommandBufferImpl::
 bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view) {
-  bool compositing_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableAcceleratedCompositing);
+  bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableAcceleratedCompositing);
   ggl::Context* parent_context = NULL;
   // If GPU compositing is enabled we need to create a GL context that shares
   // resources with the compositor's context.

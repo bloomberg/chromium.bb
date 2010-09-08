@@ -2440,7 +2440,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   // to create a factory for FFmpegVideoDecoder here so that it can use
   // the Gles2VideoDecodeContext.
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
-      cmd_line->HasSwitch(switches::kEnableAcceleratedCompositing)) {
+      !cmd_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
     // Add the hardware video decoder factory.
     factory->AddFactory(IpcVideoDecoder::CreateFactory(
         MessageLoop::current(),
