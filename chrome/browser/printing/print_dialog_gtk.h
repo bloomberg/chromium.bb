@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 
@@ -29,19 +30,11 @@ class PrintDialogGtk {
 
   static void CreateDialogImpl(const FilePath& path);
 
-  static void OnResponseThunk(GtkDialog* dialog,
-                              gint response_id,
-                              gpointer user_data) {
-    reinterpret_cast<PrintDialogGtk*>(user_data)->OnResponse(response_id);
-  }
-  void OnResponse(gint response_id);
+  CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, gint);
 
   static void OnJobCompletedThunk(GtkPrintJob* print_job,
                                   gpointer user_data,
-                                  GError* error) {
-    reinterpret_cast<PrintDialogGtk*>(user_data)->OnJobCompleted(print_job,
-                                                                 error);
-  }
+                                  GError* error);
   void OnJobCompleted(GtkPrintJob* job, GError* error);
 
   FilePath path_to_pdf_;
