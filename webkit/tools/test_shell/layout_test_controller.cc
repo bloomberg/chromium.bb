@@ -499,6 +499,20 @@ void LayoutTestController::Reset() {
         0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
 #endif  // defined(TOOLKIT_GTK)
     shell_->webView()->removeAllUserContent();
+
+    // Reset editingBehavior to a reasonable default between tests
+    // see http://trac.webkit.org/changeset/60158
+    // DumpRenderTree resets this in TestShell::resetWebSettings()
+    // called in TestShell::resetTestController().
+    // test_shell doesn't have ResetWebSettings(), so do this here,
+    // which is also called in TestShell::ResetTestController().
+#if defined(OS_MACOSX)
+    shell_->webView()->settings()->setEditingBehavior(
+        WebKit::WebSettings::EditingBehaviorMac);
+#else
+    shell_->webView()->settings()->setEditingBehavior(
+        WebKit::WebSettings::EditingBehaviorWin);
+#endif
   }
   generate_pixel_results_ = true;
   dump_as_text_ = false;
