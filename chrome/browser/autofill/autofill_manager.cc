@@ -446,7 +446,7 @@ void AutoFillManager::HandleSubmit() {
 }
 
 void AutoFillManager::UploadFormData() {
-  if (!disable_download_manager_requests_) {
+  if (!disable_download_manager_requests_ && upload_form_structure_.get()) {
     bool was_autofilled = false;
     // Check if the form among last 3 forms that were auto-filled.
     // Clear older signatures.
