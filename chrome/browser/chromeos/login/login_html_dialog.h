@@ -38,6 +38,8 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate {
   // Overrides default width/height for dialog.
   void SetDialogSize(int width, int height);
 
+  void set_url(const GURL& url) { url_ = url; }
+
  protected:
   // HtmlDialogUIDelegate implementation.
   virtual bool IsDialogModal() const { return true; }

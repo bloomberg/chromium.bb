@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
@@ -82,7 +83,9 @@ ExistingUserController::ExistingUserController(
       background_view_(NULL),
       selected_view_index_(kNotSelected),
       num_login_attempts_(0),
-      bubble_(NULL) {
+      bubble_(NULL),
+      last_login_error_(GoogleServiceAuthError::NONE),
+      login_timed_out_(false) {
   if (delete_scheduled_instance_)
     delete_scheduled_instance_->Delete();
 
@@ -305,6 +308,8 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   LOG(INFO) << "OnLoginFailure";
   ClearCaptchaState();
 
+  last_login_error_ = failure.error();
+  login_timed_out_ = failure.reason() == LoginFailure::LOGIN_TIMED_OUT;
   std::string error = failure.GetErrorString();
 
   // Check networking after trying to login in case user is
@@ -446,8 +451,20 @@ void ExistingUserController::OnPasswordChangeDetected(
 }
 
 void ExistingUserController::OnHelpLinkActivated() {
-  AddStartUrl(GetAccountRecoveryHelpUrl());
-  LoginOffTheRecord();
+  DCHECK(last_login_error_.state() != GoogleServiceAuthError::NONE);
+  if (!help_app_.get())
+    help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
+  switch (last_login_error_.state()) {
+    case(GoogleServiceAuthError::CONNECTION_FAILED):
+      help_app_->ShowHelpTopic(
+          HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE);
+      break;
+    default:
+      help_app_->ShowHelpTopic(login_timed_out_ ?
+          HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE :
+          HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+      break;
+  }
 }
 
 void ExistingUserController::OnCaptchaEntered(const std::string& captcha) {

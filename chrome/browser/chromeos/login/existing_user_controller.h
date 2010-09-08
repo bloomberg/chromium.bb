@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -21,11 +22,13 @@
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "gfx/size.h"
 
 namespace chromeos {
 
 class Authenticator;
+class HelpAppLauncher;
 class MessageBubble;
 
 // ExistingUserController is used to handle login when someone has already
@@ -172,6 +175,16 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // Cached credentials data when password change is detected.
   GaiaAuthConsumer::ClientLoginResult cached_credentials_;
+
+  // Represents last error that was encountered when communicating to signin
+  // server. GoogleServiceAuthError::NONE if none.
+  GoogleServiceAuthError last_login_error_;
+
+  // True if last login has failed with LOGIN_TIMED_OUT error.
+  bool login_timed_out_;
+
+  // Help application used for help dialogs.
+  scoped_ptr<HelpAppLauncher> help_app_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };

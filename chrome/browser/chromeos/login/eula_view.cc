@@ -301,7 +301,8 @@ void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
 
 void EulaView::LinkActivated(views::Link* source, int event_flags) {
   if (source == learn_more_link_) {
-    help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
+    if (!help_app_.get())
+      help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
     help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
   } else if (source == system_security_settings_link_) {
     // TODO(glotov): Handle TPM link click.
