@@ -78,7 +78,6 @@ cr.define('options', function() {
           cr.bind(this.handleAddLanguageListClick_, this));
     },
 
-    languageListInitalized_: false,
     // The preference is a CSV string that describes preload engines
     // (i.e. active input methods).
     preloadEnginesPref: 'settings.language.preload_engines',
@@ -152,8 +151,7 @@ cr.define('options', function() {
      * @private
      */
     handleVisibleChange_: function(e) {
-      if (!this.languageListInitalized_ && this.visible) {
-        this.languageListInitalized_ = true;
+      if (this.visible) {
         $('language-options-list').redraw();
       }
     },
