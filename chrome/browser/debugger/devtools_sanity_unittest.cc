@@ -356,9 +356,4 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
   RunTest("testPauseInEval", kDebuggerTestPage);
 }
 
-// Test that Storage panel can be shown.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowStoragePanel) {
-  RunTest("testShowStoragePanel", kDebuggerTestPage);
-}
-
 }  // namespace
