@@ -1464,8 +1464,6 @@
         'browser/extensions/extension_updater.h',
         'browser/extensions/extension_webrequest_api_constants.cc',
         'browser/extensions/extension_webrequest_api_constants.h',
-        'browser/extensions/extension_webnavigation_api.cc',
-        'browser/extensions/extension_webnavigation_api.h',
         'browser/extensions/extension_webnavigation_api_constants.cc',
         'browser/extensions/extension_webnavigation_api_constants.h',
         'browser/extensions/extension_webstore_private_api.cc',

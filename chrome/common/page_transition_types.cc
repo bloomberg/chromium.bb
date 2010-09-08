@@ -34,20 +34,3 @@ const char* PageTransition::CoreTransitionString(Type type) {
   }
   return NULL;
 }
-
-// static
-const char* PageTransition::QualifierString(Type type) {
-  DCHECK_NE((int)(type & (CLIENT_REDIRECT | SERVER_REDIRECT)),
-            (int)(CLIENT_REDIRECT | SERVER_REDIRECT));
-
-  switch (type & (CLIENT_REDIRECT | SERVER_REDIRECT | FORWARD_BACK)) {
-    case CLIENT_REDIRECT: return "client_redirect";
-    case SERVER_REDIRECT: return "server_redirect";
-    case FORWARD_BACK:    return "forward_back";
-    case (CLIENT_REDIRECT | FORWARD_BACK):
-                          return "client_redirect|forward_back";
-    case (SERVER_REDIRECT | FORWARD_BACK):
-                          return "server_redirect|forward_back";
-  }
-  return "";
-}
