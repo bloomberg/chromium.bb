@@ -14,6 +14,7 @@
 #include <sys/mman.h>
 #include <sys/nacl_syscalls.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 /*
  * NativeClient server side of a test for passing socket addresses.  The

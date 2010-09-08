@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/nacl_imc_api.h>
 #include <sys/nacl_syscalls.h>

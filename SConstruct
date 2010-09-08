@@ -1464,7 +1464,9 @@ nacl_env = pre_base_env.Clone(
     CFLAGS = ['${EXTRA_CFLAGS}'],
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
     LIBS = ['${EXTRA_LIBS}'],
-    LINKFLAGS = ['${EXTRA_LINKFLAGS}']
+    LINKFLAGS = ['${EXTRA_LINKFLAGS}'],
+    # _GNU_SOURCE ensures that strtof() gets declared.
+    CPPDEFINES = ['_GNU_SOURCE'],
 )
 
 if ARGUMENTS.get('bitcode'):

@@ -31,6 +31,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+
 #include "native_client/common/console/term.h"
 #include "native_client/common/console/console_c.h"
 

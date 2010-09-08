@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/nacl_imc_api.h>
 #include <sys/nacl_syscalls.h>

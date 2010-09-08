@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/nacl_syscalls.h>
+#include <unistd.h>
 
 /* Flag used to record errors. */
 /* It is returned to the JavaScript bridge through the report method. */

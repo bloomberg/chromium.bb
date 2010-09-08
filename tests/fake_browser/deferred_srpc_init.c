@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <nacl/nacl_srpc.h>
 #include <sys/nacl_syscalls.h>
