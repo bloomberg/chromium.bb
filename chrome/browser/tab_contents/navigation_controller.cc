@@ -352,6 +352,9 @@ void NavigationController::GoBack() {
   DiscardNonCommittedEntries();
 
   pending_entry_index_ = current_index - 1;
+  entries_[pending_entry_index_]->set_transition_type(
+      entries_[pending_entry_index_]->transition_type() |
+      PageTransition::FORWARD_BACK);
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -382,6 +385,9 @@ void NavigationController::GoForward() {
   if (!transient)
     pending_entry_index_++;
 
+  entries_[pending_entry_index_]->set_transition_type(
+      entries_[pending_entry_index_]->transition_type() |
+      PageTransition::FORWARD_BACK);
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -420,6 +426,9 @@ void NavigationController::GoToIndex(int index) {
   DiscardNonCommittedEntries();
 
   pending_entry_index_ = index;
+  entries_[pending_entry_index_]->set_transition_type(
+      entries_[pending_entry_index_]->transition_type() |
+      PageTransition::FORWARD_BACK);
   NavigateToPendingEntry(NO_RELOAD);
 }
 

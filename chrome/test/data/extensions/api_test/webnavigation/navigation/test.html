@@ -1,0 +1,117 @@
+<script>
+var expectedEventData;
+var capturedEventData;
+
+function expect(data) {
+  expectedEventData = data;
+  capturedEventData = [];
+}
+
+function checkExpectations() {
+  if (capturedEventData.length < expectedEventData.length) {
+    return;
+  }
+  chrome.test.assertEq(JSON.stringify(expectedEventData),
+      JSON.stringify(capturedEventData));
+  chrome.test.succeed();
+}
+
+chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
+    console.log('---onCommitted: ' + details.url);
+    // normalize details.
+    details.timeStamp = 0;
+    if (details.frameId != 0) {
+      details.frameId = 1;
+    }
+    capturedEventData.push(details);
+    checkExpectations();
+});
+
+var getURL = chrome.extension.getURL;
+chrome.tabs.getSelected(null, function(tab) {
+    var tabId = tab.id;
+
+    chrome.test.runTests([
+        /* Navigates to an URL */
+        function simpleLoad() {
+          expect([
+            { frameId: 0,
+              tabId: tabId,
+              timeStamp: 0,
+              transitionQualifiers: "",
+              transitionType: "link",
+              url: getURL('simpleLoad/a.html') }]);
+          chrome.tabs.update(tabId, { url: getURL('simpleLoad/a.html') });
+        },
+
+        /* Navigates to a.html that redirects to b.html (using javascript)
+           after a delay of 500ms, so the initial navigation is completed and
+           the redirection is marked as client_redirect */
+        function clientRedirect() {
+          expect([
+            { frameId: 0,
+              tabId: tabId,
+              timeStamp: 0,
+              transitionQualifiers: "",
+              transitionType: "link",
+              url: getURL('clientRedirect/a.html') },
+            { frameId: 0,
+              tabId: tabId,
+              timeStamp: 0,
+              transitionQualifiers: "client_redirect",
+              transitionType: "link",
+              url: getURL('clientRedirect/b.html') }]);
+          chrome.tabs.update(tabId, { url: getURL('clientRedirect/a.html') });
+        },
+
+        /* First navigates to a.html, and then to b.html which uses
+           history.back() to navigate back to a.html */
+        function forwardBack() {
+          expect([
+            { frameId: 0,
+              tabId: tabId,
+              timeStamp: 0,
+              transitionQualifiers: "",
+              transitionType: "link",
+              url: getURL('forwardBack/a.html') },
+            { frameId: 0,
+              tabId: tabId,
+              timeStamp: 0,
+              transitionQualifiers: "",
+              transitionType: "link",
+              url: getURL('forwardBack/b.html') },
+            { frameId: 0,
+              tabId: tabId,
+              timeStamp: 0,
+              transitionQualifiers: "forward_back",
+              transitionType: "link",
+              url: getURL('forwardBack/a.html') }]);
+          chrome.tabs.update(tabId, { url: getURL('forwardBack/a.html') },
+              function (tab) {
+                chrome.tabs.update(tabId,
+                  { url: getURL('forwardBack/b.html') });
+              });
+        },
+
+        /* Navigates to a.html which includes b.html as an iframe. b.html
+           redirects to c.html. Note that all navigation entries are for
+           a.html. Also, b.html does not generate a navigation entry. */
+        function iframe() {
+          expect([
+            { frameId: 0,
+              tabId: tabId,
+              timeStamp: 0,
+              transitionQualifiers: "",
+              transitionType: "link",
+              url: getURL('iframe/a.html') },
+            { frameId: 1,
+              tabId: tabId,
+              timeStamp: 0,
+              transitionQualifiers: "",
+              transitionType: "link",
+              url: getURL('iframe/a.html') }]);
+          chrome.tabs.update(tabId, { url: getURL('iframe/a.html') });
+        },
+    ]);
+});
+</script>
