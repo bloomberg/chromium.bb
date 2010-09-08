@@ -142,6 +142,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
   def __init__(self, parent, name, url, safesync_url, custom_deps,
                custom_vars, deps_file, should_process):
     GClientKeywords.__init__(self)
+    gclient_utils.WorkItem.__init__(self)
     self.parent = parent
     self.name = name
     self.url = url
