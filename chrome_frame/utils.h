@@ -517,6 +517,10 @@ class ChromeFrameUrl {
     return parsed_url_;
   }
 
+  const std::string& profile_name() const {
+    return profile_name_;
+  }
+
  private:
   // If we are attaching to an existing external tab, this function parses the
   // suffix portion of the URL which contains the attach_external_tab prefix.
@@ -532,6 +536,7 @@ class ChromeFrameUrl {
   int disposition_;
 
   GURL parsed_url_;
+  std::string profile_name_;
 };
 
 // Returns true if we can navigate to this URL.

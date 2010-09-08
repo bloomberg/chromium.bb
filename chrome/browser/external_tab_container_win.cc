@@ -383,6 +383,8 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
     attach_params_.dimensions = initial_pos;
     attach_params_.user_gesture = user_gesture;
     attach_params_.disposition = disposition;
+    attach_params_.profile_name = WideToUTF8(
+        tab_contents()->profile()->GetPath().DirName().BaseName().value());
     automation_->Send(new AutomationMsg_AttachExternalTab(0,
         tab_handle_, attach_params_));
   } else {

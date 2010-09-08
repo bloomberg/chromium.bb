@@ -43,9 +43,6 @@
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 
-static const wchar_t kUseChromeNetworking[] = L"UseChromeNetworking";
-static const wchar_t kHandleTopLevelRequests[] = L"HandleTopLevelRequests";
-
 DEFINE_GUID(CGID_DocHostCmdPriv, 0x000214D4L, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0,
             0x46);
 
@@ -95,11 +92,6 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
     if (FAILED(hr))
       return hr;
   }
-
-  bool chrome_network = GetConfigBool(false, kUseChromeNetworking);
-  bool top_level_requests = GetConfigBool(true, kHandleTopLevelRequests);
-  automation_client_->set_use_chrome_network(chrome_network);
-  automation_client_->set_handle_top_level_requests(top_level_requests);
 
   find_dialog_.Init(automation_client_.get());
 
@@ -1023,7 +1015,11 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
   if (launch_params_) {
     return automation_client_->Initialize(this, launch_params_);
   } else {
-    return InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate(),
+    std::wstring profile = UTF8ToWide(cf_url.profile_name());
+    // If no profile was given, then make use of the host process's name.
+    if (profile.empty())
+      profile = GetHostProcessName(false);
+    return InitializeAutomation(profile, L"", IsIEInPrivate(),
                                 false, cf_url.gurl(), GURL(referrer));
   }
 }

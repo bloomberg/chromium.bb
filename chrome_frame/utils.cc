@@ -1355,6 +1355,13 @@ bool ChromeFrameUrl::ParseAttachExternalTabUrl() {
   } else {
     return false;
   }
+
+  if (tokenizer.GetNext()) {
+    profile_name_ = tokenizer.token();
+  } else {
+    return false;
+  }
+
   return true;
 }
 
@@ -1364,6 +1371,7 @@ void ChromeFrameUrl::Reset() {
   cookie_ = 0;
   dimensions_.SetRect(0, 0, 0, 0);
   disposition_ = 0;
+  profile_name_.clear();
 }
 
 bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,

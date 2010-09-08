@@ -580,6 +580,7 @@ struct AttachExternalTabParams {
   gfx::Rect dimensions;
   int disposition;
   bool user_gesture;
+  std::string profile_name;
 };
 
 template <>
@@ -591,6 +592,7 @@ struct ParamTraits<AttachExternalTabParams> {
     WriteParam(m, p.dimensions);
     WriteParam(m, p.disposition);
     WriteParam(m, p.user_gesture);
+    WriteParam(m, p.profile_name);
   }
 
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -598,7 +600,8 @@ struct ParamTraits<AttachExternalTabParams> {
         ReadParam(m, iter, &p->url) &&
         ReadParam(m, iter, &p->dimensions) &&
         ReadParam(m, iter, &p->disposition) &&
-        ReadParam(m, iter, &p->user_gesture);
+        ReadParam(m, iter, &p->user_gesture) &&
+        ReadParam(m, iter, &p->profile_name);
   }
 
   static void Log(const param_type& p, std::string* l) {
@@ -612,6 +615,8 @@ struct ParamTraits<AttachExternalTabParams> {
     LogParam(p.disposition, l);
     l->append(", ");
     LogParam(p.user_gesture, l);
+    l->append(",");
+    LogParam(p.profile_name, l);
     l->append(")");
   }
 };

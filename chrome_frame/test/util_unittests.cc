@@ -121,20 +121,26 @@ TEST(UtilTests, GetTempInternetFiles) {
 TEST(UtilTests, ParseAttachTabUrlTest) {
   ChromeFrameUrl cf_url;
 
-  EXPECT_TRUE(cf_url.Parse(L"http://f/?attach_external_tab&10&1&2&3&123&321"));
+  static const std::string kProfileName("iexplore");
+
+  EXPECT_TRUE(cf_url.Parse(
+      L"http://f/?attach_external_tab&10&1&2&3&123&321&iexplore"));
 
   EXPECT_TRUE(cf_url.attach_to_external_tab());
   EXPECT_FALSE(cf_url.is_chrome_protocol());
   EXPECT_EQ(10, cf_url.cookie());
   EXPECT_EQ(1, cf_url.disposition());
   EXPECT_EQ(gfx::Rect(2, 3, 123, 321), cf_url.dimensions());
+  EXPECT_EQ(kProfileName, cf_url.profile_name());
 
-  EXPECT_TRUE(cf_url.Parse(L"http://www.foobar.com?&10&1&2&3&123&321"));
+  EXPECT_TRUE(cf_url.Parse(
+      L"http://www.foobar.com?&10&1&2&3&123&321&iexplore"));
   EXPECT_FALSE(cf_url.attach_to_external_tab());
   EXPECT_FALSE(cf_url.is_chrome_protocol());
   EXPECT_EQ(0, cf_url.cookie());
   EXPECT_EQ(0, cf_url.disposition());
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), cf_url.dimensions());
+  EXPECT_TRUE(cf_url.profile_name().empty());
 
   EXPECT_FALSE(cf_url.Parse(L"attach_external_tab&10&1"));
   EXPECT_FALSE(cf_url.attach_to_external_tab());
@@ -142,13 +148,16 @@ TEST(UtilTests, ParseAttachTabUrlTest) {
   EXPECT_EQ(0, cf_url.cookie());
   EXPECT_EQ(0, cf_url.disposition());
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), cf_url.dimensions());
+  EXPECT_TRUE(cf_url.profile_name().empty());
 
-  EXPECT_TRUE(cf_url.Parse(L"gcf:http://f/?attach_tab&10&1&2&3&123&321"));
+  EXPECT_TRUE(cf_url.Parse(
+      L"gcf:http://f/?attach_tab&10&1&2&3&123&321&iexplore"));
   EXPECT_FALSE(cf_url.attach_to_external_tab());
   EXPECT_TRUE(cf_url.is_chrome_protocol());
   EXPECT_EQ(0, cf_url.cookie());
   EXPECT_EQ(0, cf_url.disposition());
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), cf_url.dimensions());
+  EXPECT_TRUE(cf_url.profile_name().empty());
 
   EXPECT_TRUE(cf_url.Parse(L"gcf:http://google.com"));
   EXPECT_FALSE(cf_url.attach_to_external_tab());
@@ -157,6 +166,7 @@ TEST(UtilTests, ParseAttachTabUrlTest) {
   EXPECT_EQ(0, cf_url.disposition());
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), cf_url.dimensions());
   EXPECT_EQ(cf_url.gurl(), GURL("http://google.com"));
+  EXPECT_TRUE(cf_url.profile_name().empty());
 }
 
 // Mock for the IInternetSecurityManager interface
@@ -226,33 +236,37 @@ TEST(UtilTests, CanNavigateTest) {
     { "          ", false, false, false },
     { "foo bar", true, false, false },
 
-    //non-privileged test cases
-    { "http://blah/?attach_external_tab&10&1&0&0&100&100", false, true, true },
+    // non-privileged test cases
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", false,
+        true, true },
     { "http://untrusted/bar.html", false, false, true },
-    { "http://blah/?attach_external_tab&10&1&0&0&100&100", false, true, true },
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", false,
+        true, true },
     { "view-source:http://www.google.ca", false, true, true },
     { "view-source:javascript:alert('foo');", false, false, true },
     { "about:blank", false, true, true },
     { "About:Version", false, true, true },
     { "about:config", false, false, true },
     { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, false,
-         true },
+        true },
     { "ftp://www.google.ca", false, false, true },
     { "file://www.google.ca", false, false, true },
     { "file://C:\boot.ini", false, false, true },
     { "SIP:someone@10.1.2.3", false, false, true },
 
-    //privileged test cases
-    { "http://blah/?attach_external_tab&10&1&0&0&100&100", true, true, true },
+    // privileged test cases
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", true, true,
+        true },
     { "http://untrusted/bar.html", true, false, true },
-    { "http://blah/?attach_external_tab&10&1&0&0&100&100", true, true, true },
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", true, true,
+        true },
     { "view-source:http://www.google.ca", true, true, true },
     { "view-source:javascript:alert('foo');", true, false, true },
     { "about:blank", true, true, true },
     { "About:Version", true, true, true },
     { "about:config", true, false, true },
     { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true,
-       true },
+        true },
     { "ftp://www.google.ca", true, false, true },
     { "file://www.google.ca", true, false, true },
     { "file://C:\boot.ini", true, false, true },

@@ -37,6 +37,9 @@
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
 
+static const wchar_t kUseChromeNetworking[] = L"UseChromeNetworking";
+static const wchar_t kHandleTopLevelRequests[] = L"HandleTopLevelRequests";
+
 // Connection point class to support firing IChromeFrameEvents (dispinterface).
 template<class T>
 class ATL_NO_VTABLE ProxyDIChromeFrameEvents
@@ -264,6 +267,14 @@ END_MSG_MAP()
                                               IE_8,
                                               IE_8 + 1);
     }
+
+    // Query and assign the host networking and top-level-request settings
+    // from the registry.
+    bool chrome_network = GetConfigBool(false, kUseChromeNetworking);
+    bool top_level_requests = GetConfigBool(true, kHandleTopLevelRequests);
+    automation_client_->set_use_chrome_network(chrome_network);
+    automation_client_->set_handle_top_level_requests(top_level_requests);
+
     return S_OK;
   }
 
@@ -510,7 +521,7 @@ END_MSG_MAP()
     GURL parsed_url(WideToUTF8(wide_url));
 
     std::string url =
-        StringPrintf("%hs:%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d",
+        StringPrintf("%hs:%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
                      parsed_url.scheme().c_str(),
                      parsed_url.host().c_str(),
                      params.cookie,
@@ -518,7 +529,8 @@ END_MSG_MAP()
                      params.dimensions.x(),
                      params.dimensions.y(),
                      params.dimensions.width(),
-                     params.dimensions.height());
+                     params.dimensions.height(),
+                     params.profile_name.c_str());
     HostNavigate(GURL(url), GURL(), params.disposition);
   }
 
