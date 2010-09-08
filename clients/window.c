@@ -109,9 +109,15 @@ struct input {
 	struct wl_input_device *input_device;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
+	uint32_t current_pointer_image;
 	uint32_t modifiers;
 	int32_t x, y, sx, sy;
 	struct wl_list link;
+};
+
+enum {
+	POINTER_DEFAULT = 100,
+	POINTER_UNSET
 };
 
 const char *option_xkb_layout = "us";
@@ -555,12 +561,20 @@ set_pointer_image(struct input *input, int pointer)
 		break;
 	case WINDOW_EXTERIOR:
 	case WINDOW_TITLEBAR:
+		if (input->current_pointer_image == POINTER_DEFAULT)
+			return;
+
 		wl_input_device_attach(input->input_device, NULL, 0, 0);
+		input->current_pointer_image = POINTER_DEFAULT;
 		return;
 	default:
 		break;
 	}
 
+	if (pointer == input->current_pointer_image)
+		return;
+
+	input->current_pointer_image = pointer;
 	surface = display->pointer_surfaces[pointer];
 	buffer = display_get_buffer_for_surface(display, surface);
 	wl_input_device_attach(input->input_device, buffer,
@@ -692,6 +706,7 @@ window_handle_pointer_focus(void *data,
 		set_pointer_image(input, pointer);
 	} else {
 		input->pointer_focus = NULL;
+		input->current_pointer_image = POINTER_UNSET;
 	}
 }
 
