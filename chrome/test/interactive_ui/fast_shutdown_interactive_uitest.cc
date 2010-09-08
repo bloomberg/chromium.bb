@@ -21,11 +21,6 @@ class FastShutdown : public UITest {
 #if defined(OS_MACOSX)
 // SimulateOSClick is broken on the Mac: http://crbug.com/45162
 #define MAYBE_SlowTermination DISABLED_SlowTermination
-#elif defined(OS_LINUX)
-#define MAYBE_SlowTermination SlowTermination
-#elif defined(OS_WIN)
-// Times out: http://crbug.com/46616
-#define MAYBE_SlowTermination DISABLED_SlowTermination
 #else
 #define MAYBE_SlowTermination SlowTermination
 #endif
