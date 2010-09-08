@@ -19,7 +19,7 @@
 
 namespace AutoFillDialogControllerInternal {
 class PersonalDataManagerObserver;
-class PrefObserver;
+class PreferenceObserver;
 }  // AutoFillDialogControllerInternal
 
 @class AutoFillAddressSheetController;
@@ -29,7 +29,7 @@ class Profile;
 @class WindowSizeAutosaver;
 
 // A window controller for managing the AutoFill options dialog.
-// Application modally presents a dialog allowing the user to store
+// Modelessly presents a dialog allowing the user to store
 // personal address and credit card information.
 @interface AutoFillDialogController : NSWindowController <NSTableViewDelegate> {
  @private
@@ -50,25 +50,14 @@ class Profile;
   // Weak, not retained.
   Profile* profile_;
 
-  // Reference to input parameter.
-  // Weak, not retained.
-  AutoFillProfile* importedProfile_;
-
-  // Reference to input parameter.
-  // Weak, not retained.
-  CreditCard* importedCreditCard_;
-
   // Working list of input profiles.
   std::vector<AutoFillProfile> profiles_;
 
   // Working list of input credit cards.
   std::vector<CreditCard> creditCards_;
 
-  // Tracks the AutoFill enabled preference.
-  BooleanPrefMember prefAutoFillEnabled_;
-
   // State of checkbox for enabling AutoFill in general.
-  BOOL autoFillEnabled_;
+  BooleanPrefMember autoFillEnabled_;
 
   // Whether AutoFill is controlled by configuration management.
   BOOL autoFillManaged_;
@@ -77,7 +66,7 @@ class Profile;
   BOOL autoFillManagedAndDisabled_;
 
   // State of checkbox for enabling Mac Address Book integration.
-  BOOL auxiliaryEnabled_;
+  BooleanPrefMember auxiliaryEnabled_;
 
   // State for |itemIsSelected| property used in bindings for "Edit..." and
   // "Remove" buttons.
@@ -103,7 +92,8 @@ class Profile;
       personalDataManagerObserver_;
 
   // Watches for changes to the AutoFill enabled preference.
-  scoped_ptr<AutoFillDialogControllerInternal::PrefObserver> prefObserver_;
+  scoped_ptr<AutoFillDialogControllerInternal::PreferenceObserver>
+      preferenceObserver_;
 }
 
 // Property representing state of the AutoFill enabled preference.  Checkbox is
@@ -132,26 +122,18 @@ class Profile;
 // state of edit button is bound to this property.
 @property (nonatomic) BOOL multipleSelected;
 
-// Main interface for displaying an application modal AutoFill dialog on screen.
+// Main interface for displaying a modeless AutoFill dialog on screen.
 // This class method creates a new |AutoFillDialogController| and runs it as a
-// modal dialog.  The controller autoreleases itself when the dialog is closed.
-// |observer| can be NULL, but if it is, then no notification is sent during
-// call to |save|.  If |observer| is non-NULL then its |OnAutoFillDialogApply|
-// method is invoked during |save| with the new address and credit card
-// information.
+// modeless dialog.  The controller autoreleases itself when the dialog is
+// closed. |observer| can be NULL, but if it is, then no notification is sent
+// during modifications to data.  If |observer| is non-NULL then its
+// |OnAutoFillDialogApply| method is invoked with the new address and credit
+// card information.
 // |profile| must be non-NULL.
 // AutoFill profile and credit card data is initialized from the
 // |PersonalDataManager| that is associated with the input |profile|.
-// If |importedProfile| or |importedCreditCard| parameters are supplied then
-// the |PersonalDataManager| data is ignored.  Both may be NULL.
 + (void)showAutoFillDialogWithObserver:(AutoFillDialogObserver*)observer
-                     profile:(Profile*)profile
-             importedProfile:(AutoFillProfile*)importedProfile
-          importedCreditCard:(CreditCard*)importedCreditCard;
-
-// IBActions for the dialog buttons.
-- (IBAction)save:(id)sender;
-- (IBAction)cancel:(id)sender;
+                               profile:(Profile*)profile;
 
 // IBActions for adding new items.
 - (IBAction)addNewAddress:(id)sender;
@@ -191,14 +173,11 @@ class Profile;
 // Note: controller is autoreleased when |-closeDialog| is called.
 + (AutoFillDialogController*)controllerWithObserver:
       (AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*)importedProfile
-    importedCreditCard:(CreditCard*)importedCreditCard;
+               profile:(Profile*)profile;
 
 - (id)initWithObserver:(AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*)importedProfile
-    importedCreditCard:(CreditCard*)importedCreditCard;
+               profile:(Profile*)profile;
+- (void)runModelessDialog;
 - (void)closeDialog;
 - (AutoFillAddressSheetController*)addressSheetController;
 - (AutoFillCreditCardSheetController*)creditCardSheetController;
@@ -207,6 +186,8 @@ class Profile;
 - (void)addSelectedAddressAtIndex:(size_t)i;
 - (void)addSelectedCreditCardAtIndex:(size_t)i;
 - (BOOL)editButtonEnabled;
+- (std::vector<AutoFillProfile>&)profiles;
+- (std::vector<CreditCard>&)creditCards;
 @end
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_MAC_

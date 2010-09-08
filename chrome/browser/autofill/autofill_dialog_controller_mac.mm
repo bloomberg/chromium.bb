@@ -6,6 +6,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
+#include "base/singleton.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -26,6 +27,10 @@
 #include "grit/theme_resources.h"
 
 namespace {
+
+// Type for singleton object that contains the instance of the visible
+// dialog.
+typedef std::map<Profile*, AutoFillDialogController*> ProfileControllerMap;
 
 // Update profile labels passed as |input|.  When profile data changes as a
 // result of adding new profiles, edititing existing profiles, or deleting a
@@ -81,15 +86,24 @@ void UpdateProfileLabels(std::vector<AutoFillProfile>* input) {
 
 // Private interface.
 @interface AutoFillDialogController (PrivateMethods)
+// Save profiles and credit card information after user modification.
+- (void)save;
+
 // Asyncronous handler for when PersonalDataManager data loads.  The
 // personal data manager notifies the dialog with this method when the
 // data loading is complete and ready to be used.
 - (void)onPersonalDataLoaded:(const std::vector<AutoFillProfile*>&)profiles
                  creditCards:(const std::vector<CreditCard*>&)creditCards;
 
+// Asyncronous handler for when PersonalDataManager data changes.  The
+// personal data manager notifies the dialog with this method when the
+// data has changed.
+- (void)onPersonalDataChanged:(const std::vector<AutoFillProfile*>&)profiles
+                  creditCards:(const std::vector<CreditCard*>&)creditCards;
+
 // Called upon changes to AutoFill preferences that should be reflected in the
 // UI.
-- (void)onPrefChanged:(const std::string&)prefName;
+- (void)preferenceDidChange:(const std::string&)preferenceName;
 
 // Returns true if |row| is an index to a valid profile in |tableView_|, and
 // false otherwise.
@@ -122,9 +136,6 @@ void UpdateProfileLabels(std::vector<AutoFillProfile>* input) {
 // |creditCards_|.
 - (NSInteger)rowFromCreditCardIndex:(size_t)row;
 
-// Invokes the modal dialog.
-- (void)runModalDialog;
-
 @end
 
 namespace AutoFillDialogControllerInternal {
@@ -147,6 +158,9 @@ class PersonalDataManagerObserver : public PersonalDataManager::Observer {
 
   // Notifies the observer that the PersonalDataManager has finished loading.
   virtual void OnPersonalDataLoaded();
+
+  // Notifies the observer that the PersonalDataManager data has changed.
+  virtual void OnPersonalDataChanged();
 
  private:
   // Utility method to remove |this| from |personal_data_manager_| as an
@@ -182,18 +196,22 @@ void PersonalDataManagerObserver::RemoveObserver() {
   }
 }
 
-// The data is ready so display our data.  Notify the dialog controller that
-// the data is ready.  Once done we clear the observer.
+// The data has been loaded, notify the controller.
 void PersonalDataManagerObserver::OnPersonalDataLoaded() {
-  RemoveObserver();
   [controller_ onPersonalDataLoaded:personal_data_manager_->web_profiles()
                         creditCards:personal_data_manager_->credit_cards()];
 }
 
+// The data has changed, notify the controller.
+void PersonalDataManagerObserver::OnPersonalDataChanged() {
+  [controller_ onPersonalDataChanged:personal_data_manager_->web_profiles()
+                         creditCards:personal_data_manager_->credit_cards()];
+}
+
 // Bridges preference changed notifications to the dialog controller.
-class PrefObserver : public NotificationObserver {
+class PreferenceObserver : public NotificationObserver {
  public:
-  explicit PrefObserver(AutoFillDialogController* controller)
+  explicit PreferenceObserver(AutoFillDialogController* controller)
       : controller_(controller) {}
 
   // Overridden from NotificationObserver:
@@ -203,7 +221,7 @@ class PrefObserver : public NotificationObserver {
     if (type == NotificationType::PREF_CHANGED) {
       const std::string* pref = Details<std::string>(details).ptr();
       if (pref) {
-        [controller_ onPrefChanged:*pref];
+        [controller_ preferenceDidChange:*pref];
       }
     }
   }
@@ -211,34 +229,24 @@ class PrefObserver : public NotificationObserver {
  private:
   AutoFillDialogController* controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrefObserver);
+  DISALLOW_COPY_AND_ASSIGN(PreferenceObserver);
 };
 
 }  // namespace AutoFillDialogControllerInternal
 
 @implementation AutoFillDialogController
 
-@synthesize autoFillEnabled = autoFillEnabled_;
 @synthesize autoFillManaged = autoFillManaged_;
 @synthesize autoFillManagedAndDisabled = autoFillManagedAndDisabled_;
-@synthesize auxiliaryEnabled = auxiliaryEnabled_;
 @synthesize itemIsSelected = itemIsSelected_;
 @synthesize multipleSelected = multipleSelected_;
 
 + (void)showAutoFillDialogWithObserver:(AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*) importedProfile
-    importedCreditCard:(CreditCard*) importedCreditCard {
+                               profile:(Profile*)profile {
   AutoFillDialogController* controller =
       [AutoFillDialogController controllerWithObserver:observer
-                                         profile:profile
-                                 importedProfile:importedProfile
-                              importedCreditCard:importedCreditCard];
-
-  // Only run modal dialog if it is not already being shown.
-  if (![controller isWindowLoaded]) {
-    [controller runModalDialog];
-  }
+                                               profile:profile];
+  [controller runModelessDialog];
 }
 
 - (void)awakeFromNib {
@@ -250,14 +258,13 @@ class PrefObserver : public NotificationObserver {
     // |personalDataManager| data is loaded, we can proceed with the contents.
     [self onPersonalDataLoaded:personal_data_manager->web_profiles()
                    creditCards:personal_data_manager->credit_cards()];
-  } else {
-    // |personalDataManager| data is NOT loaded, so we load it here, installing
-    // our observer.
-    personalDataManagerObserver_.reset(
-        new AutoFillDialogControllerInternal::PersonalDataManagerObserver(
-            self, personal_data_manager, profile_));
-    personal_data_manager->SetObserver(personalDataManagerObserver_.get());
   }
+
+  // Register as listener to listen to subsequent data change notifications.
+  personalDataManagerObserver_.reset(
+      new AutoFillDialogControllerInternal::PersonalDataManagerObserver(
+          self, personal_data_manager, profile_));
+  personal_data_manager->SetObserver(personalDataManagerObserver_.get());
 
   // Explicitly load the data in the table before window displays to avoid
   // nasty flicker as tables update.
@@ -273,25 +280,13 @@ class PrefObserver : public NotificationObserver {
   [tableView_ setDataSource:nil];
   [tableView_ setDelegate:nil];
   [self autorelease];
-}
 
-// Called when the user clicks the save button.
-- (IBAction)save:(id)sender {
-  // If we have an |observer_| then communicate the changes back, unless
-  // AutoFill has been disabled through policy in the mean time.
-  if (observer_ && !autoFillManagedAndDisabled_) {
-    prefAutoFillEnabled_.SetValueIfNotManaged(autoFillEnabled_);
-    profile_->GetPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled,
-                                     auxiliaryEnabled_);
-    observer_->OnAutoFillDialogApply(&profiles_, &creditCards_);
+  // Remove ourself from the map.
+  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap::iterator it = map->find(profile_);
+  if (it != map->end()) {
+    map->erase(it);
   }
-  [self closeDialog];
-}
-
-// Called when the user clicks the cancel button. All we need to do is stop
-// the modal session.
-- (IBAction)cancel:(id)sender {
-  [self closeDialog];
 }
 
 // Invokes the "Add" sheet for address information.  If user saves then the new
@@ -354,9 +349,9 @@ class PrefObserver : public NotificationObserver {
     if (!newAddress.IsEmpty()) {
       profiles_.push_back(newAddress);
 
-      // Refresh the view based on new data.
-      UpdateProfileLabels(&profiles_);
-      [tableView_ reloadData];
+      // Saving will save to the PDM and the table will refresh when PDM sends
+      // notification that the underlying model has changed.
+      [self save];
 
       // Update the selection to the newly added item.
       NSInteger row = [self rowFromProfileIndex:profiles_.size() - 1];
@@ -381,8 +376,9 @@ class PrefObserver : public NotificationObserver {
     if (!newCreditCard.IsEmpty()) {
       creditCards_.push_back(newCreditCard);
 
-      // Refresh the view based on new data.
-      [tableView_ reloadData];
+      // Saving will save to the PDM and the table will refresh when PDM sends
+      // notification that the underlying model has changed.
+      [self save];
 
       // Update the selection to the newly added item.
       NSInteger row = [self rowFromCreditCardIndex:creditCards_.size() - 1];
@@ -428,8 +424,9 @@ class PrefObserver : public NotificationObserver {
     [tableView_ deselectAll:self];
   }
 
-  UpdateProfileLabels(&profiles_);
-  [tableView_ reloadData];
+  // Saving will save to the PDM and the table will refresh when PDM sends
+  // notification that the underlying model has changed.
+  [self save];
 }
 
 // Edits the selected item, either address or credit card depending on the item
@@ -499,8 +496,9 @@ class PrefObserver : public NotificationObserver {
                        std::mem_fun_ref(&AutoFillProfile::IsEmpty)),
         profiles_.end());
 
-    UpdateProfileLabels(&profiles_);
-    [tableView_ reloadData];
+    // Saving will save to the PDM and the table will refresh when PDM sends
+    // notification that the underlying model has changed.
+    [self save];
   }
   [sheet orderOut:self];
   addressSheetController.reset(nil);
@@ -523,7 +521,10 @@ class PrefObserver : public NotificationObserver {
             creditCards_.begin(), creditCards_.end(),
             std::mem_fun_ref(&CreditCard::IsEmpty)),
         creditCards_.end());
-    [tableView_ reloadData];
+
+    // Saving will save to the PDM and the table will refresh when PDM sends
+    // notification that the underlying model has changed.
+    [self save];
   }
   [sheet orderOut:self];
   creditCardSheetController.reset(nil);
@@ -538,7 +539,7 @@ class PrefObserver : public NotificationObserver {
 
 // NSTableView Delegate method.
 - (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row {
-  return ![self tableView:tableView isGroupRow:row];
+  return [self isProfileRow:row] || [self isCreditCardRow:row];
 }
 
 // NSTableView Delegate method.
@@ -643,23 +644,53 @@ class PrefObserver : public NotificationObserver {
   return array;
 }
 
+// Accessor for |autoFillEnabled| preference state.  Note: a checkbox in Nib
+// is bound to this via KVO.
+- (BOOL)autoFillEnabled {
+  return autoFillEnabled_.GetValue();
+}
+
+// Setter for |autoFillEnabled| preference state.
+- (void)setAutoFillEnabled:(BOOL)value {
+  autoFillEnabled_.SetValueIfNotManaged(value ? true : false);
+}
+
+// Accessor for |auxiliaryEnabled| preference state.  Note: a checkbox in Nib
+// is bound to this via KVO.
+- (BOOL)auxiliaryEnabled {
+  return auxiliaryEnabled_.GetValue();
+}
+
+// Setter for |auxiliaryEnabled| preference state.
+- (void)setAuxiliaryEnabled:(BOOL)value {
+  if ([self autoFillEnabled])
+    auxiliaryEnabled_.SetValueIfNotManaged(value ? true : false);
+}
+
 @end
 
 @implementation AutoFillDialogController (ExposedForUnitTests)
 
-+ (AutoFillDialogController*)controllerWithObserver:
-        (AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*)importedProfile
-    importedCreditCard:(CreditCard*)importedCreditCard {
++ (AutoFillDialogController*)
+    controllerWithObserver:(AutoFillDialogObserver*)observer
+                   profile:(Profile*)profile {
+  profile = profile->GetOriginalProfile();
+
+  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  DCHECK(map != NULL);
+  ProfileControllerMap::iterator it = map->find(profile);
+  if (it == map->end()) {
+    // We should have exactly 1 or 0 entry in the map, no more.  That is,
+    // only one profile can have the AutoFill dialog up at a time.
+    DCHECK_EQ(map->size(), 0U);
 
   // Deallocation is done upon window close.  See |windowWillClose:|.
   AutoFillDialogController* controller =
-      [[self alloc] initWithObserver:observer
-                             profile:profile
-                     importedProfile:importedProfile
-                  importedCreditCard:importedCreditCard];
-  return controller;
+      [[self alloc] initWithObserver:observer profile:profile];
+    it = map->insert(std::make_pair(profile, controller)).first;
+  }
+
+  return it->second;
 }
 
 
@@ -667,9 +698,7 @@ class PrefObserver : public NotificationObserver {
 // |profiles| are non-retained immutable list of AutoFill profiles.
 // |creditCards| are non-retained immutable list of credit card info.
 - (id)initWithObserver:(AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*)importedProfile
-    importedCreditCard:(CreditCard*)importedCreditCard {
+               profile:(Profile*)profile {
   DCHECK(profile);
   // Use initWithWindowNibPath: instead of initWithWindowNibName: so we
   // can override it in a unit test.
@@ -680,22 +709,26 @@ class PrefObserver : public NotificationObserver {
     // Initialize member variables based on input.
     observer_ = observer;
     profile_ = profile;
-    importedProfile_ = importedProfile;
-    importedCreditCard_ = importedCreditCard;
 
     // Initialize the preference observer and watch kAutoFillEnabled.
-    prefObserver_.reset(
-        new AutoFillDialogControllerInternal::PrefObserver(self));
-    prefAutoFillEnabled_.Init(prefs::kAutoFillEnabled, profile_->GetPrefs(),
-                              prefObserver_.get());
+    preferenceObserver_.reset(
+        new AutoFillDialogControllerInternal::PreferenceObserver(self));
+    autoFillEnabled_.Init(prefs::kAutoFillEnabled, profile_->GetPrefs(),
+                          preferenceObserver_.get());
 
-    // Call onPrefChanged in order to initialize UI state of the checkbox and
-    // save button.
-    [self onPrefChanged:prefs::kAutoFillEnabled];
+    // Call |preferenceDidChange| in order to initialize UI state of the
+    // checkbox.
+    [self preferenceDidChange:prefs::kAutoFillEnabled];
 
-    // Use property here to trigger KVO binding.
-    [self setAuxiliaryEnabled:profile_->GetPrefs()->GetBoolean(
-        prefs::kAutoFillAuxiliaryProfilesEnabled)];
+    // Initialize the preference observer and watch
+    // kAutoFillAuxiliaryProfilesEnabled.
+    auxiliaryEnabled_.Init(prefs::kAutoFillAuxiliaryProfilesEnabled,
+                           profile_->GetPrefs(),
+                           preferenceObserver_.get());
+
+    // Call |preferenceDidChange| in order to initialize UI state of the
+    // checkbox.
+    [self preferenceDidChange:prefs::kAutoFillAuxiliaryProfilesEnabled];
 
     // Do not use [NSMutableArray array] here; we need predictable destruction
     // which will be prevented by having a reference held by an autorelease
@@ -704,10 +737,22 @@ class PrefObserver : public NotificationObserver {
   return self;
 }
 
+// Run modeless.
+- (void)runModelessDialog {
+  // Use stored window geometry if it exists.
+  if (g_browser_process && g_browser_process->local_state()) {
+    sizeSaver_.reset([[WindowSizeAutosaver alloc]
+        initWithWindow:[self window]
+           prefService:g_browser_process->local_state()
+                  path:prefs::kAutoFillDialogPlacement]);
+  }
+
+  [self showWindow:nil];
+}
+
 // Close the dialog.
 - (void)closeDialog {
-  [[self window] close];
-  [NSApp stopModal];
+  [[self window] performClose:self];
 }
 
 - (AutoFillAddressSheetController*)addressSheetController {
@@ -746,55 +791,66 @@ class PrefObserver : public NotificationObserver {
   return [editButton_ isEnabled];
 }
 
+- (std::vector<AutoFillProfile>&)profiles {
+  return profiles_;
+}
+
+- (std::vector<CreditCard>&)creditCards {
+  return creditCards_;
+}
+
 @end
 
 @implementation AutoFillDialogController (PrivateMethods)
 
-// Run application modal.
-- (void)runModalDialog {
-  // Use stored window geometry if it exists.
-  if (g_browser_process && g_browser_process->local_state()) {
-    sizeSaver_.reset([[WindowSizeAutosaver alloc]
-        initWithWindow:[self window]
-           prefService:g_browser_process->local_state()
-                  path:prefs::kAutoFillDialogPlacement]);
-  }
+// Called when the user modifies the profiles or credit card information.
+- (void)save {
+  // If we have an |observer_| then communicate the changes back, unless
+  // AutoFill has been disabled through policy in the mean time.
+  if (observer_ && !autoFillManagedAndDisabled_) {
+    // Make a working copy of profiles.  |OnAutoFillDialogApply| can mutate
+    // |profiles_|.
+    std::vector<AutoFillProfile> profiles = profiles_;
 
-  [NSApp runModalForWindow:[self window]];
+    // Make a working copy of credit cards.  |OnAutoFillDialogApply| can mutate
+    // |creditCards_|.
+    std::vector<CreditCard> creditCards = creditCards_;
+
+    observer_->OnAutoFillDialogApply(&profiles, &creditCards);
+  }
 }
 
 - (void)onPersonalDataLoaded:(const std::vector<AutoFillProfile*>&)profiles
                  creditCards:(const std::vector<CreditCard*>&)creditCards {
-  if (importedProfile_) {
-      profiles_.push_back(*importedProfile_);
-  }
-
-  if (importedCreditCard_) {
-      creditCards_.push_back(*importedCreditCard_);
-  }
-
-  // If we're not using imported data then use the data fetch from the web db.
-  if (!importedProfile_ && !importedCreditCard_) {
-    // Make local copy of |profiles|.
-    for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
-         iter != profiles.end(); ++iter)
-      profiles_.push_back(**iter);
-
-    // Make local copy of |creditCards|.
-    for (std::vector<CreditCard*>::const_iterator iter = creditCards.begin();
-         iter != creditCards.end(); ++iter)
-      creditCards_.push_back(**iter);
-  }
-
-  UpdateProfileLabels(&profiles_);
+  [self onPersonalDataChanged:profiles creditCards:creditCards];
 }
 
-- (void)onPrefChanged:(const std::string&)prefName {
-  if (prefName == prefs::kAutoFillEnabled) {
-    [self setAutoFillEnabled:prefAutoFillEnabled_.GetValue()];
-    [self setAutoFillManaged:prefAutoFillEnabled_.IsManaged()];
+- (void)onPersonalDataChanged:(const std::vector<AutoFillProfile*>&)profiles
+                  creditCards:(const std::vector<CreditCard*>&)creditCards {
+  // Make local copy of |profiles|.
+  profiles_.clear();
+  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter)
+    profiles_.push_back(**iter);
+
+  // Make local copy of |creditCards|.
+  creditCards_.clear();
+  for (std::vector<CreditCard*>::const_iterator iter = creditCards.begin();
+       iter != creditCards.end(); ++iter)
+    creditCards_.push_back(**iter);
+
+  UpdateProfileLabels(&profiles_);
+  [tableView_ reloadData];
+}
+
+- (void)preferenceDidChange:(const std::string&)preferenceName {
+  if (preferenceName == prefs::kAutoFillEnabled) {
+    [self setAutoFillEnabled:autoFillEnabled_.GetValue()];
+    [self setAutoFillManaged:autoFillEnabled_.IsManaged()];
     [self setAutoFillManagedAndDisabled:
-        prefAutoFillEnabled_.IsManaged() && !prefAutoFillEnabled_.GetValue()];
+        autoFillEnabled_.IsManaged() && !autoFillEnabled_.GetValue()];
+  } else if (preferenceName == prefs::kAutoFillAuxiliaryProfilesEnabled) {
+    [self setAuxiliaryEnabled:auxiliaryEnabled_.GetValue()];
   } else {
     NOTREACHED();
   }

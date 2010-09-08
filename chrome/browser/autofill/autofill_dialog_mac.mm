@@ -13,10 +13,7 @@
 void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
                         Profile* profile) {
-  // TODO: get rid of imported profile and credit card.
   [AutoFillDialogController
       showAutoFillDialogWithObserver:observer
-                             profile:profile
-                     importedProfile:NULL
-                  importedCreditCard:NULL];
+                             profile:profile];
 }
