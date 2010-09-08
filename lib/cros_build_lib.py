@@ -4,6 +4,7 @@
 
 """Common python commands used by various build scripts."""
 
+import os
 import subprocess
 import sys
 
@@ -125,3 +126,27 @@ def Info(message):
   """
   print >> sys.stderr, (
       Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message))
+
+
+def ListFiles(base_dir):
+  """Recurively list files in a directory.
+
+  Keyword arguments:
+    base_dir: directory to start recursively listing in.
+
+  Returns:
+    A list of files relative to the base_dir path or
+    An empty list of there are no files in the directories.
+  """
+  directories = [base_dir]
+  files_list = []
+  while directories:
+    directory = directories.pop()
+    for name in os.listdir(directory):
+      fullpath = os.path.join(directory, name)
+      if os.path.isfile(fullpath):
+        files_list.append(fullpath)
+      elif os.path.isdir(fullpath):
+        directories.append(fullpath)
+
+  return files_list
