@@ -51,12 +51,16 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
     localized_strings->SetString(
         GetI18nContentValue(preference, kI18nPrefix),
         l10n_util::GetStringUTF16(preference.message_id));
-    localized_strings->SetString(
-        GetTemplateDataMinName(preference, kI18nPrefix),
-        base::IntToString(preference.min_pref_value));
-    localized_strings->SetString(
-        GetTemplateDataMaxName(preference, kI18nPrefix),
-        base::IntToString(preference.max_pref_value));
+    ListValue* list_value = new ListValue();
+    for (int j = preference.min_pref_value; j <= preference.max_pref_value;
+         ++j) {
+      ListValue* option = new ListValue();
+      option->Append(CreateValue(j));
+      option->Append(CreateValue(j));
+      list_value->Append(option);
+    }
+    localized_strings->Set(GetTemplateDataPropertyName(preference, kI18nPrefix),
+                           list_value);
   }
 }
 

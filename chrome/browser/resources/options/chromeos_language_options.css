@@ -161,3 +161,8 @@
 #notification .link-color {
   color: rgb(0, 102, 204);
 }
+
+#chewing-max-chi-symbol-len {
+  width: 100px;
+  height: 30%;
+}

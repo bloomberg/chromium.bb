@@ -72,17 +72,16 @@
                 pref="settings.language.chewing_max_chi_symbol_len"
                 i18n-values="min:Chewing_maxChiSymbolLenMin;
                              max:Chewing_maxChiSymbolLenMax"
-                type="number" required>
+                type="range">
+           <span id="chewing-max-chi-symbol-len-value"></span>
          </td>
        </tr>
        <tr>
          <td class="option-name" i18n-content="Chewing_candPerPage"></td>
          <td class="option-value">
-           <input id="chewing-cand-per-page" class="control"
+           <select id="chewing-cand-per-page" class="control"
                 pref="settings.language.chewing_cand_per_page"
-                i18n-values="min:Chewing_candPerPageMin;
-                             max:Chewing_candPerPageMax"
-                type="number" required>
+                data-values="Chewing_candPerPageValue"></select>
          </td>
        </tr>
        <tr>

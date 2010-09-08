@@ -282,14 +282,6 @@ select {
   background-color: pink;
 }
 
-#languageChewingPage :invalid {
-  background-color: pink;
-}
-
-#languageMozcPage :invalid {
-  background-color: pink;
-}
-
 list > .heading {
   color: #666666;
 }

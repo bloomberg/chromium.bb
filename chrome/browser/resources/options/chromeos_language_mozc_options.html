@@ -139,10 +139,9 @@
          <td class="option-name" i18n-content="mozc_suggestions_size">
          </td>
          <td class="option-value">
-           <input id="mozc-suggestions-size" class="control" type="number"
-               pref="settings.language.mozc_suggestions_size"
-               i18n-values="min:mozc_suggestions_sizeMin;
-                            max:mozc_suggestions_sizeMax" required>
+           <select id="mozc-suggestions-size" class="control"
+                pref="settings.language.mozc_suggestions_size"
+                data-values="mozc_suggestions_sizeValue"></select>
          </td>
        </tr>
      </table>

@@ -74,6 +74,8 @@ const size_t kNumChewingBooleanPrefs = 8;
 extern const LanguageIntegerRangePreference kChewingIntegerPrefs[];
 // See comments at kNumChewingBooleanPrefs for why we hard-code this here.
 const size_t kNumChewingIntegerPrefs = 2;
+const int kChewingMaxChiSymbolLenIndex = 0;
+const int kChewingCandPerPageIndex = 1;
 
 extern const LanguageMultipleChoicePreference<const char*>
     kChewingMultipleChoicePrefs[];

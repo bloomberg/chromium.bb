@@ -39,9 +39,11 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
             language_prefs::kChewingBooleanPrefs[i].message_id));
   }
 
-  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
+  // For maximum Chinese characters in pre-edit buffer, we use slider UI.
+  {
     const language_prefs::LanguageIntegerRangePreference& preference =
-        language_prefs::kChewingIntegerPrefs[i];
+        language_prefs::kChewingIntegerPrefs[
+            language_prefs::kChewingMaxChiSymbolLenIndex];
     localized_strings->SetString(
         GetI18nContentValue(preference, kI18nPrefix),
         l10n_util::GetStringUTF16(preference.message_id));
@@ -51,6 +53,26 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
     localized_strings->SetString(
         GetTemplateDataMaxName(preference, kI18nPrefix),
         base::IntToString(preference.max_pref_value));
+  }
+
+  // For number of candidates per page, we use select-option UI.
+  {
+    const language_prefs::LanguageIntegerRangePreference& preference =
+        language_prefs::kChewingIntegerPrefs[
+            language_prefs::kChewingCandPerPageIndex];
+    localized_strings->SetString(
+        GetI18nContentValue(preference, kI18nPrefix),
+        l10n_util::GetStringUTF16(preference.message_id));
+    ListValue* list_value = new ListValue();
+    for (int i = preference.min_pref_value; i <= preference.max_pref_value;
+         ++i) {
+      ListValue* option = new ListValue();
+      option->Append(CreateValue(i));
+      option->Append(CreateValue(i));
+      list_value->Append(option);
+    }
+    localized_strings->Set(GetTemplateDataPropertyName(preference, kI18nPrefix),
+                           list_value);
   }
 
   for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs;

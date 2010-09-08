@@ -204,6 +204,23 @@ cr.define('options', function() {
     decorate: function() {
       this.type = 'range';
       PrefNumeric.prototype.decorate.call(this);
+      var self = this;
+
+      // Additionally change the indicator as well.
+      Preferences.getInstance().addEventListener(this.pref,
+          function(event) {
+            self.updateIndicator();
+          });
+
+      // Listen to user events.
+      this.addEventListener('input',
+          function(e) {
+            this.updateIndicator();
+          });
+    },
+
+    updateIndicator: function() {
+      $(this.id + '-value').textContent = this.value;
     }
   };
 
