@@ -51,8 +51,10 @@ class SyncAPIServerConnectionManager
                                  int port,
                                  bool use_ssl,
                                  const std::string& client_version,
+                                 const std::string& client_id,
                                  HttpPostProviderFactory* factory)
-      : ServerConnectionManager(server, port, use_ssl, client_version),
+      : ServerConnectionManager(server, port, use_ssl, client_version,
+                                client_id),
         post_provider_factory_(factory) {
     DCHECK(post_provider_factory_.get());
   }

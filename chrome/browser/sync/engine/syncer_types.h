@@ -78,8 +78,6 @@ struct SyncerEvent {
 
     STATUS_CHANGED,
 
-    UPDATED_TOKEN,  // new token in updated_token
-
     // Take care not to wait in shutdown handlers for the syncer to stop as it
     // causes a race in the event system. Use SyncerShutdownEvent instead.
     SHUTDOWN_USE_WITH_CARE,
@@ -145,9 +143,6 @@ struct SyncerEvent {
   // How many milliseconds later should the syncer kick in? For
   // REQUEST_SYNC_NUDGE only.
   int nudge_delay_milliseconds;
-
-  // Update-Client-Auth returns a new token for sync use.
-  std::string updated_token;
 };
 
 struct SyncerShutdownEvent {

@@ -168,7 +168,7 @@ class SyncerTest : public testing::Test,
         new MockConnectionManager(syncdb_.manager(), syncdb_.name()));
     EnableDatatype(syncable::BOOKMARKS);
     worker_ = new ModelSafeWorker();
-    context_.reset(new SyncSessionContext(mock_server_.get(),
+    context_.reset(new SyncSessionContext(mock_server_.get(), NULL,
         syncdb_.manager(), this));
     context_->set_account_name(syncdb_.name());
     ASSERT_FALSE(context_->syncer_event_channel());

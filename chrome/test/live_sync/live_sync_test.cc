@@ -22,7 +22,6 @@
 #include "chrome/test/testing_browser_process.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
-#include "net/base/network_change_notifier.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
@@ -232,10 +231,6 @@ void LiveSyncTest::SetUpInProcessBrowserTestFixture() {
   // Without this, running the test case on Linux causes an error as we make an
   // external DNS lookup of "ocsp.thawte.com".
   resolver->AllowDirectLookup("*.thawte.com");
-  // The new XMPP cert seems to use crl.geotrust.com on Linux.
-  resolver->AllowDirectLookup("*.geotrust.com");
-  // SSL chain.
-  resolver->AllowDirectLookup("*.gstatic.com");
   mock_host_resolver_override_.reset(
       new net::ScopedDefaultHostResolverProc(resolver));
 }
@@ -260,12 +255,10 @@ void LiveSyncTest::TearDownLocalTestServer() {
   ASSERT_TRUE(test_server_.Stop());
 }
 
+
 void LiveSyncTest::EnableNetwork(Profile* profile) {
   SetProxyConfig(profile->GetRequestContext(),
                  net::ProxyConfig::CreateDirect());
-  // Bugs: http://crbug.com/53857
-  //       http://crbug.com/53858
-  net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 }
 
 void LiveSyncTest::DisableNetwork(Profile* profile) {
@@ -274,7 +267,6 @@ void LiveSyncTest::DisableNetwork(Profile* profile) {
   net::ProxyConfig config;
   config.proxy_rules().ParseFromString("http=127.0.0.1:0");
   SetProxyConfig(profile->GetRequestContext(), config);
-  net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 }
 
 bool LiveSyncTest::EnsureSyncServerConfiguration() {

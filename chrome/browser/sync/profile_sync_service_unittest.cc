@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -33,7 +32,6 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -248,10 +246,9 @@ class ProfileSyncServiceTest : public testing::Test {
   }
   void StartSyncServiceAndSetInitialSyncEnded(bool set_initial_sync_ended) {
     if (!service_.get()) {
-      // Set bootstrap to true and it will provide a logged in user for test
       service_.reset(new TestProfileSyncService(&factory_,
                                                 profile_.get(),
-                                                "test", false, NULL));
+                                                false, false, NULL));
       if (!set_initial_sync_ended)
         service_->dont_set_initial_sync_ended_on_init();
 
@@ -270,9 +267,6 @@ class ProfileSyncServiceTest : public testing::Test {
           new browser_sync::BookmarkDataTypeController(&factory_,
                                                        profile_.get(),
                                                        service_.get()));
-
-      profile_->GetTokenService()->IssueAuthTokenForTest(
-          GaiaConstants::kSyncService, "token");
       service_->Initialize();
       MessageLoop::current()->Run();
     }
@@ -473,15 +467,15 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   service_.reset(new TestProfileSyncService(&factory_, profile_.get(),
-                                            "test", true, NULL));
+                                            false, true, NULL));
   service_->set_num_expected_resumes(0);
-  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+      WillOnce(ReturnNewDataTypeManager());
   EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).Times(0);
   service_->RegisterDataTypeController(
       new browser_sync::BookmarkDataTypeController(&factory_,
                                                    profile_.get(),
                                                    service_.get()));
-
   service_->Initialize();
   service_.reset();
 }
@@ -1355,9 +1349,9 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
   if (!service_.get()) {
     service_.reset(
         new TestProfileSyncService(&factory_, profile_.get(),
-                                   "test", true, NULL));
+                                   false, true, NULL));
+
     service_->dont_set_initial_sync_ended_on_init();
-    service_->set_synchronous_sync_configuration();
     profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
     model_associator_ = new TestBookmarkModelAssociator(service_.get(),
@@ -1382,25 +1376,26 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
   ASSERT_FALSE(service_->backend());
   ASSERT_FALSE(service_->HasSyncSetupCompleted());
 
-  // Create some tokens in the token service; the service will startup when
-  // it is notified that tokens are available.
-  profile_->GetTokenService()->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
-
+  // This will actually start up the sync service.
+  service_->EnableForUser(NULL);
   syncable::ModelTypeSet set;
   set.insert(syncable::BOOKMARKS);
   service_->OnUserChoseDatatypes(false, set);
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->Run();
 
   // Stop the service so we can read the new Sync Data files that were created.
   service_.reset();
 
   // This file should have been deleted when the whole directory was nuked.
   ASSERT_FALSE(file_util::PathExists(sync_file3));
-  ASSERT_FALSE(file_util::PathExists(sync_file1));
 
-  // This will still exist, but the text should have changed.
+  // These two will still exist, but their texts should have changed.
+  ASSERT_TRUE(file_util::PathExists(sync_file1));
+  std::string file1text;
+  file_util::ReadFileToString(sync_file1, &file1text);
+  ASSERT_FALSE(file1text.compare(nonsense1) == 0);
+
   ASSERT_TRUE(file_util::PathExists(sync_file2));
   std::string file2text;
   file_util::ReadFileToString(sync_file2, &file2text);

@@ -4,37 +4,6 @@
 
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 
-// TODO(rsimha): Debug the flakiness of this with fred. http://crbug.com/53858
-IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest,
-                       FAILS_OfflineToOnline) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  DisableNetwork(GetProfile(0));
-
-  BookmarkModel* bm = GetBookmarkModel(0);
-  BookmarkModelVerifier* v = verifier_helper();
-
-  const BookmarkNode* top = v->AddGroup(bm, bm->other_node(), 0, L"top");
-  v->SetTitle(bm, top, L"title");
-
-
-  EXPECT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Offline state change."));
-  {
-    ProfileSyncService::Status status(
-        GetClient(0)->service()->QueryDetailedSyncStatus());
-    EXPECT_EQ(status.summary, ProfileSyncService::Status::OFFLINE_UNSYNCED);
-  }
-
-  EnableNetwork(GetProfile(0));
-  {
-    EXPECT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Commit changes."));
-    ProfileSyncService::Status status(
-        GetClient(0)->service()->QueryDetailedSyncStatus());
-    EXPECT_EQ(status.summary, ProfileSyncService::Status::READY);
-    v->ExpectMatch(bm);
-  }
-}
-
 IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   BookmarkModel* bm = GetBookmarkModel(0);

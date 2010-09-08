@@ -20,6 +20,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   ProfileSyncServiceMock() {}
   virtual ~ProfileSyncServiceMock() {}
 
+  MOCK_METHOD0(EnableForUser, void());
   MOCK_METHOD0(DisableForUser, void());
   MOCK_METHOD0(OnBackendInitialized, void());
   MOCK_METHOD0(OnSyncCycleCompleted, void());

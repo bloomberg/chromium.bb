@@ -13,8 +13,6 @@
 #include "chrome/common/notification_service.h"
 
 // Unfortunately kNumServices must be defined in the .h.
-// TODO(chron): Sync doesn't use the TalkToken anymore so we can stop
-//              requesting it.
 const char* TokenService::kServices[] = {GaiaConstants::kSyncService,
                                          GaiaConstants::kTalkService};
 TokenService::TokenService()
@@ -31,18 +29,12 @@ void TokenService::Initialize(const char* const source,
                               Profile* profile) {
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (!source_.empty()) {
-    // Already initialized.
-    return;
-  }
+
   getter_ = profile->GetRequestContext();
   // Since the user can create a bookmark in incognito, sync may be running.
   // Thus we have to go for explicit access.
   web_data_service_ = profile->GetWebDataService(Profile::EXPLICIT_ACCESS);
   source_ = std::string(source);
-  registrar_.Add(this,
-                 NotificationType::TOKEN_UPDATED,
-                 NotificationService::AllSources());
 }
 
 void TokenService::ResetCredentialsInMemory() {
@@ -155,12 +147,6 @@ void TokenService::FireTokenRequestFailedNotification(
       Details<const TokenRequestFailedDetails>(&details));
 }
 
-void TokenService::IssueAuthTokenForTest(const std::string& service,
-                                         const std::string& auth_token) {
-  token_map_[service] = auth_token;
-  FireTokenAvailableNotification(service, auth_token);
-}
-
 void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
                                            const std::string& auth_token) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
@@ -192,11 +178,6 @@ void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
             result);
     LoadTokensIntoMemory(token_result->GetValue(), &token_map_);
   }
-
-  NotificationService::current()->Notify(
-      NotificationType::TOKEN_LOADING_FINISHED,
-      Source<TokenService>(this),
-      NotificationService::NoDetails());
 }
 
 // Load tokens from the db_token map into the in memory token map.
@@ -225,13 +206,4 @@ void TokenService::LoadTokensIntoMemory(
       }
     }
   }
-}
-
-void TokenService::Observe(NotificationType type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TOKEN_UPDATED);
-  TokenAvailableDetails* tok_details =
-      Details<TokenAvailableDetails>(details).ptr();
-  OnIssueAuthTokenSuccess(tok_details->service(), tok_details->token());
 }

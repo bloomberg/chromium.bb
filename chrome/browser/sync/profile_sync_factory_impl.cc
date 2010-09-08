@@ -76,11 +76,9 @@ ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(Profile* profile,
       command_line_(command_line) {
 }
 
-ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
-    const std::string& cros_user) {
-
+ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   ProfileSyncService* pss = new ProfileSyncService(
-      this, profile_, cros_user);
+      this, profile_, browser_defaults::kBootstrapSyncAuthentication);
 
   // App sync is enabled by default.  Register unless explicitly
   // disabled.

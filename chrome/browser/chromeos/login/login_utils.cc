@@ -181,10 +181,6 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
     token_service->StartFetchingTokens();
   }
 
-  // Set the CrOS user by getting this constructor run with the
-  // user's email on first retrieval.
-  profile->GetProfileSyncService(username);
-
   // Attempt to take ownership; this will fail if device is already owned.
   OwnershipService::GetSharedInstance()->StartTakeOwnershipAttempt(
       UserManager::Get()->logged_in_user().email());

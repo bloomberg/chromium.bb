@@ -25,7 +25,7 @@ class SyncApiTest : public testing::Test {
   virtual void SetUp() {
     setter_upper_.SetUp();
     share_.dir_manager.reset(setter_upper_.manager());
-    share_.name = setter_upper_.name();
+    share_.authenticated_name = setter_upper_.name();
   }
 
   virtual void TearDown() {

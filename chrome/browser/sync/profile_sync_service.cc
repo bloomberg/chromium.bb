@@ -30,10 +30,7 @@
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/browser/sync/token_migrator.h"
-#include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
@@ -47,7 +44,6 @@ using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::SyncBackendHost;
-using sync_api::SyncCredentials;
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -59,20 +55,20 @@ const char* ProfileSyncService::kDevServerUrl =
 
 ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        Profile* profile,
-                                       const std::string& cros_user)
+                                       bool bootstrap_sync_authentication)
     : last_auth_error_(AuthError::None()),
       factory_(factory),
       profile_(profile),
-      cros_user_(cros_user),
+      bootstrap_sync_authentication_(bootstrap_sync_authentication),
       sync_service_url_(kDevServerUrl),
       backend_initialized_(false),
+      expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
       use_chrome_async_socket_(false),
       notification_method_(browser_sync::kDefaultNotificationMethod),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
-      token_migrator_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)) {
   DCHECK(factory);
   DCHECK(profile);
   registrar_.Add(this,
@@ -113,8 +109,10 @@ ProfileSyncService::ProfileSyncService()
     : last_auth_error_(AuthError::None()),
       factory_(NULL),
       profile_(NULL),
+      bootstrap_sync_authentication_(false),
       sync_service_url_(kSyncServerUrl),
       backend_initialized_(false),
+      expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
@@ -126,37 +124,6 @@ ProfileSyncService::ProfileSyncService()
 
 ProfileSyncService::~ProfileSyncService() {
   Shutdown(false);
-}
-
-bool ProfileSyncService::AreCredentialsAvailable() {
-  if (IsManaged()) {
-    return false;
-  }
-
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
-    return false;
-  }
-
-  // CrOS user is always logged in. Chrome uses signin_ to check logged in.
-  if (!cros_user_.empty() || !signin_.GetUsername().empty()) {
-    // TODO(chron): Verify CrOS unit test behavior.
-    if (profile()->GetTokenService() &&
-        profile()->GetTokenService()->HasTokenForService(
-            GaiaConstants::kSyncService)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void ProfileSyncService::LoadMigratedCredentials(const std::string& username,
-                                                 const std::string& token) {
-  signin_.SetUsername(username);
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
-  profile()->GetTokenService()->OnIssueAuthTokenSuccess(
-      GaiaConstants::kSyncService, token);
-  profile()->GetPrefs()->SetBoolean(prefs::kSyncCredentialsMigrated, true);
-  token_migrator_.reset();
 }
 
 void ProfileSyncService::Initialize() {
@@ -174,49 +141,24 @@ void ProfileSyncService::Initialize() {
     return;
   }
 
-  RegisterAuthNotifications();
-
-  // In Chrome, we integrate a SigninManager which works with the sync
-  // setup wizard to kick off the TokenService. CrOS does its own plumbing
-  // for the TokenService.
-  if (cros_user_.empty()) {
-    // Will load tokens from DB and broadcast Token events after.
-    signin_.Initialize(profile_);
-  }
-
-  if (!HasSyncSetupCompleted()) {
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
-    if (!cros_user_.empty() && AreCredentialsAvailable()) {
-      StartUp();  // Under ChromeOS, just autostart it anyway if creds are here.
+
+    // Automatically start sync in Chromium OS.
+    if (bootstrap_sync_authentication_ &&
+        !profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
+      // If the LSID is empty, we're in a CrOS UI test that is not testing sync
+      // behavior, so we don't want the sync service to start.
+      if (profile()->GetTokenService() &&
+          !profile()->GetTokenService()->HasLsid()) {
+        LOG(WARNING) << "Skipping CrOS sync startup, no LSID present.";
+        return;
+      }
+      StartUp();
     }
-  } else if (AreCredentialsAvailable()) {
-    // If we have credentials and sync setup finished, autostart the backend.
-    // Note that if we haven't finished setting up sync, backend bring up will
-    // be done by the wizard.
-    StartUp();
   } else {
-    // Try to migrate the tokens (if that hasn't already succeeded).
-    if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncCredentialsMigrated)) {
-      token_migrator_.reset(new TokenMigrator(this, profile_->GetPath()));
-      token_migrator_->TryMigration();
-    }
+    StartUp();
   }
-
-}
-
-void ProfileSyncService::RegisterAuthNotifications() {
-  registrar_.Add(this,
-                 NotificationType::TOKEN_AVAILABLE,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::TOKEN_LOADING_FINISHED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::GOOGLE_SIGNIN_FAILED,
-                 NotificationService::AllSources());
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -290,7 +232,6 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
   pref_service->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
-  pref_service->RegisterBooleanPref(prefs::kSyncCredentialsMigrated, false);
 
   // If you've never synced before, or if you're using Chrome OS, all datatypes
   // are on by default.
@@ -328,29 +269,23 @@ void ProfileSyncService::ClearPreferences() {
   pref_service->ScheduleSavePersistentPrefs();
 }
 
-SyncCredentials ProfileSyncService::GetCredentials() {
-  SyncCredentials credentials;
-  credentials.email = !cros_user_.empty() ? cros_user_ : signin_.GetUsername();
-  DCHECK(!credentials.email.empty());
-  TokenService* service = profile_->GetTokenService();
-  credentials.sync_token = service->GetTokenForService(
-      GaiaConstants::kSyncService);
-  return credentials;
-}
-
 void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   if (!backend_.get()) {
     NOTREACHED();
     return;
   }
 
-  // TODO(chron): Reimplement invalidate XMPP login / Sync login
-  //              command line switches. Perhaps make it a command
-  //              line in the TokenService itself to pass an arbitrary
-  //              token.
+  // TODO(akalin): Gather all the command-line-controlled switches
+  // into an Options struct to make passing them down less annoying.
 
+  bool invalidate_sync_login = false;
+  bool invalidate_sync_xmpp_login = false;
   bool try_ssltcp_first = false;
 #if !defined(NDEBUG)
+  invalidate_sync_login = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kInvalidateSyncLogin);
+  invalidate_sync_xmpp_login = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kInvalidateSyncXmppLogin);
   try_ssltcp_first = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSyncUseSslTcp);
 #endif
@@ -359,17 +294,15 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   // If sync setup hasn't finished, we don't want to initialize routing info
   // for any data types so that we don't download updates for types that the
   // user chooses not to sync on the first DownloadUpdatesCommand.
-  if (HasSyncSetupCompleted()) {
+  if (HasSyncSetupCompleted())
     GetPreferredDataTypes(&types);
-  }
-
-  SyncCredentials credentials = GetCredentials();
-
   backend_->Initialize(sync_service_url_,
                        types,
                        profile_->GetRequestContext(),
-                       credentials,
+                       profile_->GetTokenService()->GetLsid(),
                        delete_sync_data_folder,
+                       invalidate_sync_login,
+                       invalidate_sync_xmpp_login,
                        use_chrome_async_socket_,
                        try_ssltcp_first,
                        notification_method_);
@@ -388,9 +321,7 @@ void ProfileSyncService::StartUp() {
     return;
   }
 
-  DCHECK(AreCredentialsAvailable());
-
-  LOG(INFO) << "ProfileSyncService bringing up backend host.";
+  LOG(INFO) << "ProfileSyncSerivce bringing up backend host.";
 
   last_synced_time_ = base::Time::FromInternalValue(
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
@@ -424,20 +355,30 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   // Clear various flags.
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
+  expecting_first_run_auth_needed_event_ = false;
   last_attempted_user_email_.clear();
 }
 
-void ProfileSyncService::DisableForUser() {
-  LOG(INFO) << "Disabling sync for user.";
+void ProfileSyncService::EnableForUser(gfx::NativeWindow parent_window) {
+  if (WizardIsVisible()) {
+    wizard_.Focus();
+    return;
+  }
+  expecting_first_run_auth_needed_event_ = true;
+  DCHECK(!data_type_manager_.get());
 
-  // Clear prefs (including SyncSetupHasCompleted) before shutting down so
+  wizard_.SetParent(parent_window);
+  StartUp();
+  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+}
+
+void ProfileSyncService::DisableForUser() {
+  LOG(INFO) << "Clearing Sync DB.";
+
+  // Clear prefs (including  SyncSetupHasCompleted) before shutting down so
   // PSS clients don't think we're set up while we're shutting down.
   ClearPreferences();
   Shutdown(true);
-
-  if (cros_user_.empty()) {
-    signin_.SignOut();
-  }
 
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
@@ -500,20 +441,29 @@ void ProfileSyncService::OnUnrecoverableError(
                                     from_here.file_name(),
                                     from_here.line_number()));
 
+  // Shut all data types down.
+  if (data_type_manager_.get())
+    data_type_manager_->Stop();
+
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
-  LOG(ERROR) << "Unrecoverable error detected -- ProfileSyncService unusable."
-      << message;
+  LOG(ERROR) << "Unrecoverable error detected -- ProfileSyncService unusable.";
   std::string location;
   from_here.Write(true, true, &location);
   LOG(ERROR) << location;
 
-  // Shut all data types down.
-  MessageLoop::current()->PostTask(FROM_HERE,
+  if (SetupInProgress()) {
+    // We've hit an error in the middle of a startup process- shutdown all the
+    // backend stuff, and then restart it, so we're in the same state as before.
+    MessageLoop::current()->PostTask(FROM_HERE,
         scoped_runnable_method_factory_.NewRunnableMethod(
         &ProfileSyncService::Shutdown, true));
+    MessageLoop::current()->PostTask(FROM_HERE,
+        scoped_runnable_method_factory_.NewRunnableMethod(
+        &ProfileSyncService::StartUp));
+  }
 }
 
 void ProfileSyncService::OnBackendInitialized() {
@@ -522,12 +472,11 @@ void ProfileSyncService::OnBackendInitialized() {
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".  last_synced_time_ will only be null
   // in this case, because the pref wasn't restored on StartUp.
-  if (last_synced_time_.is_null()) {
+  if (last_synced_time_.is_null())
     UpdateLastSyncedTime();
-  }
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 
-  if (!cros_user_.empty()) {
+  if (bootstrap_sync_authentication_) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
       ShowChooseDataTypes(NULL);
     } else {
@@ -535,9 +484,8 @@ void ProfileSyncService::OnBackendInitialized() {
     }
   }
 
-  if (HasSyncSetupCompleted()) {
+  if (HasSyncSetupCompleted())
     ConfigureDataTypeManager();
-  }
 }
 
 void ProfileSyncService::OnSyncCycleCompleted() {
@@ -545,16 +493,22 @@ void ProfileSyncService::OnSyncCycleCompleted() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
-void ProfileSyncService::UpdateAuthErrorState(
-    const GoogleServiceAuthError& error) {
-  last_auth_error_ = error;
+void ProfileSyncService::OnAuthError() {
+  last_auth_error_ = backend_->GetAuthError();
   // Protect against the in-your-face dialogs that pop out of nowhere.
   // Require the user to click somewhere to run the setup wizard in the case
   // of a steady-state auth failure.
-  if (WizardIsVisible()) {
+  if (WizardIsVisible() || expecting_first_run_auth_needed_event_) {
     wizard_.Step(AuthError::NONE == last_auth_error_.state() ?
         SyncSetupWizard::GAIA_SUCCESS : SyncSetupWizard::GAIA_LOGIN);
-  } else {
+  }
+
+  if (expecting_first_run_auth_needed_event_) {
+    last_auth_error_ = AuthError::None();
+    expecting_first_run_auth_needed_event_ = false;
+  }
+
+  if (!WizardIsVisible()) {
     auth_error_time_ == base::TimeTicks::Now();
   }
 
@@ -569,10 +523,6 @@ void ProfileSyncService::UpdateAuthErrorState(
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
-void ProfileSyncService::OnAuthError() {
-  UpdateAuthErrorState(backend_->GetAuthError());
- }
-
 void ProfileSyncService::OnStopSyncingPermanently() {
   if (SetupInProgress()) {
     wizard_.Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
@@ -583,12 +533,6 @@ void ProfileSyncService::OnStopSyncingPermanently() {
 }
 
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
-  // TODO(johnnyg): File a bug to make sure this doesn't happen.
-  if (!cros_user_.empty()) {
-    LOG(WARNING) << "ShowLoginDialog called on Chrome OS.";
-    return;
-  }
-
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
@@ -600,10 +544,10 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  wizard_.SetParent(parent_window);
-  wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
-
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  if (last_auth_error_.state() != AuthError::NONE) {
+    wizard_.SetParent(parent_window);
+    wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
+  }
 }
 
 void ProfileSyncService::ShowChooseDataTypes(gfx::NativeWindow parent_window) {
@@ -679,26 +623,16 @@ string16 ProfileSyncService::GetAuthenticatedUsername() const {
 void ProfileSyncService::OnUserSubmittedAuth(
     const std::string& username, const std::string& password,
     const std::string& captcha) {
+  if (!backend_.get()) {
+    NOTREACHED();
+    return;
+  }
   last_attempted_user_email_ = username;
   is_auth_in_progress_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 
   auth_start_time_ = base::TimeTicks::Now();
-
-  // TODO(chron): Mechanism for ChromeOS auth renewal?
-  // (maybe just run the dialog anyway?)
-  // or send it to the CrOS login somehow?
-  if (!cros_user_.empty()) {
-    LOG(WARNING) << "No mechanism on ChromeOS yet. See http://crbug.com/50292";
-  }
-
-  if (!signin_.GetUsername().empty()) {
-    signin_.SignOut();
-  }
-  signin_.StartSignIn(username,
-                      password,
-                      last_auth_error_.captcha().token,
-                      captcha);
+  backend_->Authenticate(username, password, captcha);
 }
 
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
@@ -715,7 +649,7 @@ void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
 }
 
 void ProfileSyncService::OnUserCancelledDialog() {
-  if (!HasSyncSetupCompleted()) {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     // A sync dialog was aborted before authentication.
     // Rollback.
     expect_sync_configuration_aborted_ = true;
@@ -881,43 +815,10 @@ void ProfileSyncService::Observe(NotificationType type,
       std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kSyncManaged) {
         FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
-        if (*pref_sync_managed_) {
+        if (*pref_sync_managed_)
           DisableForUser();
-        } else if (HasSyncSetupCompleted() && AreCredentialsAvailable()) {
+        else if (HasSyncSetupCompleted())
           StartUp();
-        }
-      }
-      break;
-    }
-    case NotificationType::GOOGLE_SIGNIN_SUCCESSFUL: {
-      LOG(INFO) << "Signin OK. Waiting on tokens.";
-      // TODO(chron): UI update?
-      // TODO(chron): Timeout?
-      break;
-    }
-    case NotificationType::GOOGLE_SIGNIN_FAILED: {
-      GoogleServiceAuthError error =
-          *(Details<GoogleServiceAuthError>(details).ptr());
-      UpdateAuthErrorState(error);
-      break;
-    }
-    case NotificationType::TOKEN_AVAILABLE: {
-      if (AreCredentialsAvailable()) {
-        if (backend_initialized_) {
-          backend_->UpdateCredentials(GetCredentials());
-        }
-
-        StartUp();
-      }
-      break;
-    }
-    case NotificationType::TOKEN_LOADING_FINISHED: {
-      // If not in Chrome OS, and we have a username without tokens,
-      // the user will need to signin again, so sign out.
-      if (cros_user_.empty() &&
-          !signin_.GetUsername().empty() &&
-          !AreCredentialsAvailable()) {
-        DisableForUser();
       }
       break;
     }

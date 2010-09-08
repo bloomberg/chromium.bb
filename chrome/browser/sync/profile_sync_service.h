@@ -15,14 +15,12 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
@@ -36,7 +34,6 @@ class NotificationSource;
 class NotificationType;
 class Profile;
 class ProfileSyncFactory;
-class TokenMigrator;
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.  Each subsystem is logically thought of as being
@@ -117,22 +114,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   ProfileSyncService(ProfileSyncFactory* factory_,
                      Profile* profile,
-                     const std::string& cros_user);
+                     bool bootstrap_sync_authentication);
   virtual ~ProfileSyncService();
 
   // Initializes the object. This should be called every time an object of this
   // class is constructed.
   void Initialize();
-
-  void RegisterAuthNotifications();
-
-  // Return whether all sync tokens are loaded and
-  // available for the backend to start up.
-  bool AreCredentialsAvailable();
-
-  // Loads credentials migrated from the old user settings db.
-  void LoadMigratedCredentials(const std::string& username,
-                               const std::string& token);
 
   // Registers a data type controller with the sync service.  This
   // makes the data type controller available for use, it does not
@@ -151,7 +138,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void GetDataTypeControllerStates(
     browser_sync::DataTypeController::StateMap* state_map) const;
 
-  // Disables sync for user. Use ShowLoginDialog to enable.
+  // Enables/disables sync for user.
+  virtual void EnableForUser(gfx::NativeWindow parent_window);
   virtual void DisableForUser();
 
   // Whether sync is enabled by user or not.
@@ -168,9 +156,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnUserSubmittedAuth(const std::string& username,
                                    const std::string& password,
                                    const std::string& captcha);
-
-  // Update the last auth error and notify observers of error state.
-  void UpdateAuthErrorState(const GoogleServiceAuthError& error);
 
   // Called when a user chooses which data types to sync as part of the sync
   // setup wizard.  |sync_everything| represents whether they chose the
@@ -341,9 +326,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void RegisterPreferences();
   void ClearPreferences();
 
-  // Return SyncCredentials from the TokenService.
-  sync_api::SyncCredentials GetCredentials();
-
   // Test need to override this to create backends that allow setting up
   // initial conditions, such as populating sync nodes.
   virtual void CreateBackend();
@@ -352,8 +334,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return data_type_controllers_;
   }
 
-  // The wizard will try to read the auth state out of the profile sync
-  // service using this member. Captcha and error state are reflected.
+  // We keep track of the last auth error observed so we can cover up the first
+  // "expected" auth failure from observers.
+  // TODO(timsteele): Same as expecting_first_run_auth_needed_event_. Remove
+  // this!
   GoogleServiceAuthError last_auth_error_;
 
   // Our asynchronous backend to communicate with sync components living on
@@ -396,8 +380,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // The profile whose data we are synchronizing.
   Profile* profile_;
 
-  // Email for the ChromiumOS user, if we're running under ChromiumOS.
-  std::string cros_user_;
+  // True if the profile sync service should attempt to use an LSID
+  // cookie for authentication.  This is typically set to true in
+  // ChromiumOS since we want to use the system level authentication
+  // for sync.
+  bool bootstrap_sync_authentication_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.
@@ -413,6 +400,17 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
 
+  // Set to true when the user first enables sync, and we are waiting for
+  // syncapi to give us the green light on providing credentials for the first
+  // time. It is set back to false as soon as we get this message, and is
+  // false all other times so we don't have to persist this value as it will
+  // get initialized to false.
+  // TODO(timsteele): Remove this by way of starting the wizard when enabling
+  // sync *before* initializing the backend. syncapi will need to change, but
+  // it means we don't have to wait for the first AuthError; if we ever get
+  // one, it is actually an error and this bool isn't needed.
+  bool expecting_first_run_auth_needed_event_;
+
   // Various pieces of UI query this value to determine if they should show
   // an "Authenticating.." type of message.  We are the only central place
   // all auth attempts funnel through, so it makes sense to provide this.
@@ -420,9 +418,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   bool is_auth_in_progress_;
 
   SyncSetupWizard wizard_;
-
-  // Encapsulates user signin with TokenService.
-  SigninManager signin_;
 
   // True if an unrecoverable error (e.g. violation of an assumed invariant)
   // occurred during syncer operation.  This value should be checked before
@@ -458,8 +453,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // DataTypeManager in the event that the server informed us to cease and
   // desist syncing immediately.
   bool expect_sync_configuration_aborted_;
-
-  scoped_ptr<TokenMigrator> token_migrator_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

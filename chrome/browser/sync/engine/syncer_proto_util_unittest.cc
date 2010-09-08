@@ -182,7 +182,7 @@ TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
 class DummyConnectionManager : public browser_sync::ServerConnectionManager {
  public:
   DummyConnectionManager()
-      : ServerConnectionManager("unused", 0, false, "version"),
+      : ServerConnectionManager("unused", 0, false, "version", "id"),
         send_error_(false),
         access_denied_(false) {}
 

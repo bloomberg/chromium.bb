@@ -6,9 +6,9 @@
 
 #include "base/format_macros.h"
 #include "base/string_util.h"
+#include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
@@ -124,7 +124,7 @@ void SyncerProtoUtil::AddRequestBirthday(syncable::Directory* dir,
 
 // static
 bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
-                                            sessions::SyncSession* session,
+                                            AuthWatcher* auth_watcher,
                                             const ClientToServerMessage& msg,
                                             ClientToServerResponse* response) {
 
@@ -144,9 +144,12 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
     std::string new_token =
         http_response.update_client_auth_header;
     if (!new_token.empty()) {
-      SyncerEvent event(SyncerEvent::UPDATED_TOKEN);
-      event.updated_token = new_token;
-      session->context()->syncer_event_channel()->Notify(event);
+      // We could also do this in the SCM's PostBufferWithAuth.
+      // But then we could be in the middle of authentication, which seems
+      // like a bad time to update the token. A consequence of this is that
+      // we can't reset the cookie in response to auth attempts, but this
+      // should be OK.
+      auth_watcher->RenewAuthToken(new_token);
     }
 
     if (response->ParseFromString(rx)) {
@@ -186,7 +189,7 @@ bool SyncerProtoUtil::PostClientToServerMessage(
   }
 
   if (!PostAndProcessHeaders(session->context()->connection_manager(),
-                             session,
+                             session->context()->auth_watcher(),
                              msg,
                              response)) {
     return false;

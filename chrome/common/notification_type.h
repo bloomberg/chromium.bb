@@ -1045,13 +1045,6 @@ class NotificationType {
     // are a ChromeCookieDetails object.
     COOKIE_CHANGED,
 
-    // Sidebar -----------------------------------------------------------------
-
-    // Sent when the sidebar state is changed.
-    // The source is a SidebarManager instance, the details are the changed
-    // SidebarContainer object.
-    SIDEBAR_CHANGED,
-
     // Token Service -----------------------------------------------------------
 
     // When the token service has a new token available for a service, one of
@@ -1060,31 +1053,15 @@ class NotificationType {
     // TokenAvailableDetails object.
     TOKEN_AVAILABLE,
 
-    // When there aren't any additional tokens left to load, this notification
-    // is sent.
-    // The source is a TokenService on the profile. There are no details.
-    TOKEN_LOADING_FINISHED,
+    // Sent when the sidebar state is changed.
+    // The source is a SidebarManager instance, the details are the changed
+    // SidebarContainer object.
+    SIDEBAR_CHANGED,
 
     // If a token request failed, one of these is issued per failed request.
     // The source is a TokenService on the Profile. The details are a
     // TokenRequestFailedDetails object.
     TOKEN_REQUEST_FAILED,
-
-    // When a service has a new token they got from a frontend that the
-    // TokenService should know about, fire this notification. The details
-    // are a TokenAvailableDetails object.
-    TOKEN_UPDATED,
-
-    // Sent when a user signs into Google services such as sync.
-    // The source is the SigninManager instance. The details are a
-    // GoogleServiceSignin object.
-    GOOGLE_SIGNIN_SUCCESSFUL,
-
-    // Sent when a user fails to sign into Google services such as sync.
-    // The source is the SigninManager instance. The details are a
-    // GoogleServiceAuthError object.
-    GOOGLE_SIGNIN_FAILED,
-
 
     // Misc --------------------------------------------------------------------
 

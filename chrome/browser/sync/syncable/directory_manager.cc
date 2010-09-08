@@ -54,6 +54,17 @@ bool DirectoryManager::Open(const std::string& name) {
   bool was_open = false;
   const DirOpenResult result = OpenImpl(name,
       GetSyncDataDatabasePath(), &was_open);
+  if (!was_open) {
+    DirectoryManagerEvent event;
+    event.dirname = name;
+    if (syncable::OPENED == result) {
+      event.what_happened = DirectoryManagerEvent::OPENED;
+    } else {
+      event.what_happened = DirectoryManagerEvent::OPEN_FAILED;
+      event.error = result;
+    }
+    channel_->NotifyListeners(event);
+  }
   return syncable::OPENED == result;
 }
 

@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_IMPL_H__
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 
@@ -20,8 +18,7 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
   virtual ~ProfileSyncFactoryImpl() {}
 
   // ProfileSyncFactory interface.
-  virtual ProfileSyncService* CreateProfileSyncService(
-      const std::string& cros_user);
+  virtual ProfileSyncService* CreateProfileSyncService();
 
   virtual browser_sync::DataTypeManager* CreateDataTypeManager(
       browser_sync::SyncBackendHost* backend,

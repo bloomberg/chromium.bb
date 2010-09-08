@@ -100,7 +100,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
     UserShare* user_share = core_->syncapi()->GetUserShare();
     DirectoryManager* dir_manager = user_share->dir_manager.get();
 
-    ScopedDirLookup dir(dir_manager, user_share->name);
+    ScopedDirLookup dir(dir_manager, user_share->authenticated_name);
     if (!dir.good())
       FAIL();
 
@@ -154,6 +154,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
         &SyncBackendHost::Core::DoInitializeForTest,
         user,
         options.http_bridge_factory,
+        options.auth_http_bridge_factory,
         options.delete_sync_data_folder,
         browser_sync::kDefaultNotificationMethod));
 
@@ -185,12 +186,10 @@ class TestProfileSyncService : public ProfileSyncService {
  public:
   TestProfileSyncService(ProfileSyncFactory* factory,
                          Profile* profile,
-                         const std::string& test_user,
+                         bool bootstrap_sync_authentication,
                          bool synchronous_backend_initialization,
                          Task* initial_condition_setup_task)
-      : ProfileSyncService(factory, profile,
-                           !test_user.empty() ?
-                           test_user : ""),
+      : ProfileSyncService(factory, profile, bootstrap_sync_authentication),
         synchronous_backend_initialization_(
             synchronous_backend_initialization),
         synchronous_sync_configuration_(false),

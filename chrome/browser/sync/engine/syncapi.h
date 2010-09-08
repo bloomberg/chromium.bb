@@ -107,14 +107,12 @@ struct UserShare {
   // be shared across multiple threads (unlike Directory).
   scoped_ptr<syncable::DirectoryManager> dir_manager;
 
-  // The username of the sync user.
-  std::string name;
-};
-
-// Contains everything needed to talk to and identify a user account.
-struct SyncCredentials {
-  std::string email;
-  std::string sync_token;
+  // The username of the sync user. This is empty until we have performed at
+  // least one successful GAIA authentication with this username, which means
+  // on first-run it is empty until an AUTH_SUCCEEDED event and on future runs
+  // it is set as soon as the client instructs us to authenticate for the last
+  // known valid user (AuthenticateForLastKnownUser()).
+  std::string authenticated_name;
 };
 
 // A valid BaseNode will never have an ID of zero.
@@ -671,9 +669,6 @@ class SyncManager {
     // Called when user interaction may be required due to an auth problem.
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error) = 0;
 
-    // Called when a new auth token is provided by the sync server.
-    virtual void OnUpdatedToken(const std::string& token) = 0;
-
     // Called when user interaction is required to obtain a valid passphrase.
     virtual void OnPassphraseRequired() = 0;
 
@@ -720,22 +715,52 @@ class SyncManager {
   // |sync_server_and_path| and |sync_server_port| represent the Chrome sync
   // server to use, and |use_ssl| specifies whether to communicate securely;
   // the default is false.
+  // |gaia_service_id| is the service id used for GAIA authentication. If it's
+  // null then default will be used.
   // |post_factory| will be owned internally and used to create
   // instances of an HttpPostProvider.
+  // |auth_post_factory| will be owned internally and used to create
+  // instances of an HttpPostProvider for communicating with GAIA.
+  // TODO(timsteele): It seems like one factory should suffice, but for now to
+  // avoid having to deal with threading issues since the auth code and syncer
+  // code live on separate threads that run simultaneously, we just dedicate
+  // one to each component. Long term we may want to reconsider the HttpBridge
+  // API to take all the params in one chunk in a threadsafe manner.. which is
+  // still suboptimal as there will be high contention between the two threads
+  // on startup; so maybe what we have now is the best solution- it does mirror
+  // the CURL implementation as each thread creates their own internet handle.
+  // Investigate.
   // |model_safe_worker| ownership is given to the SyncManager.
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
+  // As a fallback when no cached auth information is available, try to
+  // bootstrap authentication using |lsid|, if it isn't empty.
+  //
+  // |invalidate_last_user_auth_token| makes it so that any auth token
+  // read from user settings is invalidated.  This is used for testing
+  // code paths related to authentication failures.
+  //
+  // |invalidate_xmpp_auth_token| makes it so that any auth token
+  // used to log into XMPP is invalidated.  This is used for testing
+  // code paths related to authentication failures for XMPP only.
+  //
   // |try_ssltcp_first| indicates that the SSLTCP port (443) is tried before the
   // the XMPP port (5222) during login. It is used by the sync tests that are
   // run on the chromium builders because port 5222 is blocked.
   bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,
+            const char* gaia_service_id,
+            const char* gaia_source,
             bool use_ssl,
             HttpPostProviderFactory* post_factory,
+            HttpPostProviderFactory* auth_post_factory,
             browser_sync::ModelSafeWorkerRegistrar* registrar,
+            bool attempt_last_user_authentication,
+            bool invalidate_last_user_auth_token,
+            bool invalidate_xmpp_auth_token,
             const char* user_agent,
-            const SyncCredentials& credentials,
+            const char* lsid,
             bool use_chrome_async_socket,
             bool try_ssltcp_first,
             browser_sync::NotificationMethod notification_method,
@@ -751,11 +776,15 @@ class SyncManager {
   // called.
   bool InitialSyncEndedForAllEnabledTypes();
 
-  // Migrate tokens from user settings DB to the token service.
-  void MigrateTokens();
-
-  // Update tokens that we're using in Sync. Email must stay the same.
-  void UpdateCredentials(const SyncCredentials& credentials);
+  // Submit credentials to GAIA for verification. On success, both |username|
+  // and the obtained auth token are persisted on disk for future re-use.
+  // If authentication fails, OnAuthProblem is called on our Observer.
+  // The Observer may, in turn, decide to try again with new
+  // credentials. Calling this method again is the appropriate course of action
+  // to "retry".
+  // |username|, |password|, and |captcha| are owned by the caller.
+  void Authenticate(const char* username, const char* password,
+                    const char* captcha);
 
   // Start the SyncerThread.
   void StartSyncing();

@@ -66,7 +66,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
                                                 metadb_.name()));
     worker_ = new ModelSafeWorker();
     SyncSessionContext* context = new SyncSessionContext(connection_.get(),
-        metadb_.manager(), this);
+        NULL, metadb_.manager(), this);
     syncer_thread_ = new SyncerThread(context);
     syncer_event_hookup_.reset(
         syncer_thread_->relay_channel()->AddObserver(this));
@@ -217,12 +217,12 @@ class SyncShareIntercept
 };
 
 TEST_F(SyncerThreadTest, Construction) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
 }
 
 TEST_F(SyncerThreadTest, StartStop) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   EXPECT_TRUE(syncer_thread->Start());
   EXPECT_TRUE(syncer_thread->Stop(2000));
@@ -247,7 +247,7 @@ TEST(SyncerThread, GetRecommendedDelay) {
 }
 
 TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   syncer_thread->DisableIdleDetection();
 
@@ -307,7 +307,7 @@ TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
 TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // Set up the environment.
   int user_idle_milliseconds_param = 0;
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   syncer_thread->DisableIdleDetection();
   // Hold the lock to appease asserts in code.
@@ -639,8 +639,8 @@ TEST_F(SyncerThreadWithSyncerTest, Polling) {
   syncer_thread()->SetSyncerShortPollInterval(poll_interval);
   EXPECT_TRUE(syncer_thread()->Start());
 
+  // Calling Open() should cause the SyncerThread to create a Syncer.
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
 
   TimeDelta two_polls = poll_interval + poll_interval;
   // We could theoretically return immediately from the wait if the interceptor
@@ -673,7 +673,6 @@ TEST_F(SyncerThreadWithSyncerTest, Nudge) {
   PreventThreadFromPolling();
   EXPECT_TRUE(syncer_thread()->Start());
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
   const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
   interceptor.WaitForSyncShare(1, poll_interval + poll_interval);
 
@@ -698,7 +697,6 @@ TEST_F(SyncerThreadWithSyncerTest, Throttling) {
 
   EXPECT_TRUE(syncer_thread()->Start());
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
 
   // Wait for some healthy syncing.
   interceptor.WaitForSyncShare(4, poll_interval + poll_interval);
@@ -752,7 +750,6 @@ TEST_F(SyncerThreadWithSyncerTest, StopSyncPermanently) {
 
   EXPECT_TRUE(syncer_thread()->Start());
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   connection()->set_store_birthday("NotYourLuckyDay");
@@ -768,7 +765,6 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
   syncer_thread()->SetSyncerShortPollInterval(poll_interval);
   EXPECT_TRUE(syncer_thread()->Start());
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
 
   // Wait for some healthy syncing.
   interceptor.WaitForSyncShare(2, TimeDelta::FromSeconds(10));
@@ -830,7 +826,6 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_Pause) {
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
   ASSERT_TRUE(syncer_thread()->Start());
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   // Request a pause.
@@ -874,7 +869,6 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
 
   connection()->SetServerNotReachable();
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
 
   // Syncer thread will always go through once cycle at the start,
   // then it will wait for a connection.
@@ -929,8 +923,6 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
       Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
       WillOnce(SignalEvent(&event));
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
-
   ASSERT_TRUE(syncer_thread()->Start());
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
   ASSERT_TRUE(event.TimedWait(max_wait_time_));
@@ -1002,7 +994,6 @@ TEST_F(SyncerThreadWithSyncerTest, PauseResumeWhenNotRunning) {
   // Pause the thread then start the syncer.
   ASSERT_TRUE(Pause(&listener));
   metadb()->Open();
-  syncer_thread()->CreateSyncer(metadb()->name());
   ASSERT_TRUE(syncer_thread()->Start());
 
   // Resume and let the syncer cycle.

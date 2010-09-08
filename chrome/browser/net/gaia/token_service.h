@@ -37,15 +37,12 @@
 
 #include <map>
 #include <string>
-
-#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "base/gtest_prod_util.h"
 
 class URLRequestContextGetter;
 class Profile;
@@ -53,8 +50,7 @@ class Profile;
 // The TokenService is a Profile member, so all calls are expected
 // from the UI thread.
 class TokenService : public GaiaAuthConsumer,
-                     public WebDataServiceConsumer,
-                     public NotificationObserver {
+                     public WebDataServiceConsumer {
  public:
    TokenService();
    virtual ~TokenService();
@@ -127,10 +123,6 @@ class TokenService : public GaiaAuthConsumer,
   const bool HasTokenForService(const char* const service) const;
   const std::string& GetTokenForService(const char* const service) const;
 
-  // For tests only. Doesn't save to the WebDB.
-  void IssueAuthTokenForTest(const std::string& service,
-                             const std::string& auth_token);
-
   // GaiaAuthConsumer implementation.
   virtual void OnIssueAuthTokenSuccess(const std::string& service,
                                        const std::string& auth_token);
@@ -140,11 +132,6 @@ class TokenService : public GaiaAuthConsumer,
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
  private:
 
@@ -181,8 +168,6 @@ class TokenService : public GaiaAuthConsumer,
   scoped_ptr<GaiaAuthenticator2> fetchers_[kNumServices];
   // Map from service to token.
   std::map<std::string, std::string> token_map_;
-
-  NotificationRegistrar registrar_;
 
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryBasic);
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryAdvanced);

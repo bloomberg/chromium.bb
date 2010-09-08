@@ -48,9 +48,6 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   virtual void OnShouldStopSyncingPermanently() {
     FAIL() << "Shouldn't be forced to stop syncing.";
   }
-  virtual void SignalUpdatedToken(const std::string& token) {
-    FAIL() << "Should never update token.";
-  }
 
   // ModelSafeWorkerRegistrar implementation.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {
@@ -94,7 +91,7 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
 
   void ResetContext() {
     context_.reset(new sessions::SyncSessionContext(
-        mock_server_.get(), syncdb_->manager(), registrar()));
+        mock_server_.get(), NULL, syncdb_->manager(), registrar()));
     context_->set_account_name(syncdb_->name());
     ClearSession();
   }

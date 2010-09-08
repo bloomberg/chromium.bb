@@ -444,11 +444,6 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
-  virtual ProfileSyncService* GetProfileSyncService(
-      const std::string& cros_user) {
-    return NULL;
-  }
-
   virtual CloudPrintProxyService* GetCloudPrintProxyService() {
     return NULL;
   }

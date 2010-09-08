@@ -139,7 +139,7 @@ void ContentPageView::ButtonPressed(
               IDS_CONFIRM_STOP_SYNCING_DIALOG_HEIGHT_LINES)));
       return;
     } else {
-      sync_service_->ShowLoginDialog(GetWindow()->GetNativeWindow());
+      sync_service_->EnableForUser(GetWindow()->GetNativeWindow());
       ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
     }
   } else if (sender == sync_customize_button_) {

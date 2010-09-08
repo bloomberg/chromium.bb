@@ -168,7 +168,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   } else {
     // User clicked the 'Start now' link to begin syncing.
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
-    sync_service_->ShowLoginDialog(NULL);
+    sync_service_->EnableForUser(NULL);
   }
 }
 
