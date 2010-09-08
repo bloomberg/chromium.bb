@@ -81,6 +81,10 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 {
 	va_list ap;
 
+	if (client == NULL)
+		/* wl_grab_surface case */
+		return;
+
 	va_start(ap, opcode);
 	wl_connection_vmarshal(client->connection,
 			       sender, opcode, ap,
@@ -399,23 +403,6 @@ wl_display_add_global(struct wl_display *display,
 	wl_list_insert(display->global_list.prev, &global->link);
 
 	return 0;	
-}
-
-WL_EXPORT void
-wl_surface_post_event(struct wl_surface *surface,
-		      struct wl_object *sender,
-		      uint32_t event, ...)
-{
-	va_list ap;
-
-	if (surface == &wl_grab_surface)
-		return;
-
-	va_start(ap, event);
-	wl_connection_vmarshal(surface->client->connection,
-			       sender, event, ap,
-			       &sender->interface->events[event]);
-	va_end(ap);
 }
 
 WL_EXPORT void

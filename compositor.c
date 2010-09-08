@@ -665,16 +665,16 @@ wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
 
 	if (device->keyboard_focus &&
 	    (!surface || device->keyboard_focus->base.client != surface->base.client))
-		wl_surface_post_event(&device->keyboard_focus->base,
-				      &device->base.base,
-				      WL_INPUT_DEVICE_KEYBOARD_FOCUS,
-				      time, NULL, &device->keys);
+		wl_client_post_event(device->keyboard_focus->base.client,
+				     &device->base.base,
+				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
+				     time, NULL, &device->keys);
 
 	if (surface)
-		wl_surface_post_event(&surface->base,
-				      &device->base.base,
-				      WL_INPUT_DEVICE_KEYBOARD_FOCUS,
-				      time, &surface->base, &device->keys);
+		wl_client_post_event(surface->base.client,
+				     &device->base.base,
+				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
+				     time, &surface->base, &device->keys);
 
 	device->keyboard_focus = surface;
 }
@@ -691,16 +691,16 @@ wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
 
 	if (device->pointer_focus &&
 	    (!surface || device->pointer_focus->base.client != surface->base.client))
-		wl_surface_post_event(&device->pointer_focus->base,
-				      &device->base.base,
-				      WL_INPUT_DEVICE_POINTER_FOCUS,
-				      time, NULL, 0, 0, 0, 0);
+		wl_client_post_event(device->pointer_focus->base.client,
+				     &device->base.base,
+				     WL_INPUT_DEVICE_POINTER_FOCUS,
+				     time, NULL, 0, 0, 0, 0);
 	if (surface)
-		wl_surface_post_event(&surface->base,
-				      &device->base.base,
-				      WL_INPUT_DEVICE_POINTER_FOCUS,
-				      time, &surface->base,
-				      x, y, sx, sy);
+		wl_client_post_event(surface->base.client,
+				     &device->base.base,
+				     WL_INPUT_DEVICE_POINTER_FOCUS,
+				     time, &surface->base,
+				     x, y, sx, sy);
 
 	if (!surface)
 		wlsc_input_device_set_pointer_image(device,
@@ -758,28 +758,31 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 		wlsc_input_device_set_pointer_focus(device, es,
 						    time, x, y, sx, sy);
 		if (es)
-			wl_surface_post_event(&es->base, &device->base.base,
-					      WL_INPUT_DEVICE_MOTION,
-					      time, x, y, sx, sy);
+			wl_client_post_event(es->base.client,
+					     &device->base.base,
+					     WL_INPUT_DEVICE_MOTION,
+					     time, x, y, sx, sy);
 		break;
 
 	case WLSC_DEVICE_GRAB_MOTION:
 		es = device->pointer_focus;
 		wlsc_surface_transform(es, x, y, &sx, &sy);
-		wl_surface_post_event(&es->base, &device->base.base,
-				      WL_INPUT_DEVICE_MOTION,
-				      time, x, y, sx, sy);
+		wl_client_post_event(es->base.client,
+				     &device->base.base,
+				     WL_INPUT_DEVICE_MOTION,
+				     time, x, y, sx, sy);
 		break;
 
 	case WLSC_DEVICE_GRAB_MOVE:
 		es = device->grab_surface;
 		es->x = x + device->grab_dx;
 		es->y = y + device->grab_dy;;
-		wl_surface_post_event(&es->base, &ec->shell.base,
-				      WL_SHELL_CONFIGURE,
-				      time, device->grab,
-				      &es->base, es->x, es->y,
-				      es->width, es->height);
+		wl_client_post_event(es->base.client,
+				     &ec->shell.base,
+				     WL_SHELL_CONFIGURE,
+				     time, device->grab,
+				     &es->base, es->x, es->y,
+				     es->width, es->height);
 
 		wlsc_surface_update_matrix(es);
 
@@ -818,9 +821,10 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 			height = device->grab_height;
 		}
 
-		wl_surface_post_event(&es->base, &ec->shell.base,
-				      WL_SHELL_CONFIGURE, time, device->grab,
-				      &es->base, sx, sy, width, height);
+		wl_client_post_event(es->base.client,
+				     &ec->shell.base,
+				     WL_SHELL_CONFIGURE, time, device->grab,
+				     &es->base, sx, sy, width, height);
 		break;
 
 	case WLSC_DEVICE_GRAB_DRAG:
@@ -828,10 +832,10 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 		wl_drag_set_pointer_focus(device->drag,
 					  es, time, x, y, sx, sy);
 		if (es)
-			wl_surface_post_event(&es->base,
-					      &device->drag->drag_offer.base,
-					      WL_DRAG_OFFER_MOTION,
-					      time, x, y, sx, sy);
+			wl_client_post_event(es->base.client,
+					     &device->drag->drag_offer.base,
+					     WL_DRAG_OFFER_MOTION,
+					     time, x, y, sx, sy);
 		break;
 
 	}
@@ -903,10 +907,10 @@ notify_button(struct wlsc_input_device *device,
 				     WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT);
 		else if (device->grab == WLSC_DEVICE_GRAB_NONE ||
 			 device->grab == WLSC_DEVICE_GRAB_MOTION)
-			wl_surface_post_event(&surface->base,
-					      &device->base.base,
-					      WL_INPUT_DEVICE_BUTTON,
-					      time, button, state);
+			wl_client_post_event(surface->base.client,
+					     &device->base.base,
+					     WL_INPUT_DEVICE_BUTTON,
+					     time, button, state);
 
 		if (!state &&
 		    device->grab != WLSC_DEVICE_GRAB_NONE &&
@@ -969,9 +973,9 @@ notify_key(struct wlsc_input_device *device,
 	}
 
 	if (device->keyboard_focus != NULL)
-		wl_surface_post_event(&device->keyboard_focus->base,
-				      &device->base.base,
-				      WL_INPUT_DEVICE_KEY, time, key, state);
+		wl_client_post_event(device->keyboard_focus->base.client,
+				     &device->base.base,
+				     WL_INPUT_DEVICE_KEY, time, key, state);
 }
 
 static void
@@ -1041,7 +1045,7 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 
 	if (drag->pointer_focus &&
 	    (!surface || drag->pointer_focus->client != surface->base.client))
-		wl_surface_post_event(drag->pointer_focus,
+		wl_client_post_event(drag->pointer_focus->client,
 				      &drag->drag_offer.base,
 				      WL_DRAG_OFFER_POINTER_FOCUS,
 				      time, NULL, 0, 0, 0, 0);
@@ -1054,17 +1058,17 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 
 		end = drag->types.data + drag->types.size;
 		for (p = drag->types.data; p < end; p++)
-			wl_surface_post_event(&surface->base,
+			wl_client_post_event(surface->base.client,
 					      &drag->drag_offer.base,
 					      WL_DRAG_OFFER_OFFER, *p);
 	}
 
 	if (surface) {
-		wl_surface_post_event(&surface->base,
-				      &drag->drag_offer.base,
-				      WL_DRAG_OFFER_POINTER_FOCUS,
-				      time, &surface->base,
-				      x, y, sx, sy);
+		wl_client_post_event(surface->base.client,
+				     &drag->drag_offer.base,
+				     WL_DRAG_OFFER_POINTER_FOCUS,
+				     time, &surface->base,
+				     x, y, sx, sy);
 
 	}
 
@@ -1095,8 +1099,8 @@ drag_offer_accept(struct wl_client *client,
 		if (type && strcmp(*p, type) == 0)
 			drag->type = *p;
 
-	wl_surface_post_event(drag->source, &drag->resource.base,
-			      WL_DRAG_TARGET, drag->type);
+	wl_client_post_event(drag->source->client, &drag->resource.base,
+			     WL_DRAG_TARGET, drag->type);
 }
 
 static void
@@ -1105,8 +1109,8 @@ drag_offer_receive(struct wl_client *client,
 {
 	struct wl_drag *drag = container_of(offer, struct wl_drag, drag_offer);
 
-	wl_surface_post_event(drag->source, &drag->resource.base,
-			      WL_DRAG_FINISH, fd);
+	wl_client_post_event(drag->source->client, &drag->resource.base,
+			     WL_DRAG_FINISH, fd);
 	close(fd);
 }
 

@@ -148,11 +148,6 @@ wl_client_post_event(struct wl_client *client,
 		      struct wl_object *sender,
 		      uint32_t event, ...);
 
-void
-wl_surface_post_event(struct wl_surface *surface,
-		      struct wl_object *sender,
-		      uint32_t event, ...);
-
 int
 wl_display_set_compositor(struct wl_display *display,
 			  struct wl_compositor *compositor,
