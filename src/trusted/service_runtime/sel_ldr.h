@@ -70,6 +70,7 @@ EXTERN_C_BEGIN
 
 struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
+struct NaClDynamicRegion;
 
 struct NaClApp {
   /*
@@ -195,6 +196,30 @@ struct NaClApp {
   struct NaClDesc           *text_shm;
   struct NaClMutex          dynamic_load_mutex;
 
+  /*
+   * The array of dynamic_regions is maintained in sorted order
+   * Accesses must be protected by dynamic_load_mutex
+   */
+  struct NaClDynamicRegion  *dynamic_regions;
+  int                       num_dynamic_regions;
+  int                       dynamic_regions_allocated;
+
+  /*
+   * These variables are used for caching mapped writable views of the
+   * dynamic text segment.  See CachedMapWritableText in nacl_text.c.
+   * Accesses must be protected by dynamic_load_mutex
+   */
+  uint32_t                  dynamic_mapcache_offset;
+  uint32_t                  dynamic_mapcache_size;
+  uintptr_t                 dynamic_mapcache_ret;
+
+  /*
+   * Monotonically increasing generation number used for deletion
+   * Accesses must be protected by dynamic_load_mutex
+   */
+  int                       dynamic_delete_generation;
+
+
   int                       running;
   int                       exit_status;
 
@@ -296,6 +321,13 @@ int NaClValidateCodeReplacement(struct    NaClApp *nap,
                                 uint8_t   *data_old,
                                 uint8_t   *data_new,
                                 size_t    size);
+
+/*
+ * Copies code from data_new to data_old in a thread-safe way
+ */
+int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
+                 uint8_t *data_old, uint8_t *data_new,
+                 size_t size);
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) NACL_WUR;
 

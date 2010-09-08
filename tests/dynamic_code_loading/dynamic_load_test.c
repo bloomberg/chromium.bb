@@ -56,7 +56,7 @@ void fill_int32(uint8_t *data, size_t size, int32_t value) {
   /* All the archs we target supported unaligned word read/write, but
      check that the pointer is aligned anyway. */
   assert(((uintptr_t) data) % 4 == 0);
-  for(i = 0; i < size / 4; i++)
+  for (i = 0; i < size / 4; i++)
     ((uint32_t *) data)[i] = value;
 }
 
@@ -111,54 +111,6 @@ void test_loading_code() {
   /* Need double cast otherwise gcc complains with "ISO C forbids
      conversion of object pointer to function pointer type
      [-pedantic]". */
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-}
-
-/* Check that we can dynamically rewrite code. */
-void test_replacing_code() {
-  void *load_area = allocate_code_space(1);
-  uint8_t buf[32];
-  int rc;
-  int (*func)();
-
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
-  rc = nacl_load_code(load_area, buf, sizeof(buf));
-  assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-
-  /* write replacement to the same location */
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func_replacement,
-                                          &template_func_replacement_end);
-  rc = nacl_load_code(load_area, buf, sizeof(buf));
-  assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 4321);
-}
-
-/* Check that we can't dynamically rewrite code. */
-void test_replacing_code_disabled() {
-  void *load_area = allocate_code_space(1);
-  uint8_t buf[32];
-  int rc;
-  int (*func)();
-
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
-  rc = nacl_load_code(load_area, buf, sizeof(buf));
-  assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-
-  /* write replacement to the same location */
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func_replacement,
-                                          &template_func_replacement_end);
-  rc = nacl_load_code(load_area, buf, sizeof(buf));
-  assert(rc != 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
   assert(rc == 1234);
@@ -279,8 +231,8 @@ void test_fail_on_overwrite() {
   rc = nacl_load_code(load_area, buf, sizeof(buf));
   assert(rc == 0);
 
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func_nonreplacement,
-                                          &template_func_nonreplacement_end);
+  copy_and_pad_fragment(buf, sizeof(buf), &template_func,
+                                          &template_func_end);
 
   rc = nacl_load_code(load_area, buf, sizeof(buf));
   assert(rc == -EINVAL);
@@ -346,15 +298,19 @@ void test_end_of_code_region() {
   assert(rc == 0);
 }
 
-void test_fail_on_hlt_filled_bundle() {
+void test_hlt_filled_bundle() {
   uint8_t bad_code[NUM_BUNDLES_FOR_HLT * NACL_BUNDLE_SIZE];
-  void *load_area = allocate_code_space(1);
+  void *load_area;
   int ix;
 
   for (ix = 0; ix < NUM_BUNDLES_FOR_HLT; ++ix) {
     fill_nops(bad_code, sizeof bad_code);
     fill_hlts(bad_code + ix * NACL_BUNDLE_SIZE, NACL_BUNDLE_SIZE);
 
+    load_area = allocate_code_space(1);
+    /* hlts are now allowed */
+    assert(0 == nacl_load_code(load_area, bad_code, sizeof bad_code));
+    /* but not twice... */
     assert(0 != nacl_load_code(load_area, bad_code, sizeof bad_code));
   }
 }
@@ -383,13 +339,7 @@ int main() {
   RUN_TEST(test_fail_on_mmap_to_dyncode_area);
   RUN_TEST(test_branches_outside_chunk);
   RUN_TEST(test_end_of_code_region);
-  RUN_TEST(test_fail_on_hlt_filled_bundle);
-
-#if defined(__i386__) && defined(TEST_DYNCODE_REPLACEMENT)
-  RUN_TEST(test_replacing_code);
-#else
-  RUN_TEST(test_replacing_code_disabled);
-#endif
+  RUN_TEST(test_hlt_filled_bundle);
 
   /* Test again to make sure we didn't run out of space. */
   RUN_TEST(test_loading_code);

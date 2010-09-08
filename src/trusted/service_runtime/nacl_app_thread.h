@@ -129,6 +129,13 @@ struct NaClAppThread {
 
   /* Stack for signal handling, registered with sigaltstack(). */
   void                      *signal_stack;
+
+
+  /*
+   * The last generation this thread reported into the service runtime
+   * Protected by mu
+   */
+  int dynamic_delete_generation;
 };
 
 int NaClAppThreadCtor(struct NaClAppThread  *natp,

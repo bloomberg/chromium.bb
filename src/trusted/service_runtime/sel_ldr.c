@@ -73,6 +73,15 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_mem_map;
   }
 
+  nap->dynamic_regions = NULL;
+  nap->num_dynamic_regions = 0;
+  nap->dynamic_regions_allocated = 0;
+  nap->dynamic_delete_generation = 0;
+
+  nap->dynamic_mapcache_offset = 0;
+  nap->dynamic_mapcache_size = 0;
+  nap->dynamic_mapcache_ret = 0;
+
   nap->srpc_fd = -1;
 
   nap->service_port = NULL;
@@ -502,6 +511,8 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "ELF executable segment header parameter error";
     case LOAD_VALIDATION_FAILED:
       return "Validation failure. File violates Native Client safety rules.";
+    case LOAD_UNIMPLEMENTED:
+      return "Not implemented for this architecture.";
     case SRT_NO_SEG_SEL:
       return "Service Runtime: cannot allocate segment selector";
   }

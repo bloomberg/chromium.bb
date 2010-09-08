@@ -643,9 +643,23 @@ cleanup:
   return retval;
 }
 
-int32_t NaClSysDyncode_Copy(struct NaClAppThread *natp,
+int32_t NaClSysDyncode_Create(struct NaClAppThread *natp,
                             uint32_t             dest,
                             uint32_t             src,
                             uint32_t             size) {
-  return NaClTextSysDyncode_Copy(natp, dest, src, size);
+  return NaClTextSysDyncode_Create(natp, dest, src, size);
 }
+
+int32_t NaClSysDyncode_Modify(struct NaClAppThread *natp,
+                            uint32_t             dest,
+                            uint32_t             src,
+                            uint32_t             size) {
+  return NaClTextSysDyncode_Modify(natp, dest, src, size);
+}
+
+int32_t NaClSysDyncode_Delete(struct NaClAppThread *natp,
+                            uint32_t             dest,
+                            uint32_t             size) {
+  return NaClTextSysDyncode_Delete(natp, dest, size);
+}
+

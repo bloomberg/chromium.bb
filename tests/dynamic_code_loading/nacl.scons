@@ -33,6 +33,11 @@ env.ComponentProgram('dynamic_load_test.nexe',
                      ['dynamic_load_test.c',
                       template_obj])
 
+# Uncomment once the toolchain gets the new syscalls:
+#env.ComponentProgram('dynamic_modify_test.nexe',
+#                     ['dynamic_modify_test.c',
+#                      template_obj])
+
 env.ComponentProgram('write_to_dyncode.nexe',
                      ['write_to_dyncode.c'])
 
@@ -65,6 +70,16 @@ tests = [
         sel_ldr_flags=["-c"],
         command=[env.File('debug_mode_test.nexe')],
         ),
+# Uncomment once the toolchain gets the new syscalls:
+#   env.CommandSelLdrTestNacl(
+#       'dynamic_modify_test_disabled.out',
+#       command=[env.File('dynamic_modify_test.nexe')],
+#       ),
+#   env.CommandSelLdrTestNacl(
+#       'dynamic_modify_test_enabled.out',
+#       command=[env.File('dynamic_modify_test.nexe')],
+#       osenv='NACL_ALLOW_DYNCODE_REPLACEMENT=1',
+#       ),
   ]
 
 # TODO(kcc): non-standard linking options confuse Valgrind debug info reader.

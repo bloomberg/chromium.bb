@@ -348,7 +348,13 @@ extern int sched_yield(void);
 
 /**
  *  @nacl
- *  Validates and dynamically loads executable code.
+ *  Deprecated.  Alias for nacl_dyncode_create.
+ */
+extern int nacl_dyncode_copy(void *dest, const void *src, size_t size);
+
+/**
+ *  @nacl
+ *  Validates and dynamically loads executable code into an unused address.
  *  @param dest Destination address.  Must be in the code region and
  *  be instruction-bundle-aligned.
  *  @param src Source address.  Does not need to be aligned.
@@ -358,7 +364,33 @@ extern int sched_yield(void);
  *  properly aligned, or the destination is invalid or has already had
  *  code loaded into it.
  */
-extern int nacl_dyncode_copy(void *dest, const void *src, size_t size);
+extern int nacl_dyncode_create(void *dest, const void *src, size_t size);
+
+/**
+ *  @nacl
+ *  Validates and modifies previously loaded dynamic code.  Must
+ *  have identical instruction boundaries to existing code.
+ *  @param dest Destination address. Must be subregion of one previously created
+ *  @param src Source address.
+ *  @param size of both dest and src, need not be aligned.
+ *  @return Returns zero on success, -1 on failure.
+ *  Sets errno to EINVAL if validation fails, if src or size are not
+ *  properly aligned, or the destination is invalid or has already had
+ *  code loaded into it.
+ */
+extern int nacl_dyncode_modify(void *dest, const void *src, size_t size);
+
+/**
+ *  @nacl
+ *  Remove inserted dynamic code or mark it for deletion if threads are
+ *  unaccounted for.
+ *  @param dest must match a past call to nacl_dyncode_create
+ *  @param size must match a past call to nacl_dyncode_create
+ *  @return Returns zero on success, -1 on failure.
+ *  Fails and sets errno to EAGAIN if deletion is delayed because other
+ *  threads have not checked into the nacl runtime.
+ */
+extern int nacl_dyncode_delete(void *dest, size_t size);
 
 
 #ifdef __cplusplus

@@ -138,7 +138,10 @@ NCVALIDATE_SOURCES = ['nacl_cpuid.c',
                                     'nc_inst_trans.c',
                                     'ncop_exps.c',
                                     'nc_read_segment.c',
-                                    'ncvalidate.c']
+                                    'ncvalidate.c',
+                                    'nccopycode.c',
+                                    'nccopycode_stores.S'
+                                    ]
 if env['TARGET_SUBARCH']=='64':
   NCVALIDATE_SOURCES = NCVALIDATE_SOURCES + ncopcode_desc_o
 

@@ -114,6 +114,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   natp->thread_num = -1;  /* illegal index */
   natp->sys_tdb = sys_tdb;
 
+  natp->dynamic_delete_generation = 0;
+
   thread_idx = NaClGetThreadIdx(natp);
 
   nacl_thread[thread_idx] = natp;

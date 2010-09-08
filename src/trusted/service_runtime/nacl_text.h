@@ -15,6 +15,12 @@ EXTERN_C_BEGIN
 struct NaClApp;
 struct NaClAppThread;
 
+struct NaClDynamicRegion {
+  uintptr_t start;
+  size_t size;
+  int delete_generation;
+};
+
 /*
  * Create a shared memory descriptor and map it into the text region
  * of the address space.  This implies that the text size must be a
@@ -25,10 +31,19 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap);
 struct NaClDescEffectorShm;
 int NaClDescEffectorShmCtor(struct NaClDescEffectorShm *self);
 
-int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
-                                uint32_t             dest,
-                                uint32_t             src,
-                                uint32_t             size);
+int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
+                                  uint32_t             dest,
+                                  uint32_t             src,
+                                  uint32_t             size);
+
+int32_t NaClTextSysDyncode_Modify(struct NaClAppThread *natp,
+                                  uint32_t             dest,
+                                  uint32_t             src,
+                                  uint32_t             size);
+
+int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
+                                  uint32_t             dest,
+                                  uint32_t             size);
 
 EXTERN_C_END
 

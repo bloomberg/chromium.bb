@@ -55,6 +55,8 @@
           'ncop_exps.c',
           'nc_read_segment.c',
           'ncvalidate.c',
+          'nccopycode.c',
+          'nccopycode_stores.S',
         ],
         'cflags!': [
           '-Wextra',
