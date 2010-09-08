@@ -30,7 +30,7 @@ PP_Var Instance::GetOwnerElementObject() {
   return PP_MakeVoid();
 }
 
-bool Instance::BindGraphicsDeviceContext(PP_Resource device) {
+bool Instance::BindGraphics(PP_Resource device) {
   DebugPrintf("Instance::BindGraphicsDeviceContext: instance=%p"
               ", device=%"NACL_PRIu64"\n",
               reinterpret_cast<void*>(this), device);
@@ -43,6 +43,16 @@ bool Instance::IsFullFrame() {
               reinterpret_cast<void*>(this));
   NACL_UNIMPLEMENTED();
   return false;
+}
+
+PP_Var Instance::ExecuteScript(PP_Var script,
+                               PP_Var* exception) {
+  DebugPrintf("Instance::ExecuteScript: instance=%p\n",
+              reinterpret_cast<void*>(this));
+  NACL_UNIMPLEMENTED();
+  UNREFERENCED_PARAMETER(script);
+  UNREFERENCED_PARAMETER(exception);
+  return PP_MakeVoid();
 }
 
 }  // namespace fake_browser_ppapi

@@ -56,8 +56,10 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
   NACL_UNIMPLEMENTED();
 }
 
-bool IsMainThread() {
+static bool IsMainThread() {
+  DebugPrintf("Core::IsMainThread\n");
   NACL_UNIMPLEMENTED();
+  return true;
 }
 
 }  // namespace

@@ -24,8 +24,10 @@ class Instance : public ppapi_proxy::PluginInstance {
   // The bindings for the methods invoked by the PPAPI interface.
   virtual PP_Var GetWindowObject();
   virtual PP_Var GetOwnerElementObject();
-  virtual bool BindGraphicsDeviceContext(PP_Resource device);
+  virtual bool BindGraphics(PP_Resource device);
   virtual bool IsFullFrame();
+  virtual PP_Var ExecuteScript(PP_Var script,
+                               PP_Var* exception);
 
  private:
   FakeWindow* window_;

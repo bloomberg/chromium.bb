@@ -32,12 +32,12 @@ static PP_Var GetOwnerElementObjectThunk(PP_Instance instance) {
   return GetInstancePointer(instance)->GetOwnerElementObject();
 }
 
-static bool BindGraphicsDeviceContextThunk(PP_Instance instance,
-                                           PP_Resource device) {
+static bool BindGraphicsThunk(PP_Instance instance,
+                              PP_Resource device) {
   DebugPrintf("PluginInstance::BindGraphicsDeviceContext: instance=%"
               NACL_PRIx64 ", device=%" NACL_PRIu64 "\n",
               instance, device);
-  return GetInstancePointer(instance)->BindGraphicsDeviceContext(device);
+  return GetInstancePointer(instance)->BindGraphics(device);
 }
 
 static bool IsFullFrameThunk(PP_Instance instance) {
@@ -46,14 +46,12 @@ static bool IsFullFrameThunk(PP_Instance instance) {
   return GetInstancePointer(instance)->IsFullFrame();
 }
 
-PP_Var ExecuteScript(PP_Instance instance, PP_Var script,  PP_Var* exception) {
-  UNREFERENCED_PARAMETER(script);
-  UNREFERENCED_PARAMETER(exception);
-  DebugPrintf("PluginInstance::ExecuteScript: instance=%"
-              NACL_PRIx64 "\n",
+static PP_Var ExecuteScriptThunk(PP_Instance instance,
+                                 PP_Var script,
+                                 PP_Var* exception) {
+  DebugPrintf("PluginInstance::ExecuteScript: instance=%" NACL_PRIx64"\n",
               instance);
-  NACL_UNIMPLEMENTED();
-  return PP_MakeVoid();
+  return GetInstancePointer(instance)->ExecuteScript(script, exception);
 }
 
 }  // namespace
@@ -62,9 +60,9 @@ const PPB_Instance* PluginInstance::GetInterface() {
   static const PPB_Instance intf = {
     GetWindowObjectThunk,
     GetOwnerElementObjectThunk,
-    BindGraphicsDeviceContextThunk,
+    BindGraphicsThunk,
     IsFullFrameThunk,
-    ExecuteScript
+    ExecuteScriptThunk
   };
   return &intf;
 }

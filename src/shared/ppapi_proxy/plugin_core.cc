@@ -61,7 +61,8 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
   // See how NPN_PluginThreadAsyncCall is implemented in npruntime.
 }
 
-bool IsMainThread() {
+static bool IsMainThread() {
+  DebugPrintf("PluginCore::IsMainThread\n");
   NACL_UNIMPLEMENTED();
 }
 
