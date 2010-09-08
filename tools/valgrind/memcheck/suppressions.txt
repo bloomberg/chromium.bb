@@ -4243,6 +4243,7 @@
    bug_54308
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZNK8chromeos25CrosSettingsProviderProxy3GetERKSsPP5Value
    fun:_ZNK8chromeos12CrosSettings3GetERKSsPP5Value
    fun:_ZN8chromeos26CoreChromeOSOptionsHandler9FetchPrefERKSs
@@ -4254,16 +4255,6 @@
    fun:_ZN11TabContents19ProcessDOMUIMessageERK29ViewHostMsg_DomMessage_Params
    fun:_ZN14RenderViewHost14OnMsgDOMUISendERK4GURLRKSsS4_
    fun:_Z16DispatchToMethodI14RenderViewHostMS0_FvRK4GURLRKSsS5_ES1_SsSsEvPT_T0_RK6Tuple3IT1_T2_T3_E
-   fun:_ZN3IPC16MessageWithTupleI6Tuple3I4GURLSsSsEE8DispatchI14RenderViewHostMS6_FvRKS2_RKSsSA_EEEbPKNS_7MessageEPT_T0_
-   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN24BrowserRenderProcessHost17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base16MessagePumpForUI14HandleDispatchEv
 }
 {
    bug_54689
