@@ -419,9 +419,6 @@ void ContentPageView::InitSyncGroup() {
   privacy_dashboard_link_->SetController(this);
   privacy_dashboard_link_->SetText(
       l10n_util::GetString(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
-  privacy_dashboard_link_->SetVisible(
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowPrivacyDashboardLink));
 
   sync_start_stop_button_ = new views::NativeButton(this, std::wstring());
   sync_customize_button_ = new views::NativeButton(this, std::wstring());

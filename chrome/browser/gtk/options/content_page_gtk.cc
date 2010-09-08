@@ -374,25 +374,22 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   gtk_box_pack_start(GTK_BOX(button_hbox), sync_customize_button_, FALSE,
                      FALSE, 0);
 
-  // Add the privacy dashboard link.  Only show it if the command line
-  // switch has been provided.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowPrivacyDashboardLink)) {
-    GtkWidget* dashboard_link_hbox =
-        gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
-    GtkWidget* dashboard_link_background = gtk_event_box_new();
-    std::string dashboard_link_label =
-        l10n_util::GetStringUTF8(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL);
-    privacy_dashboard_link_ =
-        gtk_chrome_link_button_new(dashboard_link_label.c_str());
-    g_signal_connect(privacy_dashboard_link_, "clicked",
-                     G_CALLBACK(OnPrivacyDashboardLinkClickedThunk), this);
-    gtk_box_pack_start(GTK_BOX(vbox), dashboard_link_hbox, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(dashboard_link_hbox),
-                       dashboard_link_background, FALSE, FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(dashboard_link_background),
-                      privacy_dashboard_link_);
-  }
+  // Add the privacy dashboard link.
+  GtkWidget* dashboard_link_hbox =
+      gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
+  GtkWidget* dashboard_link_background = gtk_event_box_new();
+  std::string dashboard_link_label =
+      l10n_util::GetStringUTF8(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL);
+  privacy_dashboard_link_ =
+      gtk_chrome_link_button_new(dashboard_link_label.c_str());
+  g_signal_connect(privacy_dashboard_link_, "clicked",
+                   G_CALLBACK(OnPrivacyDashboardLinkClickedThunk), this);
+  gtk_box_pack_start(GTK_BOX(vbox), dashboard_link_hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(dashboard_link_hbox),
+                     dashboard_link_background, FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(dashboard_link_background),
+                    privacy_dashboard_link_);
+
 
   return vbox;
 }

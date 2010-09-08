@@ -1855,10 +1855,6 @@ const int kDisabledIndex = 1;
     [syncStatus_ setBackgroundColor:syncStatusNoErrorBackgroundColor_];
     [syncLinkCell setBackgroundColor:syncLinkNoErrorBackgroundColor_];
   }
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kShowPrivacyDashboardLink))
-    [privacyDashboardLink_ setHidden:YES];
 }
 
 // Show the preferences window.
