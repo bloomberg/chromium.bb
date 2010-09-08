@@ -182,7 +182,7 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   AutoFillField* autofill_field = NULL;
   for (std::vector<FormStructure*>::iterator form_iter =
            form_structures_.begin();
-       form_iter != form_structures_.end(); ++form_iter) {
+       form_iter != form_structures_.end() && !autofill_field; ++form_iter) {
     form = *form_iter;
 
     // Don't send suggestions for forms that aren't auto-fillable.
