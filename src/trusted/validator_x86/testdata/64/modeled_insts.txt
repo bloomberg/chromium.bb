@@ -2385,6 +2385,23 @@ Target: x86-64 bit mode
     Comiss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
+  --- 30 ---
+  0f 30                       RDMSR NaClIllegal
+    Wrmsr {%ECX}, {%EDX}, {%EAX}
+      RegECX                  OpUse OpImplicit
+      RegEDX                  OpUse OpImplicit
+      RegEAX                  OpUse OpImplicit
+  --- 31 ---
+  0f 31                       RDTSC 
+    Rdtsc {%EDX}, {%EAX}
+      RegEDX                  OpSet OpImplicit
+      RegEAX                  OpSet OpImplicit
+  --- 32 ---
+  0f 32                       RDMSR NaClIllegal
+    Rdmsr {%ECX}, {%EDX}, {%EAX}
+      RegECX                  OpUse OpImplicit
+      RegEDX                  OpSet OpImplicit
+      RegEAX                  OpSet OpImplicit
   --- 36 ---
   0f 36                       INVALID 
   --- 37 ---

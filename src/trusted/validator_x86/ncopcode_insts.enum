@@ -442,6 +442,8 @@ Rcl
 Rcpps
 Rcpss
 Rcr
+Rdmsr
+Rdtsc
 Ret
 Rol
 Ror
@@ -498,6 +500,7 @@ Unpckhpd
 Unpckhps
 Unpcklpd
 Unpcklps
+Wrmsr
 Xadd
 Xchg
 Xor

@@ -3236,3 +3236,42 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
+0000000000000000: 0f 30                                        wrmsr
+  0f 30                       RDMSR NaClIllegal
+    Wrmsr {%ECX}, {%EDX}, {%EAX}
+      RegECX                  OpUse OpImplicit
+      RegEDX                  OpUse OpImplicit
+      RegEAX                  OpUse OpImplicit
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %ecx, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %edx, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 2, ExprImplicit },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+};
+0000000000000000: 0f 31                                        rdtsc
+  0f 31                       RDTSC 
+    Rdtsc {%EDX}, {%EAX}
+      RegEDX                  OpSet OpImplicit
+      RegEAX                  OpSet OpImplicit
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %edx, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
+};
+0000000000000000: 0f 32                                        rdmsr
+  0f 32                       RDMSR NaClIllegal
+    Rdmsr {%ECX}, {%EDX}, {%EAX}
+      RegECX                  OpUse OpImplicit
+      RegEDX                  OpSet OpImplicit
+      RegEAX                  OpSet OpImplicit
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %ecx, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %edx, ExprSet | ExprSize32 },
+  { OperandReference[1] , 2, ExprImplicit },
+  { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
+};

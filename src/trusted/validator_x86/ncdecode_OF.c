@@ -145,6 +145,23 @@ void NaClDef0FInsts() {
   NaClDefInvalid(0x26);
   NaClDefInvalid(0x27);
 
+  NaClDefInst(0x30, NACLi_RDMSR, NACL_IFLAG(NaClIllegal), InstWrmsr);
+  NaClDefOp(RegECX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegEDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegEAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClSetInstCat(Other);
+
+  NaClDefInst(0x31, NACLi_RDTSC, NACL_EMPTY_IFLAGS, InstRdtsc);
+  NaClDefOp(RegEDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegEAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClSetInstCat(Other);
+
+  NaClDefInst(0x32, NACLi_RDMSR, NACL_IFLAG(NaClIllegal), InstRdmsr);
+  NaClDefOp(RegECX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegEDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegEAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClSetInstCat(Other);
+
   NaClDefInvalid(0x36);
   NaClDefInvalid(0x37);
   NaClDefInvalid(0x38);
