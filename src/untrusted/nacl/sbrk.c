@@ -4,8 +4,8 @@
  * be found in the LICENSE file.
  */
 
-
 #include <errno.h>
+#include <stdint.h>
 
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
