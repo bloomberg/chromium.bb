@@ -64,7 +64,7 @@ bool ScriptableHandlePpapi::HasCallType(CallType call_type,
   uintptr_t id = handle()->browser_interface()->StringToIdentifier(call_name);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (id=%"NACL_PRIxPTR")\n",
                  caller, id));
-  bool status = handle()->plugin()->HasMethod(id, call_type);
+  bool status = handle()->HasMethod(id, call_type);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (return %d)\n",
                  caller, status));
   return status;
@@ -73,8 +73,8 @@ bool ScriptableHandlePpapi::HasCallType(CallType call_type,
 
 bool ScriptableHandlePpapi::HasProperty(const pp::Var& name,
                                         pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::HasProperty (name=%s)\n",
-                 VarToString(name).c_str()));
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::HasProperty (this=%p, name=%s)\n",
+                 static_cast<void*>(this), VarToString(name).c_str()));
   assert(name.is_string() || name.is_int());
   UNREFERENCED_PARAMETER(exception);
   return HasCallType(PROPERTY_GET, NameAsString(name), "HasProperty");
@@ -83,8 +83,8 @@ bool ScriptableHandlePpapi::HasProperty(const pp::Var& name,
 
 bool ScriptableHandlePpapi::HasMethod(const pp::Var& name, pp::Var* exception) {
   assert(name.is_string());
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::HasMethod (name='%s')\n",
-                 name.AsString().c_str()));
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::HasMethod (this=%p, name='%s')\n",
+                 static_cast<void*>(this), VarToString(name).c_str()));
   UNREFERENCED_PARAMETER(exception);
   return HasCallType(METHOD_CALL, name.AsString(), "HasMethod");
 }
