@@ -41,7 +41,7 @@ void *sysbrk(void* new_break) {
   return NACL_SYSCALL(sysbrk)(new_break);
 }
 
-void  *sbrk(int increment) {
+void  *sbrk(intptr_t increment) {
   void  *old_break;
   int   ret;
 

@@ -8,7 +8,7 @@
 /*
  * Stub simple non-thread safe routine for `sbrk' for porting support.
  */
-
+#include <sys/types.h>
 #include <unistd.h>
 
 extern char end; /* Supplied by linker */

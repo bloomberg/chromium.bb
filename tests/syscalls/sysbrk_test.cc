@@ -34,9 +34,16 @@ void* kSysbrkErrorAddress = reinterpret_cast<void*>(-1);
 // modules.
 void* kIllegalBreakAddress = reinterpret_cast<void*>(~0U);
 
+// The amount to increment/decrement sbrk
+const intptr_t kAddrDelta = 65536;
+
 // Make sure the current break address is non-0 when using sysbrk().
 int TestCurrentBreakAddr() {
   START_TEST("TestCurrentBreakAddr");
+
+  // Clear errno incase a previous function set it.
+  errno = 0;
+
   void* break_addr = sysbrk(NULL);
   EXPECT(NULL != break_addr);
   EXPECT(kSysbrkErrorAddress != break_addr);
@@ -44,19 +51,14 @@ int TestCurrentBreakAddr() {
   END_TEST();
 }
 
-// Make sure the current break address is non-0 when using sbrk().
-int TestSbrk() {
-  START_TEST("TestSbrk");
-  void* break_addr = sbrk(NULL);
-  EXPECT(NULL != break_addr);
-  EXPECT(kSysbrkErrorAddress != break_addr)
-  EXPECT(0 == errno);
-  END_TEST();
-}
 
 // Try to reset the program's break address to a legitimate value.
 int TestSysbrk() {
   START_TEST("TestSysbrk");
+
+  // Clear errno incase a previous function set it.
+  errno = 0;
+
   void* break_addr = sysbrk(kSysbreakBase);
   EXPECT(NULL != break_addr);
   EXPECT(kSysbrkErrorAddress != break_addr);
@@ -65,11 +67,58 @@ int TestSysbrk() {
   END_TEST();
 }
 
+// Make sure the current break address changes correctly
+// on expansion and contraction.
+int TestSbrk() {
+  START_TEST("TestSbrkExpandContract");
+
+  // Clear errno incase a previous function set it.
+  errno = 0;
+
+  // Get the start address.
+  char *start_addr = reinterpret_cast<char *>(sbrk(0));
+  EXPECT(NULL != start_addr);
+  EXPECT(kSysbrkErrorAddress != start_addr)
+  EXPECT(0 == errno);
+
+  errno = 0;
+
+  // Return the previous (start) address on increment.
+  char *inc_addr = reinterpret_cast<char *>(sbrk(kAddrDelta));
+  EXPECT(inc_addr == start_addr);
+  EXPECT(0 == errno);
+  errno = 0;
+
+  // Verify that we actually did increment.
+  char *cur_addr = reinterpret_cast<char *>(sbrk(0));
+  EXPECT(cur_addr == (start_addr + kAddrDelta));
+  EXPECT(0 == errno);
+  errno = 0;
+
+  // Return the previous (cur) address on decrement.
+  char *dec_addr = reinterpret_cast<char *>(sbrk(-kAddrDelta));
+  EXPECT(dec_addr == cur_addr);
+  EXPECT(0 == errno);
+  errno = 0;
+
+  // Verify that we actually did decrement and are back where we started.
+  cur_addr = reinterpret_cast<char *>(sbrk(0));
+  EXPECT(cur_addr == start_addr);
+  EXPECT(0 == errno);
+
+  END_TEST();
+}
+
+
 // Try to reset the program's break address to something illegal using sysbrk().
 // When sysbrk() fails, it is supposed to return the old break address and set
 // |errno| "to an appropriate value" (in this case, EINVAL).
 int TestIllegalSysbrk() {
   START_TEST("TestIllegalSysbrk");
+
+  // Clear errno incase a previous function set it.
+  errno = 0;
+
   void* current_break = sysbrk(NULL);
   void* break_addr = sysbrk(kIllegalBreakAddress);
   EXPECT(NULL != break_addr);
@@ -81,7 +130,11 @@ int TestIllegalSysbrk() {
 // Try to reset the program's break address to something illegal using sbrk().
 int TestIllegalSbrk() {
   START_TEST("TestIllegalSbrk");
-  void* current_break = sbrk(NULL);
+
+  // Clear errno incase a previous function set it.
+  errno = 0;
+
+  void* current_break = sbrk(0);
   void* break_addr = sbrk(reinterpret_cast<ptrdiff_t>(kIllegalBreakAddress));
   EXPECT(NULL != break_addr);
   EXPECT(errno == ENOMEM);

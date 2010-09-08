@@ -187,6 +187,7 @@ int32_t NaClSetBreak(struct NaClAppThread *natp,
     NaClLog(4, "new_break before break (0x%"NACL_PRIxPTR"); freeing\n",
             nap->break_addr);
     nap->break_addr = new_break;
+    break_addr = new_break;
   } else {
 
     /*
