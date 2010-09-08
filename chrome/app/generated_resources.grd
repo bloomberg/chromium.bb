@@ -9422,6 +9422,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_LAYOUT_ISRAEL" desc="In the language menu button, this shows the input mode.">
         Hebrew
       </message>
+      <message name="IDS_STATUSBAR_LAYOUT_KOREA_104" desc="In the language menu button, this shows the input mode.">
+        Korean keyboard layout
+      </message>
 
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't log in because password is invalid">
         Sorry, your password could not be verified. Please try again.

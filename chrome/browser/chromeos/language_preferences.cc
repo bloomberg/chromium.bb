@@ -18,13 +18,10 @@ const char kHotKeySectionName[] = "general/hotkey";
 const char kPreloadEnginesConfigName[] = "preload_engines";
 const char kNextEngineInMenuConfigName[] = "next_engine_in_menu";
 const char kPreviousEngineConfigName[] = "previous_engine";
-// TODO(yusukes): Check if the "Kana/Eisu" key in the Japanese keyboard for
-// Chrome OS actually generates Zenkaku_Hankaku when the keyboard gets ready.
 // ibus-daemon accepts up to 5 next-engine hot-keys.
 const char kHotkeyNextEngineInMenu[] =
     "Shift+Alt+Release+Shift_L,Shift+Alt+Release+Meta_L,Control+Shift+space,"
-    "Zenkaku_Hankaku";
-// TODO(suzhe): Add more key bindings?
+    "Zenkaku_Hankaku,Hangul";
 const char kHotkeyPreviousEngine[] = "Control+space";
 
 // ---------------------------------------------------------------------------
@@ -127,11 +124,9 @@ const LanguageMultipleChoicePreference<int> kChewingHsuSelKeyType = {
 const char kHangulSectionName[] = "engine/Hangul";
 const char kHangulKeyboardConfigName[] = "HangulKeyboard";
 const char kHangulHanjaKeysConfigName[] = "HanjaKeys";
-// We add Control+Alt+9 in addition to the two default keys since Hanja key
-// might not be available on the Chrome OS keyboard and F9 key is reserved by
-// the window manager.
-// TODO: Hanja keys are not configurable yet (and we're not sure if it should.)
-const char kHangulHanjaKeys[] = "F9,Hangul_Hanja,Control+Alt+9";
+// We add Control+9 since F9 key is reserved by the window manager.
+// TODO: HanjaKeys are not configurable yet (and we're not sure if it should.)
+const char kHangulHanjaKeys[] = "F9,Hangul_Hanja,Control+9";
 
 const HangulKeyboardNameIDPair kHangulKeyboardNameIDPairs[] = {
   // We have to sync the |keyboard_id|s with those in
