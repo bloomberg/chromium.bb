@@ -359,6 +359,14 @@ below:
       <message name="IDS_PDF_NEED_PASSWORD" desc="A message asking the user for a password to open a PDF file.">
         This document is password protected.  Please enter a password.
       </message>
+
+      <message name="IDS_PDF_PAGE_LOADING" desc="A message displayed on the PDF page while page is loading.">
+        Loading...
+      </message>
+
+      <message name="IDS_PDF_LOADING_PROGRESS" desc="A message displayed on the PDF control to indicate loading progress.">
+        Loading document: %d/%d pages...
+      </message>
     </messages>
   </release>
 </grit>
