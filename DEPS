@@ -61,7 +61,7 @@ deps = {
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client/tests/prebuilt@" +
+    Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
     Var("nacl_revision"),
 
   "src/third_party/skia/src":
