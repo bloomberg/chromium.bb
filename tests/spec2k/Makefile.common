@@ -193,11 +193,11 @@ BC_PRELINK=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -emit-llvm -L$(LIB_BC_PATH)  -arch a
 
 # optimized llvm bit code combined and interprocedurally optimized
 $(IT).opt.prelinked.bc: $(IT).opt.bc
-	$(BC_PRELINK) $^ -lm -o $(IT).opt.prelinked
+	$(BC_PRELINK) $^ -lm -o $@
 
 # optimized llvm bit code combined and interprocedurally optimized
 $(IT).prelinked.bc: $(IT).bc
-	$(BC_PRELINK) $^ -lm -o $(IT).prelinked
+	$(BC_PRELINK) $^ -lm -o $@
 
 
 # TODO(abetul): the arm translator is not fully supported at this time

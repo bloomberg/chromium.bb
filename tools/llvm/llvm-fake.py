@@ -565,6 +565,10 @@ def GenerateCombinedBitcodeFile(argv, arch):
     if a in ['-o', '-T']:
       # combine two arg items into one arg
       last = a
+    elif a.startswith('-o$'):
+      tokens = a.split('$')
+      output = tokens[1]
+      args_native_ld += tokens
     elif a == '-emit-llvm':
         pass
     elif a.endswith('.bc'):
@@ -584,10 +588,6 @@ def GenerateCombinedBitcodeFile(argv, arch):
       args_bit_ld.append(a)
     elif a.startswith('-L'):
       args_bit_ld.append(a)
-    elif a.startswith('-o$'):
-      tokens = a.split('$')
-      output = tokens[1]
-      args_native_ld += tokens
     else:
       LogFatal('Unexpected ld arg: %s' % a)
 
@@ -604,7 +604,11 @@ def GenerateCombinedBitcodeFile(argv, arch):
                       '-lnosys',
                       ])
 
-  args_bit_ld += ['-o', output + '.bc']
+  if '-emit-llvm' in argv:
+      bitcode_output = output
+  else:
+      bitcode_output = output  + '.bc'
+  args_bit_ld += ['-o', bitcode_output]
 
   # add init and fini
   # we add some native libraries which are only inspected for
