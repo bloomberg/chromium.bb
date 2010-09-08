@@ -1054,6 +1054,37 @@ void TabLanguageDeterminedObserver::Observe(
   delete this;
 }
 
+InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
+                                           IPC::Message* reply_message,
+                                           TabContents* tab_contents,
+                                           int target_count)
+    : automation_(automation),
+      reply_message_(reply_message),
+      tab_contents_(tab_contents),
+      target_count_(target_count) {
+  Source<TabContents> source(tab_contents);
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
+  CheckCount();
+}
+
+void InfoBarCountObserver::Observe(NotificationType type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  DCHECK(type == NotificationType::TAB_CONTENTS_INFOBAR_ADDED ||
+         type == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED);
+  CheckCount();
+}
+
+void InfoBarCountObserver::CheckCount() {
+  if (tab_contents_->infobar_delegate_count() != target_count_)
+    return;
+
+  AutomationMsg_WaitForInfoBarCount::WriteReplyParams(reply_message_, true);
+  automation_->Send(reply_message_);
+  delete this;
+}
+
 #if defined(OS_CHROMEOS)
 LoginManagerObserver::LoginManagerObserver(
     AutomationProvider* automation,

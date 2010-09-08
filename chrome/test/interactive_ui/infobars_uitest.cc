@@ -31,7 +31,7 @@ TEST_F(InfoBarsUITest, TestInfoBarsCloseOnNewTheme) {
       test_data_directory_.AppendASCII("extensions").AppendASCII("theme.crx"),
       true);
   ASSERT_TRUE(theme != NULL);
-  EXPECT_TRUE(tab_1->WaitForInfoBarCount(1, action_max_timeout_ms()));
+  EXPECT_TRUE(tab_1->WaitForInfoBarCount(1));
 
   EXPECT_TRUE(browser->AppendTab(
       test_server.GetURL("files/simple.html")));
@@ -42,9 +42,9 @@ TEST_F(InfoBarsUITest, TestInfoBarsCloseOnNewTheme) {
       test_data_directory_.AppendASCII("extensions").AppendASCII("theme2.crx"),
       true);
   ASSERT_TRUE(theme != NULL);
-  EXPECT_TRUE(tab_2->WaitForInfoBarCount(1, action_max_timeout_ms()));
-  EXPECT_TRUE(tab_1->WaitForInfoBarCount(0, action_max_timeout_ms()));
+  EXPECT_TRUE(tab_2->WaitForInfoBarCount(1));
+  EXPECT_TRUE(tab_1->WaitForInfoBarCount(0));
 
   EXPECT_TRUE(automation()->ResetToDefaultTheme());
-  EXPECT_TRUE(tab_2->WaitForInfoBarCount(0, action_max_timeout_ms()));
+  EXPECT_TRUE(tab_2->WaitForInfoBarCount(0));
 }

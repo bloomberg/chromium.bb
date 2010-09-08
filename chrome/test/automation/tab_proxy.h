@@ -346,10 +346,9 @@ class TabProxy : public AutomationResourceProxy,
   // Retrieves the number of info-bars currently showing in |count|.
   bool GetInfoBarCount(int* count) WARN_UNUSED_RESULT;
 
-  // Waits for up to |wait_timeout| ms until the infobar count is |count|.
-  // Returns false if a timeout occurred before the count matched, or an
-  // error occurred retrieving the count.
-  bool WaitForInfoBarCount(int count, int wait_timeout) WARN_UNUSED_RESULT;
+  // Waits until the infobar count is |count|.
+  // Returns true on success.
+  bool WaitForInfoBarCount(int count) WARN_UNUSED_RESULT;
 
   // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
   // If |wait_for_navigation| is true, this call does not return until a

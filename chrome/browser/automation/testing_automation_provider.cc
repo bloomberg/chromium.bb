@@ -405,6 +405,8 @@ void TestingAutomationProvider::OnMessageReceived(
                                     SendJSONRequest)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabCountToBecome,
                                     WaitForTabCountToBecome)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForInfoBarCount,
+                                    WaitForInfoBarCount)
 
     IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
   IPC_END_MESSAGE_MAP()
@@ -3706,6 +3708,28 @@ void TestingAutomationProvider::WaitForTabCountToBecome(
 
   // The observer will delete itself.
   new TabCountChangeObserver(this, browser, reply_message, target_tab_count);
+}
+
+void TestingAutomationProvider::WaitForInfoBarCount(
+    int tab_handle,
+    int target_count,
+    IPC::Message* reply_message) {
+  if (!tab_tracker_->ContainsHandle(tab_handle)) {
+    AutomationMsg_WaitForInfoBarCount::WriteReplyParams(reply_message_, false);
+    Send(reply_message_);
+    return;
+  }
+
+  NavigationController* controller = tab_tracker_->GetResource(tab_handle);
+  if (!controller) {
+    AutomationMsg_WaitForInfoBarCount::WriteReplyParams(reply_message_, false);
+    Send(reply_message_);
+    return;
+  }
+
+  // The delegate will delete itself.
+  new InfoBarCountObserver(this, reply_message, controller->tab_contents(),
+                           target_count);
 }
 
 // TODO(brettw) change this to accept GURLs when history supports it

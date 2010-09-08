@@ -1434,4 +1434,10 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* target tab count */,
                              bool /* success */)
 
+  // Waits for the infobar count to reach given number.
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_WaitForInfoBarCount,
+                             int /* tab handle */,
+                             int /* target count */,
+                             bool /* success */)
+
 IPC_END_MESSAGES(Automation)

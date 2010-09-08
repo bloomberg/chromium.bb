@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -560,6 +560,33 @@ class TabLanguageDeterminedObserver : public NotificationObserver {
   TranslateInfoBarDelegate* translate_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLanguageDeterminedObserver);
+};
+
+class InfoBarCountObserver : public NotificationObserver {
+ public:
+  InfoBarCountObserver(AutomationProvider* automation,
+                       IPC::Message* reply_message,
+                       TabContents* tab_contents,
+                       int target_count);
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  // Checks whether the infobar count matches our target, and if so
+  // sends the reply message and deletes itself.
+  void CheckCount();
+
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  TabContents* tab_contents_;
+
+  const int target_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(InfoBarCountObserver);
 };
 
 #if defined(OS_CHROMEOS)

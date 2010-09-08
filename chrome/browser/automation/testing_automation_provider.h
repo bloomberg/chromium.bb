@@ -600,6 +600,10 @@ class TestingAutomationProvider : public AutomationProvider,
                                int target_tab_count,
                                IPC::Message* reply_message);
 
+  void WaitForInfoBarCount(int tab_handle,
+                           int target_count,
+                           IPC::Message* reply_message);
+
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
       HistoryService::Handle request_handle,

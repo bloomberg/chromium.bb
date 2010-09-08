@@ -40,7 +40,7 @@ TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
       &result));
   EXPECT_TRUE(result);
 
-  EXPECT_TRUE(tab->WaitForInfoBarCount(1, action_max_timeout_ms()));
+  EXPECT_TRUE(tab->WaitForInfoBarCount(1));
 }
 
 TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {

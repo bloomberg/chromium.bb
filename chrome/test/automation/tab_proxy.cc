@@ -658,17 +658,13 @@ bool TabProxy::GetInfoBarCount(int* count) {
   return sender_->Send(new AutomationMsg_GetInfoBarCount(0, handle_, count));
 }
 
-bool TabProxy::WaitForInfoBarCount(int target_count, int wait_timeout) {
-  int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
-  for (int i = 0; i < intervals; ++i) {
-    PlatformThread::Sleep(automation::kSleepTime);
-    int new_count = -1;
-    if (!GetInfoBarCount(&new_count))
-      return false;
-    if (target_count == new_count)
-      return true;
-  }
-  return false;
+bool TabProxy::WaitForInfoBarCount(int target_count) {
+  if (!is_valid())
+    return false;
+
+  bool success = false;
+  return sender_->Send(new AutomationMsg_WaitForInfoBarCount(
+                           0, handle_, target_count, &success)) && success;
 }
 
 bool TabProxy::ClickInfoBarAccept(int info_bar_index,
