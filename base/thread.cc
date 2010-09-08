@@ -136,9 +136,27 @@ void Thread::StopSoon() {
   message_loop_->PostTask(FROM_HERE, new ThreadQuitTask());
 }
 
+#if defined(OS_WIN)
+#pragma warning (disable: 4748)
+#pragma optimize( "", off )
+#endif
+
 void Thread::Run(MessageLoop* message_loop) {
+#if defined(OS_WIN)
+  // Logging the thread name for debugging.
+  // TODO(huanr): remove after done.
+  // http://code.google.com/p/chromium/issues/detail?id=54307
+  char name[16];
+  strncpy(name, name_.c_str(), arraysize(name) - 1);
+  name[arraysize(name) - 1] = '\0';
+#endif
   message_loop->Run();
 }
+
+#if defined(OS_WIN)
+#pragma optimize( "", on )
+#pragma warning (default: 4748)
+#endif
 
 void Thread::ThreadMain() {
   {
