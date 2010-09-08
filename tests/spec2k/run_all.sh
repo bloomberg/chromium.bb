@@ -29,6 +29,8 @@ SPEC2K_SCRIPT="./run.train.sh"
 # export VERIFY=no
 export VERIFY=${VERIFY:-yes}
 
+export PERF_LOGGER="$(pwd)/emit_perf_log.sh"
+
 # Pick a setup
 
 ######################################################################
@@ -360,21 +362,21 @@ BuildBenchmarks() {
     Banner "Building: $i"
     cd $i
 
-    make timeit=${timeit} ${i#*.}.${SUFFIX}
+    make measureit=${timeit} PERF_LOGGER="${PERF_LOGGER}" ${i#*.}.${SUFFIX}
     cd ..
   done
 }
 
-#@
+
 #@ TimedRunCmd <time_result_file> {actual_cmd }
 #@
-#@  Run the command under time. Each individual timed run files
-#@  have a history of one run. To keep history, refer to CollectTimingInfo
+#@  Run the command under time and dump time data to file.
 TimedRunCmd() {
   target=$1
   shift
-  /usr/bin/time -f "TIME %U %S %e %C" -o ${target} "$@"
+  /usr/bin/time -f "%U %S %e %C" -o ${target} "$@"
 }
+
 
 #@
 #@ RunBenchmarks <setup> [ref|train] <benchmark>*
@@ -414,11 +416,17 @@ RunTimedBenchmarks() {
   ConfigInfo "$@"
   for i in ${list} ; do
     Banner "Benchmarking: $i"
-    cd $i
-    target_file=./${i#*.}.${SUFFIX}
+    pushd $i
+    local benchname=${i#*.}
+    local target_file=./${benchname}.${SUFFIX}
+    local time_file=${target_file}.run_time
     size  ${target_file}
-    TimedRunCmd ${target_file}.run_time ${script} ${target_file}
-    cd ..
+    TimedRunCmd ${time_file} ${script} ${target_file}
+    # TODO(jvoung): split runtimes by arch as well
+    # i.e., pull "arch" out of SUFFIX and add to the "runtime" label.
+    "${PERF_LOGGER}" LogUserSysTime "${time_file}" "runtime" \
+      ${benchname} ${SUFFIX}
+    popd
   done
 }
 

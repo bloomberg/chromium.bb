@@ -18,18 +18,41 @@ CFLAGS = $(CFLAGS_EXTRA)
 .SUFFIXES : .c .cc .o .bc
 
 ######################################################################
+# Measurement tools
 
 ######################################################################
-# time command wrapper
-# invoke the makefile with
+# Time command wrapper, and size measurement command
+# Enable by invoking the makefile with:
+#     measureit=1
+# and PERF_LOGGER=<log_script_name>
 ######################################################################
 
-ifeq ($(timeit),1)
-TIME_CMD=/usr/bin/time -f "TIME %U %S %e %C" -o $@.compile_time
+ifeq ($(measureit),1)
+# Dumps time taken to translate to a file: $exe.compile_time
+TIME_CMD=/usr/bin/time -f "%U %S %e %C" -o $@.compile_time
+# Calculate user+sys time for generating executable $(1) for benchmark $(2)
+# Assumes the following format for name of $(1):  $(2)."setup_identifier"
+# examples of "setup_identifier": nacl.opt.x8664, pnacl_translator.x8664, ...
+# Assumes time is logged to a file with name $(1).compile_time
+LOG_TRANSLATE_TIME=(TIME_FILE="$(1).compile_time" && \
+	 FILE_TYPE=$(subst $(2).,,$(1)) && \
+	 $(PERF_LOGGER) LogUserSysTime $$TIME_FILE "compiletime" $(2) $$FILE_TYPE)
 else
 TIME_CMD=
+LOG_TRANSLATE_TIME=true
 endif
 
+ifeq ($(measureit),1)
+# Check gzipped size of file $(1) for benchmark $(2)
+# Assumes the following format for name of $(1):  $(2)."setup_identifier"
+# examples of "setup_identifier": nacl.opt.x8664, opt.prelinked.bc, ...
+LOG_ZIP_SIZE=(FILE_TYPE=$(subst $(2).,,$(1)) && \
+	$(PERF_LOGGER) LogGzippedSize $(1) "transfersize" $(2) $$FILE_TYPE)
+else
+LOG_ZIP_SIZE=true
+endif
+
+######################################################################
 
 clean:
 	rm -f -- *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
@@ -57,21 +80,26 @@ LOCAL_GCC=$(TIME_CMD) /usr/bin/gcc
 # straight x86-32 gcc
 $(IT).gcc.x8632: $(SRC) $(CPPSRC)
 	$(LOCAL_GCC) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized x86-32 gcc
 $(IT).gcc.opt.x8632: $(SRC) $(CPPSRC)
 	$(LOCAL_GCC) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 
 # straight x86-64 gcc
 $(IT).gcc.x8664: $(SRC) $(CPPSRC)
 	$(LOCAL_GCC) -O0 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
-	$^ -static -lstdc++ -lm  -o $@
+	 	$^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized x86-64 gcc
 $(IT).gcc.opt.x8664: $(SRC) $(CPPSRC)
 	$(LOCAL_GCC) -O3 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
-	$^ -static -lstdc++ -lm  -o $@
+	 	$^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
+
 
 ######################################################################
 LOCAL_CROSS_GCC=$(TIME_CMD) \
@@ -80,12 +108,14 @@ LOCAL_CROSS_GCC=$(TIME_CMD) \
 # straight arm gcc (code sourcery)
 $(IT).gcc.arm: $(SRC) $(CPPSRC)
 	$(LOCAL_CROSS_GCC) -O0 -march=armv6 $(CFLAGS) \
-	$^ -static -lstdc++ -lm  -o $@
+		$^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized x86 gcc (code sourcery)
 $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
 	$(LOCAL_CROSS_GCC) -O3 -march=armv6 $(CFLAGS) \
-	$^ -static -lstdc++ -lm  -o $@
+		$^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
 ## NACL-GCC TOOLCHAINS
@@ -95,10 +125,12 @@ NACL_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl-gcc
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC) $(CPPSRC)
 	$(NACL_GCC) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -lnosys -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86 gcc
 $(IT).nacl.opt.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O3 -m32 $(CFLAGS) $^  -static -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -lnosys -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
 NACL64_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl64-gcc
@@ -106,10 +138,12 @@ NACL64_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl64-gcc
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC) $(CPPSRC)
 	$(NACL64_GCC) -O0 $(CFLAGS) $^  -static -lstdc++ -lm  -lnosys -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86-64 gcc
 $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
 	$(NACL64_GCC) -O3 $(CFLAGS) $^  -static -lstdc++ -lm  -lnosys -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
 ## BITCODE TOOLCHAINS
@@ -144,33 +178,39 @@ PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS) -D__native_client__=1
 # llvm bit code combined
 $(IT).bc: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
 	$(BC_LINK) $^  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized llvm bit code combined
 $(IT).preopt.bc: $(SRC:%.c=%.o.bc) $(CPPSRC:%.cc=%.o.bc)
 	$(BC_LINK) $^  -o $@
-
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized llvm bit code combined and interprocedurally re-optimized
 $(IT).opt.bc: $(IT).preopt.bc
 	$(BC_OPT) -f -O3 -std-compile-opts $< -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
 # BITCODE - BACKEND - ARM
 
 $(IT).pnacl.arm: $(IT).bc
 	$(BC_TRANSLATE) $(IT).bc  -arch arm $(PNACL_FLAGS) -o $@ -lm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 $(IT).pnacl.opt.arm: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch arm $(PNACL_FLAGS) -o $@ -lm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 ######################################################################
 # BITCODE - BACKEND - X8632
 
 $(IT).pnacl.x8632: $(IT).bc
 	$(BC_TRANSLATE) $(IT).bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 $(IT).pnacl.opt.x8632: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 
 ######################################################################
@@ -178,9 +218,11 @@ $(IT).pnacl.opt.x8632: $(IT).opt.bc
 
 $(IT).pnacl.x8664: $(IT).bc
 	$(BC_TRANSLATE) $(IT).bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 $(IT).pnacl.opt.x8664: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 ######################################################################
 # SANDBOXED TRANSLATOR
@@ -189,15 +231,18 @@ $(IT).pnacl.opt.x8664: $(IT).opt.bc
 # tools/llvm/utman.sh install-translators
 ######################################################################
 # Note: we are using -arch arm here, BUT the actual arch should be irrelevant
-BC_PRELINK=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -emit-llvm -L$(LIB_BC_PATH)  -arch arm
+BC_PRELINK=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -emit-llvm -L$(LIB_BC_PATH) \
+	-arch arm
 
 # optimized llvm bit code combined and interprocedurally optimized
 $(IT).opt.prelinked.bc: $(IT).opt.bc
 	$(BC_PRELINK) $^ -lm -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-# optimized llvm bit code combined and interprocedurally optimized
+# llvm bit code combined
 $(IT).prelinked.bc: $(IT).bc
 	$(BC_PRELINK) $^ -lm -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 
 # TODO(abetul): the arm translator is not fully supported at this time
@@ -214,15 +259,19 @@ BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8632/translator
 
 $(IT).pnacl_translator.x8632: $(IT).prelinked.bc
 	$(BC_X8632_TRANSLATOR) $(IT).prelinked.bc $@
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 $(IT).pnacl_translator.opt.x8632: $(IT).opt.prelinked.bc
 	$(BC_X8632_TRANSLATOR) $(IT).opt.prelinked.bc $@
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 
 BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8664/translator
 
 $(IT).pnacl_translator.x8664: $(IT).prelinked.bc
 	$(BC_X8664_TRANSLATOR) $(IT).prelinked.bc $@
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 $(IT).pnacl_translator.opt.x8664: $(IT).opt.prelinked.bc
 	$(BC_X8664_TRANSLATOR) $(IT).opt.prelinked.bc $@
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))

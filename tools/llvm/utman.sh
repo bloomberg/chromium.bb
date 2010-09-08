@@ -2759,11 +2759,11 @@ CollectTimingInfo() {
   )
 }
 
-#@ timed-test-spec <result-file> <official-spec-dir> <setup> -  run spec tests
-#@  result-file is NOT cleared out, so you can reuse the same file to gather
-#@  run-time data from different runs.
-#@  Individual results files ARE cleaned out during each run, so as to not
-#@  pollute the final results file
+
+#@ timed-test-spec <result-file> <official-spec-dir> <setup> ... - run spec and
+#@  measure time / size data. Data is emitted to stdout, but also collected
+#@  in <result-file>. <result-file> is not cleared across runs (but temp files
+#@  are cleared on each run).
 #@  Note that the VERIFY variable effects the timing!
 timed-test-spec() {
   if [ "$#" -lt "3" ]; then
@@ -2784,24 +2784,38 @@ timed-test-spec() {
 }
 
 
-
 #@ test-bot-base         - tests that must pass on the bots to validate a TC
 test-bot-base() {
   test-all
 }
 
 
-#@ test-bot-extra <spec-official> - additional tests run on the bots
-test-bot-extra() {
-  official=$(readlink -f $1)
+#@ timed-test-spec-all <spec-official> - Run spec on all interesting setups,
+#@   and measure benchmark stats as well (measurements emitted to stdout).
+timed-test-spec-all() {
+  official_specdir=$(readlink -f $1)
+
+  # Make sure the translators are there...
+  build-sandboxed-translators
+  install-translators
+
   spushd tests/spec2k
   ./run_all.sh CleanBenchmarks
-  ./run_all.sh PoplateFromSpecHarness ${official}
-  ./run_all.sh BuildAndRunBenchmarks SetupPnaclX8632Opt
-  ./run_all.sh BuildAndRunBenchmarks SetupPnaclX8632Opt
-  ./run_all.sh BuildAndRunBenchmarks SetupPnaclArmOpt
+  ./run_all.sh PopulateFromSpecHarness ${official_specdir}
 
+# TODO(jvoung) enable more setups when issues fixed:
+# - gcc-x86-64: 253.perlbmk doesn't run without double-free/mem-corrupt
+# - nacl-gcc32: tiny float diff
+  local setups="SetupGccX8632Opt SetupNaclX8664Opt
+SetupPnaclX8632Opt SetupPnaclX8664Opt SetupPnaclArmOpt
+SetupPnaclTranslatorX8632Opt SetupPnaclTranslatorX8664Opt"
+  for setup in ${setups}; do
+    ./run_all.sh TimedBuildAndRunBenchmarks ${setup} train
+  done
+  spopd
 }
+
+
 ######################################################################
 ######################################################################
 #
