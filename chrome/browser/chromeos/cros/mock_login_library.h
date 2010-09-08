@@ -34,6 +34,7 @@ class MockLoginLibrary : public LoginLibrary {
   MOCK_METHOD3(WhitelistAsync, bool(const std::string&,
                                     const std::vector<uint8>&,
                                     Delegate<bool>*));
+  MOCK_METHOD1(EnumerateWhitelisted, bool(std::vector<std::string>*));
   MOCK_METHOD2(StartSession, bool(const std::string&, const std::string&));
   MOCK_METHOD1(StopSession, bool(const std::string&));
   MOCK_METHOD2(RestartJob, bool(int, const std::string&));

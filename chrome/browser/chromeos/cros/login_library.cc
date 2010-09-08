@@ -80,6 +80,10 @@ class LoginLibraryImpl : public LoginLibrary {
     return chromeos::Whitelist(email.c_str(), signature);
   }
 
+  bool EnumerateWhitelisted(std::vector<std::string>* whitelisted) {
+    return chromeos::EnumerateWhitelisted(whitelisted);
+  }
+
   bool StartSession(const std::string& user_email,
                     const std::string& unique_id /* unused */) {
     // only pass unique_id through once we use it for something.
@@ -198,11 +202,14 @@ class LoginLibraryStubImpl : public LoginLibrary {
     return true;
   }
   bool WhitelistAsync(const std::string& email,
-                        const std::vector<uint8>& signature,
-                        Delegate<bool>* callback) {
+                      const std::vector<uint8>& signature,
+                      Delegate<bool>* callback) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
+    return true;
+  }
+  bool EnumerateWhitelisted(std::vector<std::string>* whitelisted) {
     return true;
   }
   bool StartSession(const std::string& user_email,

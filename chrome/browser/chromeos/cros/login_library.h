@@ -78,6 +78,11 @@ class LoginLibrary {
                                 const std::vector<uint8>& signature,
                                 Delegate<bool>* callback) = 0;
 
+  // Retrieves the user white list. Note the call is for display purpose only.
+  // To determine if an email is white listed, you MUST use CheckWhitelist.
+  //  Returns true if the request is successfully dispatched.
+  virtual bool EnumerateWhitelisted(std::vector<std::string>* whitelisted) = 0;
+
   // Tells the session manager to start a logged-in session for the user
   // |user_email|.  |unique_id| is meant to be used when we have a non-human-
   // readable unique identifier by which we distinguish users (to deal with
