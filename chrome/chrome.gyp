@@ -23,7 +23,6 @@
     'chromium_dependencies': [
       'common',
       'browser',
-      'debugger',
       'chrome_gpu',
       'profile_import',
       'renderer',
@@ -1787,7 +1786,6 @@
           'msvs_guid': '2E969AE9-7B12-4EDB-8E8B-48C7AE7BE357',
           'dependencies': [
             'browser',
-            'debugger',
             'renderer',
             'syncapi',
             '../base/base.gyp:base',

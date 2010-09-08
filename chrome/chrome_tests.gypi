@@ -265,7 +265,6 @@
       'dependencies': [
         'chrome',
         'browser',
-        'debugger',
         'common',
         'chrome_resources',
         'chrome_strings',
@@ -457,7 +456,6 @@
         'chrome_resources',
         'chrome_strings',
         'common',
-        'debugger',
         'syncapi',
         'test_support_ui',
         '../base/base.gyp:base',
@@ -612,7 +610,6 @@
       'dependencies': [
         'chrome',
         'browser',
-        'debugger',
         'common',
         'chrome_resources',
         'chrome_strings',
@@ -681,7 +678,6 @@
       'dependencies': [
         'chrome',
         'browser',
-        'debugger',
         'common',
         'chrome_resources',
         'chrome_strings',
@@ -753,7 +749,6 @@
         'chrome_resources',
         'chrome_strings',
         'common',
-        'debugger',
         'profile_import',
         'renderer',
         'service',
@@ -1612,7 +1607,6 @@
         'chrome',
         'chrome_resources',
         'chrome_strings',
-        'debugger',
         'profile_import',
         'renderer',
         'test_support_common',
@@ -1934,7 +1928,6 @@
       'dependencies': [
         'chrome',
         'browser',
-        'debugger',
         'common',
         'chrome_resources',
         'chrome_strings',
@@ -2308,7 +2301,6 @@
         'chrome',
         'chrome_resources',
         'common',
-        'debugger',
         'profile_import',
         'renderer',
         'chrome_strings',
@@ -2491,7 +2483,6 @@
           'dependencies': [
             'browser',
             'common',
-            'debugger',
             'renderer',
             'chrome_resources',
             'chrome_strings',

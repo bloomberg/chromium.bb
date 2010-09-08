@@ -15,6 +15,7 @@
         'chrome_resources',
         'chrome_strings',
         'component_extensions',
+        'debugger',
         'installer_util',
         'platform_locale_settings',
         'profile_import',
