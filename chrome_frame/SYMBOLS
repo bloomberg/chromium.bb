@@ -1,2 +1,4 @@
 servers\npchrome_frame.pdb
 servers\chrome_launcher.pdb
+chrome_frame_helper.pdb
+chrome_frame_helper_dll.pdb
