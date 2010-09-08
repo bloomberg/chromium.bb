@@ -28,12 +28,3 @@ BUG32153 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = IMAGE+TE
 
 // FFmpeg buffer rotation is causing this hang.
 BUG54465 WIN SKIP : http/tests/media/video-play-stall-seek.html = FAIL
-
-// Temporarily marked as pass + fail until the fix for
-// https://bugs.webkit.org/show_bug.cgi?id=45155 lands and rolls in, at which
-// point this can be removed.
-BUGPKASTING : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TEXT PASS
-
-// WebKit 66847. new test.
-BUG54656 WIN LINUX : svg/custom/use-invalid-pattern.svg = MISSING
-BUG54656 MAC : svg/custom/use-invalid-pattern.svg = TEXT
