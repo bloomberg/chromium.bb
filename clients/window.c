@@ -873,10 +873,6 @@ window_copy_surface(struct window *window,
 
 	cairo_paint (cr);
 	cairo_destroy (cr);
-
-	wl_surface_damage(window->surface,
-			  rectangle->x, rectangle->y,
-			  rectangle->width, rectangle->height);
 }
 
 static gboolean
