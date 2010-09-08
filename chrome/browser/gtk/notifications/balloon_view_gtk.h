@@ -77,10 +77,7 @@ class BalloonViewImpl : public BalloonView,
   // Where the balloon contents should be in screen coordinates.
   gfx::Rect GetContentsRectangle() const;
 
-  static void OnCloseButtonThunk(GtkWidget* widget, gpointer user_data) {
-    reinterpret_cast<BalloonViewImpl*>(user_data)->Close(true);
-  }
-
+  CHROMEGTK_CALLBACK_0(BalloonViewImpl, void, OnCloseButton);
   CHROMEGTK_CALLBACK_1(BalloonViewImpl, gboolean, OnExpose, GdkEventExpose*);
   CHROMEGTK_CALLBACK_0(BalloonViewImpl, void, OnOptionsMenuButton);
   CHROMEGTK_CALLBACK_0(BalloonViewImpl, gboolean, OnDestroy);

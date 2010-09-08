@@ -380,6 +380,10 @@ void BalloonViewImpl::Observe(NotificationType type,
   }
 }
 
+void BalloonViewImpl::OnCloseButton(GtkWidget* widget) {
+  Close(true);
+}
+
 gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
   gdk_cairo_rectangle(cr, &event->area);
