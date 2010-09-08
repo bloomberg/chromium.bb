@@ -400,7 +400,10 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			length = s ? strlen(s) + 1: 0;
 			*p++ = length;
 
-			*sp = (const char *) p;
+			if (length > 0)
+				*sp = (const char *) p;
+			else
+				*sp = NULL;
 
 			memcpy(p, s, length);
 			p += DIV_ROUNDUP(length, sizeof *p);
