@@ -39,8 +39,6 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
 #endif
 #if defined(OS_CHROMEOS)
     prefs::kTapToClickEnabled,
-    prefs::kVertEdgeScrollEnabled,
-    prefs::kTouchpadSpeedFactor,
     prefs::kTouchpadSensitivity,
 #endif
     prefs::kDownloadDefaultDirectory,

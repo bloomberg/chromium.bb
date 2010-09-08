@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
-#include "chrome/browser/chromeos/cros/synaptics_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
+#include "chrome/browser/chromeos/cros/touchpad_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 
 namespace chromeos {
@@ -80,16 +80,16 @@ SpeechSynthesisLibrary* CrosLibrary::GetSpeechSynthesisLibrary() {
   return speech_synthesis_lib_.GetDefaultImpl(use_stub_impl_);
 }
 
-SynapticsLibrary* CrosLibrary::GetSynapticsLibrary() {
-  return synaptics_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
 SyslogsLibrary* CrosLibrary::GetSyslogsLibrary() {
   return syslogs_lib_.GetDefaultImpl(use_stub_impl_);
 }
 
 SystemLibrary* CrosLibrary::GetSystemLibrary() {
   return system_lib_.GetDefaultImpl(use_stub_impl_);
+}
+
+TouchpadLibrary* CrosLibrary::GetTouchpadLibrary() {
+  return touchpad_lib_.GetDefaultImpl(use_stub_impl_);
 }
 
 UpdateLibrary* CrosLibrary::GetUpdateLibrary() {
@@ -184,9 +184,9 @@ void CrosLibrary::TestApi::SetSpeechSynthesisLibrary(
   library_->speech_synthesis_lib_.SetImpl(library, own);
 }
 
-void CrosLibrary::TestApi::SetSynapticsLibrary(
-    SynapticsLibrary* library, bool own) {
-  library_->synaptics_lib_.SetImpl(library, own);
+void CrosLibrary::TestApi::SetTouchpadLibrary(
+    TouchpadLibrary* library, bool own) {
+  library_->touchpad_lib_.SetImpl(library, own);
 }
 
 void CrosLibrary::TestApi::SetSyslogsLibrary(

@@ -187,15 +187,8 @@ const char kTLS1Enabled[] = "ssl.tls1.enabled";
 // A boolean pref set to true if TapToClick is being done in browser.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 
-// A boolean pref set to true if VertEdgeScroll is being done in browser.
-const char kVertEdgeScrollEnabled[] =
-    "settings.touchpad.enable_vert_edge_scroll";
-
-// A integer pref for the touchpad speed factor.
-const char kTouchpadSpeedFactor[] = "settings.touchpad.speed_factor";
-
 // A integer pref for the touchpad sensitivity.
-const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity";
+const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 
 // A string pref set to the current input method.
 const char kLanguageCurrentInputMethod[] =

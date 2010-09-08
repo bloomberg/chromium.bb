@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
-#include "chrome/browser/chromeos/cros/synaptics_library.h"
+#include "chrome/browser/chromeos/cros/touchpad_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -27,9 +27,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
   prefs->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   prefs->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
-  prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 9);
-  prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
+  prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 3);
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
@@ -107,8 +105,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 void Preferences::Init(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   accessibility_enabled_.Init(prefs::kAccessibilityEnabled, prefs, this);
-  vert_edge_scroll_enabled_.Init(prefs::kVertEdgeScrollEnabled, prefs, this);
-  speed_factor_.Init(prefs::kTouchpadSpeedFactor, prefs, this);
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   language_hotkey_next_engine_in_menu_.Init(
       prefs::kLanguageHotkeyNextEngineInMenu, prefs, this);
@@ -182,24 +178,12 @@ void Preferences::Observe(NotificationType type,
 
 void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
-    CrosLibrary::Get()->GetSynapticsLibrary()->SetBoolParameter(
-        PARAM_BOOL_TAP_TO_CLICK,
+    CrosLibrary::Get()->GetTouchpadLibrary()->SetTapToClick(
         tap_to_click_enabled_.GetValue());
   }
-  if (!pref_name || *pref_name == prefs::kVertEdgeScrollEnabled) {
-    CrosLibrary::Get()->GetSynapticsLibrary()->SetBoolParameter(
-        PARAM_BOOL_VERTICAL_EDGE_SCROLLING,
-        vert_edge_scroll_enabled_.GetValue());
-  }
-  if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor) {
-    CrosLibrary::Get()->GetSynapticsLibrary()->SetRangeParameter(
-        PARAM_RANGE_SPEED_SENSITIVITY,
-        speed_factor_.GetValue());
-  }
   if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
-    CrosLibrary::Get()->GetSynapticsLibrary()->SetRangeParameter(
-          PARAM_RANGE_TOUCH_SENSITIVITY,
-          sensitivity_.GetValue());
+    CrosLibrary::Get()->GetTouchpadLibrary()->SetSensitivity(
+        sensitivity_.GetValue());
   }
 
   // We don't handle prefs::kLanguageCurrentInputMethod and PreviousInputMethod

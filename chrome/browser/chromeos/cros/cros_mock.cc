@@ -17,8 +17,8 @@
 #include "chrome/browser/chromeos/cros/mock_power_library.h"
 #include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/mock_speech_synthesis_library.h"
-#include "chrome/browser/chromeos/cros/mock_synaptics_library.h"
 #include "chrome/browser/chromeos/cros/mock_system_library.h"
+#include "chrome/browser/chromeos/cros/mock_touchpad_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -44,8 +44,8 @@ CrosMock::CrosMock()
       mock_power_library_(NULL),
       mock_screen_lock_library_(NULL),
       mock_speech_synthesis_library_(NULL),
-      mock_synaptics_library_(NULL),
-      mock_system_library_(NULL) {}
+      mock_system_library_(NULL),
+      mock_touchpad_library_(NULL) {}
 
 CrosMock::~CrosMock() {
 }
@@ -59,7 +59,7 @@ void CrosMock::InitStatusAreaMocks() {
   InitMockInputMethodLibrary();
   InitMockNetworkLibrary();
   InitMockPowerLibrary();
-  InitMockSynapticsLibrary();
+  InitMockTouchpadLibrary();
   InitMockSystemLibrary();
 }
 
@@ -130,12 +130,12 @@ void CrosMock::InitMockSpeechSynthesisLibrary() {
   test_api()->SetSpeechSynthesisLibrary(mock_speech_synthesis_library_, true);
 }
 
-void CrosMock::InitMockSynapticsLibrary() {
+void CrosMock::InitMockTouchpadLibrary() {
   InitMockLibraryLoader();
-  if (mock_synaptics_library_)
+  if (mock_touchpad_library_)
     return;
-  mock_synaptics_library_ = new StrictMock<MockSynapticsLibrary>();
-  test_api()->SetSynapticsLibrary(mock_synaptics_library_, true);
+  mock_touchpad_library_ = new StrictMock<MockTouchpadLibrary>();
+  test_api()->SetTouchpadLibrary(mock_touchpad_library_, true);
 }
 
 void CrosMock::InitMockSystemLibrary() {
@@ -175,12 +175,12 @@ MockSpeechSynthesisLibrary* CrosMock::mock_speech_synthesis_library() {
   return mock_speech_synthesis_library_;
 }
 
-MockSynapticsLibrary* CrosMock::mock_synaptics_library() {
-  return mock_synaptics_library_;
-}
-
 MockSystemLibrary* CrosMock::mock_system_library() {
   return mock_system_library_;
+}
+
+MockTouchpadLibrary* CrosMock::mock_touchpad_library() {
+  return mock_touchpad_library_;
 }
 
 void CrosMock::SetStatusAreaMocksExpectations() {
@@ -188,7 +188,7 @@ void CrosMock::SetStatusAreaMocksExpectations() {
   SetInputMethodLibraryStatusAreaExpectations();
   SetNetworkLibraryStatusAreaExpectations();
   SetPowerLibraryStatusAreaExpectations();
-  SetSynapticsLibraryExpectations();
+  SetTouchpadLibraryExpectations();
   SetSystemLibraryStatusAreaExpectations();
 }
 
@@ -363,10 +363,10 @@ void CrosMock::SetSystemLibraryStatusAreaExpectations() {
       .RetiresOnSaturation();
 }
 
-void CrosMock::SetSynapticsLibraryExpectations() {
-  EXPECT_CALL(*mock_synaptics_library_, SetBoolParameter(_, _))
+void CrosMock::SetTouchpadLibraryExpectations() {
+  EXPECT_CALL(*mock_touchpad_library_, SetSensitivity(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_synaptics_library_, SetRangeParameter(_, _))
+  EXPECT_CALL(*mock_touchpad_library_, SetTapToClick(_))
       .Times(AnyNumber());
 }
 
@@ -395,10 +395,10 @@ void CrosMock::TearDownMocks() {
     test_api()->SetScreenLockLibrary(NULL, false);
   if (mock_speech_synthesis_library_)
     test_api()->SetSpeechSynthesisLibrary(NULL, false);
-  if (mock_synaptics_library_)
-    test_api()->SetSynapticsLibrary(NULL, false);
   if (mock_system_library_)
     test_api()->SetSystemLibrary(NULL, false);
+  if (mock_touchpad_library_)
+    test_api()->SetTouchpadLibrary(NULL, false);
 }
 
 }  // namespace chromeos

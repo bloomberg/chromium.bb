@@ -23,9 +23,9 @@ class NetworkLibrary;
 class PowerLibrary;
 class ScreenLockLibrary;
 class SpeechSynthesisLibrary;
-class SynapticsLibrary;
 class SyslogsLibrary;
 class SystemLibrary;
+class TouchpadLibrary;
 class UpdateLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
@@ -65,12 +65,12 @@ class CrosLibrary {
     void SetScreenLockLibrary(ScreenLockLibrary* library, bool own);
     // Setter for SpeechSynthesisLibrary.
     void SetSpeechSynthesisLibrary(SpeechSynthesisLibrary* library, bool own);
-    // Setter for SynapticsLibrary.
-    void SetSynapticsLibrary(SynapticsLibrary* library, bool own);
     // Setter for SyslogsLibrary.
     void SetSyslogsLibrary(SyslogsLibrary* library, bool own);
     // Setter for SystemLibrary.
     void SetSystemLibrary(SystemLibrary* library, bool own);
+    // Setter for TouchpadLibrary.
+    void SetTouchpadLibrary(TouchpadLibrary* library, bool own);
     // Setter for UpdateLibrary.
     void SetUpdateLibrary(UpdateLibrary* library, bool own);
 
@@ -113,14 +113,14 @@ class CrosLibrary {
   // This gets the singleton SpeechSynthesisLibrary.
   SpeechSynthesisLibrary* GetSpeechSynthesisLibrary();
 
-  // This gets the singleton SynapticsLibrary.
-  SynapticsLibrary* GetSynapticsLibrary();
-
   // This gets the singleton SyslogsLibrary.
   SyslogsLibrary* GetSyslogsLibrary();
 
   // This gets the singleton SystemLibrary.
   SystemLibrary* GetSystemLibrary();
+
+  // This gets the singleton TouchpadLibrary.
+  TouchpadLibrary* GetTouchpadLibrary();
 
   // This gets the singleton UpdateLibrary.
   UpdateLibrary* GetUpdateLibrary();
@@ -192,9 +192,9 @@ class CrosLibrary {
   Library<PowerLibrary> power_lib_;
   Library<ScreenLockLibrary> screen_lock_lib_;
   Library<SpeechSynthesisLibrary> speech_synthesis_lib_;
-  Library<SynapticsLibrary> synaptics_lib_;
   Library<SyslogsLibrary> syslogs_lib_;
   Library<SystemLibrary> system_lib_;
+  Library<TouchpadLibrary> touchpad_lib_;
   Library<UpdateLibrary> update_lib_;
 
   // Stub implementations of the libraries should be used.

@@ -73,8 +73,6 @@ extern const char kTLS1Enabled[];
 #endif
 #if defined(OS_CHROMEOS)
 extern const char kTapToClickEnabled[];
-extern const char kVertEdgeScrollEnabled[];
-extern const char kTouchpadSpeedFactor[];
 extern const char kTouchpadSensitivity[];
 extern const char kLanguageCurrentInputMethod[];
 extern const char kLanguagePreviousInputMethod[];

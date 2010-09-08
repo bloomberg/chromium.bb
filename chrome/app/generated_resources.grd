@@ -8284,14 +8284,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables tap-to-click.">
         Enable tap-to-click
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_VERT_EDGE_SCROLL_ENABLED_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables vertical edge scrolling.">
-        Enable vertical edge scrolling
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad touch sensitivity.">
-        Touch Sensitivity:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad speed factor.">
-        Speed Sensitivity:
+        Sensitivity:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_MEDIAPLAYER_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to turn on the mediaplayer">
         Turn on the Mediaplayer

@@ -45,13 +45,8 @@ void SystemOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("enable_tap_to_click",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION));
-  localized_strings->SetString("enable_vert_edge_scroll",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_VERT_EDGE_SCROLL_ENABLED_DESCRIPTION));
   localized_strings->SetString("sensitivity",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION));
-  localized_strings->SetString("speed_factor",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION));
 
   localized_strings->SetString("language",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE));
