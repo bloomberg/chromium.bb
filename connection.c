@@ -52,6 +52,7 @@ struct wl_closure {
 	ffi_cif cif;
 	void *args[20];
 	uint32_t buffer[64];
+	uint32_t *start;
 };
 
 struct wl_connection {
@@ -357,7 +358,7 @@ wl_message_size_extra(const struct wl_message *message)
 	return extra;
 }
 
-void
+struct wl_closure *
 wl_connection_vmarshal(struct wl_connection *connection,
 		       struct wl_object *sender,
 		       uint32_t opcode, va_list ap,
@@ -466,7 +467,9 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	size = (p - start) * sizeof *p;
 	start[0] = sender->id;
 	start[1] = opcode | (size << 16);
-	wl_connection_write(connection, start, size);
+	closure->start = start;
+
+	return closure;
 }
 
 struct wl_closure *
@@ -649,6 +652,15 @@ wl_closure_invoke(struct wl_closure *closure,
 	closure->args[1] = &target;
 
 	ffi_call(&closure->cif, func, &result, closure->args);
+}
+
+void
+wl_closure_send(struct wl_closure *closure, struct wl_connection *connection)
+{
+	uint32_t size;
+
+	size = closure->start[1] >> 16;
+	wl_connection_write(connection, closure->start, size);
 }
 
 void

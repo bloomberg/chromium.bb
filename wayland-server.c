@@ -79,6 +79,7 @@ WL_EXPORT void
 wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 		     uint32_t opcode, ...)
 {
+	struct wl_closure *closure;
 	va_list ap;
 
 	if (client == NULL)
@@ -86,10 +87,13 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 		return;
 
 	va_start(ap, opcode);
-	wl_connection_vmarshal(client->connection,
-			       sender, opcode, ap,
-			       &sender->interface->events[opcode]);
+	closure = wl_connection_vmarshal(client->connection,
+					 sender, opcode, ap,
+					 &sender->interface->events[opcode]);
 	va_end(ap);
+
+	wl_closure_send(closure, client->connection);
+	wl_closure_destroy(closure);
 }
 
 static void
@@ -163,7 +167,6 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 				  object->implementation[opcode], client);
 
 		wl_closure_destroy(closure);
-
 	}
 }
 

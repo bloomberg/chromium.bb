@@ -195,13 +195,17 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 WL_EXPORT void
 wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 {
+	struct wl_closure *closure;
 	va_list ap;
 
 	va_start(ap, opcode);
-	wl_connection_vmarshal(proxy->display->connection,
-			       &proxy->base, opcode, ap,
-			       &proxy->base.interface->methods[opcode]);
+	closure = wl_connection_vmarshal(proxy->display->connection,
+					 &proxy->base, opcode, ap,
+					 &proxy->base.interface->methods[opcode]);
 	va_end(ap);
+
+	wl_closure_send(closure, proxy->display->connection);
+	wl_closure_destroy(closure);
 }
 
 static void
