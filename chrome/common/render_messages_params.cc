@@ -223,7 +223,7 @@ struct ParamTraits<Extension::Location> {
     int val = 0;
     if (!ReadParam(m, iter, &val) ||
         val < Extension::INVALID ||
-        val >= Extension::EXTERNAL_PREF_DOWNLOAD)
+        val > Extension::EXTERNAL_PREF_DOWNLOAD)
       return false;
     *p = static_cast<param_type>(val);
     return true;
