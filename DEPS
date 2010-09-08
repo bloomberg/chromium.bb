@@ -9,7 +9,7 @@ vars = {
   "swig_revision": "40423",
   "nacl_revision": "3186",
   "libvpx_revision": "58584",
-  "libjingle_revision": "27",
+  "libjingle_revision": "29",
 }
 
 deps = {

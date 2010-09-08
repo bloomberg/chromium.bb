@@ -5,10 +5,11 @@
 // This file overrides the inclusion of talk/base/scoped_ptr.h.  We use
 // a version of scoped_ptr from Chromium base, to avoid multiple definitions.
 
-#ifndef OVERRIDES_TALK_BASE_SCOPED_PTR_H__
-#define OVERRIDES_TALK_BASE_SCOPED_PTR_H__
+#ifndef OVERRIDES_TALK_BASE_SCOPED_PTR_H_
+#define OVERRIDES_TALK_BASE_SCOPED_PTR_H_
 
 #include "base/scoped_ptr.h"
+#include "talk/base/common.h"
 
 namespace talk_base {
 
@@ -17,4 +18,4 @@ using ::scoped_array;
 
 }  // namespace talk_base
 
-#endif // OVERRIDES_TALK_BASE_SCOPED_PTR_H__
+#endif  // OVERRIDES_TALK_BASE_SCOPED_PTR_H_
