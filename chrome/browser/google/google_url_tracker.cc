@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -186,6 +188,10 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   // various members here for more detail on exactly what the conditions are.
   if (in_startup_sleep_ || already_fetched_ || !need_to_fetch_ ||
       !request_context_available_)
+    return;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBackgroundNetworking))
     return;
 
   already_fetched_ = true;

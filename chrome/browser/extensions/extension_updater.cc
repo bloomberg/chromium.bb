@@ -792,6 +792,10 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
 }
 
 void ExtensionUpdater::StartUpdateCheck(ManifestFetchData* fetch_data) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBackgroundNetworking))
+    return;
+
   std::deque<ManifestFetchData*>::const_iterator i;
   for (i = manifests_pending_.begin(); i != manifests_pending_.end(); i++) {
     if (fetch_data->full_url() == (*i)->full_url()) {

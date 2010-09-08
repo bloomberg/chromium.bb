@@ -144,6 +144,11 @@ const char kDisableAudio[]                  = "disable-audio";
 const char kDisableAuthNegotiateCnameLookup[] =
     "disable-auth-negotiate-cname-lookup";
 
+// Disable several subsystems which run network requests in the background.
+// This is for use when doing network performance testing to avoid noise
+// in the measurements.
+const char kDisableBackgroundNetworking[] = "disable-background-networking";
+
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";

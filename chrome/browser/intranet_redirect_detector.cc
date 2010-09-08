@@ -4,12 +4,14 @@
 
 #include "chrome/browser/intranet_redirect_detector.h"
 
+#include "base/command_line.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/load_flags.h"
@@ -76,6 +78,10 @@ void IntranetRedirectDetector::StartFetchesIfPossible() {
   // again each time one of the preconditions changes, so we'll fetch
   // immediately once all of them are met.
   if (in_sleep_ || !request_context_available_)
+    return;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBackgroundNetworking))
     return;
 
   DCHECK(fetchers_.empty() && resulting_origins_.empty());

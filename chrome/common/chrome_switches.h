@@ -53,6 +53,7 @@ extern const char kDisableApplicationCache[];
 extern const char kDisableApps[];
 extern const char kDisableAudio[];
 extern const char kDisableAuthNegotiateCnameLookup[];
+extern const char kDisableBackgroundNetworking[];
 extern const char kDisableBackingStoreLimit[];
 extern const char kDisableByteRangeSupport[];
 extern const char kDisableClickToPlay[];

@@ -364,7 +364,9 @@ void SafeBrowsingService::OnIOInitialize(
 #endif
 #endif
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  bool disable_auto_update = cmdline->HasSwitch(switches::kSbDisableAutoUpdate);
+  bool disable_auto_update =
+      cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
+      cmdline->HasSwitch(switches::kDisableBackgroundNetworking);
   std::string info_url_prefix =
       cmdline->HasSwitch(switches::kSbInfoURLPrefix) ?
       cmdline->GetSwitchValueASCII(switches::kSbInfoURLPrefix) :
