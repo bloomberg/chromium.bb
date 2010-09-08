@@ -214,6 +214,19 @@ class GClientSmoke(GClientSmokeBase):
     self.assertTree({})
     self.check(('', '', 0), self.gclient(['status']))
 
+  def testDifferentTopLevelDirectory(self):
+    # Check that even if the .gclient file does not mention the directory src
+    # itself, but it is included via dependencies, the .gclient file is used.
+    self.gclient(['config', self.svn_base + 'trunk/src.DEPS'])
+    deps = join(self.root_dir, 'src.DEPS')
+    os.mkdir(deps)
+    write(join(deps, 'DEPS'),
+        'deps = { "src": "%strunk/src" }' % (self.svn_base))
+    src = join(self.root_dir, 'src')
+    os.mkdir(src)
+    res = self.gclient(['status'], src)
+    self.checkBlock(res[0], [('running', deps), ('running', src)])
+
 
 class GClientSmokeSVN(GClientSmokeBase):
   def setUp(self):
@@ -460,6 +473,48 @@ class GClientSmokeSVN(GClientSmokeBase):
            ']\n\n' %
           { 'base': self.svn_base + 'trunk' })
     self.check((out, '', 0), results)
+
+  def testWrongDirectory(self):
+    # Check that we're not using a .gclient configuration which only talks
+    # about a subdirectory src when we're in a different subdirectory src-other.
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    self.gclient(['sync'])
+    other_src = join(self.root_dir, 'src-other')
+    os.mkdir(other_src)
+    res = ('', 'Error: client not configured; see \'gclient config\'\n', 1)
+    self.check(res, self.gclient(['status'], other_src))
+
+  def testCorrectDirectory(self):
+    # Check that when we're in the subdirectory src, the .gclient configuration
+    # is used.
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    self.gclient(['sync'])
+    src = join(self.root_dir, 'src')
+    res = self.gclient(['status'], src)
+    self.checkBlock(res[0], [('running', src)])
+
+  def testInitialCheckoutNotYetDone(self):
+    # Check that gclient can be executed when the initial checkout hasn't been
+    # done yet.
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    self.parseGclient(['sync'],
+                      ['running', 'running',
+                       # This is due to the way svn update is called for a
+                       # single file when File() is used in a DEPS file.
+                       ('running', self.root_dir + '/src/file/other'),
+                       'running', 'running', 'running', 'running'])
+
+  def testInitialCheckoutFailed(self):
+    # Check that gclient can be executed from an arbitrary sub directory if the
+    # initial checkout has failed.
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    self.gclient(['sync'])
+    # Cripple the checkout.
+    os.remove(join(self.root_dir, '.gclient_entries'))
+    src = join(self.root_dir, 'src')
+    res = self.gclient(['sync'], src)
+    self.checkBlock(res[0],
+                    ['running', 'running', 'running'])
 
 
 class GClientSmokeGIT(GClientSmokeBase):

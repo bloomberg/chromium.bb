@@ -348,12 +348,39 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
 
 def FindGclientRoot(from_dir, filename='.gclient'):
   """Tries to find the gclient root."""
-  path = os.path.realpath(from_dir)
+  real_from_dir = os.path.realpath(from_dir)
+  path = real_from_dir
   while not os.path.exists(os.path.join(path, filename)):
     split_path = os.path.split(path)
     if not split_path[1]:
       return None
     path = split_path[0]
+
+  # If we did not find the file in the current directory, make sure we are in a
+  # sub directory that is controlled by this configuration.
+  if path != real_from_dir:
+    entries_filename = os.path.join(path, filename + '_entries')
+    if not os.path.exists(entries_filename):
+      # If .gclient_entries does not exist, a previous call to gclient sync
+      # might have failed. In that case, we cannot verify that the .gclient
+      # is the one we want to use. In order to not to cause too much trouble,
+      # just issue a warning and return the path anyway.
+      print >>sys.stderr, ("%s file in parent directory %s might not be the "
+          "file you want to use" % (filename, path))
+      return path
+    scope = {}
+    try:
+      exec(FileRead(entries_filename), scope)
+    except SyntaxError, e:
+      SyntaxErrorToError(filename, e)
+    all_directories = scope['entries'].keys()
+    path_to_check = real_from_dir[len(path)+1:]
+    while path_to_check:
+      if path_to_check in all_directories:
+        return path
+      path_to_check = os.path.dirname(path_to_check)
+    return None
+    
   logging.info('Found gclient root at ' + path)
   return path
 
