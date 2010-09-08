@@ -10,7 +10,6 @@
 #include "app/gfx/gl/gl_context_egl.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/file_path.h"
-#include "base/logging.h"
 #include "base/scoped_native_library.h"
 #include "base/string_util.h"
 

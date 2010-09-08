@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/pickle.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"

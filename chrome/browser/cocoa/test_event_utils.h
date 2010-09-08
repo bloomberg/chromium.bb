@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #import <objc/objc-class.h>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 
 // Within a given scope, replace the selector |selector| on |target| with that
 // from |source|.
@@ -40,8 +40,8 @@ NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
 
 // Return a mouse down and an up event with the given |clickCount| at
 // |view|'s midpoint.
-std::pair<NSEvent*,NSEvent*> MouseClickInView(NSView* view,
-                                              NSUInteger clickCount);
+std::pair<NSEvent*, NSEvent*> MouseClickInView(NSView* view,
+                                               NSUInteger clickCount);
 
 }  // namespace test_event_utils
 

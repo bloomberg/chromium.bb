@@ -4,7 +4,6 @@
 
 #include "chrome/browser/wrench_menu_model.h"
 
-#include "base/logging.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/menu_model_test.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/data_encryption.h"
 #include "chrome/common/sqlite_utils.h"

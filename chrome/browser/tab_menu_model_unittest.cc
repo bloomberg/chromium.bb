@@ -1,10 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/tab_menu_model.h"
 
-#include "base/logging.h"
 #include "chrome/test/menu_model_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

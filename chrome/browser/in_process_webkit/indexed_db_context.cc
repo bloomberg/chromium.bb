@@ -4,6 +4,7 @@
 
 #include "chrome/browser/in_process_webkit/indexed_db_context.h"
 
+#include "base/logging.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 

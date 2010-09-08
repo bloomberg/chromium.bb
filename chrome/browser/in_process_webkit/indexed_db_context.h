@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 
 namespace WebKit {

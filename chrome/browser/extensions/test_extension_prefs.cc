@@ -6,7 +6,6 @@
 
 
 #include "base/file_util.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"

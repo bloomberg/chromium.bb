@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#if defined(OS_POSIX)
 #include "base/environment.h"
+#endif
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"

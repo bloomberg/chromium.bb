@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/glue/history_model_worker.h"
 
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/task.h"

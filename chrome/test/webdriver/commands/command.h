@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "base/json/json_writer.h"
@@ -68,4 +67,3 @@ class Command {
 };
 }  // namespace webdriver
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_COMMAND_H_
-

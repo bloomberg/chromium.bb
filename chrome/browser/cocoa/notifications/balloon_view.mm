@@ -6,7 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 

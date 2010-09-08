@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "gfx/font.h"
 #include "views/view.h"
 
@@ -57,6 +57,6 @@ class OobeProgressBar : public views::View {
   DISALLOW_COPY_AND_ASSIGN(OobeProgressBar);
 };
 
-}  // chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_OOBE_PROGRESS_BAR_H_

@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/glue/password_model_worker.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/waitable_event.h"

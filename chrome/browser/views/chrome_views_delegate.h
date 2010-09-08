@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_VIEWS_CHROME_VIEWS_DELEGATE_H_
 #pragma once
 
-#include "base/logging.h"
+#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "views/views_delegate.h"
 
 class ChromeViewsDelegate : public views::ViewsDelegate {

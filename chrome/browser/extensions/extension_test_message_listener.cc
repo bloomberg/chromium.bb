@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 
-#include "base/logging.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/ui_test_utils.h"

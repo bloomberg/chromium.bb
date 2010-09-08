@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/view_id_util.h"
 

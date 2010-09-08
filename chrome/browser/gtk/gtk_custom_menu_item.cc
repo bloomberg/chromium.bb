@@ -5,7 +5,6 @@
 #include "chrome/browser/gtk/gtk_custom_menu_item.h"
 
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "chrome/browser/gtk/gtk_custom_menu.h"
 
 enum {

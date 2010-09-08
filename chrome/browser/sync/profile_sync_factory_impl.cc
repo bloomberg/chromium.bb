@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/app_data_type_controller.h"
@@ -272,4 +271,3 @@ ProfileSyncFactoryImpl::CreateSessionSyncComponents(
       new SessionChangeProcessor(error_handler, model_associator);
   return SyncComponents(model_associator, change_processor);
 }
-

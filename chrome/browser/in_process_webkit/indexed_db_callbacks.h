@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "chrome/common/indexed_db_key.h"
@@ -161,7 +160,7 @@ class IndexedDBCallbacks<void> : public IndexedDBCallbacksBase {
 
 class IndexedDBTransactionCallbacks
     : public WebKit::WebIDBTransactionCallbacks {
-public:
+ public:
   IndexedDBTransactionCallbacks(
       IndexedDBDispatcherHost* dispatcher_host, int transaction_id)
       : dispatcher_host_(dispatcher_host), transaction_id_(transaction_id) {
@@ -176,10 +175,9 @@ public:
     return transaction_id_;
   }
 
-private:
+ private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   int transaction_id_;
 };
 
 #endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CALLBACKS_H_
-

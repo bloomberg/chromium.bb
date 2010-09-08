@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/eintr_wrapper.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/thread.h"

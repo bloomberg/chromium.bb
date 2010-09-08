@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/dock_info.h"
 
-#include "base/logging.h"
-
 bool DockInfo::GetNewWindowBounds(gfx::Rect* new_window_bounds,
                                   bool* maximize_new_window) const {
   // TODO(pinkerton): Implement DockInfo, http://crbug.com/9274.

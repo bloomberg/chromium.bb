@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/error_codes.h"
 
@@ -73,4 +74,3 @@ class Response {
 };
 }  // namespace webdriver
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_RESPONSE_H_
-

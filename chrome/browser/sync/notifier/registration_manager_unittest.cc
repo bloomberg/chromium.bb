@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/invalidation-client.h"

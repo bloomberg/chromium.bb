@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/logging.h"
 #include "chrome/browser/platform_util.h"
 
 FocusStoreGtk::FocusStoreGtk()

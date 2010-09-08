@@ -6,7 +6,6 @@
 
 #include "app/animation.h"
 #include "app/slide_animation.h"
-#include "base/logging.h"
 
 #include "chrome/browser/gtk/gtk_expanded_container.h"
 

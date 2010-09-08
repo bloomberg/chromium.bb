@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_proxy_api.h"
 
-#include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_pref_store.h"

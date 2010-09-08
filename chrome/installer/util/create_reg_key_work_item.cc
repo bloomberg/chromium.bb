@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "shlwapi.h"
+#include <shlwapi.h>
 
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/registry.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/install_util.h"
@@ -24,7 +25,7 @@ void UpOneDirectoryOrEmpty(std::wstring* dir) {
     *dir = directory.ToWStringHack();
 }
 
-} // namespace
+}  // namespace
 
 CreateRegKeyWorkItem::~CreateRegKeyWorkItem() {
 }

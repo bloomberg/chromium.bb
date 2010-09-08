@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 #include "app/keyboard_codes.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "base/ref_counted.h"

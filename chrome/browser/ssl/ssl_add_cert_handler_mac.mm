@@ -8,6 +8,7 @@
 #include <SecurityInterface/SFCertificateView.h>
 
 #include "app/l10n_util_mac.h"
+#include "base/logging.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/browser/browser_list.h"

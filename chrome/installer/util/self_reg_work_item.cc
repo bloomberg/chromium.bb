@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/installer/util/self_reg_work_item.h"
 
+#include "base/logging.h"
 #include "chrome/installer/util/logging_installer.h"
 
 // Default registration export names.

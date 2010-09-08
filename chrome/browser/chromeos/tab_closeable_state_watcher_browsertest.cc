@@ -1,11 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/tab_closeable_state_watcher.h"
 
 #include "base/file_path.h"
-#include "base/logging.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -317,4 +316,3 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
 }
 
 }  // namespace chromeos
-

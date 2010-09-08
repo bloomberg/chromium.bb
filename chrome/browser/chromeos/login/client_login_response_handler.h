@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 
 class URLRequestContextGetter;

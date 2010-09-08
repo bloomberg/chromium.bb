@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "app/resource_bundle.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_piece.h"
@@ -278,7 +277,7 @@ void SlideshowHandler::OnListDone(int error) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-SlideshowUI::SlideshowUI(TabContents* contents) : DOMUI(contents){
+SlideshowUI::SlideshowUI(TabContents* contents) : DOMUI(contents) {
   SlideshowHandler* handler = new SlideshowHandler();
   AddMessageHandler((handler)->Attach(this));
   handler->Init();

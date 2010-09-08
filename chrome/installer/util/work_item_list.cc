@@ -1,9 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/installer/util/logging_installer.h"
 #include "chrome/installer/util/work_item_list.h"
+
+#include "base/logging.h"
+#include "chrome/installer/util/logging_installer.h"
 
 WorkItemList::~WorkItemList() {
   for (WorkItemIterator itr = list_.begin(); itr != list_.end(); ++itr) {

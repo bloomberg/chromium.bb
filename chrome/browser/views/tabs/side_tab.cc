@@ -5,7 +5,6 @@
 #include "chrome/browser/views/tabs/side_tab.h"
 
 #include "app/resource_bundle.h"
-#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"

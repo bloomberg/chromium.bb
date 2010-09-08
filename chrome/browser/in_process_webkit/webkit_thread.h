@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/lock.h"
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"

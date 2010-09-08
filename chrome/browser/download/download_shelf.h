@@ -8,7 +8,6 @@
 
 #include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 

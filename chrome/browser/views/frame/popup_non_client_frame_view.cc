@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/frame/popup_non_client_frame_view.h"
 
-#include "base/logging.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"

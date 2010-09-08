@@ -4,7 +4,6 @@
 
 #include "chrome/worker/worker_webapplicationcachehost_impl.h"
 
-#include "base/logging.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/worker/worker_thread.h"
 

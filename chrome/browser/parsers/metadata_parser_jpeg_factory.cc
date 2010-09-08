@@ -5,7 +5,6 @@
 #include "chrome/browser/parsers/metadata_parser_jpeg_factory.h"
 
 #include "base/file_path.h"
-#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/parsers/metadata_parser_jpeg.h"
 
