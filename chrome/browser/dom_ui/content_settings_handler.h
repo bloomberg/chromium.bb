@@ -29,6 +29,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
                        const NotificationDetails& details);
 
  private:
+  void UpdateAllExceptionsDefaultsFromModel();
+  void UpdateExceptionsDefaultFromModel(ContentSettingsType type);
+  std::string GetExceptionsDefaultFromModel(ContentSettingsType type);
   void UpdateAllExceptionsViewsFromModel();
   void UpdateExceptionsViewFromModel(ContentSettingsType type);
   void SetContentFilter(const ListValue* args);

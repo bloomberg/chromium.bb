@@ -224,37 +224,10 @@ void ContentSettingsHandler::GetLocalizedValues(
 }
 
 void ContentSettingsHandler::Initialize() {
-  // We send a list of the <input> IDs that should be checked.
-  DictionaryValue filter_settings;
+  UpdateAllExceptionsDefaultsFromModel();
 
   const HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
-  for (int i = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
-       i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    ContentSetting default_setting;
-    if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-      default_setting = settings_map->GetDefaultContentSetting(type);
-      if (settings_map->GetBlockNonsandboxedPlugins())
-        default_setting = CONTENT_SETTING_ASK;
-    } else if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-      default_setting = dom_ui_->GetProfile()->
-          GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
-    } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-      default_setting = dom_ui_->GetProfile()->
-          GetDesktopNotificationService()->GetDefaultContentSetting();
-    } else {
-      default_setting = dom_ui_->GetProfile()->GetHostContentSettingsMap()->
-          GetDefaultContentSetting(type);
-    }
-
-    filter_settings.SetString(ContentSettingsTypeToGroupName(type),
-                              ContentSettingToString(default_setting));
-  }
-
-  dom_ui_->CallJavascriptFunction(
-      L"ContentSettings.setInitialContentFilterSettingsValue", filter_settings);
-
   scoped_ptr<Value> block_3rd_party(Value::CreateBooleanValue(
       settings_map->BlockThirdPartyCookies()));
   dom_ui_->CallJavascriptFunction(
@@ -288,6 +261,52 @@ void ContentSettingsHandler::Observe(NotificationType type,
     UpdateExceptionsViewFromModel(settings_details->type());
 }
 
+void ContentSettingsHandler::UpdateAllExceptionsDefaultsFromModel() {
+  DictionaryValue filter_settings;
+  for (int i = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
+       i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    ContentSettingsType type = static_cast<ContentSettingsType>(i);
+    filter_settings.SetString(ContentSettingsTypeToGroupName(type),
+                              GetExceptionsDefaultFromModel(type));
+  }
+
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.setContentFilterSettingsValue", filter_settings);
+}
+
+void ContentSettingsHandler::UpdateExceptionsDefaultFromModel(
+    ContentSettingsType type) {
+  DictionaryValue filter_settings;
+  filter_settings.SetString(ContentSettingsTypeToGroupName(type),
+                            GetExceptionsDefaultFromModel(type));
+
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.setContentFilterSettingsValue", filter_settings);
+}
+
+std::string ContentSettingsHandler::GetExceptionsDefaultFromModel(
+    ContentSettingsType type) {
+  ContentSetting default_setting;
+  const HostContentSettingsMap* settings_map =
+      dom_ui_->GetProfile()->GetHostContentSettingsMap();
+  if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    default_setting = settings_map->GetDefaultContentSetting(type);
+    if (settings_map->GetBlockNonsandboxedPlugins())
+      default_setting = CONTENT_SETTING_ASK;
+  } else if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    default_setting = dom_ui_->GetProfile()->
+        GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
+  } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    default_setting = dom_ui_->GetProfile()->
+        GetDesktopNotificationService()->GetDefaultContentSetting();
+  } else {
+    default_setting = dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+        GetDefaultContentSetting(type);
+  }
+
+  return ContentSettingToString(default_setting);
+}
+
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
   for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
        type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
@@ -314,6 +333,10 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
   StringValue type_string(ContentSettingsTypeToGroupName(type));
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setExceptions", type_string, exceptions);
+
+  // The default may also have changed (we won't get a separte notification).
+  // If it hasn't changed, this call will be harmless.
+  UpdateExceptionsDefaultFromModel(type);
 }
 
 void ContentSettingsHandler::RegisterMessages() {

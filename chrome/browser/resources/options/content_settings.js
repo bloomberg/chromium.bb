@@ -62,11 +62,11 @@ cr.define('options', function() {
   };
 
   /**
-   * Sets the initial values for all the content settings radios.
+   * Sets the values for all the content settings radios.
    * @param {Object} dict A mapping from radio groups to the checked value for
    *     that group.
    */
-  ContentSettings.setInitialContentFilterSettingsValue = function(dict) {
+  ContentSettings.setContentFilterSettingsValue = function(dict) {
     for (var group in dict) {
       document.querySelector('input[type=radio][name=' + group +
                              '][value=' + dict[group] + ']').checked = true;
