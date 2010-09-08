@@ -290,7 +290,8 @@ class TouchEvent : public LocatedEvent {
   }
 
  private:
-  // The identity (typically finger) of the touch.
+  // The identity (typically finger) of the touch starting at 0 and incrementing
+  // for each separable additional touch that the hardware can detect.
   const int touch_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEvent);

@@ -22,6 +22,10 @@ namespace views {
 class PaintTask;
 class Widget;
 
+#if defined(TOUCH_UI)
+class GestureManager;
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // RootView class
@@ -93,6 +97,9 @@ class RootView : public View,
   virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
   virtual void OnMouseMoved(const MouseEvent& e);
   virtual void SetMouseHandler(View* new_mouse_handler);
+#if defined(TOUCH_UI)
+  virtual bool OnTouchEvent(const TouchEvent& e);
+#endif
 
   // Invoked By the Widget if the mouse drag is interrupted by
   // the system. Invokes OnMouseReleased with a value of true for canceled.
@@ -175,6 +182,12 @@ class RootView : public View,
   // Accessibility accessors/mutators, overridden from View.
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
 
+#if defined(TOUCH_UI) && defined(UNIT_TEST)
+  // For unit testing purposes, we use this method to set a mock
+  // GestureManager
+  void SetGestureManager(GestureManager* g) { gesture_manager_ = g; }
+#endif
+
  protected:
 
   // Overridden to properly reset our event propagation member
@@ -188,6 +201,12 @@ class RootView : public View,
  private:
   friend class View;
   friend class PaintTask;
+
+#if defined(TOUCH_UI)
+  // Required so the GestureManager can call the Process* entry points
+  // with synthetic events as necessary.
+  friend class GestureManager;
+#endif
 
   RootView();
 
@@ -321,14 +340,20 @@ class RootView : public View,
   // view the drag started from.
   View* drag_view_;
 
+#if defined(TOUCH_UI)
+  // The gesture_manager_ for this.
+  GestureManager* gesture_manager_;
+
+  // The view currently handling touch events.
+  View *touch_pressed_handler_;
+#endif
+
 #ifndef NDEBUG
   // True if we're currently processing paint.
   bool is_processing_paint_;
 #endif
-
   DISALLOW_COPY_AND_ASSIGN(RootView);
 };
-
 }  // namespace views
 
 #endif  // VIEWS_WIDGET_ROOT_VIEW_H_

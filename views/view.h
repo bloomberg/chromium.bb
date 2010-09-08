@@ -705,6 +705,12 @@ class View : public AcceleratorTarget {
   // Default implementation does nothing. Override as needed.
   virtual void OnMouseExited(const MouseEvent& event);
 
+#if defined(TOUCH_UI)
+  // This method is invoked for each touch event. Default implementation
+  // does nothing. Override as needed.
+  virtual bool OnTouchEvent(const TouchEvent& event);
+#endif
+
   // Set the MouseHandler for a drag session.
   //
   // A drag session is a stream of mouse events starting
@@ -712,7 +718,7 @@ class View : public AcceleratorTarget {
   // events and finishing with a MouseReleased event.
   //
   // This method should be only invoked while processing a
-  // MouseDragged or MouseReleased event.
+  // MouseDragged or MousePressed event.
   //
   // All further mouse dragged and mouse up events will be sent
   // the MouseHandler, even if it is reparented to another window.
@@ -1159,6 +1165,13 @@ class View : public AcceleratorTarget {
   bool ProcessMousePressed(const MouseEvent& e, DragInfo* drop_info);
   bool ProcessMouseDragged(const MouseEvent& e, DragInfo* drop_info);
   void ProcessMouseReleased(const MouseEvent& e, bool canceled);
+
+#if defined(TOUCH_UI)
+  // RootView will invoke this with incoming TouchEvents. Returns the
+  // the result of OnTouchEvent: true if the event was handled by the
+  // callee.
+  bool ProcessTouchEvent(const TouchEvent& e);
+#endif
 
   // Starts a drag and drop operation originating from this view. This invokes
   // WriteDragData to write the data and GetDragOperations to determine the

@@ -16,6 +16,10 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
+#if defined(TOUCH_UI)
+#include "views/touchui/gesture_manager.h"
+#endif
+
 #if defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #endif  // defined(OS_LINUX)
@@ -76,6 +80,11 @@ RootView::RootView(Widget* widget)
       focus_traversable_parent_(NULL),
       focus_traversable_parent_view_(NULL),
       drag_view_(NULL)
+#if defined(TOUCH_UI)
+      ,
+      gesture_manager_(GestureManager::Get()),
+      touch_pressed_handler_(NULL)
+#endif
 #ifndef NDEBUG
       ,
       is_processing_paint_(false)
@@ -288,6 +297,62 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 void RootView::SetFocusOnMousePressed(bool f) {
   focus_on_mouse_pressed_ = f;
 }
+
+#if defined(TOUCH_UI)
+bool RootView::OnTouchEvent(const TouchEvent& e) {
+  // If touch_pressed_handler_ is non null, we are currently processing
+  // a touch down on the screen situation. In that case we send the
+  // event to touch_pressed_handler_
+
+  if (touch_pressed_handler_) {
+    TouchEvent touch_event(e, this, touch_pressed_handler_);
+    touch_pressed_handler_->ProcessTouchEvent(touch_event);
+    gesture_manager_->ProcessTouchEventForGesture(e, this, true);
+    return true;
+  }
+
+  bool handled = false;
+  // Walk up the tree until we find a view that wants the touch event.
+  for (touch_pressed_handler_ = GetViewForPoint(e.location());
+       touch_pressed_handler_ && (touch_pressed_handler_ != this);
+       touch_pressed_handler_ = touch_pressed_handler_->GetParent()) {
+    if (!touch_pressed_handler_->IsEnabled()) {
+      // Disabled views eat events but are treated as not handled by the
+      // the GestureManager.
+      handled = false;
+      break;
+    }
+
+    // See if this view wants to handle the touch
+    TouchEvent touch_event(e, this, touch_pressed_handler_);
+    handled = touch_pressed_handler_->ProcessTouchEvent(touch_event);
+
+    // The view could have removed itself from the tree when handling
+    // OnTouchEvent(). So handle as per OnMousePressed. NB: we
+    // assume that the RootView itself cannot be so removed.
+    //
+    // NOTE: Don't return true here, because we don't want the frame to
+    // forward future events to us when there's no handler.
+    if (!touch_pressed_handler_)
+      break;
+
+    // If the view handled the event, leave touch_pressed_handler_ set and
+    // return true, which will cause subsequent drag/release events to get
+    // forwarded to that view.
+    if (handled) {
+      gesture_manager_->ProcessTouchEventForGesture(e, this, handled);
+      return true;
+    }
+  }
+
+  // Reset touch_pressed_handler_ to indicate that no processing is occurring.
+  touch_pressed_handler_ = NULL;
+
+  // Give the touch event to the gesture manager.
+  gesture_manager_->ProcessTouchEventForGesture(e, this, handled);
+  return handled;
+}
+#endif
 
 bool RootView::OnMousePressed(const MouseEvent& e) {
   // This function does not normally handle non-client messages except for

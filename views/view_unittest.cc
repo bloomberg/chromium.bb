@@ -14,9 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
-#if defined(OS_WIN)
-#include "views/controls/button/native_button_win.h"
-#endif
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/scroll_view.h"
 #include "views/controls/textfield/textfield.h"
@@ -26,14 +23,19 @@
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
+#include "views/window/dialog_delegate.h"
+#include "views/window/window.h"
+
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
+#include "views/controls/button/native_button_win.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_gtk.h"
 #endif
-#include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
+#if defined(TOUCH_UI)
+#include "views/touchui/gesture_manager.h"
+#endif
 
 using namespace views;
 
@@ -155,6 +157,10 @@ class TestView : public View {
     child_removed_ = false;
     last_mouse_event_type_ = 0;
     location_.SetPoint(0, 0);
+#if defined(TOUCH_UI)
+    last_touch_event_type_ = 0;
+    last_touch_event_was_handled_ = false;
+#endif
     last_clip_.setEmpty();
     accelerator_count_map_.clear();
   }
@@ -165,6 +171,9 @@ class TestView : public View {
   virtual bool OnMousePressed(const MouseEvent& event);
   virtual bool OnMouseDragged(const MouseEvent& event);
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled);
+#if defined(TOUCH_UI)
+  virtual bool OnTouchEvent(const TouchEvent& event);
+#endif
   virtual void Paint(gfx::Canvas* canvas);
   virtual bool AcceleratorPressed(const Accelerator& accelerator);
 
@@ -183,12 +192,43 @@ class TestView : public View {
   int last_mouse_event_type_;
   gfx::Point location_;
 
+#if defined(TOUCH_UI)
+  // TouchEvent
+  int last_touch_event_type_;
+  bool last_touch_event_was_handled_;
+#endif
+
   // Painting
   SkRect last_clip_;
 
   // Accelerators
   std::map<Accelerator, int> accelerator_count_map_;
 };
+
+#if defined(TOUCH_UI)
+// Mock instance of the GestureManager for testing.
+class MockGestureManager : public GestureManager {
+ public:
+  // Reset all test state
+  void Reset() {
+    last_touch_event_ = 0;
+    last_view_ = NULL;
+    previously_handled_flag_ = false;
+  }
+
+  bool previously_handled_flag_;
+  bool ProcessTouchEventForGesture(const TouchEvent& event,
+                                   View* source,
+                                   bool previouslyHandled);
+  MockGestureManager();
+
+  int last_touch_event_;
+  View *last_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockGestureManager);
+};
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // DidChangeBounds
@@ -382,6 +422,114 @@ TEST_F(ViewTest, MouseEvent) {
 
   window->CloseNow();
 }
+
+#if defined(TOUCH_UI)
+////////////////////////////////////////////////////////////////////////////////
+// TouchEvent
+////////////////////////////////////////////////////////////////////////////////
+bool MockGestureManager::ProcessTouchEventForGesture(
+    const TouchEvent& event,
+    View* source,
+    bool previouslyHandled) {
+  last_touch_event_ =  event.GetType();
+  last_view_ = source;
+  previously_handled_flag_ = previouslyHandled;
+  return true;
+}
+
+MockGestureManager::MockGestureManager() {
+}
+
+bool TestView::OnTouchEvent(const TouchEvent& event) {
+  last_touch_event_type_ = event.GetType();
+  location_.SetPoint(event.x(), event.y());
+  return last_touch_event_was_handled_;
+}
+
+TEST_F(ViewTest, TouchEvent) {
+  MockGestureManager* gm = new MockGestureManager();
+
+  TestView* v1 = new TestView();
+  v1->SetBounds(0, 0, 300, 300);
+
+  TestView* v2 = new TestView();
+  v2->SetBounds(100, 100, 100, 100);
+
+  scoped_ptr<Widget> window(CreateWidget());
+#if defined(OS_WIN)
+  // This code would need to be here when we support
+  // touch on windows?
+  WidgetWin* window_win = static_cast<WidgetWin*>(window.get());
+  window_win->set_delete_on_destroy(false);
+  window_win->set_window_style(WS_OVERLAPPEDWINDOW);
+  window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
+#endif
+  RootView* root = window->GetRootView();
+
+  root->AddChildView(v1);
+  root->SetGestureManager(gm);
+  v1->AddChildView(v2);
+
+  v1->Reset();
+  v2->Reset();
+  gm->Reset();
+
+  TouchEvent pressed(Event::ET_TOUCH_PRESSED,
+                     110,
+                     120,
+                     0, /* no flags */
+                     0  /* first finger touch */);
+  v2->last_touch_event_was_handled_ = true;
+  root->OnTouchEvent(pressed);
+
+  EXPECT_EQ(v2->last_touch_event_type_, Event::ET_TOUCH_PRESSED);
+  EXPECT_EQ(v2->location_.x(), 10);
+  EXPECT_EQ(v2->location_.y(), 20);
+  // Make sure v1 did not receive the event
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+
+  EXPECT_EQ(gm->last_touch_event_, Event::ET_TOUCH_PRESSED);
+  EXPECT_EQ(gm->last_view_, root);
+  EXPECT_EQ(gm->previously_handled_flag_, true);
+
+  // Drag event out of bounds. Should still go to v2
+  v1->Reset();
+  v2->Reset();
+  TouchEvent dragged(Event::ET_TOUCH_MOVED,
+                     50,
+                     40,
+                     0, /* no flags */
+                     0  /* first finger touch */);
+  root->OnTouchEvent(dragged);
+  EXPECT_EQ(v2->last_touch_event_type_, Event::ET_TOUCH_MOVED);
+  EXPECT_EQ(v2->location_.x(), -50);
+  EXPECT_EQ(v2->location_.y(), -60);
+  // Make sure v1 did not receive the event
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+
+  EXPECT_EQ(gm->last_touch_event_, Event::ET_TOUCH_MOVED);
+  EXPECT_EQ(gm->last_view_, root);
+  EXPECT_EQ(gm->previously_handled_flag_, true);
+
+  // Releasted event out of bounds. Should still go to v2
+  v1->Reset();
+  v2->Reset();
+  TouchEvent released(Event::ET_TOUCH_RELEASED, 0, 0, 0, 0 /* first finger */);
+  v2->last_touch_event_was_handled_ = true;
+  root->OnTouchEvent(released);
+  EXPECT_EQ(v2->last_touch_event_type_, Event::ET_TOUCH_RELEASED);
+  EXPECT_EQ(v2->location_.x(), -100);
+  EXPECT_EQ(v2->location_.y(), -100);
+  // Make sure v1 did not receive the event
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+
+  EXPECT_EQ(gm->last_touch_event_, Event::ET_TOUCH_RELEASED);
+  EXPECT_EQ(gm->last_view_, root);
+  EXPECT_EQ(gm->previously_handled_flag_, true);
+
+  window->CloseNow();
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Painting

@@ -31,6 +31,9 @@
         ['include', '/win/'],
         ['include', '/win_[^/]*\\.cc$'],
       ]}],
+      ['touchui==0', {'sources/': [
+        ['exclude', 'touchui/'],
+      ]}],
     ],
   },
   'targets': [
@@ -260,6 +263,8 @@
         'screen_gtk.cc',
         'screen_win.cc',
         'standard_layout.h',
+        'touchui/gesture_manager.h',
+        'touchui/gesture_manager.cc',
         'view.cc',
         'view.h',
         'view_constants.cc',
@@ -358,6 +363,9 @@
             'window/native_frame_view.cc',
             'widget/widget_win.cc',
           ],
+        }],
+        ['touchui==1', {
+          'defines': ['TOUCH_UI=1'],
         }],
         ['OS=="win"', {
           'sources!': [
