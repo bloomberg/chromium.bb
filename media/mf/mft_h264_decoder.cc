@@ -324,11 +324,11 @@ bool MftH264Decoder::CreateD3DDevManager() {
     LOG(ERROR) << "Failed to create D3D9";
     return false;
   }
-  static const TCHAR windowName[] = TEXT("MFT Decoder Hidden Window");
-  static const TCHAR className[] = TEXT("STATIC");
+  static const TCHAR kWindowName[] = TEXT("MFT Decoder Hidden Window");
+  static const TCHAR kClassName[] = TEXT("STATIC");
   device_window_ = CreateWindowEx(WS_EX_NOACTIVATE,
-                                  className,
-                                  windowName,
+                                  kClassName,
+                                  kWindowName,
                                   WS_DISABLED | WS_POPUP,
                                   0, 0, 1, 1,
                                   HWND_MESSAGE,

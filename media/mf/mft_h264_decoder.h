@@ -11,8 +11,6 @@
 
 #if defined(OS_WIN)
 
-#include <deque>
-
 #include <d3d9.h>
 #include <dxva2api.h>
 #include <mfidl.h>
