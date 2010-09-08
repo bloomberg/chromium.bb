@@ -331,6 +331,32 @@ wl_connection_write(struct wl_connection *connection,
 				   connection->data);
 }
 
+static int
+wl_message_size_extra(const struct wl_message *message)
+{
+	int i, extra;
+
+	for (i = 0, extra = 0; message->signature[i]; i++) {
+
+		switch (message->signature[i]) {
+		case 's':
+		case 'o':
+			extra += sizeof (void *);
+			break;
+		case 'a':
+			extra += sizeof (void *) + sizeof (struct wl_array);
+			break;
+		case 'h':
+			extra += sizeof (uint32_t);
+			break;
+		default:
+			break;
+		}
+	}
+
+	return extra;
+}
+
 void
 wl_connection_vmarshal(struct wl_connection *connection,
 		       struct wl_object *sender,
@@ -338,36 +364,74 @@ wl_connection_vmarshal(struct wl_connection *connection,
 		       const struct wl_message *message)
 {
 	struct wl_closure *closure = &connection->closure;
-	struct wl_object *object;
-	uint32_t length, *p, size;
+	struct wl_object **objectp, *object;
+	uint32_t length, *p, *start, size;
 	int dup_fd;
-	struct wl_array *array;
-	const char *s;
-	int i, count, fd;
+	struct wl_array **arrayp, *array;
+	const char **sp, *s;
+	char *extra;
+	int i, count, fd, extra_size;
 
-	count = strlen(message->signature);
-	p = &closure->buffer[2];
-	for (i = 0; i < count; i++) {
-		switch (message->signature[i]) {
+	extra_size = wl_message_size_extra(message);
+	closure->message = message;
+	count = strlen(message->signature) + 2;
+	extra = (char *) closure->buffer;
+	start = &closure->buffer[DIV_ROUNDUP(extra_size, sizeof *p)];
+	p = &start[2];
+	for (i = 2; i < count; i++) {
+		switch (message->signature[i - 2]) {
 		case 'u':
+			closure->types[i] = &ffi_type_uint32;
+			closure->args[i] = p;
 			*p++ = va_arg(ap, uint32_t);
 			break;
 		case 'i':
+			closure->types[i] = &ffi_type_sint32;
+			closure->args[i] = p;
 			*p++ = va_arg(ap, int32_t);
 			break;
 		case 's':
+			closure->types[i] = &ffi_type_pointer;
+			closure->args[i] = extra;
+			sp = (const char **) extra;
+			extra += sizeof *sp;
+
 			s = va_arg(ap, const char *);
 			length = s ? strlen(s) + 1: 0;
 			*p++ = length;
+
+			*sp = (const char *) p;
+
 			memcpy(p, s, length);
-			p += DIV_ROUNDUP(length, sizeof(*p));
+			p += DIV_ROUNDUP(length, sizeof *p);
 			break;
 		case 'o':
-		case 'n':
+			closure->types[i] = &ffi_type_pointer;
+			closure->args[i] = extra;
+			objectp = (struct wl_object **) extra;
+			extra += sizeof *objectp;
+
 			object = va_arg(ap, struct wl_object *);
+			*objectp = object;
 			*p++ = object ? object->id : 0;
 			break;
+
+		case 'n':
+			closure->types[i] = &ffi_type_uint32;
+			closure->args[i] = p;
+			object = va_arg(ap, struct wl_object *);
+			*p++ = object->id;
+			break;
+
 		case 'a':
+			closure->types[i] = &ffi_type_pointer;
+			closure->args[i] = extra;
+			arrayp = (struct wl_array **) extra;
+			extra += sizeof *arrayp;
+
+			*arrayp = (struct wl_array *) extra;
+			extra += sizeof **arrayp;
+
 			array = va_arg(ap, struct wl_array *);
 			if (array == NULL || array->size == 0) {
 				*p++ = 0;
@@ -375,8 +439,14 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			}
 			*p++ = array->size;
 			memcpy(p, array->data, array->size);
-			p = (void *) p + array->size;
+
+			(*arrayp)->size = array->size;
+			(*arrayp)->alloc = array->alloc;
+			(*arrayp)->data = p;
+
+			p += DIV_ROUNDUP(array->size, sizeof *p);
 			break;
+
 		case 'h':
 			fd = va_arg(ap, int);
 			dup_fd = dup(fd);
@@ -393,35 +463,10 @@ wl_connection_vmarshal(struct wl_connection *connection,
 		}
 	}
 
-	size = (p - closure->buffer) * sizeof *p;
-	closure->buffer[0] = sender->id;
-	closure->buffer[1] = opcode | (size << 16);
-	wl_connection_write(connection, closure->buffer, size);
-}
-
-static int
-wl_message_size_extra(const struct wl_message *message)
-{
-	int i, extra;
-
-	for (i = 0, extra = 0; message->signature[i]; i++) {
-
-		switch (message->signature[i - 2]) {
-		case 's':
-		case 'o':
-			extra += sizeof (void *);
-			break;
-		case 'a':
-			extra += sizeof (void *) + sizeof (struct wl_array);
-			break;
-		case 'h':
-			extra += sizeof (uint32_t);
-		default:
-			break;
-		}
-	}
-
-	return extra;
+	size = (p - start) * sizeof *p;
+	start[0] = sender->id;
+	start[1] = opcode | (size << 16);
+	wl_connection_write(connection, start, size);
 }
 
 struct wl_closure *
