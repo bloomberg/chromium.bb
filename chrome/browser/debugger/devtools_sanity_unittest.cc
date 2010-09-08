@@ -60,8 +60,6 @@ const char kPauseWhenScriptIsRunning[] =
 const char kResourceContentLengthTestPage[] = "files/devtools/image.html";
 const char kResourceTestPage[] = "files/devtools/resource_test_page.html";
 const char kSimplePage[] = "files/devtools/simple_page.html";
-const char kSyntaxErrorTestPage[] =
-    "files/devtools/script_syntax_error.html";
 const char kCompletionOnPause[] =
     "files/devtools/completion_on_pause.html";
 const char kPageWithContentScript[] =
@@ -341,12 +339,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        DISABLED_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
-}
-
-// Tests that execution continues automatically when there is a syntax error in
-// script and DevTools are open.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
-  RunTest("testAutoContinueOnSyntaxError", kSyntaxErrorTestPage);
 }
 
 // Fails after WebKit roll 66724:66804, http://crbug.com/54592
