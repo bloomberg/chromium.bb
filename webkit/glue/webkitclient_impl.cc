@@ -424,10 +424,11 @@ static size_t memoryUsageMBGeneric() {
 }
 #endif
 
-size_t WebKitClientImpl::memoryUsageMB() {
+static size_t getMemoryUsageMB(bool bypass_cache) {
   size_t current_mem_usage = 0;
   MemoryUsageCache* mem_usage_cache_singleton = MemoryUsageCache::Get();
-  if (mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
+  if (!bypass_cache &&
+      mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
     return current_mem_usage;
 
   current_mem_usage =
@@ -440,6 +441,14 @@ size_t WebKitClientImpl::memoryUsageMB() {
 #endif
   mem_usage_cache_singleton->SetMemoryValue(current_mem_usage);
   return current_mem_usage;
+}
+
+size_t WebKitClientImpl::memoryUsageMB() {
+  return getMemoryUsageMB(false);
+}
+
+size_t WebKitClientImpl::actualMemoryUsageMB() {
+  return getMemoryUsageMB(true);
 }
 
 void WebKitClientImpl::SuspendSharedTimer() {
