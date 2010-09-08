@@ -84,7 +84,7 @@ NaClExpVector[10] = {
 };
 00000000: d5 0a                                        aad
   d5                          ILLEGAL OpcodeHasImmed_b
-    Aad
+    Aad {%AX}, {%AL}, {%AH}, {$I}
       RegAX                   OpSet OpImplicit
       RegAL                   OpSet OpImplicit
       RegAH                   OpSet OpImplicit
@@ -272,7 +272,7 @@ NaClExpVector[0] = {
 };
 00000000: e3 00                                        jecxz 0x2
   e3                          JMP8 OpcodeHasImmed OperandSize_b AddressSize_v
-    Jecxz $I
+    Jecxz {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
 NaClExpVector[4] = {
@@ -283,7 +283,7 @@ NaClExpVector[4] = {
 };
 00000000: 67 e3 00                                     jcxz 0x3
   e3                          JMP8 OpcodeHasImmed OperandSize_b AddressSize_w
-    Jcxz $I
+    Jcxz {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
 NaClExpVector[4] = {

@@ -102,6 +102,11 @@ typedef struct NaClInst {
   uint8_t num_operands;
   /* The corresponding models of the operands. */
   NaClOp operands[NACL_MAX_NUM_OPERANDS];
+  /* A human readable description of the operands. Used
+   * by NaClInstPrint to print out the corresponding description
+   * of the operands.
+   */
+  char* operands_desc;
   /* Pointer to the next pattern to try and match for the
    * given sequence of opcode bytes.
    */

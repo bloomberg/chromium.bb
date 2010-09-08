@@ -26,10 +26,11 @@
 #define NEEDSNACLINSTTYPESTRING
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
+#include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
-#include "native_client/src/include/portability.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -37,6 +38,9 @@
 #define DEBUGGING 0
 
 #include "native_client/src/shared/utils/debugging.h"
+
+/* Define the default buffer size to use. */
+#define BUFFER_SIZE 256
 
 /* Define the number of possible bytes values. */
 #define NACL_NUM_BYTE_VALUES 256
@@ -152,6 +156,288 @@ static void NaClFatalOp(int index, const char* message) {
     NaClLog(LOG_ERROR, "On operand %d:\n", index);
   }
   NaClFatalInst(message);
+}
+
+/* Advance the buffer/buffer_size values by count characters. */
+static void CharAdvance(char** buffer, size_t* buffer_size, size_t count) {
+  if (count < 0) {
+    NaClFatal("Unable to advance buffer by count!");
+  } else {
+    *buffer += count;
+    *buffer_size += count;
+  }
+}
+
+/* Generates a (malloc allocated) string describing the form for the
+ * operands.
+ * Note: This code used to be part of the validator (runtime) library.
+ * By moving it here, we remove this code, and runtime cost, from
+ * the validator runtime.
+ */
+static char* NaClDefaultOperandsDesc(NaClInst* inst) {
+  char buffer[BUFFER_SIZE];
+  char* buf = buffer;
+  size_t buf_size = BUFFER_SIZE;
+  Bool is_first = TRUE;
+  int i;
+  buffer[0] = '\0';  /* just in case there isn't any operands. */
+  for (i = 0; i < inst->num_operands; ++i) {
+    if (NACL_EMPTY_OPFLAGS == (inst->operands[i].flags &
+                               (NACL_OPFLAG(OperandExtendsOpcode)))) {
+      Bool is_implicit = (NACL_EMPTY_OPFLAGS != (inst->operands[i].flags &
+                                                 NACL_OPFLAG(OpImplicit)));
+      NaClOpKind kind = inst->operands[i].kind;
+      if (is_first) {
+        is_first = FALSE;
+      } else {
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, ", "));
+      }
+      if (is_implicit) {
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "{"));
+      }
+      switch(kind) {
+        case A_Operand:
+        case Aw_Operand:
+        case Av_Operand:
+        case Ao_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$A"));
+          break;
+        case E_Operand:
+        case Eb_Operand:
+        case Ew_Operand:
+        case Ev_Operand:
+        case Eo_Operand:
+        case Edq_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$E"));
+          break;
+        case G_Operand:
+        case Gb_Operand:
+        case Gw_Operand:
+        case Gv_Operand:
+        case Go_Operand:
+        case Gdq_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$G"));
+          break;
+        case ES_G_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "es:$G"));
+          break;
+        case G_OpcodeBase:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$/r"));
+          break;
+        case I_Operand:
+        case Ib_Operand:
+        case Iw_Operand:
+        case Iv_Operand:
+        case Io_Operand:
+        case I2_Operand:
+        case J_Operand:
+        case Jb_Operand:
+        case Jw_Operand:
+        case Jv_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$I"));
+          break;
+        case M_Operand:
+        case Mb_Operand:
+        case Mw_Operand:
+        case Mv_Operand:
+        case Mo_Operand:
+        case Mdq_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$M"));
+          break;
+        case Mpw_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "m16:16"));
+          break;
+        case Mpv_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "m16:32"));
+          break;
+        case Mpo_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "m16:64"));
+          break;
+        case Mmx_E_Operand:
+        case Mmx_N_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$E(mmx)"));
+          break;
+        case Mmx_G_Operand:
+        case Mmx_Gd_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$G(mmx)"));
+          break;
+        case Xmm_E_Operand:
+        case Xmm_Eo_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$E(xmm)"));
+          break;
+        case Xmm_G_Operand:
+        case Xmm_Go_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$G(xmm)"));
+          break;
+        case O_Operand:
+        case Ob_Operand:
+        case Ow_Operand:
+        case Ov_Operand:
+        case Oo_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$O"));
+          break;
+        case S_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "%%Sreg"));
+          break;
+        case St_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "%%st"));
+          break;
+        case RegAL:
+        case RegBL:
+        case RegCL:
+        case RegDL:
+        case RegAH:
+        case RegBH:
+        case RegCH:
+        case RegDH:
+        case RegDIL:
+        case RegSIL:
+        case RegBPL:
+        case RegSPL:
+        case RegR8B:
+        case RegR9B:
+        case RegR10B:
+        case RegR11B:
+        case RegR12B:
+        case RegR13B:
+        case RegR14B:
+        case RegR15B:
+        case RegAX:
+        case RegBX:
+        case RegCX:
+        case RegDX:
+        case RegSI:
+        case RegDI:
+        case RegBP:
+        case RegSP:
+        case RegR8W:
+        case RegR9W:
+        case RegR10W:
+        case RegR11W:
+        case RegR12W:
+        case RegR13W:
+        case RegR14W:
+        case RegR15W:
+        case RegEAX:
+        case RegEBX:
+        case RegECX:
+        case RegEDX:
+        case RegESI:
+        case RegEDI:
+        case RegEBP:
+        case RegESP:
+        case RegR8D:
+        case RegR9D:
+        case RegR10D:
+        case RegR11D:
+        case RegR12D:
+        case RegR13D:
+        case RegR14D:
+        case RegR15D:
+        case RegCS:
+        case RegDS:
+        case RegSS:
+        case RegES:
+        case RegFS:
+        case RegGS:
+        case RegEFLAGS:
+        case RegRFLAGS:
+        case RegEIP:
+        case RegRIP:
+        case RegRAX:
+        case RegRBX:
+        case RegRCX:
+        case RegRDX:
+        case RegRSI:
+        case RegRDI:
+        case RegRBP:
+        case RegRSP:
+        case RegR8:
+        case RegR9:
+        case RegR10:
+        case RegR11:
+        case RegR12:
+        case RegR13:
+        case RegR14:
+        case RegR15:
+        case RegRESP:
+        case RegREAX:
+        case RegREDX:
+        case RegREIP:
+        case RegREBP:
+        case RegDS_EDI:
+        case RegES_EDI:
+        case RegST0:
+        case RegST1:
+        case RegST2:
+        case RegST3:
+        case RegST4:
+        case RegST5:
+        case RegST6:
+        case RegST7:
+        case RegMMX0:
+        case RegMMX1:
+        case RegMMX2:
+        case RegMMX3:
+        case RegMMX4:
+        case RegMMX5:
+        case RegMMX6:
+        case RegMMX7:
+        case RegXMM0:
+        case RegXMM1:
+        case RegXMM2:
+        case RegXMM3:
+        case RegXMM4:
+        case RegXMM5:
+        case RegXMM6:
+        case RegXMM7:
+        case RegXMM8:
+        case RegXMM9:
+        case RegXMM10:
+        case RegXMM11:
+        case RegXMM12:
+        case RegXMM13:
+        case RegXMM14:
+        case RegXMM15:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "%%%s",
+                               NaClOpKindName(kind) + strlen("Reg")));
+          break;
+        case Const_1:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "1"));
+          break;
+        default:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "???"));
+          break;
+      }
+      if (is_implicit) {
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "}"));
+      }
+    }
+  }
+  return strdup(buffer);
 }
 
 /* Define the prefix name for the given opcode, for the given run mode. */
@@ -1098,6 +1384,7 @@ static void NaClDefInstInternal(
   current_inst->insttype = insttype;
   current_inst->flags = flags;
   current_inst->name = name;
+  current_inst->operands_desc = NULL;
   current_inst->next_rule = NULL;
 
   /* undefine all operands. */
@@ -1224,6 +1511,10 @@ void NaClDefInstSeq(const char* opcode_seq) {
   /* Now install into lookup trie. */
   current_cand_inst_node =
       NaClInstallInstSeq(0, opcode_seq, opcode_seq, &inst_node_root);
+}
+
+void NaClAddOperandsDesc(const char* desc) {
+  current_inst->operands_desc = strdup(desc);
 }
 
 /* Apply checks to current instruction flags, and update model as
@@ -1574,6 +1865,7 @@ static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
     NaClOpPrintInternal(f, inst->operands + i);
   }
   gprintf(f, "    },\n");
+  gprintf(f, "    \"%s\",\n", inst->operands_desc);
   if (index < 0 || NULL == inst->next_rule) {
     gprintf(f, "    NULL\n");
   } else {
@@ -1924,6 +2216,43 @@ static void GenerateTables(struct Gio* f, const char* cmd,
   }
 }
 
+/* Walk the trie of explicitly defined opcode sequences, and
+ * fill in the operands description field if it hasn't been
+ * explicitly defined.
+ */
+static void FillInTrieMissingOperandsDescs(NaClInstNode* node) {
+  int i;
+  NaClInst* inst;
+  if (NULL == node) return;
+  inst = node->matching_inst;
+  if ((NULL != inst) && (NULL == inst->operands_desc)) {
+    inst->operands_desc = NaClDefaultOperandsDesc(inst);
+  }
+  for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
+    FillInTrieMissingOperandsDescs(node->succs[i]);
+  }
+}
+
+/* Define the operands description field of each modeled
+ * opcode instruction, if it hasn't explicitly been defined.
+ */
+static void FillInMissingOperandsDescs() {
+  int i;
+  NaClInstPrefix prefix;
+  for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
+    for (i = 0; i < NCDTABLESIZE; ++i) {
+      NaClInst* next = NaClInstTable[i][prefix];
+      while (NULL != next) {
+        if (NULL == next->operands_desc) {
+          next->operands_desc = NaClDefaultOperandsDesc(next);
+        }
+        next = next->next_rule;
+      }
+    }
+  }
+  FillInTrieMissingOperandsDescs(inst_node_root);
+}
+
 int main(const int argc, const char* argv[]) {
   struct GioFile gfile;
   struct Gio* g = (struct Gio*) &gfile;
@@ -1940,6 +2269,7 @@ int main(const int argc, const char* argv[]) {
   NaClBuildInstTables();
   NaClSimplifyIfApplicable();
   NaClVerifyInstCounts();
+  FillInMissingOperandsDescs();
 
   if (new_argc == 1) {
     GioFileRefCtor(&gfile, stdout);

@@ -108,12 +108,12 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 06 ---
   06                          ILLEGAL 
-    Push %ES
+    Push {%ESP}, %ES
       RegESP                  OpUse OpSet OpImplicit
       RegES                   OpUse
   --- 07 ---
   07                          ILLEGAL 
-    Pop %ES
+    Pop {%ESP}, %ES
       RegESP                  OpUse OpSet OpImplicit
       RegES                   OpSet
   --- 08 ---
@@ -152,7 +152,7 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 0e ---
   0e                          ILLEGAL 
-    Push %CS
+    Push {%ESP}, %CS
       RegESP                  OpUse OpSet OpImplicit
       RegCS                   OpUse
   --- 10 ---
@@ -191,12 +191,12 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 16 ---
   16                          ILLEGAL 
-    Push %SS
+    Push {%RESP}, %SS
       RegRESP                 OpUse OpSet OpImplicit
       RegSS                   OpUse
   --- 17 ---
   17                          ILLEGAL 
-    Pop %SS
+    Pop {%RESP}, %SS
       RegRESP                 OpUse OpSet OpImplicit
       RegSS                   OpSet
   --- 18 ---
@@ -235,12 +235,12 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 1e ---
   1e                          ILLEGAL 
-    Push %DS
+    Push {%ESP}, %DS
       RegESP                  OpUse OpSet OpImplicit
       RegDS                   OpUse
   --- 1f ---
   1f                          ILLEGAL 
-    Pop %DS
+    Pop {%ESP}, %DS
       RegESP                  OpUse OpSet OpImplicit
       RegDS                   OpSet
   --- 20 ---
@@ -353,7 +353,7 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 37 ---
   37                          ILLEGAL 
-    Aaa
+    Aaa {%AL}
       RegAL                   OpUse OpSet OpImplicit
   --- 38 ---
   38                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
@@ -458,164 +458,164 @@ Target: x86-32 bit mode
       G_OpcodeBase            OpUse OpSet OpDest
   --- 50 ---
   50 - r0                     386 OpcodePlusR OperandSize_w
-    Push $/r
+    Push {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   50 - r0                     386 OpcodePlusR OperandSize_v
-    Push $/r
+    Push {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 51 ---
   51 - r1                     386 OpcodePlusR OperandSize_w
-    Push $/r
+    Push {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   51 - r1                     386 OpcodePlusR OperandSize_v
-    Push $/r
+    Push {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 52 ---
   52 - r2                     386 OpcodePlusR OperandSize_w
-    Push $/r
+    Push {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   52 - r2                     386 OpcodePlusR OperandSize_v
-    Push $/r
+    Push {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 53 ---
   53 - r3                     386 OpcodePlusR OperandSize_w
-    Push $/r
+    Push {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   53 - r3                     386 OpcodePlusR OperandSize_v
-    Push $/r
+    Push {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 54 ---
   54 - r4                     386 OpcodePlusR OperandSize_w
-    Push $/r
+    Push {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   54 - r4                     386 OpcodePlusR OperandSize_v
-    Push $/r
+    Push {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 55 ---
   55 - r5                     386 OpcodePlusR OperandSize_w
-    Push $/r
+    Push {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   55 - r5                     386 OpcodePlusR OperandSize_v
-    Push $/r
+    Push {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 56 ---
   56 - r6                     386 OpcodePlusR OperandSize_w
-    Push $/r
+    Push {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   56 - r6                     386 OpcodePlusR OperandSize_v
-    Push $/r
+    Push {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 57 ---
   57 - r7                     386 OpcodePlusR OperandSize_w
-    Push $/r
+    Push {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   57 - r7                     386 OpcodePlusR OperandSize_v
-    Push $/r
+    Push {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 58 ---
   58 - r0                     386 OpcodePlusR OperandSize_w
-    Pop $/r
+    Pop {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   58 - r0                     386 OpcodePlusR OperandSize_v
-    Pop $/r
+    Pop {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 59 ---
   59 - r1                     386 OpcodePlusR OperandSize_w
-    Pop $/r
+    Pop {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   59 - r1                     386 OpcodePlusR OperandSize_v
-    Pop $/r
+    Pop {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5a ---
   5a - r2                     386 OpcodePlusR OperandSize_w
-    Pop $/r
+    Pop {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   5a - r2                     386 OpcodePlusR OperandSize_v
-    Pop $/r
+    Pop {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5b ---
   5b - r3                     386 OpcodePlusR OperandSize_w
-    Pop $/r
+    Pop {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   5b - r3                     386 OpcodePlusR OperandSize_v
-    Pop $/r
+    Pop {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5c ---
   5c - r4                     386 OpcodePlusR OperandSize_w
-    Pop $/r
+    Pop {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   5c - r4                     386 OpcodePlusR OperandSize_v
-    Pop $/r
+    Pop {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5d ---
   5d - r5                     386 OpcodePlusR OperandSize_w
-    Pop $/r
+    Pop {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   5d - r5                     386 OpcodePlusR OperandSize_v
-    Pop $/r
+    Pop {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5e ---
   5e - r6                     386 OpcodePlusR OperandSize_w
-    Pop $/r
+    Pop {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   5e - r6                     386 OpcodePlusR OperandSize_v
-    Pop $/r
+    Pop {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5f ---
   5f - r7                     386 OpcodePlusR OperandSize_w
-    Pop $/r
+    Pop {%RESP}, $/r
       RegRESP                 OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   5f - r7                     386 OpcodePlusR OperandSize_v
-    Pop $/r
+    Pop {%ESP}, $/r
       RegESP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 60 ---
   60                          ILLEGAL OperandSize_w
-    Pusha
+    Pusha {%ESP}, {???}
       RegESP                  OpUse OpSet OpImplicit
       RegGP7                  OpUse OpImplicit
   60                          ILLEGAL OperandSize_v
-    Pushad
+    Pushad {%ESP}, {???}
       RegESP                  OpUse OpSet OpImplicit
       RegGP7                  OpUse OpImplicit
   --- 61 ---
   61                          ILLEGAL OperandSize_w
-    Popa
+    Popa {%ESP}, {???}
       RegESP                  OpUse OpSet OpImplicit
       RegGP7                  OpSet OpImplicit
   61                          ILLEGAL OperandSize_v
-    Popad
+    Popad {%ESP}, {???}
       RegESP                  OpUse OpSet OpImplicit
       RegGP7                  OpSet OpImplicit
   --- 63 ---
@@ -625,7 +625,7 @@ Target: x86-32 bit mode
       G_Operand               OpUse
   --- 68 ---
   68                          386 OpcodeHasImmed OperandSize_w
-    Push $I
+    Push {%RESP}, $I
       RegRESP                 OpUse OpSet OpImplicit
       I_Operand               OpUse
   --- 69 ---
@@ -636,7 +636,7 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 6a ---
   6a                          386 OpcodeHasImmed OperandSize_b
-    Push $I
+    Push {%RESP}, $I
       RegRESP                 OpUse OpSet OpImplicit
       I_Operand               OpUse
   --- 6b ---
@@ -647,110 +647,110 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 6c ---
   6c                          ILLEGAL OperandSize_b
-    Insb
+    Insb {%ES_EDI}, {%DX}
       RegES_EDI               OpSet OpImplicit
       RegDX                   OpUse OpImplicit
   --- 6d ---
   6d                          ILLEGAL OperandSize_w
-    Insw
+    Insw {%ES_EDI}, {%DX}
       RegES_EDI               OpSet OpImplicit
       RegDX                   OpUse OpImplicit
   6d                          ILLEGAL OperandSize_v
-    Insd
+    Insd {%ES_EDI}, {%DX}
       RegES_EDI               OpSet OpImplicit
       RegDX                   OpUse OpImplicit
   --- 6e ---
   6e                          ILLEGAL OperandSize_b
-    Outsb
+    Outsb {%DX}, {%ES_EDI}
       RegDX                   OpUse OpImplicit
       RegES_EDI               OpUse OpImplicit
   --- 6f ---
   6f                          ILLEGAL OperandSize_w
-    Outsw
+    Outsw {%DX}, {%ES_EDI}
       RegDX                   OpUse OpImplicit
       RegES_EDI               OpUse OpImplicit
   6f                          ILLEGAL OperandSize_v
-    Outsd
+    Outsd {%DX}, {%ES_EDI}
       RegDX                   OpUse OpImplicit
       RegES_EDI               OpUse OpImplicit
   --- 70 ---
   70                          JMP8 OpcodeHasImmed OperandSize_b
-    Jo $I
+    Jo {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 71 ---
   71                          JMP8 OpcodeHasImmed OperandSize_b
-    Jno $I
+    Jno {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 72 ---
   72                          JMP8 OpcodeHasImmed OperandSize_b
-    Jb $I
+    Jb {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 73 ---
   73                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnb $I
+    Jnb {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 74 ---
   74                          JMP8 OpcodeHasImmed OperandSize_b
-    Jz $I
+    Jz {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 75 ---
   75                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnz $I
+    Jnz {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 76 ---
   76                          JMP8 OpcodeHasImmed OperandSize_b
-    Jbe $I
+    Jbe {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 77 ---
   77                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnbe $I
+    Jnbe {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 78 ---
   78                          JMP8 OpcodeHasImmed OperandSize_b
-    Js $I
+    Js {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 79 ---
   79                          JMP8 OpcodeHasImmed OperandSize_b
-    Jns $I
+    Jns {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7a ---
   7a                          JMP8 OpcodeHasImmed OperandSize_b
-    Jp $I
+    Jp {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7b ---
   7b                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnp $I
+    Jnp {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7c ---
   7c                          JMP8 OpcodeHasImmed OperandSize_b
-    Jl $I
+    Jl {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7d ---
   7d                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnl $I
+    Jnl {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7e ---
   7e                          JMP8 OpcodeHasImmed OperandSize_b
-    Jle $I
+    Jle {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7f ---
   7f                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnle $I
+    Jnle {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 80 ---
@@ -971,11 +971,11 @@ Target: x86-32 bit mode
       E_Operand               OpSet
   --- 8f ---
   8f / 0                      386 OpcodeInModRm OperandSize_w
-    Pop $E
+    Pop {%RESP}, $E
       RegRESP                 OpUse OpSet OpImplicit
       E_Operand               OpSet
   8f / 0                      386 OpcodeInModRm OperandSize_v
-    Pop $E
+    Pop {%ESP}, $E
       RegESP                  OpUse OpSet OpImplicit
       E_Operand               OpSet
   --- 90 ---
@@ -1052,32 +1052,32 @@ Target: x86-32 bit mode
       RegRAX                  OpUse OpSet OpDest
   --- 98 ---
   98                          386 OperandSize_w
-    Cbw
+    Cbw {%AX}, {%AL}
       RegAX                   OpSet OpImplicit
       RegAL                   OpUse OpImplicit
   98                          386 OperandSize_v
-    Cwde
+    Cwde {%EAX}, {%AX}
       RegEAX                  OpSet OpImplicit
       RegAX                   OpUse OpImplicit
   --- 99 ---
   99                          386 OperandSize_w
-    Cwd
+    Cwd {%DX}, {%AX}, {%AX}
       RegDX                   OpSet OpImplicit
       RegAX                   OpSet OpImplicit
       RegAX                   OpUse OpImplicit
   99                          386 OperandSize_v
-    Cdq
+    Cdq {%EDX}, {%EAX}, {%EAX}
       RegEDX                  OpSet OpImplicit
       RegEAX                  OpSet OpImplicit
       RegEAX                  OpUse OpImplicit
   --- 9a ---
   9a                          ILLEGAL OpcodeHasImmed_v OperandSize_w
-    Call $I
+    Call {%EIP}, {%ESP}, $I
       RegEIP                  OpUse OpSet OpImplicit
       RegESP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandFar OperandRelative
   9a                          ILLEGAL OpcodeHasImmed_p OperandSize_v
-    Call $I
+    Call {%EIP}, {%ESP}, $I
       RegEIP                  OpUse OpSet OpImplicit
       RegESP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandFar OperandRelative
@@ -1086,25 +1086,25 @@ Target: x86-32 bit mode
     Fwait
   --- 9c ---
   9c                          ILLEGAL OperandSize_w
-    Pushf
+    Pushf {%RESP}
       RegRESP                 OpUse OpSet OpImplicit
   9c                          ILLEGAL OperandSize_v
-    Pushfd
+    Pushfd {%ESP}
       RegESP                  OpUse OpSet OpImplicit
   --- 9d ---
   9d                          ILLEGAL OperandSize_w
-    Popf
+    Popf {%RESP}
       RegRESP                 OpUse OpSet OpImplicit
   9d                          ILLEGAL OperandSize_v
-    Popfd
+    Popfd {%ESP}
       RegESP                  OpUse OpSet OpImplicit
   --- 9e ---
   9e                          386 
-    Sahf
+    Sahf {%AH}
       RegAH                   OpUse OpImplicit
   --- 9f ---
   9f                          386 
-    Lahf
+    Lahf {%AH}
       RegAH                   OpSet OpImplicit
   --- a0 ---
   a0                          386 OpcodeHasImmed_Addr OperandSize_b
@@ -1128,30 +1128,30 @@ Target: x86-32 bit mode
       RegREAX                 OpUse
   --- a4 ---
   a4                          386R OperandSize_b
-    Movsb
+    Movsb {%ES_EDI}, {%DS_EDI}
       RegES_EDI               OpSet OpImplicit
       RegDS_EDI               OpUse OpImplicit
   --- a5 ---
   a5                          386R OperandSize_w
-    Movsw
+    Movsw {%ES_EDI}, {%DS_EDI}
       RegES_EDI               OpSet OpImplicit
       RegDS_EDI               OpUse OpImplicit
   a5                          386R OperandSize_v
-    Movsd
+    Movsd {%ES_EDI}, {%DS_EDI}
       RegES_EDI               OpSet OpImplicit
       RegDS_EDI               OpUse OpImplicit
   --- a6 ---
   a6                          386RE OperandSize_b
-    Cmpsb
+    Cmpsb {%ES_EDI}, {%DS_EDI}
       RegES_EDI               OpUse OpImplicit
       RegDS_EDI               OpUse OpImplicit
   --- a7 ---
   a7                          386RE OperandSize_w
-    Cmpsw
+    Cmpsw {%ES_EDI}, {%DS_EDI}
       RegES_EDI               OpUse OpImplicit
       RegDS_EDI               OpUse OpImplicit
   a7                          386RE OperandSize_v
-    Cmpsd
+    Cmpsd {%ES_EDI}, {%DS_EDI}
       RegES_EDI               OpUse OpImplicit
       RegDS_EDI               OpUse OpImplicit
   --- a8 ---
@@ -1170,44 +1170,44 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- aa ---
   aa                          386R OperandSize_b
-    Stosb
+    Stosb {%ES_EDI}, {%AL}
       RegES_EDI               OpSet OpImplicit
       RegAL                   OpUse OpImplicit
   --- ab ---
   ab                          386R OperandSize_w
-    Stosw
+    Stosw {%ES_EDI}, {%AX}
       RegES_EDI               OpSet OpImplicit
       RegAX                   OpUse OpImplicit
   ab                          386R OperandSize_v
-    Stosd
+    Stosd {%ES_EDI}, {%EAX}
       RegES_EDI               OpSet OpImplicit
       RegEAX                  OpUse OpImplicit
   --- ac ---
   ac                          ILLEGAL OperandSize_b
-    Lodsb
+    Lodsb {%AL}, {%DS_EDI}
       RegAL                   OpSet OpImplicit
       RegDS_EDI               OpUse OpImplicit
   --- ad ---
   ad                          ILLEGAL OperandSize_w
-    Lodsw
+    Lodsw {%AX}, {%DS_EDI}
       RegAX                   OpSet OpImplicit
       RegDS_EDI               OpUse OpImplicit
   ad                          ILLEGAL OperandSize_v
-    Lodsd
+    Lodsd {%EAX}, {%DS_EDI}
       RegEAX                  OpSet OpImplicit
       RegDS_EDI               OpUse OpImplicit
   --- ae ---
   ae                          386RE OperandSize_b
-    Scasb
+    Scasb {%AL}, {%DS_EDI}
       RegAL                   OpUse OpImplicit
       RegDS_EDI               OpUse OpImplicit
   --- af ---
   af                          386RE OperandSize_w
-    Scasw
+    Scasw {%AX}, {%DS_EDI}
       RegAX                   OpUse OpImplicit
       RegDS_EDI               OpUse OpImplicit
   af                          386RE OperandSize_v
-    Scasd
+    Scasd {%EAX}, {%DS_EDI}
       RegEAX                  OpUse OpImplicit
       RegDS_EDI               OpUse OpImplicit
   --- b0 ---
@@ -1382,23 +1382,23 @@ Target: x86-32 bit mode
       I_Operand
   --- c2 ---
   c2                          RETURN OpcodeHasImmed_w
-    Ret $I
+    Ret {%REIP}, {%RESP}, $I
       RegREIP                 OpSet OpImplicit
       RegRESP                 OpUse OpSet OpImplicit
       I_Operand               OpUse OperandNear
   --- c3 ---
   c3                          RETURN 
-    Ret
+    Ret {%REIP}, {%RESP}
       RegREIP                 OpSet OpImplicit
       RegRESP                 OpUse OpSet OpImplicit
   --- c4 ---
   c4                          ILLEGAL OpcodeUsesModRm OpcodeHasImmed_v OperandSize_w
-    Les $G, $I
+    Les {es:$G}, $G, $I
       ES_G_Operand            OpSet OpImplicit
       G_Operand               OpUse
       I_Operand               OpUse
   c4                          ILLEGAL OpcodeUsesModRm OpcodeHasImmed_p OperandSize_v
-    Les $G, $I
+    Les {es:$G}, $G, $I
       ES_G_Operand            OpSet OpImplicit
       G_Operand               OpUse
       I_Operand               OpUse
@@ -1408,7 +1408,7 @@ Target: x86-32 bit mode
       G_Operand               OpUse
       I_Operand               OpUse
   c5                          ILLEGAL OpcodeUsesModRm OpcodeHasImmed_p OperandSize_v
-    Les $G, $I
+    Les {es:$G}, $G, $I
       ES_G_Operand            OpSet OpImplicit
       G_Operand               OpUse
       I_Operand               OpUse
@@ -1433,18 +1433,18 @@ Target: x86-32 bit mode
       I2_Operand              OpUse
   --- c9 ---
   c9                          386 
-    Leave
+    Leave {%REBP}, {%RESP}
       RegREBP                 OpUse OpSet OpImplicit
       RegRESP                 OpUse OpSet OpImplicit
   --- ca ---
   ca                          RETURN OpcodeHasImmed_w
-    Ret $I
+    Ret {%REIP}, {%RESP}, $I
       RegREIP                 OpSet OpImplicit
       RegRESP                 OpUse OpSet OpImplicit
       I_Operand               OpUse OperandFar
   --- cb ---
   cb                          RETURN 
-    Ret
+    Ret {%REIP}, {%RESP}
       RegREIP                 OpSet OpImplicit
       RegRESP                 OpUse OpSet OpImplicit
   --- cc ---
@@ -1578,12 +1578,12 @@ Target: x86-32 bit mode
       RegCL                   OpUse
   --- d4 ---
   d4                          ILLEGAL OpcodeHasImmed_b
-    Aam
+    Aam {%AX}, {$I}
       RegAX                   OpUse OpSet OpImplicit
       I_Operand               OpUse OpImplicit
   --- d5 ---
   d5                          ILLEGAL OpcodeHasImmed_b
-    Aad
+    Aad {%AX}, {%AL}, {%AH}, {$I}
       RegAX                   OpSet OpImplicit
       RegAL                   OpSet OpImplicit
       RegAH                   OpSet OpImplicit
@@ -1824,26 +1824,26 @@ Target: x86-32 bit mode
       RegST0                  OpUse
   --- e0 ---
   e0                          JMP8 OpcodeHasImmed OperandSize_b
-    Loopne $I
+    Loopne {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e1 ---
   e1                          JMP8 OpcodeHasImmed OperandSize_b
-    Loope $I
+    Loope {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e2 ---
   e2                          JMP8 OpcodeHasImmed OperandSize_b
-    Loop $I
+    Loop {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e3 ---
   e3                          JMP8 OpcodeHasImmed OperandSize_b AddressSize_w
-    Jcxz $I
+    Jcxz {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   e3                          JMP8 OpcodeHasImmed OperandSize_b AddressSize_v
-    Jecxz $I
+    Jecxz {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e4 ---
@@ -1858,23 +1858,23 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- e8 ---
   e8                          JMPZ OpcodeHasImmed OperandSize_w
-    Call $I
+    Call {%EIP}, {%ESP}, $I
       RegEIP                  OpUse OpSet OpImplicit
       RegESP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   e8                          JMPZ OpcodeHasImmed OperandSize_v
-    Call $I
+    Call {%REIP}, {%RESP}, $I
       RegREIP                 OpUse OpSet OpImplicit
       RegRESP                 OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e9 ---
   e9                          JMPZ OpcodeHasImmed OperandSize_w OperandSize_v
-    Jmp $I
+    Jmp {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- eb ---
   eb                          JMP8 OpcodeHasImmed OperandSize_b
-    Jmp $I
+    Jmp {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- ec ---
@@ -1902,22 +1902,22 @@ Target: x86-32 bit mode
     Neg $E
       E_Operand               OpUse OpSet OpDest
   f6 / 4                      386 OpcodeInModRm OperandSize_b
-    Mul $E
+    Mul {%AX}, {%AL}, $E
       RegAX                   OpSet OpImplicit
       RegAL                   OpUse OpImplicit
       E_Operand               OpUse
   f6 / 5                      386 OpcodeInModRm OperandSize_b
-    Imul $E
+    Imul {%AX}, {%AL}, $E
       RegAX                   OpSet OpImplicit
       RegAL                   OpUse OpImplicit
       E_Operand               OpUse
   f6 / 6                      386 OpcodeInModRm OperandSize_b
-    Div $E
+    Div {%AX}, {%AL}, $E
       RegAX                   OpSet OpImplicit
       RegAL                   OpUse OpImplicit
       E_Operand               OpUse
   f6 / 7                      386 OpcodeInModRm OperandSize_b
-    Idiv $E
+    Idiv {%AL}, {%AH}, {%AX}, $E
       RegAL                   OpSet OpImplicit
       RegAH                   OpSet OpImplicit
       RegAX                   OpUse OpImplicit
@@ -1938,22 +1938,22 @@ Target: x86-32 bit mode
     Neg $E
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
   f7 / 4                      386 OpcodeInModRm OperandSize_w OperandSize_v
-    Mul $E
+    Mul {%REDX}, {%REAX}, $E
       RegREDX                 OpSet OpImplicit
       RegREAX                 OpUse OpSet OpImplicit
       E_Operand               OpUse
   f7 / 5                      386 OpcodeInModRm OperandSize_w OperandSize_v
-    Imul $E
+    Imul {%REDX}, {%REAX}, $E
       RegREDX                 OpSet OpImplicit
       RegREAX                 OpUse OpSet OpImplicit
       E_Operand               OpUse
   f7 / 6                      386 OpcodeInModRm OperandSize_w OperandSize_v
-    Div $E
+    Div {%REDX}, {%REAX}, $E
       RegREDX                 OpUse OpSet OpImplicit
       RegREAX                 OpUse OpSet OpImplicit
       E_Operand               OpUse
   f7 / 7                      386 OpcodeInModRm OperandSize_w OperandSize_v
-    Idiv $E
+    Idiv {%REDX}, {%REAX}, $E
       RegREDX                 OpUse OpSet OpImplicit
       RegREAX                 OpUse OpSet OpImplicit
       E_Operand               OpUse
@@ -1975,12 +1975,12 @@ Target: x86-32 bit mode
     Dec $E
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
   ff / 2                      INDIRECT OpcodeInModRm OperandSize_w
-    Call $E
+    Call {%EIP}, {%ESP}, $E
       RegEIP                  OpUse OpSet OpImplicit
       RegESP                  OpUse OpSet OpImplicit
       E_Operand               OpUse OperandNear
   ff / 2                      INDIRECT OpcodeInModRm OperandSize_v
-    Call $E
+    Call {%EIP}, {%ESP}, $E
       RegEIP                  OpUse OpSet OpImplicit
       RegESP                  OpUse OpSet OpImplicit
       E_Operand               OpUse OperandNear
@@ -1993,19 +1993,19 @@ Target: x86-32 bit mode
       RegEIP                  OpSet OpDest
       E_Operand               OpUse OperandNear
   ff / 5                      ILLEGAL OpcodeInModRm ModRmModIsnt0x3 OperandSize_w
-    Jmp $M
+    Jmp {%REIP}, $M
       RegREIP                 OpSet OpImplicit
       Mw_Operand              OpUse
   ff / 5                      ILLEGAL OpcodeInModRm ModRmModIsnt0x3 OperandSize_v
-    Jmp $M
+    Jmp {%REIP}, $M
       RegREIP                 OpSet OpImplicit
       Mw_Operand              OpUse
   ff / 6                      386 OpcodeInModRm OperandSize_w
-    Push $E
+    Push {%RESP}, $E
       RegRESP                 OpUse OpSet OpImplicit
       E_Operand               OpUse
   ff / 6                      386 OpcodeInModRm OperandSize_v
-    Push $E
+    Push {%ESP}, $E
       RegESP                  OpUse OpSet OpImplicit
       E_Operand               OpUse
 
@@ -2486,146 +2486,146 @@ Target: x86-32 bit mode
       Mmx_G_Operand           OpUse
   --- 80 ---
   0f 80                       JMPZ OpcodeHasImmed OperandSize_w
-    Jo $I
+    Jo {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 80                       JMPZ OpcodeHasImmed OperandSize_v
-    Jo $I
+    Jo {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 81 ---
   0f 81                       JMPZ OpcodeHasImmed OperandSize_w
-    Jno $I
+    Jno {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 81                       JMPZ OpcodeHasImmed OperandSize_v
-    Jno $I
+    Jno {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 82 ---
   0f 82                       JMPZ OpcodeHasImmed OperandSize_w
-    Jb $I
+    Jb {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 82                       JMPZ OpcodeHasImmed OperandSize_v
-    Jb $I
+    Jb {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 83 ---
   0f 83                       JMPZ OpcodeHasImmed OperandSize_w
-    Jnb $I
+    Jnb {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 83                       JMPZ OpcodeHasImmed OperandSize_v
-    Jnb $I
+    Jnb {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 84 ---
   0f 84                       JMPZ OpcodeHasImmed OperandSize_w
-    Jz $I
+    Jz {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 84                       JMPZ OpcodeHasImmed OperandSize_v
-    Jz $I
+    Jz {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 85 ---
   0f 85                       JMPZ OpcodeHasImmed OperandSize_w
-    Jnz $I
+    Jnz {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 85                       JMPZ OpcodeHasImmed OperandSize_v
-    Jnz $I
+    Jnz {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 86 ---
   0f 86                       JMPZ OpcodeHasImmed OperandSize_w
-    Jbe $I
+    Jbe {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 86                       JMPZ OpcodeHasImmed OperandSize_v
-    Jbe $I
+    Jbe {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 87 ---
   0f 87                       JMPZ OpcodeHasImmed OperandSize_w
-    Jnbe $I
+    Jnbe {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 87                       JMPZ OpcodeHasImmed OperandSize_v
-    Jnbe $I
+    Jnbe {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 88 ---
   0f 88                       JMPZ OpcodeHasImmed OperandSize_w
-    Js $I
+    Js {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 88                       JMPZ OpcodeHasImmed OperandSize_v
-    Js $I
+    Js {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 89 ---
   0f 89                       JMPZ OpcodeHasImmed OperandSize_w
-    Jns $I
+    Jns {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 89                       JMPZ OpcodeHasImmed OperandSize_v
-    Jns $I
+    Jns {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8a ---
   0f 8a                       JMPZ OpcodeHasImmed OperandSize_w
-    Jp $I
+    Jp {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 8a                       JMPZ OpcodeHasImmed OperandSize_v
-    Jp $I
+    Jp {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8b ---
   0f 8b                       JMPZ OpcodeHasImmed OperandSize_w
-    Jnp $I
+    Jnp {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 8b                       JMPZ OpcodeHasImmed OperandSize_v
-    Jnp $I
+    Jnp {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8c ---
   0f 8c                       JMPZ OpcodeHasImmed OperandSize_w
-    Jl $I
+    Jl {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 8c                       JMPZ OpcodeHasImmed OperandSize_v
-    Jl $I
+    Jl {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8d ---
   0f 8d                       JMPZ OpcodeHasImmed OperandSize_w
-    Jnl $I
+    Jnl {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 8d                       JMPZ OpcodeHasImmed OperandSize_v
-    Jnl $I
+    Jnl {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8e ---
   0f 8e                       JMPZ OpcodeHasImmed OperandSize_w
-    Jle $I
+    Jle {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 8e                       JMPZ OpcodeHasImmed OperandSize_v
-    Jle $I
+    Jle {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8f ---
   0f 8f                       JMPZ OpcodeHasImmed OperandSize_w
-    Jnle $I
+    Jnle {%EIP}, $I
       RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   0f 8f                       JMPZ OpcodeHasImmed OperandSize_v
-    Jnle $I
+    Jnle {%REIP}, $I
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 90 ---
@@ -2698,7 +2698,7 @@ Target: x86-32 bit mode
   0f a1                       INVALID 
   --- a2 ---
   0f a2                       386 
-    Cpuid
+    Cpuid {%EAX}, {%EBX}, {%ECX}, {%EDX}
       RegEAX                  OpSet OpImplicit
       RegEBX                  OpSet OpImplicit
       RegECX                  OpSet OpImplicit
@@ -2746,13 +2746,13 @@ Target: x86-32 bit mode
       E_Operand               OpUse
   --- b0 ---
   0f b0                       386L OpcodeUsesModRm OpcodeLockable OperandSize_b
-    Cmpxchg $E, $G
+    Cmpxchg {%AL}, $E, $G
       RegAL                   OpUse OpSet OpImplicit
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- b1 ---
   0f b1                       386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Cmpxchg $E, $G
+    Cmpxchg {%REAX}, $E, $G
       RegREAX                 OpUse OpSet OpImplicit
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
@@ -3065,7 +3065,7 @@ Target: x86-32 bit mode
       Mmx_E_Operand           OpUse
   --- f7 ---
   0f f7                       MMX ModRmModIs0x3 OpcodeUsesModRm
-    Maskmovq $G(mmx), $E(mmx)
+    Maskmovq $G(mmx), $E(mmx), {%DS_EDI}
       Mmx_G_Operand           OpUse
       Mmx_E_Operand           OpUse
       RegDS_EDI               OpUse OpImplicit
@@ -4332,7 +4332,7 @@ Target: x86-32 bit mode
       Xmm_E_Operand           OpUse
   --- f7 ---
   66 0f f7                    SSE2 ModRmModIs0x3 OpcodeUsesModRm
-    Maskmovdqu $G(xmm), $E(xmm)
+    Maskmovdqu $G(xmm), $E(xmm), {%DS_EDI}
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
       RegDS_EDI               OpUse OpImplicit
@@ -4465,7 +4465,7 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 60 ---
   66 0f 3a 60                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
-    Pcmpestrm $G(xmm), $E(xmm), $I
+    Pcmpestrm {%XMM0}, {%EAX}, {%EDX}, $G(xmm), $E(xmm), $I
       RegXMM0                 OpSet OpImplicit
       RegEAX                  OpSet OpImplicit
       RegEDX                  OpSet OpImplicit
@@ -4473,7 +4473,7 @@ Target: x86-32 bit mode
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   66 0f 3a 60                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b
-    Pcmpestrm $G(xmm), $E(xmm), $I
+    Pcmpestrm {%XMM0}, {%RAX}, {%RDX}, $G(xmm), $E(xmm), $I
       RegXMM0                 OpSet OpImplicit
       RegRAX                  OpSet OpImplicit
       RegRDX                  OpSet OpImplicit
@@ -4482,7 +4482,7 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 61 ---
   66 0f 3a 61                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
-    Pcmpestri $G(xmm), $E(xmm), $I
+    Pcmpestri {%ECX}, {%EAX}, {%EDX}, $G(xmm), $E(xmm), $I
       RegECX                  OpSet OpImplicit
       RegEAX                  OpSet OpImplicit
       RegEDX                  OpSet OpImplicit
@@ -4490,7 +4490,7 @@ Target: x86-32 bit mode
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   66 0f 3a 61                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b
-    Pcmpestri $G(xmm), $E(xmm), $I
+    Pcmpestri {%RCX}, {%RAX}, {%RDX}, $G(xmm), $E(xmm), $I
       RegRCX                  OpSet OpImplicit
       RegRAX                  OpSet OpImplicit
       RegRDX                  OpSet OpImplicit
@@ -4499,18 +4499,18 @@ Target: x86-32 bit mode
       I_Operand               OpUse
   --- 62 ---
   66 0f 3a 62                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b
-    Pcmpistrm $G(xmm), $E(xmm)
+    Pcmpistrm {%XMM0}, $G(xmm), $E(xmm)
       RegXMM0                 OpSet OpImplicit
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
   --- 63 ---
   66 0f 3a 63                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
-    Pcmpistri $G(xmm), $E(xmm)
+    Pcmpistri {%ECX}, $G(xmm), $E(xmm)
       RegECX                  OpSet OpImplicit
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
   66 0f 3a 63                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b
-    Pcmpistri $G(xmm), $E(xmm)
+    Pcmpistri {%RCX}, $G(xmm), $E(xmm)
       RegRCX                  OpSet OpImplicit
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse

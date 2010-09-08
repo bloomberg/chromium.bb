@@ -142,6 +142,11 @@ void NaClDefInvalid(const uint8_t opcode);
 /* Defines an invalid instruction for the given prefix. */
 void NaClDefInvalidIcode(NaClInstPrefix prefix, const uint8_t opcode);
 
+/* Adds the given operands description to the current instruction being
+ * processed.
+ */
+void NaClAddOperandsDesc(const char* desc);
+
 /* Add additional instruction flags to the current instruction being
  * processed.
  */
