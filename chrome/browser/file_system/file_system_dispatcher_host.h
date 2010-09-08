@@ -6,9 +6,15 @@
 #define CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/file_util.h"
+#include "base/id_map.h"
 #include "base/nullable_string16.h"
 #include "base/process.h"
+#include "base/platform_file.h"
+#include "base/scoped_callback_factory.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/file_system/file_system_operation.h"
+#include "chrome/browser/file_system/file_system_operation_client.h"
 #include "chrome/common/render_messages.h"
 
 class FileSystemHostContext;
@@ -17,7 +23,8 @@ class Receiver;
 class ResourceMessageFilter;
 
 class FileSystemDispatcherHost
-    : public base::RefCountedThreadSafe<FileSystemDispatcherHost> {
+    : public base::RefCountedThreadSafe<FileSystemDispatcherHost>,
+      public FileSystemOperationClient {
  public:
   FileSystemDispatcherHost(IPC::Message::Sender* sender,
                            FileSystemHostContext* file_system_host_context,
@@ -56,8 +63,25 @@ class FileSystemDispatcherHost
       const string16& path);
   void Send(IPC::Message* message);
 
+  // FileSystemOperationClient methods.
+  virtual void DidFail(WebKit::WebFileError status, int request_id);
+  virtual void DidSucceed(int request_id);
+  virtual void DidReadMetadata(
+      const base::PlatformFileInfo& info,
+      int request_id);
+  virtual void DidReadDirectory(
+      const std::vector<base::file_util_proxy::Entry>& entries,
+      bool has_more,
+      int request_id);
+
  private:
-  void Move(const string16& src, const string16& dest, int operation_id);
+  // Creates a new FileSystemOperation.
+  FileSystemOperation* GetNewOperation(int request_id);
+
+  // Checks the validity of a given |path|. Returns true if the given |path|
+  // is valid as a path for FileSystem API. Otherwise it sends back a
+  // security error code to the dispatcher and returns false.
+  bool CheckValidFileSystemPath(const FilePath& path, int request_id);
 
   // The sender to be used for sending out IPC messages.
   IPC::Message::Sender* message_sender_;
@@ -71,6 +95,12 @@ class FileSystemDispatcherHost
 
   // Used to look up permissions.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+
+  // Keeps ongoing file system operations.
+  typedef IDMap<FileSystemOperation, IDMapOwnPointer> OperationsMap;
+  OperationsMap operations_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);
 };
 
 #endif  // CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_HOST_H_

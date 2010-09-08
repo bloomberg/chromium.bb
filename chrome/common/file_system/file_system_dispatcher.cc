@@ -127,7 +127,8 @@ void FileSystemDispatcher::DidReadDirectory(
     callbacks_.Remove(params.request_id);
   WebVector<WebFileSystemEntry> entries(params.entries.size());
   for (size_t i = 0; i < params.entries.size(); ++i) {
-    entries[i].name = webkit_glue::FilePathToWebString(params.entries[i].name);
+    entries[i].name = webkit_glue::FilePathStringToWebString(
+        params.entries[i].name);
     entries[i].isDirectory = params.entries[i].is_directory;
   }
   callbacks->didReadDirectory(entries, params.has_more);

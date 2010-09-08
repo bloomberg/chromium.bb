@@ -11,6 +11,7 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/file_path.h"
+#include "base/file_util_proxy.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
@@ -846,18 +847,8 @@ struct ViewMsg_FileSystem_DidReadDirectory_Params {
   // The response should have this id.
   int request_id;
 
-  // TODO(kinuko): replace this with file_util_proxy's entry structure
-  // once it's defined.
-  struct Entry {
-    // Name of the entry.
-    FilePath name;
-
-    // Indicates if the entry is directory or not.
-    bool is_directory;
-  };
-
   // A vector of directory entries.
-  std::vector<Entry> entries;
+  std::vector<base::file_util_proxy::Entry> entries;
 
   // Indicates if there will be more entries.
   bool has_more;
@@ -1125,8 +1116,8 @@ struct ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params> {
 };
 
 template <>
-struct ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry> {
-  typedef ViewMsg_FileSystem_DidReadDirectory_Params::Entry param_type;
+struct ParamTraits<base::file_util_proxy::Entry> {
+  typedef base::file_util_proxy::Entry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

@@ -1481,14 +1481,14 @@ void ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params>::Log(
   l->append(")");
 }
 
-void ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry>::Write(
+void ParamTraits<base::file_util_proxy::Entry>::Write(
     Message* m,
     const param_type& p) {
   WriteParam(m, p.name);
   WriteParam(m, p.is_directory);
 }
 
-bool ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry>::Read(
+bool ParamTraits<base::file_util_proxy::Entry>::Read(
     const Message* m,
     void** iter,
     param_type* p) {
@@ -1497,7 +1497,7 @@ bool ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry>::Read(
       ReadParam(m, iter, &p->is_directory);
 }
 
-void ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params::Entry>::Log(
+void ParamTraits<base::file_util_proxy::Entry>::Log(
     const param_type& p,
     std::string* l) {
   l->append("(");
