@@ -175,7 +175,7 @@ def checkoutRevision(url, revision, branch_url, revert=False):
   print command
   os.system(command)
 
-  match = re.search(r"svn://.*/(.*)", branch_url)
+  match = re.search(r"^[a-z]+://.*/(.*)", branch_url)
 
   if match:
     os.chdir(match.group(1))
