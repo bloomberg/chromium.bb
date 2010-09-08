@@ -53,7 +53,7 @@ void FileSystemOperation::CreateDirectory(const FilePath& path,
   operation_pending_ = true;
   base::FileUtilProxy::CreateDirectory(
       ChromeThread::GetMessageLoopProxyForThread(
-          ChromeThread::FILE), path, exclusive,
+          ChromeThread::FILE), path, exclusive, false, /* recursive */
           callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
