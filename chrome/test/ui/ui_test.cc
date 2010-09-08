@@ -447,6 +447,10 @@ void UITestBase::QuitBrowser() {
   }
 
   // There's nothing to do here if the browser is not running.
+  // WARNING: There is a race condition here where the browser may shut down
+  // after this check but before some later automation call. Your test should
+  // use WaitForBrowserProcessToQuit() if it intentionally
+  // causes the browser to shut down.
   if (IsBrowserRunning()) {
     TimeTicks quit_start = TimeTicks::Now();
     EXPECT_TRUE(automation()->SetFilteredInet(false));
@@ -496,11 +500,7 @@ void UITestBase::QuitBrowser() {
 
     // Wait for the browser process to quit. It should quit once all tabs have
     // been closed.
-    int timeout = terminate_timeout_ms_;
-#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-    timeout = 500000;
-#endif
-    if (!base::WaitForSingleProcess(process_, timeout)) {
+    if (!WaitForBrowserProcessToQuit()) {
       // We need to force the browser to quit because it didn't quit fast
       // enough. Take no chance and kill every chrome processes.
       CleanupAppProcesses();
@@ -532,12 +532,7 @@ void UITestBase::TerminateBrowser() {
     EXPECT_EQ(kill(process_, SIGTERM), 0);
 #endif  // OS_POSIX
 
-    // Wait for the browser process to quit.
-    int timeout = terminate_timeout_ms_;
-#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-    timeout = 500000;
-#endif
-    if (!base::WaitForSingleProcess(process_, timeout)) {
+    if (!WaitForBrowserProcessToQuit()) {
       // We need to force the browser to quit because it didn't quit fast
       // enough. Take no chance and kill every chrome processes.
       CleanupAppProcesses();
@@ -648,6 +643,15 @@ bool UITestBase::WaitForDownloadShelfVisible(BrowserProxy* browser) {
 
 bool UITestBase::WaitForDownloadShelfInvisible(BrowserProxy* browser) {
   return WaitForDownloadShelfVisibilityChange(browser, false);
+}
+
+bool UITestBase::WaitForBrowserProcessToQuit() {
+    // Wait for the browser process to quit.
+    int timeout = terminate_timeout_ms_;
+#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
+    timeout = 500000;
+#endif
+    return base::WaitForSingleProcess(process_, timeout);
 }
 
 bool UITestBase::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,

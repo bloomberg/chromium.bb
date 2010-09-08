@@ -41,6 +41,7 @@
     '<(DEPTH)/chrome/browser/views/tabs/tab_dragging_test.cc',
     '<(DEPTH)/chrome/test/in_process_browser_test.cc',
     '<(DEPTH)/chrome/test/in_process_browser_test.h',
+    '<(DEPTH)/chrome/test/interactive_ui/fast_shutdown_interactive_uitest.cc',
     '<(DEPTH)/chrome/test/interactive_ui/infobars_uitest.cc',
     '<(DEPTH)/chrome/test/interactive_ui/keyboard_access_uitest.cc',
     '<(DEPTH)/chrome/test/interactive_ui/mouseleave_interactive_uitest.cc',

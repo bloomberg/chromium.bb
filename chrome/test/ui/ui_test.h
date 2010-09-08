@@ -203,6 +203,10 @@ class UITestBase {
   // finishing as soon as possible.
   bool WaitForDownloadShelfInvisible(BrowserProxy* browser);
 
+  // Wait for the browser process to shut down on its own (i.e. as a result of
+  // some action that your test has taken).
+  bool WaitForBrowserProcessToQuit();
+
  private:
   // Waits for download shelf visibility or invisibility.
   bool WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,11 +22,12 @@ class FastShutdown : public UITest {
 // SimulateOSClick is broken on the Mac: http://crbug.com/45162
 #define MAYBE_SlowTermination DISABLED_SlowTermination
 #elif defined(OS_LINUX)
-// http://crbug.com/46614
-#define MAYBE_SlowTermination FLAKY_SlowTermination
-#else
+#define MAYBE_SlowTermination SlowTermination
+#elif defined(OS_WIN)
 // Times out: http://crbug.com/46616
 #define MAYBE_SlowTermination DISABLED_SlowTermination
+#else
+#define MAYBE_SlowTermination SlowTermination
 #endif
 
 // This tests for a previous error where uninstalling an onbeforeunload
@@ -58,4 +59,5 @@ TEST_F(FastShutdown, MAYBE_SlowTermination) {
   ASSERT_TRUE(automation()->WaitForAppModalDialog());
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
                   MessageBoxFlags::DIALOGBUTTON_OK));
+  ASSERT_TRUE(WaitForBrowserProcessToQuit());
 }
