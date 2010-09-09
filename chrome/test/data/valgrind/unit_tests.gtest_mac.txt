@@ -6,7 +6,9 @@ IPCSyncChannelTest.*
 WebDropTargetTest.URL
 WebDropTargetTest.Data
 
-# Folowing tests do not pass memcheck test.
+# Following tests do not pass memcheck test.
+# See http://crbug.com/30384.
+FramedBrowserWindowTest.DoesHideTitle
 # See http://crbug.com/30393.
 NSMenuItemAdditionsTest.TestMOnDifferentLayouts
 # See http://crbug.com/30394.
