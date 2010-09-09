@@ -474,6 +474,8 @@
           {
             'sources': [
               'cross/cairo/install_check.cc',
+              'cross/cairo/layer.cc',
+              'cross/cairo/layer.h',
               'cross/cairo/renderer_cairo.cc',
               'cross/cairo/renderer_cairo.h',
               'cross/cairo/texture_cairo.cc',

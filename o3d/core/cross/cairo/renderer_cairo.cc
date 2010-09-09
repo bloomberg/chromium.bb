@@ -36,18 +36,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "core/cross/cairo/layer.h"
 #include "core/cross/cairo/texture_cairo.h"
 
 namespace o3d {
 
 Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
-  return RendererCairo::CreateDefault(service_locator);
+  return o2d::RendererCairo::CreateDefault(service_locator);
 }
 
+namespace o2d {
+
 RendererCairo::RendererCairo(ServiceLocator* service_locator)
-    : Renderer(service_locator), display_(NULL), window_(0),
-      main_surface_(NULL), frame_src_data_(NULL), frame_src_width_(0),
-      frame_src_height_(0), frame_src_pitch_(0) {
+    : Renderer(service_locator), display_(NULL), main_surface_(NULL) {
   // Don't need to do anything.
 }
 
@@ -69,19 +70,6 @@ void RendererCairo::Destroy() {
   }
 
   display_ = NULL;
-  frame_src_data_ = NULL;
-}
-
-void RendererCairo::SetNewFrame(const void* src_data, unsigned src_width,
-                                unsigned src_height, int src_pitch) {
-  DLOG(INFO) << "To Set New Frame";
-  if (src_data == NULL)
-    return;
-
-  frame_src_data_ = src_data;
-  frame_src_width_ = src_width;
-  frame_src_height_ = src_height;
-  frame_src_pitch_ = src_pitch;
 }
 
 // TODO(fransiskusx): Need to check if the shared memory data has been
@@ -89,33 +77,91 @@ void RendererCairo::SetNewFrame(const void* src_data, unsigned src_width,
 // shared memory data to render the frame.
 void RendererCairo::Paint() {
   DLOG(INFO) << "To paint";
+  cairo_t* current_drawing = cairo_create(main_surface_);
 
-  if (frame_src_data_ != NULL) {
-    DLOG(INFO) << "To paint new drawing";
+  // Paint the background.
+  PaintBackground(current_drawing);
 
-    // Preparing the image to render
+  // Core process of painting.
+  for (LayerRefList::iterator i = layer_list_.begin();
+       i != layer_list_.end(); i++) {
+    // Put the state with no mask to the stack.
+    cairo_save(current_drawing);
+
+    // Preparing and updating the Layer.
+    Layer* cur = *i;
+    TextureCairo* cur_texture = cur->GetTexture();
+
+    // Check if the pointer to data is null.
+    if (cur_texture->GetData() == NULL) {
+      continue;
+    }
+
+    // Masking areas for other scene.
+    LayerRefList::iterator start_mask_it = i;
+    start_mask_it++;
+    MaskArea(current_drawing, start_mask_it);
+
+    // Preparing the image to render.
     cairo_surface_t* image = cairo_image_surface_create_for_data(
         const_cast<unsigned char*>(
-            static_cast<const unsigned char*>(frame_src_data_)),
-        CAIRO_FORMAT_ARGB32, frame_src_width_,
-        frame_src_height_, frame_src_pitch_);
-    cairo_t* current_drawing = cairo_create(main_surface_);
+            static_cast<const unsigned char*>(cur_texture->GetData())),
+        CAIRO_FORMAT_ARGB32, cur_texture->GetWidth(),
+        cur_texture->GetHeight(), cur_texture->GetPitch());
 
-    // Scaling the image
+    // Scale the image.
     double width_scaling =
-        (static_cast<double>(display_width())) / frame_src_width_;
+        (static_cast<double>(cur->GetScaleX())) / cur_texture->GetWidth();
     double height_scaling =
-        (static_cast<double>(display_height())) / frame_src_height_;
+        (static_cast<double>(cur->GetScaleY())) / cur_texture->GetHeight();
+
     cairo_scale(current_drawing, width_scaling, height_scaling);
 
-    // Painting the image to the surface
-    cairo_set_source_surface(current_drawing, image, 0, 0);
-    cairo_paint(current_drawing);
+    // Painting the image to the surface.
+    cairo_set_source_surface(current_drawing, image,
+        cur->GetTranslateX() / width_scaling,
+        cur->GetTranslateY() / height_scaling);
 
-    // Cleaning up the memory
-    cairo_destroy(current_drawing);
+    cairo_paint_with_alpha(current_drawing, cur->GetAlpha());
+
+    // Cleaning up the memory.
     cairo_surface_destroy(image);
+
+    // Restore to the state with no mask.
+    cairo_restore(current_drawing);
   }
+  cairo_destroy(current_drawing);
+}
+
+void RendererCairo::PaintBackground(cairo_t* cr) {
+  cairo_save(cr);
+  MaskArea(cr, layer_list_.begin());
+
+  cairo_rectangle(cr, 0, 0, display_width(), display_height());
+  cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+  cairo_fill(cr);
+  cairo_restore(cr);
+}
+
+void RendererCairo::MaskArea(cairo_t* cr,  LayerRefList::iterator it) {
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+
+  for (LayerRefList::iterator i = it; i != layer_list_.end(); i++) {
+    // Preparing and updating the Layer.
+    Layer* cur_mask = *i;
+
+    cairo_rectangle(cr, 0, 0, display_width(), display_height());
+    cairo_rectangle(cr,
+                    cur_mask->GetTranslateX(),
+                    cur_mask->GetTranslateY(),
+                    static_cast<double>(cur_mask->GetScaleX()),
+                    static_cast<double>(cur_mask->GetScaleY()));
+    cairo_clip(cr);
+  }
+}
+
+void RendererCairo::AddLayer(Layer* image) {
+  layer_list_.push_front(image);
 }
 
 void RendererCairo::InitCommon() {
@@ -144,7 +190,7 @@ void RendererCairo::Resize(int width, int height) {
   DLOG(INFO) << "To Resize " << width << " x " << height;
   SetClientSize(width, height);
 
-  // Resize the mainSurface
+  // Resize the mainSurface and buffer
   cairo_xlib_surface_set_size(main_surface_, width, height);
 }
 
@@ -186,6 +232,12 @@ void RendererCairo::PlatformSpecificFinishRendering() {
 // The platform specific part of Present.
 void RendererCairo::PlatformSpecificPresent() {
   // Don't need to do anything.
+}
+
+// TODO(fransiskusx): DO need to implement before shipped.
+// Removes the Layer from the array.
+void RendererCairo::RemoveLayer(Layer* image) {
+  NOTIMPLEMENTED();
 }
 
 // TODO(fransiskusx): DO need to implement before shipped.
@@ -381,5 +433,10 @@ void RendererCairo::SetState(Renderer* renderer, Param* param) {
   NOTIMPLEMENTED();
 }
 
-}  // namespace o3d
+void RendererCairo::PopRenderStates() {
+  NOTIMPLEMENTED();
+}
 
+}  // namespace o2d
+
+}  // namespace o3d
