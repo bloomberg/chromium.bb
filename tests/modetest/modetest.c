@@ -438,6 +438,7 @@ create_test_buffer(drm_intel_bufmgr *bufmgr,
 
 	/* Mode size at 32 bpp */
 	stride = width * 4;
+	stride = (stride + 63) & ~63;
 	size = stride * height;
 
 	bo = drm_intel_bo_alloc(bufmgr, "frontbuffer", size, 4096);
