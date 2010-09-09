@@ -31,8 +31,13 @@ class PrefSetObserver : public NotificationObserver {
   // Check whether any of the observed preferences has the managed bit set.
   bool IsManaged();
 
-  // Create a pref set observer for all preferences relavant to proxies.
+  // Create a pref set observer for all preferences relevant to proxies.
   static PrefSetObserver* CreateProxyPrefSetObserver(
+      PrefService* pref_service,
+      NotificationObserver* observer);
+
+  // Create a pref set observer for all preferences relevant to default search.
+  static PrefSetObserver* CreateDefaultSearchPrefSetObserver(
       PrefService* pref_service,
       NotificationObserver* observer);
 
