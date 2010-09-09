@@ -1060,6 +1060,7 @@ base_env.Append(
     'src/shared/utils/build.scons',
     'src/third_party_mod/gtest/build.scons',
     'src/trusted/base/build.scons',
+    'src/trusted/debug_stub/build.scons',
     'src/trusted/desc/build.scons',
     'src/trusted/gdb_rsp/build.scons',
     'src/trusted/handle_pass/build.scons',

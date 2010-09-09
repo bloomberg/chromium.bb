@@ -128,11 +128,29 @@
             'sources': [
               '<@(gdb_rsp_sources)',
             ],
+          'defines': [
+            'GDB_RSP_ABI_X86_64',
+          ],
           'configurations': {
             'Common_Base': {
               'msvs_target_platform': 'x64',
             },
           },
+        },
+        {
+          'target_name': 'gdb_rsp_test64',
+          'type': 'executable',
+            'sources': [
+              '<@(gdb_test_sources)',
+            ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+          'dependencies': [
+            'gdb_rsp64',
+          ]
         },
       ],
     }],

@@ -1,0 +1,28 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file needs to be in sync with $SOURCE_ROOT/ppapi/ppapi.gyp
+# at the revision specified in $SOURCE_ROOT/native_client/DEPS.
+
+Import('env')
+
+debug_sources = [
+  'debug_stub.cc',
+  ]
+
+# TODO(noelallen)
+# Still need to add Linux and Mac implementation.  Move "common" to
+# above section once their dependancies are satisfied.
+if env.Bit('windows'):
+  debug_sources += [
+    'event_common.cc',
+    'platform_common.cc',
+    'transport_common.cc',
+    'win/debug_stub_win.cc',
+    'win/mutex_impl.cc',
+    'win/platform_impl.cc',
+    'win/thread_impl.cc',
+  ]
+
+env.DualLibrary('debug_stub', debug_sources)

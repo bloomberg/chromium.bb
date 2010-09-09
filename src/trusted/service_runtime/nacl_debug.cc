@@ -64,9 +64,13 @@ enum NaClDebugStatus {
   NDS_STOPPED = 2
 };
 
-/* Remove name mangling to make it easier to find */
-extern "C" uint32_t nacl_debug_allowed;
-uint32_t nacl_debug_allowed = 0;
+/*
+ * Remove name mangling to make it easier to find, incase we want to toggle
+ * internal stub debugging from an external debugger.
+ */
+extern "C" {
+  uint32_t nacl_debug_allowed = 0;
+}
 
 struct NaClDebugState {
   NaClDebugState() : errCode_(0) {
@@ -182,7 +186,11 @@ void NaClDebugSetAppInfo(struct NaClApp *app) throw() {
     state->break_ = app->entry_pt + app->mem_start;
 
 #ifdef NACL_DEBUG_STUB
-    port::IPlatform::AddBreakPoint(state->break_);
+    /*
+     * TODO(noelallen) We need a mechanism to enable "broken on start"
+     * including adding a command-line switch.
+     */
+//    port::IPlatform::AddBreakPoint(state->break_);
 #endif
   }
 }
@@ -258,6 +266,7 @@ int NaClDebugStart(void) throw() {
 
     targ->Init();
 
+    NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
     IThread::SetExceptionCatch(NaClExceptionCatcher, targ);
     return NaClThreadCtor(thread, NaClStubThread, targ, NACL_KERN_STACK_SIZE);
   }

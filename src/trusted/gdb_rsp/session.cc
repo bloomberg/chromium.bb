@@ -180,7 +180,7 @@ Session::DPResult Session::SendStream(const char *out) {
     sent += tx;
   }
 
-  if (GetFlags() & DEBUG_SEND) IPlatform::LogInfo("TX %s", out);
+  if (GetFlags() & DEBUG_SEND) IPlatform::LogInfo("TX %s\n", out);
   return DPR_OK;
 }
 
@@ -265,7 +265,7 @@ Session::DPResult Session::GetPacket(Packet *pkt) {
   NibbleToInt(ch, &val);
   fin_xsum |= val;
 
-  if (GetFlags() & DEBUG_RECV) IPlatform::LogInfo("RX %s", in.data());
+  if (GetFlags() & DEBUG_RECV) IPlatform::LogInfo("RX %s\n", in.data());
 
   // Pull off teh sequence number if we have one
   if (has_seq) {

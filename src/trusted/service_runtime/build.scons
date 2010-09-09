@@ -19,8 +19,9 @@ DEBUG_LIBS = []
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])
   if env['TARGET_SUBARCH'] == '64':
-    env.Append(CPPDEFINES=['WIN64'])
-    DEBUG_LIBS += ['gdb_rsp']
+    env.Append(CPPDEFINES=['WIN64','NACL_DEBUG_STUB'])
+    DEBUG_LIBS += ['gdb_rsp','debug_stub']
+
 
 
 # normally comment out -- uncomment out to test the pedantic removal
