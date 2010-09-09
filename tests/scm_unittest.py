@@ -60,8 +60,8 @@ class GitWrapperTestCase(BaseSCMTestCase):
 
   def testGetEmail(self):
     self.mox.StubOutWithMock(scm.GIT, 'Capture')
-    scm.GIT.Capture(['config', 'user.email'], self.root_dir, error_ok=True
-                    ).AndReturn(['mini@me.com', ''])
+    scm.GIT.Capture(['config', 'user.email'], cwd=self.root_dir
+                    ).AndReturn('mini@me.com')
     self.mox.ReplayAll()
     self.assertEqual(scm.GIT.GetEmail(self.root_dir), 'mini@me.com')
 

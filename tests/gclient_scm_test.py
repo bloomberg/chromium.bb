@@ -630,7 +630,9 @@ from :3
     scm.diff(options, self.args, file_list)
     self.assertEquals(file_list, [])
     self.checkstdout(
-        ('\n_____ . at refs/heads/master\n\n\n'
+        ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
+         'Fast-forward\n a |    1 +\n b |    1 +\n'
+         ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
          '________ running \'git reset --hard origin/master\' in \'%s\'\n'
          'HEAD is now at a7142dc Personalized\n') %
             gclient_scm.os.path.join(self.root_dir, '.'))
@@ -649,7 +651,9 @@ from :3
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
     self.checkstdout(
-      ('\n_____ . at refs/heads/master\n\n\n'
+      ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
+       'Fast-forward\n a |    1 +\n b |    1 +\n'
+       ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
        '________ running \'git reset --hard origin/master\' in \'%s\'\n'
        'HEAD is now at a7142dc Personalized\n') %
             gclient_scm.os.path.join(self.root_dir, '.'))
@@ -673,7 +677,9 @@ from :3
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
     self.checkstdout(
-      ('\n_____ . at refs/heads/master\n\n\n'
+      ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
+       'Fast-forward\n a |    1 +\n b |    1 +\n'
+       ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
        '________ running \'git reset --hard origin/master\' in \'%s\'\n'
        'HEAD is now at a7142dc Personalized\n') %
             gclient_scm.os.path.join(self.root_dir, '.'))
@@ -701,7 +707,9 @@ from :3
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
     self.checkstdout(
-      ('\n_____ . at refs/heads/master\n\n\n'
+      ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
+       'Fast-forward\n a |    1 +\n b |    1 +\n'
+       ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
        '________ running \'git reset --hard origin/master\' in \'%s\'\n'
        'HEAD is now at a7142dc Personalized\n') %
             gclient_scm.os.path.join(self.root_dir, '.'))
@@ -784,7 +792,10 @@ from :3
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
-    self.checkstdout('\n_____ . at refs/heads/master\n\n')
+    self.checkstdout(
+        '\n_____ . at refs/heads/master\n'
+        'Updating 069c602..a7142dc\nFast-forward\n a |    1 +\n b |    1 +\n'
+        ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n')
 
   def testUpdateUnstagedConflict(self):
     if not self.enabled:

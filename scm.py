@@ -66,22 +66,9 @@ def GenFakeDiff(filename):
 
 class GIT(object):
   @staticmethod
-  def Capture(args, in_directory=None, print_error=True, error_ok=False):
-    """Runs git, capturing output sent to stdout as a string.
-
-    Args:
-      args: A sequence of command line parameters to be passed to git.
-      in_directory: The directory where git is to be run.
-
-    Returns:
-      The output sent to stdout as a string.
-    """
-    try:
-      return gclient_utils.CheckCall(['git'] + args, in_directory, print_error)
-    except gclient_utils.CheckCallError:
-      if error_ok:
-        return ('', '')
-      raise
+  def Capture(args, **kwargs):
+    return gclient_utils.CheckCall(['git'] + args, print_error=False,
+        **kwargs)[0]
 
   @staticmethod
   def CaptureStatus(files, upstream_branch=None):
@@ -93,32 +80,34 @@ class GIT(object):
     if upstream_branch is None:
       upstream_branch = GIT.GetUpstreamBranch(os.getcwd())
       if upstream_branch is None:
-        raise Exception("Cannot determine upstream branch")
-    command = ["diff", "--name-status", "-r", "%s..." % upstream_branch]
+        raise gclient_utils.Error('Cannot determine upstream branch')
+    command = ['diff', '--name-status', '-r', '%s...' % upstream_branch]
     if not files:
       pass
     elif isinstance(files, basestring):
       command.append(files)
     else:
       command.extend(files)
-
-    status = GIT.Capture(command)[0].rstrip()
+    status = GIT.Capture(command).rstrip()
     results = []
     if status:
-      for statusline in status.split('\n'):
+      for statusline in status.splitlines():
         m = re.match('^(\w)\t(.+)$', statusline)
         if not m:
-          raise Exception("status currently unsupported: %s" % statusline)
+          raise gclient_utils.Error(
+              'status currently unsupported: %s' % statusline)
         results.append(('%s      ' % m.group(1), m.group(2)))
     return results
 
   @staticmethod
-  def GetEmail(repo_root):
+  def GetEmail(cwd):
     """Retrieves the user email address if known."""
     # We could want to look at the svn cred when it has a svn remote but it
     # should be fine for now, users should simply configure their git settings.
-    return GIT.Capture(['config', 'user.email'],
-                       repo_root, error_ok=True)[0].strip()
+    try:
+      return GIT.Capture(['config', 'user.email'], cwd=cwd).strip()
+    except gclient_utils.CheckCallError:
+      return ''
 
   @staticmethod
   def ShortBranchName(branch):
@@ -128,7 +117,7 @@ class GIT(object):
   @staticmethod
   def GetBranchRef(cwd):
     """Returns the full branch reference, e.g. 'refs/heads/master'."""
-    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd)[0].strip()
+    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd).strip()
 
   @staticmethod
   def GetBranch(cwd):
@@ -140,7 +129,7 @@ class GIT(object):
     """Returns true if this repo looks like it's using git-svn."""
     # If you have any "svn-remote.*" config keys, we think you're using svn.
     try:
-      GIT.Capture(['config', '--get-regexp', r'^svn-remote\.'], cwd)
+      GIT.Capture(['config', '--get-regexp', r'^svn-remote\.'], cwd=cwd)
       return True
     except gclient_utils.CheckCallError:
       return False
@@ -159,11 +148,11 @@ class GIT(object):
     # Get the refname and svn url for all refs/remotes/*.
     remotes = GIT.Capture(
         ['for-each-ref', '--format=%(refname)', 'refs/remotes'],
-        cwd)[0].splitlines()
+        cwd=cwd).splitlines()
     svn_refs = {}
     for ref in remotes:
       match = git_svn_re.search(
-          GIT.Capture(['cat-file', '-p', ref], cwd)[0])
+          GIT.Capture(['cat-file', '-p', ref], cwd=cwd))
       # Prefer origin/HEAD over all others.
       if match and (match.group(1) not in svn_refs or
                     ref == "refs/remotes/origin/HEAD"):
@@ -198,22 +187,24 @@ class GIT(object):
     """
     remote = '.'
     branch = GIT.GetBranch(cwd)
-    upstream_branch = None
-    upstream_branch = GIT.Capture(
-        ['config', 'branch.%s.merge' % branch], in_directory=cwd,
-        error_ok=True)[0].strip()
+    try:
+      upstream_branch = GIT.Capture(
+          ['config', 'branch.%s.merge' % branch], cwd=cwd).strip()
+    except gclient_utils.Error:
+      upstream_branch = None
     if upstream_branch:
-      remote = GIT.Capture(
-          ['config', 'branch.%s.remote' % branch],
-          in_directory=cwd, error_ok=True)[0].strip()
+      try:
+        remote = GIT.Capture(
+            ['config', 'branch.%s.remote' % branch], cwd=cwd).strip()
+      except gclient_utils.Error:
+        pass
     else:
       # Fall back on trying a git-svn upstream branch.
       if GIT.IsGitSvn(cwd):
         upstream_branch = GIT.GetSVNBranch(cwd)
       else:
         # Else, try to guess the origin remote.
-        remote_branches = GIT.Capture(
-            ['branch', '-r'], in_directory=cwd)[0].split()
+        remote_branches = GIT.Capture(['branch', '-r'], cwd=cwd).split()
         if 'origin/master' in remote_branches:
           # Fall back on origin/master if it exits.
           remote = 'origin'
@@ -254,7 +245,7 @@ class GIT(object):
     if files:
       command.append('--')
       command.extend(files)
-    diff = GIT.Capture(command, cwd)[0].splitlines(True)
+    diff = GIT.Capture(command, cwd=cwd).splitlines(True)
     for i in range(len(diff)):
       # In the case of added files, replace /dev/null with the path to the
       # file being added.
@@ -268,20 +259,20 @@ class GIT(object):
     if not branch:
       branch = GIT.GetUpstreamBranch(cwd)
     command = ['diff', '--name-only', branch + "..." + branch_head]
-    return GIT.Capture(command, cwd)[0].splitlines(False)
+    return GIT.Capture(command, cwd=cwd).splitlines(False)
 
   @staticmethod
   def GetPatchName(cwd):
     """Constructs a name for this patch."""
-    short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd)[0].strip()
+    short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd=cwd).strip()
     return "%s#%s" % (GIT.GetBranch(cwd), short_sha)
 
   @staticmethod
-  def GetCheckoutRoot(path):
+  def GetCheckoutRoot(cwd):
     """Returns the top level directory of a git checkout as an absolute path.
     """
-    root = GIT.Capture(['rev-parse', '--show-cdup'], path)[0].strip()
-    return os.path.abspath(os.path.join(path, root))
+    root = GIT.Capture(['rev-parse', '--show-cdup'], cwd=cwd).strip()
+    return os.path.abspath(os.path.join(cwd, root))
 
   @staticmethod
   def AssertVersion(min_version):
@@ -291,7 +282,7 @@ class GIT(object):
         return int(val)
       else:
         return 0
-    current_version =  GIT.Capture(['--version'])[0].split()[-1]
+    current_version =  GIT.Capture(['--version']).split()[-1]
     current_version_list = map(only_int, current_version.split('.'))
     for min_ver in map(int, min_version.split('.')):
       ver = current_version_list.pop(0)

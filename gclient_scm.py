@@ -258,10 +258,9 @@ class GitWrapper(SCMWrapper):
     backoff_time = 5
     for _ in range(10):
       try:
-        remote_output, remote_err = scm.GIT.Capture(
+        remote_output = scm.GIT.Capture(
             ['remote'] + verbose + ['update'],
-            self.checkout_path,
-            print_error=False)
+            cwd=self.checkout_path)
         break
       except gclient_utils.CheckCallError, e:
         # Hackish but at that point, git is known to work so just checking for
@@ -276,9 +275,7 @@ class GitWrapper(SCMWrapper):
         raise
 
     if verbose:
-      options.stdout.write(remote_output.strip() + '\n')
-      # git remote update prints to stderr when used with --verbose
-      options.stdout.write(remote_err.strip() + '\n')
+      options.stdout.write(remote_output)
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
@@ -331,10 +328,8 @@ class GitWrapper(SCMWrapper):
         options.stdout.write('Trying fast-forward merge to branch : %s\n' %
             upstream_branch)
       try:
-        merge_output, merge_err = scm.GIT.Capture(['merge', '--ff-only',
-                                                   upstream_branch],
-                                                  self.checkout_path,
-                                                  print_error=False)
+        merge_output = scm.GIT.Capture(['merge', '--ff-only', upstream_branch],
+            cwd=self.checkout_path)
       except gclient_utils.CheckCallError, e:
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
           if not printed_path:
@@ -342,7 +337,7 @@ class GitWrapper(SCMWrapper):
             printed_path = True
           while True:
             try:
-              # TODO(maruel): That can't work.
+              # TODO(maruel): That can't work with --jobs.
               action = str(raw_input("Cannot fast-forward merge, attempt to "
                                      "rebase? (y)es / (q)uit / (s)kip : "))
             except ValueError:
@@ -382,10 +377,7 @@ class GitWrapper(SCMWrapper):
           if not printed_path:
             options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
             printed_path = True
-          print merge_output.strip()
-          if merge_err:
-            options.stdout.write('Merge produced error output:\n%s\n' %
-                merge_err.strip())
+          options.stdout.write(merge_output)
           if not verbose:
             # Make the output a little prettier. It's nice to have some
             # whitespace between projects when syncing.
@@ -530,13 +522,11 @@ class GitWrapper(SCMWrapper):
       rebase_cmd.append(branch)
 
     try:
-      rebase_output, rebase_err = scm.GIT.Capture(rebase_cmd,
-                                                  self.checkout_path,
-                                                  print_error=False)
+      rebase_output = scm.GIT.Capture(rebase_cmd, cwd=self.checkout_path)
     except gclient_utils.CheckCallError, e:
-      if re.match(r'cannot rebase: you have unstaged changes', e.stderr) or \
-         re.match(r'cannot rebase: your index contains uncommitted changes',
-                  e.stderr):
+      if (re.match(r'cannot rebase: you have unstaged changes', e.stderr) or
+          re.match(r'cannot rebase: your index contains uncommitted changes',
+                   e.stderr)):
         while True:
           rebase_action = str(raw_input("Cannot rebase because of unstaged "
                                         "changes.\n'git reset --hard HEAD' ?\n"
@@ -546,8 +536,7 @@ class GitWrapper(SCMWrapper):
           if re.match(r'yes|y', rebase_action, re.I):
             self._Run(['reset', '--hard', 'HEAD'], options)
             # Should this be recursive?
-            rebase_output, rebase_err = scm.GIT.Capture(rebase_cmd,
-                                                        self.checkout_path)
+            rebase_output = scm.GIT.Capture(rebase_cmd, cwd=self.checkout_path)
             break
           elif re.match(r'quit|q', rebase_action, re.I):
             raise gclient_utils.Error("Please merge or rebase manually\n"
@@ -572,10 +561,7 @@ class GitWrapper(SCMWrapper):
                                   self.checkout_path
                                   + "%s" % ' '.join(rebase_cmd))
 
-    print rebase_output.strip()
-    if rebase_err:
-      options.stdout.write('Rebase produced error output:\n%s\n' %
-          rebase_err.strip())
+    options.stdout.write(rebase_output)
     if not options.verbose:
       # Make the output a little prettier. It's nice to have some
       # whitespace between projects when syncing.
@@ -601,7 +587,7 @@ class GitWrapper(SCMWrapper):
     # Make sure the tree is clean; see git-rebase.sh for reference
     try:
       scm.GIT.Capture(['update-index', '--ignore-submodules', '--refresh'],
-                      self.checkout_path, print_error=False)
+                      cwd=self.checkout_path)
     except gclient_utils.CheckCallError:
       raise gclient_utils.Error('\n____ %s%s\n'
                                 '\tYou have unstaged changes.\n'
@@ -609,8 +595,8 @@ class GitWrapper(SCMWrapper):
                                   % (self.relpath, rev_str))
     try:
       scm.GIT.Capture(['diff-index', '--cached', '--name-status', '-r',
-                       '--ignore-submodules', 'HEAD', '--'], self.checkout_path,
-                       print_error=False)
+                       '--ignore-submodules', 'HEAD', '--'],
+                       cwd=self.checkout_path)
     except gclient_utils.CheckCallError:
       raise gclient_utils.Error('\n____ %s%s\n'
                                 '\tYour index contains uncommitted changes\n'
@@ -622,10 +608,8 @@ class GitWrapper(SCMWrapper):
     # reference by a commit). If not, error out -- most likely a rebase is
     # in progress, try to detect so we can give a better error.
     try:
-      _, _ = scm.GIT.Capture(
-        ['name-rev', '--no-undefined', 'HEAD'],
-        self.checkout_path,
-        print_error=False)
+      scm.GIT.Capture(['name-rev', '--no-undefined', 'HEAD'],
+          cwd=self.checkout_path)
     except gclient_utils.CheckCallError:
       # Commit is not contained by any rev. See if the user is rebasing:
       if self._IsRebasing():
@@ -652,8 +636,8 @@ class GitWrapper(SCMWrapper):
     return branch
 
   def _Capture(self, args):
-    return gclient_utils.CheckCall(['git'] + args,
-                                   cwd=self.checkout_path)[0].strip()
+    return gclient_utils.CheckCall(
+        ['git'] + args, cwd=self.checkout_path, print_error=False)[0].strip()
 
   def _Run(self, args, options, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
