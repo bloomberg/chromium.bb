@@ -6,6 +6,8 @@
 
 #include "base/values.h"
 #include "chrome/common/common_param_traits.h"
+#include "chrome/common/indexed_db_key.h"
+#include "chrome/common/serialized_script_value.h"
 #include "base/file_path.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

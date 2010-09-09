@@ -19,6 +19,8 @@
 #include "printing/page_range.h"
 
 class FilePath;
+class IndexedDBKey;
+class SerializedScriptValue;
 class SkBitmap;
 
 //------------------------------------------------------------------------------

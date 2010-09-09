@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/indexed_db_key.h"
+#include "chrome/common/serialized_script_value.h"
 #include "chrome/common/utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "gfx/rect.h"

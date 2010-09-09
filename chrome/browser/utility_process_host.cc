@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/indexed_db_key.h"
 #include "chrome/common/utility_messages.h"
 #include "ipc/ipc_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
