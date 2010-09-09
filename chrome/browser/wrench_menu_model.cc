@@ -240,6 +240,14 @@ bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
+#if defined(OS_CHROMEOS)
+  // Special case because IDC_NEW_WINDOW item should be disabled in BWSI mode,
+  // but accelerator should work.
+  if (command_id == IDC_NEW_WINDOW &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kBWSI))
+    return false;
+#endif
+
   return browser_->command_updater()->IsCommandEnabled(command_id);
 }
 
