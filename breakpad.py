@@ -4,10 +4,17 @@
 
 """Breakpad for Python.
 
-Sends a notification when a process stops on an exception."""
+Sends a notification when a process stops on an exception.
+
+It is only enabled when all these conditions are met:
+  1. hostname finishes with '.google.com'
+  2. main module name doesn't contain the word 'test'
+  3. no NO_BREAKPAD environment variable is defined
+"""
 
 import atexit
 import getpass
+import os
 import urllib
 import traceback
 import socket
@@ -33,6 +40,11 @@ def SendStack(last_tb, stack, url=None):
         'exception': last_tb,
         'host': socket.getfqdn(),
     }
+    try:
+      # That may not always work.
+      params['exception'] = str(last_tb)
+    except:
+      pass
     request = urllib.urlopen(url, urllib.urlencode(params))
     print request.read()
     request.close()
@@ -60,7 +72,8 @@ def Register():
 
 # Skip unit tests and we don't want anything from non-googler.
 if (not 'test' in sys.modules['__main__'].__file__ and
-    socket.getfqdn().endswith('.google.com')):
+    socket.getfqdn().endswith('.google.com') and
+    not 'NO_BREAKPAD' in os.environ):
   Register()
 
 # Uncomment this line if you want to test it out.
