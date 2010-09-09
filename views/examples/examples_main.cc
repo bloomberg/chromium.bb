@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #endif
 #include "views/examples/table2_example.h"
 #include "views/examples/textfield_example.h"
+#include "views/examples/throbber_example.h"
 #include "views/examples/widget_example.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/grid_layout.h"
@@ -95,6 +96,10 @@ void ExamplesMain::Run() {
   examples::ButtonExample button_example(this);
   tabbed_pane->AddTab(button_example.GetExampleTitle(),
                       button_example.GetExampleView());
+
+  examples::ThrobberExample throbber_example(this);
+  tabbed_pane->AddTab(throbber_example.GetExampleTitle(),
+                      throbber_example.GetExampleView());
 
   examples::ComboboxExample combobox_example(this);
   tabbed_pane->AddTab(combobox_example.GetExampleTitle(),
