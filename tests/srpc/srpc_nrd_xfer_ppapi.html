@@ -181,12 +181,12 @@ var SharedMemoryNaClToNaCl = function() {
 var RunAllTests = function() {
   // socket address passing tests.
   SocketAddressNaClToBrowser();
-  //SocketAddressNaClToNacl();   // handle not yet supported
+  SocketAddressNaClToNacl();
   // shared memory passing tests.
   SharedMemoryBrowserToBrowser();
-  //SharedMemoryBrowserToNaCl();  // handle not yet supported
+  SharedMemoryBrowserToNaCl();
   SharedMemoryNaClToBrowser();
-  //SharedMemoryNaClToNaCl();  // handle not yet supported
+  SharedMemoryNaClToNaCl();
 }
       //]]>
     </script>

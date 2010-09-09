@@ -141,25 +141,40 @@ template<typename T> void PPVarToArray(const pp::Var& var,
 }
 
 
-// Returns NaClDesc* corresponding to |var|. Sets |exception| on error.
-NaClDesc* PPVarToNaClDesc(const pp::Var& var, pp::Var* exception) {
+// Returns ScriptableHandle* corresponding to |var|. Sets |exception| on error.
+ScriptableHandle* PPVarToScriptableHandle(const pp::Var& var,
+                                          pp::Var* exception) {
   if (!var.is_object()) {
-    *exception = "incompatible argument: type is not handle object";
+    *exception = "incompatible argument: type is not object";
     return NULL;
   }
+  pp::ScriptableObject* scriptable_object = var.AsScriptableObject();
+  if (scriptable_object == NULL) {
+    *exception = "incompatible argument: type is not scriptable object";
+    return NULL;
+  }
+  ScriptableHandlePpapi* scriptable_handle =
+      static_cast<ScriptableHandlePpapi*>(scriptable_object);
+  if (!ScriptableHandle::is_valid(scriptable_handle)) {
+    *exception = "incompatible argument: not a valid scriptable handle";
+    return NULL;
+  }
+  return scriptable_handle;
+}
 
-  // TODO(polina): Extract the underlying object once the method is
-  // available in pp::Var:
-  //   http://code.google.com/p/chromium/issues/detail?id=53125
 
-  // TODO(sehr): We need to be very careful in how we implement this,
-  // as there are security implications.  We need a reliable way to ensure
-  // that a pp::Var is in fact a wrapper around one of our scriptable classes
-  // (the whole descriptor hierarchy) or a malicious JS could be constructed
-  // to spoof these classes.
-
-  *exception = "incompatible argument: handle is not yet supported";
-  return NULL;
+// Returns NaClDesc* corresponding to |var|. Sets |exception| on error.
+NaClDesc* PPVarToNaClDesc(const pp::Var& var, pp::Var* exception) {
+  ScriptableHandle* scriptable_handle = PPVarToScriptableHandle(var, exception);
+  if (scriptable_handle == NULL) {
+    return NULL;
+  }
+  NaClDesc* nacl_desc = scriptable_handle->handle()->desc();
+  if (nacl_desc == NULL) {
+    *exception = "incompatible argument: not a handle object";
+    return NULL;
+  }
+  return nacl_desc;
 }
 
 
@@ -272,12 +287,10 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
           PPVarToNaClDesc(var, exception));
       break;
     case NACL_SRPC_ARG_TYPE_OBJECT:
-      // TODO(polina): extract the underlying object once the method is
-      // available in pp::Var:
-      // http://code.google.com/p/chromium/issues/detail?id=53125
-      //
+      arg->u.oval = reinterpret_cast<void*>(
+          PPVarToScriptableHandle(var, exception));
       // There are currently no predeclared PPAPI plugin methods that
-      // take objects as input, so this will never be reached.
+      // take objects as input, so this should never be reached.
       NACL_NOTREACHED();
       break;
     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
@@ -349,7 +362,7 @@ pp::Var ObjectToPPVar(void* obj) {
   // have methods like this at the time. If one ever creates such a method,
   // this CHECK will fail and remind the author to update this code to handle
   // arbitrary objects.
-  CHECK(plugin::ScriptableHandle::is_valid(handle));
+  CHECK(ScriptableHandle::is_valid(handle));
   ScriptableHandlePpapi* handle_ppapi =
       static_cast<ScriptableHandlePpapi*>(handle);
   if (handle_ppapi->var() != NULL)
