@@ -105,7 +105,7 @@ class SyncerProtoUtil {
   // Post the message using the scm, and do some processing on the returned
   // headers. Decode the server response.
   static bool PostAndProcessHeaders(browser_sync::ServerConnectionManager* scm,
-                                    browser_sync::AuthWatcher* authwatcher,
+                                    sessions::SyncSession* session,
                                     const ClientToServerMessage& msg,
                                     sync_pb::ClientToServerResponse* response);
 

@@ -1350,7 +1350,7 @@ const int kDisabledIndex = 1;
   } else {
     // Otherwise, the sync button was a "sync my bookmarks" button.
     // Kick off the sync setup process.
-    syncService_->EnableForUser(NULL);
+    syncService_->ShowLoginDialog(NULL);
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
   }
 }

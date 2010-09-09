@@ -191,8 +191,8 @@ void OpenSyncMyBookmarksDialog(
   if (service->HasSyncSetupCompleted()) {
     ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile);
   } else {
-    service->EnableForUser(NULL);
-    ProfileSyncService::SyncEvent(code);
+    service->ShowLoginDialog(NULL);
+    ProfileSyncService::SyncEvent(code);  // UMA stats
   }
 }
 

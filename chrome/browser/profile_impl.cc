@@ -479,6 +479,7 @@ ProfileImpl::~ProfileImpl() {
   // Delete the NTP resource cache so we can unregister pref observers.
   ntp_resource_cache_.reset();
 
+  // The sync service needs to be deleted before the services it calls.
   sync_service_.reset();
 
   // Both HistoryService and WebDataService maintain threads for background
@@ -1235,10 +1236,16 @@ TokenService* ProfileImpl::GetTokenService() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
+  return GetProfileSyncService("");
+}
+
+ProfileSyncService* ProfileImpl::GetProfileSyncService(
+    const std::string& cros_user) {
+
   if (!ProfileSyncService::IsSyncEnabled())
     return NULL;
   if (!sync_service_.get())
-    InitSyncService();
+    InitSyncService(cros_user);
   return sync_service_.get();
 }
 
@@ -1248,11 +1255,11 @@ CloudPrintProxyService* ProfileImpl::GetCloudPrintProxyService() {
   return cloud_print_proxy_service_.get();
 }
 
-void ProfileImpl::InitSyncService() {
+void ProfileImpl::InitSyncService(const std::string& cros_user) {
   profile_sync_factory_.reset(
       new ProfileSyncFactoryImpl(this, CommandLine::ForCurrentProcess()));
   sync_service_.reset(
-      profile_sync_factory_->CreateProfileSyncService());
+      profile_sync_factory_->CreateProfileSyncService(cros_user));
   sync_service_->Initialize();
 }
 

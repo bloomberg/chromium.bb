@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -153,7 +154,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   void StartSyncService(Task* task) {
     if (!service_.get()) {
       service_.reset(
-          new TestProfileSyncService(&factory_, &profile_, false, false,
+          new TestProfileSyncService(&factory_, &profile_, "test", false,
                                      task));
       TypedUrlDataTypeController* data_type_controller =
           new TypedUrlDataTypeController(&factory_,
@@ -176,7 +177,14 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(profile_, GetHistoryService(_)).
           WillRepeatedly(Return(history_service_.get()));
 
+      token_service_.IssueAuthTokenForTest(
+          GaiaConstants::kSyncService, "token");
+
+      EXPECT_CALL(profile_, GetTokenService()).
+          WillRepeatedly(Return(&token_service_));
+
       service_->RegisterDataTypeController(data_type_controller);
+
       service_->Initialize();
       MessageLoop::current()->Run();
     }

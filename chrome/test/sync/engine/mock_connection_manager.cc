@@ -33,7 +33,7 @@ using syncable::WriteTransaction;
 
 MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
                                              const string& name)
-    : ServerConnectionManager("unused", 0, false, "version", "id"),
+    : ServerConnectionManager("unused", 0, false, "version"),
       conflict_all_commits_(false),
       conflict_n_commits_(0),
       next_new_id_(10000),

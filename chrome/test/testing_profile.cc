@@ -453,6 +453,11 @@ TokenService* TestingProfile::GetTokenService() {
 }
 
 ProfileSyncService* TestingProfile::GetProfileSyncService() {
+  return GetProfileSyncService("");
+}
+
+ProfileSyncService* TestingProfile::GetProfileSyncService(
+    const std::string& cros_user) {
   if (!profile_sync_service_.get()) {
     // Use a NiceMock here since we are really using the mock as a
     // fake.  Test cases that want to set expectations on a

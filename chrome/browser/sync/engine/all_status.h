@@ -89,7 +89,6 @@ class AllStatus : public ChannelEventHandler<SyncerEvent> {
   AllStatus();
   ~AllStatus();
 
-  void WatchConnectionManager(ServerConnectionManager* conn_mgr);
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
@@ -116,7 +115,6 @@ class AllStatus : public ChannelEventHandler<SyncerEvent> {
 
   // Examines syncer to calculate syncing and the unsynced count,
   // and returns a Status with new values.
-  Status CalcSyncing() const;
   Status CalcSyncing(const SyncerEvent& event) const;
   Status CreateBlankStatus() const;
 
@@ -125,7 +123,6 @@ class AllStatus : public ChannelEventHandler<SyncerEvent> {
 
   Status status_;
   Channel* const channel_;
-  scoped_ptr<EventListenerHookup> conn_mgr_hookup_;
   scoped_ptr<ChannelHookup<SyncerEvent> > syncer_thread_hookup_;
   scoped_ptr<EventListenerHookup> diskfull_hookup_;
   scoped_ptr<EventListenerHookup> talk_mediator_hookup_;

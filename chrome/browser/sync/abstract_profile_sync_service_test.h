@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
@@ -55,7 +56,7 @@ class ProfileSyncServiceTestHelper {
     UserShare* user_share = service->backend()->GetUserShareHandle();
     DirectoryManager* dir_manager = user_share->dir_manager.get();
 
-    ScopedDirLookup dir(dir_manager, user_share->authenticated_name);
+    ScopedDirLookup dir(dir_manager, user_share->name);
     if (!dir.good())
       return false;
 
@@ -120,6 +121,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   ProfileSyncFactoryMock factory_;
+  TokenService token_service_;
   scoped_ptr<TestProfileSyncService> service_;
   TestIdFactory ids_;
 };

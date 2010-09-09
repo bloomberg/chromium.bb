@@ -26,6 +26,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -110,7 +111,7 @@ class ProfileSyncServiceSessionTest
       return false;
 
     sync_service_.reset(new TestProfileSyncService(
-        &factory_, profile(), false, false, task));
+        &factory_, profile(), "test user", false, task));
     profile()->set_session_service(helper_.service());
 
     // Register the session data type.
@@ -126,6 +127,8 @@ class ProfileSyncServiceSessionTest
     sync_service_->set_num_expected_resumes(will_fail_association ? 0 : 1);
     sync_service_->RegisterDataTypeController(
         new SessionDataTypeController(&factory_, sync_service_.get()));
+    profile()->GetTokenService()->IssueAuthTokenForTest(
+        GaiaConstants::kSyncService, "token");
     sync_service_->Initialize();
     MessageLoop::current()->Run();
     return true;

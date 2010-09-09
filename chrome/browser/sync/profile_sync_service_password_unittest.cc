@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -140,7 +141,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
                         int num_pause_expectations) {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(&factory_, &profile_,
-                                                false, false, root_task));
+                                                "test_user", false, root_task));
       service_->set_num_expected_resumes(num_resume_expectations);
       service_->set_num_expected_pauses(num_pause_expectations);
       PasswordDataTypeController* data_type_controller =
@@ -154,6 +155,13 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
                                               data_type_controller));
       EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
           WillOnce(ReturnNewDataTypeManager());
+
+      // We need tokens to get the tests going
+      token_service_.IssueAuthTokenForTest(
+          GaiaConstants::kSyncService, "token");
+
+      EXPECT_CALL(profile_, GetTokenService()).
+          WillRepeatedly(Return(&token_service_));
 
       // Creating model safe workers will request the history service and
       // password store.  I couldn't manage to convince gmock that splitting up

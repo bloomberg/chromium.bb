@@ -919,9 +919,16 @@ const char kSyncManaged[] = "sync.managed";
 // used when sync is disabled by the user via the privacy dashboard.
 const char kSyncSuppressStart[] = "sync.suppress_start";
 
+// Boolean to reperesent if sync credentials have been migrated from the
+// user settings DB to the token service.
+const char kSyncCredentialsMigrated[] = "sync.credentials_migrated";
+
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.
 const char kEncryptionBootstrapToken[] = "sync.encryption_bootstrap_token";
+
+// String that identifies the user logged into sync and other google services.
+const char kGoogleServicesUsername[] = "google.services.username";
 
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";
