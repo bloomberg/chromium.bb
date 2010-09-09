@@ -395,6 +395,9 @@ const char kEnabledLabsExperiments[] = "browser.enabled_labs_experiments";
 // Boolean pref to define the default values for using auto spell correct.
 const char kEnableAutoSpellCorrect[] = "browser.enable_autospellcorrect";
 
+// Boolean controlling whether printing is enabled.
+const char kPrintingEnabled[] = "printing.enabled";
+
 // String pref to define the default values for print overlays.
 const char kPrintingPageHeaderLeft[] = "printing.page.header.left";
 const char kPrintingPageHeaderCenter[] = "printing.page.header.center";

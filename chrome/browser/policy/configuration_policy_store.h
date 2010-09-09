@@ -39,7 +39,8 @@ class ConfigurationPolicyStore {
     kPolicyExtensionInstallAllowList,
     kPolicyExtensionInstallDenyList,
     kPolicyShowHomeButton,
-    kPolicyDisabledPlugins
+    kPolicyDisabledPlugins,
+    kPolicyPrintingEnabled,
   };
 
   static const int kPolicyNoProxyServerMode = 0;

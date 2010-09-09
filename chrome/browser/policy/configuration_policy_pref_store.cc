@@ -107,6 +107,8 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
       prefs::kPasswordManagerEnabled },
   { Value::TYPE_BOOLEAN, kPolicyPasswordManagerAllowShowPasswords,
       prefs::kPasswordManagerAllowShowPasswords },
+  { Value::TYPE_BOOLEAN, kPolicyPrintingEnabled,
+      prefs::kPrintingEnabled },
   { Value::TYPE_BOOLEAN, kPolicyMetricsReportingEnabled,
       prefs::kMetricsReportingEnabled },
   { Value::TYPE_STRING, kPolicyApplicationLocale,

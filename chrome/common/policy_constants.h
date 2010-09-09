@@ -40,6 +40,7 @@ extern const char kSyncDisabled[];
 extern const char kExtensionInstallAllowList[];
 extern const char kExtensionInstallDenyList[];
 extern const char kShowHomeButton[];
+extern const char kPrintingEnabled[];
 
 }  // namespace key
 

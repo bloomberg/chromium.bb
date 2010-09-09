@@ -39,6 +39,7 @@ const char kSyncDisabled[] = "SyncDisabled";
 const char kExtensionInstallAllowList[] = "ExtensionInstallWhitelist";
 const char kExtensionInstallDenyList[] = "ExtensionInstallBlacklist";
 const char kShowHomeButton[] = "ShowHomeButton";
+const char kPrintingEnabled[] = "PrintingEnabled";
 
 }  // namespace key
 

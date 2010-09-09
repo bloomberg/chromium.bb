@@ -64,6 +64,8 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
       Value::TYPE_LIST, policy::key::kExtensionInstallDenyList },
   { ConfigurationPolicyStore::kPolicyShowHomeButton,
       Value::TYPE_BOOLEAN, policy::key::kShowHomeButton },
+  { ConfigurationPolicyStore::kPolicyPrintingEnabled,
+      Value::TYPE_BOOLEAN, policy::key::kPrintingEnabled },
 };
 
 }  // namespace

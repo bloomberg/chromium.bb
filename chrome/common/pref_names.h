@@ -151,6 +151,7 @@ extern const char kEnableSpellCheck[];
 extern const char kEnabledLabsExperiments[];
 extern const char kEnableAutoSpellCorrect[];
 extern const char kDeleteTimePeriod[];
+extern const char kPrintingEnabled[];
 extern const char kPrintingPageHeaderLeft[];
 extern const char kPrintingPageHeaderCenter[];
 extern const char kPrintingPageHeaderRight[];
