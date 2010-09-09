@@ -666,7 +666,7 @@ def _GenerateMsvsProject(proj_path, guid, build_file, spec, options, version):
   # Get directory project file is in.
   gyp_dir = os.path.split(proj_path)[0]
 
-  config_type = _GetMsvsConfigurationType(spec)
+  config_type = _GetMsvsConfigurationType(spec, build_file)
   for config_name, config in spec['configurations'].iteritems():
     _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config)
 
@@ -741,7 +741,7 @@ def _CreateMsvsUserFile(proj_path, version, spec):
   return user_file
 
 
-def _GetMsvsConfigurationType(spec):
+def _GetMsvsConfigurationType(spec, build_file):
   """Returns the configuration type for this project.  It's a number defined
      by Microsoft.  May raise an exception.
   Returns:
