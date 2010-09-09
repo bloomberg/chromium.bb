@@ -31,6 +31,8 @@ form {
   display: inline-block;
 }
 #chooseDataTypesBody {
+  width: 90%;
+  -webkit-margin-start: 3ex;
 }
 #chooseDataTypesBody > div {
   margin-top: 0px;
@@ -38,12 +40,20 @@ form {
   -webkit-column-gap: 10px;
   column-count: 2;
   column-gap: 10px;
-  width: 345px;
 }
 .sync-item-show {
   display: block;
   white-space: nowrap;
 }
+
+.sync-item-show > label {
+ overflow: hidden;
+ white-space: nowrap;
+ text-overflow: ellipsis;
+ display: inline-block;
+ width: 92%;
+}
+
 .sync-item-hide {
   display: none;
 }
@@ -290,15 +300,15 @@ html[os='mac'] input[type='submit'] {
  <div id="chooseDataTypes" class="sync-choice_radio">
    <input id="chooseDataTypesRadio" type="radio" name="syncChooseDataTypes" 
           onclick="setDataTypeCheckboxesEnabled(true)">
-   <div id="chooseDataTypesBody">
    <label for="chooseDataTypesRadio" i18n-content="choosedatatypes" ></label>
+   <div id="chooseDataTypesBody">
    <div>
      <!-- Apps -->
      <div class="sync-item-show" id="appsItem">
        <input id="appsCheckbox" name="dataTypeCheckbox" type="checkbox">
        <label id="appsCheckboxLabel" name="dataTypeLabel" 
               for="appsCheckbox" i18n-content="apps"
-              i8n-values="title:apps"></label>
+              i18n-values="title:apps"></label>
      </div>
      <!-- Autofill -->
      <div class="sync-item-show" id="autofillItem">
