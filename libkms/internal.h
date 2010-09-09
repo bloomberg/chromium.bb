@@ -70,4 +70,6 @@ int intel_create(int fd, struct kms_driver **out);
 
 int nouveau_create(int fd, struct kms_driver **out);
 
+int radeon_create(int fd, struct kms_driver **out);
+
 #endif

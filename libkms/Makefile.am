@@ -26,6 +26,10 @@ if HAVE_NOUVEAU
 libkms_la_SOURCES += nouveau.c
 endif
 
+if HAVE_RADEON
+libkms_la_SOURCES += radeon.c
+endif
+
 libkmsincludedir = ${includedir}/libkms
 libkmsinclude_HEADERS = libkms.h
 
