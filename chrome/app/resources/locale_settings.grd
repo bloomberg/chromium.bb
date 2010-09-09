@@ -18,6 +18,7 @@
     <output filename="locale_settings_es.rc" type="rc_all" lang="es" />
     <output filename="locale_settings_es-419.rc" type="rc_all" lang="es-419" />
     <output filename="locale_settings_et.rc" type="rc_all" lang="et" />
+    <output filename="locale_settings_fa.rc" type="rc_all" lang="fa" />
     <output filename="locale_settings_fi.rc" type="rc_all" lang="fi" />
     <output filename="locale_settings_fil.rc" type="rc_all" lang="fil" />
     <output filename="locale_settings_fr.rc" type="rc_all" lang="fr" />
@@ -72,6 +73,7 @@
     <output filename="locale_settings_es.pak" type="data_package" lang="es" />
     <output filename="locale_settings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="locale_settings_et.pak" type="data_package" lang="et" />
+    <output filename="locale_settings_fa.pak" type="data_package" lang="fa" />
     <output filename="locale_settings_fi.pak" type="data_package" lang="fi" />
     <output filename="locale_settings_fil.pak" type="data_package" lang="fil" />
     <output filename="locale_settings_fr.pak" type="data_package" lang="fr" />
@@ -126,6 +128,7 @@
     <file path="locale_settings_es.xtb" lang="es" />
     <file path="locale_settings_es-419.xtb" lang="es-419" />
     <file path="locale_settings_et.xtb" lang="et" />
+    <file path="locale_settings_fa.xtb" lang="fa" />
     <file path="locale_settings_fi.xtb" lang="fi" />
     <file path="locale_settings_fil.xtb" lang="fil" />
     <file path="locale_settings_fr.xtb" lang="fr" />
@@ -180,6 +183,7 @@
       <if expr="pp_ifdef('_google_chrome') and 'es' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_es.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'es-419' == lang"><include name="IDR_TERMS_HTML" file="terms\terms_es-419.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'et' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_et.html" type="BINDATA" /></if>
+      <if expr="pp_ifdef('_google_chrome') and 'fa' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_en.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'fi' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_fi.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'fil' == lang">   <include name="IDR_TERMS_HTML" file="terms\terms_fil.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'fr' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_fr.html" type="BINDATA" /></if>

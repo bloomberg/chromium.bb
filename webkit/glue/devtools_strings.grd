@@ -19,6 +19,7 @@ Google Chrome Developer Tools. -->
     <output filename="devtoolsStrings_es.js" type="js_map_format" lang="es" />
     <output filename="devtoolsStrings_es-419.js" type="js_map_format" lang="es-419" />
     <output filename="devtoolsStrings_et.js" type="js_map_format" lang="et" />
+    <output filename="devtoolsStrings_fa.js" type="js_map_format" lang="fa" />
     <output filename="devtoolsStrings_fi.js" type="js_map_format" lang="fi" />
     <output filename="devtoolsStrings_fil.js" type="js_map_format" lang="fil" />
     <output filename="devtoolsStrings_fr.js" type="js_map_format" lang="fr" />

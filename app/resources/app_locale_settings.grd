@@ -18,6 +18,7 @@
     <output filename="app_locale_settings_es.rc" type="rc_all" lang="es" />
     <output filename="app_locale_settings_es-419.rc" type="rc_all" lang="es-419" />
     <output filename="app_locale_settings_et.rc" type="rc_all" lang="et" />
+    <output filename="app_locale_settings_fa.rc" type="rc_all" lang="fa" />
     <output filename="app_locale_settings_fi.rc" type="rc_all" lang="fi" />
     <output filename="app_locale_settings_fil.rc" type="rc_all" lang="fil" />
     <output filename="app_locale_settings_fr.rc" type="rc_all" lang="fr" />
@@ -72,6 +73,7 @@
     <output filename="app_locale_settings_es.pak" type="data_package" lang="es" />
     <output filename="app_locale_settings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="app_locale_settings_et.pak" type="data_package" lang="et" />
+    <output filename="app_locale_settings_fa.pak" type="data_package" lang="fa" />
     <output filename="app_locale_settings_fi.pak" type="data_package" lang="fi" />
     <output filename="app_locale_settings_fil.pak" type="data_package" lang="fil" />
     <output filename="app_locale_settings_fr.pak" type="data_package" lang="fr" />
@@ -126,6 +128,7 @@
     <file path="app_locale_settings_es.xtb" lang="es" />
     <file path="app_locale_settings_es-419.xtb" lang="es-419" />
     <file path="app_locale_settings_et.xtb" lang="et" />
+    <file path="app_locale_settings_fa.xtb" lang="fa" />
     <file path="app_locale_settings_fi.xtb" lang="fi" />
     <file path="app_locale_settings_fil.xtb" lang="fil" />
     <file path="app_locale_settings_fr.xtb" lang="fr" />

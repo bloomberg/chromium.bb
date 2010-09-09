@@ -55,6 +55,7 @@ so we include the original license below:
     <output filename="inspectorStrings_es.js" type="js_map_format" lang="es" />
     <output filename="inspectorStrings_es-419.js" type="js_map_format" lang="es-419" />
     <output filename="inspectorStrings_et.js" type="js_map_format" lang="et" />
+    <output filename="inspectorStrings_fa.js" type="js_map_format" lang="fa" />
     <output filename="inspectorStrings_fi.js" type="js_map_format" lang="fi" />
     <output filename="inspectorStrings_fil.js" type="js_map_format" lang="fil" />
     <output filename="inspectorStrings_fr.js" type="js_map_format" lang="fr" />

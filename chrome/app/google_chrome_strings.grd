@@ -25,6 +25,7 @@ Chrome supports. -->
     <output filename="strings_google_chrome_es.rc" type="rc_all" lang="es" />
     <output filename="strings_google_chrome_es-419.rc" type="rc_all" lang="es-419" />
     <output filename="strings_google_chrome_et.rc" type="rc_all" lang="et" />
+    <output filename="strings_google_chrome_fa.rc" type="rc_all" lang="fa" />
     <output filename="strings_google_chrome_fi.rc" type="rc_all" lang="fi" />
     <output filename="strings_google_chrome_fil.rc" type="rc_all" lang="fil" />
     <output filename="strings_google_chrome_fr.rc" type="rc_all" lang="fr" />
@@ -78,6 +79,7 @@ Chrome supports. -->
     <output filename="google_chrome_strings_es.pak" type="data_package" lang="es" />
     <output filename="google_chrome_strings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="google_chrome_strings_et.pak" type="data_package" lang="et" />
+    <output filename="google_chrome_strings_fa.pak" type="data_package" lang="fa" />
     <output filename="google_chrome_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="google_chrome_strings_fil.pak" type="data_package" lang="fil" />
     <output filename="google_chrome_strings_fr.pak" type="data_package" lang="fr" />
@@ -131,6 +133,7 @@ Chrome supports. -->
     <file path="resources/google_chrome_strings_es.xtb" lang="es" />
     <file path="resources/google_chrome_strings_es-419.xtb" lang="es-419" />
     <file path="resources/google_chrome_strings_et.xtb" lang="et" />
+    <file path="resources/google_chrome_strings_fa.xtb" lang="fa" />
     <file path="resources/google_chrome_strings_fi.xtb" lang="fi" />
     <file path="resources/google_chrome_strings_fil.xtb" lang="fil" />
     <file path="resources/google_chrome_strings_fr.xtb" lang="fr" />

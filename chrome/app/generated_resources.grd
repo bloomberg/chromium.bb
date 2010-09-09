@@ -23,6 +23,7 @@ each locale. -->
     <output filename="generated_resources_es.rc" type="rc_all" lang="es" />
     <output filename="generated_resources_es-419.rc" type="rc_all" lang="es-419" />
     <output filename="generated_resources_et.rc" type="rc_all" lang="et" />
+    <output filename="generated_resources_fa.rc" type="rc_all" lang="fa" />
     <output filename="generated_resources_fi.rc" type="rc_all" lang="fi" />
     <output filename="generated_resources_fil.rc" type="rc_all" lang="fil" />
     <output filename="generated_resources_fr.rc" type="rc_all" lang="fr" />
@@ -77,6 +78,7 @@ each locale. -->
     <output filename="generated_resources_es.pak" type="data_package" lang="es" />
     <output filename="generated_resources_es-419.pak" type="data_package" lang="es-419" />
     <output filename="generated_resources_et.pak" type="data_package" lang="et" />
+    <output filename="generated_resources_fa.pak" type="data_package" lang="fa" />
     <output filename="generated_resources_fi.pak" type="data_package" lang="fi" />
     <output filename="generated_resources_fil.pak" type="data_package" lang="fil" />
     <output filename="generated_resources_fr.pak" type="data_package" lang="fr" />
@@ -131,6 +133,7 @@ each locale. -->
     <file path="resources/generated_resources_es.xtb" lang="es" />
     <file path="resources/generated_resources_es-419.xtb" lang="es-419" />
     <file path="resources/generated_resources_et.xtb" lang="et" />
+    <file path="resources/generated_resources_fa.xtb" lang="fa" />
     <file path="resources/generated_resources_fi.xtb" lang="fi" />
     <file path="resources/generated_resources_fil.xtb" lang="fil" />
     <file path="resources/generated_resources_fr.xtb" lang="fr" />

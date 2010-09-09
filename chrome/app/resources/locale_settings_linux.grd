@@ -18,6 +18,7 @@
     <output filename="platform_locale_settings_es.pak" type="data_package" lang="es" />
     <output filename="platform_locale_settings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="platform_locale_settings_et.pak" type="data_package" lang="et" />
+    <output filename="platform_locale_settings_fa.pak" type="data_package" lang="fa" />
     <output filename="platform_locale_settings_fi.pak" type="data_package" lang="fi" />
     <output filename="platform_locale_settings_fil.pak" type="data_package" lang="fil" />
     <output filename="platform_locale_settings_fr.pak" type="data_package" lang="fr" />
@@ -72,6 +73,7 @@
     <file path="platform_locale_settings/locale_settings_linux_es.xtb" lang="es" />
     <file path="platform_locale_settings/locale_settings_linux_es-419.xtb" lang="es-419" />
     <file path="platform_locale_settings/locale_settings_linux_et.xtb" lang="et" />
+    <file path="platform_locale_settings/locale_settings_linux_fa.xtb" lang="fa" />
     <file path="platform_locale_settings/locale_settings_linux_fi.xtb" lang="fi" />
     <file path="platform_locale_settings/locale_settings_linux_fil.xtb" lang="fil" />
     <file path="platform_locale_settings/locale_settings_linux_fr.xtb" lang="fr" />
