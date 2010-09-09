@@ -379,7 +379,11 @@ int main() {
 
 def Main(args):
   root_targets = GetTargets(GetSources())
-  btarget.BuildMain(root_targets, args, sys.stdout)
+  # Use an unbuffered version of stdout.  Python/libc adds buffering
+  # to stdout when it is not a tty, but this causes output to be
+  # ordered wrongly.  See the PYTHONUNBUFFERED environment variable.
+  stream = os.fdopen(os.dup(sys.stdout.fileno()), "w", 0)
+  btarget.BuildMain(root_targets, args, stream)
 
 
 if __name__ == "__main__":
