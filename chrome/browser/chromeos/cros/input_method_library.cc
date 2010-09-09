@@ -385,7 +385,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
       gint argc;
 
       if (!g_shell_parse_argv(
-          "/usr/bin/ibus-daemon --panel=disable --cache=none --restart",
+          "/usr/bin/ibus-daemon "
+          "--panel=disable --cache=none --restart --replace",
           &argc, &argv, &error)) {
         LOG(ERROR) << "Could not parse command: " << error->message;
         g_error_free(error);
