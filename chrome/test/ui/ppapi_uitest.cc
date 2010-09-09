@@ -116,12 +116,8 @@ TEST_F(PPAPITest, FLAKY_PaintAggregator) {
   RunTestViaHTTP("PaintAggregator");
 }
 
-#if defined(OS_WIN)
-TEST_F(PPAPITest, Scrollbar) {
-#else
 // Flaky, http://crbug.com/48544.
 TEST_F(PPAPITest, FLAKY_Scrollbar) {
-#endif
   RunTest("Scrollbar");
 }
 
