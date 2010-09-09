@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_COCOA_INFOBAR_CONTAINER_CONTROLLER_H_
+#define CHROME_BROWSER_COCOA_INFOBAR_CONTAINER_CONTROLLER_H_
+#pragma once
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
@@ -14,7 +18,6 @@ class InfoBarDelegate;
 class InfoBarNotificationObserver;
 class TabContents;
 class TabStripModel;
-class TabStripModelObserverBridge;
 
 // Protocol for basic container methods, as needed by an InfoBarController.
 // This protocol exists to make mocking easier in unittests.
@@ -40,9 +43,6 @@ class TabStripModelObserverBridge;
   // Holds the InfoBarControllers currently owned by this container.
   scoped_nsobject<NSMutableArray> infobarControllers_;
 
-  // Lets us get TabChanged/TabDetachedAt notifications.
-  scoped_ptr<TabStripModelObserverBridge> tabObserver_;
-
   // Lets us registers for INFOBAR_ADDED/INFOBAR_REMOVED
   // notifications.  The actual notifications are sent to the
   // InfoBarNotificationObserver object, which proxies them back to us.
@@ -50,8 +50,7 @@ class TabStripModelObserverBridge;
   scoped_ptr<InfoBarNotificationObserver> infoBarObserver_;
 }
 
-- (id)initWithTabStripModel:(TabStripModel*)model
-             resizeDelegate:(id<ViewResizer>)resizeDelegate;
+- (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate;
 
 // Informs the selected TabContents that the infobars for the given
 // |delegate| need to be removed.  Does not remove any infobar views
@@ -64,6 +63,19 @@ class TabStripModelObserverBridge;
 // removes its view from the view hierarchy.  This method is safe to call while
 // |controller| is still on the call stack.
 - (void)removeController:(InfoBarController*)controller;
+
+// Modifies this container to display infobars for the given
+// |contents|.  Registers for INFOBAR_ADDED and INFOBAR_REMOVED
+// notifications for |contents|.  If we are currently showing any
+// infobars, removes them first and deregisters for any
+// notifications.  |contents| can be NULL, in which case no infobars
+// are shown and no notifications are registered for.
+- (void)changeTabContents:(TabContents*)contents;
+
+// Stripped down version of TabStripModelObserverBridge:tabDetachedWithContents.
+// Forwarded by BWC. Removes all infobars and deregisters for any notifications
+// if |contents| is the current tab contents.
+- (void)tabDetachedWithContents:(TabContents*)contents;
 
 @end
 
@@ -97,3 +109,5 @@ class TabStripModelObserverBridge;
 - (void)removeAllInfoBars;
 
 @end
+
+#endif  // CHROME_BROWSER_COCOA_INFOBAR_CONTAINER_CONTROLLER_H_

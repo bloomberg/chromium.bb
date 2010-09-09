@@ -14,8 +14,12 @@
 
 - (id)initWithView:(TabStripView*)view
         switchView:(NSView*)switchView
-           browser:(Browser*)browser {
-  self = [super initWithView:view switchView:switchView browser:browser];
+           browser:(Browser*)browser
+          delegate:(id<TabStripControllerDelegate>)delegate {
+  self = [super initWithView:view
+                  switchView:switchView
+                     browser:browser
+                    delegate:delegate];
   if (self) {
     // Side tabs have no indent since they are not sharing space with the
     // window controls.

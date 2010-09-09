@@ -279,13 +279,15 @@ private:
 
 - (id)initWithView:(TabStripView*)view
         switchView:(NSView*)switchView
-           browser:(Browser*)browser {
-  DCHECK(view && switchView && browser);
+           browser:(Browser*)browser
+          delegate:(id<TabStripControllerDelegate>)delegate {
+  DCHECK(view && switchView && browser && delegate);
   if ((self = [super init])) {
     tabStripView_.reset([view retain]);
     switchView_ = switchView;
     browser_ = browser;
     tabStripModel_ = browser_->tabstrip_model();
+    delegate_ = delegate;
     bridge_.reset(new TabStripModelObserverBridge(tabStripModel_, self));
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
@@ -440,9 +442,10 @@ private:
   // the view hierarchy. This is in order to avoid sending the renderer a
   // spurious default size loaded from the nib during the call to |-view|.
   NSView* newView = [controller view];
-  NSRect frame = [switchView_ bounds];
-  [newView setFrame:frame];
-  [controller ensureContentsVisible];
+
+  // Turns content autoresizing off, so removing and inserting views won't
+  // trigger unnecessary content relayout.
+  [controller ensureContentsSizeDoesNotChange];
 
   // Remove the old view from the view hierarchy. We know there's only one
   // child of |switchView_| because we're the one who put it there. There
@@ -451,10 +454,21 @@ private:
   NSArray* subviews = [switchView_ subviews];
   if ([subviews count]) {
     NSView* oldView = [subviews objectAtIndex:0];
+    // Set newView frame to the oldVew frame to prevent NSSplitView hosting
+    // sidebar and tab content from resizing sidebar's content view.
+    // ensureContentsVisible (see below) sets content size and autoresizing
+    // properties.
+    [newView setFrame:[oldView frame]];
     [switchView_ replaceSubview:oldView with:newView];
   } else {
     [switchView_ addSubview:newView];
   }
+
+  // New content is in place, delegate should adjust itself accordingly.
+  [delegate_ onSelectTabWithContents:[controller tabContents]];
+
+  // It also resores content autoresizing properties.
+  [controller ensureContentsVisible];
 
   // Make sure the new tabs's sheets are visible (necessary when a background
   // tab opened a sheet while it was in the background and now becomes active).
@@ -1048,8 +1062,6 @@ private:
 
   // Swap in the contents for the new tab.
   [self swapInTabAtIndex:modelIndex];
-  [self updateSidebarForContents:newContents];
-  [self updateDevToolsForContents:newContents];
 
   if (newContents) {
     newContents->DidBecomeSelected();
@@ -1155,14 +1167,12 @@ private:
     [self removeTab:tab];
   }
 
-  // Does nothing, purely for consistency with the windows/linux code.
-  [self updateSidebarForContents:NULL];
-  [self updateDevToolsForContents:NULL];
-
   // Send a broadcast that the number of tabs have changed.
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kTabStripNumberOfTabsChanged
                     object:self];
+
+  [delegate_ onTabDetachedWithContents:contents];
 }
 
 // A helper routine for creating an NSImageView to hold the fav icon or app icon
@@ -1274,6 +1284,9 @@ private:
                     changeType:(TabStripModelObserver::TabChangeType)change {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
+
+  if (modelIndex == tabStripModel_->selected_index())
+    [delegate_ onSelectedTabChange:change];
 
   if (change == TabStripModelObserver::TITLE_NOT_LOADING) {
     // TODO(sky): make this work.
@@ -1792,14 +1805,12 @@ private:
 
   // View hierarchy of the contents view:
   // NSView  -- switchView, same for all tabs
-  // +-  NSView  -- TabContentsController's view
-  //     +- NSSplitView
-  //        +- NSSplitView
-  //           +- TabContentsViewCocoa
+  // +- NSView  -- TabContentsController's view
+  //    +- TabContentsViewCocoa
+  // Changing it? Do not forget to modify removeConstrainedWindow too.
   // We use the TabContentsController's view in |swapInTabAtIndex|, so we have
   // to pass it to the sheet controller here.
-  NSView* tabContentsView =
-      [[[window->owner()->GetNativeView() superview] superview] superview];
+  NSView* tabContentsView = [window->owner()->GetNativeView() superview];
   window->delegate()->RunSheet([self sheetController], tabContentsView);
 
   // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
@@ -1817,8 +1828,7 @@ private:
 }
 
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
-  NSView* tabContentsView =
-      [[[window->owner()->GetNativeView() superview] superview] superview];
+  NSView* tabContentsView = [window->owner()->GetNativeView() superview];
 
   // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
   // between windows. Until then, we have to prevent having to move a tabsheet
@@ -1831,60 +1841,6 @@ private:
   if (index >= 0) {
     [controller setTab:[self viewAtIndex:index] isDraggable:YES];
   }
-}
-
-- (void)updateDevToolsForContents:(TabContents*)contents {
-  int modelIndex = tabStripModel_->GetIndexOfTabContents(contents);
-
-  // This happens e.g. if one hits cmd-q with a docked devtools window open.
-  if (modelIndex == TabStripModel::kNoTab)
-    return;
-
-  NSInteger index = [self indexFromModelIndex:modelIndex];
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, (NSInteger)[tabContentsArray_ count]);
-  if (index < 0 || index >= (NSInteger)[tabContentsArray_ count])
-    return;
-
-  TabContentsController* tabController =
-      [tabContentsArray_ objectAtIndex:index];
-  TabContents* devtoolsContents = contents ?
-      DevToolsWindow::GetDevToolsContents(contents) : NULL;
-  [tabController showDevToolsContents:devtoolsContents];
-}
-
-// This function is very similar to updateDevToolsContents.
-// TODO(alekseys): refactor and move both to browser window.
-// I (alekseys) intend to do it very soon.
-- (void)updateSidebarForContents:(TabContents*)contents {
-  if (SidebarManager::GetInstance() == NULL)  // Happens in tests.
-    return;
-
-  int modelIndex = tabStripModel_->GetIndexOfTabContents(contents);
-
-  // This happens e.g. if one hits cmd-q with sidebar expanded.
-  if (modelIndex == TabStripModel::kNoTab)
-    return;
-
-  NSInteger index = [self indexFromModelIndex:modelIndex];
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, (NSInteger)[tabContentsArray_ count]);
-  if (index < 0 || index >= (NSInteger)[tabContentsArray_ count])
-    return;
-
-  TabContentsController* tabController =
-      [tabContentsArray_ objectAtIndex:index];
-  TabContents* sidebar_contents = NULL;
-  if (contents && SidebarManager::IsSidebarAllowed()) {
-    SidebarContainer* active_sidebar =
-        SidebarManager::GetInstance()->GetActiveSidebarContainerFor(contents);
-    if (active_sidebar)
-      sidebar_contents = active_sidebar->sidebar_contents();
-  }
-  TabContents* old_sidebar_contents = [tabController sidebarContents];
-  [tabController showSidebarContents:sidebar_contents];
-  SidebarManager::GetInstance()->NotifyStateChanges(
-      old_sidebar_contents, sidebar_contents);
 }
 
 @end

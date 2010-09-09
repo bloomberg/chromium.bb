@@ -9,26 +9,19 @@
 #include <Cocoa/Cocoa.h>
 
 class TabContents;
-class TabContentsCommandObserver;
-class TabStripModel;
 
 // A class that controls the web contents of a tab. It manages displaying the
-// native view for a given TabContents and optionally its docked devtools in
-// |contentsContainer_|.
-// Note that just creating the class does not display the view in
-// |contentsContainer_|. We defer inserting it until the box is the correct size
-// to avoid multiple resize messages to the renderer. You must call
-// |-ensureContentsVisible| to display the render widget host view.
+// native view for a given TabContents.
+// Note that just creating the class does not display the view. We defer
+// inserting it until the box is the correct size to avoid multiple resize
+// messages to the renderer. You must call |-ensureContentsVisible| to display
+// the render widget host view.
 
 @interface TabContentsController : NSViewController {
  @private
-  TabContentsCommandObserver* observer_;  // nil if |commands_| is nil
   TabContents* contents_;  // weak
-  TabContents* sidebarContents_;  // weak
-
-  IBOutlet NSSplitView* contentsContainer_;
-  IBOutlet NSSplitView* devToolsContainer_;
 }
+@property(readonly, nonatomic) TabContents* tabContents;
 
 // Create the contents of a tab represented by |contents| and loaded from the
 // nib given by |name|.
@@ -44,6 +37,10 @@ class TabStripModel;
 // enabled.
 - (void)willBecomeSelectedTab;
 
+// Call when the tab contents is about to be replaced with the currently
+// selected tab contents to do not trigger unnecessary content relayout.
+- (void)ensureContentsSizeDoesNotChange;
+
 // Call when the tab view is properly sized and the render widget host view
 // should be put into the view hierarchy.
 - (void)ensureContentsVisible;
@@ -52,26 +49,6 @@ class TabStripModel;
 // notification from the model isn't specific). |updatedContents| could reflect
 // an entirely new tab contents object.
 - (void)tabDidChange:(TabContents*)updatedContents;
-
-// Shows |devToolsContents| in a split view, or removes the bottom view in the
-// split viewif |devToolsContents| is NULL.
-// TODO(thakis): Either move this to tab_window or move infobar handling to here
-// too -- http://crbug.com/31633 .
-- (void)showDevToolsContents:(TabContents*)devToolsContents;
-
-// Returns the height required by devtools and divider, or 0 if no devtools are
-// docked to the tab.
-- (CGFloat)devToolsHeight;
-
-// Shows |sidebarContents| in a split view, or removes the right view in the
-// split view if |sidebarContents| is NULL.
-// TODO(thakis): Either move this to tab_window or move infobar handling to here
-// too -- http://crbug.com/31633 .
-- (void)showSidebarContents:(TabContents*)sidebarContents;
-
-// Returns contents of the currently displayed sidebar; returns NULL if there
-// isn't any.
-- (TabContents*)sidebarContents;
 
 @end
 

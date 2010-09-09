@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #include "chrome/browser/cocoa/infobar_test_helper.h"
@@ -19,11 +18,9 @@ class InfoBarContainerControllerTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
-    TabStripModel* model = browser_helper_.browser()->tabstrip_model();
     ViewResizerPong *viewResizer = resizeDelegate_.get();
     controller_ =
-        [[InfoBarContainerController alloc] initWithTabStripModel:model
-                                                   resizeDelegate:viewResizer];
+        [[InfoBarContainerController alloc] initWithResizeDelegate:viewResizer];
     NSView* view = [controller_ view];
     [[test_window() contentView] addSubview:view];
   }
@@ -35,7 +32,6 @@ class InfoBarContainerControllerTest : public CocoaTest {
   }
 
  public:
-  BrowserTestHelper browser_helper_;
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
   InfoBarContainerController* controller_;
 };

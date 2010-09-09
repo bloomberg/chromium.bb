@@ -36,7 +36,6 @@
 #import "chrome/browser/cocoa/status_bubble_mac.h"
 #import "chrome/browser/cocoa/tab_contents_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
-#import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/tabpose_window.h"
@@ -55,7 +54,6 @@
 #include "chrome/browser/window_sizer.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-
 
 // ORGANIZATION: This is a big file. It is (in principle) organized as follows
 // (in order):
@@ -191,8 +189,6 @@
     initializing_ = YES;
     browser_.reset(browser);
     ownsBrowser_ = ownIt;
-    tabObserver_.reset(
-        new TabStripModelObserverBridge(browser->tabstrip_model(), self));
     NSWindow* window = [self window];
     windowShim_.reset(new BrowserWindowCocoa(browser, self, window));
 
@@ -240,9 +236,7 @@
     // Create the infobar container view, so we can pass it to the
     // ToolbarController.
     infoBarContainerController_.reset(
-        [[InfoBarContainerController alloc]
-          initWithTabStripModel:(browser_->tabstrip_model())
-                 resizeDelegate:self]);
+        [[InfoBarContainerController alloc] initWithResizeDelegate:self]);
     [[[self window] contentView] addSubview:[infoBarContainerController_ view]];
 
     // Create a controller for the toolbar, giving it the toolbar model object
@@ -275,6 +269,16 @@
                                  positioned:NSWindowBelow
                                  relativeTo:[toolbarController_ view]];
     [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
+
+    // Create a sub-controller for the docked devTools.
+    devToolsController_.reset(
+        [[DevToolsController alloc] initWithView:[self devToolsContainer]
+                                        delegate:self]);
+
+    // Create a sub-controller for the docked devTools.
+    sidebarController_.reset(
+        [[SidebarController alloc] initWithView:[self contentsContainer]
+                                       delegate:self]);
 
     // We don't want to try and show the bar before it gets placed in its parent
     // view, so this step shoudn't be inside the bookmark bar controller's
@@ -396,11 +400,11 @@
 }
 
 - (void)updateDevToolsForContents:(TabContents*)contents {
-  [tabStripController_ updateDevToolsForContents:contents];
+  [devToolsController_ updateDevToolsForTabContents:contents];
 }
 
 - (void)updateSidebarForContents:(TabContents*)contents {
-  [tabStripController_ updateSidebarForContents:contents];
+  [sidebarController_ updateSidebarForTabContents:contents];
 }
 
 // Called when the user wants to close a window or from the shutdown process.
@@ -979,9 +983,13 @@
 
 // StatusBubble delegate method: tell the status bubble how far above the bottom
 // of the window it should position itself.
+// TODO(alekseys): status bubble should respect web view bounds, not just its
+// vertical size. Now it can overlap sidebar contents. http://crbug.com/54882
 - (CGFloat)verticalOffsetForStatusBubble {
-  return verticalOffsetForStatusBubble_ +
-         [[tabStripController_ activeTabContentsController] devToolsHeight];
+  NSRect contents_bounds = [[self contentsContainer] bounds];
+  NSView* baseView = [[self window] contentView];
+  return NSMinY([baseView convertRect:contents_bounds
+                             fromView:[self contentsContainer]]);
 }
 
 - (GTMWindowSheetController*)sheetController {
@@ -1297,41 +1305,90 @@
   return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];
 }
 
-- (void)selectTabWithContents:(TabContents*)newContents
-             previousContents:(TabContents*)oldContents
-                      atIndex:(NSInteger)index
-                  userGesture:(bool)wasUserGesture {
-  DCHECK(oldContents != newContents);
+// DevToolsController protocol.
+- (void)resizeDevToolsToNewHeight:(CGFloat)height {
+  NSSplitView* container = [self devToolsContainer];
+  NSArray* subviews = [container subviews];
 
+  // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
+  // but I can't figure out how to use it. Manually resize web and devtools.
+  // TODO(alekseys): either make setPosition:ofDividerAtIndex: work or to add a
+  // category on NSSplitView to handle manual resizing.
+  NSView* devToolsView = [subviews objectAtIndex:1];
+  NSRect devToolsFrame = [devToolsView frame];
+  devToolsFrame.size.height = height;
+  [devToolsView setFrame:devToolsFrame];
+
+  NSView* webView = [subviews objectAtIndex:0];
+  NSRect webFrame = [webView frame];
+  webFrame.size.height =
+      NSHeight([container frame]) - ([container dividerThickness] + height);
+  [webView setFrame:webFrame];
+
+  [container adjustSubviews];
+}
+
+// SidebarController protocol.
+- (void)resizeSidebarToNewWidth:(CGFloat)width {
+  NSSplitView* container = [self contentsContainer];
+  NSArray* subviews = [container subviews];
+
+  // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
+  // but I can't figure out how to use it. Manually resize web and sidebar.
+  // TODO(alekseys): either make setPosition:ofDividerAtIndex: work or to add a
+  // category on NSSplitView to handle manual resizing.
+  NSView* sidebarView = [subviews objectAtIndex:1];
+  NSRect sidebarFrame = [sidebarView frame];
+  sidebarFrame.size.width = width;
+  [sidebarView setFrame:sidebarFrame];
+
+  NSView* webView = [subviews objectAtIndex:0];
+  NSRect webFrame = [webView frame];
+  webFrame.size.width =
+      NSWidth([container frame]) - ([container dividerThickness] + width);
+  [webView setFrame:webFrame];
+
+  [container adjustSubviews];
+}
+
+// TabStripControllerDelegate protocol.
+- (void)onSelectTabWithContents:(TabContents*)contents {
   // Update various elements that are interested in knowing the current
   // TabContents.
 
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
 
+  [self updateSidebarForContents:contents];
+  [self updateDevToolsForContents:contents];
+
   // Update the bookmark bar.
+  // Must do it after sidebar and devtools update, otherwise bookmark bar might
+  // call resizeView -> layoutSubviews and cause unnecessary relayout.
   // TODO(viettrungluu): perhaps update to not terminate running animations (if
   // applicable)?
   [self updateBookmarkBarVisibilityWithAnimation:NO];
+
+  [infoBarContainerController_ changeTabContents:contents];
 }
 
-- (void)tabChangedWithContents:(TabContents*)contents
-                       atIndex:(NSInteger)index
-                    changeType:(TabStripModelObserver::TabChangeType)change {
-  if (index == browser_->tabstrip_model()->selected_index()) {
-    // Update titles if this is the currently selected tab and if it isn't just
-    // the loading state which changed.
-    if (change != TabStripModelObserver::LOADING_ONLY)
-      windowShim_->UpdateTitleBar();
+- (void)onSelectedTabChange:(TabStripModelObserver::TabChangeType)change {
+  // Update titles if this is the currently selected tab and if it isn't just
+  // the loading state which changed.
+  if (change != TabStripModelObserver::LOADING_ONLY)
+    windowShim_->UpdateTitleBar();
 
-    // Update the bookmark bar if this is the currently selected tab and if it
-    // isn't just the title which changed. This for transitions between the NTP
-    // (showing its floating bookmark bar) and normal web pages (showing no
-    // bookmark bar).
-    // TODO(viettrungluu): perhaps update to not terminate running animations?
-    if (change != TabStripModelObserver::TITLE_NOT_LOADING)
-      [self updateBookmarkBarVisibilityWithAnimation:NO];
-  }
+  // Update the bookmark bar if this is the currently selected tab and if it
+  // isn't just the title which changed. This for transitions between the NTP
+  // (showing its floating bookmark bar) and normal web pages (showing no
+  // bookmark bar).
+  // TODO(viettrungluu): perhaps update to not terminate running animations?
+  if (change != TabStripModelObserver::TITLE_NOT_LOADING)
+    [self updateBookmarkBarVisibilityWithAnimation:NO];
+}
+
+- (void)onTabDetachedWithContents:(TabContents*)contents {
+  [infoBarContainerController_ tabDetachedWithContents:contents];
 }
 
 - (void)userChangedTheme {

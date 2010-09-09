@@ -52,8 +52,9 @@ const CGFloat kLocBarBottomInset = 1;
 
   tabStripController_.reset([[factory alloc]
                               initWithView:[self tabStripView]
-                                switchView:[self tabContentArea]
-                                   browser:browser_.get()]);
+                                switchView:[self contentsContainer]
+                                   browser:browser_.get()
+                                  delegate:self]);
 }
 
 - (void)saveWindowPositionIfNeeded {
@@ -228,9 +229,6 @@ willPositionSheet:(NSWindow*)sheet
   // Finally, the content area takes up all of the remaining space.
   NSRect contentAreaRect = NSMakeRect(minX, minY, width, maxY - minY);
   [self layoutTabContentArea:contentAreaRect];
-
-  // Place the status bubble at the bottom of the content area.
-  verticalOffsetForStatusBubble_ = minY;
 
   // Normally, we don't need to tell the toolbar whether or not to show the
   // divider, but things break down during animation.

@@ -8,7 +8,6 @@
 #include "chrome/browser/cocoa/infobar.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/infobar_controller.h"
-#include "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/cocoa/view_id_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -64,25 +63,15 @@ class InfoBarNotificationObserver : public NotificationObserver {
 // adding together the heights of all its subviews.
 - (CGFloat)desiredHeight;
 
-// Modifies this container to display infobars for the given
-// |contents|.  Registers for INFOBAR_ADDED and INFOBAR_REMOVED
-// notifications for |contents|.  If we are currently showing any
-// infobars, removes them first and deregisters for any
-// notifications.  |contents| can be NULL, in which case no infobars
-// are shown and no notifications are registered for.
-- (void)changeTabContents:(TabContents*)contents;
-
 @end
 
 
 @implementation InfoBarContainerController
-- (id)initWithTabStripModel:(TabStripModel*)model
-             resizeDelegate:(id<ViewResizer>)resizeDelegate {
+- (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate {
   DCHECK(resizeDelegate);
   if ((self = [super initWithNibName:@"InfoBarContainer"
                               bundle:mac_util::MainAppBundle()])) {
     resizeDelegate_ = resizeDelegate;
-    tabObserver_.reset(new TabStripModelObserverBridge(model, self));
     infoBarObserver_.reset(new InfoBarNotificationObserver(self));
 
     // NSMutableArray needs an initial capacity, and we rarely ever see
@@ -122,16 +111,30 @@ class InfoBarNotificationObserver : public NotificationObserver {
   [self positionInfoBarsAndRedraw];
 }
 
-// TabStripModelObserverBridge notifications
-- (void)selectTabWithContents:(TabContents*)newContents
-             previousContents:(TabContents*)oldContents
-                      atIndex:(NSInteger)index
-                  userGesture:(bool)wasUserGesture {
-  [self changeTabContents:newContents];
+- (void)changeTabContents:(TabContents*)contents {
+  registrar_.RemoveAll();
+  [self removeAllInfoBars];
+
+  currentTabContents_ = contents;
+  if (currentTabContents_) {
+    for (int i = 0; i < currentTabContents_->infobar_delegate_count(); ++i) {
+      [self addInfoBar:currentTabContents_->GetInfoBarDelegateAt(i)
+               animate:NO];
+    }
+
+    Source<TabContents> source(currentTabContents_);
+    registrar_.Add(infoBarObserver_.get(),
+                   NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
+    registrar_.Add(infoBarObserver_.get(),
+                   NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
+    registrar_.Add(infoBarObserver_.get(),
+                   NotificationType::TAB_CONTENTS_INFOBAR_REPLACED, source);
+  }
+
+  [self positionInfoBarsAndRedraw];
 }
 
-- (void)tabDetachedWithContents:(TabContents*)contents
-                        atIndex:(NSInteger)index {
+- (void)tabDetachedWithContents:(TabContents*)contents {
   if (currentTabContents_ == contents)
     [self changeTabContents:NULL];
 }
@@ -157,29 +160,6 @@ class InfoBarNotificationObserver : public NotificationObserver {
   for (InfoBarController* controller in infobarControllers_.get())
     height += NSHeight([[controller view] frame]);
   return height;
-}
-
-- (void)changeTabContents:(TabContents*)contents {
-  registrar_.RemoveAll();
-  [self removeAllInfoBars];
-
-  currentTabContents_ = contents;
-  if (currentTabContents_) {
-    for (int i = 0; i < currentTabContents_->infobar_delegate_count(); ++i) {
-      [self addInfoBar:currentTabContents_->GetInfoBarDelegateAt(i)
-               animate:NO];
-    }
-
-    Source<TabContents> source(currentTabContents_);
-    registrar_.Add(infoBarObserver_.get(),
-                   NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
-    registrar_.Add(infoBarObserver_.get(),
-                   NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
-    registrar_.Add(infoBarObserver_.get(),
-                   NotificationType::TAB_CONTENTS_INFOBAR_REPLACED, source);
-  }
-
-  [self positionInfoBarsAndRedraw];
 }
 
 - (void)addInfoBar:(InfoBarDelegate*)delegate animate:(BOOL)animate {

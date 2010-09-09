@@ -26,6 +26,26 @@ class TabStripModel;
 class TabContents;
 class ToolbarModel;
 
+// The interface for the tab strip controller's delegate. Currently, the
+// delegate is the BWC and is responsible for subviews layout and forwarding
+// these events to InfoBarContainerController.
+// Delegating TabStripModelObserverBridge's events (in lieu of subscrining
+// BWC and InfoBarContainerController to TabStripModelObserverBridge events)
+// is necessary to guarantee a proper order of subviews layout updates,
+// otherwise it might trigger unnesessary content relayout, UI flickering etc.
+@protocol TabStripControllerDelegate
+
+// Stripped down version of TabStripModelObserverBridge:selectTabWithContents.
+- (void)onSelectTabWithContents:(TabContents*)contents;
+
+// Stripped down version of TabStripModelObserverBridge:tabChangedWithContents.
+- (void)onSelectedTabChange:(TabStripModelObserver::TabChangeType)change;
+
+// Stripped down version of TabStripModelObserverBridge:tabDetachedWithContents.
+- (void)onTabDetachedWithContents:(TabContents*)contents;
+
+@end
+
 // A class that handles managing the tab strip in a browser window. It uses
 // a supporting C++ bridge object to register for notifications from the
 // TabStripModel. The Obj-C part of this class handles drag and drop and all
@@ -52,6 +72,8 @@ class ToolbarModel;
   scoped_ptr<TabStripModelObserverBridge> bridge_;
   Browser* browser_;  // weak
   TabStripModel* tabStripModel_;  // weak
+  // Delegate that is informed about tab state changes.
+  id<TabStripControllerDelegate> delegate_;  // weak
 
   // YES if the new tab button is currently displaying the hover image (if the
   // mouse is currently over the button).
@@ -126,9 +148,12 @@ class ToolbarModel;
 // "switched" every time the user switches tabs. The children of this view
 // will be released, so if you want them to stay around, make sure
 // you have retained them.
+// |delegate| is the one listening to filtered TabStripModelObserverBridge's
+// events (see TabStripControllerDelegate for more details).
 - (id)initWithView:(TabStripView*)view
         switchView:(NSView*)switchView
-           browser:(Browser*)browser;
+           browser:(Browser*)browser
+          delegate:(id<TabStripControllerDelegate>)delegate;
 
 // Return the view for the currently selected tab.
 - (NSView*)selectedTabView;
@@ -221,8 +246,6 @@ class ToolbarModel;
   // functions.
 - (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
-- (void)updateDevToolsForContents:(TabContents*)contents;
-- (void)updateSidebarForContents:(TabContents*)contents;
 
 @end
 

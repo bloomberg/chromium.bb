@@ -15,6 +15,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+@interface TestTabStripControllerDelegate :
+  NSObject<TabStripControllerDelegate> {
+}
+@end
+
+@implementation TestTabStripControllerDelegate
+- (void)onSelectTabWithContents:(TabContents*)contents {
+}
+- (void)onSelectedTabChange:(TabStripModelObserver::TabChangeType)change {
+}
+- (void)onTabDetachedWithContents:(TabContents*)contents {
+}
+@end
+
 namespace {
 
 // Stub model delegate
@@ -104,10 +118,12 @@ class TabStripControllerTest : public CocoaTest {
 
     delegate_.reset(new TestTabStripDelegate());
     model_ = browser->tabstrip_model();
+    controller_delegate_.reset([TestTabStripControllerDelegate alloc]);
     controller_.reset([[TabStripController alloc]
                         initWithView:static_cast<TabStripView*>(tab_strip.get())
                           switchView:switch_view.get()
-                             browser:browser]);
+                             browser:browser
+                            delegate:controller_delegate_.get()]);
   }
 
   virtual void TearDown() {
@@ -122,6 +138,7 @@ class TabStripControllerTest : public CocoaTest {
   BrowserTestHelper browser_helper_;
   scoped_ptr<TestTabStripDelegate> delegate_;
   TabStripModel* model_;
+  scoped_nsobject<TestTabStripControllerDelegate> controller_delegate_;
   scoped_nsobject<TabStripController> controller_;
 };
 

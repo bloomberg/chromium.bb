@@ -17,7 +17,10 @@
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
+#import "chrome/browser/cocoa/dev_tools_controller.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
+#import "chrome/browser/cocoa/sidebar_controller.h"
+#import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
@@ -39,7 +42,6 @@ class LocationBarViewMac;
 class StatusBubbleMac;
 class TabContents;
 @class TabStripController;
-class TabStripModelObserverBridge;
 @class TabStripView;
 @class ToolbarController;
 
@@ -48,7 +50,10 @@ class TabStripModelObserverBridge;
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
-                      ViewResizer> {
+                      ViewResizer,
+                      DevToolsControllerDelegate,
+                      SidebarControllerDelegate,
+                      TabStripControllerDelegate> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -56,7 +61,6 @@ class TabStripModelObserverBridge;
   // (tab/toolbar/bookmark models, profiles, etc).
   scoped_ptr<Browser> browser_;
   NSWindow* savedRegularWindow_;
-  scoped_ptr<TabStripModelObserverBridge> tabObserver_;
   scoped_ptr<BrowserWindowCocoa> windowShim_;
   scoped_nsobject<ToolbarController> toolbarController_;
   scoped_nsobject<TabStripController> tabStripController_;
@@ -64,6 +68,8 @@ class TabStripModelObserverBridge;
   scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
+  scoped_nsobject<DevToolsController> devToolsController_;
+  scoped_nsobject<SidebarController> sidebarController_;
   scoped_nsobject<FullscreenController> fullscreenController_;
 
   // Strong. StatusBubble is a special case of a strong reference that
@@ -75,7 +81,6 @@ class TabStripModelObserverBridge;
   BookmarkBubbleController* bookmarkBubbleController_;  // Weak.
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
-  CGFloat verticalOffsetForStatusBubble_;
 
   // The total amount by which we've grown the window up or down (to display a
   // bookmark bar and/or download shelf), respectively; reset to 0 when moved
