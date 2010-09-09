@@ -11,6 +11,9 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#if defined(OS_MACOSX)
+#include "app/surface/io_surface_support_mac.h"
+#endif
 #include "app/text_elider.h"
 #include "base/auto_reset.h"
 #include "base/file_version_info.h"
@@ -2837,6 +2840,13 @@ WebPreferences TabContents::GetWebkitPrefs() {
       GetURL().SchemeIs(chrome::kExtensionScheme)) {
     web_prefs.accelerated_compositing_enabled = false;
   }
+
+#if defined(OS_MACOSX)
+  // Disable accelerated compositing if IOSurface's are not supported,
+  // as is the case in 10.5.
+  if (!IOSurfaceSupport::Initialize())
+      web_prefs.accelerated_compositing_enabled = false;
+#endif
 
   return web_prefs;
 }
