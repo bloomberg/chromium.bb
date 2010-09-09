@@ -904,6 +904,9 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
                                false, false, true, false));
   EXPECT_TRUE(builder.GetFetches().empty());
 
+  // TODO(akalin): Test that extensions with empty update URLs
+  // converted from user scripts are rejected.
+
   // Extensions with empty update URLs should have a default one
   // filled in.
   builder.AddPendingExtension(

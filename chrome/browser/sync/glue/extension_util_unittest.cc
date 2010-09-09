@@ -99,7 +99,14 @@ TEST_F(ExtensionUtilTest, GetExtensionType) {
     Extension extension(file_path);
     MakeExtension(false, GURL(), GURL(), true,
                   Extension::INTERNAL, 0, &extension);
-    EXPECT_EQ(USER_SCRIPT, GetExtensionType(extension));
+    EXPECT_EQ(LOCAL_USER_SCRIPT, GetExtensionType(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL("http://www.google.com"), GURL(), true,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_EQ(UPDATEABLE_USER_SCRIPT, GetExtensionType(extension));
   }
   {
     FilePath file_path(kExtensionFilePath);

@@ -157,6 +157,13 @@ ManifestFetchesBuilder::ManifestFetchesBuilder(
 }
 
 void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
+  // Skip extensions with empty update URLs converted from user
+  // scripts.
+  if (extension.converted_from_user_script() &&
+      extension.update_url().is_empty()) {
+    return;
+  }
+
   AddExtensionData(extension.location(),
                    extension.id(),
                    *extension.version(),

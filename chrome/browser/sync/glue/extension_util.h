@@ -25,7 +25,13 @@ namespace browser_sync {
 enum ExtensionType {
   THEME,
   EXTENSION,
-  USER_SCRIPT,
+  // A converted user script that does not have an update URL.
+  LOCAL_USER_SCRIPT,
+  // A converted user script that has an update URL.  (We don't have a
+  // similar distinction for "regular" extensions as an empty update
+  // URL is interpreted to mean the default update URL [i.e., the
+  // extensions gallery].)
+  UPDATEABLE_USER_SCRIPT,
   APP,
 };
 

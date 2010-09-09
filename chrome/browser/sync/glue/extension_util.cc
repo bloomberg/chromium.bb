@@ -29,7 +29,10 @@ ExtensionType GetExtensionType(const Extension& extension) {
   }
 
   if (extension.converted_from_user_script()) {
-    return USER_SCRIPT;
+    if (extension.update_url().is_empty()) {
+      return LOCAL_USER_SCRIPT;
+    }
+    return UPDATEABLE_USER_SCRIPT;
   }
 
   // Otherwise, we just have a regular extension.

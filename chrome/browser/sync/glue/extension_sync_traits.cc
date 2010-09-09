@@ -55,9 +55,7 @@ bool GetExtensionSpecificsFromEntity(
 ExtensionSyncTraits GetExtensionSyncTraits() {
   ExtensionTypeSet allowed_extension_types;
   allowed_extension_types.insert(EXTENSION);
-  // We allow user scripts since some of them are actually uploaded to
-  // the gallery as extensions (!).
-  allowed_extension_types.insert(USER_SCRIPT);
+  allowed_extension_types.insert(UPDATEABLE_USER_SCRIPT);
   return ExtensionSyncTraits(syncable::EXTENSIONS,
                              "google_chrome_extensions",
                              allowed_extension_types,
