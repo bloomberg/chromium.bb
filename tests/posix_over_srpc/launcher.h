@@ -20,7 +20,15 @@ enum CollectTag {
   DESC_WRAPPER
 };
 
-typedef std::map<int, void*> PtrByHandleMap;
+typedef union HandledValue {
+  void* ptrval;
+  int ival;
+  HandledValue() {}
+  HandledValue(int a) : ival(a) {}
+  HandledValue(void* a) : ptrval(a) {}
+} HandledValue;
+
+typedef std::map<int, HandledValue> ValueByHandleMap;
 typedef std::pair<void*, enum CollectTag> CollectPair;
 typedef std::queue<CollectPair> DescCollector;
 
@@ -35,23 +43,24 @@ class PosixOverSrpcLauncher {
   void IncreaseNumberOfChildren();
   void DecreaseNumberOfChildren();
 
-  bool PtrByHandle(int child_id, int handle, void** pptr);
-  int NewPtrHandle(int child_id, void* ptr);
+  bool ValueByHandle(int child_id, int handle, HandledValue* pval);
+  int NewHandle(int child_id, HandledValue val);
 
   void CollectDesc(int child_id, void* desc, enum CollectTag tag);
-  nacl::DescWrapperFactory* DescFactory();
   void CloseUnusedDescs(int child_id);
+  nacl::DescWrapperFactory* DescFactory();
 
  private:
   nacl::string sel_ldr_dir_;
   std::vector<nacl::string> sel_ldr_args_;
 
   // For every spawned nacl module we store instance of SelLdrLauncher and table
-  // to map pointers. All the methods which work with opaque entities like
-  // struct DIR use this pointer table. In nacl module pointer is just an int
-  // value which is mapped to real address of opaque structure in this launcher.
+  // to map pointers and socket file descriptors. All the methods which work
+  // with opaque entities like struct DIR use this table. In nacl module pointer
+  // is just an int value which is mapped to real address of opaque structure in
+  // this launcher.
   std::vector<nacl::SelLdrLauncher*> launchers_;
-  std::vector<PtrByHandleMap*> ptr_by_handle_maps_;
+  std::vector<ValueByHandleMap*> value_by_handle_maps_;
   std::vector<int> last_used_handles_;
 
   // Also for every nacl module there is a collector for unused NaClDescs which

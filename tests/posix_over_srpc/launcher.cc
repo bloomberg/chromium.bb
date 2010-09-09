@@ -22,25 +22,26 @@
  */
 int kUpChannelDestDesc = 6;
 
-bool PosixOverSrpcLauncher::PtrByHandle(int child_id, int handle, void** pptr) {
-  PtrByHandleMap* pmap = ptr_by_handle_maps_[child_id];
-  PtrByHandleMap::iterator i = pmap->find(handle);
+bool PosixOverSrpcLauncher::ValueByHandle(int child_id, int handle,
+                                          HandledValue* pval) {
+  ValueByHandleMap* pmap = value_by_handle_maps_[child_id];
+  ValueByHandleMap::iterator i = pmap->find(handle);
   if (i == pmap->end()) {
     std::cerr << "Wrong handle: " << handle << "\n";
     return false;
   } else {
-    *pptr = i->second;
+    *pval = i->second;
     return true;
   }
 }
 
-int PosixOverSrpcLauncher::NewPtrHandle(int child_id, void* ptr) {
-  PtrByHandleMap* pmap = ptr_by_handle_maps_[child_id];
+int PosixOverSrpcLauncher::NewHandle(int child_id, HandledValue val) {
+  ValueByHandleMap* pmap = value_by_handle_maps_[child_id];
   ++last_used_handles_[child_id];
   while(pmap->find(last_used_handles_[child_id]) != pmap->end()) {
     ++last_used_handles_[child_id];
   }
-  (*pmap)[last_used_handles_[child_id]] = ptr;
+  (*pmap)[last_used_handles_[child_id]] = val;
   return last_used_handles_[child_id];
 }
 
@@ -110,14 +111,20 @@ void PosixOverSrpcLauncher::DecreaseNumberOfChildren() {
 void* UpcallLoopThread(void* void_arg) {
   ChildContext* context = static_cast<ChildContext*>(void_arg);
   NaClSrpcHandlerDesc handlers[] = {
+    {"accept:i:hii", nonnacl_accept},
+    {"bind:iiCi:ii", nonnacl_bind},
+    {"close:i:", nonnacl_close},
     {"closedir:i:ii", nonnacl_closedir},
     {"getcwd::Cii", nonnacl_getcwd},
     {"getpagesize::i", nonnacl_getpagesize},
+    {"listen:ii:ii", nonnacl_listen},
     {"open:sii:hi", nonnacl_open},
     {"opendir:s:ii", nonnacl_opendir},
     {"pathconf:si:ii", nonnacl_pathconf},
     {"pipe::iihh", nonnacl_pipe},
     {"readdir:i:iiisii", nonnacl_readdir},
+    {"setsockopt:iiiC:ii", nonnacl_setsockopt},
+    {"socket:iii:hii", nonnacl_socket},
     {"times::iiii", nonnacl_times},
     {NULL, NULL}
   };
@@ -184,7 +191,7 @@ bool PosixOverSrpcLauncher::SpawnNaClModule(
   context->imc_handle = upcall_imc_handle;
   IncreaseNumberOfChildren();
   last_used_handles_.push_back(0);
-  ptr_by_handle_maps_.push_back(new PtrByHandleMap);
+  value_by_handle_maps_.push_back(new ValueByHandleMap);
   launchers_.push_back(launcher);
   desc_collectors_.push_back(new DescCollector);
 
@@ -196,7 +203,7 @@ bool PosixOverSrpcLauncher::SpawnNaClModule(
     delete context;
     DecreaseNumberOfChildren();
     last_used_handles_.pop_back();
-    ptr_by_handle_maps_.pop_back();
+    value_by_handle_maps_.pop_back();
     launchers_.pop_back();
     desc_collectors_.pop_back();
     return false;

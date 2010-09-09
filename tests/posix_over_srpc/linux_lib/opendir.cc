@@ -18,7 +18,7 @@ NaClSrpcError nonnacl_opendir(NaClSrpcChannel* channel,
     outs[0]->u.ival = 0;
     outs[1]->u.ival = errno;
   } else {
-    outs[0]->u.ival = NewPtrHandle(channel, dir);
+    outs[0]->u.ival = NewHandle(channel, dir);
   }
   return NACL_SRPC_RESULT_OK;
 }

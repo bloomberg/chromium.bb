@@ -8,19 +8,25 @@ Import('env')
 if env['TARGET_ARCHITECTURE'] == 'arm':
     Return()
 
-sources = [
+sources = ['accept.c',
+           'bind.c',
+           'close.c',
            'closedir.c',
            'getcwd.c',
            'getpagesize.c',
            'getwd.c',
+           'listen.c',
            'open.c',
            'opendir.c',
            'pathconf.c',
            'pipe.c',
            'posix_over_srpc.c',
            'readdir.c',
-           'times.c',
-          ]
+           'recv.c',
+           'socket.c',
+           'send.c',
+           'setsockopt.c',
+           'times.c',]
 
 env.ComponentLibrary('libposix_over_srpc', sources,)
 

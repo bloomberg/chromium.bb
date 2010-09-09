@@ -54,6 +54,7 @@
 NaClSrpcChannel* up_channel;
 
 __psrpc_queue_t __psrpc_queue;
+__psrpc_fd_list_t __psrpc_fd_list;
 
 volatile int __psrpc_number_of_threads;
 volatile int __psrpc_main_thread_completion_flag = 0;
@@ -68,18 +69,86 @@ pthread_cond_t __psrpc_init_cv;
  * to enum posix_call_id.
  */
 char* __psrpc_signatures[] = {
+  "accept:i:hii",
+  "bind:iiCi:ii",
+  "close:i:",
   "closedir:i:ii",
   "getcwd::Cii",
   "getpagesize::i",
+  "listen:ii:ii",
   "open:sii:hi",
   "opendir:s:ii",
   "pathconf:si:ii",
   "pipe::iihh",
   "readdir:i:iiisii",
+  "setsockopt:iiiC:ii",
+  "socket:iii:hii",
   "times::iiii",
   /* Signature for PSRPC_EXIT_HOOK */
   "::"
 };
+
+/* TODO(mikhailt): document these fd_list methods. */
+int __psrpc_fd_list_push(__psrpc_fd_list_t* fd_list, int nacl_fd, int key) {
+  pthread_mutex_lock(&fd_list->mu);
+  if (fd_list->top == fd_list->size) {
+    /* Make fd list twice bigger in case it is full. */
+    fd_list->size *= 2;
+    fd_list->body = realloc(fd_list->body,
+                            fd_list->size * sizeof(*fd_list->body));
+    if (NULL == fd_list->body) {
+      return 1;
+    }
+  }
+  fd_list->body[fd_list->top].nacl_fd = nacl_fd;
+  fd_list->body[fd_list->top].key = key;
+  ++fd_list->top;
+  pthread_mutex_unlock(&fd_list->mu);
+  return 0;
+}
+
+int __psrpc_fd_list_get_key(__psrpc_fd_list_t* fd_list, int nacl_fd) {
+  int y, result = -1;
+  pthread_mutex_lock(&fd_list->mu);
+  for (y = 0; y < fd_list->top; ++y) {
+    if (fd_list->body[y].nacl_fd == nacl_fd) {
+      result = fd_list->body[y].key;
+      break;
+    }
+  }
+  pthread_mutex_unlock(&fd_list->mu);
+  return result;
+}
+
+int __psrpc_fd_list_remove(__psrpc_fd_list_t* fd_list, int nacl_fd) {
+  int y, result = 1;
+  pthread_mutex_lock(&fd_list->mu);
+  for (y = 0; y < fd_list->top; ++y) {
+    if (fd_list->body[y].nacl_fd == nacl_fd) {
+      --fd_list->top;
+      fd_list->body[y].nacl_fd = fd_list->body[fd_list->top].nacl_fd;
+      fd_list->body[y].key = fd_list->body[fd_list->top].key;
+      result = 0;
+      break;
+    }
+  }
+  pthread_mutex_unlock(&fd_list->mu);
+  return result;
+}
+
+int __psrpc_fd_list_create(__psrpc_fd_list_t* fd_list) {
+  fd_list->body = calloc(INITIAL_FD_LIST_SIZE, sizeof(*fd_list->body));
+  if (NULL == fd_list) {
+    return 1;
+  }
+  if (0 != pthread_mutex_init(&fd_list->mu, NULL)) {
+    free(fd_list->body);
+    return 1;
+  }
+  fd_list->size = INITIAL_FD_LIST_SIZE;
+  fd_list->top = 0;
+  return 0;
+}
 
 /*
  * Makes srpc invoke to handle posix call request.
@@ -170,26 +239,35 @@ int __psrpc_request_create(__psrpc_request_t* request, int id) {
  * Frees memory allocated by __psrpc_request_create.
  * Destroys corresponding mutex and condition variable.
  */
-void __psrpc_request_destroy(__psrpc_request_t* request) {
+int __psrpc_request_destroy(__psrpc_request_t* request) {
   if (NULL == request) {
-    return;
+    return 0;
   }
   free(request->args[0][0]);
   free(request->args[1][0]);
   free(request->args[0]);
   free(request->args[1]);
-  pthread_mutex_destroy(&request->caller_mu);
-  pthread_cond_destroy(&request->caller_cv);
+  if (0 != pthread_mutex_destroy(&request->caller_mu)) {
+    return 1;
+  }
+  if (0 != pthread_cond_destroy(&request->caller_cv)) {
+    return 1;
+  }
+  return 0;
 }
 
 /*
  * Following 4 methods implement queue on array.
  */
-void __psrpc_queue_init(__psrpc_queue_t* queue) {
+int __psrpc_queue_create(__psrpc_queue_t* queue) {
   queue->front = queue->back = 0;
   queue->size = INITIAL_QUEUE_SIZE;
   queue->body = (__psrpc_request_t**)calloc(INITIAL_QUEUE_SIZE,
                                             sizeof(*queue->body));
+  if (NULL == queue->body) {
+    return 1;
+  }
+  return 0;
 }
 
 int __psrpc_queue_empty(__psrpc_queue_t* queue) {
@@ -205,7 +283,7 @@ __psrpc_request_t* __psrpc_queue_pop(__psrpc_queue_t* queue) {
   return result;
 }
 
-void __psrpc_queue_push(__psrpc_queue_t* queue, __psrpc_request_t* request) {
+int __psrpc_queue_push(__psrpc_queue_t* queue, __psrpc_request_t* request) {
   queue->body[queue->back] = request;
   ++queue->back;
   if (queue->back == queue->size) {
@@ -219,11 +297,15 @@ void __psrpc_queue_push(__psrpc_queue_t* queue, __psrpc_request_t* request) {
     queue->body = (__psrpc_request_t**)realloc(queue->body,
                                                sizeof(*queue->body)
                                                * queue->size * 2);
+    if (NULL == queue->body) {
+      return 1;
+    }
     memcpy(&queue->body[queue->size], queue->body,
            queue->back * sizeof(__psrpc_request_t*));
     queue->back += queue->size;
     queue->size *= 2;
   }
+  return 0;
 }
 
 /*
@@ -293,7 +375,8 @@ void __attribute__((constructor(101))) __psrpc_wait_for_upcall_handler() {
  * See beginning of this file for more explanations.
  */
 void __psrpc_upcall_handler() {
-  __psrpc_queue_init(&__psrpc_queue);
+  __psrpc_queue_create(&__psrpc_queue);
+  __psrpc_fd_list_create(&__psrpc_fd_list);
   pthread_mutex_init(&__psrpc_handler_mu, NULL);
   pthread_cond_init(&__psrpc_handler_cv, NULL);
   pthread_mutex_lock(&__psrpc_handler_mu);

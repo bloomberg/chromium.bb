@@ -15,8 +15,8 @@ int GetChildId(NaClSrpcChannel* channel) {
   return static_cast<ChildContext*>(channel->server_instance_data)->child_id;
 }
 
-int NewPtrHandle(NaClSrpcChannel* channel, void* ptr) {
-  return GetLauncher(channel)->NewPtrHandle(GetChildId(channel), ptr);
+int NewHandle(NaClSrpcChannel* channel, HandledValue val) {
+  return GetLauncher(channel)->NewHandle(GetChildId(channel), val);
 }
 
 void CollectDesc(NaClSrpcChannel* channel, void* desc, enum CollectTag tag) {

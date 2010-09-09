@@ -23,6 +23,7 @@
  */
 #define open(...) nacl_open(__VA_ARGS__)
 #define opendir(...) nacl_opendir(__VA_ARGS__)
+#define close(...) nacl_close(__VA_ARGS__)
 #define closedir(...) nacl_closedir(__VA_ARGS__)
 #define readdir(...) nacl_readdir(__VA_ARGS__)
 

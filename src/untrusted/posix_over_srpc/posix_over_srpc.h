@@ -26,24 +26,62 @@ extern NaClSrpcChannel* up_channel;
  * Initial size of queue for posix calls requests.
  */
 #define INITIAL_QUEUE_SIZE 128
+#define INITIAL_FD_LIST_SIZE 128
 
 /*
  * This enum defines values for posix calls ids. Posix call id is field of
  * __psrpc_request_t structure.
  */
 enum posix_call_id {
+  PSRPC_ACCEPT,
+  PSRPC_BIND,
+  PSRPC_CLOSE,
   PSRPC_CLOSEDIR,
   PSRPC_GETCWD,
   PSRPC_GETPAGESIZE,
+  PSRPC_LISTEN,
   PSRPC_OPEN,
   PSRPC_OPENDIR,
   PSRPC_PATHCONF,
   PSRPC_PIPE,
   PSRPC_READDIR,
+  PSRPC_SETSOCKOPT,
+  PSRPC_SOCKET,
   PSRPC_TIMES,
 
   PSRPC_EXIT_HOOK
 };
+
+
+/*
+ * It is necessary to keep some security token (int value) with every opened
+ * socket file descriptor. This structure keeps these pairs.
+ */
+typedef struct {
+  int nacl_fd;
+  int key;
+} __psrpc_fd_info_t;
+
+/* This is table of all __psrpc_fd_info_t structures. */
+typedef struct {
+  __psrpc_fd_info_t* body;
+  int size;
+  int top;
+  pthread_mutex_t mu;
+} __psrpc_fd_list_t;
+
+extern __psrpc_fd_list_t __psrpc_fd_list;
+
+int __psrpc_fd_list_push(__psrpc_fd_list_t* fd_list, int nacl_fd, int key);
+int __psrpc_fd_list_get_key(__psrpc_fd_list_t* fd_list, int nacl_fd);
+int __psrpc_fd_list_remove(__psrpc_fd_list_t* fd_list, int nacl_fd);
+
+#define fd_list_push(nacl_fd, key)                                             \
+  __psrpc_fd_list_push(&__psrpc_fd_list, nacl_fd, key)
+#define fd_list_remove(nacl_fd)                                                \
+  __psrpc_fd_list_remove(&__psrpc_fd_list, nacl_fd)
+#define fd_list_get_key(nacl_fd)                                             \
+  __psrpc_fd_list_get_key(&__psrpc_fd_list, nacl_fd)
 
 /* Posix call request structure. */
 typedef struct {
@@ -60,7 +98,7 @@ typedef struct {
 } __psrpc_request_t;
 
 int __psrpc_request_create(__psrpc_request_t* request, int id);
-void __psrpc_request_destroy(__psrpc_request_t* request);
+int __psrpc_request_destroy(__psrpc_request_t* request);
 
 /* Simple queue on array. */
 typedef struct {
@@ -78,7 +116,7 @@ extern __psrpc_queue_t __psrpc_queue;
 
 int __psrpc_queue_empty(__psrpc_queue_t* queue);
 __psrpc_request_t* __psrpc_queue_pop(__psrpc_queue_t* queue);
-void __psrpc_queue_push(__psrpc_queue_t* queue, __psrpc_request_t* request);
+int __psrpc_queue_push(__psrpc_queue_t* queue, __psrpc_request_t* request);
 
 /*
  * Realizes logic of posix call on side of caller when request structure is

@@ -8,15 +8,21 @@ Import('env')
 if env['TARGET_PLATFORM'] != 'LINUX':
     Return()
 
-sources = ['closedir.cc',
+sources = ['accept.cc',
+           'bind.cc',
+           'close.cc',
+           'closedir.cc',
            'getcwd.cc',
            'getpagesize.cc',
+           'listen.cc',
            'open.cc',
            'opendir.cc',
            'pathconf.cc',
            'pipe.cc',
            'posix_over_srpc_linux.cc',
            'readdir.cc',
+           'setsockopt.cc',
+           'socket.cc',
            'times.cc',]
 
 env.ComponentLibrary('posix_over_srpc_linux', sources)

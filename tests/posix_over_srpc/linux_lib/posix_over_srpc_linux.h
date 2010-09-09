@@ -28,7 +28,7 @@ struct ChildContext {
 
 PosixOverSrpcLauncher* GetLauncher(NaClSrpcChannel* channel);
 int GetChildId(NaClSrpcChannel* channel);
-int NewPtrHandle(NaClSrpcChannel* channel, void* ptr);
+int NewHandle(NaClSrpcChannel* channel, HandledValue val);
 void CollectDesc(NaClSrpcChannel* channel, void* desc, enum CollectTag tag);
 void CloseUnusedDescs(NaClSrpcChannel* channel);
 nacl::DescWrapperFactory* DescFactory(NaClSrpcChannel* channel);
@@ -36,18 +36,37 @@ nacl::DescWrapperFactory* DescFactory(NaClSrpcChannel* channel);
 // These macros are just to reduce code replication in posix calls processing
 // methods.
 #define GET_VALID_PTR(handle, pptr)                                            \
-if (false == GetLauncher(channel)->PtrByHandle(                                \
+if (false == GetLauncher(channel)->ValueByHandle(                              \
         GetChildId(channel),                                                   \
         handle,                                                                \
-        reinterpret_cast<void**>(pptr))) {                                     \
+        reinterpret_cast<HandledValue*>(pptr))) {                              \
   return NACL_SRPC_RESULT_APP_ERROR;                                           \
 }
 
+#define GET_VALID_FD(handle, pfd)                                              \
+HandledValue __hidden_val__;                                                   \
+if (false == GetLauncher(channel)->ValueByHandle(                              \
+        GetChildId(channel),                                                   \
+        handle,                                                                \
+        &__hidden_val__)) {                                                    \
+  return NACL_SRPC_RESULT_APP_ERROR;                                           \
+}                                                                              \
+*pfd = __hidden_val__.ival;
+
+
+NaClSrpcError nonnacl_accept(NaClSrpcChannel* channel, NaClSrpcArg** ins,
+                             NaClSrpcArg** outs);
+NaClSrpcError nonnacl_bind(NaClSrpcChannel* channel, NaClSrpcArg** ins,
+                           NaClSrpcArg** outs);
+NaClSrpcError nonnacl_close(NaClSrpcChannel* channel, NaClSrpcArg** ins,
+                            NaClSrpcArg** outs);
 NaClSrpcError nonnacl_closedir(NaClSrpcChannel* channel, NaClSrpcArg** ins,
                                NaClSrpcArg** outs);
+NaClSrpcError nonnacl_getcwd(NaClSrpcChannel* channel, NaClSrpcArg** ins,
+                             NaClSrpcArg** outs);
 NaClSrpcError nonnacl_getpagesize(NaClSrpcChannel* channel, NaClSrpcArg** ins,
                                   NaClSrpcArg** outs);
-NaClSrpcError nonnacl_getcwd(NaClSrpcChannel* channel, NaClSrpcArg** ins,
+NaClSrpcError nonnacl_listen(NaClSrpcChannel* channel, NaClSrpcArg** ins,
                              NaClSrpcArg** outs);
 NaClSrpcError nonnacl_open(NaClSrpcChannel* channel, NaClSrpcArg** ins,
                            NaClSrpcArg** outs);
@@ -59,6 +78,10 @@ NaClSrpcError nonnacl_pipe(NaClSrpcChannel* channel, NaClSrpcArg** ins,
                            NaClSrpcArg** outs);
 NaClSrpcError nonnacl_readdir(NaClSrpcChannel* channel, NaClSrpcArg** ins,
                               NaClSrpcArg** outs);
+NaClSrpcError nonnacl_setsockopt(NaClSrpcChannel* channel, NaClSrpcArg** ins,
+                                 NaClSrpcArg** outs);
+NaClSrpcError nonnacl_socket(NaClSrpcChannel* channel, NaClSrpcArg** ins,
+                             NaClSrpcArg** outs);
 NaClSrpcError nonnacl_times(NaClSrpcChannel* channel, NaClSrpcArg** ins,
                             NaClSrpcArg** outs);
 
