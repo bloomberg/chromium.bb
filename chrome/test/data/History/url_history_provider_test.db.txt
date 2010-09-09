@@ -5,11 +5,11 @@
   CREATE TABLE urls(id INTEGER PRIMARY KEY,
                     url LONGVARCHAR,
                     title LONGVARCHAR,
-                    hidden INTEGER DEFAULT 0 NOT NULL,
-                    favicon_id INTEGER DEFAULT 0 NOT NULL,
-                    typed_count INTEGER DEFAULT 0 NOT NULL,
                     visit_count INTEGER DEFAULT 0 NOT NULL,
-                    last_visit_time INTEGER NOT NULL);
+                    typed_count INTEGER DEFAULT 0 NOT NULL,
+                    last_visit_time INTEGER NOT NULL,
+                    hidden INTEGER DEFAULT 0 NOT NULL,
+                    favicon_id INTEGER DEFAULT 0 NOT NULL);
 
   The quick history autocomplete provider filters out history items that:
     1) have not been visited in kLowQualityMatchAgeLimitInDays, AND
@@ -55,3 +55,7 @@ INSERT INTO "urls" VALUES(26,'http://www.codeproject.com/','Your Development Res
 INSERT INTO "urls" VALUES(27,'http://www.tomshardware.com/us/#redir','Tom''s Hardware: Hardware News, Tests and Reviews',6,6,0,0,65);
 INSERT INTO "urls" VALUES(28,'http://www.ddj.com/windows/184416623','Dr. Dobb''s | Avoiding the Visual C++ Runtime Library | 2 1, 2003',6,6,0,0,0);
 INSERT INTO "urls" VALUES(29,'http://svcs.cnn.com/weather/getForecast?time=34&mode=json_html&zipCode=336736767676&locCode=EGLL&celcius=true&csiID=csi2','',6,6,0,1,0);
+INSERT INTO "urls" VALUES(30,'http://www.drudgery.com/','Life in the Slow Lane',3,2,2,0,0);
+INSERT INTO "urls" VALUES(31,'http://www.redrudgerydo.com/','Music of the Wild Landscape',0,0,6,0,0);
+INSERT INTO "urls" VALUES(32,'http://NearlyPerfectResult.com/','Practically Perfect Search Result',99,99,0,0,0);
+INSERT INTO "urls" VALUES(33,'http://QuiteUselessSearchResultxyz.com/','Practically Useless Search Result',4,0,99,0,0);

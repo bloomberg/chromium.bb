@@ -109,6 +109,7 @@ TEST_F(InMemoryURLIndexTest, Construction) {
   EXPECT_TRUE(url_index_.get());
 }
 
+// TODO(mrossetti): Write python script to calculate the validation criteria.
 TEST_F(InMemoryURLIndexTest, Initialization) {
   // Verify that the database contains the expected number of items, which
   // is the pre-filtered count, i.e. all of the items.
@@ -116,21 +117,68 @@ TEST_F(InMemoryURLIndexTest, Initialization) {
   EXPECT_TRUE(statement);
   uint64 row_count = 0;
   while (statement.Step()) ++row_count;
-  EXPECT_EQ(29U, row_count);
+  EXPECT_EQ(33U, row_count);
   url_index_.reset(new InMemoryURLIndex);
   url_index_->Init(this, "en,ja,hi,zh");
 
-  // There should have been 25 of the 29 urls accepted during filtering.
-  EXPECT_EQ(25U, url_index_->history_item_count_);
+  // There should have been 27 of the 31 urls accepted during filtering.
+  EXPECT_EQ(28U, url_index_->history_item_count_);
 
   // history_info_map_ should have the same number of items as were filtered.
-  EXPECT_EQ(25U, url_index_->history_info_map_.size());
+  EXPECT_EQ(28U, url_index_->history_info_map_.size());
 
   // The resulting indexes should account for:
   //    37 characters
   //    88 words
   EXPECT_EQ(37U, url_index_->char_word_map_.size());
-  EXPECT_EQ(88U, url_index_->word_map_.size());
+  EXPECT_EQ(91U, url_index_->word_map_.size());
+}
+
+TEST_F(InMemoryURLIndexTest, Retrieval) {
+  url_index_.reset(new InMemoryURLIndex);
+  std::string languages("en,ja,hi,zh");
+  url_index_->Init(this, languages);
+  InMemoryURLIndex::String16Vector terms;
+  // The term will be lowercased by the search.
+
+  // See if a very specific term gives a single result.
+  string16 term = ASCIIToUTF16("DrudgeReport");
+  terms.push_back(term);
+  ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(terms);
+  EXPECT_EQ(1U, matches.size());
+
+  // Search which should result in multiple results.
+  terms.clear();
+  term = ASCIIToUTF16("drudge");
+  terms.push_back(term);
+  matches = url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(2U, matches.size());
+  // The results should be in descending score order.
+  EXPECT_GT(matches[0].raw_score, matches[1].raw_score);
+
+  // Search which should result in nearly perfect result.
+  terms.clear();
+  term = ASCIIToUTF16("http");
+  terms.push_back(term);
+  term = ASCIIToUTF16("NearlyPerfectResult");
+  terms.push_back(term);
+  matches = url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(1U, matches.size());
+  // The results should have a very high score.
+  EXPECT_GT(matches[0].raw_score, 900);
+
+  // Search which should result in very poor result.
+  terms.clear();
+  term = ASCIIToUTF16("z");
+  terms.push_back(term);
+  term = ASCIIToUTF16("y");
+  terms.push_back(term);
+  term = ASCIIToUTF16("x");
+  terms.push_back(term);
+  matches = url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(1U, matches.size());
+  // The results should have a poor score.
+  EXPECT_LT(matches[0].raw_score, 200);
 }
 
 }  // namespace history

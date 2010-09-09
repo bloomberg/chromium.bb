@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,7 @@ struct TestURLInfo {
   std::string title;
   int visit_count;
   int typed_count;
-};
-
-// Contents of the test database.
-static TestURLInfo test_db[] = {
+} test_db[] = {
   {"http://www.google.com/", "Google", 3, 3},
 
   // High-quality pages should get a host synthesized as a lower-quality match.

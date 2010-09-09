@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_H_
 #pragma once
 
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -27,6 +28,23 @@ class Time;
 namespace history {
 
 class URLDatabase;
+
+// Used for intermediate history result operations.
+struct ScoredHistoryMatch : public HistoryMatch {
+  // Required for STL, we don't use this directly.
+  ScoredHistoryMatch();
+
+  ScoredHistoryMatch(const URLRow& url_info,
+                     size_t input_location,
+                     bool match_in_scheme,
+                     bool innermost_match,
+                     int score);
+
+  // An interim score taking into consideration location and completeness
+  // of the match.
+  int raw_score;
+};
+typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -65,16 +83,18 @@ class InMemoryURLIndex {
   // history index and return a vector with all scored, matching history items.
   // Each term must occur somewhere in the history item for the item to
   // qualify; however, the terms do not necessarily have to be adjacent.
-  HistoryMatches HistoryItemsForTerms(const String16Vector& terms);
+  // Results are sorted with higher scoring items first.
+  ScoredHistoryMatches HistoryItemsForTerms(const String16Vector& terms);
 
   // Returns the date threshold for considering an history item as significant.
   static base::Time RecentThreshold();
 
  private:
+  friend class AddHistoryMatch;
   friend class InMemoryURLIndexTest;
   FRIEND_TEST(InMemoryURLIndexTest, Initialization);
 
-  // Convenience types
+  // Convenience types.
   typedef std::set<string16> String16Set;
   typedef std::set<char16> Char16Set;
 
@@ -103,6 +123,8 @@ class InMemoryURLIndex {
           word_id_set_(word_id_set),
           used_(used) {}
 
+    bool IsNotUsed() const { return !used_; }
+
     Char16Set char_set_;
     WordIDSet word_id_set_;
     bool used_;  // true if this set has been used for the current term search.
@@ -115,8 +137,33 @@ class InMemoryURLIndex {
   // A map from history_id to the history's URL and title.
   typedef std::map<HistoryID, URLRow> HistoryInfoMap;
 
+  // A helper class which performs the final filter on each candidate
+  // history URL match, inserting accepted matches into |scored_matches_|
+  // and trimming the maximum number of matches to 10.
+  class AddHistoryMatch : std::unary_function<HistoryID, void> {
+   public:
+    AddHistoryMatch(const InMemoryURLIndex& index,
+                    const String16Vector& lower_terms)
+        : index_(index),
+          lower_terms_(lower_terms) {}
+
+    void operator()(const HistoryID history_id);
+
+    ScoredHistoryMatches ScoredMatches() const { return scored_matches_; }
+
+   private:
+    const InMemoryURLIndex& index_;
+    ScoredHistoryMatches scored_matches_;
+    const String16Vector& lower_terms_;
+  };
+
   // Break a string down into individual words.
-  String16Set WordsFromString16(const string16& uni_string);
+  static String16Set WordSetFromString16(const string16& uni_string);
+
+  // Given a set of Char16s, find words containing those characters. If any
+  // existing, cached set is a proper subset then start with that cached
+  // set. Update the cache.
+  WordIDSet WordIDSetForTermChars(const Char16Set& uni_chars);
 
   // URL History indexing support functions.
 
@@ -144,6 +191,33 @@ class InMemoryURLIndex {
   // Create a new entry in the word/history map for |word_id| and add
   // |history_id| as the initial element of the word's set.
   void AddWordHistory(const string16& uni_word, HistoryID history_id);
+
+  // Clear the search term cache. This cache holds on to the intermediate
+  // word results for each previously typed character to eliminate the need
+  // to re-perform set operations for previously typed characters.
+  void ResetTermCharWordSetCache();
+
+  // Compose a set of history item IDs by intersecting the set for each word
+  // in |uni_string|.
+  HistoryIDSet HistoryIDSetFromWords(const string16& uni_string);
+
+  // Helper function to HistoryIDSetFromWords which composes a set of history
+  // ids for the given term given in |uni_word|.
+  HistoryIDSet HistoryIDsForTerm(const string16& uni_word);
+
+  // Calculate a raw score for this history item by first determining
+  // if all of the terms in |terms_vector| occur in |row| and, if so,
+  // calculating a raw score based on 1) starting position of each term
+  // in the user input, 2) completeness of each term's match, 3) ordering
+  // of the occurrence of each term (i.e. they appear in order), 4) last
+  // visit time, and 5) number of visits.
+  // This raw score allows the results to be ordered and can be used
+  // to influence the final score calculated by the client of this
+  // index. Return the starting location of the first term in
+  // |first_term_location|.
+  static int RawScoreForURL(const URLRow& row,
+                            const String16Vector& terms_vector,
+                            size_t* first_term_location);
 
   // A list of all of indexed words. The index of a word in this list is the
   // ID of the word in the word_map_. It reduces the memory overhead by
