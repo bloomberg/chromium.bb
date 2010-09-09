@@ -95,7 +95,8 @@ TEST_F(BrowserWindowControllerTest, TestFullScreenWindow) {
   EXPECT_TRUE([controller_ createFullscreenWindow]);
 }
 
-TEST_F(BrowserWindowControllerTest, TestNormal) {
+// Crashes: http://crbug.com/54945
+TEST_F(BrowserWindowControllerTest, DISABLED_TestNormal) {
   // Force the bookmark bar to be shown.
   browser_helper_.profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
