@@ -92,6 +92,8 @@ SkBitmap CGImageToSkBitmap(CGImageRef image) {
 
   scoped_ptr<skia::BitmapPlatformDevice> device(
       skia::BitmapPlatformDevice::Create(NULL, width, height, false));
+  if (!device.get())
+    return SkBitmap();
 
   CGContextRef context = device->GetBitmapContext();
 
