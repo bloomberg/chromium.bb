@@ -110,8 +110,6 @@ void GpuVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
       param.surface_type_ =
           GpuVideoDecoderInitDoneParam::SurfaceTypeSystemMemory;
       break;
-    case VideoFrame::TYPE_DIRECT3DSURFACE:
-    case VideoFrame::TYPE_EGL_IMAGE:
     default:
       NOTREACHED();
   }

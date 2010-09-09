@@ -110,7 +110,7 @@ void OmxVideoDecodeEngine::Initialize(
   info.success_ = true;
   info.provides_buffers_ = !uses_egl_image_;
   info.stream_info_.surface_type_ =
-      uses_egl_image_ ? VideoFrame::TYPE_EGL_IMAGE
+      uses_egl_image_ ? VideoFrame::TYPE_GL_TEXTURE
                       : VideoFrame::TYPE_SYSTEM_MEMORY;
   info.stream_info_.surface_format_ = GetSurfaceFormat();
   info.stream_info_.surface_width_ = config.width_;
@@ -919,7 +919,7 @@ scoped_refptr<VideoFrame> OmxVideoDecodeEngine::CreateOmxBufferVideoFrame(
   strides[1] = strides[2] = width_ >> 1;
 
   VideoFrame::CreateFrameExternal(
-      VideoFrame::TYPE_OMXBUFFERHEAD,
+      VideoFrame::TYPE_SYSTEM_MEMORY,
       VideoFrame::YV12,
       width_, height_, 3,
       data, strides,
@@ -1121,8 +1121,7 @@ void OmxVideoDecodeEngine::ChangePort(OMX_COMMANDTYPE cmd, int port_index) {
 OMX_BUFFERHEADERTYPE* OmxVideoDecodeEngine::FindOmxBuffer(
     scoped_refptr<VideoFrame> video_frame) {
   for (size_t i = 0; i < output_frames_.size(); ++i) {
-    scoped_refptr<VideoFrame> frame = output_frames_[i].first;
-    if (video_frame->private_buffer() == frame->private_buffer())
+    if (video_frame == output_frames_[i].first)
       return output_frames_[i].second;
   }
   return NULL;

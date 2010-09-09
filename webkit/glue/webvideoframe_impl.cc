@@ -42,10 +42,8 @@ COMPILE_ASSERT_MATCHING_ENUM(FormatEmpty, EMPTY);
 COMPILE_ASSERT_MATCHING_ENUM(FormatASCII, ASCII);
 
 COMPILE_ASSERT_MATCHING_ENUM(SurfaceTypeSystemMemory, TYPE_SYSTEM_MEMORY);
-COMPILE_ASSERT_MATCHING_ENUM(SurfaceTypeOMXBufferHead, TYPE_OMXBUFFERHEAD);
-COMPILE_ASSERT_MATCHING_ENUM(SurfaceTypeEGLImage, TYPE_EGL_IMAGE);
-COMPILE_ASSERT_MATCHING_ENUM(SurfaceTypeMFBuffer, TYPE_MFBUFFER);
-COMPILE_ASSERT_MATCHING_ENUM(SurfaceTypeDirect3DSurface, TYPE_DIRECT3DSURFACE);
+// TODO(hclam): Add checks for newly added surface types like GL texture and
+// D3D texture.
 
 WebVideoFrame::SurfaceType WebVideoFrameImpl::surfaceType() const {
   if (video_frame_.get())

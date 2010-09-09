@@ -181,8 +181,7 @@ void GlesVideoRenderer::Paint() {
   }
 
   if (uses_egl_image()) {
-    if (media::VideoFrame::TYPE_EGL_IMAGE == video_frame->type()) {
-
+    if (media::VideoFrame::TYPE_GL_TEXTURE == video_frame->type()) {
       GLuint texture = FindTexture(video_frame);
       if (texture) {
         glActiveTexture(GL_TEXTURE0);
@@ -438,7 +437,7 @@ void GlesVideoRenderer::CreateTextureAndProgramEgl() {
     memset(data, 0, sizeof(data));
     memset(strides, 0, sizeof(strides));
     media::VideoFrame:: CreateFrameExternal(
-        media::VideoFrame::TYPE_EGL_IMAGE,
+        media::VideoFrame::TYPE_GL_TEXTURE,
         media::VideoFrame::RGB565,
         width(), height(), 3,
         data, strides,
