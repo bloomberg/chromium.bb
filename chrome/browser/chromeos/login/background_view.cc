@@ -190,6 +190,16 @@ bool BackgroundView::ScreenSaverEnabled() {
   return background_area_ != NULL;
 }
 
+void BackgroundView::OnOwnerChanged() {
+  if (go_incognito_button_) {
+    // BackgroundView is passed among multiple controllers, so they should
+    // explicitly enable "Go incognito" button if needed.
+    RemoveChildView(go_incognito_button_);
+    delete go_incognito_button_;
+    go_incognito_button_ = NULL;
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BackgroundView protected:
 

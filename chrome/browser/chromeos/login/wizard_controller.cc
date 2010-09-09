@@ -338,6 +338,7 @@ void WizardController::OwnBackground(
   DCHECK(!background_widget_);
   background_widget_ = background_widget;
   background_view_ = background_view;
+  background_view_->OnOwnerChanged();
 }
 
 chromeos::NetworkScreen* WizardController::GetNetworkScreen() {

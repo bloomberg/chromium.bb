@@ -142,6 +142,7 @@ void ExistingUserController::OwnBackground(
   DCHECK(!background_window_);
   background_window_ = background_widget;
   background_view_ = background_view;
+  background_view_->OnOwnerChanged();
 }
 
 void ExistingUserController::LoginNewUser(const std::string& username,

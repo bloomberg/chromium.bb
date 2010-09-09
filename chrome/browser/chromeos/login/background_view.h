@@ -94,6 +94,9 @@ class BackgroundView : public views::View,
   // Tells if screen saver is enabled.
   bool ScreenSaverEnabled();
 
+  // Tells that owner has been changed.
+  void OnOwnerChanged();
+
  protected:
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
