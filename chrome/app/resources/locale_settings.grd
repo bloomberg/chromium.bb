@@ -170,6 +170,7 @@
   <release seq="1" allow_pseudo="false">
     <includes>
       <!-- The HTML for the about:terms page -->
+      <if expr="pp_ifdef('_google_chrome') and 'am' == lang"> <include name="IDR_TERMS_HTML" file="terms\terms_en.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'ar' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_ar.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'bg' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_bg.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'bn' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_bn.html" type="BINDATA" /></if>
@@ -212,6 +213,7 @@
       <if expr="pp_ifdef('_google_chrome') and 'sl' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_sl.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'sr' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_sr.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'sv' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_sv.html" type="BINDATA" /></if>
+      <if expr="pp_ifdef('_google_chrome') and 'sw' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_sw.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'ta' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_ta.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'te' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_te.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'th' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_th.html" type="BINDATA" /></if>
