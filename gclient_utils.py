@@ -314,6 +314,29 @@ class StdoutAutoFlush(object):
     self.stdout.flush()
 
 
+class StdoutAnnotated(object):
+  """Prepends every line with a string."""
+  def __init__(self, prepend, stdout):
+    self.prepend = prepend
+    self.buf = ''
+    self.stdout = stdout
+
+  def write(self, out):
+    self.buf += out
+    while '\n' in self.buf:
+      line, self.buf = self.buf.split('\n', 1)
+      self.stdout.write(self.prepend + line + '\n')
+
+  def flush(self):
+    pass
+
+  def full_flush(self):
+    if self.buf:
+      self.stdout.write(self.prepend + self.buf)
+      self.stdout.flush()
+      self.buf = ''
+
+
 def CheckCallAndFilter(args, stdout=None, filter_fn=None,
                        print_stdout=None, call_filter_on_first_line=False,
                        **kwargs):
@@ -569,7 +592,7 @@ class ExecutionQueue(object):
         self.running.append(t)
       else:
         t.join()
-        t.kwargs['options'].stdout.flush()
+        t.kwargs['options'].stdout.full_flush()
         if self.progress:
           self.progress.update(1)
         assert not t.name in self.ran
@@ -580,9 +603,11 @@ class ExecutionQueue(object):
     if self.jobs > 1:
       # Start the thread.
       index = len(self.ran) + len(self.running) + 1
-      # Copy 'options' just to be safe.
+      # Copy 'options' and add annotated stdout.
       task_kwargs = kwargs.copy()
       task_kwargs['options'] = copy.copy(task_kwargs['options'])
+      task_kwargs['options'].stdout = StdoutAnnotated(
+          '%d>' % index, task_kwargs['options'].stdout)
       new_thread = self._Worker(task_item, args, task_kwargs)
       self.running.append(new_thread)
       new_thread.start()
