@@ -42,6 +42,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                              int index);
   virtual void TabMiniStateChanged(TabContents* contents, int index);
   virtual void TabStripEmpty();
+  virtual void TabStripModelDeleted();
 
  private:
   id controller_;  // weak, owns me
@@ -72,6 +73,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
 - (void)tabMiniStateChangedWithContents:(TabContents*)contents
                                 atIndex:(NSInteger)index;
 - (void)tabStripEmpty;
+- (void)tabStripModelDeleted;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_STRIP_MODEL_OBSERVER_BRIDGE_H_

@@ -99,3 +99,8 @@ void TabStripModelObserverBridge::TabStripEmpty() {
   if ([controller_ respondsToSelector:@selector(tabStripEmpty)])
     [controller_ tabStripEmpty];
 }
+
+void TabStripModelObserverBridge::TabStripModelDeleted() {
+  if ([controller_ respondsToSelector:@selector(tabStripModelDeleted)])
+    [controller_ tabStripModelDeleted];
+}

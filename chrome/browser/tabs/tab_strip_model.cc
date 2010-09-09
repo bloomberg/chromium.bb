@@ -274,13 +274,14 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
   next_selected_index = IndexOfNextNonPhantomTab(next_selected_index, -1);
   if (!HasNonPhantomTabs())
     closing_all_ = true;
-  TabStripModelObservers::Iterator iter(observers_);
-  while (TabStripModelObserver* obs = iter.GetNext()) {
-    obs->TabDetachedAt(removed_contents, index);
-    if (!HasNonPhantomTabs())
-      obs->TabStripEmpty();
-  }
-  if (HasNonPhantomTabs()) {
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+      TabDetachedAt(removed_contents, index));
+  if (!HasNonPhantomTabs()) {
+    // TabDetachedAt() might unregister observers, so send |TabStripEmtpy()| in
+    // a second pass.
+    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+        TabStripEmpty());
+  } else {
     if (index == selected_index_) {
       ChangeSelectedContentsFrom(removed_contents, next_selected_index, false);
     } else if (index < selected_index_) {

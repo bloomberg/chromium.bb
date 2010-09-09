@@ -1681,23 +1681,3 @@
    fun:view_display_link
    fun:link_callback
 }
-{
-   bug_54342
-   Memcheck:Addr4
-   fun:_ZNK21RenderViewHostManager12current_hostEv
-   fun:_ZNK11TabContents16render_view_hostEv
-   fun:-[ThumbnailLayer drawInContext:]
-   fun:backing_callback
-   fun:CABackingStoreUpdate
-   fun:-[CALayer _display]
-   fun:CALayerDisplayIfNeeded
-   fun:CAContextCommitTransaction
-   fun:CATransactionCommit
-   fun:__CFRunLoopDoObservers
-   fun:CFRunLoopRunSpecific
-   fun:CFRunLoopRunInMode
-   fun:RunCurrentEventLoopInMode
-   fun:ReceiveNextEventCommon
-   fun:BlockUntilNextEventMatchingListInMode
-   fun:_DPSNextEvent
-}

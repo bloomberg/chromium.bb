@@ -988,6 +988,11 @@ void AnimateCALayerFrameFromTo(
 - (void)close {
   // Prevent parent window from disappearing.
   [[self parentWindow] removeChildWindow:self];
+
+  // We're dealloc'd in an autorelease pool – by then the observer registry
+  // might be dead, so explicitly reset the observer now.
+  tabStripModelObserverBridge_.reset();
+
   [super close];
 }
 
@@ -1006,10 +1011,6 @@ void AnimateCALayerFrameFromTo(
 
   state_ = tabpose::kFadingOut;
   [self setAcceptsMouseMovedEvents:NO];
-
-  // We're not interested in tab strip changes any more once the exit animation
-  // plays.
-  tabStripModelObserverBridge_.reset();
 
   // Select chosen tab.
   if (tileSet_->selected_index() < tabStripModel_->count()) {
@@ -1070,10 +1071,9 @@ void AnimateCALayerFrameFromTo(
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished {
   NSString* animationId = [animation valueForKey:kAnimationIdKey];
   if ([animationId isEqualToString:kAnimationIdFadeIn]) {
-    if (finished) {
+    if (finished && state_ == tabpose::kFadingIn) {
       // If the user clicks while the fade in animation is still running,
       // |state_| is already kFadingOut. In that case, don't do anything.
-      DCHECK_EQ(tabpose::kFadingIn, state_);
       state_ = tabpose::kFadedIn;
 
       selectionHighlight_.hidden = NO;
@@ -1253,6 +1253,10 @@ void AnimateCALayerFrameFromTo(
   tile.set_tab_contents(contents);
   ThumbnailLayer* thumbLayer = [allThumbnailLayers_ objectAtIndex:index];
   [thumbLayer setTabContents:contents];
+}
+
+- (void)tabStripModelDeleted {
+  [self close];
 }
 
 @end
