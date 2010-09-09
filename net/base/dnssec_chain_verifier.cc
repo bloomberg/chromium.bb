@@ -146,6 +146,7 @@ DNSSECChainVerifier::DNSSECChainVerifier(const std::string& target,
       chain_(chain),
       ignore_timestamps_(false),
       valid_(false),
+      already_entered_zone_(false),
       rrtype_(0) {
 }
 
@@ -184,9 +185,13 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::Verify() {
       break;
     }
 
-    err = EnterZone(next_name);
-    if (err != OK)
-      return err;
+    if (already_entered_zone_) {
+      already_entered_zone_ = false;
+    } else {
+      err = EnterZone(next_name);
+      if (err != OK)
+        return err;
+    }
   }
 
   return OK;
@@ -453,6 +458,19 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::EnterZone(
   return OK;
 }
 
+// CountLabels returns the number of DNS labels in |a|, which must be in DNS,
+// length-prefixed form.
+static unsigned CountLabels(base::StringPiece a) {
+  for (unsigned c = 0;; c++) {
+    if (!a.size())
+      return c;
+    uint8 label_len = a.data()[0];
+    a.remove_prefix(1);
+    DCHECK_GE(a.size(), label_len);
+    a.remove_prefix(label_len);
+  }
+}
+
 // LeaveZone transitions out of the current zone, either by following DS
 // records to validate the entry key of the next zone, or because the final
 // resource records are given.
@@ -472,10 +490,11 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::LeaveZone(
 
   if (rrtype == kDNS_DS) {
     err = ReadDSSet(&rrdatas, *next_name);
-  } else if (rrtype == kDNS_CERT) {
-    err = ReadCERTs(&rrdatas);
+  } else if (rrtype == kDNS_CERT || rrtype == kDNS_TXT) {
+    err = ReadGenericRRs(&rrdatas);
+  } else if (rrtype == kDNS_CNAME) {
+    err = ReadCNAME(&rrdatas);
   } else {
-    // TODO(agl): add CNAME support.
     return UNKNOWN_TERMINAL_RRTYPE;
   }
   if (err != OK)
@@ -491,7 +510,7 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::LeaveZone(
     // 'closer' to the target than the current zone.
     if (MatchingLabels(target_, *next_name) <= current_zone_->matching_labels)
       return OFF_COURSE;
-  } else if (rrtype == kDNS_CERT) {
+  } else if (rrtype == kDNS_CERT || rrtype == kDNS_TXT) {
     // If this is the final entry in the chain then the name must match target_
     if (next_name->size() != target_.size() ||
         memcmp(next_name->data(), target_.data(), target_.size())) {
@@ -500,6 +519,28 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::LeaveZone(
     rrdatas_ = rrdatas;
     valid_ = true;
     rrtype_ = rrtype;
+  } else if (rrtype == kDNS_CNAME) {
+    // A CNAME must match the current target. Then we update the current target
+    // and unwind the chain to the closest common ancestor.
+    if (next_name->size() != target_.size() ||
+        memcmp(next_name->data(), target_.data(), target_.size())) {
+      return BAD_TARGET;
+    }
+    DCHECK_EQ(1u, rrdatas.size());
+    target_ = rrdatas[0].as_string();
+    // We unwind the zones until the current zone is a (non-strict) subset of
+    // the new target.
+    while (MatchingLabels(target_, current_zone_->name) <
+           CountLabels(current_zone_->name)) {
+      Zone* prev = current_zone_->prev;
+      delete current_zone_;
+      current_zone_ = prev;
+      if (!current_zone_) {
+        NOTREACHED();
+        return BAD_DATA;
+      }
+    }
+    already_entered_zone_ = true;
   } else {
     NOTREACHED();
     return UNKNOWN_TERMINAL_RRTYPE;
@@ -581,20 +622,31 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::ReadDSSet(
   return OK;
 }
 
-DNSSECChainVerifier::Error DNSSECChainVerifier::ReadCERTs(
+DNSSECChainVerifier::Error DNSSECChainVerifier::ReadGenericRRs(
     std::vector<base::StringPiece>* rrdatas) {
-  uint8 num_certs;
-  if (!U8(&num_certs))
+  uint8 num_rrs;
+  if (!U8(&num_rrs))
     return BAD_DATA;
-  rrdatas->resize(num_certs);
+  rrdatas->resize(num_rrs);
 
-  for (unsigned i = 0; i < num_certs; i++) {
+  for (unsigned i = 0; i < num_rrs; i++) {
     base::StringPiece rrdata;
     if (!VariableLength16(&rrdata))
       return BAD_DATA;
     (*rrdatas)[i] = rrdata;
   }
 
+  return OK;
+}
+
+DNSSECChainVerifier::Error DNSSECChainVerifier::ReadCNAME(
+    std::vector<base::StringPiece>* rrdatas) {
+  base::StringPiece name;
+  if (!ReadName(&name))
+    return BAD_DATA;
+
+  rrdatas->resize(1);
+  (*rrdatas)[0] = name;
   return OK;
 }
 
@@ -685,19 +737,6 @@ DNSSECChainVerifier::ParseTLSTXTRecord(base::StringPiece rrdata) {
 
   ret.swap(m);
   return ret;
-}
-
-// CountLabels returns the number of DNS labels in |a|, which must be in DNS,
-// length-prefixed form.
-static unsigned CountLabels(base::StringPiece a) {
-  for (unsigned c = 0;; c++) {
-    if (!a.size())
-      return c;
-    uint8 label_len = a.data()[0];
-    a.remove_prefix(1);
-    DCHECK_GE(a.size(), label_len);
-    a.remove_prefix(label_len);
-  }
 }
 
 // RemoveLeadingLabel removes the first label from |a|, which must be in DNS,

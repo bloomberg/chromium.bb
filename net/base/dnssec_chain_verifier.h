@@ -96,14 +96,17 @@ class DNSSECChainVerifier {
   Error LeaveZone(base::StringPiece* next_name);
   Error ReadDSSet(std::vector<base::StringPiece>*,
                   const base::StringPiece& next_name);
-  Error ReadCERTs(std::vector<base::StringPiece>*);
-
+  Error ReadGenericRRs(std::vector<base::StringPiece>*);
+  Error ReadCNAME(std::vector<base::StringPiece>*);
 
   Zone* current_zone_;
-  const std::string target_;
+  std::string target_;
   base::StringPiece chain_;
   bool ignore_timestamps_;
   bool valid_;
+  // already_entered_zone_ is set to true when we unwind a Zone chain and start
+  // off from a point where we have already entered a zone.
+  bool already_entered_zone_;
   uint16 rrtype_;
   std::vector<base::StringPiece> rrdatas_;
   // A list of pointers which need to be free()ed on destruction.
