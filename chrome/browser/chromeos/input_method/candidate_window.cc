@@ -983,6 +983,16 @@ void CandidateWindowController::OnSetCursorLocation(
   CandidateWindowController* controller =
       static_cast<CandidateWindowController*>(input_method_library);
 
+  // A workaround for http://crosbug.com/6460. We should ignore very short Y
+  // move to prevent the window from shaking up and down.
+  const int kKeepPositionThreshold = 2;  // px
+  const gfx::Rect& last_location = controller->cursor_location();
+  const int delta_y = abs(last_location.y() - y);
+  if ((last_location.x() == x) && (delta_y <= kKeepPositionThreshold)) {
+    DLOG(INFO) << "Ignored set_cursor_location signal to prevent window shake";
+    return;
+  }
+
   // Remember the cursor location.
   controller->set_cursor_location(gfx::Rect(x, y, width, height));
   // Move the window per the cursor location.
