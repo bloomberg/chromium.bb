@@ -140,7 +140,7 @@ static void FixAddress(void *obj_base) {
     sections[i].sh_offset += base;
 }
 
-// Find the prefered loading address of the binary.
+// Find the preferred loading address of the binary.
 static ElfW(Addr) GetLoadingAddress(const ElfW(Phdr) *program_headers,
                                     int nheader) {
   for (int i = 0; i < nheader; ++i) {
@@ -466,7 +466,7 @@ class LoadSymbolsInfo {
     }
   }
 
-  // We expect the ELF file and linked debug file to have the same prefered
+  // We expect the ELF file and linked debug file to have the same preferred
   // loading address.
   void set_loading_addr(ElfW(Addr) addr, const std::string &filename) {
     if (!has_loading_addr_) {
@@ -503,7 +503,7 @@ class LoadSymbolsInfo {
 
   bool has_loading_addr_;  // Indicate if LOADING_ADDR_ is valid.
 
-  ElfW(Addr) loading_addr_;  // Saves the prefered loading address from the
+  ElfW(Addr) loading_addr_;  // Saves the preferred loading address from the
                              // first call to LoadSymbols().
 
   std::string loaded_file_;  // Name of the file loaded from the first call to

@@ -105,7 +105,7 @@ class ExceptionHandler {
 
   // In certain cases, a user may wish to handle the generation of the minidump
   // themselves. In this case, they can install a handler callback which is
-  // called when a crash has occured. If this function returns true, no other
+  // called when a crash has occurred. If this function returns true, no other
   // processing of occurs and the process will shortly be crashed. If this
   // returns false, the normal processing continues.
   typedef bool (*HandlerCallback)(const void* crash_context,

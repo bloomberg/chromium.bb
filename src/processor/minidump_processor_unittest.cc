@@ -189,7 +189,7 @@ TEST_F(MinidumpProcessorTest, TestCorruptMinidumps) {
   MinidumpProcessor processor(&supplier, &resolver);
   ProcessState state;
 
-  EXPECT_EQ(processor.Process("nonexistant minidump", &state),
+  EXPECT_EQ(processor.Process("nonexistent minidump", &state),
             google_breakpad::PROCESS_ERROR_MINIDUMP_NOT_FOUND);
 
   EXPECT_CALL(dump, path()).WillRepeatedly(Return("mock minidump"));
