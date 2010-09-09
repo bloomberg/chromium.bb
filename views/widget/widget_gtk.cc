@@ -1432,6 +1432,17 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       gtk_window_set_transient_for(GTK_WINDOW(widget_), GTK_WINDOW(parent));
     GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
 
+    // Gtk determines the size for windows based on the requested size of the
+    // child. For WidgetGtk the child is a fixed. If the fixed ends up with a
+    // child widget it's possible the child widget will drive the requested size
+    // of the widget, which we don't want. We explicitly set a value of 1x1 here
+    // so that gtk doesn't attempt to resize the window if we end up with a
+    // situation where the requested size of a child of the fixed is greater
+    // than the size of the window. By setting the size in this manner we're
+    // also allowing users of WidgetGtk to change the requested size at any
+    // time.
+    gtk_widget_set_size_request(widget_, 1, 1);
+
     if (!bounds.size().IsEmpty()) {
       // When we realize the window, the window manager is given a size. If we
       // don't specify a size before then GTK defaults to 200x200. Specify
