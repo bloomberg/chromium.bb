@@ -14,6 +14,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator_x86/defsize64.h"
 #include "native_client/src/trusted/validator_x86/lock_insts.h"
 #include "native_client/src/trusted/validator_x86/nacl_illegal.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
@@ -181,6 +182,7 @@ static NaClOpFlags NaClGetIcatFlags(NaClInstCat icat,
 static void NaClAddMiscellaneousFlags() {
   NaClAddZeroExtend32FlagIfApplicable();
   NaClLockableFlagIfApplicable();
+  NaClAddSizeDefaultIs64();
   NaClAddNaClIllegalIfApplicable();
 }
 

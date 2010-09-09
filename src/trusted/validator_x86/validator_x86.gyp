@@ -379,6 +379,7 @@
       'sources': ['ncdecode_tablegen.c',
                   'ncdecode_forms.c',
                   'zero_extends.c',
+                  'defsize64.c',
                   'nacl_illegal.c',
                   'lock_insts.c',
                   'ncdecode_onebyte.c',

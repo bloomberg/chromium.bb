@@ -577,11 +577,19 @@ static void NaClCheckIfIRepeated(int index) {
 }
 
 /* Returns the set of operand size flags defined for the given instruction. */
-static NaClIFlags NaClOperandSizes(NaClInst* inst) {
-  return inst->flags & (NACL_IFLAG(OperandSize_b) |
-                        NACL_IFLAG(OperandSize_w) |
-                        NACL_IFLAG(OperandSize_v) |
-                        NACL_IFLAG(OperandSize_o));
+NaClIFlags NaClOperandSizes(NaClInst* inst) {
+  NaClIFlags flags = inst->flags & (NACL_IFLAG(OperandSize_b) |
+                                    NACL_IFLAG(OperandSize_w) |
+                                    NACL_IFLAG(OperandSize_v) |
+                                    NACL_IFLAG(OperandSize_o));
+  /* Note: if no sizes specified, assume all sizes possible. */
+  if (NACL_EMPTY_IFLAGS == flags) {
+    flags = NACL_IFLAG(OperandSize_b) |
+        NACL_IFLAG(OperandSize_w) |
+        NACL_IFLAG(OperandSize_v) |
+        NACL_IFLAG(OperandSize_o);
+  }
+  return flags;
 }
 
 /* Check that the operand being defined (via the given index), does not

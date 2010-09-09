@@ -171,6 +171,9 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags);
  */
 void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags flags);
 
+/* Returns the set of operand size flags defined for the given instruction. */
+NaClIFlags NaClOperandSizes(NaClInst* inst);
+
 /* Defines one byte opcodes. */
 void NaClDefOneByteInsts();
 
