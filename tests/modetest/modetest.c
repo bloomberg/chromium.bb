@@ -354,37 +354,40 @@ connector_find_mode(struct connector *c)
 		c->crtc = c->encoder->crtc_id;
 }
 
-#ifdef HAVE_CAIRO
-
-static int
-create_test_buffer(drm_intel_bufmgr *bufmgr,
-		   int width, int height, int *stride_out, drm_intel_bo **bo_out)
+static drm_intel_bo *
+allocate_buffer(drm_intel_bufmgr *bufmgr,
+		int width, int height, int *stride)
 {
-	drm_intel_bo *bo;
-	unsigned int *fb_ptr;
-	int size, i, stride;
-	div_t d;
+	int size;
+
+	/* Scan-out has a 64 byte alignment restriction */
+	size = (width + 63) & -64;
+	*stride = size;
+	size *= height;
+
+	return drm_intel_bo_alloc(bufmgr, "frontbuffer", size, 0);
+}
+
+static void
+make_pwetty(drm_intel_bo *bo, int width, int height, int stride)
+{
+#ifdef HAVE_CAIRO
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	char buf[64];
 	int x, y;
 
-	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-	stride = cairo_image_surface_get_stride(surface);
-	size = stride * height;
-	fb_ptr = (unsigned int *) cairo_image_surface_get_data(surface);
-
-	/* paint the buffer with colored tiles */
-	for (i = 0; i < width * height; i++) {
-		d = div(i, width);
-		fb_ptr[i] = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
-	}
-
+	surface = cairo_image_surface_create_for_data(bo->virtual,
+						      CAIRO_FORMAT_ARGB32,
+						      width, height,
+						      stride);
 	cr = cairo_create(surface);
+	cairo_surface_destroy(surface);
+
 	cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
 	for (x = 0; x < width; x += 250)
 		for (y = 0; y < height; y += 250) {
-			cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+			char buf[64];
+
 			cairo_move_to(cr, x, y - 20);
 			cairo_line_to(cr, x, y + 20);
 			cairo_move_to(cr, x - 20, y);
@@ -397,6 +400,7 @@ create_test_buffer(drm_intel_bufmgr *bufmgr,
 			cairo_set_source_rgb(cr, 1, 1, 1);
 			cairo_set_line_width(cr, 2);
 			cairo_stroke(cr);
+
 			snprintf(buf, sizeof buf, "%d, %d", x, y);
 			cairo_move_to(cr, x + 20, y + 20);
 			cairo_text_path(cr, buf);
@@ -407,41 +411,17 @@ create_test_buffer(drm_intel_bufmgr *bufmgr,
 		}
 
 	cairo_destroy(cr);
-
-	bo = drm_intel_bo_alloc(bufmgr, "frontbuffer", size, 4096);
-	if (!bo) {
-		fprintf(stderr, "failed to alloc buffer: %s\n",
-			strerror(errno));
-		return -1;
-	}
-
-	drm_intel_bo_subdata(bo, 0, size, fb_ptr);
-
-	cairo_surface_destroy(surface);
-
-	*bo_out = bo;
-	*stride_out = stride;
-
-	return 0;
+#endif
 }
-
-#else
 
 static int
 create_test_buffer(drm_intel_bufmgr *bufmgr,
 		   int width, int height, int *stride_out, drm_intel_bo **bo_out)
 {
 	drm_intel_bo *bo;
-	unsigned int *fb_ptr;
-	int size, ret, i, stride;
-	div_t d;
+	int ret, i, j, stride;
 
-	/* Mode size at 32 bpp */
-	stride = width * 4;
-	stride = (stride + 63) & ~63;
-	size = stride * height;
-
-	bo = drm_intel_bo_alloc(bufmgr, "frontbuffer", size, 4096);
+	bo = allocate_buffer(bufmgr, width, height, &stride);
 	if (!bo) {
 		fprintf(stderr, "failed to alloc buffer: %s\n",
 			strerror(errno));
@@ -455,22 +435,25 @@ create_test_buffer(drm_intel_bufmgr *bufmgr,
 		return -1;
 	}
 
-	fb_ptr = bo->virtual;
-
 	/* paint the buffer with colored tiles */
-	for (i = 0; i < width * height; i++) {
-		d = div(i, width);
-		fb_ptr[i] = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
+	for (j = 0; j < height; j++) {
+		uint32_t *fb_ptr = (uint32_t*)((char*)bo->virtual + j * stride);
+		for (i = 0; i < width; i++) {
+			div_t d = div(i, width);
+			fb_ptr[i] =
+				0x00130502 * (d.quot >> 6) +
+				0x000a1120 * (d.rem >> 6);
+		}
 	}
+
+	make_pwetty(bo, width, height, stride);
+
 	drm_intel_gem_bo_unmap_gtt(bo);
 
 	*bo_out = bo;
 	*stride_out = stride;
-
 	return 0;
 }
-
-#endif
 
 static int
 create_grey_buffer(drm_intel_bufmgr *bufmgr,
