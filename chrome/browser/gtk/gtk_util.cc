@@ -1066,4 +1066,9 @@ bool IsWidgetAncestryVisible(GtkWidget* widget) {
   return !parent;
 }
 
+void SetGtkFont(const std::string& font_name) {
+  g_object_set(gtk_settings_get_default(),
+               "gtk-font-name", font_name.c_str(), NULL);
+}
+
 }  // namespace gtk_util

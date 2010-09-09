@@ -66,6 +66,10 @@ def calc_inputs(locale):
   inputs.append('%s/app/app_strings/app_strings_%s.pak' % (
       SHARE_INT_DIR, locale))
 
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/app/app_locale_settings_da.pak',
+  inputs.append('%s/app/app_locale_settings/app_locale_settings_%s.pak' % (
+      SHARE_INT_DIR, locale))
+
   #e.g. '<(grit_out_dir)/google_chrome_strings_da.pak'
   #     or
   #     '<(grit_out_dir)/chromium_strings_da.pak'

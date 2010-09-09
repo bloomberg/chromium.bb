@@ -319,6 +319,9 @@ string16 GetStockPreferencesMenuLabel();
 // ancestors up to its toplevel are visible.
 bool IsWidgetAncestryVisible(GtkWidget* widget);
 
+// Sets the GTK font from the given font name (ex. "Arial Black, 10").
+void SetGtkFont(const std::string& font_name);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_

@@ -112,6 +112,9 @@
             ['use_titlecase_in_grd_files==1', {
               'action': ['-D', 'use_titlecase'],
             }],
+            ['chromeos==1', {
+              'action': ['-D', 'chromeos'],
+            }],
           ],
         },
       ],

@@ -723,6 +723,21 @@ int GetMinimumFontSize() {
   return min_font_size;
 }
 
+#elif defined(OS_CHROMEOS)
+// Changes the UI font if non-default font name is specified in
+// IDS_UI_FONT_FAMILY_CROS. This is necessary as the default font
+// specified in /etc/gtk-2.0/gtrkc may not work well for some languages
+// For instance, ChromeDroidSans does not work well for Japanese users,
+// since Chinese glyphs are used for Kanji characters.
+void MaybeChangeUIFont() {
+  const std::string font_name =
+      l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS);
+  // The font name should not be empty here, but just in case.
+  if (font_name == "default" || font_name.empty()) {
+    return;
+  }
+  gtk_util::SetGtkFont(font_name);
+}
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -1072,6 +1087,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_CHROMEOS)
   // Now that the file thread exists we can record our stats.
   chromeos::BootTimesLoader::Get()->RecordChromeMainStats();
+  // Change the UI font if necessary. This has to be done after
+  // InitSharedInstance() is called, as it depends on resource data.
+  MaybeChangeUIFont();
 #endif
 
   // Record last shutdown time into a histogram.
