@@ -36,16 +36,11 @@
 
 #include <cairo.h>
 #include <build/build_config.h>
-#include <list>
 #include <vector>
 #include "core/cross/renderer_platform.h"
 #include "core/cross/renderer.h"
 
 namespace o3d {
-
-namespace o2d {
-
-class Layer;
 
 class RendererCairo : public Renderer {
  public:
@@ -65,14 +60,12 @@ class RendererCairo : public Renderer {
   // Released all hardware resources.
   virtual void Destroy();
 
+  // set the image surface used to render images to the main surface.
+  void SetNewFrame(const void* src_data, unsigned src_width,
+                   unsigned src_height, int src_pitch);
+
   // Paint the frame to the main view
   void Paint();
-
-  // Insert the given Layer to the back of the array.
-  void AddLayer(Layer* image);
-
-  // Remove the given Layer from the array.
-  void RemoveLayer(Layer* image);
 
   // Handles the plugin resize event.
   virtual void Resize(int width, int height);
@@ -145,15 +138,9 @@ class RendererCairo : public Renderer {
   // current platform.
   virtual const int* GetRGBAUByteNSwizzleTable();
 
-  // Overriden from Renderer
   void PushRenderStates(State* state);
 
-  // Overrider from Renderer
-  void PopRenderStates();
-
  protected:
-  typedef std::list<Layer*> LayerRefList;
-
   // Keep the constructor protected so only factory methods can create
   // renderers.
   explicit RendererCairo(ServiceLocator* service_locator);
@@ -218,13 +205,6 @@ class RendererCairo : public Renderer {
                                    float min_z,
                                    float max_z);
 
-  // Mask the area of the current layer that will collide with other images.
-  void MaskArea(cairo_t* cr,  LayerRefList::iterator it);
-
-  // Paint the background with black color.
-  // TODO(fransiskusx): Support changing the background color.
-  void PaintBackground(cairo_t* cr);
-
   // Linux Client Display
   Display* display_;
   // Linux Client Window
@@ -233,15 +213,17 @@ class RendererCairo : public Renderer {
   // Main surface to render cairo
   cairo_surface_t* main_surface_;
 
-  // Draw the background
-  cairo_t* bg_drawing_;
-
-  // Array of Layer
-  LayerRefList layer_list_;
+  // Current Frame Data Source
+  const void* frame_src_data_;
+  // Current Frame Source Width
+  unsigned frame_src_width_;
+  // Current Frame Source Height
+  unsigned frame_src_height_;
+  // Current Frame Source Pitch
+  int frame_src_pitch_;
 };
-
-}  // namespace o2d
 
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_CAIRO_RENDERER_CAIRO_H_
+

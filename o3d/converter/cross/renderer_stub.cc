@@ -211,4 +211,10 @@ const int* RendererStub::GetRGBAUByteNSwizzleTable() {
   return swizzle_table;
 }
 
+// This is a factory function for creating Renderer objects.  Since
+// we're implementing a stub renderer, we only ever return a stub renderer.
+Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
+  return RendererStub::CreateDefault(service_locator);
+}
+
 }  // namespace o3d

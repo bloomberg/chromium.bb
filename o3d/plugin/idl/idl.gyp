@@ -13,15 +13,6 @@
     'idl_files': [
       '<!@(python get_idl_files.py)',
     ],
-    'conditions': [
-      ['renderer == "cairo"',
-        {
-          'idl_files': [
-            'layer.idl',
-          ],
-        },
-      ],
-    ],
   },
   'target_defaults': {
     'include_dirs': [

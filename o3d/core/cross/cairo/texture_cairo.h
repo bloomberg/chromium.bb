@@ -40,8 +40,6 @@
 
 namespace o3d {
 
-namespace o2d {
-
 class RendererCairo;
 
 // Texture2DCairo implements the Texture2D interface.
@@ -74,30 +72,6 @@ class TextureCairo : public Texture2D {
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
 
-  const void* GetData() {
-    return data_;
-  }
-
-  unsigned GetOriginX() {
-    return left_;
-  }
-
-  unsigned GetOriginY() {
-    return top_;
-  }
-
-  unsigned GetWidth() {
-    return width_;
-  }
-
-  unsigned GetHeight() {
-    return height_;
-  }
-
-  int GetPitch() {
-    return pitch_;
-  }
-
  protected:
   // Overridden from Texture2D
   virtual bool PlatformSpecificLock(int level, void** texture_data, int* pitch,
@@ -112,21 +86,8 @@ class TextureCairo : public Texture2D {
   // Returns the implementation-specific texture handle for this texture.
   virtual void* GetTextureHandle() const;
 
-  // The 2d renderer object to be used by client.
+  // The 2d renderer object to be used by client
   RendererCairo* renderer_;
-
-  // Current Frame Data Source
-  const void* data_;
-  // X coordinate
-  unsigned left_;
-  // Y coordinate
-  unsigned top_;
-  // Current Frame Source Width
-  unsigned width_;
-  // Current Frame Source Height
-  unsigned height_;
-  // Current Frame Source Pitch
-  int pitch_;
 
  private:
   // Initializes the Texture2D.
@@ -138,8 +99,7 @@ class TextureCairo : public Texture2D {
                bool enable_render_surfaces);
 };
 
-}  // namespace o2d
-
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_CAIRO_TEXTURE_CAIRO_H_
+

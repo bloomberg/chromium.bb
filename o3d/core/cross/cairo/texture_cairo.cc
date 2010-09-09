@@ -44,8 +44,6 @@ Texture::RGBASwizzleIndices g_gl_abgr32f_swizzle_indices = {0, 1, 2, 3};
 
 }  // anonymous namespace.
 
-namespace o2d {
-
 TextureCairo::TextureCairo(ServiceLocator* service_locator,
                            Texture::Format format,
                            int levels,
@@ -59,8 +57,7 @@ TextureCairo::TextureCairo(ServiceLocator* service_locator,
                 levels,
                 enable_render_surfaces),
       renderer_(static_cast<RendererCairo*>(
-          service_locator->GetService<Renderer>())),
-      data_(NULL), left_(0), top_(0), width_(0), height_(0), pitch_(0) {
+          service_locator->GetService<Renderer>())) {
   DLOG(INFO) << "Texture2D Construct";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
 }
@@ -72,6 +69,7 @@ TextureCairo* TextureCairo::Create(ServiceLocator* service_locator,
                                    int width,
                                    int height,
                                    bool enable_render_surfaces) {
+  DLOG(INFO) << "Texture2DCairo Create";
   TextureCairo* texture = new TextureCairo(service_locator,
                                            format,
                                            levels,
@@ -88,7 +86,6 @@ const Texture::RGBASwizzleIndices& TextureCairo::GetABGR32FSwizzleIndices() {
 }
 
 TextureCairo::~TextureCairo() {
-  renderer_ = NULL;
   DLOG(INFO) << "Texture2DCairo Destruct";
 }
 
@@ -102,12 +99,9 @@ void TextureCairo::SetRect(int level,
                            int src_pitch) {
   DLOG(INFO) << "Texture2DCairo SetRect";
 
-  data_ = src_data;
-  left_ = dst_left;
-  top_ = dst_top;
-  width_ = src_width;
-  height_ = src_height;
-  pitch_ = src_pitch;
+  renderer_->SetNewFrame(src_data,
+                         src_width, src_height,
+                         src_pitch);
 }
 
 // Locks the given mipmap level of this texture for loading from main memory,
@@ -141,6 +135,5 @@ void* TextureCairo::GetTextureHandle() const {
   return reinterpret_cast<void*>(NULL);
 }
 
-}  // namespace o2d
-
 }  // namespace o3d
+

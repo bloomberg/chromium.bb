@@ -66,7 +66,6 @@
 #include "core/cross/transform.h"
 #include "core/cross/tree_traversal.h"
 #include "core/cross/viewport.h"
-#include "core/cross/cairo/layer.h"
 
 namespace o3d {
 
@@ -179,11 +178,6 @@ ClassManager::ClassManager(ServiceLocator* service_locator)
   AddTypedClass<TreeTraversal>();
   AddTypedClass<VertexBuffer>();
   AddTypedClass<Viewport>();
-
-  // Specific Objects for Cairo
-#if defined(RENDERER_CAIRO)
-  AddTypedClass<o2d::Layer>();
-#endif
 }
 
 void ClassManager::AddClass(const ObjectBase::Class* object_class,
