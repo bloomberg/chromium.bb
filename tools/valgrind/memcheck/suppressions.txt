@@ -4290,3 +4290,10 @@
    fun:_ZN14RenderViewTest20SimulateElementClickERKSs
    fun:_ZN36RenderViewTest_PageClickTracker_Test8TestBodyEv
 }
+{
+   bug_54915
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12browser_sync7ChannelINS_11SyncerEventEE11AddObserverEPNS_19ChannelEventHandlerIS1_EE
+   fun:_ZN12browser_sync54ClearDataCommandTest_ClearDataCommandExpectSucess_Test8TestBodyEv
+}
