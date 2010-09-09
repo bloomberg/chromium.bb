@@ -15,16 +15,6 @@ using WebKit::WebBlobData;
 using WebKit::WebData;
 using WebKit::WebString;
 
-namespace {
-
-// Time::FromDoubleT() does not return empty Time object when dt is 0.
-// We have to work around this problem here.
-base::Time DoubleTToTime(double dt) {
-  return dt ? base::Time::FromDoubleT(dt) : base::Time();
-}
-
-}
-
 namespace webkit_blob {
 
 BlobData::BlobData(const WebBlobData& data) {
@@ -44,7 +34,7 @@ BlobData::BlobData(const WebBlobData& data) {
             webkit_glue::WebStringToFilePath(item.filePath),
             static_cast<uint64>(item.offset),
             static_cast<uint64>(item.length),
-            DoubleTToTime(item.expectedModificationTime));
+            base::Time::FromDoubleT(item.expectedModificationTime));
         break;
       case WebBlobData::Item::TypeBlob:
         if (item.length) {
