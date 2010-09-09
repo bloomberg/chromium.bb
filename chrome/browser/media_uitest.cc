@@ -53,15 +53,18 @@ TEST_F(MediaTest, DISABLED_VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
 
-TEST_F(MediaTest, VideoBearSilentTheora) {
+// Crashes, see http://crbug.com/54939
+TEST_F(MediaTest, DISABLED_VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv");
 }
 
-TEST_F(MediaTest, VideoBearWebm) {
+// Crashes, see http://crbug.com/54939
+TEST_F(MediaTest, DISABLED_VideoBearWebm) {
   PlayVideo("bear.webm");
 }
 
-TEST_F(MediaTest, VideoBearSilentWebm) {
+// Crashes, see http://crbug.com/54939
+TEST_F(MediaTest, DISABLED_VideoBearSilentWebm) {
   PlayVideo("bear_silent.webm");
 }
 
@@ -75,7 +78,8 @@ TEST_F(MediaTest, VideoBearSilentMp4) {
 }
 #endif
 
-TEST_F(UILayoutTest, MediaUILayoutTest) {
+// Crashes, see http://crbug.com/54939
+TEST_F(UILayoutTest, DISABLED_MediaUILayoutTest) {
   static const char* kResources[] = {
     "content",
     "media-file.js",
