@@ -21,8 +21,6 @@ namespace plugin {
 
 nacl::string NameAsString(const pp::Var& name);
 
-nacl::string VarToString(const pp::Var& var);
-
 bool PPVarToAllocateNaClSrpcArg(const pp::Var& var,
                                 NaClSrpcArg* arg,
                                 pp::Var* exception);

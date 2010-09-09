@@ -79,10 +79,10 @@ bool BrowserInterfacePpapi::GetFullURL(InstanceIdentifier instance_id,
   *full_url = kUnknownURL;
   pp::Var location = GetWindow(instance_id).GetProperty("location");
   PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (location=%s)\n",
-                 VarToString(location).c_str()));
+                 location.DebugString().c_str()));
   pp::Var href = location.GetProperty("href");
   PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (href=%s)\n",
-                 VarToString(href).c_str()));
+                 href.DebugString().c_str()));
   if (href.is_string()) {
     *full_url = href.AsString();
   }

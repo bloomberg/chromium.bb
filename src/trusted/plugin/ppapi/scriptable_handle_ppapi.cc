@@ -74,7 +74,7 @@ bool ScriptableHandlePpapi::HasCallType(CallType call_type,
 bool ScriptableHandlePpapi::HasProperty(const pp::Var& name,
                                         pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::HasProperty (this=%p, name=%s)\n",
-                 static_cast<void*>(this), VarToString(name).c_str()));
+                 static_cast<void*>(this), name.DebugString().c_str()));
   assert(name.is_string() || name.is_int());
   UNREFERENCED_PARAMETER(exception);
   return HasCallType(PROPERTY_GET, NameAsString(name), "HasProperty");
@@ -84,7 +84,7 @@ bool ScriptableHandlePpapi::HasProperty(const pp::Var& name,
 bool ScriptableHandlePpapi::HasMethod(const pp::Var& name, pp::Var* exception) {
   assert(name.is_string());
   PLUGIN_PRINTF(("ScriptableHandlePpapi::HasMethod (this=%p, name='%s')\n",
-                 static_cast<void*>(this), VarToString(name).c_str()));
+                 static_cast<void*>(this), name.DebugString().c_str()));
   UNREFERENCED_PARAMETER(exception);
   return HasCallType(METHOD_CALL, name.AsString(), "HasMethod");
 }
@@ -181,7 +181,7 @@ pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
   }
   if (call_type == PROPERTY_GET) assert(output_length == 1);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (return %s)\n",
-                 caller, VarToString(retvar).c_str()));
+                 caller, retvar.DebugString().c_str()));
   return retvar;
 }
 
@@ -189,7 +189,7 @@ pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
 pp::Var ScriptableHandlePpapi::GetProperty(const pp::Var& name,
                                            pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::GetProperty (name=%s)\n",
-                 VarToString(name).c_str()));
+                 name.DebugString().c_str()));
   return Invoke(PROPERTY_GET, NameAsString(name), "GetProperty",
                 std::vector<pp::Var>(), exception);
 }
@@ -199,7 +199,7 @@ void ScriptableHandlePpapi::SetProperty(const pp::Var& name,
                                         const pp::Var& value,
                                         pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::SetProperty (name=%s, value=%s)\n",
-                 VarToString(name).c_str(), VarToString(value).c_str()));
+                 name.DebugString().c_str(), value.DebugString().c_str()));
   std::vector<pp::Var> args;
   args.push_back(pp::Var(pp::Var::DontManage(), value.pp_var()));
   Invoke(PROPERTY_SET, NameAsString(name), "SetProperty", args, exception);
@@ -209,7 +209,7 @@ void ScriptableHandlePpapi::SetProperty(const pp::Var& name,
 void ScriptableHandlePpapi::RemoveProperty(const pp::Var& name,
                                            pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::RemoveProperty (name=%s)\n",
-                 VarToString(name).c_str()));
+                 name.DebugString().c_str()));
   Error(NameAsString(name), "RemoveProperty",
         "property removal is not supported", exception);
 }
@@ -238,7 +238,7 @@ pp::Var ScriptableHandlePpapi::Call(const pp::Var& name,
                                     const std::vector<pp::Var>& args,
                                     pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (name=%s, %"NACL_PRIuS
-                 " args)\n", VarToString(name).c_str(), args.size()));
+                 " args)\n", name.DebugString().c_str(), args.size()));
   if (name.is_void())  // invoke default
     return pp::Var();
   assert(name.is_string());

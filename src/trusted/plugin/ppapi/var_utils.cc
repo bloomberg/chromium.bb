@@ -36,27 +36,6 @@ nacl::string NameAsString(const pp::Var& name) {
 }
 
 
-// TODO(polina): see if this can be moved to ppapi/cpp/var.h::Var.
-nacl::string VarToString(const pp::Var& var) {
-  char buf[256];
-  if (var.is_void())
-    SNPRINTF(buf, sizeof(buf), "Var<VOID>");
-  else if (var.is_null())
-    SNPRINTF(buf, sizeof(buf), "Var<NULL>");
-  else if (var.is_bool())
-    SNPRINTF(buf, sizeof(buf), var.AsBool() ? "Var<true>" : "Var<false>");
-  else if (var.is_int())
-    SNPRINTF(buf, sizeof(buf), "Var<%"NACL_PRIu32">", var.AsInt());
-  else if (var.is_double())
-    SNPRINTF(buf, sizeof(buf), "Var<%f>", var.AsDouble());
-  else if (var.is_string())
-    SNPRINTF(buf, sizeof(buf), "Var<'%s'>", var.AsString().c_str());
-  else if (var.is_object())
-    SNPRINTF(buf, sizeof(buf), "Var<OBJECT>");
-  return buf;
-}
-
-
 //-----------------------------------------------------------------------------
 // Translation from pp::Var to NaClSrpcArg
 //-----------------------------------------------------------------------------
@@ -107,7 +86,7 @@ template<typename T> void PPVarToArray(const pp::Var& var,
 
   pp::Var length_var = var.GetProperty(pp::Var("length"), exception);
   PLUGIN_PRINTF(("  PPVarToArray (length=%s)\n",
-                 VarToString(length_var).c_str()));
+                 length_var.DebugString().c_str()));
   PPVarToAllocateArray(length_var, array_length, array_data, exception);
   if (!exception->is_void()) {
     return;
@@ -117,7 +96,7 @@ template<typename T> void PPVarToArray(const pp::Var& var,
     int32_t index = nacl::assert_cast<int32_t>(i);
     pp::Var element = var.GetProperty(pp::Var(index), exception);
     PLUGIN_PRINTF(("  PPVarToArray (array[%d]=%s)\n",
-                   index, VarToString(element).c_str()));
+                   index, element.DebugString().c_str()));
     if (!exception->is_void()) {
       break;
     }
@@ -220,7 +199,7 @@ template<typename T> T PPVarToNumber(const pp::Var& var, pp::Var* exception) {
 bool PPVarToAllocateNaClSrpcArg(const pp::Var& var,
                                 NaClSrpcArg* arg, pp::Var* exception) {
   PLUGIN_PRINTF(("  PPVarToAllocateNaClSrpcArg (var=%s, arg->tag='%c')\n",
-                 VarToString(var).c_str(), arg->tag));
+                 var.DebugString().c_str(), arg->tag));
   switch (arg->tag) {
     case NACL_SRPC_ARG_TYPE_BOOL:
     case NACL_SRPC_ARG_TYPE_DOUBLE:
@@ -247,7 +226,7 @@ bool PPVarToAllocateNaClSrpcArg(const pp::Var& var,
       *exception = "variant array and invalid type arguments are not supported";
   }
   PLUGIN_PRINTF(("  PPVarToAllocateNaClSrpcArg (return exception=%s)\n",
-                 VarToString(*exception).c_str()));
+                 exception->DebugString().c_str()));
   return exception->is_void();
 }
 
@@ -256,7 +235,7 @@ bool PPVarToAllocateNaClSrpcArg(const pp::Var& var,
 bool PPVarToNaClSrpcArg(const pp::Var& var,
                         NaClSrpcArg* arg, pp::Var* exception) {
   PLUGIN_PRINTF(("  PPVarToNaClSrpcArg (var=%s, arg->tag='%c')\n",
-                 VarToString(var).c_str(), arg->tag));
+                 var.DebugString().c_str(), arg->tag));
   switch (arg->tag) {
     case NACL_SRPC_ARG_TYPE_BOOL:
       if (!var.is_bool())
@@ -299,7 +278,7 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
       *exception = "variant array and invalid type arguments are not supported";
   }
   PLUGIN_PRINTF(("  PPVarToNaClSrpcArg (return exception=%s)\n",
-                 VarToString(*exception).c_str()));
+                 exception->DebugString().c_str()));
   return exception->is_void();
 }
 
@@ -415,7 +394,7 @@ pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, PluginPpapi* plugin,
       *exception = "variant array and invalid argument types are not supproted";
   }
   PLUGIN_PRINTF(("  NaClSrpcArgToPPVar (return var=%s, exception=%s)\n",
-                 VarToString(var).c_str(), VarToString(*exception).c_str()));
+                 var.DebugString().c_str(), exception->DebugString().c_str()));
   return var;
 }
 
