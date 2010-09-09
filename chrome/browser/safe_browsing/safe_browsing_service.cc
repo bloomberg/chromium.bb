@@ -55,6 +55,7 @@ SafeBrowsingService::SafeBrowsingService()
       protocol_manager_(NULL),
       enabled_(false),
       update_in_progress_(false),
+      database_update_in_progress_(false),
       closing_database_(false) {
 }
 
@@ -455,7 +456,7 @@ bool SafeBrowsingService::MakeDatabaseAvailable() {
 }
 
 SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   if (database_)
     return database_;
 
@@ -525,9 +526,12 @@ void SafeBrowsingService::OnCheckDone(SafeBrowsingCheck* check) {
 }
 
 void SafeBrowsingService::GetAllChunksFromDatabase() {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+
   bool database_error = true;
   std::vector<SBListChunkRanges> lists;
+  DCHECK(!database_update_in_progress_);
+  database_update_in_progress_ = true;
   GetDatabase();  // This guarantees that |database_| is non-NULL.
   if (database_->UpdateStarted(&lists)) {
     database_error = false;
@@ -582,7 +586,7 @@ void SafeBrowsingService::DatabaseLoadComplete() {
 void SafeBrowsingService::HandleChunkForDatabase(
     const std::string& list_name,
     SBChunkList* chunks) {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   if (chunks) {
     GetDatabase()->InsertChunks(list_name, *chunks);
     delete chunks;
@@ -594,7 +598,7 @@ void SafeBrowsingService::HandleChunkForDatabase(
 
 void SafeBrowsingService::DeleteChunks(
     std::vector<SBChunkDelete>* chunk_deletes) {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   if (chunk_deletes) {
     GetDatabase()->DeleteChunks(*chunk_deletes);
     delete chunk_deletes;
@@ -621,8 +625,10 @@ void SafeBrowsingService::NotifyClientBlockingComplete(Client* client,
 }
 
 void SafeBrowsingService::DatabaseUpdateFinished(bool update_succeeded) {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   GetDatabase()->UpdateFinished(update_succeeded);
+  DCHECK(database_update_in_progress_);
+  database_update_in_progress_ = false;
 }
 
 void SafeBrowsingService::Start() {
@@ -654,7 +660,7 @@ void SafeBrowsingService::Start() {
 }
 
 void SafeBrowsingService::OnCloseDatabase() {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   DCHECK(closing_database_);
 
   // Because |closing_database_| is true, nothing on the IO thread will be
@@ -671,14 +677,14 @@ void SafeBrowsingService::OnCloseDatabase() {
 }
 
 void SafeBrowsingService::OnResetDatabase() {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   GetDatabase()->ResetDatabase();
 }
 
 void SafeBrowsingService::CacheHashResults(
   const std::vector<SBPrefix>& prefixes,
   const std::vector<SBFullHashResult>& full_hashes) {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   GetDatabase()->CacheHashResults(prefixes, full_hashes);
 }
 

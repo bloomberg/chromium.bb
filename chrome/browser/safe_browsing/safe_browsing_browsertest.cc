@@ -19,7 +19,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
  public:
   SafeBrowsingServiceTest()
     : safe_browsing_service_(NULL),
-      is_update_in_progress_(false),
+      is_database_ready_(true),
       is_initial_request_(false),
       is_update_scheduled_(false),
       is_url_match_in_db_(false) {
@@ -28,12 +28,17 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   void UpdateSafeBrowsingStatus() {
     CHECK(safe_browsing_service_);
     AutoLock lock(update_status_mutex_);
-    is_update_in_progress_ = safe_browsing_service_->IsUpdateInProgress();
     is_initial_request_ =
         safe_browsing_service_->protocol_manager_->is_initial_request();
     last_update_ = safe_browsing_service_->protocol_manager_->last_update();
     is_update_scheduled_ =
         safe_browsing_service_->protocol_manager_->update_timer_.IsRunning();
+  }
+
+  void CheckIsDatabaseReady() {
+    AutoLock lock(update_status_mutex_);
+    is_database_ready_ =
+        !safe_browsing_service_->database_update_in_progress_;
   }
 
   void CheckUrl(SafeBrowsingService::Client* helper, const GURL& url) {
@@ -51,9 +56,9 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     return is_url_match_in_db_;
   }
 
-  bool is_update_in_progress() {
+  bool is_database_ready() {
     AutoLock l(update_status_mutex_);
-    return is_update_in_progress_;
+    return is_database_ready_;
   }
 
   bool is_initial_request() {
@@ -71,6 +76,10 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     return is_update_scheduled_;
   }
 
+  MessageLoop* SafeBrowsingMessageLoop() {
+    return safe_browsing_service_->safe_browsing_thread_->message_loop();
+  }
+
  protected:
   void InitSafeBrowsingService() {
     safe_browsing_service_ =
@@ -86,11 +95,12 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
  private:
   SafeBrowsingService* safe_browsing_service_;
 
-  // Protects all variables below since they are updated on IO thread but
-  // read on UI thread.
+  // Protects all variables below since they are read on UI thread
+  // but updated on IO thread or safebrowsing thread.
   Lock update_status_mutex_;
+
   // States associated with safebrowsing service updates.
-  bool is_update_in_progress_;
+  bool is_database_ready_;
   bool is_initial_request_;
   base::Time last_update_;
   bool is_update_scheduled_;
@@ -136,16 +146,29 @@ class SafeBrowsingServiceTestHelper
     StopUILoop();
   }
 
-  // Functions and callbacks related to safebrowsing server status.
+  // Updates status from IO Thread.
   void CheckStatusOnIOThread() {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
     safe_browsing_test_->UpdateSafeBrowsingStatus();
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(this,
-        &SafeBrowsingServiceTestHelper::OnCheckStatusOnIOThreadDone));
+    safe_browsing_test_->SafeBrowsingMessageLoop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this,
+        &SafeBrowsingServiceTestHelper::CheckIsDatabaseReady));
   }
-  void OnCheckStatusOnIOThreadDone() {
+
+  // Checks status in SafeBrowsing Thread.
+  void CheckIsDatabaseReady() {
+    DCHECK_EQ(MessageLoop::current(),
+              safe_browsing_test_->SafeBrowsingMessageLoop());
+    safe_browsing_test_->CheckIsDatabaseReady();
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(this,
+        &SafeBrowsingServiceTestHelper::OnCheckStatusAfterDelayDone));
+  }
+
+  void OnCheckStatusAfterDelayDone() {
     StopUILoop();
   }
+
+  // Checks safebrowsing status after a given latency.
   void CheckStatusAfterDelay(int64 wait_time_sec) {
     ChromeThread::PostDelayedTask(
         ChromeThread::IO,
@@ -177,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
   // Loop will stop once OnCheckStatusOnIOThreadDone in safe_browsing_helper
   // is called and status from safe_browsing_service_ is checked.
   ui_test_utils::RunMessageLoop();
-  EXPECT_FALSE(is_update_in_progress());
+  EXPECT_TRUE(is_database_ready());
   EXPECT_TRUE(is_initial_request());
   EXPECT_FALSE(is_update_scheduled());
   EXPECT_TRUE(last_update().is_null());

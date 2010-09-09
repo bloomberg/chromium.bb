@@ -307,6 +307,10 @@ class SafeBrowsingService
   // Indicates if we're currently in an update cycle.
   bool update_in_progress_;
 
+  // When true, newly fetched chunks may not in the database yet since the
+  // database is still updating.
+  bool database_update_in_progress_;
+
   // Indicates if we're in the midst of trying to close the database.  If this
   // is true, nothing on the IO thread should access the database.
   bool closing_database_;
