@@ -1443,6 +1443,7 @@ nacl_env = pre_base_env.Clone(
     tools = ['naclsdk'],
     BUILD_TYPE = 'nacl',
     BUILD_TYPE_DESCRIPTION = 'NaCl module build',
+    BUILD_GROUPS = ['default'],
     NACL_BUILD_FAMILY = 'UNTRUSTED',
 
     EXTRA_CFLAGS = [],

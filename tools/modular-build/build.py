@@ -355,14 +355,10 @@ int main() {
       scons_args=["MODE=nacl_extra_sdk", "--nacl_glibc",
                   "extra_sdk_update", "extra_sdk_update_header"])
 
-  # TODO(mseaborn): Enable this for other platforms.  This involves
-  # sorting out the MODE argument.
-  if sys.platform == "linux2":
-    AddSconsModule(
-        "scons_tests",
-        deps=glibc_toolchain_deps,
-        scons_args=["MODE=dbg-linux,nacl", "--nacl_glibc",
-                    "run_hello_world_test"])
+  AddSconsModule(
+      "scons_tests",
+      deps=glibc_toolchain_deps,
+      scons_args=["--nacl_glibc", "run_hello_world_test"])
 
   return module_list
 
