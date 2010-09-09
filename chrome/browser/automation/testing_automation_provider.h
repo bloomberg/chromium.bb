@@ -604,6 +604,20 @@ class TestingAutomationProvider : public AutomationProvider,
                            int target_count,
                            IPC::Message* reply_message);
 
+  // Gets the current used encoding name of the page in the specified tab.
+  void GetPageCurrentEncoding(int tab_handle, std::string* current_encoding);
+
+  void ShutdownSessionService(int handle, bool* result);
+
+  void SetContentSetting(int handle,
+                         const std::string& host,
+                         ContentSettingsType content_type,
+                         ContentSetting setting,
+                         bool* success);
+
+  // Resets to the default theme.
+  void ResetToDefaultTheme();
+
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
       HistoryService::Handle request_handle,

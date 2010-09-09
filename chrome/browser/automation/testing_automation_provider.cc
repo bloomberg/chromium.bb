@@ -407,6 +407,12 @@ void TestingAutomationProvider::OnMessageReceived(
                                     WaitForTabCountToBecome)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForInfoBarCount,
                                     WaitForInfoBarCount)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetPageCurrentEncoding,
+                        GetPageCurrentEncoding)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
+                        ShutdownSessionService)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
 
     IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
   IPC_END_MESSAGE_MAP()
@@ -3730,6 +3736,55 @@ void TestingAutomationProvider::WaitForInfoBarCount(
   // The delegate will delete itself.
   new InfoBarCountObserver(this, reply_message, controller->tab_contents(),
                            target_count);
+}
+
+// Gets the current used encoding name of the page in the specified tab.
+void TestingAutomationProvider::GetPageCurrentEncoding(
+    int tab_handle, std::string* current_encoding) {
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
+    Browser* browser = FindAndActivateTab(nav);
+    DCHECK(browser);
+
+    if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU))
+      *current_encoding = nav->tab_contents()->encoding();
+  }
+}
+
+void TestingAutomationProvider::ShutdownSessionService(int handle,
+                                                       bool* result) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    browser->profile()->ShutdownSessionService();
+    *result = true;
+  } else {
+    *result = false;
+  }
+}
+
+void TestingAutomationProvider::SetContentSetting(
+    int handle,
+    const std::string& host,
+    ContentSettingsType content_type,
+    ContentSetting setting,
+    bool* success) {
+  *success = false;
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    HostContentSettingsMap* map =
+        browser->profile()->GetHostContentSettingsMap();
+    if (host.empty()) {
+      map->SetDefaultContentSetting(content_type, setting);
+    } else {
+      map->SetContentSetting(HostContentSettingsMap::Pattern(host),
+                             content_type, "", setting);
+    }
+    *success = true;
+  }
+}
+
+void TestingAutomationProvider::ResetToDefaultTheme() {
+  profile_->ClearTheme();
 }
 
 // TODO(brettw) change this to accept GURLs when history supports it

@@ -195,7 +195,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void OnUnhandledMessage();
 
   // IPC Message callbacks.
-  void ShutdownSessionService(int handle, bool* result);
   void WindowSimulateDrag(int handle,
                           std::vector<gfx::Point> drag_path,
                           int flags,
@@ -210,11 +209,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SetFilteredInet(const IPC::Message& message, bool enabled);
   void GetFilteredInetHitCount(int* hit_count);
   void SetProxyConfig(const std::string& new_proxy_config);
-  void SetContentSetting(int handle,
-                         const std::string& host,
-                         ContentSettingsType content_type,
-                         ContentSetting setting,
-                         bool* success);
 
   // Responds to the FindInPage request, retrieves the search query parameters,
   // launches an observer to listen for results and issues a StartFind request.
@@ -267,12 +261,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Asynchronous request for printing the current tab.
   void PrintAsync(int tab_handle);
-
-  // Resets to the default theme.
-  void ResetToDefaultTheme();
-
-  // Gets the current used encoding name of the page in the specified tab.
-  void GetPageCurrentEncoding(int tab_handle, std::string* current_encoding);
 
   // Uses the specified encoding to override the encoding of the page in the
   // specified tab.

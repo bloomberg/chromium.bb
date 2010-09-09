@@ -328,8 +328,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_SetProxyConfig, SetProxyConfig);
     IPC_MESSAGE_HANDLER(AutomationMsg_PrintAsync, PrintAsync)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Find, HandleFindRequest)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetPageCurrentEncoding,
-                        GetPageCurrentEncoding)
     IPC_MESSAGE_HANDLER(AutomationMsg_OverrideEncoding, OverrideEncoding)
     IPC_MESSAGE_HANDLER(AutomationMsg_SelectAll, SelectAll)
     IPC_MESSAGE_HANDLER(AutomationMsg_Cut, Cut)
@@ -362,12 +360,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         MoveExtensionBrowserAction)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetExtensionProperty,
                         GetExtensionProperty)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
-                        ShutdownSessionService)
     IPC_MESSAGE_HANDLER(AutomationMsg_SaveAsAsync, SaveAsAsync)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBrowsingData, RemoveBrowsingData)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
 #if defined(OS_WIN)
     // These are for use with external tabs.
     IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
@@ -410,16 +404,6 @@ void AutomationProvider::OnUnhandledMessage() {
              << "switches::kAutomationClientChannelID for everything else "
              << "(like ChromeFrame). Closing the automation channel.";
   channel_->Close();
-}
-
-void AutomationProvider::ShutdownSessionService(int handle, bool* result) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    browser->profile()->ShutdownSessionService();
-    *result = true;
-  } else {
-    *result = false;
-  }
 }
 
 // This task just adds another task to the event queue.  This is useful if
@@ -579,19 +563,6 @@ TabContents* AutomationProvider::GetTabContentsForHandle(
     return nav_controller->tab_contents();
   }
   return NULL;
-}
-
-// Gets the current used encoding name of the page in the specified tab.
-void AutomationProvider::GetPageCurrentEncoding(
-    int tab_handle, std::string* current_encoding) {
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
-    Browser* browser = FindAndActivateTab(nav);
-    DCHECK(browser);
-
-    if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU))
-      *current_encoding = nav->tab_contents()->encoding();
-  }
 }
 
 // Gets the current used encoding name of the page in the specified tab.
@@ -991,29 +962,4 @@ void AutomationProvider::SaveAsAsync(int tab_handle) {
   TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
   if (tab_contents)
     tab_contents->OnSavePage();
-}
-
-void AutomationProvider::SetContentSetting(
-    int handle,
-    const std::string& host,
-    ContentSettingsType content_type,
-    ContentSetting setting,
-    bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    HostContentSettingsMap* map =
-        browser->profile()->GetHostContentSettingsMap();
-    if (host.empty()) {
-      map->SetDefaultContentSetting(content_type, setting);
-    } else {
-      map->SetContentSetting(HostContentSettingsMap::Pattern(host),
-                             content_type, "", setting);
-    }
-    *success = true;
-  }
-}
-
-void AutomationProvider::ResetToDefaultTheme() {
-  profile_->ClearTheme();
 }
