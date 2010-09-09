@@ -77,6 +77,15 @@ function removeBenchmark(benchmark) {
   }
 }
 
+function benchmarkStillRunning() {
+  for (var index = 0; index < benchmarks.length; ++index) {
+    if (benchmarks[index].isRunning()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function findBenchmark(url) {
   for (var index = 0; index < benchmarks.length; ++index) {
     if (benchmarks[index].url() == url) {
@@ -351,10 +360,12 @@ chrome.extension.onConnect.addListener(function(port) {
         alert("blank page loaded!");
       }
       var benchmark = findBenchmark(data.url);
-      if (benchmark == undefined) {
-        alert("Error: Loaded url(" + data.url + ") is not the same as what "
-              "you set in url box. This could happen if the request is "
+      if (benchmark == undefined && benchmarkStillRunning()) {
+        alert("Error: Loaded url(" + data.url + ") is not the same as what " +
+              "you set in url box. This could happen if the request is " +
               "redirected. Please use the redirected url for testing.");
+        // Stop the test here.
+        benchmarks = [];
       }
       if (benchmark != undefined && benchmark.isRunning()) {
         benchmark.pageFinished(data.values);
