@@ -10,9 +10,9 @@
       "web_url": "https://chrome.google.com/extensions"
     },
     "urls": [
-      "https://chrome.google.com/extensions",
-      "https://clients2.google.com/service/update2",
-      "https://clients2.googleusercontent.com/crx"
+      "*://chrome.google.com/extensions",
+      "*://clients2.google.com/service/update2",
+      "*://clients2.googleusercontent.com/crx"
     ]
   },
   "permissions": [
