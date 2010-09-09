@@ -581,7 +581,14 @@ TEST_F(WorkerTest, WorkerClose) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
 
-TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
+// Times out on Mac OS 10.5, http://crbug.com/42641
+#if defined (OS_MACOSX)
+#define MAYBE_QueuedSharedWorkerShutdown FLAKY_QueuedSharedWorkerShutdown
+#else
+#define MAYBE_QueuedSharedWorkerShutdown QueuedSharedWorkerShutdown
+#endif
+
+TEST_F(WorkerTest, MAYBE_QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when
   // shared workers shut down.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
