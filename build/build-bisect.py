@@ -97,7 +97,7 @@ def SetArchiveVars(archive):
   BUILD_ARCHIVE_TYPE = archive
   BUILD_ARCHIVE_DIR = 'chromium-rel-' + BUILD_ARCHIVE_TYPE
 
-  if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64'):
+  if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64', 'linux-chromiumos'):
     BUILD_ZIP_NAME = 'chrome-linux.zip'
     BUILD_DIR_NAME = 'chrome-linux'
     BUILD_EXE_NAME = 'chrome'
@@ -178,7 +178,7 @@ def main():
            'Perform binary search on the snapshot builds.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
-  choices = ['mac', 'xp', 'linux', 'linux-64']
+  choices = ['mac', 'xp', 'linux', 'linux-64', 'linux-chromiumos']
   parser.add_option('-a', '--archive',
                     choices = choices,
                     help = 'The buildbot archive to bisect [%s].' %
