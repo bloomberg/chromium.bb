@@ -180,7 +180,10 @@ bool HistoryFunction::GetTimeFromValue(Value* value, base::Time* time) {
   // The history service has seconds resolution, while javascript Date() has
   // milliseconds resolution.
   double seconds_from_epoch = ms_from_epoch / 1000.0;
-  *time = base::Time::FromDoubleT(seconds_from_epoch);
+  // Time::FromDoubleT converts double time 0 to empty Time object. So we need
+  // to do special handling here.
+  *time = (seconds_from_epoch == 0) ?
+      base::Time::UnixEpoch() : base::Time::FromDoubleT(seconds_from_epoch);
   return true;
 }
 
@@ -368,7 +371,7 @@ bool DeleteAllHistoryFunction::RunAsyncImpl() {
   HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
-      base::Time::FromDoubleT(0),  // From the beginning of the epoch.
+      base::Time::UnixEpoch(),     // From the beginning of the epoch.
       base::Time::Now(),           // To the current time.
       &cancelable_consumer_,
       NewCallback(this, &DeleteAllHistoryFunction::DeleteComplete));

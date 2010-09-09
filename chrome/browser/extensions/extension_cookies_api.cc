@@ -306,7 +306,10 @@ bool SetCookieFunction::RunImpl() {
       EXTENSION_FUNCTION_VALIDATE(
           expiration_date_value->GetAsReal(&expiration_date));
     }
-    expiration_time_ = base::Time::FromDoubleT(expiration_date);
+    // Time::FromDoubleT converts double time 0 to empty Time object. So we need
+    // to do special handling here.
+    expiration_time_ = (expiration_date == 0) ?
+        base::Time::UnixEpoch() : base::Time::FromDoubleT(expiration_date);
   }
 
   URLRequestContextGetter* store_context = NULL;
