@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <title i18n-content="labsTitle"></title>
 <style>
-
 body {
   margin: 10px;
   min-width: 47em;
@@ -17,11 +16,14 @@ a {
 
 div#header {
   margin-bottom: 1.05em;
+  /* 67px is the height of the header's background image. */
+  min-height: 67px;
   overflow: hidden;
-  padding-bottom: 1.5em;
+  padding-bottom: 20px;
   padding-left: 0;
-  padding-top: 1.5em;
+  padding-top: 20px;
   position: relative;
+  -webkit-box-sizing: border-box;
 }
 
 html[dir=rtl] #header {

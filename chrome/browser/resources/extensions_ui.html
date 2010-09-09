@@ -14,13 +14,16 @@ a {
   font-size: 103%;
 }
 
-#header {
+div#header {
   margin-bottom: 1.05em;
+  /* 67px is the height of the header's background image. */
+  min-height: 67px;
   overflow: hidden;
-  padding-bottom: 1.5em;
+  padding-bottom: 20px;
   padding-left: 0;
-  padding-top: 1.5em;
+  padding-top: 20px;
   position: relative;
+  -webkit-box-sizing: border-box;
 }
 
 html[dir=rtl] #header {
@@ -35,6 +38,7 @@ html[dir=rtl] #header {
   padding-left: 75px;
   padding-top: 40px;
 }
+
 html[dir=rtl] #header h1 {
   background: url('../../app/theme/extensions_section.png') right no-repeat;
   padding-right: 95px;
