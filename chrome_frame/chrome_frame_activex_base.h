@@ -37,8 +37,6 @@
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
 
-static const wchar_t kUseChromeNetworking[] = L"UseChromeNetworking";
-static const wchar_t kHandleTopLevelRequests[] = L"HandleTopLevelRequests";
 
 // Connection point class to support firing IChromeFrameEvents (dispinterface).
 template<class T>
@@ -267,13 +265,6 @@ END_MSG_MAP()
                                               IE_8,
                                               IE_8 + 1);
     }
-
-    // Query and assign the host networking and top-level-request settings
-    // from the registry.
-    bool chrome_network = GetConfigBool(false, kUseChromeNetworking);
-    bool top_level_requests = GetConfigBool(true, kHandleTopLevelRequests);
-    automation_client_->set_use_chrome_network(chrome_network);
-    automation_client_->set_handle_top_level_requests(top_level_requests);
 
     return S_OK;
   }
