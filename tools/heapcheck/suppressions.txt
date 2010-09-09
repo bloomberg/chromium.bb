@@ -1005,3 +1005,27 @@
    fun:RenderViewTest::SimulateElementClick
    fun:RenderViewTest_PageClickTracker_Test::TestBody
 }
+{
+   bug_55031_a
+   Heapcheck:Leak
+   fun:SyncSessionContext
+   fun:sync_api::SyncManager::SyncInternal::Init
+   fun:sync_api::SyncManager::Init
+   fun:browser_sync::SyncBackendHost::Core::DoInitialize
+   fun:browser_sync::SyncBackendHost::Core::DoInitializeForTest
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+}
+{
+   bug_55031_b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:NotificationRegistrar::Add
+   fun:browser_sync::::RegistrationTask::Run
+   ...
+   fun:ProfileSyncServicePreferenceTest::StartSyncService
+   fun:ProfileSyncServicePreferenceTest_*_Test::TestBody
+}
