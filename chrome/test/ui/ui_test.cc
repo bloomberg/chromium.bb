@@ -15,6 +15,7 @@
 #include "app/sql/connection.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -414,6 +415,17 @@ void UITestBase::LaunchBrowser(const CommandLine& arguments,
     // side. Using PathService seems to be the most reliable, consistent way
     // to do that.
     ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, user_data_dir()));
+
+#if defined(OS_LINUX)
+    // Make sure the cache directory is inside our clear profile. Otherwise
+    // the cache may contain data from earlier tests that could break the
+    // current test.
+    //
+    // Note: we use an environment variable here, because we have to pass the
+    // value to the child process. This is the simplest way to do it.
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    env->SetVar("XDG_CACHE_HOME", user_data_dir().value());
+#endif
   }
 
   if (!template_user_data_.empty()) {
