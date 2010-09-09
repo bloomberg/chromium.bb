@@ -270,15 +270,15 @@ function updateMask(maxiview, visibleHeightPx) {
   var third = fourth - gradientHeightPx / window.innerHeight;
 
   var gradientArguments = [
-    "linear",
-    "0 0",
-    "0 100%",
-    "from(transparent)",
-    getColorStopString(first, "transparent"),
+    'linear',
+    '0 0',
+    '0 100%',
+    'from(transparent)',
+    getColorStopString(first, 'transparent'),
     getColorStopString(second, gradientDestination),
     getColorStopString(third, gradientDestination),
-    getColorStopString(fourth, "transparent"),
-    "to(transparent)"
+    getColorStopString(fourth, 'transparent'),
+    'to(transparent)'
   ];
 
   var gradient = '-webkit-gradient(' + gradientArguments.join(', ') + ')';
@@ -286,7 +286,7 @@ function updateMask(maxiview, visibleHeightPx) {
 }
 
 function getColorStopString(height, color) {
-  return "color-stop(" + height + ", " + color + ")";
+  return 'color-stop(' + height + ', ' + color + ')';
 }
 
 window.addEventListener('resize', handleWindowResize);
@@ -357,10 +357,12 @@ function hideSection(section) {
 }
 
 window.addEventListener('webkitTransitionEnd', function(e) {
-  if (e.target.classList.contains('hiding'))
+  if (e.target.classList.contains('hiding')) {
     e.target.classList.add('hidden');
+    e.target.classList.remove('hiding');
+  }
 
-  document.documentElement.setAttribute("enable-section-animations", "false");
+  document.documentElement.setAttribute('enable-section-animations', 'false');
 });
 
 /**
@@ -657,39 +659,40 @@ $('main').addEventListener('click', function(e) {
     p = p.parentNode;
   }
 
-  if (!p) {
+  if (!p)
     return;
-  }
 
   p = p.parentNode;
-  if (!getSectionMaxiview(p)) {
+  if (!getSectionMaxiview(p))
     return;
-  }
 
-  var section = p.getAttribute('section');
-  if (section) {
-    // We set it back in webkitTransitionEnd.
-    document.documentElement.setAttribute("enable-section-animations", "true");
-    if (shownSections & Section[section]) {
-      hideSection(Section[section]);
-    } else {
-      for (var p in Section) {
-        if (p == section)
-          showSection(Section[p]);
-        else
-          hideSection(Section[p]);
-      }
-    }
-    layoutSections();
-    saveShownSections();
-  }
+  toggleSectionVisibilityAndAnimate(p.getAttribute('section'));
 });
+
+function toggleSectionVisibilityAndAnimate(section) {
+  if (!section)
+    return;
+
+  // We set it back in webkitTransitionEnd.
+  document.documentElement.setAttribute('enable-section-animations', 'true');
+  if (shownSections & Section[section]) {
+    hideSection(Section[section]);
+  } else {
+    for (var p in Section) {
+      if (p == section)
+        showSection(Section[p]);
+      else
+        hideSection(Section[p]);
+    }
+  }
+  layoutSections();
+  saveShownSections();
+}
 
 function handleIfEnterKey(f) {
   return function(e) {
-    if (e.keyIdentifier == 'Enter') {
+    if (e.keyIdentifier == 'Enter')
       f(e);
-    }
   };
 }
 

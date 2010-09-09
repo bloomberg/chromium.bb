@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function getAppsCallback(data) {
-  logEvent('recieved apps');
+  logEvent('received apps');
   var appsSection = $('apps');
   var appsSectionContent = $('apps-maxiview');
   var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
@@ -152,8 +152,14 @@ var apps = (function() {
         div.setAttribute('new', 'new');
         // Delay changing the attribute a bit to let the page settle down a bit.
         setTimeout(function() {
+          // This will trigger the 'bounce' animation defined in apps.css.
           div.setAttribute('new', 'installed');
         }, 500);
+        div.addEventListener('webkitAnimationEnd', function(e) {
+          div.removeAttribute('new');
+        });
+        if ($('apps').classList.contains('hidden'))
+          toggleSectionVisibilityAndAnimate('APPS');
       }
 
       var settingsButton = div.appendChild(new cr.ui.ContextMenuButton);
