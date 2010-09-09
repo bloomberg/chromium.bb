@@ -101,16 +101,21 @@ def main(argv):
   parser = optparse.OptionParser()
   parser.add_option("--shards", type="int", dest="shards", default=10)
 
+  # Make it possible to pass options to the launched process.
+  # Options for parallel_launcher should be first, then the binary path,
+  # and finally - optional arguments for the launched binary.
+  parser.disable_interspersed_args()
+
   options, args = parser.parse_args(argv)
 
-  if len(args) != 1:
-    print 'You must provide only one argument: path to the test binary'
+  if not args:
+    print 'You must provide path to the test binary'
     return 1
 
   launchers = []
 
   for shard in range(options.shards):
-    launcher = TestLauncher(args[0], args[0], options.shards, shard)
+    launcher = TestLauncher(args, args[0], options.shards, shard)
     launcher.launch()
     launchers.append(launcher)
 
