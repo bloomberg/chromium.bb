@@ -517,7 +517,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                     innerPath:&innerPath
                      clipPath:NULL];
 
-  BOOL pressed = [self isHighlighted];
+  BOOL pressed = ([((NSControl*)[self controlView]) isEnabled] &&
+                  [self isHighlighted]);
   NSWindow* window = [controlView window];
   ThemeProvider* themeProvider = [window themeProvider];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
