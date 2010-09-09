@@ -8,6 +8,7 @@
 # Import before super_mox to keep valid references.
 from os import rename
 from shutil import rmtree
+import StringIO
 from subprocess import Popen, PIPE, STDOUT
 import tempfile
 import __builtin__
@@ -46,6 +47,20 @@ class BaseTestCase(GCBaseTestCase):
     self._scm_wrapper = gclient_scm.CreateSCM
     gclient_scm.sys.stdout.flush = lambda: None
     gclient_scm.scm.SVN.current_version = None
+    self.stdout = StringIO.StringIO()
+
+  def tearDown(self):
+    GCBaseTestCase.tearDown(self)
+    try:
+      self.stdout.getvalue()
+      self.fail()
+    except AttributeError:
+      pass
+
+  def checkstdout(self, expected):
+    value = self.stdout.getvalue()
+    self.stdout.close()
+    self.assertEquals(expected, value)
 
 
 class SVNWrapperTestCase(BaseTestCase):
@@ -58,7 +73,7 @@ class SVNWrapperTestCase(BaseTestCase):
       self.force = False
       self.reset = False
       self.nohooks = False
-      self.stdout = gclient_scm.sys.stdout
+      self.stdout = test_case.stdout
 
   def Options(self, *args, **kwargs):
     return self.OptionsObject(self, *args, **kwargs)
@@ -80,11 +95,13 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # If you add a member, be sure to add the relevant test!
     self.compareMembers(self._scm_wrapper('svn://a'), members)
+    self.checkstdout('')
 
   def testUnsupportedSCM(self):
     args = ['gopher://foo', self.root_dir, self.relpath]
     exception_msg = 'No SCM found for url gopher://foo'
     self.assertRaisesError(exception_msg, self._scm_wrapper, *args)
+    self.checkstdout('')
 
   def testSVNFullUrlForRelativeUrl(self):
     self.url = 'svn://a/b/c/d'
@@ -93,6 +110,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'svn://a/b/crap')
+    self.checkstdout('')
 
   def testGITFullUrlForRelativeUrl(self):
     self.url = 'git://a/b/c/d'
@@ -101,6 +119,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'git://a/b/c/crap')
+    self.checkstdout('')
 
   def testRunCommandException(self):
     options = self.Options(verbose=False)
@@ -113,10 +132,11 @@ class SVNWrapperTestCase(BaseTestCase):
     exception = "Unsupported argument(s): %s" % ','.join(self.args)
     self.assertRaisesError(exception, scm.RunCommand,
                            'update', options, self.args)
+    self.checkstdout('')
 
   def testRunCommandUnknown(self):
     # TODO(maruel): if ever used.
-    pass
+    self.checkstdout('')
 
   def testRevertMissing(self):
     options = self.Options(verbose=True)
@@ -127,7 +147,6 @@ class SVNWrapperTestCase(BaseTestCase):
     # It'll to a checkout instead.
     gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
                                ).AndReturn(False)
-    print("\n_____ %s is missing, synching instead" % self.relpath)
     # Checkout.
     gclient_scm.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
@@ -142,6 +161,8 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.revert(options, self.args, files_list)
+    self.checkstdout(
+        ('\n_____ %s is missing, synching instead\n' % self.relpath))
 
   def testRevertNone(self):
     options = self.Options(verbose=True)
@@ -159,6 +180,7 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
+    self.checkstdout('')
 
   def testRevert2Files(self):
     options = self.Options(verbose=True)
@@ -182,14 +204,15 @@ class SVNWrapperTestCase(BaseTestCase):
                                           cwd=base_path,
                                           file_list=mox.IgnoreArg(),
                                           stdout=options.stdout)
-    print(gclient_scm.os.path.join(base_path, 'a'))
-    print(gclient_scm.os.path.join(base_path, 'b'))
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
+    self.checkstdout(
+        ('%s\n%s\n' % (gclient_scm.os.path.join(base_path, 'a'),
+            gclient_scm.os.path.join(base_path, 'b'))))
 
   def testRevertDirectory(self):
     options = self.Options(verbose=True)
@@ -200,7 +223,6 @@ class SVNWrapperTestCase(BaseTestCase):
     ]
     gclient_scm.scm.SVN.CaptureStatus(base_path).AndReturn(items)
     file_path = gclient_scm.os.path.join(base_path, 'a')
-    print(file_path)
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
     gclient_scm.os.path.islink(file_path).AndReturn(False)
@@ -218,6 +240,7 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     file_list2 = []
     scm.revert(options, self.args, file_list2)
+    self.checkstdout(('%s\n' % file_path))
 
   def testStatus(self):
     options = self.Options(verbose=True)
@@ -233,7 +256,7 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     file_list = []
     self.assertEqual(scm.status(options, self.args, file_list), None)
-
+    self.checkstdout('')
 
   # TODO(maruel):  TEST REVISIONS!!!
   # TODO(maruel):  TEST RELOCATE!!!
@@ -262,6 +285,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
+    self.checkstdout('')
 
   def testUpdateUpdate(self):
     options = self.Options(verbose=True)
@@ -284,10 +308,9 @@ class SVNWrapperTestCase(BaseTestCase):
     # Checkout or update.
     gclient_scm.os.path.exists(base_path).AndReturn(True)
     gclient_scm.scm.SVN.CaptureInfo(
-        gclient_scm.os.path.join(base_path, "."), '.'
-        ).AndReturn(file_info)
+        gclient_scm.os.path.join(base_path, ".")).AndReturn(file_info)
     # Cheat a bit here.
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL'], '.').AndReturn(file_info)
+    gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
     additional_args = []
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
@@ -304,6 +327,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
+    self.checkstdout('')
 
   def testUpdateSingleCheckout(self):
     options = self.Options(verbose=True)
@@ -339,9 +363,8 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn(False)
     gclient_scm.os.path.exists(base_path).AndReturn(True)
     gclient_scm.scm.SVN.CaptureInfo(
-        gclient_scm.os.path.join(base_path, "."), '.'
-        ).AndReturn(file_info)
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL'], '.').AndReturn(file_info)
+        gclient_scm.os.path.join(base_path, ".")).AndReturn(file_info)
+    gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
     options.stdout.write("\n_____ %s at 42" % self.relpath)
     options.stdout.write('\n')
 
@@ -349,6 +372,8 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
+    self.checkstdout(
+        2 * ('\n_____ %s at 42\n' % self.relpath))
 
   def testUpdateSingleCheckoutSVN14(self):
     options = self.Options(verbose=True)
@@ -376,6 +401,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
+    self.checkstdout('')
 
   def testUpdateSingleCheckoutSVNUpgrade(self):
     options = self.Options(verbose=True)
@@ -414,15 +440,15 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn(False)
     gclient_scm.os.path.exists(base_path).AndReturn(True)
     gclient_scm.scm.SVN.CaptureInfo(
-        gclient_scm.os.path.join(base_path, "."), '.'
-        ).AndReturn(file_info)
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL'], '.').AndReturn(file_info)
-    print("\n_____ %s at 42" % self.relpath)
+        gclient_scm.os.path.join(base_path, ".")).AndReturn(file_info)
+    gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
+    self.checkstdout(
+        ('\n_____ %s at 42\n' % self.relpath))
 
   def testUpdateSingleUpdate(self):
     options = self.Options(verbose=True)
@@ -448,27 +474,27 @@ class SVNWrapperTestCase(BaseTestCase):
                                ).AndReturn(False)
     gclient_scm.os.path.exists(base_path).AndReturn(True)
     gclient_scm.scm.SVN.CaptureInfo(
-        gclient_scm.os.path.join(base_path, "."), '.'
-        ).AndReturn(file_info)
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL'], '.').AndReturn(file_info)
-    print("\n_____ %s at 42" % self.relpath)
+        gclient_scm.os.path.join(base_path, ".")).AndReturn(file_info)
+    gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
+    self.checkstdout('\n_____ %s at 42\n' % self.relpath)
 
   def testUpdateGit(self):
     options = self.Options(verbose=True)
     file_path = gclient_scm.os.path.join(self.root_dir, self.relpath, '.git')
     gclient_scm.os.path.exists(file_path).AndReturn(True)
-    print("________ found .git directory; skipping %s" % self.relpath)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     file_list = []
     scm.update(options, self.args, file_list)
+    self.checkstdout(
+        ('________ found .git directory; skipping %s\n' % self.relpath))
 
 
 class GitWrapperTestCase(BaseTestCase):
@@ -482,6 +508,7 @@ class GitWrapperTestCase(BaseTestCase):
       self.force = False
       self.reset = False
       self.nohooks = False
+      self.stdout = StringIO.StringIO()
 
   sample_git_import = """blob
 mark :1
@@ -560,10 +587,10 @@ from :3
     self.relpath = '.'
     self.base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
-    SuperMoxBaseTestBase.setUp(self)
+    BaseTestBase.setUp(self)
 
   def tearDown(self):
-    SuperMoxBaseTestBase.tearDown(self)
+    BaseTestBase.tearDown(self)
     rmtree(self.root_dir)
 
   def testDir(self):

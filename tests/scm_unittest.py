@@ -28,9 +28,10 @@ class BaseTestCase(SuperMoxTestBase):
 class BaseSCMTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(scm.gclient_utils, 'Popen')
+    self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCall')
     self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCallAndFilter')
     self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCallAndFilterAndHeader')
+    self.mox.StubOutWithMock(scm.gclient_utils, 'Popen')
 
 
 class RootTestCase(BaseSCMTestCase):
@@ -153,13 +154,13 @@ class SVNTestCase(BaseSCMTestCase):
     self.args = self.Args()
     self.url = self.Url()
     self.relpath = 'asf'
+    self.mox.StubOutWithMock(scm.SVN, 'Capture')
 
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'AssertVersion', 'Capture', 'CaptureBaseRevision',
-        'CaptureHeadRevision', 'CaptureInfo', 'CaptureStatus',
-        'current_version', 'DiffItem', 'GenerateDiff',
+        'AssertVersion', 'Capture', 'CaptureRevision', 'CaptureInfo',
+        'CaptureStatus', 'current_version', 'DiffItem', 'GenerateDiff',
         'GetCheckoutRoot', 'GetEmail', 'GetFileProperty', 'IsMoved',
         'IsMovedInfo', 'ReadSimpleAuth', 'RunAndGetFileList',
     ]
@@ -172,10 +173,10 @@ class SVNTestCase(BaseSCMTestCase):
     scm.os.path.abspath(self.root_dir + 'x').AndReturn(self.root_dir)
     scm.GetCasedPath(self.root_dir).AndReturn(self.root_dir)
     result1 = { "Repository Root": "Some root" }
-    scm.SVN.CaptureInfo(self.root_dir, print_error=False).AndReturn(result1)
+    scm.SVN.CaptureInfo(self.root_dir).AndReturn(result1)
     results2 = { "Repository Root": "A different root" }
-    scm.SVN.CaptureInfo(scm.os.path.dirname(self.root_dir),
-                        print_error=False).AndReturn(results2)
+    scm.SVN.CaptureInfo(
+        scm.os.path.dirname(self.root_dir)).AndReturn(results2)
     self.mox.ReplayAll()
     self.assertEquals(scm.SVN.GetCheckoutRoot(self.root_dir + 'x'),
                       self.root_dir)
@@ -196,8 +197,7 @@ class SVNTestCase(BaseSCMTestCase):
 </entry>
 </info>
 """ % self.url
-    self.mox.StubOutWithMock(scm.SVN, 'Capture')
-    scm.SVN.Capture(['info', '--xml', self.url], '.', True).AndReturn(xml_text)
+    scm.SVN.Capture(['info', '--xml', self.url]).AndReturn(xml_text)
     expected = {
       'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
       'UUID': None,
@@ -211,7 +211,7 @@ class SVNTestCase(BaseSCMTestCase):
       'Node Kind': 'file',
     }
     self.mox.ReplayAll()
-    file_info = scm.SVN.CaptureInfo(self.url, '.', True)
+    file_info = scm.SVN.CaptureInfo(self.url)
     self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
 
   def testCaptureInfo(self):
@@ -238,10 +238,9 @@ class SVNTestCase(BaseSCMTestCase):
 </entry>
 </info>
 """ % (self.url, self.root_dir)
-    self.mox.StubOutWithMock(scm.SVN, 'Capture')
-    scm.SVN.Capture(['info', '--xml', self.url], '.', True).AndReturn(xml_text)
+    scm.SVN.Capture(['info', '--xml', self.url]).AndReturn(xml_text)
     self.mox.ReplayAll()
-    file_info = scm.SVN.CaptureInfo(self.url, '.', True)
+    file_info = scm.SVN.CaptureInfo(self.url)
     expected = {
       'URL': self.url,
       'UUID': '7b9385f5-0452-0410-af26-ad4892b7a1fb',
@@ -293,12 +292,7 @@ class SVNTestCase(BaseSCMTestCase):
 </target>
 </status>
 """
-    proc = self.mox.CreateMockAnything()
-    scm.gclient_utils.Popen(['svn', 'status', '--xml', '.'],
-                            cwd=None,
-                            stderr=None,
-                            stdout=scm.subprocess.PIPE).AndReturn(proc)
-    proc.communicate().AndReturn((text, 0))
+    scm.SVN.Capture(['status', '--xml', '.']).AndReturn(text)
 
     self.mox.ReplayAll()
     info = scm.SVN.CaptureStatus('.')
@@ -318,12 +312,7 @@ class SVNTestCase(BaseSCMTestCase):
        path="perf">
        </target>
        </status>"""
-    proc = self.mox.CreateMockAnything()
-    scm.gclient_utils.Popen(['svn', 'status', '--xml'],
-                            cwd=None,
-                            stderr=None,
-                            stdout=scm.subprocess.PIPE).AndReturn(proc)
-    proc.communicate().AndReturn((text, 0))
+    scm.SVN.Capture(['status', '--xml']).AndReturn(text)
     self.mox.ReplayAll()
     info = scm.SVN.CaptureStatus(None)
     self.assertEquals(info, [])

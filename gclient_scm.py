@@ -742,12 +742,12 @@ class SVNWrapper(SCMWrapper):
       return
 
     # Get the existing scm url and the revision number of the current checkout.
-    from_info = scm.SVN.CaptureInfo(os.path.join(self.checkout_path, '.'), '.')
-    if not from_info:
-      raise gclient_utils.Error(('Can\'t update/checkout %r if an unversioned '
-                                 'directory is present. Delete the directory '
-                                 'and try again.') %
-                                self.checkout_path)
+    try:
+      from_info = scm.SVN.CaptureInfo(os.path.join(self.checkout_path, '.'))
+    except gclient_utils.Error:
+      raise gclient_utils.Error(
+          ('Can\'t update/checkout %s if an unversioned directory is present. '
+           'Delete the directory and try again.') % self.checkout_path)
 
     # Look for locked directories.
     dir_info = scm.SVN.CaptureStatus(os.path.join(self.checkout_path, '.'))
@@ -758,14 +758,15 @@ class SVNWrapper(SCMWrapper):
 
     # Retrieve the current HEAD version because svn is slow at null updates.
     if options.manually_grab_svn_rev and not revision:
-      from_info_live = scm.SVN.CaptureInfo(from_info['URL'], '.')
+      from_info_live = scm.SVN.CaptureInfo(from_info['URL'])
       revision = str(from_info_live['Revision'])
       rev_str = ' at %s' % revision
 
     if from_info['URL'] != base_url:
       # The repository url changed, need to switch.
-      to_info = scm.SVN.CaptureInfo(url, '.')
-      if not to_info.get('Repository Root') or not to_info.get('UUID'):
+      try:
+        to_info = scm.SVN.CaptureInfo(url)
+      except gclient_utils.Error:
         # The url is invalid or the server is not accessible, it's safer to bail
         # out right now.
         raise gclient_utils.Error('This url is unreachable: %s' % url)
@@ -919,7 +920,10 @@ class SVNWrapper(SCMWrapper):
 
   def revinfo(self, options, args, file_list):
     """Display revision"""
-    return scm.SVN.CaptureBaseRevision(self.checkout_path)
+    try:
+      return scm.SVN.CaptureRevision(self.checkout_path)
+    except gclient_utils.Error:
+      return None
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)

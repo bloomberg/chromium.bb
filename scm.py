@@ -306,21 +306,12 @@ class SVN(object):
   current_version = None
 
   @staticmethod
-  def Capture(args, in_directory=None, print_error=True):
-    """Runs svn, capturing output sent to stdout as a string.
+  def Capture(args, **kwargs):
+    """Always redirect stderr.
 
-    Args:
-      args: A sequence of command line parameters to be passed to svn.
-      in_directory: The directory where svn is to be run.
-
-    Returns:
-      The output sent to stdout as a string.
-    """
-    stderr = None
-    if not print_error:
-      stderr = subprocess.PIPE
-    return gclient_utils.Popen(['svn'] + args, cwd=in_directory,
-        stdout=subprocess.PIPE, stderr=stderr).communicate()[0]
+    Throws an exception if non-0 is returned."""
+    return gclient_utils.CheckCall(['svn'] + args, print_error=False,
+        **kwargs)[0]
 
   @staticmethod
   def RunAndGetFileList(verbose, args, cwd, file_list, stdout=None):
@@ -425,15 +416,11 @@ class SVN(object):
       break
 
   @staticmethod
-  def CaptureInfo(relpath, in_directory=None, print_error=True):
+  def CaptureInfo(cwd):
     """Returns a dictionary from the svn info output for the given file.
 
-    Args:
-      relpath: The directory where the working copy resides relative to
-        the directory given by in_directory.
-      in_directory: The directory where svn is to be run.
-    """
-    output = SVN.Capture(["info", "--xml", relpath], in_directory, print_error)
+    Throws an exception if svn info fails."""
+    output = SVN.Capture(['info', '--xml', cwd])
     dom = gclient_utils.ParseXML(output)
     result = {}
     if dom:
@@ -468,24 +455,13 @@ class SVN(object):
     return result
 
   @staticmethod
-  def CaptureHeadRevision(url):
-    """Get the head revision of a SVN repository.
-
-    Returns:
-      Int head revision
-    """
-    info = SVN.Capture(["info", "--xml", url], os.getcwd())
-    dom = xml.dom.minidom.parseString(info)
-    return dom.getElementsByTagName('entry')[0].getAttribute('revision')
-
-  @staticmethod
-  def CaptureBaseRevision(cwd):
+  def CaptureRevision(cwd):
     """Get the base revision of a SVN repository.
 
     Returns:
       Int base revision
     """
-    info = SVN.Capture(["info", "--xml"], cwd)
+    info = SVN.Capture(['info', '--xml'], cwd=cwd)
     dom = xml.dom.minidom.parseString(info)
     return dom.getElementsByTagName('entry')[0].getAttribute('revision')
 
@@ -539,8 +515,9 @@ class SVN(object):
           if xml_item_status in status_letter:
             statuses[0] = status_letter[xml_item_status]
           else:
-            raise Exception('Unknown item status "%s"; please implement me!' %
-                            xml_item_status)
+            raise gclient_utils.Error(
+                'Unknown item status "%s"; please implement me!' %
+                    xml_item_status)
           # Col 1
           xml_props_status = wc_status[0].getAttribute('props')
           if xml_props_status == 'modified':
@@ -551,8 +528,9 @@ class SVN(object):
                 xml_props_status == 'normal'):
             pass
           else:
-            raise Exception('Unknown props status "%s"; please implement me!' %
-                            xml_props_status)
+            raise gclient_utils.Error(
+                'Unknown props status "%s"; please implement me!' %
+                    xml_props_status)
           # Col 2
           if wc_status[0].getAttribute('wc-locked') == 'true':
             statuses[2] = 'L'
@@ -592,12 +570,10 @@ class SVN(object):
       is not set on the file.  If the file is not under version control, the
       empty string is also returned.
     """
-    output = SVN.Capture(["propget", property_name, filename])
-    if (output.startswith("svn: ") and
-        output.endswith("is not under version control")):
-      return ""
-    else:
-      return output
+    try:
+      return SVN.Capture(['propget', property_name, filename])
+    except gclient_utils.Error:
+      return ''
 
   @staticmethod
   def DiffItem(filename, full_move=False, revision=None):
@@ -662,7 +638,7 @@ class SVN(object):
       else:
         if info.get("Node Kind") != "directory":
           # svn diff on a mv/cp'd file outputs nothing if there was no change.
-          data = SVN.Capture(command, None)
+          data = SVN.Capture(command)
           if not data:
             # We put in an empty Index entry so upload.py knows about them.
             data = "Index: %s\n" % filename.replace(os.sep, '/')
@@ -670,7 +646,7 @@ class SVN(object):
     else:
       if info.get("Node Kind") != "directory":
         # Normal simple case.
-        data = SVN.Capture(command, None)
+        data = SVN.Capture(command)
       # Otherwise silently ignore directories.
     return data
 
@@ -761,14 +737,15 @@ class SVN(object):
   @staticmethod
   def GetEmail(repo_root):
     """Retrieves the svn account which we assume is an email address."""
-    infos = SVN.CaptureInfo(repo_root)
-    uuid = infos.get('UUID')
-    root = infos.get('Repository Root')
-    if not root:
+    try:
+      infos = SVN.CaptureInfo(repo_root)
+    except gclient_utils.Error:
       return None
 
     # Should check for uuid but it is incorrectly saved for https creds.
+    root = infos['Repository Root']
     realm = root.rsplit('/', 1)[0]
+    uuid = infos['UUID']
     if root.startswith('https') or not uuid:
       regexp = re.compile(r'<%s:\d+>.*' % realm)
     else:
@@ -820,15 +797,16 @@ class SVN(object):
     The directory is returned as an absolute path.
     """
     directory = os.path.abspath(directory)
-    infos = SVN.CaptureInfo(directory, print_error=False)
-    cur_dir_repo_root = infos.get("Repository Root")
-    if not cur_dir_repo_root:
+    try:
+      cur_dir_repo_root = SVN.CaptureInfo(directory)['Repository Root']
+    except gclient_utils.Error:
       return None
-
     while True:
       parent = os.path.dirname(directory)
-      if (SVN.CaptureInfo(parent, print_error=False).get(
-              "Repository Root") != cur_dir_repo_root):
+      try:
+        if SVN.CaptureInfo(parent)['Repository Root'] != cur_dir_repo_root:
+          break
+      except gclient_utils.Error:
         break
       directory = parent
     return GetCasedPath(directory)
