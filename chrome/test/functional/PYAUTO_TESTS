@@ -52,9 +52,12 @@
   'win': [
     # testBookmarkBarVisible fails on windows. crbug.com/42823
     '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
-    # download test fails on official builder, thru buildbot only.
-    # crbug.com/50481
+    # Some download test fails on win official builder, only thru buildbot when
+    # downloading the small zip file.
+    # crbug.com/50481, crbug.com/54942
     '-downloads.DownloadsTest.testZip',
+    '-downloads.DownloadsTest.testRemoveDownload',
+    '-prefs.PrefsTest.testDownloadDirPref',
   ],
 
   'mac': [
