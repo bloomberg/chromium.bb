@@ -959,6 +959,8 @@ def CMDchange(args):
               "directory.")
 
   if len(args) == 2:
+    if not os.path.isfile(args[1]):
+      ErrorExit('The change "%s" doesn\'t exist.' % args[1])
     f = open(args[1], 'rU')
     override_description = f.read()
     f.close()
