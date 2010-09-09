@@ -1482,7 +1482,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       if (permission_str == kOldUnlimitedStoragePermission)
         permission_str = kUnlimitedStoragePermission;
 
-      if (web_extent().is_empty()) {
+      if (web_extent().is_empty() || location() == Extension::COMPONENT) {
         // Check if it's a module permission.  If so, enable that permission.
         if (IsAPIPermission(permission_str)) {
           api_permissions_.push_back(permission_str);

@@ -10,17 +10,22 @@
 #include "base/basictypes.h"
 #include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 
 using base::IntToString;
 namespace events = extension_event_names;
+
+namespace {
 
 const char kAppLaunchUrlKey[] = "appLaunchUrl";
 const char kEnabledKey[] = "enabled";
@@ -33,6 +38,8 @@ const char kSizeKey[] = "size";
 const char kUrlKey[] = "url";
 
 const char kNoExtensionError[] = "No extension with id *";
+
+}
 
 ExtensionsService* ExtensionManagementFunction::service() {
   return profile()->GetExtensionsService();
@@ -117,11 +124,6 @@ bool SetEnabledFunction::RunImpl() {
   return true;
 }
 
-bool InstallFunction::RunImpl() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool UninstallFunction::RunImpl() {
   std::string extension_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
@@ -135,7 +137,6 @@ bool UninstallFunction::RunImpl() {
   service()->UninstallExtension(extension_id, false /* external_uninstall */);
   return true;
 }
-
 
 // static
 ExtensionManagementEventRouter* ExtensionManagementEventRouter::GetInstance() {

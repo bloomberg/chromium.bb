@@ -4005,29 +4005,6 @@
         ]
       },
       {
-        "name": "install",
-        "description": "(FOR INTERNAL USE ONLY)",
-        "nodoc": true,
-        "parameters": [
-          {
-            "name": "expected_id",
-            "type": "string",
-            "description": "The id we expect the crx at |url| to have."
-          },
-          {
-            "name": "url",
-            "type": "string",
-            "description": "The url to fetch the crx from."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "optional": "true",
-            "parameters": []
-          }
-        ]
-      },
-      {
         "name": "uninstall",
         "description": "Uninstall a currently installed app or extension.",
         "parameters": [
@@ -4077,6 +4054,23 @@
     "namespace":"webstorePrivate",
     "nodoc": "true",
     "functions": [
+      {
+        "name": "install",
+        "description": "Installs the extension corresponding to the given id",
+        "parameters": [
+          {
+            "name": "expected_id",
+            "type": "string",
+            "description": "The id of the extension to install."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
       {
         "name": "getSyncLogin",
         "description": "Returns the logged-in sync user login if there is one, or the empty string otherwise.",

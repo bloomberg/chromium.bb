@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/singleton.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -31,11 +32,42 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
-  // Helper function to delete files. This is used to avoid ugly casts which
-  // would be necessary with PostMessage since file_util::Delete is overloaded.
-  static void DeleteFileHelper(const FilePath& path, bool recursive) {
-    file_util::Delete(path, recursive);
+
+// Helper function to delete files. This is used to avoid ugly casts which
+// would be necessary with PostMessage since file_util::Delete is overloaded.
+static void DeleteFileHelper(const FilePath& path, bool recursive) {
+  file_util::Delete(path, recursive);
+}
+
+struct WhitelistedInstallData {
+  WhitelistedInstallData() {}
+  std::list<std::string> ids;
+};
+
+}
+
+// static
+void CrxInstaller::SetWhitelistedInstallId(const std::string& id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  Singleton<WhitelistedInstallData>::get()->ids.push_back(id);
+}
+
+// static
+bool CrxInstaller::ClearWhitelistedInstallId(const std::string& id) {
+  std::list<std::string>& ids = Singleton<WhitelistedInstallData>::get()->ids;
+  std::list<std::string>::iterator iter = ids.begin();
+  for (; iter != ids.end(); ++iter) {
+    if (*iter == id) {
+      break;
+    }
   }
+
+  if (iter != ids.end()) {
+    ids.erase(iter);
+    return true;
+  }
+
+  return false;
 }
 
 CrxInstaller::CrxInstaller(const FilePath& install_directory,
@@ -49,7 +81,8 @@ CrxInstaller::CrxInstaller(const FilePath& install_directory,
       create_app_shortcut_(false),
       frontend_(frontend),
       client_(client),
-      apps_require_extension_mime_type_(false) {
+      apps_require_extension_mime_type_(false),
+      allow_silent_install_(false) {
   extensions_enabled_ = frontend_->extensions_enabled();
 }
 
@@ -221,7 +254,9 @@ void CrxInstaller::ConfirmInstall() {
   current_version_ =
       frontend_->extension_prefs()->GetVersionString(extension_->id());
 
-  if (client_) {
+  if (client_ &&
+      (!allow_silent_install_ ||
+       !ClearWhitelistedInstallId(extension_->id()))) {
     AddRef();  // Balanced in Proceed() and Abort().
     client_->ConfirmInstall(this, extension_.get());
   } else {

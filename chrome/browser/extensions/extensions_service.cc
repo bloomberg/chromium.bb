@@ -164,7 +164,7 @@ bool IsGalleryDownloadURL(const GURL& download_url) {
           switches::kAppsGalleryURL);
   if (!command_line_gallery_url.empty() &&
       StartsWithASCII(download_url.spec(),
-                      extension_urls::kGalleryDownloadPrefix, false))
+                      command_line_gallery_url, false))
     return true;
 
   return false;

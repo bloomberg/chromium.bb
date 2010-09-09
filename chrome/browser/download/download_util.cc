@@ -295,6 +295,7 @@ void OpenChromeExtension(Profile* profile,
       installer->set_original_url(download_item.url());
       installer->set_limit_web_extent_to_download_host(!is_gallery_download);
       installer->InstallCrx(download_item.full_path());
+      installer->set_allow_silent_install(is_gallery_download);
     }
   } else {
     TabContents* contents = NULL;

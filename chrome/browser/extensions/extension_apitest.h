@@ -69,11 +69,17 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // |extension_name| is a directory in "test/data/extensions/api_test".
   bool RunExtensionTest(const char* extension_name);
 
-  // Load |extension_name|, load page at path |subtest_page| under the
-  // extension, and wait for pass / fail notification.  |extension_name|
-  // is a directory in "test/data/extensions/api_test".
+  // If not empty, Load |extension_name|, load |page_url| and wait for pass /
+  // fail notification from the extension API on the page. Note that if
+  // |page_url| is not a valid url, it will be treated as a resource within
+  // the extension. |extension_name| is a directory in
+  // "test/data/extensions/api_test".
   bool RunExtensionSubtest(const char* extension_name,
-                           const std::string& subtest_page);
+                           const std::string& page_url);
+
+  // Load |page_url| and wait for pass / fail notification from the extension
+  // API on the page.
+  bool RunPageTest(const std::string& page_url);
 
   // Test that exactly one extension loaded.  If so, return a pointer to
   // the extension.  If not, return NULL and set message_.

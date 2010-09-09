@@ -81,32 +81,53 @@ bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
 }
 
 bool ExtensionApiTest::RunExtensionSubtest(const char* extension_name,
-                                           const std::string& subtest_page) {
-  DCHECK(!subtest_page.empty()) << "Argument subtest_page is required.";
-  return RunExtensionTestImpl(extension_name, subtest_page);
+                                           const std::string& page_url) {
+  DCHECK(!page_url.empty()) << "Argument page_url is required.";
+  return RunExtensionTestImpl(extension_name, page_url);
 }
 
-// Load an extension and wait for it to notify of PASSED or FAILED.
-bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
-                                            const std::string& subtest_page) {
-  ResultCatcher catcher;
-  LOG(INFO) << "Running ExtensionApiTest with: " << extension_name;
+bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
+  return RunExtensionSubtest("", page_url);
+}
 
-  if (!LoadExtension(test_data_dir_.AppendASCII(extension_name))) {
-    message_ = "Failed to load extension.";
-    return false;
+// Load |extension_name| extension and/or |page_url| and wait for
+// PASSED or FAILED notification.
+bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
+                                            const std::string& page_url) {
+  ResultCatcher catcher;
+  DCHECK(!std::string(extension_name).empty() || !page_url.empty()) <<
+      "extension_name and page_url cannot both be empty";
+  LOG(INFO) << "Running ExtensionApiTest";
+
+  if (!std::string(extension_name).empty()) {
+    LOG(INFO) << "Loading Extension: " << extension_name;
+    if (!LoadExtension(test_data_dir_.AppendASCII(extension_name))) {
+      message_ = "Failed to load extension.";
+      return false;
+    }
   }
 
-  // If there is a subtest to load, navigate to the subtest page.
-  if (!subtest_page.empty()) {
-    ExtensionsService* service = browser()->profile()->GetExtensionsService();
-    Extension* extension =
-        service->GetExtensionById(last_loaded_extension_id_, false);
-    if (!extension)
-      return false;
+  // If there is a page_url to load, navigate it.
+  if (!page_url.empty()) {
+    GURL url = GURL(page_url);
 
-    GURL url = extension->GetResourceURL(subtest_page);
-    LOG(ERROR) << "Loading subtest page url: " << url.spec();
+    // Note: We use is_valid() here in the expectation that the provided url
+    // may lack a scheme & host and thus be a relative url within the loaded
+    // extension.
+    if (!url.is_valid()) {
+      DCHECK(!std::string(extension_name).empty()) <<
+          "Relative page_url given with no extension_name";
+
+      ExtensionsService* service = browser()->profile()->GetExtensionsService();
+      Extension* extension =
+          service->GetExtensionById(last_loaded_extension_id_, false);
+      if (!extension)
+        return false;
+
+      url = extension->GetResourceURL(page_url);
+    }
+
+    LOG(ERROR) << "Loading page url: " << url.spec();
     ui_test_utils::NavigateToURL(browser(), url);
   }
 

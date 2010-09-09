@@ -30,12 +30,6 @@ class SetEnabledFunction : public ExtensionManagementFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.management.setEnabled");
 };
 
-class InstallFunction : public ExtensionManagementFunction {
-  ~InstallFunction() {}
-  virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.management.install");
-};
-
 class UninstallFunction : public ExtensionManagementFunction {
   ~UninstallFunction() {}
   virtual bool RunImpl();

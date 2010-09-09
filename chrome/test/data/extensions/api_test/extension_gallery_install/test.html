@@ -1,0 +1,58 @@
+<script>
+// This tests that the management install and uninstall functions work
+// properly when called by the gallery. Additionally, it implicitly tests
+// that the install() function, when called from the gallery, avoids the
+// dangerous download prompt and the extension permissions install prompt.
+// If either were to appear, this test wouldn't complete.
+// Note that for the purposes of this test the gallery url is "www.a.com"
+// which is set in extension_gallery_install_apitest.cc.
+
+var id = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+
+function checkInstalled(callback) {
+  chrome.experimental.management.getAll(function(extensions) {
+    var found = false;
+    extensions.forEach(function(extension) {
+      if (id == extension.id)
+        found = true;
+    });
+    
+    callback(found);
+  });
+}
+
+// Make sure our "gallery" extension isn't yet installed.
+checkInstalled(function(installed) {
+  chrome.test.assertEq(false, installed);
+
+  // Install "gallery" extensions.
+  chrome.experimental.management.onInstalled.addListener(function(info) {  
+    chrome.test.assertEq(id, info.id);
+    console.log("Installed " + info.id);
+    
+    // Double check it is installed.
+    checkInstalled(function(installed) {
+      chrome.test.assertEq(true, installed);
+
+      // Now uninstall
+      chrome.experimental.management.onUninstalled.addListener(function() {
+        // And check that it's gone.
+        checkInstalled(function(installed) {
+          chrome.test.assertEq(false, installed);
+          
+          chrome.test.succeed();
+        });
+      });
+
+      console.log("Uninstalling...");
+      chrome.experimental.management.uninstall(id, function() {
+        chrome.test.assertNoLastError();
+      });
+    });
+  });
+  chrome.webstorePrivate.install(id, function() {
+    chrome.test.assertNoLastError();
+  });
+  console.log("Installing...");
+});
+</script>

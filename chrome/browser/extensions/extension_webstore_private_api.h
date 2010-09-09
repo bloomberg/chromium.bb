@@ -8,6 +8,16 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+class InstallFunction : public SyncExtensionFunction {
+ public:
+  static void SetTestingInstallBaseUrl(const char* testing_install_base_url);
+
+ protected:
+  ~InstallFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.install");
+};
+
 class GetSyncLoginFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getSyncLogin");
