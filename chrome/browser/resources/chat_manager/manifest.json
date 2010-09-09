@@ -10,6 +10,7 @@
   },
   "description": "Google Chat Manager",
   "background_page": "background.html",
+  "options_page": "options.html",
   "content_scripts": [ {
     "js": [
       "js/chatbridgeeventtypes.js",
