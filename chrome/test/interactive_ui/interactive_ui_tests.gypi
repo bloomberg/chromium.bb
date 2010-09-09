@@ -34,7 +34,6 @@
     '<(DEPTH)/chrome/browser/collected_cookies_uitest.cc',
     '<(DEPTH)/chrome/browser/debugger/devtools_sanity_unittest.cc',
     '<(DEPTH)/chrome/browser/gtk/bookmark_bar_gtk_interactive_uitest.cc',
-    '<(DEPTH)/chrome/browser/media_browsertest.cc',
     '<(DEPTH)/chrome/browser/notifications/notifications_interactive_uitest.cc',
     '<(DEPTH)/chrome/browser/views/bookmark_bar_view_test.cc',
     '<(DEPTH)/chrome/browser/views/browser_keyboard_accessibility_test_win.cc',
