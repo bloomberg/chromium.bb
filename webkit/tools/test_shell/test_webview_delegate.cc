@@ -1051,6 +1051,16 @@ void TestWebViewDelegate::didReceiveResponse(
            GetResourceDescription(identifier).c_str(),
            GetResponseDescription(response).c_str());
   }
+  if (shell_->ShouldDumpResourceResponseMIMETypes()) {
+    GURL url = response.url();
+    WebString mimeType = response.mimeType();
+    printf("%s has MIME type %s\n",
+        url.ExtractFileName().c_str(),
+        // Simulate NSURLResponse's mapping of empty/unknown MIME types to
+        // application/octet-stream.
+        mimeType.isEmpty() ?
+            "application/octet-stream" : mimeType.utf8().data());
+  }
 }
 
 void TestWebViewDelegate::didFinishResourceLoad(

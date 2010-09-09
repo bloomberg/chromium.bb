@@ -92,7 +92,7 @@ public:
     static void CleanupLogging();
 
     // Initialization and clean up of a static member variable.
-    static void InitializeTestShell(bool layout_test_mode, 
+    static void InitializeTestShell(bool layout_test_mode,
                                     bool allow_external_pages);
     static void ShutdownTestShell();
 
@@ -186,6 +186,10 @@ public:
     bool ShouldDumpResourceLoadCallbacks() {
       return layout_test_mode_ && (test_is_preparing_ || test_is_pending_) &&
              layout_test_controller_->ShouldDumpResourceLoadCallbacks();
+    }
+    bool ShouldDumpResourceResponseMIMETypes() {
+      return layout_test_mode_ && (test_is_preparing_ || test_is_pending_) &&
+             layout_test_controller_->ShouldDumpResourceResponseMIMETypes();
     }
     bool ShouldDumpTitleChanges() {
       return layout_test_mode_ &&
@@ -380,9 +384,9 @@ private:
 
     // True when the app is being run using the --layout-tests switch.
     static bool layout_test_mode_;
-  
+
     // True when we wish to allow test shell to load external pages like
-    // www.google.com even when in --layout-test mode (used for QA to 
+    // www.google.com even when in --layout-test mode (used for QA to
     // produce images of the rendered page)
     static bool allow_external_pages_;
 

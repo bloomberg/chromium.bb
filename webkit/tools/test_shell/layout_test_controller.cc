@@ -61,6 +61,7 @@ bool LayoutTestController::dump_as_text_ = false;
 bool LayoutTestController::dump_editing_callbacks_ = false;
 bool LayoutTestController::dump_frame_load_callbacks_ = false;
 bool LayoutTestController::dump_resource_load_callbacks_ = false;
+bool LayoutTestController::dump_resource_response_mime_types_ = false;
 bool LayoutTestController::dump_back_forward_list_ = false;
 bool LayoutTestController::dump_child_frame_scroll_positions_ = false;
 bool LayoutTestController::dump_child_frames_as_text_ = false;
@@ -99,6 +100,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("dumpBackForwardList", &LayoutTestController::dumpBackForwardList);
   BindMethod("dumpFrameLoadCallbacks", &LayoutTestController::dumpFrameLoadCallbacks);
   BindMethod("dumpResourceLoadCallbacks", &LayoutTestController::dumpResourceLoadCallbacks);
+  BindMethod("dumpResourceResponseMIMETypes", &LayoutTestController::dumpResourceResponseMIMETypes);
   BindMethod("dumpStatusCallbacks", &LayoutTestController::dumpWindowStatusChanges);
   BindMethod("dumpTitleChanges", &LayoutTestController::dumpTitleChanges);
   BindMethod("setAcceptsEditing", &LayoutTestController::setAcceptsEditing);
@@ -294,6 +296,12 @@ void LayoutTestController::dumpFrameLoadCallbacks(
 void LayoutTestController::dumpResourceLoadCallbacks(
     const CppArgumentList& args, CppVariant* result) {
   dump_resource_load_callbacks_ = true;
+  result->SetNull();
+}
+
+void LayoutTestController::dumpResourceResponseMIMETypes(
+    const CppArgumentList& args, CppVariant* result) {
+  dump_resource_response_mime_types_ = true;
   result->SetNull();
 }
 
@@ -519,6 +527,7 @@ void LayoutTestController::Reset() {
   dump_editing_callbacks_ = false;
   dump_frame_load_callbacks_ = false;
   dump_resource_load_callbacks_ = false;
+  dump_resource_response_mime_types_ = false;
   dump_back_forward_list_ = false;
   dump_child_frame_scroll_positions_ = false;
   dump_child_frames_as_text_ = false;
@@ -869,7 +878,7 @@ void LayoutTestController::suspendAnimations(
 
   WebKit::WebAnimationController* controller = web_frame->animationController();
   if (!controller)
-    return;  
+    return;
   controller->suspendAnimations();
 }
 
