@@ -87,7 +87,10 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   static const char kIssueAuthTokenFormat[];
 
   // Constants for parsing ClientLogin errors.
+  static const char kAccountDeletedError[];
+  static const char kAccountDisabledError[];
   static const char kCaptchaError[];
+  static const char kServiceUnavailableError[];
   static const char kErrorParam[];
   static const char kErrorUrlParam[];
   static const char kCaptchaUrlParam[];
@@ -160,6 +163,9 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
 
   friend class GaiaAuthenticator2Test;
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CaptchaParse);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, AccountDeletedError);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, AccountDisabledError);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, ServiceUnavailableError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CheckNormalErrorCode);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CheckTwoFactorResponse);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, LoginNetFailure);

@@ -296,6 +296,30 @@ TEST_F(GaiaAuthenticator2Test, CaptchaParse) {
   EXPECT_EQ(error.captcha().unlock_url, unlock_url);
 }
 
+TEST_F(GaiaAuthenticator2Test, AccountDeletedError) {
+  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  std::string data = "Error=AccountDeleted\n";
+  GoogleServiceAuthError error =
+      GaiaAuthenticator2::GenerateAuthError(data, status);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::ACCOUNT_DELETED);
+}
+
+TEST_F(GaiaAuthenticator2Test, AccountDisabledError) {
+  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  std::string data = "Error=AccountDisabled\n";
+  GoogleServiceAuthError error =
+      GaiaAuthenticator2::GenerateAuthError(data, status);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::ACCOUNT_DISABLED);
+}
+
+TEST_F(GaiaAuthenticator2Test,ServiceUnavailableError) {
+  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  std::string data = "Error=ServiceUnavailable\n";
+  GoogleServiceAuthError error =
+      GaiaAuthenticator2::GenerateAuthError(data, status);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+}
+
 TEST_F(GaiaAuthenticator2Test, FullLogin) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientLoginSuccess(_))

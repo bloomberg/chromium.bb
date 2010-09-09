@@ -27,7 +27,10 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
     string16* link_label) {
   if (link_label)
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
-  if (auth_error.state() == AuthError::INVALID_GAIA_CREDENTIALS) {
+  if (auth_error.state() == AuthError::INVALID_GAIA_CREDENTIALS ||
+      auth_error.state() == AuthError::ACCOUNT_DELETED ||
+      auth_error.state() == AuthError::ACCOUNT_DISABLED ||
+      auth_error.state() == AuthError::SERVICE_UNAVAILABLE) {
     // If the user name is empty then the first login failed, otherwise the
     // credentials are out-of-date.
     if (service->GetAuthenticatedUsername().empty())

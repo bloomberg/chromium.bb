@@ -691,6 +691,9 @@ static std::string MakeSyncAuthErrorText(
     const GoogleServiceAuthError::State& state) {
   switch (state) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+    case GoogleServiceAuthError::ACCOUNT_DELETED:
+    case GoogleServiceAuthError::ACCOUNT_DISABLED:
+    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       return "INVALID_GAIA_CREDENTIALS";
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
       return "USER_NOT_SIGNED_UP";

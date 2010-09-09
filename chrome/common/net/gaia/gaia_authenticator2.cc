@@ -43,7 +43,14 @@ const char GaiaAuthenticator2::kIssueAuthTokenFormat[] =
     "Session=true";
 
 // static
+const char GaiaAuthenticator2::kAccountDeletedError[] = "AccountDeleted";
+// static
+const char GaiaAuthenticator2::kAccountDisabledError[] = "AccountDisabled";
+// static
 const char GaiaAuthenticator2::kCaptchaError[] = "CaptchaRequired";
+// static
+const char GaiaAuthenticator2::kServiceUnavailableError[] =
+    "ServiceUnavailable";
 // static
 const char GaiaAuthenticator2::kErrorParam[] = "Error";
 // static
@@ -275,6 +282,13 @@ GoogleServiceAuthError GaiaAuthenticator2::GenerateAuthError(
       GURL unlock_url(url);
       return GoogleServiceAuthError::FromCaptchaChallenge(
           captcha_token, image_url, unlock_url);
+    } else if (error == kAccountDeletedError) {
+      return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DELETED);
+    } else if (error == kAccountDisabledError) {
+      return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
+    } else if (error == kServiceUnavailableError) {
+      return GoogleServiceAuthError(
+          GoogleServiceAuthError::SERVICE_UNAVAILABLE);
     }
 
     return GoogleServiceAuthError(

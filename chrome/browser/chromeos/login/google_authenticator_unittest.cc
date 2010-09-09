@@ -435,6 +435,60 @@ TEST_F(GoogleAuthenticatorTest, LoginDenied) {
   message_loop.RunAllPending();
 }
 
+TEST_F(GoogleAuthenticatorTest, LoginAccountDisabled) {
+  MessageLoopForUI message_loop;
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+
+  GoogleServiceAuthError client_error(
+      GoogleServiceAuthError::ACCOUNT_DISABLED);
+
+  MockConsumer consumer;
+  EXPECT_CALL(consumer, OnLoginFailure(_))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  PrepForLogin(auth.get());
+  auth->OnClientLoginFailure(client_error);
+  message_loop.RunAllPending();
+}
+
+TEST_F(GoogleAuthenticatorTest, LoginAccountDeleted) {
+  MessageLoopForUI message_loop;
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+
+  GoogleServiceAuthError client_error(
+      GoogleServiceAuthError::ACCOUNT_DELETED);
+
+  MockConsumer consumer;
+  EXPECT_CALL(consumer, OnLoginFailure(_))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  PrepForLogin(auth.get());
+  auth->OnClientLoginFailure(client_error);
+  message_loop.RunAllPending();
+}
+
+TEST_F(GoogleAuthenticatorTest, LoginServiceUnavailable) {
+  MessageLoopForUI message_loop;
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+
+  GoogleServiceAuthError client_error(
+      GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+
+  MockConsumer consumer;
+  EXPECT_CALL(consumer, OnLoginFailure(_))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  PrepForLogin(auth.get());
+  auth->OnClientLoginFailure(client_error);
+  message_loop.RunAllPending();
+}
+
 TEST_F(GoogleAuthenticatorTest, CaptchaErrorOutputted) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);

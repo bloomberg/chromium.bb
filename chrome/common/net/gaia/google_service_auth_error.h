@@ -58,6 +58,15 @@ class GoogleServiceAuthError {
     // https://www.google.com/accounts/DisplayUnlockCaptcha. Otherwise,
     // captcha() will provide details about the associated challenge.
     CAPTCHA_REQUIRED,
+
+    // The user account has been deleted.
+    ACCOUNT_DELETED,
+
+    // The user account has been disabled.
+    ACCOUNT_DISABLED,
+
+    // The service is not available; try again later.
+    SERVICE_UNAVAILABLE,
   };
 
   // Additional data for CAPTCHA_REQUIRED errors.

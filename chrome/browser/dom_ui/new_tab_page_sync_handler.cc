@@ -156,7 +156,13 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
     if (sync_service_->GetAuthError().state() ==
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
         sync_service_->GetAuthError().state() ==
-        GoogleServiceAuthError::CAPTCHA_REQUIRED) {
+        GoogleServiceAuthError::CAPTCHA_REQUIRED ||
+        sync_service_->GetAuthError().state() ==
+        GoogleServiceAuthError::ACCOUNT_DELETED ||
+        sync_service_->GetAuthError().state() ==
+        GoogleServiceAuthError::ACCOUNT_DISABLED ||
+        sync_service_->GetAuthError().state() ==
+        GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
       sync_service_->ShowLoginDialog(NULL);
       return;
     }
