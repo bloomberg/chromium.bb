@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 
@@ -20,12 +21,12 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
   ConfigurationPolicyPrefStore* managed = NULL;
   ExtensionPrefStore* extension = NULL;
   CommandLinePrefStore* command_line = NULL;
-  JsonPrefStore* user = NULL;
   ConfigurationPolicyPrefStore* recommended = NULL;
 
-  user = new JsonPrefStore(
+  JsonPrefStore* user = new JsonPrefStore(
       pref_filename,
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
+  DefaultPrefStore* default_store = new DefaultPrefStore();
 
   if (!user_only) {
     managed = ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore();
@@ -35,7 +36,7 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
         ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
   }
   return new PrefValueStore(managed, extension, command_line, user,
-      recommended);
+                            recommended, default_store);
 }
 
 PrefValueStore::~PrefValueStore() {}
@@ -50,7 +51,7 @@ bool PrefValueStore::GetValue(const std::string& name,
       return true;
     }
   }
-  // No value found for the given preference name, set the return false.
+  // No value found for the given preference name: set the return false.
   *out_value = NULL;
   return false;
 }
@@ -89,7 +90,9 @@ bool PrefValueStore::HasPrefPath(const char* path) const {
   Value* tmp_value = NULL;
   const std::string name(path);
   bool rv = GetValue(name, &tmp_value);
-  return rv;
+  // Merely registering a pref doesn't count as "having" it: we require a
+  // non-default value set.
+  return rv && !PrefValueFromDefaultStore(path);
 }
 
 bool PrefValueStore::PrefHasChanged(const char* path,
@@ -110,8 +113,9 @@ bool PrefValueStore::PrefHasChanged(const char* path,
   // If there's a value in a store with lower priority than the |new_store|,
   // and no value in a store with higher priority, assume the |new_store| just
   // took control of the pref. (This assumption is wrong if the new value
-  // and store are both the same as the old one, but that situation should be
-  // rare, and reporting a change when none happened should not be harmful.)
+  // and store are both the same as the old one.)
+  // TODO(pamg): This happens often, because every pref has a value in the
+  // default pref store. Fix it.
   if (PrefValueInStoreRange(path, new_store, false) &&
       !PrefValueInStoreRange(path, new_store, true))
     return true;
@@ -119,11 +123,18 @@ bool PrefValueStore::PrefHasChanged(const char* path,
   return false;
 }
 
-// Note the |DictionaryValue| referenced by the |PrefStore| user_prefs_
+// Note the |DictionaryValue| referenced by the |PrefStore| USER_STORE
 // (returned by the method prefs()) takes the ownership of the Value referenced
 // by in_value.
 void PrefValueStore::SetUserPrefValue(const char* name, Value* in_value) {
   pref_stores_[PrefNotifier::USER_STORE]->prefs()->Set(name, in_value);
+}
+
+// Note the |DictionaryValue| referenced by the |PrefStore| DEFAULT_STORE
+// (returned by the method prefs()) takes the ownership of the Value referenced
+// by in_value.
+void PrefValueStore::SetDefaultPrefValue(const char* name, Value* in_value) {
+  pref_stores_[PrefNotifier::DEFAULT_STORE]->prefs()->Set(name, in_value);
 }
 
 bool PrefValueStore::ReadOnly() {
@@ -136,27 +147,31 @@ void PrefValueStore::RemoveUserPrefValue(const char* name) {
   }
 }
 
-bool PrefValueStore::PrefValueInManagedStore(const char* name) {
+bool PrefValueStore::PrefValueInManagedStore(const char* name) const {
   return PrefValueInStore(name, PrefNotifier::MANAGED_STORE);
 }
 
-bool PrefValueStore::PrefValueInExtensionStore(const char* name) {
+bool PrefValueStore::PrefValueInExtensionStore(const char* name) const {
   return PrefValueInStore(name, PrefNotifier::EXTENSION_STORE);
 }
 
-bool PrefValueStore::PrefValueInUserStore(const char* name) {
+bool PrefValueStore::PrefValueInUserStore(const char* name) const {
   return PrefValueInStore(name, PrefNotifier::USER_STORE);
 }
 
-bool PrefValueStore::PrefValueFromExtensionStore(const char* name) {
+bool PrefValueStore::PrefValueFromExtensionStore(const char* name) const {
   return ControllingPrefStoreForPref(name) == PrefNotifier::EXTENSION_STORE;
 }
 
-bool PrefValueStore::PrefValueFromUserStore(const char* name) {
+bool PrefValueStore::PrefValueFromUserStore(const char* name) const {
   return ControllingPrefStoreForPref(name) == PrefNotifier::USER_STORE;
 }
 
-bool PrefValueStore::PrefValueUserModifiable(const char* name) {
+bool PrefValueStore::PrefValueFromDefaultStore(const char* name) const {
+  return ControllingPrefStoreForPref(name) == PrefNotifier::DEFAULT_STORE;
+}
+
+bool PrefValueStore::PrefValueUserModifiable(const char* name) const {
   PrefNotifier::PrefStoreType effective_store =
       ControllingPrefStoreForPref(name);
   return effective_store >= PrefNotifier::USER_STORE ||
@@ -164,7 +179,7 @@ bool PrefValueStore::PrefValueUserModifiable(const char* name) {
 }
 
 bool PrefValueStore::PrefValueInStore(const char* name,
-                                      PrefNotifier::PrefStoreType type) {
+                                      PrefNotifier::PrefStoreType type) const {
   if (!pref_stores_[type].get()) {
     // No store of that type set, so this pref can't be in it.
     return false;
@@ -175,7 +190,7 @@ bool PrefValueStore::PrefValueInStore(const char* name,
 
 bool PrefValueStore::PrefValueInStoreRange(const char* name,
                                            PrefNotifier::PrefStoreType boundary,
-                                           bool higher_priority) {
+                                           bool higher_priority) const {
   // Higher priorities are lower PrefStoreType values. The range is
   // non-inclusive of the boundary.
   int start = higher_priority ? 0 : boundary + 1;
@@ -189,9 +204,8 @@ bool PrefValueStore::PrefValueInStoreRange(const char* name,
   return false;
 }
 
-
 PrefNotifier::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
-    const char* name) {
+    const char* name) const {
   for (int i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
     if (PrefValueInStore(name, static_cast<PrefNotifier::PrefStoreType>(i)))
       return static_cast<PrefNotifier::PrefStoreType>(i);
@@ -288,10 +302,15 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
                                PrefStore* extension_prefs,
                                PrefStore* command_line_prefs,
                                PrefStore* user_prefs,
-                               PrefStore* recommended_prefs) {
+                               PrefStore* recommended_prefs,
+                               PrefStore* default_prefs) {
+  // NULL default pref store is usually bad, but may be OK for some unit tests.
+  if (!default_prefs)
+    LOG(WARNING) << "default pref store is null";
   pref_stores_[PrefNotifier::MANAGED_STORE].reset(managed_prefs);
   pref_stores_[PrefNotifier::EXTENSION_STORE].reset(extension_prefs);
   pref_stores_[PrefNotifier::COMMAND_LINE_STORE].reset(command_line_prefs);
   pref_stores_[PrefNotifier::USER_STORE].reset(user_prefs);
   pref_stores_[PrefNotifier::RECOMMENDED_STORE].reset(recommended_prefs);
+  pref_stores_[PrefNotifier::DEFAULT_STORE].reset(default_prefs);
 }

@@ -32,6 +32,7 @@ class PrefNotifier : public NonThreadSafe,
   //   COMMAND_LINE contains preference values set by command-line switches.
   //   USER contains all user-set preference values.
   //   RECOMMENDED contains all recommended (policy) preference values.
+  //   DEFAULT contains all application default preference values.
   // This enum is kept in pref_notifier.h rather than pref_value_store.h in
   // order to minimize additional headers needed by the *PrefStore files.
   enum PrefStoreType {
@@ -43,7 +44,8 @@ class PrefNotifier : public NonThreadSafe,
     COMMAND_LINE_STORE,
     USER_STORE,
     RECOMMENDED_STORE,
-    PREF_STORE_TYPE_MAX = RECOMMENDED_STORE
+    DEFAULT_STORE,
+    PREF_STORE_TYPE_MAX = DEFAULT_STORE
   };
 
   // The |service| with which this notifier is associated will be sent as the

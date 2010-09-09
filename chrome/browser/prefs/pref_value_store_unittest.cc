@@ -35,6 +35,7 @@ namespace prefs {
   const char kRecommendedPref[] = "this.pref.recommended_value_only";
   const char kSampleDict[] = "sample.dict";
   const char kSampleList[] = "sample.list";
+  const char kDefaultPref[] = "default.pref";
 
   // This must match the actual pref name so the command-line store knows about
   // it.
@@ -72,6 +73,10 @@ namespace recommended_pref {
   const bool kRecommendedPrefValue = true;
 }
 
+namespace default_pref {
+  const int kDefaultValue = 7;
+}
+
 class PrefValueStoreTest : public testing::Test {
  protected:
   virtual void SetUp() {
@@ -81,6 +86,7 @@ class PrefValueStoreTest : public testing::Test {
     command_line_prefs_ = CreateCommandLinePrefs();
     user_prefs_ = CreateUserPrefs();
     recommended_prefs_ = CreateRecommendedPrefs();
+    default_prefs_ = CreateDefaultPrefs();
 
     // Create |DummyPrefStore|s.
     enforced_pref_store_ = new DummyPrefStore();
@@ -94,6 +100,8 @@ class PrefValueStoreTest : public testing::Test {
     user_pref_store_->set_prefs(user_prefs_);
     recommended_pref_store_ = new DummyPrefStore();
     recommended_pref_store_->set_prefs(recommended_prefs_);
+    default_pref_store_ = new DummyPrefStore();
+    default_pref_store_->set_prefs(default_prefs_);
 
     // Create a new pref-value-store.
     pref_value_store_ = new TestingPrefService::TestingPrefValueStore(
@@ -101,7 +109,8 @@ class PrefValueStoreTest : public testing::Test {
         extension_pref_store_,
         command_line_pref_store_,
         user_pref_store_,
-        recommended_pref_store_);
+        recommended_pref_store_,
+        default_pref_store_);
 
     ui_thread_.reset(new ChromeThread(ChromeThread::UI, &loop_));
     file_thread_.reset(new ChromeThread(ChromeThread::FILE, &loop_));
@@ -163,7 +172,14 @@ class PrefValueStoreTest : public testing::Test {
     expected_differing_paths_.push_back("this");
     expected_differing_paths_.push_back("this.pref");
     expected_differing_paths_.push_back(prefs::kRecommendedPref);
-    return recommended_prefs;  }
+    return recommended_prefs;
+  }
+
+  DictionaryValue* CreateDefaultPrefs() {
+    DictionaryValue* default_prefs = new DictionaryValue();
+    default_prefs->SetInteger(prefs::kDefaultPref, default_pref::kDefaultValue);
+    return default_prefs;
+  }
 
   DictionaryValue* CreateSampleDictValue() {
     DictionaryValue* sample_dict = new DictionaryValue();
@@ -194,8 +210,9 @@ class PrefValueStoreTest : public testing::Test {
   DummyPrefStore* enforced_pref_store_;
   DummyPrefStore* extension_pref_store_;
   DummyPrefStore* command_line_pref_store_;
-  DummyPrefStore* recommended_pref_store_;
   DummyPrefStore* user_pref_store_;
+  DummyPrefStore* recommended_pref_store_;
+  DummyPrefStore* default_pref_store_;
 
   // A vector of the preferences paths in the managed and recommended
   // PrefStores that are set at the beginning of a test. Can be modified
@@ -209,6 +226,7 @@ class PrefValueStoreTest : public testing::Test {
   DictionaryValue* command_line_prefs_;
   DictionaryValue* user_prefs_;
   DictionaryValue* recommended_prefs_;
+  DictionaryValue* default_prefs_;
 
  private:
   scoped_ptr<ChromeThread> ui_thread_;
@@ -221,6 +239,7 @@ TEST_F(PrefValueStoreTest, IsReadOnly) {
   command_line_pref_store_->set_read_only(true);
   user_pref_store_->set_read_only(true);
   recommended_pref_store_->set_read_only(true);
+  default_pref_store_->set_read_only(true);
   EXPECT_TRUE(pref_value_store_->ReadOnly());
 
   user_pref_store_->set_read_only(false);
@@ -272,6 +291,13 @@ TEST_F(PrefValueStoreTest, GetValue) {
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_EQ(recommended_pref::kRecommendedPrefValue, actual_bool_value);
 
+  // Test getting a default value.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDefaultPref, &value));
+  actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(default_pref::kDefaultValue, actual_int_value);
+
   // Test getting a preference value that the |PrefValueStore|
   // does not contain.
   FundamentalValue tmp_dummy_value(true);
@@ -287,6 +313,8 @@ TEST_F(PrefValueStoreTest, HasPrefPath) {
   EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kDeleteCache));
   // Recommended preference
   EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
+  // Default preference
+  EXPECT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
   // Unknown preference
   EXPECT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
 }
@@ -448,6 +476,11 @@ TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
       prefs::kRecommendedPref));
 
+  // Test a preference from the default pref store.
+  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kDefaultPref));
+
   // Test a preference for which the PrefValueStore does not contain a value.
   ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(prefs::kMissingPref));
@@ -485,6 +518,13 @@ TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
       prefs::kRecommendedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kRecommendedPref));
+
+  // Test a preference from the default pref store.
+  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kDefaultPref));
 
   // Test a preference for which the PrefValueStore does not contain a value.
   ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
@@ -526,10 +566,50 @@ TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
       prefs::kRecommendedPref));
 
+  // Test a preference from the default pref store.
+  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kDefaultPref));
+
   // Test a preference for which the PrefValueStore does not contain a value.
   ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kMissingPref));
+}
+
+TEST_F(PrefValueStoreTest, PrefValueFromDefaultStore) {
+  // Test an enforced preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(prefs::kHomepage));
+
+  // Test an extension preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kCurrentThemeID));
+
+  // Test a command-line preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kApplicationLocale));
+
+  // Test a user preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(prefs::kMaxTabs));
+
+  // Test a preference from the recommended pref store.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kRecommendedPref));
+
+  // Test a preference from the default pref store.
+  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
+  EXPECT_TRUE(
+      pref_value_store_->PrefValueFromDefaultStore(prefs::kDefaultPref));
+
+  // Test a preference for which the PrefValueStore does not contain a value.
+  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
+  EXPECT_FALSE(
+      pref_value_store_->PrefValueFromDefaultStore(prefs::kMissingPref));
 }
 
 TEST_F(PrefValueStoreTest, TestPolicyRefresh) {

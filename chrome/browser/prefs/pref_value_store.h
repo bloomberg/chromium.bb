@@ -49,7 +49,9 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   ~PrefValueStore();
 
   // Get the preference value for the given preference name.
-  // Return true if a value for the given preference name was found.
+  // Return true if a value for the given preference name was found in any of
+  // the available PrefStores. Most callers should use Preference::GetValue()
+  // instead of calling this method directly.
   bool GetValue(const std::string& name, Value** out_value) const;
 
   // Read preference values into the three PrefStores so that they are available
@@ -77,7 +79,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // TODO(pamg): If we're setting the same value as we already had, into the
   // same store that was controlling it before, and there's also a value set in
   // a lower-priority store, *and* we're not the highest-priority store, then
-  // this will return true when it shouldn't. Fix that if it causes problems.
+  // this will return true when it shouldn't. This comes up frequently because
+  // every pref has a value in the default PrefStore.
   virtual bool PrefHasChanged(const char* path,
                               PrefNotifier::PrefStoreType new_store,
                               const Value* old_value);
@@ -101,22 +104,26 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // or recommended this function should have no effect.
   void RemoveUserPrefValue(const char* name);
 
+  // Sets a value in the DefaultPrefStore, which takes ownership of the Value.
+  void SetDefaultPrefValue(const char* name, Value* in_value);
+
   // These methods return true if a preference with the given name is in the
   // indicated pref store, even if that value is currently being overridden by
   // a higher-priority source.
-  bool PrefValueInManagedStore(const char* name);
-  bool PrefValueInExtensionStore(const char* name);
-  bool PrefValueInUserStore(const char* name);
+  bool PrefValueInManagedStore(const char* name) const;
+  bool PrefValueInExtensionStore(const char* name) const;
+  bool PrefValueInUserStore(const char* name) const;
 
   // These methods return true if a preference with the given name is actually
   // being controlled by the indicated pref store and not being overridden by
   // a higher-priority source.
-  bool PrefValueFromExtensionStore(const char* name);
-  bool PrefValueFromUserStore(const char* name);
+  bool PrefValueFromExtensionStore(const char* name) const;
+  bool PrefValueFromUserStore(const char* name) const;
+  bool PrefValueFromDefaultStore(const char* name) const;
 
   // Check whether a Preference value is modifiable by the user, i.e. whether
   // there is no higher-priority source controlling it.
-  bool PrefValueUserModifiable(const char* name);
+  bool PrefValueUserModifiable(const char* name) const;
 
   // Signature of callback triggered after policy refresh. Parameter is not
   // passed as reference to prevent passing along a pointer to a set whose
@@ -144,6 +151,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   //        switches.
   //   |user_prefs| contains all user-set preference values.
   //   |recommended_prefs| contains all recommended (policy) preference values.
+  //   |default_prefs| contains application-default preference values. It must
+  //        be non-null if any preferences are to be registered.
   //
   // This constructor should only be used internally, or by subclasses in
   // testing. The usual way to create a PrefValueStore is by creating a
@@ -152,7 +161,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
                  PrefStore* extension_prefs,
                  PrefStore* command_line_prefs,
                  PrefStore* user_prefs,
-                 PrefStore* recommended_prefs);
+                 PrefStore* recommended_prefs,
+                 PrefStore* default_prefs);
 
  private:
   friend class PrefValueStoreTest;
@@ -161,7 +171,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
 
   scoped_ptr<PrefStore> pref_stores_[PrefNotifier::PREF_STORE_TYPE_MAX + 1];
 
-  bool PrefValueInStore(const char* name, PrefNotifier::PrefStoreType type);
+  bool PrefValueInStore(const char* name,
+                        PrefNotifier::PrefStoreType type) const;
 
   // Returns true if the preference |name| is found in any PrefStore starting
   // just beyond the |boundary|, non-inclusive, and checking either
@@ -169,12 +180,13 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // stores.
   bool PrefValueInStoreRange(const char* name,
                              PrefNotifier::PrefStoreType boundary,
-                             bool higher_priority);
+                             bool higher_priority) const;
 
   // Returns the pref store type identifying the source that controls the
   // Preference identified by |name|. If none of the sources has a value,
   // INVALID is returned.
-  PrefNotifier::PrefStoreType ControllingPrefStoreForPref(const char* name);
+  PrefNotifier::PrefStoreType ControllingPrefStoreForPref(
+      const char* name) const;
 
   // Called during policy refresh after ReadPrefs completes on the thread
   // that initiated the policy refresh. RefreshPolicyPrefsCompletion takes

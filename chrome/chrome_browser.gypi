@@ -2231,6 +2231,8 @@
         'browser/prefs/browser_prefs.h',
         'browser/prefs/command_line_pref_store.cc',
         'browser/prefs/command_line_pref_store.h',
+        'browser/prefs/default_pref_store.cc',
+        'browser/prefs/default_pref_store.h',
         'browser/prefs/pref_member.cc',
         'browser/prefs/pref_member.h',
         'browser/prefs/pref_notifier.cc',
