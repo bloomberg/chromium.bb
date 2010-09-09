@@ -1,0 +1,13 @@
+{
+  "name": "Popup blocking test",
+  "version": "1",
+  "description": "Popup windows should never be blocked from within an extension.",
+  "permissions": ["tabs"],
+  "background_page": "background.html",
+  "content_scripts": [
+    {
+      "matches": ["http://b.com/*"],
+      "js": ["pop.js", "content_script.js"]
+    }
+  ]
+}

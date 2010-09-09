@@ -1,0 +1,73 @@
+<!--
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script src="pop.js"></script>
+<script>
+var webPageURL =
+    "http://b.com:1337/files/extensions/api_test/window_open/popup_blocking/" +
+    "extension/foo.html";
+
+chrome.tabs.onUpdated.addListener(function(tabId, changed, tab) {
+  if (tab.status == "complete")
+    checkTest();
+});
+
+function checkTest() {
+  chrome.windows.getAll({populate: true}, function(windows) {
+    // If we don't have enough windows and tabs yet, the test isn't done.
+    if (windows.length < 4 || windows[0].tabs.length < 6)
+      return;
+
+    // The first window should have 6 tabs, all of which have a URL.
+    chrome.test.assertEq("normal", windows[0].type);
+    for (var i = 0; i < windows[0].tabs.length; i++) {
+      // If a tab doesn't have a URL yet, the test isn't done.
+      if (!windows[0].tabs[i].url)
+        return;
+    }
+
+    // The remaining 3 windows should each be popup with one tab.
+    for (var i = 1; i < 4; i++) {
+      // If the popup doesn't have a URL yet, the test isn't done.
+      if (windows[i].tabs.length < 1 || !windows[i].tabs[0].url)
+        return;
+    }
+
+    // OK, we appear to be done with the test. Now check that each of the tabs
+    // has the expected URL.
+
+    // The first window has: the new tab page, a tab from our extension, a web
+    // page we used to trigger a content script, and three popup tabs.
+    chrome.test.assertEq("normal", windows[0].type);
+    chrome.test.assertEq(chrome.extension.getURL("tab.html"),
+                         windows[0].tabs[1].url);
+    chrome.test.assertEq(webPageURL, windows[0].tabs[2].url);
+    for (var i = 3; i < 6; i++) {
+      chrome.test.assertEq(popupURL, windows[0].tabs[i].url);
+    }
+
+    // The remaining windows should each have one popup tab.
+    for (var i = 1; i < 4; i++) {
+      chrome.test.assertEq("popup", windows[i].type);
+      chrome.test.assertEq(1, windows[i].tabs.length);
+      chrome.test.assertEq(popupURL, windows[i].tabs[0].url);
+    }
+
+    chrome.test.notifyPass();
+  });
+}
+
+// Open a popup and a tab from the background page.
+pop();
+
+// Open a popup and a tab from a tab (tabs don't use ExtensionHost, so it's
+// interesting to test them separately).
+chrome.tabs.create({url: "tab.html", index: 1});
+
+// Open a tab to a URL that will cause our content script to run. The content
+// script will open a popup and a tab.
+chrome.tabs.create({url: webPageURL, index: 2});
+</script>
