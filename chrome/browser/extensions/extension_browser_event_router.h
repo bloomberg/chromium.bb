@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,9 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
   virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents, int index);
+                             TabContents* new_contents,
+                             int index,
+                             TabReplaceType type);
   virtual void TabStripEmpty();
 
   // Page Action execute event.
@@ -114,6 +116,9 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // Register ourselves to receive the various notifications we are interested
   // in for a tab.
   void RegisterForTabNotifications(TabContents* contents);
+
+  // Removes notifications added in RegisterForTabNotifications.
+  void UnregisterForTabNotifications(TabContents* contents);
 
   ExtensionBrowserEventRouter();
   friend struct DefaultSingletonTraits<ExtensionBrowserEventRouter>;
