@@ -170,6 +170,7 @@ def SubsetNaClHeaders(input_headers, arch):
       "sys/nacl_imc_api.h",
       "bits/nacl_imc_api.h",
       "sys/nacl_syscalls.h",
+      "bits/nacl_syscalls.h",
       "sys/audio_video.h",
       "machine/_types.h"]
   for filename in headers:
@@ -191,12 +192,11 @@ exec %s "$@"
                                                  executable=True)}}
 
 
-def DummyLibs(arch):
+def DummyLibrary(arch, name):
   # This text file works as a dummy (empty) library because ld treats
   # it as a linker script.
   dummy_lib = FileSnapshotInMemory("/* Intentionally empty */\n")
-  return {arch: {"lib": {"libnacl.so": dummy_lib,
-                         "libcrt_platform.so": dummy_lib}}}
+  return {arch: {"lib": {"%s.so" % name: dummy_lib}}}
 
 
 # When gcc is built, it checks whether libc provides <limits.h> in

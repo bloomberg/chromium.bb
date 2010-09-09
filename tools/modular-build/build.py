@@ -261,14 +261,30 @@ int main() {
       "readelf", os.path.join(top_dir, "install", "readelf"),
       treemappers.CreateAlias, [], args=["readelf", "%s-readelf" % arch]))
 
-  modules["dummy_libs"] = btarget.TreeMapper(
-      "dummy_libs",
-      os.path.join(top_dir, "install", "dummy_libs"),
-      treemappers.DummyLibs, [], args=[arch])
+  # nacl-gcc's spec file forces linking against -lcrt_platform and
+  # -lnacl, but the former is specific to the newlib toolchain and the
+  # latter is not a dependency of glibc's libc.  We work around this
+  # by providing dummy libraries.
+  # TODO(mseaborn): Change the nacl-gcc spec file to remove "-lnacl"
+  # and "-lcrt_platform".
+  modules["dummy_libnacl"] = btarget.TreeMapper(
+      "dummy_libnacl",
+      os.path.join(top_dir, "install", "dummy_libnacl"),
+      treemappers.DummyLibrary, [], args=[arch, "libnacl"])
+  modules["dummy_libcrt_platform"] = btarget.TreeMapper(
+      "dummy_libcrt_platform",
+      os.path.join(top_dir, "install", "dummy_libcrt_platform"),
+      treemappers.DummyLibrary, [], args=[arch, "libcrt_platform"])
+  # We also provide a dummy libnosys for tests that link against it.
+  modules["dummy_libnosys"] = btarget.TreeMapper(
+      "dummy_libnosys",
+      os.path.join(top_dir, "install", "dummy_libnosys"),
+      treemappers.DummyLibrary, [], args=[arch, "libnosys"])
 
   AddAutoconfModule(
       "glibc", "glibc",
-      deps=["binutils", "pre-gcc", "dummy_libs", "readelf"] + gcc_libs,
+      deps=["binutils", "pre-gcc", "readelf",
+            "dummy_libnacl", "dummy_libcrt_platform"] + gcc_libs,
       explicitly_passed_deps=[src["linux_headers"]],
       configure_opts=[
           "--prefix=/%s" % arch,
@@ -286,10 +302,6 @@ int main() {
       configure_env=["libc_cv_forced_unwind=yes", "libc_cv_c_cleanup=yes"],
       use_install_root=True)
 
-  modules["wrappers"] = btarget.SourceTarget(
-      "wrappers",
-      os.path.join(top_dir, "install", "wrappers"),
-      dirtree.CopyTree(os.path.join(script_dir, "wrappers")))
   # TODO(mseaborn): It would be better if installing linker scripts
   # did not require an ad-hoc rule.
   modules["linker_scripts"] = btarget.TreeMapper(
@@ -316,7 +328,8 @@ int main() {
 
   AddAutoconfModule(
       "full-gcc-glibc", "gcc",
-      deps=["binutils", "glibc", "installed_linux_headers", "dummy_libs",
+      deps=["binutils", "glibc", "installed_linux_headers",
+            "dummy_libnacl", "dummy_libcrt_platform",
             "linker_scripts", "sys_include_alias"] + gcc_libs,
       configure_opts=[
           "--disable-libmudflap",
@@ -336,28 +349,29 @@ int main() {
       make_cmd=["make", "all"])
 
   glibc_toolchain_deps = [
-      "binutils", "full-gcc-glibc", "glibc", "wrappers", "linker_scripts",
-      "installed_linux_headers", "installed_nacl_headers"] + gcc_libs
+      "binutils", "full-gcc-glibc", "glibc",
+      "dummy_libcrt_platform", "dummy_libnosys",
+      "linker_scripts", "installed_linux_headers",
+      "installed_nacl_headers"] + gcc_libs
+  AddSconsModule(
+      "nacl_libs_glibc",
+      deps=glibc_toolchain_deps + ["libnacl_headers"],
+      scons_args=["MODE=nacl_extra_sdk", "--nacl_glibc",
+                  "extra_sdk_update", "extra_sdk_update_header"])
   glibc_toolchain = MakeInstallPrefix(
-      "glibc_toolchain", deps=glibc_toolchain_deps)
+      "glibc_toolchain", deps=glibc_toolchain_deps + ["nacl_libs_glibc"])
 
   modules["hello_glibc"] = btarget.TestModule(
       "hello_glibc",
       os.path.join(top_dir, "build", "hello_glibc"),
       glibc_toolchain,
       hello_c,
-      compiler=["nacl-glibc-gcc"])
+      compiler=["nacl-gcc"])
   module_list.append(modules["hello_glibc"])
 
   AddSconsModule(
-      "nacl_libs_glibc",
-      deps=glibc_toolchain_deps + ["libnacl_headers"],
-      scons_args=["MODE=nacl_extra_sdk", "--nacl_glibc",
-                  "extra_sdk_update", "extra_sdk_update_header"])
-
-  AddSconsModule(
       "scons_tests",
-      deps=glibc_toolchain_deps,
+      deps=glibc_toolchain_deps + ["dummy_libnacl"],
       scons_args=["--nacl_glibc", "run_hello_world_test"])
 
   return module_list

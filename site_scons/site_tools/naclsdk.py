@@ -186,10 +186,6 @@ def _SetEnvForX86Sdk(env, sdk_path):
                        ],
               ASFLAGS=[extraflag],
               )
-  if env.Bit('nacl_glibc'):
-    env.Replace(CC="nacl-glibc-gcc")
-    env.Replace(LINK="nacl-glibc-gcc")
-    env.Replace(NACL_SDK_LIB='%s/%s/lib' % (sdk_path, arch))
 
 def _SetEnvForPnacl(env, arch):
   assert arch in ['arm', 'x86-32', 'x86-64']
