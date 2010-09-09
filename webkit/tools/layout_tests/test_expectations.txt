@@ -28,3 +28,6 @@ BUG32153 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = IMAGE+TE
 
 // FFmpeg buffer rotation is causing this hang.
 BUG54465 WIN SKIP : http/tests/media/video-play-stall-seek.html = FAIL
+
+// Temporary override until WebKit roll picks up r67119
+BUGWK45479 : fast/dom/HTMLLinkElement/prefetch.html = TEXT
