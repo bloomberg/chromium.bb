@@ -278,6 +278,8 @@ void TableView::OnModelChanged() {
   if (!list_view_)
     return;
 
+  UpdateGroups();
+
   int current_row_count = ListView_GetItemCount(list_view_);
   if (current_row_count > 0)
     OnItemsRemoved(0, current_row_count);
@@ -805,21 +807,7 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
   if (model_)
     model_->SetObserver(this);
 
-  // Add the groups.
-  if (model_ && model_->HasGroups()) {
-    ListView_EnableGroupView(list_view_, true);
-
-    TableModel::Groups groups = model_->GetGroups();
-    LVGROUP group = { 0 };
-    group.cbSize = sizeof(LVGROUP);
-    group.mask = LVGF_HEADER | LVGF_ALIGN | LVGF_GROUPID;
-    group.uAlign = LVGA_HEADER_LEFT;
-    for (size_t i = 0; i < groups.size(); ++i) {
-      group.pszHeader = const_cast<wchar_t*>(groups[i].title.c_str());
-      group.iGroupId = groups[i].id;
-      ListView_InsertGroup(list_view_, static_cast<int>(i), &group);
-    }
-  }
+  UpdateGroups();
 
   // Set the # of rows.
   if (model_)
@@ -1533,6 +1521,26 @@ void TableView::UpdateContentOffset() {
   GetWindowRect(header, &header_bounds);
 
   content_offset_ = origin.y + header_bounds.bottom - header_bounds.top;
+}
+
+void TableView::UpdateGroups() {
+  // Add the groups.
+  if (model_ && model_->HasGroups()) {
+    ListView_EnableGroupView(list_view_, true);
+
+    ListView_RemoveAllGroups(list_view_);
+
+    TableModel::Groups groups = model_->GetGroups();
+    LVGROUP group = { 0 };
+    group.cbSize = sizeof(LVGROUP);
+    group.mask = LVGF_HEADER | LVGF_ALIGN | LVGF_GROUPID;
+    group.uAlign = LVGA_HEADER_LEFT;
+    for (size_t i = 0; i < groups.size(); ++i) {
+      group.pszHeader = const_cast<wchar_t*>(groups[i].title.c_str());
+      group.iGroupId = groups[i].id;
+      ListView_InsertGroup(list_view_, static_cast<int>(i), &group);
+    }
+  }
 }
 
 gfx::Rect TableView::GetAltTextBounds() {

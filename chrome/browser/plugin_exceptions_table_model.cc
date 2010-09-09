@@ -1,0 +1,197 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/plugin_exceptions_table_model.h"
+
+#include "app/l10n_util.h"
+#include "app/table_model_observer.h"
+#include "base/auto_reset.h"
+#include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/common/notification_service.h"
+#include "grit/generated_resources.h"
+#include "webkit/glue/plugins/plugin_list.h"
+
+PluginExceptionsTableModel::PluginExceptionsTableModel(
+    HostContentSettingsMap* content_settings_map,
+    HostContentSettingsMap* otr_content_settings_map)
+    : map_(content_settings_map),
+      otr_map_(otr_content_settings_map),
+      updates_disabled_(false),
+      observer_(NULL) {
+  registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
+}
+
+bool PluginExceptionsTableModel::CanRemoveRows(const Rows& rows) const {
+  return !rows.empty();
+}
+
+void PluginExceptionsTableModel::RemoveRows(const Rows& rows) {
+  AutoReset<bool> tmp(&updates_disabled_, true);
+  bool reload_all = false;
+  // Iterate in reverse over the rows to get the indexes right.
+  for (Rows::const_reverse_iterator it = rows.rbegin();
+       it != rows.rend(); ++it) {
+    SettingsEntry& entry = settings_[*it];
+    HostContentSettingsMap* map = entry.is_otr ? otr_map_ : map_;
+    map->SetContentSetting(entry.pattern,
+                           CONTENT_SETTINGS_TYPE_PLUGINS,
+                           resources_[entry.plugin_id],
+                           CONTENT_SETTING_DEFAULT);
+    row_counts_[entry.plugin_id]--;
+    // If we remove the last exception for a plugin, recreate all groups to get
+    // correct IDs.
+    if (row_counts_[entry.plugin_id] == 0)
+      reload_all = true;
+    settings_.erase(settings_.begin() + *it);
+  }
+  if (reload_all) {
+    // This also notifies the observer.
+    ReloadSettings();
+  } else if (observer_) {
+    for (Rows::const_reverse_iterator it = rows.rbegin();
+         it != rows.rend(); ++it) {
+      observer_->OnItemsRemoved(*it, 1);
+    }
+  }
+}
+
+void PluginExceptionsTableModel::RemoveAll() {
+  int old_row_count = RowCount();
+  {
+    AutoReset<bool> tmp(&updates_disabled_, true);
+    map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS);
+    if (otr_map_)
+      otr_map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS);
+  }
+  ClearSettings();
+  if (observer_)
+    observer_->OnItemsRemoved(0, old_row_count);
+}
+
+int PluginExceptionsTableModel::RowCount() {
+  return settings_.size();
+}
+
+std::wstring PluginExceptionsTableModel::GetText(int row, int column_id) {
+  DCHECK_GE(row, 0);
+  DCHECK_LT(row, static_cast<int>(settings_.size()));
+  SettingsEntry& entry = settings_[row];
+  switch (column_id) {
+    case IDS_EXCEPTIONS_PATTERN_HEADER:
+    case IDS_EXCEPTIONS_HOSTNAME_HEADER:
+      return UTF8ToWide(entry.pattern.AsString());
+
+    case IDS_EXCEPTIONS_ACTION_HEADER:
+      switch (entry.setting) {
+        case CONTENT_SETTING_ALLOW:
+          return l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON);
+        case CONTENT_SETTING_BLOCK:
+          return l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON);
+        default:
+          NOTREACHED();
+      }
+      break;
+
+    default:
+      NOTREACHED();
+  }
+
+  return std::wstring();
+}
+
+void PluginExceptionsTableModel::SetObserver(TableModelObserver* observer) {
+  observer_ = observer;
+}
+
+TableModel::Groups PluginExceptionsTableModel::GetGroups() {
+  return groups_;
+}
+
+int PluginExceptionsTableModel::GetGroupID(int row) {
+  DCHECK_LT(row, static_cast<int>(settings_.size()));
+  return settings_[row].plugin_id;
+}
+
+void PluginExceptionsTableModel::Observe(NotificationType type,
+                                         const NotificationSource& source,
+                                         const NotificationDetails& details) {
+  if (!updates_disabled_)
+    ReloadSettings();
+}
+
+void PluginExceptionsTableModel::ClearSettings() {
+  settings_.clear();
+  groups_.clear();
+  row_counts_.clear();
+  resources_.clear();
+}
+
+void PluginExceptionsTableModel::GetPlugins(
+    std::vector<WebPluginInfo>* plugins) {
+  NPAPI::PluginList::Singleton()->GetPlugins(false, plugins);
+}
+
+void PluginExceptionsTableModel::LoadSettings() {
+  int group_id = 0;
+  std::vector<WebPluginInfo> plugins;
+  GetPlugins(&plugins);
+  for (std::vector<WebPluginInfo>::iterator it = plugins.begin();
+       it != plugins.end(); ++it) {
+#if defined OS_POSIX
+    std::string plugin = it->path.value();
+#elif defined OS_WIN
+    std::string plugin = base::SysWideToUTF8(it->path.value());
+#endif
+    HostContentSettingsMap::SettingsForOneType settings;
+    map_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                plugin,
+                                &settings);
+    HostContentSettingsMap::SettingsForOneType otr_settings;
+    if (otr_map_) {
+      otr_map_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      plugin,
+                                      &otr_settings);
+    }
+    std::wstring title = UTF16ToWide(it->name);
+    for (HostContentSettingsMap::SettingsForOneType::iterator setting_it =
+             settings.begin(); setting_it != settings.end(); ++setting_it) {
+      SettingsEntry entry = {
+        setting_it->first,
+        group_id,
+        setting_it->second,
+        false
+      };
+      settings_.push_back(entry);
+    }
+    for (HostContentSettingsMap::SettingsForOneType::iterator setting_it =
+             otr_settings.begin();
+         setting_it != otr_settings.end(); ++setting_it) {
+      SettingsEntry entry = {
+        setting_it->first,
+        group_id,
+        setting_it->second,
+        true
+      };
+      settings_.push_back(entry);
+    }
+    int num_plugins = settings.size() + otr_settings.size();
+    if (num_plugins > 0) {
+      Group group = { title, group_id++ };
+      groups_.push_back(group);
+      resources_.push_back(plugin);
+      row_counts_.push_back(num_plugins);
+    }
+  }
+}
+
+void PluginExceptionsTableModel::ReloadSettings() {
+  ClearSettings();
+  LoadSettings();
+
+  if (observer_)
+    observer_->OnModelChanged();
+}
+

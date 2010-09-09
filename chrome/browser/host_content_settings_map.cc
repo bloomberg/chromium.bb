@@ -489,8 +489,8 @@ void HostContentSettingsMap::SetContentSetting(
     ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(RequiresResourceIdentifier(content_type) !=
-         resource_identifier.empty());
+  DCHECK_NE(RequiresResourceIdentifier(content_type),
+            resource_identifier.empty());
 
   bool early_exit = false;
   std::string pattern_str(pattern.AsString());

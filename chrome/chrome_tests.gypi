@@ -1162,6 +1162,7 @@
         'browser/password_manager/password_store_default_unittest.cc',
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/password_manager/password_store_win_unittest.cc',
+        'browser/plugin_exceptions_table_model_unittest.cc',
         'browser/policy/config_dir_policy_provider_unittest.cc',
         'browser/policy/configuration_policy_pref_store_unittest.cc',
         'browser/policy/configuration_policy_provider_mac_unittest.cc',

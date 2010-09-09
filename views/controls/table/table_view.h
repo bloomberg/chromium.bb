@@ -402,6 +402,9 @@ class TableView : public NativeControl,
   // Updates content_offset_ from the position of the header.
   void UpdateContentOffset();
 
+  // Reloads the groups from the model if there is one and it has groups.
+  void UpdateGroups();
+
   // Returns the bounds of the alt text.
   gfx::Rect GetAltTextBounds();
 
