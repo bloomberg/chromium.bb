@@ -244,7 +244,17 @@ void TabStripModel::ReplaceTabContentsAt(
     int index,
     TabContents* new_contents,
     TabStripModelObserver::TabReplaceType type) {
-  delete ReplaceTabContentsAtImpl(index, new_contents, type);
+  scoped_ptr<TabContents> old_contents(
+      ReplaceTabContentsAtImpl(index, new_contents, type));
+
+  // When the selected tab contents is replaced send out selected notification
+  // too. We do this as nearly all observers need to treat a replace of the
+  // selected contents as selection changing.
+  if (selected_index_ == index) {
+    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                      TabSelectedAt(old_contents.get(), new_contents,
+                                    selected_index_, false));
+  }
 }
 
 void TabStripModel::ReplaceNavigationControllerAt(

@@ -1938,3 +1938,56 @@ TEST_F(TabStripModelTest, DeletePhantomTabContents) {
   // And there should have been no methods sent to the TabStripModelObserver.
   EXPECT_EQ(0, tabstrip_observer.GetStateCount());
 }
+
+// Makes sure the TabStripModel calls the right observer methods during a
+// replace.
+TEST_F(TabStripModelTest, ReplaceSendsSelected) {
+  typedef MockTabStripModelObserver::State State;
+
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel strip(&delegate, profile());
+
+  TabContents* first_contents = CreateTabContents();
+  strip.AddTabContents(first_contents, -1, PageTransition::TYPED,
+                       TabStripModel::ADD_SELECTED);
+
+  MockTabStripModelObserver tabstrip_observer;
+  strip.AddObserver(&tabstrip_observer);
+
+  TabContents* new_contents = CreateTabContents();
+  strip.ReplaceTabContentsAt(0, new_contents,
+                             TabStripModelObserver::REPLACE_MATCH_PREVIEW);
+
+  ASSERT_EQ(2, tabstrip_observer.GetStateCount());
+
+  // First event should be for replaced.
+  State state(new_contents, 0, MockTabStripModelObserver::REPLACED);
+  state.src_contents = first_contents;
+  EXPECT_TRUE(tabstrip_observer.StateEquals(0, state));
+
+  // And the second for selected.
+  state = State(new_contents, 0, MockTabStripModelObserver::SELECT);
+  state.src_contents = first_contents;
+  EXPECT_TRUE(tabstrip_observer.StateEquals(1, state));
+
+  // Now add another tab and replace it, making sure we don't get a selected
+  // event this time.
+  TabContents* third_contents = CreateTabContents();
+  strip.AddTabContents(third_contents, 1, PageTransition::TYPED,
+                       TabStripModel::ADD_NONE);
+
+  tabstrip_observer.ClearStates();
+
+  // And replace it.
+  new_contents = CreateTabContents();
+  strip.ReplaceTabContentsAt(1, new_contents,
+                             TabStripModelObserver::REPLACE_MATCH_PREVIEW);
+
+  ASSERT_EQ(1, tabstrip_observer.GetStateCount());
+
+  state = State(new_contents, 1, MockTabStripModelObserver::REPLACED);
+  state.src_contents = third_contents;
+  EXPECT_TRUE(tabstrip_observer.StateEquals(0, state));
+
+  strip.CloseAllTabs();
+}
