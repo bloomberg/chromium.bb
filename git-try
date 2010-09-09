@@ -9,25 +9,32 @@ import sys
 
 import breakpad
 
+import gclient_utils
 from scm import GIT
 import trychange
 
 
 def GetRietveldIssueNumber():
-  return GIT.Capture(
-      ['config', 'branch.%s.rietveldissue' % GIT.GetBranch(None)],
-      error_ok=True)[0]
+  try:
+    return GIT.Capture(
+        ['config', 'branch.%s.rietveldissue' % GIT.GetBranch(None)])
+  except gclient_utils.Error:
+    return None
 
 
 def GetRietveldPatchsetNumber():
-  return GIT.Capture(
-      ['config', 'branch.%s.rietveldpatchset' % GIT.GetBranch(None)],
-      error_ok=True)[0]
+  try:
+    return GIT.Capture(
+        ['config', 'branch.%s.rietveldpatchset' % GIT.GetBranch(None)])
+  except gclient_utils.Error:
+    return None
 
 
 def GetRietveldServerUrl():
-  return GIT.Capture(
-      ['config', 'rietveld.server'], error_ok=True)[0].strip()
+  try:
+    return GIT.Capture(['config', 'rietveld.server']).strip()
+  except gclient_utils.Error:
+    return None
 
 
 if __name__ == '__main__':
