@@ -334,7 +334,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
           None, should_process))
     logging.debug('Loaded: %s' % str(self))
 
-  def run(self, options, revision_overrides, command, args, work_queue):
+  def run(self, revision_overrides, command, args, work_queue, options):
     """Runs 'command' before parsing the DEPS in case it's a initial checkout
     or a revert."""
     assert self._file_list == []
@@ -720,8 +720,7 @@ solutions = [
     work_queue = gclient_utils.ExecutionQueue(self._options.jobs, pm)
     for s in self.dependencies:
       work_queue.enqueue(s)
-    work_queue.flush(self._options, revision_overrides, command, args,
-        work_queue)
+    work_queue.flush(revision_overrides, command, args, options=self._options)
 
     # Once all the dependencies have been processed, it's now safe to run the
     # hooks.
@@ -765,7 +764,7 @@ solutions = [
     work_queue = gclient_utils.ExecutionQueue(self._options.jobs, None)
     for s in self.dependencies:
       work_queue.enqueue(s)
-    work_queue.flush(self._options, {}, None, [], work_queue)
+    work_queue.flush({}, None, [], options=self._options)
 
     def GetURLAndRev(dep):
       """Returns the revision-qualified SCM url for a Dependency."""

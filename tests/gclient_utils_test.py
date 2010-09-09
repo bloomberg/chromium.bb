@@ -29,8 +29,8 @@ class GclientUtilsUnittest(GclientUtilBase):
         'GetNodeNamedAttributeText', 'PathDifference', 'ParseXML', 'Popen',
         'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
         'StdoutAutoFlush', 'SyntaxErrorToError', 'WorkItem',
-        'errno', 'logging', 'os', 're', 'stat', 'subprocess', 'sys',
-        'threading', 'time', 'xml',
+        'copy', 'errno', 'logging', 'os', 'Queue', 're', 'stat', 'subprocess',
+        'sys','threading', 'time', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)
