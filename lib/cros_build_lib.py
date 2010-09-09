@@ -12,12 +12,11 @@ _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
 
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
-               cwd=None, input=None, enter_chroot=False):
-  """Runs a shell command.
+               cwd=None, input=None, enter_chroot=False, shell=False):
+  """Runs a command.
 
   Keyword arguments:
-    cmd - cmd to run.  Should be input to subprocess.POpen.  If a string,
-      converted to an array using split().
+    cmd - cmd to run.  Should be input to subprocess.Popen.
     print_cmd -- prints the command before running it.
     error_ok -- does not raise an exception on error.
     error_message -- prints out this message when an error occurrs.
@@ -28,6 +27,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     input -- input to pipe into this command through stdin.
     enter_chroot -- this command should be run from within the chroot.  If set,
       cwd must point to the scripts directory.
+    shell -- If shell is True, the specified command will be executed through the shell.
   Raises:
     Exception:  Raises generic exception on error with optional error_message.
   """
@@ -41,21 +41,27 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   if redirect_stdout:  stdout = subprocess.PIPE
   if redirect_stderr:  stderr = subprocess.PIPE
   if input:  stdin = subprocess.PIPE
-  if enter_chroot:  cmd = ['./enter_chroot.sh', '--'] + cmd
+  if isinstance(cmd, basestring):
+    if enter_chroot: cmd = './enter_chroot.sh -- ' + cmd
+    cmd_str = cmd
+  else:
+    if enter_chroot: cmd = ['./enter_chroot.sh', '--'] + cmd
+    cmd_str = ' '.join(cmd)
 
   # Print out the command before running.
   if print_cmd:
-    Info('RunCommand: %s' % ' '.join(cmd))
+    Info('RunCommand: %s' % cmd_str)
 
   try:
     proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin,
-                            stdout=stdout, stderr=stderr)
+                            stdout=stdout, stderr=stderr,
+                            shell=shell)
     (output, error) = proc.communicate(input)
     if exit_code:
       return proc.returncode
 
     if not error_ok and proc.returncode:
-      raise Exception('Command "%s" failed.\n' % (' '.join(cmd)) +
+      raise Exception('Command "%s" failed.\n' % cmd_str +
                       (error_message or error or output or ''))
   except Exception,e:
     if not error_ok:
