@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef JINGLE_NOTIFIER_COMMUNICATOR_XMPP_SOCKET_ADAPTER_H_
-#define JINGLE_NOTIFIER_COMMUNICATOR_XMPP_SOCKET_ADAPTER_H_
+#ifndef REMOTING_JINGLE_GLUE_XMPP_SOCKET_ADAPTER_H_
+#define REMOTING_JINGLE_GLUE_XMPP_SOCKET_ADAPTER_H_
 
 #include <string>
 
@@ -18,7 +18,7 @@
 #define WSA_NOT_ENOUGH_MEMORY ENOMEM
 #endif
 
-namespace notifier {
+namespace remoting {
 
 class XmppSocketAdapter : public buzz::AsyncSocket,
                           public sigslot::has_slots<> {
@@ -82,6 +82,6 @@ class XmppSocketAdapter : public buzz::AsyncSocket,
   DISALLOW_COPY_AND_ASSIGN(XmppSocketAdapter);
 };
 
-}  // namespace notifier
+}  // namespace remoting
 
-#endif  // JINGLE_NOTIFIER_COMMUNICATOR_XMPP_SOCKET_ADAPTER_H_
+#endif  // REMOTING_JINGLE_GLUE_XMPP_SOCKET_ADAPTER_H_

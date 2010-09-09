@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef JINGLE_NOTIFIER_COMMUNICATOR_SSL_SOCKET_ADAPTER_H_
-#define JINGLE_NOTIFIER_COMMUNICATOR_SSL_SOCKET_ADAPTER_H_
+#ifndef REMOTING_JINGLE_GLUE_SSL_SOCKET_ADAPTER_H_
+#define REMOTING_JINGLE_GLUE_SSL_SOCKET_ADAPTER_H_
 
 #include "base/scoped_ptr.h"
 #include "net/base/completion_callback.h"
@@ -15,7 +15,7 @@
 #include "talk/base/asyncsocket.h"
 #include "talk/base/ssladapter.h"
 
-namespace notifier {
+namespace remoting {
 
 class SSLSocketAdapter;
 
@@ -81,7 +81,7 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
 };
 
 // This provides a talk_base::AsyncSocketAdapter interface around Chromium's
-// net::SSLClientSocket class.  This allows notifier to use Chromium's SSL
+// net::SSLClientSocket class.  This allows remoting to use Chromium's SSL
 // implementation instead of OpenSSL.
 class SSLSocketAdapter : public talk_base::SSLAdapter {
  public:
@@ -140,6 +140,6 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
   DISALLOW_COPY_AND_ASSIGN(SSLSocketAdapter);
 };
 
-}  // namespace notifier
+}  // namespace remoting
 
-#endif  // JINGLE_NOTIFIER_COMMUNICATOR_SSL_SOCKET_ADAPTER_H_
+#endif  // REMOTING_JINGLE_GLUE_SSL_SOCKET_ADAPTER_H_

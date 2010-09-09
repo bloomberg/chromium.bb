@@ -278,12 +278,6 @@ void ProfileSyncService::InitSettings() {
         << " for test sync notification server.";
   }
 
-  notifier_options_.use_chrome_async_socket =
-      !command_line.HasSwitch(switches::kSyncDisableChromeAsyncSocket);
-  if (notifier_options_.use_chrome_async_socket) {
-    LOG(INFO) << "Using ChromeAsyncSocket";
-  }
-
   notifier_options_.try_ssltcp_first =
       command_line.HasSwitch(switches::kSyncUseSslTcp);
   if (notifier_options_.try_ssltcp_first) {
