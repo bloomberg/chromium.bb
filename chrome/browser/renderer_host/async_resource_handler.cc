@@ -50,8 +50,7 @@ class SharedIOBuffer : public net::IOBuffer {
     if (shared_memory_.Create(std::wstring(), false, false, buffer_size_) &&
         shared_memory_.Map(buffer_size_)) {
       data_ = reinterpret_cast<char*>(shared_memory_.memory());
-      // TODO(hawk): Remove after debugging bug 16371.
-      CHECK(data_);
+      DCHECK(data_);
       ok_ = true;
     }
     return ok_;
@@ -63,8 +62,7 @@ class SharedIOBuffer : public net::IOBuffer {
 
  private:
   ~SharedIOBuffer() {
-    // TODO(willchan): Remove after debugging bug 16371.
-    CHECK(g_spare_read_buffer != this);
+    DCHECK(g_spare_read_buffer != this);
     data_ = NULL;
   }
 
@@ -181,13 +179,12 @@ bool AsyncResourceHandler::OnWillStart(int request_id,
 
 bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                       int* buf_size, int min_size) {
-  DCHECK(min_size == -1);
+  DCHECK_EQ(-1, min_size);
 
   if (g_spare_read_buffer) {
     DCHECK(!read_buffer_);
     read_buffer_.swap(&g_spare_read_buffer);
-    // TODO(willchan): Remove after debugging bug 16371.
-    CHECK(read_buffer_->data());
+    DCHECK(read_buffer_->data());
 
     *buf = read_buffer_.get();
     *buf_size = read_buffer_->buffer_size();
@@ -198,8 +195,7 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
       read_buffer_ = NULL;
       return false;
     }
-    // TODO(willchan): Remove after debugging bug 16371.
-    CHECK(read_buffer_->data());
+    DCHECK(read_buffer_->data());
     *buf = read_buffer_.get();
     *buf_size = next_buffer_size_;
   }
@@ -254,11 +250,12 @@ bool AsyncResourceHandler::OnResponseCompleted(
                                                        security_info));
 
   // If we still have a read buffer, then see about caching it for later...
-  if (g_spare_read_buffer) {
+  // Note that we have to make sure the buffer is not still being used, so we
+  // have to perform an explicit check on the status code.
+  if (g_spare_read_buffer || URLRequestStatus::SUCCESS != status.status()) {
     read_buffer_ = NULL;
   } else if (read_buffer_.get()) {
-    // TODO(willchan): Remove after debugging bug 16371.
-    CHECK(read_buffer_->data());
+    DCHECK(read_buffer_->data());
     read_buffer_.swap(&g_spare_read_buffer);
   }
   return true;
