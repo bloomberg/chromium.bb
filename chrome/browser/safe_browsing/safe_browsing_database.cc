@@ -269,7 +269,8 @@ bool SafeBrowsingDatabaseNew::ContainsUrl(
   if (prefixes.empty())
     return false;
 
-  // Prevent changes to bloom filter and caches.
+  // This function is called on the I/O thread, prevent changes to
+  // bloom filter and caches.
   AutoLock locked(lookup_lock_);
 
   if (!bloom_filter_.get())
@@ -473,10 +474,7 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
 void SafeBrowsingDatabaseNew::CacheHashResults(
     const std::vector<SBPrefix>& prefixes,
     const std::vector<SBFullHashResult>& full_hits) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
-
-  // This is on the same thread as other updates, lock against
-  // |ContainsUrl()|.
+  // This is called on the I/O thread, lock against updates.
   AutoLock locked(lookup_lock_);
 
   if (full_hits.empty()) {
@@ -592,7 +590,14 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   {
     AutoLock locked(lookup_lock_);
     full_hashes_.swap(add_full_hashes);
+
+    // TODO(shess): If |CacheHashResults()| is posted between the
+    // earlier lock and this clear, those pending hashes will be lost.
+    // It could be fixed by only removing hashes which were collected
+    // at the earlier point.  I believe that is fail-safe as-is (the
+    // hash will be fetched again).
     pending_hashes_.clear();
+
     prefix_miss_cache_.clear();
     bloom_filter_.swap(filter);
   }
