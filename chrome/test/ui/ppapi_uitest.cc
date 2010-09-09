@@ -106,8 +106,7 @@ TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
 
-// TODO(brettw) bug 51345: this failed consistently on one of the bots.
-TEST_F(PPAPITest, FAILS_URLLoader) {
+TEST_F(PPAPITest, URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
