@@ -12,10 +12,9 @@ TestingPrefService::TestingPrefValueStore::TestingPrefValueStore(
     PrefStore* extension_prefs,
     PrefStore* command_line_prefs,
     PrefStore* user_prefs,
-    PrefStore* recommended_prefs,
-    PrefStore* default_prefs)
+    PrefStore* recommended_prefs)
     : PrefValueStore(managed_prefs, extension_prefs, command_line_prefs,
-                     user_prefs, recommended_prefs, default_prefs) {
+      user_prefs, recommended_prefs) {
 }
 
 // TODO(pamg): Instantiate no PrefStores by default. Allow callers to specify
@@ -26,8 +25,7 @@ TestingPrefService::TestingPrefService()
           NULL,
           NULL,
           user_prefs_ = new DummyPrefStore(),
-          NULL,
-          default_prefs_ = new DummyPrefStore())) {
+          NULL)) {
 }
 
 const Value* TestingPrefService::GetManagedPref(const char* path) {

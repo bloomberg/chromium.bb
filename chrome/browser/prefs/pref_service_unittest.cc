@@ -105,11 +105,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   // time.
   obs.Reset(new_pref_value);
   prefs.SetString(pref_name, new_pref_value);
-  // At the moment this does trigger notifications, because the PrefValueStore
-  // has no way to know that the default value isn't being overridden.
-  // TODO(pamg): Fix this expectation when the above problem is fixed.
-  // EXPECT_FALSE(obs.observer_fired());
-  EXPECT_TRUE(obs.observer_fired());
+  EXPECT_FALSE(obs.observer_fired());
 
   // Clearing the pref should cause the pref to fire.
   obs.Reset("");
@@ -119,9 +115,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   // Clearing the pref again should not cause the pref to fire.
   obs.Reset("");
   prefs.ClearPref(pref_name);
-  // TODO(pamg): see above
-  // EXPECT_FALSE(obs.observer_fired());
-  EXPECT_TRUE(obs.observer_fired());
+  EXPECT_FALSE(obs.observer_fired());
 
   // Ok, clean up.
   prefs.RemovePrefObserver(pref_name, &obs);
@@ -218,16 +212,7 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
   scoped_ptr<Value> default_value(Value::CreateStringValue(default_string));
   prefs_.RegisterStringPref(name_, default_string);
   prefs_.AddPrefObserver(name_, &observer_);
-  // Changing the controlling store from default to user triggers notification.
-  SetExpectPrefChanged();
-  prefs_.Set(name_, *default_value);
-  Mock::VerifyAndClearExpectations(&observer_);
-
-  // At the moment this also triggers notifications, because the PrefValueStore
-  // has no way to know that the default value isn't being overridden again.
-  // TODO(pamg): Fix this expectation when the above problem is fixed.
-  // SetExpectNoNotification();
-  SetExpectPrefChanged();
+  SetExpectNoNotification();
   prefs_.Set(name_, *default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -243,8 +228,6 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   prefs_.RegisterDictionaryPref(name_);
   prefs_.AddPrefObserver(name_, &observer_);
 
-  // Dictionary values are special: setting one to NULL is the same as clearing
-  // the user value, allowing the NULL default to take (or keep) control.
   SetExpectNoNotification();
   prefs_.Set(name_, *null_value_);
   Mock::VerifyAndClearExpectations(&observer_);
@@ -260,11 +243,7 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   dict->GetString(name_, &out_value);
   EXPECT_EQ(value_, out_value);
 
-  // At the moment this also triggers notifications, because the PrefValueStore
-  // has no way to know that the default value isn't being overridden again.
-  // TODO(pamg): Fix this expectation when the above problem is fixed.
-  // SetExpectNoNotification();
-  SetExpectPrefChanged();
+  SetExpectNoNotification();
   prefs_.Set(name_, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -281,8 +260,6 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   prefs_.RegisterListPref(name_);
   prefs_.AddPrefObserver(name_, &observer_);
 
-  // List values are special: setting one to NULL is the same as clearing the
-  // user value, allowing the NULL default to take (or keep) control.
   SetExpectNoNotification();
   prefs_.Set(name_, *null_value_);
   Mock::VerifyAndClearExpectations(&observer_);
@@ -298,11 +275,7 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   list->GetString(0, &out_value);
   EXPECT_EQ(value_, out_value);
 
-  // At the moment this also triggers notifications, because the PrefValueStore
-  // has no way to know that the default value isn't being overridden again.
-  // TODO(pamg): Fix this expectation when the above problem is fixed.
-  // SetExpectNoNotification();
-  SetExpectPrefChanged();
+  SetExpectNoNotification();
   prefs_.Set(name_, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 

@@ -22,8 +22,7 @@ class TestingPrefService : public PrefService {
                           PrefStore* extension_prefs,
                           PrefStore* command_line_prefs,
                           PrefStore* user_prefs,
-                          PrefStore* recommended_prefs,
-                          PrefStore* default_prefs);
+                          PrefStore* recommended_prefs);
   };
 
   // Create an empty instance.
@@ -60,7 +59,6 @@ class TestingPrefService : public PrefService {
   // Pointers to the pref stores our value store uses.
   PrefStore* managed_prefs_;
   PrefStore* user_prefs_;
-  PrefStore* default_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingPrefService);
 };

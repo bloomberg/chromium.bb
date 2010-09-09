@@ -28,13 +28,14 @@ class PrefService : public NonThreadSafe {
   class Preference {
    public:
 
-    // The type of the preference is determined by the type with which it is
-    // registered. This type needs to be a boolean, integer, real, string,
+    // The type of the preference is determined by the type of |default_value|.
+    // Therefore, the type needs to be a boolean, integer, real, string,
     // dictionary (a branch), or list.  You shouldn't need to construct this on
-    // your own; use the PrefService::Register*Pref methods instead.
-    Preference(const PrefService* service,
+    // your own, use the PrefService::Register*Pref methods instead.
+    // |default_value| will be owned by the Preference object.
+    Preference(PrefValueStore* pref_value_store,
                const char* name,
-               Value::ValueType type);
+               Value* default_value);
     ~Preference() {}
 
     Value::ValueType type() const { return type_; }
@@ -43,9 +44,12 @@ class PrefService : public NonThreadSafe {
     // browser.window_placement).
     const std::string name() const { return name_; }
 
-    // Returns the value of the Preference, falling back to the registered
-    // default value if no other has been set.
+    // Returns the value of the Preference.  If there is no user specified
+    // value, it returns the default value.
     const Value* GetValue() const;
+
+    // Returns true if the current value matches the default value.
+    bool IsDefaultValue() const;
 
     // Returns true if the Preference is managed, i.e. set by an admin policy.
     // Since managed prefs have the highest priority, this also indicates
@@ -68,11 +72,6 @@ class PrefService : public NonThreadSafe {
     // user setting, and not by any higher-priority source.
     bool IsUserControlled() const;
 
-    // Returns true if the Preference is currently using its default value,
-    // and has not been set by any higher-priority source (even with the same
-    // value).
-    bool IsDefaultValue() const;
-
     // Returns true if the user can change the Preference value, which is the
     // case if no higher-priority source than the user store controls the
     // Preference.
@@ -83,9 +82,10 @@ class PrefService : public NonThreadSafe {
 
     Value::ValueType type_;
     std::string name_;
+    scoped_ptr<Value> default_value_;
 
-    // Reference to the PrefService in which this pref was created.
-    const PrefService* pref_service_;
+    // A reference to the pref service's pref_value_store_.
+    PrefValueStore* pref_value_store_;
 
     DISALLOW_COPY_AND_ASSIGN(Preference);
   };
@@ -100,8 +100,8 @@ class PrefService : public NonThreadSafe {
 
   // Convenience factory method for use in unit tests. Creates a new
   // PrefService that uses a PrefValueStore with user preferences at the given
-  // |pref_filename|, a default PrefStore, and no other PrefStores (i.e., no
-  // other types of preferences).
+  // |pref_filename|, and no other PrefStores (i.e., no other types of
+  // preferences).
   static PrefService* CreateUserPrefService(const FilePath& pref_filename);
 
   // This constructor is primarily used by tests. The |pref_value_store|
@@ -171,9 +171,7 @@ class PrefService : public NonThreadSafe {
   void ClearPref(const char* path);
 
   // If the path is valid (i.e., registered), update the pref value in the user
-  // prefs. Seting a null value on a preference of List or Dictionary type is
-  // equivalent to removing the user value for that preference, allowing the
-  // default value to take effect unless another value takes precedence.
+  // prefs.
   void Set(const char* path, const Value& value);
   void SetBoolean(const char* path, bool value);
   void SetInteger(const char* path, int value);
@@ -229,8 +227,8 @@ class PrefService : public NonThreadSafe {
 
  private:
   // Add a preference to the PreferenceMap.  If the pref already exists, return
-  // false.  This method takes ownership of |default_value|.
-  void RegisterPreference(const char* path, Value* default_value);
+  // false.  This method takes ownership of |pref|.
+  void RegisterPreference(Preference* pref);
 
   // Returns a copy of the current pref value.  The caller is responsible for
   // deleting the returned object.

@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_pref_service.h"
@@ -159,11 +158,9 @@ TEST(ChromeURLRequestContextTest, CreateProxyConfigTest) {
     SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
                               tests[i].description.c_str()));
     CommandLine command_line(tests[i].command_line);
-    // Only configuration-policy and default prefs are needed.
     PrefService prefs(new TestingPrefService::TestingPrefValueStore(
         new ConfigurationPolicyPrefStore(&command_line, NULL),
-        NULL, NULL, NULL, NULL,
-        new DefaultPrefStore()));
+        NULL, NULL, NULL, NULL));  // Only configuration-policy prefs.
     ChromeURLRequestContextGetter::RegisterUserPrefs(&prefs);
     scoped_ptr<net::ProxyConfig> config(CreateProxyConfig(&prefs));
 
