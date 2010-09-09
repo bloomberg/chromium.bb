@@ -120,21 +120,22 @@ const wchar_t kToastResultsKey[] = L"toast-results-key";
 
 }  // namespace switches
 
+const wchar_t kChromeDll[] = L"chrome.dll";
+const wchar_t kChromeExe[] = L"chrome.exe";
+const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";
+const wchar_t kChromeFrameHelperExe[] = L"chrome_frame_helper.exe";
+const wchar_t kChromeFrameHelperWndClass[] = L"ChromeFrameHelperWindowClass";
+const wchar_t kChromeNaCl64Dll[] = L"nacl64.dll";
+const wchar_t kChromeNewExe[] = L"new_chrome.exe";
+const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";
 const wchar_t kGoogleChromeInstallSubDir2[] = L"Chrome";
 const wchar_t kInstallBinaryDir[] = L"Application";
-const wchar_t kInstallUserDataDir[] = L"User Data";
-const wchar_t kChromeExe[] = L"chrome.exe";
-const wchar_t kChromeOldExe[] = L"old_chrome.exe";
-const wchar_t kChromeNewExe[] = L"new_chrome.exe";
-const wchar_t kNaClExe[] = L"nacl64.exe";
-const wchar_t kChromeDll[] = L"chrome.dll";
-const wchar_t kChromeNaCl64Dll[] = L"nacl64.dll";
-const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";
-const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kInstallerDir[] = L"Installer";
+const wchar_t kInstallUserDataDir[] = L"User Data";
+const wchar_t kNaClExe[] = L"nacl64.exe";
+const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kSxSSuffix[] = L" SxS";
-
 const wchar_t kUninstallStringField[] = L"UninstallString";
 const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kUninstallDisplayNameField[] = L"DisplayName";

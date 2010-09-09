@@ -84,26 +84,27 @@ extern const wchar_t kSystemLevelToast[];
 extern const wchar_t kToastResultsKey[];
 }  // namespace switches
 
+extern const wchar_t kChromeDll[];
+extern const wchar_t kChromeExe[];
+extern const wchar_t kChromeFrameDll[];
+extern const wchar_t kChromeFrameHelperExe[];
+extern const wchar_t kChromeFrameHelperWndClass[];
+extern const wchar_t kChromeNaCl64Dll[];
+extern const wchar_t kChromeOldExe[];
+extern const wchar_t kChromeNewExe[];
 extern const wchar_t kGoogleChromeInstallSubDir1[];
 extern const wchar_t kGoogleChromeInstallSubDir2[];
 extern const wchar_t kInstallBinaryDir[];
-extern const wchar_t kInstallUserDataDir[];
-extern const wchar_t kChromeExe[];
-extern const wchar_t kChromeOldExe[];
-extern const wchar_t kChromeNewExe[];
-extern const wchar_t kNaClExe[];
-extern const wchar_t kChromeDll[];
-extern const wchar_t kChromeNaCl64Dll[];
-extern const wchar_t kChromeFrameDll[];
-extern const wchar_t kSetupExe[];
 extern const wchar_t kInstallerDir[];
+extern const wchar_t kInstallUserDataDir[];
+extern const wchar_t kNaClExe[];
+extern const wchar_t kSetupExe[];
 extern const wchar_t kSxSSuffix[];
-
-extern const wchar_t kUninstallStringField[];
 extern const wchar_t kUninstallArgumentsField[];
 extern const wchar_t kUninstallDisplayNameField[];
-extern const char kUninstallMetricsName[];
 extern const wchar_t kUninstallInstallationDate[];
+extern const char kUninstallMetricsName[];
+extern const wchar_t kUninstallStringField[];
 
 }  // namespace installer_util
 

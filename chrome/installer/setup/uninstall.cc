@@ -65,6 +65,17 @@ void CloseAllChromeProcesses() {
                          ResultCodes::HUNG, NULL);
 }
 
+// Attempts to close the Chrome Frame helper process by sending WM_CLOSE
+// messages to its window, or just killing it if that doesn't work.
+void CloseAllChromeFrameHelperProcesses() {
+  HWND window = FindWindow(installer_util::kChromeFrameHelperWndClass, NULL);
+  if (window &&
+      !SendMessageTimeout(window, WM_CLOSE, 0, 0, SMTO_BLOCK, 3000, NULL)) {
+    base::CleanupProcesses(installer_util::kChromeFrameHelperExe, 0,
+                           ResultCodes::HUNG, NULL);
+  }
+}
+
 // This method tries to figure out if current user has registered Chrome.
 // It returns true iff:
 // - Software\Clients\StartMenuInternet\Chromium\"" key has a valid value.
@@ -547,6 +558,11 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
         dll_list->Do();
       }
     }
+  }
+
+  // Close any Chrome Frame helper processes that may be running.
+  if (InstallUtil::IsChromeFrameProcess()) {
+    CloseAllChromeFrameHelperProcesses();
   }
 
   if (!installed_version.get())
