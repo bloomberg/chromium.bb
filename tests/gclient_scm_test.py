@@ -11,17 +11,18 @@ from shutil import rmtree
 import StringIO
 from subprocess import Popen, PIPE, STDOUT
 import tempfile
+import unittest
 import __builtin__
 
 # Fixes include path.
-from super_mox import mox, SuperMoxBaseTestBase, SuperMoxTestBase
+from super_mox import mox, TestCaseUtils, SuperMoxTestBase
 
 import gclient_scm
 
 
-class GCBaseTestCase(SuperMoxTestBase):
-  # Like unittest's assertRaises, but checks for Gclient.Error.
+class GCBaseTestCase(object):
   def assertRaisesError(self, msg, fn, *args, **kwargs):
+    """Like unittest's assertRaises() but checks for Gclient.Error."""
     try:
       fn(*args, **kwargs)
     except gclient_scm.gclient_utils.Error, e:
@@ -29,28 +30,10 @@ class GCBaseTestCase(SuperMoxTestBase):
     else:
       self.fail('%s not raised' % msg)
 
-
-class BaseTestCase(GCBaseTestCase):
   def setUp(self):
-    GCBaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCallAndFilter')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils,
-        'CheckCallAndFilterAndHeader')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'RemoveDirectory')
-    self._CaptureSVNInfo = gclient_scm.scm.SVN.CaptureInfo
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureInfo')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureStatus')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'RunAndGetFileList')
-    self._scm_wrapper = gclient_scm.CreateSCM
-    gclient_scm.sys.stdout.flush = lambda: None
-    gclient_scm.scm.SVN.current_version = None
     self.stdout = StringIO.StringIO()
 
   def tearDown(self):
-    GCBaseTestCase.tearDown(self)
     try:
       self.stdout.getvalue()
       self.fail()
@@ -61,6 +44,32 @@ class BaseTestCase(GCBaseTestCase):
     value = self.stdout.getvalue()
     self.stdout.close()
     self.assertEquals(expected, value)
+
+
+class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
+  def setUp(self):
+    GCBaseTestCase.setUp(self)
+    SuperMoxTestBase.setUp(self)
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCall')
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCallAndFilter')
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils,
+        'CheckCallAndFilterAndHeader')
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'Popen')
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'RemoveDirectory')
+    self._CaptureSVNInfo = gclient_scm.scm.SVN.CaptureInfo
+    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')
+    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureStatus')
+    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'RunAndGetFileList')
+    self._scm_wrapper = gclient_scm.CreateSCM
+    gclient_scm.sys.stdout.flush = lambda: None
+    gclient_scm.scm.SVN.current_version = None
+
+  def tearDown(self):
+    GCBaseTestCase.tearDown(self)
+    SuperMoxTestBase.tearDown(self)
 
 
 class SVNWrapperTestCase(BaseTestCase):
@@ -80,10 +89,7 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.root_dir = self.Dir()
-    self.args = self.Args()
-    self.url = self.Url()
-    self.relpath = 'asf'
+    self.url = self.SvnUrl()
 
   def testDir(self):
     members = [
@@ -497,7 +503,7 @@ class SVNWrapperTestCase(BaseTestCase):
         ('________ found .git directory; skipping %s\n' % self.relpath))
 
 
-class GitWrapperTestCase(BaseTestCase):
+class GitWrapperTestCase(GCBaseTestCase, TestCaseUtils, unittest.TestCase):
   """This class doesn't use pymox."""
   class OptionsObject(object):
      def __init__(self, test_case, verbose=False, revision=None):
@@ -508,7 +514,7 @@ class GitWrapperTestCase(BaseTestCase):
       self.force = False
       self.reset = False
       self.nohooks = False
-      self.stdout = StringIO.StringIO()
+      self.stdout = test_case.stdout
 
   sample_git_import = """blob
 mark :1
@@ -561,36 +567,39 @@ from :3
   def CreateGitRepo(self, git_import, path):
     """Do it for real."""
     try:
-      Popen(['git', 'init'], stdout=PIPE, stderr=STDOUT,
+      Popen(['git', 'init', '-q'], stdout=PIPE, stderr=STDOUT,
             cwd=path).communicate()
     except OSError:
       # git is not available, skip this test.
       return False
-    Popen(['git', 'fast-import'], stdin=PIPE, stdout=PIPE, stderr=STDOUT,
-          cwd=path).communicate(input=git_import)
-    Popen(['git', 'checkout'], stdout=PIPE, stderr=STDOUT,
-          cwd=path).communicate()
+    Popen(['git', 'fast-import', '--quiet'], stdin=PIPE, stdout=PIPE,
+        stderr=STDOUT, cwd=path).communicate(input=git_import)
+    Popen(['git', 'checkout', '-q'], stdout=PIPE, stderr=STDOUT,
+        cwd=path).communicate()
     Popen(['git', 'remote', 'add', '-f', 'origin', '.'], stdout=PIPE,
-          stderr=STDOUT, cwd=path).communicate()
-    Popen(['git', 'checkout', '-b', 'new', 'origin/master'], stdout=PIPE,
-          stderr=STDOUT, cwd=path).communicate()
-    Popen(['git', 'push', 'origin', 'origin/origin:origin/master'], stdout=PIPE,
-          stderr=STDOUT, cwd=path).communicate()
+        stderr=STDOUT, cwd=path).communicate()
+    Popen(['git', 'checkout', '-b', 'new', 'origin/master', '-q'], stdout=PIPE,
+        stderr=STDOUT, cwd=path).communicate()
+    Popen(['git', 'push', 'origin', 'origin/origin:origin/master', '-q'],
+        stdout=PIPE, stderr=STDOUT, cwd=path).communicate()
     Popen(['git', 'config', '--unset', 'remote.origin.fetch'], stdout=PIPE,
-          stderr=STDOUT, cwd=path).communicate()
+        stderr=STDOUT, cwd=path).communicate()
     return True
 
   def setUp(self):
-    self.args = self.Args()
+    GCBaseTestCase.setUp(self)
+    TestCaseUtils.setUp(self)
+    unittest.TestCase.setUp(self)
     self.url = 'git://foo'
     self.root_dir = tempfile.mkdtemp()
     self.relpath = '.'
     self.base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
-    BaseTestBase.setUp(self)
 
   def tearDown(self):
-    BaseTestBase.tearDown(self)
+    GCBaseTestCase.tearDown(self)
+    TestCaseUtils.tearDown(self)
+    unittest.TestCase.tearDown(self)
     rmtree(self.root_dir)
 
   def testDir(self):
@@ -602,6 +611,7 @@ from :3
 
     # If you add a member, be sure to add the relevant test!
     self.compareMembers(gclient_scm.CreateSCM(url=self.url), members)
+    self.checkstdout('')
 
   def testRevertMissing(self):
     if not self.enabled:
@@ -619,6 +629,11 @@ from :3
     file_list = []
     scm.diff(options, self.args, file_list)
     self.assertEquals(file_list, [])
+    self.checkstdout(
+        ('\n_____ . at refs/heads/master\n\n\n'
+         '________ running \'git reset --hard origin/master\' in \'%s\'\n'
+         'HEAD is now at a7142dc Personalized\n') %
+            gclient_scm.os.path.join(self.root_dir, '.'))
 
   def testRevertNone(self):
     if not self.enabled:
@@ -633,7 +648,11 @@ from :3
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
-
+    self.checkstdout(
+      ('\n_____ . at refs/heads/master\n\n\n'
+       '________ running \'git reset --hard origin/master\' in \'%s\'\n'
+       'HEAD is now at a7142dc Personalized\n') %
+            gclient_scm.os.path.join(self.root_dir, '.'))
 
   def testRevertModified(self):
     if not self.enabled:
@@ -653,6 +672,11 @@ from :3
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
+    self.checkstdout(
+      ('\n_____ . at refs/heads/master\n\n\n'
+       '________ running \'git reset --hard origin/master\' in \'%s\'\n'
+       'HEAD is now at a7142dc Personalized\n') %
+            gclient_scm.os.path.join(self.root_dir, '.'))
 
   def testRevertNew(self):
     if not self.enabled:
@@ -676,6 +700,11 @@ from :3
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
+    self.checkstdout(
+      ('\n_____ . at refs/heads/master\n\n\n'
+       '________ running \'git reset --hard origin/master\' in \'%s\'\n'
+       'HEAD is now at a7142dc Personalized\n') %
+            gclient_scm.os.path.join(self.root_dir, '.'))
 
   def testStatusNew(self):
     if not self.enabled:
@@ -688,6 +717,10 @@ from :3
     file_list = []
     scm.status(options, self.args, file_list)
     self.assertEquals(file_list, [file_path])
+    self.checkstdout(
+        ('\n________ running \'git diff --name-status '
+         '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\nM\ta\n') %
+            gclient_scm.os.path.join(self.root_dir, '.'))
 
   def testStatus2New(self):
     if not self.enabled:
@@ -705,6 +738,10 @@ from :3
     expected_file_list = [gclient_scm.os.path.join(self.base_path, x)
                           for x in ['a', 'b']]
     self.assertEquals(sorted(file_list), expected_file_list)
+    self.checkstdout(
+        ('\n________ running \'git diff --name-status '
+         '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\nM\ta\nM\tb\n') %
+            gclient_scm.os.path.join(self.root_dir, '.'))
 
   def testUpdateCheckout(self):
     if not self.enabled:
@@ -726,6 +763,13 @@ from :3
                         '069c602044c5388d2d15c3f875b057c852003458')
     finally:
       rmtree(root_dir)
+    join = gclient_scm.os.path.join
+    self.checkstdout(
+        ('\n_____ foo at refs/heads/master\n\n'
+         '________ running \'git clone -b master --verbose %s %s\' in \'%s\'\n'
+         'Initialized empty Git repository in %s\n') %
+            (join(self.root_dir, '.', '.git'), join(root_dir, 'foo'), root_dir,
+             join(root_dir, 'foo', '.git') + '/'))
 
   def testUpdateUpdate(self):
     if not self.enabled:
@@ -740,6 +784,7 @@ from :3
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
+    self.checkstdout('\n_____ . at refs/heads/master\n\n')
 
   def testUpdateUnstagedConflict(self):
     if not self.enabled:
@@ -754,6 +799,7 @@ from :3
         "Aborting.\n"
         "Please, commit your changes or stash them before you can merge.\n")
     self.assertRaisesError(exception, scm.update, options, (), [])
+    self.checkstdout('\n_____ . at refs/heads/master\n')
 
   def testUpdateConflict(self):
     if not self.enabled:
@@ -763,23 +809,26 @@ from :3
                                 relpath=self.relpath)
     file_path = gclient_scm.os.path.join(self.base_path, 'b')
     f = open(file_path, 'w').writelines('conflict\n')
-    scm._Run(['commit', '-am', 'test'])
-    self.mox.StubOutWithMock(__builtin__, 'raw_input')
-    __builtin__.raw_input.__call__(mox.StrContains('Cannot fast-forward merge, '
-                                                   'attempt to rebase? (y)es / '
-                                                   '(q)uit / (s)kip : ')
-                                   ).AndReturn('y')
-    self.mox.ReplayAll()
-    exception = \
-        'Conflict while rebasing this branch.\n' \
-        'Fix the conflict and run gclient again.\n' \
-        "See 'man git-rebase' for details.\n"
+    scm._Run(['commit', '-am', 'test'], options)
+    __builtin__.raw_input = lambda x: 'y'
+    exception = ('Conflict while rebasing this branch.\n'
+                 'Fix the conflict and run gclient again.\n'
+                 'See \'man git-rebase\' for details.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
-    exception = \
-        '\n____ . at refs/heads/master\n' \
-        '\tYou have unstaged changes.\n' \
-        '\tPlease commit, stash, or reset.\n'
+    exception = ('\n____ . at refs/heads/master\n'
+                 '\tYou have unstaged changes.\n'
+                 '\tPlease commit, stash, or reset.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
+    # The hash always changes. Use a cheap trick.
+    start = ('\n________ running \'git commit -am test\' in \'%s\'\n'
+             '[new ') % gclient_scm.os.path.join(self.root_dir, '.')
+    end = ('] test\n 1 files changed, 1 insertions(+), '
+         '1 deletions(-)\n\n_____ . at refs/heads/master\n'
+         'Attempting rebase onto refs/remotes/origin/master...\n')
+    self.assertTrue(self.stdout.getvalue().startswith(start))
+    self.assertTrue(self.stdout.getvalue().endswith(end))
+    self.assertEquals(len(self.stdout.getvalue()), len(start) + len(end) + 7)
+    self.stdout.close()
 
   def testUpdateNotGit(self):
     if not self.enabled:
@@ -789,13 +838,13 @@ from :3
                                 relpath=self.relpath)
     git_path = gclient_scm.os.path.join(self.base_path, '.git')
     rename(git_path, git_path + 'foo')
-    exception = \
-        '\n____ . at refs/heads/master\n' \
-        '\tPath is not a git repo. No .git dir.\n' \
-        '\tTo resolve:\n' \
-        '\t\trm -rf .\n' \
-        '\tAnd run gclient sync again\n'
+    exception = ('\n____ . at refs/heads/master\n'
+                 '\tPath is not a git repo. No .git dir.\n'
+                 '\tTo resolve:\n'
+                 '\t\trm -rf .\n'
+                 '\tAnd run gclient sync again\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
+    self.checkstdout('')
 
   def testRevinfo(self):
     if not self.enabled:
@@ -805,10 +854,10 @@ from :3
                                 relpath=self.relpath)
     rev_info = scm.revinfo(options, (), None)
     self.assertEquals(rev_info, '069c602044c5388d2d15c3f875b057c852003458')
+    self.checkstdout('')
 
 
 if __name__ == '__main__':
-  import unittest
   unittest.main()
 
 # vim: ts=2:sw=2:tw=80:et:

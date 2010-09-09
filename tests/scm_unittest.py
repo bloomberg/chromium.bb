@@ -9,7 +9,7 @@ from shutil import rmtree
 import tempfile
 
 # Fixes include path.
-from super_mox import mox, SuperMoxBaseTestBase, SuperMoxTestBase
+from super_mox import mox, TestCaseUtils, SuperMoxTestBase
 
 import scm
 
@@ -46,89 +46,8 @@ class RootTestCase(BaseSCMTestCase):
     self.compareMembers(scm, members)
 
 
-class GitWrapperTestCase(SuperMoxBaseTestBase):
-  sample_git_import = """blob
-mark :1
-data 6
-Hello
-
-blob
-mark :2
-data 4
-Bye
-
-reset refs/heads/master
-commit refs/heads/master
-mark :3
-author Bob <bob@example.com> 1253744361 -0700
-committer Bob <bob@example.com> 1253744361 -0700
-data 8
-A and B
-M 100644 :1 a
-M 100644 :2 b
-
-blob
-mark :4
-data 10
-Hello
-You
-
-blob
-mark :5
-data 8
-Bye
-You
-
-commit refs/heads/origin
-mark :6
-author Alice <alice@example.com> 1253744424 -0700
-committer Alice <alice@example.com> 1253744424 -0700
-data 13
-Personalized
-from :3
-M 100644 :4 a
-M 100644 :5 b
-
-reset refs/heads/master
-from :3
-"""
-
-  def CreateGitRepo(self, git_import, path):
-    try:
-      scm.subprocess.Popen(['git', 'init'],
-                           stdout=scm.subprocess.PIPE,
-                           stderr=scm.subprocess.STDOUT,
-                           cwd=path).communicate()
-    except OSError:
-      # git is not available, skip this test.
-      return False
-    scm.subprocess.Popen(['git', 'fast-import'],
-                         stdin=scm.subprocess.PIPE,
-                         stdout=scm.subprocess.PIPE,
-                         stderr=scm.subprocess.STDOUT,
-                         cwd=path).communicate(input=git_import)
-    scm.subprocess.Popen(['git', 'checkout'],
-                         stdout=scm.subprocess.PIPE,
-                         stderr=scm.subprocess.STDOUT,
-                         cwd=path).communicate()
-    return True
-
-  def setUp(self):
-    SuperMoxBaseTestBase.setUp(self)
-    self.args = self.Args()
-    self.url = 'git://foo'
-    self.root_dir = tempfile.mkdtemp()
-    self.relpath = '.'
-    self.base_path = scm.os.path.join(self.root_dir, self.relpath)
-    self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
-    self.fake_root = self.Dir()
-
-  def tearDown(self):
-    rmtree(self.root_dir)
-    SuperMoxBaseTestBase.tearDown(self)
-
+class GitWrapperTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
-    self.mox.ReplayAll()
     members = [
         'AssertVersion', 'Capture', 'CaptureStatus',
         'FetchUpstreamTuple',
@@ -141,20 +60,17 @@ from :3
 
   def testGetEmail(self):
     self.mox.StubOutWithMock(scm.GIT, 'Capture')
-    scm.GIT.Capture(['config', 'user.email'], self.fake_root, error_ok=True
+    scm.GIT.Capture(['config', 'user.email'], self.root_dir, error_ok=True
                     ).AndReturn(['mini@me.com', ''])
     self.mox.ReplayAll()
-    self.assertEqual(scm.GIT.GetEmail(self.fake_root), 'mini@me.com')
+    self.assertEqual(scm.GIT.GetEmail(self.root_dir), 'mini@me.com')
 
 
 class SVNTestCase(BaseSCMTestCase):
   def setUp(self):
     BaseSCMTestCase.setUp(self)
-    self.root_dir = self.Dir()
-    self.args = self.Args()
-    self.url = self.Url()
-    self.relpath = 'asf'
     self.mox.StubOutWithMock(scm.SVN, 'Capture')
+    self.url = self.SvnUrl()
 
   def testMembersChanged(self):
     self.mox.ReplayAll()

@@ -28,7 +28,7 @@ class IsOneOf(mox.Comparator):
     return '<sequence or map containing \'%s\'>' % str(self._keys)
 
 
-class SuperMoxBaseTestBase(mox.MoxTestBase):
+class TestCaseUtils(object):
   """Base class with some additional functionalities. People will usually want
   to use SuperMoxTestBase instead."""
   # Backup the separator in case it gets mocked
@@ -56,7 +56,7 @@ class SuperMoxBaseTestBase(mox.MoxTestBase):
     return (self._RANDOM_CHOICE((self._OS_SEP, '')) +
             self._DirElts(max_elt_count, max_elt_length))
 
-  def Url(self, max_elt_count=4, max_elt_length=8):
+  def SvnUrl(self, max_elt_count=4, max_elt_length=8):
     return ('svn://random_host:port/a' +
             self._DirElts(max_elt_count, max_elt_length
                 ).replace(self._OS_SEP, '/'))
@@ -64,11 +64,11 @@ class SuperMoxBaseTestBase(mox.MoxTestBase):
   def RootDir(self, max_elt_count=4, max_elt_length=8):
     return self._OS_SEP + self._DirElts(max_elt_count, max_elt_length)
 
-  def compareMembers(self, object, members):
+  def compareMembers(self, obj, members):
     """If you add a member, be sure to add the relevant test!"""
     # Skip over members starting with '_' since they are usually not meant to
     # be for public use.
-    actual_members = [x for x in sorted(dir(object))
+    actual_members = [x for x in sorted(dir(obj))
                       if not x.startswith('_')]
     expected_members = sorted(members)
     if actual_members != expected_members:
@@ -77,18 +77,20 @@ class SuperMoxBaseTestBase(mox.MoxTestBase):
       print>>sys.stderr, diff
     self.assertEqual(actual_members, expected_members)
 
-  def UnMock(self, object, name):
-    """Restore an object inside a test."""
-    for (parent, old_child, child_name) in self.mox.stubs.cache:
-      if parent == object and child_name == name:
-        setattr(parent, child_name, old_child)
-        break
+  def setUp(self):
+    self.root_dir = self.Dir()
+    self.args = self.Args()
+    self.relpath = self.String(200)
+
+  def tearDown(self):
+    pass
 
 
-class SuperMoxTestBase(SuperMoxBaseTestBase):
+class SuperMoxTestBase(TestCaseUtils, mox.MoxTestBase):
   def setUp(self):
     """Patch a few functions with know side-effects."""
-    SuperMoxBaseTestBase.setUp(self)
+    TestCaseUtils.setUp(self)
+    mox.MoxTestBase.setUp(self)
     #self.mox.StubOutWithMock(__builtin__, 'open')
     os_to_mock = ('chdir', 'chown', 'close', 'closerange', 'dup', 'dup2',
       'fchdir', 'fchmod', 'fchown', 'fdopen', 'getcwd', 'getpid', 'lseek',
@@ -104,6 +106,10 @@ class SuperMoxTestBase(SuperMoxBaseTestBase):
     # Don't mock stderr since it confuses unittests.
     self.MockList(sys, ('stdin', 'stdout'))
 
+  def tearDown(self):
+    TestCaseUtils.tearDown(self)
+    mox.MoxTestBase.tearDown(self)
+
   def MockList(self, parent, items_to_mock):
     for item in items_to_mock:
       # Skip over items not present because of OS-specific implementation,
@@ -113,3 +119,10 @@ class SuperMoxTestBase(SuperMoxBaseTestBase):
           self.mox.StubOutWithMock(parent, item)
         except TypeError:
           raise TypeError('Couldn\'t mock %s in %s' % (item, parent.__name__))
+
+  def UnMock(self, object, name):
+    """Restore an object inside a test."""
+    for (parent, old_child, child_name) in self.mox.stubs.cache:
+      if parent == object and child_name == name:
+        setattr(parent, child_name, old_child)
+        break
