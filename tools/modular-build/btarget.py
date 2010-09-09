@@ -292,7 +292,7 @@ def SconsBuild(name, dest_dir, build_dir, src_dir, prefix_obj, scons_args):
   def DoBuild():
     ResetDir(build_dir)
     ResetDir(dest_dir)
-    subprocess.check_call(scons_cmd + scons_args + ["--verbose"],
+    subprocess.check_call(scons_cmd + ["--verbose"],
                           cwd=src_dir.dest_path)
   return BuildTarget(name, dest_dir, DoBuild,
                      args=[scons_cmd],
