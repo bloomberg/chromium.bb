@@ -48,7 +48,8 @@ class MediaTest : public UITest {
   }
 };
 
-TEST_F(MediaTest, VideoBearTheora) {
+// Crashes, see http://crbug.com/54939
+TEST_F(MediaTest, DISABLED_VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
 
