@@ -204,7 +204,10 @@ var chrome = chrome || {};
     // Returns a resource URL that can be used to fetch a resource from this
     // extension.
     chrome.extension.getURL = function(path) {
-      return "chrome-extension://" + extensionId + "/" + path;
+      path = String(path);
+      if (!path.length || path[0] != "/")
+        path = "/" + path;
+      return "chrome-extension://" + extensionId + path;
     };
 
     chrome.i18n = chrome.i18n || {};

@@ -207,6 +207,18 @@ TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
       "escape spaces.html" },
     { URL_PREFIX "%C3%9Cber.html",
       "\xC3\x9C" "ber.html" },
+#if defined(OS_WIN)
+    { URL_PREFIX "C%3A/simple.html",
+      "" },
+#endif
+    { URL_PREFIX "////simple.html",
+      "simple.html" },
+    { URL_PREFIX "/simple.html",
+      "simple.html" },
+    { URL_PREFIX "\\simple.html",
+      "simple.html" },
+    { URL_PREFIX "\\\\foo\\simple.html",
+      "foo/simple.html" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
@@ -221,7 +233,8 @@ TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
         extension_file_util::ExtensionURLToRelativeFilePath(url);
     EXPECT_FALSE(actual_path.IsAbsolute()) <<
       " For the path " << actual_path.value();
-    EXPECT_EQ(expected_path.value(), actual_path.value());
+    EXPECT_EQ(expected_path.value(), actual_path.value()) <<
+      " For the path " << url;
   }
 }
 

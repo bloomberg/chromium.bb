@@ -492,15 +492,30 @@ FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
   if (url_path.empty() || url_path[0] != '/')
     return FilePath();
 
-  // Drop the leading slash and convert %-encoded UTF8 to regular UTF8.
-  std::string file_path = UnescapeURLComponent(url_path.substr(1),
+  // Drop the leading slashes and convert %-encoded UTF8 to regular UTF8.
+  std::string file_path = UnescapeURLComponent(url_path,
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+  size_t skip = file_path.find_first_not_of("/\\");
+  if (skip != file_path.npos)
+    file_path = file_path.substr(skip);
 
+  FilePath path =
 #if defined(OS_POSIX)
-  return FilePath(file_path);
+    FilePath(file_path);
 #elif defined(OS_WIN)
-  return FilePath(UTF8ToWide(file_path));
+    FilePath(UTF8ToWide(file_path));
+#else
+    FilePath();
+    NOTIMPLEMENTED();
 #endif
+
+  // It's still possible for someone to construct an annoying URL whose path
+  // would still wind up not being considered relative at this point.
+  // For example: chrome-extension://id/c:////foo.html
+  if (path.IsAbsolute())
+    return FilePath();
+
+  return path;
 }
 
 }  // namespace extension_file_util
