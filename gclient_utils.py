@@ -595,9 +595,9 @@ class ExecutionQueue(object):
         t.kwargs['options'].stdout.full_flush()
         if self.progress:
           self.progress.update(1)
-        assert not t.name in self.ran
-        if not t.name in self.ran:
-          self.ran.append(t.name)
+        assert not t.item.name in self.ran
+        if not t.item.name in self.ran:
+          self.ran.append(t.item.name)
 
   def _run_one_task(self, task_item, args, kwargs):
     if self.jobs > 1:

@@ -49,9 +49,25 @@ class GClientSmokeBase(FakeReposTestBase):
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 
-  def parseGclient(self, cmd, items, expected_stderr=''):
-    """Parse gclient's output to make it easier to test."""
+  def parseGclient(self, cmd, items, expected_stderr='', untangle=False):
+    """Parse gclient's output to make it easier to test.
+    If untangle is True, tries to sort out the output from parallel checkout."""
     (stdout, stderr, returncode) = self.gclient(cmd)
+    if untangle:
+      tasks = {}
+      remaining = []
+      for line in stdout.splitlines(False):
+        m = re.match(r'^(\d)+>(.*)$', line)
+        if not m:
+          remaining.append(line)
+        else:
+          self.assertEquals([], remaining)
+          tasks.setdefault(int(m.group(1)), []).append(m.group(2))
+      out = []
+      for key in sorted(tasks.iterkeys()):
+        out.extend(tasks[key])
+      out.extend(remaining)
+      stdout = '\n'.join(out)
     self.checkString(expected_stderr, stderr)
     self.assertEquals(0, returncode)
     return self.checkBlock(stdout, items)
@@ -78,9 +94,14 @@ class GClientSmokeBase(FakeReposTestBase):
             # Blah, it's when a dependency is deleted, we should probably not
             # output this message.
             results.append([line])
-          else:
-            print line
-            raise Exception('fail', line)
+          elif (
+              not re.match(
+                  r'_____ [^ ]+ : Attempting rebase onto [0-9a-f]+...',
+                  line) and
+              not re.match(r'_____ [^ ]+ at [^ ]+', line)):
+            # The two regexp above are a bit too broad, they are necessary only
+            # for git checkouts.
+            self.fail(line)
         else:
           results.append([[match.group(1), match.group(2), match.group(3)]])
       else:
@@ -224,7 +245,7 @@ class GClientSmoke(GClientSmokeBase):
         'deps = { "src": "%strunk/src" }' % (self.svn_base))
     src = join(self.root_dir, 'src')
     os.mkdir(src)
-    res = self.gclient(['status'], src)
+    res = self.gclient(['status', '--jobs', '1'], src)
     self.checkBlock(res[0], [('running', deps), ('running', src)])
 
 
@@ -237,7 +258,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     # TODO(maruel): safesync.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     # Test unversioned checkout.
-    self.parseGclient(['sync', '--deps', 'mac'],
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
                       ['running', 'running',
                        # This is due to the way svn update is called for a
                        # single file when File() is used in a DEPS file.
@@ -257,9 +278,10 @@ class GClientSmokeSVN(GClientSmokeBase):
     os.remove(join(self.root_dir, 'src', 'svn_hooked1'))
 
     # Test incremental versioned sync: sync backward.
-    self.parseGclient(['sync', '--revision', 'src@1', '--deps', 'mac',
-                       '--delete_unversioned_trees'],
-                      ['running', 'running', 'running', 'running', 'deleting'])
+    self.parseGclient(
+        ['sync', '--revision', 'src@1', '--deps', 'mac',
+          '--delete_unversioned_trees', '--jobs', '1'],
+        ['running', 'running', 'running', 'running', 'deleting'])
     tree = self.mangle_svn_tree(
         ('trunk/src@1', 'src'),
         ('trunk/third_party/foo@2', 'src/third_party/fpp'),
@@ -269,7 +291,7 @@ class GClientSmokeSVN(GClientSmokeBase):
         self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
-    self.parseGclient(['sync', '--deps', 'mac'],
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
                       ['running', 'running', 'running', 'running', 'running'])
     tree = self.mangle_svn_tree(
         ('trunk/src@2', 'src'),
@@ -285,7 +307,8 @@ class GClientSmokeSVN(GClientSmokeBase):
   def testSyncIgnoredSolutionName(self):
     """TODO(maruel): This will become an error soon."""
     self.gclient(['config', self.svn_base + 'trunk/src/'])
-    results = self.gclient(['sync', '--deps', 'mac', '-r', 'invalid@1'])
+    results = self.gclient(
+        ['sync', '--deps', 'mac', '-r', 'invalid@1', '--jobs', '1'])
     self.checkBlock(results[0], [
         'running', 'running',
         # This is due to the way svn update is called for a single file when
@@ -307,7 +330,7 @@ class GClientSmokeSVN(GClientSmokeBase):
   def testSyncNoSolutionName(self):
     # When no solution name is provided, gclient uses the first solution listed.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
-    self.parseGclient(['sync', '--deps', 'mac', '-r', '1'],
+    self.parseGclient(['sync', '--deps', 'mac', '-r', '1', '--jobs', '1'],
                       ['running', 'running', 'running', 'running'])
     tree = self.mangle_svn_tree(
         ('trunk/src@1', 'src'),
@@ -316,13 +339,67 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/third_party/foo@2', 'src/third_party/prout'))
     self.assertTree(tree)
 
+  def testSyncJobs(self):
+    # TODO(maruel): safesync.
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    # Test unversioned checkout.
+    self.parseGclient(
+        ['sync', '--deps', 'mac', '--jobs', '8'],
+        ['running', 'running',
+        # This is due to the way svn update is called for a
+        # single file when File() is used in a DEPS file.
+        ('running', self.root_dir + '/src/file/other'),
+        'running', 'running', 'running', 'running'],
+        untangle=True)
+    tree = self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/foo@1', 'src/third_party/foo'),
+        ('trunk/other@2', 'src/other'))
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
+    tree['src/svn_hooked1'] = 'svn_hooked1'
+    self.assertTree(tree)
+
+    # Manually remove svn_hooked1 before synching to make sure it's not
+    # recreated.
+    os.remove(join(self.root_dir, 'src', 'svn_hooked1'))
+
+    # Test incremental versioned sync: sync backward.
+    self.parseGclient(
+        ['sync', '--revision', 'src@1', '--deps', 'mac',
+          '--delete_unversioned_trees', '--jobs', '8'],
+        ['running', 'running', 'running', 'running', 'deleting'],
+        untangle=True)
+    tree = self.mangle_svn_tree(
+        ('trunk/src@1', 'src'),
+        ('trunk/third_party/foo@2', 'src/third_party/fpp'),
+        ('trunk/other@1', 'src/other'),
+        ('trunk/third_party/foo@2', 'src/third_party/prout'))
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
+    self.assertTree(tree)
+    # Test incremental sync: delete-unversioned_trees isn't there.
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '8'],
+                      ['running', 'running', 'running', 'running', 'running'],
+                      untangle=True)
+    tree = self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/foo@2', 'src/third_party/fpp'),
+        ('trunk/third_party/foo@1', 'src/third_party/foo'),
+        ('trunk/other@2', 'src/other'),
+        ('trunk/third_party/foo@2', 'src/third_party/prout'))
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
+    tree['src/svn_hooked1'] = 'svn_hooked1'
+    self.assertTree(tree)
+
   def testRevertAndStatus(self):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     # Tested in testSync.
     self.gclient(['sync', '--deps', 'mac'])
     write(join(self.root_dir, 'src', 'other', 'hi'), 'Hey!')
 
-    out = self.parseGclient(['status', '--deps', 'mac'],
+    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'],
                             [['running', join(self.root_dir, 'src')],
                              ['running', join(self.root_dir, 'src', 'other')]])
     out = self.svnBlockCleanup(out)
@@ -336,7 +413,7 @@ class GClientSmokeSVN(GClientSmokeBase):
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching.
-    results = self.gclient(['revert', '--deps', 'mac'])
+    results = self.gclient(['revert', '--deps', 'mac', '--jobs', '1'])
     out = self.splitBlock(results[0])
     # src, src/other is missing, src/other, src/third_party/foo is missing,
     # src/third_party/foo, 2 svn hooks, 3 related to File().
@@ -353,7 +430,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     tree['src/svn_hooked2'] = 'svn_hooked2'
     self.assertTree(tree)
 
-    out = self.parseGclient(['status', '--deps', 'mac'],
+    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'],
                             [['running', join(self.root_dir, 'src')]])
     out = self.svnBlockCleanup(out)
     self.checkString('file', out[0][1])
@@ -372,7 +449,7 @@ class GClientSmokeSVN(GClientSmokeBase):
 
     # Without --verbose, gclient won't output the directories without
     # modification.
-    out = self.parseGclient(['status', '--deps', 'mac'],
+    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'],
                             [['running', join(self.root_dir, 'src')],
                              ['running', join(self.root_dir, 'src', 'other')]])
     out = self.svnBlockCleanup(out)
@@ -384,7 +461,8 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.assertEquals(2, len(out[1]))
 
     # So verify it works with --verbose.
-    out = self.parseGclient(['status', '--deps', 'mac', '--verbose'],
+    out = self.parseGclient(
+        ['status', '--deps', 'mac', '--verbose', '--jobs', '1'],
         [['running', join(self.root_dir, 'src')],
           ['running', join(self.root_dir, 'src', 'third_party', 'fpp')],
           ['running', join(self.root_dir, 'src', 'other')],
@@ -404,7 +482,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     # matching.
     # TODO(maruel): In general, gclient revert output is wrong. It should output
     # the file list after some ___ running 'svn status'
-    results = self.gclient(['revert', '--deps', 'mac'])
+    results = self.gclient(['revert', '--deps', 'mac', '--jobs', '1'])
     out = self.splitBlock(results[0])
     self.assertEquals(7, len(out))
     self.checkString('', results[1])
@@ -416,7 +494,7 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/third_party/prout@2', 'src/third_party/prout'))
     self.assertTree(tree)
 
-    out = self.parseGclient(['status', '--deps', 'mac'],
+    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'],
                             [['running', join(self.root_dir, 'src')]])
     out = self.svnBlockCleanup(out)
     self.checkString('other', out[0][1])
@@ -490,14 +568,14 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     self.gclient(['sync'])
     src = join(self.root_dir, 'src')
-    res = self.gclient(['status'], src)
+    res = self.gclient(['status', '--jobs', '1'], src)
     self.checkBlock(res[0], [('running', src)])
 
   def testInitialCheckoutNotYetDone(self):
     # Check that gclient can be executed when the initial checkout hasn't been
     # done yet.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
-    self.parseGclient(['sync'],
+    self.parseGclient(['sync', '--jobs', '1'],
                       ['running', 'running',
                        # This is due to the way svn update is called for a
                        # single file when File() is used in a DEPS file.
@@ -512,7 +590,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     # Cripple the checkout.
     os.remove(join(self.root_dir, '.gclient_entries'))
     src = join(self.root_dir, 'src')
-    res = self.gclient(['sync'], src)
+    res = self.gclient(['sync', '--jobs', '1'], src)
     self.checkBlock(res[0],
                     ['running', 'running', 'running'])
 
@@ -528,7 +606,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     # TODO(maruel): safesync.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
-    self.parseGclient(['sync', '--deps', 'mac'],
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
                       ['running', 'running', 'running', 'running', 'running'])
     # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
     # add sync parsing to get the list of updated files.
@@ -544,15 +622,10 @@ class GClientSmokeGIT(GClientSmokeBase):
     os.remove(join(self.root_dir, 'src', 'git_hooked1'))
 
     # Test incremental versioned sync: sync backward.
-    results = self.gclient(['sync', '--revision',
-                            'src@' + self.githash('repo_1', 1),
-                            '--deps', 'mac', '--delete_unversioned_trees'])
-    # gclient's git output is unparsable and all messed up. Don't look at it, it
-    # hurts the smoke test's eyes. Add "print out" here if you want to dare to
-    # parse it. So just assert it's not empty and look at the result on the file
-    # system instead.
-    self.assertEquals('', results[1])
-    self.assertEquals(0, results[2])
+    self.parseGclient(['sync', '--jobs', '1', '--revision',
+                       'src@' + self.githash('repo_1', 1),
+                       '--deps', 'mac', '--delete_unversioned_trees'],
+                       ['running', 'running', 'deleting'])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -560,10 +633,8 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
-    results = self.gclient(['sync', '--deps', 'mac'])
-    # See comment above about parsing gclient's git output.
-    self.assertEquals('', results[1])
-    self.assertEquals(0, results[2])
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
+        ['running', 'running', 'running'])
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -579,7 +650,7 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.parseGclient(
-        ['sync', '--deps', 'mac',
+        ['sync', '--deps', 'mac', '--jobs', '1',
          '--revision', 'invalid@' + self.githash('repo_1', 1)],
         ['running', 'running', 'running', 'running', 'running'],
         'Please fix your script, having invalid --revision flags '
@@ -596,13 +667,59 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     # When no solution name is provided, gclient uses the first solution listed.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
-    self.parseGclient(['sync', '--deps', 'mac',
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1',
                        '--revision', self.githash('repo_1', 1)],
                       ['running', 'running', 'running', 'running'])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
+    self.assertTree(tree)
+
+  def testSyncJobs(self):
+    if not self.enabled:
+      return
+    # TODO(maruel): safesync.
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    # Test unversioned checkout.
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '8'],
+                      ['running', 'running', 'running', 'running', 'running'],
+                      untangle=True)
+    # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
+    # add sync parsing to get the list of updated files.
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+
+    # Manually remove git_hooked1 before synching to make sure it's not
+    # recreated.
+    os.remove(join(self.root_dir, 'src', 'git_hooked1'))
+
+    # Test incremental versioned sync: sync backward.
+    self.parseGclient(
+        ['sync', '--revision', 'src@' + self.githash('repo_1', 1),
+          '--deps', 'mac', '--delete_unversioned_trees', '--jobs', '8'],
+        ['running', 'running', 'deleting'],
+        untangle=True)
+    tree = self.mangle_git_tree(('repo_1@1', 'src'),
+                                ('repo_2@2', 'src/repo2'),
+                                ('repo_3@1', 'src/repo2/repo3'),
+                                ('repo_4@2', 'src/repo4'))
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+    # Test incremental sync: delete-unversioned_trees isn't there.
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '8'],
+        ['running', 'running', 'running'], untangle=True)
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@1', 'src/repo2/repo3'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'),
+                                ('repo_4@2', 'src/repo4'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
   def testRevertAndStatus(self):
@@ -712,13 +829,44 @@ class GClientSmokeBoth(GClientSmokeBase):
         ' "url": "' + self.svn_base + 'trunk/src/"},'
         '{"name": "src-git",'
         '"url": "' + self.git_base + 'repo_1"}]'])
-    self.parseGclient(['sync', '--deps', 'mac'],
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
         ['running', 'running', 'running',
          # This is due to the way svn update is called for a single
          # file when File() is used in a DEPS file.
          ('running', self.root_dir + '/src/file/other'),
          'running', 'running', 'running', 'running', 'running', 'running',
          'running', 'running'])
+    tree = self.mangle_git_tree(('repo_1@2', 'src-git'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree.update(self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/foo@1', 'src/third_party/foo'),
+        ('trunk/other@2', 'src/other')))
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
+    tree['src/svn_hooked1'] = 'svn_hooked1'
+    self.assertTree(tree)
+
+  def testMultiSolutionsJobs(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', '--spec',
+        'solutions=['
+        '{"name": "src",'
+        ' "url": "' + self.svn_base + 'trunk/src/"},'
+        '{"name": "src-git",'
+        '"url": "' + self.git_base + 'repo_1"}]'])
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '8'],
+        ['running', 'running', 'running',
+         # This is due to the way svn update is called for a single
+         # file when File() is used in a DEPS file.
+         ('running', self.root_dir + '/src/file/other'),
+         'running', 'running', 'running', 'running', 'running', 'running',
+         'running', 'running'],
+        untangle=True)
     tree = self.mangle_git_tree(('repo_1@2', 'src-git'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
@@ -743,7 +891,7 @@ class GClientSmokeBoth(GClientSmokeBase):
         '{"name": "src-git",'
         '"url": "' + self.git_base + 'repo_1"}]'])
     self.parseGclient(
-        ['sync', '--deps', 'mac', '--revision', '1',
+        ['sync', '--deps', 'mac', '--jobs', '1', '--revision', '1',
          '-r', 'src-git@' + self.githash('repo_1', 1)],
         ['running', 'running', 'running', 'running',
          'running', 'running', 'running', 'running'])
@@ -843,7 +991,8 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
         '--username', 'user1', '--password', 'foo'])
 
   def testSync(self):
-    self.parseGclient(['sync', '--deps', 'mac'], ['running', 'running'])
+    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
+        ['running', 'running'])
     tree = self.mangle_svn_tree(
         ('trunk/webkit@2', ''),
         ('trunk/third_party/foo@1', 'foo/bar'))
@@ -853,11 +1002,11 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
     self.gclient(['sync'])
 
     # TODO(maruel): This is incorrect.
-    out = self.parseGclient(['status', '--deps', 'mac'], [])
+    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'], [])
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching.
-    results = self.gclient(['revert', '--deps', 'mac'])
+    results = self.gclient(['revert', '--deps', 'mac', '--jobs', '1'])
     out = self.splitBlock(results[0])
     self.assertEquals(2, len(out))
     self.checkString(2, len(out[0]))
@@ -903,10 +1052,12 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
   def testRest(self):
     self.gclient(['sync'])
     # TODO(maruel): This is incorrect, it should run on ./ too.
-    out = self.parseGclient(['cleanup', '--deps', 'mac', '--verbose'],
-                            [('running', join(self.root_dir, 'foo', 'bar'))])
-    out = self.parseGclient(['diff', '--deps', 'mac', '--verbose'],
-                            [('running', join(self.root_dir, 'foo', 'bar'))])
+    out = self.parseGclient(
+        ['cleanup', '--deps', 'mac', '--verbose', '--jobs', '1'],
+        [('running', join(self.root_dir, 'foo', 'bar'))])
+    out = self.parseGclient(
+        ['diff', '--deps', 'mac', '--verbose', '--jobs', '1'],
+        [('running', join(self.root_dir, 'foo', 'bar'))])
 
 
 if __name__ == '__main__':
