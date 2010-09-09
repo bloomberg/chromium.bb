@@ -37,7 +37,9 @@ class SpeechInputManagerImpl : public SpeechInputManager,
                                     const string16& value);
   virtual void DidCompleteRecording(int caller_id);
   virtual void DidCompleteRecognition(int caller_id);
-  virtual void OnRecognizerError(int caller_id);
+  virtual void OnRecognizerError(int caller_id,
+                                 SpeechRecognizer::ErrorCode error);
+  virtual void DidCompleteEnvironmentEstimation(int caller_id);
 
   // SpeechInputBubbleController::Delegate methods.
   virtual void RecognitionCancelled(int caller_id);
@@ -49,6 +51,7 @@ class SpeechInputManagerImpl : public SpeechInputManager,
     scoped_refptr<SpeechRecognizer> recognizer;
     int render_process_id;
     int render_view_id;
+    gfx::Rect element_rect;
   };
 
   // Private constructor to enforce singleton.
@@ -124,15 +127,13 @@ void SpeechInputManagerImpl::StartRecognition(
     return;
   }
 
-  bubble_controller_->CreateBubble(caller_id, render_process_id,
-                                   render_view_id, element_rect);
-
   recording_caller_id_ = caller_id;
   SpeechInputRequest request;
   request.delegate = delegate;
   request.recognizer = new SpeechRecognizer(this, caller_id);
   request.render_process_id = render_process_id;
   request.render_view_id = render_view_id;
+  request.element_rect = element_rect;
   requests_[caller_id] = request;
   request.recognizer->StartRecording();
 }
@@ -173,10 +174,25 @@ void SpeechInputManagerImpl::DidCompleteRecognition(int caller_id) {
   bubble_controller_->CloseBubble(caller_id);
 }
 
-void SpeechInputManagerImpl::OnRecognizerError(int caller_id) {
-  const SpeechInputRequest& request = requests_.find(caller_id)->second;
+void SpeechInputManagerImpl::OnRecognizerError(
+    int caller_id, SpeechRecognizer::ErrorCode error) {
+  // TODO(satish): Show specific messages for the various error codes and allow
+  // user to retry without ending the recognition session if possible.
+  const SpeechInputRequest& request = requests_[caller_id];
   ShowErrorMessage(request.render_process_id, request.render_view_id,
                    l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_ERROR));
+}
+
+void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {
+  DCHECK(HasPendingRequest(caller_id));
+  DCHECK(recording_caller_id_ == caller_id);
+
+  // Speech recognizer has gathered enough background audio so we can ask the
+  // user to start speaking.
+  const SpeechInputRequest& request = requests_[caller_id];
+  bubble_controller_->CreateBubble(caller_id, request.render_process_id,
+                                   request.render_view_id,
+                                   request.element_rect);
 }
 
 void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(int caller_id) {

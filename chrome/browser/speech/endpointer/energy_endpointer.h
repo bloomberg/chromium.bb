@@ -84,6 +84,10 @@ class EnergyEndpointer {
   // corresponding to the most recently computed frame.
   EpStatus Status(int64* status_time_us) const;
 
+  bool estimating_environment() const {
+    return estimating_environment_;
+  }
+
  private:
   class HistoryRing;
 

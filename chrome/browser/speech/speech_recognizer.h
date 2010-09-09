@@ -26,6 +26,13 @@ class SpeechRecognizer
       public media::AudioInputController::EventHandler,
       public SpeechRecognitionRequestDelegate {
  public:
+  enum ErrorCode {
+    RECOGNIZER_NO_ERROR,
+    RECOGNIZER_ERROR_CAPTURE,
+    RECOGNIZER_ERROR_NO_SPEECH,
+    RECOGNIZER_ERROR_NO_RESULTS,
+  };
+
   // Implemented by the caller to receive recognition events.
   class Delegate {
    public:
@@ -44,9 +51,16 @@ class SpeechRecognizer
     virtual void DidCompleteRecognition(int caller_id) = 0;
 
     // Invoked if there was an error while recording or recognizing audio. The
-    // session may get terminated and the DidXxxx callbacks may be issued after
-    // this call.
-    virtual void OnRecognizerError(int caller_id) = 0;
+    // session is terminated when this call is made and the DidXxxx callbacks
+    // are issued after this call.
+    virtual void OnRecognizerError(int caller_id,
+                                   SpeechRecognizer::ErrorCode error) = 0;
+
+    // At the start of recognition, a short amount of audio is recorded to
+    // estimate the environment/background noise and this callback is issued
+    // after that is complete. Typically the delegate brings up any speech
+    // recognition UI once this callback is received.
+    virtual void DidCompleteEnvironmentEstimation(int caller_id) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -78,8 +92,15 @@ class SpeechRecognizer
   // SpeechRecognitionRequest::Delegate methods.
   void SetRecognitionResult(bool error, const string16& value);
 
+  static const int kAudioSampleRate;
+  static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
+  static const int kNumAudioChannels;
+  static const int kNumBitsPerAudioSample;
+  static const int kNoSpeechTimeoutSec;
+
  private:
   void ReleaseAudioBuffers();
+  void InformErrorAndCancelRecognition(ErrorCode error);
 
   void HandleOnError(int error_code);  // Handles OnError in the IO thread.
 
@@ -97,6 +118,7 @@ class SpeechRecognizer
   scoped_refptr<media::AudioInputController> audio_controller_;
   scoped_ptr<SpeexEncoder> encoder_;
   Endpointer endpointer_;
+  int num_samples_recorded_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
 };

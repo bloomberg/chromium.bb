@@ -65,6 +65,16 @@ class Endpointer {
   // Get the status of the endpointer.
   EpStatus Status(int64 *time_us);
 
+  // Returns true if the endpointer detected reasonable audio levels above
+  // background noise which could be user speech, false if not.
+  bool DidStartReceivingSpeech() const {
+    return speech_previously_detected_;
+  }
+
+  bool IsEstimatingEnvironment() const {
+    return energy_endpointer_.estimating_environment();
+  }
+
   void set_speech_input_complete_silence_length(int64 time_us) {
     speech_input_complete_silence_length_us_ = time_us;
   }

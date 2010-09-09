@@ -21,7 +21,6 @@ const char* const kDefaultSpeechRecognitionUrl =
     "http://www.google.com/speech-api/v1/recognize?lang=en-us&client=chromium";
 const char* const kContentTypeSpeex =
     "audio/x-speex-with-header-byte; rate=16000";
-const int kAudioSampleRate = 16000;
 const int kSpeexEncodingQuality = 8;
 const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
 
@@ -29,12 +28,16 @@ const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
 // make sure it is within the byte range.
 COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
 
-const int kAudioPacketIntervalMs = 100;  // Record 100ms long audio packets.
-const int kNumAudioChannels = 1;  // Speech is recorded as mono.
-const int kNumBitsPerAudioSample = 16;
+const int kEndpointerEstimationTimeMs = 300;
 }  // namespace
 
 namespace speech_input {
+
+const int SpeechRecognizer::kAudioSampleRate = 16000;
+const int SpeechRecognizer::kAudioPacketIntervalMs = 100;
+const int SpeechRecognizer::kNumAudioChannels = 1;
+const int SpeechRecognizer::kNumBitsPerAudioSample = 16;
+const int SpeechRecognizer::kNoSpeechTimeoutSec = 8;
 
 // Provides a simple interface to encode raw audio using the Speex codec.
 class SpeexEncoder {
@@ -122,15 +125,10 @@ bool SpeechRecognizer::StartRecording() {
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
 
-  // TODO(satish): Normally for a short time (even 0.5s) the endpointer needs to
-  // estimate the environment/background noise before starting to treat the
-  // audio as user input. Once we have implemented a popup UI to notify the user
-  // that recording has started, we should perhaps have a short interval where
-  // we record background audio and then show the popup UI so that the user can
-  // start speaking after that. For now we just do these together so there isn't
-  // any background noise for the end pointer (still works ok).
+  // The endpointer needs to estimate the environment/background noise before
+  // starting to treat the audio as user input. In |HandleOnData| we wait until
+  // such time has passed before switching to user input mode.
   endpointer_.SetEnvironmentEstimationMode();
-  endpointer_.SetUserInputMode();
 
   int samples_per_packet = (kAudioSampleRate * kAudioPacketIntervalMs) / 1000;
   DCHECK((samples_per_packet % encoder_->samples_per_frame()) == 0);
@@ -140,6 +138,7 @@ bool SpeechRecognizer::StartRecording() {
       AudioInputController::Create(this, params, samples_per_packet);
   DCHECK(audio_controller_.get());
   LOG(INFO) << "SpeechRecognizer starting record.";
+  num_samples_recorded_ = 0;
   audio_controller_->Record();
 
   return true;
@@ -231,10 +230,7 @@ void SpeechRecognizer::HandleOnError(int error_code) {
   if (!audio_controller_.get())
     return;
 
-  delegate_->OnRecognizerError(caller_id_);
-  CancelRecognition();
-  delegate_->DidCompleteRecording(caller_id_);
-  delegate_->DidCompleteRecognition(caller_id_);
+  InformErrorAndCancelRecognition(RECOGNIZER_ERROR_CAPTURE);
 }
 
 void SpeechRecognizer::OnData(AudioInputController* controller,
@@ -265,6 +261,24 @@ void SpeechRecognizer::HandleOnData(string* data) {
   encoder_->Encode(samples, num_samples, &audio_buffers_);
   endpointer_.ProcessAudio(samples, num_samples);
   delete data;
+  num_samples_recorded_ += num_samples;
+
+  // Check if we have gathered enough audio for the endpointer to do environment
+  // estimation and should move on to detect speech/end of speech.
+  if (endpointer_.IsEstimatingEnvironment() &&
+      num_samples_recorded_ >= (kEndpointerEstimationTimeMs *
+                                kAudioSampleRate) / 1000) {
+    endpointer_.SetUserInputMode();
+    delegate_->DidCompleteEnvironmentEstimation(caller_id_);
+    return;
+  }
+
+  // Check if we have waited too long without hearing any speech.
+  if (!endpointer_.DidStartReceivingSpeech() &&
+      num_samples_recorded_ >= kNoSpeechTimeoutSec * kAudioSampleRate) {
+    InformErrorAndCancelRecognition(RECOGNIZER_ERROR_NO_SPEECH);
+    return;
+  }
 
   if (endpointer_.speech_input_complete()) {
     StopRecording();
@@ -275,10 +289,25 @@ void SpeechRecognizer::HandleOnData(string* data) {
 }
 
 void SpeechRecognizer::SetRecognitionResult(bool error, const string16& value) {
+  if (value.empty()) {
+    InformErrorAndCancelRecognition(RECOGNIZER_ERROR_NO_RESULTS);
+    return;
+  }
+
   delegate_->SetRecognitionResult(caller_id_, error, value);
 
   // Guard against the delegate freeing us until we finish our job.
   scoped_refptr<SpeechRecognizer> me(this);
+  delegate_->DidCompleteRecognition(caller_id_);
+}
+
+void SpeechRecognizer::InformErrorAndCancelRecognition(ErrorCode error) {
+  CancelRecognition();
+
+  // Guard against the delegate freeing us until we finish our job.
+  scoped_refptr<SpeechRecognizer> me(this);
+  delegate_->OnRecognizerError(caller_id_, error);
+  delegate_->DidCompleteRecording(caller_id_);
   delegate_->DidCompleteRecognition(caller_id_);
 }
 
