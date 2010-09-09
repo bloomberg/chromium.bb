@@ -676,7 +676,7 @@ bool MinidumpContext::Read(u_int32_t expected_size) {
       }
 
       default: {
-        // Unknown context type - Don't log as an error yet. Let the 
+        // Unknown context type - Don't log as an error yet. Let the
         // caller work that out.
         BPLOG(INFO) << "MinidumpContext unknown context type " <<
           HexString(cpu_type);
@@ -1185,11 +1185,12 @@ bool MinidumpMemoryRegion::GetMemoryAtAddressInternal(u_int64_t address,
     return false;
   }
 
+  // Common failure case
   if (address < descriptor_->start_of_memory_range ||
       sizeof(T) > numeric_limits<u_int64_t>::max() - address ||
       address + sizeof(T) > descriptor_->start_of_memory_range +
                             descriptor_->memory.data_size) {
-    BPLOG(ERROR) << "MinidumpMemoryRegion request out of range: " <<
+    BPLOG(INFO) << "MinidumpMemoryRegion request out of range: " <<
                     HexString(address) << "+" << sizeof(T) << "/" <<
                     HexString(descriptor_->start_of_memory_range) << "+" <<
                     HexString(descriptor_->memory.data_size);
@@ -1482,7 +1483,7 @@ bool MinidumpThreadList::Read(u_int32_t expected_size) {
     }
   }
 
-  
+
   if (thread_count > max_threads_) {
     BPLOG(ERROR) << "MinidumpThreadList count " << thread_count <<
                     " exceeds maximum " << max_threads_;
@@ -1839,8 +1840,9 @@ string MinidumpModule::debug_file() const {
     }
   }
 
-  BPLOG_IF(ERROR, file.empty()) << "MinidumpModule could not determine "
-                                   "debug_file for " << *name_;
+  // Relatively common case
+  BPLOG_IF(INFO, file.empty()) << "MinidumpModule could not determine "
+                                  "debug_file for " << *name_;
 
   return file;
 }
@@ -1907,8 +1909,9 @@ string MinidumpModule::debug_identifier() const {
 
   // TODO(mmentovai): on the Mac, provide fallbacks as in code_identifier().
 
-  BPLOG_IF(ERROR, identifier.empty()) << "MinidumpModule could not determine "
-                                         "debug_identifier for " << *name_;
+  // Relatively common case
+  BPLOG_IF(INFO, identifier.empty()) << "MinidumpModule could not determine "
+                                        "debug_identifier for " << *name_;
 
   return identifier;
 }

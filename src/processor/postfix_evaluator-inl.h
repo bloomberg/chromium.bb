@@ -162,8 +162,8 @@ bool PostfixEvaluator<ValueType>::EvaluateInternal(
       // = for assignment.
       ValueType value;
       if (!PopValue(&value)) {
-        BPLOG(ERROR) << "Could not PopValue to get value to assign: " <<
-                        expression;
+        BPLOG(INFO) << "Could not PopValue to get value to assign: " <<
+                       expression;
         return false;
       }
 
@@ -212,7 +212,7 @@ bool PostfixEvaluator<ValueType>::Evaluate(const string &expression,
   // and successful.
   if (stack_.empty())
     return true;
-    
+
   BPLOG(ERROR) << "Incomplete execution: " << expression;
   return false;
 }
@@ -231,7 +231,7 @@ bool PostfixEvaluator<ValueType>::EvaluateForValue(const string &expression,
     BPLOG(ERROR) << "Expression yielded bad number of results: "
                  << "'" << expression << "'";
     return false;
-  } 
+  }
 
   return PopValue(result);
 }
@@ -299,7 +299,7 @@ bool PostfixEvaluator<ValueType>::PopValue(ValueType *value) {
     if (iterator == dictionary_->end()) {
       // The identifier wasn't found in the dictionary.  Don't imply any
       // default value, just fail.
-      BPLOG(ERROR) << "Identifier " << token << " not in dictionary";
+      BPLOG(INFO) << "Identifier " << token << " not in dictionary";
       return false;
     }
 
