@@ -770,6 +770,38 @@
     {
       "features": [
         "background_page", 
+        "contextMenus", 
+        "tabs"
+      ], 
+      "icon": "imageinfo-128.png", 
+      "description": "Get image info for images, including EXIF data", 
+      "search_string": "IMAGEINFO GET IMAGE INFO FOR IMAGES, INCLUDING EXIF DATA BACKGROUND_PAGE CONTEXTMENUS TABS CHROME.CONTEXTMENUS.CREATE CHROME.TABS.GET CHROME.TABS.GETCURRENT CHROME.WINDOWS.CREATE CHROME.WINDOWS.UPDATE", 
+      "source_files": [
+        "background.html", 
+        "imageinfo/binaryajax.js", 
+        "imageinfo/exif.js", 
+        "imageinfo/imageinfo.js", 
+        "info.html", 
+        "manifest.json"
+      ], 
+      "path": "examples/extensions/imageinfo/", 
+      "api_calls": [
+        "chrome.contextMenus.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getCurrent", 
+        "chrome.windows.create", 
+        "chrome.windows.update"
+      ], 
+      "id": "646325c25f572a1d15edc73d057f821d847a4fbe", 
+      "protocols": [
+        "http://", 
+        "https://"
+      ], 
+      "name": "Imageinfo"
+    }, 
+    {
+      "features": [
+        "background_page", 
         "page_action", 
         "popup", 
         "tabs"
