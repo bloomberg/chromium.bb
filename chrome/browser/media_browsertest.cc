@@ -90,7 +90,14 @@ class MediaBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MediaBrowserTest, VideoBearTheora) {
+// Crashes on Mac OS (http://crbug.com/54939)
+#if defined(OS_MACOSX)
+#define MAYBE_VideoBearTheora FLAKY_VideoBearTheora
+#else
+#define MAYBE_VideoBearTheora VideoBearTheora
+#endif
+
+IN_PROC_BROWSER_TEST_F(MediaBrowserTest, MAYBE_VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
 
