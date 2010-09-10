@@ -5,34 +5,4 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// Temporary override until http://codereview.chromium.org/3294007 is upstreamed
-BUGWK43480 : fast/dom/Geolocation/delayed-permission-allowed.html = TEXT PASS
-BUGWK43480 : fast/dom/Geolocation/delayed-permission-denied.html = TEXT PASS
-BUGWK43480 : fast/dom/Geolocation/delayed-permission-allowed-for-multiple-requests.html = TEXT PASS
-BUGWK43480 : fast/dom/Geolocation/delayed-permission-denied-for-multiple-requests.html = TEXT PASS
 
-BUG52841 MAC : fast/dom/Geolocation/callback-exception.html = TEXT PASS
-BUG52841 MAC : fast/dom/Geolocation/no-page-cache.html = TEXT PASS
-BUG52841 MAC : fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT PASS
-BUG52841 MAC : editing/selection/drag-in-iframe.html = IMAGE PASS
-
-// Still failing, should be moved upstream.
-BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE PASS
-
-// Newly added test apparently misbehaves.
-BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
-
-// Upstream test_expectations.txt contains the entry for it as TEXT. We need to
-// change it to IMAGE+TEXT because we started to check images.
-BUG32153 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = IMAGE+TEXT
-
-// FFmpeg buffer rotation is causing this hang.
-BUG54465 WIN SKIP : http/tests/media/video-play-stall-seek.html = FAIL
-
-// Temporary override until WebKit roll picks up r67119
-BUGWK45479 : fast/dom/HTMLLinkElement/prefetch.html = TEXT PASS
-
-// dpranke - Temporary overrides until I can sort out the WK rolls
-BUGDIRK : fast/dom/dataset-gc.html = TEXT
-BUGDIRK WIN LINUX : svg/repaint/filter-repaint.svg = CRASH IMAGE+TEXT PASS
-BUGDIRK LINUX : svg/dynamic-updates/SVGFEDiffuseLightingElement-lighting-color-css-prop.html = IMAGE PASS
