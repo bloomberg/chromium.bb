@@ -1176,9 +1176,10 @@ def Main(argv):
         for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
     parser = optparse.OptionParser(version='%prog ' + __version__)
     # TODO(maruel): Temporary workaround to disable parallel checkout on
-    # buildbots until they can correctly parse its output. Uses that fact that
-    # stdout is redirected as a signal.
-    if sys.stdout.isatty():
+    # buildbots until they can correctly parse its output. stdout being
+    # redirected is not a good signal, at least on linux. Check for environment
+    # variable instead.
+    if 'CHROME_HEADLESS' not in os.environ:
       jobs = 8
     else:
       jobs = 1
