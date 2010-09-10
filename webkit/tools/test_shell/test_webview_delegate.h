@@ -50,6 +50,7 @@ class TestShell;
 class WebWidgetHost;
 
 namespace WebKit {
+class WebDeviceOrientationClient;
 class WebStorageNamespace;
 struct WebWindowFeatures;
 }
@@ -138,6 +139,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       const WebKit::WebAccessibilityObject& object);
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
   virtual WebKit::WebGeolocationService* geolocationService();
+  virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect& rect);

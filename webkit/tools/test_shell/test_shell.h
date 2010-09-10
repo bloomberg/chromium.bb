@@ -63,6 +63,10 @@ namespace base {
 class StringPiece;
 }
 
+namespace WebKit {
+class WebDeviceOrientationClientMock;
+}
+
 class TestShell : public base::SupportsWeakPtr<TestShell>  {
 public:
     struct TestParams {
@@ -328,6 +332,8 @@ public:
       return dev_tools_agent_.get();
     }
 
+    WebKit::WebDeviceOrientationClientMock* device_orientation_client_mock();
+
 protected:
     void CreateDevToolsClient(TestShellDevToolsAgent* agent);
     bool Initialize(const GURL& starting_url);
@@ -407,6 +413,8 @@ private:
     base::WeakPtr<TestShell> devtools_shell_;
     scoped_ptr<TestShellDevToolsAgent> dev_tools_agent_;
     scoped_ptr<TestShellDevToolsClient> dev_tools_client_;
+    scoped_ptr<WebKit::WebDeviceOrientationClientMock>
+        device_orientation_client_mock_;
 
     const TestParams* test_params_;
 

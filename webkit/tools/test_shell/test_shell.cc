@@ -33,6 +33,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClientMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
@@ -761,6 +762,15 @@ void TestShell::SetFocus(WebWidgetHost* host, bool enable) {
       }
     }
   }
+}
+
+WebKit::WebDeviceOrientationClientMock*
+TestShell::device_orientation_client_mock() {
+  if (!device_orientation_client_mock_.get()) {
+    device_orientation_client_mock_.reset(
+        new WebKit::WebDeviceOrientationClientMock());
+  }
+  return device_orientation_client_mock_.get();
 }
 
 //-----------------------------------------------------------------------------

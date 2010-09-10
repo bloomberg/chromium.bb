@@ -21,6 +21,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClientMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
@@ -637,6 +638,11 @@ WebNotificationPresenter* TestWebViewDelegate::notificationPresenter() {
 
 WebKit::WebGeolocationService* TestWebViewDelegate::geolocationService() {
   return GetTestGeolocationService();
+}
+
+WebKit::WebDeviceOrientationClient*
+TestWebViewDelegate::deviceOrientationClient() {
+  return shell_->device_orientation_client_mock();
 }
 
 // WebWidgetClient -----------------------------------------------------------

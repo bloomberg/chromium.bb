@@ -43,7 +43,7 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
 
   // TODO(hwennborg): Enable this once the implementation supports it.
   WebKit::WebRuntimeFeatures::enableDeviceMotion(false);
-  WebKit::WebRuntimeFeatures::enableDeviceOrientation(false);
+  WebKit::WebRuntimeFeatures::enableDeviceOrientation(true);
 
   // Load libraries for media and enable the media player.
   FilePath module_path;

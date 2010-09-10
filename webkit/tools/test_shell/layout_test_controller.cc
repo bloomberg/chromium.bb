@@ -18,6 +18,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebAnimationController.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClientMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -195,6 +197,8 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setMockGeolocationError", &LayoutTestController::setMockGeolocationError);
 
   BindMethod("markerTextForListItem", &LayoutTestController::markerTextForListItem);
+
+  BindMethod("setMockDeviceOrientation", &LayoutTestController::setMockDeviceOrientation);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -1433,4 +1437,21 @@ void LayoutTestController::markerTextForListItem(const CppArgumentList& args,
   else
     result->Set(
         element.document().frame()->markerTextForListItem(element).utf8());
+}
+
+void LayoutTestController::setMockDeviceOrientation(const CppArgumentList& args,
+                                                    CppVariant* result) {
+  if (args.size() < 6 ||
+      !args[0].isBool() || !args[1].isNumber() ||
+      !args[2].isBool() || !args[3].isNumber() ||
+      !args[4].isBool() || !args[5].isNumber())
+    return;
+  WebKit::WebDeviceOrientation orientation(args[0].ToBoolean(),
+                                           args[1].ToDouble(),
+                                           args[2].ToBoolean(),
+                                           args[3].ToDouble(),
+                                           args[4].ToBoolean(),
+                                           args[5].ToDouble());
+
+  shell_->device_orientation_client_mock()->setOrientation(orientation);
 }
