@@ -65,9 +65,21 @@ SPECIAL_CASES = {
         "Name": "OTS (OpenType Sanitizer)",
         "URL": "http://code.google.com/p/ots/",
     },
+    os.path.join('third_party', 'ppapi'): {
+        "Name": "ppapi",
+        "URL": "http://code.google.com/p/ppapi/",
+    },
+    os.path.join('third_party', 'protobuf2'): {
+        "Name": "protobuf",
+        "URL": "http://code.google.com/p/protobuf/",
+    },
     os.path.join('third_party', 'pywebsocket'): {
         "Name": "pywebsocket",
         "URL": "http://code.google.com/p/pywebsocket/",
+    },
+    os.path.join('third_party', 'skia'): {
+        "Name": "skia",
+        "URL": "http://code.google.com/p/skia/",
     },
     os.path.join('third_party', 'WebKit'): {
         "Name": "WebKit",
