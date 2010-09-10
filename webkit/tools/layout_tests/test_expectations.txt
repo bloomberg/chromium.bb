@@ -4,5 +4,7 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+BUGWK45513 WIN : inspector/extensions-resources.html = TIMEOUT CRASH
+
 
 
