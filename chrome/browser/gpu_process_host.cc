@@ -29,17 +29,14 @@ namespace {
 // Tasks used by this file
 class RouteOnUIThreadTask : public Task {
  public:
-  explicit RouteOnUIThreadTask(const IPC::Message& msg) {
-    msg_ = new IPC::Message(msg);
+  explicit RouteOnUIThreadTask(const IPC::Message& msg) : msg_(msg) {
   }
 
  private:
   void Run() {
-    GpuProcessHostUIShim::Get()->OnMessageReceived(*msg_);
-    delete msg_;
-    msg_ = NULL;
+    GpuProcessHostUIShim::Get()->OnMessageReceived(msg_);
   }
-  IPC::Message* msg_;
+  IPC::Message msg_;
 };
 
 // Global GpuProcessHost instance.
@@ -167,6 +164,8 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
+                        OnGraphicsInfoCollected)
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GetViewXID, OnGetViewXID)
 #elif defined(OS_MACOSX)
@@ -194,6 +193,10 @@ void GpuProcessHost::OnSynchronizeReply() {
       queued_synchronization_replies_.front();
   request.filter->Send(request.reply);
   queued_synchronization_replies_.pop();
+}
+
+void GpuProcessHost::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
+  gpu_info_ = gpu_info;
 }
 
 #if defined(OS_LINUX)

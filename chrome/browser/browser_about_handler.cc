@@ -29,6 +29,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/gpu_process_host.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/labs.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -841,22 +842,34 @@ std::string AboutGpu() {
   GPUInfo gpu_info = GpuProcessHost::Get()->gpu_info();
 
   std::string html;
-  html.append("<html><head><title>About GPU</title></head><body>\n");
-  html.append("<h2>GPU Information</h2><ul>\n");
-
-  html.append("<li><strong>Vendor ID:</strong> ");
-  html.append(base::IntToString(gpu_info.vendor_id()));
-  html.append("<li><strong>Device ID:</strong> ");
-  html.append(base::IntToString(gpu_info.device_id()));
-  html.append("<li><strong>Driver Version:</strong> ");
-  html.append(WideToASCII(gpu_info.driver_version()).c_str());
-  html.append("<li><strong>Pixel Shader Version:</strong> ");
-  html.append(VersionNumberToString(gpu_info.pixel_shader_version()).c_str());
-  html.append("<li><strong>Vertex Shader Version:</strong> ");
-  html.append(VersionNumberToString(gpu_info.vertex_shader_version()).c_str());
-  html.append("<li><strong>GL Version:</strong> ");
-  html.append(VersionNumberToString(gpu_info.gl_version()).c_str());
-  html.append("</ul></body></html> ");
+  if (!gpu_info.initialized()) {
+    GpuProcessHostUIShim::Get()->CollectGraphicsInfoAsynchronously();
+    // If it's not initialized yet, let the user know and reload the page
+    html.append("<html><head><title>About GPU</title></head>\n");
+    html.append("<body onload=\"setTimeout('window.location.reload(true)',");
+    html.append("2000)\">\n");
+    html.append("<h2>GPU Information</h2>\n");
+    html.append("<p>Retrieving GPU information . . .</p>\n");
+    html.append("</body></html> ");
+  } else {
+    html.append("<html><head><title>About GPU</title></head><body>\n");
+    html.append("<h2>GPU Information</h2><ul>\n");
+    html.append("<li><strong>Vendor ID:</strong> ");
+    html.append(base::IntToString(gpu_info.vendor_id()));
+    html.append("<li><strong>Device ID:</strong> ");
+    html.append(base::IntToString(gpu_info.device_id()));
+    html.append("<li><strong>Driver Version:</strong> ");
+    html.append(WideToASCII(gpu_info.driver_version()).c_str());
+    html.append("<li><strong>Pixel Shader Version:</strong> ");
+    html.append(VersionNumberToString(
+                    gpu_info.pixel_shader_version()).c_str());
+    html.append("<li><strong>Vertex Shader Version:</strong> ");
+    html.append(VersionNumberToString(
+                    gpu_info.vertex_shader_version()).c_str());
+    html.append("<li><strong>GL Version:</strong> ");
+    html.append(VersionNumberToString(gpu_info.gl_version()).c_str());
+    html.append("</ul></body></html> ");
+  }
   return html;
 }
 

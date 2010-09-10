@@ -86,6 +86,8 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnSynchronize)
     IPC_MESSAGE_HANDLER(GpuMsg_NewRenderWidgetHostView,
                         OnNewRenderWidgetHostView)
+    IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo,
+                        OnCollectGraphicsInfo)
   IPC_END_MESSAGE_MAP_EX()
 }
 
@@ -145,4 +147,15 @@ void GpuThread::OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
 #else
   NOTIMPLEMENTED();
 #endif
+}
+
+void GpuThread::OnCollectGraphicsInfo() {
+  // Fail to establish a channel if some implementation of GL cannot be
+  // initialized.
+  GPUInfo gpu_info;
+  if (gfx::GLContext::InitializeOneOff()) {
+    gpu_info_collector::CollectGraphicsInfo(&gpu_info);
+  }
+
+  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info));
 }

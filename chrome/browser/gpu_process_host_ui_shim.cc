@@ -66,3 +66,11 @@ void GpuProcessHostUIShim::RemoveRoute(int32 routing_id) {
 void GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   router_.RouteMessage(message);
 }
+
+void GpuProcessHostUIShim::CollectGraphicsInfoAsynchronously() {
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::IO));
+  ChromeThread::PostTask(
+      ChromeThread::IO,
+      FROM_HERE,
+      new SendOnIOThreadTask(new GpuMsg_CollectGraphicsInfo()));
+}

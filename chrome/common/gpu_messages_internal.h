@@ -46,6 +46,10 @@ IPC_BEGIN_MESSAGES(Gpu)
                        GpuNativeWindowHandle, /* parent window */
                        int32 /* view_id */)
 
+  // Tells the GPU process to create a context for collecting graphics card
+  // information.
+  IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
+
   // Creates a new backing store.
   IPC_MESSAGE_ROUTED2(GpuMsg_NewBackingStore,
                       int32, /* backing_store_routing_id */
@@ -105,6 +109,10 @@ IPC_BEGIN_MESSAGES(GpuHost)
 
   // Response to a GpuMsg_Synchronize message.
   IPC_MESSAGE_CONTROL0(GpuHostMsg_SynchronizeReply)
+
+  // Response to a GpuMsg_CollectGraphicsInfo.
+  IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
+                       GPUInfo /* GPU logging stats */)
 
 #if defined(OS_LINUX)
   // Get the XID for a view ID.

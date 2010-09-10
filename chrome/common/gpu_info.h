@@ -18,6 +18,9 @@ class GPUInfo {
   GPUInfo();
   ~GPUInfo() {}
 
+  // Returns whether this GPUInfo has been initialized with information
+  bool initialized() const;
+
   // Return the DWORD (uint32) representing the graphics card vendor id.
   uint32 vendor_id() const;
 
@@ -58,6 +61,7 @@ class GPUInfo {
                        uint32 gl_version,
                        bool can_lose_context);
  private:
+  bool initialized_;
   uint32 vendor_id_;
   uint32 device_id_;
   std::wstring driver_version_;

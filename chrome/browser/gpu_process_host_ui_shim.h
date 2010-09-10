@@ -42,6 +42,10 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
+  // Sends a message to the browser process to collect the information from the
+  // graphics card.
+  void CollectGraphicsInfoAsynchronously();
+
  private:
   friend struct DefaultSingletonTraits<GpuProcessHostUIShim>;
 

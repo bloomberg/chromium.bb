@@ -86,6 +86,7 @@ class GpuProcessHost : public BrowserChildProcessHost {
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle,
                             const GPUInfo& gpu_info);
   void OnSynchronizeReply();
+  void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
 #if defined(OS_LINUX)
   void OnGetViewXID(gfx::NativeViewId id, unsigned long* xid);
 #elif defined(OS_MACOSX)
