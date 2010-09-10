@@ -423,7 +423,6 @@ function handleEnablePlugin(node, enable, isGroup) {
   // Tell the C++ PluginsDOMHandler to enable/disable the plugin.
   chrome.send('enablePlugin', [String(node.path), String(enable),
               String(isGroup)]);
-  requestPluginsData();
 }
 
 // Keeps track of whether details have been made visible (expanded) or not.

@@ -552,6 +552,10 @@ class NotificationType {
     // should be loaded. The source is the RenderView. No details are expected.
     SHOULD_LOAD_PLUGINS,
 
+    // Sent by the PluginUpdater when there is a change of plugin
+    // enable/disable status.
+    PLUGIN_ENABLE_STATUS_CHANGED,
+
     // This is sent when a login prompt is shown.  The source is the
     // Source<NavigationController> for the tab in which the prompt is shown.
     // Details are a LoginNotificationDetails which provide the LoginHandler

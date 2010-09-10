@@ -21,8 +21,10 @@
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -127,9 +129,10 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
 // TODO(viettrungluu): Make plugin list updates notify, and then observe
 // changes; maybe replumb plugin list through plugin service?
 // <http://crbug.com/39101>
-class PluginsDOMHandler : public DOMMessageHandler {
+class PluginsDOMHandler : public DOMMessageHandler,
+                          public NotificationObserver {
  public:
-  PluginsDOMHandler() {}
+  explicit PluginsDOMHandler();
   virtual ~PluginsDOMHandler() {}
 
   // DOMMessageHandler implementation.
@@ -146,9 +149,22 @@ class PluginsDOMHandler : public DOMMessageHandler {
   // the security model.
   void HandleShowTermsOfServiceMessage(const ListValue* args);
 
+  // NotificationObserver method overrides
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details);
+
  private:
+  NotificationRegistrar registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(PluginsDOMHandler);
 };
+
+PluginsDOMHandler::PluginsDOMHandler() {
+  registrar_.Add(this,
+                 NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
+                 NotificationService::AllSources());
+}
 
 void PluginsDOMHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("requestPluginsData",
@@ -161,7 +177,8 @@ void PluginsDOMHandler::RegisterMessages() {
 
 void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
   DictionaryValue results;
-  results.Set("plugins", plugin_updater::GetPluginGroupsData());
+  results.Set("plugins",
+              PluginUpdater::GetPluginUpdater()->GetPluginGroupsData());
   dom_ui_->CallJavascriptFunction(L"returnPluginsData", results);
 }
 
@@ -181,19 +198,21 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     if (!args->GetString(0, &group_name))
       return;
 
-    plugin_updater::EnablePluginGroup(enable_str == "true", group_name);
+    PluginUpdater::GetPluginUpdater()->EnablePluginGroup(
+        enable_str == "true", group_name);
   } else {
     FilePath::StringType file_path;
     if (!args->GetString(0, &file_path))
       return;
 
-    plugin_updater::EnablePluginFile(enable_str == "true", file_path);
+    PluginUpdater::GetPluginUpdater()->EnablePluginFile(
+        enable_str == "true", file_path);
   }
 
   // TODO(viettrungluu): We might also want to ensure that the plugins
   // list is always written to prefs even when the user hasn't disabled a
   // plugin. <http://crbug.com/39101>
-  plugin_updater::UpdatePreferences(dom_ui_->GetProfile());
+  PluginUpdater::GetPluginUpdater()->UpdatePreferences(dom_ui_->GetProfile());
 }
 
 void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const ListValue* args) {
@@ -202,6 +221,16 @@ void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const ListValue* args) {
   browser->OpenURL(GURL(chrome::kAboutTermsURL),
                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   browser->window()->Show();
+}
+
+void PluginsDOMHandler::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
+  DCHECK_EQ(NotificationType::PLUGIN_ENABLE_STATUS_CHANGED, type.value);
+  DictionaryValue results;
+  results.Set("plugins",
+              PluginUpdater::GetPluginUpdater()->GetPluginGroupsData());
+  dom_ui_->CallJavascriptFunction(L"returnPluginsData", results);
 }
 
 }  // namespace

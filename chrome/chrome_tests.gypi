@@ -1175,6 +1175,7 @@
         'browser/preferences_mock_mac.cc',
         'browser/preferences_mock_mac.h',
         'browser/prefs/command_line_pref_store_unittest.cc',
+        'browser/prefs/pref_change_registrar_unittest.cc',
         'browser/prefs/pref_member_unittest.cc',
         'browser/prefs/pref_notifier_unittest.cc',
         'browser/prefs/pref_service_unittest.cc',

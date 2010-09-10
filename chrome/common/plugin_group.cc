@@ -88,6 +88,8 @@ size_t PluginGroup::GetPluginGroupDefinitionsSize() {
 void PluginGroup::SetPolicyDisabledPluginSet(const std::set<string16>& set) {
   if (!policy_disabled_plugins_)
     policy_disabled_plugins_ = new std::set<string16>(set);
+  else
+    *policy_disabled_plugins_ = set;
 }
 
 /*static*/

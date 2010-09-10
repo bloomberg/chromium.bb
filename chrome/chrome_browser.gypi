@@ -2241,6 +2241,8 @@
         'browser/prefs/pref_member.h',
         'browser/prefs/pref_notifier.cc',
         'browser/prefs/pref_notifier.h',
+        'browser/prefs/pref_change_registrar.cc',
+        'browser/prefs/pref_change_registrar.h',
         'browser/prefs/pref_service.cc',
         'browser/prefs/pref_service.h',
         'browser/prefs/pref_set_observer.cc',

@@ -61,11 +61,11 @@ void PluginService::InitGlobalInstance(Profile* profile) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // We first group the plugins and then figure out which groups to disable.
-  plugin_updater::DisablePluginGroupsFromPrefs(profile);
+  PluginUpdater::GetPluginUpdater()->DisablePluginGroupsFromPrefs(profile);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableOutdatedPlugins)) {
-    plugin_updater::DisableOutdatedPluginGroups();
+    PluginUpdater::GetPluginUpdater()->DisableOutdatedPluginGroups();
   }
 
   // Have Chrome plugins write their data to the profile directory.

@@ -37,6 +37,7 @@
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profile_manager.h"
@@ -605,6 +606,13 @@ void BrowserProcessImpl::CreateLocalState() {
   FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   local_state_.reset(PrefService::CreatePrefService(local_state_path, NULL));
+
+  // Make sure the the plugin updater gets notifications of changes
+  // in the plugin blacklist.
+  local_state_->RegisterListPref(prefs::kPluginsPluginsBlacklist);
+  plugin_state_change_registrar_.Init(local_state_.get());
+  plugin_state_change_registrar_.Add(prefs::kPluginsPluginsBlacklist,
+                                     PluginUpdater::GetPluginUpdater());
 }
 
 void BrowserProcessImpl::CreateIconManager() {

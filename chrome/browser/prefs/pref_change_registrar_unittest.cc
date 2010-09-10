@@ -1,0 +1,90 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/testing_pref_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using testing::Mock;
+using testing::Eq;
+
+// A mock provider that allows us to capture pref observer changes.
+class MockPrefService : public TestingPrefService {
+ public:
+  MockPrefService() {}
+  virtual ~MockPrefService() {};
+
+  MOCK_METHOD2(AddPrefObserver, void(const char*, NotificationObserver*));
+  MOCK_METHOD2(RemovePrefObserver, void(const char*, NotificationObserver*));
+};
+
+// A mock observer used as a pref observer
+class MockObserver : public NotificationObserver {
+ public:
+  MOCK_METHOD3(Observe, void(NotificationType, const NotificationSource& source,
+               const NotificationDetails& details));
+};
+
+class PrefChangeRegistrarTest : public testing::Test {
+ public:
+  PrefChangeRegistrarTest() {}
+  virtual ~PrefChangeRegistrarTest() {}
+
+ protected:
+  virtual void SetUp();
+
+  NotificationObserver* observer() const { return observer_.get(); }
+  MockPrefService* service() const { return service_.get(); }
+
+ private:
+  scoped_ptr<MockPrefService> service_;
+  scoped_ptr<MockObserver> observer_;
+};
+
+void PrefChangeRegistrarTest::SetUp() {
+  service_.reset(new MockPrefService());
+  observer_.reset(new MockObserver());
+}
+
+TEST_F(PrefChangeRegistrarTest, AddAndRemove) {
+  PrefChangeRegistrar registrar;
+  registrar.Init(service());
+
+  // Test adding.
+  EXPECT_CALL(*service(),
+              AddPrefObserver(Eq(std::string("test.pref.1")), observer()));
+  EXPECT_CALL(*service(),
+              AddPrefObserver(Eq(std::string("test.pref.2")), observer()));
+  registrar.Add("test.pref.1", observer());
+  registrar.Add("test.pref.2", observer());
+
+  // Test removing.
+  Mock::VerifyAndClearExpectations(service());
+  EXPECT_CALL(*service(),
+              RemovePrefObserver(Eq(std::string("test.pref.1")), observer()));
+  EXPECT_CALL(*service(),
+              RemovePrefObserver(Eq(std::string("test.pref.2")), observer()));
+  registrar.Remove("test.pref.1", observer());
+  registrar.Remove("test.pref.2", observer());
+}
+
+TEST_F(PrefChangeRegistrarTest, AutoRemove) {
+  PrefChangeRegistrar registrar;
+  registrar.Init(service());
+
+  // Setup of auto-remove.
+  EXPECT_CALL(*service(),
+              AddPrefObserver(Eq(std::string("test.pref.1")), observer()));
+  registrar.Add("test.pref.1", observer());
+  Mock::VerifyAndClearExpectations(service());
+
+  // Test auto-removing.
+  EXPECT_CALL(*service(),
+              RemovePrefObserver(Eq(std::string("test.pref.1")), observer()));
+}

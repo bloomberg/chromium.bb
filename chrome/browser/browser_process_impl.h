@@ -19,6 +19,7 @@
 #include "base/timer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "ipc/ipc_message.h"
 
@@ -193,6 +194,10 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void DoInspectorFilesCheck();
   // Our best estimate about the existence of the inspector directory.
   bool have_inspector_files_;
+
+  // Ensures that the observer of plugin disable/enable state
+  // notifications are properly added and removed.
+  PrefChangeRegistrar plugin_state_change_registrar_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;

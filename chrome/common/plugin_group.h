@@ -90,6 +90,9 @@ class PluginGroup {
   // group.
   void Enable(bool enable);
 
+  // Returns whether the plugin group is enabled or not.
+  bool Enabled() const { return enabled_; }
+
   // Returns this group's name
   const string16& GetGroupName() const { return group_name_; }
 
