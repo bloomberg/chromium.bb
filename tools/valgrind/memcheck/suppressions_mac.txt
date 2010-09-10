@@ -478,13 +478,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_40877
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25ActiveNotificationTracker20RegisterNotificationERKN6WebKit15WebNotificationE
-   fun:_ZN53ActiveNotificationTrackerTest_TestLookupAndClear_Test8TestBodyEv
-}
-{
    bug_46186_a
    Memcheck:Leak
    fun:_Znw*
@@ -605,7 +598,7 @@
    fun:main
 }
 {
-   bug_50297
+   bug_50297a
    Memcheck:Cond
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
@@ -616,7 +609,7 @@
    fun:_ZN11MessageLoop11RunInternalEv
 }
 {
-   bug_50297
+   bug_50297b
    Memcheck:Cond
    fun:_ZN6Pickle8FindNextEmPKcS1_
    fun:_ZN3IPC7Message8FindNextEPKcS2_

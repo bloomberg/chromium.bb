@@ -1332,7 +1332,7 @@
    fun:__cxa_atexit
 }
 {
-   bug_29069
+   bug_29069a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN16UserScriptMaster9StartScanEv
@@ -1344,7 +1344,7 @@
    fun:_ZN17ExtensionsService4InitEv
 }
 {
-   bug_29069
+   bug_29069b
    Memcheck:Leak
    fun:_Znw*
    fun:_Z9SerializeRKSt6vectorI10UserScriptSaIS0_EE
@@ -1642,16 +1642,6 @@
    fun:PORT_Alloc_Util
    ...
    fun:PK11_InitPin
-}
-{
-  bug_33394
-  Memcheck:Leak
-  fun:calloc
-  fun:PR_Calloc
-  ...
-  fun:_PR_ImplicitInitialization
-  ...
-  fun:_ZN4base14EnsureNSPRInitEv
 }
 {
   bug_34554_a
