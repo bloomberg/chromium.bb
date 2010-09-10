@@ -60,21 +60,8 @@ class ImportEndedObserver : public ImporterHost::Observer {
 
 }  // namespace
 
-// TODO(estade): pay attention to the args between |profile| and
-// |process_singleton|.
-bool OpenFirstRunDialog(Profile* profile,
-                        bool homepage_defined,
-                        int import_items,
-                        int dont_import_items,
-                        bool search_engine_experiment,
-                        bool randomize_search_engine_experiment,
-                        ProcessSingleton* process_singleton) {
-  return FirstRunDialog::Show(profile, process_singleton);
-}
-
 // TODO(port): This is just a piece of the silent import functionality from
 // ImportSettings for Windows.  It would be nice to get the rest of it ported.
-// TODO(estade): When do we use this?
 bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());

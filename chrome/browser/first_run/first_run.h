@@ -306,7 +306,7 @@ class FirstRunImportObserver : public ImportObserver {
   DISALLOW_COPY_AND_ASSIGN(FirstRunImportObserver);
 };
 
-
+#if defined(OS_MACOSX)
 // Show the First Run UI to the user, allowing them to create shortcuts for
 // the app, import their bookmarks and other data from another browser into
 // |profile| and perhaps some other tasks.
@@ -331,5 +331,6 @@ bool OpenFirstRunDialog(Profile* profile,
                         bool search_engine_experiment,
                         bool randomize_search_engine_experiment,
                         ProcessSingleton* process_singleton);
+#endif  // OS_MACOSX
 
 #endif  // CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
