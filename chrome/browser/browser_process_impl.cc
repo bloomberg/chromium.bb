@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/task.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
@@ -72,6 +73,13 @@
 // How often to check if the persistent instance of Chrome needs to restart
 // to install an update.
 static const int kUpdateCheckIntervalHours = 6;
+#endif
+
+#if defined(USE_X11)
+// How long to wait for the File thread to complete during EndSession, on
+// Linux. We have a timeout here because we're unable to run the UI messageloop
+// and there's some deadlock risk. Our only option is to exit anyway.
+static const int kEndSessionTimeoutSeconds = 10;
 #endif
 
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
@@ -215,10 +223,16 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   g_browser_process = NULL;
 }
 
+#if defined(OS_WIN)
 // Send a QuitTask to the given MessageLoop.
 static void PostQuit(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
+#elif defined(USE_X11)
+static void Signal(base::WaitableEvent* event) {
+  event->Signal();
+}
+#endif
 
 unsigned int BrowserProcessImpl::AddRefModule() {
   DCHECK(CalledOnValidThread());
@@ -240,9 +254,9 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
 }
 
 void BrowserProcessImpl::EndSession() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_X11)
   // Notify we are going away.
-  ::SetEvent(shutdown_event_->handle());
+  shutdown_event_->Signal();
 #endif
 
   // Mark all the profiles as clean.
@@ -264,9 +278,20 @@ void BrowserProcessImpl::EndSession() {
   // We must write that the profile and metrics service shutdown cleanly,
   // otherwise on startup we'll think we crashed. So we block until done and
   // then proceed with normal shutdown.
-  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+#if defined(USE_X11)
+  //  Can't run a local loop on linux. Instead create a waitable event.
+  base::WaitableEvent done_writing(false, false);
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(Signal, &done_writing));
+  done_writing.TimedWait(
+      base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds));
+#elif defined(OS_WIN)
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(PostQuit, MessageLoop::current()));
   MessageLoop::current()->Run();
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 ResourceDispatcherHost* BrowserProcessImpl::resource_dispatcher_host() {
