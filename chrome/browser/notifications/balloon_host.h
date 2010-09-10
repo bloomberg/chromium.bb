@@ -42,7 +42,7 @@ class BalloonHost : public RenderViewHostDelegate,
     // TODO(aa): Should this return the native view of the BalloonView*?
     return NULL;
   }
-  virtual TabContents* associated_tab_contents() { return NULL; }
+  virtual TabContents* associated_tab_contents() const { return NULL; }
 
   RenderViewHost* render_view_host() const { return render_view_host_; }
 

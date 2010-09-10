@@ -511,10 +511,25 @@ END_MSG_MAP()
     std::wstring wide_url = url_;
     GURL parsed_url(WideToUTF8(wide_url));
 
+    std::string scheme(parsed_url.scheme());
+    std::string host(parsed_url.host());
+
+    // If Chrome-Frame is presently navigated to an extension page, navigating
+    // the host to a url with scheme chrome-extension will fail, so we
+    // point the host at http:local_host.  Note that this is NOT the URL
+    // to which the host is directed.  It is only used as a temporary message
+    // passing mechanism between this CF instance, and the BHO that will
+    // be constructed in the new IE tab.
+    if (parsed_url.SchemeIs("chrome-extension") &&
+        is_privileged_) {
+      scheme = "http";
+      host = "local_host";
+    }
+
     std::string url =
         StringPrintf("%hs:%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
-                     parsed_url.scheme().c_str(),
-                     parsed_url.host().c_str(),
+                     scheme.c_str(),
+                     host.c_str(),
                      params.cookie,
                      params.disposition,
                      params.dimensions.x(),
@@ -1219,6 +1234,18 @@ END_MSG_MAP()
 
     web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty,
                             http_headers.AsInput());
+  }
+
+  void InitializeAutomationSettings() {
+    static const wchar_t kHandleTopLevelRequests[] = L"HandleTopLevelRequests";
+    static const wchar_t kUseChromeNetworking[] = L"UseChromeNetworking";
+
+    // Query and assign the top-level-request routing, and host networking
+    // settings from the registry.
+    bool top_level_requests = GetConfigBool(true, kHandleTopLevelRequests);
+    bool chrome_network = GetConfigBool(false, kUseChromeNetworking);
+    automation_client_->set_handle_top_level_requests(top_level_requests);
+    automation_client_->set_use_chrome_network(chrome_network);
   }
 
   ScopedBstr url_;

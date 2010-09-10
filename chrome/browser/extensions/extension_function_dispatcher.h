@@ -51,7 +51,7 @@ class ExtensionFunctionDispatcher {
     // context. For example, the TabContents in which an infobar or
     // chrome-extension://<id> URL are being shown. Callers must check for a
     // NULL return value (as in the case of a background page).
-    virtual TabContents* associated_tab_contents() = 0;
+    virtual TabContents* associated_tab_contents() const = 0;
 
    protected:
     virtual ~Delegate() {}

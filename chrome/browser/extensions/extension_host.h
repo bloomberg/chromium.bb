@@ -86,7 +86,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   ViewType::Type extension_host_type() const { return extension_host_type_; }
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual TabContents* associated_tab_contents() {
+  virtual TabContents* associated_tab_contents() const {
     return associated_tab_contents_;
   }
   void set_associated_tab_contents(TabContents* associated_tab_contents) {
@@ -111,8 +111,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   // |size_limit| in both width and height.
   void DisableScrollbarsForSmallWindows(const gfx::Size& size_limit);
 
-  // RenderViewHostDelegate implementation.
-  virtual RenderViewHostDelegate::View* GetViewDelegate();
+  // RenderViewHostDelegate::View implementation.
   virtual const GURL& GetURL() const { return url_; }
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual ViewType::Type GetRenderViewType() const;
@@ -126,6 +125,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void DocumentOnLoadCompletedInMainFrame(
       RenderViewHost* render_view_host);
 
+  // RenderViewHostDelegate implementation.
+  virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual WebPreferences GetWebkitPrefs();
   virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,

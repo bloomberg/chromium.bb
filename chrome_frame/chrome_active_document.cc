@@ -46,9 +46,6 @@
 DEFINE_GUID(CGID_DocHostCmdPriv, 0x000214D4L, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0,
             0x46);
 
-static const wchar_t kHandleTopLevelRequests[] = L"HandleTopLevelRequests";
-static const wchar_t kUseChromeNetworking[] = L"UseChromeNetworking";
-
 base::ThreadLocalPointer<ChromeActiveDocument> g_active_doc_cache;
 
 bool g_first_launch_by_process_ = true;
@@ -96,12 +93,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
       return hr;
   }
 
-  // Query and assign the top-level-request routing, and host networking
-  // settings from the registry.
-  bool top_level_requests = GetConfigBool(true, kHandleTopLevelRequests);
-  bool chrome_network = GetConfigBool(false, kUseChromeNetworking);
-  automation_client_->set_handle_top_level_requests(top_level_requests);
-  automation_client_->set_use_chrome_network(chrome_network);
+  InitializeAutomationSettings();
 
   find_dialog_.Init(automation_client_.get());
 

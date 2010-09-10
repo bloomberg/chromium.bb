@@ -632,6 +632,12 @@ NavigationType::Type NavigationController::ClassifyNavigation(
       tab_contents_->GetSiteInstance(),
       params.page_id);
   if (existing_entry_index == -1) {
+    // TODO(twiz)  Top-level, out-of-browser navigations from ActiveX instances
+    // of Chrome Frame can trigger this behaviour:  The page_id is less than
+    // GetMaxPageID, yet no entry index is registered.  See BUG 55138.
+    if (PageTransition::IsMainFrame(params.transition))
+      return NavigationType::NEW_PAGE;
+
     // The page was not found. It could have been pruned because of the limit on
     // back/forward entries (not likely since we'll usually tell it to navigate
     // to such entries). It could also mean that the renderer is smoking crack.

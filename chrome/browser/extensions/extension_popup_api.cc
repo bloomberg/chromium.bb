@@ -165,6 +165,15 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
         GetRoutingFromDispatcher(dispatcher_);
     if (router)
       router->RegisterRenderViewHost(host->render_view_host());
+
+    // Extension hosts created for popup contents exist in the same tab
+    // contents as the ExtensionFunctionDispatcher that requested the popup.
+    // For example, '_blank' link navigation should be routed through the tab
+    // contents that requested the popup.
+    if (dispatcher_ && dispatcher_->delegate()) {
+      host->set_associated_tab_contents(
+          dispatcher_->delegate()->associated_tab_contents());
+    }
   }
 
   virtual void ExtensionPopupResized(ExtensionPopup* popup) {

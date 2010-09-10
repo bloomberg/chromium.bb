@@ -457,6 +457,13 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
 
 RendererPreferences ExtensionHost::GetRendererPrefs(Profile* profile) const {
   RendererPreferences preferences;
+
+  TabContents* associated_contents = associated_tab_contents();
+  if (associated_contents)
+    preferences =
+        static_cast<RenderViewHostDelegate*>(associated_contents)->
+            GetRendererPrefs(profile);
+
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
   return preferences;
 }
@@ -501,7 +508,7 @@ void ExtensionHost::CreateNewWindow(
     const string16& frame_name) {
   // TODO(aa): Use the browser's profile if the extension is split mode
   // incognito.
-  delegate_view_helper_.CreateNewWindow(
+  TabContents* new_contents = delegate_view_helper_.CreateNewWindow(
       route_id,
       render_view_host()->process()->profile(),
       site_instance(),
@@ -510,6 +517,10 @@ void ExtensionHost::CreateNewWindow(
       this,
       window_container_type,
       frame_name);
+
+  TabContents* associated_contents = associated_tab_contents();
+  if (associated_contents && associated_contents->delegate())
+    associated_contents->delegate()->TabContentsCreated(new_contents);
 }
 
 void ExtensionHost::CreateNewWidget(int route_id,
@@ -542,11 +553,26 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
       Browser::TYPE_NORMAL,
       false);  // Match incognito exactly.
   if (!browser) {
-    browser = Browser::Create(contents->profile());
-    browser->window()->Show();
+    // If no browser is associated with the created TabContents, then the
+    // created TabContents may be an intermediate structure used during topmost
+    // url navigation from within an experimental extension popup view.
+    //
+    // If the ExtensionHost has an associated TabContents, then register the
+    // new contents with this contents.  This will allow top-level link
+    // navigation within the new contents to function just as navigation
+    // within the current host.
+    TabContents* associated_contents = associated_tab_contents();
+    if (associated_contents) {
+      associated_contents->AddNewContents(contents, disposition, initial_pos,
+                                          user_gesture);
+    } else {
+      browser = Browser::Create(contents->profile());
+      browser->window()->Show();
+    }
   }
 
-  browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
+  if (browser)
+    browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
 }
 
 void ExtensionHost::ShowCreatedWidget(int route_id,
