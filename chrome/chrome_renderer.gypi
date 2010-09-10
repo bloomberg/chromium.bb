@@ -14,7 +14,6 @@
         'plugin',
         'chrome_resources',
         'chrome_strings',
-        'safe_browsing_proto',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/hunspell/hunspell.gyp:hunspell',
@@ -85,7 +84,6 @@
         'renderer/resources/extension_process_bindings.js',
         'renderer/resources/greasemonkey_api.js',
         'renderer/resources/json_schema.js',
-        'renderer/resources/phishing_model.pb'
         'renderer/resources/renderer_extension_bindings.js',
         'renderer/about_handler.cc',
         'renderer/about_handler.h',
@@ -192,9 +190,6 @@
         'renderer/renderer_webstoragearea_impl.h',
         'renderer/renderer_webstoragenamespace_impl.cc',
         'renderer/renderer_webstoragenamespace_impl.h',
-        # TODO(noelutz): Find a better way to include these files
-        '<(protoc_out_dir)/chrome/renderer/safe_browsing/client_model.pb.cc',
-        '<(protoc_out_dir)/chrome/renderer/safe_browsing/client_model.pb.h',
         'renderer/safe_browsing/feature_extractor_clock.h',
         'renderer/safe_browsing/features.cc',
         'renderer/safe_browsing/features.h',
@@ -204,8 +199,6 @@
         'renderer/safe_browsing/phishing_term_feature_extractor.h',
         'renderer/safe_browsing/phishing_url_feature_extractor.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor.h',
-        'renderer/safe_browsing/scorer.cc',
-        'renderer/safe_browsing/scorer.h',
         'renderer/speech_input_dispatcher.cc',
         'renderer/speech_input_dispatcher.h',
         'renderer/spellchecker/spellcheck.cc',
@@ -297,50 +290,6 @@
             'renderer/command_buffer_proxy.h',
           ],
         }],
-      ],
-    },
-    {
-      # Protobuf compiler / generator for the safebrowsing client model proto.
-      'target_name': 'safe_browsing_proto',
-      'type': 'none',
-      'sources': [ 'renderer/safe_browsing/client_model.proto' ],
-      'rules': [
-        {
-          'rule_name': 'genproto',
-          'extension': 'proto',
-          'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-          ],
-          'variables': {
-            # The protoc compiler requires a proto_path argument with the
-            # directory containing the .proto file.
-            # There's no generator variable that corresponds to this, so fake it.
-            'rule_input_relpath': 'renderer/safe_browsing',
-          },
-          'outputs': [
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
-          ],
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=./<(rule_input_relpath)',
-            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
-            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
-          ],
-          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'dependencies': [
-        '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
-        '../third_party/protobuf2/protobuf.gyp:protoc#host',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ]
-      },
-      'export_dependent_settings': [
-        '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
       ],
     },
   ],

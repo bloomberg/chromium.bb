@@ -1360,7 +1360,6 @@
         'renderer/safe_browsing/features_unittest.cc',
         'renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc',
-        'renderer/safe_browsing/scorer_unittest.cc',
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'service/cloud_print/cloud_print_helpers_unittest.cc',
