@@ -41,6 +41,11 @@ const char kExtensionInstallDenyList[] = "ExtensionInstallBlacklist";
 const char kShowHomeButton[] = "ShowHomeButton";
 const char kPrintingEnabled[] = "PrintingEnabled";
 
+// Chrome Frame specific policy constants
+const char kChromeFrameRendererSettings[] = "ChromeFrameRendererSettings";
+const char kRenderInChromeFrameList[] = "RenderInChromeFrameList";
+const char kRenderInHostList[] = "RenderInHostList";
+
 }  // namespace key
 
 }  // namespace policy

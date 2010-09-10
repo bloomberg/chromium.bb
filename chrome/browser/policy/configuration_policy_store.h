@@ -41,6 +41,9 @@ class ConfigurationPolicyStore {
     kPolicyShowHomeButton,
     kPolicyDisabledPlugins,
     kPolicyPrintingEnabled,
+    kPolicyChromeFrameRendererSettings,
+    kPolicyRenderInChromeFrameList,
+    kPolicyRenderInHostList,
   };
 
   static const int kPolicyNoProxyServerMode = 0;

@@ -233,11 +233,34 @@
         'type': 'list',
       }]
     },
+    {
+      'name': 'ChromeFrameRendererSettings',
+      'policies': [{
+          'name': 'ChromeFrameRendererSettings',
+          'type': 'enum',
+          'items': [
+            {'name': 'RenderInHost', 'value': '0'},
+            {'name': 'RenderInChromeFrame', 'value': '1'},
+          ],
+        }, {
+          'name': 'RenderInChromeFrameList',
+          'type': 'list',
+        }, {
+          'name': 'RenderInHostList',
+          'type': 'list',
+        },
+      ],
+    },
   ],
   'placeholders': [
+    # Note: keys $1 and $3 are reserved for Chromium and Chromium Frame.
     {
       'key': '$2',
       'value': 'http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett'
+    },
+    {
+      'key': '$4',
+      'value': 'http://www.chromium.org/developers/how-tos/chrome-frame-getting-started'
     },
   ]
 }

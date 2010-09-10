@@ -23,6 +23,7 @@ def GetConfigurationForBuild(defines):
     config = {
       'build': 'chromium',
       'app_name': 'Chromium',
+      'frame_name': 'Chromium Frame',
       'win_reg_key_name': 'Software\\Policies\\Chromium',
       'win_category_path': ['chromium'],
       'admx_namespace': 'Chromium.Policies.Chromium',
@@ -32,6 +33,7 @@ def GetConfigurationForBuild(defines):
     config = {
       'build': 'chrome',
       'app_name': 'Google Chrome',
+      'frame_name': 'Google Chrome Frame',
       'win_reg_key_name': 'Software\\Policies\\Google\\Chrome',
       'win_category_path': ['google', 'googlechrome'],
       'admx_namespace': 'Google.Policies.Chrome',

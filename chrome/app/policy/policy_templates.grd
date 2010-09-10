@@ -470,6 +470,58 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_RESTOREONSTARTUPURLS_DESC" desc="Description of the list editor 'restore startup urls' of the policy settings page 'restore on startup'.">
       If 'Open a list of URLs' is selected as action on startup, this allows you to specify the list of URLs that are opened on startup.
     </message>
+
+    <!-- Begin Chrome Frame messages -->
+    <message name="IDS_POLICY_GROUP_CHROMEFRAMERENDERERSETTINGS_CAPTION"
+             desc="Caption of Chrome Frame renderer policy settings page">
+      Configure the default renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>
+        Google Chrome Frame</ex></ph>
+    </message>
+    <message name="IDS_POLICY_GROUP_CHROMEFRAMERENDERERSETTINGS_DESC"
+             desc="Description of the 'Chrome Frame renderer' policy settings page.  TODO(gfeher): This text is only visible on Mac, but the corresponding policy is not supported on Mac.">
+      Configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">
+        $3<ex>Google Chrome Frame</ex>
+      </ph> is installed.
+      The default setting is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
+        Google Chrome Frame</ex></ph> render HTML pages by default.
+      For example patterns for the lists, see <ph name="CF_GETTING_STARTED_URL">$4<ex>
+        http://www.chromium.org/developers/how-tos/chrome-frame-getting-started</ex></ph>.
+    </message>
+
+    <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_CAPTION"
+             desc="Caption of Chrome Frame renderer policy settings page">
+      Configure the default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>
+    </message>
+    <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_DESC"
+             desc="Description of the 'Chrome Frame renderer' policy settings page.">
+      Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex>
+      </ph> is installed.
+      The default setting is to allow the host browser do the rendering, but you
+      can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
+        Google Chrome Frame</ex></ph> render HTML pages by default.
+    </message>
+
+    <message name="IDS_POLICY_ENUM_RENDERINHOST_CAPTION"
+             desc="Caption for 'Use the host browser as the default HTML renderer'.">
+      Use the host browser by default
+    </message>
+
+    <message name="IDS_POLICY_ENUM_RENDERINCHROMEFRAME_CAPTION"
+             desc="Make Chrome Frame the default renderer - caption">
+      Use <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> by default
+    </message>
+
+    <message name="IDS_POLICY_RENDERINCHROMEFRAMELIST_CAPTION"
+             desc="Caption for list of URLs that should always be displayed in Chrome Frame">
+      Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>
+    </message>
+
+    <message name="IDS_POLICY_RENDERINHOSTLIST_CAPTION"
+             desc="Caption for list of URLs that should always be displayed in the host browser">
+      Always render the following URL patterns in the host browser
+    </message>
+    <!-- End Chrome Frame messages -->
+
     </messages>
   </release>
 </grit>

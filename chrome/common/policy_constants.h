@@ -42,6 +42,11 @@ extern const char kExtensionInstallDenyList[];
 extern const char kShowHomeButton[];
 extern const char kPrintingEnabled[];
 
+// Chrome Frame specific policy constants
+extern const char kChromeFrameRendererSettings[];
+extern const char kRenderInChromeFrameList[];
+extern const char kRenderInHostList[];
+
 }  // namespace key
 
 }  // namespace policy
