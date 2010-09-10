@@ -397,6 +397,7 @@ class LineLengthChecker(object):
 
   def FileFilter(self, props):
     return ('.patch' not in props and
+            '.table' not in props and
             '.val' not in props and
             '.valerr' not in props)
 
