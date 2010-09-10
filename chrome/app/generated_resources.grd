@@ -5454,7 +5454,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE" desc="This message is displayed when the server hasn't been updated to fix a recent security issues. TLS here is an acronym and need not be translated. 'renegotiation' is a technical term describing a process of agreeing on a new set of security parameters and secrets. 'extension' here should be taken to mean 'amendment' rather than elongation.">
         The server does not support the TLS renegotiation extension.
       </message>
-      
+      <message name="IDS_PAGE_INFO_SITE_INFO_TITLE" desc="The name of the site information section.">
+        Site information
+      </message>
+
       <!-- SSL Blocking Page -->
       <message name="IDS_SSL_BLOCKING_PAGE_TITLE" desc="The title of the SSL blocking page.">
         SSL Error

@@ -37,8 +37,10 @@ class PageInfoModel {
 
   enum SectionInfoState {
     SECTION_STATE_OK = 0,
-    // If state is OK but contains mixed content.
-    SECTION_STATE_WARNING,
+    // For example, if state is OK but contains mixed content.
+    SECTION_STATE_WARNING_MINOR,
+    // For example, if content was served over HTTP.
+    SECTION_STATE_WARNING_MAJOR,
     // For example, unverified identity over HTTPS.
     SECTION_STATE_ERROR,
   };

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,9 +223,12 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
       case PageInfoModel::SECTION_STATE_OK:
         pixbuf = rb.GetPixbufNamed(IDR_PAGEINFO_GOOD);
         break;
-      case PageInfoModel::SECTION_STATE_WARNING:
+      case PageInfoModel::SECTION_STATE_WARNING_MINOR:
         DCHECK(section.type == PageInfoModel::SECTION_INFO_CONNECTION);
-        pixbuf = rb.GetPixbufNamed(IDR_PAGEINFO_MIXED);
+        pixbuf = rb.GetPixbufNamed(IDR_PAGEINFO_WARNING_MINOR);
+        break;
+      case PageInfoModel::SECTION_STATE_WARNING_MAJOR:
+        pixbuf = rb.GetPixbufNamed(IDR_PAGEINFO_WARNING_MAJOR);
         break;
       case PageInfoModel::SECTION_STATE_ERROR:
         pixbuf = rb.GetPixbufNamed(IDR_PAGEINFO_BAD);

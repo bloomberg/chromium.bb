@@ -344,7 +344,9 @@ Section::Section(const string16& title,
   if (!good_state_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     good_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_GOOD);
-    bad_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_BAD);
+    // The exclamation point has been re-purposed as a warning
+    // signal in the new code.
+    bad_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_WARNING_MAJOR);
   }
   title_label_ = new views::Label(UTF16ToWideHack(title));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

@@ -94,7 +94,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
     // HTTP or bad HTTPS.
     description.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
-    state = SECTION_STATE_ERROR;
+    state = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
+        SECTION_STATE_WARNING_MAJOR : SECTION_STATE_ERROR;
   }
   sections_.push_back(SectionInfo(
       state,
@@ -114,7 +115,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
     // Security strength is unknown.  Say nothing.
     state = SECTION_STATE_ERROR;
   } else if (ssl.security_bits() == 0) {
-    state = SECTION_STATE_ERROR;
+    state = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
+        SECTION_STATE_WARNING_MAJOR : SECTION_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
@@ -129,11 +131,18 @@ PageInfoModel::PageInfoModel(Profile* profile,
         subject_name,
         base::IntToString16(ssl.security_bits())));
     if (ssl.displayed_insecure_content() || ssl.ran_insecure_content()) {
+      // The old SSL dialog only had good and bad state, so for the old
+      // implementation we raise an error on finding mixed content. The new
+      // SSL info bubble has a warning state for displaying insecure content,
+      // so we check. The command line check will go away once we eliminate
+      // the old dialogs.
       const CommandLine* command_line(CommandLine::ForCurrentProcess());
-      if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble))
-        state = SECTION_STATE_WARNING;
-      else
+      if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble) &&
+          !ssl.ran_insecure_content()) {
+        state = SECTION_STATE_WARNING_MINOR;
+      } else {
         state = SECTION_STATE_ERROR;
+      }
       description.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
           description,
@@ -235,12 +244,18 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
     visited_before_today = (first_visit_midnight < today);
   }
 
+  // We only show the Site Information heading for the new dialogs.
+  string16 title;
+  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble))
+    title = l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE);
+
   if (!visited_before_today) {
     sections_.push_back(SectionInfo(
         SECTION_STATE_ERROR,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
-        string16(),
+        title,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY),
         SECTION_INFO_FIRST_VISIT));
@@ -249,7 +264,7 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
         SECTION_STATE_OK,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
-        string16(),
+        title,
         l10n_util::GetStringFUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,
             WideToUTF16(base::TimeFormatShortDate(first_visit))),

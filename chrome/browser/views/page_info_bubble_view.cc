@@ -61,10 +61,6 @@ class Section : public views::View,
   // The information this view represents.
   PageInfoModel::SectionInfo info_;
 
-  static SkBitmap* good_state_icon_;
-  static SkBitmap* bad_state_icon_;
-  static SkBitmap* mixed_state_icon_;
-
   views::ImageView* status_image_;
   views::Label* headline_label_;
   views::Label* description_label_;
@@ -72,11 +68,6 @@ class Section : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(Section);
 };
-
-// static
-SkBitmap* Section::good_state_icon_ = NULL;
-SkBitmap* Section::bad_state_icon_ = NULL;
-SkBitmap* Section::mixed_state_icon_ = NULL;
 
 }  // namespace
 
@@ -190,31 +181,35 @@ Section::Section(PageInfoBubbleView* owner,
                  bool show_cert)
     : owner_(owner),
       info_(section_info),
+      status_image_(NULL),
       link_(NULL) {
-  if (!good_state_icon_) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    good_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_GOOD);
-    bad_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_BAD);
-    mixed_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_MIXED);
-  }
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY ||
       info_.type == PageInfoModel::SECTION_INFO_CONNECTION) {
     status_image_ = new views::ImageView();
     switch (info_.state) {
       case PageInfoModel::SECTION_STATE_OK:
-        status_image_->SetImage(good_state_icon_);
+        status_image_->SetImage(rb.GetBitmapNamed(IDR_PAGEINFO_GOOD));
         break;
-      case PageInfoModel::SECTION_STATE_WARNING:
-        DCHECK(info_.type == PageInfoModel::SECTION_INFO_CONNECTION);
-        status_image_->SetImage(mixed_state_icon_);
+      case PageInfoModel::SECTION_STATE_WARNING_MAJOR:
+        status_image_->SetImage(rb.GetBitmapNamed(IDR_PAGEINFO_WARNING_MAJOR));
+        break;
+      case PageInfoModel::SECTION_STATE_WARNING_MINOR:
+        status_image_->SetImage(rb.GetBitmapNamed(IDR_PAGEINFO_WARNING_MINOR));
         break;
       case PageInfoModel::SECTION_STATE_ERROR:
-        status_image_->SetImage(bad_state_icon_);
+        status_image_->SetImage(rb.GetBitmapNamed(IDR_PAGEINFO_BAD));
         break;
       default:
         NOTREACHED();  // Do you need to add a case here?
     }
+    AddChildView(status_image_);
+  } else if (info_.type == PageInfoModel::SECTION_INFO_FIRST_VISIT) {
+    status_image_ = new views::ImageView();
+    status_image_->SetImage(info_.state == PageInfoModel::SECTION_STATE_OK ?
+        rb.GetBitmapNamed(IDR_PAGEINFO_INFO) :
+        rb.GetBitmapNamed(IDR_PAGEINFO_WARNING_MAJOR));
     AddChildView(status_image_);
   }
 
@@ -261,8 +256,7 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
 
   // Layout the image, head-line and description.
   gfx::Size size;
-  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY ||
-    info_.type == PageInfoModel::SECTION_INFO_CONNECTION) {
+  if (status_image_) {
       size = status_image_->GetPreferredSize();
     if (!compute_bounds_only)
       status_image_->SetBounds(x, y, size.width(), size.height());
@@ -291,7 +285,8 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
   }
   if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY && link_) {
     size = link_->GetPreferredSize();
-    link_->SetBounds(x, y, size.width(), size.height());
+    if (!compute_bounds_only)
+      link_->SetBounds(x, y, size.width(), size.height());
     y += size.height();
   }
 
