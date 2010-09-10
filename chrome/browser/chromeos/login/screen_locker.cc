@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -98,10 +99,20 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
         saved_active_input_method_list_.empty()) {
       chromeos::InputMethodLibrary* language =
           chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+      chromeos::KeyboardLibrary* keyboard =
+          chromeos::CrosLibrary::Get()->GetKeyboardLibrary();
+
       saved_previous_input_method_id_ = language->previous_input_method().id;
       saved_current_input_method_id_ = language->current_input_method().id;
       scoped_ptr<chromeos::InputMethodDescriptors> active_input_method_list(
           language->GetActiveInputMethods());
+
+      const std::string hardware_keyboard =
+          keyboard->GetHardwareKeyboardLayoutName();  // e.g. "xkb:us::eng"
+      // We'll add the hardware keyboard if it's not included in
+      // |active_input_method_list| so that the user can always use the hardware
+      // keyboard on the screen locker.
+      bool should_add_hardware_keyboard = true;
 
       chromeos::ImeConfigValue value;
       value.type = chromeos::ImeConfigValue::kValueTypeStringList;
@@ -113,9 +124,12 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
         if (!StartsWithASCII(input_method_id, kValidInputMethodPrefix, true))
           continue;
         value.string_list_value.push_back(input_method_id);
+        if (input_method_id == hardware_keyboard) {
+          should_add_hardware_keyboard = false;
+        }
       }
-      if (value.string_list_value.empty()) {
-        value.string_list_value.push_back(kFallbackInputMethodId);  // US qwerty
+      if (should_add_hardware_keyboard) {
+        value.string_list_value.push_back(hardware_keyboard);
       }
       language->SetImeConfig(
           chromeos::language_prefs::kGeneralSectionName,
