@@ -21,6 +21,7 @@
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/base/xmpp_client_socket_factory.h"
+#include "jingle/notifier/communicator/xmpp_socket_adapter.h"
 #include "jingle/notifier/listener/listen_task.h"
 #include "jingle/notifier/listener/notification_constants.h"
 #include "jingle/notifier/listener/subscribe_task.h"
@@ -29,6 +30,9 @@
 #include "talk/base/cryptstring.h"
 #include "talk/base/logging.h"
 #include "talk/base/sigslot.h"
+#include "talk/base/physicalsocketserver.h"
+#include "talk/base/ssladapter.h"
+#include "talk/base/thread.h"
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -40,6 +44,14 @@
 // are received.
 
 namespace {
+
+void PumpAuxiliaryLoops() {
+  talk_base::Thread* current_thread =
+      talk_base::ThreadManager::CurrentThread();
+  current_thread->ProcessMessages(100);
+  MessageLoop::current()->PostTask(
+      FROM_HERE, NewRunnableFunction(&PumpAuxiliaryLoops));
+}
 
 // Main class that listens for and handles messages from the XMPP
 // client.
@@ -72,7 +84,8 @@ class XmppNotificationClient : public sigslot::has_slots<> {
   }
 
   // Connect with the given XMPP settings and run until disconnected.
-  void Run(const buzz::XmppClientSettings& xmpp_client_settings) {
+  void Run(const buzz::XmppClientSettings& xmpp_client_settings,
+           bool use_chrome_async_socket) {
     CHECK(!xmpp_client_);
     xmpp_client_settings_ = xmpp_client_settings;
     xmpp_client_ = new buzz::XmppClient(&task_pump_);
@@ -88,11 +101,15 @@ class XmppNotificationClient : public sigslot::has_slots<> {
     bool use_fake_ssl_client_socket =
         (xmpp_client_settings.protocol() == cricket::PROTO_SSLTCP);
     buzz::AsyncSocket* buzz_async_socket =
-        new notifier::ChromeAsyncSocket(
-            new notifier::XmppClientSocketFactory(
-                net::ClientSocketFactory::GetDefaultFactory(),
-                use_fake_ssl_client_socket),
-            ssl_config, 4096, 64 * 1024, NULL);
+        use_chrome_async_socket ?
+        static_cast<buzz::AsyncSocket*>(
+            new notifier::ChromeAsyncSocket(
+                new notifier::XmppClientSocketFactory(
+                    net::ClientSocketFactory::GetDefaultFactory(),
+                    use_fake_ssl_client_socket),
+                ssl_config, 4096, 64 * 1024, NULL)) :
+        static_cast<buzz::AsyncSocket*>(
+            new notifier::XmppSocketAdapter(xmpp_client_settings_, false));
     CHECK(buzz_async_socket);
     // Transfers ownership of buzz_async_socket.
     buzz::XmppReturnStatus connect_status =
@@ -100,6 +117,10 @@ class XmppNotificationClient : public sigslot::has_slots<> {
                               buzz_async_socket, NULL);
     CHECK_EQ(connect_status, buzz::XMPP_RETURN_OK);
     xmpp_client_->Start();
+    if (!use_chrome_async_socket) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE, NewRunnableFunction(&PumpAuxiliaryLoops));
+    }
     MessageLoop::current()->Run();
     DCHECK(!xmpp_client_);
   }
@@ -322,6 +343,11 @@ int main(int argc, char* argv[]) {
   }
   xmpp_client_settings.set_server(addr);
 
+  // Set up message loops and socket servers.
+  talk_base::PhysicalSocketServer physical_socket_server;
+  talk_base::InitializeSSL();
+  talk_base::Thread main_thread(&physical_socket_server);
+  talk_base::ThreadManager::SetCurrent(&main_thread);
   MessageLoopForIO message_loop;
 
   // Connect and listen.
@@ -335,8 +361,11 @@ int main(int argc, char* argv[]) {
   }
   // TODO(akalin): Revert the move of all switches in this file into
   // chrome_switches.h.
+  bool use_chrome_async_socket =
+      command_line.HasSwitch("use-chrome-async-socket");
   XmppNotificationClient xmpp_notification_client(delegate);
-  xmpp_notification_client.Run(xmpp_client_settings);
+  xmpp_notification_client.Run(xmpp_client_settings,
+                               use_chrome_async_socket);
 
   return 0;
 }

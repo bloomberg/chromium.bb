@@ -93,6 +93,10 @@ class MediatorThreadImpl
   MessageLoop* parent_message_loop_;
 
  private:
+  void StartLibjingleThread();
+  void PumpLibjingleLoop();
+  void StopLibjingleThread();
+
   // Called from within the thread on internal events.
   void DoLogin(const buzz::XmppClientSettings& settings);
   void DoDisconnect();
@@ -132,6 +136,10 @@ class MediatorThreadImpl
   // complete or the pump shuts down.
   scoped_ptr<notifier::TaskPump> pump_;
   scoped_ptr<notifier::Login> login_;
+
+  // Used only when |use_chrome_async_socket_| is false.
+  scoped_ptr<talk_base::SocketServer> socket_server_;
+  scoped_ptr<talk_base::Thread> libjingle_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(MediatorThreadImpl);
 };

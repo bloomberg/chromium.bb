@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/xmpp_socket_adapter.h"
+#include "jingle/notifier/communicator/xmpp_socket_adapter.h"
 
 #include <iomanip>
 #include <string>
 
 #include "base/logging.h"
-#include "remoting/jingle_glue/ssl_adapter.h"
+#include "jingle/notifier/base/ssl_adapter.h"
+#include "jingle/notifier/communicator/product_info.h"
 #include "talk/base/byteorder.h"
 #include "talk/base/common.h"
 #include "talk/base/firewallsocketserver.h"
@@ -18,7 +19,7 @@
 #include "talk/base/thread.h"
 #include "talk/xmpp/xmppengine.h"
 
-namespace remoting {
+namespace notifier {
 
 XmppSocketAdapter::XmppSocketAdapter(const buzz::XmppClientSettings& xcs,
                                      bool allow_unverified_certs)
@@ -110,7 +111,7 @@ bool XmppSocketAdapter::Connect(const talk_base::SocketAddress& addr) {
     } else {
       // Note: we are trying unknown proxies as HTTPS currently.
       proxy_socket = new talk_base::AsyncHttpsProxySocket(socket,
-          "chromoting", proxy_.address, proxy_.username,
+          GetUserAgentString(), proxy_.address, proxy_.username,
           proxy_.password);
     }
     if (!proxy_socket) {
@@ -133,7 +134,7 @@ bool XmppSocketAdapter::Connect(const talk_base::SocketAddress& addr) {
   }
 
 #if defined(FEATURE_ENABLE_SSL)
-  talk_base::SSLAdapter* ssl_adapter = remoting::CreateSSLAdapter(socket);
+  talk_base::SSLAdapter* ssl_adapter = notifier::CreateSSLAdapter(socket);
   socket = ssl_adapter;  // For our purposes the SSL adapter is the socket.
 #endif
 
@@ -425,4 +426,4 @@ bool XmppSocketAdapter::HandleWritable() {
   return true;
 }
 
-}  // namespace remoting
+}  // namespace notifier

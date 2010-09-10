@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/login_settings.h"
+#include "jingle/notifier/communicator/product_info.h"
 #include "jingle/notifier/communicator/single_login_attempt.h"
 #include "net/base/host_port_pair.h"
 #include "talk/base/common.h"
@@ -31,6 +32,7 @@ namespace notifier {
 static const int kRedirectTimeoutMinutes = 5;
 
 Login::Login(talk_base::TaskParent* parent,
+             bool use_chrome_async_socket,
              const buzz::XmppClientSettings& user_settings,
              const ConnectionOptions& options,
              std::string lang,
@@ -41,6 +43,7 @@ Login::Login(talk_base::TaskParent* parent,
              bool try_ssltcp_first,
              bool proxy_only)
     : parent_(parent),
+      use_chrome_async_socket_(use_chrome_async_socket),
       login_settings_(new LoginSettings(user_settings,
                                         options,
                                         lang,
@@ -80,7 +83,9 @@ void Login::StartConnection() {
   LOG(INFO) << "Starting connection...";
 
   single_attempt_ = new SingleLoginAttempt(parent_,
-                                           login_settings_.get());
+                                           login_settings_.get(),
+                                           use_chrome_async_socket_,
+                                           true);
 
   // Do the signaling hook-ups.
   single_attempt_->SignalUnexpectedDisconnect.connect(

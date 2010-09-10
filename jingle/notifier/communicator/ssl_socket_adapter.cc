@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/ssl_socket_adapter.h"
+#include "jingle/notifier/communicator/ssl_socket_adapter.h"
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
@@ -13,7 +13,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context.h"
 
-namespace remoting {
+namespace notifier {
 
 namespace {
 
@@ -383,4 +383,4 @@ void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
   }
 }
 
-}  // namespace remoting
+}  // namespace notifier

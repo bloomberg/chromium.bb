@@ -18,9 +18,16 @@
 #include "jingle/notifier/communicator/gaia_token_pre_xmpp_auth.h"
 #include "jingle/notifier/communicator/login_failure.h"
 #include "jingle/notifier/communicator/login_settings.h"
+#include "jingle/notifier/communicator/product_info.h"
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
+#include "jingle/notifier/communicator/xmpp_socket_adapter.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
+#include "talk/base/asynchttprequest.h"
+#include "talk/base/firewallsocketserver.h"
+#include "talk/base/signalthread.h"
+#include "talk/base/taskrunner.h"
+#include "talk/base/win32socketinit.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -54,15 +61,23 @@ static void GetClientErrorInformation(
 }
 
 SingleLoginAttempt::SingleLoginAttempt(talk_base::TaskParent* parent,
-                                       LoginSettings* login_settings)
+                                       LoginSettings* login_settings,
+                                       bool use_chrome_async_socket,
+                                       bool successful_connection)
     : talk_base::Task(parent),
+      use_chrome_async_socket_(use_chrome_async_socket),
       state_(buzz::XmppEngine::STATE_NONE),
       code_(buzz::XmppEngine::ERROR_NONE),
       subcode_(0),
       need_authentication_(false),
       certificate_expired_(false),
+      cookie_refreshed_(false),
+      successful_connection_(successful_connection),
       login_settings_(login_settings),
       client_(NULL) {
+#if defined(OS_WIN)
+  talk_base::EnsureWinsockInit();
+#endif
   connection_generator_.reset(new XmppConnectionGenerator(
                                   this,
                                   login_settings_->host_resolver(),
@@ -139,7 +154,14 @@ void SingleLoginAttempt::OnAttemptedAllConnections(
 
   LOG(INFO) << "Connection failed with error " << code_;
 
-  SignalNeedAutoReconnect();
+  // We were connected and we had a problem.
+  if (successful_connection_) {
+    SignalNeedAutoReconnect();
+    // Expect to be deleted at this point.
+    return;
+  }
+
+  DiagnoseConnectionError();
 }
 
 void SingleLoginAttempt::UseNextConnection() {
@@ -203,24 +225,39 @@ void SingleLoginAttempt::OnCertificateExpired() {
 
 buzz::AsyncSocket* SingleLoginAttempt::CreateSocket(
     const buzz::XmppClientSettings& xcs) {
-  bool use_fake_ssl_client_socket =
-      (xcs.protocol() == cricket::PROTO_SSLTCP);
-  net::ClientSocketFactory* const client_socket_factory =
-      new XmppClientSocketFactory(
-          net::ClientSocketFactory::GetDefaultFactory(),
-          use_fake_ssl_client_socket);
-  // The default SSLConfig is good enough for us for now.
-  const net::SSLConfig ssl_config;
-  // A read buffer of 64k ought to be sufficient.
-  const size_t kReadBufSize = 64U * 1024U;
-  // This number was taken from a similar number in
-  // XmppSocketAdapter.
-  const size_t kWriteBufSize = 64U * 1024U;
-  // TODO(akalin): Use a real NetLog.
-  net::NetLog* const net_log = NULL;
-  return new ChromeAsyncSocket(
-      client_socket_factory, ssl_config,
-      kReadBufSize, kWriteBufSize, net_log);
+  if (use_chrome_async_socket_) {
+    bool use_fake_ssl_client_socket =
+        (xcs.protocol() == cricket::PROTO_SSLTCP);
+    net::ClientSocketFactory* const client_socket_factory =
+        new XmppClientSocketFactory(
+            net::ClientSocketFactory::GetDefaultFactory(),
+            use_fake_ssl_client_socket);
+    // The default SSLConfig is good enough for us for now.
+    const net::SSLConfig ssl_config;
+    // A read buffer of 64k ought to be sufficient.
+    const size_t kReadBufSize = 64U * 1024U;
+    // This number was taken from a similar number in
+    // XmppSocketAdapter.
+    const size_t kWriteBufSize = 64U * 1024U;
+    // TODO(akalin): Use a real NetLog.
+    net::NetLog* const net_log = NULL;
+    return new ChromeAsyncSocket(
+        client_socket_factory, ssl_config,
+        kReadBufSize, kWriteBufSize, net_log);
+  }
+  // TODO(akalin): Always use ChromeAsyncSocket and get rid of this
+  // code.
+  bool allow_unverified_certs =
+      login_settings_->connection_options().allow_unverified_certs();
+  XmppSocketAdapter* adapter = new XmppSocketAdapter(xcs,
+                                                     allow_unverified_certs);
+  adapter->SignalAuthenticationError.connect(
+      this,
+      &SingleLoginAttempt::OnAuthenticationError);
+  if (login_settings_->firewall()) {
+    adapter->set_firewall(true);
+  }
+  return adapter;
 }
 
 buzz::PreXmppAuth* SingleLoginAttempt::CreatePreXmppAuth(
@@ -228,6 +265,147 @@ buzz::PreXmppAuth* SingleLoginAttempt::CreatePreXmppAuth(
   buzz::Jid jid(xcs.user(), xcs.host(), buzz::STR_EMPTY);
   return new GaiaTokenPreXmppAuth(
       jid.Str(), xcs.auth_cookie(), xcs.token_service());
+}
+
+void SingleLoginAttempt::OnFreshAuthCookie(const std::string& auth_cookie) {
+  // Remember this is a fresh cookie.
+  cookie_refreshed_ = true;
+
+  // TODO(sync): do the cookie logic (part of which is in the #if 0 below).
+
+  // The following code is what PhoneWindow does for the equivalent method.
+#if 0
+  // Save cookie
+  AccountInfo current(account_history_.current());
+  current.set_auth_cookie(auth_cookie);
+  account_history_.set_current(current);
+
+  // Calc next time to refresh cookie, between 5 and 10 days. The cookie has
+  // 14 days of life; this gives at least 4 days of retries before the current
+  // cookie expires, maximizing the chance of having a valid cookie next time
+  // the connection servers go down.
+  FTULL now;
+
+  // NOTE: The following line is win32.  Address this when implementing this
+  // code (doing "the cookie logic").
+  GetSystemTimeAsFileTime(&(now.ft));
+  ULONGLONG five_days = (ULONGLONG)10000 * 1000 * 60 * 60 * 24 * 5;  // 5 days
+  ULONGLONG random = (ULONGLONG)10000 *          // get to 100 ns units
+      ((rand() % (5 * 24 * 60)) * (60 * 1000) +  // random min. in 5 day period
+      (rand() % 1000) * 60);                     // random 1/1000th of a minute
+  next_cookie_refresh_ = now.ull + five_days + random;  // 5-10 days
+#endif
+}
+
+void SingleLoginAttempt::DiagnoseConnectionError() {
+  switch (code_) {
+    case buzz::XmppEngine::ERROR_MISSING_USERNAME:
+    case buzz::XmppEngine::ERROR_NETWORK_TIMEOUT:
+    case buzz::XmppEngine::ERROR_DOCUMENT_CLOSED:
+    case buzz::XmppEngine::ERROR_BIND:
+    case buzz::XmppEngine::ERROR_AUTH:
+    case buzz::XmppEngine::ERROR_TLS:
+    case buzz::XmppEngine::ERROR_UNAUTHORIZED:
+    case buzz::XmppEngine::ERROR_VERSION:
+    case buzz::XmppEngine::ERROR_STREAM:
+    case buzz::XmppEngine::ERROR_XML:
+    case buzz::XmppEngine::ERROR_NONE:
+    default: {
+      LoginFailure failure(LoginFailure::XMPP_ERROR, code_, subcode_);
+      SignalLoginFailure(failure);
+      return;
+    }
+
+      // The following errors require diagnosistics:
+      // * spurious close of connection
+      // * socket errors after auth
+    case buzz::XmppEngine::ERROR_CONNECTION_CLOSED:
+    case buzz::XmppEngine::ERROR_SOCKET:
+      break;
+  }
+
+  talk_base::AsyncHttpRequest *http_request =
+    new talk_base::AsyncHttpRequest(GetUserAgentString());
+  http_request->set_host("www.google.com");
+  http_request->set_port(80);
+  http_request->set_secure(false);
+  http_request->request().path = "/";
+  http_request->request().verb = talk_base::HV_GET;
+
+  talk_base::ProxyInfo proxy;
+  DCHECK(connection_generator_.get());
+  if (connection_generator_.get()) {
+    proxy = connection_generator_->proxy();
+  }
+  http_request->set_proxy(proxy);
+  http_request->set_firewall(login_settings_->firewall());
+
+  http_request->SignalWorkDone.connect(this,
+                                       &SingleLoginAttempt::OnHttpTestDone);
+  http_request->Start();
+  http_request->Release();
+}
+
+void SingleLoginAttempt::OnHttpTestDone(talk_base::SignalThread* thread) {
+  DCHECK(thread);
+
+  talk_base::AsyncHttpRequest* request =
+    static_cast<talk_base::AsyncHttpRequest*>(thread);
+
+  if (request->response().scode == 200) {
+    // We were able to do an HTTP GET of www.google.com:80
+
+    //
+    // The original error should be reported
+    //
+    LoginFailure failure(LoginFailure::XMPP_ERROR, code_, subcode_);
+    SignalLoginFailure(failure);
+    return;
+  }
+
+  // Otherwise lets transmute the error into ERROR_SOCKET, and put the subcode
+  // as an indicator of what we think the problem might be.
+
+#if 0
+  // TODO(sync): determine if notifier has an analogous situation.
+
+  //
+  // We weren't able to do an HTTP GET of www.google.com:80
+  //
+  GAutoupdater::Version version_logged_in(g_options.version_logged_in());
+  GAutoupdater::Version version_installed(GetProductVersion().c_str());
+  if (version_logged_in < version_installed) {
+    //
+    // Google Talk has been updated and can no longer connect to the Google
+    // Talk Service. Your firewall is probably not allowing the new version of
+    // Google Talk to connect to the internet. Please adjust your firewall
+    // settings to allow the new version of Google Talk to connect to the
+    // internet.
+    //
+    // We'll use the "error=1" to help figure this out for now.
+    //
+    LoginFailure failure(LoginFailure::XMPP_ERROR,
+                         buzz::XmppEngine::ERROR_SOCKET,
+                         1);
+    SignalLoginFailure(failure);
+    return;
+  }
+#endif
+
+  //
+  // Any other checking we can add here?
+  //
+
+  //
+  // Google Talk is unable to use your internet connection. Either your network
+  // isn't configured or Google Talk is being blocked by a local firewall.
+  //
+  // We'll use the "error=0" to help figure this out for now
+  //
+  LoginFailure failure(LoginFailure::XMPP_ERROR,
+                       buzz::XmppEngine::ERROR_SOCKET,
+                       0);
+  SignalLoginFailure(failure);
 }
 
 void SingleLoginAttempt::OnClientStateChange(buzz::XmppEngine::State state) {
@@ -241,8 +419,10 @@ void SingleLoginAttempt::OnClientStateChange(buzz::XmppEngine::State state) {
     case buzz::XmppEngine::STATE_NONE:
     case buzz::XmppEngine::STATE_START:
     case buzz::XmppEngine::STATE_OPENING:
-    case buzz::XmppEngine::STATE_OPEN:
       // Do nothing.
+      break;
+    case buzz::XmppEngine::STATE_OPEN:
+      successful_connection_ = true;
       break;
     case buzz::XmppEngine::STATE_CLOSED:
       OnClientStateChangeClosed(previous_state);
@@ -318,6 +498,14 @@ void SingleLoginAttempt::HandleConnectionError(
   // Unreachable host,
   // Or internal server binding error -
   // All these are temporary problems, so continue reconnecting.
+
+  // GaiaAuth signals this directly via SignalCertificateExpired, but
+  // SChannelAdapter propagates the error through SocketWindow as a socket
+  // error.
+  if (code_ == buzz::XmppEngine::ERROR_SOCKET &&
+      subcode_ == SEC_E_CERT_EXPIRED) {
+    certificate_expired_ = true;
+  }
 
   login_settings_->modifiable_user_settings()->set_resource("");
 
