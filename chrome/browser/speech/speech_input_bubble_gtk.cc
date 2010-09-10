@@ -26,7 +26,7 @@ const GdkColor kLabelTextColor = gfx::kGdkBlack;
 // Implementation of SpeechInputBubble for GTK. This shows a speech input
 // info bubble on screen.
 class SpeechInputBubbleGtk
-    : public SpeechInputBubble,
+    : public SpeechInputBubbleBase,
       public InfoBubbleGtkDelegate {
  public:
   SpeechInputBubbleGtk(TabContents* tab_contents,
@@ -40,7 +40,9 @@ class SpeechInputBubbleGtk
                                  bool closed_by_escape);
 
   // SpeechInputBubble methods.
-  virtual void SetRecognizingMode();
+  virtual void Show();
+  virtual void Hide();
+  virtual void UpdateLayout();
 
   CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnCancelClicked);
 
@@ -111,19 +113,26 @@ SpeechInputBubbleGtk::~SpeechInputBubbleGtk() {
 void SpeechInputBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
                                              bool closed_by_escape) {
   if (delegate_)
-    delegate_->InfoBubbleClosed();
+    delegate_->InfoBubbleFocusChanged();
 }
 
 void SpeechInputBubbleGtk::OnCancelClicked(GtkWidget* widget) {
-  delegate_->RecognitionCancelled();
+  delegate_->InfoBubbleButtonClicked(BUTTON_CANCEL);
 }
 
-void SpeechInputBubbleGtk::SetRecognizingMode() {
-  SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_SPEECH_INPUT_PROCESSING);
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
-  gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
-  g_object_unref(pixbuf);
+void SpeechInputBubbleGtk::Show() {
+  // TODO(satish): Implement.
+  NOTREACHED();
+}
+
+void SpeechInputBubbleGtk::Hide() {
+  // TODO(satish): Implement.
+  NOTREACHED();
+}
+
+void SpeechInputBubbleGtk::UpdateLayout() {
+  // TODO: Implement.
+  NOTREACHED();
 }
 
 }  // namespace

@@ -63,7 +63,7 @@ const int kBubbleHorizontalMargin = 15;  // Space on either sides of controls.
 }
 
 - (IBAction)cancel:(id)sender {
-  delegate_->RecognitionCancelled();
+  delegate_->InfoBubbleButtonClicked(SpeechInputBubble::BUTTON_CANCEL);
 }
 
 // Calculate the window dimensions to reflect the sum height and max width of
@@ -123,7 +123,7 @@ const int kBubbleHorizontalMargin = 15;  // Space on either sides of controls.
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  delegate_->InfoBubbleClosed();
+  delegate_->InfoBubbleFocusChanged();
 }
 
 @end  // implementation SpeechInputWindowController

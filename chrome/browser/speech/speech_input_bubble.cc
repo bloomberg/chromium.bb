@@ -21,3 +21,23 @@ SpeechInputBubble* SpeechInputBubble::Create(TabContents* tab_contents,
 
   return CreateNativeBubble(tab_contents, delegate, element_rect);
 }
+
+SpeechInputBubbleBase::SpeechInputBubbleBase()
+    : display_mode_(DISPLAY_MODE_RECORDING) {
+}
+
+void SpeechInputBubbleBase::SetRecordingMode() {
+  display_mode_ = DISPLAY_MODE_RECORDING;
+  UpdateLayout();
+}
+
+void SpeechInputBubbleBase::SetRecognizingMode() {
+  display_mode_ = DISPLAY_MODE_RECOGNIZING;
+  UpdateLayout();
+}
+
+void SpeechInputBubbleBase::SetMessage(const string16& text) {
+  message_text_ = text;
+  display_mode_ = DISPLAY_MODE_MESSAGE;
+  UpdateLayout();
+}

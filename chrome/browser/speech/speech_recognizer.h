@@ -51,8 +51,9 @@ class SpeechRecognizer
     virtual void DidCompleteRecognition(int caller_id) = 0;
 
     // Invoked if there was an error while recording or recognizing audio. The
-    // session is terminated when this call is made and the DidXxxx callbacks
-    // are issued after this call.
+    // session has already been cancelled when this call is made and the DidXxxx
+    // callbacks will not be issued. It is safe to destroy/release the
+    // |SpeechRecognizer| object while processing this call.
     virtual void OnRecognizerError(int caller_id,
                                    SpeechRecognizer::ErrorCode error) = 0;
 

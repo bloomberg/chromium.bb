@@ -169,8 +169,8 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorNoData) {
   ASSERT_TRUE(controller);
   controller->event_handler()->OnError(controller, 0);
   MessageLoop::current()->RunAllPending();
-  EXPECT_TRUE(recording_complete_);
-  EXPECT_TRUE(recognition_complete_);
+  EXPECT_FALSE(recording_complete_);
+  EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_ERROR_CAPTURE, error_);
 }
@@ -187,8 +187,8 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorWithData) {
   controller->event_handler()->OnError(controller, 0);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(NULL, url_fetcher_factory_.GetFetcherByID(0));
-  EXPECT_TRUE(recording_complete_);
-  EXPECT_TRUE(recognition_complete_);
+  EXPECT_FALSE(recording_complete_);
+  EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_ERROR_CAPTURE, error_);
 }
@@ -211,8 +211,8 @@ TEST_F(SpeechRecognizerTest, NoSpeechCallbackIssued) {
                                         audio_packet_.size());
   }
   MessageLoop::current()->RunAllPending();
-  EXPECT_TRUE(recording_complete_);
-  EXPECT_TRUE(recognition_complete_);
+  EXPECT_FALSE(recording_complete_);
+  EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_ERROR_NO_SPEECH, error_);
 }

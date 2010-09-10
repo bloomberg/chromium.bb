@@ -42,16 +42,15 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   virtual void DidCompleteEnvironmentEstimation(int caller_id);
 
   // SpeechInputBubbleController::Delegate methods.
-  virtual void RecognitionCancelled(int caller_id);
-  virtual void SpeechInputFocusChanged(int caller_id);
+  virtual void InfoBubbleButtonClicked(int caller_id,
+                                       SpeechInputBubble::Button button);
+  virtual void InfoBubbleFocusChanged(int caller_id);
 
  private:
   struct SpeechInputRequest {
     SpeechInputManagerDelegate* delegate;
     scoped_refptr<SpeechRecognizer> recognizer;
-    int render_process_id;
-    int render_view_id;
-    gfx::Rect element_rect;
+    bool is_active;  // Set to true when recording or recognition is going on.
   };
 
   // Private constructor to enforce singleton.
@@ -60,18 +59,12 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   virtual ~SpeechInputManagerImpl();
 
   bool HasPendingRequest(int caller_id) const;
-  SpeechRecognizer* GetRecognizer(int caller_id) const;
   SpeechInputManagerDelegate* GetDelegate(int caller_id) const;
 
   void CancelRecognitionAndInformDelegate(int caller_id);
 
-  // Shows an error message string as a simple alert info bar for the tab
-  // identified by |render_process_id| and |render_view_id|.
-  void ShowErrorMessage(int render_process_id, int render_view_id,
-                        const string16& message);
-  static void ShowErrorMessageInUIThread(
-      int render_process_id, int render_view_id,
-      const string16& message);
+  // Starts/restarts recognition for an existing request.
+  void StartRecognitionForRequest(int caller_id);
 
   SpeechInputManagerDelegate* delegate_;
   typedef std::map<int, SpeechInputRequest> SpeechRecognizerMap;
@@ -104,10 +97,6 @@ SpeechInputManagerDelegate* SpeechInputManagerImpl::GetDelegate(
   return requests_.find(caller_id)->second.delegate;
 }
 
-SpeechRecognizer* SpeechInputManagerImpl::GetRecognizer(int caller_id) const {
-  return requests_.find(caller_id)->second.recognizer;
-}
-
 void SpeechInputManagerImpl::StartRecognition(
     SpeechInputManagerDelegate* delegate,
     int caller_id,
@@ -116,31 +105,38 @@ void SpeechInputManagerImpl::StartRecognition(
     const gfx::Rect& element_rect) {
   DCHECK(!HasPendingRequest(caller_id));
 
+  bubble_controller_->CreateBubble(caller_id, render_process_id, render_view_id,
+                                   element_rect);
+
+  SpeechInputRequest* request = &requests_[caller_id];
+  request->delegate = delegate;
+  request->recognizer = new SpeechRecognizer(this, caller_id);
+  request->is_active = false;
+
+  StartRecognitionForRequest(caller_id);
+}
+
+void SpeechInputManagerImpl::StartRecognitionForRequest(int caller_id) {
+  DCHECK(HasPendingRequest(caller_id));
+
   // If we are currently recording audio for another caller, abort that cleanly.
   if (recording_caller_id_)
     CancelRecognitionAndInformDelegate(recording_caller_id_);
 
   if (!AudioManager::GetAudioManager()->HasAudioInputDevices()) {
-    ShowErrorMessage(render_process_id, render_view_id,
-                     l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_NO_MIC));
-    delegate->DidCompleteRecognition(caller_id);
-    return;
+    bubble_controller_->SetBubbleMessage(
+        caller_id, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_NO_MIC));
+  } else {
+    recording_caller_id_ = caller_id;
+    requests_[caller_id].is_active = true;
+    requests_[caller_id].recognizer->StartRecording();
   }
-
-  recording_caller_id_ = caller_id;
-  SpeechInputRequest request;
-  request.delegate = delegate;
-  request.recognizer = new SpeechRecognizer(this, caller_id);
-  request.render_process_id = render_process_id;
-  request.render_view_id = render_view_id;
-  request.element_rect = element_rect;
-  requests_[caller_id] = request;
-  request.recognizer->StartRecording();
 }
 
 void SpeechInputManagerImpl::CancelRecognition(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
-  GetRecognizer(caller_id)->CancelRecognition();
+  if (requests_[caller_id].is_active)
+    requests_[caller_id].recognizer->CancelRecognition();
   requests_.erase(caller_id);
   if (recording_caller_id_ == caller_id)
     recording_caller_id_ = 0;
@@ -149,7 +145,7 @@ void SpeechInputManagerImpl::CancelRecognition(int caller_id) {
 
 void SpeechInputManagerImpl::StopRecording(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
-  GetRecognizer(caller_id)->StopRecording();
+  requests_[caller_id].recognizer->StopRecording();
 }
 
 void SpeechInputManagerImpl::SetRecognitionResult(int caller_id,
@@ -165,7 +161,7 @@ void SpeechInputManagerImpl::DidCompleteRecording(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   recording_caller_id_ = 0;
   GetDelegate(caller_id)->DidCompleteRecording(caller_id);
-  bubble_controller_->SetBubbleToRecognizingMode(caller_id);
+  bubble_controller_->SetBubbleRecognizingMode(caller_id);
 }
 
 void SpeechInputManagerImpl::DidCompleteRecognition(int caller_id) {
@@ -176,11 +172,28 @@ void SpeechInputManagerImpl::DidCompleteRecognition(int caller_id) {
 
 void SpeechInputManagerImpl::OnRecognizerError(
     int caller_id, SpeechRecognizer::ErrorCode error) {
-  // TODO(satish): Show specific messages for the various error codes and allow
-  // user to retry without ending the recognition session if possible.
-  const SpeechInputRequest& request = requests_[caller_id];
-  ShowErrorMessage(request.render_process_id, request.render_view_id,
-                   l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_ERROR));
+  if (caller_id == recording_caller_id_)
+    recording_caller_id_ = 0;
+
+  requests_[caller_id].is_active = false;
+
+  int message_id;
+  switch (error) {
+    case SpeechRecognizer::RECOGNIZER_ERROR_CAPTURE:
+      message_id = IDS_SPEECH_INPUT_ERROR;
+      break;
+    case SpeechRecognizer::RECOGNIZER_ERROR_NO_SPEECH:
+      message_id = IDS_SPEECH_INPUT_NO_SPEECH;
+      break;
+    case SpeechRecognizer::RECOGNIZER_ERROR_NO_RESULTS:
+      message_id = IDS_SPEECH_INPUT_NO_RESULTS;
+      break;
+    default:
+      NOTREACHED() << "unknown error " << error;
+      return;
+  }
+  bubble_controller_->SetBubbleMessage(caller_id,
+                                       l10n_util::GetStringUTF16(message_id));
 }
 
 void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {
@@ -189,10 +202,7 @@ void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {
 
   // Speech recognizer has gathered enough background audio so we can ask the
   // user to start speaking.
-  const SpeechInputRequest& request = requests_[caller_id];
-  bubble_controller_->CreateBubble(caller_id, request.render_process_id,
-                                   request.render_view_id,
-                                   request.element_rect);
+  bubble_controller_->SetBubbleRecordingMode(caller_id);
 }
 
 void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(int caller_id) {
@@ -202,46 +212,36 @@ void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(int caller_id) {
   cur_delegate->DidCompleteRecognition(caller_id);
 }
 
-void SpeechInputManagerImpl::RecognitionCancelled(int caller_id) {
+void SpeechInputManagerImpl::InfoBubbleButtonClicked(
+    int caller_id, SpeechInputBubble::Button button) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // Ignore if the caller id was not in our active recognizers list because the
   // user might have clicked more than once, or recognition could have been
   // cancelled due to other reasons before the user click was processed.
-  if (HasPendingRequest(caller_id))
+  if (!HasPendingRequest(caller_id))
+    return;
+
+  if (button == SpeechInputBubble::BUTTON_CANCEL) {
     CancelRecognitionAndInformDelegate(caller_id);
+  } else if (button == SpeechInputBubble::BUTTON_TRY_AGAIN) {
+    StartRecognitionForRequest(caller_id);
+  }
 }
 
-void SpeechInputManagerImpl::SpeechInputFocusChanged(int caller_id) {
+void SpeechInputManagerImpl::InfoBubbleFocusChanged(int caller_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // Ignore if the caller id was not in our active recognizers list because the
   // user might have clicked more than once, or recognition could have been
   // ended due to other reasons before the user click was processed.
   if (HasPendingRequest(caller_id)) {
-    // If this is an ongoing recording, abort it since user has switched focus.
-    // Otherwise recognition has started and keep that going so user can start
-    // speaking to another element while this gets the results in parallel.
-    if (recording_caller_id_ == caller_id)
+    // If this is an ongoing recording or if we were displaying an error message
+    // to the user, abort it since user has switched focus. Otherwise
+    // recognition has started and keep that going so user can start speaking to
+    // another element while this gets the results in parallel.
+    if (recording_caller_id_ == caller_id || !requests_[caller_id].is_active) {
       CancelRecognitionAndInformDelegate(caller_id);
+    }
   }
-}
-
-void SpeechInputManagerImpl::ShowErrorMessage(
-    int render_process_id, int render_view_id,
-    const string16& message) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableFunction(&SpeechInputManagerImpl::ShowErrorMessageInUIThread,
-                          render_process_id, render_view_id, message));
-}
-
-void SpeechInputManagerImpl::ShowErrorMessageInUIThread(
-    int render_process_id, int render_view_id,
-    const string16& message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  TabContents* tab = tab_util::GetTabContentsByID(render_process_id,
-                                                  render_view_id);
-  if (tab)  // Check in case the tab was closed before we got this request.
-    tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab, message, NULL, true));
 }
 
 }  // namespace speech_input

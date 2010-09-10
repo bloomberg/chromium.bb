@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_H_
 #pragma once
 
+#include "base/string16.h"
+
 namespace gfx {
 class Rect;
 }
@@ -17,19 +19,24 @@ class TabContents;
 // the popup window, or by the caller destroying this object.
 class SpeechInputBubble {
  public:
+  // The various buttons which may be part of the bubble.
+  enum Button {
+    BUTTON_TRY_AGAIN,
+    BUTTON_CANCEL
+  };
+
   // Informs listeners of user actions in the bubble.
   class Delegate {
    public:
-    // Invoked when the user cancels speech recognition by clicking on the
-    // cancel button. The InfoBubble is still active and the caller should close
-    // it if necessary.
-    virtual void RecognitionCancelled() = 0;
+    // Invoked when the user selects a button in the info bubble. The InfoBubble
+    // is still active and the caller should close it if necessary.
+    virtual void InfoBubbleButtonClicked(Button button) = 0;
 
     // Invoked when the user clicks outside the InfoBubble causing it to close.
     // The InfoBubble window is no longer visible on screen and the caller can
     // free the InfoBubble instance. This callback is not issued if the bubble
     // got closed because the object was destroyed by the caller.
-    virtual void InfoBubbleClosed() = 0;
+    virtual void InfoBubbleFocusChanged() = 0;
 
    protected:
     virtual ~Delegate() {
@@ -37,7 +44,7 @@ class SpeechInputBubble {
   };
 
   // Factory method to create new instances.
-  // Creates and displays the bubble.
+  // Creates the bubble, call |Show| to display it on screen.
   // |tab_contents| is the TabContents hosting the page.
   // |element_rect| is the display bounds of the html element requesting speech
   // input (in page coordinates).
@@ -65,8 +72,24 @@ class SpeechInputBubble {
 
   virtual ~SpeechInputBubble() {}
 
-  // Indicates to the user that recognition is in progress.
+  // Indicates to the user that audio recording is in progress. If the bubble is
+  // hidden, |Show| must be called to make it appear on screen.
+  virtual void SetRecordingMode() = 0;
+
+  // Indicates to the user that recognition is in progress. If the bubble is
+  // hidden, |Show| must be called to make it appear on screen.
   virtual void SetRecognizingMode() = 0;
+
+  // Displays the given string with the 'Try again' and 'Cancel' buttons. If the
+  // bubble is hidden, |Show| must be called to make it appear on screen.
+  virtual void SetMessage(const string16& text) = 0;
+
+  // Brings up the bubble on screen.
+  virtual void Show() = 0;
+
+  // Hides the info bubble, resulting in a call to
+  // |Delegate::InfoBubbleFocusChanged| as well.
+  virtual void Hide() = 0;
 
   // The horizontal distance between the start of the html widget and the speech
   // bubble's arrow.
@@ -74,6 +97,42 @@ class SpeechInputBubble {
 
  private:
   static FactoryMethod factory_;
+};
+
+// Base class for the platform specific bubble implementations, this contains
+// the platform independent code for SpeechInputBubble.
+class SpeechInputBubbleBase : public SpeechInputBubble {
+ public:
+  // The current display mode of the bubble, useful only for the platform
+  // specific implementation.
+  enum DisplayMode {
+    DISPLAY_MODE_RECORDING,
+    DISPLAY_MODE_RECOGNIZING,
+    DISPLAY_MODE_MESSAGE
+  };
+
+  SpeechInputBubbleBase();
+
+  // SpeechInputBubble methods
+  virtual void SetRecordingMode();
+  virtual void SetRecognizingMode();
+  virtual void SetMessage(const string16& text);
+
+ protected:
+  // Updates the platform specific UI layout for the current display mode.
+  virtual void UpdateLayout() = 0;
+
+  DisplayMode display_mode() {
+    return display_mode_;
+  }
+
+  string16 message_text() {
+    return message_text_;
+  }
+
+ private:
+  DisplayMode display_mode_;
+  string16 message_text_;  // Text displayed in DISPLAY_MODE_MESSAGE
 };
 
 // This typedef is to workaround the issue with certain versions of

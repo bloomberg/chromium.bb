@@ -16,13 +16,15 @@ namespace {
 // A class to bridge between the speech recognition C++ code and the Objective-C
 // bubble implementation. See chrome/browser/speech/speech_input_bubble.h for
 // more information on how this gets used.
-class SpeechInputBubbleImpl : public SpeechInputBubble {
+class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
  public:
   SpeechInputBubbleImpl(TabContents* tab_contents,
                         Delegate* delegate,
                         const gfx::Rect& element_rect);
   virtual ~SpeechInputBubbleImpl();
-  virtual void SetRecognizingMode();
+  virtual void Show();
+  virtual void Hide();
+  virtual void UpdateLayout();
 
  private:
   scoped_nsobject<SpeechInputWindowController> window_;
@@ -53,8 +55,19 @@ SpeechInputBubbleImpl::~SpeechInputBubbleImpl() {
   [window_.get() close];
 }
 
-void SpeechInputBubbleImpl::SetRecognizingMode() {
-  [window_.get() didStartRecognition];
+void SpeechInputBubbleImpl::Show() {
+  // TODO(satish): Implement.
+  NOTREACHED();
+}
+
+void SpeechInputBubbleImpl::Hide() {
+  // TODO(satish): Implement.
+  NOTREACHED();
+}
+
+void SpeechInputBubbleImpl::UpdateLayout() {
+  // TODO(satish): Implement.
+  NOTREACHED();
 }
 
 }  // namespace

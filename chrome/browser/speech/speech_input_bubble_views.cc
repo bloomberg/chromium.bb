@@ -84,7 +84,7 @@ void ContentView::SetRecognizingMode() {
 void ContentView::ButtonPressed(views::Button* source,
                                 const views::Event& event) {
   if (source == cancel_) {
-    delegate_->RecognitionCancelled();
+    delegate_->InfoBubbleButtonClicked(SpeechInputBubble::BUTTON_CANCEL);
   } else {
     NOTREACHED() << "Unknown view";
   }
@@ -126,7 +126,7 @@ void ContentView::Layout() {
 
 // Implementation of SpeechInputBubble.
 class SpeechInputBubbleImpl
-    : public SpeechInputBubble,
+    : public SpeechInputBubbleBase,
       public InfoBubbleDelegate,
       public NotificationObserver {
  public:
@@ -136,6 +136,11 @@ class SpeechInputBubbleImpl
   virtual ~SpeechInputBubbleImpl();
 
   virtual void SetRecognizingMode();
+
+  // SpeechInputBubble methods.
+  virtual void Show();
+  virtual void Hide();
+  virtual void UpdateLayout();
 
   // Returns the screen rectangle to use as the info bubble's target.
   // |element_rect| is the html element's bounds in page coordinates.
@@ -220,7 +225,7 @@ void SpeechInputBubbleImpl::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
-    delegate_->RecognitionCancelled();
+    delegate_->InfoBubbleButtonClicked(BUTTON_CANCEL);
   } else {
     NOTREACHED() << "Unknown notification";
   }
@@ -233,7 +238,7 @@ void SpeechInputBubbleImpl::InfoBubbleClosing(InfoBubble* info_bubble,
   info_bubble_ = NULL;
   bubble_content_ = NULL;
   if (!did_invoke_close_)
-    delegate_->InfoBubbleClosed();
+    delegate_->InfoBubbleFocusChanged();
 }
 
 bool SpeechInputBubbleImpl::CloseOnEscape() {
@@ -242,6 +247,21 @@ bool SpeechInputBubbleImpl::CloseOnEscape() {
 
 bool SpeechInputBubbleImpl::FadeInOnShow() {
   return false;
+}
+
+void SpeechInputBubbleImpl::Show() {
+  // TODO(satish): Implement.
+  NOTREACHED();
+}
+
+void SpeechInputBubbleImpl::Hide() {
+  // TODO(satish): Implement.
+  NOTREACHED();
+}
+
+void SpeechInputBubbleImpl::UpdateLayout() {
+  // TODO: Implement.
+  NOTREACHED();
 }
 
 }  // namespace

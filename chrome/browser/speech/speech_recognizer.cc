@@ -307,8 +307,6 @@ void SpeechRecognizer::InformErrorAndCancelRecognition(ErrorCode error) {
   // Guard against the delegate freeing us until we finish our job.
   scoped_refptr<SpeechRecognizer> me(this);
   delegate_->OnRecognizerError(caller_id_, error);
-  delegate_->DidCompleteRecording(caller_id_);
-  delegate_->DidCompleteRecognition(caller_id_);
 }
 
 }  // namespace speech_input
