@@ -1372,6 +1372,20 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     buttonThatMouseIsIn_ = nil;
   }
 
+  // Deleting a button causes rearrangement that enables us to lose a
+  // mouse-exited event.  This problem doesn't appear to exist with
+  // other keep-menu-open options (e.g. add folder).  Since the
+  // showsBorderOnlyWhileMouseInside uses a tracking area, simple
+  // tricks (e.g. sending an extra mouseExited: to the button) don't
+  // fix the problem.
+  // http://crbug.com/54324
+  for (NSButton* button in buttons_.get()) {
+    if ([button showsBorderOnlyWhileMouseInside]) {
+      [button setShowsBorderOnlyWhileMouseInside:NO];
+      [button setShowsBorderOnlyWhileMouseInside:YES];
+    }
+  }
+
   [oldButton setDelegate:nil];
   [oldButton removeFromSuperview];
   if (animate && !ignoreAnimations_)
