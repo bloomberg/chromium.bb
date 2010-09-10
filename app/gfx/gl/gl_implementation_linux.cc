@@ -39,12 +39,12 @@ bool InitializeGLBindings(GLImplementation implementation) {
 
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
-      FilePath exe_path;
-      if (!PathService::Get(base::DIR_EXE, &exe_path))
+      FilePath module_path;
+      if (!PathService::Get(base::DIR_MODULE, &module_path))
         return false;
 
       base::NativeLibrary library = base::LoadNativeLibrary(
-          exe_path.Append("libosmesa.so"));
+          module_path.Append("libosmesa.so"));
       if (!library) {
         DLOG(INFO) << "libosmesa.so not found";
         return false;

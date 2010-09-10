@@ -36,12 +36,12 @@ bool InitializeGLBindings(GLImplementation implementation) {
 
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
-      FilePath exe_path;
-      if (!PathService::Get(base::DIR_EXE, &exe_path))
+      FilePath module_path;
+      if (!PathService::Get(base::DIR_MODULE, &module_path))
         return false;
 
       base::NativeLibrary library = base::LoadNativeLibrary(
-          exe_path.Append(L"osmesa.dll"));
+          module_path.Append(L"osmesa.dll"));
       if (!library) {
         LOG(INFO) << "osmesa.dll not found";
         return false;
@@ -61,14 +61,14 @@ bool InitializeGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationEGLGLES2: {
-      FilePath exe_path;
-      if (!PathService::Get(base::DIR_EXE, &exe_path))
+      FilePath module_path;
+      if (!PathService::Get(base::DIR_MODULE, &module_path))
         return false;
 
       // When using EGL, first try eglGetProcAddress and then Windows
       // GetProcAddress on both the EGL and GLES2 DLLs.
       base::NativeLibrary egl_library = base::LoadNativeLibrary(
-          exe_path.Append(L"libegl.dll"));
+          module_path.Append(L"libegl.dll"));
       if (!egl_library) {
         LOG(INFO) << "libegl.dll not found.";
         return false;
@@ -80,7 +80,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
                   egl_library, "eglGetProcAddress"));
 
       base::NativeLibrary gles_library = base::LoadNativeLibrary(
-          exe_path.Append(L"libglesv2.dll"));
+          module_path.Append(L"libglesv2.dll"));
       if (!gles_library) {
         base::UnloadNativeLibrary(egl_library);
         LOG(ERROR) << "libglesv2.dll not found";
