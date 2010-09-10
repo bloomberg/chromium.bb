@@ -119,7 +119,7 @@ std::wstring TemplateURLModel::GenerateKeyword(const GURL& url,
 
   // Strip "www." off the front of the keyword; otherwise the keyword won't work
   // properly.  See http://code.google.com/p/chromium/issues/detail?id=6984 .
-  return net::StripWWW(UTF8ToWide(url.host()));
+  return UTF16ToWideHack(net::StripWWW(UTF8ToUTF16(url.host())));
 }
 
 // static
@@ -149,7 +149,7 @@ std::wstring TemplateURLModel::CleanUserInputKeyword(
   }
 
   // Remove leading "www.".
-  result = net::StripWWW(result);
+  result = UTF16ToWideHack(net::StripWWW(WideToUTF16(result)));
 
   // Remove trailing "/".
   return (result.length() > 0 && result[result.length() - 1] == L'/') ?

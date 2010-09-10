@@ -384,7 +384,7 @@ SortedDisplayURL::SortedDisplayURL(const GURL& url,
   std::wstring host;
   net::AppendFormattedHost(url, languages, &host, NULL, NULL);
   sort_host_ = WideToUTF16Hack(host);
-  string16 host_minus_www = WideToUTF16Hack(net::StripWWW(host));
+  string16 host_minus_www = net::StripWWW(WideToUTF16Hack(host));
   url_parse::Parsed parsed;
   display_url_ = net::FormatUrl(url, WideToUTF8(languages),
       net::kFormatUrlOmitAll, UnescapeRule::SPACES, &parsed, &prefix_end_,
