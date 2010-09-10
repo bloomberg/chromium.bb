@@ -2406,6 +2406,10 @@ readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 # Usage: VerifyObject <regexp> <filename>
 # Ensure that the ELF "file format" string for <filename> matches <regexp>.
 VerifyObject() {
+  if [[ $(basename $2) = "libgcc_eh.a" ]] ; then
+    echo "SKIPPPING EMPTY libgcc_eh"
+    return
+  fi
   local pattern=$1 filename=$2
   echo -n "verify $(basename "$filename") [$pattern]: "
   local format=$(objdump -a "$filename" |
