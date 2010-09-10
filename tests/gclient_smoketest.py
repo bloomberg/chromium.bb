@@ -265,7 +265,7 @@ class GClientSmokeSVN(GClientSmokeBase):
                       ['running', 'running',
                        # This is due to the way svn update is called for a
                        # single file when File() is used in a DEPS file.
-                       ('running', self.root_dir + '/src/file/other'),
+                       ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
                        'running', 'running', 'running', 'running'])
     tree = self.mangle_svn_tree(
         ('trunk/src@2', 'src'),
@@ -318,7 +318,7 @@ class GClientSmokeSVN(GClientSmokeBase):
         'running', 'running',
         # This is due to the way svn update is called for a single file when
         # File() is used in a DEPS file.
-        ('running', self.root_dir + '/src/file/other'),
+        ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
         'running', 'running', 'running', 'running'])
     self.checkString('Please fix your script, having invalid --revision flags '
         'will soon considered an error.\n', results[1])
@@ -357,7 +357,7 @@ class GClientSmokeSVN(GClientSmokeBase):
         ['running', 'running',
         # This is due to the way svn update is called for a
         # single file when File() is used in a DEPS file.
-        ('running', self.root_dir + '/src/file/other'),
+        ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
         'running', 'running', 'running', 'running'],
         untangle=True)
     tree = self.mangle_svn_tree(
@@ -604,7 +604,7 @@ class GClientSmokeSVN(GClientSmokeBase):
                       ['running', 'running',
                        # This is due to the way svn update is called for a
                        # single file when File() is used in a DEPS file.
-                       ('running', self.root_dir + '/src/file/other'),
+                       ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
                        'running', 'running', 'running', 'running'])
 
   def testInitialCheckoutFailed(self):
