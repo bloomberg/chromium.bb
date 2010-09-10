@@ -109,7 +109,6 @@
     "chrome.tabs.onMoved": "tabs.html#event-onMoved", 
     "chrome.experimental.omnibox.sendSuggestions": "experimental.omnibox.html#method-sendSuggestions", 
     "chrome.bookmarks.update": "bookmarks.html#method-update", 
-    "chrome.experimental.management.install": "experimental.management.html#method-install", 
     "chrome.contextMenus.removeAll": "contextMenus.html#method-removeAll", 
     "chrome.windows.remove": "windows.html#method-remove", 
     "chrome.tabs.sendRequest": "tabs.html#method-sendRequest", 

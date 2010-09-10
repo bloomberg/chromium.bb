@@ -346,7 +346,7 @@ create, modify, and rearrange tabs in the browser.
 <img src="images/tabs.png" width="323" height="50" alt="Two tabs in a window">
 
 <h2 id="manifest">Manifest</h2>
-<p>You must declare the "tabs" permission in your extension's manifest to use the tabs API.
+<p>All but two functions* require you to declare the "tabs" permission in your extension's manifest to use the tabs API.
 For example:
 </p>
 
@@ -359,6 +359,7 @@ For example:
   ...
 }</pre>
 
+<p>* The two functions that do not require the "tabs" permission are: tabs.create and tabs.update</p>
 <h2 id="examples"> Examples </h2>
 
 <p>
@@ -1112,7 +1113,7 @@ For other examples and for help in viewing the source code, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Creates a new tab.</p>
+                <p>Creates a new tab. Note: This function can be used without requesting the 'tabs' permission in the manifest.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -4486,7 +4487,7 @@ For other examples and for help in viewing the source code, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified.</p>
+                <p>Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified. Note: This function can be used without requesting the 'tabs' permission in the manifest.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>

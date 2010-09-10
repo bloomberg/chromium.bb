@@ -12,7 +12,7 @@ create, modify, and rearrange tabs in the browser.
      width="323" height="50" alt="Two tabs in a window" />
 
 <h2 id="manifest">Manifest</h2>
-<p>You must declare the "tabs" permission in your extension's manifest to use the tabs API.
+<p>All but two functions* require you to declare the "tabs" permission in your extension's manifest to use the tabs API.
 For example:
 </p>
 
@@ -25,6 +25,7 @@ For example:
   ...
 }</pre>
 
+<p>* The two functions that do not require the "tabs" permission are: tabs.create and tabs.update</p>
 <h2 id="examples"> Examples </h2>
 
 <p>

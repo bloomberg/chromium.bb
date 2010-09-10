@@ -938,7 +938,7 @@
       {
         "name": "create",
         "type": "function",
-        "description": "Creates a new tab.",
+        "description": "Creates a new tab. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
         "parameters": [
           {
             "type": "object",
@@ -985,7 +985,7 @@
       {
         "name": "update",
         "type": "function",
-        "description": "Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified.",
+        "description": "Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
