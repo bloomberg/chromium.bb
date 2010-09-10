@@ -39,7 +39,7 @@ class PbufferGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
@@ -158,8 +158,9 @@ bool PbufferGLContext::IsOffscreen() {
   return true;
 }
 
-void PbufferGLContext::SwapBuffers() {
+bool PbufferGLContext::SwapBuffers() {
   NOTREACHED() << "Cannot call SwapBuffers on a PbufferGLContext.";
+  return false;
 }
 
 gfx::Size PbufferGLContext::GetSize() {

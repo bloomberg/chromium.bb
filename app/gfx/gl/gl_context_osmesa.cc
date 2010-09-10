@@ -80,8 +80,9 @@ bool OSMesaGLContext::IsOffscreen() {
   return true;
 }
 
-void OSMesaGLContext::SwapBuffers() {
+bool OSMesaGLContext::SwapBuffers() {
   NOTREACHED() << "Should not call SwapBuffers on an OSMesaGLContext.";
+  return false;
 }
 
 gfx::Size OSMesaGLContext::GetSize() {

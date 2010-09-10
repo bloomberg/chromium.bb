@@ -40,7 +40,7 @@ class ViewGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
@@ -70,7 +70,7 @@ class OSMesaViewGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
@@ -103,7 +103,7 @@ class PbufferGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
@@ -130,7 +130,7 @@ class PixmapGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
@@ -269,9 +269,10 @@ bool ViewGLContext::IsOffscreen() {
   return false;
 }
 
-void ViewGLContext::SwapBuffers() {
+bool ViewGLContext::SwapBuffers() {
   Display* display = x11_util::GetXDisplay();
   glXSwapBuffers(display, window_);
+  return true;
 }
 
 gfx::Size ViewGLContext::GetSize() {
@@ -343,11 +344,11 @@ bool OSMesaViewGLContext::IsOffscreen() {
   return false;
 }
 
-void OSMesaViewGLContext::SwapBuffers() {
+bool OSMesaViewGLContext::SwapBuffers() {
   // Update the size before blitting so that the blit size is exactly the same
   // as the window.
   if (!UpdateSize())
-    return;
+    return false;
 
   gfx::Size size = osmesa_context_.GetSize();
 
@@ -373,6 +374,8 @@ void OSMesaViewGLContext::SwapBuffers() {
             0, 0,
             size.width(), size.height(),
             0, 0);
+
+  return true;
 }
 
 gfx::Size OSMesaViewGLContext::GetSize() {
@@ -575,8 +578,9 @@ bool PbufferGLContext::IsOffscreen() {
   return true;
 }
 
-void PbufferGLContext::SwapBuffers() {
+bool PbufferGLContext::SwapBuffers() {
   NOTREACHED() << "Attempted to call SwapBuffers on a pbuffer.";
+  return false;
 }
 
 gfx::Size PbufferGLContext::GetSize() {
@@ -691,8 +695,9 @@ bool PixmapGLContext::IsOffscreen() {
   return true;
 }
 
-void PixmapGLContext::SwapBuffers() {
+bool PixmapGLContext::SwapBuffers() {
   NOTREACHED() << "Attempted to call SwapBuffers on a pixmap.";
+  return false;
 }
 
 gfx::Size PixmapGLContext::GetSize() {

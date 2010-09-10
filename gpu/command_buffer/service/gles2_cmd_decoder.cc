@@ -5332,7 +5332,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
         glFlush();
     }
   } else {
-    context_->SwapBuffers();
+    if (!context_->SwapBuffers())
+      return error::kLostContext;
   }
 
   // TODO(kbr): when the back buffer is multisampled, then at least on Mac

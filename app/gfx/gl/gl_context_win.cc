@@ -42,7 +42,7 @@ class NativeViewGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
@@ -71,7 +71,7 @@ class OSMesaViewGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
@@ -103,7 +103,7 @@ class PbufferGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
@@ -372,9 +372,9 @@ bool NativeViewGLContext::IsOffscreen() {
   return false;
 }
 
-void NativeViewGLContext::SwapBuffers() {
+bool NativeViewGLContext::SwapBuffers() {
   DCHECK(device_context_);
-  ::SwapBuffers(device_context_);
+  return ::SwapBuffers(device_context_) == TRUE;
 }
 
 gfx::Size NativeViewGLContext::GetSize() {
@@ -427,7 +427,7 @@ bool OSMesaViewGLContext::IsOffscreen() {
   return false;
 }
 
-void OSMesaViewGLContext::SwapBuffers() {
+bool OSMesaViewGLContext::SwapBuffers() {
   DCHECK(device_context_);
 
   // Update the size before blitting so that the blit size is exactly the same
@@ -450,13 +450,13 @@ void OSMesaViewGLContext::SwapBuffers() {
   info.bV4AlphaMask = 0x000000FF;
 
   // Copy the back buffer to the window's device context.
-  StretchDIBits(device_context_,
-                0, 0, size.width(), size.height(),
-                0, 0, size.width(), size.height(),
-                osmesa_context_.buffer(),
-                reinterpret_cast<BITMAPINFO*>(&info),
-                DIB_RGB_COLORS,
-                SRCCOPY);
+  return StretchDIBits(device_context_,
+                       0, 0, size.width(), size.height(),
+                       0, 0, size.width(), size.height(),
+                       osmesa_context_.buffer(),
+                       reinterpret_cast<BITMAPINFO*>(&info),
+                       DIB_RGB_COLORS,
+                       SRCCOPY) != 0;
 }
 
 gfx::Size OSMesaViewGLContext::GetSize() {
@@ -603,8 +603,9 @@ bool PbufferGLContext::IsOffscreen() {
   return true;
 }
 
-void PbufferGLContext::SwapBuffers() {
+bool PbufferGLContext::SwapBuffers() {
   NOTREACHED() << "Attempted to call SwapBuffers on a pbuffer.";
+  return false;
 }
 
 gfx::Size PbufferGLContext::GetSize() {

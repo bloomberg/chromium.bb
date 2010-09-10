@@ -32,7 +32,7 @@ class GLContext {
 
   // Swaps front and back buffers. This has no effect for off-screen
   // contexts.
-  virtual void SwapBuffers() = 0;
+  virtual bool SwapBuffers() = 0;
 
   // Get the size of the back buffer.
   virtual gfx::Size GetSize() = 0;

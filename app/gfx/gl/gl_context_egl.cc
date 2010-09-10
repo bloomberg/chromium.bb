@@ -160,8 +160,8 @@ bool NativeViewEGLContext::IsOffscreen() {
   return false;
 }
 
-void NativeViewEGLContext::SwapBuffers() {
-  eglSwapBuffers(g_display, surface_);
+bool NativeViewEGLContext::SwapBuffers() {
+  return eglSwapBuffers(g_display, surface_) == EGL_TRUE;
 }
 
 gfx::Size NativeViewEGLContext::GetSize() {
@@ -277,8 +277,9 @@ bool SecondaryEGLContext::IsOffscreen() {
   return true;
 }
 
-void SecondaryEGLContext::SwapBuffers() {
+bool SecondaryEGLContext::SwapBuffers() {
   NOTREACHED() << "Attempted to call SwapBuffers on a SecondaryEGLContext.";
+  return false;
 }
 
 gfx::Size SecondaryEGLContext::GetSize() {

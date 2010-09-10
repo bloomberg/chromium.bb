@@ -28,7 +28,7 @@ class OSMesaGLContext : public GLContext {
   virtual bool MakeCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
-  virtual void SwapBuffers();
+  virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
