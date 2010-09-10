@@ -1,0 +1,7 @@
+Name: protobuf
+URL: http://protobuf.googlecode.com/svn/trunk
+License File: src/COPYING.txt
+
+There are no local changes to the code itself.
+
+A protbuf.gyp file has been added for building with Chromium.
