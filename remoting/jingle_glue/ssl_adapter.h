@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef JINGLE_NOTIFIER_BASE_SSL_ADAPTER_H_
-#define JINGLE_NOTIFIER_BASE_SSL_ADAPTER_H_
+#ifndef REMOTING_JINGLE_GLUE_SSL_ADAPTER_H_
+#define REMOTING_JINGLE_GLUE_SSL_ADAPTER_H_
 
 namespace talk_base {
 class AsyncSocket;
 class SSLAdapter;
 }  // namespace talk_base
 
-namespace notifier {
+namespace remoting {
 
 // Wraps the given socket in a platform-dependent SSLAdapter
 // implementation.
@@ -23,11 +23,11 @@ class SSLAdapterSocketFactory : public SocketFactory {
  public:
   virtual talk_base::SSLAdapter* CreateSSLAdapter(
       talk_base::AsyncSocket* socket) {
-    return ::notifier::CreateSSLAdapter(socket);
+    return ::remoting::CreateSSLAdapter(socket);
   }
 };
 
-}  // namespace notifier
+}  // namespace remoting
 
-#endif  // JINGLE_NOTIFIER_BASE_SSL_ADAPTER_H_
+#endif  // REMOTING_JINGLE_GLUE_SSL_ADAPTER_H_
 

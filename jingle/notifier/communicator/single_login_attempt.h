@@ -47,9 +47,7 @@ class XmppConnectionGenerator;
 class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
  public:
   SingleLoginAttempt(talk_base::TaskParent* parent,
-                     LoginSettings* login_settings,
-                     bool use_chrome_async_socket,
-                     bool successful_connection);
+                     LoginSettings* login_settings);
   ~SingleLoginAttempt();
   virtual int ProcessStart();
   void UseNextConnection();
@@ -107,25 +105,18 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
       const buzz::XmlElement* stream_error);
   void HandleConnectionPasswordError();
 
-  void DiagnoseConnectionError();
-  void OnHttpTestDone(talk_base::SignalThread* thread);
-
   void OnAuthenticationError();
   void OnCertificateExpired();
-  void OnFreshAuthCookie(const std::string& auth_cookie);
   void OnClientStateChange(buzz::XmppEngine::State state);
   void OnClientStateChangeClosed(buzz::XmppEngine::State previous_state);
   void OnAttemptedAllConnections(bool successfully_resolved_dns,
                                  int first_dns_error);
 
-  bool use_chrome_async_socket_;
   buzz::XmppEngine::State state_;
   buzz::XmppEngine::Error code_;
   int subcode_;
   bool need_authentication_;
   bool certificate_expired_;
-  bool cookie_refreshed_;
-  bool successful_connection_;
   LoginSettings* login_settings_;
   buzz::XmppClient* client_;
   scoped_ptr<XmppConnectionGenerator> connection_generator_;

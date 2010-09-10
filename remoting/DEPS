@@ -3,6 +3,7 @@ include_rules = [
   "+gfx",
   "+google/protobuf",
   "+media/base",
+  "+net",
 
   "+jingle",
 

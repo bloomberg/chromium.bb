@@ -279,7 +279,6 @@ extern const char kSimpleDataSource[];
 extern const char kSingleProcess[];
 extern const char kStartMaximized[];
 extern const char kSyncAllowPlain[];
-extern const char kSyncDisableChromeAsyncSocket[];
 extern const char kSyncDisableTls[];
 extern const char kSyncEmail[];
 extern const char kSyncerThreadTimedStop[];
