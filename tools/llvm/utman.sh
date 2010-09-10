@@ -2359,6 +2359,11 @@ organize-native-code() {
   local startup_dir=${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}
   cp -f ${startup_dir}/libgcc.a \
         ${PNACL_ARM_ROOT}
+  # NOTE: create an empty archive until this is resolved
+  # http://code.google.com/p/nativeclient/issues/detail?id=835
+  rm -f ${PNACL_ARM_ROOT}/libgcc_eh.a
+  ${CROSS_TARGET_AR} -r ${PNACL_ARM_ROOT}/libgcc_eh.a
+
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
   StepBanner "PNaCl" "x86-32 native code: ${PNACL_X8632_ROOT}"
@@ -2366,6 +2371,11 @@ organize-native-code() {
   local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}
   cp -f ${startup_dir}/libgcc.a \
         ${PNACL_X8632_ROOT}
+  # NOTE: create an empty archive until this is resolved
+  # http://code.google.com/p/nativeclient/issues/detail?id=835
+  rm -f ${PNACL_X8632_ROOT}/libgcc_eh.a
+  ${CROSS_TARGET_AR} -r ${PNACL_X8632_ROOT}/libgcc_eh.a
+
   DebugRun ls -l ${PNACL_X8632_ROOT}
 
   StepBanner "PNaCl" "x86-64 native code: ${PNACL_X8664_ROOT}"
@@ -2373,6 +2383,10 @@ organize-native-code() {
   local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}
   cp -f ${startup_dir}/libgcc.a \
         ${PNACL_X8664_ROOT}
+  # NOTE: create an empty archive until this is resolved
+  # http://code.google.com/p/nativeclient/issues/detail?id=835
+  rm -f ${PNACL_X8664_ROOT}/libgcc_eh.a
+  ${CROSS_TARGET_AR} -r ${PNACL_X8664_ROOT}/libgcc_eh.a
 
   DebugRun ls -l ${PNACL_X8664_ROOT}
 }

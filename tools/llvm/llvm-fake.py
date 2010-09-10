@@ -519,6 +519,7 @@ def MassageFinalLinkCommandPnacl(args, arch, flags):
     out.append(native_dir + '/crtend.o')
     out.append(native_dir + '/crtn.o')
     out.append('-L' + native_dir)
+    out.append('-lgcc_eh')
     out.append('-lgcc')
 
   if '--native-bc-libs' in args:
