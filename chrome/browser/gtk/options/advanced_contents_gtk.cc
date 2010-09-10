@@ -76,19 +76,11 @@ const int kWrapWidth = 445;
 const int kWrapWidth = 475;
 #endif
 
-// We can't calculate the proper width until the label is realized.
-void LabelRealized(GtkWidget* label, gpointer unused) {
-  gtk_label_set_width_chars(
-      GTK_LABEL(label),
-      gtk_util::GetCharacterWidthForPixels(label, kWrapWidth));
-}
-
 GtkWidget* CreateWrappedLabel(int string_id) {
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(string_id).c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  g_signal_connect(label, "realize", G_CALLBACK(LabelRealized), NULL);
+  gtk_util::SetLabelWidth(label, kWrapWidth);
   return label;
 }
 

@@ -29,13 +29,6 @@ const int kImageSize = 69;
 // Padding on all sides of each permission in the permissions list.
 const int kPermissionsPadding = 8;
 
-void LabelRealized(GtkWidget* label, gpointer unused) {
-  gtk_label_set_width_chars(
-      GTK_LABEL(label),
-      gtk_util::GetCharacterWidthForPixels(label,
-                                           kRightColumnMinWidth));
-}
-
 // Make a GtkLabel with |str| as its text, using the formatting in |format|.
 GtkWidget* MakeMarkupLabel(const char* format, const std::string& str) {
   GtkWidget* label = gtk_label_new(NULL);
@@ -120,9 +113,8 @@ void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
                 IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO;
     GtkWidget* warning_label = gtk_label_new(l10n_util::GetStringUTF8(
         label).c_str());
-    gtk_label_set_line_wrap(GTK_LABEL(warning_label), TRUE);
     gtk_misc_set_alignment(GTK_MISC(warning_label), 0.0, 0.5);
-    g_signal_connect(warning_label, "realize", G_CALLBACK(LabelRealized), NULL);
+    gtk_util::SetLabelWidth(warning_label, kRightColumnMinWidth);
 
     gtk_box_pack_start(GTK_BOX(right_column_area), warning_label,
                        FALSE, FALSE, 0);

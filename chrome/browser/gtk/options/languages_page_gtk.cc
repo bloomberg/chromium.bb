@@ -37,12 +37,6 @@ GtkWidget* NewComboboxFromModel(ComboboxModel* model) {
   return combobox;
 }
 
-void LabelRealized(GtkWidget* label, gpointer unused) {
-  gtk_label_set_width_chars(
-      GTK_LABEL(label),
-      gtk_util::GetCharacterWidthForPixels(label, kWrapWidth));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AddLanguageDialog
 
@@ -148,9 +142,7 @@ void LanguagesPageGtk::Init() {
       l10n_util::GetStringUTF8(
           IDS_FONT_LANGUAGE_SETTING_LANGUAGES_INSTRUCTIONS).c_str());
   gtk_misc_set_alignment(GTK_MISC(languages_instructions_label), 0, .5);
-  gtk_label_set_line_wrap(GTK_LABEL(languages_instructions_label), TRUE);
-  g_signal_connect(languages_instructions_label, "realize",
-                   G_CALLBACK(LabelRealized), NULL);
+  gtk_util::SetLabelWidth(languages_instructions_label, kWrapWidth);
   gtk_box_pack_start(GTK_BOX(languages_vbox), languages_instructions_label,
                      FALSE, FALSE, 0);
 
