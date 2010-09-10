@@ -19,7 +19,7 @@
 
 struct sqlite3;
 
-// Importer for Mozilla Firefox 3.
+// Importer for Mozilla Firefox 3 and later.
 // Firefox 3 stores its persistent information in a new system called places.
 // http://wiki.mozilla.org/Places
 class Firefox3Importer : public Importer {

@@ -35,7 +35,7 @@ enum ProfileType {
   MS_IE = 0,
 #endif
   FIREFOX2 = 1,
-  FIREFOX3 = 2,
+  FIREFOX3 = 2,  // Firefox 3 and later.
 #if defined(OS_MACOSX)
   SAFARI = 3,
 #endif

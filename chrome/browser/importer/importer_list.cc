@@ -129,12 +129,12 @@ void ImporterList::DetectFirefoxProfiles() {
 #if defined(OS_WIN)
   version = GetCurrentFirefoxMajorVersionFromRegistry();
 #endif
-  if (version != 2 && version != 3)
+  if (version < 2)
     GetFirefoxVersionAndPathFromProfile(profile_path, &version, &app_path);
 
   if (version == 2) {
     firefox_type = importer::FIREFOX2;
-  } else if (version == 3) {
+  } else if (version >= 3) {
     firefox_type = importer::FIREFOX3;
   } else {
     // Ignores other versions of firefox.
