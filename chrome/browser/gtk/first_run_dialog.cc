@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -62,14 +63,18 @@ void SetWelcomePosition(GtkFloatingContainer* container,
                         GtkWidget* label) {
   GValue value = { 0, };
   g_value_init(&value, G_TYPE_INT);
-  g_value_set_int(&value, gtk_util::kContentAreaSpacing);
-  gtk_container_child_set_property(GTK_CONTAINER(container),
-                                   label, "x", &value);
 
   GtkRequisition req;
   gtk_widget_size_request(label, &req);
-  int y = allocation->height / 2 - req.height / 2;
 
+  int x = base::i18n::IsRTL() ?
+      allocation->width - req.width - gtk_util::kContentAreaSpacing :
+      gtk_util::kContentAreaSpacing;
+  g_value_set_int(&value, x);
+  gtk_container_child_set_property(GTK_CONTAINER(container),
+                                   label, "x", &value);
+
+  int y = allocation->height / 2 - req.height / 2;
   g_value_set_int(&value, y);
   gtk_container_child_set_property(GTK_CONTAINER(container),
                                    label, "y", &value);
@@ -130,7 +135,7 @@ void FirstRunDialog::ShowSearchEngineWindow() {
   gtk_container_add(GTK_CONTAINER(search_engine_window_), content_area);
 
   GdkPixbuf* pixbuf =
-      ResourceBundle::GetSharedInstance().GetPixbufNamed(
+      ResourceBundle::GetSharedInstance().GetRTLEnabledPixbufNamed(
           IDR_SEARCH_ENGINE_DIALOG_TOP);
   GtkWidget* top_image = gtk_image_new_from_pixbuf(pixbuf);
   // Right align the image.
@@ -139,6 +144,9 @@ void FirstRunDialog::ShowSearchEngineWindow() {
 
   GtkWidget* welcome_message = gtk_util::CreateBoldLabel(
       l10n_util::GetStringUTF8(IDS_FR_SEARCH_MAIN_LABEL));
+  // Force the font size to make sure the label doesn't overlap the image.
+  // 13.4px == 10pt @ 96dpi
+  gtk_util::ForceFontSizePixels(welcome_message, 13.4);
 
   GtkWidget* top_area = gtk_floating_container_new();
   gtk_container_add(GTK_CONTAINER(top_area), top_image);
