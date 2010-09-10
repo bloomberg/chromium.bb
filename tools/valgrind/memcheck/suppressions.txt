@@ -159,14 +159,6 @@
    fun:PR_LoadLibraryWithFlags
 }
 {
-   # glibc has a bug when it has to retry dns lookup?
-   # http://sourceware.org/bugzilla/show_bug.cgi?id=10391
-   glibc_bug_10391
-   Memcheck:Cond
-   ...
-   fun:getaddrinfo
-}
-{
    glibc leak.  See also http://sources.redhat.com/bugzilla/show_bug.cgi?id=2451
    Memcheck:Leak
    fun:malloc
@@ -198,12 +190,6 @@
    fun:PR_LoadLibraryWithFlags
    ...
    fun:SECMOD_LoadModule
-}
-{
-   Error in ICU
-   Memcheck:Overlap
-   fun:memcpy
-   fun:init_resb_result
 }
 {
    libc_dynamiclinker_foo
@@ -275,37 +261,6 @@
    fun:g_object_add_weak_pointer
 }
 {
-   bug_16161
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   ...
-   fun:gtk_clipboard_set_text
-   fun:_ZN23AutocompleteEditViewGtk20SavePrimarySelectionERKSs
-}
-{
-   # Maybe this is a widget caught in the middle of being destroyed?
-   bug_19369
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_datalist_id_set_data_full
-   fun:g_object_freeze_notify
-   fun:gtk_widget_unparent
-   fun:gtk_bin_remove
-   fun:g_cclosure_marshal_VOID__OBJECT
-   fun:g_type_class_meta_marshal
-   fun:g_closure_invoke
-   fun:signal_emit_unlocked_R
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gtk_container_remove
-   fun:gtk_widget_dispose
-   fun:g_object_run_dispose
-   fun:gtk_object_destroy
-}
-{
    # Totem plugin leaks when we load it.
    bug_21326
    Memcheck:Leak
@@ -339,104 +294,12 @@
    fun:sqlite3BtreeCommitPhaseOne
 }
 {
-   # Valgrind doesn't grok clone quite yet on x64,
-   # see https://bugs.kde.org/show_bug.cgi?id=117564
-   valgrind_bug_117564
-   Memcheck:Param
-   clone(child_tidptr)
-   fun:clone
-   fun:_ZN7testing8internal13ExecDeathTest10AssumeRoleEv
-}
-{
    http://sources.redhat.com/bugzilla/show_bug.cgi?id=5171
    Memcheck:Leak
    fun:calloc
    fun:allocate_dtv
    fun:_dl_allocate_tls
    fun:pthread_create@@GLIBC_2.1
-}
-{
-   leak_in_ps
-   Memcheck:Leak
-   fun:malloc
-   fun:nss_parse_service_list
-   ...
-   obj:/bin/ps
-}
-{
-   # Valgrind issues with tcmalloc's VDSOSupport module
-   bug_28149a
-   Memcheck:Addr1
-   ...
-   fun:_ZN4base11VDSOSupport4InitEv
-   ...
-   fun:_Z41__static_initialization_and_destruction_0ii
-   fun:_GLOBAL__I__ZN4base11VDSOSupport12kInvalidBaseE
-   ...
-   fun:__libc_csu_init
-   fun:(below main)
-}
-{
-   # Valgrind issues with tcmalloc's VDSOSupport module
-   bug_28149b
-   Memcheck:Addr2
-   ...
-   fun:_ZN4base11VDSOSupport4InitEv
-   ...
-   fun:_Z41__static_initialization_and_destruction_0ii
-   fun:_GLOBAL__I__ZN4base11VDSOSupport12kInvalidBaseE
-   ...
-   fun:__libc_csu_init
-   fun:(below main)
-}
-{
-   # Valgrind issues with tcmalloc's VDSOSupport module
-   bug_28149c
-   Memcheck:Addr4
-   ...
-   fun:_ZN4base11VDSOSupport4InitEv
-   ...
-   fun:_Z41__static_initialization_and_destruction_0ii
-   fun:_GLOBAL__I__ZN4base11VDSOSupport12kInvalidBaseE
-   ...
-   fun:__libc_csu_init
-   fun:(below main)
-}
-{
-   # Valgrind issues with tcmalloc's VDSOSupport module
-   bug_28149d
-   Memcheck:Addr1
-   ...
-   fun:_ZNK4base11VDSOSupport12LookupSymbolEPKcS2_iPNS0_10SymbolInfoE
-   ...
-   fun:_Z41__static_initialization_and_destruction_0ii
-   ...
-}
-{
-   # Valgrind issues with tcmalloc's VDSOSupport module
-   bug_28149e
-   Memcheck:Addr2
-   ...
-   fun:_ZNK4base11VDSOSupport12LookupSymbolEPKcS2_iPNS0_10SymbolInfoE
-   ...
-   fun:_Z41__static_initialization_and_destruction_0ii
-   ...
-}
-{
-   # Valgrind issues with tcmalloc's VDSOSupport module
-   bug_28149f
-   Memcheck:Addr4
-   ...
-   fun:_ZNK4base11VDSOSupport12LookupSymbolEPKcS2_iPNS0_10SymbolInfoE
-   ...
-   fun:_Z41__static_initialization_and_destruction_0ii
-   ...
-}
-{
-   bug_30110
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN13TCMallocGuardC1Ev
 }
 # zlib-1.2.x uses uninitialised memory in some tricky way which
 # apparently is harmless (it must amount to a vectorised while-loop,
@@ -565,18 +428,6 @@
    fun:g_closure_invoke
    fun:signal_emit_unlocked_R
    fun:g_signal_emit_valist
-}
-{
-   bug_51327
-   Memcheck:Cond
-   fun:DecodeItem
-   ...
-   fun:SEC_QuickDERDecodeItem_Util
-   ...
-   fun:lg_PutMetaData
-   fun:sftkdb_ChangePassword
-   fun:NSC_InitPIN
-   fun:PK11_InitPin
 }
 {
    bug_51332a
@@ -723,13 +574,6 @@
    fun:_ZN7logging11InitLoggingEPKcNS_18LoggingDestinationENS_15LogLockingStateENS_20OldFileDeletionStateE
 }
 {
-   # See comment on struct CheckOpString
-   logging::MakeCheckOpString result not freed because app is aborting
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7logging17MakeCheckOpStringIiiEEPSsRKT_RKT0_PKc
-}
-{
    Linux tests don't bother to undo net::TestServer::LoadTestRootCert().
    Memcheck:Leak
    ...
@@ -779,52 +623,6 @@
    fun:_ZN58ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
 }
 {
-   # A callback object that may or may not be called on exit.
-   # See comments in ProxyConfigServiceLinux::Delegate::PostDestroyTask (proxy_config_service_linux.cc)
-   intentional_NewRunnableMethod_ProxyConfigServiceLinux_Delegate_CancelableTask_Leak
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z17NewRunnableMethodIN3net23ProxyConfigServiceLinux8DelegateEMS2_FvvEEP14CancelableTaskPT_T0_
-   fun:_ZN3net23ProxyConfigServiceLinux8Delegate15PostDestroyTaskEv
-   fun:_ZN3net23ProxyConfigServiceLinuxD0Ev
-}
-{
-   # Since this object is deleted on the file thread, and the file thread may be
-   # gone by the time we want to delete the object, it can leak on shutdown. It
-   # should be harmless though.
-   bug_28862
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11ProfileImpl26ReinitializeSpellCheckHostEb
-   fun:_ZN24BrowserRenderProcessHost31OnSpellCheckerRequestDictionaryEv
-   fun:_ZN3IPC7Message8DispatchI24BrowserRenderProcessHostEEbPKS0_PT_MS5_FvvE
-}
-{
-   # AudioRendererHost is deleted in IO thread, which may or may not be called on exit.
-   intentional_BrowserRenderProcessHost_Init_Leak
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN24BrowserRenderProcessHost4InitEbP23URLRequestContextGetter
-   fun:_ZN14RenderViewHost16CreateRenderViewEP23URLRequestContextGetter
-}
-{
-   # Async callback leak on exit in metrics_service.cc
-   intentional_MetricsService_GetPluginListTask_Run_Leak
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14MetricsService17GetPluginListTask3RunEv
-}
-{
-   # Async deletion leak on exit in ChromeThread.
-   # This fails once in a while in LocaleTest.
-   intentional_ChromeThread_DeleteSoon_ExtensionMessageService_Leak
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12ChromeThread10DeleteSoonI23ExtensionMessageServiceEEbNS_2IDERKN15tracked_objects8LocationEPT_
-   fun:_ZN12ChromeThread14DeleteOnThreadILNS_2IDE0EE8DestructI23ExtensionMessageServiceEEvPT_
-}
-{
    # This is an on demand initialization which is done and then intentionally
    # kept around (not freed) while the process is running.
    intentional_WebCore_XMLNames_init_leak
@@ -847,50 +645,6 @@
    Memcheck:Addr4
    fun:rc4_wordconv
    fun:RC4_Encrypt
-}
-{
-   # Valgrind gets confused by fork() and reports false positive.
-   bug_46343_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIiE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseIiSaIiEE11_M_allocateEj
-   fun:_ZNSt6vectorIiSaIiEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPiS1_EERKi
-   fun:_ZNSt6vectorIiSaIiEE9push_backERKi
-   fun:_ZN10ZygoteHost12ForkRendererERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EE
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
-   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
-{
-   bug_46343_b
-   Memcheck:Leak
-   ...
-   fun:realloc
-   fun:_ZN6Pickle6ResizeEj
-   fun:_ZN6Pickle10BeginWriteEj
-   fun:_ZN6Pickle10WriteBytesEPKvi
-   fun:_ZN6Pickle8WriteIntEi
-   fun:_ZN6Pickle11WriteStringERKSs
-   fun:_ZN10ZygoteHost12ForkRendererERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EE
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
-   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
-{
-   bug_46343_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt4pairIjiEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseISt4pairIjiESaIS1_EE11_M_allocateEj
-   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
-   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE9push_backERKS1_
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
-   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
 }
 {
    bug_39963_a
@@ -962,14 +716,6 @@
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
 }
 {
-   # V8 (or test shell) leak?  See http://crbug.com/9458
-   bug_9458
-   Memcheck:Leak
-   ...
-   fun:_NPN_RegisterObject
-   fun:_Z25createV8ObjectForNPObjectP8NPObjectS0_
-}
-{
    # webkit leak?  See http://crbug.com/9503
    bug_9503
    Memcheck:Leak
@@ -982,28 +728,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN14ProcessWatcher23EnsureProcessTerminatedEi
-}
-{
-   bug_11838
-   Memcheck:Cond
-   fun:strlen
-   ...
-   fun:__xmlRaiseError
-   ...
-   fun:_ZN16Toolbar5Importer17LocateNextOpenTagEP9XmlReader
-   fun:_ZN16Toolbar5Importer27LocateNextTagWithStopByNameEP9XmlReaderRKSsS3_
-   fun:_ZN16Toolbar5Importer24ParseBookmarksFromReaderEP9XmlReaderPSt6vectorIN13ProfileWriter13BookmarkEntryESaIS4_EE
-   fun:_ZN39Toolbar5ImporterTest_BookmarkParse_Test8TestBodyEv
-}
-{
-   # See http://crbug.com/11213
-   bug_11213
-   Memcheck:Leak
-   ...
-   fun:_ZN7WebCore14ResourceHandle6createERKNS_15ResourceRequestEPNS_20ResourceHandleClientEPNS_5FrameEbbb
-   fun:_ZN7WebCore14ResourceLoader4loadERKNS_15ResourceRequestE
-   fun:_ZN7WebCore17SubresourceLoader6createEPNS_5FrameEPNS_23SubresourceLoaderClientERKNS_15ResourceRequestEbbb
-   fun:_ZN7WebCore6Loader4Host20servePendingRequestsERN3WTF5DequeIPNS_7RequestEEERb
 }
 {
    # very common in ui tests
@@ -1141,12 +865,6 @@
    fun:_ZN7WebCore22ResourceHandleInternal5startEv
 }
 {
-   bug_16577
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12RenderThread22InformHostOfCacheStatsEv
-}
-{
    # Webkit leak in WebCore::HTMLNames::init() ?
    bug_16579
    Memcheck:Leak
@@ -1167,22 +885,6 @@
    fun:g_object_new_valist
 }
 {
-   bug_16584
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7WebCore10CSSRuleSet12addToRuleSetEPNS_16AtomicStringImplERN3WTF7HashMapIS2_PNS_15CSSRuleDataListENS3_7PtrHashIS2_EENS3_10HashTraitsIS2_EENS9_IS6_EEEEPNS_12CSSStyleRuleEPNS_11CSSSelectorE
-   fun:_ZN7WebCore10CSSRuleSet7addRuleEPNS_12CSSStyleRuleEPNS_11CSSSelectorE
-   fun:_ZN7WebCore10CSSRuleSet17addRulesFromSheetEPNS_13CSSStyleSheetERKNS_19MediaQueryEvaluatorEPNS_16CSSStyleSelectorE
-   ...
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentERKNS_6StringEPNS_14StyleSheetListEPNS_13CSSStyleSheetEbb
-   fun:_ZN7WebCore8Document6attachEv
-   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
-   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-}
-{
    bug_17291
    Memcheck:Leak
    fun:malloc
@@ -1201,27 +903,6 @@
    fun:_ZN3IPC12ChannelProxyC2ERKSsNS_7Channel4ModeEP11MessageLoopPNS0_7ContextEb
    ...
    fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
-}
-{
-   bug_17451
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
-   fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
-   ...
-   fun:_ZN11WebViewImpl13DownloadImageEiRK4GURLi
-   fun:_ZN10RenderView17OnDownloadFavIconEiRK4GURLi
-}
-{
-   bug_17451b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
-   ...
-   fun:_ZN11WebViewImpl13DownloadImageEiRK4GURLi
-   fun:_ZN10RenderView17OnDownloadFavIconEiRK4GURLi
 }
 {
    bug_17540
@@ -1297,37 +978,6 @@
    fun:_ZN4base19MessagePumpLibevent4InitEv
    fun:_ZN4base19MessagePumpLibeventC1Ev
    fun:_ZN11MessageLoopC1ENS_4TypeE
-}
-{
-   bug_19546a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19SafeBrowsingService5StartEv
-   fun:_ZN19SafeBrowsingService10InitializeEP11MessageLoop
-   fun:_ZN22ResourceDispatcherHost10InitializeEv
-   fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
-   fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
-   fun:_ZN24BrowserRenderProcessHost4InitEv
-}
-{
-   bug_19546b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19SafeBrowsingService14OnIOInitializeEP11MessageLoopRKSsS3_
-   fun:_ZN14RunnableMethodI19SafeBrowsingServiceMS0_FvP11MessageLoopRKSsS4_E6Tuple3IS2_SsSsEE3RunEv
-}
-{
-   bug_19546c
-   Memcheck:Leak
-   ...
-   fun:_ZN19SafeBrowsingService5StartEv
-   fun:_ZN19SafeBrowsingService10InitializeEP11MessageLoop
-   fun:_ZN22ResourceDispatcherHost10InitializeEv
-   fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
-   fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
-   fun:_ZN17ExtensionsService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsEv
-   fun:_Z11BrowserMainRK18MainFunctionParams
 }
 {
    bug_19775_a
@@ -1435,40 +1085,6 @@
    fun:sqlite3_prepare
 }
 {
-   bug_20113
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:_ZN3WTF10fastMallocE*
-   ...
-   fun:_ZN7WebCore16StorageNamespace23sessionStorageNamespaceEv
-   fun:_ZN7WebCore4Page14sessionStorageEb
-   fun:_ZNK7WebCore9DOMWindow14sessionStorageEv
-   fun:_ZN7WebCore17DOMWindowInternal*24sessionStorageAttrGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
-   fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
-}
-{
-   bug_20320
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   ...
-   fun:gtk_accel_group_disconnect
-   fun:gtk_accel_group_disconnect_key
-}
-{
-   bug_20320b
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:handlers_find
-   fun:signal_handlers_foreach_matched_R
-   fun:g_signal_handlers_disconnect_matched
-   fun:gtk_accel_label_set_accel_widget
-   fun:gtk_accel_label_destroy
-}
-{
    bug_20581
    Memcheck:Leak
    ...
@@ -1478,46 +1094,6 @@
    fun:sqlite3Step
    fun:sqlite3_step
    fun:sqlite3_exec
-}
-{
-   bug_20616
-   Memcheck:Leak
-   ...
-   fun:_ZN19SafeBrowsingService11GetDatabaseEv
-   fun:_ZN19SafeBrowsingService14OnDBInitializeEv
-}
-{
-   bug_20617
-   Memcheck:Leak
-   ...
-   fun:_ZN18AutomationProvider30WaitForAppModalDialogToBeShownEPN3IPC7MessageE
-}
-{
-   bug_20641a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z17NewRunnableMethodI19SafeBrowsingServiceMS0_FvP11MessageLoopRKSsS4_ES2_SsSsEP14CancelableTaskPT_T0_RKT1_RKT2_RKT3_
-   fun:_ZN19SafeBrowsingService5StartEv
-   fun:_ZN19SafeBrowsingService10InitializeEP11MessageLoop
-}
-{
-   bug_20641b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19SafeBrowsingService14OnIOInitializeEP11MessageLoopRKSsS3_
-}
-{
-   bug_20659
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15tracked_objects10ThreadData12FindLifetimeERKNS_8LocationE
-   fun:_ZN15tracked_objects7Tracked13SetBirthPlaceERKNS_8LocationE
-   fun:_ZN11MessageLoop15PostTask_HelperERKN15tracked_objects8LocationEP4Taskxb
-   fun:_ZN11MessageLoop15PostDelayedTaskERKN15tracked_objects8LocationEP4Taskx
-   fun:_ZN4base16BaseTimer_Helper19InitiateDelayedTaskEPNS0_9TimerTaskE
-   fun:_ZN4base9BaseTimerI27SafeBrowsingProtocolManagerLb0EE5StartENS_9TimeDeltaEPS1_MS1_FvvE
-   fun:_ZN27SafeBrowsingProtocolManager18ScheduleNextUpdateEb
-   fun:_ZN27SafeBrowsingProtocolManager10InitializeEv
 }
 # IPCing uninitialized data
 {
@@ -1537,24 +1113,6 @@
    ...
    fun:event_process_active
    fun:event_base_loop
-}
-{
-   bug_21010a
-   Memcheck:Value4
-   fun:_ZN2v88internal10PagedSpace10FindObjectEPh
-}
-{
-   bug_21010b
-   Memcheck:Value4
-   fun:_ZN2v88internal18HeapObjectIterator17HasNextInNextPageEv
-}
-{
-   bug_22021
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocE*
-   ...
-   fun:_ZN7WebCore19V8EventListenerList3addEPNS_15V8EventListenerE
 }
 {
    bug_22098
@@ -1611,125 +1169,6 @@
    fun:_ZN13WorkerService12CreateWorker*
    fun:_ZN21ResourceMessageFilter14OnCreateWorker*
    fun:_Z16DispatchToMethodI21ResourceMessageFilter*
-}
-{
-   bug_23104
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore9CSSParser23createFloatingValueListEv
-   fun:_Z10cssyyparsePv
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
-   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKNS_6StringEb
-   fun:_ZN7WebCore12parseUASheetERKNS_6StringE
-   fun:_ZN7WebCore12parseUASheetEPKcj
-   fun:_ZN7WebCore22loadSimpleDefaultStyleEv
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentEPNS_14StyleSheetListEPNS_13CSSStyleSheetES6_PKN3WTF6VectorINS7_6RefPtrIS5_EELj0EEEbb
-   fun:_ZN7WebCore8Document6attachEv
-   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
-   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-}
-{
-   bug_23151
-   Memcheck:Addr4
-   ...
-   fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventE
-   fun:_ZN7WebCore11EventTarget18fireEventListenersEPNS_5EventE
-   fun:_ZN7WebCore11EventTarget13dispatchEventEN3WTF10PassRefPtrINS_5EventEEE
-   fun:_ZN7WebCore14XMLHttpRequest28callReadyStateChangeListenerEv
-}
-{
-   bug_23310
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7history14HistoryBackend12SetPageTitleERK4GURLRKSbIwSt11char_traitsIwESaIwEE
-   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvRK4GURLRKSbIwSt11char_traitsIwESaIwEEES2_S8_EvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvRK4GURLRKSbIwSt11char_traitsIwESaIwEEE6Tuple2IS2_S8_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
-{
-   bug_23313
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNSt6vectorIN4skia19ConvolutionFilter1D14FilterInstanceESaIS2_EE9push_backERKS2_
-   fun:_ZN4skia19ConvolutionFilter1D9AddFilterEiPKsi
-   ...
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-}
-{
-   bug_23416
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
-   fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
-   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
-   fun:_ZN11webkit_glue15ResourceFetcherC2ERK4GURLPN6WebKit8WebFrameEP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
-   fun:_ZN11webkit_glue26ResourceFetcherWithTimeoutC1ERK4GURLPN6WebKit8WebFrameEiP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
-   fun:_ZN11webkit_glue27AltErrorPageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameERKNS4_11WebURLErrorEP14CallbackRunnerI6Tuple3IS6_S9_RKSsEE
-}
-{
-   bug_23918
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
-   fun:_ZNSs7reserveEj
-   fun:_ZNSs6appendERKSs
-   fun:_ZN12StatsCounterC1ERKSs
-   fun:_ZN12WebFrameImplC1EPN6WebKit14WebFrameClientE
-   fun:_ZN11WebViewImpl19initializeMainFrameEPN6WebKit14WebFrameClientE
-   fun:_ZN10RenderView4InitEiiRK19RendererPreferencesPN4base14RefCountedDataIiEEi
-   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEi
-   fun:_ZN12RenderThread15OnCreateNewViewEiRK19RendererPreferencesRK14WebPreferencesi
-   fun:_Z16DispatchToMethodI12RenderThreadMS0_FviRK19RendererPreferencesRK14WebPreferencesiEiS1_S4_iEvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-   fun:_ZN3IPC16MessageWithTupleI6Tuple4Ii19RendererPreferences14WebPreferencesiEE8DispatchI12RenderThreadMS7_FviRKS2_RKS3_iEEEbPKNS_7MessageEPT_T0_
-   fun:_ZN12RenderThread24OnControlMessageReceivedERKN3IPC7MessageE
-   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-}
-{
-   bug_27313
-   Memcheck:Leak
-   ...
-   fun:_ZN24SkScalerContext_FreeTypeC1EPK12SkDescriptor
-   fun:_ZN10SkFontHost19CreateScalerContextEPK12SkDescriptor
-   fun:_ZN15SkScalerContext6CreateEPK12SkDescriptor
-   fun:_ZN12SkGlyphCacheC1EPK12SkDescriptor
-   fun:_ZN12SkGlyphCache10VisitCacheEPK12SkDescriptorPFbPKS_PvES5_
-   fun:_Z19FontMetricsDescProcPK12SkDescriptorPv
-   fun:_ZNK7SkPaint14descriptorProcEPK8SkMatrixPFvPK12SkDescriptorPvES6_
-   fun:_ZNK7SkPaint14getFontMetricsEPNS_11FontMetricsEf
-   fun:_ZN7WebCore14SimpleFontData12platformInitEv
-   fun:_ZN7WebCore14SimpleFontDataC1ERKNS_16FontPlatformDataEbbPNS_11SVGFontDataE
-}
-{
-   bug_27317
-   Memcheck:Leak
-   ...
-   fun:_ZN6WebKit17WebDataSourceImpl6createERKN7WebCore15ResourceRequestERKNS1_14SubstituteDataE
-   fun:_ZN6WebKit21FrameLoaderClientImpl20createDocumentLoaderERKN7WebCore15ResourceRequestERKNS1_14SubstituteDataE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-   fun:_ZN6WebKit12WebFrameImpl21initializeAsMainFrameEPNS_11WebViewImplE
-   fun:_ZN6WebKit11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
-   fun:_ZN10RenderView4InitEiiRK19RendererPreferencesPN4base14RefCountedDataIiEEi
-   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEi
-   fun:_ZN12RenderThread15OnCreateNewViewEiRK19RendererPreferencesRK14WebPreferencesi
-}
-{
-   # See comment in app_launcher.cc
-   app_launcher_leak
-   Memcheck:Leak
-   ...
-   fun:_ZN8chromeos11AppLauncherC1Ev
 }
 # The following three suppressions are related to the workers code.
 {
@@ -1793,211 +1232,6 @@
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
-   bug_27989
-   Memcheck:Leak
-   fun:_Znam
-   fun:_ZN2v88internalL8NewArrayIPNS0_6ObjectEEEPT_i
-   fun:_ZN2v88internal22HandleScopeImplementer18GetSpareOrNewBlockEv
-   fun:_ZN2v88internal11HandleScope6ExtendEv
-   fun:_ZN2v88internal11HandleScope12CreateHandleINS0_6StringEEEPPT_S5_
-   fun:_ZN2v88internal6HandleINS0_6StringEEC2EPS2_
-   fun:_ZN2v88internal6HandleINS0_6StringEEC1EPS2_
-   fun:_ZN2v88internal7Factory12LookupSymbolENS0_6VectorIKcEE
-   fun:_ZN2v88internal24AstBuildingParserFactory12LookupSymbolEPKci
-   fun:_ZN2v88internal6Parser15ParseIdentifierEPb
-   fun:_ZN2v88internal6Parser22ParsePrimaryExpressionEPb
-   fun:_ZN2v88internal6Parser36ParseMemberWithNewPrefixesExpressionEPNS0_13PositionStackEPb
-   fun:_ZN2v88internal6Parser21ParseMemberExpressionEPb
-   fun:_ZN2v88internal6Parser27ParseLeftHandSideExpressionEPb
-   fun:_ZN2v88internal6Parser22ParsePostfixExpressionEPb
-   fun:_ZN2v88internal6Parser20ParseUnaryExpressionEPb
-   fun:_ZN2v88internal6Parser21ParseBinaryExpressionEibPb
-   fun:_ZN2v88internal6Parser26ParseConditionalExpressionEbPb
-   fun:_ZN2v88internal6Parser25ParseAssignmentExpressionEbPb
-   fun:_ZN2v88internal6Parser15ParseExpressionEbPb
-   fun:_ZN2v88internal6Parser22ParsePrimaryExpressionEPb
-   fun:_ZN2v88internal6Parser36ParseMemberWithNewPrefixesExpressionEPNS0_13PositionStackEPb
-}
-{
-   bug_27989
-   Memcheck:Leak
-   fun:_Znam
-   fun:_ZN2v88internalL8NewArrayIPNS0_6ObjectEEEPT_i
-   fun:_ZN2v88internal22HandleScopeImplementer18GetSpareOrNewBlockEv
-   fun:_ZN2v88internal11HandleScope6ExtendEv
-   fun:_ZN2v88internal11HandleScope12CreateHandleINS0_6StringEEEPPT_S5_
-   fun:_ZN2v88internal6HandleINS0_6StringEEC2EPS2_
-   fun:_ZN2v88internal6HandleINS0_6StringEEC1EPS2_
-   fun:_ZN2v88internal7Factory12LookupSymbolENS0_6VectorIKcEE
-   fun:_ZN2v88internal24AstBuildingParserFactory12LookupSymbolEPKci
-   fun:_ZN2v88internal6Parser15ParseIdentifierEPb
-   fun:_ZN2v88internal6Parser22ParsePrimaryExpressionEPb
-   fun:_ZN2v88internal6Parser36ParseMemberWithNewPrefixesExpressionEPNS0_13PositionStackEPb
-   fun:_ZN2v88internal6Parser21ParseMemberExpressionEPb
-   fun:_ZN2v88internal6Parser27ParseLeftHandSideExpressionEPb
-   fun:_ZN2v88internal6Parser22ParsePostfixExpressionEPb
-   fun:_ZN2v88internal6Parser20ParseUnaryExpressionEPb
-   fun:_ZN2v88internal6Parser21ParseBinaryExpressionEibPb
-   fun:_ZN2v88internal6Parser26ParseConditionalExpressionEbPb
-   fun:_ZN2v88internal6Parser25ParseAssignmentExpressionEbPb
-   fun:_ZN2v88internal6Parser15ParseExpressionEbPb
-   fun:_ZN2v88internal6Parser34ParseExpressionOrLabelledStatementEPNS0_8ZoneListINS0_6HandleINS0_6StringEEEEEPb
-   fun:_ZN2v88internal6Parser14ParseStatementEPNS0_8ZoneListINS0_6HandleINS0_6StringEEEEEPb
-}
-{
-   bug_27989
-   Memcheck:Leak
-   fun:_Znam
-   fun:_ZN2v88internalL8NewArrayIPNS0_6ObjectEEEPT_i
-   fun:_ZN2v88internal22HandleScopeImplementer18GetSpareOrNewBlockEv
-   fun:_ZN2v88internal11HandleScope6ExtendEv
-   fun:_ZN2v88internal11HandleScope12CreateHandleINS0_6StringEEEPPT_S5_
-   fun:_ZN2v88internal6HandleINS0_6StringEEC2EPS2_
-   fun:_ZN2v88internal6HandleINS0_6StringEEC1EPS2_
-   fun:_ZN2v88internal7Factory12LookupSymbolENS0_6VectorIKcEE
-   fun:_ZN2v88internal24AstBuildingParserFactory12LookupSymbolEPKci
-   fun:_ZN2v88internal6Parser15ParseIdentifierEPb
-   fun:_ZN2v88internal6Parser22ParsePrimaryExpressionEPb
-   fun:_ZN2v88internal6Parser36ParseMemberWithNewPrefixesExpressionEPNS0_13PositionStackEPb
-   fun:_ZN2v88internal6Parser21ParseMemberExpressionEPb
-   fun:_ZN2v88internal6Parser27ParseLeftHandSideExpressionEPb
-   fun:_ZN2v88internal6Parser22ParsePostfixExpressionEPb
-   fun:_ZN2v88internal6Parser20ParseUnaryExpressionEPb
-   fun:_ZN2v88internal6Parser21ParseBinaryExpressionEibPb
-   fun:_ZN2v88internal6Parser26ParseConditionalExpressionEbPb
-   fun:_ZN2v88internal6Parser25ParseAssignmentExpressionEbPb
-   fun:_ZN2v88internal6Parser14ParseArgumentsEPb
-   fun:_ZN2v88internal6Parser27ParseLeftHandSideExpressionEPb
-   fun:_ZN2v88internal6Parser22ParsePostfixExpressionEPb
-}
-{
-   bug_27989
-   Memcheck:Leak
-   fun:_Znam
-   fun:_ZN2v88internalL8NewArrayIPNS0_6ObjectEEEPT_i
-   fun:_ZN2v88internal22HandleScopeImplementer18GetSpareOrNewBlockEv
-   fun:_ZN2v88internal11HandleScope6ExtendEv
-   fun:_ZN2v88internal11HandleScope12CreateHandleINS0_6StringEEEPPT_S5_
-   fun:_ZN2v88internal6HandleINS0_6StringEEC2EPS2_
-   fun:_ZN2v88internal6HandleINS0_6StringEEC1EPS2_
-   fun:_ZN2v88internal15FunctionLiteralC2ENS0_6HandleINS0_6StringEEEPNS0_5ScopeEPNS0_8ZoneListIPNS0_9StatementEEEiibNS2_INS0_10FixedArrayEEEiiib
-   fun:_ZN2v88internal15FunctionLiteralC1ENS0_6HandleINS0_6StringEEEPNS0_5ScopeEPNS0_8ZoneListIPNS0_9StatementEEEiibNS2_INS0_10FixedArrayEEEiiib
-   fun:_ZN2v88internal6Parser20ParseFunctionLiteralENS0_6HandleINS0_6StringEEEiNS1_19FunctionLiteralTypeEPb
-   fun:_ZN2v88internal6Parser24ParseFunctionDeclarationEPb
-   fun:_ZN2v88internal6Parser14ParseStatementEPNS0_8ZoneListINS0_6HandleINS0_6StringEEEEEPb
-   fun:_ZN2v88internal6Parser19ParseSourceElementsEPNS0_15ZoneListWrapperINS0_9StatementEEEiPb
-   fun:_ZN2v88internal6Parser12ParseProgramENS0_6HandleINS0_6StringEEEPN7unibrow15CharacterStreamEb
-   fun:_ZN2v88internal7MakeASTEbNS0_6HandleINS0_6ScriptEEEPNS_9ExtensionEPNS0_14ScriptDataImplE
-   fun:_ZN2v88internalL12MakeFunctionEbbNS0_8Compiler15ValidationStateENS0_6HandleINS0_6ScriptEEENS3_INS0_7ContextEEEPNS_9ExtensionEPNS0_14ScriptDataImplE
-   fun:_ZN2v88internal8Compiler7CompileENS0_6HandleINS0_6StringEEENS2_INS0_6ObjectEEEiiPNS_9ExtensionEPNS0_14ScriptDataImplE
-   fun:_ZN2v88internal5Debug21CompileDebuggerScriptEi
-   fun:_ZN2v88internal5Debug4LoadEv
-   fun:_ZN2v88internal13EnterDebuggerC2Ev
-   fun:_ZN2v88internal13EnterDebuggerC1Ev
-   fun:_ZN2v88internal8Debugger4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEPb
-}
-{
-   bug_27993
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeIP24DOMStorageDispatcherHostEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE14_M_create_nodeERKS1_
-   fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE9_M_insertEPSt18_Rb_tree_node_baseS9_RKS1_
-   fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE13insert_uniqueERKS1_
-   fun:_ZNSt3setIP24DOMStorageDispatcherHostSt4lessIS1_ESaIS1_EE6insertERKS1_
-   fun:_ZN17DOMStorageContext22RegisterDispatcherHostEP24DOMStorageDispatcherHost
-   fun:_ZN24DOMStorageDispatcherHost4InitEi
-   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
-   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
-   fun:event_process_active
-   fun:event_base_loop
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
-   bug_28026
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK7WebCore11CSSSelector17extractPseudoTypeEv
-   fun:_ZNK7WebCore11CSSSelector10pseudoTypeEv
-   fun:_Z10cssyyparsePv
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
-   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKNS_6StringEb
-   fun:_ZN7WebCoreL12parseUASheetERKNS_6StringE
-   fun:_ZN7WebCoreL12parseUASheetEPKcj
-   fun:_ZN7WebCoreL22loadSimpleDefaultStyleEv
-   fun:_ZN7WebCore16CSSStyleSelectorC2EPNS_8DocumentEPNS_14StyleSheetListEPNS_13CSSStyleSheetES6_PKN3WTF6VectorINS7_6RefPtrIS5_EELm0EEEbb
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentEPNS_14StyleSheetListEPNS_13CSSStyleSheetES6_PKN3WTF6VectorINS7_6RefPtrIS5_EELm0EEEbb
-   fun:_ZN7WebCore8Document6attachEv
-   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
-   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-   fun:_ZN6WebKit12WebFrameImpl21initializeAsMainFrameEPNS_11WebViewImplE
-   fun:_ZN6WebKit11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
-   fun:_ZN10RenderView4InitEliRK19RendererPreferencesPN4base14RefCountedDataIiEEi
-   fun:_ZN10RenderView6CreateEP16RenderThreadBaseliRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEi
-   fun:_ZN12RenderThread15OnCreateNewViewElRK19RendererPreferencesRK14WebPreferencesi
-   fun:_Z16DispatchToMethodI12RenderThreadMS0_FvlRK19RendererPreferencesRK14WebPreferencesiElS1_S4_iEvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-}
-{
-   bug_28027
-   Memcheck:Addr4
-   fun:_ZN3WTF17ChromiumThreading37scheduleDispatchFunctionsOnMainThreadEv
-   fun:_ZN3WTF37scheduleDispatchFunctionsOnMainThreadEv
-   fun:_ZN3WTF16callOnMainThreadEPFvPvES0_
-   fun:_ZN7WebCore22ScriptExecutionContext20postTaskToMainThreadEN3WTF10PassOwnPtrINS0_4TaskEEE
-   fun:_ZN7WebCore8Document8postTaskEN3WTF10PassOwnPtrINS_22ScriptExecutionContext4TaskEEE
-   fun:_ZN6WebKit13WebWorkerBase16postTaskToLoaderEN3WTF10PassOwnPtrIN7WebCore22ScriptExecutionContext4TaskEEE
-   fun:_ZN7WebCore22WorkerThreadableLoader16MainThreadBridgeC2EN3WTF10PassRefPtrINS_29ThreadableLoaderClientWrapperEEERNS_17WorkerLoaderProxyERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoader16MainThreadBridgeC1EN3WTF10PassRefPtrINS_29ThreadableLoaderClientWrapperEEERNS_17WorkerLoaderProxyERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoaderC2EPNS_13WorkerContextEPNS_22ThreadableLoaderClientERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoaderC1EPNS_13WorkerContextEPNS_22ThreadableLoaderClientERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoader6createEPNS_13WorkerContextEPNS_22ThreadableLoaderClientERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoader25loadResourceSynchronouslyEPNS_13WorkerContextERKNS_15ResourceRequestERNS_22ThreadableLoaderClientERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore18WorkerScriptLoader17loadSynchronouslyEPNS_22ScriptExecutionContextERKNS_4KURLENS_24CrossOriginRequestPolicyE
-   fun:_ZN7WebCore13WorkerContext13importScriptsERKN3WTF6VectorINS_6StringELm0EEERKS3_iRi
-   fun:_ZN7WebCore8V8Custom36v8WorkerContextImportScriptsCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
-   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
-}
-{
-   bug_28027
-   Memcheck:Addr4
-   fun:_ZN3WTF17ChromiumThreading37scheduleDispatchFunctionsOnMainThreadEv
-   fun:_ZN3WTF37scheduleDispatchFunctionsOnMainThreadEv
-   fun:_ZN3WTF16callOnMainThreadEPFvPvES0_
-   fun:_ZN7WebCore8Document8postTaskEN3WTF10PassOwnPtrINS_22ScriptExecutionContext4TaskEEE
-   fun:_ZN6WebKit13WebWorkerBase16postTaskToLoaderEN3WTF10PassOwnPtrIN7WebCore22ScriptExecutionContext4TaskEEE
-   fun:_ZN7WebCore22WorkerThreadableLoader16MainThreadBridgeC2EN3WTF10PassRefPtrINS_29ThreadableLoaderClientWrapperEEERNS_17WorkerLoaderProxyERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoader16MainThreadBridgeC1EN3WTF10PassRefPtrINS_29ThreadableLoaderClientWrapperEEERNS_17WorkerLoaderProxyERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoaderC2EPNS_13WorkerContextEPNS_22ThreadableLoaderClientERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoaderC1EPNS_13WorkerContextEPNS_22ThreadableLoaderClientERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoader6createEPNS_13WorkerContextEPNS_22ThreadableLoaderClientERKNS_6StringERKNS_15ResourceRequestERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore22WorkerThreadableLoader25loadResourceSynchronouslyEPNS_13WorkerContextERKNS_15ResourceRequestERNS_22ThreadableLoaderClientERKNS_23ThreadableLoaderOptionsE
-   fun:_ZN7WebCore18WorkerScriptLoader17loadSynchronouslyEPNS_22ScriptExecutionContextERKNS_4KURLENS_24CrossOriginRequestPolicyE
-   fun:_ZN7WebCore13WorkerContext13importScriptsERKN3WTF6VectorINS_6StringELm0EEERKS3_iRi
-   fun:_ZN7WebCore8V8Custom36v8WorkerContextImportScriptsCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
-   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
-   fun:_ZN2v86Script3RunEv
 }
 {
    bug_28200
@@ -2090,23 +1324,6 @@
    fun:tooltip_popup_timeout
    fun:gdk_threads_dispatch
 }
-# This task is created quite frequently and may leak on shutdown depending on
-# ordering.
-{
-   chromeos_network_task
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z17NewRunnableMethodIN8chromeos14NetworkLibraryEMS1_FviEiEP14CancelableTaskPT_T0_RKT1_
-   fun:_ZN8chromeos14NetworkLibrary24NetworkTrafficTimerFiredEv
-   fun:_Z16DispatchToMethodIN8chromeos14NetworkLibraryEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN4base9BaseTimerIN8chromeos14NetworkLibraryELb0EE9TimerTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
 {
    bug_28633
    Memcheck:Leak
@@ -2132,18 +1349,6 @@
    fun:_Znw*
    fun:_Z9SerializeRKSt6vectorI10UserScriptSaIS0_EE
    fun:_ZN16UserScriptMaster14ScriptReloader7RunScanE8FilePathSt6vectorI10UserScriptSaIS3_EE
-}
-{
-   bug_29115
-   Memcheck:Leak
-   ...
-   fun:_Z15sk_malloc_flagsjj
-   fun:_Z15sk_malloc_throwj
-   fun:_ZN7SkDeque9push_backEv
-   fun:_ZN8SkCanvas12internalSaveENS_9SaveFlagsE
-   fun:_ZN8SkCanvas4saveENS_9SaveFlagsE
-   fun:_ZN19PlatformContextSkia4saveEv
-   fun:_ZN7WebCore15GraphicsContext17savePlatformStateEv
 }
 {
    bug_29675

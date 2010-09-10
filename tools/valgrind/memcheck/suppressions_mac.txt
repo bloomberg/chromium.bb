@@ -98,21 +98,6 @@
    fun:_CFBundleDlfcnCheckLoaded
 }
 {
-   # Nasty invalid write. Reported to Apple as rdar://7240303. Supposedly fixed
-   # in Snow Leopard; should be verified and removed if so.
-   bug_18189
-   Memcheck:Addr8
-   fun:sseCGSFill8by1
-   fun:argb32_mark_constshape
-   fun:argb32_mark
-   fun:ripl_BltShape
-   fun:ripc_Render
-   fun:ripc_DrawRects
-   fun:CGContextFillRects
-   fun:CGContextFillRect
-   fun:NSRectFill
-}
-{
    bug_18215
    Memcheck:Cond
    fun:_DPSNextEvent
@@ -146,24 +131,6 @@
    fun:CFArrayCreateMutableCopy
    fun:_ZN8Security12KeychainCore5Trust8evaluateEv
 }
-{
-   # Invalid read
-   bug_20508a
-   Memcheck:Addr4
-   ...
-   fun:ripc_DrawGlyphs
-   fun:draw_glyphs
-   fun:CGContextShowGlyphsWithAdvances
-}
-{
-   # Invalid read
-   bug_20508b
-   Memcheck:Addr4
-   fun:_eATSFontGetGlyphIDsForGlyphNames
-   fun:ATSFontGetGlyphIDsForGlyphNames
-   fun:ats_font_get_glyphs_for_glyph_names
-   fun:get_glyphs_for_glyph_names
-}
 # See description of bug_20653a/b in suppressions.txt.
 {
    bug_20653a_mac
@@ -188,34 +155,6 @@
    fun:_cache_collect_free
    fun:_cache_fill
 }
-# Unaddressable bytes passed to chmod_extended() and fchmod_extended() syscalls.
-# Being discussed on valgrind-developers@lists.sf.net
-# TODO(glider): update
-{
-   chmod_extended_unaddressable
-   Memcheck:Param
-   chmod_extended(xsecurity)
-   fun:__chmod_extended
-   fun:chmodx_np
-   fun:copyfile
-}
-{
-   fchmod_extended_unaddressable
-   Memcheck:Param
-   fchmod_extended(xsecurity)
-   fun:__fchmod_extended
-   fun:fchmodx_np
-   fun:copyfile_internal
-   fun:copyfile
-}
-
-# See http://openradar.appspot.com/radar?id=574401
-{
-   DKeyHas8Words_below_stack
-   Memcheck:Addr4
-   fun:DKeyHas8Words
-}
-
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
@@ -259,58 +198,8 @@
    fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE	
    fun:_ZN4dyld24initializeMainExecutableEv	
 }
-{
-   # jrg thinks this is probably a bug in Cocoa but is harmless.  We
-   # can hit it by using --homepage=about:blank, which triggers a
-   # location bar focus earlier than normal (earlier than when a
-   # window is shown).  To "work around" the problem for valgrind, we
-   # could call for example call [NSWindow setInitialFirstResponder:]
-   # instead of [NSWindow makeFirstResponder:] if the window isn't
-   # visible.  However, these contortions are ugly.  since the
-   # needsDisplay region gets reset when the window is shown, it
-   # really doesn't matter what we do with it before then.
-   Mac_NSIsEmptyRect_Cond
-   Memcheck:Cond
-   fun:NSIsEmptyRect
-   fun:-[NSRegion isEmpty]
-   fun:-[NSRegion subtractRegion:]
-   fun:-[NSWindow _subtractFromNeedsDisplayRegion:]
-   ...
-   fun:-[NSWindow makeKeyAndOrderFront:]
-   fun:_ZN18BrowserWindowCocoa4ShowEv
-   ...
-   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
-   ...
-   fun:ChromeMain
-   fun:main
-}
-{
-   # Same as above -- touching a region we'll throw away soon.
-   Mac_NSUnionRect_Cond
-   Memcheck:Cond
-   fun:NSUnionRect
-   fun:-[NSRegion addRect:]
-   ...
-   fun:-[AutocompleteTextField becomeFirstResponder]
-   fun:-[NSWindow makeFirstResponder:]
-   fun:_ZN23AutocompleteEditViewMac13FocusLocationEb
-   ...
-   fun:_ZN13TabStripModel14AddTabContentsEP11TabContentsiji
-}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
-{
-   # Mac test_shell_tests, see http://crbug.com/9561
-   bug_9561
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:ripc_GetClipState
-   fun:ripc_GetRenderingState
-   fun:ripc_DrawRects
-   fun:CGContextFillRects
-   fun:CGContextFillRect
-   fun:_ZN7WebCore15GraphicsContext8fillRectERKNS_9FloatRectERKNS_5ColorE
-}
 {
   bug_17297
   Memcheck:Leak
@@ -354,51 +243,7 @@
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
 }
 {
-   bug_20814
-   Memcheck:Addr4
-   fun:_ZN10CLVContextC2EPKvm
-   fun:_Z26getAllCarbonLazyValues2000v
-   fun:CLVVisitValuesForKey
-   fun:INIT_ResourceManager
-   fun:CurResFile
-   ...
-   fun:_ZN5NPAPI12_GLOBAL__N_117ReadSTRPluginInfoERK8FilePathP10__CFBundleP13WebPluginInfo
-   fun:_ZN5NPAPI9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
-}
-{
-   bug_21280
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   ...
-   fun:ATSFontLoadUnicodeCharacterSet
-   ...
-   fun:__NSFontInstanceInfoInitializeMetricsInfo
-   ...
-   fun:-[NSFont boundingRectForGlyph:]
-}
-{
-   bug_21280_b
-   Memcheck:Addr2
-   fun:CFRetain
-   fun:CFDictionarySetValue
-   fun:_ZNK9TBaseFont20SetAttributeInternalEPKvS1_
-   fun:_ZNK9TBaseFont16CopyCharacterSetEv
-   fun:-[__NSFontTypefaceInfo _nominalCharacterCoverage]
-   fun:-[__NSSharedFontInstanceInfo _characterCoverage]
-   fun:__NSFontInstanceInfoInitializeMetricsInfo
-   fun:-[__NSSharedFontInstanceInfo _numberOfGlyphs]
-   fun:-[NSFont boundingRectForGlyph:]
-}
-{
-   bug_21286
-   Memcheck:Leak
-   fun:_Znw*
-   fun:sendSimpleEventToSelf
-   fun:aeInitializeFromHIToolbox
-   fun:INIT_AppleEvents
-}
-{
-   bug_21479
+   bug_21479a
    Memcheck:Leak
    fun:malloc_zone_malloc
    fun:_CFRuntimeCreateInstance
@@ -408,76 +253,13 @@
    fun:+[NSPasteboard pasteboardWithUniqueName]
 }
 {
-   bug_21479
+   bug_21479b
    Memcheck:Leak
    fun:malloc_zone_malloc
    fun:_CFRuntimeCreateInstance
    fun:CFPasteboardCreate
    fun:+[NSPasteboard _pasteboardWithName:]
    fun:-[FindPasteboard findPboard]
-}
-{
-   bug_22021
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMalloc*
-   ...
-   fun:_ZN7WebCore19V8EventListenerList3addEPNS_15V8EventListenerE
-}
-{
-   bug_22544
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   fun:__CFArrayInit
-   fun:CFArrayCreateMutableCopy
-   fun:_ZN3net22MacTrustedCertificates27CopyTrustedCertificateArrayEv
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-}
-{
-   bug_23416
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue16WebURLLoaderImplC2Ev
-   ...
-   fun:_ZN11webkit_glue20ImageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameEiiP14CallbackRunnerI6Tuple2IPS0_RK8SkBitmapEE
-   fun:_ZN10RenderView13DownloadImageEiRK4GURLi
-}
-{
-   bug_25648
-   Memcheck:Leak
-   fun:malloc
-   fun:sqlite3MemMalloc
-   ...
-   fun:yy_reduce
-   fun:sqlite3Parser
-   ...
-   fun:_ZN7history15HistoryDatabase4InitERK8FilePathS3_
-}
-{
-   bug_25656
-   Memcheck:Addr4
-   ...
-   fun:bestBtreeIndex
-   fun:sqlite3WhereBegin
-   fun:sqlite3Select
-   fun:yy_reduce
-   fun:sqlite3Parser
-   ...
-   fun:_ZN7history14HistoryBackend*
-}
-{
-   bug_25661
-   Memcheck:Addr4
-   fun:_ZNK10scoped_ptrI11ChildThreadE3getEv
-   fun:_ZN12ChildProcess11main_threadEv
-   fun:_ZN11ChildThread7currentEv
-   fun:_ZN25WebMessagePortChannelImpl11postMessageERKN6WebKit9WebStringEPNS0_9WebVectorIPNS0_21WebMessagePortChannelEEE
-   fun:_ZN7WebCore26PlatformMessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS_18MessagePortChannel9EventDataEEE
-   fun:_ZN7WebCore18MessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS0_9EventDataEEE
-   fun:_ZN7WebCore11MessagePort11postMessageEN3WTF10PassRefPtrINS_21SerializedScriptValueEEEPKNS1_6VectorINS1_6RefPtrIS0_EELm1EEERi
-   fun:_ZN7WebCore8V8Custom32v8MessagePortPostMessageCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
 }
 {
    bug_27315
@@ -497,17 +279,6 @@
    fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
    fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
    fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
-}
-{
-   bug_27316
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z17NewRunnableMethodI25WebMessagePortChannelImplMS0_FvRKN6WebKit9WebStringEPNS1_9WebVectorIPNS1_21WebMessagePortChannelEEEES2_S9_EP14CancelableTaskPT_T0_RKT1_RKT2_
-   fun:_ZN25WebMessagePortChannelImpl11postMessageERKN6WebKit9WebStringEPNS0_9WebVectorIPNS0_21WebMessagePortChannelEEE
-   fun:_ZN7WebCore26PlatformMessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS_18MessagePortChannel9EventDataEEE
-   fun:_ZN7WebCore18MessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS0_9EventDataEEE
-   fun:_ZN7WebCore11MessagePort11postMessageEN3WTF10PassRefPtrINS_21SerializedScriptValueEEEPKNS1_6VectorINS1_6RefPtrIS0_EELm1EEERi
-   fun:_ZN7WebCore8V8Custom32v8MessagePortPostMessageCallbackERKN2v89ArgumentsE
 }
 {
    bug_27644
@@ -531,16 +302,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_27991
-   Memcheck:Addr4
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base24MessagePumpCFRunLoopBase7RunWorkEv
-   fun:_ZN4base24MessagePumpCFRunLoopBase13RunWorkSourceEPv
-   fun:CFRunLoopRunSpecific
-}
-{
    bug_28847a
    Memcheck:Leak
    fun:_Znw*
@@ -555,32 +316,6 @@
    fun:_ZN17WorkerProcessHost4InitEv
    fun:_ZN13WorkerService12CreateWorkerERK4GURLbbRKSbItN4base20string16_char_traitsESaItEEiiPN3IPC7Message6SenderEi
    fun:_ZN21ResourceMessageFilter14OnCreateWorkerERK4GURLbRKSbItN4base20string16_char_traitsESaItEEiPi
-}
-{
-   bug_29325
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11ProfileImplC2ERK8FilePath
-   fun:_ZN11ProfileImplC1ERK8FilePath
-   fun:_ZN7Profile13CreateProfileERK8FilePath
-   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
-   fun:_ZN14ProfileManager10GetProfileERK8FilePath
-   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
-}
-{
-   bug_28071
-   Memcheck:Addr4
-   fun:_ZN10CLVContextC2EPKvm
-   fun:_Z26getAllCarbonLazyValues2000v
-   fun:CLVVisitValuesForKey
-   fun:aeInstallLazyEventHandlers
-   fun:AEGetEventHandler
-   fun:AEGetSpecialHandler
-   fun:_Z35_findSysPreHIToolboxDispatchHandlermmPl
-   fun:_Z20aeDispatchAppleEventPK6AEDescPS_mPh
-   fun:_Z25dispatchEventAndSendReplyPK6AEDescPS_
-   fun:aeProcessAppleEvent
-   fun:AEProcessAppleEvent
 }
 {
    bug_28072a
@@ -608,77 +343,6 @@
    fun:_ZN7history15HistoryDatabase4InitERK8FilePathS3_
    fun:_ZN7history14HistoryBackend8InitImplEv
    fun:_ZN7history14HistoryBackend4InitEb
-}
-{
-   bug_28073
-   Memcheck:Addr4
-   fun:_ZN10CLVContextC2EPKvm
-   fun:_Z26getAllCarbonLazyValues2000v
-   fun:CLVVisitValuesForKey
-   fun:aeInstallLazyEventHandlers
-   fun:AEGetEventHandler
-   fun:AEGetSpecialHandler
-   fun:_Z35_findSysPreHIToolboxDispatchHandlermmPl
-   fun:_Z20aeDispatchAppleEventPK6AEDescPS_mPh
-   fun:_Z25dispatchEventAndSendReplyPK6AEDescPS_
-   fun:aeProcessAppleEvent
-   fun:AEProcessAppleEvent
-}
-{
-   # This may be category 1, but putting here for now and
-   # someone who knows better has to look into this.
-   bug_30264a
-   Memcheck:Value4
-   fun:_ZNK10CMMConvLut7ConvertER10CMMMinBitsP14CMMRuntimeInfomm
-   fun:_Z16CMMProcessBitmapP15CMMBitmapParams
-   fun:DoMatchBitmap
-   fun:CWMatchBitmap
-   fun:ConvertImageGeneric
-   fun:CMSColorWorldConvertData
-   fun:CMSTransformConvertData
-   fun:CGCMSInterfaceTransformConvertData
-   fun:CGColorTransformConvertData
-   fun:img_colormatch_read
-   fun:img_alphamerge_read
-   fun:img_data_lock
-   fun:CGSImageDataLock
-   fun:ripc_AcquireImage
-   fun:ripc_DrawImage
-   fun:CGContextDrawImage
-   fun:_ZN3gfx17CGImageToSkBitmapEP7CGImage
-   fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhm
-   ...
-   fun:_ZN17ExtensionUnpacker15AddDecodedImageERK8FilePath
-   fun:_ZN17ExtensionUnpacker3RunEv
-   fun:_ZN26SandboxedExtensionUnpacker5StartEv
-}
-{
-   # This may be category 1, but putting here for now and
-   # someone who knows better has to look into this.
-   bug_30264b
-   Memcheck:Cond
-   fun:_ZNK10CMMMtxOnly10ConvertMinE10CMM3x3Type10CMM3x1TypeR12CMMMinBuffermm
-   fun:_ZNK21CMMConvMatrixTemplateI10CMMMtxOnly22CMMConvGrayToRGBMatrixE7ConvertER10CMMMinBitsP14CMMRuntimeInfomm
-   fun:_Z16CMMProcessBitmapP15CMMBitmapParams
-   fun:DoMatchBitmap
-   fun:CWMatchBitmap
-   fun:ConvertImageGeneric
-   fun:CMSColorWorldConvertData
-   fun:CMSTransformConvertData
-   fun:CGCMSInterfaceTransformConvertData
-   fun:CGColorTransformConvertData
-   fun:img_colormatch_read
-   fun:img_alphamerge_read
-   fun:img_data_lock
-   fun:CGSImageDataLock
-   fun:ripc_AcquireImage
-   fun:ripc_DrawImage
-   fun:CGContextDrawImage
-   fun:_ZN3gfx17CGImageToSkBitmapEP7CGImage
-   fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhm
-   ...
-   fun:_ZN17ExtensionUnpacker15AddDecodedImageERK8FilePath
-   fun:_ZN17ExtensionUnpacker3RunEv
 }
 {
    bug_30632a
