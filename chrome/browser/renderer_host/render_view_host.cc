@@ -1383,7 +1383,7 @@ void RenderViewHost::OnMsgRunFileChooser(
   RenderViewHostDelegate::FileSelect* file_select_delegate =
       delegate()->GetFileSelectDelegate();
   if (file_select_delegate)
-    file_select_delegate->RunFileChooser(params);
+    file_select_delegate->RunFileChooser(this, params);
 }
 
 void RenderViewHost::OnMsgRunJavaScriptMessage(

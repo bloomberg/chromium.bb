@@ -2,28 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_FILE_SELECT_HELPER_H_
-#define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_FILE_SELECT_HELPER_H_
+#ifndef CHROME_BROWSER_FILE_SELECT_HELPER_H_
+#define CHROME_BROWSER_FILE_SELECT_HELPER_H_
 #pragma once
 
 #include <vector>
 
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "net/base/directory_lister.h"
 
+class Profile;
 class RenderViewHost;
-class TabContents;
 struct ViewHostMsg_RunFileChooser_Params;
 
-class TabContentsFileSelectHelper
+class FileSelectHelper
     : public SelectFileDialog::Listener,
       public net::DirectoryLister::DirectoryListerDelegate,
-      public RenderViewHostDelegate::FileSelect {
+      public RenderViewHostDelegate::FileSelect,
+      public NotificationObserver {
  public:
-  explicit TabContentsFileSelectHelper(TabContents* tab_contents);
-
-  ~TabContentsFileSelectHelper();
+  explicit FileSelectHelper(Profile* profile);
+  ~FileSelectHelper();
 
   // SelectFileDialog::Listener
   virtual void FileSelected(const FilePath& path, int index, void* params);
@@ -37,11 +39,14 @@ class TabContentsFileSelectHelper
   virtual void OnListDone(int error);
 
   // RenderViewHostDelegate::FileSelect
-  virtual void RunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
+  virtual void RunFileChooser(RenderViewHost* render_view_host,
+                              const ViewHostMsg_RunFileChooser_Params& params);
 
  private:
-  // Returns the RenderViewHost of tab_contents_.
-  RenderViewHost* GetRenderViewHost();
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Helper method for handling the SelectFileDialog::Listener callbacks.
   void DirectorySelected(const FilePath& path);
@@ -52,9 +57,11 @@ class TabContentsFileSelectHelper
   SelectFileDialog::FileTypeInfo* GetFileTypesFromAcceptType(
       const string16& accept_types);
 
-  // The tab contents this class is helping.  |tab_contents_| owns this object,
-  // so this pointer is guaranteed to be valid.
-  TabContents* tab_contents_;
+  // Profile used to set/retrieve the last used directory.
+  Profile* profile_;
+
+  // The RenderViewHost for the page we are associated with.
+  RenderViewHost* render_view_host_;
 
   // Dialog box used for choosing files to upload from file form fields.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
@@ -69,7 +76,10 @@ class TabContentsFileSelectHelper
   // as the listing proceeds.
   std::vector<FilePath> directory_lister_results_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsFileSelectHelper);
+  // Registrar for notifications regarding our RenderViewHost.
+  NotificationRegistrar notification_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSelectHelper);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_FILE_SELECT_HELPER_H_
+#endif  // CHROME_BROWSER_FILE_SELECT_HELPER_H_

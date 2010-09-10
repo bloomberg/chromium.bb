@@ -605,6 +605,7 @@ class RenderViewHostDelegate {
    public:
     // A file chooser should be shown.
     virtual void RunFileChooser(
+        RenderViewHost* render_view_host,
         const ViewHostMsg_RunFileChooser_Params& params) = 0;
 
    protected:

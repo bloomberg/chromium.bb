@@ -45,6 +45,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/favicon_service.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -79,7 +80,6 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents_file_select_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -2297,7 +2297,7 @@ RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {
 
 RenderViewHostDelegate::FileSelect* TabContents::GetFileSelectDelegate() {
   if (file_select_helper_.get() == NULL)
-    file_select_helper_.reset(new TabContentsFileSelectHelper(this));
+    file_select_helper_.reset(new FileSelectHelper(profile()));
   return file_select_helper_.get();
 }
 

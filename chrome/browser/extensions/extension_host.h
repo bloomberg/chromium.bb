@@ -26,6 +26,7 @@
 
 class Browser;
 class Extension;
+class FileSelectHelper;
 class RenderProcessHost;
 class RenderWidgetHostView;
 class TabContents;
@@ -115,6 +116,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual const GURL& GetURL() const { return url_; }
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual ViewType::Type GetRenderViewType() const;
+  virtual FileSelect* GetFileSelectDelegate();
   virtual int GetBrowserWindowID() const;
   virtual void RenderViewGone(RenderViewHost* render_view_host);
   virtual void DidNavigate(RenderViewHost* render_view_host,
@@ -267,6 +269,9 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Used to measure how long it's been since the host was created.
   PerfTimer since_created_;
+
+  // FileSelectHelper, lazily created.
+  scoped_ptr<FileSelectHelper> file_select_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

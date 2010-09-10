@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/message_box_handler.h"
@@ -675,6 +676,12 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
     render_view_host->EnablePreferredSizeChangedMode(
         kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
   }
+}
+
+RenderViewHostDelegate::FileSelect* ExtensionHost::GetFileSelectDelegate() {
+  if (file_select_helper_.get() == NULL)
+    file_select_helper_.reset(new FileSelectHelper(profile()));
+  return file_select_helper_.get();
 }
 
 int ExtensionHost::GetBrowserWindowID() const {

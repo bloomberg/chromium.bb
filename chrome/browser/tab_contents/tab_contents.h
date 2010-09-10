@@ -69,6 +69,7 @@ class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
 class Extension;
+class FileSelectHelper;
 class InfoBarDelegate;
 class LoadNotificationDetails;
 class MatchPreview;
@@ -82,7 +83,6 @@ class SiteInstance;
 class SkBitmap;
 class TabContents;
 class TabContentsDelegate;
-class TabContentsFileSelectHelper;
 class TabContentsSSLHelper;
 class TabContentsView;
 class URLPattern;
@@ -1074,8 +1074,8 @@ class TabContents : public PageNavigator,
   // BlockedPluginManager, lazily created.
   scoped_ptr<BlockedPluginManager> blocked_plugin_manager_;
 
-  // TabContentsFileSelectHelper, lazily created.
-  scoped_ptr<TabContentsFileSelectHelper> file_select_helper_;
+  // FileSelectHelper, lazily created.
+  scoped_ptr<FileSelectHelper> file_select_helper_;
 
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;
