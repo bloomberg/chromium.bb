@@ -1025,7 +1025,5 @@
    fun:std::vector::push_back
    fun:NotificationRegistrar::Add
    fun:browser_sync::::RegistrationTask::Run
-   ...
-   fun:ProfileSyncServicePreferenceTest::StartSyncService
-   fun:ProfileSyncServicePreferenceTest_*_Test::TestBody
+   fun:MessageLoop::RunTask
 }

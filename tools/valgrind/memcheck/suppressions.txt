@@ -4301,11 +4301,6 @@
    fun:_Z16DispatchToMethodIN12browser_sync15SyncBackendHost4CoreEMS2_FvRKSbIwSt11char_traitsIwESaIwEEPN8sync_api23HttpPostProviderFactoryEbES6_SB_bEvPT_T0_RK6Tuple3IT1_T2_T3_E
    fun:_ZN14RunnableMethodIN12browser_sync15SyncBackendHost4CoreEMS2_FvRKSbIwSt11char_traitsIwESaIwEEPN8sync_api23HttpPostProviderFactoryEbE6Tuple3IS6_SB_bEE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
    bug_55031_b
