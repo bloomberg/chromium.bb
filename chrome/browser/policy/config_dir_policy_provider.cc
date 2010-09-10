@@ -8,8 +8,11 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/json_value_serializer.h"
 
 namespace {
@@ -222,7 +225,7 @@ void PolicyDirWatcher::InitWatcher(
     return;
   }
 
-  if (!Watch(loader->config_dir(), loader.get()))
+  if (!watcher_.Watch(loader->config_dir(), loader.get()))
     loader->OnError();
 
   // There might have been changes to the directory in the time between

@@ -8,8 +8,8 @@
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/json_value_serializer.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Mock;
 
