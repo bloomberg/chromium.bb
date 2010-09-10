@@ -1327,15 +1327,14 @@ bool SyncManager::SyncInternal::Init(
   // Listen to TalkMediator events ourselves
   talk_mediator_->SetDelegate(this);
 
-  LOG(INFO) << "Sync is bringing up SyncSessionContext.";
-
-  // Build a SyncSessionContext and store the worker in it.
-  SyncSessionContext* context = new SyncSessionContext(
-      connection_manager_.get(), dir_manager(), model_safe_worker_registrar);
-
-  // The SyncerThread takes ownership of |context|.  Test mode does not
-  // use an actual syncer thread.
+  // Test mode does not use a syncer context or syncer thread.
   if (!setup_for_test_mode) {
+    // Build a SyncSessionContext and store the worker in it.
+    LOG(INFO) << "Sync is bringing up SyncSessionContext.";
+    SyncSessionContext* context = new SyncSessionContext(
+        connection_manager_.get(), dir_manager(), model_safe_worker_registrar);
+
+    // The SyncerThread takes ownership of |context|.
     syncer_thread_ = new SyncerThread(context);
     allstatus_.WatchSyncerThread(syncer_thread());
 
