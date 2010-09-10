@@ -19,7 +19,21 @@ namespace policy {
 // etc.) should implement a subclass of this class.
 class ConfigurationPolicyProvider {
  public:
-  ConfigurationPolicyProvider() {}
+  // Used for static arrays of policy values that is used to initialize an
+  // instance of the ConfigurationPolicyProvider.
+  struct StaticPolicyValueMap {
+    struct Entry {
+      ConfigurationPolicyStore::PolicyType policy_type;
+      Value::ValueType value_type;
+      const char* name;
+    };
+
+    size_t entry_count;
+    const Entry* entries;
+  };
+
+  explicit ConfigurationPolicyProvider(const StaticPolicyValueMap& policy_map);
+
   virtual ~ConfigurationPolicyProvider() {}
 
   // Must be implemented by provider subclasses to specify the
@@ -45,9 +59,13 @@ class ConfigurationPolicyProvider {
   };
   typedef std::vector<PolicyValueMapEntry> PolicyValueMap;
 
-  // Returns the mapping from policy values to the actual names used by
-  // implementations.
-  static const PolicyValueMap* PolicyValueMapping();
+  const PolicyValueMap& policy_value_map() const {
+    return policy_value_map_;
+  }
+
+ private:
+  // Contains the default mapping from policy values to the actual names.
+  PolicyValueMap policy_value_map_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);

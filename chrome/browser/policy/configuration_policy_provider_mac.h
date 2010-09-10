@@ -17,9 +17,11 @@ namespace policy {
 // provided by Mac OS X's managed preferences.
 class ConfigurationPolicyProviderMac : public ConfigurationPolicyProvider {
  public:
-  ConfigurationPolicyProviderMac();
+  explicit ConfigurationPolicyProviderMac(
+      const StaticPolicyValueMap& policy_map);
   // For testing; takes ownership of |preferences|.
-  explicit ConfigurationPolicyProviderMac(MacPreferences* preferences);
+  ConfigurationPolicyProviderMac(const StaticPolicyValueMap& policy_map,
+                                 MacPreferences* preferences);
   virtual ~ConfigurationPolicyProviderMac() { }
 
   // ConfigurationPolicyProvider method overrides:

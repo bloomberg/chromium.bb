@@ -127,7 +127,9 @@ void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
   MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
-ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin() {
+ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin(
+    const StaticPolicyValueMap& policy_map)
+    : ConfigurationPolicyProvider(policy_map) {
   watcher_ = new GroupPolicyChangeWatcher(this->AsWeakPtr(),
                                           kReloadIntervalMinutes);
   watcher_->Start();
@@ -231,10 +233,9 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
 
 bool ConfigurationPolicyProviderWin::Provide(
     ConfigurationPolicyStore* store) {
-  const PolicyValueMap* mapping = PolicyValueMapping();
-
-  for (PolicyValueMap::const_iterator current = mapping->begin();
-       current != mapping->end(); ++current) {
+  const PolicyValueMap& mapping(policy_value_map());
+  for (PolicyValueMap::const_iterator current = mapping.begin();
+       current != mapping.end(); ++current) {
     std::wstring name = UTF8ToWide(current->name);
     switch (current->value_type) {
       case Value::TYPE_STRING: {

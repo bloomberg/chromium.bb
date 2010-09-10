@@ -13,7 +13,10 @@ namespace policy {
 
 class DummyConfigurationPolicyProvider : public ConfigurationPolicyProvider {
  public:
-  DummyConfigurationPolicyProvider() {}
+  explicit DummyConfigurationPolicyProvider(
+      const StaticPolicyValueMap& policy_map)
+      : ConfigurationPolicyProvider(policy_map) {
+  }
   virtual ~DummyConfigurationPolicyProvider() {}
 
   virtual bool Provide(ConfigurationPolicyStore* store) {

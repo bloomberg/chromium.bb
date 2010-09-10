@@ -234,7 +234,10 @@ void PolicyDirWatcher::InitWatcher(
 
 // ConfigDirPolicyProvider implementation:
 
-ConfigDirPolicyProvider::ConfigDirPolicyProvider(const FilePath& config_dir) {
+ConfigDirPolicyProvider::ConfigDirPolicyProvider(
+    const ConfigurationPolicyProvider::StaticPolicyValueMap& policy_map,
+    const FilePath& config_dir)
+    : ConfigurationPolicyProvider(policy_map) {
   loader_ = new PolicyDirLoader(AsWeakPtr(), config_dir, kSettleIntervalSeconds,
                                 kReloadIntervalMinutes);
   watcher_ = new PolicyDirWatcher;
@@ -255,9 +258,9 @@ bool ConfigDirPolicyProvider::Provide(ConfigurationPolicyStore* store) {
 void ConfigDirPolicyProvider::DecodePolicyValueTree(
     DictionaryValue* policies,
     ConfigurationPolicyStore* store) {
-  const PolicyValueMap* mapping = PolicyValueMapping();
-  for (PolicyValueMap::const_iterator i = mapping->begin();
-       i != mapping->end(); ++i) {
+  const PolicyValueMap& mapping(policy_value_map());
+  for (PolicyValueMap::const_iterator i = mapping.begin();
+       i != mapping.end(); ++i) {
     const PolicyValueMapEntry& entry(*i);
     Value* value;
     if (policies->Get(entry.name, &value) && value->IsType(entry.value_type))

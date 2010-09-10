@@ -79,7 +79,8 @@ class ConfigurationPolicyProviderWin
     CancelableTask* reload_task_;
   };
 
-  ConfigurationPolicyProviderWin();
+  explicit ConfigurationPolicyProviderWin(
+      const StaticPolicyValueMap& policy_map);
   virtual ~ConfigurationPolicyProviderWin();
 
   // ConfigurationPolicyProvider method overrides:

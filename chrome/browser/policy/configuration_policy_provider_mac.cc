@@ -10,20 +10,23 @@
 
 namespace policy {
 
-ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac()
-    : preferences_(new MacPreferences()) {
+ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
+    const StaticPolicyValueMap& policy_map)
+    : ConfigurationPolicyProvider(policy_map),
+      preferences_(new MacPreferences()) {
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
-    MacPreferences* preferences) : preferences_(preferences) {
+    const StaticPolicyValueMap& policy_map, MacPreferences* preferences)
+    : ConfigurationPolicyProvider(policy_map), preferences_(preferences) {
 }
 
 bool ConfigurationPolicyProviderMac::Provide(ConfigurationPolicyStore* store) {
   bool success = true;
-  const PolicyValueMap* mapping = PolicyValueMapping();
+  const PolicyValueMap& mapping(policy_value_map());
 
-  for (PolicyValueMap::const_iterator current = mapping->begin();
-       current != mapping->end(); ++current) {
+  for (PolicyValueMap::const_iterator current = mapping.begin();
+       current != mapping.end(); ++current) {
     scoped_cftyperef<CFStringRef> name(
         base::SysUTF8ToCFStringRef(current->name));
     scoped_cftyperef<CFPropertyListRef> value(

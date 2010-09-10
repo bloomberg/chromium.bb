@@ -6,6 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_mac.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/preferences_mock_mac.h"
@@ -18,29 +19,26 @@ class TestConfigurationPolicyProviderMac
     : public ConfigurationPolicyProviderMac {
  public:
   TestConfigurationPolicyProviderMac() :
-      ConfigurationPolicyProviderMac(new MockPreferences()) { }
+      ConfigurationPolicyProviderMac(
+          ConfigurationPolicyPrefStore::GetChromePolicyValueMap(),
+          new MockPreferences()) { }
   virtual ~TestConfigurationPolicyProviderMac() { }
 
   void AddTestItem(ConfigurationPolicyStore::PolicyType policy,
                    CFPropertyListRef value,
                    bool is_forced);
-
-  typedef std::vector<PolicyValueMapEntry> PolicyValueMap;
-  static const PolicyValueMap* PolicyValueMapping() {
-    return ConfigurationPolicyProvider::PolicyValueMapping();
-  }
 };
 
 void TestConfigurationPolicyProviderMac::AddTestItem(
     ConfigurationPolicyStore::PolicyType policy,
     CFPropertyListRef value,
     bool is_forced) {
-  const PolicyValueMap* mapping = PolicyValueMapping();
-  for (PolicyValueMap::const_iterator current = mapping->begin();
-       current != mapping->end(); ++current) {
-    if (current->policy_type == policy) {
+  const ConfigurationPolicyProvider::StaticPolicyValueMap& mapping =
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap();
+  for (size_t i = 0; i < mapping.entry_count; ++i) {
+    if (mapping.entries[i].policy_type == policy) {
       scoped_cftyperef<CFStringRef> name(
-          base::SysUTF8ToCFStringRef(current->name));
+          base::SysUTF8ToCFStringRef(mapping.entries[i].name));
       static_cast<MockPreferences*>(preferences_.get())->
           AddTestItem(name, value, is_forced);
     }

@@ -148,7 +148,9 @@ class ConfigDirPolicyProvider
     : public ConfigurationPolicyProvider,
       public base::SupportsWeakPtr<ConfigDirPolicyProvider> {
  public:
-  explicit ConfigDirPolicyProvider(const FilePath& config_dir);
+  explicit ConfigDirPolicyProvider(
+      const ConfigurationPolicyProvider::StaticPolicyValueMap& policy_map,
+      const FilePath& config_dir);
   virtual ~ConfigDirPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.

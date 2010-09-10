@@ -39,6 +39,10 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // Creates a ConfigurationPolicyPrefStore that reads recommended policy.
   static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();
 
+  // Returns the default policy value map for Chrome.
+  static ConfigurationPolicyProvider::StaticPolicyValueMap
+      GetChromePolicyValueMap();
+
  private:
   // For unit tests.
   friend class ConfigurationPolicyPrefStoreTest;
@@ -54,6 +58,8 @@ class ConfigurationPolicyPrefStore : public PrefStore,
 
   static const PolicyToPreferenceMapEntry simple_policy_map_[];
   static const PolicyToPreferenceMapEntry proxy_policy_map_[];
+  static const ConfigurationPolicyProvider::StaticPolicyValueMap
+      policy_value_map_;
 
   const CommandLine* command_line_;
   ConfigurationPolicyProvider* provider_;

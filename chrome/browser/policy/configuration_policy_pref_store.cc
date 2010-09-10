@@ -23,6 +23,7 @@
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/policy_constants.h"
 #include "chrome/common/pref_names.h"
 
 namespace policy {
@@ -50,34 +51,38 @@ class ConfigurationPolicyProviderKeeper {
   scoped_ptr<ConfigurationPolicyProvider> recommended_provider_;
 
   static ConfigurationPolicyProvider* CreateManagedProvider() {
+    const ConfigurationPolicyProvider::StaticPolicyValueMap& policy_map =
+        ConfigurationPolicyPrefStore::GetChromePolicyValueMap();
 #if defined(OS_WIN)
-    return new ConfigurationPolicyProviderWin();
+    return new ConfigurationPolicyProviderWin(policy_map);
 #elif defined(OS_MACOSX)
-    return new ConfigurationPolicyProviderMac();
+    return new ConfigurationPolicyProviderMac(policy_map);
 #elif defined(OS_POSIX)
     FilePath config_dir_path;
     if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-      return new ConfigDirPolicyProvider(
+      return new ConfigDirPolicyProvider(policy_map,
           config_dir_path.Append(FILE_PATH_LITERAL("managed")));
     } else {
-      return new DummyConfigurationPolicyProvider();
+      return new DummyConfigurationPolicyProvider(policy_map);
     }
 #else
-    return new DummyConfigurationPolicyProvider();
+    return new DummyConfigurationPolicyProvider(policy_map);
 #endif
   }
 
   static ConfigurationPolicyProvider* CreateRecommendedProvider() {
+    const ConfigurationPolicyProvider::StaticPolicyValueMap& policy_map =
+        ConfigurationPolicyPrefStore::GetChromePolicyValueMap();
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     FilePath config_dir_path;
     if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-      return new ConfigDirPolicyProvider(
+      return new ConfigDirPolicyProvider(policy_map,
           config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
     } else {
-      return new DummyConfigurationPolicyProvider();
+      return new DummyConfigurationPolicyProvider(policy_map);
     }
 #else
-    return new DummyConfigurationPolicyProvider();
+    return new DummyConfigurationPolicyProvider(policy_map);
 #endif
   }
 
@@ -127,6 +132,65 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
   { Value::TYPE_STRING, kPolicyProxyPacUrl, prefs::kProxyPacUrl },
   { Value::TYPE_STRING, kPolicyProxyBypassList, prefs::kProxyBypassList }
 };
+
+/* static */
+ConfigurationPolicyProvider::StaticPolicyValueMap
+ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
+  static ConfigurationPolicyProvider::StaticPolicyValueMap::Entry entries[] = {
+    { ConfigurationPolicyStore::kPolicyHomePage,
+        Value::TYPE_STRING, key::kHomepageLocation },
+    { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
+        Value::TYPE_BOOLEAN, key::kHomepageIsNewTabPage },
+    { ConfigurationPolicyStore::kPolicyRestoreOnStartup,
+        Value::TYPE_INTEGER, key::kRestoreOnStartup },
+    { ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
+        Value::TYPE_LIST, key::kURLsToRestoreOnStartup },
+    { ConfigurationPolicyStore::kPolicyProxyServerMode,
+        Value::TYPE_INTEGER, key::kProxyServerMode },
+    { ConfigurationPolicyStore::kPolicyProxyServer,
+        Value::TYPE_STRING, key::kProxyServer },
+    { ConfigurationPolicyStore::kPolicyProxyPacUrl,
+        Value::TYPE_STRING, key::kProxyPacUrl },
+    { ConfigurationPolicyStore::kPolicyProxyBypassList,
+        Value::TYPE_STRING, key::kProxyBypassList },
+    { ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
+        Value::TYPE_BOOLEAN, key::kAlternateErrorPagesEnabled },
+    { ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
+        Value::TYPE_BOOLEAN, key::kSearchSuggestEnabled },
+    { ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
+        Value::TYPE_BOOLEAN, key::kDnsPrefetchingEnabled },
+    { ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
+        Value::TYPE_BOOLEAN, key::kSafeBrowsingEnabled },
+    { ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
+        Value::TYPE_BOOLEAN, key::kMetricsReportingEnabled },
+    { ConfigurationPolicyStore::kPolicyPasswordManagerEnabled,
+        Value::TYPE_BOOLEAN, key::kPasswordManagerEnabled },
+    { ConfigurationPolicyStore::kPolicyPasswordManagerAllowShowPasswords,
+        Value::TYPE_BOOLEAN, key::kPasswordManagerAllowShowPasswords },
+    { ConfigurationPolicyStore::kPolicyAutoFillEnabled,
+        Value::TYPE_BOOLEAN, key::kAutoFillEnabled },
+    { ConfigurationPolicyStore::kPolicyDisabledPlugins,
+        Value::TYPE_LIST, key::kDisabledPlugins },
+    { ConfigurationPolicyStore::kPolicyApplicationLocale,
+        Value::TYPE_STRING, key::kApplicationLocaleValue },
+    { ConfigurationPolicyStore::kPolicySyncDisabled,
+        Value::TYPE_BOOLEAN, key::kSyncDisabled },
+    { ConfigurationPolicyStore::kPolicyExtensionInstallAllowList,
+        Value::TYPE_LIST, key::kExtensionInstallAllowList },
+    { ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
+        Value::TYPE_LIST, key::kExtensionInstallDenyList },
+    { ConfigurationPolicyStore::kPolicyShowHomeButton,
+        Value::TYPE_BOOLEAN, key::kShowHomeButton },
+    { ConfigurationPolicyStore::kPolicyPrintingEnabled,
+        Value::TYPE_BOOLEAN, key::kPrintingEnabled },
+  };
+
+  ConfigurationPolicyProvider::StaticPolicyValueMap map = {
+    arraysize(entries),
+    entries
+  };
+  return map;
+}
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
     const CommandLine* command_line,

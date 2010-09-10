@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/policy_constants.h"
@@ -30,7 +31,10 @@ const wchar_t kUnitTestUserOverrideSubKey[] =
 class TestConfigurationPolicyProviderWin
     : public ConfigurationPolicyProviderWin {
  public:
-  TestConfigurationPolicyProviderWin() : ConfigurationPolicyProviderWin() { }
+  TestConfigurationPolicyProviderWin()
+      : ConfigurationPolicyProviderWin(
+          ConfigurationPolicyPrefStore::GetChromePolicyValueMap()) {
+  }
   virtual ~TestConfigurationPolicyProviderWin() { }
 
   void SetHomepageRegistryValue(HKEY hive, const wchar_t* value);
@@ -43,22 +47,16 @@ class TestConfigurationPolicyProviderWin
                  const char* key,
                  int index,
                  const wchar_t* id);
-
-  typedef std::vector<PolicyValueMapEntry> PolicyValueMap;
-  static const PolicyValueMap* PolicyValueMapping() {
-    return ConfigurationPolicyProvider::PolicyValueMapping();
-  }
 };
 
 namespace {
 
 std::wstring NameForPolicy(ConfigurationPolicyStore::PolicyType policy) {
-  const TestConfigurationPolicyProviderWin::PolicyValueMap* mapping =
-      TestConfigurationPolicyProviderWin::PolicyValueMapping();
-  for (TestConfigurationPolicyProviderWin::PolicyValueMap::const_iterator
-       current = mapping->begin(); current != mapping->end(); ++current) {
-    if (current->policy_type == policy)
-      return UTF8ToWide(current->name);
+  const ConfigurationPolicyProvider::StaticPolicyValueMap& map =
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap();
+  for (size_t i = 0; i < map.entry_count; ++i) {
+    if (map.entries[i].policy_type == policy)
+      return UTF8ToWide(map.entries[i].name);
   }
   return NULL;
 }

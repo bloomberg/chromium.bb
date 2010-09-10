@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/policy/config_dir_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/json_value_serializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,7 +65,10 @@ class ConfigDirPolicyProviderTestBase : public testing::Test {
 class MockConfigDirPolicyProvider : public ConfigDirPolicyProvider {
  public:
   explicit MockConfigDirPolicyProvider(const FilePath& config_dir_)
-      : ConfigDirPolicyProvider(config_dir_) {}
+      : ConfigDirPolicyProvider(
+          ConfigurationPolicyPrefStore::GetChromePolicyValueMap(),
+          config_dir_) {
+  }
 
   MOCK_METHOD0(NotifyStoreOfPolicyChange, void());
 };
@@ -152,7 +156,8 @@ class ConfigDirPolicyProviderTest : public ConfigDirPolicyProviderTestBase {
 // The preferences dictionary is expected to be empty when there are no files to
 // load.
 TEST_F(ConfigDirPolicyProviderTest, ReadPrefsEmpty) {
-  ConfigDirPolicyProvider provider(test_dir_);
+  ConfigDirPolicyProvider provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
   EXPECT_TRUE(provider.Provide(policy_store_.get()));
   EXPECT_TRUE(policy_store_->policy_map().empty());
 }
@@ -161,7 +166,9 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsEmpty) {
 // dictionary.
 TEST_F(ConfigDirPolicyProviderTest, ReadPrefsNonExistentDirectory) {
   FilePath non_existent_dir(test_dir_.Append(FILE_PATH_LITERAL("not_there")));
-  ConfigDirPolicyProvider provider(non_existent_dir);
+  ConfigDirPolicyProvider provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(),
+      non_existent_dir);
   EXPECT_TRUE(provider.Provide(policy_store_.get()));
   EXPECT_TRUE(policy_store_->policy_map().empty());
 }
@@ -171,7 +178,8 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsSinglePref) {
   DictionaryValue test_dict;
   test_dict.SetString("HomepageLocation", "http://www.google.com");
   WriteConfigFile(test_dict, "config_file");
-  ConfigDirPolicyProvider provider(test_dir_);
+  ConfigDirPolicyProvider provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
 
   EXPECT_TRUE(provider.Provide(policy_store_.get()));
   const MockConfigurationPolicyStore::PolicyMap& policy_map(
@@ -201,7 +209,8 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
   WriteConfigFile(test_dict_foo, "9");
   for (unsigned int i = 5; i <= 8; ++i)
     WriteConfigFile(test_dict_bar, base::IntToString(i));
-  ConfigDirPolicyProvider provider(test_dir_);
+  ConfigDirPolicyProvider provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
 
   EXPECT_TRUE(provider.Provide(policy_store_.get()));
   const MockConfigurationPolicyStore::PolicyMap& policy_map(

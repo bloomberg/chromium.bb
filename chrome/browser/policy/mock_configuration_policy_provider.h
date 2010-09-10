@@ -17,7 +17,10 @@ namespace policy {
 // values for polices.
 class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
  public:
-  MockConfigurationPolicyProvider() {}
+  MockConfigurationPolicyProvider()
+      : ConfigurationPolicyProvider(
+          ConfigurationPolicyPrefStore::GetChromePolicyValueMap()) {
+  }
   ~MockConfigurationPolicyProvider() {
     STLDeleteValues(&policy_map_);
   }
