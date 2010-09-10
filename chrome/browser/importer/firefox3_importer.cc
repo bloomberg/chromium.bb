@@ -188,6 +188,7 @@ void Firefox3Importer::ImportBookmarks() {
       post_keyword_ids.insert(s.column_int(0));
   } else {
     NOTREACHED();
+    return;
   }
 
   std::wstring firefox_folder =

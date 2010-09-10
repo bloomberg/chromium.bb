@@ -243,8 +243,7 @@ bool ReadPrefFile(const FilePath& path, std::string* content) {
   file_util::ReadFileToString(path, content);
 
   if (content->empty()) {
-    NOTREACHED() << "Firefox preference file " << path.value()
-                 << " is empty.";
+    LOG(WARNING) << "Firefox preference file " << path.value() << " is empty.";
     return false;
   }
 
@@ -269,7 +268,7 @@ std::string ReadBrowserConfigProp(const FilePath& app_path,
 
   if (start == std::string::npos ||
       stop == std::string::npos || (start == stop)) {
-    NOTREACHED() << "Firefox property " << pref_key << " could not be parsed.";
+    LOG(WARNING) << "Firefox property " << pref_key << " could not be parsed.";
     return "";
   }
 
@@ -314,7 +313,7 @@ int GetFirefoxDefaultSearchEngineIndex(
     }
   }
   if (default_se_index == -1) {
-    NOTREACHED() <<
+    LOG(WARNING) <<
         "Firefox default search engine not found in search engine list";
   }
 
