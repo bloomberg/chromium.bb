@@ -25,12 +25,20 @@ class InputMethodLibrary {
   class Observer {
    public:
     virtual ~Observer() = 0;
+    // Called when the current input method is changed.
     virtual void InputMethodChanged(InputMethodLibrary* obj) = 0;
+
+    // Called when input method properties (see chromeos_input_method.h
+    // for details) are changed.
     virtual void ImePropertiesChanged(InputMethodLibrary* obj) = 0;
+
+    // Called when the active input methods are changed.
     virtual void ActiveInputMethodsChanged(InputMethodLibrary* obj) = 0;
   };
   virtual ~InputMethodLibrary() {}
 
+  // Adds an observer to receive notifications of input method related
+  // changes as desribed in the Observer class above.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 
 namespace {
+const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
+const char kCandidateWindowPath[] = "/opt/google/chrome/candidate_window";
 
 // Finds a property which has |new_prop.key| from |prop_list|, and replaces the
 // property with |new_prop|. Returns true if such a property is found.
@@ -48,18 +50,18 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
       : input_method_status_connection_(NULL),
         previous_input_method_("", "", "", ""),
         current_input_method_("", "", "", ""),
-        ime_running_(false),
+        should_launch_ime_(false),
         ime_connected_(false),
         defer_ime_startup_(false),
-        need_input_method_set_(false),
-        ime_handle_(0),
-        candidate_window_handle_(0),
+        should_change_input_method_(false),
+        ibus_daemon_process_id_(0),
+        candidate_window_process_id_(0),
         failure_count_(0) {
     scoped_ptr<InputMethodDescriptors> input_method_descriptors(
         CreateFallbackInputMethodDescriptors());
     current_input_method_ = input_method_descriptors->at(0);
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      active_input_method_ = chromeos::GetHardwareKeyboardLayoutName();
+      current_input_method_id_ = chromeos::GetHardwareKeyboardLayoutName();
     }
   }
 
@@ -106,7 +108,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   }
 
   void ChangeInputMethod(const std::string& input_method_id) {
-    active_input_method_ = input_method_id;
+    current_input_method_id_ = input_method_id;
     if (EnsureLoadedAndStarted()) {
       if (input_method_id != chromeos::GetHardwareKeyboardLayoutName()) {
         StartInputMethodProcesses();
@@ -147,7 +149,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
 
   bool SetImeConfig(const char* section, const char* config_name,
                     const ImeConfigValue& value) {
-    MaybeUpdateImeState(section, config_name, value);
+    MaybeStartOrStopInputMethodProcesses(section, config_name, value);
 
     const ConfigKeyType key = std::make_pair(section, config_name);
     current_config_values_[key] = value;
@@ -170,13 +172,16 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   }
 
  private:
-  void MaybeUpdateImeState(
+  // Starts or stops the input method processes based on the current state.
+  void MaybeStartOrStopInputMethodProcesses(
       const char* section,
       const char* config_name,
       const ImeConfigValue& value) {
     if (!strcmp(language_prefs::kGeneralSectionName, section) &&
         !strcmp(language_prefs::kPreloadEnginesConfigName, config_name)) {
       if (EnsureLoadedAndStarted()) {
+        // If there are no input methods other than one for the hardware
+        // keyboard, we'll stop the input method processes.
         if (value.type == ImeConfigValue::kValueTypeStringList &&
             value.string_list_value.size() == 1 &&
             value.string_list_value[0] ==
@@ -190,6 +195,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     }
   }
 
+  // Flushes the input method config data. The config data is queued up in
+  // |pending_config_requests_| until the config backend (ibus-memconf)
+  // starts. Since there is no good way to get notified when the config
+  // backend starts, we use a timer to periodically attempt to send the
+  // config data to the config backend.
   void FlushImeConfig() {
     bool active_input_methods_are_changed = false;
     bool completed = false;
@@ -219,10 +229,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
         // Calls to ChangeInputMethod() will fail if the input method has not
         // yet been added to preload_engines.  As such, the call is deferred
         // until after all config values have been sent to the IME process.
-        if (need_input_method_set_) {
+        if (should_change_input_method_) {
           if (chromeos::ChangeInputMethod(input_method_status_connection_,
-                                          active_input_method_.c_str())) {
-            need_input_method_set_ = false;
+                                          current_input_method_id_.c_str())) {
+            should_change_input_method_ = false;
             completed = true;
             active_input_methods_are_changed = true;
           }
@@ -235,19 +245,22 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     if (completed) {
       timer_.Stop();  // no-op if it's not running.
     } else {
+      // Flush is not completed. Start a timer if it's not yet running.
       if (!timer_.IsRunning()) {
         static const int64 kTimerIntervalInMsec = 100;
         failure_count_ = 0;
         timer_.Start(base::TimeDelta::FromMilliseconds(kTimerIntervalInMsec),
                      this, &InputMethodLibraryImpl::FlushImeConfig);
       } else {
+        // The timer is already running. We'll give up if it reaches the
+        // max retry count.
         static const int kMaxRetries = 15;
         ++failure_count_;
         if (failure_count_ > kMaxRetries) {
-          LOG(ERROR) << "FlushImeConfig: Max retries exceeded. " <<
-                        "active_input_method: " << active_input_method_ <<
-                        " pending_config_requests.size: " <<
-                        pending_config_requests_.size();
+          LOG(ERROR) << "FlushImeConfig: Max retries exceeded. "
+                     << "current_input_method_id: " << current_input_method_id_
+                     << " pending_config_requests.size: "
+                     << pending_config_requests_.size();
           timer_.Stop();
         }
       }
@@ -260,13 +273,28 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   static void InputMethodChangedHandler(
       void* object,
       const chromeos::InputMethodDescriptor& current_input_method) {
+    // The handler is called when the input method method change is
+    // notified via a DBus connection. Since the DBus notificatiosn are
+    // handled in the UI thread, we can assume that this functionalways
+    // runs on the UI thread, but just in case.
+    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+      LOG(ERROR) << "Not on UI thread";
+      return;
+    }
+
     InputMethodLibraryImpl* input_method_library =
         static_cast<InputMethodLibraryImpl*>(object);
-    input_method_library->UpdateCurrentInputMethod(current_input_method);
+    input_method_library->ChangeCurrentInputMethod(current_input_method);
   }
 
   static void RegisterPropertiesHandler(
       void* object, const ImePropertyList& prop_list) {
+    // See comments in InputMethodChangedHandler.
+    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+      LOG(ERROR) << "Not on UI thread";
+      return;
+    }
+
     InputMethodLibraryImpl* input_method_library =
         static_cast<InputMethodLibraryImpl*>(object);
     input_method_library->RegisterProperties(prop_list);
@@ -274,12 +302,24 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
 
   static void UpdatePropertyHandler(
       void* object, const ImePropertyList& prop_list) {
+    // See comments in InputMethodChangedHandler.
+    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+      LOG(ERROR) << "Not on UI thread";
+      return;
+    }
+
     InputMethodLibraryImpl* input_method_library =
         static_cast<InputMethodLibraryImpl*>(object);
     input_method_library->UpdateProperty(prop_list);
   }
 
   static void ConnectionChangeHandler(void* object, bool connected) {
+    // See comments in InputMethodChangedHandler.
+    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+      LOG(ERROR) << "Not on UI thread";
+      return;
+    }
+
     InputMethodLibraryImpl* input_method_library =
         static_cast<InputMethodLibraryImpl*>(object);
     input_method_library->ime_connected_ = connected;
@@ -288,7 +328,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
       input_method_library->pending_config_requests_.insert(
           input_method_library->current_config_values_.begin(),
           input_method_library->current_config_values_.end());
-      input_method_library->need_input_method_set_ = true;
+      input_method_library->should_change_input_method_ = true;
       input_method_library->FlushImeConfig();
     } else {
       // Stop attempting to resend config data, since it will continue to fail.
@@ -313,20 +353,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
            EnsureStarted();
   }
 
-  void UpdateCurrentInputMethod(const InputMethodDescriptor& new_input_method) {
-    // Make sure we run on UI thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      DLOG(INFO) << "UpdateCurrentInputMethod (Background thread)";
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          // NewRunnableMethod() copies |new_input_method| by value.
-          NewRunnableMethod(
-              this, &InputMethodLibraryImpl::UpdateCurrentInputMethod,
-              new_input_method));
-      return;
-    }
-
-    DLOG(INFO) << "UpdateCurrentInputMethod (UI thread)";
+  void ChangeCurrentInputMethod(const InputMethodDescriptor& new_input_method) {
     // Change the keyboard layout to a preferred layout for the input method.
     CrosLibrary::Get()->GetKeyboardLibrary()->SetCurrentKeyboardLayoutByName(
         new_input_method.keyboard_layout);
@@ -339,102 +366,84 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   }
 
   void RegisterProperties(const ImePropertyList& prop_list) {
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              this, &InputMethodLibraryImpl::RegisterProperties, prop_list));
-      return;
-    }
-
     // |prop_list| might be empty. This means "clear all properties."
     current_ime_properties_ = prop_list;
     FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
   }
 
   void StartInputMethodProcesses() {
-    ime_running_ = true;
-    MaybeLaunchIme();
+    should_launch_ime_ = true;
+    MaybeLaunchInputMethodProcesses();
   }
 
   void UpdateProperty(const ImePropertyList& prop_list) {
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              this, &InputMethodLibraryImpl::UpdateProperty, prop_list));
-      return;
-    }
-
     for (size_t i = 0; i < prop_list.size(); ++i) {
       FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
     }
     FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
   }
 
-  void MaybeLaunchIme() {
-    if (!ime_running_) {
+  // Launches an input method procsess specified by the given command
+  // line. On success, returns true and stores the process ID in
+  // |process_id|. Otherwise, returns false, and the contents of
+  // |process_id| is untouched. OnImeShutdown will be called when the
+  // process terminates.
+  bool LaunchInputMethodProcess(const std::string& command_line,
+                                int* process_id) {
+    GError *error = NULL;
+    gchar **argv = NULL;
+    gint argc = NULL;
+    // TODO(zork): export "LD_PRELOAD=/usr/lib/libcrash.so"
+    if (!g_shell_parse_argv(command_line.c_str(), &argc, &argv, &error)) {
+      LOG(ERROR) << "Could not parse command: " << error->message;
+      g_error_free(error);
+      return false;
+    }
+
+    int pid = 0;
+    const GSpawnFlags kFlags = G_SPAWN_DO_NOT_REAP_CHILD;
+    const gboolean result = g_spawn_async(NULL, argv, NULL,
+                                          kFlags, NULL, NULL,
+                                          &pid, &error);
+    g_strfreev(argv);
+    if (!result) {
+      LOG(ERROR) << "Could not launch: " << command_line << ": "
+                 << error->message;
+      g_error_free(error);
+      return false;
+    }
+    g_child_watch_add(pid, reinterpret_cast<GChildWatchFunc>(OnImeShutdown),
+                      this);
+
+    *process_id = pid;
+    return  true;
+  }
+
+  // Launches input method processes if these are not yet running.
+  void MaybeLaunchInputMethodProcesses() {
+    if (!should_launch_ime_) {
       return;
     }
 
-    // TODO(zork): export "LD_PRELOAD=/usr/lib/libcrash.so"
-    GSpawnFlags flags = G_SPAWN_DO_NOT_REAP_CHILD;
-    if (ime_handle_ == 0) {
-      GError *error = NULL;
-      gchar **argv;
-      gint argc;
-
-      if (!g_shell_parse_argv(
-          "/usr/bin/ibus-daemon "
-          "--panel=disable --cache=none --restart --replace",
-          &argc, &argv, &error)) {
-        LOG(ERROR) << "Could not parse command: " << error->message;
-        g_error_free(error);
-        return;
-      }
-
-      error = NULL;
-      int handle;
+    if (ibus_daemon_process_id_ == 0) {
       // TODO(zork): Send output to /var/log/ibus.log
-      gboolean result = g_spawn_async(NULL, argv, NULL,
-                                      flags, NULL, NULL,
-                                      &handle, &error);
-      g_strfreev(argv);
-      if (!result) {
-        LOG(ERROR) << "Could not launch ime: " << error->message;
-        g_error_free(error);
+      const std::string ibus_daemon_command_line =
+          StringPrintf("%s --panel=disable --cache=none --restart --replace",
+                       kIBusDaemonPath);
+      if (!LaunchInputMethodProcess(ibus_daemon_command_line,
+                                    &ibus_daemon_process_id_)) {
+        // On failure, we should not attempt to launch candidate_window.
         return;
       }
-      ime_handle_ = handle;
-      g_child_watch_add(ime_handle_, (GChildWatchFunc)OnImeShutdown, this);
     }
 
-    if (candidate_window_handle_ == 0) {
-      GError *error = NULL;
-      gchar **argv;
-      gint argc;
-
-      if (!g_shell_parse_argv("/opt/google/chrome/candidate_window",
-                              &argc, &argv, &error)) {
-        LOG(ERROR) << "Could not parse command: " << error->message;
-        g_error_free(error);
+    if (candidate_window_process_id_ == 0) {
+      const std::string candidate_window_command_line = kCandidateWindowPath;
+      if (!LaunchInputMethodProcess(candidate_window_command_line,
+                                    &candidate_window_process_id_)) {
+        // Return here just in case we add more code below.
         return;
       }
-
-      error = NULL;
-      int handle;
-      gboolean result = g_spawn_async(NULL, argv, NULL,
-                                      flags, NULL, NULL,
-                                      &handle, &error);
-      g_strfreev(argv);
-      if (!result) {
-        LOG(ERROR) << "Could not launch ime candidate window" << error->message;
-        g_error_free(error);
-        return;
-      }
-      candidate_window_handle_ = handle;
-      g_child_watch_add(candidate_window_handle_,
-                        (GChildWatchFunc)OnImeShutdown, this);
     }
   }
 
@@ -442,31 +451,32 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
                             int status,
                             InputMethodLibraryImpl* library) {
     g_spawn_close_pid(pid);
-    if (library->ime_handle_ == pid) {
-      library->ime_handle_ = 0;
-    } else if (library->candidate_window_handle_ == pid) {
-      library->candidate_window_handle_ = 0;
+    if (library->ibus_daemon_process_id_ == pid) {
+      library->ibus_daemon_process_id_ = 0;
+    } else if (library->candidate_window_process_id_ == pid) {
+      library->candidate_window_process_id_ = 0;
     }
 
-    library->MaybeLaunchIme();
+    // Restart input method processes if needed.
+    library->MaybeLaunchInputMethodProcesses();
   }
 
   void StopInputMethodProcesses() {
-    ime_running_ = false;
-    if (ime_handle_) {
+    should_launch_ime_ = false;
+    if (ibus_daemon_process_id_) {
       const std::string xkb_engine_name =
           chromeos::GetHardwareKeyboardLayoutName();
       // We should not use chromeos::ChangeInputMethod() here since without the
-      // ibus-daemon process, UpdateCurrentInputMethod() callback function which
+      // ibus-daemon process, ChangeCurrentInputMethod() callback function which
       // actually changes the XKB layout will not be called.
       CrosLibrary::Get()->GetKeyboardLibrary()->SetCurrentKeyboardLayoutByName(
           chromeos::input_method::GetKeyboardLayoutName(xkb_engine_name));
-      kill(ime_handle_, SIGTERM);
-      ime_handle_ = 0;
+      kill(ibus_daemon_process_id_, SIGTERM);
+      ibus_daemon_process_id_ = 0;
     }
-    if (candidate_window_handle_) {
-      kill(candidate_window_handle_, SIGTERM);
-      candidate_window_handle_ = 0;
+    if (candidate_window_process_id_) {
+      kill(candidate_window_process_id_, SIGTERM);
+      candidate_window_process_id_ = 0;
     }
   }
 
@@ -504,14 +514,24 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   // method config daemon.
   base::OneShotTimer<InputMethodLibraryImpl> timer_;
 
-  bool ime_running_;
+  // True if we should launch the input method processes.
+  bool should_launch_ime_;
+  // True if the connection to the IBus daemon is alive.
   bool ime_connected_;
+  // If true, we'll defer the startup until a non-default method is
+  // activated.
   bool defer_ime_startup_;
-  std::string active_input_method_;
-  bool need_input_method_set_;
+  // The ID of the current input method (ex. "mozc").
+  std::string current_input_method_id_;
+  // True if we should change the input method once the queue of the
+  // pending config requests becomes empty.
+  bool should_change_input_method_;
 
-  int ime_handle_;
-  int candidate_window_handle_;
+  // The process id of the IBus daemon. 0 if it's not running. The process
+  // ID 0 is not used in Linux, hence it's safe to use 0 for this purpose.
+  int ibus_daemon_process_id_;
+  // The process id of the candidate window. 0 if it's not running.
+  int candidate_window_process_id_;
 
   int failure_count_;
 
