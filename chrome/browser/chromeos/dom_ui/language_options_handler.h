@@ -53,8 +53,23 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   static DictionaryValue* GetUiLanguageCodeSet();
 
  private:
+  // Called when the input method is disabled.
+  // |args| will contain the input method ID as string (ex. "mozc").
+  void InputMethodDisableCallback(const ListValue* args);
+
+  // Called when the input method is enabled.
+  // |args| will contain the input method ID as string (ex. "mozc").
+  void InputMethodEnableCallback(const ListValue* args);
+
+  // Called when the input method options page is opened.
+  // |args| will contain the input method ID as string (ex. "mozc").
+  void InputMethodOptionsOpenCallback(const ListValue* args);
+
+  // Called when the language options is opened.
+  void LanguageOptionsOpenCallback(const ListValue* args);
+
   // Called when the UI language is changed.
-  // |args| will be the language code as string (ex. "fr").
+  // |args| will contain the language code as string (ex. "fr").
   void UiLanguageChangeCallback(const ListValue* args);
 
   // Called when the restart button is clicked.

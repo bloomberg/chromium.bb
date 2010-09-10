@@ -140,6 +140,7 @@ cr.define('options', function() {
         // of the checkbox). The button click here should not be handled
         // as checkbox click.
         e.preventDefault();
+        chrome.send('inputMethodOptionsOpen', [inputMethodId]);
         OptionsPage.showPageByName(pageName);
       }
       return button;
@@ -153,6 +154,7 @@ cr.define('options', function() {
     handleVisibleChange_: function(e) {
       if (this.visible) {
         $('language-options-list').redraw();
+        chrome.send('languageOptionsOpen');
       }
     },
 
@@ -384,6 +386,12 @@ cr.define('options', function() {
             localStrings.getString('please_add_another_input_method'),
             localStrings.getString('ok_button'));
         checkbox.checked = true;
+        return;
+      }
+      if (checkbox.checked) {
+        chrome.send('inputMethodEnable', [checkbox.inputMethodId]);
+      } else {
+        chrome.send('inputMethodDisable', [checkbox.inputMethodId]);
       }
       this.updatePreloadEnginesFromCheckboxes_();
       this.preloadEngines_ = this.sortPreloadEngines_(this.preloadEngines_);
@@ -407,7 +415,7 @@ cr.define('options', function() {
           // Filipino).
           this.preloadEngines_.indexOf(inputMethodIds[0]) == -1) {
         this.preloadEngines_.push(inputMethodIds[0]);
-	this.updateCheckboxesFromPreloadEngines_();
+        this.updateCheckboxesFromPreloadEngines_();
         this.savePreloadEnginesPref_();
       }
       OptionsPage.clearOverlays();

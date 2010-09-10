@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
@@ -103,6 +104,15 @@ void LanguageOptionsHandler::GetLocalizedValues(
 
 void LanguageOptionsHandler::RegisterMessages() {
   DCHECK(dom_ui_);
+  dom_ui_->RegisterMessageCallback("inputMethodDisable",
+      NewCallback(this, &LanguageOptionsHandler::InputMethodDisableCallback));
+  dom_ui_->RegisterMessageCallback("inputMethodEnable",
+      NewCallback(this, &LanguageOptionsHandler::InputMethodEnableCallback));
+  dom_ui_->RegisterMessageCallback("inputMethodOptionsOpen",
+      NewCallback(this,
+                  &LanguageOptionsHandler::InputMethodOptionsOpenCallback));
+  dom_ui_->RegisterMessageCallback("languageOptionsOpen",
+      NewCallback(this, &LanguageOptionsHandler::LanguageOptionsOpenCallback));
   dom_ui_->RegisterMessageCallback("uiLanguageChange",
       NewCallback(this, &LanguageOptionsHandler::UiLanguageChangeCallback));
   dom_ui_->RegisterMessageCallback("uiLanguageRestart",
@@ -215,8 +225,41 @@ DictionaryValue* LanguageOptionsHandler::GetUiLanguageCodeSet() {
   return dictionary;
 }
 
+void LanguageOptionsHandler::InputMethodDisableCallback(
+    const ListValue* args) {
+  std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  // TODO(satorux): Record the input method ID code as well.
+  UserMetrics::RecordAction(
+      UserMetricsAction("LanguageOptions_DisableInputMethod"));
+}
+
+void LanguageOptionsHandler::InputMethodEnableCallback(
+    const ListValue* args) {
+  std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  // TODO(satorux): Record the input method ID code as well.
+  UserMetrics::RecordAction(
+      UserMetricsAction("LanguageOptions_EnableInputMethod"));
+}
+
+void LanguageOptionsHandler::InputMethodOptionsOpenCallback(
+    const ListValue* args) {
+  std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  // TODO(satorux): Record the input method ID code as well.
+  UserMetrics::RecordAction(
+      UserMetricsAction("InputMethodOptions_Open"));
+}
+
+void LanguageOptionsHandler::LanguageOptionsOpenCallback(
+    const ListValue* args) {
+  UserMetrics::RecordAction(UserMetricsAction("LanguageOptions_Open"));
+}
+
 void LanguageOptionsHandler::UiLanguageChangeCallback(
     const ListValue* args) {
+  // TODO(satorux): Record the language code as well.
+  UserMetrics::RecordAction(
+      UserMetricsAction("LanguageOptions_UiLanguageChange"));
+
   std::string language_code = WideToASCII(ExtractStringValue(args));
   CHECK(!language_code.empty());
   PrefService* prefs = g_browser_process->local_state();
@@ -227,6 +270,8 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
 }
 
 void LanguageOptionsHandler::RestartCallback(const ListValue* args) {
+  UserMetrics::RecordAction(UserMetricsAction("LanguageOptions_Restart"));
+
   Browser* browser = Browser::GetBrowserForController(
       &dom_ui_->tab_contents()->controller(), NULL);
   // TODO(kochi): For ChromiumOS, just exiting means browser restart.
