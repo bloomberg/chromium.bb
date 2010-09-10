@@ -1175,8 +1175,9 @@ def Main(argv):
         '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
         for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
     parser = optparse.OptionParser(version='%prog ' + __version__)
-    parser.add_option('-j', '--jobs', default=1, type='int',
-                      help='Specify how many SCM commands can run in parallel')
+    parser.add_option('-j', '--jobs', default=8, type='int',
+                      help='Specify how many SCM commands can run in parallel; '
+                           'default=%default')
     parser.add_option('-v', '--verbose', action='count', default=0,
                       help='Produces additional output for diagnostics. Can be '
                            'used up to three times for more logging info.')
