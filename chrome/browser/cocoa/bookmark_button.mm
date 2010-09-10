@@ -73,6 +73,29 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
   return [[self cell] isContinuousPulsing];
 }
 
+- (NSPoint)screenLocationForRemoveAnimation {
+  NSPoint point;
+
+  if (dragPending_) {
+    // Use the position of the mouse in the drag image as the location.
+    point = dragEndScreenLocation_;
+    point.x += dragMouseOffset_.x;
+    if ([self isFlipped]) {
+      point.y += [self bounds].size.height - dragMouseOffset_.y;
+    } else {
+      point.y += dragMouseOffset_.y;
+    }
+  } else {
+    // Use the middle of this button as the location.
+    NSRect bounds = [self bounds];
+    point = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
+    point = [self convertPoint:point toView:nil];
+    point = [[self window] convertBaseToScreen:point];
+  }
+
+  return point;
+}
+
 // By default, NSButton ignores middle-clicks.
 // But we want them.
 - (void)otherMouseUp:(NSEvent*)event {
@@ -114,12 +137,16 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
         isWithinFolder ? "BookmarkBarFolder_DragStart" :
             "BookmarkBar_DragStart"));
 
+    dragMouseOffset_ = [self convertPointFromBase:[event locationInWindow]];
+    dragPending_ = YES;
+
     CGFloat yAt = [self bounds].size.height;
     NSSize dragOffset = NSMakeSize(0.0, 0.0);
     [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
               event:event pasteboard:pboard source:self slideBack:YES];
 
     // And we're done.
+    dragPending_ = NO;
     [self autorelease];
   } else {
     // Avoid blowing up, but we really shouldn't get here.
@@ -138,8 +165,23 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
 }
 
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
-  return isLocal ? NSDragOperationCopy | NSDragOperationMove
-                 : NSDragOperationCopy;
+  NSDragOperation operation = NSDragOperationCopy;
+  if (isLocal) {
+    operation |= NSDragOperationMove;
+  }
+  if ([delegate_ canDragBookmarkButtonToTrash:self]) {
+    operation |= NSDragOperationDelete;
+  }
+  return operation;
+}
+
+- (void)draggedImage:(NSImage *)anImage
+             endedAt:(NSPoint)aPoint
+           operation:(NSDragOperation)operation {
+  if (operation & NSDragOperationDelete) {
+    dragEndScreenLocation_ = aPoint;
+    [delegate_ didDragBookmarkToTrash:self];
+  }
 }
 
 // mouseEntered: and mouseExited: are called from our

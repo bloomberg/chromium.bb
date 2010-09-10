@@ -18,6 +18,8 @@
  @public
   int entered_;
   int exited_;
+  BOOL canDragToTrash_;
+  int didDragToTrashCount_;
 }
 @end
 
@@ -42,6 +44,15 @@
 - (NSWindow*)browserWindow {
   return nil;
 }
+
+- (BOOL)canDragBookmarkButtonToTrash:(BookmarkButton*)button {
+  return canDragToTrash_;
+}
+
+- (void)didDragBookmarkToTrash:(BookmarkButton*)button {
+  didDragToTrashCount_++;
+}
+
 @end
 
 namespace {
@@ -112,6 +123,52 @@ TEST_F(BookmarkButtonTest, MouseEnterExitRedirect) {
   [button mouseExited:moveEvent];
   EXPECT_EQ(1, delegate.get()->entered_);
   EXPECT_EQ(2, delegate.get()->exited_);
+}
+
+TEST_F(BookmarkButtonTest, DragToTrash) {
+  BrowserTestHelper helper_;
+
+  scoped_nsobject<BookmarkButton> button;
+  scoped_nsobject<BookmarkButtonCell> cell;
+  scoped_nsobject<FakeButtonDelegate>
+      delegate([[FakeButtonDelegate alloc] init]);
+  button.reset([[BookmarkButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
+  cell.reset([[BookmarkButtonCell alloc] initTextCell:@"hi mom"]);
+  [button setCell:cell];
+  [button setDelegate:delegate];
+
+  // Add a deletable bookmark to the button.
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* barNode = model->GetBookmarkBarNode();
+  const BookmarkNode* node = model->AddURL(barNode, 0, ASCIIToUTF16("hi mom"),
+                                           GURL("http://www.google.com"));
+  [cell setBookmarkNode:node];
+
+  // Verify that if canDragBookmarkButtonToTrash is NO then the button can't
+  // be dragged to the trash.
+  delegate.get()->canDragToTrash_ = NO;
+  NSDragOperation operation = [button draggingSourceOperationMaskForLocal:NO];
+  EXPECT_EQ(0u, operation & NSDragOperationDelete);
+  operation = [button draggingSourceOperationMaskForLocal:YES];
+  EXPECT_EQ(0u, operation & NSDragOperationDelete);
+
+  // Verify that if canDragBookmarkButtonToTrash is YES then the button can
+  // be dragged to the trash.
+  delegate.get()->canDragToTrash_ = YES;
+  operation = [button draggingSourceOperationMaskForLocal:NO];
+  EXPECT_EQ(NSDragOperationDelete, operation & NSDragOperationDelete);
+  operation = [button draggingSourceOperationMaskForLocal:YES];
+  EXPECT_EQ(NSDragOperationDelete, operation & NSDragOperationDelete);
+
+  // Verify that canDragBookmarkButtonToTrash is called when expected.
+  delegate.get()->canDragToTrash_ = YES;
+  EXPECT_EQ(0, delegate.get()->didDragToTrashCount_);
+  [button draggedImage:nil endedAt:NSZeroPoint operation:NSDragOperationCopy];
+  EXPECT_EQ(0, delegate.get()->didDragToTrashCount_);
+  [button draggedImage:nil endedAt:NSZeroPoint operation:NSDragOperationMove];
+  EXPECT_EQ(0, delegate.get()->didDragToTrashCount_);
+  [button draggedImage:nil endedAt:NSZeroPoint operation:NSDragOperationDelete];
+  EXPECT_EQ(1, delegate.get()->didDragToTrashCount_);
 }
 
 }

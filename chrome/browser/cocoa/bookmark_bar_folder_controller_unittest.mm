@@ -1289,7 +1289,6 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
                           initWithParentButton:button
                               parentController:nil
                                  barController:bar_]);
-  [folderController window];
   BookmarkButton* targetButton =
       [folderController buttonWithTitleEqualTo:@"2f1b"];
   ASSERT_TRUE(targetButton);
@@ -1322,6 +1321,45 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
                                "2f3b ] 3b 4b ");
   actual = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ(expectedA, actual);
+}
+
+TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                                 "2f3b ] 3b 4b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model.
+  std::string actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actual);
+
+  const BookmarkNode* folderNode = root->GetChild(1);
+  int oldFolderChildCount = folderNode->GetChildCount();
+
+  // Pop open a folder.
+  BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"2f"];
+  scoped_nsobject<BookmarkBarFolderControllerDragData> folderController;
+  folderController.reset([[BookmarkBarFolderControllerDragData alloc]
+                          initWithParentButton:button
+                              parentController:nil
+                                 barController:bar_]);
+
+  // Drag a button to the trash.
+  BookmarkButton* buttonToDelete =
+      [folderController buttonWithTitleEqualTo:@"2f1b"];
+  ASSERT_TRUE(buttonToDelete);
+  EXPECT_TRUE([folderController canDragBookmarkButtonToTrash:buttonToDelete]);
+  [folderController didDragBookmarkToTrash:buttonToDelete];
+
+  // There should be one less button in the folder.
+  int newFolderChildCount = folderNode->GetChildCount();
+  EXPECT_EQ(oldFolderChildCount - 1, newFolderChildCount);
+  // Verify the model.
+  const std::string expected("1b 2f:[ 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                             "2f3b ] 3b 4b ");
+  actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(expected, actual);
 }
 
 TEST_F(BookmarkBarFolderControllerMenuTest, AddURLs) {

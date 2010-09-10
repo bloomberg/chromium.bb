@@ -294,6 +294,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // presenting a new menu.)
 - (void)closeFolderAndStopTrackingMenus;
 
+// Checks if operations such as edit or delete are allowed.
+- (BOOL)canEditBookmark:(const BookmarkNode*)node;
+
 // Actions for manipulating bookmarks.
 // Open a normal bookmark or folder from a button, ...
 - (IBAction)openBookmark:(id)sender;
@@ -346,7 +349,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (NSMenu*)offTheSideMenu;
 - (NSButton*)offTheSideButton;
 - (BOOL)offTheSideButtonIsHidden;
-- (NSButton*)otherBookmarksButton;
+- (BookmarkButton*)otherBookmarksButton;
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;
 - (int)displayedButtonCount;

@@ -2076,4 +2076,37 @@ TEST_F(BookmarkBarControllerDragDropTest, PulseButton) {
   EXPECT_FALSE([button isContinuousPulsing]);
 }
 
+TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkDataToTrash) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                                  "2f3b ] 3b 4b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model.
+  std::string actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actual);
+
+  int oldChildCount = root->GetChildCount();
+
+  // Drag a button to the trash.
+  BookmarkButton* buttonToDelete = [bar_ buttonWithTitleEqualTo:@"3b"];
+  ASSERT_TRUE(buttonToDelete);
+  EXPECT_TRUE([bar_ canDragBookmarkButtonToTrash:buttonToDelete]);
+  [bar_ didDragBookmarkToTrash:buttonToDelete];
+
+  // There should be one less button in the bar.
+  int newChildCount = root->GetChildCount();
+  EXPECT_EQ(oldChildCount - 1, newChildCount);
+  // Verify the model.
+  const std::string expected("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                             "2f3b ] 4b ");
+  actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(expected, actual);
+
+  // Verify that the other bookmark folder can't be deleted.
+  BookmarkButton *otherButton = [bar_ otherBookmarksButton];
+  EXPECT_FALSE([bar_ canDragBookmarkButtonToTrash:otherButton]);
+}
+
 }  // namespace

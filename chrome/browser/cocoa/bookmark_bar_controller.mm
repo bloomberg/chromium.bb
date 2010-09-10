@@ -506,6 +506,15 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [self closeAllBookmarkFolders];
 }
 
+- (BOOL)canEditBookmark:(const BookmarkNode*)node {
+  // Don't allow edit/delete of the bar node, or of "Other Bookmarks"
+  if ((node == nil) ||
+      (node == bookmarkModel_->other_node()) ||
+      (node == bookmarkModel_->GetBookmarkBarNode()))
+    return NO;
+  return YES;
+}
+
 #pragma mark Actions
 
 - (IBAction)openBookmark:(id)sender {
@@ -905,10 +914,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
       (action == @selector(deleteBookmark:)) ||
       (action == @selector(cutBookmark:)) ||
       (action == @selector(copyBookmark:))) {
-    // Don't allow edit/delete of the bar node, or of "Other Bookmarks"
-    if ((node == nil) ||
-        (node == bookmarkModel_->other_node()) ||
-        (node == bookmarkModel_->GetBookmarkBarNode())) {
+    if (![self canEditBookmark:node]) {
       return NO;
     }
   }
@@ -1422,7 +1428,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return [offTheSideButton_ isHidden];
 }
 
-- (NSButton*)otherBookmarksButton {
+- (BookmarkButton*)otherBookmarksButton {
   return otherBookmarksButton_.get();
 }
 
@@ -2004,6 +2010,21 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return [[self view] window];
 }
 
+- (BOOL)canDragBookmarkButtonToTrash:(BookmarkButton*)button {
+  return [self canEditBookmark:[button bookmarkNode]];
+}
+
+- (void)didDragBookmarkToTrash:(BookmarkButton*)button {
+  // TODO(mrossetti): Refactor BookmarkBarFolder common code.
+  // http://crbug.com/35966
+  const BookmarkNode* node = [button bookmarkNode];
+  if (node) {
+    const BookmarkNode* parent = node->GetParent();
+    bookmarkModel_->Remove(parent,
+                           parent->IndexOfChild(node));
+  }
+}
+
 #pragma mark BookmarkButtonControllerProtocol
 
 // Close all bookmark folders.  "Folder" here is the fake menu for
@@ -2378,10 +2399,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       // If we are deleting a button whose folder is currently open, close it!
       [self closeAllBookmarkFolders];
     }
-    NSRect poofFrame = [oldButton bounds];
-    NSPoint poofPoint = NSMakePoint(NSMidX(poofFrame), NSMidY(poofFrame));
-    poofPoint = [oldButton convertPoint:poofPoint toView:nil];
-    poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
+    NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
     NSRect oldFrame = [oldButton frame];
     [oldButton setDelegate:nil];
     [oldButton removeFromSuperview];

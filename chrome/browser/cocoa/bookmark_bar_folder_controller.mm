@@ -1042,6 +1042,21 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return [parentController_ browserWindow];
 }
 
+- (BOOL)canDragBookmarkButtonToTrash:(BookmarkButton*)button {
+  return [barController_ canEditBookmark:[button bookmarkNode]];
+}
+
+- (void)didDragBookmarkToTrash:(BookmarkButton*)button {
+  // TODO(mrossetti): Refactor BookmarkBarFolder common code.
+  // http://crbug.com/35966
+  const BookmarkNode* node = [button bookmarkNode];
+  if (node) {
+    const BookmarkNode* parent = node->GetParent();
+    [self bookmarkModel]->Remove(parent,
+                                 parent->IndexOfChild(node));
+  }
+}
+
 #pragma mark BookmarkButtonControllerProtocol
 
 // Recursively close all bookmark folders.
@@ -1349,10 +1364,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)removeButton:(NSInteger)buttonIndex animate:(BOOL)animate {
   // TODO(mrossetti): Get disappearing animation to work. http://crbug.com/42360
   BookmarkButton* oldButton = [buttons_ objectAtIndex:buttonIndex];
-  NSRect poofFrame = [oldButton bounds];
-  NSPoint poofPoint = NSMakePoint(NSMidX(poofFrame), NSMidY(poofFrame));
-  poofPoint = [oldButton convertPoint:poofPoint toView:nil];
-  poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
+  NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
 
   // If a hover-open is pending, cancel it.
   if (oldButton == buttonThatMouseIsIn_) {
