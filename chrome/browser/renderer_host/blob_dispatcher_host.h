@@ -21,20 +21,22 @@ class BlobData;
 
 class BlobDispatcherHost {
  public:
-  explicit BlobDispatcherHost(
-      ChromeBlobStorageContext* blob_storage_context);
+  BlobDispatcherHost(int process_id,
+                     ChromeBlobStorageContext* blob_storage_context);
   ~BlobDispatcherHost();
 
   void Shutdown();
   bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
 
  private:
-
   void OnRegisterBlobUrl(const GURL& url,
                          const scoped_refptr<webkit_blob::BlobData>& blob_data);
   void OnRegisterBlobUrlFrom(const GURL& url, const GURL& src_url);
   void OnUnregisterBlobUrl(const GURL& url);
 
+  bool CheckPermission(webkit_blob::BlobData* blob_data) const;
+
+  int process_id_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   // Keep track of blob URLs registered in this process. Need to unregister

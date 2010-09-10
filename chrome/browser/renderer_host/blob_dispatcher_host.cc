@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 
+#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/render_messages.h"
@@ -13,8 +14,10 @@
 #include "webkit/blob/blob_storage_controller.h"
 
 BlobDispatcherHost::BlobDispatcherHost(
+    int process_id,
     ChromeBlobStorageContext* blob_storage_context)
-    : blob_storage_context_(blob_storage_context) {
+    : process_id_(process_id),
+      blob_storage_context_(blob_storage_context) {
 }
 
 BlobDispatcherHost::~BlobDispatcherHost() {
@@ -46,9 +49,27 @@ bool BlobDispatcherHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
+// Check if the child process has been granted permission to register the files.
+bool BlobDispatcherHost::CheckPermission(
+    webkit_blob::BlobData* blob_data) const {
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  for (std::vector<webkit_blob::BlobData::Item>::const_iterator iter =
+           blob_data->items().begin();
+       iter != blob_data->items().end(); ++iter) {
+    if (iter->type() == webkit_blob::BlobData::TYPE_FILE) {
+      if (!policy->CanUploadFile(process_id_, iter->file_path()))
+        return false;
+    }
+  }
+  return true;
+}
+
 void BlobDispatcherHost::OnRegisterBlobUrl(
     const GURL& url, const scoped_refptr<webkit_blob::BlobData>& blob_data) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (!CheckPermission(blob_data.get()))
+    return;
   blob_storage_context_->controller()->RegisterBlobUrl(url, blob_data);
   blob_urls_.insert(url.spec());
 }

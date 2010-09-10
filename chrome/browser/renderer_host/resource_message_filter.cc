@@ -260,7 +260,8 @@ ResourceMessageFilter::ResourceMessageFilter(
               profile->GetFileSystemHostContext(),
               profile->GetHostContentSettingsMap()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
-          new BlobDispatcherHost(profile->GetBlobStorageContext()))) {
+          new BlobDispatcherHost(
+              this->id(), profile->GetBlobStorageContext()))) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
