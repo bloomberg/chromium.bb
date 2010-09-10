@@ -35,7 +35,7 @@ echo.
 echo Creating %Out%
 
 echo>"%Out%" @echo off
-echo>>"%Out%" "%~dp0chrome-update.bat" "%Trunk%" ^> "%Trunk%\chrome-update-results.txt" 
+echo>>"%Out%" "%~dp0chrome-update.bat" "%Trunk%" --solution chrome.sln --target Debug --build-dir src/chrome ^> "%Trunk%\chrome-update-results.txt" 
 
 :CreateTask
 

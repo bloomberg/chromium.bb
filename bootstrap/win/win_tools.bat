@@ -76,7 +76,6 @@ goto :END
 :PYTHON_INSTALL
 echo Installing python ...
 :: Cleanup python directory if it was existing.
-if exist "%WIN_TOOLS_ROOT_DIR%\python\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python"
 if exist "%WIN_TOOLS_ROOT_DIR%\python_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python_bin"
 call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python_26 "%WIN_TOOLS_ROOT_DIR%\python_bin"
 if errorlevel 1 goto :PYTHON_FAIL
