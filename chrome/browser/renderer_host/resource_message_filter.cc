@@ -1725,7 +1725,7 @@ void ResourceMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
   base::PlatformFile file = base::CreatePlatformFile(
       path, flags, NULL, &error_code);
   IPC::PlatformFileForTransit file_for_transit =
-      base::kInvalidPlatformFileValue;
+      IPC::InvalidPlatformFileForTransit();
   if (file != base::kInvalidPlatformFileValue) {
 #if defined(OS_WIN)
     ::DuplicateHandle(::GetCurrentProcess(), file, handle(),
