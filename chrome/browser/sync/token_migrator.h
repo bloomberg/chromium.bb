@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_SYNC_TOKEN_MIGRATOR_H_
+#define CHROME_BROWSER_SYNC_TOKEN_MIGRATOR_H_
+#pragma once
+
 #include <string>
 
 #include "base/file_path.h"
@@ -51,3 +55,5 @@ class TokenMigrator {
 
 // We ensure this object will outlive its tasks, so don't need refcounting.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(TokenMigrator);
+
+#endif  // CHROME_BROWSER_SYNC_TOKEN_MIGRATOR_H_
