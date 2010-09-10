@@ -10,6 +10,22 @@ import sys
 
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
 
+
+class CommandResult(object):
+  """An object to store various attributes of a child process."""
+
+  def __init__(self):
+    self.cmd = None
+    self.error = None
+    self.output = None
+    self.returncode = None
+
+
+class RunCommandError(Exception):
+  """Error caught in RunCommand() method."""
+  pass
+
+
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False):
@@ -36,6 +52,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   stderr = None
   stdin = None
   output = ''
+  cmd_result = CommandResult()
 
   # Modify defaults based on parameters.
   if redirect_stdout:  stdout = subprocess.PIPE
@@ -51,25 +68,27 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # Print out the command before running.
   if print_cmd:
     Info('RunCommand: %s' % cmd_str)
+  cmd_result.cmd = cmd_str
 
   try:
-    proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin,
+    proc = subprocess.Popen(cmd_str, cwd=cwd, stdin=stdin,
                             stdout=stdout, stderr=stderr,
                             shell=shell)
-    (output, error) = proc.communicate(input)
+    (cmd_result.output, cmd_result.error) = proc.communicate(input)
     if exit_code:
-      return proc.returncode
+      cmd_result.returncode = proc.returncode
 
     if not error_ok and proc.returncode:
-      raise Exception('Command "%s" failed.\n' % cmd_str +
-                      (error_message or error or output or ''))
+      msg = ('Command "%s" failed.\n' % cmd_str +
+             (error_message or cmd_result.error or cmd_result.output or ''))
+      raise RunCommandError(msg)
   except Exception,e:
     if not error_ok:
       raise
     else:
       Warning(str(e))
 
-  return output
+  return cmd_result
 
 
 class Color(object):
