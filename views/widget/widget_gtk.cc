@@ -1413,12 +1413,16 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       DCHECK(GTK_WIDGET_REALIZED(widget_));
       gdk_window_set_composited(widget_->window, true);
     }
-    if (!bounds.size().IsEmpty()) {
+    if (parent && !bounds.size().IsEmpty()) {
       // Make sure that an widget is given it's initial size before
       // we're done initializing, to take care of some potential
       // corner cases when programmatically arranging hierarchies as
       // seen in
       // http://code.google.com/p/chromium-os/issues/detail?id=5987
+
+      // This can't be done without a parent present, or stale data
+      // might show up on the screen as seen in
+      // http://code.google.com/p/chromium/issues/detail?id=53870
       GtkAllocation alloc = { 0, 0, bounds.width(), bounds.height() };
       gtk_widget_size_allocate(widget_, &alloc);
     }
