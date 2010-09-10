@@ -103,6 +103,8 @@ const char kPageActionModuleName[] = "pageAction";
 const char kPageActionsModuleName[] = "pageActions";
 const char kTestModuleName[] = "test";
 
+// Names of modules that can be used without listing it in the permissions
+// section of the manifest.
 const char* kNonPermissionModuleNames[] = {
     kBrowserActionModuleName,
     kBrowserActionsModuleName,
@@ -115,6 +117,16 @@ const char* kNonPermissionModuleNames[] = {
 };
 const size_t kNumNonPermissionModuleNames =
     arraysize(kNonPermissionModuleNames);
+
+// Names of functions (within modules requiring permissions) that can be used
+// without asking for the module permission. In other words, functions you can
+// use with no permissions specified.
+const char* kNonPermissionFunctionNames[] = {
+  "tabs.create",
+  "tabs.update"
+};
+const size_t kNumNonPermissionFunctionNames =
+    arraysize(kNonPermissionFunctionNames);
 
 }  // namespace
 
@@ -1821,8 +1833,20 @@ bool Extension::CanAccessURL(const URLPattern pattern) const {
 // static.
 bool Extension::HasApiPermission(
     const std::vector<std::string>& api_permissions,
-    const std::string& permission) {
-  std::string permission_name = permission;
+    const std::string& function_name) {
+  std::string permission_name = function_name;
+
+  for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
+    if (permission_name == kNonPermissionFunctionNames[i])
+      return true;
+  }
+
+  // See if this is a function or event name first and strip out the package.
+  // Functions will be of the form package.function
+  // Events will be of the form package/id or package.optional.stuff
+  size_t separator = function_name.find_first_of("./");
+  if (separator != std::string::npos)
+    permission_name = function_name.substr(0, separator);
 
   // windows and tabs are the same permission.
   if (permission_name == "windows")

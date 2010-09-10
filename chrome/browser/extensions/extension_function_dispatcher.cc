@@ -455,13 +455,8 @@ void ExtensionFunctionDispatcher::HandleRequest(
   function->set_include_incognito(service->IsIncognitoEnabled(extension) &&
                                   !extension->incognito_split_mode());
 
-  std::string permission_name = function->name();
-  size_t separator = permission_name.find_first_of("./");
-  if (separator != std::string::npos)
-    permission_name = permission_name.substr(0, separator);
-
   if (!service->ExtensionBindingsAllowed(function->source_url()) ||
-      !extension->HasApiPermission(permission_name)) {
+      !extension->HasApiPermission(function->name())) {
     render_view_host_->BlockExtensionRequest(function->request_id());
     return;
   }

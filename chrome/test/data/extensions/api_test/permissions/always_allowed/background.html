@@ -1,0 +1,31 @@
+<script>
+// This tests whether we have permission to use individual functions, despite
+// not having asked for any permissions in the manifest.
+
+chrome.test.runTests([
+
+  // Test the tabs API.
+  function tabs() {
+    try {
+      chrome.tabs.create({url: "404_is_enough.html"}, function(tab1) {
+        chrome.tabs.update(tab1.id, {url: "404_again.html"}, function(tab2) {
+          chrome.test.succeed();
+        });
+      });
+    } catch (e) {
+      chrome.test.fail();
+    }
+  },
+
+  // Negative test for the tabs API.
+  function tabsNegative() {
+    try {
+      var tab = chrome.tabs.getSelected();
+      chrome.test.fail();
+    } catch (e) {
+      chrome.test.succeed();
+    }
+  }
+
+]);
+</script>

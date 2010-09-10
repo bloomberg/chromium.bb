@@ -42,6 +42,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FavIconPermission) {
   ASSERT_TRUE(RunExtensionTest("permissions/favicon")) << message_;
 }
 
+// Test functions and APIs that are always allowed (even if you ask for no
+// permissions.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlwaysAllowed) {
+  ASSERT_TRUE(RunExtensionTest("permissions/always_allowed")) << message_;
+}
+
 // TODO(gregoryd): run the NaCl test on all systems once
 // http://code.google.com/p/chromium/issues/detail?id=51335 is fixed.
 // Meanwhile we run it on Mac OSX only, since we can be sure that an x86-32 NaCl

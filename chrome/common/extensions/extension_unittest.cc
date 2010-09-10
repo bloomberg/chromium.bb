@@ -945,7 +945,7 @@ TEST(ExtensionTest, ImageCaching) {
 }
 
 // Tests that the old permission name "unlimited_storage" still works for
-// backwards compatability (we renamed it to "unlimitedStorage").
+// backwards compatibility (we renamed it to "unlimitedStorage").
 TEST(ExtensionTest, OldUnlimitedStoragePermission) {
   ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
@@ -970,4 +970,46 @@ TEST(ExtensionTest, OldUnlimitedStoragePermission) {
   EXPECT_TRUE(extension.InitFromValue(dictionary, false, &errors));
   EXPECT_TRUE(extension.HasApiPermission(
       Extension::kUnlimitedStoragePermission));
+}
+
+// This tests the API permissions with an empty manifest (one that just
+// specifies a name and a version and nothing else).
+TEST(ExtensionTest, ApiPermissions) {
+  const struct {
+    const char* permission_name;
+    bool expect_success;
+  } kTests[] = {
+    // Negative test.
+    { "non_existing_permission", false },
+    // Test default module/package permission.
+    { "browserAction",  true },
+    { "browserActions", true },
+    { "devtools",       true },
+    { "extension",      true },
+    { "i18n",           true },
+    { "pageAction",     true },
+    { "pageActions",    true },
+    { "test",           true },
+    // Some negative tests.
+    { "bookmarks",      false },
+    { "cookies",        false },
+    { "history",        false },
+    { "tabs.onUpdated", false },
+    // Make sure we find the module name after stripping '.' and '/'.
+    { "browserAction/abcd/onClick",  true },
+    { "browserAction.abcd.onClick",  true },
+    // Test Tabs functions.
+    { "tabs.create",      true},
+    { "tabs.update",      true},
+    { "tabs.getSelected", false},
+  };
+
+  scoped_ptr<Extension> extension;
+  extension.reset(LoadManifest("empty_manifest", "empty.json"));
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+    EXPECT_EQ(kTests[i].expect_success,
+              extension->HasApiPermission(kTests[i].permission_name))
+                  << "Permission being tested: " << kTests[i].permission_name;
+  }
 }

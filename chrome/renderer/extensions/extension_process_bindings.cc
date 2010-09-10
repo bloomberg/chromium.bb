@@ -682,17 +682,8 @@ bool ExtensionProcessBindings::CurrentContextHasPermission(
 // static
 bool ExtensionProcessBindings::HasPermission(const std::string& extension_id,
                                              const std::string& permission) {
-  std::string permission_name = permission;
-
-  // See if this is a function or event name first and strip out the package.
-  // Functions will be of the form package.function
-  // Events will be of the form package/id or package.optional.stuff
-  size_t separator = permission.find_first_of("./");
-  if (separator != std::string::npos)
-    permission_name = permission.substr(0, separator);
-
   PermissionsList& permissions_list = *GetPermissionsList(extension_id);
-  return Extension::HasApiPermission(permissions_list, permission_name);
+  return Extension::HasApiPermission(permissions_list, permission);
 }
 
 // static
