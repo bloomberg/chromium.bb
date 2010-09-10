@@ -1175,7 +1175,14 @@ def Main(argv):
         '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
         for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
     parser = optparse.OptionParser(version='%prog ' + __version__)
-    parser.add_option('-j', '--jobs', default=1, type='int',
+    # TODO(maruel): Temporary workaround to disable parallel checkout on
+    # buildbots until they can correctly parse its output. Uses that fact that
+    # stdout is redirected as a signal.
+    if sys.stdout.isatty():
+      jobs = 8
+    else:
+      jobs = 1
+    parser.add_option('-j', '--jobs', default=jobs, type='int',
                       help='Specify how many SCM commands can run in parallel; '
                            'default=%default')
     parser.add_option('-v', '--verbose', action='count', default=0,
