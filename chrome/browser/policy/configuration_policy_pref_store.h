@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
@@ -54,7 +52,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
 
   static const PolicyToPreferenceMapEntry simple_policy_map_[];
   static const PolicyToPreferenceMapEntry proxy_policy_map_[];
-  static const PolicyToPreferenceMapEntry default_search_policy_map_[];
 
   const CommandLine* command_line_;
   ConfigurationPolicyProvider* provider_;
@@ -88,15 +85,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   bool ApplyPolicyFromMap(PolicyType policy, Value* value,
                           const PolicyToPreferenceMapEntry map[], int size);
 
-  // Returns the map entry that corresponds to |policy| in the map.
-  const PolicyToPreferenceMapEntry* FindPolicyInMap(PolicyType policy,
-      const PolicyToPreferenceMapEntry* map, int size);
-
-  // Remove the preferences found in the map from |prefs_|.  Returns true if
-  // any such preferences were found and removed.
-  bool RemovePreferencesOfMap(const PolicyToPreferenceMapEntry* map,
-                              int table_size);
-
   // Processes proxy-specific policies. Returns true if the specified policy
   // is a proxy-related policy. ApplyProxyPolicy assumes the ownership
   // of |value| in the case that the policy is proxy-specific.
@@ -109,16 +97,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // Handles policies that affect AutoFill. Returns true if the policy was
   // handled and assumes ownership of |value| in that case.
   bool ApplyAutoFillPolicy(PolicyType policy, Value* value);
-
-  // Make sure that the |path| if present in |prefs_|.  If not, set it to
-  // a blank string.
-  void EnsureStringPrefExists(const std::string& path);
-
-  // If the required entries for default search are specified and valid,
-  // finalizes the policy-specified configuration by initializing the
-  // unspecified map entries.  Otherwise wipes all default search related
-  // map entries from |prefs_|.
-  void FinalizeDefaultSearchPolicySettings();
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };

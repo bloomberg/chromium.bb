@@ -20,16 +20,6 @@ const char kHomepageLocation[] = "HomepageLocation";
 const char kHomepageIsNewTabPage[] = "HomepageIsNewTabPage";
 const char kRestoreOnStartup[] = "RestoreOnStartup";
 const char kURLsToRestoreOnStartup[] = "RestoreOnStartupURLs";
-const char kDefaultSearchProviderName[] = "DefaultSearchProviderName";
-const char kDefaultSearchProviderKeyword[] = "DefaultSearchProviderKeyword";
-const char kDefaultSearchProviderSearchURL[] =
-    "DefaultSearchProviderSearchURL";
-const char kDefaultSearchProviderSuggestURL[] =
-    "DefaultSearchProviderSuggestURL";
-const char kDefaultSearchProviderIconURL[] =
-    "DefaultSearchProviderIconURL";
-const char kDefaultSearchProviderEncodings[] =
-    "DefaultSearchProviderEncodings";
 const char kProxyServerMode[] = "ProxyServerMode";
 const char kProxyServer[] = "ProxyServer";
 const char kProxyPacUrl[] = "ProxyPacUrl";

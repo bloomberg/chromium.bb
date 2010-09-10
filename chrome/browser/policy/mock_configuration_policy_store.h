@@ -25,8 +25,7 @@ class MockConfigurationPolicyStore : public ConfigurationPolicyStore {
 
   // ConfigurationPolicyStore implementation.
   virtual void Apply(PolicyType policy, Value* value) {
-    std::swap(policy_map_[policy], value);
-    delete value;
+    policy_map_[policy] = value;
   }
 
  private:

@@ -23,8 +23,7 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   typedef std::map<ConfigurationPolicyStore::PolicyType, Value*> PolicyMap;
 
   void AddPolicy(ConfigurationPolicyStore::PolicyType policy, Value* value) {
-    std::swap(policy_map_[policy], value);
-    delete value;
+    policy_map_[policy] = value;
   }
 
   // ConfigurationPolicyProvider method overrides.
