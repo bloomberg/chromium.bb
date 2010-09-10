@@ -368,7 +368,7 @@ below:
       </message>
 
       <message name="IDS_PDF_LOADING_PROGRESS" desc="A message displayed on the PDF control to indicate loading progress.">
-        Loading document: <ph name="PAGE_NUMBER">%d<ex>3</ex></ph>/<ph name="NUMBER_OF_PAGES">%d<ex>15</ex></ph> pages...
+        Loading document: %d/%d pages...
       </message>
     </messages>
   </release>
