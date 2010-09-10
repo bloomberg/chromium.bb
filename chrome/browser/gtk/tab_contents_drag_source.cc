@@ -101,7 +101,9 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
 
   drop_data_.reset(new WebDropData(drop_data));
 
-  if (!image.isNull())
+  // The image we get from WebKit makes heavy use of alpha-shading. This looks
+  // bad on non-compositing WMs. Fall back to the default drag icon.
+  if (!image.isNull() && gtk_util::IsScreenComposited())
     drag_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&image);
   image_offset_ = image_offset;
 
