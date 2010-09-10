@@ -31,3 +31,8 @@ BUG54465 WIN SKIP : http/tests/media/video-play-stall-seek.html = FAIL
 
 // Temporary override until WebKit roll picks up r67119
 BUGWK45479 : fast/dom/HTMLLinkElement/prefetch.html = TEXT
+
+// dpranke - Temporary overrides until I can sort out the WK rolls
+BUGDIRK : fast/dom/dataset-gc.html = TEXT
+BUGDIRK : svg/repaint/filter-repaint.svg = CRASH
+BUGDIRK LINUX : svg/dynamic-updates/SVGFEDiffuseLightingElement-lighting-color-css-prop.html = IMAGE
