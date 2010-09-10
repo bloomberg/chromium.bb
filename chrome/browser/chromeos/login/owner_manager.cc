@@ -81,7 +81,7 @@ void OwnerManager::ExportKey() {
   }
 }
 
-void OwnerManager::Run(bool value) {
+void OwnerManager::OnComplete(bool value) {
   LOG(INFO) << "Export public key attempt: " << (value ? "success" : "fail");
   NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
   if (!value)

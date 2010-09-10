@@ -25,7 +25,7 @@ namespace chromeos {
 // It handles generating the appropriate keys and storing them in the
 // appropriate locations.
 class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
-                     public LoginLibrary::Delegate<bool> {
+                     public LoginLibrary::Delegate {
  public:
   // Return codes for public/private key operations.
   enum KeyOpCode {
@@ -65,7 +65,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
   void ExportKey();
 
   // Overridden from LoginLibrary::Delegate
-  void Run(bool value);
+  void OnComplete(bool value);
 
   bool EnsurePublicKey();
   bool EnsurePrivateKey();

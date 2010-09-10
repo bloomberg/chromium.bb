@@ -26,7 +26,7 @@ class MockKeyUtils : public OwnerKeyUtils {
   MockKeyUtils() {}
   MOCK_METHOD0(GenerateKeyPair, RSAPrivateKey*());
   MOCK_METHOD2(ExportPublicKeyViaDbus, bool(RSAPrivateKey* pair,
-                                            LoginLibrary::Delegate<bool>*));
+                                            LoginLibrary::Delegate*));
   MOCK_METHOD2(ExportPublicKeyToFile, bool(RSAPrivateKey* pair,
                                            const FilePath& key_file));
   MOCK_METHOD2(ImportPublicKey, bool(const FilePath& key_file,
@@ -41,13 +41,13 @@ class MockKeyUtils : public OwnerKeyUtils {
   MOCK_METHOD0(GetOwnerKeyFilePath, FilePath());
 
   // To simulate doing a LoginLibrary::SetOwnerKey call
-  static void SetOwnerKeyCallback(LoginLibrary::Delegate<bool>* callback,
+  static void SetOwnerKeyCallback(LoginLibrary::Delegate* callback,
                                   bool value) {
-    callback->Run(value);
+    callback->OnComplete(value);
   }
 
   static bool ExportPublicKeyViaDbusWin(RSAPrivateKey* key,
-                                        LoginLibrary::Delegate<bool>* d) {
+                                        LoginLibrary::Delegate* d) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(&SetOwnerKeyCallback, d, true));
@@ -55,7 +55,7 @@ class MockKeyUtils : public OwnerKeyUtils {
   }
 
   static bool ExportPublicKeyViaDbusFail(RSAPrivateKey* key,
-                                         LoginLibrary::Delegate<bool>* d) {
+                                         LoginLibrary::Delegate* d) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(&SetOwnerKeyCallback, d, false));

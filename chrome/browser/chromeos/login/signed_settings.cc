@@ -38,7 +38,7 @@ class CheckWhitelistOp : public SignedSettings {
 };
 
 class WhitelistOp : public SignedSettings,
-                    public LoginLibrary::Delegate<bool> {
+                    public LoginLibrary::Delegate {
  public:
   WhitelistOp(const std::string& email,
               bool add_to_whitelist,
@@ -48,8 +48,8 @@ class WhitelistOp : public SignedSettings,
   // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
-  // Implementation of LoginLibrary::Delegate::Run()
-  void Run(bool value);
+  // Implementation of LoginLibrary::Delegate::OnComplete()
+  void OnComplete(bool value);
 
  private:
   bool InitiateWhitelistOp(const std::vector<uint8>& signature);
@@ -60,7 +60,7 @@ class WhitelistOp : public SignedSettings,
 };
 
 class StorePropertyOp : public SignedSettings,
-                        public LoginLibrary::Delegate<bool> {
+                        public LoginLibrary::Delegate {
  public:
   StorePropertyOp(const std::string& name,
                   const std::string& value,
@@ -70,8 +70,8 @@ class StorePropertyOp : public SignedSettings,
   // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
-  // Implementation of LoginLibrary::Delegate::Run()
-  void Run(bool value);
+  // Implementation of LoginLibrary::Delegate::OnComplete()
+  void OnComplete(bool value);
 
  private:
   std::string name_;
@@ -192,14 +192,14 @@ void WhitelistOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
   // Now, sure we're on the UI thread.
   bool success = false;
   if (return_code == OwnerManager::SUCCESS) {
-    // Run() will be called when this is done.
+    // OnComplete() will be called when this is done.
     success = InitiateWhitelistOp(payload);
   }
   if (!success)
     d_->OnSettingsOpFailed();
 }
 
-void WhitelistOp::Run(bool value) {
+void WhitelistOp::OnComplete(bool value) {
   if (value)
     d_->OnSettingsOpSucceeded(value);
   else
@@ -246,7 +246,7 @@ void StorePropertyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
   // Now, sure we're on the UI thread.
   bool success = false;
   if (return_code == OwnerManager::SUCCESS) {
-    // Run() will be called when this is done.
+    // OnComplete() will be called when this is done.
     success = CrosLibrary::Get()->GetLoginLibrary()->StorePropertyAsync(name_,
                                                                         value_,
                                                                         payload,
@@ -256,7 +256,7 @@ void StorePropertyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
     d_->OnSettingsOpFailed();
 }
 
-void StorePropertyOp::Run(bool value) {
+void StorePropertyOp::OnComplete(bool value) {
   if (value)
     d_->OnSettingsOpSucceeded(value);
   else

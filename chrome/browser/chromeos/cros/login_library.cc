@@ -41,7 +41,7 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
   bool SetOwnerKeyAsync(const std::vector<uint8>& public_key_der,
-                        Delegate<bool>* callback) {
+                        Delegate* callback) {
     DCHECK(callback) << "must provide a callback to SetOwnerKeyAsync()";
     if (set_owner_key_callback_)
       return false;
@@ -52,7 +52,7 @@ class LoginLibraryImpl : public LoginLibrary {
   bool StorePropertyAsync(const std::string& name,
                           const std::string& value,
                           const std::vector<uint8>& signature,
-                          Delegate<bool>* callback) {
+                          Delegate* callback) {
     DCHECK(callback) << "must provide a callback to StorePropertyAsync()";
     if (property_op_callback_)
       return false;
@@ -62,7 +62,7 @@ class LoginLibraryImpl : public LoginLibrary {
 
   bool UnwhitelistAsync(const std::string& email,
                         const std::vector<uint8>& signature,
-                        Delegate<bool>* callback) {
+                        Delegate* callback) {
     DCHECK(callback) << "must provide a callback to UnwhitelistAsync()";
     if (whitelist_op_callback_)
       return false;
@@ -72,7 +72,7 @@ class LoginLibraryImpl : public LoginLibrary {
 
   bool WhitelistAsync(const std::string& email,
                       const std::vector<uint8>& signature,
-                      Delegate<bool>* callback) {
+                      Delegate* callback) {
     DCHECK(callback) << "must provide a callback to WhitelistAsync()";
     if (whitelist_op_callback_)
       return false;
@@ -134,27 +134,27 @@ class LoginLibraryImpl : public LoginLibrary {
   void CompleteSetOwnerKey(bool result) {
     CHECK(set_owner_key_callback_) << "CompleteSetOwnerKey() called without "
                                       "a registered callback!";
-    set_owner_key_callback_->Run(result);
+    set_owner_key_callback_->OnComplete(result);
     set_owner_key_callback_ = NULL;
   }
 
   void CompleteWhitelistOp(bool result) {
     CHECK(whitelist_op_callback_);
-    whitelist_op_callback_->Run(result);
+    whitelist_op_callback_->OnComplete(result);
     whitelist_op_callback_ = NULL;
   }
 
   void CompletePropertyOp(bool result) {
     CHECK(property_op_callback_);
-    property_op_callback_->Run(result);
+    property_op_callback_->OnComplete(result);
     property_op_callback_ = NULL;
   }
 
   chromeos::SessionConnection session_connection_;
 
-  Delegate<bool>* set_owner_key_callback_;
-  Delegate<bool>* whitelist_op_callback_;
-  Delegate<bool>* property_op_callback_;
+  Delegate* set_owner_key_callback_;
+  Delegate* whitelist_op_callback_;
+  Delegate* property_op_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginLibraryImpl);
 };
@@ -178,7 +178,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
     return true;
   }
   bool SetOwnerKeyAsync(const std::vector<uint8>& public_key_der,
-                        Delegate<bool>* callback) {
+                        Delegate* callback) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
@@ -187,7 +187,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
   bool StorePropertyAsync(const std::string& name,
                           const std::string& value,
                           const std::vector<uint8>& signature,
-                          Delegate<bool>* callback) {
+                          Delegate* callback) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
@@ -195,7 +195,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
   }
   bool UnwhitelistAsync(const std::string& email,
                         const std::vector<uint8>& signature,
-                        Delegate<bool>* callback) {
+                        Delegate* callback) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
@@ -203,7 +203,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
   }
   bool WhitelistAsync(const std::string& email,
                       const std::vector<uint8>& signature,
-                      Delegate<bool>* callback) {
+                      Delegate* callback) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
@@ -218,8 +218,8 @@ class LoginLibraryStubImpl : public LoginLibrary {
   bool RestartJob(int pid, const std::string& command_line) { return true; }
 
  private:
-  static void DoStubCallback(Delegate<bool>* callback) {
-    callback->Run(true);
+  static void DoStubCallback(Delegate* callback) {
+    callback->OnComplete(true);
   }
 
   DISALLOW_COPY_AND_ASSIGN(LoginLibraryStubImpl);

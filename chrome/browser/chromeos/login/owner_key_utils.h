@@ -54,7 +54,7 @@ class OwnerKeyUtils : public base::RefCounted<OwnerKeyUtils> {
   // d->Run() will be called with a boolean indicating success or failure when
   // the attempt is complete.
   virtual bool ExportPublicKeyViaDbus(base::RSAPrivateKey* pair,
-                                      LoginLibrary::Delegate<bool>* d) = 0;
+                                      LoginLibrary::Delegate* d) = 0;
 
   // DER encodes public half of |pair| and writes it out to |key_file|.
   // The blob on disk is a DER-encoded X509 SubjectPublicKeyInfo object.

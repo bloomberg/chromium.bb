@@ -51,7 +51,7 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
   RSAPrivateKey* GenerateKeyPair();
 
   bool ExportPublicKeyViaDbus(RSAPrivateKey* pair,
-                              LoginLibrary::Delegate<bool>* d);
+                              LoginLibrary::Delegate* d);
 
   bool ExportPublicKeyToFile(RSAPrivateKey* pair, const FilePath& key_file);
 
@@ -110,9 +110,8 @@ RSAPrivateKey* OwnerKeyUtilsImpl::GenerateKeyPair() {
   return RSAPrivateKey::CreateSensitive(kKeySizeInBits);
 }
 
-bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(
-    RSAPrivateKey* pair,
-    LoginLibrary::Delegate<bool>* d) {
+bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(RSAPrivateKey* pair,
+                                               LoginLibrary::Delegate* d) {
   DCHECK(pair);
   bool ok = false;
 

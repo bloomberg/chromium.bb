@@ -16,10 +16,9 @@ namespace chromeos {
 // This interface defines the interaction with the ChromeOS login library APIs.
 class LoginLibrary {
  public:
-  template <class T>
   class Delegate {
    public:
-    virtual void Run(T value) = 0;
+    virtual void OnComplete(bool value) = 0;
   };
 
   virtual ~LoginLibrary() {}
@@ -47,7 +46,7 @@ class LoginLibrary {
   //  Returns true if the attempt was successfully started.
   //  callback->Run() will be called when the operation is complete.
   virtual bool SetOwnerKeyAsync(const std::vector<uint8>& public_key_der,
-                                Delegate<bool>* callback) = 0;
+                                Delegate* callback) = 0;
 
   // Attempts to issue a signed async request to store |name|=|value|.
   // |signature| must by a SHA1 with RSA encryption signature over the string
@@ -57,7 +56,7 @@ class LoginLibrary {
   virtual bool StorePropertyAsync(const std::string& name,
                                   const std::string& value,
                                   const std::vector<uint8>& signature,
-                                  Delegate<bool>* callback) = 0;
+                                  Delegate* callback) = 0;
 
   // Attempts to issue a signed async request to whitelist |email|.
   // |signature| must by a SHA1 with RSA encryption signature over |email|
@@ -66,7 +65,7 @@ class LoginLibrary {
   //  callback->Run() will be called when the operation is complete.
   virtual bool WhitelistAsync(const std::string& email,
                               const std::vector<uint8>& signature,
-                              Delegate<bool>* callback) = 0;
+                              Delegate* callback) = 0;
 
   // Attempts to issue a signed async request to remove |email| from the
   // whitelist of users allowed to log in to this machine.
@@ -76,7 +75,7 @@ class LoginLibrary {
   //  callback->Run() will be called when the operation is complete.
   virtual bool UnwhitelistAsync(const std::string& email,
                                 const std::vector<uint8>& signature,
-                                Delegate<bool>* callback) = 0;
+                                Delegate* callback) = 0;
 
   // Retrieves the user white list. Note the call is for display purpose only.
   // To determine if an email is white listed, you MUST use CheckWhitelist.
