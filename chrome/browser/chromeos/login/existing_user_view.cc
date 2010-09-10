@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "grit/generated_resources.h"
+#include "views/focus/focus_manager.h"
 #include "views/grid_layout.h"
 
 namespace chromeos {
@@ -69,12 +70,17 @@ class UserEntryTextfield : public views::Textfield {
 };
 
 void ExistingUserView::RecreateFields() {
-  delete password_field_;
-  password_field_ = new UserEntryTextfield(user_controller_,
-                                           views::Textfield::STYLE_PASSWORD);
+  if (password_field_ == NULL) {
+    password_field_ = new UserEntryTextfield(user_controller_,
+                                             views::Textfield::STYLE_PASSWORD);
+    password_field_->SetFocusable(true);
+    password_field_->SetController(user_controller_);
+  }
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_EMPTY_PASSWORD_TEXT));
-  password_field_->SetController(user_controller_);
+  if (submit_button_ && GetFocusManager()) {
+    GetFocusManager()->ViewRemoved(this, submit_button_);
+  }
   delete submit_button_;
   submit_button_ = new UserEntryNativeButton(
       user_controller_, user_controller_,
@@ -93,6 +99,16 @@ void ExistingUserView::RecreateFields() {
   SetLayoutManager(layout);
   layout->Layout(this);
   SchedulePaint();
+}
+
+void ExistingUserView::FocusPasswordField() {
+  if (GetFocusManager()) {
+    password_field()->RequestFocus();
+  }
+}
+
+void ExistingUserView::OnLocaleChanged() {
+  RecreateFields();
 }
 
 }  // namespace chromeos

@@ -203,7 +203,7 @@ void ExistingUserController::Login(UserController* source,
       std::find(controllers_.begin(), controllers_.end(), source);
   DCHECK(i != controllers_.end());
 
-  if (selected_view_index_ == static_cast<size_t>(i - controllers_.begin())) {
+  if (i == controllers_.begin() + selected_view_index_) {
     num_login_attempts_++;
   } else {
     selected_view_index_ = i - controllers_.begin();

@@ -447,7 +447,7 @@ void UserController::SelectUser(int index) {
 }
 
 void UserController::FocusPasswordField() {
-  existing_user_view_->password_field()->RequestFocus();
+  existing_user_view_->FocusPasswordField();
 }
 
 }  // namespace chromeos

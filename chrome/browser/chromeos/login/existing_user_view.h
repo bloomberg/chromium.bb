@@ -23,19 +23,15 @@ class ExistingUserView : public views::View {
 
   void RecreateFields();
 
-  views::Textfield* password_field() {
-    return password_field_;
-  }
+  views::Textfield* password_field() { return password_field_; }
 
-  views::NativeButton* submit_button() {
-    return submit_button_;
-  }
+  views::NativeButton* submit_button() { return submit_button_; }
+
+  void FocusPasswordField();
 
  protected:
   // views::View overrides:
-  virtual void OnLocaleChanged() {
-    RecreateFields();
-  }
+  virtual void OnLocaleChanged();
 
   // For editing the password.
   views::Textfield* password_field_;
