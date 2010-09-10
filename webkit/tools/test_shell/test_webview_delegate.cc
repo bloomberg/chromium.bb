@@ -28,6 +28,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
@@ -87,6 +89,8 @@ using WebKit::WebDataSource;
 using WebKit::WebDragData;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
+using WebKit::WebFileSystem;
+using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
@@ -1103,6 +1107,19 @@ void TestWebViewDelegate::didRunInsecureContent(
 bool TestWebViewDelegate::allowScript(WebFrame* frame,
                                       bool enabled_per_settings) {
   return enabled_per_settings && shell_->allow_scripts();
+}
+
+void TestWebViewDelegate::openFileSystem(
+    WebFrame* frame, WebFileSystem::Type type, long long size,
+    WebFileSystemCallbacks* callbacks) {
+  if (shell_->file_system_root().empty()) {
+    // The FileSystem temp directory was not initialized successfully.
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+  } else {
+    callbacks->didOpenFileSystem(
+        "TestShellFileSystem",
+        webkit_glue::FilePathToWebString(shell_->file_system_root()));
+  }
 }
 
 // WebPluginPageDelegate -----------------------------------------------------

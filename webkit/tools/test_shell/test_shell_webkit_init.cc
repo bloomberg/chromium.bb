@@ -40,6 +40,7 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
   WebKit::WebRuntimeFeatures::enableTouch(true);
   WebKit::WebRuntimeFeatures::enableIndexedDatabase(true);
   WebKit::WebRuntimeFeatures::enableSpeechInput(true);
+  WebKit::WebRuntimeFeatures::enableFileSystem(true);
 
   // TODO(hwennborg): Enable this once the implementation supports it.
   WebKit::WebRuntimeFeatures::enableDeviceMotion(false);

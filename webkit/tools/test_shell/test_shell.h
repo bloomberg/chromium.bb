@@ -33,6 +33,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/scoped_temp_dir.h"
 #if defined(OS_MACOSX)
 #include "base/lazy_instance.h"
 #endif
@@ -317,6 +318,10 @@ public:
       test_params_ = test_params;
     }
 
+    const FilePath& file_system_root() const {
+      return file_system_root_.path();
+    }
+
 #if defined(OS_MACOSX)
     // handle cleaning up a shell given the associated window
     static void DestroyAssociatedShell(gfx::NativeWindow handle);
@@ -415,6 +420,9 @@ private:
     scoped_ptr<TestShellDevToolsClient> dev_tools_client_;
     scoped_ptr<WebKit::WebDeviceOrientationClientMock>
         device_orientation_client_mock_;
+
+    // A temporary directory for FileSystem API.
+    ScopedTempDir file_system_root_;
 
     const TestParams* test_params_;
 

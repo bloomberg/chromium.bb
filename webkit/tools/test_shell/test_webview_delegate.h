@@ -27,6 +27,7 @@
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #if defined(OS_MACOSX)
@@ -222,6 +223,11 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void didRunInsecureContent(
       WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin);
   virtual bool allowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual void openFileSystem(
+      WebKit::WebFrame* frame,
+      WebKit::WebFileSystem::Type type,
+      long long size,
+      WebKit::WebFileSystemCallbacks* callbacks);
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(

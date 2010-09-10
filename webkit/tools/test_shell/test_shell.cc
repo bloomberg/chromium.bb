@@ -159,6 +159,12 @@ TestShell::TestShell()
     url_util::AddStandardScheme("test-shell-resource");
 
     URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
+
+    if (!file_system_root_.CreateUniqueTempDir()) {
+      LOG(WARNING) << "Failed to create a temp dir for the filesystem."
+                      "FileSystem feature will be disabled.";
+      DCHECK(file_system_root_.path().empty());
+    }
 }
 
 TestShell::~TestShell() {
