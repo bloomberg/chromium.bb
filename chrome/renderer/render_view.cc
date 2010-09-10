@@ -805,6 +805,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnAccessibilityObjectChildrenChangeAck)
     IPC_MESSAGE_HANDLER(ViewMsg_OpenFileSystemRequest_Complete,
                         OnOpenFileSystemRequestComplete)
+    IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -5688,4 +5689,13 @@ void RenderView::OnOpenFileSystemRequestComplete(
     request->callbacks->didFail(WebKit::WebFileErrorSecurity);
   request->callbacks = NULL;
   pending_file_system_requests_.Remove(request_id);
+}
+
+void RenderView::OnAsyncFileOpened(base::PlatformFileError error_code,
+                                   IPC::PlatformFileForTransit file_for_transit,
+                                   int message_id) {
+  pepper_delegate_.OnAsyncFileOpened(
+      error_code,
+      IPC::PlatformFileForTransitToPlatformFile(file_for_transit),
+      message_id);
 }

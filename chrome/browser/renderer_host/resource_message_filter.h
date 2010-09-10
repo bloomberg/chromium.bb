@@ -371,6 +371,15 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnEstablishGpuChannel();
   void OnSynchronizeGpu(IPC::Message* reply);
 
+  void OnAsyncOpenFile(const IPC::Message& msg,
+                       const FilePath& path,
+                       int flags,
+                       int message_id);
+  void AsyncOpenFileOnFileThread(const FilePath& path,
+                                 int flags,
+                                 int message_id,
+                                 int routing_id);
+
 #if defined(USE_X11)
   void SendDelayedReply(IPC::Message* reply_msg);
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);

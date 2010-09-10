@@ -5,6 +5,7 @@
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 
 #include "app/surface/transport_dib.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -12,12 +13,14 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/command_buffer_proxy.h"
+#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "third_party/ppapi/c/dev/pp_video_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
+#include "webkit/glue/plugins/pepper_file_io.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/webplugin.h"
 
@@ -472,7 +475,8 @@ class PlatformVideoDecoderImpl
 }  // namespace
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
-    : render_view_(render_view) {
+    : render_view_(render_view),
+      id_generator_(0) {
 }
 
 void PepperPluginDelegateImpl::ViewInitiatedPaint() {
@@ -608,4 +612,32 @@ bool PepperPluginDelegateImpl::RunFileChooser(
     const WebKit::WebFileChooserParams& params,
     WebKit::WebFileChooserCompletion* chooser_completion) {
   return render_view_->runFileChooser(params, chooser_completion);
+}
+
+bool PepperPluginDelegateImpl::AsyncOpenFile(const FilePath& path,
+                                             int flags,
+                                             AsyncOpenFileCallback* callback) {
+  int message_id = id_generator_++;
+  DCHECK(!messages_waiting_replies_.Lookup(message_id));
+  messages_waiting_replies_.AddWithID(callback, message_id);
+  IPC::Message* msg = new ViewHostMsg_AsyncOpenFile(
+      render_view_->routing_id(), path, flags, message_id);
+  return render_view_->Send(msg);
+}
+
+void PepperPluginDelegateImpl::OnAsyncFileOpened(
+    base::PlatformFileError error_code,
+    base::PlatformFile file,
+    int message_id) {
+  AsyncOpenFileCallback* callback =
+      messages_waiting_replies_.Lookup(message_id);
+  DCHECK(callback);
+  messages_waiting_replies_.Remove(message_id);
+  callback->Run(error_code, file);
+  delete callback;
+}
+
+scoped_refptr<base::MessageLoopProxy>
+PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
+  return RenderThread::current()->GetFileThreadMessageLoopProxy();
 }

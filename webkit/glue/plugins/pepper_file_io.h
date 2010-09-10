@@ -5,7 +5,14 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_FILE_IO_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_FILE_IO_H_
 
+#include "base/file_path.h"
+#include "base/platform_file.h"
+#include "base/scoped_callback_factory.h"
+#include "base/scoped_ptr.h"
+#include "third_party/ppapi/c/dev/pp_file_info_dev.h"
+#include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_time.h"
+#include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PP_CompletionCallback;
@@ -62,6 +69,25 @@ class FileIO : public Resource {
                     PP_CompletionCallback callback);
   int32_t WillSetLength(int64_t length,
                         PP_CompletionCallback callback);
+
+  void RunPendingCallback(int result);
+  void StatusCallback(base::PlatformFileError error_code);
+  void AsyncOpenFileCallback(base::PlatformFileError error_code,
+                             base::PlatformFile file);
+  void QueryInfoCallback(base::PlatformFileError error_code,
+                         const base::PlatformFileInfo& file_info);
+  void ReadWriteCallback(base::PlatformFileError error_code,
+                         int bytes_read_or_written);
+
+ private:
+  PluginDelegate* delegate_;
+  base::ScopedCallbackFactory<FileIO> callback_factory_;
+
+  base::PlatformFile file_;
+  PP_FileSystemType_Dev file_system_type_;
+
+  PP_CompletionCallback callback_;
+  PP_FileInfo_Dev* info_;
 };
 
 }  // namespace pepper

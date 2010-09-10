@@ -855,6 +855,10 @@ class RenderView : public RenderWidget,
 #endif
   void OnZoom(PageZoom::Function function);
 
+  void OnAsyncFileOpened(base::PlatformFileError error_code,
+                         IPC::PlatformFileForTransit file_for_transit,
+                         int message_id);
+
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
 

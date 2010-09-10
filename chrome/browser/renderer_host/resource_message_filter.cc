@@ -527,6 +527,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                           OnEstablishGpuChannel)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SynchronizeGpu,
                                       OnSynchronizeGpu)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
       IPC_MESSAGE_UNHANDLED(
           handled = false)
     IPC_END_MESSAGE_MAP_EX()
@@ -1702,6 +1703,43 @@ void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
+}
+
+void ResourceMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
+                                            const FilePath& path,
+                                            int flags,
+                                            int message_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
+          this, &ResourceMessageFilter::AsyncOpenFileOnFileThread,
+          path, flags, message_id, msg.routing_id()));
+}
+
+void ResourceMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
+                                                      int flags,
+                                                      int message_id,
+                                                      int routing_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
+  base::PlatformFile file = base::CreatePlatformFile(
+      path, flags, NULL, &error_code);
+  IPC::PlatformFileForTransit file_for_transit =
+      base::kInvalidPlatformFileValue;
+  if (file != base::kInvalidPlatformFileValue) {
+#if defined(OS_WIN)
+    ::DuplicateHandle(::GetCurrentProcess(), file, handle(),
+                      &file_for_transit, 0, false, DUPLICATE_SAME_ACCESS);
+#else
+    file_for_transit = base::FileDescriptor(file, true);
+#endif
+  }
+
+  IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
+      routing_id, error_code, file_for_transit, message_id);
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE, NewRunnableMethod(
+          this, &ResourceMessageFilter::Send, reply));
 }
 
 SetCookieCompletion::SetCookieCompletion(int render_process_id,

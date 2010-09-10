@@ -5,6 +5,9 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 
+#include "base/callback.h"
+#include "base/platform_file.h"
+#include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/task.h"
@@ -13,6 +16,10 @@
 #include "third_party/ppapi/c/pp_stdint.h"
 
 class AudioMessageFilter;
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace gfx {
 class Rect;
@@ -37,6 +44,7 @@ struct PP_VideoUncompressedDataBuffer_Dev;
 
 namespace pepper {
 
+class FileIO;
 class PluginInstance;
 
 // Virtual interface that the browser implements to implement features for
@@ -146,6 +154,18 @@ class PluginDelegate {
   virtual bool RunFileChooser(
       const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion) = 0;
+
+  // Sends an async IPC to open a file.
+  typedef Callback2<base::PlatformFileError, base::PlatformFile
+                    >::Type AsyncOpenFileCallback;
+  virtual bool AsyncOpenFile(const FilePath& path,
+                             int flags,
+                             AsyncOpenFileCallback* callback) = 0;
+
+  // Returns a MessageLoopProxy instance associated with the message loop
+  // of the file thread in this renderer.
+  virtual scoped_refptr<base::MessageLoopProxy>
+  GetFileThreadMessageLoopProxy() = 0;
 };
 
 }  // namespace pepper

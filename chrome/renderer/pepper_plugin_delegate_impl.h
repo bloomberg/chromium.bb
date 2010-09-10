@@ -9,14 +9,17 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/id_map.h"
 #include "base/weak_ptr.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
+class FilePath;
 class RenderView;
 
 namespace pepper {
+class FileIO;
 class PluginInstance;
 }
 
@@ -37,6 +40,11 @@ class PepperPluginDelegateImpl
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
+  // Called by RenderView when ViewMsg_AsyncOpenFile_ACK.
+  void OnAsyncFileOpened(base::PlatformFileError error_code,
+                         base::PlatformFile file,
+                         int message_id);
+
   // pepper::PluginDelegate implementation.
   virtual void InstanceCreated(pepper::PluginInstance* instance);
   virtual void InstanceDeleted(pepper::PluginInstance* instance);
@@ -55,12 +63,19 @@ class PepperPluginDelegateImpl
   virtual bool RunFileChooser(
       const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion);
+  virtual bool AsyncOpenFile(const FilePath& path,
+                             int flags,
+                             AsyncOpenFileCallback* callback);
+  virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
 
  private:
   // Pointer to the RenderView that owns us.
   RenderView* render_view_;
 
   std::set<pepper::PluginInstance*> active_instances_;
+
+  int id_generator_;
+  IDMap<AsyncOpenFileCallback> messages_waiting_replies_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

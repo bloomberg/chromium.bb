@@ -737,6 +737,12 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
   static void Log(const param_type& p, std::string* l);
 };
 
+// Traits for base::PlatformFileError
+template <>
+struct SimilarTypeTraits<base::PlatformFileError> {
+  typedef int Type;
+};
+
 }  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE "chrome/common/render_messages_internal.h"

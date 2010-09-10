@@ -1041,6 +1041,12 @@ IPC_BEGIN_MESSAGES(View)
                        int /* request_id */,
                        WebKit::WebFileError /* error_code */)
 
+  // The response to ViewHostMsg_AsyncOpenFile.
+  IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
+                      base::PlatformFileError /* error_code */,
+                      IPC::PlatformFileForTransit /* file descriptor */,
+                      int /* message_id */)
+
 IPC_END_MESSAGES(View)
 
 
@@ -2523,6 +2529,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int /* mode */,
                               IPC::PlatformFileForTransit /* result */)
 
+  // Opens a file asynchronously. The response returns a file descriptor
+  // and an error code from base/platform_file.h.
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_AsyncOpenFile,
+                      FilePath /* file path */,
+                      int /* flags */,
+                      int /* message_id */)
+
   // Sent by the renderer process to acknowledge receipt of a
   // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_OnCSSInserted)
@@ -2544,18 +2557,18 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Asks the browser process to delete a DB file
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DatabaseDeleteFile,
-                       string16 /* vfs file name */,
-                       bool /* whether or not to sync the directory */,
+                              string16 /* vfs file name */,
+                              bool /* whether or not to sync the directory */,
                               int /* SQLite error code */)
 
   // Asks the browser process to return the attributes of a DB file
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DatabaseGetFileAttributes,
-                       string16 /* vfs file name */,
+                              string16 /* vfs file name */,
                               int32 /* the attributes for the given DB file */)
 
   // Asks the browser process to return the size of a DB file
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DatabaseGetFileSize,
-                       string16 /* vfs file name */,
+                              string16 /* vfs file name */,
                               int64 /* the size of the given DB file */)
 
   // Notifies the browser process that a new database has been opened
@@ -2748,7 +2761,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StopUpdating,
                        int /* render_view_id */)
 
-//-----------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // FileSystem API messages
   // These are messages sent from the renderer to the browser process.
 

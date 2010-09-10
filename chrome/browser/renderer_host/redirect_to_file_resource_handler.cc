@@ -143,9 +143,10 @@ void RedirectToFileResourceHandler::OnRequestClosed() {
   file_stream_->Close();
   file_stream_.reset();
 
-  base::FileUtilProxy::Delete(
-        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
-        file_path_, NULL);
+  // TODO(dumi): delete the temp file when it's no longer needed.
+  // base::FileUtilProxy::Delete(
+  //       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
+  //       file_path_, NULL);
 }
 
 RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
