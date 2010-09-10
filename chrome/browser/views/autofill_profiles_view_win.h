@@ -7,6 +7,7 @@
 #pragma once
 
 #include <list>
+#include <map>
 #include <vector>
 
 #include "app/combobox_model.h"
@@ -143,6 +144,7 @@ class AutoFillProfilesView : public views::View,
 
   // PersonalDataManager::Observer methods:
   virtual void OnPersonalDataLoaded();
+  virtual void OnPersonalDataChanged();
 
   // NotificationObserver methods:
   virtual void Observe(NotificationType type,
@@ -192,6 +194,8 @@ class AutoFillProfilesView : public views::View,
 
   void GetData();
   bool IsDataReady() const;
+  void SaveData();
+  void UpdateIdToIndexes();
 
   // Rebuilds the view by deleting and re-creating sub-views
   void RebuildView(const FocusedItem& new_focus_index);
@@ -456,6 +460,7 @@ class AutoFillProfilesView : public views::View,
   PrefService* preferences_;
   std::vector<EditableSetInfo> profiles_set_;
   std::vector<EditableSetInfo> credit_card_set_;
+  std::map<int, size_t> unique_ids_to_indexes_;
 
   AddressComboBoxModel billing_model_;
 

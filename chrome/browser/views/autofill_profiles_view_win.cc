@@ -93,6 +93,7 @@ AutoFillProfilesView::AutoFillProfilesView(
     credit_card_set_.push_back(
         EditableSetInfo(imported_credit_card));
   }
+  personal_data_manager_->SetObserver(this);
 }
 
 AutoFillProfilesView::~AutoFillProfilesView() {
@@ -100,7 +101,6 @@ AutoFillProfilesView::~AutoFillProfilesView() {
   if (scroll_view_)
     scroll_view_->SetModel(NULL);
 
-  // Removes observer if we are observing Profile load. Does nothing otherwise.
   if (personal_data_manager_)
     personal_data_manager_->RemoveObserver(this);
 }
@@ -145,7 +145,6 @@ void AutoFillProfilesView::AddClicked(int group_type) {
   } else {
     NOTREACHED();
   }
-
   EditableSetViewContents *edit_view = new
       EditableSetViewContents(this, &billing_model_, true, it);
   views::Window::CreateChromeWindow(window()->GetNativeWindow(), gfx::Rect(),
@@ -187,6 +186,8 @@ void AutoFillProfilesView::DeleteClicked() {
     scroll_view_->Select(scroll_view_->ViewToModel(last_view_row));
   UpdateBillingModel();
   UpdateWidgetState();
+  UpdateIdToIndexes();
+  SaveData();
 }
 
 void AutoFillProfilesView::UpdateWidgetState() {
@@ -327,18 +328,6 @@ bool AutoFillProfilesView::Cancel() {
 }
 
 bool AutoFillProfilesView::Accept() {
-  std::vector<AutoFillProfile> profiles;
-  profiles.reserve(profiles_set_.size());
-  std::vector<EditableSetInfo>::iterator it;
-  for (it = profiles_set_.begin(); it != profiles_set_.end(); ++it) {
-    profiles.push_back(it->address);
-  }
-  std::vector<CreditCard> credit_cards;
-  credit_cards.reserve(credit_card_set_.size());
-  for (it = credit_card_set_.begin(); it != credit_card_set_.end(); ++it) {
-    credit_cards.push_back(it->credit_card);
-  }
-  observer_->OnAutoFillDialogApply(&profiles, &credit_cards);
   return true;
 }
 
@@ -397,10 +386,66 @@ void AutoFillProfilesView::OnDoubleClick() {
 
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, PersonalDataManager::Observer implementation.
-void  AutoFillProfilesView::OnPersonalDataLoaded() {
-  personal_data_manager_->RemoveObserver(this);
+// AutoFillProfilesView, PersonalDataManager::Observer implementations.
+void AutoFillProfilesView::OnPersonalDataLoaded() {
   GetData();
+}
+
+void AutoFillProfilesView::OnPersonalDataChanged() {
+  // When we get here only new or updated data could be present.
+  // The only way to delete items is from this dialog, and it completely
+  // rebuilds the map before sending the update. Thus all received profiles or
+  // credit cards should be already present (thus id match check) or new.
+  std::map<int, size_t>::const_iterator found_id;
+  for (std::vector<AutoFillProfile*>::const_iterator address_it =
+           personal_data_manager_->profiles().begin();
+       address_it != personal_data_manager_->profiles().end();
+       ++address_it) {
+    found_id = unique_ids_to_indexes_.find((*address_it)->unique_id());
+    if (found_id == unique_ids_to_indexes_.end()) {
+      // New one - add.
+      profiles_set_.push_back(EditableSetInfo(*address_it));
+    } else {
+      if (profiles_set_.size() <= found_id->second) {
+        // Should never get here.
+        DCHECK(false);
+      } else {
+        // Update current profile - verify that unique ids match.
+        DCHECK(profiles_set_[found_id->second].address.unique_id() ==
+               (*address_it)->unique_id());
+        profiles_set_[found_id->second] = EditableSetInfo(*address_it);
+      }
+    }
+  }
+  UpdateProfileLabels();
+
+  for (std::vector<CreditCard*>::const_iterator cc_it =
+           personal_data_manager_->credit_cards().begin();
+       cc_it != personal_data_manager_->credit_cards().end();
+       ++cc_it) {
+    found_id = unique_ids_to_indexes_.find((*cc_it)->unique_id());
+    if (found_id == unique_ids_to_indexes_.end()) {
+      // New one - add.
+      credit_card_set_.push_back(EditableSetInfo(*cc_it));
+    } else {
+      if (credit_card_set_.size() <= found_id->second) {
+        // Should never get here.
+        DCHECK(false);
+      } else {
+        // Update current credit card - verify that unique ids match.
+        DCHECK(credit_card_set_[found_id->second].credit_card.unique_id() ==
+               (*cc_it)->unique_id());
+        credit_card_set_[found_id->second] = EditableSetInfo(*cc_it);
+      }
+    }
+  }
+  if (table_model_.get())
+    table_model_->Refresh();
+
+  // Update state only if buttons already created.
+  if (add_address_button_) {
+    UpdateWidgetState();
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -490,7 +535,6 @@ void AutoFillProfilesView::Init() {
 
 void AutoFillProfilesView::GetData() {
   if (!personal_data_manager_->IsDataLoaded()) {
-    personal_data_manager_->SetObserver(this);
     return;
   }
   bool imported_data_present = !profiles_set_.empty() ||
@@ -515,6 +559,9 @@ void AutoFillProfilesView::GetData() {
       credit_card_set_.push_back(EditableSetInfo(*cc_it));
     }
   }
+
+  UpdateIdToIndexes();
+
   if (table_model_.get())
     table_model_->Refresh();
 
@@ -527,6 +574,35 @@ void AutoFillProfilesView::GetData() {
 bool AutoFillProfilesView::IsDataReady() const {
   return personal_data_manager_->IsDataLoaded();
 }
+
+void AutoFillProfilesView::SaveData() {
+  std::vector<AutoFillProfile> profiles;
+  profiles.reserve(profiles_set_.size());
+  std::vector<EditableSetInfo>::iterator it;
+  for (it = profiles_set_.begin(); it != profiles_set_.end(); ++it) {
+    profiles.push_back(it->address);
+  }
+  std::vector<CreditCard> credit_cards;
+  credit_cards.reserve(credit_card_set_.size());
+  for (it = credit_card_set_.begin(); it != credit_card_set_.end(); ++it) {
+    credit_cards.push_back(it->credit_card);
+  }
+  observer_->OnAutoFillDialogApply(&profiles, &credit_cards);
+}
+
+void AutoFillProfilesView::UpdateIdToIndexes() {
+  unique_ids_to_indexes_.clear();
+  // Unique ids are unique across both profiles and credit cards, so we can
+  // combine them into one map.
+  size_t i;
+  for (i = 0; i < profiles_set_.size(); ++i) {
+    unique_ids_to_indexes_[profiles_set_[i].address.unique_id()] = i;
+  }
+  for (i = 0; i < credit_card_set_.size(); ++i) {
+    unique_ids_to_indexes_[credit_card_set_[i].credit_card.unique_id()] = i;
+  }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::PhoneSubView, public:
@@ -818,6 +894,7 @@ bool AutoFillProfilesView::EditableSetViewContents::Accept() {
     observer_->UpdateProfileLabels();
     observer_->UpdateBillingModel();
   }
+  observer_->SaveData();
   return true;
 }
 
