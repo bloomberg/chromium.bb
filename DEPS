@@ -217,7 +217,7 @@ deps_os = {
        Var("nacl_revision")),
 
     "src/rlz":
-      (Var("googlecode_url") % "rlz") + "/trunk@16",
+      (Var("googlecode_url") % "rlz") + "/trunk@17",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
