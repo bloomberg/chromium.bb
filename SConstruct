@@ -15,6 +15,9 @@ import sets
 from SCons.Errors import UserError
 from SCons.Script import GetBuildFailures
 
+import SCons.Warnings
+SCons.Warnings.warningAsException()
+
 # NOTE: Underlay for  src/third_party_mod/gtest
 # TODO: try to eliminate this hack
 Dir('src/third_party_mod/gtest').addRepository(

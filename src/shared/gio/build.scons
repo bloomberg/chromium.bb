@@ -57,12 +57,15 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
     # anonymous variadic macros were introduced in C99
     gtest_env.FilterOut(CCFLAGS=['-pedantic'])
 
+
   gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+  gtest_env.DualLibrary('gio_test', ['gio_test_base.cc'])
+
 
   gio_mem_test_exe = gtest_env.ComponentProgram(
       'gio_mem_test',
-      ['gio_mem_test.cc', 'gio_test_base.cc'],
-      EXTRA_LIBS=['gtest', 'gio',])
+      ['gio_mem_test.cc'],
+      EXTRA_LIBS=['gtest', 'gio', 'gio_test'])
   gtest_env.Requires(gio_mem_test_exe, crt)
 
   node = gtest_env.CommandTest(
@@ -73,8 +76,8 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
 
   gio_test_exe = gtest_env.ComponentProgram(
       'gio_test',
-      ['gio_test.cc', 'gio_test_base.cc',],
-      EXTRA_LIBS=['gtest', 'gio', 'platform',])
+      ['gio_test.cc'],
+      EXTRA_LIBS=['gtest', 'gio', 'platform', 'gio_test'])
   gtest_env.Requires(gio_test_exe, crt)
 
   # temp file will be removed by gio_test (if it compiles and test completes).

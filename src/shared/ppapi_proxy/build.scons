@@ -26,12 +26,17 @@ if env.Bit('windows'):
     )
     env.Tool('atlmfc_vc80')
 
+
+common_obj = env.DualObject(['utility.cc'])
+
+
 env.DualLibrary('ppapi_browser',
                 ['object.cc',
-                 'utility.cc'])
+                 common_obj,])
+
 
 env.DualLibrary('ppapi_plugin',
                 ['plugin_core.cc',
                  'plugin_instance.cc',
                  'plugin_var.cc',
-                 'utility.cc'])
+                 common_obj])
