@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,10 @@
 #define GPU_COMMAND_BUFFER_COMMON_LOGGING_H_
 
 #include <assert.h>
+#include <stdio.h>
 
-#include <iostream>
+#include <sstream>
+#include <string>
 
 // Windows defines an ERROR macro.
 #ifdef ERROR
@@ -26,8 +28,8 @@ enum LogLevel {
 };
 
 // This is a very simple logger for use in command buffer code. Common and
-// command buffer code cannot be dependent on base. It just outputs the message
-// to stderr.
+// client side command buffer code cannot be dependent on base. It just outputs
+// the message to stderr, flushes and asserts if the error was fatal.
 class Logger {
  public:
   Logger(bool condition, LogLevel level)
@@ -113,8 +115,9 @@ class Logger {
 
   ~Logger() {
     if (!condition_) {
-      std::cerr << std::endl;
-      std::cerr.flush();
+      message_stream_ << std::endl;
+      fputs(message_stream_.str().c_str(), stderr);
+      fflush(stderr);
       if (level_ == FATAL)
         assert(false);
     }
@@ -123,7 +126,7 @@ class Logger {
   template <typename T>
   Logger& operator<<(const T& value) {
     if (!condition_)
-      std::cerr << value;
+      message_stream_ << value;
     return *this;
   }
 
@@ -131,6 +134,7 @@ class Logger {
   Logger(const Logger& logger): condition_(logger.condition_) {
   }
 
+  std::stringstream message_stream_;
   bool condition_;
   LogLevel level_;
 };
