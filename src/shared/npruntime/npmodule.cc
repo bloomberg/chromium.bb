@@ -106,7 +106,7 @@ NPError NPModule::Initialize() {
   }
 
  done:
-  DescWrapper::SafeDelete(wrapper);
+  delete wrapper;
   return err;
 }
 
@@ -381,7 +381,7 @@ NaClSrpcError NPModule::Device2DInitialize(NPP npp,
   // would cause Dtor to fire.
   *shm_desc = NaClDescRef(wrapper->desc());
   // Free the wrapper.
-  wrapper->Delete();
+  delete wrapper;
   *stride = context2d_->stride;
   *left = context2d_->dirty.left;
   *top = context2d_->dirty.top;
@@ -714,7 +714,7 @@ void AudioCallback(NPDeviceContextAudio* user_data) {
     sync_wrapper = factory.ImportPepperSync(sync_int);
   }
   if (NULL == sync_wrapper) {
-    DescWrapper::SafeDelete(shm_wrapper);
+    delete shm_wrapper;
     return;
   }
 
@@ -726,8 +726,8 @@ void AudioCallback(NPDeviceContextAudio* user_data) {
                                       size,
                                       NaClDescRef(sync_wrapper->desc()));
 
-  DescWrapper::SafeDelete(shm_wrapper);
-  DescWrapper::SafeDelete(sync_wrapper);
+  delete shm_wrapper;
+  delete sync_wrapper;
 }
 
 NaClSrpcError NPModule::AudioInitialize(NPP npp,

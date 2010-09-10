@@ -264,7 +264,8 @@ bool MultimediaSocket::InitializeModuleMultimedia(
                                              &params);
   PLUGIN_PRINTF(("MultmediaSocket::InitializeModuleMultimedia:"
                  " returned %d\n", static_cast<int>(rpc_result)));
-  desc[1]->Delete();
+  // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+  delete desc[1];
 
   return rpc_result;
 }

@@ -225,7 +225,8 @@ bool SharedMemory::Init(Plugin* plugin,
 
   if (!DescBasedHandle::Init(plugin, wrapper)) {
     if (allocated_memory) {
-      wrapper->Delete();
+      // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+      delete wrapper;
     }
     return false;
   }

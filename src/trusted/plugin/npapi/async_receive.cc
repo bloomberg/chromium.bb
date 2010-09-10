@@ -85,7 +85,9 @@ void WINAPI AsyncReceiveThread(void* handle) {
     NPN_PluginThreadAsyncCall(args->plugin, DoReceiveCallback, call);
   }
 
-  args->socket->Delete();
+  // TODO(sehr,mseaborn): use scoped_ptr for DescWrappers.
+  delete args->socket;
+  args->socket = NULL;
   NPN_PluginThreadAsyncCall(args->plugin, DoReleaseObject, args->callback);
   free(buffer);
   delete args;

@@ -1262,7 +1262,9 @@ int VideoMap::InitializeSharedMemory(PluginWindow* window) {
     size_t mem_size = video_size_;
     if (0 > video_handle_->Map(&map_addr, &mem_size)) {
       untrusted_video_share_ = NULL;
-      video_handle_->Delete();
+      // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+      delete video_handle_;
+      video_handle_ = NULL;
       untrusted_video_share_ = NULL;
       video_size_ = 0;
       window_ = NULL;

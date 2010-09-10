@@ -80,14 +80,7 @@ class DescWrapper {
         NACL_ABI_RECVMSG_DESC_TRUNCATED;
   };
 
-  // Delete this wrapper.
-  void Delete() { delete this; }
-  // Safely delete a specified wrapper.  (No-op if wrapper is NULL.)
-  static void SafeDelete(DescWrapper* wrapper) {
-    if (NULL != wrapper) {
-      wrapper->Delete();
-    }
-  }
+  ~DescWrapper();
 
   // Extract a NaClDesc from the wrapper.
   struct NaClDesc* desc() const { return desc_; }
@@ -197,7 +190,6 @@ class DescWrapper {
 
  private:
   DescWrapper(DescWrapperCommon* common_data, struct NaClDesc* desc);
-  ~DescWrapper();
 
   DescWrapperCommon* common_data_;
   struct NaClDesc* desc_;

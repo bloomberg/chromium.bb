@@ -237,7 +237,8 @@ bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
   nacl::DescWrapper* fd_to_send =
     plugin->wrapper_factory()->MakeGeneric(params->ins()[1]->u.hval);
   bool result = SendAsyncMessage(obj, params, &fd_to_send, 1);
-  fd_to_send->Delete();
+  // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+  delete fd_to_send;
   return result;
 }
 

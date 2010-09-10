@@ -47,7 +47,7 @@ ServiceRuntime::ServiceRuntime(
     subprocess_(NULL) {
 }
 
-// shm is consumed (Delete invoked).
+// shm is consumed (delete invoked).
 bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
                                        nacl::DescWrapper* shm) {
   // TODO(sehr): this should use the new
@@ -105,14 +105,16 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
       const char* error = "failed to send nexe";
       PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
       browser_interface_->AddToConsole(plugin()->instance_id(), error);
-      shm->Delete();
+      // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+      delete shm;
       // TODO(gregoryd): close communication channels
       delete subprocess_;
       subprocess_ = NULL;
       return false;
     }
     /* LoadModule succeeded, proceed normally */
-    shm->Delete();
+    // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+    delete shm;
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     // Establish the communication for handle passing protocol
     struct NaClDesc* desc = NaClHandlePassBrowserGetSocketAddress();
@@ -273,12 +275,9 @@ ServiceRuntime::~ServiceRuntime() {
   delete subprocess_;
   delete runtime_channel_;
 
-  if (async_receive_desc != NULL) {
-    async_receive_desc->Delete();
-  }
-  if (async_send_desc != NULL) {
-    async_send_desc->Delete();
-  }
+  // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+  delete async_receive_desc;
+  delete async_send_desc;
 }
 
 ScriptableHandle* ServiceRuntime::default_socket_address() const {
@@ -330,7 +329,8 @@ ScriptableHandle* ServiceRuntime::GetSocketAddress(
   retval = browser_interface_->NewScriptableHandle(
       SocketAddress::New(plugin, descs[0]));
  cleanup:
-  imc_desc->Delete();
+  // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+  delete imc_desc;
   PLUGIN_PRINTF(("ServiceRuntime::GetSocketAddress (return %p)\n",
                  static_cast<void*>(retval)));
   return retval;

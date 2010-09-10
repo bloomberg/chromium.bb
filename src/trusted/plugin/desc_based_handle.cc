@@ -58,7 +58,7 @@ DescBasedHandle::~DescBasedHandle() {
   PLUGIN_PRINTF(("DescBasedHandle::~DescBasedHandle (this=%p)\n",
                  static_cast<void*>(this)));
   if (NULL != wrapper_) {
-    wrapper_->Delete();
+    delete wrapper_;
     wrapper_ = NULL;
   }
 }

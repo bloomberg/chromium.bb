@@ -350,7 +350,8 @@ void NpGetUrlClosure::RunFromFile(NPStream* stream,
                           ndiod->desc(),
                           const_cast<char*>(stream->url),
                           stream->end);
-    ndiod->Delete();
+    // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+    delete ndiod;
     // We return success and the version of the URL that the browser returns.
     // The latter is typically the fully qualified URL for the request.
     notify_reason = NPRES_DONE;
@@ -409,7 +410,8 @@ void NpGetUrlClosure::RunFromBuffer(const nacl::string& url,
                           wrapped_shm->desc(),
                           const_cast<char*>(url.c_str()),
                           size);
-    wrapped_shm->Delete();
+    // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+    delete wrapped_shm;
     // We return success and the version of the URL that the browser returns.
     // The latter is typically the fully qualified URL for the request.
     notify_reason = NPRES_DONE;

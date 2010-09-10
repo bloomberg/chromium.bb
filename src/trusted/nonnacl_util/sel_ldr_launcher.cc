@@ -141,11 +141,11 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   retval = true;
 
  done:
-  DescWrapper::SafeDelete(command_desc);
-  DescWrapper::SafeDelete(untrusted_command_desc);
-  DescWrapper::SafeDelete(untrusted_desc);
-  DescWrapper::SafeDelete(channel_desc);
-  DescWrapper::SafeDelete(sock_addr);
+  delete command_desc;
+  delete untrusted_command_desc;
+  delete untrusted_desc;
+  delete channel_desc;
+  delete sock_addr;
 
   return retval;
 }

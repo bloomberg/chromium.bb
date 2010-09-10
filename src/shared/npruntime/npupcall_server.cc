@@ -61,7 +61,7 @@ class UpcallInfo {
     module_ = module;
   }
   ~UpcallInfo() {
-    wrapper_->Delete();
+    delete wrapper_;
   }
   DescWrapper* wrapper() const { return wrapper_; }
   NPModule* module() const { return module_; }
@@ -114,8 +114,8 @@ DescWrapper* NPUpcallServer::Start(NPModule* module,
   pair[1] = NULL;
 
  done:
-  DescWrapper::SafeDelete(pair[0]);
-  DescWrapper::SafeDelete(pair[1]);
+  delete pair[0];
+  delete pair[1];
   delete info;
   return desc;
 }
