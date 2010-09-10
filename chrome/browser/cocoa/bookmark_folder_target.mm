@@ -43,10 +43,24 @@ NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
   // NOTE: we cannot use [[sender cell] mouseDownFlags] because we
   // thwart the normal mouse click mechanism to make buttons
   // draggable.  Thus we must use [NSApp currentEvent].
+  //
+  // Holding command while using the scroll wheel (or moving around
+  // over a bookmark folder) can confuse us.  Unless we check the
+  // event type, we are not sure if this is an "open folder" due to a
+  // hover-open or "open folder" due to a click.  It doesn't matter
+  // (both do the same thing) unless a modifier is held, since
+  // command-click should "open all" but command-move should not.
+  // WindowOpenDispositionFromNSEvent does not consider the event
+  // type; only the modifiers.  Thus the need for an extra
+  // event-type-check here.
   DCHECK([sender bookmarkNode]->is_folder());
+  NSEvent* event = [NSApp currentEvent];
   WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (disposition == NEW_BACKGROUND_TAB) {
+      event_utils::WindowOpenDispositionFromNSEvent(event);
+  if (([event type] != NSMouseEntered) &&
+      ([event type] != NSMouseMoved) &&
+      ([event type] != NSScrollWheel) &&
+      (disposition == NEW_BACKGROUND_TAB)) {
     [controller_ closeAllBookmarkFolders];
     [controller_ openAll:[sender bookmarkNode] disposition:disposition];
     return;
