@@ -16,6 +16,7 @@ namespace browser_sync {
 
 PasswordModelWorker::PasswordModelWorker(PasswordStore* password_store)
   : password_store_(password_store) {
+  DCHECK(password_store);
 }
 
 void PasswordModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {

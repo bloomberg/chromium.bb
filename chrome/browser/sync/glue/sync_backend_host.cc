@@ -95,9 +95,15 @@ void SyncBackendHost::Initialize(
           profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
   registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
   registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
-  registrar_.workers[GROUP_PASSWORD] =
-      new PasswordModelWorker(
-          profile_->GetPasswordStore(Profile::IMPLICIT_ACCESS));
+
+  PasswordStore* password_store =
+      profile_->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+  if (password_store) {
+    registrar_.workers[GROUP_PASSWORD] =
+        new PasswordModelWorker(password_store);
+  } else {
+    LOG(ERROR) << "Password store not initialized, cannot sync passwords";
+  }
 
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that
