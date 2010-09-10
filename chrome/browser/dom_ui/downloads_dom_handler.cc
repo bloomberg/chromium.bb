@@ -152,7 +152,7 @@ void DownloadsDOMHandler::HandleGetDownloads(const ListValue* args) {
 void DownloadsDOMHandler::HandleOpenFile(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
-    download_manager_->OpenDownload(file, NULL);
+    file->OpenDownload();
 }
 
 void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
@@ -180,7 +180,7 @@ void DownloadsDOMHandler::HandleDiscardDangerous(const ListValue* args) {
 void DownloadsDOMHandler::HandleShow(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
-      download_manager_->ShowDownloadInShell(file);
+    file->ShowDownloadInShell();
 }
 
 void DownloadsDOMHandler::HandlePause(const ListValue* args) {

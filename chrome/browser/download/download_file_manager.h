@@ -81,23 +81,10 @@ class DownloadFileManager
   // download thread.
   void UpdateDownload(int id, DownloadBuffer* buffer);
   void CancelDownload(int id);
-  void DownloadFinished(int id, DownloadBuffer* buffer);
+  void OnResponseCompleted(int id, DownloadBuffer* buffer);
 
   // Called on FILE thread by DownloadManager at the beginning of its shutdown.
   void OnDownloadManagerShutdown(DownloadManager* manager);
-
-#if !defined(OS_MACOSX)
-  // The open and show methods run on the file thread, which does not work on
-  // Mac OS X (which uses the UI thread for opens).
-
-  // Handler for shell operations sent from the UI to the download thread.
-  void OnShowDownloadInShell(const FilePath& full_path);
-
-  // Handler to open or execute a downloaded file.
-  void OnOpenDownloadInShell(const FilePath& full_path,
-                             const GURL& url,
-                             gfx::NativeView parent_window);
-#endif
 
   // The DownloadManager in the UI thread has provided an intermediate
   // .crdownload name for the download specified by 'id'.

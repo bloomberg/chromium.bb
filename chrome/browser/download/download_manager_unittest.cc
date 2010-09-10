@@ -243,11 +243,11 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
       EXPECT_CALL(*download, DeleteCrDownload()).Times(1);
 
     if (kDownloadRenameCases[i].finish_before_rename) {
-      download_manager_->DownloadFinished(i, 1024);
+      download_manager_->OnAllDataSaved(i, 1024);
       download_manager_->FileSelected(new_path, i, info);
     } else {
       download_manager_->FileSelected(new_path, i, info);
-      download_manager_->DownloadFinished(i, 1024);
+      download_manager_->OnAllDataSaved(i, 1024);
     }
 
     message_loop_.RunAllPending();

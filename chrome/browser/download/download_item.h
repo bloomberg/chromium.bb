@@ -105,10 +105,6 @@ class DownloadItem {
   // complete if it is in progress).
   void OpenDownload();
 
-  // Callback from the DownloadManager when the item is opened. Sets opened_
-  // to true and notifies observers.
-  void Opened();
-
   // Show the download via the OS shell.
   void ShowDownloadInShell();
 
@@ -129,8 +125,12 @@ class DownloadItem {
   // when resuming a download (assuming the server supports byte ranges).
   void Cancel(bool update_history);
 
-  // Download operation completed.
-  void Finished(int64 size);
+  // Called when all data has been saved.
+  void OnAllDataSaved(int64 size);
+
+  // Called when the entire download operation (including renaming etc)
+  // is finished.
+  void Finished();
 
   // The user wants to remove the download from the views and history. If
   // |delete_file| is true, the file is deleted on the disk.
@@ -187,7 +187,6 @@ class DownloadItem {
     safety_state_ = safety_state;
   }
   bool auto_opened() { return auto_opened_; }
-  void set_auto_opened(bool auto_opened) { auto_opened_ = auto_opened; }
   FilePath original_name() const { return original_name_; }
   bool save_as() const { return save_as_; }
   bool is_otr() const { return is_otr_; }

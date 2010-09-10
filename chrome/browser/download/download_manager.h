@@ -110,7 +110,7 @@ class DownloadManager
   // Notifications sent from the download thread to the UI thread
   void StartDownload(DownloadCreateInfo* info);
   void UpdateDownload(int32 download_id, int64 size);
-  void DownloadFinished(int32 download_id, int64 size);
+  void OnAllDataSaved(int32 download_id, int64 size);
 
   // Called from a view when a user clicks a UI button or link.
   void DownloadCancelled(int32 download_id);
@@ -165,14 +165,6 @@ class DownloadManager
   void ShowDownloadInBrowser(const DownloadCreateInfo& info,
                              DownloadItem* download);
 
-  // Opens a download. For Chrome extensions call
-  // ExtensionsServices::InstallExtension, for everything else call
-  // OpenDownloadInShell.
-  void OpenDownload(DownloadItem* download, gfx::NativeView parent_window);
-
-  // Show a download via the Windows shell.
-  void ShowDownloadInShell(const DownloadItem* download);
-
   // The number of in progress (including paused) downloads.
   int in_progress_count() const {
     return static_cast<int>(in_progress_.size());
@@ -225,10 +217,6 @@ class DownloadManager
 
   ~DownloadManager();
 
-  // Opens a download via the Windows shell.
-  void OpenDownloadInShell(DownloadItem* download,
-                           gfx::NativeView parent_window);
-
   // Called on the download thread to check whether the suggested file path
   // exists.  We don't check if the file exists on the UI thread to avoid UI
   // stalls from interacting with the file system.
@@ -241,8 +229,8 @@ class DownloadManager
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by
   // the user in a Save As dialog box.
-  void ContinueStartDownload(DownloadCreateInfo* info,
-                             const FilePath& target_path);
+  void CreateDownloadItem(DownloadCreateInfo* info,
+                          const FilePath& target_path);
 
   // Download cancel helper function.
   void DownloadCancelledInternal(int download_id,

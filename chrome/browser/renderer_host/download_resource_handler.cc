@@ -160,7 +160,7 @@ bool DownloadResourceHandler::OnResponseCompleted(
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(download_file_manager_,
-                        &DownloadFileManager::DownloadFinished,
+                        &DownloadFileManager::OnResponseCompleted,
                         download_id_,
                         buffer_));
   read_buffer_ = NULL;

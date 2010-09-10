@@ -403,12 +403,12 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
                                     owning_window, info);
   } else {
     // No prompting for download, just continue with the suggested name.
-    ContinueStartDownload(info, info->suggested_path);
+    CreateDownloadItem(info, info->suggested_path);
   }
 }
 
-void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
-                                            const FilePath& target_path) {
+void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info,
+                                         const FilePath& target_path) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   scoped_ptr<DownloadCreateInfo> infop(info);
@@ -446,8 +446,8 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
   if (download_finished) {
     // If the download already completed by the time we reached this point, then
     // notify observers that it did.
-    DownloadFinished(info->download_id,
-                     pending_finished_downloads_[info->download_id]);
+    OnAllDataSaved(info->download_id,
+                   pending_finished_downloads_[info->download_id]);
   }
 
   download->Rename(target_path);
@@ -468,7 +468,7 @@ void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
   UpdateAppIcon();
 }
 
-void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
+void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
   DownloadMap::iterator it = in_progress_.find(download_id);
   if (it == in_progress_.end()) {
     // The download is done, but the user hasn't selected a final location for
@@ -489,7 +489,7 @@ void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
     pending_finished_downloads_.erase(erase_it);
 
   DownloadItem* download = it->second;
-  download->Finished(size);
+  download->OnAllDataSaved(size);
 
   // Clean up will happen when the history system create callback runs if we
   // don't have a valid db_handle yet.
@@ -556,31 +556,7 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
   // removed from dangerous_finished_ so it does not get deleted on shutdown.
   dangerous_finished_.erase(download->id());
 
-  // Handle chrome extensions explicitly and skip the shell execute.
-  if (download->is_extension_install()) {
-    download_util::OpenChromeExtension(profile_, this, *download);
-    download->set_auto_opened(true);
-  } else if (download->open_when_complete() ||
-             ShouldOpenFileBasedOnExtension(download->full_path()) ||
-             download->is_temporary()) {
-    // If the download is temporary, like in drag-and-drop, do not open it but
-    // we still need to set it auto-opened so that it can be removed from the
-    // download shelf.
-    if (!download->is_temporary())
-      OpenDownloadInShell(download, NULL);
-    download->set_auto_opened(true);
-  }
-
-  // Notify our observers that we are complete (the call to Finished() set the
-  // state to complete but did not notify).
-  download->UpdateObservers();
-
-  // The download file is meant to be completed if both the filename is
-  // finalized and the file data is downloaded. The ordering of these two
-  // actions is indeterministic. Thus, if the filename is not finalized yet,
-  // delay the notification.
-  if (download->name_finalized())
-    download->NotifyObserversDownloadFileCompleted();
+  download->Finished();
 }
 
 // Called on the file thread.  Renames the downloaded file to its original name.
@@ -778,7 +754,6 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
         dangerous_finished_.erase(dit);
 
       pending_deletes.push_back(download);
-    // Observer interface.
 
       continue;
     }
@@ -850,52 +825,6 @@ void DownloadManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-// Post Windows Shell operations to the Download thread, to avoid blocking the
-// user interface.
-void DownloadManager::ShowDownloadInShell(const DownloadItem* download) {
-  DCHECK(file_manager_);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-#if defined(OS_MACOSX)
-  // Mac needs to run this operation on the UI thread.
-  platform_util::ShowItemInFolder(download->full_path());
-#else
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_manager_, &DownloadFileManager::OnShowDownloadInShell,
-          FilePath(download->full_path())));
-#endif
-}
-
-void DownloadManager::OpenDownload(DownloadItem* download,
-                                   gfx::NativeView parent_window) {
-  // Open Chrome extensions with ExtensionsService. For everything else do shell
-  // execute.
-  if (download->is_extension_install()) {
-    download->Opened();
-    download_util::OpenChromeExtension(profile_, this, *download);
-  } else {
-    OpenDownloadInShell(download, parent_window);
-  }
-}
-
-void DownloadManager::OpenDownloadInShell(DownloadItem* download,
-                                          gfx::NativeView parent_window) {
-  DCHECK(file_manager_);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  download->Opened();
-#if defined(OS_MACOSX)
-  // Mac OS X requires opening downloads on the UI thread.
-  platform_util::OpenItem(download->full_path());
-#else
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_manager_, &DownloadFileManager::OnOpenDownloadInShell,
-          download->full_path(), download->url(), parent_window));
-#endif
-}
-
 bool DownloadManager::ShouldOpenFileBasedOnExtension(
     const FilePath& path) const {
   FilePath::StringType extension = path.Extension();
@@ -915,7 +844,7 @@ void DownloadManager::FileSelected(const FilePath& path,
   DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
   if (info->prompt_user_for_save_location)
     last_download_path_ = path.DirName();
-  ContinueStartDownload(info, path);
+  CreateDownloadItem(info, path);
 }
 
 void DownloadManager::FileSelectionCanceled(void* params) {

@@ -202,7 +202,7 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
   }
 }
 
-void DownloadFileManager::DownloadFinished(int id, DownloadBuffer* buffer) {
+void DownloadFileManager::OnResponseCompleted(int id, DownloadBuffer* buffer) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   delete buffer;
   DownloadFileMap::iterator it = downloads_.find(id);
@@ -215,7 +215,7 @@ void DownloadFileManager::DownloadFinished(int id, DownloadBuffer* buffer) {
       ChromeThread::PostTask(
           ChromeThread::UI, FROM_HERE,
           NewRunnableMethod(
-              download_manager, &DownloadManager::DownloadFinished,
+              download_manager, &DownloadManager::OnAllDataSaved,
               id, download->bytes_so_far()));
     }
 
@@ -264,35 +264,6 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 }
 
 // Actions from the UI thread and run on the download thread
-
-// Open a download, or show it in a file explorer window. We run on this
-// thread to avoid blocking the UI with (potentially) slow Shell operations.
-// TODO(paulg): File 'stat' operations.
-#if !defined(OS_MACOSX)
-void DownloadFileManager::OnShowDownloadInShell(const FilePath& full_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  platform_util::ShowItemInFolder(full_path);
-}
-#endif
-
-// Launches the selected download using ShellExecute 'open' verb. For windows,
-// if there is a valid parent window, the 'safer' version will be used which can
-// display a modal dialog asking for user consent on dangerous files.
-#if !defined(OS_MACOSX)
-void DownloadFileManager::OnOpenDownloadInShell(const FilePath& full_path,
-                                                const GURL& url,
-                                                gfx::NativeView parent_window) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-#if defined(OS_WIN)
-  if (NULL != parent_window) {
-    win_util::SaferOpenItemViaShell(parent_window, L"", full_path,
-                                    UTF8ToWide(url.spec()));
-    return;
-  }
-#endif
-  platform_util::OpenItem(full_path);
-}
-#endif  // OS_MACOSX
 
 // The DownloadManager in the UI thread has provided an intermediate .crdownload
 // name for the download specified by 'id'. Rename the in progress download.
