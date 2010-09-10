@@ -286,10 +286,14 @@ class FakeRepos(object):
   def setUpSVN(self):
     """Creates subversion repositories and start the servers."""
     if self.svnserve:
-      return
+      return True
     self.setUp()
     root = join(self.repos_dir, 'svn')
-    check_call(['svnadmin', 'create', root])
+    try:
+      check_call(['svnadmin', 'create', root])
+    except OSError:
+      self.svn_enabled = False
+      return False
     write(join(root, 'conf', 'svnserve.conf'),
         '[general]\n'
         'anon-access = read\n'
@@ -306,6 +310,7 @@ class FakeRepos(object):
       cmd.append('--listen-host=127.0.0.1')
     self.svnserve = Popen(cmd, cwd=root)
     self.populateSvn()
+    return True
 
   def populateSvn(self):
     """Creates a few revisions of changes including DEPS files."""

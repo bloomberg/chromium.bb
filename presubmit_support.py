@@ -115,7 +115,7 @@ class OutputApi(object):
         output_stream.write('  ' + ' \\\n  '.join(map(str, self._items)) + '\n')
       if self._long_text:
         output_stream.write('\n***************\n%s\n***************\n' %
-                            self._long_text.encode('ascii', 'replace'))
+                            self._long_text)
 
       if self.ShouldPrompt() and may_prompt:
         if not PromptYesNo(input_stream, output_stream,

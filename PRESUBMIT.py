@@ -56,7 +56,11 @@ def RunPylint(input_api, output_api):
   files.append('git-try')
   # It uses non-standard pylint exceptions that makes pylint always fail.
   files.remove('cpplint.py')
-  proc = input_api.subprocess.Popen(['pylint', '-E'] + files)
+  try:
+    proc = input_api.subprocess.Popen(['pylint', '-E'] + files)
+  except WindowsError:
+    # It's windows, give up.
+    return []
   proc.communicate()
   if proc.returncode:
     return [output_api.PresubmitError('Fix pylint errors first.')]

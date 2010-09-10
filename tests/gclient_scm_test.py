@@ -597,6 +597,8 @@ from :3
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
 
   def tearDown(self):
+    if not self.enabled:
+      self.checkstdout('')
     GCBaseTestCase.tearDown(self)
     TestCaseUtils.tearDown(self)
     unittest.TestCase.tearDown(self)
@@ -611,7 +613,8 @@ from :3
 
     # If you add a member, be sure to add the relevant test!
     self.compareMembers(gclient_scm.CreateSCM(url=self.url), members)
-    self.checkstdout('')
+    if self.enabled:
+      self.checkstdout('')
 
   def testRevertMissing(self):
     if not self.enabled:
