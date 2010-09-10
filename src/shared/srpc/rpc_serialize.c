@@ -336,11 +336,12 @@ static const ArgEltInterface k##name##IoInterface = {           \
 };
 
 /*
- * The three basic parameter types.
+ * The basic parameter types.
  */
 BASIC_TYPE_IO_DECLARE(Bool, char, bval, "1d")
 BASIC_TYPE_IO_DECLARE(Double, double, dval, "f")
 BASIC_TYPE_IO_DECLARE(Int, int32_t, ival, NACL_PRId32)
+BASIC_TYPE_IO_DECLARE(Long, int64_t, lval, NACL_PRId64)
 
 #define ARRAY_TYPE_IO_DECLARE(name, impl_type, field, array)                   \
 static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
@@ -424,7 +425,8 @@ static const ArgEltInterface k##name##ArrIoInterface = {                       \
  */
 ARRAY_TYPE_IO_DECLARE(Char, char, caval, carr)
 ARRAY_TYPE_IO_DECLARE(Double, double, daval, darr)
-ARRAY_TYPE_IO_DECLARE(Int, int, iaval, iarr)
+ARRAY_TYPE_IO_DECLARE(Int, int32_t, iaval, iarr)
+ARRAY_TYPE_IO_DECLARE(Long, int64_t, laval, larr)
 
 /*
  * Handle (descriptor) type I/O support.
@@ -780,6 +782,10 @@ static const ArgEltInterface* ArgsGetEltInterface(const NaClSrpcArg* arg) {
     return &kIntIoInterface;
    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
     return &kIntArrIoInterface;
+   case NACL_SRPC_ARG_TYPE_LONG:
+    return &kLongIoInterface;
+   case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+    return &kLongArrIoInterface;
    case NACL_SRPC_ARG_TYPE_STRING:
     return &kStringIoInterface;
    case NACL_SRPC_ARG_TYPE_OBJECT:

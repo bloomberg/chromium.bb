@@ -54,11 +54,13 @@ size_t strnlen(const char* str, size_t max);
 #pragma warning(disable : 4996)
 
 #define STRDUP _strdup
+#define STRTOLL _strtoi64
 #define STRTOULL _strtoui64
 
 #else
 
 #define STRDUP strdup
+#define STRTOLL strtoll
 #define STRTOULL strtoull
 
 #endif

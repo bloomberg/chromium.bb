@@ -102,6 +102,11 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
           return false;
         }
         break;
+      case NACL_SRPC_ARG_TYPE_LONG:
+        if (!plugin::NPVariantToScalar(&args[i], &inputs[i]->u.lval)) {
+          return false;
+        }
+        break;
       case NACL_SRPC_ARG_TYPE_STRING:
         if (!plugin::NPVariantToScalar(&args[i], &inputs[i]->u.sval)) {
           return false;
@@ -141,6 +146,17 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         }
         break;
 
+      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+        /* SCOPE */ {
+          if (!plugin::NPVariantToArray(&args[i],
+                                        npp,
+                                        &inputs[i]->u.laval.count,
+                                        &inputs[i]->u.laval.larr)) {
+            return false;
+          }
+        }
+        break;
+
       case NACL_SRPC_ARG_TYPE_INVALID:
       case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
       default:
@@ -174,10 +190,18 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
           return false;
         }
         break;
+      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+        if (!plugin::NPVariantToAllocatedArray(&args[i + inputs_length],
+                                               &outputs[i]->u.laval.count,
+                                               &outputs[i]->u.laval.larr)) {
+          return false;
+        }
+        break;
       case NACL_SRPC_ARG_TYPE_BOOL:
       case NACL_SRPC_ARG_TYPE_DOUBLE:
       case NACL_SRPC_ARG_TYPE_HANDLE:
       case NACL_SRPC_ARG_TYPE_INT:
+      case NACL_SRPC_ARG_TYPE_LONG:
       case NACL_SRPC_ARG_TYPE_STRING:
       case NACL_SRPC_ARG_TYPE_OBJECT:
         break;
@@ -256,6 +280,11 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
         return false;
       }
       break;
+    case NACL_SRPC_ARG_TYPE_LONG:
+      if (!plugin::ScalarToNPVariant(outs[i]->u.lval, retvalue)) {
+        return false;
+      }
+      break;
     case NACL_SRPC_ARG_TYPE_STRING:
       if (!plugin::ScalarToNPVariant(outs[i]->u.sval, retvalue)) {
         return false;
@@ -286,6 +315,14 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       if (!plugin::ArrayToNPVariant(outs[i]->u.iaval.iarr,
                                     outs[i]->u.iaval.count,
+                                    npp,
+                                    retvalue)) {
+        return false;
+      }
+      break;
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      if (!plugin::ArrayToNPVariant(outs[i]->u.laval.larr,
+                                    outs[i]->u.laval.count,
                                     npp,
                                     retvalue)) {
         return false;

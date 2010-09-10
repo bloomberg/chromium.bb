@@ -126,8 +126,10 @@ static void TestRpcs(NaClSrpcChannel* channel,
       static char           c_out[MAX_ARRAY_SIZE];
       static double         d_in[MAX_ARRAY_SIZE / sizeof(double)];
       static double         d_out[MAX_ARRAY_SIZE / sizeof(double)];
-      static int            i_in[MAX_ARRAY_SIZE / sizeof(int)];
-      static int            i_out[MAX_ARRAY_SIZE / sizeof(int)];
+      static int32_t        i_in[MAX_ARRAY_SIZE / sizeof(int32_t)];
+      static int32_t        i_out[MAX_ARRAY_SIZE / sizeof(int32_t)];
+      static int64_t        l_in[MAX_ARRAY_SIZE / sizeof(int64_t)];
+      static int64_t        l_out[MAX_ARRAY_SIZE / sizeof(int64_t)];
       char*                 macbeth =
                               "She should have died hereafter;"
                               "There would have been a time for such a word."
@@ -169,10 +171,19 @@ static void TestRpcs(NaClSrpcChannel* channel,
           in.u.ival = -1;
           break;
         case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-          in.u.iaval.count = timed_rpc_bytes / sizeof(int);
+          in.u.iaval.count = timed_rpc_bytes / sizeof(int32_t);
           in.u.iaval.iarr = i_in;
           out.u.iaval.count = in.u.iaval.count;
           out.u.iaval.iarr = i_out;
+          break;
+        case NACL_SRPC_ARG_TYPE_LONG:
+          in.u.lval = -1;
+          break;
+        case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+          in.u.laval.count = timed_rpc_bytes / sizeof(int64_t);
+          in.u.laval.larr = l_in;
+          out.u.laval.count = in.u.laval.count;
+          out.u.laval.larr = l_out;
           break;
         case NACL_SRPC_ARG_TYPE_STRING:
           /* TODO(sehr): needs length variation */

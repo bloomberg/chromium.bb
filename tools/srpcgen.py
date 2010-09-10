@@ -85,13 +85,15 @@ SOURCE_FILE_INCLUDES = """\
 """
 
 types = {'bool': ['b', 'bool', 'u.bval', ''],
-         'int32_t': ['i', 'int32_t', 'u.ival', ''],
-         'double': ['d', 'double', 'u.dval', ''],
-         'string': ['s', 'char*', 'u.sval', ''],
-         'handle': ['h', 'NaClSrpcImcDescType', 'u.hval', ''],
          'char[]': ['C', 'char*', 'u.caval.carr', 'u.caval.count'],
+         'double': ['d', 'double', 'u.dval', ''],
+         'double[]': ['D', 'double*', 'u.daval.darr', 'u.daval.count'],
+         'handle': ['h', 'NaClSrpcImcDescType', 'u.hval', ''],
+         'int32_t': ['i', 'int32_t', 'u.ival', ''],
          'int32_t[]': ['I', 'int32_t*', 'u.iaval.iarr', 'u.iaval.count'],
-         'double[]': ['D', 'double*', 'u.daval.darr', 'u.daval.count']
+         'int64_t': ['l', 'int64_t', 'u.lval', ''],
+         'int64_t[]': ['L', 'int64_t', 'u.laval.larr', 'u.laval.count'],
+         'string': ['s', 'char*', 'u.sval', ''],
         }
 
 
@@ -331,7 +333,8 @@ def main(argv):
     elif opt == '-s':
       mode = 'server'
     else:
-      assert 0
+      print >>sys.stderr, 'Neither -c nor -s specified'
+      return 1
 
   # Combine the rpc specs from spec_files into rpcs.
   specs = []

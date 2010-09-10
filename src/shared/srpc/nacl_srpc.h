@@ -118,8 +118,10 @@ enum NaClSrpcArgType {
   NACL_SRPC_ARG_TYPE_DOUBLE = 'd',  /**< scalar double */
   NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY = 'D',  /**< array of double */
   NACL_SRPC_ARG_TYPE_HANDLE = 'h',  /**< a descriptor (handle) */
-  NACL_SRPC_ARG_TYPE_INT = 'i',  /**< scalar int */
-  NACL_SRPC_ARG_TYPE_INT_ARRAY = 'I',  /**< array of int */
+  NACL_SRPC_ARG_TYPE_INT = 'i',  /**< scalar int32_t */
+  NACL_SRPC_ARG_TYPE_INT_ARRAY = 'I',  /**< array of int32_t */
+  NACL_SRPC_ARG_TYPE_LONG = 'l',  /**< scalar int64_t */
+  NACL_SRPC_ARG_TYPE_LONG_ARRAY = 'L',  /**< array of int64_t */
   NACL_SRPC_ARG_TYPE_STRING = 's',  /**< NUL-terminated string */
   NACL_SRPC_ARG_TYPE_OBJECT = 'o',  /**< scriptable object */
   NACL_SRPC_ARG_TYPE_VARIANT_ARRAY = 'A'  /**< array of NaClSrpcArg structs */
@@ -147,17 +149,6 @@ struct NaClSrpcCharArray {
 };
 
 /**
- * Argument data type for passing arrays of int.
- * @see NaClSrpcArg
- */
-struct NaClSrpcIntArray {
-  /** The number of integers in the array */
-  nacl_abi_size_t  count;
-  /** A chunk of memory containing <code>count</code> integers */
-  int             *iarr;
-};
-
-/**
  * Argument data type for passing arrays of double.
  * @see NaClSrpcArg
  */
@@ -166,6 +157,28 @@ struct NaClSrpcDoubleArray {
   nacl_abi_size_t   count;
   /** A chunk of memory containing <code>count</code> doubles */
   double            *darr;
+};
+
+/**
+ * Argument data type for passing arrays of int32_t.
+ * @see NaClSrpcArg
+ */
+struct NaClSrpcIntArray {
+  /** The number of integers in the array */
+  nacl_abi_size_t  count;
+  /** A chunk of memory containing <code>count</code> int32_t */
+  int32_t          *iarr;
+};
+
+/**
+ * Argument data type for passing arrays of int64_t.
+ * @see NaClSrpcArg
+ */
+struct NaClSrpcLongArray {
+  /** The number of doubles in the array */
+  nacl_abi_size_t   count;
+  /** A chunk of memory containing <code>count</code> int64_t */
+  int64_t           *larr;
 };
 
 #ifdef __cplusplus
@@ -208,14 +221,18 @@ struct NaClSrpcArg {
     int                         bval;
     /** An integer value */
     int32_t                     ival;
+    /** A int64_t value */
+    int64_t                     lval;
     /** A double-precision floating point value */
     double                      dval;
     /** An array of character values */
     struct NaClSrpcCharArray    caval;
-    /** An array of integer values */
-    struct NaClSrpcIntArray     iaval;
     /** An array of double-precision floating point values */
     struct NaClSrpcDoubleArray  daval;
+    /** An array of int32_t values */
+    struct NaClSrpcIntArray     iaval;
+    /** An array of int64_t values */
+    struct NaClSrpcLongArray    laval;
     /** A zero-terminated string value */
     char                        *sval;
     /** A handle used to pass descriptors */

@@ -5,7 +5,7 @@
  */
 
 /*
- * NaCl service library.  a primitive rpc library
+ * NaCl SRPC library.  A primitive rpc library.
  */
 
 #include <stdarg.h>
@@ -37,13 +37,15 @@ static int TypeCheckArgs(const char* arg_types, NaClSrpcArg** alist) {
     /* This code could be more compact by using a 256 entry table. */
     switch (*p) {
       case NACL_SRPC_ARG_TYPE_BOOL:
-      case NACL_SRPC_ARG_TYPE_INT:
-      case NACL_SRPC_ARG_TYPE_DOUBLE:
-      case NACL_SRPC_ARG_TYPE_STRING:
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_DOUBLE:
       case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
       case NACL_SRPC_ARG_TYPE_HANDLE:
+      case NACL_SRPC_ARG_TYPE_INT:
+      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_LONG:
+      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      case NACL_SRPC_ARG_TYPE_STRING:
         if ((*alist)->tag != (enum NaClSrpcArgType) *p) {
           return 0;
         }
@@ -223,10 +225,16 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
         SCALAR_##phase(arg, hval, va, NaClSrpcImcDescType);     \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_INT:                              \
-        SCALAR_##phase(arg, ival, va, int);                     \
+        SCALAR_##phase(arg, ival, va, int32_t);                 \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_INT_ARRAY:                        \
-        ARRAY_##phase(arg, iaval, iarr, va, int*);              \
+        ARRAY_##phase(arg, iaval, iarr, va, int32_t*);          \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_LONG:                             \
+        SCALAR_##phase(arg, lval, va, int64_t);                 \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:                       \
+        ARRAY_##phase(arg, laval, larr, va, int64_t*);          \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_STRING:                           \
         SCALAR_##phase(arg, sval, va, char*);                   \

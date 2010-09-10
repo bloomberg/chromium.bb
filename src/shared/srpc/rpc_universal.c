@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "native_client/src/include/portability_string.h"
 #if NACL_WINDOWS
 #include <float.h>
 #define NACL_ISNAN(d) _isnan(d)
@@ -412,7 +413,8 @@ static int Tokenize(char* line, TOKEN *array, int n) {
  * 0 if not (out of memory or bad type).
  */
 static int ParseArg(NaClSrpcArg* arg, const char* token) {
-  long val;
+  int32_t val;
+  int64_t lval;
   int dim;
   int i;
   const char* comma;
@@ -483,7 +485,7 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
     dim = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_INT_ARRAY;
-    arg->u.iaval.iarr = (int*) calloc(dim, sizeof(int));
+    arg->u.iaval.iarr = (int32_t*) calloc(dim, sizeof(int32_t));
     if (NULL == arg->u.iaval.iarr) {
       return 0;
     }
@@ -494,6 +496,30 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
       if (!comma) break;
       ++comma;
       arg->u.iaval.iarr[i] = strtol(comma, 0, 0);
+    }
+    break;
+   case NACL_SRPC_ARG_TYPE_LONG:
+    lval = STRTOLL(&token[2], 0, 0);
+    arg->tag = NACL_SRPC_ARG_TYPE_LONG;
+    arg->u.lval = lval;
+    break;
+   case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+    /*
+     * dim is the count of the elements in the array, which is a 32-bit value.
+     */
+    dim = strtol(&token[2], 0, 0);
+    arg->tag = NACL_SRPC_ARG_TYPE_LONG_ARRAY;
+    arg->u.laval.larr = (int64_t*) calloc(dim, sizeof(int64_t));
+    if (NULL == arg->u.laval.larr) {
+      return 0;
+    }
+    arg->u.laval.count = dim;
+    comma = token;
+    for (i = 0; i < dim; ++i) {
+      comma = strstr(comma, ",");
+      if (!comma) break;
+      ++comma;
+      arg->u.laval.larr[i] = STRTOLL(comma, 0, 0);
     }
     break;
    case NACL_SRPC_ARG_TYPE_STRING:
@@ -617,7 +643,17 @@ static void DumpArg(const NaClSrpcArg* arg) {
     count = arg->u.iaval.count;
     printf("I(%"NACL_PRIu32"", count);
     for (i = 0; i < count; ++i)
-      printf(",%d", arg->u.iaval.iarr[i]);
+      printf(",%"NACL_PRId32, arg->u.iaval.iarr[i]);
+    printf(")");
+    break;
+   case NACL_SRPC_ARG_TYPE_LONG:
+    printf("l(%"NACL_PRId64")", arg->u.lval);
+    break;
+   case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+    count = arg->u.laval.count;
+    printf("L(%"NACL_PRIu32"", count);
+    for (i = 0; i < count; ++i)
+      printf(",%"NACL_PRId64, arg->u.laval.larr[i]);
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_STRING:
@@ -678,6 +714,9 @@ void FreeArrayArgs(NaClSrpcArg arg[], int count) {
      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       free(arg[i].u.iaval.iarr);
       break;
+     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      free(arg[i].u.laval.larr);
+      break;
      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
       FreeArrayArgs(arg[i].u.vaval.varr, arg[i].u.vaval.count);
       break;
@@ -686,6 +725,7 @@ void FreeArrayArgs(NaClSrpcArg arg[], int count) {
      case NACL_SRPC_ARG_TYPE_DOUBLE:
      case NACL_SRPC_ARG_TYPE_HANDLE:
      case NACL_SRPC_ARG_TYPE_INT:
+     case NACL_SRPC_ARG_TYPE_LONG:
      case NACL_SRPC_ARG_TYPE_STRING:
      case NACL_SRPC_ARG_TYPE_OBJECT:
      default:

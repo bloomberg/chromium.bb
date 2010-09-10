@@ -80,6 +80,16 @@ NaClSrpcError IntMethod(NaClSrpcChannel *channel,
 }
 
 /*
+ *  The test for long negates the input and returns it.
+ */
+NaClSrpcError LongMethod(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
+  out_args[0]->u.lval = -in_args[0]->u.lval;
+  return NACL_SRPC_RESULT_OK;
+}
+
+/*
  *  The test for string returns the length of the string.
  */
 NaClSrpcError StringMethod(NaClSrpcChannel *channel,
@@ -106,7 +116,7 @@ NaClSrpcError CharArrayMethod(NaClSrpcChannel *channel,
   }
   length = in_args[0]->u.caval.count;
   for (i = 0; i < length; i++) {
-    out_args[0]->u.caval.carr[length-i-1] = in_args[0]->u.caval.carr[i];
+    out_args[0]->u.caval.carr[length - i - 1] = in_args[0]->u.caval.carr[i];
   }
   return NACL_SRPC_RESULT_OK;
 }
@@ -120,7 +130,7 @@ NaClSrpcError DoubleArrayMethod(NaClSrpcChannel *channel,
   }
   length = in_args[0]->u.daval.count;
   for (i = 0; i < length; i++) {
-    out_args[0]->u.daval.darr[length-i-1] = in_args[0]->u.daval.darr[i];
+    out_args[0]->u.daval.darr[length - i - 1] = in_args[0]->u.daval.darr[i];
   }
   return NACL_SRPC_RESULT_OK;
 }
@@ -134,7 +144,21 @@ NaClSrpcError IntArrayMethod(NaClSrpcChannel *channel,
   }
   length = in_args[0]->u.iaval.count;
   for (i = 0; i < length; i++) {
-    out_args[0]->u.iaval.iarr[length-i-1] = in_args[0]->u.iaval.iarr[i];
+    out_args[0]->u.iaval.iarr[length - i - 1] = in_args[0]->u.iaval.iarr[i];
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError LongArrayMethod(NaClSrpcChannel *channel,
+                              NaClSrpcArg **in_args,
+                              NaClSrpcArg **out_args) {
+  int i, length;
+  if (out_args[0]->u.laval.count != in_args[0]->u.laval.count) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  length = in_args[0]->u.laval.count;
+  for (i = 0; i < length; i++) {
+    out_args[0]->u.laval.larr[length - i - 1] = in_args[0]->u.laval.larr[i];
   }
   return NACL_SRPC_RESULT_OK;
 }
@@ -222,10 +246,12 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { "double:d:d", DoubleMethod },
   { "nan::d", NaNMethod },
   { "int:i:i", IntMethod },
+  { "long:l:l", LongMethod },
   { "string:s:i", StringMethod },
   { "char_array:C:C", CharArrayMethod },
   { "double_array:D:D", DoubleArrayMethod },
   { "int_array:I:I", IntArrayMethod },
+  { "long_array:L:L", LongArrayMethod },
   { "null_method::", NullMethod },
   { "stringret:i:s", ReturnStringMethod },
   { "handle:h:", HandleMethod },

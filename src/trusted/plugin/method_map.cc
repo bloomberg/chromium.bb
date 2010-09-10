@@ -61,12 +61,14 @@ uint32_t SrpcParams::SignatureLength() const {
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
       case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
       case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
         ++array_outs;
         break;
       case NACL_SRPC_ARG_TYPE_STRING:
       case NACL_SRPC_ARG_TYPE_BOOL:
       case NACL_SRPC_ARG_TYPE_DOUBLE:
       case NACL_SRPC_ARG_TYPE_INT:
+      case NACL_SRPC_ARG_TYPE_LONG:
       case NACL_SRPC_ARG_TYPE_HANDLE:
       case NACL_SRPC_ARG_TYPE_INVALID:
       case NACL_SRPC_ARG_TYPE_OBJECT:
@@ -153,6 +155,9 @@ void FreeSrpcArg(NaClSrpcArg* arg) {
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       free(arg->u.iaval.iarr);
       break;
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      free(arg->u.laval.larr);
+      break;
     case NACL_SRPC_ARG_TYPE_STRING:
       // All strings that are passed in SrpcArg must be allocated using
       // malloc! We cannot use browser's allocation API
@@ -173,6 +178,7 @@ void FreeSrpcArg(NaClSrpcArg* arg) {
     case NACL_SRPC_ARG_TYPE_BOOL:
     case NACL_SRPC_ARG_TYPE_DOUBLE:
     case NACL_SRPC_ARG_TYPE_INT:
+    case NACL_SRPC_ARG_TYPE_LONG:
     case NACL_SRPC_ARG_TYPE_INVALID:
     default:
       break;

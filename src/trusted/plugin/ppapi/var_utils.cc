@@ -204,6 +204,7 @@ bool PPVarToAllocateNaClSrpcArg(const pp::Var& var,
     case NACL_SRPC_ARG_TYPE_BOOL:
     case NACL_SRPC_ARG_TYPE_DOUBLE:
     case NACL_SRPC_ARG_TYPE_INT:
+    case NACL_SRPC_ARG_TYPE_LONG:
     case NACL_SRPC_ARG_TYPE_STRING:
     case NACL_SRPC_ARG_TYPE_HANDLE:
     case NACL_SRPC_ARG_TYPE_OBJECT:
@@ -218,6 +219,10 @@ bool PPVarToAllocateNaClSrpcArg(const pp::Var& var,
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       PPVarToAllocateArray(var, &arg->u.iaval.count, &arg->u.iaval.iarr,
+                           exception);
+      break;
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      PPVarToAllocateArray(var, &arg->u.laval.count, &arg->u.laval.larr,
                            exception);
       break;
     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
@@ -247,7 +252,10 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
       arg->u.dval = PPVarToNumber<double>(var, exception);
       break;
     case NACL_SRPC_ARG_TYPE_INT:
-      arg->u.ival = PPVarToNumber<int>(var, exception);
+      arg->u.ival = PPVarToNumber<int32_t>(var, exception);
+      break;
+    case NACL_SRPC_ARG_TYPE_LONG:
+      arg->u.lval = PPVarToNumber<int64_t>(var, exception);
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
       arg->u.sval = PPVarToString(var, exception);
@@ -260,6 +268,9 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       PPVarToArray(var, &arg->u.iaval.count, &arg->u.iaval.iarr, exception);
+      break;
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      PPVarToArray(var, &arg->u.laval.count, &arg->u.laval.larr, exception);
       break;
     case NACL_SRPC_ARG_TYPE_HANDLE:
       arg->u.hval = reinterpret_cast<NaClSrpcImcDescType>(
@@ -289,6 +300,18 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
 
 namespace {
 
+// PPAPI does not have a 64-bit integer Var type.
+// To make the array construction below work, we define a set of overloaded
+// functions to convert an array element to a pp::Var.
+template<typename T> pp::Var ArrayElementToPPVar(T array_element) {
+  return pp::Var(array_element);
+}
+
+// One overload is specialized, and it truncates, losing precision of course.
+pp::Var ArrayElementToPPVar(int64_t array_element) {
+  return pp::Var(static_cast<int32_t>(array_element));
+}
+
 // Return a pp::Var constructed from |array_data|. Sets |exception| on error.
 template<typename T> pp::Var ArrayToPPVar(T* array_data,
                                           nacl_abi_size_t array_length,
@@ -302,7 +325,9 @@ template<typename T> pp::Var ArrayToPPVar(T* array_data,
 
   for (size_t i = 0; i < array_length; ++i) {
     int32_t index = static_cast<int32_t>(i);
-    array->SetProperty(pp::Var(index), pp::Var(array_data[i]), exception);
+    array->SetProperty(pp::Var(index),
+                       ArrayElementToPPVar(array_data[i]),
+                       exception);
   }
   return pp::Var(array);
 }
@@ -367,6 +392,10 @@ pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, PluginPpapi* plugin,
     case NACL_SRPC_ARG_TYPE_INT:
       var = pp::Var(arg->u.ival);
       break;
+    case NACL_SRPC_ARG_TYPE_LONG:
+      // PPAPI does not have a 64-bit integral type.  Downcast.
+      var = pp::Var(static_cast<int32_t>(arg->u.lval));
+      break;
     case NACL_SRPC_ARG_TYPE_STRING:
       var = pp::Var(arg->u.sval);
       break;
@@ -380,6 +409,10 @@ pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, PluginPpapi* plugin,
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       var = ArrayToPPVar(arg->u.iaval.iarr, arg->u.iaval.count, plugin,
+                         exception);
+      break;
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      var = ArrayToPPVar(arg->u.laval.larr, arg->u.laval.count, plugin,
                          exception);
       break;
     case NACL_SRPC_ARG_TYPE_HANDLE:
