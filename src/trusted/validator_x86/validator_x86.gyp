@@ -382,6 +382,7 @@
                   'defsize64.c',
                   'nacl_illegal.c',
                   'lock_insts.c',
+		  'ncdecode_st.c',
                   'ncdecode_onebyte.c',
                   'ncdecode_OF.c',
                   'ncdecode_sse.c',

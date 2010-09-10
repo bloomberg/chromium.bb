@@ -577,6 +577,12 @@ static int NaClGetNumImmedBytes(NaClInstState* state) {
     return 8;
   } else if (state->inst->flags & NACL_IFLAG(OpcodeHasImmed_Addr)) {
     return NaClExtractAddressSize(state) / 8;
+  } else if (state->inst->flags & NACL_IFLAG(OpcodeHasImmed_z)) {
+    if (state->operand_size == 2) {
+      return 2;
+    } else {
+      return 4;
+    }
   } else {
     return 0;
   }

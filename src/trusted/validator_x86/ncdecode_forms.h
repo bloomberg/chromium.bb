@@ -13,6 +13,8 @@
 
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 
+struct NaClSymbolTable;
+
 /* Defines the general category of instruction, and is used to define
  * set/use values for instructions. That is, most X86 instructions
  * have the form:
@@ -129,8 +131,8 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
                           size_t name_and_opcode_seq_size);
 
 /*
- * Operands are encoded using up to 3 characters. Each character defines
- * a property of the operand, as follows (if the sequence is less than 3
+ * Operands for macros are encoded using up to 3 characters. Each character
+ * defines a property of the operand, as follows (if the sequence is less than 3
  * characters, trailing underscores are added to make it a 3 character
  * sequence):
  *
@@ -168,99 +170,29 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
  * v - A word, doubleword, or quadword, depending on the effective operand size.
  *
  * Note: These character encodings come from Appendix A of the AMD manual.
+ * TODO(karl): Remove using these macros once code has been updated to use
+ * the new form of modeling at the end of this header file.
  */
 
 /* Generic macro for defining the name of an operand defining function,
  * based on the type it should recognize.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DEF_OPERAND(XXX) Define ## XXX ## Operand
 
 /* Generic macro defining an operand defining function, basede on
  * the type it should recognize.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DECLARE_OPERAND(XXX) \
   void DEF_OPERAND(XXX)()
 
-/* The following list are the current set of known (i.e. implemented
- * operand types.
- */
-
-DECLARE_OPERAND(E__);
-
-DECLARE_OPERAND(EdQ);
-
-DECLARE_OPERAND(Edq);
-
-DECLARE_OPERAND(Gd_);
-
-DECLARE_OPERAND(Gdq);
-
-DECLARE_OPERAND(I__);
-
-DECLARE_OPERAND(Md_);
-
-DECLARE_OPERAND(Mdq);
-
-DECLARE_OPERAND(Mpd);
-
-DECLARE_OPERAND(Mps);
-
-DECLARE_OPERAND(Mq_);
-
-DECLARE_OPERAND(Nq_);
-
-DECLARE_OPERAND(Pd_);
-
-DECLARE_OPERAND(Pdq);
-
-DECLARE_OPERAND(PdQ);
-
-DECLARE_OPERAND(Ppi);
-
-DECLARE_OPERAND(Pq_);
-
-DECLARE_OPERAND(Qd_);
-
-DECLARE_OPERAND(Qpi);
-
-DECLARE_OPERAND(Qq_);
-
-DECLARE_OPERAND(Udq);
-
-DECLARE_OPERAND(Upd);
-
-DECLARE_OPERAND(Ups);
-
-DECLARE_OPERAND(Uq_);
-
-DECLARE_OPERAND(Vdq);
-
-DECLARE_OPERAND(VdQ);
-
-DECLARE_OPERAND(Vpd);
-
-DECLARE_OPERAND(Vps);
-
-DECLARE_OPERAND(Vq_);
-
-DECLARE_OPERAND(Vsd);
-
-DECLARE_OPERAND(Vss);
-
-DECLARE_OPERAND(Wdq);
-
-DECLARE_OPERAND(Wpd);
-
-DECLARE_OPERAND(Wps);
-
-DECLARE_OPERAND(Wq_);
-
-DECLARE_OPERAND(Wsd);
-
-DECLARE_OPERAND(Wss);
+/* Model of a DEF_OPERAND form function. */
+typedef void (*NaClDefOperand)();
 
 /* Defines the name of an opcode extended with
  * an opcode in the ModRm byte.
+ * TODO(karl) Remove this function once code has been ported to new API.
  */
 void NaClDefInvModRmInst(NaClInstPrefix, uint8_t opcode,
                          NaClOpKind modrm_opcode);
@@ -269,15 +201,18 @@ void NaClDefInvModRmInst(NaClInstPrefix, uint8_t opcode,
  * Note: Size is intentionally set to be the same as for
  * uses of macro DEF_BINST and DEF_OINST, so that all
  * opcode definitions have the same width.
- */
+ * TODO(karl) Remove this macro once code has been ported to new API. */
 #define DEF_NULL_OPRDS_INST NaClDefNullOprdsInst
 
-/* Generic routine to define an opcode with no type arguments. */
+/* Generic routine to define an opcode with no type arguments.
+ * TODO(karl) Remove this function once code has been ported to new API.
+ */
 void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
                          NaClInstPrefix prefix, NaClMnemonic inst);
 
 /* Generic macro to define the name of a unary instruction with one type
  * argument, and use the modrm byte to decode the argument.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DEF_UNARY_INST(XXX) NaClDef ## XXX ## Inst
 
@@ -287,6 +222,7 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
  *
  * NOTE: We use macros to define function headers so that type checking
  * can happen on arguments to the corresponding defining function.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DECLARE_UNARY_INST(XXX) \
   void DEF_UNARY_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
@@ -296,6 +232,7 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
 /* Generic macro to define the name of a unary instruction with one type
  * argument, and uses the modrm field of the modrm byt to refine
  * the opcode being defined.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DEF_USUBO_INST(XXX) NaClDef ## XXX ## SubInst
 
@@ -306,6 +243,7 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
  *
  * NOTE: We use macros to define function headers so that type checking
  * can happen on arguments to the corresponding defining function.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DECLARE_UNARY_OINST(XXX) \
   void DEF_USUBO_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
@@ -318,6 +256,7 @@ DECLARE_UNARY_OINST(Mb_);
 
 /* Generic macro to define the name of an opcode with two type arguments,
  * and use the modrm byte to decode at least one of these arguments.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DEF_BINST(XXX, YYY) NaClDef ## XXX ## YYY ## Inst
 
@@ -327,6 +266,7 @@ DECLARE_UNARY_OINST(Mb_);
  *
  * NOTE: We use macros to define function headers so that type checking
  * can happen on arguments to the corresponding defining function.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DECLARE_BINARY_INST(XXX, YYY) \
   void DEF_BINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
@@ -496,6 +436,7 @@ DECLARE_BINARY_INST(Wss, Vss);
 /* Generic macro to define the name of a binary instruction with two type
  * arguments, and uses the modrm field of the modrm byte to refine
  * the opcode being defined.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DEF_OINST(XXX, YYY) NaClDef ## XXX ## YYY ## SubInst
 
@@ -506,6 +447,7 @@ DECLARE_BINARY_INST(Wss, Vss);
  *
  * NOTE: We use macros to define function headers so that type checking
  * can happen on arguments to the corresponding defining function.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 #define DECLARE_BINARY_OINST(XXX, YYY) \
   void DEF_OINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
@@ -516,6 +458,7 @@ DECLARE_BINARY_INST(Wss, Vss);
 
 /* The set of binary functions (with opcode refinement in the modrm byte),
  * with typed aruments, that are recognized.
+ * TODO(karl) Remove this macro once code has been ported to new API.
  */
 
 DECLARE_BINARY_OINST(Ev_, Ib_);
@@ -525,5 +468,228 @@ DECLARE_BINARY_OINST(Nq_, I__);
 DECLARE_BINARY_OINST(Udq, I__);
 
 DECLARE_BINARY_OINST(Vdq, I__);
+
+/***************************************************************************
+ * This section is the new API for defining instructions. It doesn't use
+ * macros. Rather, it uses a string, describing the instruction to
+ * model, In addition, a symbol table is passed in to define possible
+ * substitutions.
+ *
+ * The string defining the instruction is called an "opcode description string".
+ *
+ *    Examples: The following are some examples of opcode description strings.
+ *
+ *   "06: Push {%@sp}, %es" - Defines (opcode 06) that pushes register es
+ *   "07: Pop  {%@sp}, %es" - Defines (opcode 07) that pops into register es.
+ *   "69/r: Imul $Gv, $Ev, $Iz" - Defines (opcode 69) a signed multiply.
+ *   "0fba/7: Btc $Ev, $Ib" - Defines(opcode 0f ba, with opcode extension
+ *            7 in the modrm mod field) a bit test and complement.
+ *   "90+@i: Xchg $r8v, $rAX" - Defines (opcode 90+i) exhange register/memory
+ *            with register.
+ *
+ * A (symbol table) substitution is defined as follows:
+ *
+ *    (1) It begins with the character '@';
+ *    (2) Its name is an alphanumeric sequence; and
+ *    (3) The name is terminated by a character in the charset ' :+/{}'.
+ *
+ * The general form of an opcode description string is a sequence of
+ * hex values defining the opcode prefix, and the opcode byte. This
+ * sequence of values must be terminated with a colon (:). No spaces
+ * are allowed in this sequence.
+ *
+ * If the instruction uses the modrm byte, a '/r' must immediately follow
+ * the sequence of hex values (and must appear before the colon).
+ *
+ * If the instruction is continued in the modrm mod field (i.e. a value 0..7),
+ * the characters /N (where N is in 0..7) must immediately follow the sequence
+ * of hex values (and must appear before the colon).
+ *
+ * If the instruction encodes a register value as part of the opcode byte,
+ * the value of the register defined is the string '+R' (where R is in 0..7),
+ * and must immediately follow the sequence of hex values (and must appear
+ * before the colon).
+ *
+ * After the colon, the mnemonic name of the instruction must appear. An
+ * arbitrary number of spaces can appear between the colon, and the mnemonic
+ * name. The mnemonic name is then followed by zero or more operands.
+ * Each operand can be separated by an arbitrary sequence of spaces and/or
+ * commas.
+ *
+ * Each operand specifies a register and/or memory address. An operand
+ * may not contain spaces.
+ *
+ * If the operand is implicit (i.e. should not appear when printing a
+ * decoded instruction), it should be enclosed in curly braces. In general,
+ * we put implicit operands first, but there are no rules defining where an
+ * implicit operand may appear.
+ *
+ * A register begins with the character '%', and is followed by its name.
+ * Register names are case insensitive. Legal values are any operand kind
+ * defined in ncopcode_operand_kind.enum that begins with the text 'Reg'.
+ *
+ * A print form begins with the character '$", and is followed by a name.
+ * Print forms are, in general, defined by Appendex section A.1 - Opcode-Syntax
+ * Notation in AMD document 24594-Rev.3.14-September 2007, "AMD64 Architecture
+ * Programmer's manual Volume 3: General-Purpose and System Instructions".
+ * Exceptions are made for descriptions used in that appendex, but are
+ * not documented in this section. For clarity, the rules are explicitly
+ * defined as follows: A print form consists of a FORM,
+ * and a SIZE specification, by concatenation the two names together.
+ *
+ * Valid FORMs are:
+ *   A - Far pointer is encoded in the instruction.
+ *   C - Control register specified by the ModRM reg field.
+ *   D - Debug register specified by the ModRM reg field.
+ *   E - General purpose register or memory operand specified by the ModRm
+ *       bytes. Memory addresses can be computed from a segment register,
+ *       SIB byte, and/or displacement.
+ *   F - rFLAGS register.
+ *   G - General purpose register specified by the ModRm reg field.
+ *   I - Immediate value.
+ *   J - The instruciton includes a relative offset that is added to the rIP.
+ *   M - A memory operand specified by the ModRM byte.
+ *   O - The offset of an operand is encoded in the instruction. There is no
+ *       ModRm byte in the instruction. Complex addressing using the SIB byte
+ *       cannot be done.
+ *   P - 64-bit MMX register specified by the ModRM reg field.
+ *   PR - 64 bit MMX register specified by the ModRM r/m field. The ModRM mod
+ *       field must be 11b.
+ *   Q - 64 bit MMX register or memory operand specified by the ModRM byte.
+ *       Memory addresses can be computed from a segment register, SIB byte,
+ *       and/or displacement.
+ *   R - General purpose register specified by the ModRM r/m field. The ModeRm
+ *       mod field must be 11b.
+ *   S - Segment register specified by the ModRM reg field.
+ *   V - 128-bit XMM register specified by the ModRM reg field.
+ *   VR - 128-bit XMM register specified by the ModRM r/m field. The ModRM mod
+ *       field must be 11b.
+ *   W - 128 Xmm register or memory operand specified by the ModRm Byte. Memory
+ *       addresses can be computed from a segment register, SIB byte, and/or
+ *       displacement.
+ *   X - A memory operand addressed by the DS.rSI registers. Used in string
+ *       instructions.
+ *   Y - A memory operand addressed by the ES.rDI registers. Used in string
+ *       instructions.
+ *   r8 - The 8 registers rAX, rCX, rDX, rBX, rSP, rBP, rSI, rDI, and the
+ *        optional registers r8-r15 if REX.b is set, based on the register value
+ *        embedded in the opcode.
+ *   rAX - The register AX, EAX, or RAX, depending on SIZE.
+ *   rBP - The register BP, EBP, or RBP, depending on SIZE.
+ *   rBX - The register BX, EBX, or RBX, depending on SIZE.
+ *   rCX - The register CX, ECX, or RCX, depending on SIZE.
+ *   rDI - The register DI, EDI, or RDI, depending on SIZE.
+ *   rDX - The register DX, EDX, or RDX, depending on SIZE.
+ *   rSI - The register SI, ESI, or RSI, depending on SIZE.
+ *   rSP - The register SP, ESP, or RSP, depending on SIZE.
+ *
+ * Valid SIZEs are:
+ *   a - Two 16-bit or 32-bit memory operands, depending on the effective
+ *       operand size. Used in the BOUND instruction.
+ *   b - A byte, irrespective of the effective operand size.
+ *   d - A doubleword (32-bits), irrespective of the effective operand size.
+ *   dq - A douible-quadword (128 bits), irrespective of the effective operand
+ *       size.
+ *   p - A 32-bit or 48-bit far pointer, depending on the effective operand
+ *       size.
+ *   pd - A 128-bit double-precision floating point vector operand (packed
+ *       double).
+ *   pi - A 64-bit MMX operand (packed integer).
+ *   ps - A 138-bit single precision floating point vector operand (packed
+ *        single).
+ *   q - A quadword, irrespective of the effective operand size.
+ *   s - A 6-byte or 10-byte pseudo-descriptor.
+ *   sd - A scalar dobule-precision floating point operand (scalar double).
+ *   si - A scalar doubleword (32-bit) integer operand (scalar integer).
+ *   ss - A scalar single-precision floating-point operand (scalar single).
+ *   v - A word, doubleword, or quadword, depending on the effective operand
+ *       size.
+ *   w - A word, irrespective of the effective operand size.
+ *   z - A word if the effective operand size is 16 bits, or a doubleword
+ *       if the effective operand size is 32 or 64 bits.
+ *
+ * In addition, this code adds the following special print forms:
+ *    One - The literal constant 1.
+ *
+ * Because some instructions may need to add flags and/or additional operands
+ * outside the string context, instructions are modeled using a pair of calls
+ * (i.e. a Begin and End form). The Begin form starts defining the instruction,
+ * and the End form completes and installs the modeled instruction. Any
+ * additional model changes for the instruction being defined should
+ * appear between these call pairs.
+ *
+ * For instructions not needing to do special touchups, a simplier Define form
+ * exists that simply dispatches calls to the corresponding Begin and End forms.
+ ***************************************************************************/
+
+/* Defines the beginning of the modeling of both a x86-32 and x86-64
+ * instruction.
+ * Parameters are:
+ *   desc - the opcode description string.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ */
+void NaClBegDef(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st);
+
+/* Defines the beginning of the modeling of a x86-32 instruction without
+ * an equivalent x86-64 version.
+ * Parameters are:
+ *   desc - the opcode description string.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ */
+void NaClBegD32(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st);
+
+/* Defines the beginning of the modeling of a x86-64 instruction without
+ * an equivalent x86-32 version.
+ * Parameters are:
+ *   desc - the opcode description string.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ */
+void NaClBegD64(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st);
+
+/* Defines the end of the modeling of an instruction. Must be paired with
+ * a call to NaClBegDef, NaClBegD32, or NaClBegD64.
+ * Parameters are:
+ *   icat - The set/use categorization for the instruction being defined.
+ */
+void NaClEndDef(NaClInstCat icat);
+
+/* Defines both a x86-32 and x86-64 instruction, using dispatching
+ * calls to NaClBegDef and NaClEndDef.
+ * Parameters are:
+ *   desc - the opcode description string.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ *   icat - The set/use categorization for the instruction being defined.
+ */
+void NaClDefine(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st, NaClInstCat cat);
+
+/* Defines a x86-32 instruction without an equivalent x86-64 version, using
+ * dispatching calls to NaClBegD32 and NaClEndDef.
+ * Parameters are:
+ *   desc - the opcode description string.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ *   icat - The set/use categorization for the instruction being defined.
+ */
+void NaClDef_32(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st, NaClInstCat cat);
+
+/* Defines a x86-64 instruction without an equivalent x86-32 version, using
+ * dispatching calls to NaClBegD32 and NaClEndDef.
+ * Parameters are:
+ *   desc - the opcode description string.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ *   icat - The set/use categorization for the instruction being defined.
+ */
+void NaClDef_64(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st, NaClInstCat cat);
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_FORMS_H__ */

@@ -107,15 +107,15 @@ Target: x86-32 bit mode
       RegAX                   OpUse OpSet OpDest
       I_Operand               OpUse
   --- 06 ---
-  06                          ILLEGAL 
-    Push {%ESP}, %ES
+  06                          ILLEGAL NaClIllegal
+    Push {%esp}, %es
       RegESP                  OpUse OpSet OpImplicit
       RegES                   OpUse
   --- 07 ---
-  07                          ILLEGAL 
-    Pop {%ESP}, %ES
+  07                          ILLEGAL NaClIllegal
+    Pop {%esp}, %es
       RegESP                  OpUse OpSet OpImplicit
-      RegES                   OpSet
+      RegES                   OpSet OpDest
   --- 08 ---
   08                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
     Or $E, $G

@@ -48,6 +48,7 @@ OpcodeHasImmed_w
 OpcodeHasImmed_v
 OpcodeHasImmed_p  # 6 bytes.
 OpcodeHasImmed_o
+OpcodeHasImmed_z  # if effective size 2 bytes, 2 bytes. Otherwise 4 bytes.
 
 # Define the size of the second immediate value that must follow the first
 # immediate opcode (if more than one immediate value).

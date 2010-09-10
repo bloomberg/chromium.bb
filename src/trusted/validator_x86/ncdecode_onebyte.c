@@ -430,7 +430,7 @@ static void NaClDefGroup2OpcodesInModRm() {
   }
 }
 
-void NaClDefOneByteInsts() {
+void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   uint8_t i;
 
   NaClDefInstPrefix(NoPrefix);
@@ -438,15 +438,8 @@ void NaClDefOneByteInsts() {
   NaClBuildBinaryOps_00_05(0x00, NACLi_386L, InstAdd,
                            NACL_IFLAG(OpcodeLockable));
 
-  NaClDefInst(0x06, NACLi_ILLEGAL, NACL_IFLAG(Opcode32Only), InstPush);
-  NaClDefOp(RegESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) |
-            NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegES, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0x07, NACLi_ILLEGAL, NACL_IFLAG(Opcode32Only), InstPop);
-  NaClDefOp(RegESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) |
-            NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegES, NACL_OPFLAG(OpSet));
+  NaClDef_32("06: Push {%@sp}, %es", NACLi_ILLEGAL, st, Push);
+  NaClDef_32("07: Pop  {%@sp}, %es", NACLi_ILLEGAL, st, Pop);
 
   NaClBuildBinaryOps_00_05(0x08, NACLi_386L, InstOr,
                            NACL_IFLAG(OpcodeLockable));

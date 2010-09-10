@@ -9,14 +9,19 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability_io.h"
+#include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/defsize64.h"
 #include "native_client/src/trusted/validator_x86/lock_insts.h"
 #include "native_client/src/trusted/validator_x86/nacl_illegal.h"
+#include "native_client/src/trusted/validator_x86/ncdecode_st.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 #include "native_client/src/trusted/validator_x86/zero_extends.h"
 
@@ -395,6 +400,10 @@ void DEF_OPERAND(Nq_)() {
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
+void DEF_OPERAND(One)() {
+  NaClDefOp(Const_1, NACL_EMPTY_OPFLAGS);
+}
+
 void DEF_OPERAND(Pd_)() {
   NaClDefOp(Mmx_Gd_Operand, NACL_EMPTY_OPFLAGS);
 }
@@ -762,3 +771,465 @@ DEFINE_BINARY_OINST(Nq_, I__)
 DEFINE_BINARY_OINST(Udq, I__)
 
 DEFINE_BINARY_OINST(Vdq, I__)
+
+/**************************************************************************
+ * The following code is code that takes a opcode description string, and *
+ * generates the corresponding instruction                                *
+ *                                                                        *
+ * TODO(karl) Remove macro implementations once we have moved to this new *
+ * implementation.                                                        *
+ *************************************************************************/
+
+/* Define the (maximum) size that working buffers, for the translation code. */
+#define BUFSIZE 256
+
+/* Define the maximum number of operands that can appear in an opcode
+ * description string.
+ */
+#define MAX_OPERANDS 10
+
+#define MAX_DEFOPS 1000
+
+/* The maximum number of symbol substitutions that can be applied to an
+ * opcode description string. Used mainly to make sure that if a
+ * substitution occurs, the code will not looop infinitely.
+ */
+#define MAX_ST_SUBSTITUTIONS 100
+
+/* The current opcode string description being translated. Mainly used
+ * to generate useful error messages.
+ */
+static char* kCachedDesc = "???";
+
+/* The set of possible characters that can follow a symbol when doing
+ * symbol substitution.
+ */
+static const char* kSymbolTerminators = " :+/{},@";
+
+/* Generates a fatal error message for the given opcode description string. */
+static void NaClDefDescFatal(char* desc, const char* message) {
+  NaClLog(LOG_FATAL, "NaClDefine '%s': %s\n", desc, message);
+}
+
+/* Generates a fatal error message for the cached opcode description string. */
+static void NaClDefFatal(const char* message) {
+  NaClDefDescFatal(kCachedDesc, message);
+}
+
+/* replace all occurrences of "@NAME" with the corresponding
+ * value in the given symbol table.
+ *
+ * NOTE: only MAX_ST_SUBSTITUTIONS are allowed, to make sure
+ * that we don't infinite loop.
+ */
+static void NaClStExpand(char* desc, struct NaClSymbolTable* st) {
+  const char* marker;
+  int attempts_left = MAX_ST_SUBSTITUTIONS;
+  if (NULL == st) return;
+  for (marker = strchr(desc, '@');
+       (NULL != marker) && attempts_left;
+       marker = strchr(desc, '@')) {
+    char name[BUFSIZE];
+    size_t name_len = 0;
+    /* Extract name */
+    const char *ch_ptr = marker+1;
+    while (*ch_ptr && (NULL == strchr(kSymbolTerminators, *ch_ptr))) {
+      name[name_len++] = *(ch_ptr++);
+    }
+    name[name_len] = '\0';
+    if (name_len) {
+      /* Get corresponding symbol table value. */
+      NaClStValue* val = NaClSymbolTableGet(name, st);
+      if (NULL != val) {
+        /* Substitute and update desc. */
+        char buffer[BUFSIZE];
+        char* buffer_ptr = buffer;
+        const char* desc_ptr = desc;
+        char v_buffer[BUFSIZE];
+        const char* v_buffer_ptr = v_buffer;
+        /* Copy text before @name. */
+        while (desc_ptr != marker) {
+          *(buffer_ptr++) = *(desc_ptr++);
+        }
+        /* Do substitution of symbol value. */
+        switch (val->kind) {
+          case nacl_byte:
+            SNPRINTF(v_buffer, BUFSIZE, "%02"NACL_PRIx8, val->value.byte_value);
+            break;
+          case nacl_text:
+            v_buffer_ptr = val->value.text_value;
+          case nacl_int:
+            SNPRINTF(v_buffer, BUFSIZE, "%d", val->value.int_value);
+            break;
+          default:
+            NaClDefDescFatal(desc, "Unable to expand @ variable");
+            break;
+        }
+        while (*v_buffer_ptr) {
+          *(buffer_ptr++) = *(v_buffer_ptr++);
+        }
+        /* copy text after @name. */
+        desc_ptr = ch_ptr;
+        while (*desc_ptr) {
+          *(buffer_ptr++) = *(desc_ptr++);
+        }
+        *buffer_ptr = '\0';
+        strcpy(desc, buffer);
+        --attempts_left;
+        continue;
+      }
+    }
+    /* If reached, unable to do substitution, stop. */
+    break;
+  }
+}
+
+/* Verify argument is a string describing a sequence of byte,
+ * i.e. pairs of hex values (with no space inbetween), describing
+ * the opcode base of an instruction.
+ */
+static void NaClVerifyByteBaseAssumptions(const char* byte) {
+  size_t len = strlen(byte);
+  if ((len < 2) || (len % 2)) {
+    NaClDefFatal("opcode (hex) base length must be divisible by 2");
+  }
+  if (len != strspn(byte, "0123456789aAbBcCdDeEfF")) {
+    NaClDefFatal("opcode base not hex value");
+  }
+}
+
+/* Given a pointer to a string describing a byte using hexidecimal values,
+ * extract the corresponding byte value.
+ *
+ * Note: Assumes that the length of base is 2.
+ */
+static uint8_t NaClExtractByte(const char* base) {
+  return (uint8_t) STRTOULL(base + strlen(base) - 2, NULL, 16);
+}
+
+/* Given a string of byte values, describing the opcode base
+ * of an instruction, extract out the corresponding opcode
+ * prefix (i.e. the prefix defined by all but the last byte in
+ * the opcode base.
+ *
+ * Note: Assumes that NaClVerifyByteBaseAssumptions was called
+ * on the given parameter.
+ */
+NaClInstPrefix NaClExtractPrefix(const char* base) {
+  size_t len = strlen(base);
+  if (len == 2) {
+    return NoPrefix;
+  } else {
+    size_t i;
+    NaClInstPrefix prefix;
+    char prefix_text[BUFSIZE];
+    char* text_ptr;
+    size_t prefix_size = len - 2;
+    strcpy(prefix_text, "Prefix");
+    text_ptr = prefix_text + strlen("Prefix");
+    for (i = 0; i < prefix_size; ++i) {
+      text_ptr[i] = toupper(base[i]);
+    }
+    text_ptr[prefix_size] = '\0';
+    for (prefix = 0; prefix < NaClInstPrefixEnumSize; ++prefix) {
+      if (0 == strcmp(NaClInstPrefixName(prefix), prefix_text)) {
+        return prefix;
+      }
+    }
+  }
+  NaClDefFatal("Opcode prefix not understood");
+  /* NOT REACHED */
+  return NaClInstPrefixEnumSize;
+}
+
+/*
+ * Given a string describing an opcode, the type of the
+ * instruction, and the mnemonic associated with the instruction,
+ * parse the opcode string and define the corresponding instruction.
+ *
+ * Note: See ??? for descriptions of legal opcode strings.
+ */
+static void NaClParseOpcode(const char* opcode,
+                            NaClInstType insttype,
+                            NaClMnemonic name) {
+  char buffer[BUFSIZE];
+  char* marker;
+  const char* base = buffer;
+  char* reg_offset = NULL;
+  char* opcode_ext = NULL;
+  NaClInstPrefix prefix;
+  uint8_t opcode_value;
+  strcpy(buffer, opcode);
+
+  /* Start by finding any valid suffix (i.e. +X or /X), and remove.
+   * Put the corresponding suffix into reg_offset(+), or opcode_ext(/).
+   */
+  marker = strchr(buffer, '+');
+  if (NULL != marker) {
+    *marker = '\0';
+    reg_offset = buffer + strlen(base) + 1;
+    if (strlen(reg_offset) != 1) {
+      NaClDefFatal("register offset in opcode can only be a single digit");
+    }
+  } else {
+    marker = strchr(buffer, '/');
+    if (NULL != marker) {
+      *marker = '\0';
+      opcode_ext = buffer + strlen(base) + 1;
+      if (strlen(opcode_ext) != 1) {
+        NaClDefFatal("modrm opcode extension can only be a single digit");
+      }
+    }
+  }
+
+  /* Now verify the opcode string, less the suffix, is valid. If so,
+   * Pull out the instruction prefix and opcode byte.
+   */
+  NaClVerifyByteBaseAssumptions(base);
+  prefix = NaClExtractPrefix(base);
+  NaClDefInstPrefix(prefix);
+  opcode_value = NaClExtractByte(base + strlen(base) - 2);
+
+  if (reg_offset != NULL) {
+    int reg;
+    if ((1 != strlen(reg_offset)) || (1 != strspn(reg_offset, "01234567"))) {
+      NaClDefFatal("invalid opcode register offset");
+    }
+    reg = (int) STRTOULL(reg_offset, NULL, 10);
+    NaClDefInst(opcode_value + reg, insttype, NACL_IFLAG(OpcodePlusR), name);
+    NaClDefOp(OpcodeBaseMinus0 + reg, NACL_IFLAG(OperandExtendsOpcode));
+  } else if (opcode_ext != NULL) {
+    if (0 == strcmp("r", opcode_ext)) {
+      NaClDefInst(opcode_value, insttype, NACL_IFLAG(OpcodeUsesModRm), name);
+    } else {
+      int ext;
+      if ((1 != strlen(opcode_ext)) || (1 != strspn(opcode_ext, "01234567"))) {
+        NaClDefFatal("invalid modrm opcode extension");
+      }
+      ext = (int) STRTOULL(opcode_ext, NULL, 10);
+      NaClDefInst(opcode_value, insttype, NACL_IFLAG(OpcodeInModRm), name);
+      NaClDefOp(Opcode0 + ext, NACL_OPFLAG(OperandExtendsOpcode));
+    }
+  } else {
+    NaClDefInst(opcode_value, insttype, NACL_EMPTY_IFLAGS, name);
+  }
+}
+
+/* Given the text of a mnemonic, return the corresponding mnemonic. */
+static NaClMnemonic NaClAssemName(const char* name) {
+  NaClMnemonic i;
+  for (i = (NaClMnemonic) 0; i < NaClMnemonicEnumSize; ++i) {
+    if (0 == strcmp(NaClMnemonicName(i), name)) {
+      return i;
+    }
+  }
+  NaClDefFatal("Can't find name for mnemonic");
+ /* NOT REACHED */
+  return NaClMnemonicEnumSize;
+}
+
+/* Given the name of a register, define the corresponding operand on
+ * the instruction being defined.
+ */
+static void NaClExtractRegister(const char* reg_name) {
+  char buffer[BUFSIZE];
+  char* buf_ptr = buffer;
+  char* reg_ptr = (char*) reg_name;
+  NaClOpKind kind;
+  strcpy(buf_ptr, "Reg");
+  buf_ptr += strlen("Reg");
+  while (*reg_ptr) {
+    char ch = *(reg_ptr++);
+    *(buf_ptr++) = toupper(ch);
+  }
+  *buf_ptr = '\0';
+  for (kind = 0; kind < NaClOpKindEnumSize; ++kind) {
+    if (0 == strcmp(NaClOpKindName(kind), buffer)) {
+      NaClDefOp(kind, NACL_EMPTY_OPFLAGS);
+      return;
+    }
+  }
+  NaClDefFatal("Unable to find register");
+}
+
+/* Helper function to add a define operand function into
+ * a symbol table.
+ */
+static void NaClSymbolTablePutDefOp(const char* name,
+                                    NaClDefOperand defop,
+                                    struct NaClSymbolTable* st) {
+  NaClStValue value;
+  value.kind = nacl_defop;
+  value.value.defop_value = defop;
+  NaClSymbolTablePut(name, &value, st);
+}
+
+/* Given the name describing legal values for an operand,
+ * call the corresponding function to define the corresponding
+ * operand.
+ */
+static void NaClExtractOperandForm(const char* form) {
+  static struct NaClSymbolTable* defop_st = NULL;
+  NaClStValue* value;
+  if (NULL == defop_st) {
+    /* TODO(karl): Complete this out as more forms are needed. */
+    defop_st = NaClSymbolTableCreate(MAX_DEFOPS, NULL);
+    NaClSymbolTablePutDefOp("Eb",    DEF_OPERAND(Eb_), defop_st);
+    NaClSymbolTablePutDefOp("Gb",    DEF_OPERAND(Gb_), defop_st);
+    NaClSymbolTablePutDefOp("Gv",    DEF_OPERAND(Gv_), defop_st);
+    NaClSymbolTablePutDefOp("Ib",    DEF_OPERAND(Ib_), defop_st);
+  }
+  value = NaClSymbolTableGet(form, defop_st);
+  if (NULL == value || (value->kind != nacl_defop)) {
+    NaClDefFatal("Malformed $defop form");
+  }
+  value->value.defop_value();
+}
+
+/* Given a string describing the operand, define the corresponding
+ * operand. Returns the set of operand flags that must be
+ * defined for the operand, based on the contents of the operand string.
+ *
+ * Note: See ??? for descriptions of legal operand strings.
+ */
+static NaClOpFlags NaClExtractOperand(const char* operand) {
+  NaClOpFlags op_flags = NACL_EMPTY_OPFLAGS;
+  switch (*operand) {
+    case '{':
+      if ('}' == operand[strlen(operand) - 1]) {
+        char buffer[BUFSIZE];
+        strcpy(buffer, operand+1);
+        buffer[strlen(buffer)-1] = '\0';
+        op_flags =
+            NaClExtractOperand(buffer) |
+            NACL_OPFLAG(OpImplicit);
+      } else {
+        NaClDefFatal("Malformed implicit braces");
+      }
+      break;
+    case '1':
+      if (1 == strlen(operand)) {
+        DEF_OPERAND(One)();
+      } else {
+        NaClDefFatal("Malformed operand argument");
+      }
+      break;
+    case '%':
+      NaClExtractRegister(operand+1);
+      break;
+    case '$':
+      NaClExtractOperandForm(operand+1);
+      break;
+    default:
+      NaClDefFatal("Malformed operand argument");
+  }
+  return op_flags;
+}
+
+/* Given a string describing the operand, and an index corresponding
+ * to the position of the operand in the corresponding opcode description
+ * string, define the corresponding operand in the model being generated.
+ */
+static void NaClParseOperand(const char* operand, int arg_index) {
+  NaClAddOperandFlags(arg_index, NaClExtractOperand(operand));
+}
+
+void NaClBegDef(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st) {
+  char* name;
+  char* arg;
+  int num_args = 0;
+  char buffer[BUFSIZE];
+  char expanded_desc[BUFSIZE];
+  char operands_desc[BUFSIZE];
+  char* opcode;
+  char* assem_desc;
+  NaClMnemonic mnemonic;
+  char* old_kdesc = kCachedDesc;
+  kCachedDesc = (char*) desc;
+
+  /* Do symbol table substitutions. */
+  strcpy(buffer, desc);
+  NaClStExpand(buffer, st);
+  strcpy(expanded_desc, buffer);
+  kCachedDesc = expanded_desc;
+  operands_desc[0] = '\0';
+
+  /* Separate the description into opcode sequence and
+   * assembly description.
+   */
+  opcode = strtok(buffer, ":");
+  if (NULL == opcode) {
+    NaClDefFatal("opcode not separated from assembly description using ':'");
+  }
+  assem_desc = strtok(NULL, ":");
+  if (NULL == assem_desc) {
+    NaClDefFatal("Can't find assembly description");
+  }
+  if (NULL != strtok(NULL, ":")) {
+    NaClDefFatal("Malformed assembly description");
+  }
+
+  /* extract nmemonic name of instruction. */
+  name = strtok(assem_desc, " ");
+  if (NULL == name) {
+    NaClDefFatal("Can't find mnemonic name");
+  }
+  mnemonic = NaClAssemName(name);
+  NaClDelaySanityChecks();
+  NaClParseOpcode(opcode, insttype, mnemonic);
+
+  /* Now extract operands. */
+  while ((arg = strtok(NULL, ", "))) {
+    NaClParseOperand(arg, num_args);
+    ++num_args;
+    if (num_args == MAX_OPERANDS) {
+      NaClDefFatal("Too many operands");
+    }
+    if (1 == num_args) {
+      SNPRINTF(operands_desc, BUFSIZE, "%s", arg);
+    } else {
+      char* cpy_operands_desc = strdup(operands_desc);
+      SNPRINTF(operands_desc, BUFSIZE, "%s, %s",
+               cpy_operands_desc, arg);
+    }
+  }
+  NaClAddOperandsDesc(operands_desc);
+  kCachedDesc = old_kdesc;
+}
+
+void NaClBegD32(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st) {
+  NaClBegDef(desc, insttype, st);
+  NaClAddIFlags(NACL_IFLAG(Opcode32Only));
+}
+
+void NaClBegD64(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st) {
+  NaClBegDef(desc, insttype, st);
+  NaClAddIFlags(NACL_IFLAG(Opcode64Only));
+}
+
+void NaClEndDef(NaClInstCat icat) {
+  NaClSetInstCat(icat);
+  NaClApplySanityChecks();
+  NaClResetToDefaultInstPrefix();
+}
+
+void NaClDefine(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st, NaClInstCat cat) {
+  NaClBegDef(desc, insttype, st);
+  NaClEndDef(cat);
+}
+
+void NaClDef_32(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st, NaClInstCat cat) {
+  NaClBegD32(desc, insttype, st);
+  NaClEndDef(cat);
+}
+
+void NaClDef_64(const char* desc, NaClInstType insttype,
+                struct NaClSymbolTable* st, NaClInstCat cat) {
+  NaClBegD64(desc, insttype, st);
+  NaClEndDef(cat);
+}

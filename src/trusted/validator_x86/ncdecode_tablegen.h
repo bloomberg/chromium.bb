@@ -12,6 +12,8 @@
 
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 
+struct NaClSymbolTable;
+
 /* Report the given fatal error, and then quit. */
 void NaClFatal(const char* s);
 
@@ -163,8 +165,19 @@ void NaClDefOp(NaClOpKind kind, NaClOpFlags flags);
 
 /* Add additional operand flags to the indexed operand of the current
  * instruction being processed (index is 0 based).
+ *
+ * Note: Index must be adjusted by one if the first (hidden) operand
+ * is an opcode extention.
  */
 void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags);
+
+/* Add additional operand flags to the indexed operand of hte current
+ * instruction being processed (index is 0 based).
+ *
+ * Note: Index is positional. It will automatically be incremented by
+ * one (internally) if the first (hidden) operand is an opcode extension.
+ */
+void NaClAddOperandFlags(uint8_t operand_index, NaClOpFlags more_flags);
 
 /* Removes operand flags from the indexed operand of the current
  * instruction being processed (index is 0 based).
@@ -175,7 +188,7 @@ void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags flags);
 NaClIFlags NaClOperandSizes(NaClInst* inst);
 
 /* Defines one byte opcodes. */
-void NaClDefOneByteInsts();
+void NaClDefOneByteInsts(struct NaClSymbolTable* context_st);
 
 /* Defines two byte opcodes beginning with OF. */
 void NaClDef0FInsts();

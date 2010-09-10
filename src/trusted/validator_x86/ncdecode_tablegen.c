@@ -26,11 +26,13 @@
 #define NEEDSNACLINSTTYPESTRING
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
+
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
+#include "native_client/src/trusted/validator_x86/ncdecode_st.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -1074,6 +1076,14 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
   }
 }
 
+void NaClAddOperandFlags(uint8_t operand_index, NaClOpFlags more_flags) {
+  if ((current_inst->num_operands > 0) &&
+      (current_inst->operands[0].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
+    ++operand_index;
+  }
+  NaClAddOpFlags(operand_index, more_flags);
+}
+
 void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
   DEBUG(NaClLog(LOG_INFO, "Removing flags:");
         NaClPrintlnOpFlags(NaClLogGetGio(), more_flags));
@@ -1670,19 +1680,23 @@ static void NaClDefNops() {
 
 /* Build the set of x64 opcode (instructions). */
 static void NaClBuildInstTables() {
+  struct NaClSymbolTable* st = NaClSymbolTableCreate(5, NULL);
+
+  /* Create common (global) symbol table with instruction set presumptions. */
+  NaClSymbolTablePutText(
+      "sp", ((X86_32 == NACL_FLAGS_run_mode) ? "esp" : "rsp"), st);
+  NaClSymbolTablePutText(
+      "ip", ((X86_32 == NACL_FLAGS_run_mode) ? "eip" : "rip"), st);
+
   NaClInitInstTables();
-
   NaClDefPrefixBytes();
-
-  NaClDefOneByteInsts();
-
+  NaClDefOneByteInsts(st);
   NaClDef0FInsts();
-
   NaClDefSseInsts();
-
   NaClDefX87Insts();
-
   NaClDefNops();
+
+  NaClSymbolTableDestroy(st);
 }
 
 /* Return the number of instruction rules pointed to by the parameter. */
