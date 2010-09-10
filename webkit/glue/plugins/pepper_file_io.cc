@@ -363,7 +363,11 @@ void FileIO::Close() {
 }
 
 int32_t FileIO::GetOSFileDescriptor() {
-  return reinterpret_cast<uintptr_t>(base::kInvalidPlatformFileValue);
+#if defined(OS_POSIX)
+  return file_;
+#else
+  return reinterpret_cast<uintptr_t>(file_);
+#endif
 }
 
 int32_t FileIO::WillWrite(int64_t offset,
