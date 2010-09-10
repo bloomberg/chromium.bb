@@ -96,16 +96,17 @@ class BrowserList {
   // 2. An update exe is present in the install folder.
   static bool CanRestartForUpdate();
 
+  // Closes all browsers. If use_post is true the windows are closed by way of
+  // posting a WM_CLOSE message, otherwise the windows are closed directly. In
+  // almost all cases you'll want to use true, the one exception is ending
+  // the session. use_post should only be false when invoked from end session.
+  static void CloseAllBrowsers(bool use_post);
+
   // Closes all browsers and exits.  This is equivalent to
   // CloseAllBrowsers(true) on platforms where the application exits when no
   // more windows are remaining.  On other platforms (the Mac), this will
   // additionally exit the application.
   static void CloseAllBrowsersAndExit();
-
-  // Closes all browsers. If the session is ending the windows are closed
-  // directly. Otherwise the windows are closed by way of posting a WM_CLOSE
-  // message.
-  static void CloseAllBrowsers();
 
   // Begins shutdown of the application when the Windows session is ending.
   static void WindowsSessionEnding();

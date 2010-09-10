@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -76,8 +75,7 @@ TabCloseableStateWatcher::TabCloseableStateWatcher()
 
 TabCloseableStateWatcher::~TabCloseableStateWatcher() {
   BrowserList::RemoveObserver(this);
-  if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers())
-    DCHECK(tabstrip_watchers_.empty());
+  DCHECK(tabstrip_watchers_.empty());
 }
 
 bool TabCloseableStateWatcher::CanCloseTab(const Browser* browser) const {

@@ -100,7 +100,6 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "chrome/browser/browser_main_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #endif
 
@@ -1197,10 +1196,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
         *(CommandLine::ForCurrentProcess()),
         logging::DELETE_OLD_LOG_FILE);
   }
-#endif
-
-#if defined(USE_X11)
-  SetBrowserX11ErrorHandlers();
 #endif
 
   Profile* profile = CreateProfile(parameters, user_data_dir);

@@ -293,7 +293,6 @@
         'browser/browser_list.h',
         'browser/browser_main.cc',
         'browser/browser_main_gtk.cc',
-        'browser/browser_main_gtk.h',
         'browser/browser_main_mac.mm',
         'browser/browser_main_posix.cc',
         'browser/browser_main_posix.h',

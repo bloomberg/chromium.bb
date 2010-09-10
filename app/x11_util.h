@@ -173,10 +173,8 @@ void GrabWindowSnapshot(GtkWindow* gdk_window,
 // Change desktop for |window| to the desktop of |destination| window.
 bool ChangeWindowDesktop(XID window, XID destination);
 
-// Enable the default X error handlers. These will log the error and abort
-// the process if called. Use SetX11ErrorHandlers() from x11_util_internal.h
-// to set your own error handlers.
-void SetDefaultX11ErrorHandlers();
+// Sets the X Error Handlers so we can catch X errors and crash.
+void SetX11ErrorHandlers();
 
 }  // namespace x11_util
 

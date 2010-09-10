@@ -20,9 +20,9 @@ extern "C" {
 }
 
 namespace x11_util {
-  // --------------------------------------------------------------------------
-  // NOTE: these functions cache the results and must be called from the UI
+  // NOTE: these function caches the results and must be called from the UI
   // thread.
+
   // Get the XRENDER format id for ARGB32 (Skia's format).
   //
   // NOTE:Currently this don't support multiple screens/displays.
@@ -31,16 +31,6 @@ namespace x11_util {
   // Get the XRENDER format id for the default visual on the first screen. This
   // is the format which our GTK window will have.
   XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual);
-
-  // --------------------------------------------------------------------------
-  // X11 error handling.
-  // Sets the X Error Handlers. Passing NULL for either will enable the default
-  // error handler, which if called will log the error and abort the process.
-  void SetX11ErrorHandlers(XErrorHandler error_handler,
-                           XIOErrorHandler io_error_handler);
-
-  // Returns a string suitable for logging the error event.
-  std::string GetErrorEventDescription(XErrorEvent* error_event);
 };
 
 #endif  // APP_X11_UTIL_INTERNAL_H_

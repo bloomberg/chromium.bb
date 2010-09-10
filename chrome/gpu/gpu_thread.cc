@@ -26,7 +26,6 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "app/x11_util.h"
 #include <gtk/gtk.h>
 #endif
 
@@ -58,7 +57,7 @@ GpuThread::GpuThread() {
     for (size_t i = 0; i < args.size(); ++i) {
       free(argv[i]);
     }
-    x11_util::SetDefaultX11ErrorHandlers();
+    x11_util::SetX11ErrorHandlers();
   }
 #endif
 }

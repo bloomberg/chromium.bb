@@ -223,15 +223,7 @@ void BrowserList::RemoveObserver(BrowserList::Observer* observer) {
 }
 
 // static
-void BrowserList::CloseAllBrowsers() {
-  bool session_ending =
-      browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION;
-  bool use_post = !session_ending;
-  bool force_exit = false;
-#if defined(USE_X11)
-  if (session_ending)
-    force_exit = true;
-#endif
+void BrowserList::CloseAllBrowsers(bool use_post) {
   // Tell everyone that we are shutting down.
   browser_shutdown::SetTryingToQuit(true);
 
@@ -241,7 +233,7 @@ void BrowserList::CloseAllBrowsers() {
 
   // If there are no browsers, send the APP_TERMINATING action here. Otherwise,
   // it will be sent by RemoveBrowser() when the last browser has closed.
-  if (force_exit || browsers_.empty()) {
+  if (browsers_.empty()) {
     NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
                                            NotificationService::AllSources(),
                                            NotificationService::NoDetails());
@@ -284,10 +276,10 @@ void BrowserList::CloseAllBrowsersAndExit() {
 
 #if !defined(OS_MACOSX)
   // On most platforms, closing all windows causes the application to exit.
-  CloseAllBrowsers();
+  CloseAllBrowsers(true);
 #else
   // On the Mac, the application continues to run once all windows are closed.
-  // Terminate will result in a CloseAllBrowsers() call, and once (and if)
+  // Terminate will result in a CloseAllBrowsers(true) call, and once (and if)
   // that is done, will cause the application to exit cleanly.
   chrome_browser_application_mac::Terminate();
 #endif
@@ -311,7 +303,8 @@ void BrowserList::WindowsSessionEnding() {
   // Write important data first.
   g_browser_process->EndSession();
 
-  BrowserList::CloseAllBrowsers();
+  // Close all the browsers.
+  BrowserList::CloseAllBrowsers(false);
 
   // Send out notification. This is used during testing so that the test harness
   // can properly shutdown before we exit.
@@ -327,8 +320,6 @@ void BrowserList::WindowsSessionEnding() {
   // At this point the message loop is still running yet we've shut everything
   // down. If any messages are processed we'll likely crash. Exit now.
   ExitProcess(ResultCodes::NORMAL_EXIT);
-#elif defined(OS_LINUX)
-  _exit(ResultCodes::NORMAL_EXIT);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -367,7 +358,7 @@ void BrowserList::EndKeepAlive() {
     // (MessageLoop::current() == null).
     if (browsers_.empty() && !browser_shutdown::IsTryingToQuit() &&
         MessageLoop::current())
-      CloseAllBrowsers();
+      CloseAllBrowsers(true);
   }
 }
 
