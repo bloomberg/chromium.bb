@@ -1150,8 +1150,8 @@ const char kLoginPassword[]                 = "login-password";
 // Use the frame layout used in chromeos.
 const char kChromeosFrame[]                 = "chromeos-frame";
 
-// Set logging output to the given file.
-const char kChromeosLogToFile[]             = "logtofile";
+// Use the given language for UI in the input method candidate window.
+const char kCandidateWindowLang[]           = "lang";
 
 // Indicates that the browser is in "browse without sign-in" mode.
 // Should completely disable extensions, sync and bookmarks.

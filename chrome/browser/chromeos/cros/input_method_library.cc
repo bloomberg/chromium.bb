@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
@@ -438,7 +439,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     }
 
     if (candidate_window_process_id_ == 0) {
-      const std::string candidate_window_command_line = kCandidateWindowPath;
+      // Pass the UI language info to candidate_window via --lang flag.
+      const std::string candidate_window_command_line =
+          StringPrintf("%s --lang=%s", kCandidateWindowPath,
+                       g_browser_process->GetApplicationLocale().c_str());
       if (!LaunchInputMethodProcess(candidate_window_command_line,
                                     &candidate_window_process_id_)) {
         // Return here just in case we add more code below.

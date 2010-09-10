@@ -11,6 +11,7 @@
       'target_name': 'candidate_window',
       'type': 'executable',
       'dependencies': [
+        '../../../../app/app.gyp:app_strings',
         '../../../../base/base.gyp:base',
         '../../../../build/linux/system.gyp:gtk',
         '../../../../build/linux/system.gyp:x11',

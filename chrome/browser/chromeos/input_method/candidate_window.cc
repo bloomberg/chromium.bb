@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "app/app_paths.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
+#include "grit/app_locale_settings.h"
 #include "cros/chromeos_cros_api.h"
 #include "cros/chromeos_input_method_ui.h"
 #include "views/controls/label.h"
@@ -1060,30 +1062,26 @@ int main(int argc, char** argv) {
   base::EnableTerminationOnHeapCorruption();
   app::RegisterPathProvider();
   CommandLine::Init(argc, argv);
-  // TODO(markusheintz): The command line switch --Lang is now processed
-  // by the CommandLinePrefStore and mapped to the preference
-  // prefs::kApplicationLocale. This preferences can be read through the
-  // PrefService. l10n_util::GetApplicationLocale() which is called by the
-  // ResourceBundle code now ignores the --Lang flag.
-  // In order to support the --Lang flag here the preference
-  // prefs::kApplicationLocale must be read and passed instead of L"en-US".
-  ResourceBundle::InitSharedInstance("en-US");
 
-  // Write logs to a file for debugging, if --logtofile=FILE_NAME is given.
+  // Check if the UI language code is passed from the command line,
+  // otherwise, default to "en-US".
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string log_file_name =
-      command_line.GetSwitchValueASCII(switches::kChromeosLogToFile);
-  if (!log_file_name.empty()) {
-    logging::SetMinLogLevel(logging::LOG_INFO);
-    logging::InitLogging(log_file_name.c_str(),
-                         logging::LOG_ONLY_TO_FILE,
-                         logging::DONT_LOCK_LOG_FILE,
-                         logging::DELETE_OLD_LOG_FILE);
-    // Redirect stderr to log_file_name. This is neeed to capture the
-    // logging from libcros.so.
-    if (!freopen(log_file_name.c_str(), "a", stderr)) {
-      LOG(INFO) << "Failed to redirect stderr to " << log_file_name.c_str();
-    }
+  std::string ui_language_code =
+      command_line.GetSwitchValueASCII(switches::kCandidateWindowLang);
+  if (ui_language_code.empty()) {
+    ui_language_code = "en-US";
+  }
+  ResourceBundle::InitSharedInstance(ui_language_code);
+
+  // Change the UI font if needed.
+  const std::string font_name =
+      l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS);
+  // The font name should not be empty here, but just in case.
+  if (font_name != "default" && !font_name.empty()) {
+    // Don't use gtk_util::SetGtkFont() in chrome/browser/gtk not to
+    // introduce a dependency to it.
+    g_object_set(gtk_settings_get_default(),
+                 "gtk-font-name", font_name.c_str(), NULL);
   }
 
   // Load libcros.

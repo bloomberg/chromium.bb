@@ -330,7 +330,7 @@ extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kLoginPassword[];
 extern const char kChromeosFrame[];
-extern const char kChromeosLogToFile[];
+extern const char kCandidateWindowLang[];
 extern const char kBWSI[];
 extern const char kStubCros[];
 extern const char kScreenSaverUrl[];
