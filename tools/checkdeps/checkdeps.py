@@ -237,7 +237,7 @@ def ApplyDirectoryRules(existing_rules, dir_name):
   # contained in git source direcotries. This will tell us if it's a source
   # directory and should be checked.
   if not (os.path.exists(os.path.join(dir_name, ".svn")) or
-          (dir_name in GIT_SOURCE_DIRECTORY)):
+          (dir_name.lower() in GIT_SOURCE_DIRECTORY)):
     return (None, [])
 
   # Check the DEPS file in this directory.
