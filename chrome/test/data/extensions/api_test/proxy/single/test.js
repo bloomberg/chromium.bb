@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // proxy api test
-// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxySingle
+// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyManualSingle
 
 chrome.test.runTests([
   function setSingleProxy() {

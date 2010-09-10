@@ -3478,11 +3478,21 @@
         }
       },
       {
+        "id": "PacScript",
+        "type": "object",
+        "description": "An object holding proxy auto-config information. Only one of the fields should be non-empty.",
+        "properties": {
+          "url": {"type": "string", "optional": true, "description": "URL of he PAC file to be used."}
+        }
+      },
+      {
         "id": "ProxyConfig",
         "type": "object",
         "description": "An object encapsulating a complete proxy configuration.",
         "properties": {
-          "rules": {"$ref": "ProxyRules", "description": "The proxy rules describing this configuration."}
+          "rules": {"$ref": "ProxyRules", "optional": true, "description": "The proxy rules describing this configuration."},
+          "autoDetect": {"type": "boolean", "optional": true, "description": "True if the proxy settings sbould be detected automatically."},
+          "pacScript": {"$ref": "PacScript", "optional": true, "description": "The proxy auto-config (PAC) script for this configuration."}
         }
       }
     ],

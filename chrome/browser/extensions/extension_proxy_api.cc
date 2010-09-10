@@ -12,7 +12,8 @@
 
 namespace {
 
-// The scheme for which to use the proxy, not of the proxy URI itself.
+// The scheme for which to use a manually specified proxy, not of the proxy URI
+// itself.
 enum {
   SCHEME_ALL = 0,
   SCHEME_HTTP,
@@ -22,7 +23,7 @@ enum {
   SCHEME_MAX = SCHEME_SOCKS  // Keep this value up to date.
 };
 
-// The names of the JavaScript properties to extract from the args_.
+// The names of the JavaScript properties to extract from the proxy_rules.
 // These must be kept in sync with the SCHEME_* constants.
 const char* field_name[] = { "singleProxy",
                              "proxyForHttp",
@@ -30,8 +31,9 @@ const char* field_name[] = { "singleProxy",
                              "proxyForFtp",
                              "socksProxy" };
 
-// The names of the schemes to be used to build the preference value string.
-// These must be kept in sync with the SCHEME_* constants.
+// The names of the schemes to be used to build the preference value string
+// for manual proxy settings.  These must be kept in sync with the SCHEME_*
+// constants.
 const char* scheme_name[] = { "*error*",
                               "http",
                               "https",
@@ -50,9 +52,53 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   DictionaryValue* proxy_config;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &proxy_config));
 
-  DictionaryValue* proxy_rules;
-  EXTENSION_FUNCTION_VALIDATE(proxy_config->GetDictionary("rules",
-      &proxy_rules));
+  bool auto_detect = false;
+  proxy_config->GetBoolean("autoDetect", &auto_detect);
+
+  DictionaryValue* pac_dict = NULL;
+  proxy_config->GetDictionary("pacScript", &pac_dict);
+
+  DictionaryValue* proxy_rules = NULL;
+  proxy_config->GetDictionary("rules", &proxy_rules);
+
+  return ApplyAutoDetect(auto_detect) &&
+      ApplyPacScript(pac_dict) &&
+      ApplyProxyRules(proxy_rules);
+}
+
+bool UseCustomProxySettingsFunction::GetProxyServer(
+    const DictionaryValue* dict, ProxyServer* proxy_server) {
+  dict->GetString("scheme", &proxy_server->scheme);
+  EXTENSION_FUNCTION_VALIDATE(dict->GetString("host", &proxy_server->host));
+  dict->GetInteger("port", &proxy_server->port);
+  return true;
+}
+
+bool UseCustomProxySettingsFunction::ApplyAutoDetect(bool auto_detect) {
+  // We take control of the auto-detect preference even if none was specified,
+  // so that all proxy preferences are controlled by the same extension (if not
+  // by a higher-priority source).
+  SendNotification(prefs::kProxyAutoDetect,
+                   Value::CreateBooleanValue(auto_detect));
+  return true;
+}
+
+bool UseCustomProxySettingsFunction::ApplyPacScript(DictionaryValue* pac_dict) {
+  std::string pac_url;
+  if (pac_dict)
+    pac_dict->GetString("url", &pac_url);
+
+  // We take control of the PAC preference even if none was specified, so that
+  // all proxy preferences are controlled by the same extension (if not by a
+  // higher-priority source).
+  SendNotification(prefs::kProxyPacUrl, Value::CreateStringValue(pac_url));
+  return true;
+}
+
+bool UseCustomProxySettingsFunction::ApplyProxyRules(
+    DictionaryValue* proxy_rules) {
+  if (!proxy_rules)
+    return true;
 
   // Local data into which the parameters will be parsed. has_proxy describes
   // whether a setting was found for the scheme; proxy_dict holds the
@@ -106,23 +152,17 @@ bool UseCustomProxySettingsFunction::RunImpl() {
     }
   }
 
+  SendNotification(prefs::kProxyServer, Value::CreateStringValue(proxy_pref));
+  return true;
+}
+
+void UseCustomProxySettingsFunction::SendNotification(const char* pref_path,
+                                                      Value* pref_value) {
   ExtensionPrefStore::ExtensionPrefDetails details =
-      std::make_pair(GetExtension(),
-                     std::make_pair(prefs::kProxyServer,
-                                    Value::CreateStringValue(proxy_pref)));
+      std::make_pair(GetExtension(), std::make_pair(pref_path, pref_value));
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_PREF_CHANGED,
       Source<Profile>(profile_),
       Details<ExtensionPrefStore::ExtensionPrefDetails>(&details));
-
-  return true;
-}
-
-bool UseCustomProxySettingsFunction::GetProxyServer(
-    const DictionaryValue* dict, ProxyServer* proxy_server) {
-  dict->GetString("scheme", &proxy_server->scheme);
-  EXTENSION_FUNCTION_VALIDATE(dict->GetString("host", &proxy_server->host));
-  dict->GetInteger("port", &proxy_server->port);
-  return true;
 }
