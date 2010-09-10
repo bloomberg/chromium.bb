@@ -377,7 +377,7 @@ NaClSrpcError NPModule::Device2DInitialize(NPP npp,
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  // Increase reference count for SRPC return value, since wrapper Delete
+  // Increase reference count for SRPC return value, since deleting wrapper
   // would cause Dtor to fire.
   *shm_desc = NaClDescRef(wrapper->desc());
   // Free the wrapper.
@@ -525,11 +525,11 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  // Increase reference count for SRPC return value, since wrapper Delete
+  // Increase reference count for SRPC return value, since deleting wrapper
   // would cause Dtor to fire.
   *shm_desc = NaClDescRef(wrapper->desc());
   // Free the wrapper.
-  wrapper->Delete();
+  delete wrapper;
   *entries_obtained = context3d_->commandBufferSize;
   *get_offset = context3d_->getOffset;
   *put_offset = context3d_->putOffset;
@@ -636,12 +636,12 @@ NaClSrpcError NPModule::Device3DCreateBuffer(NPP npp,
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  // Increase reference count for SRPC return value, since wrapper Delete
+  // Increase reference count for SRPC return value, since deleting wrapper
   // would cause Dtor to fire.
   *shm_desc = NaClDescRef(wrapper->desc());
   *id = buffer_id;
   // Clean up.
-  wrapper->Delete();
+  delete wrapper;
 
   return NACL_SRPC_RESULT_OK;
 #endif  // defined(NACL_STANDALONE)
