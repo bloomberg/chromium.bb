@@ -244,8 +244,8 @@
       <include name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_GOOD" file="pageinfo_good.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_INFO" file="pageinfo_info.png" type="BINDATA" />
-      <include name="IDR_PAGEINFO_WARNING_MAJOR" file="pageinfo_warning.png" type="BINDATA" />
-      <include name="IDR_PAGEINFO_WARNING_MINOR" file="pageinfo_mixed.png" type="BINDATA" />
+      <include name="IDR_PAGEINFO_WARNING_MAJOR" file="pageinfo_warning_major.png" type="BINDATA" />
+      <include name="IDR_PAGEINFO_WARNING_MINOR" file="pageinfo_warning_minor.png" type="BINDATA" />
       <include name="IDR_PLUGIN" file="plugin.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_PRODUCT_ICON_32" file="google_chrome/google_chrome_icon_32.png" type="BINDATA" />
