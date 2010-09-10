@@ -224,7 +224,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
     }
   }
   bool succeeded = transaction.Commit();
-  UMA_HISTOGRAM_ENUMERATION("net.CookieBackingStoreUpdateResults",
+  UMA_HISTOGRAM_ENUMERATION("Cookie.BackingStoreUpdateResults",
                             succeeded ? 0 : 1, 2);
 }
 

@@ -146,28 +146,28 @@ CookieMonster::~CookieMonster() {
 void CookieMonster::InitializeHistograms() {
   // From UMA_HISTOGRAM_CUSTOM_COUNTS
   histogram_expiration_duration_minutes_ = Histogram::FactoryGet(
-      "net.CookieExpirationDurationMinutes",
+      "Cookie.ExpirationDurationMinutes",
       1, kMinutesInTenYears, 50,
       Histogram::kUmaTargetedHistogramFlag);
   histogram_between_access_interval_minutes_ = Histogram::FactoryGet(
-      "net.CookieBetweenAccessIntervalMinutes",
+      "Cookie.BetweenAccessIntervalMinutes",
       1, kMinutesInTenYears, 50,
       Histogram::kUmaTargetedHistogramFlag);
   histogram_evicted_last_access_minutes_ = Histogram::FactoryGet(
-      "net.CookieEvictedLastAccessMinutes",
+      "Cookie.EvictedLastAccessMinutes",
       1, kMinutesInTenYears, 50,
       Histogram::kUmaTargetedHistogramFlag);
   histogram_count_ = Histogram::FactoryGet(
-      "net.CookieCount", 1, 4000, 50,
+      "Cookie.Count", 1, 4000, 50,
       Histogram::kUmaTargetedHistogramFlag);
   histogram_domain_count_ = Histogram::FactoryGet(
-      "net.CookieDomainCount", 1, 4000, 50,
+      "Cookie.DomainCount", 1, 4000, 50,
       Histogram::kUmaTargetedHistogramFlag);
   histogram_etldp1_count_ = Histogram::FactoryGet(
-      "net.CookieEtldp1Count", 1, 4000, 50,
+      "Cookie.Etldp1Count", 1, 4000, 50,
       Histogram::kUmaTargetedHistogramFlag);
   histogram_domain_per_etldp1_count_ = Histogram::FactoryGet(
-      "net.CookieDomainPerEtldp1Count", 1, 4000, 50,
+      "Cookie.DomainPerEtldp1Count", 1, 4000, 50,
       Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_COUNTS_10000 & UMA_HISTOGRAM_CUSTOM_COUNTS
@@ -177,15 +177,15 @@ void CookieMonster::InitializeHistograms() {
 
   // From UMA_HISTOGRAM_ENUMERATION
   histogram_cookie_deletion_cause_ = LinearHistogram::FactoryGet(
-      "net.CookieDeletionCause", 1,
+      "Cookie.DeletionCause", 1,
       DELETE_COOKIE_LAST_ENTRY, DELETE_COOKIE_LAST_ENTRY + 1,
       Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
-  histogram_time_get_ = Histogram::FactoryTimeGet("net.CookieTimeGet",
+  histogram_time_get_ = Histogram::FactoryTimeGet("Cookie.TimeGet",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
       50, Histogram::kUmaTargetedHistogramFlag);
-  histogram_time_load_ = Histogram::FactoryTimeGet("net.CookieTimeLoad",
+  histogram_time_load_ = Histogram::FactoryTimeGet("Cookie.TimeLoad",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
       50, Histogram::kUmaTargetedHistogramFlag);
 }
