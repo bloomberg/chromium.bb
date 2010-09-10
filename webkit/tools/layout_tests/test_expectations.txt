@@ -14,10 +14,10 @@ BUGWK43480 : fast/dom/Geolocation/delayed-permission-denied-for-multiple-request
 BUG52841 MAC : fast/dom/Geolocation/callback-exception.html = TEXT PASS
 BUG52841 MAC : fast/dom/Geolocation/no-page-cache.html = TEXT PASS
 BUG52841 MAC : fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT PASS
-BUG52841 MAC : editing/selection/drag-in-iframe.html = IMAGE
+BUG52841 MAC : editing/selection/drag-in-iframe.html = IMAGE PASS
 
 // Still failing, should be moved upstream.
-BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE
+BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE PASS
 
 // Newly added test apparently misbehaves.
 BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
@@ -30,9 +30,9 @@ BUG32153 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = IMAGE+TE
 BUG54465 WIN SKIP : http/tests/media/video-play-stall-seek.html = FAIL
 
 // Temporary override until WebKit roll picks up r67119
-BUGWK45479 : fast/dom/HTMLLinkElement/prefetch.html = TEXT
+BUGWK45479 : fast/dom/HTMLLinkElement/prefetch.html = TEXT PASS
 
 // dpranke - Temporary overrides until I can sort out the WK rolls
 BUGDIRK : fast/dom/dataset-gc.html = TEXT
-BUGDIRK WIN LINUX : svg/repaint/filter-repaint.svg = CRASH IMAGE+TEXT
-BUGDIRK LINUX : svg/dynamic-updates/SVGFEDiffuseLightingElement-lighting-color-css-prop.html = IMAGE
+BUGDIRK WIN LINUX : svg/repaint/filter-repaint.svg = CRASH IMAGE+TEXT PASS
+BUGDIRK LINUX : svg/dynamic-updates/SVGFEDiffuseLightingElement-lighting-color-css-prop.html = IMAGE PASS
