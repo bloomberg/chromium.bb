@@ -6,6 +6,7 @@
 
 #include "app/animation.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_launched_animation.h"
@@ -197,11 +198,42 @@ void AppLauncherHandler::AnimateAppIcon(Extension* extension,
 
 void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   std::string extension_id = WideToUTF8(ExtractStringValue(args));
+  Extension* extension = extensions_service_->GetExtensionById(
+      extension_id, false);
+  if (!extension)
+    return;
 
-  // Make sure that the extension exists.
+  if (!extension_id_prompting_.empty())
+    return;  // Only one prompt at a time.
+
+  extension_id_prompting_ = extension_id;
+  GetExtensionInstallUI()->ConfirmUninstall(this, extension);
+}
+
+ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
+  if (!install_ui_.get())
+    install_ui_.reset(new ExtensionInstallUI(dom_ui_->GetProfile()));
+  return install_ui_.get();
+}
+
+void AppLauncherHandler::InstallUIProceed(bool create_app_shortcut) {
+  // We only ever use ExtensionInstallUI for uninstalling, which should never
+  // result in it telling us to create a shortcut.
+  DCHECK(!create_app_shortcut);
+  DCHECK(!extension_id_prompting_.empty());
+
+  // The extension can be uninstalled in another window while the UI was
+  // showing. Do nothing in that case.
   Extension* extension =
-      extensions_service_->GetExtensionById(extension_id, false);
-  DCHECK(extension);
+      extensions_service_->GetExtensionById(extension_id_prompting_, true);
+  if (!extension)
+    return;
 
-  extensions_service_->UninstallExtension(extension_id, false);
+  extensions_service_->UninstallExtension(extension_id_prompting_,
+                                          false /* external_uninstall */);
+  extension_id_prompting_ = "";
+}
+
+void AppLauncherHandler::InstallUIAbort() {
+  extension_id_prompting_ = "";
 }

@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_DOM_UI_APP_LAUNCHER_HANDLER_H_
 #pragma once
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -20,6 +22,7 @@ namespace gfx {
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler
     : public DOMMessageHandler,
+      public ExtensionInstallUI::Delegate,
       public NotificationObserver {
  public:
   explicit AppLauncherHandler(ExtensionsService* extension_service);
@@ -47,6 +50,15 @@ class AppLauncherHandler
   void HandleUninstallApp(const ListValue* args);
 
  private:
+  // ExtensionInstallUI::Delegate implementation, used for receiving
+  // notification about uninstall confirmation dialog selections.
+  virtual void InstallUIProceed(bool create_app_shortcut);
+  virtual void InstallUIAbort();
+
+  // Returns the ExtensionInstallUI object for this class, creating it if
+  // needed.
+  ExtensionInstallUI* GetExtensionInstallUI();
+
   // Starts the animation of the app icon.
   void AnimateAppIcon(Extension* extension, const gfx::Rect& rect);
 
@@ -56,6 +68,13 @@ class AppLauncherHandler
   // We monitor changes to the extension system so that we can reload the apps
   // when necessary.
   NotificationRegistrar registrar_;
+
+  // Used to show confirmation UI for uninstalling/enabling extensions in
+  // incognito mode.
+  scoped_ptr<ExtensionInstallUI> install_ui_;
+
+  // The id of the extension we are prompting the user about.
+  std::string extension_id_prompting_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);
 };

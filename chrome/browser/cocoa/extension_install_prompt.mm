@@ -21,7 +21,7 @@ class Profile;
 
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const string16& warning_text, ExtensionInstallUI::PromptType type) {
+    ExtensionInstallUI::PromptType type) {
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
 
   NSButton* continueButton = [alert addButtonWithTitle:l10n_util::GetNSString(
@@ -37,7 +37,6 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
   [alert setMessageText:l10n_util::GetNSStringF(
        ExtensionInstallUI::kHeadingIds[type],
        UTF8ToUTF16(extension->name()))];
-  [alert setInformativeText:base::SysUTF16ToNSString(warning_text)];
   [alert setAlertStyle:NSWarningAlertStyle];
   [alert setIcon:gfx::SkBitmapToNSImage(*icon)];
 

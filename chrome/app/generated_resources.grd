@@ -3410,9 +3410,6 @@ each locale. -->
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension uninstallation prompt. Asks the user if they want to uninstall a particular extension.">
         Uninstall "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
-      <message name="IDS_EXTENSION_UNINSTALL_CONFIRMATION" desc="The warning you get when you are about to uninstall an extension.">
-        Are you sure you want to uninstall this extension?
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
         This extension will have access to your browsing history.
       </message>

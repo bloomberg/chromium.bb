@@ -63,6 +63,9 @@ const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
 
 namespace {
 
+// Size of extension icon in top left of dialog.
+const int kIconSize = 69;
+
 static void GetV2Warnings(Extension* extension,
                           std::vector<string16>* warnings) {
   if (!extension->plugins().empty()) {
@@ -291,15 +294,13 @@ void ExtensionInstallUI::OnImageLoaded(
 
       std::vector<string16> warnings;
       GetV2Warnings(extension_, &warnings);
-      ShowExtensionInstallUIPrompt2Impl(
-          profile_, delegate_, extension_, &icon_, warnings);
+      ShowExtensionInstallUIPrompt2Impl(profile_, delegate_, extension_, &icon_,
+                                        warnings);
       break;
     }
     case UNINSTALL_PROMPT: {
-      string16 message =
-          l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_CONFIRMATION);
       ShowExtensionInstallUIPromptImpl(profile_, delegate_, extension_, &icon_,
-          message, UNINSTALL_PROMPT);
+                                       UNINSTALL_PROMPT);
       break;
     }
     default:
@@ -360,8 +361,7 @@ void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
   ExtensionResource image =
       extension_->GetIconResource(Extension::EXTENSION_ICON_LARGE);
   tracker_.LoadImage(extension_, image,
-                     gfx::Size(Extension::EXTENSION_ICON_LARGE,
-                               Extension::EXTENSION_ICON_LARGE),
+                     gfx::Size(kIconSize, kIconSize),
                      ImageLoadingTracker::DONT_CACHE);
 }
 

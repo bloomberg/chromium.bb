@@ -28,34 +28,19 @@ class Profile;
 
 namespace {
 
-// Since apps don't (currently) have any privilege disclosure text, the dialog
-// looks a bit empty if it is sized the same as extensions. So we scale
-// everything down a bit for apps for the time being.
-const int kRightColumnWidthApp = 210;
-const int kRightColumnWidthExtension = 270;
-const int kIconSizeApp = 69;
-const int kIconSizeExtension = 85;
+const int kRightColumnWidth = 210;
+const int kIconSize = 69;
 
 // Implements the extension installation prompt for Windows.
 class InstallDialogContent : public views::View, public views::DialogDelegate {
  public:
   InstallDialogContent(ExtensionInstallUI::Delegate* delegate,
-      Extension* extension, SkBitmap* icon, const std::wstring& warning_text,
-      ExtensionInstallUI::PromptType type)
-          : delegate_(delegate), icon_(NULL), warning_(NULL),
-            create_shortcut_(NULL), type_(type) {
-    if (extension->GetFullLaunchURL().is_valid()) {
-      icon_size_ = kIconSizeApp;
-      right_column_width_ = kRightColumnWidthApp;
-    } else {
-      icon_size_ = kIconSizeExtension;
-      right_column_width_ = kRightColumnWidthExtension;
-    }
-
+      Extension* extension, SkBitmap* icon, ExtensionInstallUI::PromptType type)
+          : delegate_(delegate), icon_(NULL), type_(type) {
     // Scale down to icon size, but allow smaller icons (don't scale up).
     gfx::Size size(icon->width(), icon->height());
-    if (size.width() > icon_size_ || size.height() > icon_size_)
-      size = gfx::Size(icon_size_, icon_size_);
+    if (size.width() > kIconSize || size.height() > kIconSize)
+      size = gfx::Size(kIconSize, kIconSize);
     icon_ = new views::ImageView();
     icon_->SetImageSize(size);
     icon_->SetImage(*icon);
@@ -64,24 +49,9 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     heading_ = new views::Label(
         l10n_util::GetStringF(ExtensionInstallUI::kHeadingIds[type_],
                               UTF8ToWide(extension->name())));
-    heading_->SetFont(heading_->font().DeriveFont(1, gfx::Font::BOLD));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);
-
-    if (type_ == ExtensionInstallUI::INSTALL_PROMPT &&
-        extension->GetFullLaunchURL().is_valid()) {
-      create_shortcut_ = new views::Checkbox(
-          l10n_util::GetString(IDS_EXTENSION_PROMPT_CREATE_SHORTCUT));
-      create_shortcut_->SetChecked(true);
-      create_shortcut_->SetMultiLine(true);
-      AddChildView(create_shortcut_);
-    } else {
-      warning_ = new views::Label(warning_text);
-      warning_->SetMultiLine(true);
-      warning_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      AddChildView(warning_);
-    }
   }
 
  private:
@@ -104,8 +74,9 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   }
 
   virtual bool Accept() {
-    delegate_->InstallUIProceed(
-        create_shortcut_ && create_shortcut_->checked());
+    // We don't support shortcut creation from this dialog anymore.
+    // TODO(aa): Remove this param from ExtensionInstallUI::Delegate.
+    delegate_->InstallUIProceed(false);
     return true;
   }
 
@@ -124,70 +95,47 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
 
   // View
   virtual gfx::Size GetPreferredSize() {
-    int width = right_column_width_ + kPanelHorizMargin + kPanelHorizMargin;
-    width += icon_size_;
-    width += kPanelHorizMargin;
+    int width = kRightColumnWidth;
+    width += kIconSize;
+    width += kPanelHorizMargin * 3;
 
     int height = kPanelVertMargin * 2;
-    height += heading_->GetHeightForWidth(right_column_width_);
-    height += kPanelVertMargin;
-
-    if (warning_)
-      height += warning_->GetHeightForWidth(right_column_width_);
-    else
-      height += create_shortcut_->GetPreferredSize().height();
-
-    height += kPanelVertMargin;
+    height += heading_->GetHeightForWidth(kRightColumnWidth);
 
     return gfx::Size(width,
-                     std::max(height, icon_size_ + kPanelVertMargin * 2));
+                     std::max(height, kIconSize + kPanelVertMargin * 2));
   }
 
   virtual void Layout() {
     int x = kPanelHorizMargin;
     int y = kPanelVertMargin;
 
-    icon_->SetBounds(x, y, icon_size_, icon_size_);
-    x += icon_size_;
-    x += kPanelHorizMargin;
+    heading_->SizeToFit(kRightColumnWidth);
 
-    heading_->SizeToFit(right_column_width_);
-    heading_->SetX(x);
-    heading_->SetY(y);
-    y += heading_->height();
+    if (heading_->height() <= kIconSize) {
+      icon_->SetBounds(x, y, kIconSize, kIconSize);
+      x += kIconSize;
+      x += kPanelHorizMargin;
 
-    y += kPanelVertMargin;
-
-    if (create_shortcut_) {
-      create_shortcut_->SetBounds(x, y, right_column_width_, 0);
-      create_shortcut_->SetBounds(x, y, right_column_width_,
-          create_shortcut_->GetPreferredSize().height());
-
-      int bottom_aligned = icon_->y() + icon_->height() -
-          create_shortcut_->height();
-      if (bottom_aligned > y) {
-        create_shortcut_->SetY(bottom_aligned);
-        y = bottom_aligned;
-      }
-      y += create_shortcut_->height();
+      heading_->SetX(x);
+      heading_->SetY(y + (kIconSize - heading_->height()) / 2);
     } else {
-      warning_->SizeToFit(right_column_width_);
-      warning_->SetX(x);
-      warning_->SetY(y);
-      y += warning_->height();
-    }
+      icon_->SetBounds(x,
+                       y + (heading_->height() - kIconSize) / 2,
+                       kIconSize,
+                       kIconSize);
+      x += kIconSize;
+      x += kPanelHorizMargin;
 
-    y += kPanelVertMargin;
+      heading_->SetX(x);
+      heading_->SetY(y);
+    }
   }
 
   ExtensionInstallUI::Delegate* delegate_;
   views::ImageView* icon_;
   views::Label* heading_;
-  views::Label* warning_;
-  views::Checkbox* create_shortcut_;
   ExtensionInstallUI::PromptType type_;
-  int right_column_width_;
-  int icon_size_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallDialogContent);
 };
@@ -197,7 +145,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
 // static
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const string16& warning_text, PromptType type) {
+    PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort();
@@ -212,6 +160,5 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
 
   views::Window::CreateChromeWindow(window->GetNativeHandle(), gfx::Rect(),
       new InstallDialogContent(delegate, extension, icon,
-                               UTF16ToWideHack(warning_text),
                                type))->Show();
 }
