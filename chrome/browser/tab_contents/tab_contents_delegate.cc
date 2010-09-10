@@ -168,5 +168,9 @@ void TabContentsDelegate::ContentTypeChanged(TabContents* source) {
 void TabContentsDelegate::CommitMatchPreview(TabContents* source) {
 }
 
+void TabContentsDelegate::OnSetSuggestResult(int32 page_id,
+                                             const std::string& result) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
 }

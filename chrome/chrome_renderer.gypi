@@ -199,6 +199,8 @@
         'renderer/safe_browsing/phishing_term_feature_extractor.h',
         'renderer/safe_browsing/phishing_url_feature_extractor.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor.h',
+        'renderer/search_extension.cc',
+        'renderer/search_extension.h',
         'renderer/speech_input_dispatcher.cc',
         'renderer/speech_input_dispatcher.h',
         'renderer/spellchecker/spellcheck.cc',

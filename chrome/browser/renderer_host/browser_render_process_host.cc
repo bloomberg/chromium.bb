@@ -579,6 +579,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kPrelaunchGpuProcess,
     switches::kEnableAcceleratedDecoding,
     switches::kEnableFileSystem,
+    switches::kEnableMatchPreview
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

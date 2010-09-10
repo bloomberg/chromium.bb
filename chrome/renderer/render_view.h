@@ -224,6 +224,9 @@ class RenderView : public RenderWidget,
       GetSearchProviderInstallState(WebKit::WebFrame* frame,
                                     const std::string& url);
 
+  // Sends ViewHostMsg_SetSuggestResult to the browser.
+  void SetSuggestResult(const std::string& suggest);
+
   // Evaluates a string of JavaScript in a particular frame.
   void EvaluateScript(const std::wstring& frame_xpath,
                       const std::wstring& jscript);

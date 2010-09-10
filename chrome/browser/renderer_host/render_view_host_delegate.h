@@ -281,6 +281,10 @@ class RenderViewHostDelegate {
                                   const std::string& translated_lang,
                                   TranslateErrors::Type error_type) = 0;
 
+    // Notification that the page has a suggest result.
+    virtual void OnSetSuggestResult(int32 page_id,
+                                    const std::string& result) = 0;
+
    protected:
     virtual ~BrowserIntegration() {}
   };

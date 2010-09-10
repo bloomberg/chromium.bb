@@ -2112,6 +2112,11 @@ void TabContents::OnPageTranslated(int32 page_id,
       Details<PageTranslatedDetails>(&details));
 }
 
+void TabContents::OnSetSuggestResult(int32 page_id, const std::string& result) {
+  if (delegate())
+    delegate()->OnSetSuggestResult(page_id, result);
+}
+
 void TabContents::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host,
     bool is_main_frame,

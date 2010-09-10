@@ -2826,4 +2826,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Unregister a blob URL.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_UnregisterBlobUrl, GURL /* url */)
 
+  // Suggest results -----------------------------------------------------------
+
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_SetSuggestResult,
+                      int32 /* page_id */,
+                      std::string /* suggest */)
+
 IPC_END_MESSAGES(ViewHost)

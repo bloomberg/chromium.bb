@@ -677,6 +677,7 @@ class RenderViewHost : public RenderWidgetHost {
                              unsigned long estimated_size,
                              bool blocked_by_policy);
   void OnSetDisplayingPDFContent();
+  void OnSetSuggestResult(int32 page_id, const std::string& result);
 
  private:
   friend class TestRenderViewHost;

@@ -290,6 +290,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // preview TabContents.
   virtual void CommitMatchPreview(TabContents* source);
 
+  // Notifies the delegate that the page has a suggest result.
+  virtual void OnSetSuggestResult(int32 page_id, const std::string& result);
+
  protected:
   virtual ~TabContentsDelegate();
 };

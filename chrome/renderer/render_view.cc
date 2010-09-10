@@ -4061,6 +4061,11 @@ WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
   return frame;
 }
 
+void RenderView::SetSuggestResult(const std::string& suggest) {
+  if (!suggest.empty())
+    Send(new ViewHostMsg_SetSuggestResult(routing_id_, page_id_, suggest));
+}
+
 void RenderView::EvaluateScript(const std::wstring& frame_xpath,
                                 const std::wstring& script) {
   WebFrame* web_frame = GetChildFrame(frame_xpath);

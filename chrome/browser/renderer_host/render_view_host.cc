@@ -855,6 +855,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetDisplayingPDFContent,
                         OnSetDisplayingPDFContent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestResult, OnSetSuggestResult)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -2070,4 +2071,13 @@ void RenderViewHost::OnWebDatabaseAccessed(const GURL& url,
 
 void RenderViewHost::OnSetDisplayingPDFContent() {
   delegate_->SetDisplayingPDFContent();
+}
+
+void RenderViewHost::OnSetSuggestResult(int32 page_id,
+                                        const std::string& result) {
+  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
+      delegate_->GetBrowserIntegrationDelegate();
+  if (!integration_delegate)
+    return;
+  integration_delegate->OnSetSuggestResult(page_id, result);
 }

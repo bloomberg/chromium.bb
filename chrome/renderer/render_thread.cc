@@ -65,6 +65,7 @@
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/renderer_webidbfactory_impl.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
+#include "chrome/renderer/search_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_channel_handle.h"
@@ -855,6 +856,10 @@ void RenderThread::EnsureWebKitInitialized() {
       extensions_v8::ChromeAppExtension::Get());
   WebScriptController::registerExtension(
       extensions_v8::ExternalExtension::Get());
+  v8::Extension* search_extension = extensions_v8::SearchExtension::Get();
+  // search_extension is null if not enabled.
+  if (search_extension)
+    WebScriptController::registerExtension(search_extension);
 
   // TODO(rafaelw). Note that extension-related v8 extensions are being
   // bound currently based on is_extension_process_. This means that

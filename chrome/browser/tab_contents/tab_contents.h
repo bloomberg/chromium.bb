@@ -864,6 +864,7 @@ class TabContents : public PageNavigator,
                                 const std::string& original_lang,
                                 const std::string& translated_lang,
                                 TranslateErrors::Type error_type);
+  virtual void OnSetSuggestResult(int32 page_id, const std::string& result);
 
   // RenderViewHostDelegate::Resource implementation.
   virtual void DidStartProvisionalLoadForFrame(RenderViewHost* render_view_host,
