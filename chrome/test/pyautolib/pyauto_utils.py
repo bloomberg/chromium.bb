@@ -62,6 +62,9 @@ class ExistingPathReplacer(object):
     self._RemoveBackupDir()
 
   def _CreateRequestedPath(self):
+    # Create intermediate dirs if needed.
+    if not os.path.exists(os.path.dirname(self._path)):
+      os.makedirs(os.path.dirname(self._path))
     if 'dir' == self._path_type:
       os.mkdir(self._path)
     else:
