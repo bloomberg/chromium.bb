@@ -313,7 +313,6 @@ wlsc_surface_draw(struct wlsc_surface *es, struct wlsc_output *output)
 	}
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glEnable(GL_TEXTURE_2D);
 	glBindBuffer(GL_ARRAY_BUFFER, ec->vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
 			      5 * sizeof(GLfloat), NULL);
