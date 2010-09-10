@@ -713,11 +713,13 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   NSPoint eventScreenLocation =
       [[theEvent window] convertBaseToScreen:[theEvent locationInWindow]];
 
-  NSRect visibleRect = [[[self window] screen] visibleFrame];
+  // We use frame (not visibleFrame) since our bookmark folder is on
+  // TOP of the menubar.
+  NSRect visibleRect = [[[self window] screen] frame];
   CGFloat closeToTopOfScreen = NSMaxY(visibleRect) -
-      kBookmarkBarFolderScrollAmount;
+      verticalScrollArrowHeight_;
   CGFloat closeToBottomOfScreen = NSMinY(visibleRect) +
-      kBookmarkBarFolderScrollAmount;
+      verticalScrollArrowHeight_;
 
   if (eventScreenLocation.y <= closeToBottomOfScreen) {
     [self beginScrollWindowUp];

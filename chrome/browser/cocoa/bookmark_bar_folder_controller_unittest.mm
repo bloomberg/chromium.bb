@@ -216,7 +216,9 @@ TEST_F(BookmarkBarFolderControllerTest, InitCreateAndDelete) {
   Class cellClass = [BookmarkBarFolderButtonCell class];
   for (BookmarkButton* button in buttons) {
     NSRect r = [[bbfc mainView] convertRect:[button frame] fromView:button];
-    EXPECT_TRUE(NSContainsRect([[bbfc mainView] frame], r));
+    // TODO(jrg): remove this adjustment.
+    NSRect bigger = NSInsetRect([[bbfc mainView] frame], -2, 0);
+    EXPECT_TRUE(NSContainsRect(bigger, r));
     EXPECT_TRUE([[button cell] isKindOfClass:cellClass]);
   }
 
@@ -1154,8 +1156,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   button = [folderController buttonWithTitleEqualTo:@"a"];
   CGFloat buttonWidth = NSWidth([button frame]);
   CGFloat expectedWidth =
-      buttonWidth + (2 * bookmarks::kBookmarkVerticalPadding) +
-      bookmarks::kScrollViewContentWidthMargin;
+      buttonWidth + (2 * bookmarks::kBookmarkHorizontalPadding);
   EXPECT_CGFLOAT_EQ(expectedWidth, menuWidth);
 
   // Add a wider bookmark and make sure the button widths match.
