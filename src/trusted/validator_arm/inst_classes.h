@@ -306,14 +306,13 @@ class EffectiveNoOp : public ClassDecoder {
 };
 
 /*
- * BKPT
- * We model this mostly so we can use it to recognize literal pools -- untrusted
- * code isn't expected to use it, but it's not unsafe, and there are cases where
- * we may generate it.
+ * Models all instructions that reliably trap, preventing execution from falling
+ * through to the next instruction.  Note that roadblocks currently have no
+ * special role in the SFI model, so Breakpoints are distinguished below.
  */
-class Breakpoint : public ClassDecoder {
+class Roadblock : public ClassDecoder {
  public:
-  virtual ~Breakpoint() {}
+  virtual ~Roadblock() {}
 
   virtual SafetyLevel safety(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
@@ -323,6 +322,18 @@ class Breakpoint : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
+};
+
+/*
+ * BKPT
+ * We model this mostly so we can use it to recognize literal pools -- untrusted
+ * code isn't expected to use it, but it's not unsafe, and there are cases where
+ * we may generate it.
+ */
+class Breakpoint : public Roadblock {
+ public:
+  virtual ~Breakpoint() {}
+
   virtual bool is_literal_pool_head(Instruction i) const;
 };
 

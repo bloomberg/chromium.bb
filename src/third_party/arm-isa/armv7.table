@@ -229,7 +229,7 @@ op1(24:20) op2(7:5) Rd(15:12) Rn(3:0)
 1110x      x00      -         1111    =DataProc(v6T2)  # BFC
 "          x00      -         ~1111   =DataProc(v6T2)  # BFI
 1111x      x10      -         -       =DataProc(v6T2)  # UBFX
-11111      111      -         -       =Undefined  # Permanently Undefined
+11111      111      -         -       =Roadblock  # Permanently Undefined
 -          -        -         -       =Undefined  # Note on page A5-21
 
 -- parallel_add_sub (See Sections A5.4.1, A5.4.2)

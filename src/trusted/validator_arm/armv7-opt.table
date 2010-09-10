@@ -126,9 +126,9 @@ xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxx
 pat0(31:0)                        pat1(31:0)                        
 xxxxxxx11000xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx000xxxxx  =Multiply(v6)
 xxxxxxx00xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  ->parallel_add_sub
+xxxxxxx11111xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx111xxxxx  =Roadblock
 xxxxxxx01xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  ->pack_sat_rev
 xxxxxxx10xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  ->signed_mult
-xxxxxxx11111xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx111xxxxx  =Undefined
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Undefined
 xxxxxxx11x1xxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  =DataProc(v6T2)
 xxxxxxx1110xxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxx00xxxxx  =DataProc(v6T2)

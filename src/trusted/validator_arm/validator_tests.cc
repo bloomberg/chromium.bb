@@ -124,16 +124,23 @@ class ValidatorTests : public ::testing::Test {
                 ProblemSink *sink);
 
   /*
-   * Tests a pattern that's expected to pass, at each possible bundle alignment.
-   * This also tries the pattern across bundle boundaries, and makes sure it
-   * fails.
-   * Note that this only works with 8-byte patterns, but that's all we have
-   * at the moment.
+   * Tests an arbitrary-size instruction fragment that is expected to pass.
+   * Does not modulate or rewrite the pattern in any way.
    */
   void validation_should_pass(const arm_inst *pattern,
                               size_t inst_count,
                               uint32_t base_addr,
                               const string &msg);
+
+  /*
+   * Tests a two-instruction pattern that's expected to pass, at each possible
+   * bundle alignment. This also tries the pattern across bundle boundaries,
+   * and makes sure it fails.
+   */
+  void validation_should_pass2(const arm_inst *pattern,
+                               size_t inst_count,
+                               uint32_t base_addr,
+                               const string &msg);
 
   /*
    * Tests a pattern that is forbidden in the SFI model.
@@ -280,10 +287,10 @@ TEST_F(ValidatorTests, SafeMaskedStores) {
           examples_of_safe_masks[m].inst | predicate,
           examples_of_safe_stores[s].inst | predicate,
         };
-        validation_should_pass(program,
-                               2,
-                               kDefaultBaseAddr,
-                               message.str());
+        validation_should_pass2(program,
+                                2,
+                                kDefaultBaseAddr,
+                                message.str());
       }
     }
   }
@@ -324,10 +331,10 @@ TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
         examples_of_safe_masks[m].inst | predicate,
         examples_of_safe_unconditional_stores[s].inst,
       };
-      validation_should_pass(program,
-                             2,
-                             kDefaultBaseAddr,
-                             message.str());
+      validation_should_pass2(program,
+                              2,
+                              kDefaultBaseAddr,
+                              message.str());
     }
   }
 }
@@ -362,10 +369,10 @@ TEST_F(ValidatorTests, SafeConditionalStores) {
         guards[m].inst | guard_predicate,
         examples_of_safe_stores[s].inst | store_predicate,
       };
-      validation_should_pass(program,
-                             2,
-                             kDefaultBaseAddr,
-                             message.str());
+      validation_should_pass2(program,
+                              2,
+                              kDefaultBaseAddr,
+                              message.str());
     }
   }
 }
@@ -536,6 +543,61 @@ TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
   }
 }
 
+TEST_F(ValidatorTests, ScaryUndefinedInstructions) {
+  /*
+   * These instructions are undefined today (ARMv7-A) but may become defined
+   * tomorrow.  We ban them since we can't reason about their side effects.
+   */
+  static const AnnotatedInstruction undefined_insts[] = {
+    { 0xE05DEA9D, "An undefined instruction in the multiply space" },
+  };
+  for (unsigned i = 0; i < NACL_ARRAY_SIZE(undefined_insts); i++) {
+    arm_inst program[] = { undefined_insts[i].inst };
+
+    vector<ProblemRecord> problems =
+        validation_should_fail(program,
+                               NACL_ARRAY_SIZE(program),
+                               kDefaultBaseAddr,
+                               undefined_insts[i].about);
+
+    // EXPECT/continue rather than ASSERT so that we run the other cases.
+    EXPECT_EQ(1U, problems.size());
+    if (problems.size() != 1) continue;
+
+    ProblemRecord first = problems[0];
+    EXPECT_EQ(kDefaultBaseAddr, first.vaddr)
+        << "Problem report must point to the only instruction: "
+        << undefined_insts[i].about;
+    EXPECT_EQ(nacl_arm_dec::UNDEFINED, first.safety)
+        << "Instruction must be flagged as UNDEFINED: "
+        << undefined_insts[i].about;
+
+    EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafe),
+              first.problem_code)
+        << "Instruction must be marked unsafe: "
+        << undefined_insts[i].about;
+  }
+}
+
+TEST_F(ValidatorTests, LessScaryUndefinedInstructions) {
+  /*
+   * These instructions are specified by ARM as *permanently* undefined, so we
+   * treat them as a reliable Illegal Instruction trap.
+   */
+
+  static const AnnotatedInstruction perm_undefined[] = {
+    { 0xE7FFDEFE, "permanently undefined instruction produced by LLVM" },
+  };
+
+  for (unsigned i = 0; i < NACL_ARRAY_SIZE(perm_undefined); i++) {
+    arm_inst program[] = { perm_undefined[i].inst };
+    validation_should_pass(program,
+                           1,
+                           kDefaultBaseAddr,
+                           perm_undefined[i].about);
+  }
+}
+
 
 /*
  * Implementation of the ValidatorTests utility methods.  These are documented
@@ -566,6 +628,19 @@ void ValidatorTests::validation_should_pass(const arm_inst *pattern,
                                             size_t inst_count,
                                             uint32_t base_addr,
                                             const string &msg) {
+  ProblemSpy spy;
+  bool validation_result = validate(pattern, inst_count, base_addr, &spy);
+
+  ASSERT_TRUE(validation_result) << msg << " should pass at " << base_addr;
+  vector<ProblemRecord> &problems = spy.get_problems();
+  EXPECT_EQ(0U, problems.size()) << msg
+      << " should have no problems when located at " << base_addr;
+}
+
+void ValidatorTests::validation_should_pass2(const arm_inst *pattern,
+                                             size_t inst_count,
+                                             uint32_t base_addr,
+                                             const string &msg) {
   // A couple sanity checks for correct usage.
   ASSERT_EQ(2U, inst_count)
       << "This routine only supports 2-instruction patterns.";
@@ -577,14 +652,7 @@ void ValidatorTests::validation_should_pass(const arm_inst *pattern,
 
   // Try the legitimate (non-overlapping) variations:
   for (uint32_t addr = base_addr; addr < last_addr; addr += 4) {
-    ProblemSpy spy;
-    bool validation_result = validate(pattern, inst_count, addr, &spy);
-
-    // Blow all the way out on failure -- otherwise we get an error cascade.
-    ASSERT_TRUE(validation_result) << msg << " should pass at " << addr;
-    vector<ProblemRecord> &problems = spy.get_problems();
-    EXPECT_EQ(0U, problems.size()) << msg
-        << " should have no problems when located at " << addr;
+    validation_should_pass(pattern, inst_count, addr, msg);
   }
 
   // Make sure it fails over bundle boundaries.
