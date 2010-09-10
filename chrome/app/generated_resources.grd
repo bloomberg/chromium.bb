@@ -3849,7 +3849,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">
-        Click to run this blocked plug-in
+        Click to run this plug-in
       </message>
       <message name="IDS_PLUGIN_LOAD_SHORT" desc="The link for loading all blocked plug-ins, displayed in the infobar.">
         Allow
@@ -4635,13 +4635,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Plug-in Settings:
       </message>
       <message name="IDS_PLUGIN_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
-        Allow all sites to use all plug-ins (recommended)
+        Allow all sites to run all plug-ins (recommended)
       </message>
       <message name="IDS_PLUGIN_LOAD_SANDBOXED_RADIO" desc="A radio button in the Content Settings dialog for allowing sandboxed plug-ins on any site.">
         Allow only sandboxed plug-ins
       </message>
       <message name="IDS_PLUGIN_NOLOAD_RADIO" desc="A radio button in the Content Settings dialog for preventing plug-ins use on any site.">
-        Do not allow any site to use plug-ins
+        Do not allow any site to run plug-ins
       </message>
       <message name="IDS_PLUGIN_SELECTIVE_DISABLE" desc="Link to selectively disable plug-ins">
         Disable individual plug-ins...
