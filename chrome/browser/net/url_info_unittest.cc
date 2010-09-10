@@ -20,7 +20,8 @@ class DnsHostInfoTest : public testing::Test {
 
 typedef chrome_browser_net::UrlInfo UrlInfo;
 
-TEST(DnsHostInfoTest, StateChangeTest) {
+// Flaky, http://crbug.com/55169.
+TEST(DnsHostInfoTest, FLAKY_StateChangeTest) {
   UrlInfo info_practice, info;
   GURL url1("http://domain1.com:80"), url2("https://domain2.com:443");
 
