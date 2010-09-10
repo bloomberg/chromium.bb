@@ -14,7 +14,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
-namespace {
+// Can't be an internal namespace because PluginExceptionsTableModel declares
+// as a friend.
+namespace plugin_test_internal {
 
 class MockTableModelObserver : public TableModelObserver {
  public:
@@ -43,8 +45,6 @@ class TestingPluginExceptionsTableModel : public PluginExceptionsTableModel {
  private:
   std::vector<WebPluginInfo> plugins_;
 };
-
-}
 
 class PluginExceptionsTableModelTest : public testing::Test {
  public:
@@ -75,9 +75,7 @@ class PluginExceptionsTableModelTest : public testing::Test {
                            "bar",
                            CONTENT_SETTING_ALLOW);
 
-    table_model_.reset(new TestingPluginExceptionsTableModel(
-        map,
-        NULL));
+    table_model_.reset(new TestingPluginExceptionsTableModel(map, NULL));
 
     std::vector<WebPluginInfo> plugins;
     WebPluginInfo foo_plugin;
@@ -188,3 +186,5 @@ TEST_F(PluginExceptionsTableModelTest, RemoveAllRows) {
   CheckInvariants();
   table_model_->SetObserver(NULL);
 }
+
+}  // namespace plugin_test_internal

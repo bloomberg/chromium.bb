@@ -12,6 +12,9 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/notification_observer.h"
 
+namespace plugin_test_internal {
+class PluginExceptionsTableModelTest;
+}
 struct WebPluginInfo;
 
 class PluginExceptionsTableModel : public RemoveRowsTableModel,
@@ -48,7 +51,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
   virtual void GetPlugins(std::vector<WebPluginInfo>* plugins);
 
  private:
-  friend class PluginExceptionsTableModelTest;
+  friend class plugin_test_internal::PluginExceptionsTableModelTest;
 
   struct SettingsEntry {
    HostContentSettingsMap::Pattern pattern;
