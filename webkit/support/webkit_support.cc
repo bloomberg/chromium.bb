@@ -212,10 +212,6 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   }
 }
 
-void SetUpTestEnvironment(bool unit_test_mode) {
-  SetUpTestEnvironment();
-}
-
 void SetUpTestEnvironment() {
   SetUpTestEnvironmentImpl(false);
 }
@@ -352,14 +348,6 @@ void DispatchMessageLoop() {
 
 WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {
   return new WebKitClientMessageLoopImpl();
-}
-
-void PostTaskFromHere(Task* task) {
-  MessageLoop::current()->PostTask(FROM_HERE, task);
-}
-
-void PostDelayedTaskFromHere(Task* task, int64 delay_ms) {
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, task, delay_ms);
 }
 
 void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms) {

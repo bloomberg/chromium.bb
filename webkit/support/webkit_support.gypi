@@ -11,6 +11,7 @@
       'target_name': 'webkit_support',
       'type': 'static_library',
       'dependencies': [
+        '<(DEPTH)/gfx/gfx.gyp:gfx',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
@@ -36,6 +37,7 @@
         'test_webplugin_page_delegate.h',
         'webkit_support.cc',
         'webkit_support.h',
+        'webkit_support_gfx.h',
         'webkit_support_glue.cc',
         'weburl_loader_mock.cc',
         'weburl_loader_mock.h',
