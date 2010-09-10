@@ -14,6 +14,8 @@
 
 class PrefService;
 
+namespace policy {
+
 // Common base functionality for the managed prefs warning banner displayed in
 // the preference dialogs when there are options that are controlled by
 // configuration policy and thus cannot be changed by the user.
@@ -65,4 +67,7 @@ class ManagedPrefsBannerBase : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ManagedPrefsBannerBase);
 };
+
+}  // namespace policy
+
 #endif  // CHROME_BROWSER_POLICY_MANAGED_PREFS_BANNER_BASE_H_

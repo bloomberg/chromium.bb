@@ -11,7 +11,7 @@
 
 OptionsManagedBannerHandler::OptionsManagedBannerHandler(
     DOMUI* dom_ui, const string16& page_name, OptionsPage page)
-    : ManagedPrefsBannerBase(dom_ui->GetProfile()->GetPrefs(), page),
+    : policy::ManagedPrefsBannerBase(dom_ui->GetProfile()->GetPrefs(), page),
       dom_ui_(dom_ui), page_name_(page_name), page_(page) {
   // Initialize the visibility state of the banner.
   SetupBannerVisibilty();
@@ -34,4 +34,3 @@ void OptionsManagedBannerHandler::SetupBannerVisibilty() {
   // Set the managed state in the javascript handler.
   dom_ui_->CallJavascriptFunction(UTF16ToWideHack(script), visibility);
 }
-

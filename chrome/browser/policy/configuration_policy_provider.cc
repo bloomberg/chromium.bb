@@ -8,7 +8,7 @@
 #include "chrome/common/policy_constants.h"
 #include "chrome/common/notification_service.h"
 
-namespace {
+namespace policy {
 
 // TODO(avi): Generate this mapping from the template metafile
 // (chrome/app/policy/policy_templates.json). http://crbug.com/54711
@@ -21,54 +21,52 @@ struct InternalPolicyValueMapEntry {
 
 const InternalPolicyValueMapEntry kPolicyValueMap[] = {
   { ConfigurationPolicyStore::kPolicyHomePage,
-      Value::TYPE_STRING, policy::key::kHomepageLocation },
+      Value::TYPE_STRING, key::kHomepageLocation },
   { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
-      Value::TYPE_BOOLEAN, policy::key::kHomepageIsNewTabPage },
+      Value::TYPE_BOOLEAN, key::kHomepageIsNewTabPage },
   { ConfigurationPolicyStore::kPolicyRestoreOnStartup,
-      Value::TYPE_INTEGER, policy::key::kRestoreOnStartup },
+      Value::TYPE_INTEGER, key::kRestoreOnStartup },
   { ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
-      Value::TYPE_LIST, policy::key::kURLsToRestoreOnStartup },
+      Value::TYPE_LIST, key::kURLsToRestoreOnStartup },
   { ConfigurationPolicyStore::kPolicyProxyServerMode,
-      Value::TYPE_INTEGER, policy::key::kProxyServerMode },
+      Value::TYPE_INTEGER, key::kProxyServerMode },
   { ConfigurationPolicyStore::kPolicyProxyServer,
-      Value::TYPE_STRING, policy::key::kProxyServer },
+      Value::TYPE_STRING, key::kProxyServer },
   { ConfigurationPolicyStore::kPolicyProxyPacUrl,
-      Value::TYPE_STRING, policy::key::kProxyPacUrl },
+      Value::TYPE_STRING, key::kProxyPacUrl },
   { ConfigurationPolicyStore::kPolicyProxyBypassList,
-      Value::TYPE_STRING, policy::key::kProxyBypassList },
+      Value::TYPE_STRING, key::kProxyBypassList },
   { ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
-      Value::TYPE_BOOLEAN, policy::key::kAlternateErrorPagesEnabled },
+      Value::TYPE_BOOLEAN, key::kAlternateErrorPagesEnabled },
   { ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
-      Value::TYPE_BOOLEAN, policy::key::kSearchSuggestEnabled },
+      Value::TYPE_BOOLEAN, key::kSearchSuggestEnabled },
   { ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
-      Value::TYPE_BOOLEAN, policy::key::kDnsPrefetchingEnabled },
+      Value::TYPE_BOOLEAN, key::kDnsPrefetchingEnabled },
   { ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
-      Value::TYPE_BOOLEAN, policy::key::kSafeBrowsingEnabled },
+      Value::TYPE_BOOLEAN, key::kSafeBrowsingEnabled },
   { ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
-      Value::TYPE_BOOLEAN, policy::key::kMetricsReportingEnabled },
+      Value::TYPE_BOOLEAN, key::kMetricsReportingEnabled },
   { ConfigurationPolicyStore::kPolicyPasswordManagerEnabled,
-      Value::TYPE_BOOLEAN, policy::key::kPasswordManagerEnabled },
+      Value::TYPE_BOOLEAN, key::kPasswordManagerEnabled },
   { ConfigurationPolicyStore::kPolicyPasswordManagerAllowShowPasswords,
-      Value::TYPE_BOOLEAN, policy::key::kPasswordManagerAllowShowPasswords },
+      Value::TYPE_BOOLEAN, key::kPasswordManagerAllowShowPasswords },
   { ConfigurationPolicyStore::kPolicyAutoFillEnabled,
-      Value::TYPE_BOOLEAN, policy::key::kAutoFillEnabled },
+      Value::TYPE_BOOLEAN, key::kAutoFillEnabled },
   { ConfigurationPolicyStore::kPolicyDisabledPlugins,
-      Value::TYPE_LIST, policy::key::kDisabledPlugins },
+      Value::TYPE_LIST, key::kDisabledPlugins },
   { ConfigurationPolicyStore::kPolicyApplicationLocale,
-      Value::TYPE_STRING, policy::key::kApplicationLocaleValue },
+      Value::TYPE_STRING, key::kApplicationLocaleValue },
   { ConfigurationPolicyStore::kPolicySyncDisabled,
-      Value::TYPE_BOOLEAN, policy::key::kSyncDisabled },
+      Value::TYPE_BOOLEAN, key::kSyncDisabled },
   { ConfigurationPolicyStore::kPolicyExtensionInstallAllowList,
-      Value::TYPE_LIST, policy::key::kExtensionInstallAllowList },
+      Value::TYPE_LIST, key::kExtensionInstallAllowList },
   { ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
-      Value::TYPE_LIST, policy::key::kExtensionInstallDenyList },
+      Value::TYPE_LIST, key::kExtensionInstallDenyList },
   { ConfigurationPolicyStore::kPolicyShowHomeButton,
-      Value::TYPE_BOOLEAN, policy::key::kShowHomeButton },
+      Value::TYPE_BOOLEAN, key::kShowHomeButton },
   { ConfigurationPolicyStore::kPolicyPrintingEnabled,
-      Value::TYPE_BOOLEAN, policy::key::kPrintingEnabled },
+      Value::TYPE_BOOLEAN, key::kPrintingEnabled },
 };
-
-}  // namespace
 
 /* static */
 const ConfigurationPolicyProvider::PolicyValueMap*
@@ -94,3 +92,5 @@ void ConfigurationPolicyProvider::NotifyStoreOfPolicyChange() {
       Source<ConfigurationPolicyProvider>(this),
       NotificationService::NoDetails());
 }
+
+}  // namespace policy

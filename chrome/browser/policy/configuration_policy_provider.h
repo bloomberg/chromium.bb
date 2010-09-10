@@ -12,6 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_store.h"
 
+namespace policy {
+
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
 // etc.) should implement a subclass of this class.
@@ -50,5 +52,7 @@ class ConfigurationPolicyProvider {
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };
+
+}  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_

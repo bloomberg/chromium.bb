@@ -10,6 +10,8 @@
 
 class Value;
 
+namespace policy {
+
 // An abstract super class for policy stores that provides a method that can be
 // called by a |ConfigurationPolicyProvider| to specify a policy.
 class ConfigurationPolicyStore {
@@ -59,5 +61,7 @@ class ConfigurationPolicyStore {
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyStore);
 };
+
+}  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_STORE_H_

@@ -13,13 +13,11 @@
 
 using testing::Mock;
 
-namespace {
+namespace policy {
 
 // Shorter reload intervals for testing PolicyDirWatcher.
 const int kSettleIntervalSecondsForTesting = 0;
 const int kReloadIntervalMinutesForTesting = 1;
-
-}  // namespace
 
 class ConfigDirPolicyProviderTestBase : public testing::Test {
  protected:
@@ -217,3 +215,5 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
   EXPECT_TRUE(entry->second->GetAsString(&str_value));
   EXPECT_EQ("http://foo.com", str_value);
 }
+
+}  // namespace policy

@@ -17,7 +17,7 @@ class Label;
 // Displays a banner showing a warning message that tells the user some options
 // cannot be changed because the relevant preferences are managed by their
 // system administrator.
-class ManagedPrefsBannerView : public ManagedPrefsBannerBase,
+class ManagedPrefsBannerView : public policy::ManagedPrefsBannerBase,
                                public views::View {
  public:
   // Initialize the banner. |page| is used to determine the names of the

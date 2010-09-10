@@ -16,6 +16,8 @@
 
 class CommandLine;
 
+namespace policy {
+
 // An implementation of the |PrefStore| that holds a Dictionary
 // created through applied policy.
 class ConfigurationPolicyPrefStore : public PrefStore,
@@ -100,5 +102,7 @@ class ConfigurationPolicyPrefStore : public PrefStore,
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };
+
+}  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_H_

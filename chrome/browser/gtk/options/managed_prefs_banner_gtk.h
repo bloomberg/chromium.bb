@@ -13,7 +13,7 @@
 // Constructs and maintains a GTK widget displaying a warning banner. The banner
 // is displayed on the preferences dialog whenever there are options that are
 // not settable by the user due to policy.
-class ManagedPrefsBannerGtk : public ManagedPrefsBannerBase {
+class ManagedPrefsBannerGtk : public policy::ManagedPrefsBannerBase {
  public:
   ManagedPrefsBannerGtk(PrefService* prefs, OptionsPage page);
   virtual ~ManagedPrefsBannerGtk() { }

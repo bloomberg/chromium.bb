@@ -8,6 +8,8 @@
 #include "base/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 
+namespace policy {
+
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac()
     : preferences_(new MacPreferences()) {
 }
@@ -101,3 +103,4 @@ bool ConfigurationPolicyProviderMac::Provide(ConfigurationPolicyStore* store) {
   return success;
 }
 
+}  // namespace policy

@@ -120,6 +120,8 @@ void PrefNotifier::FireObserversForRefreshedManagedPrefs(
 void PrefNotifier::Observe(NotificationType type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
+  using policy::ConfigurationPolicyPrefStore;
+
   if (type == NotificationType::POLICY_CHANGED) {
       PrefValueStore::AfterRefreshCallback* callback =
           NewCallback(this,
@@ -134,7 +136,6 @@ void PrefNotifier::Observe(NotificationType type,
               &PrefValueStore::RefreshPolicyPrefs,
               ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore(),
               ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(),
-
               callback));
   }
 }

@@ -17,6 +17,7 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
     const FilePath& pref_filename,
     Profile* profile,
     bool user_only) {
+  using policy::ConfigurationPolicyPrefStore;
   ConfigurationPolicyPrefStore* managed = NULL;
   ExtensionPrefStore* extension = NULL;
   CommandLinePrefStore* command_line = NULL;

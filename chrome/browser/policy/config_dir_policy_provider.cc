@@ -15,7 +15,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/json_value_serializer.h"
 
-namespace {
+namespace policy {
 
 // Amount of time we wait for the files in the policy directory to settle before
 // trying to load it. This alleviates the problem of reading partially written
@@ -25,8 +25,6 @@ const int kSettleIntervalSeconds = 5;
 // The time interval for rechecking policy. This is our fallback in case the
 // directory watch fails or doesn't report a change.
 const int kReloadIntervalMinutes = 15;
-
-}  // namespace
 
 // PolicyDirLoader implementation:
 
@@ -269,3 +267,5 @@ void ConfigDirPolicyProvider::DecodePolicyValueTree(
   // TODO(mnissler): Handle preference overrides once |ConfigurationPolicyStore|
   // supports it.
 }
+
+}  // namespace policy

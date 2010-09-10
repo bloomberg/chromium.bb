@@ -11,6 +11,8 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
+namespace policy {
+
 // Mock ConfigurationPolicyProvider implementation that supplies canned
 // values for polices.
 class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
@@ -39,5 +41,6 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   PolicyMap policy_map_;
 };
 
-#endif  // CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_PROVIDER_H_
+}  // namespace policy
 
+#endif  // CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_PROVIDER_H_

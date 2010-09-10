@@ -10,6 +10,8 @@
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/preferences_mock_mac.h"
 
+namespace policy {
+
 // A subclass of |ConfigurationPolicyProviderMac| providing access to various
 // internal things without an orgy of FRIEND_TESTS.
 class TestConfigurationPolicyProviderMac
@@ -147,3 +149,4 @@ TEST(ConfigurationPolicyProviderMacTest, TestExtensionInstallBlacklist) {
   EXPECT_STREQ("def", str_value.c_str());
 }
 
+}  // namespace policy

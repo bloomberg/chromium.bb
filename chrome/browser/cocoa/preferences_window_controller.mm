@@ -389,7 +389,7 @@ class PrefObserverBridge : public NotificationObserver,
 
 // Tracks state for a managed prefs banner and triggers UI updates through the
 // PreferencesWindowController as appropriate.
-class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
+class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
  public:
   virtual ~ManagedPrefsBannerState() { }
 
@@ -397,7 +397,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
                                    OptionsPage page,
                                    PrefService* local_state,
                                    PrefService* prefs)
-    : ManagedPrefsBannerBase(local_state, prefs, page),
+    : policy::ManagedPrefsBannerBase(local_state, prefs, page),
         controller_(controller),
         page_(page) { }
 

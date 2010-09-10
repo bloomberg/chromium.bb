@@ -17,9 +17,12 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 class CancelableTask;
-class ConfigDirPolicyProvider;
 class DictionaryValue;
 class MessageLoop;
+
+namespace policy {
+
+class ConfigDirPolicyProvider;
 
 // FilePathWatcher delegate implementation that handles change notifications for
 // the configuration directory. It keeps the authorative version of the
@@ -164,5 +167,7 @@ class ConfigDirPolicyProvider
 
   DISALLOW_COPY_AND_ASSIGN(ConfigDirPolicyProvider);
 };
+
+}  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIG_DIR_POLICY_PROVIDER_H_

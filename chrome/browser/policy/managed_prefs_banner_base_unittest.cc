@@ -9,6 +9,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace policy {
+
 // Tests whether managed preferences banner base functionality correctly
 // determines banner visiblity.
 class ManagedPrefsBannerBaseTest : public testing::Test {
@@ -78,3 +80,5 @@ TEST_F(ManagedPrefsBannerBaseTest, NotificationTest) {
   local_state_->SetManagedPref(prefs::kMetricsReportingEnabled,
                                Value::CreateBooleanValue(true));
 }
+
+}  // namespace policy

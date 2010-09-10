@@ -11,6 +11,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_switches.h"
 
+namespace policy {
+
 class ConfigurationPolicyPrefStoreTest : public testing::Test {
  public:
   // Applies a policy that has a string value.
@@ -462,3 +464,5 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
                                          &bool_result));
 }
+
+}  // namespace policy

@@ -11,6 +11,8 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/policy/configuration_policy_store.h"
 
+namespace policy {
+
 // Mock ConfigurationPolicyStore implementation that records values for policy
 // settings as they get set.
 class MockConfigurationPolicyStore : public ConfigurationPolicyStore {
@@ -31,5 +33,7 @@ class MockConfigurationPolicyStore : public ConfigurationPolicyStore {
  private:
   PolicyMap policy_map_;
 };
+
+}  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_STORE_H_

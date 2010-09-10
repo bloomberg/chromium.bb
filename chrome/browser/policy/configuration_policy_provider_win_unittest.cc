@@ -17,15 +17,13 @@
 #include "chrome/common/policy_constants.h"
 #include "chrome/common/pref_names.h"
 
-namespace {
+namespace policy {
 
 const wchar_t kUnitTestRegistrySubKey[] = L"SOFTWARE\\Chromium Unit Tests";
 const wchar_t kUnitTestMachineOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKLM Override";
 const wchar_t kUnitTestUserOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
-
-}  // namespace
 
 // A subclass of |ConfigurationPolicyProviderWin| providing access to
 // internal protected constants without an orgy of FRIEND_TESTS.
@@ -435,3 +433,5 @@ TEST_F(ConfigurationPolicyProviderWinTest,
     TestPolicyPasswordManagerEnabled) {
   TestBooleanPolicy(ConfigurationPolicyStore::kPolicyPasswordManagerEnabled);
 }
+
+}  // namespace policy

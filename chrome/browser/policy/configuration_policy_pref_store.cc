@@ -25,7 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
-namespace {
+namespace policy {
 
 // Manages the lifecycle of the shared platform-specific policy providers
 // for managed and recommended policy. Instantiated as a Singleton.
@@ -83,8 +83,6 @@ class ConfigurationPolicyProviderKeeper {
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderKeeper);
 };
-
-}
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
     ConfigurationPolicyPrefStore::simple_policy_map_[] = {
@@ -392,3 +390,5 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
   NOTIMPLEMENTED();
   delete value;
 }
+
+}  // namespace policy
