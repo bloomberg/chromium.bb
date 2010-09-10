@@ -427,9 +427,15 @@ be available for now. -->
       <message name="IDS_TRY_TOAST_HEADING" desc="Top line of the try-chrome-again dialog">
         There is a new version of Chromium available.
       </message>
-      <message name="IDS_TRY_TOAST_ALT_HEADING" desc="Alternate top line of the try-chrome-again dialog">
-        There's a new version of Chromium available that includes extensions.
-      </message>      
+      <message name="IDS_TRY_TOAST_HEADING2" desc="Top line of the try-chrome-again dialog">
+        There's a new version of Chromium available, and it's faster than ever.
+      </message>
+      <message name="IDS_TRY_TOAST_HEADING3" desc="Top line of the try-chrome-again dialog">
+        There's a new, safer version of Chromium available.
+      </message>
+      <message name="IDS_TRY_TOAST_HEADING4" desc="Top line of the try-chrome-again dialog">
+        Chromium has been updated, but you haven't used it for at least 30 days.
+      </message>
       <message name="IDS_TRY_TOAST_TRY_OPT" desc="First option radio button on the dialog to try chrome">
         Try it out (already installed)
       </message>

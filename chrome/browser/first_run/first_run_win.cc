@@ -610,8 +610,9 @@ const wchar_t kHelpCenterUrl[] =
 class TryChromeDialog : public views::ButtonListener,
                         public views::LinkController {
  public:
-  TryChromeDialog()
-      : popup_(NULL),
+  explicit TryChromeDialog(size_t version)
+      : version_(version),
+        popup_(NULL),
         try_chrome_(NULL),
         kill_chrome_(NULL),
         result_(Upgrade::TD_LAST_ENUM) {
@@ -699,11 +700,17 @@ class TryChromeDialog : public views::ButtonListener,
     // The heading has two flavors of text, the alt one features extensions but
     // we only use it in the US until some international issues are fixed.
     const std::string app_locale = g_browser_process->GetApplicationLocale();
-    const std::wstring heading = (app_locale == "en-US") ?
-        l10n_util::GetString(IDS_TRY_TOAST_ALT_HEADING) :
-        l10n_util::GetString(IDS_TRY_TOAST_HEADING);
-    views::Label* label =
-        new views::Label(heading);
+    std::wstring heading;
+    switch (version_) {
+      case 0: heading = l10n_util::GetString(IDS_TRY_TOAST_HEADING); break;
+      case 1: heading = l10n_util::GetString(IDS_TRY_TOAST_HEADING2); break;
+      case 2: heading = l10n_util::GetString(IDS_TRY_TOAST_HEADING3); break;
+      case 3: heading = l10n_util::GetString(IDS_TRY_TOAST_HEADING4); break;
+      default:
+        NOTREACHED() << "Cannot determine which headline to show.";
+        return Upgrade::TD_DIALOG_ERROR;
+    }
+    views::Label* label = new views::Label(heading);
     label->SetFont(rb.GetFont(ResourceBundle::MediumBoldFont));
     label->SetMultiLine(true);
     label->SizeToFit(200);
@@ -860,6 +867,6 @@ Upgrade::TryResult Upgrade::ShowTryChromeDialog(size_t version) {
     // returning this early. See EarlyReturnTest test harness.
     return Upgrade::TD_NOT_NOW;
   }
-  TryChromeDialog td;
+  TryChromeDialog td(version);
   return td.ShowModal();
 }
