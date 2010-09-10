@@ -385,8 +385,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // Adjust all button widths to be consistent, determine the best size for
   // the window, and set the window frame.
   CGFloat windowWidth =
-      [self adjustButtonWidths] + (2 * bookmarks::kBookmarkVerticalPadding) +
-      bookmarks::kScrollViewContentWidthMargin;
+      [self adjustButtonWidths] + (2 * bookmarks::kBookmarkHorizontalPadding);
   NSPoint newWindowTopLeft = [self windowTopLeftForWidth:windowWidth];
   NSSize windowSize = NSMakeSize(windowWidth, windowHeight);
   windowSize = [scrollView_ convertSize:windowSize toView:nil];
