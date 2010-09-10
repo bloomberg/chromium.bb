@@ -4,6 +4,9 @@
 
 Import('env')
 
+# Underlay $SOURCE_ROOT/gpu in this directory.
+Dir('.').addRepository(Dir('#/../gpu'))
+
 # Remove the pedantic flag to accept long long.
 env.FilterOut(CCFLAGS=['-pedantic'])
 
@@ -13,20 +16,20 @@ env.Append(CPPPATH=[
     '$SOURCE_ROOT/third_party/npapi/bindings'])
 
 command_buffer_common_srcs = [
-    '$SOURCE_ROOT/gpu/command_buffer/common/cmd_buffer_common.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/common/gles2_cmd_format.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/common/gles2_cmd_utils.cc',
+    'command_buffer/common/cmd_buffer_common.cc',
+    'command_buffer/common/gles2_cmd_format.cc',
+    'command_buffer/common/gles2_cmd_utils.cc',
     ]
 
 command_buffer_client_srcs = [
-    '$SOURCE_ROOT/gpu/command_buffer/client/cmd_buffer_helper.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/client/fenced_allocator.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/client/gles2_c_lib.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/client/gles2_cmd_helper.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/client/gles2_implementation.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/client/gles2_lib.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/client/ring_buffer.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/common/id_allocator.cc',
+    'command_buffer/client/cmd_buffer_helper.cc',
+    'command_buffer/client/fenced_allocator.cc',
+    'command_buffer/client/gles2_c_lib.cc',
+    'command_buffer/client/gles2_cmd_helper.cc',
+    'command_buffer/client/gles2_implementation.cc',
+    'command_buffer/client/gles2_lib.cc',
+    'command_buffer/client/ring_buffer.cc',
+    'command_buffer/common/id_allocator.cc',
     ]
 
 command_buffer_srcs = command_buffer_common_srcs + command_buffer_client_srcs;
@@ -35,8 +38,8 @@ env.ComponentLibrary('google_nacl_gpu', command_buffer_srcs)
 env.AddLibraryToSdk(['google_nacl_gpu'])
 
 pgl_srcs = [
-    '$SOURCE_ROOT/gpu/pgl/command_buffer_pepper.cc',
-    '$SOURCE_ROOT/gpu/pgl/pgl.cc',
+    'pgl/command_buffer_pepper.cc',
+    'pgl/pgl.cc',
     ]
 
 env.ComponentLibrary('google_nacl_pgl', pgl_srcs)
@@ -45,9 +48,9 @@ env.AddLibraryToSdk(['google_nacl_pgl'])
 # GLES2 headers go into the GLES2 subdir, Khronos headers into the KHR subdir,
 # pgl header go int he pgl subdir.
 env.AddHeaderToSdk([
-    '$SOURCE_ROOT/gpu/GLES2/gl2platform.h',
-    '$SOURCE_ROOT/gpu/GLES2/gl2types.h',
-    '$SOURCE_ROOT/gpu/GLES2/gl2.h',
+    'GLES2/gl2platform.h',
+    'GLES2/gl2types.h',
+    'GLES2/gl2.h',
     ], 'GLES2')
 
 env.AddHeaderToSdk(['$SOURCE_ROOT/gpu/KHR/khrplatform.h'], 'KHR')
