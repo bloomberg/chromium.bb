@@ -6,9 +6,14 @@
 
 #include "webkit/glue/plugins/pepper_private.h"
 
+#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
+#include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
+#include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_var.h"
 #include "webkit/glue/plugins/ppb_private.h"
@@ -35,12 +40,82 @@ class PrivateFontFile : public Resource {
 
 namespace {
 
+struct ResourceImageInfo {
+  PP_ResourceImage pp_id;
+  int res_id;
+};
+
+static const ResourceImageInfo kResourceImageMap[] = {
+  { PP_RESOURCEIMAGE_PDF_BUTTON_FTH, IDR_PDF_BUTTON_FTH },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_FTH_HOVER, IDR_PDF_BUTTON_FTH_HOVER },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_FTH_PRESSED, IDR_PDF_BUTTON_FTH_PRESSED },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_FTW, IDR_PDF_BUTTON_FTW },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_FTW_HOVER, IDR_PDF_BUTTON_FTW_HOVER },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_FTW_PRESSED, IDR_PDF_BUTTON_FTW_PRESSED },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN, IDR_PDF_BUTTON_ZOOMIN },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_HOVER, IDR_PDF_BUTTON_ZOOMIN_HOVER },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_PRESSED, IDR_PDF_BUTTON_ZOOMIN_PRESSED },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT, IDR_PDF_BUTTON_ZOOMOUT },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT_HOVER, IDR_PDF_BUTTON_ZOOMOUT_HOVER },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT_PRESSED,
+      IDR_PDF_BUTTON_ZOOMOUT_PRESSED },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_0, IDR_PDF_THUMBNAIL_0 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_1, IDR_PDF_THUMBNAIL_1 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_2, IDR_PDF_THUMBNAIL_2 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_3, IDR_PDF_THUMBNAIL_3 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_4, IDR_PDF_THUMBNAIL_4 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_5, IDR_PDF_THUMBNAIL_5 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_6, IDR_PDF_THUMBNAIL_6 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_7, IDR_PDF_THUMBNAIL_7 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_8, IDR_PDF_THUMBNAIL_8 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_9, IDR_PDF_THUMBNAIL_9 },
+  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_NUM_BACKGROUND,
+      IDR_PDF_THUMBNAIL_NUM_BACKGROUND },
+};
+
 PP_Var GetLocalizedString(PP_ResourceString string_id) {
   std::string rv;
   if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD)
     rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_NEED_PASSWORD));
 
   return StringToPPVar(rv);
+}
+
+PP_Resource GetResourceImage(PP_Module module_id, PP_ResourceImage image_id) {
+  int res_id = 0;
+  for (size_t i = 0; i < arraysize(kResourceImageMap); ++i) {
+    if (kResourceImageMap[i].pp_id == image_id) {
+      res_id = kResourceImageMap[i].res_id;
+      break;
+    }
+  }
+  if (res_id == 0)
+    return NULL;
+
+  SkBitmap* res_bitmap =
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
+
+  PluginModule* module = PluginModule::FromPPModule(module_id);
+  if (!module)
+    return NULL;
+  scoped_refptr<pepper::ImageData> image_data(new pepper::ImageData(module));
+  if (!image_data->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                        res_bitmap->width(), res_bitmap->height(), false)) {
+    return NULL;
+  }
+
+  ImageDataAutoMapper mapper(image_data);
+  if (!mapper.is_valid())
+    return NULL;
+
+  skia::PlatformCanvas* canvas = image_data->mapped_canvas();
+  SkBitmap& ret_bitmap =
+      const_cast<SkBitmap&>(canvas->getTopPlatformDevice().accessBitmap(true));
+  if (!res_bitmap->copyTo(&ret_bitmap, SkBitmap::kARGB_8888_Config, NULL)) {
+    return NULL;
+  }
+
+  return image_data->GetReference();
 }
 
 PP_Resource GetFontFileWithFallback(
@@ -85,6 +160,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
 
 const PPB_Private ppb_private = {
   &GetLocalizedString,
+  &GetResourceImage,
   &GetFontFileWithFallback,
   &GetFontTableForPrivateFontFile,
 };

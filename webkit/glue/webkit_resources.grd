@@ -53,6 +53,29 @@
       <include name="IDR_AUTOFILL_CC_MASTERCARD" file="resources\mastercard.png" type="BINDATA" />
       <include name="IDR_AUTOFILL_CC_SOLO" file="resources\solo.png" type="BINDATA" />
       <include name="IDR_AUTOFILL_CC_VISA" file="resources\visa.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTH" file="resources\pdf_button_fth.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTH_HOVER" file="resources\pdf_button_fth_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTH_PRESSED" file="resources\pdf_button_fth_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTW" file="resources\pdf_button_ftw.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTW_HOVER" file="resources\pdf_button_ftw_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTW_PRESSED" file="resources\pdf_button_ftw_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN" file="resources\pdf_button_zoomin.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_HOVER" file="resources\pdf_button_zoomin_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_PRESSED" file="resources\pdf_button_zoomin_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMOUT" file="resources\pdf_button_zoomout.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMOUT_HOVER" file="resources\pdf_button_zoomout_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMOUT_PRESSED" file="resources\pdf_button_zoomout_pressed.png" type="BINDATA" />      
+      <include name="IDR_PDF_THUMBNAIL_0" file="resources\pdf_thumbnail_0.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_1" file="resources\pdf_thumbnail_1.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_2" file="resources\pdf_thumbnail_2.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_3" file="resources\pdf_thumbnail_3.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_4" file="resources\pdf_thumbnail_4.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_5" file="resources\pdf_thumbnail_5.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_6" file="resources\pdf_thumbnail_6.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_7" file="resources\pdf_thumbnail_7.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_8" file="resources\pdf_thumbnail_8.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_9" file="resources\pdf_thumbnail_9.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_NUM_BACKGROUND" file="resources\pdf_thumbnail_num_background.png" type="BINDATA" />
 
       <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
         <include name="IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE" file="resources\linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
