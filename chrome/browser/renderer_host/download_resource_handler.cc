@@ -92,9 +92,14 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_;
   ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+      ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(
           download_file_manager_, &DownloadFileManager::StartDownload, info));
+
+  // We can't start saving the data before we create the file on disk.
+  // The request will be un-paused in DownloadFileManager::CreateDownloadFile.
+  rdh_->PauseRequest(global_id_.child_id, global_id_.request_id, true);
+
   return true;
 }
 

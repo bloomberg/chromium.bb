@@ -66,6 +66,9 @@ class DownloadManager
  public:
   DownloadManager();
 
+  // Shutdown the download manager. Must be called before destruction.
+  void Shutdown();
+
   // Interface to implement for observers that wish to be informed of changes
   // to the DownloadManager's collection of downloads.
   class Observer {
@@ -225,9 +228,6 @@ class DownloadManager
   // Opens a download via the Windows shell.
   void OpenDownloadInShell(DownloadItem* download,
                            gfx::NativeView parent_window);
-
-  // Shutdown the download manager.  This call is needed only after Init.
-  void Shutdown();
 
   // Called on the download thread to check whether the suggested file path
   // exists.  We don't check if the file exists on the UI thread to avoid UI

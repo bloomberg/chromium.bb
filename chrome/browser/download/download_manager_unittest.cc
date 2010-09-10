@@ -38,6 +38,7 @@ class DownloadManagerTest : public testing::Test {
   }
 
   ~DownloadManagerTest() {
+    download_manager_->Shutdown();
     // profile_ must outlive download_manager_, so we explicitly delete
     // download_manager_ first.
     download_manager_ = NULL;
@@ -179,7 +180,7 @@ const struct {
 class MockDownloadFile : public DownloadFile {
  public:
   explicit MockDownloadFile(DownloadCreateInfo* info)
-      : DownloadFile(info), renamed_count_(0) { }
+      : DownloadFile(info, NULL), renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
   MOCK_METHOD2(Rename, bool(const FilePath&, bool));
   MOCK_METHOD0(DeleteCrDownload, void());

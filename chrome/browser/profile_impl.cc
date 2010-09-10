@@ -461,9 +461,13 @@ ProfileImpl::~ProfileImpl() {
   // shut down the database.
   template_url_model_.reset();
 
-  // The download manager queries the history system and should be deleted
-  // before the history is shutdown so it can properly cancel all requests.
-  download_manager_ = NULL;
+  // DownloadManager is lazily created, so check before accessing it.
+  if (download_manager_.get()) {
+    // The download manager queries the history system and should be shutdown
+    // before the history is shutdown so it can properly cancel all requests.
+    download_manager_->Shutdown();
+    download_manager_ = NULL;
+  }
 
   // The theme provider provides bitmaps to whoever wants them.
   theme_provider_.reset();

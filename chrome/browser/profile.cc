@@ -519,9 +519,13 @@ class OffTheRecordProfileImpl : public Profile,
 #endif  // defined(OS_CHROMEOS)
 
   virtual void ExitedOffTheRecordMode() {
-    // Drop our download manager so we forget about all the downloads made
-    // in off-the-record mode.
-    download_manager_ = NULL;
+    // DownloadManager is lazily created, so check before accessing it.
+    if (download_manager_.get()) {
+      // Drop our download manager so we forget about all the downloads made
+      // in off-the-record mode.
+      download_manager_->Shutdown();
+      download_manager_ = NULL;
+    }
   }
 
   virtual void Observe(NotificationType type,
