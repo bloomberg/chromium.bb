@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome_frame/html_utils.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
@@ -42,6 +43,12 @@ std::string CreateHttpHeaders(CFInvocation invocation,
   return ss.str();
 }
 
+std::string GetMockHttpHeaders(const FilePath& mock_http_headers_path) {
+  std::string headers;
+  file_util::ReadFileToString(mock_http_headers_path, &headers);
+  return headers;
+}
+
 }  // namespace
 
 class ChromeFrameTestEnvironment: public testing::Environment {
@@ -55,6 +62,12 @@ class ChromeFrameTestEnvironment: public testing::Environment {
 
 ::testing::Environment* const chrome_frame_env =
     ::testing::AddGlobalTestEnvironment(new ChromeFrameTestEnvironment);
+
+ChromeFrameTestWithWebServer::ChromeFrameTestWithWebServer()
+    : loop_(),
+      server_mock_(1337, L"127.0.0.1",
+          chrome_frame_test::GetTestDataFolder()) {
+}
 
 void ChromeFrameTestWithWebServer::CloseAllBrowsers() {
   // Web browsers tend to relaunch themselves in other processes, meaning the
@@ -79,26 +92,53 @@ void ChromeFrameTestWithWebServer::SetUp() {
   // Make sure that we are not accidently enabling gcf protocol.
   SetConfigBool(kAllowUnsafeURLs, false);
 
-  PathService::Get(base::DIR_SOURCE_ROOT, &test_file_path_);
-  test_file_path_ = test_file_path_.Append(FILE_PATH_LITERAL("chrome_frame"))
-      .Append(FILE_PATH_LITERAL("test"))
+  FilePath chrome_frame_source_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &chrome_frame_source_path);
+  chrome_frame_source_path = chrome_frame_source_path.Append(
+      FILE_PATH_LITERAL("chrome_frame"));
+
+  test_file_path_ = chrome_frame_source_path;
+  test_file_path_ = test_file_path_.Append(FILE_PATH_LITERAL("test"))
       .Append(FILE_PATH_LITERAL("data"));
 
-  server_.SetUp();
-  results_dir_ = server_.test_server()->document_root().AppendASCII("dump");
+  results_dir_ = chrome_frame_test::GetTestDataFolder();
+  results_dir_.AppendASCII("dump");
+
+  // Copy the CFInstance.js and CFInstall.js files from src\chrome_frame to
+  // src\chrome_frame\test\data.
+  FilePath CFInstance_src_path;
+  FilePath CFInstall_src_path;
+
+  CFInstance_src_path = chrome_frame_source_path.AppendASCII("CFInstance.js");
+  CFInstance_path_ = test_file_path_.AppendASCII("CFInstance.js");
+
+  file_util::CopyFileW(CFInstance_src_path, CFInstance_path_);
+
+  CFInstall_src_path = chrome_frame_source_path.AppendASCII("CFInstall.js");
+  CFInstall_path_ = test_file_path_.AppendASCII("CFInstall.js");
+
+  file_util::CopyFileW(CFInstall_src_path, CFInstall_path_);
+
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
+  server_mock_.set_expected_result("OK");
 }
 
 void ChromeFrameTestWithWebServer::TearDown() {
   CloseBrowser();
   CloseAllBrowsers();
-  server_.TearDown();
+  file_util::Delete(CFInstall_path_, false);
+  file_util::Delete(CFInstance_path_, false);
 }
 
 bool ChromeFrameTestWithWebServer::LaunchBrowser(BrowserKind browser,
                                                  const wchar_t* page) {
   std::wstring url = page;
-  if (url.find(L"files/") != std::wstring::npos)
-    url = UTF8ToWide(server_.Resolve(page).spec());
+
+  // We should resolve the URL only if it is a relative url.
+  GURL parsed_url(WideToUTF8(page));
+  if (!parsed_url.has_scheme()) {
+    url = server_mock_.Resolve(page);
+  }
 
   browser_ = browser;
   if (browser == IE) {
@@ -158,68 +198,45 @@ bool ChromeFrameTestWithWebServer::BringBrowserToTop() {
 }
 
 bool ChromeFrameTestWithWebServer::WaitForTestToComplete(int milliseconds) {
-  return server_.WaitToFinish(milliseconds);
+  loop_.RunFor(milliseconds/1000);
+  return true;
 }
 
 bool ChromeFrameTestWithWebServer::WaitForOnLoad(int milliseconds) {
-  DWORD start = ::GetTickCount();
-  std::string data;
-  while (!ReadResultFile(L"OnLoadEvent", &data) || data.length() == 0) {
-    DWORD now = ::GetTickCount();
-    if (start > now) {
-      // Very simple check for overflow. In that case we just restart the
-      // wait.
-      start = now;
-    } else if (static_cast<int>(now - start) > milliseconds) {
-      break;
-    }
-    Sleep(100);
-  }
-
-  return data.compare("loaded") == 0;
+  return false;
 }
 
-bool ChromeFrameTestWithWebServer::ReadResultFile(const std::wstring& file_name,
-                                                  std::string* data) {
-  FilePath full_path(results_dir_);
-  full_path = full_path.Append(file_name);
-  return file_util::ReadFileToString(full_path, data);
-}
+const wchar_t kPostedResultSubstring[] = L"/writefile/";
 
-bool ChromeFrameTestWithWebServer::CheckResultFile(
-    const std::wstring& file_name, const std::string& expected_result) {
-  std::string data;
-  bool ret = ReadResultFile(file_name, &data);
-  if (ret)
-    ret = (data == expected_result);
-
-  if (!ret) {
-    LOG(ERROR) << "Error text: " << (data.empty() ? "<empty>" : data.c_str());
-  }
-
-  return ret;
+void ChromeFrameTestWithWebServer::SimpleBrowserTestExpectedResult(
+    BrowserKind browser, const wchar_t* page, const char* result) {
+  ASSERT_TRUE(LaunchBrowser(browser, page));
+  server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
+                                           kPostedResultSubstring);
+  WaitForTestToComplete(kLongWaitTimeout);
+  ASSERT_EQ(result, server_mock_.posted_result());
 }
 
 void ChromeFrameTestWithWebServer::SimpleBrowserTest(BrowserKind browser,
-    const wchar_t* page, const wchar_t* result_file_to_check) {
-  ASSERT_TRUE(LaunchBrowser(browser, page));
-  WaitForTestToComplete(kLongWaitTimeout);
-  ASSERT_TRUE(CheckResultFile(result_file_to_check, "OK"));
+    const wchar_t* page) {
+  SimpleBrowserTestExpectedResult(browser, page, "OK");
 }
 
 void ChromeFrameTestWithWebServer::OptionalBrowserTest(BrowserKind browser,
-    const wchar_t* page, const wchar_t* result_file_to_check) {
+    const wchar_t* page) {
   DCHECK(browser != CHROME) << "Chrome tests shouldn't be optional";
   if (!LaunchBrowser(browser, page)) {
     LOG(ERROR) << "Failed to launch browser " << ToString(browser);
   } else {
+    server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
+                                             kPostedResultSubstring);
     WaitForTestToComplete(kLongWaitTimeout);
-    ASSERT_TRUE(CheckResultFile(result_file_to_check, "OK"));
+    ASSERT_EQ("OK", server_mock_.posted_result());
   }
 }
 
 void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
-    const wchar_t* page, const wchar_t* result_file_to_check) {
+    const wchar_t* page) {
   FilePath plugin_path;
   PathService::Get(base::DIR_MODULE, &plugin_path);
   plugin_path = plugin_path.AppendASCII("servers");
@@ -250,11 +267,15 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
       version = version_info->product_version();
   }
 
+  server_mock_.set_expected_result(WideToUTF8(version));
+
   EXPECT_TRUE(version_info);
   EXPECT_FALSE(version.empty());
   EXPECT_TRUE(LaunchBrowser(browser, page));
+  server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
+                                           kPostedResultSubstring);
   WaitForTestToComplete(kLongWaitTimeout);
-  ASSERT_TRUE(CheckResultFile(result_file_to_check, WideToUTF8(version)));
+  ASSERT_EQ(version, UTF8ToWide(server_mock_.posted_result()));
 }
 
 // MockWebServer methods
@@ -276,11 +297,41 @@ void MockWebServer::ExpectAndServeRequestAnyNumberTimes(
       .WillRepeatedly(SendResponse(this, invocation));
 }
 
+void MockWebServer::ExpectAndHandlePostedResult(
+    CFInvocation invocation, const std::wstring& post_suffix) {
+  EXPECT_CALL(*this, Post(_, testing::HasSubstr(post_suffix), _))
+      .WillRepeatedly(HandlePostedResponseHelper(this, invocation));
+}
+
+void MockWebServer::HandlePostedResponse(
+    test_server::ConfigurableConnection* connection,
+    const test_server::Request& request) {
+  posted_result_ = request.content();
+  if (posted_result_ == expected_result_) {
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                            new MessageLoop::QuitTask,
+                                            100);
+  }
+  connection->Send("HTTP/1.1 200 OK\r\n", "");
+}
+
 void MockWebServer::SendResponseHelper(
     test_server::ConfigurableConnection* connection,
     const std::wstring& request_uri,
+    const test_server::Request& request,
     CFInvocation invocation,
     bool add_no_cache_header) {
+  static const wchar_t kEchoHeader[] = L"/echoheader?";
+  if (request_uri.find(kEchoHeader) != std::wstring::npos) {
+    std::wstring header = request_uri.substr(
+        wcslen(kEchoHeader),
+        request_uri.length() - wcslen(kEchoHeader));
+
+    std::string header_value = http_utils::GetHttpHeaderFromHeaderList(
+        WideToUTF8(header), request.headers());
+    connection->Send(header_value, "");
+    return;
+  }
   // Convert |request_uri| to a path.
   std::wstring path = request_uri;
   size_t query_index = request_uri.find(L"?");
@@ -292,12 +343,22 @@ void MockWebServer::SendResponseHelper(
     file_path = file_path.Append(path.substr(1));  // remove first '/'
 
   std::string headers, body;
+  std::string content_type;
   if (file_util::PathExists(file_path)) {
-    std::string content_type;
-    EXPECT_TRUE(net::GetMimeTypeFromFile(file_path, &content_type));
-    DLOG(INFO) << "Going to send file (" << WideToUTF8(file_path.value())
-               << ") with content type (" << content_type << ")";
-    headers = CreateHttpHeaders(invocation, add_no_cache_header, content_type);
+    FilePath mock_http_headers(file_path.value() + L".mock-http-headers");
+    if (file_util::PathExists(mock_http_headers)) {
+      headers = GetMockHttpHeaders(mock_http_headers);
+      content_type = http_utils::GetHttpHeaderFromHeaderList("Content-type",
+                                                             headers);
+    } else {
+      EXPECT_TRUE(net::GetMimeTypeFromFile(file_path, &content_type));
+      DLOG(INFO) << "Going to send file (" << WideToUTF8(file_path.value())
+                 << ") with content type (" << content_type << ")";
+      headers = CreateHttpHeaders(invocation, add_no_cache_header,
+                                  content_type);
+    }
+
+    EXPECT_FALSE(headers.empty());
 
     EXPECT_TRUE(file_util::ReadFileToString(file_path, &body))
         << "Could not read file (" << WideToUTF8(file_path.value()) << ")";
@@ -315,23 +376,23 @@ void MockWebServer::SendResponseHelper(
   connection->Send(headers, body);
 }
 
-const wchar_t kPostMessageBasicPage[] = L"files/postmessage_basic_host.html";
+const wchar_t kPostMessageBasicPage[] = L"postmessage_basic_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_PostMessageBasic) {
-  SimpleBrowserTest(IE, kPostMessageBasicPage, L"PostMessage");
+  SimpleBrowserTest(IE, kPostMessageBasicPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_PostMessageBasic) {
-  SimpleBrowserTest(FIREFOX, kPostMessageBasicPage, L"PostMessage");
+  SimpleBrowserTest(FIREFOX, kPostMessageBasicPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_PostMessageBasic) {
-  OptionalBrowserTest(OPERA, kPostMessageBasicPage, L"PostMessage");
+  OptionalBrowserTest(OPERA, kPostMessageBasicPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabIE_MIMEFilterBasic) {
   const wchar_t kMIMEFilterBasicPage[] =
-      L"files/chrome_frame_mime_filter_test.html";
+      L"chrome_frame_mime_filter_test.html";
 
   // If this test fails for IE8 then it is possible that prebinding is enabled.
   // A known workaround is to disable it until CF properly handles it.
@@ -339,73 +400,77 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabIE_MIMEFilterBasic) {
   // HKCU\Software\Microsoft\Internet Explorer\Main
   // Value name: EnablePreBinding (REG_DWORD)
   // Value: 0
-  SimpleBrowserTest(IE, kMIMEFilterBasicPage, L"MIMEFilter");
+  SimpleBrowserTest(IE, kMIMEFilterBasicPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_Resize) {
-  SimpleBrowserTest(IE, L"files/chrome_frame_resize.html", L"Resize");
+  SimpleBrowserTest(IE, L"chrome_frame_resize.html");
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_Resize) {
-  SimpleBrowserTest(FIREFOX, L"files/chrome_frame_resize.html", L"Resize");
+  SimpleBrowserTest(FIREFOX, L"chrome_frame_resize.html");
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_Resize) {
-  OptionalBrowserTest(OPERA, L"files/chrome_frame_resize.html", L"Resize");
+  OptionalBrowserTest(OPERA, L"chrome_frame_resize.html");
 }
 
 const wchar_t kNavigateURLAbsolutePage[] =
-    L"files/navigateurl_absolute_host.html";
+    L"navigateurl_absolute_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_NavigateURLAbsolute) {
-  SimpleBrowserTest(IE, kNavigateURLAbsolutePage, L"NavigateURL");
+  SimpleBrowserTest(IE, kNavigateURLAbsolutePage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_NavigateURLAbsolute) {
-  SimpleBrowserTest(FIREFOX, kNavigateURLAbsolutePage, L"NavigateURL");
+  SimpleBrowserTest(FIREFOX, kNavigateURLAbsolutePage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_NavigateURLAbsolute) {
-  OptionalBrowserTest(OPERA, kNavigateURLAbsolutePage, L"NavigateURL");
+  OptionalBrowserTest(OPERA, kNavigateURLAbsolutePage);
 }
 
 const wchar_t kNavigateURLRelativePage[] =
-    L"files/navigateurl_relative_host.html";
+    L"navigateurl_relative_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_NavigateURLRelative) {
-  SimpleBrowserTest(IE, kNavigateURLRelativePage, L"NavigateURL");
+  SimpleBrowserTest(IE, kNavigateURLRelativePage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_NavigateURLRelative) {
-  SimpleBrowserTest(FIREFOX, kNavigateURLRelativePage, L"NavigateURL");
+  SimpleBrowserTest(FIREFOX, kNavigateURLRelativePage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_NavigateURLRelative) {
-  OptionalBrowserTest(OPERA, kNavigateURLRelativePage, L"NavigateURL");
+  OptionalBrowserTest(OPERA, kNavigateURLRelativePage);
 }
 
-const wchar_t kNavigateSimpleObjectFocus[] = L"files/simple_object_focus.html";
+const wchar_t kNavigateSimpleObjectFocus[] = L"simple_object_focus.html";
 
 // http://crbug.com/37087
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_ObjectFocus) {
-  SimpleBrowserTest(FIREFOX, kNavigateSimpleObjectFocus, L"ObjectFocus");
+  SimpleBrowserTest(FIREFOX, kNavigateSimpleObjectFocus);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_ObjectFocus) {
-  SimpleBrowserTest(IE, kNavigateSimpleObjectFocus, L"ObjectFocus");
+  SimpleBrowserTest(IE, kNavigateSimpleObjectFocus);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_ObjectFocus) {
+// TODO(ananta)
+// Rewrite this test for opera.
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_ObjectFocus) {
   if (!LaunchBrowser(OPERA, kNavigateSimpleObjectFocus)) {
     LOG(ERROR) << "Failed to launch browser " << ToString(OPERA);
   } else {
     ASSERT_TRUE(WaitForOnLoad(kLongWaitTimeout));
+    server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
+                                             kPostedResultSubstring);
     BringBrowserToTop();
     // Tab through a couple of times.  Once should be enough in theory
     // but in practice activating the browser can take a few milliseconds more.
     bool ok;
     for (int i = 0;
-         i < 5 && (ok = CheckResultFile(L"ObjectFocus", "OK")) == false;
+         i < 5 && (ok = (server_mock_.posted_result() == "OK")) == false;
          ++i) {
       Sleep(300);
       simulate_input::SendMnemonic(VK_TAB, simulate_input::NONE, false, false);
@@ -414,466 +479,445 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_ObjectFocus) {
   }
 }
 
-const wchar_t kiframeBasicPage[] = L"files/iframe_basic_host.html";
+const wchar_t kiframeBasicPage[] = L"iframe_basic_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_iframeBasic) {
-  SimpleBrowserTest(IE, kiframeBasicPage, L"PostMessage");
+  SimpleBrowserTest(IE, kiframeBasicPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_iframeBasic) {
-  SimpleBrowserTest(FIREFOX, kiframeBasicPage, L"PostMessage");
+  SimpleBrowserTest(FIREFOX, kiframeBasicPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_iframeBasic) {
-  OptionalBrowserTest(OPERA, kiframeBasicPage, L"PostMessage");
+  OptionalBrowserTest(OPERA, kiframeBasicPage);
 }
 
-const wchar_t kSrcPropertyTestPage[] = L"files/src_property_host.html";
+const wchar_t kSrcPropertyTestPage[] = L"src_property_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_SrcProperty) {
-  SimpleBrowserTest(IE, kSrcPropertyTestPage, L"SrcProperty");
+  SimpleBrowserTest(IE, kSrcPropertyTestPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_SrcProperty) {
-  SimpleBrowserTest(FIREFOX, kSrcPropertyTestPage, L"SrcProperty");
+  SimpleBrowserTest(FIREFOX, kSrcPropertyTestPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_SrcProperty) {
-  OptionalBrowserTest(OPERA, kSrcPropertyTestPage, L"SrcProperty");
+  OptionalBrowserTest(OPERA, kSrcPropertyTestPage);
 }
 
-const wchar_t kCFInstanceBasicTestPage[] = L"files/CFInstance_basic_host.html";
+const wchar_t kCFInstanceBasicTestPage[] = L"CFInstance_basic_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceBasic) {
-  SimpleBrowserTest(IE, kCFInstanceBasicTestPage, L"CFInstanceBasic");
+  SimpleBrowserTest(IE, kCFInstanceBasicTestPage);
 }
 
 // http://crbug.com/37085
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceBasic) {
-  SimpleBrowserTest(FIREFOX, kCFInstanceBasicTestPage, L"CFInstanceBasic");
+  SimpleBrowserTest(FIREFOX, kCFInstanceBasicTestPage);
 }
 
-const wchar_t kCFISingletonPage[] = L"files/CFInstance_singleton_host.html";
+const wchar_t kCFISingletonPage[] = L"CFInstance_singleton_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceSingleton) {
-  SimpleBrowserTest(IE, kCFISingletonPage, L"CFInstanceSingleton");
+  SimpleBrowserTest(IE, kCFISingletonPage);
 }
 
 // This test randomly fails on the ChromeFrame builder.
 // Bug http://code.google.com/p/chromium/issues/detail?id=31532
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceSingleton) {
-  SimpleBrowserTest(FIREFOX, kCFISingletonPage, L"CFInstanceSingleton");
+  SimpleBrowserTest(FIREFOX, kCFISingletonPage);
 }
 
-const wchar_t kCFIDelayPage[] = L"files/CFInstance_delay_host.html";
+const wchar_t kCFIDelayPage[] = L"CFInstance_delay_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_CFInstanceDelay) {
-  SimpleBrowserTest(IE, kCFIDelayPage, L"CFInstanceDelay");
+  SimpleBrowserTest(IE, kCFIDelayPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_CFInstanceDelay) {
-  SimpleBrowserTest(FIREFOX, kCFIDelayPage, L"CFInstanceDelay");
+  SimpleBrowserTest(FIREFOX, kCFIDelayPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_CFInstanceDelay) {
-  OptionalBrowserTest(OPERA, kCFIDelayPage, L"CFInstanceDelay");
+  OptionalBrowserTest(OPERA, kCFIDelayPage);
 }
 
-const wchar_t kCFIFallbackPage[] = L"files/CFInstance_fallback_host.html";
+const wchar_t kCFIFallbackPage[] = L"CFInstance_fallback_host.html";
 
 // http://crbug.com/37088
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceFallback) {
-  SimpleBrowserTest(IE, kCFIFallbackPage, L"CFInstanceFallback");
+  SimpleBrowserTest(IE, kCFIFallbackPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceFallback) {
-  SimpleBrowserTest(FIREFOX, kCFIFallbackPage, L"CFInstanceFallback");
+  SimpleBrowserTest(FIREFOX, kCFIFallbackPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceFallback) {
-  OptionalBrowserTest(OPERA, kCFIFallbackPage, L"CFInstanceFallback");
+  OptionalBrowserTest(OPERA, kCFIFallbackPage);
 }
 
-const wchar_t kCFINoSrcPage[] = L"files/CFInstance_no_src_host.html";
+const wchar_t kCFINoSrcPage[] = L"CFInstance_no_src_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceNoSrc) {
-  SimpleBrowserTest(IE, kCFINoSrcPage, L"CFInstanceNoSrc");
+  SimpleBrowserTest(IE, kCFINoSrcPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceNoSrc) {
-  SimpleBrowserTest(FIREFOX, kCFINoSrcPage, L"CFInstanceNoSrc");
+  SimpleBrowserTest(FIREFOX, kCFINoSrcPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceNoSrc) {
-  OptionalBrowserTest(OPERA, kCFINoSrcPage, L"CFInstanceNoSrc");
+  OptionalBrowserTest(OPERA, kCFINoSrcPage);
 }
 
-const wchar_t kCFIIfrOnLoadPage[] = L"files/CFInstance_iframe_onload_host.html";
+const wchar_t kCFIIfrOnLoadPage[] = L"CFInstance_iframe_onload_host.html";
 
 // disabled since it's unlikely that we care about this case
 TEST_F(ChromeFrameTestWithWebServer,
        DISABLED_WidgetModeIE_CFInstanceIfrOnLoad) {
-  SimpleBrowserTest(IE, kCFIIfrOnLoadPage, L"CFInstanceIfrOnLoad");
+  SimpleBrowserTest(IE, kCFIIfrOnLoadPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceIfrOnLoad) {
-  SimpleBrowserTest(FIREFOX, kCFIIfrOnLoadPage, L"CFInstanceIfrOnLoad");
+  SimpleBrowserTest(FIREFOX, kCFIIfrOnLoadPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceIfrOnLoad) {
-  OptionalBrowserTest(OPERA, kCFIIfrOnLoadPage, L"CFInstanceIfrOnLoad");
+  OptionalBrowserTest(OPERA, kCFIIfrOnLoadPage);
 }
 
-const wchar_t kCFIZeroSizePage[] = L"files/CFInstance_zero_size_host.html";
+const wchar_t kCFIZeroSizePage[] = L"CFInstance_zero_size_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceZeroSize) {
-  SimpleBrowserTest(IE, kCFIZeroSizePage, L"CFInstanceZeroSize");
+  SimpleBrowserTest(IE, kCFIZeroSizePage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceZeroSize) {
-  SimpleBrowserTest(FIREFOX, kCFIZeroSizePage, L"CFInstanceZeroSize");
+  SimpleBrowserTest(FIREFOX, kCFIZeroSizePage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceZeroSize) {
-  OptionalBrowserTest(OPERA, kCFIZeroSizePage, L"CFInstanceZeroSize");
+  OptionalBrowserTest(OPERA, kCFIZeroSizePage);
 }
 
-const wchar_t kCFIIfrPostPage[] = L"files/CFInstance_iframe_post_host.html";
+const wchar_t kCFIIfrPostPage[] = L"CFInstance_iframe_post_host.html";
 
 // http://crbug.com/32321
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceIfrPost) {
-  SimpleBrowserTest(IE, kCFIIfrPostPage, L"CFInstanceIfrPost");
+  SimpleBrowserTest(IE, kCFIIfrPostPage);
 }
 
 // Flakes out on the bots, http://crbug.com/26372
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_WidgetModeFF_CFInstanceIfrPost) {
-  SimpleBrowserTest(FIREFOX, kCFIIfrPostPage, L"CFInstanceIfrPost");
+  SimpleBrowserTest(FIREFOX, kCFIIfrPostPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceIfrPost) {
-  SimpleBrowserTest(CHROME, kCFIIfrPostPage, L"CFInstanceIfrPost");
+  SimpleBrowserTest(CHROME, kCFIIfrPostPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceIfrPost) {
-  OptionalBrowserTest(SAFARI, kCFIIfrPostPage, L"CFInstanceIfrPost");
+  OptionalBrowserTest(SAFARI, kCFIIfrPostPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceIfrPost) {
-  OptionalBrowserTest(OPERA, kCFIIfrPostPage, L"CFInstanceIfrPost");
+  OptionalBrowserTest(OPERA, kCFIIfrPostPage);
 }
 
-const wchar_t kCFIPostPage[] = L"files/CFInstance_post_host.html";
+const wchar_t kCFIPostPage[] = L"CFInstance_post_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstancePost) {
-  SimpleBrowserTest(IE, kCFIPostPage, L"CFInstancePost");
+  SimpleBrowserTest(IE, kCFIPostPage);
 }
 
 // This test randomly fails on the ChromeFrame builder.
 // Bug http://code.google.com/p/chromium/issues/detail?id=31532
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstancePost) {
-  SimpleBrowserTest(FIREFOX, kCFIPostPage, L"CFInstancePost");
+  SimpleBrowserTest(FIREFOX, kCFIPostPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstancePost) {
-  SimpleBrowserTest(CHROME, kCFIPostPage, L"CFInstancePost");
+  SimpleBrowserTest(CHROME, kCFIPostPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstancePost) {
-  OptionalBrowserTest(SAFARI, kCFIPostPage, L"CFInstancePost");
+  OptionalBrowserTest(SAFARI, kCFIPostPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_CFInstancePost) {
-  OptionalBrowserTest(OPERA, kCFIPostPage, L"CFInstancePost");
+  OptionalBrowserTest(OPERA, kCFIPostPage);
 }
 
-const wchar_t kCFIRPCPage[] = L"files/CFInstance_rpc_host.html";
+const wchar_t kCFIRPCPage[] = L"CFInstance_rpc_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPC) {
-  SimpleBrowserTest(IE, kCFIRPCPage, L"CFInstanceRPC");
+  SimpleBrowserTest(IE, kCFIRPCPage);
 }
 
 // This test randomly fails on the ChromeFrame builder.
 // Bug http://code.google.com/p/chromium/issues/detail?id=31532
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceRPC) {
-  SimpleBrowserTest(FIREFOX, kCFIRPCPage, L"CFInstanceRPC");
+  SimpleBrowserTest(FIREFOX, kCFIRPCPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceRPC) {
-  SimpleBrowserTest(CHROME, kCFIRPCPage, L"CFInstanceRPC");
+  SimpleBrowserTest(CHROME, kCFIRPCPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceRPC) {
-  OptionalBrowserTest(SAFARI, kCFIRPCPage, L"CFInstanceRPC");
+  OptionalBrowserTest(SAFARI, kCFIRPCPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_CFInstanceRPC) {
-  OptionalBrowserTest(OPERA, kCFIRPCPage, L"CFInstanceRPC");
+  OptionalBrowserTest(OPERA, kCFIRPCPage);
 }
 
 const wchar_t kCFIRPCInternalPage[] =
-    L"files/CFInstance_rpc_internal_host.html";
+    L"CFInstance_rpc_internal_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPCInternal) {
-  SimpleBrowserTest(IE, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
+  SimpleBrowserTest(IE, kCFIRPCInternalPage);
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=37204
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceRPCInternal) {
-  SimpleBrowserTest(FIREFOX, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
+  SimpleBrowserTest(FIREFOX, kCFIRPCInternalPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceRPCInternal) {
-  SimpleBrowserTest(CHROME, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
+  SimpleBrowserTest(CHROME, kCFIRPCInternalPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceRPCInternal) {
-  OptionalBrowserTest(SAFARI, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
+  OptionalBrowserTest(SAFARI, kCFIRPCInternalPage);
 }
 
 const wchar_t kCFIDefaultCtorPage[] =
-    L"files/CFInstance_default_ctor_host.html";
+    L"CFInstance_default_ctor_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceDefaultCtor) {
-  SimpleBrowserTest(IE, kCFIDefaultCtorPage, L"CFInstanceDefaultCtor");
+  SimpleBrowserTest(IE, kCFIDefaultCtorPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceDefaultCtor) {
-  SimpleBrowserTest(FIREFOX, kCFIDefaultCtorPage, L"CFInstanceDefaultCtor");
+  SimpleBrowserTest(FIREFOX, kCFIDefaultCtorPage);
 }
 
-const wchar_t kCFInstallBasicTestPage[] = L"files/CFInstall_basic.html";
+const wchar_t kCFInstallBasicTestPage[] = L"CFInstall_basic.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallBasic) {
-  SimpleBrowserTest(IE, kCFInstallBasicTestPage, L"CFInstallBasic");
+  SimpleBrowserTest(IE, kCFInstallBasicTestPage);
 }
 
-const wchar_t kCFInstallPlaceTestPage[] = L"files/CFInstall_place.html";
+const wchar_t kCFInstallPlaceTestPage[] = L"CFInstall_place.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallPlace) {
-  SimpleBrowserTest(IE, kCFInstallPlaceTestPage, L"CFInstallPlace");
+  SimpleBrowserTest(IE, kCFInstallPlaceTestPage);
 }
 
-const wchar_t kCFInstallOverlayTestPage[] = L"files/CFInstall_overlay.html";
+const wchar_t kCFInstallOverlayTestPage[] = L"CFInstall_overlay.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallOverlay) {
-  SimpleBrowserTest(IE, kCFInstallOverlayTestPage, L"CFInstallOverlay");
+  SimpleBrowserTest(IE, kCFInstallOverlayTestPage);
 }
 
-const wchar_t kCFInstallDismissTestPage[] = L"files/CFInstall_dismiss.html";
+const wchar_t kCFInstallDismissTestPage[] = L"CFInstall_dismiss.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallDismiss) {
-  SimpleBrowserTest(IE, kCFInstallDismissTestPage, L"CFInstallDismiss");
+  SimpleBrowserTest(IE, kCFInstallDismissTestPage);
 }
 
-const wchar_t kInitializeHiddenPage[] = L"files/initialize_hidden.html";
+const wchar_t kInitializeHiddenPage[] = L"initialize_hidden.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_InitializeHidden) {
-  SimpleBrowserTest(IE, kInitializeHiddenPage, L"InitializeHidden");
+  SimpleBrowserTest(IE, kInitializeHiddenPage);
 }
 
-const wchar_t kFullTabHttpHeaderPage[] = L"files/chrome_frame_http_header.html";
+const wchar_t kFullTabHttpHeaderPage[] = L"chrome_frame_http_header.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderBasic) {
-  SimpleBrowserTest(IE, kFullTabHttpHeaderPage, L"FullTabHttpHeader");
+  SimpleBrowserTest(IE, kFullTabHttpHeaderPage);
 }
 
 const wchar_t kFullTabHttpHeaderPageIFrame[] =
-    L"files/chrome_frame_http_header_host.html";
+    L"chrome_frame_http_header_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderIFrame) {
-  SimpleBrowserTest(IE, kFullTabHttpHeaderPageIFrame,
-                    L"FullTabHttpHeaderIFrame");
+  SimpleBrowserTest(IE, kFullTabHttpHeaderPageIFrame);
 }
 
 const wchar_t kFullTabHttpHeaderPageFrameset[] =
-    L"files/chrome_frame_http_header_frameset.html";
+    L"chrome_frame_http_header_frameset.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderFrameSet) {
-  SimpleBrowserTest(IE, kFullTabHttpHeaderPageFrameset,
-                    L"FullTabHttpHeaderFrameset");
+  SimpleBrowserTest(IE, kFullTabHttpHeaderPageFrameset);
 }
 
 // Flaky on the build bots. See http://crbug.com/30622
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_InitializeHidden) {
-  SimpleBrowserTest(FIREFOX, kInitializeHiddenPage, L"InitializeHidden");
+  SimpleBrowserTest(FIREFOX, kInitializeHiddenPage);
 }
 
 // Disabled due to a problem with Opera.
 // http://b/issue?id=1708275
 TEST_F(ChromeFrameTestWithWebServer,
        DISABLED_WidgetModeOpera_InitializeHidden) {
-  OptionalBrowserTest(OPERA, kInitializeHiddenPage, L"InitializeHidden");
+  OptionalBrowserTest(OPERA, kInitializeHiddenPage);
 }
 
-const wchar_t kInHeadPage[] = L"files/in_head.html";
+const wchar_t kInHeadPage[] = L"in_head.html";
 
 // Flaky on build bots. See http://crbug.com/37009
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_InHead) {
-  SimpleBrowserTest(FIREFOX, kInHeadPage, L"InHead");
+  SimpleBrowserTest(FIREFOX, kInHeadPage);
 }
 
-const wchar_t kVersionPage[] = L"files/version.html";
+const wchar_t kVersionPage[] = L"version.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_Version) {
-  VersionTest(IE, kVersionPage, L"version");
+  VersionTest(IE, kVersionPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_Version) {
-  VersionTest(FIREFOX, kVersionPage, L"version");
+  VersionTest(FIREFOX, kVersionPage);
 }
 
-const wchar_t kEventListenerPage[] = L"files/event_listener.html";
+const wchar_t kEventListenerPage[] = L"event_listener.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_EventListener) {
-  SimpleBrowserTest(IE, kEventListenerPage, L"EventListener");
+  SimpleBrowserTest(IE, kEventListenerPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_EventListener) {
-  SimpleBrowserTest(FIREFOX, kEventListenerPage, L"EventListener");
+  SimpleBrowserTest(FIREFOX, kEventListenerPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_EventListener) {
-  OptionalBrowserTest(OPERA, kEventListenerPage, L"EventListener");
+  OptionalBrowserTest(OPERA, kEventListenerPage);
 }
 
-const wchar_t kPrivilegedApisPage[] = L"files/privileged_apis_host.html";
+const wchar_t kPrivilegedApisPage[] = L"privileged_apis_host.html";
 
 // http://crbug.com/32321
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_PrivilegedApis) {
-  SimpleBrowserTest(IE, kPrivilegedApisPage, L"PrivilegedApis");
+  SimpleBrowserTest(IE, kPrivilegedApisPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_PrivilegedApis) {
-  SimpleBrowserTest(FIREFOX, kPrivilegedApisPage, L"PrivilegedApis");
+  SimpleBrowserTest(FIREFOX, kPrivilegedApisPage);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_PrivilegedApis) {
-  OptionalBrowserTest(OPERA, kPrivilegedApisPage, L"PrivilegedApis");
+  OptionalBrowserTest(OPERA, kPrivilegedApisPage);
 }
 
-const wchar_t kMetaTagPage[] = L"files/meta_tag.html";
+const wchar_t kMetaTagPage[] = L"meta_tag.html";
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_MetaTag) {
-  SimpleBrowserTest(IE, kMetaTagPage, L"meta_tag");
+  SimpleBrowserTest(IE, kMetaTagPage);
 }
 
-const wchar_t kCFProtocolPage[] = L"files/cf_protocol.html";
+const wchar_t kCFProtocolPage[] = L"cf_protocol.html";
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFProtocol) {
   // Temporarily enable  gcf: protocol for this test.
   SetConfigBool(kAllowUnsafeURLs, true);
-  SimpleBrowserTest(IE, kCFProtocolPage, L"chrome_frame_protocol");
+  SimpleBrowserTest(IE, kCFProtocolPage);
   SetConfigBool(kAllowUnsafeURLs, false);
 }
 
 const wchar_t kPersistentCookieTest[] =
-    L"files/persistent_cookie_test_page.html";
+    L"persistent_cookie_test_page.html";
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_PersistentCookieTest) {
-  SimpleBrowserTest(IE, kPersistentCookieTest, L"PersistentCookieTest");
+  SimpleBrowserTest(IE, kPersistentCookieTest);
 }
 
 // This test has been disabled because we need a better way to navigate out
 // of chrome frame and detect it.
-const wchar_t kNavigateOutPage[] = L"files/navigate_out.html";
+const wchar_t kNavigateOutPage[] = L"navigate_out.html";
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_NavigateOut) {
-  SimpleBrowserTest(IE, kNavigateOutPage, L"navigate_out");
+  SimpleBrowserTest(IE, kNavigateOutPage);
 }
 
-const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
+const wchar_t kReferrerMainTest[] = L"referrer_main.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
-  SimpleBrowserTest(IE, kReferrerMainTest, L"FullTab_ReferrerTest");
+  SimpleBrowserTest(IE, kReferrerMainTest);
 }
 
-const wchar_t kSubFrameTestPage[] = L"files/full_tab_sub_frame_main.html";
+const wchar_t kSubFrameTestPage[] = L"full_tab_sub_frame_main.html";
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SubFrame) {
-  SimpleBrowserTest(IE, kSubFrameTestPage, L"sub_frame");
+  SimpleBrowserTest(IE, kSubFrameTestPage);
 }
 
-const wchar_t kSubIFrameTestPage[] = L"files/full_tab_sub_iframe_main.html";
+const wchar_t kSubIFrameTestPage[] = L"full_tab_sub_iframe_main.html";
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SubIFrame) {
-  SimpleBrowserTest(IE, kSubIFrameTestPage, L"sub_frame");
+  SimpleBrowserTest(IE, kSubIFrameTestPage);
 }
 
 const wchar_t kXMLHttpRequestTestUrl[] =
-    L"files/xmlhttprequest_test.html";
+    L"xmlhttprequest_test.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRTest) {
-  chrome_frame_test::TimedMsgLoop loop;
-  ASSERT_TRUE(LaunchBrowser(IE, kXMLHttpRequestTestUrl));
-
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
-
-  chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(CheckResultFile(L"FullTab_XMLHttpRequestTest", "OK"));
+  SimpleBrowserTest(IE, kXMLHttpRequestTestUrl);
 }
 
 const wchar_t kInstallFlowTestUrl[] =
-    L"files/install_flow_test.html";
+    L"install_flow_test.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
   if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
-    chrome_frame_test::TimedMsgLoop loop;
     ScopedChromeFrameRegistrar::UnregisterAtPath(
         ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value());
 
     ASSERT_TRUE(LaunchBrowser(IE, kInstallFlowTestUrl));
 
-    loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+    loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
     ScopedChromeFrameRegistrar::RegisterAtPath(
         ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value());
 
-    loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+    server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
+                                             kPostedResultSubstring);
+    loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
     chrome_frame_test::CloseAllIEWindows();
-    ASSERT_TRUE(CheckResultFile(L"FullTab_InstallFlowTest", "OK"));
+    ASSERT_EQ("OK", server_mock_.posted_result());
   }
 }
 
 const wchar_t kMultipleCFInstancesTestUrl[] =
-    L"files/multiple_cf_instances_main.html";
+    L"multiple_cf_instances_main.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_MultipleCFInstances) {
-  SimpleBrowserTest(IE, kMultipleCFInstancesTestUrl,
-                    L"WidgetMode_MultipleInstancesTest");
+  SimpleBrowserTest(IE, kMultipleCFInstancesTestUrl);
 }
 
 // TODO(ananta)
 // Disabled until I figure out why this does not work on Firefox.
 TEST_F(ChromeFrameTestWithWebServer,
        DISABLED_WidgetModeFF_MultipleCFInstances) {
-  SimpleBrowserTest(FIREFOX, kMultipleCFInstancesTestUrl,
-                    L"WidgetMode_MultipleInstancesTest");
+  SimpleBrowserTest(FIREFOX, kMultipleCFInstancesTestUrl);
 }
 
 const wchar_t kXHRAuthHeaderTestUrl[] =
-    L"files/xmlhttprequest_authorization_header_test.html";
+    L"xmlhttprequest_authorization_header_test.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRAuthHeaderTest) {
-  chrome_frame_test::TimedMsgLoop loop;
-  ASSERT_TRUE(LaunchBrowser(IE, kXHRAuthHeaderTestUrl));
-
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
-
-  chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(CheckResultFile(L"FullTabModeIE_XHRAuthHeaderTest", "OK"));
+  SimpleBrowserTest(IE, kXHRAuthHeaderTestUrl);
 }
 
 const wchar_t kDeleteCookieTest[] =
-    L"files/fulltab_delete_cookie_test.html";
+    L"fulltab_delete_cookie_test.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_DeleteCookieTest) {
-  chrome_frame_test::TimedMsgLoop loop;
-  ASSERT_TRUE(LaunchBrowser(IE, kDeleteCookieTest));
-
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
-
-  chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(CheckResultFile(L"FullTab_DeleteCookieTest", "OK"));
+  SimpleBrowserTest(IE, kDeleteCookieTest);
 }
 
 const wchar_t kAnchorUrlNavigate[] =
-    L"files/fulltab_anchor_url_navigate.html#chrome_frame";
+    L"fulltab_anchor_url_navigate.html#chrome_frame";
 
 // http://code.google.com/p/chromium/issues/detail?id=35341
 TEST_F(ChromeFrameTestWithWebServer,
@@ -883,13 +927,7 @@ TEST_F(ChromeFrameTestWithWebServer,
     return;
   }
 
-  chrome_frame_test::TimedMsgLoop loop;
-  ASSERT_TRUE(LaunchBrowser(IE, kAnchorUrlNavigate));
-
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
-
-  chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(CheckResultFile(L"FullTab_AnchorURLNavigateTest", "OK"));
+  SimpleBrowserTest(IE, kAnchorUrlNavigate);
 }
 
 // Test whether POST-ing a form from an mshtml page to a CF page will cause
@@ -899,8 +937,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
     LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
     return;
   }
-
-  chrome_frame_test::TimedMsgLoop loop;  // must come before the server.
 
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
@@ -914,7 +950,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
   const test_server::Request* request = NULL;
   server.FindRequest("/quit?OK", &request);
@@ -937,8 +973,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
     return;
   }
 
-  chrome_frame_test::TimedMsgLoop loop;  // must come before the server.
-
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
     L"full_tab_get_mshtml.html",
@@ -952,7 +986,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
   const test_server::Request* request = NULL;
   server.FindRequest("/quit?OK", &request);
@@ -968,29 +1002,16 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
 }
 
 const wchar_t kSetCookieTest[] =
-    L"files/fulltab_set_cookie_test.html";
+    L"fulltab_set_cookie_test.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SetCookieTest) {
-  chrome_frame_test::TimedMsgLoop loop;
-  ASSERT_TRUE(LaunchBrowser(IE, kSetCookieTest));
-
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
-
-  chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(CheckResultFile(L"FullTab_SetCookieTest", "OK"));
+  SimpleBrowserTest(IE, kSetCookieTest);
 }
 
 const wchar_t kXHRConditionalHeaderTestUrl[] =
-    L"files/xmlhttprequest_conditional_header_test.html";
+    L"xmlhttprequest_conditional_header_test.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRConditionalHeaderTest) {
-  chrome_frame_test::TimedMsgLoop loop;
-  ASSERT_TRUE(LaunchBrowser(IE, kXHRConditionalHeaderTestUrl));
-
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
-
-  chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(CheckResultFile(L"FullTab_XMLHttpRequestConditionalHeaderTest",
-                              "OK"));
+  SimpleBrowserTest(IE, kXHRConditionalHeaderTestUrl);
 }
 

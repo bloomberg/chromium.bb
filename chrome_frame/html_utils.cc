@@ -386,4 +386,14 @@ bool HasFrameBustingHeader(const std::string& http_headers) {
   return false;
 }
 
+std::string GetHttpHeaderFromHeaderList(const std::string& header,
+                                        const std::string& headers) {
+  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\r\n");
+  while (it.GetNext()) {
+    if (!lstrcmpiA(it.name().c_str(), header.c_str()))
+      return std::string(it.values_begin(), it.values_end());
+  }
+  return std::string();
+}
+
 }  // namespace http_utils

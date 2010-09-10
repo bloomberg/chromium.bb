@@ -42,19 +42,6 @@ function getXHRObject(){
 
 var reportURL = "/writefile/";
 
-function shutdownServer() {
-  var xhr = getXHRObject();
-  if(!xhr)
-    return;
-
-  xhr.open("POST", "/kill", false);
-  try {
-    xhr.send(null);
-  } catch(e) {
-    appendStatus("XHR send failed. Error: " + e.description);
-  }
-}
-
 // Optionally send the server a notification that onload was fired.
 // To be called from within window.onload.
 function sendOnLoadEvent() {
@@ -66,8 +53,8 @@ function writeToServer(name, result) {
   if(!xhr)
     return;
 
-  // synchronously POST the results
-  xhr.open("POST", reportURL + name, false);
+  // asynchronously POST the results
+  xhr.open("POST", reportURL + name, true);
   xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
   try {
     xhr.send(result);
@@ -78,9 +65,6 @@ function writeToServer(name, result) {
 
 function postResult(name, result) {
   writeToServer(name, result);
-  // NOTE:
-  //  not watching for failure or return status issues. What should we do here?
-  shutdownServer();
 }
 
 // Finish running a test by setting the status

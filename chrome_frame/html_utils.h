@@ -148,6 +148,9 @@ const char* GetChromeFrameUserAgent();
 // the list with a value other than ALLOWALL, this returns true.
 bool HasFrameBustingHeader(const std::string& http_headers);
 
+// Returns the header passed in from the headers list.
+std::string GetHttpHeaderFromHeaderList(const std::string& header_name,
+                                        const std::string& headers);
 }  // namespace http_utils
 
 #endif  // CHROME_FRAME_HTML_UTILS_H_

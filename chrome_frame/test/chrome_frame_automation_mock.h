@@ -13,6 +13,7 @@
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/test/http_server.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/test_with_web_server.h"
 #include "chrome_frame/utils.h"
 
 template <typename T>
@@ -26,8 +27,11 @@ class AutomationMockDelegate
       const std::wstring& extra_chrome_arguments, bool incognito,
       bool is_widget_mode)
       : caller_message_loop_(caller_message_loop), is_connected_(false),
-        navigation_result_(false) {
-    test_server_.SetUp();
+        navigation_result_(false),
+        mock_server_(1337, L"127.0.0.1",
+            chrome_frame_test::GetTestDataFolder()) {
+
+    mock_server_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
     FilePath profile_path(
         chrome_frame_test::GetProfilePath(profile_name));
@@ -48,8 +52,6 @@ class AutomationMockDelegate
     }
     if (IsWindow())
       DestroyWindow();
-
-    test_server_.TearDown();
   }
 
   // Navigate external tab to the specified url through automation
@@ -76,7 +78,7 @@ class AutomationMockDelegate
   }
 
   bool NavigateRelative(const std::wstring& relative_url) {
-    return Navigate(test_server_.Resolve(relative_url.c_str()).spec());
+    return Navigate(WideToUTF8(mock_server_.Resolve(relative_url.c_str())));
   }
 
   virtual void OnAutomationServerReady() {
@@ -130,7 +132,7 @@ class AutomationMockDelegate
   }
 
  private:
-  ChromeFrameHTTPServer test_server_;
+  testing::StrictMock<MockWebServer> mock_server_;
   MessageLoop* caller_message_loop_;
   GURL url_;
   bool is_connected_;
