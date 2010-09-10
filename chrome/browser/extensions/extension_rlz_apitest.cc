@@ -55,10 +55,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
              KEY_READ);
   ASSERT_FALSE(key.Valid());
 
-  key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\D",
-           KEY_READ);
-  ASSERT_FALSE(key.Valid());
-
   // Mock out experimental.rlz.sendFinancialPing().
   ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
       "experimental.rlz.sendFinancialPing",
@@ -70,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   // Now run all the tests.
   ASSERT_TRUE(RunExtensionTest("rlz")) << message_;
 
-  ASSERT_EQ(3, MockRlzSendFinancialPingFunction::expected_count());
+  ASSERT_EQ(1, MockRlzSendFinancialPingFunction::expected_count());
   ExtensionFunctionDispatcher::ResetFunctions();
 
   // Now make sure we recorded what was expected.  If the code in test.js

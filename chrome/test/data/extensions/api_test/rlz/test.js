@@ -135,30 +135,11 @@ chrome.test.runTests([
     } catch(ex) {
     }
 
-    // Valid call.  Should send a ping.
-    chrome.experimental.rlz.sendFinancialPing('D', ['D3'], 'sig', 'TEST',
-                                              'id', 'en', false,
-                                              function(sent) {
-                                                if (sent) {
-                                                  chrome.test.succeed();
-                                                } else {
-                                                  chrome.test.fail();
-                                                }
-                                              });
-
-    // Try another call, this time the ping should not be sent.
-    chrome.experimental.rlz.sendFinancialPing('D', ['D3'], 'sig', 'TEST',
-                                              'id', 'en', false,
-                                              function(sent) {
-                                                if (sent) {
-                                                  chrome.test.fail();
-                                                } else {
-                                                  chrome.test.succeed();
-                                                }
-                                              });
-
-    // Valid call.  Test that callback does not need to be specified.
+    // Valid call.
     chrome.experimental.rlz.sendFinancialPing('D', ['D3'], 'sig', 'TEST',
                                               'id', 'en', false);
+
+    chrome.test.succeed();
   }
 ]);
+
