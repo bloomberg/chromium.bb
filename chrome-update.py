@@ -133,7 +133,7 @@ def Main():
                     help="doesn't sync before building")
   parser.add_option("", "--print-latest", action="store_true", default=False,
                     help="print the latest buildable revision and exit")
-  options, args = parser.parse_args()
+  options, args = parser.parse_args(None)
 
   if options.print_latest:
     print GetRevision() or "HEAD"

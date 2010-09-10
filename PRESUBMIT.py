@@ -25,6 +25,7 @@ def CheckChangeOnUpload(input_api, output_api):
                                                            output_api,
                                                            UNIT_TESTS))
   output.extend(WasGitClUploadHookModified(input_api, output_api))
+  output.extend(RunPylint(input_api, output_api))
   return output
 
 
@@ -36,6 +37,7 @@ def CheckChangeOnCommit(input_api, output_api):
   output.extend(input_api.canned_checks.CheckDoNotSubmit(input_api,
                                                          output_api))
   output.extend(WasGitClUploadHookModified(input_api, output_api))
+  output.extend(RunPylint(input_api, output_api))
   return output
 
 def WasGitClUploadHookModified(input_api, output_api):
@@ -45,4 +47,17 @@ def WasGitClUploadHookModified(input_api, output_api):
       return [output_api.PresubmitPromptWarning(
           'Don\'t forget to fix git-cl to download the newest version of '
           'git-cl-upload-hook')]
+  return []
+
+def RunPylint(input_api, output_api):
+  import glob
+  files = glob.glob('*.py')
+  # It's a python script
+  files.append('git-try')
+  # It uses non-standard pylint exceptions that makes pylint always fail.
+  files.remove('cpplint.py')
+  proc = input_api.subprocess.Popen(['pylint', '-E'] + files)
+  proc.communicate()
+  if proc.returncode:
+    return [output_api.PresubmitError('Fix pylint errors first.')]
   return []

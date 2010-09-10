@@ -588,18 +588,18 @@ class Change(object):
 
     # From the description text, build up a dictionary of key/value pairs
     # plus the description minus all key/value or "tag" lines.
-    self._description_without_tags = []
+    description_without_tags = []
     self.tags = {}
     for line in self._full_description.splitlines():
       m = self._TAG_LINE_RE.match(line)
       if m:
         self.tags[m.group('key')] = m.group('value')
       else:
-        self._description_without_tags.append(line)
+        description_without_tags.append(line)
 
     # Change back to text and remove whitespace at end.
-    self._description_without_tags = '\n'.join(self._description_without_tags)
-    self._description_without_tags = self._description_without_tags.rstrip()
+    self._description_without_tags = (
+        '\n'.join(description_without_tags).rstrip())
 
     self._affected_files = [
         self._AFFECTED_FILES(info[1], info[0].strip(), self._local_root)
