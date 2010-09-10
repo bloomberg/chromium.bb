@@ -489,15 +489,15 @@ bool AccObjectMatcher::DoesMatch(AccObject* object) const {
   std::wstring name, role_text, value;
   if (name_.length()) {
     object->GetName(&name);
-    does_match = MatchPatternWide(name, name_);
+    does_match = MatchPattern(name, name_);
   }
   if (does_match && role_text_.length()) {
     object->GetRoleText(&role_text);
-    does_match = MatchPatternWide(role_text, role_text_);
+    does_match = MatchPattern(role_text, role_text_);
   }
   if (does_match && value_.length()) {
     object->GetValue(&value);
-    does_match = MatchPatternWide(value, value_);
+    does_match = MatchPattern(value, value_);
   }
   return does_match;
 }

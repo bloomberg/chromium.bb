@@ -1,4 +1,4 @@
-// Copyright 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ bool UrlMatchesGlobs(const std::vector<std::string>* globs,
                      const GURL& url) {
   for (std::vector<std::string>::const_iterator glob = globs->begin();
        glob != globs->end(); ++glob) {
-    if (MatchPatternASCII(url.spec(), *glob))
+    if (MatchPattern(url.spec(), *glob))
       return true;
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -354,7 +354,7 @@ const std::string& GetUserAgent(const GURL& url) {
   if (!g_user_agent->user_agent_is_overridden) {
     // Workarounds for sites that use misguided UA sniffing.
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-    if (MatchPatternASCII(url.host(), "*.mail.yahoo.com")) {
+    if (MatchPattern(url.host(), "*.mail.yahoo.com")) {
       // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
       // http://bugs.chromium.org/11136
       // TODO(evanm): remove this if Yahoo fixes their sniffing.

@@ -97,7 +97,7 @@ class ExtensionManifestTest : public testing::Test {
     EXPECT_FALSE(extension) <<
         "Expected failure loading extension '" << name <<
         "', but didn't get one.";
-    EXPECT_TRUE(MatchPatternASCII(error, expected_error)) << name <<
+    EXPECT_TRUE(MatchPattern(error, expected_error)) << name <<
         " expected '" << expected_error << "' but got '" << error << "'";
   }
 

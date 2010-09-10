@@ -126,7 +126,7 @@ std::vector<FilePath> ImageDecoderTest::GetImageFiles() const {
 #else
     std::string base_name_ascii = base_name.value();
 #endif
-    if (!MatchPatternASCII(base_name_ascii, pattern))
+    if (!MatchPattern(base_name_ascii, pattern))
       continue;
     image_files.push_back(next_file_name);
   }

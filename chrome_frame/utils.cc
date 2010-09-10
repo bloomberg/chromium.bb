@@ -719,7 +719,7 @@ bool IsOptInUrl(const wchar_t* url) {
   bool match_found = false;
   RegistryValueIterator url_list(config_key.Handle(), url_list_name);
   while (!match_found && url_list.Valid()) {
-    if (MatchPatternWide(url, url_list.Name())) {
+    if (MatchPattern(url, url_list.Name())) {
       match_found = true;
     } else {
       ++url_list;
@@ -1437,4 +1437,3 @@ void PinModule() {
     }
   }
 }
-

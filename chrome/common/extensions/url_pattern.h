@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CHROME_COMMON_EXTENSIONS_URL_PATTERN_H_
@@ -207,8 +207,8 @@ class URLPattern {
   std::string path_;
 
   // The path with "?" and "\" characters escaped for use with the
-  // MatchPatternASCII() function. This is populated lazily, the first time it
-  // is needed.
+  // MatchPattern() function. This is populated lazily, the first time it is
+  // needed.
   mutable std::string path_escaped_;
 };
 
