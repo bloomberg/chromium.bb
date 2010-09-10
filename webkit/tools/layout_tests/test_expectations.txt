@@ -19,7 +19,7 @@ BUG52841 MAC : editing/selection/drag-in-iframe.html = IMAGE
 // Still failing, should be moved upstream.
 BUGWK44945 MAC : fast/files/apply-blob-url-to-img.html = IMAGE
 
-// Newly added test apparently misbehaves.  
+// Newly added test apparently misbehaves.
 BUGWK45102 : media/media-can-play-mpeg4-video.html = TEXT
 
 // Upstream test_expectations.txt contains the entry for it as TEXT. We need to
@@ -34,5 +34,5 @@ BUGWK45479 : fast/dom/HTMLLinkElement/prefetch.html = TEXT
 
 // dpranke - Temporary overrides until I can sort out the WK rolls
 BUGDIRK : fast/dom/dataset-gc.html = TEXT
-BUGDIRK : svg/repaint/filter-repaint.svg = CRASH
+BUGDIRK WIN LINUX : svg/repaint/filter-repaint.svg = CRASH IMAGE+TEXT
 BUGDIRK LINUX : svg/dynamic-updates/SVGFEDiffuseLightingElement-lighting-color-css-prop.html = IMAGE
