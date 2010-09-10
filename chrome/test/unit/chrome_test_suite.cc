@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/test_timeouts.h"
 #include "chrome/test/testing_browser_process.h"
 
 #if defined(OS_MACOSX)
@@ -89,6 +90,8 @@ void ChromeTestSuite::Initialize() {
   chrome::RegisterPathProvider();
   app::RegisterPathProvider();
   g_browser_process = new TestingBrowserProcess;
+
+  TestTimeouts::Initialize();
 
   if (!browser_dir_.empty()) {
     PathService::Override(base::DIR_EXE, browser_dir_);

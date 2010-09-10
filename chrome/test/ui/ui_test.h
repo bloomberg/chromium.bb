@@ -30,6 +30,7 @@
 // AutomationProxy here, but many files that #include this one don't
 // themselves #include automation_proxy.h.
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/test_timeouts.h"
 #include "testing/platform_test.h"
 
 class AutomationProxy;
@@ -64,14 +65,14 @@ class UITestBase {
   // Closes the browser window.
   virtual void TearDown();
 
-  // Set up the test time out values.
-  virtual void InitializeTimeouts();
-
  public:
   // ********* Utility functions *********
 
   // Launches the browser and IPC testing server.
   void LaunchBrowserAndServer();
+
+  // Only for pyauto.
+  void set_command_execution_timeout_ms(int timeout);
 
   // Overridable so that derived classes can provide their own AutomationProxy.
   virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
@@ -311,11 +312,6 @@ class UITestBase {
     dump_histograms_on_exit_ = value;
   }
 
-  static int test_timeout_ms() { return timeout_ms_; }
-  static void set_test_timeout_ms(int value) {
-    timeout_ms_ = value;
-  }
-
   static const std::string& js_flags() { return js_flags_; }
   static void set_js_flags(const std::string& value) {
     js_flags_ = value;
@@ -359,22 +355,23 @@ class UITestBase {
   // Return the process id of the browser process (-1 on error).
   base::ProcessId browser_process_id() const { return process_id_; }
 
-  // Timeout accessors.
-  void set_command_execution_timeout_ms(int timeout);
-
-  int command_execution_timeout_ms() const {
-    return command_execution_timeout_ms_;
+  // Compatibility timeout accessors.
+  // TODO(phajdan.jr): update callers and remove these.
+  static int command_execution_timeout_ms() {
+    return TestTimeouts::command_execution_timeout_ms();
   }
-
-  int action_timeout_ms() const { return action_timeout_ms_; }
-
-  void set_action_timeout_ms(int timeout) {
-    action_timeout_ms_ = timeout;
+  static int action_timeout_ms() {
+    return TestTimeouts::action_timeout_ms();
   }
-
-  int action_max_timeout_ms() const { return action_max_timeout_ms_; }
-
-  int sleep_timeout_ms() const { return sleep_timeout_ms_; }
+  static int action_max_timeout_ms() {
+    return TestTimeouts::action_max_timeout_ms();
+  }
+  static int sleep_timeout_ms() {
+    return TestTimeouts::sleep_timeout_ms();
+  }
+  static int test_timeout_ms() {
+    return TestTimeouts::large_test_timeout_ms();
+  }
 
   void set_ui_test_name(const std::string& name) {
     ui_test_name_ = name;
@@ -541,12 +538,6 @@ class UITestBase {
   static std::string log_level_;        // Logging level.
 
   scoped_ptr<AutomationProxy> server_;
-
-  int command_execution_timeout_ms_;
-  int action_timeout_ms_;
-  int action_max_timeout_ms_;
-  int sleep_timeout_ms_;
-  int terminate_timeout_ms_;
 
   std::string ui_test_name_;
 

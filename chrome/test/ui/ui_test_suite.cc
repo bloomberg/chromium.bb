@@ -13,9 +13,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 
-// Timeout for the test in milliseconds.  UI tests only.
-const char UITestSuite::kTestTimeout[] = "test-timeout";
-
 // Parameters to run test in parallel.  UI tests only.
 const char UITestSuite::kBatchCount[] = "batch-count";
 const char UITestSuite::kBatchIndex[] = "batch-index";
@@ -50,13 +47,6 @@ void UITestSuite::Initialize() {
       parsed_command_line.HasSwitch(switches::kSilentDumpOnDCHECK));
   UITest::set_disable_breakpad(
       parsed_command_line.HasSwitch(switches::kDisableBreakpad));
-  std::string test_timeout =
-      parsed_command_line.GetSwitchValueASCII(UITestSuite::kTestTimeout);
-  if (!test_timeout.empty()) {
-    int timeout;
-    base::StringToInt(test_timeout, &timeout);
-    UITest::set_test_timeout_ms(timeout);
-  }
 
 #if defined(OS_WIN)
   int batch_count = 0;

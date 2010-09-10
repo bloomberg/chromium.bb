@@ -43,6 +43,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/chrome_process_util.h"
+#include "chrome/test/test_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -55,13 +56,6 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 
-// Delay to let browser complete a requested action.
-static const int kWaitForActionMsec = 2000;
-static const int kWaitForActionMaxMsec = 15000;
-// Command execution timeout passed to AutomationProxy.
-static const int kCommandExecutionTimeout = 25000;
-// Delay to let the browser shut down before trying more brutal methods.
-static const int kWaitForTerminateMsec = 15000;
 // Passed as value of kTestType.
 static const char kUITestType[] = "ui";
 
@@ -85,24 +79,8 @@ bool UITestBase::dump_histograms_on_exit_ = false;
 bool UITestBase::enable_dcheck_ = false;
 bool UITestBase::silent_dump_on_dcheck_ = false;
 bool UITestBase::disable_breakpad_ = false;
-int UITestBase::timeout_ms_ = 10 * 60 * 1000;
 std::string UITestBase::js_flags_ = "";
 std::string UITestBase::log_level_ = "";
-
-// Specify the time (in milliseconds) that the ui_tests should wait before
-// timing out. This is used to specify longer timeouts when running under Purify
-// which requires much more time.
-const char kUiTestTimeout[] = "ui-test-timeout";
-const char kUiTestActionTimeout[] = "ui-test-action-timeout";
-const char kUiTestActionMaxTimeout[] = "ui-test-action-max-timeout";
-const char kUiTestSleepTimeout[] = "ui-test-sleep-timeout";
-const char kUiTestTerminateTimeout[] = "ui-test-terminate-timeout";
-
-const char kExtraChromeFlagsSwitch[] = "extra-chrome-flags";
-
-// By default error dialogs are hidden, which makes debugging failures in the
-// slave process frustrating. By passing this in error dialogs are enabled.
-const char kEnableErrorDialogs[] = "enable-errdialogs";
 
 // Uncomment this line to have the spawned process wait for the debugger to
 // attach.  This only works on Windows.  On posix systems, you can set the
@@ -125,11 +103,6 @@ UITestBase::UITestBase()
       profile_type_(UITestBase::DEFAULT_THEME),
       shutdown_type_(UITestBase::WINDOW_CLOSE),
       test_start_time_(Time::NowFromSystemTime()),
-      command_execution_timeout_ms_(kCommandExecutionTimeout),
-      action_timeout_ms_(kWaitForActionMsec),
-      action_max_timeout_ms_(kWaitForActionMaxMsec),
-      sleep_timeout_ms_(kWaitForActionMsec),
-      terminate_timeout_ms_(kWaitForTerminateMsec),
       temp_profile_dir_(new ScopedTempDir()) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
@@ -150,12 +123,7 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
       shutdown_type_(UITestBase::WINDOW_CLOSE),
-      test_start_time_(Time::NowFromSystemTime()),
-      command_execution_timeout_ms_(kCommandExecutionTimeout),
-      action_timeout_ms_(kWaitForActionMsec),
-      action_max_timeout_ms_(kWaitForActionMaxMsec),
-      sleep_timeout_ms_(kWaitForActionMsec),
-      terminate_timeout_ms_(kWaitForTerminateMsec) {
+      test_start_time_(Time::NowFromSystemTime()) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -167,8 +135,8 @@ void UITestBase::SetUp() {
   AssertAppNotRunning(L"Please close any other instances "
                       L"of the app before testing.");
 
-  InitializeTimeouts();
-  JavaScriptExecutionController::set_timeout(action_max_timeout_ms_);
+  JavaScriptExecutionController::set_timeout(
+      TestTimeouts::action_max_timeout_ms());
   LaunchBrowserAndServer();
 }
 
@@ -211,58 +179,11 @@ void UITestBase::TearDown() {
   EXPECT_EQ(expected_crashes_, actual_crashes) << error_msg;
 }
 
+// TODO(phajdan.jr): get rid of set_command_execution_timeout_ms.
 void UITestBase::set_command_execution_timeout_ms(int timeout) {
-  if (server_.get()) {
-    // automation channel already created. Set its timeout for use by
-    // subsequent automation calls.
-    server_->set_command_execution_timeout_ms(timeout);
-  }
-  command_execution_timeout_ms_ = timeout;
+  server_->set_command_execution_timeout_ms(timeout);
   LOG(INFO) << "Automation command execution timeout set to "
             << timeout << " milli secs.";
-}
-
-// Pick up the various test time out values from the command line.
-void UITestBase::InitializeTimeouts() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(kUiTestTimeout)) {
-    std::string timeout_str = command_line.GetSwitchValueASCII(kUiTestTimeout);
-    int timeout;
-    base::StringToInt(timeout_str, &timeout);
-    command_execution_timeout_ms_ = std::max(kCommandExecutionTimeout, timeout);
-  }
-
-  if (command_line.HasSwitch(kUiTestActionTimeout)) {
-    std::string act_str =
-        command_line.GetSwitchValueASCII(kUiTestActionTimeout);
-    int act_timeout;
-    base::StringToInt(act_str, &act_timeout);
-    action_timeout_ms_ = std::max(kWaitForActionMsec, act_timeout);
-  }
-
-  if (command_line.HasSwitch(kUiTestActionMaxTimeout)) {
-    std::string action_max_str =
-        command_line.GetSwitchValueASCII(kUiTestActionMaxTimeout);
-    int max_timeout;
-    base::StringToInt(action_max_str, &max_timeout);
-    action_max_timeout_ms_ = std::max(kWaitForActionMaxMsec, max_timeout);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kUiTestSleepTimeout)) {
-    std::string sleep_timeout_str =
-        command_line.GetSwitchValueASCII(kUiTestSleepTimeout);
-    int sleep_timeout;
-    base::StringToInt(sleep_timeout_str, &sleep_timeout);
-    sleep_timeout_ms_ = std::max(kWaitForActionMsec, sleep_timeout);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kUiTestTerminateTimeout)) {
-    std::string terminate_timeout_str =
-        command_line.GetSwitchValueASCII(kUiTestTerminateTimeout);
-    int terminate_timeout;
-    base::StringToInt(terminate_timeout_str, &terminate_timeout);
-    terminate_timeout_ms_ = std::max(kWaitForActionMsec, terminate_timeout);
-  }
 }
 
 AutomationProxy* UITestBase::CreateAutomationProxy(int execution_timeout) {
@@ -271,7 +192,8 @@ AutomationProxy* UITestBase::CreateAutomationProxy(int execution_timeout) {
 
 void UITestBase::LaunchBrowserAndServer() {
   // Set up IPC testing interface server.
-  server_.reset(CreateAutomationProxy(command_execution_timeout_ms_));
+  server_.reset(CreateAutomationProxy(
+                    TestTimeouts::command_execution_timeout_ms()));
 
   const int kTries = 3;
   for (int i = 0; i < kTries; i++) {
@@ -658,12 +580,12 @@ bool UITestBase::WaitForDownloadShelfInvisible(BrowserProxy* browser) {
 }
 
 bool UITestBase::WaitForBrowserProcessToQuit() {
-    // Wait for the browser process to quit.
-    int timeout = terminate_timeout_ms_;
+  // Wait for the browser process to quit.
+  int timeout = TestTimeouts::wait_for_terminate_timeout_ms();
 #ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-    timeout = 500000;
+  timeout = 500000;
 #endif
-    return base::WaitForSingleProcess(process_, timeout);
+  return base::WaitForSingleProcess(process_, timeout);
 }
 
 bool UITestBase::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
@@ -1106,7 +1028,7 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   // Add any explicit command line flags passed to the process.
   CommandLine::StringType extra_chrome_flags =
       CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          kExtraChromeFlagsSwitch);
+          switches::kExtraChromeFlags);
   if (!extra_chrome_flags.empty()) {
     // Split by spaces and append to command line
     std::vector<CommandLine::StringType> flags;
@@ -1141,7 +1063,8 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   }
 
   if (!show_error_dialogs_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(kEnableErrorDialogs)) {
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableErrorDialogs)) {
     command_line.AppendSwitch(switches::kNoErrorDialogs);
   }
   if (in_process_renderer_)
@@ -1170,7 +1093,8 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
 
   command_line.AppendSwitch(switches::kMetricsRecordingOnly);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableErrorDialogs))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableErrorDialogs))
     command_line.AppendSwitch(switches::kEnableLogging);
 
   if (dump_histograms_on_exit_)

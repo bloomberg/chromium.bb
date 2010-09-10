@@ -54,11 +54,6 @@ class EarlyReturnTest : public UITest {
  public:
   EarlyReturnTest() {
     wait_for_initial_loads_ = false;
-    // We don't depend on these timeouts, they are set to the minimum so
-    // the automation server waits the minimun amount possible for the
-    // handshake that will never come.
-    set_command_execution_timeout_ms(1);
-    set_action_timeout_ms(1);
     launch_arguments_.AppendSwitchASCII(switches::kTryChromeAgain, "10001");
   }
 };

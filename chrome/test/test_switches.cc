@@ -4,4 +4,20 @@
 
 #include "chrome/test/test_switches.h"
 
+// Extra flags that the test should pass to launched browser process.
+const char switches::kExtraChromeFlags[] = "extra-chrome-flags";
+
+// Enable displaying error dialogs (for debugging).
+const char switches::kEnableErrorDialogs[] = "enable-errdialogs";
+
+// Number of iterations that page cycler tests will run.
 const char switches::kPageCyclerIterations[] = "page-cycler-iterations";
+
+// Time (in milliseconds) that the ui_tests should wait before timing out.
+// TODO(phajdan.jr): Clean up the switch names.
+const char switches::kUiTestActionTimeout[] = "ui-test-action-timeout";
+const char switches::kUiTestActionMaxTimeout[] = "ui-test-action-max-timeout";
+const char switches::kUiTestCommandExecutionTimeout[] = "ui-test-timeout";
+const char switches::kUiTestSleepTimeout[] = "ui-test-sleep-timeout";
+const char switches::kUiTestTerminateTimeout[] = "ui-test-terminate-timeout";
+const char switches::kUiTestTimeout[] = "test-timeout";

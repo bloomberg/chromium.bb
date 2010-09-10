@@ -43,10 +43,6 @@ class UrlFetchTest : public UITest {
       browser_directory_ = dir;
     }
     UITest::SetUp();
-
-    // We've shortened the default timeouts, but dom_perf on Vista needs longer
-    // timeouts. Setting timeouts to the previous values before r52666.
-    set_action_timeout_ms(std::max(60000, action_timeout_ms()));
   }
 
   void RunTest(const GURL& url, const char* wait_cookie_name,

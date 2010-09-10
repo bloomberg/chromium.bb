@@ -118,6 +118,8 @@
         'test/test_location_bar.h',
         'test/test_switches.cc',
         'test/test_switches.h',
+        'test/test_timeouts.cc',
+        'test/test_timeouts.h',
         'test/testing_pref_service.cc',
         'test/testing_pref_service.h',
         'test/testing_profile.cc',
