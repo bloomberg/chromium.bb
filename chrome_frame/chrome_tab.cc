@@ -516,7 +516,8 @@ STDAPI DllUnregisterServer() {
 
 // DllRegisterServer - Adds entries to the HKCU hive in the registry
 STDAPI DllRegisterUserServer() {
-  UINT flags =  ACTIVEX | ACTIVEDOC | TYPELIB | GCF_PROTOCOL | BHO_CLSID;
+  UINT flags =  ACTIVEX | ACTIVEDOC | TYPELIB | GCF_PROTOCOL |
+                BHO_CLSID | BHO_REGISTRATION;
 
   if (UtilIsPersistentNPAPIMarkerSet()) {
     flags |= IDR_CHROMEFRAME_NPAPI;
