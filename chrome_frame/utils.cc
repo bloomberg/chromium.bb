@@ -34,6 +34,7 @@
 #include "googleurl/src/url_canon.h"
 
 #include "grit/chromium_strings.h"
+#include "net/base/escape.h"
 #include "net/http/http_util.h"
 
 // Note that these values are all lower case and are compared to
@@ -1358,6 +1359,9 @@ bool ChromeFrameUrl::ParseAttachExternalTabUrl() {
 
   if (tokenizer.GetNext()) {
     profile_name_ = tokenizer.token();
+    // Escape out special characters like %20, etc.
+    profile_name_ = UnescapeURLComponent(profile_name_,
+        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
   } else {
     return false;
   }

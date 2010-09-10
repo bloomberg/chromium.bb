@@ -15,7 +15,6 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
-
 #include "grit/chromium_strings.h"
 
 #define IDC_ABOUT_CHROME_FRAME 40018
@@ -70,8 +69,13 @@ END_MSG_MAP()
     bool incognito_mode = !is_privileged_ && incognito;
     FilePath profile_path;
     GetProfilePath(profile_name, &profile_path);
+    // The profile name could change based on the browser version. For e.g. for
+    // IE6/7 the profile is created in a different folder whose last component
+    // is Google Chrome Frame.
+    FilePath actual_profile_name = profile_path.BaseName();
     launch_params_ = new ChromeFrameLaunchParams(url, referrer, profile_path,
-        profile_name, extra_chrome_arguments, incognito_mode, is_widget_mode);
+        actual_profile_name.value(), extra_chrome_arguments, incognito_mode,
+        is_widget_mode);
     return automation_client_->Initialize(this, launch_params_);
   }
 
