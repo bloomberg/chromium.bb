@@ -2818,7 +2818,7 @@ long long Cluster::GetTime()
 }
 
 
-__int64 Cluster::GetFirstTime()
+long long Cluster::GetFirstTime()
 {
     const BlockEntry* const pEntry = GetFirst();
 
