@@ -32,7 +32,6 @@ extern struct NaClSelLdrLauncher* NaClSelLdrStart(
 extern void NaClSelLdrShutdown(struct NaClSelLdrLauncher* launcher);
 extern int NaClSelLdrOpenSrpcChannels(struct NaClSelLdrLauncher* launcher,
                                       struct NaClSrpcChannel* command,
-                                      struct NaClSrpcChannel* untrusted_command,
                                       struct NaClSrpcChannel* untrusted);
 
 extern NaClHandle NaClSelLdrGetChild(struct NaClSelLdrLauncher* launcher);

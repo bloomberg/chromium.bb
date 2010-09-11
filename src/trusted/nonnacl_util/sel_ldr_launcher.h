@@ -97,13 +97,11 @@ struct SelLdrLauncher {
   bool StartUnderChromium(const char* url, int socket_count,
                           Handle* result_sockets);
 
-  // OpenSrpcChannels essentially is a triple Ctor for the three
-  // NaClSrpcChannel objects; if it returns true (success), all were
-  // constructed; if it returns false, none were constructed (and thus
-  // none needs to be Dtor'd).
-  bool OpenSrpcChannels(NaClSrpcChannel* command,
-                        NaClSrpcChannel* untrusted_command,
-                        NaClSrpcChannel* untrusted);
+  // OpenSrpcChannels essentially is a pair Ctor for the two
+  // NaClSrpcChannel objects; if it returns true (success), both were
+  // constructed; if it returns false, neither was constructed (and thus
+  // neither needs to be Dtor'd).
+  bool OpenSrpcChannels(NaClSrpcChannel* command, NaClSrpcChannel* untrusted);
 
   ~SelLdrLauncher();
 

@@ -47,10 +47,8 @@ void NaClSelLdrShutdown(struct NaClSelLdrLauncher* launcher) {
 
 int NaClSelLdrOpenSrpcChannels(struct NaClSelLdrLauncher* launcher,
                                struct NaClSrpcChannel* command,
-                               struct NaClSrpcChannel* untrusted_command,
                                struct NaClSrpcChannel* untrusted) {
-  return ToObject(launcher)->
-    OpenSrpcChannels(command, untrusted_command, untrusted);
+  return ToObject(launcher)->OpenSrpcChannels(command, untrusted);
 }
 
 

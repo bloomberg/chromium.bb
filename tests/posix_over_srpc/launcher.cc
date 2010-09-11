@@ -142,11 +142,9 @@ void* InvokeInitUpcallChannel(void* void_context) {
   pthread_t loop_thread;
   NaClSrpcError srpc_code;
   NaClSrpcChannel command;
-  NaClSrpcChannel untrusted_command;
   NaClSrpcChannel untrusted;
 
   if (false == context->sel_ldr_launcher->OpenSrpcChannels(&command,
-                                                           &untrusted_command,
                                                            &untrusted)) {
     std::cerr << "OpenSrpcChannels failed\n";
     goto ret;
@@ -155,7 +153,7 @@ void* InvokeInitUpcallChannel(void* void_context) {
     std::cerr << "Unable to create UpcallLoopThread\n";
     goto ret;
   }
-  srpc_code = NaClSrpcInvokeBySignature(&untrusted_command,
+  srpc_code = NaClSrpcInvokeBySignature(&untrusted,
                                         "init_upcall_channel:i:",
                                         kUpChannelDestDesc);
   if (NACL_SRPC_RESULT_OK != srpc_code) {

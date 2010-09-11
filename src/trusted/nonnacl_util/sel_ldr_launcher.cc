@@ -71,14 +71,12 @@ static DescWrapper* GetSockAddr(DescWrapper* desc) {
 
 
 bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
-                                      NaClSrpcChannel* untrusted_command,
                                       NaClSrpcChannel* untrusted) {
   int start_result;
   bool retval = false;
   DescWrapper* channel_desc = NULL;
   DescWrapper* sock_addr = NULL;
   DescWrapper* command_desc = NULL;
-  DescWrapper* untrusted_command_desc = NULL;
   DescWrapper* untrusted_desc = NULL;
 
   DescWrapperFactory factory;
@@ -117,18 +115,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
     goto done;
   }
 
-  // The second connection goes to the untrusted command channel.
-  untrusted_command_desc = sock_addr->Connect();
-  if (NULL == untrusted_command_desc) {
-    goto done;
-  }
-  // Start the SRPC client to communicate with the untrusted command channel.
-  // SRPC client takes ownership of untrusted_command_desc.
-  if (!NaClSrpcClientCtor(untrusted_command, untrusted_command_desc->desc())) {
-    goto done;
-  }
-
-  // The third connection goes to the service itself.
+  // The second connection goes to the service itself.
   untrusted_desc = sock_addr->Connect();
   if (NULL == untrusted_desc) {
     goto done;
@@ -142,7 +129,6 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
 
  done:
   delete command_desc;
-  delete untrusted_command_desc;
   delete untrusted_desc;
   delete channel_desc;
   delete sock_addr;

@@ -253,7 +253,6 @@ static void TestRpcs(NaClSrpcChannel* channel,
  * NaClSrpcChannel is pretty big (> 256kB)
  */
 struct NaClSrpcChannel     command_channel;
-struct NaClSrpcChannel     untrusted_command_channel;
 struct NaClSrpcChannel     channel;
 
 int main(int  argc, char *argv[]) {
@@ -369,10 +368,7 @@ int main(int  argc, char *argv[]) {
   /*
    * Open the communication channels to the service runtime.
    */
-  if (!NaClSelLdrOpenSrpcChannels(launcher,
-                                  &command_channel,
-                                  &untrusted_command_channel,
-                                  &channel)) {
+  if (!NaClSelLdrOpenSrpcChannels(launcher, &command_channel, &channel)) {
     printf("Open failed\n");
     return 1;
   }

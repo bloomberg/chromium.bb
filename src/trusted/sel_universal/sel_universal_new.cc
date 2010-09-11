@@ -58,7 +58,6 @@ static NaClSrpcError Interpreter(NaClSrpcService* service,
  * NaClSrpcChannel is pretty big (> 256kB)
  */
 struct NaClSrpcChannel command_channel;
-struct NaClSrpcChannel untrusted_command_channel;
 struct NaClSrpcChannel channel;
 
 int main(int  argc, char *argv[]) {
@@ -134,9 +133,7 @@ int main(int  argc, char *argv[]) {
   /*
    * Open the communication channels to the service runtime.
    */
-  if (!launcher.OpenSrpcChannels(&command_channel,
-                                 &untrusted_command_channel,
-                                 &channel)) {
+  if (!launcher.OpenSrpcChannels(&command_channel, &channel)) {
     NaClLog(LOG_FATAL, "Open channel failed\n");
   }
 
@@ -151,7 +148,6 @@ int main(int  argc, char *argv[]) {
    * Close the connections to sel_ldr.
    */
   NaClSrpcDtor(&command_channel);
-  NaClSrpcDtor(&untrusted_command_channel);
   NaClSrpcDtor(&channel);
 
   NaClNrdAllModulesFini();
