@@ -1523,8 +1523,8 @@ function newFolder() {
     title: localStrings.getString('new_folder_name'),
     parentId: parentId
   }, function(newNode) {
-    // We need to do this in a timeout to be able to focus the newly created
-    // item.
+    // This callback happens before the event that triggers the tree/list to
+    // get updated so delay the work so that the tree/list gets updated first.
     setTimeout(function() {
       var newItem;
       if (isTree) {
@@ -1539,7 +1539,7 @@ function newFolder() {
       }
 
       newItem.editing = true;
-    });
+    }, 50);
   });
 }
 
