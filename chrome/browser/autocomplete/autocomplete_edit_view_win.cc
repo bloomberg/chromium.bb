@@ -496,6 +496,21 @@ AutocompleteEditViewWin::~AutocompleteEditViewWin() {
   g_paint_patcher.Pointer()->DerefPatch();
 }
 
+int AutocompleteEditViewWin::TextWidth() {
+  return WidthNeededToDisplay(GetText());
+}
+
+int AutocompleteEditViewWin::WidthOfTextAfterCursor() {
+  CHARRANGE selection;
+  GetSelection(selection);
+  const int start = std::max(0, static_cast<int>(selection.cpMax - 1));
+  return WidthNeededToDisplay(GetText().substr(start));
+ }
+
+gfx::Font AutocompleteEditViewWin::GetFont() {
+  return font_;
+}
+
 void AutocompleteEditViewWin::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
 
@@ -2500,4 +2515,20 @@ void AutocompleteEditViewWin::TrackMousePosition(MouseButton button,
     tracking_click_[button] = true;
     click_point_[button] = point;
   }
+}
+
+int AutocompleteEditViewWin::GetHorizontalMargin() {
+  RECT rect;
+  GetRect(&rect);
+  RECT client_rect;
+  GetClientRect(&client_rect);
+  return (rect.left - client_rect.left) + (client_rect.right - rect.right);
+}
+
+int AutocompleteEditViewWin::WidthNeededToDisplay(const std::wstring& text) {
+  // Use font_.GetStringWidth() instead of
+  // PosFromChar(location_entry_->GetTextLength()) because PosFromChar() is
+  // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
+  // PosFromChar(i) might return 0 when i is greater than 1.
+  return font_.GetStringWidth(text) + GetHorizontalMargin();
 }

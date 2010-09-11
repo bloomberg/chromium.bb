@@ -38,6 +38,7 @@
 #include "gfx/skia_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/controls/label.h"
 #include "views/drag_utils.h"
 
 #if defined(OS_WIN)
@@ -91,6 +92,7 @@ LocationBarView::LocationBarView(Profile* profile,
       ev_bubble_view_(NULL),
       location_entry_view_(NULL),
       selected_keyword_view_(NULL),
+      suggested_text_view_(NULL),
       keyword_hint_view_(NULL),
       star_view_(NULL),
       mode_(mode),
@@ -578,6 +580,35 @@ void LocationBarView::Layout() {
     }
   }
 
+  // Layout out the suggested text view right aligned to the location
+  // entry. Only show the suggested text if we can fit the text from one
+  // character before the end of the selection to the end of the text and the
+  // suggested text. If we can't it means either the suggested text is too big,
+  // or the user has scrolled.
+
+  // TODO(sky): We could potentially combine this with the previous step to
+  // force using minimum size if necessary, but currently the chance of showing
+  // keyword hints and suggested text is minimal and we're not confident this
+  // is the right approach for suggested text.
+  if (suggested_text_view_) {
+    // TODO(sky): need to layout when the user changes caret position.
+    int suggested_text_width = suggested_text_view_->GetPreferredSize().width();
+    int vis_text_width = location_entry_->WidthOfTextAfterCursor();
+    if (vis_text_width + suggested_text_width > entry_width) {
+      // Hide the suggested text if the user has scrolled or we can't fit all
+      // the suggested text.
+      suggested_text_view_->SetBounds(0, 0, 0, 0);
+    } else {
+      int location_needed_width = location_entry_->TextWidth();
+      location_bounds.set_width(std::min(location_needed_width,
+                                         entry_width - suggested_text_width));
+      suggested_text_view_->SetBounds(location_bounds.right(),
+                                      location_bounds.y(),
+                                      suggested_text_width,
+                                      location_bounds.height());
+    }
+  }
+
   location_entry_view_->SetBounds(location_bounds);
 }
 
@@ -772,17 +803,9 @@ std::wstring LocationBarView::GetTitle() const {
 }
 
 int LocationBarView::AvailableWidth(int location_bar_width) {
-#if defined(OS_WIN)
-  // Use font_.GetStringWidth() instead of
-  // PosFromChar(location_entry_->GetTextLength()) because PosFromChar() is
-  // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
-  // PosFromChar(i) might return 0 when i is greater than 1.
-  return std::max(
-      location_bar_width - font_.GetStringWidth(location_entry_->GetText()), 0);
-#else
   return location_bar_width - location_entry_->TextWidth();
-#endif
 }
+
 void LocationBarView::LayoutView(views::View* view,
                                  int padding,
                                  int available_width,
@@ -999,6 +1022,33 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
     return;
   }
   ShowFirstRunBubbleInternal(bubble_type);
+}
+
+void LocationBarView::SetSuggestedText(const std::wstring& text) {
+  if (!text.empty()) {
+    if (!suggested_text_view_) {
+      suggested_text_view_ = new views::Label();
+      suggested_text_view_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      suggested_text_view_->SetColor(
+          GetColor(ToolbarModel::NONE,
+                   LocationBarView::DEEMPHASIZED_TEXT));
+      suggested_text_view_->SetText(text);
+      suggested_text_view_->SetFont(location_entry_->GetFont());
+      AddChildView(suggested_text_view_);
+    } else if (suggested_text_view_->GetText() == text) {
+      return;
+    } else {
+      suggested_text_view_->SetText(text);
+    }
+  } else if (suggested_text_view_) {
+    delete suggested_text_view_;
+    suggested_text_view_ = NULL;
+  } else {
+    return;
+  }
+
+  Layout();
+  SchedulePaint();
 }
 
 std::wstring LocationBarView::GetInputString() const {

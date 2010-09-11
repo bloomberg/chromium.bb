@@ -341,6 +341,18 @@ int AutocompleteEditViewGtk::TextWidth() {
       horizontal_border_size;
 }
 
+int AutocompleteEditViewGtk::WidthOfTextAfterCursor() {
+  // TODO(sky): implement this.
+  NOTIMPLEMENTED();
+  return TextWidth();
+}
+
+gfx::Font AutocompleteEditViewGtk::GetFont() {
+  GtkRcStyle* rc_style = gtk_widget_get_modifier_style(text_view_);
+  return gfx::Font((rc_style && rc_style->font_desc) ?
+                   rc_style->font_desc : text_view_->style->font_desc);
+}
+
 void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
   // If any text has been selected, register it as the PRIMARY selection so it

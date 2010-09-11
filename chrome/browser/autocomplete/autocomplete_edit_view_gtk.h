@@ -29,6 +29,11 @@ class AutocompleteEditModel;
 class AutocompletePopupView;
 class Profile;
 class TabContents;
+
+namespace gfx{
+class Font;
+}
+
 namespace views {
 class View;
 }
@@ -70,9 +75,17 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Initialize, create the underlying widgets, etc.
   void Init();
 
-  // Returns the width, in pixels, needed to display the current text. The
-  // returned value includes margins and borders.
+  // Returns the width in pixels needed to display the current text. The
+  // returned value includes margins.
   int TextWidth();
+
+  // Returns the width in pixels needed to display the text from one character
+  // before the caret to the end of the string. See comments in
+  // LocationBarView::Layout as to why this uses -1.
+  int WidthOfTextAfterCursor();
+
+  // Returns the font.
+  gfx::Font GetFont();
 
   // Implement the AutocompleteEditView interface.
   virtual AutocompleteEditModel* model() { return model_.get(); }

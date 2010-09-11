@@ -30,6 +30,7 @@ class TestLocationBar : public LocationBar {
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {}
+  virtual void SetSuggestedText(const std::wstring& text) {}
   virtual std::wstring GetInputString() const { return input_string_; }
   virtual WindowOpenDisposition GetWindowOpenDisposition() const {
     return disposition_;

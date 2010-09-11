@@ -46,6 +46,7 @@ class TemplateURLModel;
 
 namespace views {
 class HorizontalPainter;
+class Label;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -200,6 +201,7 @@ class LocationBarView : public LocationBar,
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
+  virtual void SetSuggestedText(const std::wstring& text);
   virtual std::wstring GetInputString() const;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const;
   virtual PageTransition::Type GetPageTransition() const;
@@ -343,6 +345,10 @@ class LocationBarView : public LocationBar,
 
   // Shown if the user has selected a keyword.
   SelectedKeywordView* selected_keyword_view_;
+
+  // View responsible for showing suggested text. This is NULL when there is no
+  // suggested text.
+  views::Label* suggested_text_view_;
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView* keyword_hint_view_;
