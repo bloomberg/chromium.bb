@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -99,7 +100,7 @@ void ContentView::UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
   try_again_->SetVisible(is_message);
 
   if (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE) {
-    message_->SetText(message_text);
+    message_->SetText(UTF16ToWideHack(message_text));
   } else {
     icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) ?
