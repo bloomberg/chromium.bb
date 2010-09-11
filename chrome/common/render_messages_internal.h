@@ -1179,7 +1179,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Sent when after the onload handler has been invoked for the document
   // in the toplevel frame.
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_DocumentOnLoadCompletedInMainFrame)
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
+                      int32 /* page_id */)
 
   // Sent when the renderer loads a resource from its memory cache.
   // The security info is non empty if the resource was originally loaded over

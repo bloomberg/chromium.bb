@@ -3139,8 +3139,10 @@ void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
 }
 
 void RenderView::didHandleOnloadEvents(WebFrame* frame) {
-  if (webview()->mainFrame() == frame)
-    Send(new ViewHostMsg_DocumentOnLoadCompletedInMainFrame(routing_id_));
+  if (webview()->mainFrame() == frame) {
+    Send(new ViewHostMsg_DocumentOnLoadCompletedInMainFrame(routing_id_,
+                                                            page_id_));
+  }
 }
 
 void RenderView::didFailLoad(WebFrame* frame, const WebURLError& error) {

@@ -123,7 +123,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void DidStopLoading();
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host);
   virtual void DocumentOnLoadCompletedInMainFrame(
-      RenderViewHost* render_view_host);
+      RenderViewHost* render_view_host,
+      int32 page_id);
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();

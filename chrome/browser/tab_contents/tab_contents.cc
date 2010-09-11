@@ -2625,6 +2625,15 @@ void TabContents::DidStopLoading() {
   SetIsLoading(false, details.get());
 }
 
+void TabContents::DocumentOnLoadCompletedInMainFrame(
+    RenderViewHost* render_view_host,
+    int32 page_id) {
+  NotificationService::current()->Notify(
+      NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+      Source<TabContents>(this),
+      Details<int>(&page_id));
+}
+
 void TabContents::DidRedirectProvisionalLoad(int32 page_id,
                                              const GURL& source_url,
                                              const GURL& target_url) {

@@ -938,6 +938,9 @@ class TabContents : public PageNavigator,
   virtual void RequestMove(const gfx::Rect& new_bounds);
   virtual void DidStartLoading();
   virtual void DidStopLoading();
+  virtual void DocumentOnLoadCompletedInMainFrame(
+      RenderViewHost* render_view_host,
+      int32 page_id);
   virtual void RequestOpenURL(const GURL& url, const GURL& referrer,
                               WindowOpenDisposition disposition);
   virtual void DomOperationResponse(const std::string& json_string,

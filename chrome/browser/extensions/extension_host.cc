@@ -399,7 +399,8 @@ void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
   }
 }
 
-void ExtensionHost::DocumentOnLoadCompletedInMainFrame(RenderViewHost* rvh) {
+void ExtensionHost::DocumentOnLoadCompletedInMainFrame(RenderViewHost* rvh,
+                                                       int32 page_id) {
   if (ViewType::EXTENSION_POPUP == GetRenderViewType()) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_POPUP_VIEW_READY,

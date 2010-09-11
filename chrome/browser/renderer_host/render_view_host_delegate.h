@@ -721,7 +721,8 @@ class RenderViewHostDelegate {
 
   // The onload handler in the RenderView's main frame has completed.
   virtual void DocumentOnLoadCompletedInMainFrame(
-      RenderViewHost* render_view_host) {}
+      RenderViewHost* render_view_host,
+      int32 page_id) {}
 
   // The page wants to open a URL with the specified disposition.
   virtual void RequestOpenURL(const GURL& url,

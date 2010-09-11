@@ -1108,8 +1108,8 @@ void RenderViewHost::OnMsgDocumentAvailableInMainFrame() {
   delegate_->DocumentAvailableInMainFrame(this);
 }
 
-void RenderViewHost::OnMsgDocumentOnLoadCompletedInMainFrame() {
-  delegate_->DocumentOnLoadCompletedInMainFrame(this);
+void RenderViewHost::OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id) {
+  delegate_->DocumentOnLoadCompletedInMainFrame(this, page_id);
 }
 
 void RenderViewHost::OnMsgDidLoadResourceFromMemoryCache(
