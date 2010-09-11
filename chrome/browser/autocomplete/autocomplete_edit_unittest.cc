@@ -35,6 +35,8 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
                                         size_t caret_pos) {}
   virtual void SetForcedQuery() {}
   virtual bool IsSelectAll() { return false; }
+  virtual void GetSelectionBounds(std::wstring::size_type* start,
+                                  std::wstring::size_type* end) {}
   virtual void SelectAll(bool reversed) {}
   virtual void RevertAll() {}
   virtual void UpdatePopup() {}

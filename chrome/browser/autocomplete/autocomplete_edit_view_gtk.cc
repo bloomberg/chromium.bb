@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "base/gtk_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -437,11 +438,12 @@ void AutocompleteEditViewGtk::SetWindowTextAndCaretPos(const std::wstring& text,
 
 void AutocompleteEditViewGtk::SetForcedQuery() {
   const std::wstring current_text(GetText());
-  if (current_text.empty() || (current_text[0] != '?')) {
+  const size_t start = current_text.find_first_not_of(kWhitespaceWide);
+  if (start == std::wstring::npos || (current_text[start] != '?')) {
     SetUserText(L"?");
   } else {
     StartUpdatingHighlightedText();
-    SetSelectedRange(CharRange(current_text.size(), 1));
+    SetSelectedRange(CharRange(current_text.size(), start + 1));
     FinishUpdatingHighlightedText();
   }
 }
@@ -456,6 +458,13 @@ bool AutocompleteEditViewGtk::IsSelectAll() {
   // Returns true if the |text_buffer_| is empty.
   return gtk_text_iter_equal(&start, &sel_start) &&
       gtk_text_iter_equal(&end, &sel_end);
+}
+
+void AutocompleteEditViewGtk::GetSelectionBounds(std::wstring::size_type* start,
+                                                 std::wstring::size_type* end) {
+  CharRange selection = GetSelection();
+  *start = static_cast<size_t>(selection.cp_min);
+  *end = static_cast<size_t>(selection.cp_max);
 }
 
 void AutocompleteEditViewGtk::SelectAll(bool reversed) {

@@ -167,3 +167,94 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
             location_bar->location_entry()->GetText());
   EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
 }
+
+IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
+  LocationBar* location_bar = GetLocationBar();
+
+  // Focus search when omnibox is blank
+  {
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+              location_bar->location_entry()->GetText());
+
+    location_bar->FocusSearch();
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"?", location_bar->location_entry()->GetText());
+
+    size_t selection_start, selection_end;
+    location_bar->location_entry()->GetSelectionBounds(&selection_start,
+                                                       &selection_end);
+    EXPECT_EQ(1U, selection_start);
+    EXPECT_EQ(1U, selection_end);
+  }
+
+  // Focus search when omnibox is _not_ alread in forced query mode.
+  {
+    location_bar->location_entry()->SetUserText(L"foo");
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"foo", location_bar->location_entry()->GetText());
+
+    location_bar->FocusSearch();
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"?", location_bar->location_entry()->GetText());
+
+    size_t selection_start, selection_end;
+    location_bar->location_entry()->GetSelectionBounds(&selection_start,
+                                                       &selection_end);
+    EXPECT_EQ(1U, selection_start);
+    EXPECT_EQ(1U, selection_end);
+  }
+
+  // Focus search when omnibox _is_ already in forced query mode, but no query
+  // has been typed.
+  {
+    location_bar->location_entry()->SetUserText(L"?");
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"?", location_bar->location_entry()->GetText());
+
+    location_bar->FocusSearch();
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"?", location_bar->location_entry()->GetText());
+
+    size_t selection_start, selection_end;
+    location_bar->location_entry()->GetSelectionBounds(&selection_start,
+                                                       &selection_end);
+    EXPECT_EQ(1U, selection_start);
+    EXPECT_EQ(1U, selection_end);
+  }
+
+  // Focus search when omnibox _is_ already in forced query mode, and some query
+  // has been typed.
+  {
+    location_bar->location_entry()->SetUserText(L"?foo");
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"?foo", location_bar->location_entry()->GetText());
+
+    location_bar->FocusSearch();
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"?foo", location_bar->location_entry()->GetText());
+
+    size_t selection_start, selection_end;
+    location_bar->location_entry()->GetSelectionBounds(&selection_start,
+                                                       &selection_end);
+    EXPECT_EQ(1U, std::min(selection_start, selection_end));
+    EXPECT_EQ(4U, std::max(selection_start, selection_end));
+  }
+
+  // Focus search when omnibox is in forced query mode with leading whitespace.
+  {
+    location_bar->location_entry()->SetUserText(L"   ?foo");
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"   ?foo", location_bar->location_entry()->GetText());
+
+    location_bar->FocusSearch();
+    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(L"   ?foo", location_bar->location_entry()->GetText());
+
+    size_t selection_start, selection_end;
+    location_bar->location_entry()->GetSelectionBounds(&selection_start,
+                                                       &selection_end);
+    EXPECT_EQ(4U, std::min(selection_start, selection_end));
+    EXPECT_EQ(7U, std::max(selection_start, selection_end));
+  }
+}

@@ -107,6 +107,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual void SetForcedQuery();
 
   virtual bool IsSelectAll();
+  virtual void GetSelectionBounds(std::wstring::size_type* start,
+                                  std::wstring::size_type* end);
   virtual void SelectAll(bool reversed);
   virtual void RevertAll();
 

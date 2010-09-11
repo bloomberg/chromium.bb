@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ class AutocompleteEditView {
   // Sets the edit to forced query mode.  Practically speaking, this means that
   // if the edit is not in forced query mode, its text is set to "?" with the
   // cursor at the end, and if the edit is in forced query mode (its first
-  // character is '?'), the text after the '?' is selected.
+  // non-whitespace character is '?'), the text after the '?' is selected.
   //
   // In the future we should display the search engine UI for the default engine
   // rather than '?'.
@@ -90,6 +90,13 @@ class AutocompleteEditView {
 
   // Returns true if all text is selected or there is no text at all.
   virtual bool IsSelectAll() = 0;
+
+  // Fills |start| and |end| with the indexes of the current selection's bounds.
+  // It is not guaranteed that |*start < *end|, as the selection can be
+  // directed.  If there is no selection, |start| and |end| will both be equal
+  // to the current cursor position.
+  virtual void GetSelectionBounds(std::wstring::size_type* start,
+                                  std::wstring::size_type* end) = 0;
 
   // Selects all the text in the edit.  Use this in place of SetSelAll() to
   // avoid selecting the "phantom newline" at the end of the edit.

@@ -27,6 +27,7 @@
 #include "base/iat_patch.h"
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_accessibility.h"
@@ -633,16 +634,25 @@ void AutocompleteEditViewWin::SetWindowTextAndCaretPos(const std::wstring& text,
 
 void AutocompleteEditViewWin::SetForcedQuery() {
   const std::wstring current_text(GetText());
-  if (current_text.empty() || (current_text[0] != '?'))
+  const size_t start = current_text.find_first_not_of(kWhitespaceWide);
+  if (start == std::wstring::npos || (current_text[start] != '?'))
     SetUserText(L"?");
   else
-    SetSelection(current_text.length(), 1);
+    SetSelection(current_text.length(), start + 1);
 }
 
 bool AutocompleteEditViewWin::IsSelectAll() {
   CHARRANGE selection;
   GetSel(selection);
   return IsSelectAllForRange(selection);
+}
+
+void AutocompleteEditViewWin::GetSelectionBounds(std::wstring::size_type* start,
+                                                 std::wstring::size_type* end) {
+  CHARRANGE selection;
+  GetSel(selection);
+  *start = static_cast<size_t>(selection.cpMin);
+  *end = static_cast<size_t>(selection.cpMax);
 }
 
 void AutocompleteEditViewWin::SelectAll(bool reversed) {

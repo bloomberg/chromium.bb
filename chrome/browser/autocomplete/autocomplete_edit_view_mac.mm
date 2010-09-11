@@ -348,10 +348,11 @@ void AutocompleteEditViewMac::SetForcedQuery() {
   FocusLocation(true);
 
   const std::wstring current_text(GetText());
-  if (current_text.empty() || (current_text[0] != '?')) {
+  const size_t start = current_text.find_first_not_of(kWhitespaceWide);
+  if (start == std::wstring::npos || (current_text[start] != '?')) {
     SetUserText(L"?");
   } else {
-    NSRange range = NSMakeRange(1, current_text.size() - 1);
+    NSRange range = NSMakeRange(start + 1, current_text.size() - start - 1);
     [[field_ currentEditor] setSelectedRange:range];
   }
 }
@@ -361,6 +362,18 @@ bool AutocompleteEditViewMac::IsSelectAll() {
     return true;
   const NSRange all_range = NSMakeRange(0, [[field_ stringValue] length]);
   return NSEqualRanges(all_range, GetSelectedRange());
+}
+
+void AutocompleteEditViewMac::GetSelectionBounds(std::wstring::size_type* start,
+                                                 std::wstring::size_type* end) {
+  if (![field_ currentEditor]) {
+    *start = *end = 0;
+    return;
+  }
+
+  const NSRange selected_range = GetSelectedRange();
+  *start = static_cast<size_t>(selected_range.location);
+  *end = static_cast<size_t>(NSMaxRange(selected_range));
 }
 
 void AutocompleteEditViewMac::SelectAll(bool reversed) {
