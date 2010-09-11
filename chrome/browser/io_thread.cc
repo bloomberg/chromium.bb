@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/leak_tracker.h"
 #include "base/logging.h"
-#include "base/nss_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -25,7 +24,6 @@
 #include "net/base/net_util.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/ocsp/nss_ocsp.h"
 
 namespace {
 
@@ -176,11 +174,6 @@ void IOThread::ChangedToOnTheRecord() {
 
 void IOThread::Init() {
   BrowserProcessSubThread::Init();
-
-#if defined(USE_NSS)
-  base::EnsureNSSInit();
-  net::EnsureOCSPInit();
-#endif // defined(USE_NSS)
 
   DCHECK(!globals_);
   globals_ = new Globals;
