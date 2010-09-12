@@ -15,5 +15,5 @@ std::string LoginDatabase::EncryptedString(const string16& plain_text)
 
 string16 LoginDatabase::DecryptedString(const std::string& cipher_text)
     const {
-  return ASCIIToUTF16(cipher_text);
+  return UTF8ToUTF16(cipher_text);
 }
