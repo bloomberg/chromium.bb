@@ -2526,17 +2526,6 @@
    fun:_ZN26RenderWidgetFullscreenHostC1EP17RenderProcessHosti
 }
 {
-   bug_52836
-   Memcheck:Cond
-   ...
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
-   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
-   fun:event_process_active
-   fun:event_base_loop
-}
-{
    bug_52837
    Memcheck:Leak
    fun:_Znw*
