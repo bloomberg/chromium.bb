@@ -1658,7 +1658,8 @@ llvm-tools-sb-configure() {
     target=x86_64
   fi
 
-  local flags="-m${bitsize} -O2 -static -I${NACL_TOOLCHAIN}/${nacl}/include"
+  local flags="-m${bitsize} -O2 -static -I${NACL_TOOLCHAIN}/${nacl}/include \
+      -L${NACL_TOOLCHAIN}/${nacl}/lib -lnosys"
   spushd ${objdir}
   RunWithLog \
       llvm.tools.${arch}.sandboxed.configure \
@@ -1703,8 +1704,11 @@ llvm-tools-sb-make() {
   ts-touch-open "${objdir}"
 
   RunWithLog llvm.tools.${arch}.sandboxed.make \
-    env -i PATH="/usr/bin:/bin" \
-    make VERBOSE=1 tools-only
+      env -i PATH="/usr/bin:/bin" \
+      ONLY_TOOLS=llc \
+      SANDBOX_LLVM=1 \
+      VERBOSE=1 \
+      make tools-only ${MAKE_OPTS}
 
   ts-touch-commit "${objdir}"
 
@@ -1719,8 +1723,10 @@ llvm-tools-sb-install() {
   spushd ${objdir}
 
   RunWithLog llvm.tools.${arch}.sandboxed.install \
-    env -i PATH="/usr/bin:/bin" \
-    make install
+      env -i PATH="/usr/bin:/bin" \
+      ONLY_TOOLS=llc \
+      SANDBOX_LLVM=1 \
+      make install ${MAKE_OPTS}
 
   spopd
 }
