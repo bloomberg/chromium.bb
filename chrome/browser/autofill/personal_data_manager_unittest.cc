@@ -187,15 +187,15 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
 TEST_F(PersonalDataManagerTest, SetCreditCards) {
   CreditCard creditcard0(string16(), 0);
   autofill_unittest::SetCreditCardInfo(&creditcard0, "Corporate",
-      "John Dillinger", "Visa", "123456789012", "01", "2010", "Chicago");
+      "John Dillinger", "Visa", "123456789012", "01", "2010", 1);
 
   CreditCard creditcard1(string16(), 0);
   autofill_unittest::SetCreditCardInfo(&creditcard1, "Personal",
-      "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", "Dallas");
+      "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", 2);
 
   CreditCard creditcard2(string16(), 0);
   autofill_unittest::SetCreditCardInfo(&creditcard2, "Savings", "Clyde Barrow",
-      "American Express", "777666888555", "04", "2015", "Home");
+      "American Express", "777666888555", "04", "2015", 3);
 
   // This will verify that the web database has been loaded and the notification
   // sent out.
@@ -278,11 +278,11 @@ TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
 
   CreditCard creditcard0(string16(), 0);
   autofill_unittest::SetCreditCardInfo(&creditcard0, "Corporate",
-      "John Dillinger", "Visa", "123456789012", "01", "2010", "Chicago");
+      "John Dillinger", "Visa", "123456789012", "01", "2010", 1);
 
   CreditCard creditcard1(string16(), 0);
   autofill_unittest::SetCreditCardInfo(&creditcard1, "Personal",
-      "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", "Dallas");
+      "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", 2);
 
   // This will verify that the web database has been loaded and the notification
   // sent out.
@@ -427,7 +427,7 @@ TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
 TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
   CreditCard creditcard0(string16(), 0);
   autofill_unittest::SetCreditCardInfo(&creditcard0,
-      "", "", "", "", "", "", "");
+      "", "", "", "", "", "", 0);
 
   // This will verify that the web database has been loaded and the notification
   // sent out.

@@ -457,6 +457,36 @@ void PersonalDataManager::RemoveProfile(int unique_id) {
   SetProfiles(&profiles);
 }
 
+// TODO(jhawkins): Refactor SetCreditCards so this isn't so hacky.
+void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
+  std::vector<CreditCard> credit_cards(credit_cards_.size());
+  std::transform(credit_cards_.begin(), credit_cards_.end(),
+                 credit_cards.begin(),
+                 DereferenceFunctor<CreditCard>());
+
+  credit_cards.push_back(credit_card);
+  SetCreditCards(&credit_cards);
+}
+
+void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
+    return;
+
+  // Update the cached credit card.
+  for (std::vector<CreditCard*>::iterator iter = credit_cards_->begin();
+       iter != credit_cards_->end(); ++iter) {
+    if ((*iter)->unique_id() == credit_card.unique_id()) {
+      delete *iter;
+      *iter = new CreditCard(credit_card);
+      break;
+    }
+  }
+
+  wds->UpdateCreditCard(credit_card);
+  FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
+}
+
 void PersonalDataManager::RemoveCreditCard(int unique_id) {
   // TODO(jhawkins): Refactor SetCreditCards so this isn't so hacky.
   std::vector<CreditCard> credit_cards(credit_cards_.size());

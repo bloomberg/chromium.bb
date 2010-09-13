@@ -367,7 +367,7 @@ void CreditCard::operator=(const CreditCard& source) {
   expiration_month_ = source.expiration_month_;
   expiration_year_ = source.expiration_year_;
   label_ = source.label_;
-  billing_address_ = source.billing_address_;
+  billing_address_id_ = source.billing_address_id_;
   unique_id_ = source.unique_id_;
 }
 
@@ -383,7 +383,7 @@ bool CreditCard::operator==(const CreditCard& creditcard) const {
 
   if (label_ != creditcard.label_ ||
       unique_id_ != creditcard.unique_id_ ||
-      billing_address_ != creditcard.billing_address_) {
+      billing_address_id_ != creditcard.billing_address_id_) {
     return false;
   }
 
@@ -429,7 +429,7 @@ bool CreditCard::IsCreditCardNumber(const string16& text) {
 bool CreditCard::IsEmpty() const {
   FieldTypeSet types;
   GetAvailableFieldTypes(&types);
-  return types.empty() && billing_address().empty();
+  return types.empty() && billing_address_id_ == 0;
 }
 
 
@@ -605,7 +605,7 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& creditcard) {
       << " "
       << creditcard.unique_id()
       << " "
-      << UTF16ToUTF8(creditcard.billing_address())
+      << creditcard.billing_address_id()
       << " "
       << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))
       << " "

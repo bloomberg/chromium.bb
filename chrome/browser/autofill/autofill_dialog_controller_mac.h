@@ -160,9 +160,11 @@ class Profile;
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
 
-// Returns an array of labels representing the addresses in the |profiles_|.
-// Only returns labels for which there exists address information.
-- (NSArray*)addressLabels;
+// Creates an array of labels and populates a vector of corresponding IDs
+// representing the addresses and associated billing address IDs in the
+// |profiles_| member.
+// Only returns labels and IDs for which there exists address information.
+- (void)addressLabels:(NSArray**)labels addressIDs:(std::vector<int>*)ids;
 
 @end
 

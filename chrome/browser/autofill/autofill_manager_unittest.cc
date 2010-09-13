@@ -88,18 +88,18 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreditCard* credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "First", "Elvis Presley",
                                          "Visa", "1234567890123456", "04",
-                                         "2012", "Home");
+                                         "2012", 1);
     credit_card->set_unique_id(4);
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
                                          "Mastercard", "0987654321098765", "10",
-                                         "2014", "Work");
+                                         "2014", 2);
     credit_card->set_unique_id(5);
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "Empty", "", "", "", "",
-                                         "", "");
+                                         "", 3);
     credit_card->set_unique_id(6);
     credit_cards->push_back(credit_card);
   }

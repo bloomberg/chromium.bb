@@ -573,7 +573,7 @@ void AutoFillManager::GetBillingProfileSuggestions(
   for (std::vector<CreditCard*>::const_iterator cc =
            personal_data_->credit_cards().begin();
        cc != personal_data_->credit_cards().end(); ++cc) {
-    string16 label = (*cc)->billing_address();
+    int billing_address_id = (*cc)->billing_address_id();
     AutoFillProfile* billing_profile = NULL;
 
     // The value of the stored data for this field type in the |profile|.
@@ -585,7 +585,7 @@ void AutoFillManager::GetBillingProfileSuggestions(
       AutoFillProfile* profile = *iter;
 
       // This assumes that labels are unique.
-      if (profile->Label() == label &&
+      if (profile->unique_id() == billing_address_id &&
           !profile->GetFieldText(type).empty() &&
           StartsWith(profile->GetFieldText(type), field.value(), false)) {
         billing_profile = profile;
@@ -680,13 +680,13 @@ void AutoFillManager::FillBillingFormField(const CreditCard* credit_card,
   DCHECK(type.group() == AutoFillType::ADDRESS_BILLING);
   DCHECK(field);
 
-  string16 billing_address = credit_card->billing_address();
-  if (!billing_address.empty()) {
+  int billing_address_id = credit_card->billing_address_id();
+  if (billing_address_id != 0) {
     AutoFillProfile* profile = NULL;
     const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
     for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
          iter != profiles.end(); ++iter) {
-      if ((*iter)->Label() == billing_address) {
+      if ((*iter)->unique_id() == billing_address_id) {
         profile = *iter;
         break;
       }

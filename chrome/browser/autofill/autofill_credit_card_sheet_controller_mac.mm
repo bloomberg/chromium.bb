@@ -98,12 +98,19 @@
   // The model copies the popup values blindly.  We need to clear the strings
   // in the case that our special menus are in effect.
   if ([billingAddressPopup_ indexOfSelectedItem] <= 0)
-    [creditCardModel_ setBillingAddress:@""];
+    [creditCardModel_ setBillingAddressID:0];
   if ([expirationMonthPopup_ indexOfSelectedItem] <= 0)
     [creditCardModel_ setExpirationMonth:@""];
   if ([expirationYearPopup_ indexOfSelectedItem] <= 0)
     [creditCardModel_ setExpirationYear:@""];
 
+  // The view does not set the billing address directly.  It relies on
+  // the controller to translate between popup index and the billing address
+  // ID.  Note the -1 offset.  This is due to the empty menu item in the popup.
+  if ([billingAddressPopup_ indexOfSelectedItem] > 0) {
+    [creditCardModel_ setBillingAddressID:
+        billingAddressIDs_[[billingAddressPopup_ indexOfSelectedItem]-1]];
+  }
   [creditCardModel_ copyModelToCreditCard:creditCard];
 }
 
@@ -115,16 +122,25 @@
       IDS_AUTOFILL_DIALOG_CHOOSE_EXISTING_ADDRESS);
 
   // Build the menu array and set it.
-  NSArray* addressStrings = [parentController_ addressLabels];
+  NSArray* addressStrings = nil;
+  [parentController_ addressLabels:&addressStrings
+                        addressIDs:&billingAddressIDs_];
   NSArray* newArray = [[NSArray arrayWithObject:menuString]
       arrayByAddingObjectsFromArray:addressStrings];
   [self setBillingAddressContents:newArray];
 
-  // If the addresses no longer contain our selected item, reset the selection.
-  if ([addressStrings
-        indexOfObject:[creditCardModel_ billingAddress]] == NSNotFound) {
-    [creditCardModel_ setBillingAddress:menuString];
+  // If the addresses no longer contain our billing address then reset the
+  // selection.
+  int distance = std::distance(billingAddressIDs_.begin(),
+                               std::find(billingAddressIDs_.begin(),
+                                         billingAddressIDs_.end(),
+                                         [creditCardModel_ billingAddressID]));
+  if (distance >= static_cast<int>(billingAddressIDs_.size())) {
+    [billingAddressPopup_ selectItemAtIndex:0];
+  } else {
+    [billingAddressPopup_ selectItemAtIndex:distance+1];
   }
+
 
   // Disable first item in menu.  "Choose existing address" is a non-item.
   [[billingAddressPopup_ itemAtIndex:0] setEnabled:NO];

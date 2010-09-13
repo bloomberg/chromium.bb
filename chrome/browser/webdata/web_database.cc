@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
@@ -167,8 +168,8 @@ typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 26;
-const int kCompatibleVersionNumber = 26;
+const int kCurrentVersionNumber = 27;
+const int kCompatibleVersionNumber = 27;
 const int kUrlIdPosition = 15;
 
 // Keys used in the meta table.
@@ -339,7 +340,7 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindString16(6, LimitDataSize(text));
   text.clear();
   s->BindString16(7, LimitDataSize(text));
-  s->BindString16(8, credit_card.billing_address());
+  s->BindInt(8, credit_card.billing_address_id());
   // We don't store the shipping address anymore.
   text.clear();
   s->BindString16(9, LimitDataSize(text));
@@ -380,7 +381,7 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
 
   string16 credit_card_verification_code = s.ColumnString16(7);
   // We don't store the CVV anymore.
-  credit_card->set_billing_address(s.ColumnString16(8));
+  credit_card->set_billing_address_id(s.ColumnInt(8));
   // We don't store the shipping address anymore.
   // Column 10 is processed above.
   // Column 11 is processed above.
@@ -2039,10 +2040,122 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
         LOG(WARNING) << "Unable to update web database to version 26.";
         return;
       }
+
       meta_table_.SetVersionNumber(26);
       meta_table_.SetCompatibleVersionNumber(
           std::min(26, kCompatibleVersionNumber));
       // FALL THROUGH
+
+    case 26: {
+      // Change the credit_cards.billing_address column from a string to an int.
+      // The stored string is the label of an address, so we have to select the
+      // unique ID of this address using the label as a foreign key into the
+      // |autofill_profiles| table.
+      std::string stmt =
+          "SELECT credit_cards.unique_id, autofill_profiles.unique_id "
+          "FROM autofill_profiles, credit_cards "
+          "WHERE credit_cards.billing_address = autofill_profiles.label";
+      sql::Statement s(db_.GetUniqueStatement(stmt.c_str()));
+      if (!s) {
+        NOTREACHED() << "Statement prepare failed";
+        return;
+      }
+
+      std::map<int, int> cc_billing_map;
+      while (s.Step())
+        cc_billing_map[s.ColumnInt(0)] = s.ColumnInt(1);
+
+      // Windows already stores the IDs as strings in |billing_address|. Try to
+      // convert those.
+      if (cc_billing_map.empty()) {
+        std::string stmt =
+          "SELECT unique_id,billing_address FROM credit_cards";
+        sql::Statement s(db_.GetUniqueStatement(stmt.c_str()));
+        if (!s) {
+          NOTREACHED() << "Statement prepare failed";
+          return;
+        }
+
+        while (s.Step()) {
+          int id = 0;
+          if (base::StringToInt(s.ColumnString(1), &id))
+            cc_billing_map[s.ColumnInt(0)] = id;
+        }
+      }
+
+      if (!db_.Execute("CREATE TABLE credit_cards_temp ( "
+                       "label VARCHAR, "
+                       "unique_id INTEGER PRIMARY KEY, "
+                       "name_on_card VARCHAR, "
+                       "type VARCHAR, "
+                       "card_number VARCHAR, "
+                       "expiration_month INTEGER, "
+                       "expiration_year INTEGER, "
+                       "verification_code VARCHAR, "
+                       "billing_address INTEGER, "
+                       "shipping_address VARCHAR, "
+                       "card_number_encrypted BLOB, "
+                       "verification_code_encrypted BLOB)")) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 27.";
+        return;
+      }
+
+      if (!db_.Execute(
+          "INSERT INTO credit_cards_temp "
+          "SELECT label,unique_id,name_on_card,type,card_number,"
+          "expiration_month,expiration_year,verification_code,0,"
+          "shipping_address,card_number_encrypted,verification_code_encrypted "
+          "FROM credit_cards")) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 27.";
+        return;
+      }
+
+      if (!db_.Execute("DROP TABLE credit_cards")) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 27.";
+        return;
+      }
+
+      if (!db_.Execute(
+          "ALTER TABLE credit_cards_temp RENAME TO credit_cards")) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 27.";
+        return;
+      }
+
+      meta_table_.SetVersionNumber(26);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(26, kCompatibleVersionNumber));
+      // FALL THROUGH
+
+      for (std::map<int, int>::const_iterator iter = cc_billing_map.begin();
+           iter != cc_billing_map.end(); ++iter) {
+        sql::Statement s(db_.GetCachedStatement(
+            SQL_FROM_HERE,
+            "UPDATE credit_cards SET billing_address=? WHERE unique_id=?"));
+        if (!s) {
+          NOTREACHED() << "Statement prepare failed";
+          return;
+        }
+
+        s.BindInt(0, (*iter).second);
+        s.BindInt(1, (*iter).first);
+
+        if (!s.Run()) {
+          NOTREACHED();
+          LOG(WARNING) << "Unable to update web database to version 27.";
+          return;
+        }
+      }
+
+      meta_table_.SetVersionNumber(27);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(27, kCompatibleVersionNumber));
+
+      // FALL THROUGH
+    }
 
     // Add successive versions here.  Each should set the version number and
     // compatible version number as appropriate, then fall through to the next

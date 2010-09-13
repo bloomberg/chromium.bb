@@ -40,12 +40,25 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
 
   // Loads the data from an address and sends this data back to the DOMUI to
   // show in the address editor. Called from DOMUI.
-  // |args| - an integer, the unique ID of the address to remove.
+  // |args| - an integer, the unique ID of the address to edit.
   void EditAddress(const ListValue* args);
 
   // Removes an address from the WebDatabase. Called from DOMUI.
   // |args| - an integer, the unique ID of the address to remove.
   void RemoveAddress(const ListValue* args);
+
+  // Adds or updates a credit card, depending on the unique ID of the credit
+  // card. If the unique ID is 0, a new credit card is added to the WebDatabase;
+  // otherwise, the credit card with the matching ID is updated. Called from
+  // DOMUI.
+  // |args| - an array containing the unique ID of the credit card followed by
+  // the credit card data.
+  void UpdateCreditCard(const ListValue* args);
+
+  // Loads the data from a credit card and sends this data back to the DOMUI to
+  // show in the credit card editor. Called from DOMUI.
+  // |args| - an integer, the unique ID of the credit card to edit.
+  void EditCreditCard(const ListValue* args);
 
   // Removes a credit card from the WebDatabase. Called from DOMUI.
   // |args| - an integer, the unique ID of the credit card to remove.

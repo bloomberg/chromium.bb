@@ -265,6 +265,7 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                       ASCIIToUTF16("2012"));
+  credit_card.set_billing_address_id(0);
   credit_cards().push_back(&credit_card);
 
   LoadDialog();
@@ -401,6 +402,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
   // New credit card should match.  Don't compare labels.
   CreditCard new_credit_card;
   new_credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Don"));
+  new_credit_card.set_billing_address_id(0);
   observer_.credit_cards_[1].set_label(string16());
   ASSERT_EQ(observer_.credit_cards_[1], new_credit_card);
 }

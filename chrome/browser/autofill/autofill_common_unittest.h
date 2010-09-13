@@ -39,7 +39,7 @@ void SetProfileInfo(AutoFillProfile* profile,
 void SetCreditCardInfo(CreditCard* credit_card,
     const char* label, const char* name_on_card, const char* type,
     const char* card_number, const char* expiration_month,
-    const char* expiration_year, const char* billing_address);
+    const char* expiration_year, int billing_address_id);
 
 }  // namespace autofill_unittest
 

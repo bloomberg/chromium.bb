@@ -619,9 +619,10 @@ class PreferenceObserver : public NotificationObserver {
   return 0;
 }
 
-- (NSArray*)addressLabels {
+- (void)addressLabels:(NSArray**)labels addressIDs:(std::vector<int>*)ids {
   NSUInteger capacity = profiles_.size();
   NSMutableArray* array = [NSMutableArray arrayWithCapacity:capacity];
+  ids->clear();
 
   std::vector<AutoFillProfile>::iterator i;
   for (i = profiles_.begin(); i != profiles_.end(); ++i) {
@@ -639,9 +640,10 @@ class PreferenceObserver : public NotificationObserver {
       continue;
     }
     [array addObject:SysUTF16ToNSString(i->Label())];
+    ids->push_back(i->unique_id());
   }
 
-  return array;
+  *labels = array;
 }
 
 // Accessor for |autoFillEnabled| preference state.  Note: a checkbox in Nib

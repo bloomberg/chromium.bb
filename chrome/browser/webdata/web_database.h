@@ -129,14 +129,14 @@ class WebDatabase {
 
   // Loads the complete list of password forms into the specified vector |forms|
   // if include_blacklisted is true, otherwise only loads those which are
-  // actually autofillable; i.e haven't been blacklisted by the user selecting
+  // actually autofill-able; i.e haven't been blacklisted by the user selecting
   // the 'Never for this site' button.
   bool GetAllLogins(std::vector<webkit_glue::PasswordForm*>* forms,
                     bool include_blacklisted);
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Autofill
+  // AutoFill
   //
   //////////////////////////////////////////////////////////////////////////////
 
@@ -285,7 +285,7 @@ class WebDatabase {
   // Remove all tokens previously set with SetTokenForService.
   bool RemoveAllTokens();
 
-  // Retrives all tokens previously set with SetTokenForService.
+  // Retrieves all tokens previously set with SetTokenForService.
   // Returns true if there were tokens and we decrypted them,
   // false if there was a failure somehow
   bool GetAllTokens(std::map<std::string, std::string>* tokens);

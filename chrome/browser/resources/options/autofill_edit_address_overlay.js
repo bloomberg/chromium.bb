@@ -39,12 +39,13 @@ cr.define('options', function() {
         self.dismissOverlay_();
       }
 
+      self.uniqueID = 0;
       self.clearInputFields_();
       self.connectInputEvents_();
     },
 
     /**
-     * Clears any uncommited input, resets the stored unique ID and dismisses
+     * Clears any uncommitted input, resets the stored unique ID and dismisses
      * the overlay.
      * @private
      */
@@ -55,8 +56,8 @@ cr.define('options', function() {
     },
 
     /**
-     * Aggregates the values in the input fields into an associate array and
-     * sends the array to the AutoFill handler.
+     * Aggregates the values in the input fields into an array and sends the
+     * array to the AutoFill handler.
      * @private
      */
     saveAddress_: function() {
@@ -133,6 +134,7 @@ cr.define('options', function() {
      */
     loadAddress_: function(address) {
       this.setInputFields_(address);
+      this.inputFieldChanged_();
       this.uniqueID = address['uniqueID'];
     },
 

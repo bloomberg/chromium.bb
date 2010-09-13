@@ -7,6 +7,7 @@
 #pragma once
 
 #import <Cocoa/Cocoa.h>
+#include <vector>
 
 @class AutoFillCreditCardModel;
 @class AutoFillDialogController;
@@ -48,6 +49,9 @@ typedef NSInteger AutoFillCreditCardMode;
   // compliant property.  The values of this array may change as the list
   // of addresses change in the |parentController_|.
   NSArray* billingAddressContents_;
+
+  // Array of IDs corresponding to the strings in |billingAddressContents_|.
+  std::vector<int> billingAddressIDs_;
 
   // Contents of the expiration month and year popups.  Strongly owned.  We do
   // not hold them as scoped_nsobjects because they are exposed as KVO compliant

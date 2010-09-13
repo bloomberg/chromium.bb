@@ -40,12 +40,12 @@ class CreditCard : public FormGroup {
   string16 LastFourDigits() const;
 
   const string16& type() const { return type_; }
-  const string16& billing_address() const { return billing_address_; }
+  int billing_address_id() const { return billing_address_id_; }
   int unique_id() const { return unique_id_; }
 
   // The caller should verify that the corresponding AutoFillProfile exists.
-  void set_billing_address(const string16& address) {
-    billing_address_ = address;
+  void set_billing_address_id(int address_id) {
+    billing_address_id_ = address_id;
   }
   void set_unique_id(int id) { unique_id_ = id; }
 
@@ -137,9 +137,9 @@ class CreditCard : public FormGroup {
   // This is the display name of the card set by the user, e.g., Amazon Visa.
   string16 label_;
 
-  // The billing address. This is the label of the AutoFillProfile that contains
-  // the corresponding billing address.
-  string16 billing_address_;
+  // The billing address. This is the unique ID of the AutoFillProfile that
+  // contains the corresponding billing address.
+  int billing_address_id_;
 
   // The unique ID of this credit card.
   int unique_id_;

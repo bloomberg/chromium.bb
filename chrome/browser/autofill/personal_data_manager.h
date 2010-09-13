@@ -109,6 +109,12 @@ class PersonalDataManager
   // Removes the profile represented by |unique_id|.
   void RemoveProfile(int unique_id);
 
+  // Adds |credit_card| to the web database.
+  void AddCreditCard(const CreditCard& credit_card);
+
+  // Updates |credit_card| which already exists in the web database.
+  void UpdateCreditCard(const CreditCard& credit_card);
+
   // Removes the credit card represented by |unique_id|.
   void RemoveCreditCard(int unique_id);
 

@@ -961,9 +961,8 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
       NOTREACHED();
     } else {
       DCHECK(new_index < static_cast<int>(observer_->profiles_set_.size()));
-      temporary_info_.credit_card.set_billing_address(
-          base::IntToString16(
-          observer_->profiles_set_[new_index].address.unique_id()));
+      temporary_info_.credit_card.set_billing_address_id(
+          observer_->profiles_set_[new_index].address.unique_id());
     }
   } else if (combo_box == combo_box_month_) {
     if (new_index == -1) {
@@ -1133,9 +1132,8 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   // Address combo boxes.
   combo_box_billing_ = new views::Combobox(billing_model_);
   combo_box_billing_->set_listener(this);
-  int billing_id = -1;
-  if (base::StringToInt(WideToUTF16Hack(
-          temporary_info_.credit_card.billing_address()), &billing_id))
+  int billing_id = temporary_info_.credit_card.billing_address_id();
+  if (billing_id)
     combo_box_billing_->SetSelectedItem(billing_model_->GetIndex(billing_id));
   billing_model_->UsedWithComboBox(combo_box_billing_);
 

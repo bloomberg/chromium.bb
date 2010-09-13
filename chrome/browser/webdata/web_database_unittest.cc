@@ -1318,7 +1318,7 @@ TEST_F(WebDatabaseTest, CreditCard) {
                           ASCIIToUTF16("04"));
   work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                           ASCIIToUTF16("2013"));
-  work_creditcard.set_billing_address(ASCIIToUTF16("Overlook Hotel"));
+  work_creditcard.set_billing_address_id(1);
 
   EXPECT_TRUE(db.AddCreditCard(work_creditcard));
 
@@ -1340,7 +1340,7 @@ TEST_F(WebDatabaseTest, CreditCard) {
                             ASCIIToUTF16("06"));
   target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                             ASCIIToUTF16("2012"));
-  target_creditcard.set_billing_address(ASCIIToUTF16("Overlook Hotel"));
+  target_creditcard.set_billing_address_id(1);
 
   EXPECT_TRUE(db.AddCreditCard(target_creditcard));
   ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"),
@@ -1350,7 +1350,7 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Update the 'Target' profile.
   target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
-                          ASCIIToUTF16("Charles Grady"));
+                            ASCIIToUTF16("Charles Grady"));
   EXPECT_TRUE(db.UpdateCreditCard(target_creditcard));
   ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"), &db_creditcard));
   EXPECT_EQ(target_creditcard, *db_creditcard);
@@ -1572,6 +1572,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   void SetUpVersion22CorruptDatabase();
   void SetUpVersion24Database();
   void SetUpVersion25Database();
+  void SetUpVersion26Database();
 
  private:
   ScopedTempDir temp_dir_;
@@ -1579,7 +1580,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 26;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 27;
 
 // This schema is taken from a build prior to the addition of the |credit_card|
 // table.  Version 22 of the schema.  Contrast this with the corrupt version
@@ -1868,6 +1869,67 @@ void WebDatabaseMigrationTest::SetUpVersion25Database() {
   ASSERT_TRUE(connection.CommitTransaction());
 }
 
+// This schema is taken from a build prior to the change of column type for
+// credit_cards.billing_address from string to int.
+void WebDatabaseMigrationTest::SetUpVersion26Database() {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(connection.Execute(
+    "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,"
+        "value LONGVARCHAR);"
+    "INSERT INTO \"meta\" VALUES('version','25');"
+    "INSERT INTO \"meta\" VALUES('last_compatible_version','25');"
+    "CREATE TABLE keywords (id INTEGER PRIMARY KEY,short_name VARCHAR NOT NULL,"
+        "keyword VARCHAR NOT NULL,favicon_url VARCHAR NOT NULL,"
+        "url VARCHAR NOT NULL,show_in_default_list INTEGER,"
+        "safe_for_autoreplace INTEGER,originating_url VARCHAR,"
+        "date_created INTEGER DEFAULT 0,usage_count INTEGER DEFAULT 0,"
+        "input_encodings VARCHAR,suggest_url VARCHAR,"
+        "prepopulate_id INTEGER DEFAULT 0,"
+        "autogenerate_keyword INTEGER DEFAULT 0,"
+        "logo_id INTEGER DEFAULT 0,"
+        "created_by_policy INTEGER DEFAULT 0);"
+    "CREATE TABLE logins (origin_url VARCHAR NOT NULL, action_url VARCHAR,"
+        "username_element VARCHAR, username_value VARCHAR,"
+        "password_element VARCHAR, password_value BLOB, submit_element VARCHAR,"
+        "signon_realm VARCHAR NOT NULL,"
+        "ssl_valid INTEGER NOT NULL,preferred INTEGER NOT NULL,"
+        "date_created INTEGER NOT NULL,blacklisted_by_user INTEGER NOT NULL,"
+        "scheme INTEGER NOT NULL,UNIQUE (origin_url, username_element,"
+        "username_value, password_element, submit_element, signon_realm));"
+    "CREATE TABLE web_app_icons (url LONGVARCHAR,width int,height int,"
+        "image BLOB, UNIQUE (url, width, height));"
+    "CREATE TABLE web_apps (url LONGVARCHAR UNIQUE,"
+        "has_all_images INTEGER NOT NULL);"
+    "CREATE TABLE autofill (name VARCHAR, value VARCHAR, value_lower VARCHAR,"
+        "pair_id INTEGER PRIMARY KEY, count INTEGER DEFAULT 1);"
+    "CREATE TABLE autofill_dates ( pair_id INTEGER DEFAULT 0,"
+        "date_created INTEGER DEFAULT 0);"
+    "CREATE TABLE autofill_profiles ( label VARCHAR,"
+        "unique_id INTEGER PRIMARY KEY, first_name VARCHAR,"
+        "middle_name VARCHAR, last_name VARCHAR, email VARCHAR,"
+        "company_name VARCHAR, address_line_1 VARCHAR, address_line_2 VARCHAR,"
+        "city VARCHAR, state VARCHAR, zipcode VARCHAR, country VARCHAR,"
+        "phone VARCHAR, fax VARCHAR);"
+    "CREATE TABLE credit_cards ( label VARCHAR, unique_id INTEGER PRIMARY KEY,"
+        "name_on_card VARCHAR, type VARCHAR, card_number VARCHAR,"
+        "expiration_month INTEGER, expiration_year INTEGER,"
+        "verification_code VARCHAR, billing_address VARCHAR,"
+        "shipping_address VARCHAR, card_number_encrypted BLOB,"
+        "verification_code_encrypted BLOB);"
+    "CREATE TABLE token_service (service VARCHAR PRIMARY KEY NOT NULL,"
+        "encrypted_token BLOB);"
+    "CREATE INDEX logins_signon ON logins (signon_realm);"
+    "CREATE INDEX web_apps_url_index ON web_apps (url);"
+    "CREATE INDEX autofill_name ON autofill (name);"
+    "CREATE INDEX autofill_name_value_lower ON autofill (name, value_lower);"
+    "CREATE INDEX autofill_dates_pair_id ON autofill_dates (pair_id);"
+    "CREATE INDEX autofill_profiles_label_index ON autofill_profiles (label);"
+    "CREATE INDEX credit_cards_label_index ON credit_cards (label);"));
+  ASSERT_TRUE(connection.CommitTransaction());
+}
+
 // Tests that the all migrations from an empty database succeed.
 TEST_F(WebDatabaseMigrationTest, MigrateEmptyToCurrent) {
   // Load the database via the WebDatabase class and migrate the database to
@@ -2039,10 +2101,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion25ToCurrent) {
   {
     sql::Connection connection;
     ASSERT_TRUE(connection.Open(GetDatabasePath()));
-
-    // Columns existing and not existing before current version.
-    ASSERT_TRUE(connection.DoesColumnExist("keywords", "id"));
-    ASSERT_FALSE(connection.DoesColumnExist("keywords", "created_by_policy"));
   }
 
   // Load the database via the WebDatabase class and migrate the database to
@@ -2064,5 +2122,161 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion25ToCurrent) {
     // |keywords| |logo_id| column should have been added.
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "created_by_policy"));
+  }
+}
+
+// Tests that the credit_cards.billing_address column is changed from a string
+// to an int whilst preserving the associated billing address. This version of
+// the test makes sure a stored label is converted to an ID.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringLabels) {
+  // Initialize the database.
+  SetUpVersion25Database();
+
+  // Verify pre-conditions. These are expectations for version 25 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Columns existing and not existing before current version.
+    ASSERT_TRUE(connection.DoesColumnExist("keywords", "id"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "created_by_policy"));
+    EXPECT_TRUE(connection.DoesColumnExist("credit_cards", "billing_address"));
+
+    std::string stmt = "INSERT INTO autofill_profiles"
+      "(label, unique_id, first_name, middle_name, last_name, email,"
+      " company_name, address_line_1, address_line_2, city, state, zipcode,"
+      " country, phone, fax)"
+      "VALUES ('Home',1,'','','','','','','','','','','','','')";
+    sql::Statement s(connection.GetUniqueStatement(stmt.c_str()));
+    ASSERT_TRUE(s.Run());
+
+    // Insert a CC linked to an existing address.
+    std::string stmt2 = "INSERT INTO credit_cards"
+      "(label, unique_id, name_on_card, type, card_number,"
+      " expiration_month, expiration_year, verification_code, billing_address,"
+      " shipping_address, card_number_encrypted, verification_code_encrypted)"
+      "VALUES ('label',2,'Jack','Visa','1234',2,2012,'','Home','','','')";
+    sql::Statement s2(connection.GetUniqueStatement(stmt2.c_str()));
+    ASSERT_TRUE(s2.Run());
+
+    // |billing_address| is a string.
+    std::string stmt3 = "SELECT billing_address FROM credit_cards";
+    sql::Statement s3(connection.GetUniqueStatement(stmt3.c_str()));
+    ASSERT_TRUE(s3.Step());
+    EXPECT_EQ(s3.ColumnType(0), sql::COLUMN_TYPE_TEXT);
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+    EXPECT_TRUE(connection.DoesColumnExist("credit_cards", "billing_address"));
+
+    // |billing_address| is an integer. Also Verify the credit card data is
+    // converted.
+    std::string stmt = "SELECT * FROM credit_cards";
+    sql::Statement s(connection.GetUniqueStatement(stmt.c_str()));
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ(s.ColumnType(8), sql::COLUMN_TYPE_INTEGER);
+    EXPECT_EQ("label", s.ColumnString(0));
+    EXPECT_EQ(2, s.ColumnInt(1));
+    EXPECT_EQ("Jack", s.ColumnString(2));
+    EXPECT_EQ("Visa", s.ColumnString(3));
+    EXPECT_EQ("1234", s.ColumnString(4));
+    EXPECT_EQ(2, s.ColumnInt(5));
+    EXPECT_EQ(2012, s.ColumnInt(6));
+    EXPECT_EQ(std::string(), s.ColumnString(7));
+    EXPECT_EQ(1, s.ColumnInt(8));
+    // The remaining columns are unused or blobs.
+  }
+}
+
+// Tests that the credit_cards.billing_address column is changed from a string
+// to an int whilst preserving the associated billing address. This version of
+// the test makes sure a stored string ID is converted to an integer ID.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringIDs) {
+  // Initialize the database.
+  SetUpVersion25Database();
+
+  // Verify pre-conditions. These are expectations for version 25 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    EXPECT_TRUE(connection.DoesColumnExist("credit_cards", "billing_address"));
+
+    std::string stmt = "INSERT INTO autofill_profiles"
+      "(label, unique_id, first_name, middle_name, last_name, email,"
+      " company_name, address_line_1, address_line_2, city, state, zipcode,"
+      " country, phone, fax)"
+      "VALUES ('Home',1,'','','','','','','','','','','','','')";
+    sql::Statement s(connection.GetUniqueStatement(stmt.c_str()));
+    ASSERT_TRUE(s.Run());
+
+    // Insert a CC linked to an existing address.
+    std::string stmt2 = "INSERT INTO credit_cards"
+      "(label, unique_id, name_on_card, type, card_number,"
+      " expiration_month, expiration_year, verification_code, billing_address,"
+      " shipping_address, card_number_encrypted, verification_code_encrypted)"
+      "VALUES ('label',2,'Jack','Visa','1234',2,2012,'','1','','','')";
+    sql::Statement s2(connection.GetUniqueStatement(stmt2.c_str()));
+    ASSERT_TRUE(s2.Run());
+
+    // |billing_address| is a string.
+    std::string stmt3 = "SELECT billing_address FROM credit_cards";
+    sql::Statement s3(connection.GetUniqueStatement(stmt3.c_str()));
+    ASSERT_TRUE(s3.Step());
+    EXPECT_EQ(s3.ColumnType(0), sql::COLUMN_TYPE_TEXT);
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // |keywords| |logo_id| column should have been added.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "created_by_policy"));
+    EXPECT_TRUE(connection.DoesColumnExist("credit_cards", "billing_address"));
+
+    // |billing_address| is an integer. Also Verify the credit card data is
+    // converted.
+    std::string stmt = "SELECT * FROM credit_cards";
+    sql::Statement s(connection.GetUniqueStatement(stmt.c_str()));
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ(s.ColumnType(8), sql::COLUMN_TYPE_INTEGER);
+    EXPECT_EQ("label", s.ColumnString(0));
+    EXPECT_EQ(2, s.ColumnInt(1));
+    EXPECT_EQ("Jack", s.ColumnString(2));
+    EXPECT_EQ("Visa", s.ColumnString(3));
+    EXPECT_EQ("1234", s.ColumnString(4));
+    EXPECT_EQ(2, s.ColumnInt(5));
+    EXPECT_EQ(2012, s.ColumnInt(6));
+    EXPECT_EQ(std::string(), s.ColumnString(7));
+    EXPECT_EQ(1, s.ColumnInt(8));
+    // The remaining columns are unused or blobs.
   }
 }

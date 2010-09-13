@@ -549,10 +549,10 @@ class AutoFillCreditCardEditor {
   // Creates the combobox used to show the billing addresses.
   GtkWidget* CreateAddressWidget();
 
-  // Creates the combobox for chosing the month.
+  // Creates the combobox for choosing the month.
   GtkWidget* CreateMonthWidget();
 
-  // Creates the combobox for chosing the year.
+  // Creates the combobox for choosing the year.
   GtkWidget* CreateYearWidget();
 
   void Init();
@@ -789,7 +789,7 @@ void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
   for (std::vector<AutoFillProfile*>::const_iterator i =
            data_manager->profiles().begin();
        i != data_manager->profiles().end(); ++i) {
-    if ((*i)->Label() == card->billing_address()) {
+    if ((*i)->unique_id() == card->billing_address_id()) {
       int index = static_cast<int>(i - data_manager->profiles().begin());
       gtk_combo_box_set_active(GTK_COMBO_BOX(address_), index);
       break;
@@ -848,7 +848,7 @@ void AutoFillCreditCardEditor::ApplyEdits() {
     card = &cards.back();
   }
 
-  // Update the credit card from what the user typedi n.
+  // Update the credit card from what the user typed in.
   SetCreditCardValuesFromWidgets(card);
 
   // And update the model.
@@ -861,7 +861,7 @@ void AutoFillCreditCardEditor::SetCreditCardValuesFromWidgets(
 
   SetFormValue(name_, card, CREDIT_CARD_NAME);
 
-  card->set_billing_address(string16());
+  card->set_billing_address_id(0);
   int selected_address_index =
       gtk_combo_box_get_active(GTK_COMBO_BOX(address_));
   if (selected_address_index != -1) {
@@ -876,7 +876,7 @@ void AutoFillCreditCardEditor::SetCreditCardValuesFromWidgets(
              data_manager->profiles().begin();
          i != data_manager->profiles().end(); ++i) {
       if ((*i)->unique_id() == id) {
-        card->set_billing_address((*i)->Label());
+        card->set_billing_address_id(id);
         break;
       }
     }
