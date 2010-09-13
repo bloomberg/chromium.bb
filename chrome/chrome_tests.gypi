@@ -1766,6 +1766,7 @@
         'browser/in_process_webkit/indexed_db_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
+        'browser/popup_blocker_browsertest.cc',
         'browser/printing/print_dialog_cloud_uitest.cc',
         'browser/renderer_host/test/render_process_host_browsertest.cc',
         'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
