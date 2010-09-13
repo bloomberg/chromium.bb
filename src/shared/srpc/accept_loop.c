@@ -200,13 +200,3 @@ void __srpc_init() {
     }
   }
 }
-
-int NaClSrpcMain(const struct NaClSrpcHandlerDesc *methods) {
-  int stand_alone = (srpc_get_fd() == -1);
-  if (stand_alone) {
-    return NaClSrpcCommandLoopMain(methods);
-  } else {
-    srpc_default_acceptor((void *) methods);
-    return 0;
-  }
-}

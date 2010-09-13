@@ -24,6 +24,7 @@ trusted_untrusted_shared = [
 untrusted_only = [
     'accept_loop.c',
     'main.c',
+    'rpc_main.c',
     'rpc_universal.c']
 
 env.ComponentLibrary('libsrpc',
