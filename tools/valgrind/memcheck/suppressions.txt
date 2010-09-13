@@ -679,6 +679,7 @@
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
    fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   ...
    fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
    fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
    fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
