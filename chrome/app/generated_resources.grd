@@ -5266,7 +5266,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
         <ph name="SITE">$1<ex>google.xom</ex></ph> is not available
       </message>
-      <message name="IDS_ERRORPAGES_TITLE_NOT_FOUND" desc="Title of the error page when the server returns a 404.">
+      <message name="IDS_ERRORPAGES_TITLE_ACCESS_DENIED" desc="Title in the error page when a server returns a 403.  Also suitable for similar error codes.">
+        Access to <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> denied.
+      </message>
+      <message name="IDS_ERRORPAGES_TITLE_NOT_FOUND" desc="Title of the error page when the server returns a 404 or 410.">
         <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> is not found
       </message>
       <message name="IDS_ERRORPAGES_TITLE_LOAD_FAILED" desc="Title of the error page when we can't load a page.">
@@ -5275,7 +5278,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
         This webpage is not available.
       </message>
-      <message name="IDS_ERRORPAGES_HEADING_NOT_FOUND" desc="Heading in the error page when the server returns a 404.">
+      <message name="IDS_ERRORPAGES_HEADING_NOT_FOUND" desc="Heading in the error page when the server returns a 404 or 410.">
         This webpage is not found.
       </message>
       <message name="IDS_ERRORPAGES_HEADING_TOO_MANY_REDIRECTS" desc="Heading in the error page when there are too many URL redirects.">
@@ -5296,6 +5299,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_ERRORPAGES_DETAILS_TEMPLATE" desc="On the bottom of the error page text, there is a box that includes extra information for tech savvy users.">
         Error <ph name="ERROR_NUMBER">$1<ex>5</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_FILE_NOT_FOUND</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The requested file is not found.</ex></ph>
+      </message>
+      <message name="IDS_ERRORPAGES_HTTP_DETAILS_TEMPLATE" desc="On the bottom of the error page text for http errors, there is a box that includes extra information for tech savvy users.">
+        HTTP Error <ph name="ERROR_NUMBER">$1<ex>500</ex></ph> (<ph name="ERROR_NAME">$2<ex>Internal Server Error</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The server encountered an internal error.</ex></ph>
       </message>
 
       <message name="IDS_ERRORPAGES_DETAILS_TIMED_OUT" desc="The error message displayed when a page takes too long to load.">
@@ -5318,6 +5324,67 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
         Unknown error.
+      </message>
+
+      <message name="IDS_ERRORPAGES_HEADING_ACCESS_DENIED" desc="Heading in the error page when a server returns a 403.  Also suitable for similar error codes.">
+        Access to the webpage was denied.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_FORBIDDEN" desc="Summary in the error page when a server returns a 403.">
+        You are not authorized to access the webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.  You may need to log in.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_FORBIDDEN" desc="Details in the error page when a server returns a 403.">
+        The server refused to fulfill the request.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_GONE" desc="Summary of the error page when the server returns a 410.">
+        The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> no longer exists.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_GONE" desc="Details in the error page when a server returns a 403.">
+        The requested resource no longer exists, and there is forwarding address.  This is expected to be a permanent condition.
+      </message>
+
+      <message name="IDS_ERRORPAGES_HEADING_HTTP_SERVER_ERROR" desc="Heading in the error page for 5xx errors.">
+        Server error.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_INTERNAL_SERVER_ERROR" desc="Summary in the error page when the server returns a 500.">
+        The website encountered an error while retrieving <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.
+        It may be down for maintenance or configured incorrectly.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_INTERNAL_SERVER_ERROR" desc="The error message displayed when the server returns a 500.">
+        As unexpected condition was encountered while the server was attempting to fulfill the request.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE" desc="Summary in the error page when the server returns a 501 or 505.">
+        The website is unable to handle the request for <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_NOT_IMPLEMENTED" desc="The error message displayed when the server returns a 502.">
+        The server does have the functionality needed to fulfill the request.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_HTTP_VERSION_NOT_SUPPORTED" desc="The error message displayed when the server returns a 505.">
+        The server does not support the HTTP version used in the request.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_BAD_GATEWAY" desc="Summary in the error page when the server returns a 502.">
+        An invalid response was received while attempting to load <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.
+        The server may be down for maintenance or configured incorrectly.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_BAD_GATEWAY" desc="The error message displayed when the server returns a 502.">
+        The gateway or proxy server received an invalid response from an upstream server.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_SERVICE_UNAVAILABLE" desc="Summary in the error page when the server returns a 503.">
+        The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> is currently unavailable.  It may be overloaded or down for maintenance.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_SERVICE_UNAVAILABLE" desc="The error message displayed when the server returns a 503.">
+        The server is currently unable to handle the request.  This code indicates this is a temporary condition, and the server will be up again after a delay.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_GATEWAY_TIMEOUT" desc="Summary in the error page when the server returns a 504.">
+        The server for <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> took too long to respond.  It may be overloaded.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_GATEWAY_TIMEOUT" desc="The error message displayed when the server returns a 504.">
+        The gateway or proxy server timed out while waiting for a response from an upstream server.
       </message>
 
       <message name="IDS_ERRORPAGES_HEADING_SSL_PROTOCOL_ERROR" desc="Heading in the error page for SSL protocol errors.">

@@ -1542,18 +1542,20 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
     if (failed_url.is_valid())
       extension = ExtensionRendererInfo::GetByURL(failed_url);
     if (extension) {
-      GetAppErrorValues(error, failed_url, extension, &error_strings);
+      LocalizedError::GetAppErrorStrings(error, failed_url, extension,
+                                         &error_strings);
 
       // TODO(erikkay): Should we use a different template for different
       // error messages?
       resource_id = IDR_ERROR_APP_HTML;
     } else {
-      if (error.reason == net::ERR_CACHE_MISS &&
+      if (error.domain == WebString::fromUTF8(net::kErrorDomain) &&
+          error.reason == net::ERR_CACHE_MISS &&
           EqualsASCII(failed_request.httpMethod(), "POST")) {
-        GetFormRepostErrorValues(failed_url, &error_strings);
+        LocalizedError::GetFormRepostStrings(failed_url, &error_strings);
         resource_id = IDR_ERROR_NO_DETAILS_HTML;
       } else {
-        GetLocalizedErrorValues(error, &error_strings);
+        LocalizedError::GetStrings(error, &error_strings);
         resource_id = IDR_NET_ERROR_HTML;
       }
     }
@@ -2957,8 +2959,7 @@ void RenderView::didFailProvisionalLoad(WebFrame* frame,
     return;
 
   // Fallback to a local error page.
-  LoadNavigationErrorPage(frame, failed_request, error, std::string(),
-                          replace);
+  LoadNavigationErrorPage(frame, failed_request, error, std::string(), replace);
 }
 
 void RenderView::didReceiveDocumentData(
@@ -2972,10 +2973,12 @@ void RenderView::didReceiveDocumentData(
   // We're going to call commitDocumentData ourselves...
   prevent_default = true;
 
-  // Continue buffering the response data for the original 404 page.  If it
-  // grows too large, then we'll just let it through.
+  // Continue buffering the response data for the original error page.  If it
+  // grows too large, then we'll just let it through.  For any error other than
+  // a 404, "too large" means any data at all.
   navigation_state->append_postponed_data(data, data_len);
-  if (navigation_state->postponed_data().size() >= 512) {
+  if (navigation_state->postponed_data().size() >= 512 ||
+      navigation_state->http_status_code() != 404) {
     navigation_state->set_postpone_loading_data(false);
     frame->commitDocumentData(navigation_state->postponed_data().data(),
                               navigation_state->postponed_data().size());
@@ -3245,13 +3248,14 @@ void RenderView::didReceiveResponse(
     return;
 
   // If we are in view source mode, then just let the user see the source of
-  // the server's 404 error page.
+  // the server's error page.
   if (frame->isViewSourceModeEnabled())
     return;
 
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->provisionalDataSource());
   CHECK(navigation_state);
+  int http_status_code = response.httpStatusCode();
 
   // Record page load flags.
   navigation_state->set_was_fetched_via_spdy(response.wasFetchedViaSPDY());
@@ -3259,14 +3263,20 @@ void RenderView::didReceiveResponse(
   navigation_state->set_was_alternate_protocol_available(
       response.wasAlternateProtocolAvailable());
   navigation_state->set_was_fetched_via_proxy(response.wasFetchedViaProxy());
+  navigation_state->set_http_status_code(http_status_code);
 
   // Consider loading an alternate error page for 404 responses.
-  if (response.httpStatusCode() != 404)
+  if (http_status_code == 404) {
+    // Can we even load an alternate error page for this URL?
+    if (!GetAlternateErrorPageURL(response.url(), HTTP_404).is_valid())
+      return;
+  } else if (!LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
+                                         http_status_code)) {
+    // If no corresponding error strings for a particular status code, just
+    // render any received data, regardless of whether or not the status code
+    // indicates an error.
     return;
-
-  // Can we even load an alternate error page for this URL?
-  if (!GetAlternateErrorPageURL(response.url(), HTTP_404).is_valid())
-    return;
+  }
 
   navigation_state->set_postpone_loading_data(true);
   navigation_state->clear_postponed_data();
@@ -3279,21 +3289,33 @@ void RenderView::didFinishResourceLoad(
   if (!navigation_state->postpone_loading_data())
     return;
 
-  // The server returned a 404 and the content was < 512 bytes (which we
+  // The server returned an error and the content was < 512 bytes (which we
   // suppressed).  Go ahead and fetch the alternate page content.
+  int http_status_code = navigation_state->http_status_code();
+  if (http_status_code == 404) {
+    // On 404s, try a remote search page as a fallback.
+    const GURL& frame_url = frame->url();
 
-  const GURL& frame_url = frame->url();
+    const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
+    DCHECK(error_page_url.is_valid());
 
-  const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
-  DCHECK(error_page_url.is_valid());
+    WebURLError original_error;
+    original_error.unreachableURL = frame_url;
 
-  WebURLError original_error;
-  original_error.unreachableURL = frame_url;
+    navigation_state->set_alt_error_page_fetcher(
+        new AltErrorPageResourceFetcher(
+            error_page_url, frame, original_error,
+            NewCallback(this, &RenderView::AltErrorPageFinished)));
+  } else {
+    // On other errors, use an internal error page.
+    WebURLError error;
+    error.unreachableURL = frame->url();
+    error.domain = WebString::fromUTF8(LocalizedError::kHttpErrorDomain);
+    error.reason = http_status_code;
 
-  navigation_state->set_alt_error_page_fetcher(
-      new AltErrorPageResourceFetcher(
-          error_page_url, frame, original_error,
-          NewCallback(this, &RenderView::AltErrorPageFinished)));
+    LoadNavigationErrorPage(frame, frame->dataSource()->request(), error,
+                            std::string(), true);
+  }
 }
 
 void RenderView::didFailResourceLoad(
@@ -4587,8 +4609,8 @@ void RenderView::AltErrorPageFinished(WebFrame* frame,
         NavigationState::FromDataSource(frame->dataSource());
     html_to_load = &navigation_state->postponed_data();
   }
-  LoadNavigationErrorPage(
-      frame, WebURLRequest(), original_error, *html_to_load, true);
+  LoadNavigationErrorPage(frame, WebURLRequest(), original_error, *html_to_load,
+                          true);
 }
 
 void RenderView::OnMoveOrResizeStarted() {

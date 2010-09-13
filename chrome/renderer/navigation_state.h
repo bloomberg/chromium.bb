@@ -211,6 +211,11 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     postponed_data_.append(data, data_len);
   }
 
+  int http_status_code() const { return http_status_code_; }
+  void set_http_status_code(int http_status_code) {
+    http_status_code_ = http_status_code;
+  }
+
   // Sets the cache policy. The cache policy is only used if explicitly set and
   // by default is not set. You can mark a NavigationState as not having a cache
   // state by way of clear_cache_policy_override.
@@ -286,6 +291,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         cache_policy_override_set_(false),
         cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
         user_script_idle_scheduler_(NULL),
+        http_status_code_(0),
         was_fetched_via_spdy_(false),
         was_npn_negotiated_(false),
         was_alternate_protocol_available_(false),
@@ -323,6 +329,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   WebKit::WebURLRequest::CachePolicy cache_policy_override_;
 
   scoped_ptr<UserScriptIdleScheduler> user_script_idle_scheduler_;
+  int http_status_code_;
 
   bool was_fetched_via_spdy_;
   bool was_npn_negotiated_;
