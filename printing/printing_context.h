@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #endif
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "gfx/native_widget_types.h"
 #include "printing/print_settings.h"
 
@@ -92,7 +93,7 @@ class PrintingContext {
   // like IPC message processing! Some printers have side-effects on this call
   // like virtual printers that ask the user for the path of the saved document;
   // for example a PDF printer.
-  Result NewDocument(const std::wstring& document_name);
+  Result NewDocument(const string16& document_name);
 
   // Starts a new page.
   Result NewPage();

@@ -57,10 +57,10 @@ bool PrintViewManager::OnRenderViewGone(RenderViewHost* render_view_host) {
   return true;
 }
 
-std::wstring PrintViewManager::RenderSourceName() {
-  std::wstring name(UTF16ToWideHack(owner_.GetTitle()));
+string16 PrintViewManager::RenderSourceName() {
+  string16 name(owner_.GetTitle());
   if (name.empty())
-    name = l10n_util::GetString(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
+    name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
   return name;
 }
 

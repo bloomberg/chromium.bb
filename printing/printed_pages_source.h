@@ -5,7 +5,7 @@
 #ifndef PRINTING_PRINTED_PAGES_SOURCE_H_
 #define PRINTING_PRINTED_PAGES_SOURCE_H_
 
-#include <string>
+#include "base/string16.h"
 
 class GURL;
 class MessageLoop;
@@ -18,7 +18,7 @@ class PrintedDocument;
 class PrintedPagesSource {
  public:
   // Returns the document title.
-  virtual std::wstring RenderSourceName() = 0;
+  virtual string16 RenderSourceName() = 0;
 
   // Returns the URL's source of the document if applicable.
   virtual GURL RenderSourceUrl() = 0;

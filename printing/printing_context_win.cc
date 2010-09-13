@@ -11,6 +11,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "printing/printed_document.h"
 #include "skia/ext/platform_device_win.h"
 
@@ -246,7 +247,7 @@ void PrintingContext::ResetSettings() {
 }
 
 PrintingContext::Result PrintingContext::NewDocument(
-    const std::wstring& document_name) {
+    const string16& document_name) {
   DCHECK(!in_print_job_);
   if (!context_)
     return OnError();
@@ -261,10 +262,10 @@ PrintingContext::Result PrintingContext::NewDocument(
     return OnError();
 
   DOCINFO di = { sizeof(DOCINFO) };
-  di.lpszDocName = document_name.c_str();
+  di.lpszDocName = UTF16ToWide(document_name).c_str();
 
   // Is there a debug dump directory specified? If so, force to print to a file.
-  std::wstring debug_dump_path = PrintedDocument::debug_dump_path();
+  FilePath debug_dump_path = PrintedDocument::debug_dump_path();
   if (!debug_dump_path.empty()) {
     // Create a filename.
     std::wstring filename;
@@ -273,12 +274,12 @@ PrintingContext::Result PrintingContext::NewDocument(
     filename += L"_";
     filename += base::TimeFormatTimeOfDay(now);
     filename += L"_";
-    filename += document_name;
+    filename += UTF16ToWide(document_name);
     filename += L"_";
     filename += L"buffer.prn";
     file_util::ReplaceIllegalCharactersInPath(&filename, '_');
-    file_util::AppendToPath(&debug_dump_path, filename);
-    di.lpszOutput = debug_dump_path.c_str();
+    debug_dump_path.Append(filename);
+    di.lpszOutput = debug_dump_path.value().c_str();
   }
 
   // No message loop running in unit tests.

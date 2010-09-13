@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "printing/page_overlays.h"
 #include "printing/print_settings.h"
 #include "printing/printed_document.h"
@@ -30,8 +32,8 @@ const Keys kOverlayKeys[] = {
 
 class PagesSource : public printing::PrintedPagesSource {
  public:
-  virtual std::wstring RenderSourceName() {
-    return L"Foobar Document";
+  virtual string16 RenderSourceName() {
+    return ASCIIToUTF16("Foobar Document");
   }
 
   virtual GURL RenderSourceUrl() {

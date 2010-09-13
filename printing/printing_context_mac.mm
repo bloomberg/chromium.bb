@@ -122,7 +122,7 @@ void PrintingContext::ResetSettings() {
 }
 
 PrintingContext::Result PrintingContext::NewDocument(
-    const std::wstring& document_name) {
+    const string16& document_name) {
   DCHECK(!in_print_job_);
 
   in_print_job_ = true;
@@ -135,7 +135,7 @@ PrintingContext::Result PrintingContext::NewDocument(
       static_cast<PMPageFormat>([print_info_ PMPageFormat]);
 
   scoped_cftyperef<CFStringRef> job_title(
-      base::SysWideToCFStringRef(document_name));
+      base::SysUTF16ToCFStringRef(document_name));
   PMPrintSettingsSetJobName(print_settings, job_title.get());
 
   OSStatus status = PMSessionBeginCGDocumentNoDialog(print_session,

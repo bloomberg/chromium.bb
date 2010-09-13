@@ -60,7 +60,7 @@ void PrintingContext::ResetSettings() {
 }
 
 PrintingContext::Result PrintingContext::NewDocument(
-    const std::wstring& document_name) {
+    const string16& document_name) {
   DCHECK(!in_print_job_);
 
   NOTIMPLEMENTED();

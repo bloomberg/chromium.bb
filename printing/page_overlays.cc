@@ -149,21 +149,21 @@ std::wstring PageOverlays::ReplaceVariables(const std::wstring& input,
       offset = ReplaceKey(&output,
                           offset,
                           wcslen(kTitle),
-                          document.name());
+                          UTF16ToWideHack(document.name()));
     } else if (0 == output.compare(offset,
                                    wcslen(kTime),
                                    kTime)) {
       offset = ReplaceKey(&output,
                           offset,
                           wcslen(kTime),
-                          document.time());
+                          UTF16ToWideHack(document.time()));
     } else if (0 == output.compare(offset,
                                    wcslen(kDate),
                                    kDate)) {
       offset = ReplaceKey(&output,
                           offset,
                           wcslen(kDate),
-                          document.date());
+                          UTF16ToWideHack(document.date()));
     } else if (0 == output.compare(offset,
                                    wcslen(kPage),
                                    kPage)) {

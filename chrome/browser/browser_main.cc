@@ -1390,7 +1390,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kDebugPrint)) {
     FilePath path =
         parsed_command_line.GetSwitchValuePath(switches::kDebugPrint);
-    printing::PrintedDocument::set_debug_dump_path(path.value());
+    printing::PrintedDocument::set_debug_dump_path(path);
   }
 #endif
 

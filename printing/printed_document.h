@@ -10,11 +10,13 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "printing/print_settings.h"
 #include "printing/native_metafile.h"
 
+class FilePath;
 class MessageLoop;
 
 namespace gfx {
@@ -92,19 +94,19 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
 
   // Getters. All these items are immutable hence thread-safe.
   const PrintSettings& settings() const { return immutable_.settings_; }
-  const std::wstring& name() const {
+  const string16& name() const {
     return immutable_.name_;
   }
   const GURL& url() const { return immutable_.url_; }
-  const std::wstring& date() const { return immutable_.date_; }
-  const std::wstring& time() const { return immutable_.time_; }
+  const string16& date() const { return immutable_.date_; }
+  const string16& time() const { return immutable_.time_; }
   int cookie() const { return immutable_.cookie_; }
 
   // Sets a path where to dump printing output files for debugging. If never set
   // no files are generated.
-  static void set_debug_dump_path(const std::wstring& debug_dump_path);
+  static void set_debug_dump_path(const FilePath& debug_dump_path);
 
-  static const std::wstring& debug_dump_path();
+  static const FilePath& debug_dump_path();
 
  private:
   friend class base::RefCountedThreadSafe<PrintedDocument>;
@@ -152,16 +154,16 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
     MessageLoop* source_message_loop_;
 
     // Document name. Immutable.
-    std::wstring name_;
+    string16 name_;
 
     // URL that generated this document. Immutable.
     GURL url_;
 
     // The date on which this job started. Immutable.
-    std::wstring date_;
+    string16 date_;
 
     // The time at which this job started. Immutable.
-    std::wstring time_;
+    string16 time_;
 
     // Cookie to uniquely identify this document. It is used to make sure that a
     // PrintedPage is correctly belonging to the PrintedDocument. Since
