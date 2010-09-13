@@ -2218,6 +2218,17 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // Add a new folder controller as triggered by the given folder button.
 - (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
+
+  // If doing a close/open, make sure the fullscreen chrome doesn't
+  // have a chance to begin animating away in the middle of things.
+  BrowserWindowController* browserController =
+      [BrowserWindowController browserWindowControllerForView:[self view]];
+  // Confirm we're not re-locking with ourself as an owner before locking.
+  DCHECK([browserController isBarVisibilityLockedForOwner:self] == NO);
+  [browserController lockBarVisibilityForOwner:self
+                                 withAnimation:NO
+                                         delay:NO];
+
   if (folderController_)
     [self closeAllBookmarkFolders];
 
@@ -2231,6 +2242,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // Only BookmarkBarController has this; the
   // BookmarkBarFolderController does not.
   [self watchForExitEvent:YES];
+
+  // No longer need to hold the lock; the folderController_ now owns it.
+  [browserController releaseBarVisibilityForOwner:self
+                                    withAnimation:NO
+                                            delay:NO];
 }
 
 - (void)openAll:(const BookmarkNode*)node
