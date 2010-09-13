@@ -3,19 +3,12 @@
 // found in the LICENSE file.
 
 #include <atlbase.h>
-#include <iostream>
 
-#include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/process_util.h"
-#include "base/sys_info.h"
-#include "chrome/common/env_vars.h"
 #include "base/test/test_suite.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_paths.h"
-
 #include "chrome_frame/test/chrome_frame_test_utils.h"
-#include "chrome_frame/test/http_server.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
 
@@ -32,10 +25,6 @@ ChromeFrameUnittestsModule _AtlModule;
 
 const wchar_t kNoRegistrationSwitch[] = L"no-registration";
 
-// Causes the test executable to just run the web server and quit when the
-// server is killed. Useful for debugging tests.
-const wchar_t kRunAsServer[] = L"server";
-
 void PureCall() {
   __debugbreak();
 }
@@ -47,25 +36,6 @@ int main(int argc, char **argv) {
   _set_purecall_handler(PureCall);
 
   TestSuite test_suite(argc, argv);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kRunAsServer)) {
-    ChromeFrameHTTPServer server;
-    server.SetUp();
-    GURL server_url(server.test_server()->GetURL(""));
-    std::cout << std::endl
-              << "Server waiting on " << server_url.spec().c_str()
-              << std::endl << std::endl
-              << "Test output will be written to "
-              << server.test_server()->document_root().value() << "\\dump"
-              << std::endl << std::endl
-              << "Hit Ctrl-C or navigate to "
-              << server_url.spec().c_str() << "kill to shut down the server."
-              << std::endl;
-    server.WaitToFinish(INFINITE);
-    server.TearDown();
-    std::cout << "Server stopped.";
-    return 0;
-  }
 
   SetConfigBool(kChromeFrameHeadlessMode, true);
 
