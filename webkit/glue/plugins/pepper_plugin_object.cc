@@ -594,7 +594,7 @@ PluginObject* PluginObject::FromNPObject(NPObject* object) {
 // static
 NPObject* PluginObject::AllocateObjectWrapper() {
   NPObjectWrapper* wrapper = new NPObjectWrapper;
-  memset(wrapper, sizeof(NPObjectWrapper), 0);
+  memset(wrapper, 0, sizeof(NPObjectWrapper));
   return wrapper;
 }
 
