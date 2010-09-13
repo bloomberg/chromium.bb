@@ -1527,10 +1527,11 @@ void MenuController::IncrementSelection(int delta) {
     if (parent_count > 1) {
       for (int i = 0; i < parent_count; ++i) {
         if (parent->GetSubmenu()->GetMenuItemAt(i) == item) {
-          int next_index = (i + delta + parent_count) % parent_count;
-          ScrollToVisible(parent->GetSubmenu()->GetMenuItemAt(next_index));
           MenuItemView* to_select =
-              parent->GetSubmenu()->GetMenuItemAt(next_index);
+              FindNextSelectableMenuItem(parent, i, delta);
+          if (!to_select)
+            break;
+          ScrollToVisible(to_select);
           SetSelection(to_select, false, false);
           View* to_make_hot = GetInitialFocusableView(to_select, delta == 1);
           if (to_make_hot)
@@ -1540,6 +1541,24 @@ void MenuController::IncrementSelection(int delta) {
       }
     }
   }
+}
+
+MenuItemView* MenuController::FindNextSelectableMenuItem(MenuItemView* parent,
+                                                         int index,
+                                                         int delta) {
+  int start_index = index;
+  int parent_count = parent->GetSubmenu()->GetMenuItemCount();
+  // Loop through the menu items skipping any invisible menus. The loop stops
+  // when we wrap or find a visible child.
+  do {
+    index = (index + delta + parent_count) % parent_count;
+    if (index == start_index)
+      return NULL;
+    MenuItemView* child = parent->GetSubmenu()->GetMenuItemAt(index);
+    if (child->IsVisible())
+      return child;
+  } while (index != start_index);
+  return NULL;
 }
 
 void MenuController::OpenSubmenuChangeSelectionIfCan() {

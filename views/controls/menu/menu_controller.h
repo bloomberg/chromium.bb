@@ -311,6 +311,13 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // Selects the next/previous menu item.
   void IncrementSelection(int delta);
 
+  // Returns the next selectable child menu item of |parent| starting at |index|
+  // and incrementing index by |delta|. If there are no more selected menu items
+  // NULL is returned.
+  MenuItemView* FindNextSelectableMenuItem(MenuItemView* parent,
+                                           int index,
+                                           int delta);
+
   // If the selected item has a submenu and it isn't currently open, the
   // the selection is changed such that the menu opens immediately.
   void OpenSubmenuChangeSelectionIfCan();
