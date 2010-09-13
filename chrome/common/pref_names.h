@@ -54,7 +54,10 @@ extern const char kSearchSuggestEnabled[];
 extern const char kCookieBehavior[];  // OBSOLETE
 extern const char kDefaultSearchProviderSearchURL[];
 extern const char kDefaultSearchProviderSuggestURL[];
+extern const char kDefaultSearchProviderIconURL[];
+extern const char kDefaultSearchProviderEncodings[];
 extern const char kDefaultSearchProviderName[];
+extern const char kDefaultSearchProviderKeyword[];
 extern const char kDefaultSearchProviderID[];
 extern const char kDefaultSearchProviderPrepopulateID[];
 extern const char kSearchProviderOverrides[];

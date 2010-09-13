@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <utility>
 
 #include "base/stl_util-inl.h"
 #include "chrome/browser/policy/configuration_policy_store.h"
@@ -27,7 +28,8 @@ class MockConfigurationPolicyStore : public ConfigurationPolicyStore {
 
   // ConfigurationPolicyStore implementation.
   virtual void Apply(PolicyType policy, Value* value) {
-    policy_map_[policy] = value;
+    std::swap(policy_map_[policy], value);
+    delete value;
   }
 
  private:
