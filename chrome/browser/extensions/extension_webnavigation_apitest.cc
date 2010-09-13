@@ -12,3 +12,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
 
   ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationEvents) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  ASSERT_TRUE(RunExtensionTest("webnavigation/navigation")) << message_;
+}

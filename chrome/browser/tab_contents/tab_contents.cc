@@ -2003,6 +2003,8 @@ void TabContents::GoToEntryAtOffset(int offset) {
     // Note that we don't call NavigationController::GotToOffset() as we don't
     // want to create a pending navigation entry (it might end up lingering
     // http://crbug.com/51680).
+    entry->set_transition_type(entry->transition_type() |
+                               PageTransition::FORWARD_BACK);
     NavigateToEntry(*entry, NavigationController::NO_RELOAD);
   }
 }
