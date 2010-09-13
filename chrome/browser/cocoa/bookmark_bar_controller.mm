@@ -1621,6 +1621,13 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     case NSKeyUp:
       // Any key press ends things.
       return YES;
+    case NSLeftMouseDragged:
+      // We can get here with the following sequence:
+      // - open a bookmark folder
+      // - right-click (and unclick) on it to open context menu
+      // - move mouse to window titlebar then click-drag it by the titlebar
+      // http://crbug.com/49333
+      return YES;
     default:
       break;
   }
