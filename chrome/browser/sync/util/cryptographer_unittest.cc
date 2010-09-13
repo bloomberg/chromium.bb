@@ -91,7 +91,13 @@ TEST(CryptographerTest, AddKeySetsDefault) {
   EXPECT_EQ(encrypted3.key_name(), encrypted4.key_name());
 }
 
-TEST(CryptographerTest, EncryptExportDecrypt) {
+// Crashes, Bug 55178.
+#if defined(OS_WIN)
+#define MAYBE_EncryptExportDecrypt DISABLED_EncryptExportDecrypt
+#else
+#define MAYBE_EncryptExportDecrypt EncryptExportDecrypt
+#endif
+TEST(CryptographerTest, MAYBE_EncryptExportDecrypt) {
   sync_pb::EncryptedData nigori;
   sync_pb::EncryptedData encrypted;
 
@@ -130,7 +136,13 @@ TEST(CryptographerTest, EncryptExportDecrypt) {
   }
 }
 
-TEST(CryptographerTest, PackUnpack) {
+// Crashes, Bug 55178.
+#if defined(OS_WIN)
+#define MAYBE_PackUnpack DISABLED_PackUnpack
+#else
+#define MAYBE_PackUnpack PackUnpack
+#endif
+TEST(CryptographerTest, MAYBE_PackUnpack) {
 #if defined(OS_MACOSX)
   Encryptor::UseMockKeychain(true);
 #endif

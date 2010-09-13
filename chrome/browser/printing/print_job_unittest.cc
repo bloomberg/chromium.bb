@@ -84,7 +84,13 @@ class TestPrintNotifObserv : public NotificationObserver {
 
 }  // namespace
 
-TEST(PrintJobTest, SimplePrint) {
+// Crashes, Bug 55181.
+#if defined(OS_WIN)
+#define MAYBE_SimplePrint DISABLED_SimplePrint
+#else
+#define MAYBE_SimplePrint SimplePrint
+#endif
+TEST(PrintJobTest, MAYBE_SimplePrint) {
   // Test the multithreaded nature of PrintJob to make sure we can use it with
   // known livetime.
 

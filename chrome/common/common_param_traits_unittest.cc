@@ -233,8 +233,9 @@ TEST(IPCMessageTest, PageRange) {
   EXPECT_TRUE(input == output);
 }
 
+// Enabling this test breaks assert handling for test suite. Bug 55177.
 // Tests printing::NativeMetafile serialization.
-TEST(IPCMessageTest, Metafile) {
+TEST(IPCMessageTest, DISABLED_Metafile) {
   // TODO(sanjeevr): Make this test meaningful for non-Windows platforms. We
   // need to initialize the metafile using alternate means on the other OSes.
 #if defined(OS_WIN)
