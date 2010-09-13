@@ -538,9 +538,13 @@ TEST_F(ChromeAsyncSocketTest, WrongRead) {
     char buf[4096];
     size_t len_read;
     EXPECT_FALSE(chrome_async_socket_->Read(buf, sizeof(buf), &len_read));
-    ExpectErrorState(ChromeAsyncSocket::STATE_CLOSED,
+    ExpectErrorState(ChromeAsyncSocket::STATE_CONNECTING,
                      ChromeAsyncSocket::ERROR_WRONGSTATE);
     EXPECT_TRUE(chrome_async_socket_->Close());
+    ExpectSignalSocketState(
+        SignalSocketState(
+            SIGNAL_CLOSE, ChromeAsyncSocket::STATE_CLOSED,
+            ChromeAsyncSocket::ERROR_WRONGSTATE, net::OK));
   }, "non-open");
 }
 
