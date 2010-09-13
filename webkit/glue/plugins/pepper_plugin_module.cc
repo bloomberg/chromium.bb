@@ -159,7 +159,7 @@ void RunMessageLoop() {
 }
 
 void QuitMessageLoop() {
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitNow();
 }
 
 uint32_t GetLiveObjectCount(PP_Module module_id) {
