@@ -255,8 +255,10 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
   // an ACK if we are resized to a non-empty rect.
   webwidget_->resize(new_size);
   if (!new_size.IsEmpty()) {
-    // Resize should have caused an invalidation of the entire view.
-    DCHECK(paint_aggregator_.HasPendingUpdate());
+    if (!webwidget_->isAcceleratedCompositingActive()) {
+      // Resize should have caused an invalidation of the entire view.
+      DCHECK(paint_aggregator_.HasPendingUpdate());
+    }
 
     // We will send the Resize_ACK flag once we paint again.
     set_next_paint_is_resize_ack();
@@ -285,7 +287,11 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
   set_next_paint_is_restore_ack();
 
   // Generate a full repaint.
-  didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
+  if (needs_repainting && !webwidget_->isAcceleratedCompositingActive()) {
+    didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
+  } else {
+    scheduleComposite();
+  }
 }
 
 void RenderWidget::OnRequestMoveAck() {
@@ -471,6 +477,11 @@ void RenderWidget::DoDeferredUpdate() {
     return;
   }
 
+  // Layout may generate more invalidation.  It may also enable the
+  // GPU acceleration, so make sure to run layout before we send the
+  // GpuRenderingActivated message.
+  webwidget_->layout();
+
   // If we are using accelerated compositing then all the drawing
   // to the associated window happens directly from the gpu process and the
   // browser process shouldn't do any drawing.
@@ -486,9 +497,6 @@ void RenderWidget::DoDeferredUpdate() {
         routing_id_, is_gpu_rendering_active_));
   }
 
-  // Layout may generate more invalidation.
-  webwidget_->layout();
-
   // OK, save the pending update to a local since painting may cause more
   // invalidation.  Some WebCore rendering objects only layout when painted.
   PaintAggregator::PendingUpdate update = paint_aggregator_.GetPendingUpdate();
@@ -497,41 +505,49 @@ void RenderWidget::DoDeferredUpdate() {
   gfx::Rect scroll_damage = update.GetScrollDamage();
   gfx::Rect bounds = update.GetPaintBounds().Union(scroll_damage);
 
-  // Compute a buffer for painting and cache it.
-  scoped_ptr<skia::PlatformCanvas> canvas(
-      RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_, bounds));
-  if (!canvas.get()) {
-    NOTREACHED();
-    return;
-  }
-
-  // We may get back a smaller canvas than we asked for.
-  // TODO(darin): This seems like it could cause painting problems!
-  DCHECK_EQ(bounds.width(), canvas->getDevice()->width());
-  DCHECK_EQ(bounds.height(), canvas->getDevice()->height());
-  bounds.set_width(canvas->getDevice()->width());
-  bounds.set_height(canvas->getDevice()->height());
-
-  HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
-
-  // TODO(darin): Re-enable painting multiple damage rects once the
-  // page-cycler regressions are resolved.  See bug 29589.
-  if (update.scroll_rect.IsEmpty()) {
-    update.paint_rects.clear();
-    update.paint_rects.push_back(bounds);
-  }
-
-  // The scroll damage is just another rectangle to paint and copy.
   std::vector<gfx::Rect> copy_rects;
-  copy_rects.swap(update.paint_rects);
-  if (!scroll_damage.IsEmpty())
-    copy_rects.push_back(scroll_damage);
+  if (!is_gpu_rendering_active_) {
+    // Compute a buffer for painting and cache it.
+    scoped_ptr<skia::PlatformCanvas> canvas
+      (RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_, bounds));
+    if (!canvas.get()) {
+      NOTREACHED();
+      return;
+    }
 
-  for (size_t i = 0; i < copy_rects.size(); ++i)
-    PaintRect(copy_rects[i], bounds.origin(), canvas.get());
+    // We may get back a smaller canvas than we asked for.
+    // TODO(darin): This seems like it could cause painting problems!
+    DCHECK_EQ(bounds.width(), canvas->getDevice()->width());
+    DCHECK_EQ(bounds.height(), canvas->getDevice()->height());
+    bounds.set_width(canvas->getDevice()->width());
+    bounds.set_height(canvas->getDevice()->height());
 
+    HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
+
+    // TODO(darin): Re-enable painting multiple damage rects once the
+    // page-cycler regressions are resolved.  See bug 29589.
+    if (update.scroll_rect.IsEmpty()) {
+      update.paint_rects.clear();
+      update.paint_rects.push_back(bounds);
+    }
+
+    // The scroll damage is just another rectangle to paint and copy.
+    copy_rects.swap(update.paint_rects);
+    if (!scroll_damage.IsEmpty())
+      copy_rects.push_back(scroll_damage);
+
+    for (size_t i = 0; i < copy_rects.size(); ++i)
+      PaintRect(copy_rects[i], bounds.origin(), canvas.get());
+  } else {  // Accelerated compositing path
+    // Begin painting.
+    bool finish = next_paint_is_resize_ack();
+    webwidget_->composite(finish);
+  }
+
+  // sending an ack to browser process that the paint is complete...
   ViewHostMsg_UpdateRect_Params params;
-  params.bitmap = current_paint_buf_->id();
+  params.bitmap =
+      current_paint_buf_ ? current_paint_buf_->id() : TransportDIB::Id();
   params.bitmap_rect = bounds;
   params.dx = update.scroll_delta.x();
   params.dy = update.scroll_delta.y();
@@ -559,9 +575,19 @@ void RenderWidget::DoDeferredUpdate() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WebWidgetDelegate
+// WebWidgetClient
 
 void RenderWidget::didInvalidateRect(const WebRect& rect) {
+  if (webwidget_->isAcceleratedCompositingActive()) {
+    // Drop invalidates on the floor when we are in compositing mode.
+    // TODO(nduca): Stop WebViewImpl from sending invalidates in the first
+    // place.
+    if (!(rect.x == 0 && rect.y == 0 &&
+          rect.width == 1 && rect.height == 1)) {
+      return;
+    }
+  }
+
   // We only want one pending DoDeferredUpdate call at any time...
   bool update_pending = paint_aggregator_.HasPendingUpdate();
 
@@ -591,6 +617,11 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
 }
 
 void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
+  // Drop scrolls on the floor when we are in compositing mode.
+  // TODO(nduca): stop WebViewImpl from sending scrolls in the first place.
+  if (webwidget_->isAcceleratedCompositingActive())
+    return;
+
   // We only want one pending DoDeferredUpdate call at any time...
   bool update_pending = paint_aggregator_.HasPendingUpdate();
 
@@ -617,6 +648,16 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
   //    the work that we will need to do.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &RenderWidget::CallDoDeferredUpdate));
+}
+
+void RenderWidget::scheduleComposite() {
+  // TODO(nduca): replace with something a little less hacky.  The reason this
+  // hack is still used is because the Invalidate-DoDeferredUpdate loop
+  // contains a lot of host-renderer synchronization logic that is still
+  // important for the accelerated compositing case. The option of simply
+  // duplicating all that code is less desirable than "faking out" the
+  // invalidation path using a magical damage rect.
+  didInvalidateRect(WebRect(0,0,1,1));
 }
 
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {
@@ -679,10 +720,6 @@ void RenderWidget::closeWidgetSoon() {
   // complete, and then the Close message can be sent.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &RenderWidget::DoDeferredClose));
-}
-
-void RenderWidget::GenerateFullRepaint() {
-  didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
 }
 
 void RenderWidget::Close() {
@@ -838,8 +875,12 @@ void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
     return;
 
   set_next_paint_is_repaint_ack();
-  gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
-  didInvalidateRect(repaint_rect);
+  if (webwidget_->isAcceleratedCompositingActive()) {
+    scheduleComposite();
+  } else {
+    gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
+    didInvalidateRect(repaint_rect);
+  }
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
@@ -862,6 +903,7 @@ void RenderWidget::SetHidden(bool hidden) {
 
 void RenderWidget::SetBackground(const SkBitmap& background) {
   background_ = background;
+
   // Generate a full repaint.
   didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
 }

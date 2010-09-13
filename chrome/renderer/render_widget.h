@@ -97,6 +97,7 @@ class RenderWidget : public IPC::Channel::Listener,
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect&);
   virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect);
+  virtual void scheduleComposite();
   virtual void didFocus();
   virtual void didBlur();
   virtual void didChangeCursor(const WebKit::WebCursorInfo&);
@@ -117,9 +118,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // Called when a plugin window has been destroyed, to make sure the currently
   // pending moves don't try to reference it.
   void CleanupWindowInPluginMoves(gfx::PluginWindowHandle window);
-
-  // Invalidates entire widget rect to generate a full repaint.
-  void GenerateFullRepaint();
 
   // Close the underlying WebWidget.
   virtual void Close();

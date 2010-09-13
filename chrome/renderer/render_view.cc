@@ -4342,7 +4342,7 @@ void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
         renderer_prefs.active_selection_fg_color,
         renderer_prefs.inactive_selection_bg_color,
         renderer_prefs.inactive_selection_fg_color);
-    didInvalidateRect(gfx::Rect(size_));
+    webview()->themeChanged();
   }
 #endif
 }
@@ -4511,7 +4511,8 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
 void RenderView::OnThemeChanged() {
 #if defined(OS_WIN)
   gfx::NativeTheme::instance()->CloseHandles();
-  didInvalidateRect(gfx::Rect(size_));
+  if (webview())
+    webview()->themeChanged();
 #else  // defined(OS_WIN)
   // TODO(port): we don't support theming on non-Windows platforms yet
   NOTIMPLEMENTED();
