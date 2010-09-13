@@ -27,6 +27,9 @@ class BookmarkBarGtkUnittest : public ::testing::Test {
   BookmarkBarGtkUnittest()
       : ui_thread_(ChromeThread::UI, &message_loop_),
         file_thread_(ChromeThread::FILE, &message_loop_) {
+  }
+
+  virtual void SetUp() {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
@@ -37,13 +40,22 @@ class BookmarkBarGtkUnittest : public ::testing::Test {
                                            origin_provider_.get()));
   }
 
+  virtual void TearDown() {
+    bookmark_bar_.reset();
+    origin_provider_.reset();
+    browser_.reset();
+    profile_.reset();
+    message_loop_.RunAllPending();
+  }
+
+  MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
+
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<TabstripOriginProvider> origin_provider_;
   scoped_ptr<BookmarkBarGtk> bookmark_bar_;
-  MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
 };
 
 TEST_F(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty) {
