@@ -4,8 +4,10 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
+import hashlib
 import os
 import shutil
+import stat
 import subprocess
 
 
@@ -23,6 +25,20 @@ def WriteFile(filename, data):
     fh.write(data)
   finally:
     fh.close()
+
+
+def HashFile(filename):
+  hasher = hashlib.sha1()
+  fh = open(filename, "r")
+  try:
+    while True:
+      data = fh.read(4096)
+      if len(data) == 0:
+        break
+      hasher.update(data)
+  finally:
+    fh.close()
+  return hasher.hexdigest()
 
 
 def GetOne(lst):
@@ -148,23 +164,62 @@ class CopyTree(DirTree):
 
 class FileSnapshot(object):
 
+  def IsSymlink(self):
+    """
+    If this returns True, this leaf node is a symlink, and
+    GetSymlinkDest() is defined.  Otherwise, this is a file, and the
+    other getter methods are defined.
+    """
+    return False
+
   def CopyToPath(self, dest_path):
     raise NotImplementedError()
 
   def GetContents(self):
     raise NotImplementedError()
 
+  def GetHash(self):
+    raise NotImplementedError()
+
+  def IsExecutable(self):
+    raise NotImplementedError()
+
+  def GetSymlinkDest(self):
+    raise NotImplementedError()
+
+
+class SymlinkSnapshot(FileSnapshot):
+
+  def __init__(self, symlink_dest):
+    self._symlink_dest = symlink_dest
+
+  def CopyToPath(self, dest_path):
+    os.symlink(self._symlink_dest, dest_path)
+
+  def IsSymlink(self):
+    return True
+
+  def GetSymlinkDest(self):
+    return self._symlink_dest
+
 
 class FileSnapshotUsingHardLink(FileSnapshot):
 
-  def __init__(self, filename):
+  def __init__(self, filename, executable):
     self._filename = filename
+    self._is_executable = executable
 
   def CopyToPath(self, dest_path):
     os.link(self._filename, dest_path)
 
   def GetContents(self):
     return ReadFile(self._filename)
+
+  def GetHash(self):
+    return HashFile(self._filename)
+
+  def IsExecutable(self):
+    return self._is_executable
 
 
 class FileSnapshotInMemory(FileSnapshot):
@@ -187,6 +242,12 @@ class FileSnapshotInMemory(FileSnapshot):
 
   def GetContents(self):
     return self._data
+
+  def GetHash(self):
+    return hashlib.sha1(self._data).hexdigest()
+
+  def IsExecutable(self):
+    return self._is_executable
 
 
 class LazyDict(object):
@@ -225,14 +286,20 @@ class LazyDict(object):
 
 
 def MakeSnapshotFromPath(filename):
-  if os.path.isfile(filename):
-    return FileSnapshotUsingHardLink(filename)
-  else:
+  st = os.lstat(filename)
+  if stat.S_ISREG(st.st_mode):
+    is_executable = st.st_mode & stat.S_IXUSR != 0
+    return FileSnapshotUsingHardLink(filename, is_executable)
+  elif stat.S_ISLNK(st.st_mode):
+    return SymlinkSnapshot(os.readlink(filename))
+  elif stat.S_ISDIR(st.st_mode):
     def ReadDir():
       return dict(
           (leafname, MakeSnapshotFromPath(os.path.join(filename, leafname)))
           for leafname in os.listdir(filename))
     return LazyDict(ReadDir)
+  else:
+    raise AssertionError("Unknown file type 0%o: %r" % (st.st_mode, filename))
 
 
 def WriteSnapshotToPath(snapshot, dest_path):
