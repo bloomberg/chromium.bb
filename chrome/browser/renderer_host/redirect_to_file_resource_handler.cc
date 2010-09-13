@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/task.h"
+#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/file_stream.h"
@@ -144,6 +145,7 @@ void RedirectToFileResourceHandler::OnRequestClosed() {
   file_stream_.reset();
 
   // TODO(dumi): delete the temp file when it's no longer needed.
+  // TODO(dumi): revoke the privilege to upload this file.
   // base::FileUtilProxy::Delete(
   //       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
   //       file_path_, NULL);
@@ -161,6 +163,8 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
   file_stream_.reset(new net::FileStream(file_handle.ReleaseValue(),
                                          base::PLATFORM_FILE_WRITE |
                                          base::PLATFORM_FILE_ASYNC));
+  ChildProcessSecurityPolicy::GetInstance()->GrantUploadFile(
+      process_id_, file_path);
   host_->StartDeferredRequest(process_id_, request_id_);
 }
 

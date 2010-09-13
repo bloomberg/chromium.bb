@@ -1711,6 +1711,15 @@ void ResourceMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
                                             int flags,
                                             int message_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
+    IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
+        msg.routing_id(), base::PLATFORM_FILE_ERROR_ACCESS_DENIED,
+        IPC::InvalidPlatformFileForTransit(), message_id);
+    Send(reply);
+    return;
+  }
+
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
           this, &ResourceMessageFilter::AsyncOpenFileOnFileThread,
