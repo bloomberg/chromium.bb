@@ -262,8 +262,10 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
         convertBaseToScreen:[parentButton
                               convertRectToBase:[parentButton frame]].origin];
   // Within margin
-  EXPECT_LE(abs(pt.x - buttonOriginInScreen.x), 2);
-  EXPECT_LE(abs(pt.y - buttonOriginInScreen.y), 2);
+  EXPECT_LE(abs(pt.x - buttonOriginInScreen.x),
+            bookmarks::kBookmarkMenuOverlap+1);
+  EXPECT_LE(abs(pt.y - buttonOriginInScreen.y),
+            bookmarks::kBookmarkMenuOverlap+1);
 
   // Make sure we see the window shift left if it spills off the screen
   pt = [bbfc windowTopLeftForWidth:0];
