@@ -3141,7 +3141,8 @@
           {"name": "brand", "type": "string"},
           {"name": "id", "type": "string"},
           {"name": "lang", "type": "string"},
-          {"name": "exclude_machine_id", "type": "boolean"}
+          {"name": "exclude_machine_id", "type": "boolean"},
+          {"name": "callback", "type": "function", "optional": true, "parameters": [{"name": "sent", "type": "boolean"}]}
         ]
       },
       {
