@@ -1772,15 +1772,40 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
 }
 
 void Browser::ShowOptionsTab(const char* sub_page) {
-  ShowSingletonTab(GURL(StringPrintf("%s%s",
-                                     chrome::kChromeUIOptionsURL,
-                                     sub_page)));
+  GURL url(StringPrintf("%s%s", chrome::kChromeUIOptionsURL, sub_page));
+
+  // See if there is already an options tab open that we can use.
+  for (int i = 0; i < tabstrip_model_.count(); i++) {
+    TabContents* tc = tabstrip_model_.GetTabContentsAt(i);
+    const GURL& tab_url = tc->GetURL();
+
+    if (tab_url.scheme() == url.scheme() && tab_url.host() == url.host()) {
+      // We found an existing options tab, load the URL in this tab.  (Note:
+      // this may cause us to unnecessarily reload the same page.  We can't
+      // really detect that unless the options page is permitted to change the
+      // URL in the address bar, but security policy doesn't allow that.
+      OpenURLAtIndex(tc, url, GURL(), CURRENT_TAB, PageTransition::GENERATED,
+                     -1, -1);
+      tabstrip_model_.SelectTabContentsAt(i, false);
+      return;
+    }
+  }
+
+  // No options tab found, so create a new one.
+  AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK, -1,
+                TabStripModel::ADD_SELECTED, NULL, std::string(), NULL);
 }
 
 void Browser::OpenClearBrowsingDataDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"),
                             profile_);
-  window_->ShowClearBrowsingDataDialog();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    ShowOptionsTab(StringPrintf("%s#%s", chrome::kAdvancedOptionsSubPage,
+        chrome::kClearBrowserDataSubPage).c_str());
+  } else {
+    window_->ShowClearBrowsingDataDialog();
+  }
 }
 
 void Browser::OpenOptionsDialog() {
@@ -1797,7 +1822,8 @@ void Browser::OpenKeywordEditor() {
   UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"), profile_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
-    ShowOptionsTab(chrome::kSearchEnginesOptionsSubPage);
+    ShowOptionsTab(StringPrintf("%s#%s", chrome::kBrowserOptionsSubPage,
+        chrome::kSearchEnginesOptionsSubPage).c_str());
   } else {
     window_->ShowSearchEnginesDialog();
   }
@@ -1809,7 +1835,13 @@ void Browser::OpenPasswordManager() {
 
 void Browser::OpenImportSettingsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"), profile_);
-  window_->ShowImportDialog();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    ShowOptionsTab(StringPrintf("%s#%s", chrome::kPersonalOptionsSubPage,
+        chrome::kImportDataSubPage).c_str());
+  } else {
+    window_->ShowImportDialog();
+  }
 }
 
 void Browser::OpenSyncMyBookmarksDialog() {

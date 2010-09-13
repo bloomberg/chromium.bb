@@ -195,9 +195,12 @@ function load() {
   OptionsPage.initialize();
 
   var path = document.location.pathname;
+  var hash = document.location.hash;
 
   if (path.length > 1) {
     OptionsPage.showPageByName(path.slice(1));
+    if (hash.length > 1)
+      OptionsPage.showOverlay(hash.slice(1));
   } else {
     // TODO(csilv): Save/restore last selected page.
     if (cr.isChromeOS) {

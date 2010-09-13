@@ -125,8 +125,11 @@ extern const char kNetworkViewInternalsURL[];
 // Options sub-pages.
 extern const char kDefaultOptionsSubPage[];
 extern const char kBrowserOptionsSubPage[];
+extern const char kPersonalOptionsSubPage[];
 extern const char kAdvancedOptionsSubPage[];
 extern const char kSearchEnginesOptionsSubPage[];
+extern const char kClearBrowserDataSubPage[];
+extern const char kImportDataSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kSystemOptionsSubPage[];
 extern const char kLanguageOptionsSubPage[];

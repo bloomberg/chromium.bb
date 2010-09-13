@@ -127,8 +127,11 @@ const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";
 // Option sub pages.
 const char kDefaultOptionsSubPage[] =  "";
 const char kBrowserOptionsSubPage[] =  "browser";
+const char kPersonalOptionsSubPage[] =  "personal";
 const char kAdvancedOptionsSubPage[] =  "advanced";
 const char kSearchEnginesOptionsSubPage[] = "searchEngines";
+const char kClearBrowserDataSubPage[] = "clearBrowserDataOverlay";
+const char kImportDataSubPage[] = "importDataOverlay";
 #if defined(OS_CHROMEOS)
 const char kSystemOptionsSubPage[] = "system";
 const char kLanguageOptionsSubPage[] = "language";
