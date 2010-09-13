@@ -38,4 +38,4 @@ inline bool EncodeBGRAPNG(const unsigned char* input, int width, int height,
 
 }  // namespace webkit_support
 
-#endif WEBKIT_SUPPORT_WEBKIT_SUPPORT_GFX_H_
+#endif  // WEBKIT_SUPPORT_WEBKIT_SUPPORT_GFX_H_
