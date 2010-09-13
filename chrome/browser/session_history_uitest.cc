@@ -80,7 +80,13 @@ class SessionHistoryTest : public UITest {
   net::TestServer test_server_;
 };
 
-TEST_F(SessionHistoryTest, BasicBackForward) {
+#if defined(OS_WIN)
+// http://crbug.com/55380 - NavigateToURL to making this flaky
+#define MAYBE_BasicBackForward FLAKY_BasicBackForward
+#else
+#define MAYBE_BasicBackForward BasicBackForward
+#endif
+TEST_F(SessionHistoryTest, MAYBE_BasicBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
@@ -313,7 +319,13 @@ TEST_F(SessionHistoryTest, DISABLED_CrossFrameFormBackForward) {
 
 // Test that back/forward entries are created for reference fragment
 // navigations. Bug 730379.
-TEST_F(SessionHistoryTest, FragmentBackForward) {
+#if defined(OS_WIN)
+// http://crbug.com/55380 - NavigateToURL to making this flaky
+#define MAYBE_FragmentBackForward FLAKY_FragmentBackForward
+#else
+#define MAYBE_FragmentBackForward FragmentBackForward
+#endif
+TEST_F(SessionHistoryTest, MAYBE_FragmentBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.

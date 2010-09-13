@@ -454,7 +454,13 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreIntoSameWindow) {
 
 // Tests that a duplicate history entry is not created when we restore a page
 // to an existing SiteInstance.  (Bug 1230446)
-TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
+#if defined(OS_WIN)
+// http://crbug.com/55380 - NavigateToURL to making this flaky
+#define MAYBE_RestoreWithExistingSiteInstance FLAKY_RestoreWithExistingSiteInstance
+#else
+#define MAYBE_RestoreWithExistingSiteInstance RestoreWithExistingSiteInstance
+#endif
+TEST_F(TabRestoreUITest, MAYBE_RestoreWithExistingSiteInstance) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
@@ -501,7 +507,13 @@ TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
 // Tests that the SiteInstances used for entries in a restored tab's history
 // are given appropriate max page IDs, even if the renderer for the entry
 // already exists.  (Bug 1204135)
-TEST_F(TabRestoreUITest, RestoreCrossSiteWithExistingSiteInstance) {
+#if defined(OS_WIN)
+// http://crbug.com/55380 - NavigateToURL to making this flaky
+#define MAYBE_RestoreCrossSiteWithExistingSiteInstance FLAKY_RestoreCrossSiteWithExistingSiteInstance
+#else
+#define MAYBE_RestoreCrossSiteWithExistingSiteInstance RestoreCrossSiteWithExistingSiteInstance
+#endif
+TEST_F(TabRestoreUITest, MAYBE_RestoreCrossSiteWithExistingSiteInstance) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
