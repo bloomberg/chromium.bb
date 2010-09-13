@@ -49,7 +49,7 @@ const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
 const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
 const CGFloat kBookmarkVerticalPadding = 2.0;
-const CGFloat kBookmarkHorizontalPadding = 5.0;
+const CGFloat kBookmarkHorizontalPadding = 1.0;
 const CGFloat kBookmarkHorizontalScreenPadding = 8.0;
 
 // Our NSScrollView is supposed to be just barely big enough to fit its
@@ -61,7 +61,7 @@ const CGFloat kScrollViewContentWidthMargin = 2;
 
 // Make subfolder menus overlap their parent menu a bit to give a better
 // perception of a menuing system.
-const CGFloat kBookmarkMenuOverlap = 5.0;
+const CGFloat kBookmarkMenuOverlap = 1.0;
 
 // Delay before opening a subfolder (and closing the previous one)
 // when hovering over a folder button.
