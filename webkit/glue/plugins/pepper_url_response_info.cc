@@ -90,11 +90,11 @@ const PPB_URLResponseInfo_Dev* URLResponseInfo::GetInterface() {
 PP_Var URLResponseInfo::GetProperty(PP_URLResponseProperty_Dev property) {
   switch (property) {
     case PP_URLRESPONSEPROPERTY_URL:
-      return StringToPPVar(url_);
+      return StringVar::StringToPPVar(module(), url_);
     case PP_URLRESPONSEPROPERTY_STATUSCODE:
       return PP_MakeInt32(status_code_);
     case PP_URLRESPONSEPROPERTY_HEADERS:
-      return StringToPPVar(headers_);
+      return StringVar::StringToPPVar(module(), headers_);
     default:
       NOTIMPLEMENTED();  // TODO(darin): Implement me!
       return PP_MakeVoid();

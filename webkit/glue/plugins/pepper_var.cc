@@ -6,13 +6,12 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "third_party/ppapi/c/pp_var.h"
 #include "third_party/ppapi/c/ppb_var.h"
-#include "third_party/ppapi/c/ppp_class.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
-#include "webkit/glue/plugins/pepper_string.h"
+#include "webkit/glue/plugins/pepper_plugin_module.h"
+#include "webkit/glue/plugins/pepper_plugin_object.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebBindings;
@@ -21,11 +20,9 @@ namespace pepper {
 
 namespace {
 
-void Release(PP_Var var);
-PP_Var VarFromUtf8(const char* data, uint32_t len);
-
 const char kInvalidObjectException[] = "Error: Invalid object";
 const char kInvalidPropertyException[] = "Error: Invalid property";
+const char kInvalidValueException[] = "Error: Invalid value";
 const char kUnableToGetPropertyException[] = "Error: Unable to get property";
 const char kUnableToSetPropertyException[] = "Error: Unable to set property";
 const char kUnableToRemovePropertyException[] =
@@ -38,514 +35,182 @@ const char kUnableToConstructException[] = "Error: Unable to construct";
 // ---------------------------------------------------------------------------
 // Utilities
 
-String* GetStringUnchecked(PP_Var var) {
-  return reinterpret_cast<String*>(var.value.as_id);
-}
-
-NPObject* GetNPObjectUnchecked(PP_Var var) {
-  return reinterpret_cast<NPObject*>(var.value.as_id);
-}
-
-// Returns a NPVariant that corresponds to the given PP_Var.  The contents of
-// the PP_Var will be copied unless the PP_Var corresponds to an object.
-NPVariant PPVarToNPVariant(PP_Var var) {
-  NPVariant ret;
+// Converts the given PP_Var to an NPVariant, returning true on success.
+// False means that the given variant is invalid. In this case, the result
+// NPVariant will be set to a void one.
+//
+// The contents of the PP_Var will NOT be copied, so you need to ensure that
+// the PP_Var remains valid while the resultant NPVariant is in use.
+bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
   switch (var.type) {
     case PP_VARTYPE_VOID:
-      VOID_TO_NPVARIANT(ret);
+      VOID_TO_NPVARIANT(*result);
       break;
     case PP_VARTYPE_NULL:
-      NULL_TO_NPVARIANT(ret);
+      NULL_TO_NPVARIANT(*result);
       break;
     case PP_VARTYPE_BOOL:
-      BOOLEAN_TO_NPVARIANT(var.value.as_bool, ret);
+      BOOLEAN_TO_NPVARIANT(var.value.as_bool, *result);
       break;
     case PP_VARTYPE_INT32:
-      INT32_TO_NPVARIANT(var.value.as_int, ret);
+      INT32_TO_NPVARIANT(var.value.as_int, *result);
       break;
     case PP_VARTYPE_DOUBLE:
-      DOUBLE_TO_NPVARIANT(var.value.as_double, ret);
+      DOUBLE_TO_NPVARIANT(var.value.as_double, *result);
       break;
     case PP_VARTYPE_STRING: {
-      const std::string& value = GetStringUnchecked(var)->value();
-      STRINGN_TO_NPVARIANT(base::strdup(value.c_str()), value.size(), ret);
+      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+      if (!string) {
+        VOID_TO_NPVARIANT(*result);
+        return false;
+      }
+      const std::string& value = string->value();
+      STRINGN_TO_NPVARIANT(value.c_str(), value.size(), *result);
       break;
     }
     case PP_VARTYPE_OBJECT: {
-      NPObject* object = GetNPObjectUnchecked(var);
-      OBJECT_TO_NPVARIANT(WebBindings::retainObject(object), ret);
+      scoped_refptr<ObjectVar> object(ObjectVar::FromPPVar(var));
+      if (!object) {
+        VOID_TO_NPVARIANT(*result);
+        return false;
+      }
+      OBJECT_TO_NPVARIANT(object->np_object(), *result);
       break;
     }
-  }
-  return ret;
-}
-
-// Returns a NPVariant that corresponds to the given PP_Var.  The contents of
-// the PP_Var will NOT be copied, so you need to ensure that the PP_Var remains
-// valid while the resultant NPVariant is in use.
-NPVariant PPVarToNPVariantNoCopy(PP_Var var) {
-  NPVariant ret;
-  switch (var.type) {
-    case PP_VARTYPE_VOID:
-      VOID_TO_NPVARIANT(ret);
-      break;
-    case PP_VARTYPE_NULL:
-      NULL_TO_NPVARIANT(ret);
-      break;
-    case PP_VARTYPE_BOOL:
-      BOOLEAN_TO_NPVARIANT(var.value.as_bool, ret);
-      break;
-    case PP_VARTYPE_INT32:
-      INT32_TO_NPVARIANT(var.value.as_int, ret);
-      break;
-    case PP_VARTYPE_DOUBLE:
-      DOUBLE_TO_NPVARIANT(var.value.as_double, ret);
-      break;
-    case PP_VARTYPE_STRING: {
-      const std::string& value = GetStringUnchecked(var)->value();
-      STRINGN_TO_NPVARIANT(value.c_str(), value.size(), ret);
-      break;
-    }
-    case PP_VARTYPE_OBJECT: {
-      OBJECT_TO_NPVARIANT(GetNPObjectUnchecked(var), ret);
-      break;
-    }
-  }
-  return ret;
-}
-
-// Returns a NPIdentifier that corresponds to the given PP_Var.  The contents
-// of the PP_Var will be copied.  Returns NULL if the given PP_Var is not a a
-// string or integer type.
-NPIdentifier PPVarToNPIdentifier(PP_Var var) {
-  switch (var.type) {
-    case PP_VARTYPE_STRING:
-      return WebBindings::getStringIdentifier(
-          GetStringUnchecked(var)->value().c_str());
-    case PP_VARTYPE_INT32:
-      return WebBindings::getIntIdentifier(var.value.as_int);
     default:
-      return NULL;
-  }
-}
-
-PP_Var NPIdentifierToPPVar(NPIdentifier id) {
-  const NPUTF8* string_value = NULL;
-  int32_t int_value = 0;
-  bool is_string = false;
-  WebBindings::extractIdentifierData(id, string_value, int_value, is_string);
-  if (is_string)
-    return VarFromUtf8(string_value, strlen(string_value));
-
-  return PP_MakeInt32(int_value);
-}
-
-PP_Var NPIdentifierToPPVarString(NPIdentifier id) {
-  PP_Var var = NPIdentifierToPPVar(id);
-  if (var.type == PP_VARTYPE_STRING)
-    return var;
-  DCHECK(var.type == PP_VARTYPE_INT32);
-  const std::string& str = base::IntToString(var.value.as_int);
-  return VarFromUtf8(str.data(), str.size());
-}
-
-void ThrowException(NPObject* object, PP_Var exception) {
-  String* str = GetString(exception);
-  if (str)
-    WebBindings::setException(object, str->value().c_str());
-}
-
-// ---------------------------------------------------------------------------
-// NPObject implementation in terms of PPP_Class
-
-struct WrapperObject : NPObject {
-  const PPP_Class* ppp_class;
-  void* ppp_class_data;
-};
-
-static WrapperObject* ToWrapper(NPObject* object) {
-  return static_cast<WrapperObject*>(object);
-}
-
-NPObject* WrapperClass_Allocate(NPP npp, NPClass* unused) {
-  return new WrapperObject;
-}
-
-void WrapperClass_Deallocate(NPObject* object) {
-  WrapperObject* wrapper = ToWrapper(object);
-  wrapper->ppp_class->Deallocate(wrapper->ppp_class_data);
-  delete object;
-}
-
-void WrapperClass_Invalidate(NPObject* object) {
-  // TODO(darin): Do I need to do something here?
-}
-
-bool WrapperClass_HasMethod(NPObject* object, NPIdentifier method_name) {
-  WrapperObject* wrapper = ToWrapper(object);
-
-  PP_Var method_name_var = NPIdentifierToPPVarString(method_name);
-  PP_Var exception = PP_MakeVoid();
-  bool rv = wrapper->ppp_class->HasMethod(wrapper->ppp_class_data,
-                                          method_name_var,
-                                          &exception);
-  Release(method_name_var);
-
-  if (exception.type != PP_VARTYPE_VOID) {
-    ThrowException(object, exception);
-    Release(exception);
-    return false;
-  }
-  return rv;
-}
-
-bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
-                         const NPVariant* argv, uint32_t argc,
-                         NPVariant* result) {
-  WrapperObject* wrapper = ToWrapper(object);
-
-  scoped_array<PP_Var> args;
-  if (argc) {
-    args.reset(new PP_Var[argc]);
-    for (uint32_t i = 0; i < argc; ++i)
-      args[i] = NPVariantToPPVar(&argv[i]);
-  }
-  PP_Var method_name_var = NPIdentifierToPPVarString(method_name);
-  PP_Var exception = PP_MakeVoid();
-  PP_Var result_var = wrapper->ppp_class->Call(wrapper->ppp_class_data,
-                                               method_name_var, argc,
-                                               args.get(), &exception);
-  Release(method_name_var);
-  for (uint32_t i = 0; i < argc; ++i)
-    Release(args[i]);
-
-  bool rv;
-  if (exception.type == PP_VARTYPE_VOID) {
-    rv = true;
-    *result = PPVarToNPVariant(result_var);
-  } else {
-    rv = false;
-    ThrowException(object, exception);
-    Release(exception);
-  }
-  Release(result_var);
-  return rv;
-}
-
-bool WrapperClass_InvokeDefault(NPObject* object, const NPVariant* argv,
-                                uint32_t argc, NPVariant* result) {
-  WrapperObject* wrapper = ToWrapper(object);
-
-  scoped_array<PP_Var> args;
-  if (argc) {
-    args.reset(new PP_Var[argc]);
-    for (uint32_t i = 0; i < argc; ++i)
-      args[i] = NPVariantToPPVar(&argv[i]);
-  }
-  PP_Var exception = PP_MakeVoid();
-  PP_Var result_var = wrapper->ppp_class->Call(wrapper->ppp_class_data,
-                                               PP_MakeVoid(), argc, args.get(),
-                                               &exception);
-  for (uint32_t i = 0; i < argc; ++i)
-    Release(args[i]);
-
-  bool rv;
-  if (exception.type == PP_VARTYPE_VOID) {
-    rv = true;
-    *result = PPVarToNPVariant(result_var);
-  } else {
-    rv = false;
-    ThrowException(object, exception);
-    Release(exception);
-  }
-  Release(result_var);
-  return rv;
-}
-
-bool WrapperClass_HasProperty(NPObject* object, NPIdentifier property_name) {
-  WrapperObject* wrapper = ToWrapper(object);
-
-  PP_Var property_name_var = NPIdentifierToPPVar(property_name);
-  PP_Var exception = PP_MakeVoid();
-  bool rv = wrapper->ppp_class->HasProperty(wrapper->ppp_class_data,
-                                            property_name_var,
-                                            &exception);
-  Release(property_name_var);
-
-  if (exception.type != PP_VARTYPE_VOID) {
-    ThrowException(object, exception);
-    Release(exception);
-    return false;
-  }
-  return rv;
-}
-
-bool WrapperClass_GetProperty(NPObject* object, NPIdentifier property_name,
-                              NPVariant* result) {
-  WrapperObject* wrapper = ToWrapper(object);
-
-  PP_Var property_name_var = NPIdentifierToPPVar(property_name);
-  PP_Var exception = PP_MakeVoid();
-  PP_Var result_var = wrapper->ppp_class->GetProperty(wrapper->ppp_class_data,
-                                                      property_name_var,
-                                                      &exception);
-  Release(property_name_var);
-
-  bool rv;
-  if (exception.type == PP_VARTYPE_VOID) {
-    rv = true;
-    *result = PPVarToNPVariant(result_var);
-  } else {
-    rv = false;
-    ThrowException(object, exception);
-    Release(exception);
-  }
-  Release(result_var);
-  return rv;
-}
-
-bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
-                              const NPVariant* value) {
-  WrapperObject* wrapper = ToWrapper(object);
-
-  PP_Var property_name_var = NPIdentifierToPPVar(property_name);
-  PP_Var value_var = NPVariantToPPVar(value);
-  PP_Var exception = PP_MakeVoid();
-  wrapper->ppp_class->SetProperty(wrapper->ppp_class_data, property_name_var,
-                                  value_var, &exception);
-  Release(value_var);
-  Release(property_name_var);
-
-  if (exception.type != PP_VARTYPE_VOID) {
-    ThrowException(object, exception);
-    Release(exception);
-    return false;
+      VOID_TO_NPVARIANT(*result);
+      return false;
   }
   return true;
 }
 
-bool WrapperClass_RemoveProperty(NPObject* object, NPIdentifier property_name) {
-  WrapperObject* wrapper = ToWrapper(object);
+// ObjectAccessorTryCatch ------------------------------------------------------
 
-  PP_Var property_name_var = NPIdentifierToPPVar(property_name);
-  PP_Var exception = PP_MakeVoid();
-  wrapper->ppp_class->RemoveProperty(wrapper->ppp_class_data, property_name_var,
-                                     &exception);
-  Release(property_name_var);
-
-  if (exception.type != PP_VARTYPE_VOID) {
-    ThrowException(object, exception);
-    Release(exception);
-    return false;
-  }
-  return true;
-}
-
-bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
-                            uint32_t* count) {
-  WrapperObject* wrapper = ToWrapper(object);
-
-  uint32_t property_count = 0;
-  PP_Var* properties = NULL;
-  PP_Var exception = PP_MakeVoid();
-  wrapper->ppp_class->GetAllPropertyNames(wrapper->ppp_class_data,
-                                          &property_count,
-                                          &properties,
-                                          &exception);
-
-  bool rv;
-  if (exception.type == PP_VARTYPE_VOID) {
-    rv = true;
-    if (property_count == 0) {
-      *values = NULL;
-      *count = 0;
+// Automatically sets up a TryCatch for accessing the object identified by the
+// given PP_Var. The module from the object will be used for the exception
+// strings generated by the TryCatch.
+//
+// This will automatically retrieve the ObjectVar from the object and throw
+// an exception if it's invalid. At the end of construction, if there is no
+// exception, you know that there is no previously set exception, that the
+// object passed in is valid and ready to use (via the object() getter), and
+// that the TryCatch's module() getter is also set up properly and ready to
+// use.
+class ObjectAccessorTryCatch : public TryCatch {
+ public:
+  ObjectAccessorTryCatch(PP_Var object, PP_Var* exception)
+      : TryCatch(NULL, exception),
+        object_(ObjectVar::FromPPVar(object)) {
+    if (!object_) {
+      // No object or an invalid object was given. This means we have no module
+      // to associated with the exception text, so use the magic invalid object
+      // exception.
+      SetInvalidObjectException();
     } else {
-      *values = static_cast<NPIdentifier*>(
-          malloc(sizeof(NPIdentifier) * property_count));
-      *count = property_count;
-      for (uint32_t i = 0; i < property_count; ++i)
-        (*values)[i] = PPVarToNPIdentifier(properties[i]);
+      // When the object is valid, we have a valid module to associate
+      set_module(object_->module());
     }
-  } else {
-    rv = false;
-    ThrowException(object, exception);
-    Release(exception);
   }
 
-  for (uint32_t i = 0; i < property_count; ++i)
-    Release(properties[i]);
-  free(properties);
-  return rv;
-}
+  ObjectVar* object() { return object_.get(); }
 
-bool WrapperClass_Construct(NPObject* object, const NPVariant* argv,
-                            uint32_t argc, NPVariant* result) {
-  WrapperObject* wrapper = ToWrapper(object);
+ protected:
+  scoped_refptr<ObjectVar> object_;
 
-  scoped_array<PP_Var> args;
-  if (argc) {
-    args.reset(new PP_Var[argc]);
-    for (uint32_t i = 0; i < argc; ++i)
-      args[i] = NPVariantToPPVar(&argv[i]);
-  }
-
-  PP_Var exception = PP_MakeVoid();
-  PP_Var result_var = wrapper->ppp_class->Construct(wrapper->ppp_class_data,
-                                                    argc, args.get(),
-                                                    &exception);
-  for (uint32_t i = 0; i < argc; ++i)
-    Release(args[i]);
-
-  bool rv;
-  if (exception.type == PP_VARTYPE_VOID) {
-    rv = true;
-    *result = PPVarToNPVariant(result_var);
-  } else {
-    rv = false;
-    ThrowException(object, exception);
-    Release(exception);
-  }
-  Release(result_var);
-  return rv;
-}
-
-const NPClass wrapper_class = {
-  NP_CLASS_STRUCT_VERSION,
-  WrapperClass_Allocate,
-  WrapperClass_Deallocate,
-  WrapperClass_Invalidate,
-  WrapperClass_HasMethod,
-  WrapperClass_Invoke,
-  WrapperClass_InvokeDefault,
-  WrapperClass_HasProperty,
-  WrapperClass_GetProperty,
-  WrapperClass_SetProperty,
-  WrapperClass_RemoveProperty,
-  WrapperClass_Enumerate,
-  WrapperClass_Construct
+  DISALLOW_COPY_AND_ASSIGN(ObjectAccessorTryCatch);
 };
 
-// ---------------------------------------------------------------------------
-// PPB_Var methods
+// ObjectAccessiorWithIdentifierTryCatch ---------------------------------------
 
-void AddRef(PP_Var var) {
-  if (var.type == PP_VARTYPE_STRING) {
-    GetStringUnchecked(var)->AddRef();
-  } else if (var.type == PP_VARTYPE_OBJECT) {
-    // TODO(darin): Add thread safety check
-    WebBindings::retainObject(GetNPObjectUnchecked(var));
+// Automatically sets up a TryCatch for accessing the identifier on the given
+// object. This just extends ObjectAccessorTryCatch to additionally convert
+// the given identifier to an NPIdentifier and validate it, throwing an
+// exception if it's invalid.
+//
+// At the end of construction, if there is no exception, you know that there is
+// no previously set exception, that the object passed in is valid and ready to
+// use (via the object() getter), that the identifier is valid and ready to
+// use (via the identifier() getter), and that the TryCatch's module() getter
+// is also set up properly and ready to use.
+class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
+ public:
+  ObjectAccessorWithIdentifierTryCatch(PP_Var object,
+                                       PP_Var identifier,
+                                       PP_Var* exception)
+      : ObjectAccessorTryCatch(object, exception),
+        identifier_(0) {
+    if (!has_exception()) {
+      identifier_ = Var::PPVarToNPIdentifier(identifier);
+      if (!identifier_)
+        SetException(kInvalidPropertyException);
+    }
   }
-}
 
-void Release(PP_Var var) {
-  if (var.type == PP_VARTYPE_STRING) {
-    GetStringUnchecked(var)->Release();
-  } else if (var.type == PP_VARTYPE_OBJECT) {
-    // TODO(darin): Add thread safety check
-    WebBindings::releaseObject(GetNPObjectUnchecked(var));
-  }
-}
+  NPIdentifier identifier() const { return identifier_; }
 
-PP_Var VarFromUtf8(const char* data, uint32_t len) {
-  scoped_refptr<String> str = new String(data, len);
+ private:
+  NPIdentifier identifier_;
 
-  if (!str || !IsStringUTF8(str->value())) {
+  DISALLOW_COPY_AND_ASSIGN(ObjectAccessorWithIdentifierTryCatch);
+};
+
+// PPB_Var methods -------------------------------------------------------------
+
+PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
+  PluginModule* module = PluginModule::FromPPModule(module_id);
+  if (!module)
     return PP_MakeNull();
-  }
-
-  PP_Var ret;
-  ret.type = PP_VARTYPE_STRING;
-
-  // The caller takes ownership now.
-  ret.value.as_id = reinterpret_cast<intptr_t>(str.release());
-
-  return ret;
+  return StringVar::StringToPPVar(module, data, len);
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
-  if (var.type != PP_VARTYPE_STRING) {
+  scoped_refptr<StringVar> str(StringVar::FromPPVar(var));
+  if (!str) {
     *len = 0;
     return NULL;
   }
-  const std::string& str = GetStringUnchecked(var)->value();
-  *len = static_cast<uint32_t>(str.size());
-  if (str.empty())
+  *len = static_cast<uint32_t>(str->value().size());
+  if (str->value().empty())
     return "";  // Don't return NULL on success.
-  return str.data();
+  return str->value().data();
 }
 
 bool HasProperty(PP_Var var,
                  PP_Var name,
                  PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
+  if (accessor.has_exception())
     return false;
-
-  NPObject* object = GetNPObject(var);
-  if (!object) {
-    try_catch.SetException(kInvalidObjectException);
-    return false;
-  }
-
-  NPIdentifier identifier = PPVarToNPIdentifier(name);
-  if (!identifier) {
-    try_catch.SetException(kInvalidPropertyException);
-    return false;
-  }
-
-  return WebBindings::hasProperty(NULL, object, identifier);
+  return WebBindings::hasProperty(NULL, accessor.object()->np_object(),
+                                  accessor.identifier());
 }
 
 bool HasMethod(PP_Var var,
                PP_Var name,
                PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
+  if (accessor.has_exception())
     return false;
-
-  NPObject* object = GetNPObject(var);
-  if (!object) {
-    try_catch.SetException(kInvalidObjectException);
-    return false;
-  }
-
-  NPIdentifier identifier = PPVarToNPIdentifier(name);
-  if (!identifier) {
-    try_catch.SetException(kInvalidPropertyException);
-    return false;
-  }
-
-  return WebBindings::hasMethod(NULL, object, identifier);
+  return WebBindings::hasMethod(NULL, accessor.object()->np_object(),
+                                accessor.identifier());
 }
 
 PP_Var GetProperty(PP_Var var,
                    PP_Var name,
                    PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
+  if (accessor.has_exception())
     return PP_MakeVoid();
-
-  NPObject* object = GetNPObject(var);
-  if (!object) {
-    try_catch.SetException(kInvalidObjectException);
-    return PP_MakeVoid();
-  }
-
-  NPIdentifier identifier = PPVarToNPIdentifier(name);
-  if (!identifier) {
-    try_catch.SetException(kInvalidPropertyException);
-    return PP_MakeVoid();
-  }
 
   NPVariant result;
-  if (!WebBindings::getProperty(NULL, object, identifier, &result)) {
+  if (!WebBindings::getProperty(NULL, accessor.object()->np_object(),
+                                accessor.identifier(), &result)) {
     // An exception may have been raised.
-    if (!try_catch.HasException())
-      try_catch.SetException(kUnableToGetPropertyException);
+    accessor.SetException(kUnableToGetPropertyException);
     return PP_MakeVoid();
   }
 
-  PP_Var ret = NPVariantToPPVar(&result);
+  PP_Var ret = Var::NPVariantToPPVar(accessor.object()->module(), &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
@@ -557,21 +222,15 @@ void GetAllPropertyNames(PP_Var var,
   *properties = NULL;
   *property_count = 0;
 
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  ObjectAccessorTryCatch accessor(var, exception);
+  if (accessor.has_exception())
     return;
-
-  NPObject* object = GetNPObject(var);
-  if (!object) {
-    try_catch.SetException(kInvalidObjectException);
-    return;
-  }
 
   NPIdentifier* identifiers = NULL;
   uint32_t count = 0;
-  if (!WebBindings::enumerate(NULL, object, &identifiers, &count)) {
-    if (!try_catch.HasException())
-      try_catch.SetException(kUnableToGetAllPropertiesException);
+  if (!WebBindings::enumerate(NULL, accessor.object()->np_object(),
+                              &identifiers, &count)) {
+    accessor.SetException(kUnableToGetAllPropertiesException);
     return;
   }
 
@@ -580,8 +239,10 @@ void GetAllPropertyNames(PP_Var var,
 
   *property_count = count;
   *properties = static_cast<PP_Var*>(malloc(sizeof(PP_Var) * count));
-  for (uint32_t i = 0; i < count; ++i)
-    (*properties)[i] = NPIdentifierToPPVar(identifiers[i]);
+  for (uint32_t i = 0; i < count; ++i) {
+    (*properties)[i] = Var::NPIdentifierToPPVar(accessor.object()->module(),
+                                                identifiers[i]);
+  }
   free(identifiers);
 }
 
@@ -589,52 +250,30 @@ void SetProperty(PP_Var var,
                  PP_Var name,
                  PP_Var value,
                  PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
+  if (accessor.has_exception())
     return;
 
-  NPObject* object = GetNPObject(var);
-  if (!object) {
-    try_catch.SetException(kInvalidObjectException);
+  NPVariant variant;
+  if (!PPVarToNPVariantNoCopy(value, &variant)) {
+    accessor.SetException(kInvalidValueException);
     return;
   }
-
-  NPIdentifier identifier = PPVarToNPIdentifier(name);
-  if (!identifier) {
-    try_catch.SetException(kInvalidPropertyException);
-    return;
-  }
-
-  NPVariant variant = PPVarToNPVariantNoCopy(value);
-  if (!WebBindings::setProperty(NULL, object, identifier, &variant)) {
-    if (!try_catch.HasException())
-      try_catch.SetException(kUnableToSetPropertyException);
-  }
+  if (!WebBindings::setProperty(NULL, accessor.object()->np_object(),
+                                accessor.identifier(), &variant))
+    accessor.SetException(kUnableToSetPropertyException);
 }
 
 void RemoveProperty(PP_Var var,
                     PP_Var name,
                     PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
+  if (accessor.has_exception())
     return;
 
-  NPObject* object = GetNPObject(var);
-  if (!object) {
-    try_catch.SetException(kInvalidObjectException);
-    return;
-  }
-
-  NPIdentifier identifier = PPVarToNPIdentifier(name);
-  if (!identifier) {
-    try_catch.SetException(kInvalidPropertyException);
-    return;
-  }
-
-  if (!WebBindings::removeProperty(NULL, object, identifier)) {
-    if (!try_catch.HasException())
-      try_catch.SetException(kUnableToRemovePropertyException);
-  }
+  if (!WebBindings::removeProperty(NULL, accessor.object()->np_object(),
+                                   accessor.identifier()))
+    accessor.SetException(kUnableToRemovePropertyException);
 }
 
 PP_Var Call(PP_Var var,
@@ -642,56 +281,55 @@ PP_Var Call(PP_Var var,
             uint32_t argc,
             PP_Var* argv,
             PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  ObjectAccessorTryCatch accessor(var, exception);
+  if (accessor.has_exception())
     return PP_MakeVoid();
-
-  NPObject* object = GetNPObject(var);
-  if (!object) {
-    try_catch.SetException(kInvalidObjectException);
-    return PP_MakeVoid();
-  }
 
   NPIdentifier identifier;
   if (method_name.type == PP_VARTYPE_VOID) {
     identifier = NULL;
   } else if (method_name.type == PP_VARTYPE_STRING) {
     // Specifically allow only string functions to be called.
-    identifier = PPVarToNPIdentifier(method_name);
+    identifier = Var::PPVarToNPIdentifier(method_name);
     if (!identifier) {
-      try_catch.SetException(kInvalidPropertyException);
+      accessor.SetException(kInvalidPropertyException);
       return PP_MakeVoid();
     }
   } else {
-    try_catch.SetException(kInvalidPropertyException);
+    accessor.SetException(kInvalidPropertyException);
     return PP_MakeVoid();
   }
 
   scoped_array<NPVariant> args;
   if (argc) {
     args.reset(new NPVariant[argc]);
-    for (uint32_t i = 0; i < argc; ++i)
-      args[i] = PPVarToNPVariantNoCopy(argv[i]);
+    for (uint32_t i = 0; i < argc; ++i) {
+      if (!PPVarToNPVariantNoCopy(argv[i], &args[i])) {
+        // This argument was invalid, throw an exception & give up.
+        accessor.SetException(kInvalidValueException);
+        return PP_MakeVoid();
+      }
+    }
   }
 
   bool ok;
 
   NPVariant result;
   if (identifier) {
-    ok = WebBindings::invoke(NULL, object, identifier, args.get(), argc,
-                             &result);
+    ok = WebBindings::invoke(NULL, accessor.object()->np_object(),
+                             identifier, args.get(), argc, &result);
   } else {
-    ok = WebBindings::invokeDefault(NULL, object, args.get(), argc, &result);
+    ok = WebBindings::invokeDefault(NULL, accessor.object()->np_object(),
+                                    args.get(), argc, &result);
   }
 
   if (!ok) {
     // An exception may have been raised.
-    if (!try_catch.HasException())
-      try_catch.SetException(kUnableToCallMethodException);
+    accessor.SetException(kUnableToCallMethodException);
     return PP_MakeVoid();
   }
 
-  PP_Var ret = NPVariantToPPVar(&result);
+  PP_Var ret = Var::NPVariantToPPVar(accessor.module(), &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
@@ -700,67 +338,58 @@ PP_Var Construct(PP_Var var,
                  uint32_t argc,
                  PP_Var* argv,
                  PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  ObjectAccessorTryCatch accessor(var, exception);
+  if (accessor.has_exception())
     return PP_MakeVoid();
-
-  NPObject* object = GetNPObject(var);
-  if (!object) {
-    try_catch.SetException(kInvalidObjectException);
-    return PP_MakeVoid();
-  }
 
   scoped_array<NPVariant> args;
   if (argc) {
     args.reset(new NPVariant[argc]);
-    for (uint32_t i = 0; i < argc; ++i)
-      args[i] = PPVarToNPVariantNoCopy(argv[i]);
+    for (uint32_t i = 0; i < argc; ++i) {
+      if (!PPVarToNPVariantNoCopy(argv[i], &args[i])) {
+        // This argument was invalid, throw an exception & give up.
+        accessor.SetException(kInvalidValueException);
+        return PP_MakeVoid();
+      }
+    }
   }
 
   NPVariant result;
-  if (!WebBindings::construct(NULL, object, args.get(), argc, &result)) {
+  if (!WebBindings::construct(NULL, accessor.object()->np_object(),
+                              args.get(), argc, &result)) {
     // An exception may have been raised.
-    if (!try_catch.HasException())
-      try_catch.SetException(kUnableToConstructException);
+    accessor.SetException(kUnableToConstructException);
     return PP_MakeVoid();
   }
 
-  PP_Var ret = NPVariantToPPVar(&result);
+  PP_Var ret = Var::NPVariantToPPVar(accessor.module(), &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
 
-bool IsInstanceOf(PP_Var var, const PPP_Class* ppp_class,
+bool IsInstanceOf(PP_Var var,
+                  const PPP_Class* ppp_class,
                   void** ppp_class_data) {
-  NPObject* object = GetNPObject(var);
+  scoped_refptr<ObjectVar> object(ObjectVar::FromPPVar(var));
   if (!object)
-    return false;
+    return false;  // Not an object at all.
 
-  if (object->_class != &wrapper_class)
-    return false;
-
-  WrapperObject* wrapper = ToWrapper(object);
-  if (wrapper->ppp_class != ppp_class)
-    return false;
-
-  if (ppp_class_data)
-    *ppp_class_data = wrapper->ppp_class_data;
-  return true;
+  return PluginObject::IsInstanceOf(object->np_object(),
+                                    ppp_class, ppp_class_data);
 }
 
-PP_Var CreateObject(const PPP_Class* ppp_class, void* ppp_class_data) {
-  NPObject* object =
-      WebBindings::createObject(NULL, const_cast<NPClass*>(&wrapper_class));
-  static_cast<WrapperObject*>(object)->ppp_class = ppp_class;
-  static_cast<WrapperObject*>(object)->ppp_class_data = ppp_class_data;
-  PP_Var ret = NPObjectToPPVar(object);
-  WebBindings::releaseObject(object);  // Release reference from createObject
-  return ret;
+PP_Var CreateObject(PP_Module module_id,
+                    const PPP_Class* ppp_class,
+                    void* ppp_class_data) {
+  PluginModule* module = PluginModule::FromPPModule(module_id);
+  if (!module)
+    return PP_MakeNull();
+  return PluginObject::Create(module, ppp_class, ppp_class_data);
 }
 
 const PPB_Var var_interface = {
-  &AddRef,
-  &Release,
+  &Var::PluginAddRefPPVar,
+  &Var::PluginReleasePPVar,
   &VarFromUtf8,
   &VarToUtf8,
   &HasProperty,
@@ -777,19 +406,16 @@ const PPB_Var var_interface = {
 
 }  // namespace
 
-const PPB_Var* GetVarInterface() {
-  return &var_interface;
+// Var -------------------------------------------------------------------------
+
+Var::Var(PluginModule* module) : Resource(module) {
 }
 
-PP_Var NPObjectToPPVar(NPObject* object) {
-  PP_Var ret;
-  ret.type = PP_VARTYPE_OBJECT;
-  ret.value.as_id = reinterpret_cast<intptr_t>(object);
-  WebBindings::retainObject(object);
-  return ret;
+Var::~Var() {
 }
 
-PP_Var NPVariantToPPVar(const NPVariant* variant) {
+// static
+PP_Var Var::NPVariantToPPVar(PluginModule* module, const NPVariant* variant) {
   switch (variant->type) {
     case NPVariantType_Void:
       return PP_MakeVoid();
@@ -802,34 +428,150 @@ PP_Var NPVariantToPPVar(const NPVariant* variant) {
     case NPVariantType_Double:
       return PP_MakeDouble(NPVARIANT_TO_DOUBLE(*variant));
     case NPVariantType_String:
-      return VarFromUtf8(NPVARIANT_TO_STRING(*variant).UTF8Characters,
-                         NPVARIANT_TO_STRING(*variant).UTF8Length);
+      return StringVar::StringToPPVar(
+          module,
+          NPVARIANT_TO_STRING(*variant).UTF8Characters,
+          NPVARIANT_TO_STRING(*variant).UTF8Length);
     case NPVariantType_Object:
-      return NPObjectToPPVar(NPVARIANT_TO_OBJECT(*variant));
+      return ObjectVar::NPObjectToPPVar(module, NPVARIANT_TO_OBJECT(*variant));
   }
   NOTREACHED();
   return PP_MakeVoid();
 }
 
-
-NPObject* GetNPObject(PP_Var var) {
-  if (var.type != PP_VARTYPE_OBJECT)
-    return NULL;
-  return GetNPObjectUnchecked(var);
+// static
+NPIdentifier Var::PPVarToNPIdentifier(PP_Var var) {
+  switch (var.type) {
+    case PP_VARTYPE_STRING: {
+      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+      if (!string)
+        return NULL;
+      return WebBindings::getStringIdentifier(string->value().c_str());
+    }
+    case PP_VARTYPE_INT32:
+      return WebBindings::getIntIdentifier(var.value.as_int);
+    default:
+      return NULL;
+  }
 }
 
-PP_Var StringToPPVar(const std::string& str) {
-  DCHECK(IsStringUTF8(str));
-  return VarFromUtf8(str.data(), str.size());
+// static
+PP_Var Var::NPIdentifierToPPVar(PluginModule* module, NPIdentifier id) {
+  const NPUTF8* string_value = NULL;
+  int32_t int_value = 0;
+  bool is_string = false;
+  WebBindings::extractIdentifierData(id, string_value, int_value, is_string);
+  if (is_string)
+    return StringVar::StringToPPVar(module, string_value);
+
+  return PP_MakeInt32(int_value);
 }
 
-String* GetString(PP_Var var) {
+// static
+void Var::PluginAddRefPPVar(PP_Var var) {
+  if (var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT) {
+    // TODO(brettw) consider checking that the ID is actually a var ID rather
+    // than some random other resource ID.
+    if (!ResourceTracker::Get()->AddRefResource(var.value.as_id))
+      DLOG(WARNING) << "AddRefVar()ing a nonexistant string/object var.";
+  }
+}
+
+// static
+void Var::PluginReleasePPVar(PP_Var var) {
+  if (var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT) {
+    // TODO(brettw) consider checking that the ID is actually a var ID rather
+    // than some random other resource ID.
+    if (!ResourceTracker::Get()->UnrefResource(var.value.as_id))
+      DLOG(WARNING) << "ReleaseVar()ing a nonexistant string/object var.";
+  }
+}
+
+// static
+const PPB_Var* Var::GetInterface() {
+  return &var_interface;
+}
+
+// StringVar -------------------------------------------------------------------
+
+StringVar::StringVar(PluginModule* module, const char* str, uint32 len)
+    : Var(module),
+      value_(str, len) {
+}
+
+StringVar::~StringVar() {
+}
+
+// static
+PP_Var StringVar::StringToPPVar(PluginModule* module, const std::string& var) {
+  return StringToPPVar(module, var.c_str(), var.size());
+}
+
+// static
+PP_Var StringVar::StringToPPVar(PluginModule* module,
+                                const char* data, uint32 len) {
+  scoped_refptr<StringVar> str(new StringVar(module, data, len));
+  if (!str || !IsStringUTF8(str->value()))
+    return PP_MakeNull();
+
+  PP_Var ret;
+  ret.type = PP_VARTYPE_STRING;
+
+  // The caller takes ownership now.
+  ret.value.as_id = str->GetReference();
+  return ret;
+}
+
+// static
+scoped_refptr<StringVar> StringVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_STRING)
-    return NULL;
-  return GetStringUnchecked(var);
+    return scoped_refptr<StringVar>(NULL);
+  return Resource::GetAs<StringVar>(var.value.as_id);
 }
 
-TryCatch::TryCatch(PP_Var* exception) : exception_(exception) {
+// ObjectVar -------------------------------------------------------------
+
+ObjectVar::ObjectVar(PluginModule* module, NPObject* np_object)
+    : Var(module),
+      np_object_(np_object) {
+  WebBindings::retainObject(np_object_);
+  module->AddNPObjectVar(this);
+}
+
+ObjectVar::~ObjectVar() {
+  module()->RemoveNPObjectVar(this);
+  WebBindings::releaseObject(np_object_);
+}
+
+// static
+PP_Var ObjectVar::NPObjectToPPVar(PluginModule* module, NPObject* object) {
+  scoped_refptr<ObjectVar> object_var(module->ObjectVarForNPObject(object));
+  if (!object_var)  // No object for this module yet, make a new one.
+    object_var = new ObjectVar(module, object);
+
+  if (!object_var)
+    return PP_MakeVoid();
+
+  // Convert to a PP_Var, GetReference will AddRef for us.
+  PP_Var result;
+  result.type = PP_VARTYPE_OBJECT;
+  result.value.as_id = object_var->GetReference();
+  return result;
+}
+
+// static
+scoped_refptr<ObjectVar> ObjectVar::FromPPVar(PP_Var var) {
+  if (var.type != PP_VARTYPE_OBJECT)
+    return scoped_refptr<ObjectVar>(NULL);
+  return Resource::GetAs<ObjectVar>(var.value.as_id);
+}
+
+// TryCatch --------------------------------------------------------------------
+
+TryCatch::TryCatch(PluginModule* module, PP_Var* exception)
+    : module_(module),
+      has_exception_(exception && exception->type != PP_VARTYPE_VOID),
+      exception_(exception) {
   WebBindings::pushExceptionHandler(&TryCatch::Catch, this);
 }
 
@@ -837,20 +579,33 @@ TryCatch::~TryCatch() {
   WebBindings::popExceptionHandler();
 }
 
-bool TryCatch::HasException() const {
-  return exception_ && exception_->type != PP_VARTYPE_VOID;
+void TryCatch::SetException(const char* message) {
+  if (!module_) {
+    // Don't have a module to make the string.
+    SetInvalidObjectException();
+    return;
+  }
+
+  if (!has_exception()) {
+    has_exception_ = true;
+    if (exception_)
+      *exception_ = StringVar::StringToPPVar(module_, message, strlen(message));
+  }
 }
 
-void TryCatch::SetException(const char* message) {
-  DCHECK(!HasException());
-  if (exception_)
-    *exception_ = VarFromUtf8(message, strlen(message));
+void TryCatch::SetInvalidObjectException() {
+  if (!has_exception()) {
+    has_exception_ = true;
+    // TODO(brettw) bug 54504: Have a global singleton string that can hold
+    // a generic error message.
+    if (exception_)
+      *exception_ = PP_MakeInt32(1);
+  }
 }
 
 // static
 void TryCatch::Catch(void* self, const char* message) {
   static_cast<TryCatch*>(self)->SetException(message);
 }
-
 
 }  // namespace pepper

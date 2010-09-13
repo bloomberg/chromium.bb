@@ -42,7 +42,7 @@ class ImageData : public Resource {
   static const PPB_ImageData* GetInterface();
 
   // Resource overrides.
-  ImageData* AsImageData() { return this; }
+  virtual ImageData* AsImageData() { return this; }
 
   // PPB_ImageData implementation.
   bool Init(PP_ImageDataFormat format,

@@ -46,11 +46,12 @@ void ConvertComponents(const url_parse::Parsed& input,
 
 // Used for returning the given GURL from a PPAPI function, with an optional
 // out param indicating the components.
-PP_Var GenerateUrlReturn(const GURL& url, PP_UrlComponents_Dev* components) {
+PP_Var GenerateUrlReturn(PluginModule* module, const GURL& url,
+                         PP_UrlComponents_Dev* components) {
   if (!url.is_valid())
     return PP_MakeNull();
   ConvertComponents(url.parsed_for_possibly_invalid_spec(), components);
-  return StringToPPVar(url.possibly_invalid_spec());
+  return StringVar::StringToPPVar(module, url.possibly_invalid_spec());
 }
 
 // Sets |*security_origin| to be the WebKit security origin associated with the
@@ -73,24 +74,26 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
 }
 
 PP_Var Canonicalize(PP_Var url, PP_UrlComponents_Dev* components) {
-  String* url_string = GetString(url);
+  scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
   if (!url_string)
     return PP_MakeNull();
-  return GenerateUrlReturn(GURL(url_string->value()), components);
+  return GenerateUrlReturn(url_string->module(),
+                           GURL(url_string->value()), components);
 }
 
 PP_Var ResolveRelativeToUrl(PP_Var base_url,
                             PP_Var relative,
                             PP_UrlComponents_Dev* components) {
-  String* base_url_string = GetString(base_url);
-  String* relative_string = GetString(relative);
+  scoped_refptr<StringVar> base_url_string(StringVar::FromPPVar(base_url));
+  scoped_refptr<StringVar> relative_string(StringVar::FromPPVar(relative));
   if (!base_url_string || !relative_string)
     return PP_MakeNull();
 
   GURL base_gurl(base_url_string->value());
   if (!base_gurl.is_valid())
     return PP_MakeNull();
-  return GenerateUrlReturn(base_gurl.Resolve(relative_string->value()),
+  return GenerateUrlReturn(base_url_string->module(),
+                           base_gurl.Resolve(relative_string->value()),
                            components);
 }
 
@@ -101,19 +104,20 @@ PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
   if (!instance)
     return PP_MakeNull();
 
-  String* relative_string = GetString(relative);
+  scoped_refptr<StringVar> relative_string(StringVar::FromPPVar(relative));
   if (!relative_string)
     return PP_MakeNull();
 
   WebKit::WebElement plugin_element = instance->container()->element();
   GURL document_url = plugin_element.document().baseURL();
-  return GenerateUrlReturn(document_url.Resolve(relative_string->value()),
+  return GenerateUrlReturn(instance->module(),
+                           document_url.Resolve(relative_string->value()),
                            components);
 }
 
 bool IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
-  String* url_a_string = GetString(url_a);
-  String* url_b_string = GetString(url_b);
+  scoped_refptr<StringVar> url_a_string(StringVar::FromPPVar(url_a));
+  scoped_refptr<StringVar> url_b_string(StringVar::FromPPVar(url_b));
   if (!url_a_string || !url_b_string)
     return false;
 
@@ -126,7 +130,7 @@ bool IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
 }
 
 bool DocumentCanRequest(PP_Instance instance, PP_Var url) {
-  String* url_string = GetString(url);
+  scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
   if (!url_string)
     return false;
 

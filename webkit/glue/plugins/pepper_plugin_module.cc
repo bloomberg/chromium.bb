@@ -54,6 +54,7 @@
 #include "webkit/glue/plugins/pepper_graphics_2d.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
+#include "webkit/glue/plugins/pepper_plugin_object.h"
 #include "webkit/glue/plugins/pepper_private.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 #include "webkit/glue/plugins/pepper_scrollbar.h"
@@ -161,10 +162,18 @@ void QuitMessageLoop() {
   MessageLoop::current()->Quit();
 }
 
+uint32_t GetLiveObjectCount(PP_Module module_id) {
+  PluginModule* module = PluginModule::FromPPModule(module_id);
+  if (!module)
+    return static_cast<uint32_t>(-1);
+  return ResourceTracker::Get()->GetLiveObjectsForModule(module);
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
+  &GetLiveObjectCount
 };
 
 // GetInterface ----------------------------------------------------------------
@@ -173,7 +182,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_CORE_INTERFACE) == 0)
     return &core_interface;
   if (strcmp(name, PPB_VAR_INTERFACE) == 0)
-    return GetVarInterface();
+    return Var::GetInterface();
   if (strcmp(name, PPB_INSTANCE_INTERFACE) == 0)
     return PluginInstance::GetInterface();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
@@ -251,6 +260,17 @@ PluginModule::PluginModule()
 }
 
 PluginModule::~PluginModule() {
+  // Free all the plugin objects. This will automatically clear the back-
+  // pointer from the NPObject so WebKit can't call into the plugin any more.
+  //
+  // Swap out the set so we can delete from it (the objects will try to
+  // unregister themselves inside the delete call).
+  PluginObjectSet plugin_object_copy;
+  live_plugin_objects_.swap(plugin_object_copy);
+  for (PluginObjectSet::iterator i = live_plugin_objects_.begin();
+       i != live_plugin_objects_.end(); ++i)
+    delete *i;
+
   // When the module is being deleted, there should be no more instances still
   // holding a reference to us.
   DCHECK(instances_.empty());
@@ -401,6 +421,46 @@ void PluginModule::InstanceCreated(PluginInstance* instance) {
 
 void PluginModule::InstanceDeleted(PluginInstance* instance) {
   instances_.erase(instance);
+}
+
+void PluginModule::AddNPObjectVar(ObjectVar* object_var) {
+  DCHECK(np_object_to_object_var_.find(object_var->np_object()) ==
+         np_object_to_object_var_.end()) << "ObjectVar already in map";
+  np_object_to_object_var_[object_var->np_object()] = object_var;
+}
+
+void PluginModule::RemoveNPObjectVar(ObjectVar* object_var) {
+  NPObjectToObjectVarMap::iterator found =
+      np_object_to_object_var_.find(object_var->np_object());
+  if (found == np_object_to_object_var_.end()) {
+    NOTREACHED() << "ObjectVar not registered.";
+    return;
+  }
+  if (found->second != object_var) {
+    NOTREACHED() << "ObjectVar doesn't match.";
+    return;
+  }
+  np_object_to_object_var_.erase(found);
+}
+
+ObjectVar* PluginModule::ObjectVarForNPObject(NPObject* np_object) const {
+  NPObjectToObjectVarMap::const_iterator found =
+      np_object_to_object_var_.find(np_object);
+  if (found == np_object_to_object_var_.end())
+    return NULL;
+  return found->second;
+}
+
+void PluginModule::AddPluginObject(PluginObject* plugin_object) {
+  DCHECK(live_plugin_objects_.find(plugin_object) ==
+         live_plugin_objects_.end());
+  live_plugin_objects_.insert(plugin_object);
+}
+
+void PluginModule::RemovePluginObject(PluginObject* plugin_object) {
+  // Don't actually verify that the object is in the set since during module
+  // deletion we'll be in the process of freeing them.
+  live_plugin_objects_.erase(plugin_object);
 }
 
 }  // namespace pepper

@@ -13,8 +13,11 @@
 #include "base/singleton.h"
 #include "third_party/ppapi/c/pp_resource.h"
 
+typedef struct NPObject NPObject;
+
 namespace pepper {
 
+class PluginModule;
 class Resource;
 
 // This class maintains a global list of all live pepper resources. It allows
@@ -39,6 +42,11 @@ class ResourceTracker {
   // below.
   bool AddRefResource(PP_Resource res);
   bool UnrefResource(PP_Resource res);
+
+  // Returns the number of resources associated with this module.
+  //
+  // This is slow, use only for testing.
+  uint32 GetLiveObjectsForModule(PluginModule* module) const;
 
  private:
   friend struct DefaultSingletonTraits<ResourceTracker>;

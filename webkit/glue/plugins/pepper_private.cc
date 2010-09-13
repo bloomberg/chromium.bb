@@ -73,12 +73,16 @@ static const ResourceImageInfo kResourceImageMap[] = {
       IDR_PDF_THUMBNAIL_NUM_BACKGROUND },
 };
 
-PP_Var GetLocalizedString(PP_ResourceString string_id) {
+PP_Var GetLocalizedString(PP_Module module_id, PP_ResourceString string_id) {
+  PluginModule* module = PluginModule::FromPPModule(module_id);
+  if (!module)
+    return PP_MakeVoid();
+
   std::string rv;
   if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD)
     rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_NEED_PASSWORD));
 
-  return StringToPPVar(rv);
+  return StringVar::StringToPPVar(module, rv);
 }
 
 PP_Resource GetResourceImage(PP_Module module_id, PP_ResourceImage image_id) {

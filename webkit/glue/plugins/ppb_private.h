@@ -84,7 +84,7 @@ struct PP_PrivateFontFileDescription {
 
 struct PPB_Private {
   // Returns a localized string.
-  PP_Var (*GetLocalizedString)(PP_ResourceString string_id);
+  PP_Var (*GetLocalizedString)(PP_Module module, PP_ResourceString string_id);
 
   // Returns a resource image.
   PP_Resource (*GetResourceImage)(PP_Module module,

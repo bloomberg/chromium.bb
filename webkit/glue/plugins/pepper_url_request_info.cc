@@ -72,8 +72,11 @@ bool SetProperty(PP_Resource request_id,
   if (var.type == PP_VARTYPE_BOOL)
     return request->SetBooleanProperty(property, var.value.as_bool);
 
-  if (var.type == PP_VARTYPE_STRING)
-    return request->SetStringProperty(property, GetString(var)->value());
+  if (var.type == PP_VARTYPE_STRING) {
+    scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+    if (string)
+      return request->SetStringProperty(property, string->value());
+  }
 
   return false;
 }
@@ -84,7 +87,7 @@ bool AppendDataToBody(PP_Resource request_id, PP_Var var) {
   if (!request)
     return false;
 
-  String* data = GetString(var);
+  scoped_refptr<StringVar> data(StringVar::FromPPVar(var));
   if (!data)
     return false;
 

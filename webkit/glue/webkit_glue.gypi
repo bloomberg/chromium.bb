@@ -218,6 +218,8 @@
         'plugins/pepper_plugin_instance.h',
         'plugins/pepper_plugin_module.cc',
         'plugins/pepper_plugin_module.h',
+        'plugins/pepper_plugin_object.cc',
+        'plugins/pepper_plugin_object.h',
         'plugins/pepper_private.cc',
         'plugins/pepper_private.h',
         'plugins/pepper_resource_tracker.cc',

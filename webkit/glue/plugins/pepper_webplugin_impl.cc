@@ -73,7 +73,11 @@ void WebPluginImpl::destroy() {
 }
 
 NPObject* WebPluginImpl::scriptableObject() {
-  return GetNPObject(instance_->GetInstanceObject());
+  scoped_refptr<ObjectVar> object(
+      ObjectVar::FromPPVar(instance_->GetInstanceObject()));
+  if (object)
+    return object->np_object();
+  return NULL;
 }
 
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {

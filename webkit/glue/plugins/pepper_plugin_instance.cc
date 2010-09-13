@@ -280,14 +280,14 @@ PP_Var PluginInstance::GetWindowObject() {
   if (!frame)
     return PP_MakeVoid();
 
-  return NPObjectToPPVar(frame->windowObject());
+  return ObjectVar::NPObjectToPPVar(module(), frame->windowObject());
 }
 
 PP_Var PluginInstance::GetOwnerElementObject() {
   if (!container_)
     return PP_MakeVoid();
-
-  return NPObjectToPPVar(container_->scriptableObjectForElement());
+  return ObjectVar::NPObjectToPPVar(module(),
+                                    container_->scriptableObjectForElement());
 }
 
 bool PluginInstance::BindGraphics(PP_Resource device_id) {
@@ -339,12 +339,12 @@ bool PluginInstance::SetCursor(PP_CursorType_Dev type) {
 }
 
 PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
-  TryCatch try_catch(exception);
-  if (try_catch.HasException())
+  TryCatch try_catch(module(), exception);
+  if (try_catch.has_exception())
     return PP_MakeVoid();
 
   // Convert the script into an inconvenient NPString object.
-  String* script_string = GetString(script);
+  scoped_refptr<StringVar> script_string(StringVar::FromPPVar(script));
   if (!script_string) {
     try_catch.SetException("Script param to ExecuteScript must be a string.");
     return PP_MakeVoid();
@@ -371,7 +371,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
     return PP_MakeVoid();
   }
 
-  PP_Var ret = NPVariantToPPVar(&result);
+  PP_Var ret = Var::NPVariantToPPVar(module_, &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
@@ -457,7 +457,8 @@ void PluginInstance::ViewFlushedPaint() {
 
 string16 PluginInstance::GetSelectedText(bool html) {
   PP_Var rv = instance_interface_->GetSelectedText(GetPPInstance(), html);
-  String* string = GetString(rv);
+  scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
+  Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
   if (!string)
     return string16();
   return UTF8ToUTF16(string->value());

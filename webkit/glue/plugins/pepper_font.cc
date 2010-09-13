@@ -81,7 +81,7 @@ WebFontDescription PPFontDescToWebFontDesc(const PP_FontDescription_Dev& font) {
                  MonospaceFamily);
 
   WebFontDescription result;
-  String* face_name = GetString(font.face);
+  scoped_refptr<StringVar> face_name(StringVar::FromPPVar(font.face));
   if (face_name)
     result.family = UTF8ToUTF16(face_name->value());
   result.genericFamily = PP_FONTFAMILY_TO_WEB_FONTFAMILY(font.family);
@@ -97,7 +97,7 @@ WebFontDescription PPFontDescToWebFontDesc(const PP_FontDescription_Dev& font) {
 // Converts the given PP_TextRun to a WebTextRun, returning true on success.
 // False means the input was invalid.
 bool PPTextRunToWebTextRun(const PP_TextRun_Dev* run, WebTextRun* output) {
-  String* text_string = GetString(run->text);
+  scoped_refptr<StringVar> text_string(StringVar::FromPPVar(run->text));
   if (!text_string)
     return false;
   *output = WebTextRun(UTF8ToUTF16(text_string->value()),
@@ -205,7 +205,8 @@ bool Font::Describe(PP_FontDescription_Dev* description,
 
   // While converting the other way in PPFontDescToWebFontDesc we validated
   // that the enums can be casted.
-  description->face = StringToPPVar(UTF16ToUTF8(web_desc.family));
+  description->face = StringVar::StringToPPVar(module(),
+                                               UTF16ToUTF8(web_desc.family));
   description->family = static_cast<PP_FontFamily_Dev>(web_desc.genericFamily);
   description->size = static_cast<uint32_t>(web_desc.size);
   description->weight = static_cast<PP_FontWeight_Dev>(web_desc.weight);
