@@ -91,6 +91,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
    public:
      virtual void OnPrinterJobHandlerShutdown(
         PrinterJobHandler* job_handler, const std::string& printer_id) = 0;
+     virtual void OnAuthError() = 0;
 
    protected:
      virtual ~Delegate() {}
@@ -127,6 +128,8 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                                   const std::string& data);
   // JobStatusUpdater::Delegate implementation
   virtual bool OnJobCompleted(JobStatusUpdater* updater);
+  virtual void OnAuthError();
+
   // cloud_print::PrinterWatcherDelegate implementation
   virtual void OnPrinterDeleted();
   virtual void OnPrinterChanged();

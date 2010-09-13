@@ -26,6 +26,7 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   class Delegate {
    public:
     virtual bool OnJobCompleted(JobStatusUpdater* updater) = 0;
+    virtual void OnAuthError() = 0;
 
    protected:
     virtual ~Delegate() {}

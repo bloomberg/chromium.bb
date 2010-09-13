@@ -115,3 +115,9 @@ void CloudPrintProxy::OnAuthenticated(
   service_prefs_->WritePrefs();
 }
 
+void CloudPrintProxy::OnAuthenticationFailed() {
+  DCHECK(CalledOnValidThread());
+  // If authenticated failed, we will disable the cloud print proxy.
+  DisableForUser();
+}
+

@@ -46,6 +46,10 @@
 
 ServiceProcess* g_service_process = NULL;
 
+// Delay in millseconds after the last service is disabled before we attempt
+// a shutdown.
+static const int64 kShutdownDelay = 60000;
+
 ServiceProcess::ServiceProcess()
   : shutdown_event_(true, false),
     main_message_loop_(NULL),
@@ -168,6 +172,16 @@ void ServiceProcess::OnServiceDisabled() {
   enabled_services_--;
   if (0 == enabled_services_) {
     RemoveServiceProcessFromAutoStart();
+    // We will wait for some time to respond to IPCs before shutting down.
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ServiceProcess::ShutdownIfNoServices),
+        kShutdownDelay);
+  }
+}
+
+void ServiceProcess::ShutdownIfNoServices() {
+  if (0 == enabled_services_) {
     Shutdown();
   }
 }

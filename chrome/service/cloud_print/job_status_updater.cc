@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/net/http_return.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "googleurl/src/gurl.h"
@@ -78,6 +79,13 @@ void JobStatusUpdater::OnURLFetchComplete(const URLFetcher* source,
                                           int response_code,
                                           const ResponseCookies& cookies,
                                           const std::string& data) {
+  // If there was an auth error, we are done.
+  if (RC_FORBIDDEN == response_code) {
+    if (delegate_) {
+      delegate_->OnAuthError();
+    }
+    return;
+  }
   int64 next_update_interval = kJobStatusUpdateInterval;
   if (!status.is_success() || (response_code != 200)) {
     next_update_interval *= 10;

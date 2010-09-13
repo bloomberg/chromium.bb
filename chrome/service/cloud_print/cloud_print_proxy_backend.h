@@ -33,6 +33,8 @@ class CloudPrintProxyFrontend {
   virtual void OnAuthenticated(const std::string& cloud_print_token,
                                const std::string& cloud_print_xmpp_token,
                                const std::string& email) = 0;
+  // We have invalid/expired credentials.
+  virtual void OnAuthenticationFailed() = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.
@@ -58,7 +60,6 @@ class CloudPrintProxyBackend {
                            const std::string& proxy_id);
   void Shutdown();
   void RegisterPrinters(const cloud_print::PrinterList& printer_list);
-  void HandlePrinterNotification(const std::string& printer_id);
 
  private:
   // The real guts of SyncBackendHost, to keep the public client API clean.

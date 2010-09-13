@@ -43,6 +43,10 @@ const int64 kMaxRetryInterval = 5*60*1000;  // 5 minutes in millseconds
 const int64 kBaseRetryInterval = 5*1000;  // 5 seconds
 const int kMaxRetryCount = 2;
 const int64 kJobStatusUpdateInterval = 10*1000;  // 10 seconds
+// When we don't have XMPP notifications available, we resort to polling for
+// print jobs. We choose a random interval in seconds between these 2 values.
+const int kMinJobPollIntervalSecs = 5*60;  // 5 minutes in seconds
+const int kMaxJobPollIntervalSecs = 8*60;  // 8 minutes in seconds
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
 

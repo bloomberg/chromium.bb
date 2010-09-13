@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/net/http_return.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
@@ -219,6 +220,11 @@ void PrinterJobHandler::OnURLFetchComplete(
     const std::string& data) {
   LOG(INFO) << "CP_PROXY: Printer job handler, OnURLFetchComplete, url: " <<
       url << ", response code: " << response_code;
+  // If there was an auth error, we are done.
+  if (RC_FORBIDDEN == response_code) {
+    OnAuthError();
+    return;
+  }
   if (!shutting_down_) {
     DCHECK(source == request_.get());
     // We need a next response handler because we are strictly a sequential
@@ -247,6 +253,11 @@ bool PrinterJobHandler::OnJobCompleted(JobStatusUpdater* updater) {
     }
   }
   return ret;
+}
+
+void PrinterJobHandler::OnAuthError() {
+  if (delegate_)
+    delegate_->OnAuthError();
 }
 
 void PrinterJobHandler::OnPrinterDeleted() {

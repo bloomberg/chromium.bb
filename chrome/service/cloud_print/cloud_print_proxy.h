@@ -43,6 +43,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   virtual void OnAuthenticated(const std::string& cloud_print_token,
                                const std::string& cloud_print_xmpp_token,
                                const std::string& email);
+  virtual void OnAuthenticationFailed();
 
  protected:
   void Shutdown();

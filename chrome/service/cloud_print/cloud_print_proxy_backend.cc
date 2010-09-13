@@ -6,9 +6,11 @@
 
 #include "base/file_util.h"
 #include "base/md5.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/net/http_return.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
@@ -56,7 +58,6 @@ class CloudPrintProxyBackend::Core
   void DoShutdown();
   void DoRegisterSelectedPrinters(
       const cloud_print::PrinterList& printer_list);
-  void DoHandlePrinterNotification(const std::string& printer_id);
 
   // URLFetcher::Delegate implementation.
   virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
@@ -67,16 +68,15 @@ class CloudPrintProxyBackend::Core
   // cloud_print::PrintServerWatcherDelegate implementation
   virtual void OnPrinterAdded();
   // PrinterJobHandler::Delegate implementation
-  void OnPrinterJobHandlerShutdown(PrinterJobHandler* job_handler,
+  virtual void OnPrinterJobHandlerShutdown(PrinterJobHandler* job_handler,
                                    const std::string& printer_id);
+  virtual void OnAuthError();
 
   // notifier::TalkMediator::Delegate implementation.
   virtual void OnNotificationStateChange(
       bool notifications_enabled);
-
   virtual void OnIncomingNotification(
       const IncomingNotificationData& notification_data);
-
   virtual void OnOutgoingNotification();
 
  protected:
@@ -107,6 +107,8 @@ class CloudPrintProxyBackend::Core
     const std::string& cloud_print_token,
     const std::string& cloud_print_xmpp_token,
     const std::string& email);
+  void NotifyAuthenticationFailed();
+
   // Starts a new printer registration process.
   void StartRegistration();
   // Ends the printer registration process.
@@ -125,6 +127,12 @@ class CloudPrintProxyBackend::Core
   // handler is responsible for checking for pending print jobs for this
   // printer and print them.
   void InitJobHandlerForPrinter(DictionaryValue* printer_data);
+
+  void HandlePrinterNotification(const std::string& printer_id);
+  void PollForJobs();
+  // Schedules a task to poll for jobs. Does nothing if a task is already
+  // scheduled.
+  void ScheduleJobPoll();
 
   // Our parent CloudPrintProxyBackend
   CloudPrintProxyBackend* backend_;
@@ -166,6 +174,10 @@ class CloudPrintProxyBackend::Core
   bool new_printers_available_;
   // Notification (xmpp) handler.
   scoped_ptr<notifier::TalkMediator> talk_mediator_;
+  // Indicates whether XMPP notifications are currently enabled.
+  bool notifications_enabled_;
+  // Indicates whether a task to poll for jobs has been scheduled.
+  bool job_poll_scheduled_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -227,21 +239,13 @@ void CloudPrintProxyBackend::RegisterPrinters(
           printer_list));
 }
 
-void CloudPrintProxyBackend::HandlePrinterNotification(
-    const std::string& printer_id) {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(
-          core_.get(),
-          &CloudPrintProxyBackend::Core::DoHandlePrinterNotification,
-          printer_id));
-}
-
 CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
                                    const GURL& cloud_print_server_url,
                                    const DictionaryValue* print_system_settings)
     : backend_(backend), cloud_print_server_url_(cloud_print_server_url),
       next_upload_index_(0), server_error_count_(0),
-      next_response_handler_(NULL), new_printers_available_(false) {
+      next_response_handler_(NULL), new_printers_available_(false),
+      notifications_enabled_(false), job_poll_scheduled_(false) {
   if (print_system_settings) {
     // It is possible to have no print settings specified.
     print_system_settings_.reset(
@@ -264,8 +268,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
           user_agent, kSyncGaiaServiceId, kGaiaUrl,
           g_service_process->io_thread()->message_loop_proxy());
   gaia_auth_for_talk->set_message_loop(MessageLoop::current());
-  // TODO(sanjeevr): Handle auth failure case. We basically need to disable
-  // cloud print and shutdown.
+  bool auth_succeeded = false;
   if (gaia_auth_for_talk->AuthenticateWithLsid(lsid)) {
     scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print =
         new ServiceGaiaAuthenticator(
@@ -273,7 +276,11 @@ void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
             g_service_process->io_thread()->message_loop_proxy());
     gaia_auth_for_print->set_message_loop(MessageLoop::current());
     if (gaia_auth_for_print->AuthenticateWithLsid(lsid)) {
+      auth_succeeded = true;
       // Let the frontend know that we have authenticated.
+      backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+          &Core::NotifyAuthenticated, gaia_auth_for_print->auth_token(),
+          gaia_auth_for_talk->auth_token(), gaia_auth_for_talk->email()));
       backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
           &Core::NotifyAuthenticated, gaia_auth_for_print->auth_token(),
           gaia_auth_for_talk->auth_token(), gaia_auth_for_talk->email()));
@@ -282,6 +289,12 @@ void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
                             gaia_auth_for_talk->email(),
                             proxy_id);
     }
+  }
+
+  if (!auth_succeeded) {
+    // Let the frontend know the of authentication failure.
+    backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+        &Core::NotifyAuthenticationFailed));
   }
 }
 
@@ -323,6 +336,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
 }
 
 void CloudPrintProxyBackend::Core::StartRegistration() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   printer_list_.clear();
   print_system_->EnumeratePrinters(&printer_list_);
   server_error_count_ = 0;
@@ -332,6 +346,7 @@ void CloudPrintProxyBackend::Core::StartRegistration() {
 }
 
 void CloudPrintProxyBackend::Core::EndRegistration() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   request_.reset();
   if (new_printers_available_) {
     new_printers_available_ = false;
@@ -340,6 +355,7 @@ void CloudPrintProxyBackend::Core::EndRegistration() {
 }
 
 void CloudPrintProxyBackend::Core::DoShutdown() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   LOG(INFO) << "CP_PROXY: Shutdown proxy, id: " << proxy_id_;
   if (print_server_watcher_ != NULL)
     print_server_watcher_->StopWatching();
@@ -351,28 +367,26 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
     // remove this from the map.
     index->second->Shutdown();
   }
+  // Important to delete the TalkMediator on this thread.
+  talk_mediator_.reset();
+  notifications_enabled_ = false;
+  request_.reset();
+  MessageLoop::current()->QuitNow();
 }
 
 void CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters(
     const cloud_print::PrinterList& printer_list) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   if (!print_system_.get())
     return;  // No print system available.
   server_error_count_ = 0;
   printer_list_.assign(printer_list.begin(), printer_list.end());
-  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   next_upload_index_ = 0;
   RegisterNextPrinter();
 }
 
-void CloudPrintProxyBackend::Core::DoHandlePrinterNotification(
-    const std::string& printer_id) {
-  LOG(INFO) << "CP_PROXY: Handle printer notification, id: " << printer_id;
-  JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
-  if (index != job_handler_map_.end())
-    index->second->NotifyJobAvailable();
-}
-
 void CloudPrintProxyBackend::Core::GetRegisteredPrinters() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   request_.reset(
       new URLFetcher(
           CloudPrintHelpers::GetUrlForPrinterList(cloud_print_server_url_,
@@ -385,6 +399,7 @@ void CloudPrintProxyBackend::Core::GetRegisteredPrinters() {
 }
 
 void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   // For the next printer to be uploaded, create a multi-part post request to
   // upload the printer capabilities and the printer defaults.
   if (next_upload_index_ < printer_list_.size()) {
@@ -461,20 +476,63 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
   }
 }
 
+void CloudPrintProxyBackend::Core::HandlePrinterNotification(
+    const std::string& printer_id) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  LOG(INFO) << "CP_PROXY: Handle printer notification, id: " << printer_id;
+  JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
+  if (index != job_handler_map_.end())
+    index->second->NotifyJobAvailable();
+}
+
+void CloudPrintProxyBackend::Core::PollForJobs() {
+  LOG(INFO) << "CP_PROXY: Polling for jobs.";
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  for (JobHandlerMap::iterator index = job_handler_map_.begin();
+       index != job_handler_map_.end(); index++) {
+    index->second->NotifyJobAvailable();
+  }
+  job_poll_scheduled_ = false;
+  // If we don't have notifications, poll again after a while.
+  if (!notifications_enabled_) {
+    ScheduleJobPoll();
+  }
+}
+
+void CloudPrintProxyBackend::Core::ScheduleJobPoll() {
+  if (!job_poll_scheduled_) {
+    int interval_in_seconds = base::RandInt(kMinJobPollIntervalSecs,
+                                            kMaxJobPollIntervalSecs);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &CloudPrintProxyBackend::Core::PollForJobs),
+        interval_in_seconds * 1000);
+    job_poll_scheduled_ = true;
+  }
+}
+
 // URLFetcher::Delegate implementation.
 void CloudPrintProxyBackend::Core::OnURLFetchComplete(
     const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
   DCHECK(source == request_.get());
-  // We need a next response handler
-  DCHECK(next_response_handler_);
-  (this->*next_response_handler_)(source, url, status, response_code,
-                                  cookies, data);
+  // If we get an auth error, we need to give up right away and notify the
+  // frontend loop.
+  if (RC_FORBIDDEN == response_code) {
+    backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+        &Core::NotifyAuthenticationFailed));
+  } else {
+    // We need a next response handler
+    DCHECK(next_response_handler_);
+    (this->*next_response_handler_)(source, url, status, response_code,
+                                    cookies, data);
+  }
 }
 
 void CloudPrintProxyBackend::Core::NotifyPrinterListAvailable(
     const cloud_print::PrinterList& printer_list) {
+  DCHECK(MessageLoop::current() == backend_->frontend_loop_);
   backend_->frontend_->OnPrinterListAvailable(printer_list);
 }
 
@@ -482,14 +540,21 @@ void CloudPrintProxyBackend::Core::NotifyAuthenticated(
     const std::string& cloud_print_token,
     const std::string& cloud_print_xmpp_token,
     const std::string& email) {
+  DCHECK(MessageLoop::current() == backend_->frontend_loop_);
   backend_->frontend_->OnAuthenticated(cloud_print_token,
                                        cloud_print_xmpp_token, email);
+}
+
+void CloudPrintProxyBackend::Core::NotifyAuthenticationFailed() {
+  DCHECK(MessageLoop::current() == backend_->frontend_loop_);
+  backend_->frontend_->OnAuthenticationFailed();
 }
 
 void CloudPrintProxyBackend::Core::HandlePrinterListResponse(
     const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   bool succeeded = false;
   if (status.is_success() && response_code == 200) {
     server_error_count_ = 0;
@@ -537,6 +602,7 @@ void CloudPrintProxyBackend::Core::HandlePrinterListResponse(
 
 void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
     DictionaryValue* printer_data) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   DCHECK(printer_data);
   PrinterJobHandler::PrinterInfoFromCloud printer_info_cloud;
   printer_data->GetString(kIdValue, &printer_info_cloud.printer_id);
@@ -585,6 +651,7 @@ void CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
     const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   LOG(INFO) << "CP_PROXY: Handle register printer response, code: " <<
       response_code;
   Task* next_task =
@@ -616,6 +683,7 @@ void CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
 }
 
 void CloudPrintProxyBackend::Core::HandleServerError(Task* task_to_retry) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   LOG(INFO) << "CP_PROXY: Server error.";
   CloudPrintHelpers::HandleServerError(
       &server_error_count_, -1, kMaxRetryInterval, kBaseRetryInterval,
@@ -624,6 +692,7 @@ void CloudPrintProxyBackend::Core::HandleServerError(Task* task_to_retry) {
 
 bool CloudPrintProxyBackend::Core::RemovePrinterFromList(
     const std::string& printer_name) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   bool ret = false;
   for (cloud_print::PrinterList::iterator index = printer_list_.begin();
        index != printer_list_.end(); index++) {
@@ -638,18 +707,30 @@ bool CloudPrintProxyBackend::Core::RemovePrinterFromList(
 }
 
 void CloudPrintProxyBackend::Core::OnNotificationStateChange(
-    bool notification_enabled) {}
+    bool notification_enabled) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  bool previously_enabled = notifications_enabled_;
+  notifications_enabled_ = notification_enabled;
+  // If we lost notifications, we want to schedule a job poll. Also if
+  // notifications just got re-enabled, we want to poll once for jobs we might
+  // have missed when we were dark.
+  // Note that ScheduleJobPoll will not schedule again if a job poll task is
+  // already scheduled.
+  if (!notifications_enabled_) {
+    ScheduleJobPoll();
+  } else if (!previously_enabled) {
+    PollForJobs();
+  }
+}
+
 
 void CloudPrintProxyBackend::Core::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   LOG(INFO) << "CP_PROXY: Incoming notification.";
   if (0 == base::strcasecmp(kCloudPrintTalkServiceUrl,
                              notification_data.service_url.c_str())) {
-    backend_->core_thread_.message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(
-            this, &CloudPrintProxyBackend::Core::DoHandlePrinterNotification,
-            notification_data.service_specific_data));
+    HandlePrinterNotification(notification_data.service_specific_data);
   }
 }
 
@@ -657,6 +738,7 @@ void CloudPrintProxyBackend::Core::OnOutgoingNotification() {}
 
 // cloud_print::PrinterChangeNotifier::Delegate implementation
 void CloudPrintProxyBackend::Core::OnPrinterAdded() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   if (request_.get()) {
     new_printers_available_ = true;
   } else {
@@ -667,6 +749,15 @@ void CloudPrintProxyBackend::Core::OnPrinterAdded() {
 // PrinterJobHandler::Delegate implementation
 void CloudPrintProxyBackend::Core::OnPrinterJobHandlerShutdown(
     PrinterJobHandler* job_handler, const std::string& printer_id) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   LOG(INFO) << "CP_PROXY: Printer job handle shutdown, id " << printer_id;
   job_handler_map_.erase(printer_id);
 }
+
+void CloudPrintProxyBackend::Core::OnAuthError() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  LOG(INFO) << "CP_PROXY: Auth Error";
+  backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &Core::NotifyAuthenticationFailed));
+}
+
