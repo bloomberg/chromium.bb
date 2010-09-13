@@ -83,7 +83,7 @@ GLIBC_ARCH=$(if $(filter 32,$(BITSPLATFORM)),i486,x86_64)
 GLIBC_MARCH=$(if $(filter 32,$(BITSPLATFORM)),-march=i486,)
 
 LINUX_HEADERS="$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
-HPREFIX=../src/trusted/service_runtime/include
+HPREFIX=BUILD/build-nacl-headers
 NACL_SYS_HEADERS= \
       "$(HPREFIX)/sys/nacl_imc_api.h" \
       "$(HPREFIX)/sys/nacl_syscalls.h" \
@@ -562,6 +562,9 @@ BUILD/stamp-glibc-adhoc-files:
 	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* \
 	    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/ldscripts/
 	cp -rf $(LINUX_HEADERS)/* $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include
+	rm -rf $(HPREFIX)
+	../src/trusted/service_runtime/export_header.py \
+	  ../src/trusted/service_runtime/include $(HPREFIX)
 	mkdir -p $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/{sys,machine}
 	cp -f $(NACL_BITS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/bits
 	cp -f $(NACL_SYS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/sys
