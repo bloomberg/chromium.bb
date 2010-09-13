@@ -44,6 +44,7 @@ class BrowserURLHandler {
   // RewriteURLIfNecessary is called.
   static void InitURLHandlers();
 
+ private:
   // The list of known URLHandlers, optionally with reverse-rewriters.
   typedef std::pair<URLHandler, URLHandler> HandlerPair;
   static std::vector<HandlerPair> url_handlers_;
