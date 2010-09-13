@@ -854,12 +854,14 @@ int ChromeMain(int argc, char** argv) {
       if (process_type == switches::kRendererProcess ||
           process_type == switches::kExtensionProcess) {
         rv = RendererMain(main_params);
-#ifndef DISABLE_NACL
+#if !defined(DISABLE_NACL)
       } else if (process_type == switches::kNaClLoaderProcess) {
         rv = NaClMain(main_params);
 #endif
+      } else if (process_type == switches::kWorkerProcess) {
+        rv = WorkerMain(main_params);
       } else {
-        NOTREACHED() << "Unknown process type";
+        NOTREACHED() << "Unknown process type: " << process_type;
       }
     } else {
       rv = 0;
