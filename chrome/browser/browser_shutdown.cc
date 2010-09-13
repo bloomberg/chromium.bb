@@ -289,4 +289,12 @@ bool IsTryingToQuit() {
   return g_trying_to_quit;
 }
 
+bool ShuttingDownWithoutClosingBrowsers() {
+#if defined(USE_X11)
+  if (GetShutdownType() == browser_shutdown::END_SESSION)
+    return true;
+#endif
+  return false;
+}
+
 }  // namespace browser_shutdown

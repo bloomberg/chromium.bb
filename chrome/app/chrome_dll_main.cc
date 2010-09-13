@@ -915,7 +915,7 @@ int ChromeMain(int argc, char** argv) {
     gtk_init(&argc, &argv);
     SetUpGLibLogHandler();
 
-    x11_util::SetX11ErrorHandlers();
+    x11_util::SetDefaultX11ErrorHandlers();
 #endif  // defined(OS_LINUX)
 
     rv = BrowserMain(main_params);

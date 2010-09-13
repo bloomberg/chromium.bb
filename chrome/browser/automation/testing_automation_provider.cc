@@ -29,6 +29,7 @@
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -419,7 +420,8 @@ void TestingAutomationProvider::OnMessageReceived(
 }
 
 void TestingAutomationProvider::OnChannelError() {
-  BrowserList::CloseAllBrowsersAndExit();
+  if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
+    BrowserList::CloseAllBrowsersAndExit();
   AutomationProvider::OnChannelError();
 }
 

@@ -20,6 +20,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/thread.h"
 #include "app/x11_util_internal.h"
 #include "gfx/rect.h"
@@ -53,25 +54,18 @@ CachedPictFormats* get_cached_pict_formats() {
 // Maximum number of CachedPictFormats we keep around.
 const size_t kMaxCacheSize = 5;
 
-int X11ErrorHandler(Display* d, XErrorEvent* e) {
-  LOG(FATAL) << "X Error detected: serial " << e->serial
-             << " error_code " << static_cast<unsigned int>(e->error_code)
-             << " request_code " << static_cast<unsigned int>(e->request_code)
-             << " minor_code " << static_cast<unsigned int>(e->minor_code);
+int DefaultX11ErrorHandler(Display* d, XErrorEvent* e) {
+  LOG(FATAL) << GetErrorEventDescription(e);
   return 0;
 }
 
-int X11IOErrorHandler(Display* d) {
+int DefaultX11IOErrorHandler(Display* d) {
+  // If there's an IO error it likely means the X server has gone away
   LOG(FATAL) << "X IO Error detected";
   return 0;
 }
 
 }  // namespace
-
-void SetX11ErrorHandlers() {
-  XSetErrorHandler(X11ErrorHandler);
-  XSetIOErrorHandler(X11IOErrorHandler);
-}
 
 bool XDisplayExists() {
   return (gdk_display_get_default() != NULL);
@@ -461,79 +455,6 @@ void RestackWindow(XID window, XID sibling, bool above) {
   XConfigureWindow(GetXDisplay(), window, CWSibling | CWStackMode, &changes);
 }
 
-XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual) {
-  DCHECK(QueryRenderSupport(dpy));
-
-  CachedPictFormats* formats = get_cached_pict_formats();
-
-  for (CachedPictFormats::const_iterator i = formats->begin();
-       i != formats->end(); ++i) {
-    if (i->equals(dpy, visual))
-      return i->format;
-  }
-
-  // Not cached, look up the value.
-  XRenderPictFormat* pictformat = XRenderFindVisualFormat(dpy, visual);
-  CHECK(pictformat) << "XRENDER does not support default visual";
-
-  // And store it in the cache.
-  CachedPictFormat cached_value;
-  cached_value.visual = visual;
-  cached_value.display = dpy;
-  cached_value.format = pictformat;
-  formats->push_front(cached_value);
-
-  if (formats->size() == kMaxCacheSize) {
-    formats->pop_back();
-    // We should really only have at most 2 display/visual combinations:
-    // one for normal browser windows, and possibly another for an argb window
-    // created to display a menu.
-    //
-    // If we get here it's not fatal, we just need to make sure we aren't
-    // always blowing away the cache. If we are, then we should figure out why
-    // and make it bigger.
-    NOTREACHED();
-  }
-
-  return pictformat;
-}
-
-XRenderPictFormat* GetRenderARGB32Format(Display* dpy) {
-  static XRenderPictFormat* pictformat = NULL;
-  if (pictformat)
-    return pictformat;
-
-  // First look for a 32-bit format which ignores the alpha value
-  XRenderPictFormat templ;
-  templ.depth = 32;
-  templ.type = PictTypeDirect;
-  templ.direct.red = 16;
-  templ.direct.green = 8;
-  templ.direct.blue = 0;
-  templ.direct.redMask = 0xff;
-  templ.direct.greenMask = 0xff;
-  templ.direct.blueMask = 0xff;
-  templ.direct.alphaMask = 0;
-
-  static const unsigned long kMask =
-    PictFormatType | PictFormatDepth |
-    PictFormatRed | PictFormatRedMask |
-    PictFormatGreen | PictFormatGreenMask |
-    PictFormatBlue | PictFormatBlueMask |
-    PictFormatAlphaMask;
-
-  pictformat = XRenderFindFormat(dpy, kMask, &templ, 0 /* first result */);
-
-  if (!pictformat) {
-    // Not all X servers support xRGB32 formats. However, the XRENDER spec says
-    // that they must support an ARGB32 format, so we can always return that.
-    pictformat = XRenderFindStandardFormat(dpy, PictStandardARGB32);
-    CHECK(pictformat) << "XRENDER ARGB32 not supported.";
-  }
-
-  return pictformat;
-}
-
 XSharedMemoryId AttachSharedMemory(Display* display, int shared_memory_key) {
   DCHECK(QuerySharedMemorySupport(display));
 
@@ -825,5 +746,104 @@ bool ChangeWindowDesktop(XID window, XID destination) {
                           SubstructureNotifyMask, &event);
   return result == Success;
 }
+
+void SetDefaultX11ErrorHandlers() {
+  SetX11ErrorHandlers(NULL, NULL);
+}
+
+// ----------------------------------------------------------------------------
+// These functions are declared in x11_util_internal.h because they require
+// XLib.h to be included, and it conflicts with many other headers.
+XRenderPictFormat* GetRenderARGB32Format(Display* dpy) {
+  static XRenderPictFormat* pictformat = NULL;
+  if (pictformat)
+    return pictformat;
+
+  // First look for a 32-bit format which ignores the alpha value
+  XRenderPictFormat templ;
+  templ.depth = 32;
+  templ.type = PictTypeDirect;
+  templ.direct.red = 16;
+  templ.direct.green = 8;
+  templ.direct.blue = 0;
+  templ.direct.redMask = 0xff;
+  templ.direct.greenMask = 0xff;
+  templ.direct.blueMask = 0xff;
+  templ.direct.alphaMask = 0;
+
+  static const unsigned long kMask =
+    PictFormatType | PictFormatDepth |
+    PictFormatRed | PictFormatRedMask |
+    PictFormatGreen | PictFormatGreenMask |
+    PictFormatBlue | PictFormatBlueMask |
+    PictFormatAlphaMask;
+
+  pictformat = XRenderFindFormat(dpy, kMask, &templ, 0 /* first result */);
+
+  if (!pictformat) {
+    // Not all X servers support xRGB32 formats. However, the XRENDER spec says
+    // that they must support an ARGB32 format, so we can always return that.
+    pictformat = XRenderFindStandardFormat(dpy, PictStandardARGB32);
+    CHECK(pictformat) << "XRENDER ARGB32 not supported.";
+  }
+
+  return pictformat;
+}
+
+XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual) {
+  DCHECK(QueryRenderSupport(dpy));
+
+  CachedPictFormats* formats = get_cached_pict_formats();
+
+  for (CachedPictFormats::const_iterator i = formats->begin();
+       i != formats->end(); ++i) {
+    if (i->equals(dpy, visual))
+      return i->format;
+  }
+
+  // Not cached, look up the value.
+  XRenderPictFormat* pictformat = XRenderFindVisualFormat(dpy, visual);
+  CHECK(pictformat) << "XRENDER does not support default visual";
+
+  // And store it in the cache.
+  CachedPictFormat cached_value;
+  cached_value.visual = visual;
+  cached_value.display = dpy;
+  cached_value.format = pictformat;
+  formats->push_front(cached_value);
+
+  if (formats->size() == kMaxCacheSize) {
+    formats->pop_back();
+    // We should really only have at most 2 display/visual combinations:
+    // one for normal browser windows, and possibly another for an argb window
+    // created to display a menu.
+    //
+    // If we get here it's not fatal, we just need to make sure we aren't
+    // always blowing away the cache. If we are, then we should figure out why
+    // and make it bigger.
+    NOTREACHED();
+  }
+
+  return pictformat;
+}
+
+void SetX11ErrorHandlers(XErrorHandler error_handler,
+                         XIOErrorHandler io_error_handler) {
+  XSetErrorHandler(error_handler ? error_handler : DefaultX11ErrorHandler);
+  XSetIOErrorHandler(
+      io_error_handler ? io_error_handler : DefaultX11IOErrorHandler);
+}
+
+std::string GetErrorEventDescription(XErrorEvent* error_event) {
+  return base::StringPrintf(
+      "X Error detected: %lu error_code %u request_code %u minor_code %u",
+      error_event->serial,
+      error_event->error_code,
+      error_event->request_code,
+      error_event->minor_code);
+}
+// ----------------------------------------------------------------------------
+// End of x11_util_internal.h
+
 
 }  // namespace x11_util

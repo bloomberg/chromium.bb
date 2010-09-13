@@ -87,7 +87,7 @@ PluginThread::PluginThread()
     }
   }
 
-  x11_util::SetX11ErrorHandlers();
+  x11_util::SetDefaultX11ErrorHandlers();
 #endif
 
   PatchNPNFunctions();
