@@ -58,9 +58,13 @@ def RunPylint(input_api, output_api):
   files.remove('cpplint.py')
   try:
     proc = input_api.subprocess.Popen(['pylint', '-E'] + files)
-  except WindowsError:
-    # It's windows, give up.
-    return []
+  except OSError:
+    if input_api.platform == 'win32':
+      # It's windows, give up.
+      return []
+    else:
+      return [output_api.PresubmitError(
+          'Please install pylint with "easy_install pylint"')]
   proc.communicate()
   if proc.returncode:
     return [output_api.PresubmitError('Fix pylint errors first.')]
