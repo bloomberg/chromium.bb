@@ -61,7 +61,7 @@ class TargetBase(object):
                          for dep in self.GetDeps()),
             "args": self._args}
 
-  def _GetOutputSnapshot(self):
+  def _GetOutputHash(self):
     raise NotImplemented()
 
   def NeedsBuild(self):
@@ -85,7 +85,7 @@ class TargetBase(object):
     #    hostname, and other environment.
     # It might also be useful to record failures.
     self._state.SetState({"input": input,
-                          "output": self._GetOutputSnapshot()})
+                          "output": self._GetOutputHash()})
 
   def GetOutput(self):
     cached = self._state.GetState()
@@ -110,12 +110,12 @@ def ListFiles(tree, dirpath_rel=""):
         yield result
 
 
-def HashTree(dirpath):
+def HashTree(tree):
   # TODO(mseaborn): We could use the same tree hashing as Git so that
   # tree snapshots can be stored in Git without needing a different ID
   # scheme.
   state = hashlib.sha1()
-  for info in ListFiles(dirtree.MakeSnapshotFromPath(dirpath)):
+  for info in ListFiles(tree):
     state.update(CheckedRepr(info) + "\n")
   return state.hexdigest()
 
@@ -140,8 +140,12 @@ class BuildTarget(TargetBase):
   def GetName(self):
     return self._name
 
-  def _GetOutputSnapshot(self):
-    return HashTree(self.dest_path)
+  def GetOutputTree(self):
+    return treemappers.RemoveVersionControlDirs(
+        dirtree.MakeSnapshotFromPath(self.dest_path))
+
+  def _GetOutputHash(self):
+    return HashTree(self.GetOutputTree())
 
 
 class NonSnapshottingBuildTarget(BuildTarget):
@@ -151,7 +155,7 @@ class NonSnapshottingBuildTarget(BuildTarget):
   # source tree because it is also a build tree.
   # TODO(mseaborn): Maybe track subdirs of native_client instead,
   # or regard the tree as always having changed.
-  def _GetOutputSnapshot(self):
+  def _GetOutputHash(self):
     return None
 
 
@@ -281,9 +285,7 @@ def SconsBuild(name, dest_dir, build_dir, src_dir, prefix_obj, scons_args):
 
 def TreeMapper(name, dest_dir, map_func, input_trees, args=[]):
   def DoBuild():
-    trees = [treemappers.RemoveVersionControlDirs(
-                 dirtree.MakeSnapshotFromPath(input_tree.dest_path))
-             for input_tree in input_trees]
+    trees = [input_tree.GetOutputTree() for input_tree in input_trees]
     result = map_func(*trees + args)
     ResetDir(dest_dir)
     dirtree.WriteSnapshotToPath(result, dest_dir)

@@ -235,8 +235,9 @@ digraph {
     # same identity.
     copy_dir = self.MakeTempDir()
     dirtree.WriteSnapshotToPath(snapshot, copy_dir)
-    self.assertEquals(btarget.HashTree(tempdir),
-                      btarget.HashTree(copy_dir))
+    snapshot_from_copy = dirtree.MakeSnapshotFromPath(copy_dir)
+    self.assertEquals(btarget.HashTree(snapshot),
+                      btarget.HashTree(snapshot_from_copy))
 
   def test_tree_mapper(self):
     Dir = dirtree_test.Dir
