@@ -46,30 +46,6 @@
 
 namespace {
 
-bool LaunchNaClProcess(const char* url,
-                       int imc_fd,
-                       nacl::Handle* imc_handle,
-                       nacl::Handle* nacl_process_handle,
-                       int* nacl_process_id) {
-  // TODO(gregoryd): nacl::FileDescriptor will be soon merged with
-  // base::FileDescriptor
-  std::vector<nacl::FileDescriptor> sockets;
-  base::ProcessHandle nacl_process;
-  if (!RenderThread::current()->Send(
-    new ViewHostMsg_LaunchNaCl(
-        ASCIIToWide(url),
-        /* socket_count= */ 1,
-        &sockets,
-        &nacl_process,
-        reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
-    return false;
-  }
-  CHECK(static_cast<int>(sockets.size()) == 1);
-  *imc_handle = nacl::ToNativeHandle(sockets[0]);
-  *nacl_process_handle = nacl_process;
-  return true;
-}
-
 bool LaunchNaClProcessMultiFD(const char* alleged_url,
                               int socket_count,
                               nacl::Handle* imc_handles,
@@ -187,8 +163,6 @@ RenderProcessImpl::RenderProcessImpl()
 #ifndef DISABLE_NACL
   if (command_line.HasSwitch(switches::kInternalNaCl)) {
     std::map<std::string, uintptr_t> funcs;
-    funcs["launch_nacl_process"] =
-        reinterpret_cast<uintptr_t>(LaunchNaClProcess);
     funcs["launch_nacl_process_multi_fd"] =
         reinterpret_cast<uintptr_t>(LaunchNaClProcessMultiFD);
     RegisterInternalNaClPlugin(funcs);
