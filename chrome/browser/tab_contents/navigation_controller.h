@@ -386,6 +386,12 @@ class NavigationController {
   // invoked). This is true for session/tab restore and cloned tabs.
   bool needs_reload() const { return needs_reload_; }
 
+  // Sets the max restored page ID this NavigationController has seen, if it
+  // was restored from a previous session.
+  void set_max_restored_page_id(int32 max_id) {
+    max_restored_page_id_ = max_id;
+  }
+
   // Returns the largest restored page ID seen in this navigation controller,
   // if it was restored from a previous session.  (-1 otherwise)
   int32 max_restored_page_id() const { return max_restored_page_id_; }
@@ -475,12 +481,6 @@ class NavigationController {
   // added to the flags sent to the delegate's NotifyNavigationStateChanged.
   void NotifyNavigationEntryCommitted(LoadCommittedDetails* details,
                                       int extra_invalidate_flags);
-
-  // Sets the max restored page ID this NavigationController has seen, if it
-  // was restored from a previous session.
-  void set_max_restored_page_id(int32 max_id) {
-    max_restored_page_id_ = max_id;
-  }
 
   // Updates the virtual URL of an entry to match a new URL, for cases where
   // the real renderer URL is derived from the virtual URL, like view-source:
