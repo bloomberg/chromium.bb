@@ -205,7 +205,7 @@ fetch-git-rw-sources: ALWAYS
 	  $(MAKE) -f $(THISMAKEFILE) prepare-git-src && \
 	  git clone $(GITRW)/nacl-glibc.git SRC/glibc && \
 	  touch SRC/stamp-glibc && \
-	  $(MAKE) -f $(THISMAKEFILE) prepare-git-glibc-src ; \
+	  $(MAKE) -f $(THISMAKEFILE) fetch-glibc-sources-readonly ; \
 	fi
 
 # Unpack binutils, apply patches.
