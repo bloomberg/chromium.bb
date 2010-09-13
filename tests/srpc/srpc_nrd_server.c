@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +15,8 @@
 #include <sys/nacl_syscalls.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#define BOUND_SOCKET  3
 
 /*
  * NativeClient server side of a test for passing socket addresses.  The
@@ -215,6 +217,34 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { NULL, NULL },
 };
 
+void *HandleConnection(void *arg) {
+  int sock_fd = (int) arg;
+  int rc;
+  int success = NaClSrpcServerLoop(sock_fd, srpc_methods, NULL);
+  assert(success);
+  rc = close(sock_fd);
+  assert(rc == 0);
+  return NULL;
+}
+
 int main() {
-  return NaClSrpcMain(srpc_methods);
+  /*
+   * We need to be able to handle multiple connections because
+   * srpc_sockaddr.html tests this by doing
+   * __defaultSocketAddress().connect().  So, rather than using
+   * NaClSrpcMain() (which might be single-threaded), we handle
+   * multiple connections explicitly.
+   */
+  while (1) {
+    pthread_t tid;
+    int rc;
+    int sock_fd = imc_accept(BOUND_SOCKET);
+    if (sock_fd < 0) {
+      return 0;
+    }
+    rc = pthread_create(&tid, NULL, HandleConnection, (void *) sock_fd);
+    assert(rc == 0);
+    rc = pthread_detach(tid);
+    assert(rc == 0);
+  }
 }
