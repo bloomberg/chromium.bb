@@ -301,11 +301,6 @@ function updateLightMatrix() {
       4,                   // Near plane.
       20);                 // Far plane.
 
-  var adjustedProjection =
-          [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 2, 0], [0, 0, -1, 1]];
-      o3d.Transform.compose(
-          adjustedProjection, lightProjection, adjustedProjection);
-
   // Make the light point toward the origin
   var lightView = g_math.matrix4.lookAt(
       g_lightWorldPos,   // light
@@ -384,17 +379,9 @@ function createShapes() {
 function createLightShape() {
   var inverseMatrix = g_math.matrix4.inverse(g_lightViewProjection);
 
-  // Scale and translate a cube of side length 2 to get a box
-  // that extends from [-1, -1, 0] to [1, 1, 1].
   var shape = o3djs.lineprimitives.createLineCube(
-                  g_pack,
-                  o3djs.material.createConstantMaterial(g_pack,
-                                                        g_colorViewInfo,
-                                                        [1, 0, 0, 1]),
-                  2,
-                  g_math.matrix4.compose(
-                      g_math.matrix4.translation([0, 0, 0.5]),
-                      g_math.matrix4.scaling([1, 1, 0.5])));
+      g_pack, o3djs.material.createConstantMaterial(g_pack, g_colorViewInfo,
+          [1, 0, 0, 1]), 2);
 
   g_lightFrustumTransform = g_pack.createObject('Transform');
   g_lightFrustumTransform.localMatrix = inverseMatrix;

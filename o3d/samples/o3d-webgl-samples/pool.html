@@ -396,7 +396,7 @@ pool.Physics = function() {
                 [0, w / 2 - r, 0]];
 
     var angles = [0, Math.PI/2, Math.PI, Math.PI, 3 * Math.PI / 2, 0];
-    var translations = this.math.mulMatrixMatrix(
+    var translations = this.math.generalizedMulMatrixMatrix(
         [[-1, -1, 0], [0, -2, 0], [1, -1, 0], [1, 1, 0], [0, 2, 0], [-1, 1, 0]],
         [[w / 2, 0, 0], [0, w / 2, 0], [0, 0, 1]]);
 
@@ -624,9 +624,10 @@ pool.Physics = function() {
     var b = r[1];
     var c = r[2];
 
-    return [[1 / m + (b * b + c * c) / I, (-a * b) / I, (-a * c) / I],
-            [(-a * b) / I, 1 / m + (a * a + c * c) / I, (-b * c) / I],
-            [(-a * c) / I, (-b * c) / I, 1 / m + (a * a + b * b) / I]];
+    return o3djs.math
+         .makeMatrix3(1 / m + (b * b + c * c) / I, (-a * b) / I, (-a * c) / I,
+                      (-a * b) / I, 1 / m + (a * a + c * c) / I, (-b * c) / I,
+                      (-a * c) / I, (-b * c) / I, 1 / m + (a * a + b * b) / I);
   };
 
   this.applyImpulse = function(i, impulse, r) {
@@ -1269,11 +1270,11 @@ function initTable() {
                     Math.PI,
                     15)).concat([[-scaledWoodBreadth - 1, 0]]);
 
-  var m = g_math.mulScalarMatrix(g_tableWidth / 2, g_math.identity(2));
-  felt_polygon_A = g_math.mulMatrixMatrix(felt_polygon_A, m);
-  felt_polygon_B = g_math.mulMatrixMatrix(felt_polygon_B, m);
-  felt_polygon_C = g_math.mulMatrixMatrix(felt_polygon_C, m);
-  wood_polygon = g_math.mulMatrixMatrix(wood_polygon, m);
+  var m = [[g_tableWidth / 2, 0],[0,g_tableWidth / 2]];
+  felt_polygon_A = g_math.generalizedMulMatrixMatrix(felt_polygon_A, m);
+  felt_polygon_B = g_math.generalizedMulMatrixMatrix(felt_polygon_B, m);
+  felt_polygon_C = g_math.generalizedMulMatrixMatrix(felt_polygon_C, m);
+  wood_polygon = g_math.generalizedMulMatrixMatrix(wood_polygon, m);
 
   var felt_polygons = [];
   var wood_polygons = [];
@@ -1316,11 +1317,13 @@ function initTable() {
   var cushionSwoop = g_pocketRadius;
 
   var angles = [0, Math.PI/2, Math.PI, Math.PI, 3 * Math.PI / 2, 0];
-  var translations = g_math.mulMatrixMatrix(
+  var translations = g_math.generalizedMulMatrixMatrix(
       [[-1, -1, 0], [0, -2, 0], [1, -1, 0], [1, 1, 0], [0, 2, 0], [-1, 1, 0]],
       [[g_tableWidth / 2, 0, 0], [0, g_tableWidth / 2, 0], [0, 0, 1]]);
-  var shortenings = g_math.mulScalarMatrix(g_pocketRadius,
-      [[1, root2], [root2, root2], [root2, 1]])
+  var shortenings =
+      [[g_pocketRadius, g_pocketRadius*root2],
+       [g_pocketRadius*root2, g_pocketRadius*root2],
+       [g_pocketRadius*root2, g_pocketRadius]];
 
   var billiardThickness = 0.1;
   var billiardBreadth = 1;
@@ -1415,17 +1418,19 @@ function initHud() {
 
   var plane = o3djs.primitives.createPlane(
       g_pack, g_solidMaterial, 1, 1, 1, 1,
-      [[1, 0, 0, 0],
-       [0, 0, 1, 0],
-       [0,-1, 0, 0],
-       [0, 0, 0, 1]]);
+      o3djs.math.makeMatrix4(
+          1, 0, 0, 0,
+          0, 0, 1, 0,
+          0,-1, 0, 0,
+          0, 0, 0, 1));
 
   var backPlane = o3djs.primitives.createPlane(
       g_pack, g_solidMaterial, 1, 1, 1, 1,
-      [[1, 0, 0, 0],
-       [0, 0, 1, 0],
-       [0,-1, 0, 0],
-       [0, 0, 0, 1]]);
+      o3djs.math.makeMatrix4(
+          1, 0, 0, 0,
+          0, 0, 1, 0,
+          0,-1, 0, 0,
+          0, 0, 0, 1));
 
   barT2.addShape(plane);
   //backT2.addShape(backPlane);

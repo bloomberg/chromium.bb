@@ -241,10 +241,10 @@ o3djs.canvas.CanvasInfo = function(pack, root, viewInfo) {
       1,
       1,
       1,
-      [[1, 0, 0, 0],
-       [0, 0, 1, 0],
-       [0, -1, 0, 0],
-       [0, 0, 0, 1]]);
+      o3djs.math.makeMatrix4(1, 0, 0, 0,
+                             0, 0, 1, 0,
+                             0, -1, 0 ,0,
+                             0, 0, 0, 1));
 
   /**
    * A shape for opaque quads.
@@ -257,10 +257,10 @@ o3djs.canvas.CanvasInfo = function(pack, root, viewInfo) {
       1,
       1,
       1,
-      [[1, 0, 0, 0],
-       [0, 0, 1, 0],
-       [0, -1, 0, 0],
-       [0, 0, 0, 1]]);
+      o3djs.math.makeMatrix4(1, 0, 0, 0,
+                             0, 0, 1, 0,
+                             0, -1, 0 ,0,
+                             0, 0, 0, 1));
 };
 /**
  * The CanvasQuad object encapsulates a Transform, a rectangle Shape,

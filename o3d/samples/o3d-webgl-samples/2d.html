@@ -296,10 +296,10 @@ function initStep2(clientElements) {
       1,
       1,
       1,
-      [[1, 0, 0, 0],
-       [0, 0, 1, 0],
-       [0,-1, 0, 0],
-       [0, 0, 0, 1]]);
+      o3djs.math.makeMatrix4(1, 0, 0, 0,
+                             0, 0, 1, 0,
+                             0,-1, 0, 0,
+                             0, 0, 0, 1));
 
   // Load all the textures.
   var loader = o3djs.loader.createLoader(initStep3);

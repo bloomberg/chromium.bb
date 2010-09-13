@@ -24,10 +24,10 @@ O3DManager.prototype.createCylinder = function(radius) {
     shape = o3djs.primitives.createCylinder(g.pack,
                                             g.materials[0],
                                             radius, 40, 20, 1,
-                                            [[1, 0, 0, 0],
-                                             [0, 0, 1, 0],
-                                             [0, -1, 0, 0],
-                                             [0, 0, 0, 1]]);
+                                            o3djs.math.makeMatrix4(1, 0, 0, 0,
+                                                                   0, 0, 1, 0,
+                                                                   0, -1, 0, 0,
+                                                                   0, 0, 0, 1));
     this.shapes[id] = shape;
   }
   return new O3DShape({shape: shape});
@@ -53,16 +53,16 @@ O3DManager.prototype.createCompoundCylinder = function(radius1,
   if (!shape) {
     shape = o3djs.primitives.createCylinder(
         g.pack, g.materials[0], radius1, 40, 20, 1,
-        [[1, 0, 0, 0],
-         [0, 0, 1, 0],
-         [0, -1, 0, 0],
-         [offset1, 0, 0, 1]]);
+        o3djs.math.makeMatrix4(1, 0, 0, 0,
+                               0, 0, 1, 0,
+                               0, -1, 0, 0,
+                               offset1, 0, 0, 1));
     shape2 = o3djs.primitives.createCylinder(
         g.pack, g.materials[0], radius2, 40, 20, 1,
-        [[1, 0, 0, 0],
-         [0, 0, 1, 0],
-         [0, -1, 0, 0],
-         [offset2, 0, 0, 1]]);
+        o3djs.math.makeMatrix4(1, 0, 0, 0,
+                               0, 0, 1, 0,
+                               0, -1, 0, 0,
+                               offset2, 0, 0, 1));
     shape2.elements[0].owner = shape;
     g.pack.removeObject(shape2);
     this.shapes[id] = shape;

@@ -251,10 +251,10 @@ o3djs.fps.FPSManager = function(pack, clientWidth, clientHeight, opt_parent) {
      1,
      1,
      1,
-     [[1, 0, 0, 0],
-      [0, 0, 1, 0],
-      [0, -1, 0, 0],
-      [0.5, 0.5, 0, 1]]);
+     o3djs.math.makeMatrix4(1, 0, 0, 0,
+                            0, 0, 1, 0,
+                            0, -1, 0, 0,
+                            0.5, 0.5, 0, 1));
 
   var barXOffset = 10;
   var barYOffset = 2;
