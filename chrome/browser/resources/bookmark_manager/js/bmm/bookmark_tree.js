@@ -78,7 +78,7 @@ cr.define('bmm', function() {
   };
 
   // Clean up once per session but wait until things settle down a bit.
-  setTimeout(cr.bind(expandedManager.cleanUp, expandedManager), 1e4);
+  setTimeout(expandedManager.cleanUp.bind(expandedManager), 1e4);
 
   /**
    * Creates a new tree item for a bookmark node.

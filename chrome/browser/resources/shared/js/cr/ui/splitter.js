@@ -67,7 +67,7 @@ cr.define('cr.ui', function() {
      * Initializes the element.
      */
     decorate: function() {
-      this.addEventListener('mousedown', cr.bind(this.handleMouseDown_, this),
+      this.addEventListener('mousedown', this.handleMouseDown_.bind(this),
                             true);
     },
 
@@ -77,8 +77,8 @@ cr.define('cr.ui', function() {
      */
     startDrag: function(e) {
       if (!this.boundHandleMouseMove_) {
-        this.boundHandleMouseMove_ = cr.bind(this.handleMouseMove_, this);
-        this.boundHandleMouseUp_ = cr.bind(this.handleMouseUp_, this);
+        this.boundHandleMouseMove_ = this.handleMouseMove_.bind(this);
+        this.boundHandleMouseUp_ = this.handleMouseUp_.bind(this);
       }
 
       var doc = this.ownerDocument;

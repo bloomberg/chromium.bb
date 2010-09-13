@@ -251,7 +251,7 @@ cr.define('options.passwordsExceptions', function() {
 
       PasswordsList.decorate(this.passwordsList);
       this.passwordsList.selectionModel.addEventListener(
-          'change', cr.bind(this.handleOnSelectionChange_, this));
+          'change', this.handleOnSelectionChange_.bind(this));
 
       var removeRow = cr.doc.createElement('button');
       removeRow.textContent = templateData.passwordsRemoveButton;
@@ -339,7 +339,7 @@ cr.define('options.passwordsExceptions', function() {
 
       PasswordExceptionsList.decorate(this.passwordExceptionsList);
       this.passwordExceptionsList.selectionModel.addEventListener(
-          'change', cr.bind(this.handleOnSelectionChange_, this));
+          'change', this.handleOnSelectionChange_.bind(this));
 
       var removeRow = cr.doc.createElement('button');
       removeRow.textContent = templateData.passwordsRemoveButton;

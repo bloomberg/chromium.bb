@@ -53,8 +53,7 @@ cr.define('options.language', function() {
         }
         button.languageCode = language.code;
         // Listen to user clicks.
-        button.addEventListener('click',
-                                cr.bind(this.handleLanguageClick_, this));
+        button.addEventListener('click', this.handleLanguageClick_.bind(this));
         var li = document.createElement('li');
         li.languageCode = language.code;
         li.appendChild(button);

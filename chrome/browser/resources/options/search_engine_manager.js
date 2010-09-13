@@ -33,7 +33,7 @@ cr.define('options', function() {
       this.list_.selectionModel = selectionModel;
 
       selectionModel.addEventListener('change',
-          cr.bind(this.selectionChanged_, this));
+          this.selectionChanged_.bind(this));
 
       var self = this;
       $('addSearchEngineButton').onclick = function(event) {

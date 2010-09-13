@@ -44,7 +44,7 @@ cr.define('options', function() {
                       'editSearchEngineURL'];
       for (var i = 0; i < fieldIDs.length; i++) {
         var field = $(fieldIDs[i]);
-        field.oninput = cr.bind(this.validateFields_, this);
+        field.oninput = this.validateFields_.bind(this);
         field.onkeydown = function(e) {
           if (e.keyCode == 27)  // Esc
             editForm.reset();

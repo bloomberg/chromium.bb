@@ -248,37 +248,6 @@ const cr = (function() {
   }
 
   /**
-   * Partially applies this function to a particular 'this object' and zero or
-   * more arguments. The result is a new function with some arguments of the
-   * first function pre-filled and the value of |this| 'pre-specified'.
-   *
-   * Remaining arguments specified at call-time are appended to the pre-
-   * specified ones.
-   *
-   * Usage:
-   * <pre>var barMethBound = bind(myFunction, myObj, 'arg1', 'arg2');
-   * barMethBound('arg3', 'arg4');</pre>
-   *
-   * @param {Function} fn A function to partially apply.
-   * @param {Object|undefined} selfObj Specifies the object which |this| should
-   *     point to when the function is run. If the value is null or undefined,
-   *     it will default to the global object.
-   * @param {...*} var_args Additional arguments that are partially
-   *     applied to the function.
-   *
-   * @return {!Function} A partially-applied form of the function bind() was
-   *     invoked as a method of.
-   */
-  function bind(fn, selfObj, var_args) {
-    var boundArgs = Array.prototype.slice.call(arguments, 2);
-    return function() {
-      var args = Array.prototype.slice.call(arguments);
-      args.unshift.apply(args, boundArgs);
-      return fn.apply(selfObj, args);
-    }
-  }
-
-  /**
    * Dispatches a simple event on an event target.
    * @param {!EventTarget} target The event target to dispatch the event on.
    * @param {string} type The type of the event.
@@ -355,7 +324,6 @@ const cr = (function() {
     PropertyKind: PropertyKind,
     createUid: createUid,
     getUid: getUid,
-    bind: bind,
     dispatchSimpleEvent: dispatchSimpleEvent,
     dispatchPropertyChange: dispatchPropertyChange,
 

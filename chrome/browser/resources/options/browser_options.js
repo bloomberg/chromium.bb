@@ -32,8 +32,8 @@ cr.define('options', function() {
       $('startupAddButton').onclick = function(event) {
         OptionsPage.showOverlay('addStartupPageOverlay');
       };
-      $('startupRemoveButton').onclick = cr.bind(
-          this.removeSelectedStartupPages_, this);
+      $('startupRemoveButton').onclick =
+          this.removeSelectedStartupPages_.bind(this);
       $('startupUseCurrentButton').onclick = function(event) {
         chrome.send('setStartupPagesToCurrentPages');
       };
@@ -53,7 +53,7 @@ cr.define('options', function() {
       list.selectionModel = new ListSelectionModel;
 
       list.selectionModel.addEventListener(
-          'change', cr.bind(this.updateRemoveButtonState_, this));
+          'change', this.updateRemoveButtonState_.bind(this));
 
       this.addEventListener('visibleChange', function(event) {
         $('startupPages').redraw();
@@ -61,9 +61,9 @@ cr.define('options', function() {
 
       // Initialize control enabled states.
       Preferences.getInstance().addEventListener('session.restore_on_startup',
-          cr.bind(this.updateCustomStartupPageControlStates_, this));
+          this.updateCustomStartupPageControlStates_.bind(this));
       Preferences.getInstance().addEventListener('homepage_is_newtabpage',
-          cr.bind(this.updateHomepageFieldState_, this));
+          this.updateHomepageFieldState_.bind(this));
       this.updateCustomStartupPageControlStates_();
       this.updateHomepageFieldState_();
 

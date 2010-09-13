@@ -92,9 +92,9 @@ cr.define('cr.ui', function() {
       if (this.dataModel_ != dataModel) {
         if (!this.boundHandleDataModelSplice_) {
           this.boundHandleDataModelSplice_ =
-              cr.bind(this.handleDataModelSplice_, this);
+              this.handleDataModelSplice_.bind(this);
           this.boundHandleDataModelChange_ =
-              cr.bind(this.handleDataModelChange_, this);
+              this.handleDataModelChange_.bind(this);
         }
 
         if (this.dataModel_) {
@@ -139,8 +139,8 @@ cr.define('cr.ui', function() {
         return;
 
       if (!this.boundHandleOnChange_) {
-        this.boundHandleOnChange_ = cr.bind(this.handleOnChange_, this);
-        this.boundHandleLeadChange_ = cr.bind(this.handleLeadChange_, this);
+        this.boundHandleOnChange_ = this.handleOnChange_.bind(this);
+        this.boundHandleLeadChange_ = this.handleLeadChange_.bind(this);
       }
 
       if (oldSm) {
@@ -242,7 +242,7 @@ cr.define('cr.ui', function() {
       this.addEventListener('mousedown', this.handleMouseDownUp_);
       this.addEventListener('mouseup', this.handleMouseDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
-      this.addEventListener('scroll', cr.bind(this.redraw, this));
+      this.addEventListener('scroll', this.redraw.bind(this));
 
       // Make list focusable
       if (!this.hasAttribute('tabindex'))

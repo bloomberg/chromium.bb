@@ -555,9 +555,9 @@ cr.define('cr.ui', function() {
           labelEl.appendChild(input);
 
         input.addEventListener('keydown', handleKeydown);
-        input.addEventListener('blur', cr.bind(function() {
+        input.addEventListener('blur', (function() {
           this.editing = false;
-        }, this));
+        }).bind(this));
 
         // Make sure that double clicks do not expand and collapse the tree
         // item.

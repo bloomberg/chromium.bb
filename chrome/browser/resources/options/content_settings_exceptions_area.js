@@ -441,7 +441,7 @@ cr.define('options.contentSettings', function() {
 
       ExceptionsList.decorate(this.exceptionsList);
       this.exceptionsList.selectionModel.addEventListener(
-          'change', cr.bind(this.handleOnSelectionChange_, this));
+          'change', this.handleOnSelectionChange_.bind(this));
 
       var self = this;
       if (this.contentType != 'location' &&

@@ -11,15 +11,6 @@ function $(id) {
   return document.getElementById(id);
 }
 
-function bind(fn, selfObj, var_args) {
-  var boundArgs = Array.prototype.slice.call(arguments, 2);
-  return function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift.apply(args, boundArgs);
-    return fn.apply(selfObj, args);
-  }
-}
-
 function url(s) {
   // http://www.w3.org/TR/css3-values/#uris
   // Parentheses, commas, whitespace characters, single quotes (') and double

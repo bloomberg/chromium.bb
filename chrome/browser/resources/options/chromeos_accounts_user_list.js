@@ -25,7 +25,7 @@ cr.define('options.accounts', function() {
       List.prototype.decorate.call(this);
 
       // HACK(arv): http://crbug.com/40902
-      window.addEventListener('resize', cr.bind(this.redraw, this));
+      window.addEventListener('resize', this.redraw.bind(this));
 
       this.addEventListener('click', this.handleClick_);
 

@@ -82,17 +82,17 @@ cr.define('options.language', function() {
       this.selectionModel = new ListSingleSelectionModel;
 
       // HACK(arv): http://crbug.com/40902
-      window.addEventListener('resize', cr.bind(this.redraw, this));
+      window.addEventListener('resize', this.redraw.bind(this));
 
       // Listen to pref change.
       Preferences.getInstance().addEventListener(this.pref,
-          cr.bind(this.handlePrefChange_, this));
+          this.handlePrefChange_.bind(this));
 
       // Listen to drag and drop events.
-      this.addEventListener('dragstart', cr.bind(this.handleDragStart_, this));
-      this.addEventListener('dragenter', cr.bind(this.handleDragEnter_, this));
-      this.addEventListener('dragover', cr.bind(this.handleDragOver_, this));
-      this.addEventListener('drop', cr.bind(this.handleDrop_, this));
+      this.addEventListener('dragstart', this.handleDragStart_.bind(this));
+      this.addEventListener('dragenter', this.handleDragEnter_.bind(this));
+      this.addEventListener('dragover', this.handleDragOver_.bind(this));
+      this.addEventListener('drop', this.handleDrop_.bind(this));
     },
 
     createItem: function(languageCode) {

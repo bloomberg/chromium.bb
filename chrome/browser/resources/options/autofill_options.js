@@ -56,7 +56,7 @@ cr.define('options', function() {
       };
 
       Preferences.getInstance().addEventListener('autofill.enabled',
-          cr.bind(self.updateEnabledState_, self));
+          this.updateEnabledState_.bind(this));
     },
 
     /**

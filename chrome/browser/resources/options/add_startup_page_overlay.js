@@ -31,7 +31,7 @@ cr.define('options', function() {
 
       var self = this;
       var addForm = $('addStartupPageForm');
-      addForm.onreset = cr.bind(this.dismissOverlay_, this);
+      addForm.onreset = this.dismissOverlay_.bind(this);
       addForm.onsubmit =  function(e) {
         var urlField = $('addStartupPageURL');
         BrowserOptions.addStartupPage(urlField.value);
@@ -39,8 +39,7 @@ cr.define('options', function() {
         self.dismissOverlay_();
         return false;
       };
-      $('addStartupPageURL').oninput =
-          cr.bind(this.updateAddButtonState_, this);
+      $('addStartupPageURL').oninput = this.updateAddButtonState_.bind(this);
       $('addStartupPageURL').onkeydown = function(e) {
         if (e.keyCode == 27)  // Esc
           $('addStartupPageForm').reset();
@@ -52,7 +51,7 @@ cr.define('options', function() {
       list.selectionModel = selectionModel;
 
       selectionModel.addEventListener('change',
-                                      cr.bind(this.selectionChanged_, this));
+                                      this.selectionChanged_.bind(this));
 
       this.addEventListener('visibleChange', function(event) {
           $('addStartupPageURL').focus();

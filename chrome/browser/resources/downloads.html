@@ -198,15 +198,6 @@ html[dir=rtl] .name {
 // Helper functions
 function $(o) {return document.getElementById(o);}
 
-function bind(fn, selfObj, var_args) {
-  var boundArgs = Array.prototype.slice.call(arguments, 2);
-  return function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift.apply(args, boundArgs);
-    return fn.apply(selfObj, args);
-  }
-}
-
 /**
  * Sets the display style of a node.
  */
@@ -385,7 +376,7 @@ function Download(download) {
 
   // Container for all 'safe download' UI.
   this.safe_ = createElementWithClassName('div', 'safe');
-  this.safe_.ondragstart = bind(this.drag_, this);
+  this.safe_.ondragstart = this.drag_.bind(this);
   this.node.appendChild(this.safe_);
 
   if (download.state != Download.States.COMPLETE) {
@@ -412,7 +403,7 @@ function Download(download) {
   this.nodeTitleArea_ = createElementWithClassName('div', 'title-area');
   this.safe_.appendChild(this.nodeTitleArea_);
 
-  this.nodeFileLink_ = createLink(bind(this.openFile_, this), '');
+  this.nodeFileLink_ = createLink(this.openFile_.bind(this), '');
   this.nodeFileLink_.className = 'name';
   this.nodeFileLink_.style.display = 'none';
   this.nodeTitleArea_.appendChild(this.nodeFileLink_);
@@ -435,26 +426,26 @@ function Download(download) {
   // http://code.google.com/p/chromium-os/issues/detail?id=916.
   var showinfolder = localStrings.getString('control_showinfolder');
   if (showinfolder) {
-    this.controlShow_ = createLink(bind(this.show_, this), showinfolder);
+    this.controlShow_ = createLink(this.show_.bind(this), showinfolder);
     this.nodeControls_.appendChild(this.controlShow_);
   } else {
     this.controlShow_ = null;
   }
 
   // Pause/Resume are a toggle.
-  this.controlPause_ = createLink(bind(this.togglePause_, this),
+  this.controlPause_ = createLink(this.togglePause_.bind(this),
       localStrings.getString('control_pause'));
   this.nodeControls_.appendChild(this.controlPause_);
 
-  this.controlResume_ = createLink(bind(this.togglePause_, this),
+  this.controlResume_ = createLink(this.togglePause_.bind(this),
       localStrings.getString('control_resume'));
   this.nodeControls_.appendChild(this.controlResume_);
 
-  this.controlRemove_ = createLink(bind(this.remove_, this),
+  this.controlRemove_ = createLink(this.remove_.bind(this),
       localStrings.getString('control_removefromlist'));
   this.nodeControls_.appendChild(this.controlRemove_);
 
-  this.controlCancel_ = createLink(bind(this.cancel_, this),
+  this.controlCancel_ = createLink(this.cancel_.bind(this),
       localStrings.getString('control_cancel'));
   this.nodeControls_.appendChild(this.controlCancel_);
 
@@ -465,11 +456,11 @@ function Download(download) {
   this.dangerDesc_ = document.createElement("div");
   this.danger_.appendChild(this.dangerDesc_);
 
-  this.dangerSave_ = createButton(bind(this.saveDangerous_, this),
+  this.dangerSave_ = createButton(this.saveDangerous_.bind(this),
       localStrings.getString("danger_save"));
   this.danger_.appendChild(this.dangerSave_);
 
-  this.dangerDiscard_ = createButton(bind(this.discardDangerous_, this),
+  this.dangerDiscard_ = createButton(this.discardDangerous_.bind(this),
       localStrings.getString("danger_discard"));
   this.danger_.appendChild(this.dangerDiscard_);
 

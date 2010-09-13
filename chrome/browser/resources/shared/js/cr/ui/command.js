@@ -194,10 +194,10 @@ cr.define('cr.ui', function() {
    * @constructor
    */
   function CommandManager(doc) {
-    doc.addEventListener('focus', cr.bind(this.handleFocus_, this), true);
+    doc.addEventListener('focus', this.handleFocus_.bind(this), true);
     // Make sure we add the listener to the bubbling phase so that elements can
     // prevent the command.
-    doc.addEventListener('keydown', cr.bind(this.handleKeyDown_, this), false);
+    doc.addEventListener('keydown', this.handleKeyDown_.bind(this), false);
   }
 
   /**

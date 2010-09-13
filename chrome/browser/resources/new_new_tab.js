@@ -743,8 +743,8 @@ recentlyClosedElement.addEventListener('focus', maybeShowWindowTooltip, true);
  */
 function WindowTooltip(tooltipEl) {
   this.tooltipEl = tooltipEl;
-  this.boundHide_ = bind(this.hide, this);
-  this.boundHandleMouseOut_ = bind(this.handleMouseOut, this);
+  this.boundHide_ = this.hide.bind(this);
+  this.boundHandleMouseOut_ = this.handleMouseOut.bind(this);
 }
 
 WindowTooltip.trackMouseMove_ = function(e) {
@@ -768,7 +768,7 @@ WindowTooltip.prototype = {
     } else { // focus
       this.linkEl_.addEventListener('blur', this.boundHide_);
     }
-    this.timer = window.setTimeout(bind(this.show, this, e.type, linkEl, tabs),
+    this.timer = window.setTimeout(this.show.bind(this, e.type, linkEl, tabs),
                                    WindowTooltip.DELAY);
   },
   show: function(type, linkEl, tabs) {
@@ -848,12 +848,12 @@ WindowTooltip.prototype = {
 
 var windowTooltip = new WindowTooltip($('window-tooltip'));
 
-window.addEventListener('load', bind(logEvent, global, 'Tab.NewTabOnload',
-                                     true));
+window.addEventListener('load',
+                        logEvent.bind(global, 'Tab.NewTabOnload', true));
 
 window.addEventListener('resize', handleWindowResize);
 document.addEventListener('DOMContentLoaded',
-    bind(logEvent, global, 'Tab.NewTabDOMContentLoaded', true));
+    logEvent.bind(global, 'Tab.NewTabDOMContentLoaded', true));
 
 // Whether or not we should send the initial 'GetSyncMessage' to the backend
 // depends on the value of the attribue 'syncispresent' which the backend sets

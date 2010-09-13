@@ -199,12 +199,6 @@ var chrome = chrome || {};
                           request.callback ? true : false);
   }
 
-  function bind(obj, func) {
-    return function() {
-      return func.apply(obj, arguments);
-    };
-  }
-
   // Helper function for positioning pop-up windows relative to DOM objects.
   // Returns the absolute position of the given element relative to the hosting
   // browser frame.
@@ -346,7 +340,7 @@ var chrome = chrome || {};
           apiFunction.name = apiDef.namespace + "." + functionDef.name;
           apiFunctions[apiFunction.name] = apiFunction;
 
-          module[functionDef.name] = bind(apiFunction, function() {
+          module[functionDef.name] = (function() {
             var args = arguments;
             if (this.updateArguments) {
               // Functions whose signature has changed can define an
@@ -375,7 +369,7 @@ var chrome = chrome || {};
               chromeHidden.validate([retval], [this.definition.returns]);
             }
             return retval;
-          });
+          }).bind(apiFunction);
         });
       }
 

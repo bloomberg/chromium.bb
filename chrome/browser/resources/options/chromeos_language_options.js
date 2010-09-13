@@ -51,12 +51,12 @@ cr.define('options', function() {
       LanguageList.decorate(languageOptionsList);
 
       languageOptionsList.addEventListener('change',
-          cr.bind(this.handleLanguageOptionsListChange_, this));
+          this.handleLanguageOptionsListChange_.bind(this));
       languageOptionsList.addEventListener('save',
-          cr.bind(this.handleLanguageOptionsListSave_, this));
+          this.handleLanguageOptionsListSave_.bind(this));
 
       this.addEventListener('visibleChange',
-                            cr.bind(this.handleVisibleChange_, this));
+                            this.handleVisibleChange_.bind(this));
 
       this.initializeInputMethodList_();
       this.initializeLanguageCodeToInputMehotdIdsMap_();
@@ -67,7 +67,7 @@ cr.define('options', function() {
       };
       // Set up remove button.
       $('language-options-remove-button').addEventListener('click',
-          cr.bind(this.handleRemoveButtonClick_, this));
+          this.handleRemoveButtonClick_.bind(this));
 
       // Setup add language overlay page.
       OptionsPage.registerOverlay(AddLanguageOverlay.getInstance());
@@ -75,7 +75,7 @@ cr.define('options', function() {
       // Listen to user clicks on the add language list.
       var addLanguageList = $('add-language-overlay-language-list');
       addLanguageList.addEventListener('click',
-          cr.bind(this.handleAddLanguageListClick_, this));
+          this.handleAddLanguageListClick_.bind(this));
     },
 
     // The preference is a CSV string that describes preload engines
@@ -104,7 +104,7 @@ cr.define('options', function() {
         input.inputMethodId = inputMethod.id;
         // Listen to user clicks.
         input.addEventListener('click',
-                               cr.bind(this.handleCheckboxClick_, this));
+                               this.handleCheckboxClick_.bind(this));
         var label = document.createElement('label');
         label.appendChild(input);
         label.appendChild(document.createTextNode(inputMethod.displayName));
@@ -123,7 +123,7 @@ cr.define('options', function() {
       }
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(this.preloadEnginesPref,
-          cr.bind(this.handlePreloadEnginesPrefChange_, this));
+          this.handlePreloadEnginesPrefChange_.bind(this));
     },
 
     /**

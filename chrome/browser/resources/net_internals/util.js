@@ -3,18 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Helper that binds the |this| object to a method to create a callback.
- */
-Function.prototype.bind = function(thisObj) {
-  var func = this;
-  var args = Array.prototype.slice.call(arguments, 1);
-  return function() {
-    return func.apply(thisObj,
-    args.concat(Array.prototype.slice.call(arguments, 0)))
-  };
-};
-
-/**
  * Inherit the prototype methods from one constructor into another.
  */
 function inherits(childCtor, parentCtor) {

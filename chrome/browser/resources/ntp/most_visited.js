@@ -50,25 +50,25 @@ var MostVisited = (function() {
     this.createThumbnails_();
     this.applyMostVisitedRects_();
 
-    el.addEventListener('click', bind(this.handleClick_, this));
-    el.addEventListener('keydown', bind(this.handleKeyDown_, this));
+    el.addEventListener('click', this.handleClick_.bind(this));
+    el.addEventListener('keydown', this.handleKeyDown_.bind(this));
 
     document.addEventListener('DOMContentLoaded',
-                              bind(this.ensureSmallGridCorrect, this));
+                              this.ensureSmallGridCorrect.bind(this));
 
     // Commands
-    document.addEventListener('command', bind(this.handleCommand_, this));
-    document.addEventListener('canExecute', bind(this.handleCanExecute_, this));
+    document.addEventListener('command', this.handleCommand_.bind(this));
+    document.addEventListener('canExecute', this.handleCanExecute_.bind(this));
 
     // DND
-    el.addEventListener('dragstart', bind(this.handleDragStart_, this));
-    el.addEventListener('dragenter', bind(this.handleDragEnter_, this));
-    el.addEventListener('dragover', bind(this.handleDragOver_, this));
-    el.addEventListener('dragleave', bind(this.handleDragLeave_, this));
-    el.addEventListener('drop', bind(this.handleDrop_, this));
-    el.addEventListener('dragend', bind(this.handleDragEnd_, this));
-    el.addEventListener('drag', bind(this.handleDrag_, this));
-    el.addEventListener('mousedown', bind(this.handleMouseDown_, this));
+    el.addEventListener('dragstart', this.handleDragStart_.bind(this));
+    el.addEventListener('dragenter', this.handleDragEnter_.bind(this));
+    el.addEventListener('dragover', this.handleDragOver_.bind(this));
+    el.addEventListener('dragleave', this.handleDragLeave_.bind(this));
+    el.addEventListener('drop', this.handleDrop_.bind(this));
+    el.addEventListener('dragend', this.handleDragEnd_.bind(this));
+    el.addEventListener('drag', this.handleDrag_.bind(this));
+    el.addEventListener('mousedown', this.handleMouseDown_.bind(this));
   }
 
   MostVisited.prototype = {
@@ -418,10 +418,10 @@ var MostVisited = (function() {
         // The timeout below is to allow WebKit to see that we turned off
         // pointer-event before moving the thumbnails so that we can get out of
         // hover mode.
-        window.setTimeout(bind(function() {
+        window.setTimeout((function() {
           this.invalidate_();
           this.layout();
-        }, this), 10);
+        }).bind(this), 10);
         e.preventDefault();
         if (this.dragEndTimer_) {
           window.clearTimeout(this.dragEndTimer_);

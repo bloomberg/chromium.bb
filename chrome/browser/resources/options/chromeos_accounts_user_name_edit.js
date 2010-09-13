@@ -39,7 +39,7 @@ cr.define('options.accounts', function() {
       this.pattern = format1String + '|' + format2String + '|' +
                      format3String;
 
-      this.onkeypress = cr.bind(this.handleKeyPress_, this);
+      this.onkeypress = this.handleKeyPress_.bind(this);
     },
 
 

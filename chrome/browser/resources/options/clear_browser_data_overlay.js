@@ -36,7 +36,7 @@ cr.define('options', function() {
       $('clearBrowsingDataTimePeriod').initializeValues(
           templateData.clearBrowsingDataTimeList);
 
-      var f = cr.bind(this.updateCommitButtonState_, this);
+      var f = this.updateCommitButtonState_.bind(this);
       var types = ['browser.clear_data.browsing_history',
                    'browser.clear_data.download_history',
                    'browser.clear_data.cache',

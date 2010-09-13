@@ -83,10 +83,10 @@ window.onunload = function() {
 function addServerConnection(server) {
   var ws = new WebSocket("ws://" + location.host + "/ws");
   var irc = new IRCConnection(server.name, server.port, server.nick,
-                              bind(ws, ws.send), // sendFunc
-                              bind(ws, ws.close)); // closeFunc
-  ws.onopen = bind(irc, irc.onOpened);
-  ws.onclose = bind(irc, irc.onClosed);
+                              ws.send.bind(ws), // sendFunc
+                              ws.close.bind(ws)); // closeFunc
+  ws.onopen = irc.onOpened.bind(irc);
+  ws.onclose = irc.onClosed.bind(irc);
   ws.onmessage = function(message) {
     irc.onMessage(message.data);  
   };

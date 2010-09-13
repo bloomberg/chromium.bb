@@ -72,11 +72,11 @@ cr.define('bmm', function() {
       this.addEventListener('mousedown', this.handleMouseDown_);
 
       // HACK(arv): http://crbug.com/40902
-      window.addEventListener('resize', cr.bind(this.redraw, this));
+      window.addEventListener('resize', this.redraw.bind(this));
 
       // We could add the ContextMenuButton in the BookmarkListItem but it slows
       // down redraws a lot so we do this on mouseovers instead.
-      this.addEventListener('mouseover', cr.bind(this.handleMouseOver_, this));
+      this.addEventListener('mouseover', this.handleMouseOver_.bind(this));
     },
 
     createItem: function(bookmarkNode) {
@@ -110,7 +110,7 @@ cr.define('bmm', function() {
     reload: function() {
       var parentId = this.parentId;
 
-      var callback = cr.bind(this.handleBookmarkCallback_, this);
+      var callback = this.handleBookmarkCallback_.bind(this);
       this.loading_ = true;
 
       if (!parentId) {

@@ -31,10 +31,10 @@ cr.define('options', function() {
 
       options.CookiesTree.decorate(cookiesTree);
       cookiesTree.addEventListener('change',
-          cr.bind(this.handleCookieTreeChange_, this));
+          this.handleCookieTreeChange_.bind(this));
 
       $('cookiesSearchBox').addEventListener('keydown',
-          cr.bind(this.handleQueryEditKeyDown_, this));
+          this.handleQueryEditKeyDown_.bind(this));
 
       var self = this;
       $('clearCookieSearchButton').onclick = function(e) {
@@ -199,7 +199,7 @@ cr.define('options', function() {
       }
 
       this.queryDelayTimerId_ = window.setTimeout(
-          cr.bind(this.searchCookie, this), 500);
+          this.searchCookie.bind(this), 500);
     },
 
     initalized_: false,
