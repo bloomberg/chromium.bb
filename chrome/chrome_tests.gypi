@@ -2030,6 +2030,15 @@
           'dependencies': [
             '<(allocator_target)',
           ],
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
         },],
         ['OS=="linux"', {
           'dependencies': [
