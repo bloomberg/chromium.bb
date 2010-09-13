@@ -38,9 +38,6 @@ const size_t kMaxCharsOnAButton = 15;
 const size_t kMaxTooltipTitleLength = 100;
 const size_t kMaxTooltipURLLength = 400;
 
-// Only used for the background of the drag widget.
-const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xe6, 0xed, 0xf4);
-
 // Padding between the chrome button highlight border and the contents (favicon,
 // text).
 const int kButtonPaddingTop = 0;
@@ -201,9 +198,9 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
                                 base_font.GetHeight());
   } else {
     if (!provider->UseGtkTheme()) {
-      // TODO(erg): Theme wise, which color should I be picking here?
-      // COLOR_BUTTON_BACKGROUND doesn't match the default theme!
-      gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &kBackgroundColor);
+      GdkColor color = provider->GetGdkColor(
+          BrowserThemeProvider::COLOR_TOOLBAR);
+      gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &color);
     }
     gtk_widget_realize(window);
 
