@@ -561,7 +561,7 @@ void ProfileSyncService::UpdateAuthErrorState(
     wizard_.Step(AuthError::NONE == last_auth_error_.state() ?
         SyncSetupWizard::GAIA_SUCCESS : SyncSetupWizard::GAIA_LOGIN);
   } else {
-    auth_error_time_ == base::TimeTicks::Now();
+    auth_error_time_ = base::TimeTicks::Now();
   }
 
   if (!auth_start_time_.is_null()) {
