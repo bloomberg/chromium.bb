@@ -4,7 +4,6 @@ Source URL: git://ctrl.tukaani.org/xz.git
 Version: git commit c15c42abb3c8c6e77c778ef06c97a4a10b8b5d00
          (2010-06-15 14:06:29 +0300), newer than 4.999.9beta
 License: Public domain/license grant, LGPL 2.1, GPL 2, GPL 3
-License File: COPYING
 
 Description:
 XZ Utils is general-purpose data compression software implementing the
