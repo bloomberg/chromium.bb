@@ -63,10 +63,11 @@ class DownloadsTest(pyauto.PyUITest):
     """Make a file on-the-fly with the given size. Returns the path to the
        file.
     """
-    fd, file_path = tempfile.mkstemp(suffix='.zip', prefix='file-')
+    fd, file_path = tempfile.mkstemp(suffix='.zip', prefix='file-downloads-')
     os.lseek(fd, size, 0)
     os.write(fd, 'a')
     os.close(fd)
+    logging.debug('Created temporary file %s of size %d' % (file_path, size))
     return file_path
 
   def _CallFunctionWithNewTimeout(self, new_timeout, function):
@@ -360,6 +361,7 @@ class DownloadsTest(pyauto.PyUITest):
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self.PerformActionOnDownload(self._GetDownloadId(), 'cancel')
+    os.path.exists(file_path) and os.remove(file_path)
 
     state = self.GetDownloadsInfo().Downloads()[0]['state']
     if state == 'COMPLETE':
