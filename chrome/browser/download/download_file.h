@@ -32,8 +32,6 @@ class DownloadFile : public BaseFile {
   // Cancels the download request associated with this file.
   void CancelDownloadRequest(ResourceDispatcherHost* rdh);
 
-  void OnDownloadManagerShutdown();
-
   int id() const { return id_; }
   DownloadManager* GetDownloadManager();
 

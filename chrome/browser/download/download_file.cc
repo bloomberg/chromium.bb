@@ -45,11 +45,6 @@ void DownloadFile::CancelDownloadRequest(ResourceDispatcherHost* rdh) {
                           request_id_));
 }
 
-void DownloadFile::OnDownloadManagerShutdown() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  download_manager_ = NULL;
-}
-
 DownloadManager* DownloadFile::GetDownloadManager() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   return download_manager_.get();

@@ -255,11 +255,21 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   DCHECK(manager);
 
+  std::set<DownloadFile*> to_remove;
+
   for (DownloadFileMap::iterator i = downloads_.begin();
        i != downloads_.end(); ++i) {
     DownloadFile* download_file = i->second;
-    if (download_file->GetDownloadManager() == manager)
-      download_file->OnDownloadManagerShutdown();
+    if (download_file->GetDownloadManager() == manager) {
+      download_file->CancelDownloadRequest(resource_dispatcher_host_);
+      to_remove.insert(download_file);
+    }
+  }
+
+  for (std::set<DownloadFile*>::iterator i = to_remove.begin();
+       i != to_remove.end(); ++i) {
+    downloads_.erase((*i)->id());
+    delete *i;
   }
 }
 
