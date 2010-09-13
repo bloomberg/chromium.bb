@@ -27,7 +27,7 @@ class GpsLocationProviderLinux : public LocationProviderBase {
  public:
   typedef LibGps* (*LibGpsFactory)();
   // |factory| will be used to create the gpsd client library wrapper. (Note
-  // NewGpsLocationProvider() will use the default factory).
+  // NewSystemLocationProvider() will use the default factory).
   explicit GpsLocationProviderLinux(LibGpsFactory libgps_factory);
   virtual ~GpsLocationProviderLinux();
 

@@ -122,6 +122,7 @@ extern const char kEnableCloudPrint[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableContentPrefetch[];
 extern const char kEnableCookiePrompt[];
+extern const char kEnableCoreLocation[];
 extern const char kEnableDeviceMotion[];
 extern const char kEnableDNSSECCerts[];
 extern const char kEnableExperimentalExtensionApis[];

@@ -393,6 +393,9 @@ const char kEnableContentPrefetch[]         = "enable-content-prefetch";
 // Enables the cookie prompt.
 const char kEnableCookiePrompt[]            = "enable-cookie-prompt";
 
+// Enable CoreLocation geoposition data provider
+const char kEnableCoreLocation[]            = "enable-core-location";
+
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 

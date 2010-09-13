@@ -56,7 +56,7 @@ void LocationProviderBase::UpdateListeners() {
   }
 }
 
-#if !defined(OS_LINUX) && !defined(OS_WIN)
+#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_WIN)
 LocationProviderBase* NewSystemLocationProvider() {
   return NULL;
 }
