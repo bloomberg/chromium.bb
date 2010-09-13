@@ -275,8 +275,7 @@ ppNaClPlugin = 'ppNaClPlugin'
 
 ppapi_env = plugin_env.Clone()
 ppapi_env.Append(CPPDEFINES = ['NACL_PPAPI'])
-# TODO(sehr,polina): when there is a google_nacl_ppruntime, it goes here.
-ppapi_libs = common_libs + [ 'ppapi_cpp' ]
+ppapi_libs = common_libs + [ 'ppapi_cpp', 'ppapi_browser', 'nonnacl_srpc' ]
 if ppapi_env['SHARED_LIBS_SPECIAL']:
   ppapi_env.Append(LIBS=[l + '_shared' for l in ppapi_libs] + os_libs)
 else:

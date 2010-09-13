@@ -1,52 +1,34 @@
-# -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.  Use
-# of this source code is governed by a BSD-style license that can be
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 Import('env')
 
-# To get generated include files.
-env.Append(CPPPATH = [ '${TARGET_ROOT}' ])
+# To enable getting the generated include files and sources.
+env.Append(CPPPATH=['${TARGET_ROOT}'])
 
-if env.Bit('linux'):
-    env.Append(
-        CCFLAGS=['-fPIC', '-Wno-long-long',],
-        # Catch unresolved symbols in libraries.
-        LINKFLAGS=['-Wl,-z,defs'],
-        )
-
-if env.Bit('mac'):
-    env.Append(
-        CCFLAGS=['-Wno-long-long'],
-        CPPDEFINES = [ ['TARGET_API_MAC_CARBON', '1'], 'USE_SYSTEM_CONSOLE', ],
-        FRAMEWORKS = ['Carbon'],
-    )
-
-if env.Bit('windows'):
-    env.Append(
-        CCFLAGS = ['/EHsc',],
-        CPPDEFINES = ['WIN32', '_WINDOWS'],
-    )
-    env.Tool('atlmfc_vc80')
+env.Append(CPPDEFINES=['XP_UNIX'])
+env.FilterOut(CCFLAGS=['-Wswitch-enum'])
+env.Append(CCFLAGS=['-Wno-long-long'])
 
 # The PPAPI RPCs are specified abstractly, and proxies and stubs are
 # generated automatically.
 SRPCGEN = '${SOURCE_ROOT}/native_client/tools/srpcgen.py'
 GENERATED = '${TARGET_ROOT}/gen/native_client/src/shared/ppapi_proxy'
 
-# Client interfaces for RPCs to the plugin.
+# Plugin server interfaces exported via RPCs to the browser.
 ppp_specinputs = ['objectstub.srpc',
                   'ppp.srpc',
                   'ppp_instance.srpc',
                   ]
 
 ppp_rpc_h = GENERATED + '/ppp_rpc.h'
-ppp_rpc_cc = GENERATED + '/ppp_rpc_client.cc'
+ppp_rpc_cc = GENERATED + '/ppp_rpc_server.cc'
 ppp_rpc_files = [ ppp_rpc_h, ppp_rpc_cc ]
 env.Command(target=ppp_rpc_files,
             source=[SRPCGEN, ppp_specinputs],
             action=[Action('${PYTHON} ${SOURCES[0]} '
-                           '-c '
+                           '-s '
                            'PppRpcs '
                            'GEN_PPAPI_PROXY_PPP_RPC_H_ '
                            + ppp_rpc_h + ' '
@@ -55,18 +37,18 @@ env.Command(target=ppp_rpc_files,
                    ],
            )
 
-# Server interfaces for RPCs exported by the browser.
+# Browser interfaces used in client RPCs to the browser.
 ppb_specinputs = ['objectstub.srpc',
                   'ppb_core.srpc',
                   ]
 
 ppb_rpc_h = GENERATED + '/ppb_rpc.h'
-ppb_rpc_cc = GENERATED + '/ppb_rpc_server.cc'
+ppb_rpc_cc = GENERATED + '/ppb_rpc_client.cc'
 ppb_rpc_files = [ ppb_rpc_h, ppb_rpc_cc ]
 env.Command(target=ppb_rpc_files,
             source=[SRPCGEN, ppb_specinputs],
             action=[Action('${PYTHON} ${SOURCES[0]} '
-                           '-s '
+                           '-c '
                            'PpbRpcs '
                            'GEN_PPAPI_PROXY_PPB_RPC_H_ '
                            + ppb_rpc_h + ' '
@@ -75,17 +57,17 @@ env.Command(target=ppb_rpc_files,
                    ],
            )
 
-# Server interfaces exported on the upcall channel.
+# Browser interfaces called on the upcall channel to the browser.
 upcall_specinputs = ['upcall.srpc',
                     ]
 
 upcall_h = GENERATED + '/upcall.h'
-upcall_cc = GENERATED + '/upcall_server.cc'
+upcall_cc = GENERATED + '/upcall_client.cc'
 upcall_files = [ upcall_h, upcall_cc ]
 env.Command(target=upcall_files,
             source=[SRPCGEN, upcall_specinputs],
             action=[Action('${PYTHON} ${SOURCES[0]} '
-                           '-s '
+                           '-c '
                            'PpbUpcalls '
                            'GEN_PPAPI_PROXY_UPCALL_H_ '
                            + upcall_h + ' '
@@ -94,26 +76,23 @@ env.Command(target=upcall_files,
                    ],
            )
 
-common_obj = env.DualObject(['utility.cc'])
+env.ComponentLibrary('ppruntime',
+                     ['object.cc',
+                      'object_proxy.cc',
+                      'object_serialize.cc',
+                      'objectstub_rpc_impl.cc',
+                      'plugin_core.cc',
+                      'plugin_getinterface.cc',
+                      'plugin_globals.cc',
+                      'plugin_instance.cc',
+                      'plugin_main.cc',
+                      'plugin_ppp_instance_impl.cc',
+                      'plugin_var.cc',
+                      ppb_rpc_cc,
+                      ppp_rpc_cc,
+                      'plugin_ppp_impl.cc',
+                      upcall_cc,
+                      'utility.cc',
+                      ])
 
-
-env.DualLibrary('ppapi_browser',
-                ['browser_core.cc',
-                 'browser_globals.cc',
-                 'browser_instance.cc',
-                 'browser_ppp.cc',
-                 'browser_upcall.cc',
-                 'object.cc',
-                 'object_proxy.cc',
-                 'object_serialize.cc',
-                 'objectstub_rpc_impl.cc',
-                 ppb_rpc_cc,
-                 ppp_rpc_cc,
-                 upcall_cc,
-                 common_obj,])
-
-
-env.DualLibrary('ppapi_plugin',
-                ['plugin_instance.cc',
-                 'plugin_var.cc',
-                 common_obj])
+env.AddLibraryToSdk(['ppruntime'])

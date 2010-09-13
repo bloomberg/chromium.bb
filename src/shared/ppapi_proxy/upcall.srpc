@@ -1,0 +1,21 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods that support calls from the module to
+# the browser but are required to be done on the NPAPI thread.  These methods
+# are invoked on a separate channel that is listened to by a separate thread
+# in the browser plugin.
+{
+ 'name': 'PppUpcallRpc',
+ 'rpcs': [
+          # The ppapi_proxy plugin has already created a closure, and requests
+          # a callback from the browser on the PPAPI main thread.
+          {'name': 'PPP_Core_CallOnMainThread',
+           'inputs': [['closure_number', 'int32_t'],
+                      ['delay_in_milliseconds', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+         ]
+}

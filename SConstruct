@@ -1547,6 +1547,8 @@ nacl_env.Append(
     'tests/null/nacl.scons',
     'tests/nullptr/nacl.scons',
     'tests/pepper_plugin/nacl.scons',
+    # TODO(sehr): activate this test after proxy is checked in.
+    #'tests/ppapi_stub/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/signal_handler/nacl.scons',
     'tests/srpc/nacl.scons',
@@ -1772,6 +1774,7 @@ nacl_extra_sdk_env.Append(
       ####  ALPHABETICALLY SORTED ####
       'src/include/nacl/nacl.scons',
       'src/shared/gio/nacl.scons',
+      'src/shared/ppapi_proxy/nacl.scons',
       'src/shared/srpc/nacl.scons',
       'src/third_party/crt/nacl.scons',
       'src/untrusted/av/nacl.scons',

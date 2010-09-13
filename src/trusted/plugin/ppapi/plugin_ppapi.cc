@@ -4,15 +4,19 @@
  * be found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include <string>
 
+#include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppp_instance.h"
+#include "ppapi/cpp/module.h"
 
 namespace plugin {
 
@@ -48,13 +52,12 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   set_scriptable_handle(handle);
   PLUGIN_PRINTF(("PluginPpapi::Init (scriptable_handle=%p)\n",
                  static_cast<void*>(scriptable_handle())));
-  bool status =
-      Plugin::Init(browser_interface,
-                   PPInstanceToInstanceIdentifier(
-                       static_cast<pp::Instance*>(this)),
-                   static_cast<int>(argc),
-                   const_cast<char**>(argn),
-                   const_cast<char**>(argv));
+  bool status = Plugin::Init(browser_interface,
+                             PPInstanceToInstanceIdentifier(
+                                 static_cast<pp::Instance*>(this)),
+                             static_cast<int>(argc),
+                             const_cast<char**>(argn),
+                             const_cast<char**>(argv));
   if (status) {
     for (uint32_t i = 0; i < argc; ++i) {
       if (strcmp(argn[i], "src") == 0)
@@ -68,7 +71,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 
 PluginPpapi::PluginPpapi(PP_Instance pp_instance)
-    : pp::Instance(pp_instance) {
+    : pp::Instance(pp_instance), ppapi_proxy_(NULL) {
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
                  NACL_PRId64")\n", static_cast<void*>(this), pp_instance));
 }
@@ -83,6 +86,7 @@ PluginPpapi::~PluginPpapi() {
   NaClHandlePassBrowserDtor();
 #endif
 
+  delete ppapi_proxy_;
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
   UnrefScriptableHandle(&scriptable_handle_);
 }
@@ -93,10 +97,28 @@ pp::Var PluginPpapi::GetInstanceObject() {
                  static_cast<void*>(this)));
   ScriptableHandlePpapi* handle =
       static_cast<ScriptableHandlePpapi*>(scriptable_handle()->AddRef());
-  pp::Var* handle_var = handle->var();
-  PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (handle=%p, handle_var=%p)\n",
-                 static_cast<void*>(handle), static_cast<void*>(handle_var)));
-  return *handle_var;  // make a copy
+  if (ppapi_proxy_ == NULL) {
+    pp::Var* handle_var = handle->var();
+    PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (handle=%p, "
+                   "handle_var=%p)\n",
+                  static_cast<void*>(handle), static_cast<void*>(handle_var)));
+    return *handle_var;  // make a copy
+  } else {
+    // TODO(sehr): cache the instance_interface on the plugin.
+    const PPP_Instance* instance_interface =
+        reinterpret_cast<const PPP_Instance*>(
+            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
+    if (instance_interface == NULL) {
+      pp::Var* handle_var = handle->var();
+      // TODO(sehr): report an error here.
+      return *handle_var;  // make a copy
+    }
+    // Yuck.  This feels like another low-level interface usage.
+    // TODO(sehr,polina): add a better interface to rebuild Vars from
+    // low-level components we proxy.
+    return pp::Var(pp::Var::PassRef(),
+                   instance_interface->GetInstanceObject(pp_instance()));
+  }
 }
 
 
@@ -133,7 +155,59 @@ bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
 
 
 void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
-  UNREFERENCED_PARAMETER(srpc_channel);
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (%p)\n",
+                 reinterpret_cast<void*>(srpc_channel)));
+  // Check that the .nexe exports the PPAPI intialization method.
+  NaClSrpcService* client_service = srpc_channel->client;
+  if (NaClSrpcServiceMethodIndex(client_service,
+                                 "PPP_InitializeModule:ilhs:ii") ==
+      kNaClSrpcInvalidMethodIndex) {
+    return;
+  }
+  ppapi_proxy_ =
+      new(std::nothrow) ppapi_proxy::BrowserPpp(srpc_channel);
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy_ = %p)\n",
+                 reinterpret_cast<void*>(ppapi_proxy_)));
+  if (ppapi_proxy_ == NULL) {
+    return;
+  }
+  pp::Module* module = pp::Module::Get();
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (module = %p)\n",
+                 reinterpret_cast<void*>(module)));
+  if (module == NULL) {
+    return;
+  }
+  int32_t init_retval =
+      ppapi_proxy_->InitializeModule(module->pp_module(),
+                                     module->get_browser_interface(),
+                                     pp_instance());
+  if (init_retval != PP_OK) {
+    // TODO(sehr): we should report an error here and shut down the proxy.
+    // For now we will leak the proxy, but no longer be allowed to access it.
+    ppapi_proxy_ = NULL;
+    return;
+  }
+  const PPP_Instance* instance_interface =
+      reinterpret_cast<const PPP_Instance*>(
+          ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
+  if (instance_interface == NULL) {
+    // TODO(sehr): we should report an error here and shut down the proxy.
+    // For now we will leak the proxy, but no longer be allowed to access it.
+    ppapi_proxy_ = NULL;
+    return;
+  }
+  if (!instance_interface->New(pp_instance())) {
+    // TODO(sehr): we should report an error here.
+    return;
+  }
+  // Initialize the instance's parameters.
+  if (!instance_interface->Initialize(pp_instance(),
+                                      argc(),
+                                      const_cast<const char**>(argn()),
+                                      const_cast<const char**>(argv()))) {
+    // TODO(sehr): we should report an error here.
+    return;
+  }
 }
 
 }  // namespace plugin

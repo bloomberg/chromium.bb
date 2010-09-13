@@ -511,6 +511,12 @@ void PluginNpapi::ShutdownMultimedia() {
 }
 
 void PluginNpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
+  // Check that the .nexe exports the NPAPI initialization method.
+  NaClSrpcService* client_service = srpc_channel->client;
+  if (NaClSrpcServiceMethodIndex(client_service, "NP_Initialize:ih:i") ==
+      kNaClSrpcInvalidMethodIndex) {
+    return;
+  }
   nacl::NPModule* npmodule = new(std::nothrow) nacl::NPModule(srpc_channel);
   if (NULL != npmodule) {
     set_module(npmodule);

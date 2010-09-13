@@ -17,6 +17,9 @@
 #include "ppapi/cpp/var.h"
 
 struct NaClSrpcChannel;
+namespace ppapi_proxy {
+class BrowserPpp;
+}
 
 namespace plugin {
 
@@ -45,6 +48,8 @@ class PluginPpapi : public pp::Instance, public Plugin {
 
   // Support for proxied execution.
   virtual void StartProxiedExecution(NaClSrpcChannel* srpc_channel);
+  // Getter for PPAPI proxy interface.
+  ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
@@ -54,6 +59,11 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // The browser will invoke the destructor via the pp::Instance
   // pointer to this object, not from base's Delete().
   virtual ~PluginPpapi();
+  // A pointer to the browser (proxy) end of a Proxy pattern connecting the
+  // plugin to the .nexe's PPP interface (InitializeModule, Shutdown, and
+  // GetInterface).
+  // TODO(sehr): this should be a scoped_ptr for shutdown.
+  ppapi_proxy::BrowserPpp* ppapi_proxy_;
 };
 
 }  // namespace plugin

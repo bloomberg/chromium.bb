@@ -75,16 +75,9 @@ SrpcClient::~SrpcClient() {
 }
 
 void SrpcClient::StartJSObjectProxy(Plugin* plugin) {
-  // TODO(sehr): this needs to be revisited when we allow groups of instances
-  // in one NaCl module.
-  uintptr_t npapi_ident =
-      browser_interface_->StringToIdentifier("NP_Initialize");
-  if (methods_.find(npapi_ident) != methods_.end()) {
-    PLUGIN_PRINTF(("SrpcClient::StartJSObjectProxy (is an NPAPI plugin)\n"));
-    // Start up NPAPI interaction.
-    plugin->StartProxiedExecution(&srpc_channel_);
-  }
-  // TODO(polina,sehr): this also needs to be revisited for PPAPI proxying.
+  // Start up NPAPI/PPAPI interaction if the plugin determines that the
+  // requisite methods are exported.
+  plugin->StartProxiedExecution(&srpc_channel_);
 }
 
 void SrpcClient::GetMethods() {

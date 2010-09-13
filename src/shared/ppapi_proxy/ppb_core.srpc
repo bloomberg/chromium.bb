@@ -1,0 +1,31 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods used to implement PPB_Core calls from
+# the plugin.  The functions are described in ppapi/c/ppb_core.h.
+{
+ 'name': 'PpbCoreRpc',
+ 'rpcs': [
+          # Implements calls to increment the reference count on a resource.
+          {'name': 'PPB_Core_AddRefResource',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': []
+          },
+          # Implements calls to decrement the reference count on a resource.
+          {'name': 'PPB_Core_ReleaseResource',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': []
+          },
+          # MemAlloc and MemFree do not require RPCs to the browser.
+          # Implements calls to get the time.
+          {'name': 'PPB_Core_GetTime',
+           'inputs': [],
+           'outputs': [['time', 'double'],
+                      ]
+          },
+          # CallOnMainThread is done on a different channel.
+         ]
+}

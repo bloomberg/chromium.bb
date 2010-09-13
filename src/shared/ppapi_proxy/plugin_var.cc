@@ -144,6 +144,7 @@ bool HasProperty(PP_Var object,
     return false;
   }
   DebugPrintf("PluginVar::HasProperty: %"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("  object.type = %d; name.type = %d\n", object.type, name.type);
   const PPP_Class* object_class = impl->object_class();
   if (object_class == NULL || object_class->HasProperty == NULL) {
     return false;
@@ -341,7 +342,7 @@ std::string PluginVar::VarToString(PP_Var var) {
       {
         char buf[32];
         const size_t kBufSize = sizeof(buf);
-        SNPRINTF(buf, kBufSize, "%d", var.value.as_int);
+        SNPRINTF(buf, kBufSize, "%d", static_cast<int>(var.value.as_int));
         return buf;
       }
     case PP_VARTYPE_DOUBLE:

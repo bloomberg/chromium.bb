@@ -1,0 +1,74 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods used to implement PPAPI calls from
+# the browser to the plugin.  It implements the interface in
+# ppapi/c/ppp_instance.h.
+{
+ 'name': 'PppInstanceRpc',
+ 'rpcs': [
+          # PPP_New creates a new instance of a plugin.
+          {'name': 'PPP_Instance_New',
+           'inputs': [['instance', 'int64_t'],
+                     ],
+           'outputs': [['success', 'int32_t'],
+                      ]
+          },
+          # PPP_Instance_Delete deletes an instance of a plugin.
+          {'name': 'PPP_Instance_Delete',
+           'inputs': [['instance', 'int64_t'],
+                     ],
+           'outputs': []
+          },
+          # PPP_Instance_Initialize sets the instance's parameters.
+          {'name': 'PPP_Instance_Initialize',
+           'inputs': [['instance', 'int64_t'],
+                      ['argc', 'int32_t'],
+                      ['argn', 'char[]'],
+                      ['argv', 'char[]']],
+           'outputs': [['success', 'int32_t'],
+                      ]
+          },
+          # PPP_Instance_HandleDocumentLoad passes URL information to a
+          # full-frame instance.
+          {'name': 'PPP_Instance_HandleDocumentLoad',
+           'inputs': [['instance', 'int64_t'],
+                      ['url_loader', 'int64_t']],
+           'outputs': [['success', 'int32_t'],
+                      ]
+          },
+          # PPP_Instance_HandleEvent processes an event sent to an instance.
+          {'name': 'PPP_Instance_HandleEvent',
+           'inputs': [['instance', 'int64_t'],
+                      ['event_data', 'char[]']],
+           'outputs': [['success', 'int32_t']
+                      ]
+          },
+          # PPP_Instance_GetInstanceObject gets the instance's scriptable
+          # object.
+          {'name': 'PPP_Instance_GetInstanceObject',
+           'inputs': [['instance', 'int64_t'],
+                     ],
+           'outputs': [['capability', 'char[]'],
+                      ]
+          },
+          # PPP_Instance_ViewChanged changes the position, size, or clipping
+          # rectangle of the instance.
+          {'name': 'PPP_Instance_ViewChanged',
+           'inputs': [['instance', 'int64_t'],
+                      ['position', 'int32_t[]'],
+                      ['clip', 'int32_t[]'],
+                     ],
+           'outputs': []
+          },
+          # PPP_Instance_GetSelectedText gets a selection from the instance.
+          {'name': 'PPP_Instance_GetSelectedText',
+           'inputs': [['instance', 'int64_t'],
+                      ['html', 'int32_t'],
+                     ],
+           'outputs': [['ret', 'char[]'],
+                      ]
+          },
+         ]
+}
