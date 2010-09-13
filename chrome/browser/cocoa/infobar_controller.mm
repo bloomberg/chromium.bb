@@ -244,7 +244,10 @@ const float kAnimateCloseDuration = 0.12;
 }
 
 - (void)removeInfoBar {
-  DCHECK(delegate_);
+  // TODO(rohitrao): This method can be called even if the infobar has already
+  // been removed and |delegate_| is NULL.  Is there a way to rewrite the code
+  // so that inner event loops don't cause us to try and remove the infobar
+  // twice?  http://crbug.com/54253
   [containerController_ removeDelegate:delegate_];
 }
 
