@@ -106,7 +106,15 @@ void GpuVideoDecoderHost::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
   if (state_ == kStateError)
     return;
 
+  // TODO(hclam): We should keep an IDMap to convert between a frame a buffer
+  // ID so that we can signal GpuVideoDecoder in GPU process to use the buffer.
+  // This eliminates one conversion step.
   GpuVideoDecoderOutputBufferParam param;
+
+  // TODO(hclam): This is a hack to pass the texture id to the hardware video
+  // decoder. We should have created a mapping between VideoFrame and buffer id
+  // and we pass the buffer id to the GPU process.
+  param.texture = frame->gl_texture(VideoFrame::kRGBPlane);
   if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_FillThisBuffer(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBuffer failed";
@@ -134,21 +142,21 @@ void GpuVideoDecoderHost::OnInitializeDone(
   bool success = false;
 
   do {
-    if (!param.success_)
+    if (!param.success)
       break;
 
-    if (!base::SharedMemory::IsHandleValid(param.input_buffer_handle_))
+    if (!base::SharedMemory::IsHandleValid(param.input_buffer_handle))
       break;
     input_transfer_buffer_.reset(
-        new base::SharedMemory(param.input_buffer_handle_, false));
-    if (!input_transfer_buffer_->Map(param.input_buffer_size_))
+        new base::SharedMemory(param.input_buffer_handle, false));
+    if (!input_transfer_buffer_->Map(param.input_buffer_size))
       break;
 
-    if (!base::SharedMemory::IsHandleValid(param.output_buffer_handle_))
+    if (!base::SharedMemory::IsHandleValid(param.output_buffer_handle))
       break;
     output_transfer_buffer_.reset(
-        new base::SharedMemory(param.output_buffer_handle_, false));
-    if (!output_transfer_buffer_->Map(param.output_buffer_size_))
+        new base::SharedMemory(param.output_buffer_handle, false));
+    if (!output_transfer_buffer_->Map(param.output_buffer_size))
       break;
 
     success = true;
@@ -179,24 +187,36 @@ void GpuVideoDecoderHost::OnFillThisBufferDone(
     const GpuVideoDecoderOutputBufferParam& param) {
   scoped_refptr<VideoFrame> frame;
 
-  if (param.flags_ & GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream) {
+  if (param.flags & GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream) {
     VideoFrame::CreateEmptyFrame(&frame);
-  } else {
+  } else if (done_param_.surface_type ==
+             GpuVideoDecoderInitDoneParam::SurfaceTypeSystemMemory) {
     VideoFrame::CreateFrame(VideoFrame::YV12,
-                            init_param_.width_,
-                            init_param_.height_,
-                            base::TimeDelta::FromMicroseconds(param.timestamp_),
-                            base::TimeDelta::FromMicroseconds(param.duration_),
+                            init_param_.width,
+                            init_param_.height,
+                            base::TimeDelta::FromMicroseconds(param.timestamp),
+                            base::TimeDelta::FromMicroseconds(param.duration),
                             &frame);
-
     uint8* src = static_cast<uint8*>(output_transfer_buffer_->memory());
     uint8* data0 = frame->data(0);
     uint8* data1 = frame->data(1);
     uint8* data2 = frame->data(2);
-    int32 size = init_param_.width_ * init_param_.height_;
+    int32 size = init_param_.width * init_param_.height;
     memcpy(data0, src, size);
     memcpy(data1, src + size, size / 4);
     memcpy(data2, src + size + size / 4, size / 4);
+  } else if (done_param_.surface_type ==
+             GpuVideoDecoderInitDoneParam::SurfaceTypeGlTexture) {
+    // TODO(hclam): The logic in buffer allocation is pretty much around
+    // using shared memory for output buffer which needs to be adjusted. For
+    // now we have to add this hack to get the texture id.
+    VideoFrame::GlTexture textures[3] = { param.texture, 0, 0 };
+    media::VideoFrame::CreateFrameGlTexture(
+        media::VideoFrame::RGBA, init_param_.width, init_param_.height,
+        textures,
+        base::TimeDelta::FromMicroseconds(param.timestamp),
+        base::TimeDelta::FromMicroseconds(param.duration),
+        &frame);
   }
 
   event_handler_->OnFillBufferDone(frame);
@@ -223,10 +243,10 @@ void GpuVideoDecoderHost::SendInputBufferToGpu() {
 
   // Send input data to GPU process.
   GpuVideoDecoderInputBufferParam param;
-  param.offset_ = 0;
-  param.size_ = buffer->GetDataSize();
-  param.timestamp_ = buffer->GetTimestamp().InMicroseconds();
-  memcpy(input_transfer_buffer_->memory(), buffer->GetData(), param.size_);
+  param.offset = 0;
+  param.size = buffer->GetDataSize();
+  param.timestamp = buffer->GetTimestamp().InMicroseconds();
+  memcpy(input_transfer_buffer_->memory(), buffer->GetData(), param.size);
   if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_EmptyThisBuffer(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBuffer failed";

@@ -148,7 +148,7 @@ class MftH264DecoderHandler
   virtual void OnSeekComplete() {}
   virtual void OnError() {}
   virtual void OnFormatChange(VideoStreamInfo stream_info) {
-    info_.stream_info_ = stream_info;
+    info_.stream_info = stream_info;
   }
   virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer) {
     if (reader_ && decoder_) {
@@ -284,8 +284,8 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
     LOG(WARNING) << "Failed to get width/height from reader";
   }
   VideoCodecConfig config;
-  config.width_ = width;
-  config.height_ = height;
+  config.width = width;
+  config.height = height;
   HWND window = NULL;
   if (render) {
     window = CreateDrawWindow(width, height);

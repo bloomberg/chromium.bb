@@ -6,6 +6,7 @@
 
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
+#include "chrome/gpu/media/fake_gl_video_decode_engine.h"
 #include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
 
@@ -78,14 +79,14 @@ void GpuVideoDecoder::CreateVideoFrameOnTransferBuffer() {
   memset(data, 0, sizeof(data));
   memset(strides, 0, sizeof(strides));
   data[0] = static_cast<uint8*>(output_transfer_buffer_->memory());
-  data[1] = data[0] + config_.width_ * config_.height_;
-  data[2] = data[1] + config_.width_ * config_.height_ / 4;
-  strides[0] = config_.width_;
-  strides[1] = strides[2] = config_.width_ >> 1;
+  data[1] = data[0] + config_.width * config_.height;
+  data[2] = data[1] + config_.width * config_.height / 4;
+  strides[0] = config_.width;
+  strides[1] = strides[2] = config_.width >> 1;
   media::VideoFrame:: CreateFrameExternal(
       media::VideoFrame::TYPE_SYSTEM_MEMORY,
       media::VideoFrame::YV12,
-      config_.width_, config_.height_, 3,
+      config_.width, config_.height, 3,
       data, strides,
       kZero, kZero,
       NULL,
@@ -95,68 +96,62 @@ void GpuVideoDecoder::CreateVideoFrameOnTransferBuffer() {
 void GpuVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
   info_ = info;
   GpuVideoDecoderInitDoneParam param;
-  param.success_ = false;
-  param.input_buffer_handle_ = base::SharedMemory::NULLHandle();
-  param.output_buffer_handle_ = base::SharedMemory::NULLHandle();
+  param.success = false;
+  param.input_buffer_handle = base::SharedMemory::NULLHandle();
+  param.output_buffer_handle = base::SharedMemory::NULLHandle();
 
-  if (!info.success_) {
+  if (!info.success) {
     SendInitializeDone(param);
     return;
   }
 
   // Translate surface type.
-  switch (info.stream_info_.surface_type_) {
-    case VideoFrame::TYPE_SYSTEM_MEMORY:
-      param.surface_type_ =
-          GpuVideoDecoderInitDoneParam::SurfaceTypeSystemMemory;
-      break;
-    default:
-      NOTREACHED();
-  }
+  param.surface_type = static_cast<GpuVideoDecoderInitDoneParam::SurfaceType>(
+      info.stream_info.surface_type);
 
   // Translate surface format.
-  switch (info.stream_info_.surface_format_) {
+  switch (info.stream_info.surface_format) {
     case VideoFrame::YV12:
-      param.format_ = GpuVideoDecoderInitDoneParam::SurfaceFormat_YV12;
+      param.format = GpuVideoDecoderInitDoneParam::SurfaceFormat_YV12;
       break;
+    case VideoFrame::RGBA:
+      param.format = GpuVideoDecoderInitDoneParam::SurfaceFormat_RGBA;
     default:
       NOTREACHED();
   }
 
   // TODO(jiesun): Check the assumption of input size < original size.
-  param.input_buffer_size_ = config_.width_ * config_.height_ * 3 / 2;
-  if (!CreateInputTransferBuffer(param.input_buffer_size_,
-                                 &param.input_buffer_handle_)) {
+  param.input_buffer_size = config_.width * config_.height * 3 / 2;
+  if (!CreateInputTransferBuffer(param.input_buffer_size,
+                                 &param.input_buffer_handle)) {
     SendInitializeDone(param);
     return;
   }
 
-  if (info.stream_info_.surface_type_ == VideoFrame::TYPE_SYSTEM_MEMORY) {
+  if (info.stream_info.surface_type == VideoFrame::TYPE_SYSTEM_MEMORY) {
     // TODO(jiesun): Allocate this according to the surface format.
     // The format actually could change during streaming, we need to
     // notify GpuVideoDecoderHost side when this happened and renegotiate
     // the transfer buffer.
-
-    switch (info.stream_info_.surface_format_) {
+    switch (info.stream_info.surface_format) {
       case VideoFrame::YV12:
         // TODO(jiesun): take stride into account.
-        param.output_buffer_size_ =
-            config_.width_ * config_.height_ * 3 / 2;
+        param.output_buffer_size =
+            config_.width * config_.height * 3 / 2;
         break;
       default:
         NOTREACHED();
     }
 
-    if (!CreateOutputTransferBuffer(param.output_buffer_size_,
-                                    &param.output_buffer_handle_)) {
+    if (!CreateOutputTransferBuffer(param.output_buffer_size,
+                                    &param.output_buffer_handle)) {
       SendInitializeDone(param);
       return;
     }
-
     CreateVideoFrameOnTransferBuffer();
   }
 
-  param.success_ = true;
+  param.success = true;
 
   SendInitializeDone(param);
 }
@@ -187,10 +182,14 @@ void GpuVideoDecoder::ProduceVideoSample(scoped_refptr<Buffer> buffer) {
 
 void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
   GpuVideoDecoderOutputBufferParam output_param;
-  output_param.timestamp_ = frame->GetTimestamp().InMicroseconds();
-  output_param.duration_ = frame->GetDuration().InMicroseconds();
-  output_param.flags_ = frame->IsEndOfStream() ?
+  output_param.timestamp = frame->GetTimestamp().InMicroseconds();
+  output_param.duration = frame->GetDuration().InMicroseconds();
+  output_param.flags = frame->IsEndOfStream() ?
       GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream : 0;
+  // TODO(hclam): We should have the conversion between VideoFrame and the
+  // IPC transport param done in GpuVideoDecodeContext.
+  // This is a hack to pass texture back as a param.
+  output_param.texture = frame->gl_texture(media::VideoFrame::kRGBPlane);
   SendFillBufferDone(output_param);
 }
 
@@ -207,20 +206,20 @@ GpuVideoDecoder::GpuVideoDecoder(
       gles2_decoder_(decoder) {
   memset(&config_, 0, sizeof(config_));
   memset(&info_, 0, sizeof(info_));
-#if defined(OS_WIN) && defined(ENABLE_GPU_DECODER)
-  // TODO(jiesun): find a better way to determine which GpuVideoDecoder
+
+  // TODO(jiesun): find a better way to determine which VideoDecodeEngine
   // to return on current platform.
-  decode_engine_.reset(new GpuVideoDecoderMFT());
-#else
-#endif
+  decode_engine_.reset(new FakeGlVideoDecodeEngine());
 }
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
+  // TODO(hclam): Initialize the VideoDecodeContext first.
+
   // TODO(jiesun): codec id should come from |param|.
-  config_.codec_ = media::kCodecH264;
-  config_.width_ = param.width_;
-  config_.height_ = param.height_;
-  config_.opaque_context_ = NULL;
+  config_.codec = media::kCodecH264;
+  config_.width = param.width;
+  config_.height = param.height;
+  config_.opaque_context = NULL;
   decode_engine_->Initialize(NULL, this, config_);
 }
 
@@ -243,28 +242,47 @@ void GpuVideoDecoder::OnEmptyThisBuffer(
   uint8* src = static_cast<uint8*>(input_transfer_buffer_->memory());
 
   scoped_refptr<Buffer> input_buffer;
-  uint8* dst = buffer.size_ ? new uint8[buffer.size_] : NULL;
-  input_buffer = new media::DataBuffer(dst, buffer.size_);
-  memcpy(dst, src, buffer.size_);
+  uint8* dst = buffer.size ? new uint8[buffer.size] : NULL;
+  input_buffer = new media::DataBuffer(dst, buffer.size);
+  memcpy(dst, src, buffer.size);
   SendEmptyBufferACK();
 
   decode_engine_->ConsumeVideoSample(input_buffer);
 }
+
 void GpuVideoDecoder::OnFillThisBuffer(
-    const GpuVideoDecoderOutputBufferParam& frame) {
-  if (info_.stream_info_.surface_type_ == VideoFrame::TYPE_SYSTEM_MEMORY) {
+    const GpuVideoDecoderOutputBufferParam& param) {
+  // Switch context before calling to the decode engine.
+  // TODO(hclam): This is temporary to allow FakeGlVideoDecodeEngine to issue
+  // GL commands correctly.
+  bool ret = gles2_decoder_->MakeCurrent();
+  DCHECK(ret) << "Failed to switch context";
+
+  if (info_.stream_info.surface_type == VideoFrame::TYPE_SYSTEM_MEMORY) {
     pending_output_requests_++;
     if (!output_transfer_buffer_busy_) {
       output_transfer_buffer_busy_ = true;
       decode_engine_->ProduceVideoFrame(frame_);
     }
   } else {
-    decode_engine_->ProduceVideoFrame(frame_);
+    // TODO(hclam): I need to rethink how to delegate calls to
+    // VideoDecodeEngine, I may need to create a GpuVideoDecodeContext that
+    // provides a method for me to make calls to VideoDecodeEngine with the
+    // correct VideoFrame.
+    DCHECK_EQ(VideoFrame::TYPE_GL_TEXTURE, info_.stream_info.surface_type);
+
+    scoped_refptr<media::VideoFrame> frame;
+    VideoFrame::GlTexture textures[3] = { param.texture, 0, 0 };
+
+    media::VideoFrame:: CreateFrameGlTexture(
+        media::VideoFrame::RGBA, config_.width, config_.height, textures,
+        base::TimeDelta(), base::TimeDelta(), &frame);
+    decode_engine_->ProduceVideoFrame(frame);
   }
 }
 
 void GpuVideoDecoder::OnFillThisBufferDoneACK() {
-  if (info_.stream_info_.surface_type_ == VideoFrame::TYPE_SYSTEM_MEMORY) {
+  if (info_.stream_info.surface_type == VideoFrame::TYPE_SYSTEM_MEMORY) {
     output_transfer_buffer_busy_ = false;
     pending_output_requests_--;
     if (pending_output_requests_) {
@@ -309,9 +327,9 @@ void GpuVideoDecoder::SendEmptyBufferACK() {
 }
 
 void GpuVideoDecoder::SendFillBufferDone(
-    const GpuVideoDecoderOutputBufferParam& frame) {
+    const GpuVideoDecoderOutputBufferParam& param) {
   if (!channel_->Send(
-      new GpuVideoDecoderHostMsg_FillThisBufferDone(route_id(), frame))) {
+      new GpuVideoDecoderHostMsg_FillThisBufferDone(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBufferDone failed";
   }
 }

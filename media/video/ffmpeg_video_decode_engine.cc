@@ -50,7 +50,7 @@ void FFmpegVideoDecodeEngine::Initialize(
   static const int kDecodeThreads = 2;
   static const int kMaxDecodeThreads = 16;
 
-  av_stream_ = static_cast<AVStream*>(config.opaque_context_);
+  av_stream_ = static_cast<AVStream*>(config.opaque_context);
   codec_context_ = av_stream_->codec;
   // Enable motion vector search (potentially slow), strong deblocking filter
   // for damaged macroblocks, and set our error detection sensitivity.
@@ -87,12 +87,12 @@ void FFmpegVideoDecodeEngine::Initialize(
   // to let FFmpeg allocate the structure via avcodec_alloc_frame().
   av_frame_.reset(avcodec_alloc_frame());
   VideoCodecInfo info;
-  info.success_ = false;
-  info.provides_buffers_ = true;
-  info.stream_info_.surface_type_ = VideoFrame::TYPE_SYSTEM_MEMORY;
-  info.stream_info_.surface_format_ = GetSurfaceFormat();
-  info.stream_info_.surface_width_ = config.width_;
-  info.stream_info_.surface_height_ = config.height_;
+  info.success = false;
+  info.provides_buffers = true;
+  info.stream_info.surface_type = VideoFrame::TYPE_SYSTEM_MEMORY;
+  info.stream_info.surface_format = GetSurfaceFormat();
+  info.stream_info.surface_width = config.width;
+  info.stream_info.surface_height = config.height;
 
   // If we do not have enough buffers, we will report error too.
   bool buffer_allocated = true;
@@ -102,8 +102,8 @@ void FFmpegVideoDecodeEngine::Initialize(
     for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
       scoped_refptr<VideoFrame> video_frame;
       VideoFrame::CreateFrame(VideoFrame::YV12,
-                              config.width_,
-                              config.height_,
+                              config.width,
+                              config.height,
                               StreamSample::kInvalidTimestamp,
                               StreamSample::kInvalidTimestamp,
                               &video_frame);
@@ -120,7 +120,7 @@ void FFmpegVideoDecodeEngine::Initialize(
       avcodec_open(codec_context_, codec) >= 0 &&
       av_frame_.get() &&
       buffer_allocated) {
-    info.success_ = true;
+    info.success = true;
   }
   event_handler_ = event_handler;
   event_handler_->OnInitializeComplete(info);

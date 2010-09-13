@@ -74,8 +74,7 @@ class GpuVideoDecoder
   base::ProcessHandle renderer_handle_;
 
   // The GLES2 decoder has the context associated with this decoder. This object
-  // is used to switch GLES2 context and translate client texture ID to service
-  // ID.
+  // is used to switch context and translate client texture ID to service ID.
   gpu::gles2::GLES2Decoder* gles2_decoder_;
 
   scoped_ptr<base::SharedMemory> input_transfer_buffer_;
@@ -90,7 +89,7 @@ class GpuVideoDecoder
   void OnUninitialize();
   void OnFlush();
   void OnEmptyThisBuffer(const GpuVideoDecoderInputBufferParam& buffer);
-  void OnFillThisBuffer(const GpuVideoDecoderOutputBufferParam& frame);
+  void OnFillThisBuffer(const GpuVideoDecoderOutputBufferParam& param);
   void OnFillThisBufferDoneACK();
 
   // Output message helper.
@@ -99,7 +98,7 @@ class GpuVideoDecoder
   void SendFlushDone();
   void SendEmptyBufferDone();
   void SendEmptyBufferACK();
-  void SendFillBufferDone(const GpuVideoDecoderOutputBufferParam& frame);
+  void SendFillBufferDone(const GpuVideoDecoderOutputBufferParam& param);
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
 };

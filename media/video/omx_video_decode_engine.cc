@@ -88,8 +88,8 @@ void OmxVideoDecodeEngine::Initialize(
   message_loop_ = message_loop;
   event_handler_ = event_handler;
 
-  width_ = config.width_;
-  height_ = config.height_;
+  width_ = config.width;
+  height_ = config.height;
 
   // TODO(wjia): Find the right way to determine the codec type.
   OmxConfigurator::MediaFormat input_format, output_format;
@@ -107,14 +107,14 @@ void OmxVideoDecodeEngine::Initialize(
 
   VideoCodecInfo info;
   // TODO(jiesun): ridiculous, we never fail initialization?
-  info.success_ = true;
-  info.provides_buffers_ = !uses_egl_image_;
-  info.stream_info_.surface_type_ =
+  info.success = true;
+  info.provides_buffers = !uses_egl_image_;
+  info.stream_info.surface_type =
       uses_egl_image_ ? VideoFrame::TYPE_GL_TEXTURE
                       : VideoFrame::TYPE_SYSTEM_MEMORY;
-  info.stream_info_.surface_format_ = GetSurfaceFormat();
-  info.stream_info_.surface_width_ = config.width_;
-  info.stream_info_.surface_height_ = config.height_;
+  info.stream_info.surface_format = GetSurfaceFormat();
+  info.stream_info.surface_width = config.width;
+  info.stream_info.surface_height = config.height;
   event_handler_->OnInitializeComplete(info);
 }
 

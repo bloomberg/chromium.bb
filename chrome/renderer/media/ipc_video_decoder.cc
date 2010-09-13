@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/ipc_video_decoder.h"
 
+#include <GLES2/gl2.h>
+
 #include "base/task.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "media/base/callback.h"
@@ -63,13 +65,27 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   width_ = av_stream->codec->width;
   height_ = av_stream->codec->height;
 
-  // TODO(hclam): Pass an actual context instead of NULL.
-  gpu_video_decoder_host_ = ggl::CreateVideoDecoder(NULL);
+  // Switch GL context.
+  bool ret = ggl::MakeCurrent(ggl_context_);
+  DCHECK(ret) << "Failed to switch GL context";
+
+  // Generate textures to be used by the hardware video decoder in the GPU
+  // process.
+  // TODO(hclam): Allocation of textures should be done based on the request
+  // of the GPU process.
+  GLuint texture;
+  glGenTextures(1, &texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, NULL);
+  texture_ = texture;
+
+  // Create a hardware video decoder handle for IPC communication.
+  gpu_video_decoder_host_ = ggl::CreateVideoDecoder(ggl_context_);
 
   // Initialize hardware decoder.
   GpuVideoDecoderInitParam param = {0};
-  param.width_ = width_;
-  param.height_ = height_;
+  param.width = width_;
+  param.height = height_;
   if (!gpu_video_decoder_host_->Initialize(this, param)) {
     GpuVideoDecoderInitDoneParam param;
     OnInitializeDone(false, param);
@@ -96,9 +112,9 @@ void IpcVideoDecoder::OnInitializeDone(
     media_format_.SetAsInteger(media::MediaFormat::kWidth, width_);
     media_format_.SetAsInteger(media::MediaFormat::kHeight, height_);
     media_format_.SetAsInteger(media::MediaFormat::kSurfaceType,
-                               static_cast<int>(param.surface_type_));
+                               static_cast<int>(param.surface_type));
     media_format_.SetAsInteger(media::MediaFormat::kSurfaceFormat,
-                               static_cast<int>(param.format_));
+                               static_cast<int>(param.format));
     state_ = kPlaying;
   } else {
     LOG(ERROR) << "IpcVideoDecoder initialization failed!";
@@ -268,7 +284,13 @@ void IpcVideoDecoder::ProduceVideoFrame(scoped_refptr<VideoFrame> video_frame) {
 
   // Notify decode engine the available of new frame.
   ++pending_requests_;
-  gpu_video_decoder_host_->FillThisBuffer(video_frame);
+
+  VideoFrame::GlTexture textures[3] = { texture_, 0, 0 };
+  scoped_refptr<VideoFrame> frame;
+  media::VideoFrame::CreateFrameGlTexture(
+      media::VideoFrame::RGBA, width_, height_, textures,
+      base::TimeDelta(), base::TimeDelta(), &frame);
+  gpu_video_decoder_host_->FillThisBuffer(frame);
 }
 
 void IpcVideoDecoder::OnFillBufferDone(

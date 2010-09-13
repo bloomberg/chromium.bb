@@ -5,17 +5,19 @@
 #ifndef CHROME_RENDERER_MEDIA_GLES2_VIDEO_DECODE_CONTEXT_H_
 #define CHROME_RENDERER_MEDIA_GLES2_VIDEO_DECODE_CONTEXT_H_
 
+#include "base/message_loop.h"
 #include "media/video/video_decode_context.h"
 
-namespace WebKit {
-class WebGLES2Context;
-}  // namespace WebKit
+namespace ggl {
+class Context;
+}  // namespace ggl
 
 // FUNCTIONS
 //
-// This is a class that provides a video decode context using a GLES2 backend.
-// It provides resources for a VideoDecodeEngine to store decoded video frames
-// in the GLES2 context.
+// This is a class that provides a video decode context using a ggl::Context
+// backend.
+//
+// It provides resources for a VideoDecodeEngine to store decoded video frames.
 //
 // This class is aware of the command buffer implementation of GLES2 inside the
 // Chrome renderer and keeps a reference of ggl::Context. It might use GLES2
@@ -50,8 +52,8 @@ class WebGLES2Context;
 //
 //    The texture ID generated is used by IpcVideoDecodeEngine only to be sent
 //    the GPU process. Inside the GPU process the texture ID is translated to
-//    a real texture ID inside the actual GLES context. The real texture ID is
-//    then assigned to the hardware video decoder for storing the video frame.
+//    a real texture ID inside the actual context. The real texture ID is then
+//    assigned to the hardware video decoder for storing the video frame.
 //
 //    WebKit will see the video frame as a normal RGBA texture and perform
 //    necessary render operations.
@@ -83,8 +85,7 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
 
   //--------------------------------------------------------------------------
   // Render Thread
-  Gles2VideoDecodeContext(StorageType type,
-                          WebKit::WebGLES2Context* gles2context);
+  Gles2VideoDecodeContext(StorageType type, ggl::Context* context);
 
   // TODO(hclam): Need to figure out which thread destroys this object.
   virtual ~Gles2VideoDecodeContext();
@@ -105,11 +106,15 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
   bool IsMemoryMapped() const { return type_ == kMemoryMappedYuvTextures; }
 
  private:
+  // Message loop that this object lives on. This is the message loop that
+  // this object is created.
+  MessageLoop* message_loop_;
+
   // Type of storage provided by this class.
   StorageType type_;
 
-  // TODO(hclam): We should keep a ggl::Context instead.
-  WebKit::WebGLES2Context* context_;
+  // Pointer to the GLES2 context.
+  ggl::Context* context_;
 
   DISALLOW_COPY_AND_ASSIGN(Gles2VideoDecodeContext);
 };

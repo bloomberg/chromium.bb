@@ -173,21 +173,21 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
     media::VideoCodecConfig config;
     switch (av_stream_->codec->codec_id) {
       case CODEC_ID_VC1:
-        config.codec_ = media::kCodecVC1; break;
+        config.codec = media::kCodecVC1; break;
       case CODEC_ID_H264:
-        config.codec_ = media::kCodecH264; break;
+        config.codec = media::kCodecH264; break;
       case CODEC_ID_THEORA:
-        config.codec_ = media::kCodecTheora; break;
+        config.codec = media::kCodecTheora; break;
       case CODEC_ID_MPEG2VIDEO:
-        config.codec_ = media::kCodecMPEG2; break;
+        config.codec = media::kCodecMPEG2; break;
       case CODEC_ID_MPEG4:
-        config.codec_ = media::kCodecMPEG4; break;
+        config.codec = media::kCodecMPEG4; break;
       default:
         NOTREACHED(); break;
     }
-    config.opaque_context_ = NULL;
-    config.width_ = av_stream_->codec->width;
-    config.height_ = av_stream_->codec->height;
+    config.opaque_context = NULL;
+    config.width = av_stream_->codec->width;
+    config.height = av_stream_->codec->height;
     engine_.reset(new OmxVideoDecodeEngine());
     engine_->Initialize(&message_loop_, this, config);
 

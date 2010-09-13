@@ -172,22 +172,22 @@ void MftH264Decoder::Initialize(
   config_ = config;
   event_handler_ = event_handler;
 
-  info_.provides_buffers_ = true;
+  info_.provides_buffers = true;
 
   // TODO(jiesun): Actually it is more likely an NV12 D3DSuface9.
   // Until we had hardware composition working.
   if (use_dxva_) {
-    info_.stream_info_.surface_format_ = VideoFrame::YV12;
-    info_.stream_info_.surface_type_ = VideoFrame::TYPE_SYSTEM_MEMORY;
+    info_.stream_info.surface_format = VideoFrame::YV12;
+    info_.stream_info.surface_type = VideoFrame::TYPE_SYSTEM_MEMORY;
   } else {
-    info_.stream_info_.surface_format_ = VideoFrame::YV12;
-    info_.stream_info_.surface_type_ = VideoFrame::TYPE_SYSTEM_MEMORY;
+    info_.stream_info.surface_format = VideoFrame::YV12;
+    info_.stream_info.surface_type = VideoFrame::TYPE_SYSTEM_MEMORY;
   }
 
   // codec_info.stream_info_.surface_width_/height_ are initialized
   // in InitInternal().
-  info_.success_ = InitInternal();
-  if (info_.success_) {
+  info_.success = InitInternal();
+  if (info_.success) {
     state_ = kNormal;
     event_handler_->OnInitializeComplete(info_);
   } else {
@@ -491,10 +491,10 @@ bool MftH264Decoder::SetDecoderOutputMediaType(const GUID subtype) {
     if (out_subtype == subtype) {
       hr = decoder_->SetOutputType(0, out_media_type, 0);  // No flags
       hr = MFGetAttributeSize(out_media_type, MF_MT_FRAME_SIZE,
-          reinterpret_cast<UINT32*>(&info_.stream_info_.surface_width_),
-          reinterpret_cast<UINT32*>(&info_.stream_info_.surface_height_));
-      config_.width_ = info_.stream_info_.surface_width_;
-      config_.height_ = info_.stream_info_.surface_height_;
+          reinterpret_cast<UINT32*>(&info_.stream_info.surface_width),
+          reinterpret_cast<UINT32*>(&info_.stream_info.surface_height));
+      config_.width = info_.stream_info.surface_width;
+      config_.height = info_.stream_info.surface_height;
       if (FAILED(hr)) {
         LOG(ERROR) << "Failed to SetOutputType to |subtype| or obtain "
                    << "width/height " << std::hex << hr;
@@ -595,7 +595,7 @@ bool MftH264Decoder::DoDecode() {
       hr = SetDecoderOutputMediaType(use_dxva_ ? MFVideoFormat_NV12
                                                : MFVideoFormat_YV12);
       if (SUCCEEDED(hr)) {
-        event_handler_->OnFormatChange(info_.stream_info_);
+        event_handler_->OnFormatChange(info_.stream_info);
         return true;
       } else {
         event_handler_->OnError();
@@ -656,9 +656,9 @@ bool MftH264Decoder::DoDecode() {
     return true;
   }
 
-  VideoFrame::CreateFrame(info_.stream_info_.surface_format_,
-                          info_.stream_info_.surface_width_,
-                          info_.stream_info_.surface_height_,
+  VideoFrame::CreateFrame(info_.stream_info.surface_format,
+                          info_.stream_info.surface_width,
+                          info_.stream_info.surface_height,
                           base::TimeDelta::FromMicroseconds(timestamp),
                           base::TimeDelta::FromMicroseconds(duration),
                           &frame);
@@ -696,15 +696,15 @@ bool MftH264Decoder::DoDecode() {
     }
 
     uint32 src_stride = d3dlocked_rect.Pitch;
-    uint32 dst_stride = config_.width_;
+    uint32 dst_stride = config_.width;
     uint8* src_y = static_cast<uint8*>(d3dlocked_rect.pBits);
     uint8* src_uv = src_y + src_stride * desc.Height;
     uint8* dst_y = static_cast<uint8*>(frame->data(VideoFrame::kYPlane));
     uint8* dst_u = static_cast<uint8*>(frame->data(VideoFrame::kVPlane));
     uint8* dst_v = static_cast<uint8*>(frame->data(VideoFrame::kUPlane));
 
-    for (int y = 0; y < config_.height_; ++y) {
-      for (int x = 0; x < config_.width_; ++x) {
+    for (int y = 0; y < config_.height; ++y) {
+      for (int x = 0; x < config_.width; ++x) {
         dst_y[x] = src_y[x];
         if (!(y & 1)) {
           if (x & 1)

@@ -95,21 +95,21 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   VideoCodecConfig config;
   switch (av_stream->codec->codec_id) {
     case CODEC_ID_VC1:
-      config.codec_ = kCodecVC1; break;
+      config.codec = kCodecVC1; break;
     case CODEC_ID_H264:
-      config.codec_ = kCodecH264; break;
+      config.codec = kCodecH264; break;
     case CODEC_ID_THEORA:
-      config.codec_ = kCodecTheora; break;
+      config.codec = kCodecTheora; break;
     case CODEC_ID_MPEG2VIDEO:
-      config.codec_ = kCodecMPEG2; break;
+      config.codec = kCodecMPEG2; break;
     case CODEC_ID_MPEG4:
-      config.codec_ = kCodecMPEG4; break;
+      config.codec = kCodecMPEG4; break;
     default:
       NOTREACHED();
   }
-  config.opaque_context_ = NULL;
-  config.width_ = width_;
-  config.height_ = height_;
+  config.opaque_context = NULL;
+  config.width = width_;
+  config.height = height_;
   omx_engine_->Initialize(message_loop(), this, config);
 }
 
@@ -120,17 +120,17 @@ void OmxVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
   info_ = info;  // Save a copy.
   AutoCallbackRunner done_runner(initialize_callback_.release());
 
-  if (info.success_) {
+  if (info.success) {
     media_format_.SetAsString(MediaFormat::kMimeType,
                               mime_type::kUncompressedVideo);
     media_format_.SetAsInteger(MediaFormat::kWidth, width_);
     media_format_.SetAsInteger(MediaFormat::kHeight, height_);
     media_format_.SetAsInteger(
         MediaFormat::kSurfaceType,
-        static_cast<int>(info.stream_info_.surface_type_));
+        static_cast<int>(info.stream_info.surface_type));
     media_format_.SetAsInteger(
         MediaFormat::kSurfaceFormat,
-        static_cast<int>(info.stream_info_.surface_format_));
+        static_cast<int>(info.stream_info.surface_format));
   } else {
     host()->SetError(PIPELINE_ERROR_DECODE);
   }
@@ -236,8 +236,8 @@ void OmxVideoDecoder::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
 }
 
 bool OmxVideoDecoder::ProvidesBuffer() {
-  DCHECK(info_.success_);
-  return info_.provides_buffers_;
+  DCHECK(info_.success);
+  return info_.provides_buffers;
 }
 
 void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {

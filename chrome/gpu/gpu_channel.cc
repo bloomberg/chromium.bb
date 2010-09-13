@@ -186,22 +186,18 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 }
 
 void GpuChannel::OnGetVideoService(GpuVideoServiceInfoParam* info) {
-  info->service_available_ = 0;
+  info->service_available = 0;
 #if defined(ENABLE_GPU)
-#if defined(OS_WIN)
-  // TODO(jiesun): Not every windows platforms will support our media
-  // foundation implementation. Add more check here.
   LOG(INFO) << "GpuChannel::OnGetVideoService";
   GpuVideoService* service = GpuVideoService::get();
   if (service == NULL)
     return;
 
-  info->video_service_host_route_id_ = GenerateRouteID();
-  info->video_service_route_id_ = GenerateRouteID();
+  info->video_service_host_route_id = GenerateRouteID();
+  info->video_service_route_id = GenerateRouteID();
   // TODO(jiesun): we could had multiple entries in this routing table.
-  router_.AddRoute(info->video_service_route_id_, service);
-  info->service_available_ = 1;
-#endif
+  router_.AddRoute(info->video_service_route_id, service);
+  info->service_available = 1;
 #endif
 }
 

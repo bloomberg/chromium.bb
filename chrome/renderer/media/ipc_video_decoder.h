@@ -48,7 +48,6 @@ class IpcVideoDecoder : public media::VideoDecoder,
   virtual void OnEmptyBufferDone(scoped_refptr<media::Buffer> buffer);
   virtual void OnFillBufferDone(scoped_refptr<media::VideoFrame> frame);
   virtual void OnDeviceError();
-
   virtual bool ProvidesBuffer();
 
  private:
@@ -93,7 +92,14 @@ class IpcVideoDecoder : public media::VideoDecoder,
   // and destruction of the context.
   ggl::Context* ggl_context_;
 
+  // Handle to the hardware video decoder. This object will use IPC to
+  // communicate with the decoder in the GPU process.
   scoped_refptr<GpuVideoDecoderHost> gpu_video_decoder_host_;
+
+  // Texture that contains the video frame.
+  // TODO(hclam): Instead of one texture, we should have a set of textures
+  // as requested by the hardware video decode engine in the GPU process.
+  unsigned int texture_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcVideoDecoder);
 };

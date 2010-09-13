@@ -85,14 +85,14 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
     EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
         .Times(1);
 
-    config_.codec_ = kCodecH264;
-    config_.opaque_context_ = &stream_;
-    config_.width_ = kWidth;
-    config_.height_ = kHeight;
+    config_.codec = kCodecH264;
+    config_.opaque_context = &stream_;
+    config_.width = kWidth;
+    config_.height = kHeight;
     EXPECT_CALL(*this, OnInitializeComplete(_))
        .WillOnce(SaveInitializeResult(this));
     test_engine_->Initialize(MessageLoop::current(), this, config_);
-    EXPECT_TRUE(info_.success_);
+    EXPECT_TRUE(info_.success);
   }
 
  public:
@@ -137,14 +137,14 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
   EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
       .Times(1);
 
-  config_.codec_ = kCodecH264;
-  config_.opaque_context_ = &stream_;
-  config_.width_ = kWidth;
-  config_.height_ = kHeight;
+  config_.codec = kCodecH264;
+  config_.opaque_context = &stream_;
+  config_.width = kWidth;
+  config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
   test_engine_->Initialize(MessageLoop::current(), this, config_);
-  EXPECT_FALSE(info_.success_);
+  EXPECT_FALSE(info_.success);
 }
 
 // Note There are 2 threads for FFmpeg-mt.
@@ -159,14 +159,14 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_InitThreadFails) {
   EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
       .Times(1);
 
-  config_.codec_ = kCodecH264;
-  config_.opaque_context_ = &stream_;
-  config_.width_ = kWidth;
-  config_.height_ = kHeight;
+  config_.codec = kCodecH264;
+  config_.opaque_context = &stream_;
+  config_.width = kWidth;
+  config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
   test_engine_->Initialize(MessageLoop::current(), this, config_);
-  EXPECT_FALSE(info_.success_);
+  EXPECT_FALSE(info_.success);
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
@@ -182,14 +182,14 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
       .Times(1);
 
-  config_.codec_ = kCodecH264;
-  config_.opaque_context_ = &stream_;
-  config_.width_ = kWidth;
-  config_.height_ = kHeight;
+  config_.codec = kCodecH264;
+  config_.opaque_context = &stream_;
+  config_.width = kWidth;
+  config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
   test_engine_->Initialize(MessageLoop::current(), this, config_);
-  EXPECT_FALSE(info_.success_);
+  EXPECT_FALSE(info_.success);
 }
 
 ACTION_P2(DemuxComplete, engine, buffer) {

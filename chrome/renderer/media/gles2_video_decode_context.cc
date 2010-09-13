@@ -5,8 +5,8 @@
 #include "chrome/renderer/media/gles2_video_decode_context.h"
 
 Gles2VideoDecodeContext::Gles2VideoDecodeContext(
-    StorageType type, WebKit::WebGLES2Context* context)
-    : type_(type), context_(context) {
+    StorageType type, ggl::Context* context)
+    : message_loop_(MessageLoop::current()), type_(type), context_(context) {
 }
 
 Gles2VideoDecodeContext::~Gles2VideoDecodeContext() {
@@ -15,7 +15,7 @@ Gles2VideoDecodeContext::~Gles2VideoDecodeContext() {
 
 void* Gles2VideoDecodeContext::GetDevice() {
   // This decode context is used inside the renderer and so hardware decoder
-  // device handler should be used.
+  // device handler should not be used.
   return NULL;
 }
 

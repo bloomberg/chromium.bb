@@ -9,18 +9,16 @@
 #include "base/shared_memory.h"
 #include "chrome/common/common_param_traits.h"
 
-class GpuVideoServiceInfoParam {
- public:
+struct GpuVideoServiceInfoParam {
   // route id for GpuVideoService on GPU process side for this channel.
-  int32 video_service_route_id_;
+  int32 video_service_route_id;
   // route id for GpuVideoServiceHost on Render process side for this channel.
-  int32 video_service_host_route_id_;
+  int32 video_service_host_route_id;
   // TODO(jiesun): define capabilities of video service.
-  int32 service_available_;
+  int32 service_available;
 };
 
-class GpuVideoDecoderInfoParam {
- public:
+struct GpuVideoDecoderInfoParam {
   // Context ID of the GLES2 context what this decoder should assicate with.
   int context_id;
 
@@ -35,56 +33,57 @@ class GpuVideoDecoderInfoParam {
   int32 decoder_host_route_id;
 };
 
-class GpuVideoDecoderInitParam {
- public:
-  int32 codec_id_;
-  int32 width_;
-  int32 height_;
-  int32 profile_;
-  int32 level_;
-  int32 frame_rate_den_;
-  int32 frame_rate_num_;
-  int32 aspect_ratio_den_;
-  int32 aspect_ratio_num_;
+struct GpuVideoDecoderInitParam {
+  int32 codec_id;
+  int32 width;
+  int32 height;
+  int32 profile;
+  int32 level;
+  int32 frame_rate_den;
+  int32 frame_rate_num;
+  int32 aspect_ratio_den;
+  int32 aspect_ratio_num;
 };
 
-class GpuVideoDecoderInitDoneParam {
- public:
+struct GpuVideoDecoderInitDoneParam {
   enum SurfaceType {
     SurfaceTypeSystemMemory,
-    SurfaceTypeD3DSurface,
-    SurfaceTypeEGLImage,
+    SurfaceTypeGlTexture,
+    SurfaceTypeD3dTexture,
   };
   enum SurfaceFormat {
     SurfaceFormat_YV12,
     SurfaceFormat_NV12,
-    SurfaceFormat_XRGB,
+    SurfaceFormat_RGBA,
   };
-  int32 success_;  // other parameter is only meaningful when this is true.
+  int32 success;  // other parameter is only meaningful when this is true.
   int32 provides_buffer;
-  int32 format_;
-  int32 surface_type_;
-  int32 stride_;
-  int32 input_buffer_size_;
-  int32 output_buffer_size_;
-  base::SharedMemoryHandle input_buffer_handle_;
+  int32 format;
+  int32 surface_type;
+  int32 stride;
+  int32 input_buffer_size;
+  int32 output_buffer_size;
+  base::SharedMemoryHandle input_buffer_handle;
   // we do not need this if hardware composition is ready.
-  base::SharedMemoryHandle output_buffer_handle_;
+  base::SharedMemoryHandle output_buffer_handle;
 };
 
-class GpuVideoDecoderInputBufferParam {
- public:
-  int64 timestamp_;  // In unit of microseconds.
-  int32 offset_;
-  int32 size_;
-  int32 flags_;      // miscellaneous flag bit mask
+struct GpuVideoDecoderInputBufferParam {
+  int64 timestamp;  // In unit of microseconds.
+  int32 offset;
+  int32 size;
+  int32 flags;      // miscellaneous flag bit mask
 };
 
-class GpuVideoDecoderOutputBufferParam {
- public:
-  int64 timestamp_;  // In unit of microseconds.
-  int64 duration_;   // In unit of microseconds.
-  int32 flags_;      // miscellaneous flag bit mask
+struct GpuVideoDecoderOutputBufferParam {
+  int64 timestamp;  // In unit of microseconds.
+  int64 duration;   // In unit of microseconds.
+  int32 flags;      // miscellaneous flag bit mask
+
+  // TODO(hclam): This is really ugly and should be removed. Instead of sending
+  // a texture id we should send a buffer id that signals that a buffer is ready
+  // to be consumed. Before that we need API to establish the buffers.
+  int32 texture;
 
   enum {
     kFlagsEndOfStream     = 0x00000001,
@@ -92,19 +91,17 @@ class GpuVideoDecoderOutputBufferParam {
   };
 };
 
-class GpuVideoDecoderErrorInfoParam {
- public:
+struct GpuVideoDecoderErrorInfoParam {
   int32 error_id;  // TODO(jiesun): define enum.
 };
 
 // TODO(jiesun): define this.
-class GpuVideoDecoderFormatChangeParam {
- public:
-  int32 stride_;
-  int32 input_buffer_size_;
-  int32 output_buffer_size_;
-  base::SharedMemoryHandle input_buffer_handle_;
-  base::SharedMemoryHandle output_buffer_handle_;
+struct GpuVideoDecoderFormatChangeParam {
+  int32 stride;
+  int32 input_buffer_size;
+  int32 output_buffer_size;
+  base::SharedMemoryHandle input_buffer_handle;
+  base::SharedMemoryHandle output_buffer_handle;
 };
 
 namespace IPC {

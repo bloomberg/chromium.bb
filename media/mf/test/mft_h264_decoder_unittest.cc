@@ -125,7 +125,7 @@ class SimpleMftH264DecoderHandler : public VideoDecodeEngine::EventHandler {
   virtual void OnError() {}
   virtual void OnFormatChange(VideoStreamInfo stream_info) {
     format_change_count_++;
-    info_.stream_info_ = stream_info;
+    info_.stream_info = stream_info;
   }
   virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer) {
     if (reader_.get() && decoder_) {
@@ -172,8 +172,8 @@ TEST_F(MftH264DecoderTest, DecoderUninitializedAtFirst) {
 
 TEST_F(MftH264DecoderTest, DecoderInitMissingArgs) {
   VideoCodecConfig config;
-  config.width_ = 800;
-  config.height_ = 600;
+  config.width = 800;
+  config.height = 600;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(NULL, NULL, config);
@@ -184,8 +184,8 @@ TEST_F(MftH264DecoderTest, DecoderInitNoDxva) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 800;
-  config.height_ = 600;
+  config.width = 800;
+  config.height = 600;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
@@ -198,8 +198,8 @@ TEST_F(MftH264DecoderTest, DecoderInitDxva) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 800;
-  config.height_ = 600;
+  config.width = 800;
+  config.height = 600;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(true));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
@@ -212,8 +212,8 @@ TEST_F(MftH264DecoderTest, DecoderUninit) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 800;
-  config.height_ = 600;
+  config.width = 800;
+  config.height = 600;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
@@ -227,8 +227,8 @@ TEST_F(MftH264DecoderTest, UninitBeforeInit) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 800;
-  config.height_ = 600;
+  config.width = 800;
+  config.height = 600;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Uninitialize();
@@ -239,14 +239,14 @@ TEST_F(MftH264DecoderTest, InitWithNegativeDimensions) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = -123;
-  config.height_ = -456;
+  config.width = -123;
+  config.height = -456;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
-  EXPECT_EQ(kDecoderMaxWidth, handler.info_.stream_info_.surface_width_);
-  EXPECT_EQ(kDecoderMaxHeight, handler.info_.stream_info_.surface_height_);
+  EXPECT_EQ(kDecoderMaxWidth, handler.info_.stream_info.surface_width);
+  EXPECT_EQ(kDecoderMaxHeight, handler.info_.stream_info.surface_height);
   decoder->Uninitialize();
 }
 
@@ -254,14 +254,14 @@ TEST_F(MftH264DecoderTest, InitWithTooHighDimensions) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = kDecoderMaxWidth + 1;
-  config.height_ = kDecoderMaxHeight + 1;
+  config.width = kDecoderMaxWidth + 1;
+  config.height = kDecoderMaxHeight + 1;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
-  EXPECT_EQ(kDecoderMaxWidth, handler.info_.stream_info_.surface_width_);
-  EXPECT_EQ(kDecoderMaxHeight, handler.info_.stream_info_.surface_height_);
+  EXPECT_EQ(kDecoderMaxWidth, handler.info_.stream_info.surface_width);
+  EXPECT_EQ(kDecoderMaxHeight, handler.info_.stream_info.surface_height);
   decoder->Uninitialize();
 }
 
@@ -269,8 +269,8 @@ TEST_F(MftH264DecoderTest, DrainOnEmptyBuffer) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 1024;
-  config.height_ = 768;
+  config.width = 1024;
+  config.height = 768;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
@@ -298,8 +298,8 @@ TEST_F(MftH264DecoderTest, NoOutputOnGarbageInput) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 1024;
-  config.height_ = 768;
+  config.width = 1024;
+  config.height = 768;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
@@ -326,8 +326,8 @@ TEST_F(MftH264DecoderTest, FlushAtStart) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 1024;
-  config.height_ = 768;
+  config.width = 1024;
+  config.height = 768;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
@@ -346,8 +346,8 @@ TEST_F(MftH264DecoderTest, NoFlushAtStopped) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 1024;
-  config.height_ = 768;
+  config.width = 1024;
+  config.height = 768;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
@@ -389,8 +389,8 @@ void DecodeValidVideo(const std::string& filename, int num_frames, bool dxva) {
   MessageLoop loop;
   SimpleMftH264DecoderHandler handler;
   VideoCodecConfig config;
-  config.width_ = 1;
-  config.height_ = 1;
+  config.width = 1;
+  config.height = 1;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(dxva));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
@@ -405,8 +405,8 @@ void DecodeValidVideo(const std::string& filename, int num_frames, bool dxva) {
   // We expect a format change when decoder receives enough data to determine
   // the actual frame width/height.
   EXPECT_GT(handler.format_change_count_, 0);
-  EXPECT_EQ(actual_width, handler.info_.stream_info_.surface_width_);
-  EXPECT_EQ(actual_height, handler.info_.stream_info_.surface_height_);
+  EXPECT_EQ(actual_width, handler.info_.stream_info.surface_width);
+  EXPECT_EQ(actual_height, handler.info_.stream_info.surface_height);
   EXPECT_GE(handler.empty_buffer_callback_count_, num_frames);
   EXPECT_EQ(num_frames, handler.fill_buffer_callback_count_ - 1);
   decoder->Uninitialize();

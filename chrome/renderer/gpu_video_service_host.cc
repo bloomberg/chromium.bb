@@ -42,13 +42,13 @@ void GpuVideoServiceHost::OnGpuChannelConnected(
   router_ = router;
 
   // Get the routing_id of video service in GPU process.
-  service_info_.service_available_ = 0;
+  service_info_.service_available = 0;
   if (!channel_host_->Send(new GpuChannelMsg_GetVideoService(&service_info_))) {
     LOG(ERROR) << "GpuChannelMsg_GetVideoService failed";
   }
 
-  if (service_info_.service_available_)
-    router->AddRoute(service_info_.video_service_host_route_id_, this);
+  if (service_info_.service_available)
+    router->AddRoute(service_info_.video_service_host_route_id, this);
 }
 
 GpuVideoDecoderHost* GpuVideoServiceHost::CreateVideoDecoder(

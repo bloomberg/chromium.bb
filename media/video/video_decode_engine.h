@@ -26,46 +26,50 @@ static const uint32 kProfileDoNotCare = static_cast<uint32>(-1);
 static const uint32 kLevelDoNotCare = static_cast<uint32>(-1);
 
 struct VideoCodecConfig {
-  VideoCodecConfig() : codec_(kCodecH264),
-                       profile_(kProfileDoNotCare),
-                       level_(kLevelDoNotCare),
-                       width_(0),
-                       height_(0),
-                       opaque_context_(NULL) {}
+  VideoCodecConfig() : codec(kCodecH264),
+                       profile(kProfileDoNotCare),
+                       level(kLevelDoNotCare),
+                       width(0),
+                       height(0),
+                       opaque_context(NULL) {}
 
-  VideoCodec codec_;
+  VideoCodec codec;
 
   // TODO(jiesun): video profile and level are specific to individual codec.
   // Define enum to.
-  uint32 profile_;
-  uint32 level_;
+  uint32 profile;
+  uint32 level;
 
   // Container's concept of width and height of this video.
-  int32 width_;
-  int32 height_;  // TODO(jiesun): Do we allow height to be negative to
+  int32 width;
+  int32 height;  // TODO(jiesun): Do we allow height to be negative to
                   // indicate output is upside-down?
 
   // FFMPEG's will use this to pass AVStream. Otherwise, we should remove this.
-  void* opaque_context_;
+  void* opaque_context;
 };
 
 struct VideoStreamInfo {
-  VideoFrame::Format surface_format_;
-  VideoFrame::SurfaceType surface_type_;
-  uint32 surface_width_;  // Can be different with container's value.
-  uint32 surface_height_;  // Can be different with container's value.
+  VideoFrame::Format surface_format;
+  VideoFrame::SurfaceType surface_type;
+
+  // Can be different with container's value.
+  uint32 surface_width;
+
+  // Can be different with container's value.
+  uint32 surface_height;
 };
 
 struct VideoCodecInfo {
   // Other parameter is only meaningful when this is true.
-  bool success_;
+  bool success;
 
   // Whether decoder provides output buffer pool.
-  bool provides_buffers_;
+  bool provides_buffers;
 
   // Initial Stream Info. Only part of them could be valid.
   // If they are not valid, Engine should update with OnFormatChange.
-  VideoStreamInfo stream_info_;
+  VideoStreamInfo stream_info;
 };
 
 class VideoDecodeEngine {
