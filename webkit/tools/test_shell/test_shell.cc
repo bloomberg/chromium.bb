@@ -366,23 +366,15 @@ std::string TestShell::DumpImage(skia::PlatformCanvas* canvas,
   // to keep it. On Windows, the alpha channel is wrong since text/form control
   // drawing may have erased it in a few places. So on Windows we force it to
   // opaque and also don't write the alpha channel for the reference. Linux
-  // doesn't have the wrong alpha like Windows, but we ignore it anyway.
-#if defined(OS_WIN)
+  // doesn't have the wrong alpha like Windows, but we try to match Windows.
+#if defined(OS_MACOSX)
+  bool discard_transparency = false;
+#else
   bool discard_transparency = true;
   device.makeOpaque(0, 0, src_bmp.width(), src_bmp.height());
-#elif defined(OS_MACOSX)
-  bool discard_transparency = false;
-#elif defined(OS_POSIX)
-  bool discard_transparency = true;
-  if (WebKit::areLayoutTestImagesOpaque())
-    device.makeOpaque(0, 0, src_bmp.width(), src_bmp.height());
 #endif
 
-  // Compute MD5 sum.  We should have done this before calling
-  // device.makeOpaque on Windows.  Because we do it after the call, there are
-  // some images that are the pixel identical on windows and other platforms
-  // but have different MD5 sums.  At this point, rebaselining all the windows
-  // tests is too much of a pain, so we just check in different baselines.
+  // Compute MD5 sum.
   MD5Context ctx;
   MD5Init(&ctx);
   MD5Update(&ctx, src_bmp.getPixels(), src_bmp.getSize());
