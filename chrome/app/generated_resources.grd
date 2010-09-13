@@ -3843,6 +3843,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LABS_SIDE_TABS_DESCRIPTION" desc="Description of the 'Left Tabs' lab.">
         Adds a "Use Side Tabs" entry to the tabstrip's context menu. Use this to toggle between tabs on top (default) and tabs on the side. Useful on widescreen monitors.
       </message>
+     <message name="IDS_LABS_TABBED_OPTIONS_NAME" desc="Description of the 'Tabbed Options' lab.">
+        Tabbed Options
+      </message>
+     <message name="IDS_LABS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Options' lab.">
+        Uses an in-tab UI for the Options (Preferences) dialog instead of a stand-alone window.
+      </message>
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">

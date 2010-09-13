@@ -23,6 +23,8 @@ namespace about_labs {
 
 enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 };
 
+unsigned kOsAll = kOsMac | kOsWin | kOsLinux;
+
 struct Experiment {
   // The internal name of the experiment. This is never shown to the user.
   // It _is_ however stored in the prefs file, so you shouldn't change the
@@ -64,7 +66,14 @@ const Experiment kExperiments[] = {
     IDS_LABS_SIDE_TABS_DESCRIPTION,
     kOsWin,
     switches::kEnableVerticalTabs
-  }
+  },
+  {
+    "tabbed-options",  // Do not change; see above.
+    IDS_LABS_TABBED_OPTIONS_NAME,
+    IDS_LABS_TABBED_OPTIONS_DESCRIPTION,
+    kOsAll,
+    switches::kEnableTabbedOptions
+  },
 };
 
 // Extracts the list of enabled lab experiments from a profile and stores them
