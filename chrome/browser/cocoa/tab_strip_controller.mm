@@ -461,6 +461,7 @@ private:
     [newView setFrame:[oldView frame]];
     [switchView_ replaceSubview:oldView with:newView];
   } else {
+    [newView setFrame:[switchView_ bounds]];
     [switchView_ addSubview:newView];
   }
 
