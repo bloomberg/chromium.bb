@@ -21,6 +21,9 @@
 const char* BookmarkDragData::kClipboardFormatString =
     "chromium/x-bookmark-entries";
 
+BookmarkDragData::Element::Element() : is_url(false), id_(0) {
+}
+
 BookmarkDragData::Element::Element(const BookmarkNode* node)
     : is_url(node->is_url()),
       url(node->GetURL()),
@@ -28,6 +31,9 @@ BookmarkDragData::Element::Element(const BookmarkNode* node)
       id_(node->id()) {
   for (int i = 0; i < node->GetChildCount(); ++i)
     children.push_back(Element(node->GetChild(i)));
+}
+
+BookmarkDragData::Element::~Element() {
 }
 
 void BookmarkDragData::Element::WriteToPickle(Pickle* pickle) const {
@@ -84,6 +90,9 @@ OSExchangeData::CustomFormat BookmarkDragData::GetBookmarkCustomFormat() {
 }
 #endif
 
+BookmarkDragData::BookmarkDragData() {
+}
+
 BookmarkDragData::BookmarkDragData(const BookmarkNode* node) {
   elements.push_back(Element(node));
 }
@@ -91,6 +100,9 @@ BookmarkDragData::BookmarkDragData(const BookmarkNode* node) {
 BookmarkDragData::BookmarkDragData(
     const std::vector<const BookmarkNode*>& nodes) {
   ReadFromVector(nodes);
+}
+
+BookmarkDragData::~BookmarkDragData() {
 }
 
 bool BookmarkDragData::ReadFromVector(

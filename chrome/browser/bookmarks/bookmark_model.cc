@@ -43,6 +43,9 @@ BookmarkNode::BookmarkNode(int64 id, const GURL& url)
   Initialize(id);
 }
 
+BookmarkNode::~BookmarkNode() {
+}
+
 void BookmarkNode::Initialize(int64 id) {
   id_ = id;
   loaded_favicon_ = false;

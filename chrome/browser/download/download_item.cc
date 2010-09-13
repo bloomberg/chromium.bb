@@ -15,7 +15,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/history/download_types.h"
+#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"

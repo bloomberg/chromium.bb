@@ -5,7 +5,7 @@
 #include "chrome/browser/download/download_history.h"
 
 #include "base/logging.h"
-#include "chrome/browser/history/download_types.h"
+#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/profile.h"

@@ -44,9 +44,9 @@ class Profile;
 struct BookmarkDragData {
   // Element represents a single node.
   struct Element {
+    Element();
     explicit Element(const BookmarkNode* node);
-
-    Element() : is_url(false), id_(0) {}
+    ~Element();
 
     // If true, this element represents a URL.
     bool is_url;
@@ -74,7 +74,7 @@ struct BookmarkDragData {
     int64 id_;
   };
 
-  BookmarkDragData() { }
+  BookmarkDragData();
 
 #if defined(TOOLKIT_VIEWS)
   static OSExchangeData::CustomFormat GetBookmarkCustomFormat();
@@ -83,6 +83,8 @@ struct BookmarkDragData {
   // Created a BookmarkDragData populated from the arguments.
   explicit BookmarkDragData(const BookmarkNode* node);
   explicit BookmarkDragData(const std::vector<const BookmarkNode*>& nodes);
+
+  ~BookmarkDragData();
 
   // Reads bookmarks from the given vector.
   bool ReadFromVector(const std::vector<const BookmarkNode*>& nodes);

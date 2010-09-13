@@ -33,7 +33,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/history/download_types.h"
+#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"

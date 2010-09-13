@@ -17,7 +17,7 @@
 #include "base/time.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
-#include "chrome/browser/history/download_types.h"
+#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/in_memory_history_backend.h"

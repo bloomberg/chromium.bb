@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/history/archived_database.h"
-#include "chrome/browser/history/download_types.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_marshaling.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/mru_cache.h"
 
 class BookmarkService;
+struct DownloadCreateInfo;
 class TestingProfile;
 struct ThumbnailScore;
 

@@ -8,7 +8,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_file_manager.h"
-#include "chrome/browser/history/download_types.h"
+#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/resource_response.h"

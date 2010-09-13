@@ -16,6 +16,37 @@ namespace history {
 
 // URLRow ----------------------------------------------------------------------
 
+URLRow::URLRow() {
+  Initialize();
+}
+
+URLRow::URLRow(const GURL& url) : url_(url) {
+  // Initialize will not set the URL, so our initialization above will stay.
+  Initialize();
+}
+
+URLRow::URLRow(const GURL& url, URLID id) : url_(url) {
+  // Initialize will not set the URL, so our initialization above will stay.
+  Initialize();
+  // Initialize will zero the id_, so set it here.
+  id_ = id;
+}
+
+URLRow::~URLRow() {
+}
+
+URLRow& URLRow::operator=(const URLRow& other) {
+  id_ = other.id_;
+  url_ = other.url_;
+  title_ = other.title_;
+  visit_count_ = other.visit_count_;
+  typed_count_ = other.typed_count_;
+  last_visit_ = other.last_visit_;
+  hidden_ = other.hidden_;
+  favicon_id_ = other.favicon_id_;
+  return *this;
+}
+
 void URLRow::Swap(URLRow* other) {
   std::swap(id_, other->id_);
   url_.Swap(&other->url_);
@@ -61,6 +92,9 @@ VisitRow::VisitRow(URLID arg_url_id,
       is_indexed(false) {
 }
 
+VisitRow::~VisitRow() {
+}
+
 // StarredEntry ----------------------------------------------------------------
 
 StarredEntry::StarredEntry()
@@ -70,6 +104,9 @@ StarredEntry::StarredEntry()
       visual_order(0),
       type(URL),
       url_id(0) {
+}
+
+StarredEntry::~StarredEntry() {
 }
 
 void StarredEntry::Swap(StarredEntry* other) {
@@ -86,6 +123,23 @@ void StarredEntry::Swap(StarredEntry* other) {
 }
 
 // URLResult -------------------------------------------------------------------
+
+URLResult::URLResult() {
+}
+
+URLResult::URLResult(const GURL& url, base::Time visit_time)
+    : URLRow(url),
+      visit_time_(visit_time) {
+}
+
+URLResult::URLResult(const GURL& url,
+                     const Snippet::MatchPositions& title_matches)
+    : URLRow(url) {
+  title_match_positions_ = title_matches;
+}
+
+URLResult::~URLResult() {
+}
 
 void URLResult::Swap(URLResult* other) {
   URLRow::Swap(other);
@@ -257,6 +311,9 @@ HistoryAddPageArgs::HistoryAddPageArgs(
         transition(arg_transition),
         visit_source(arg_source),
         did_replace_entry(arg_did_replace_entry) {
+}
+
+HistoryAddPageArgs::~HistoryAddPageArgs() {
 }
 
 HistoryAddPageArgs* HistoryAddPageArgs::Clone() const {

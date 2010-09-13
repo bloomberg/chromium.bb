@@ -35,7 +35,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/history/download_types.h"
+#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_INDEX_H_
 #pragma once
 
-#include <list>
 #include <map>
 #include <set>
 #include <vector>
@@ -37,7 +36,8 @@ class URLDatabase;
 
 class BookmarkIndex {
  public:
-  explicit BookmarkIndex(Profile* profile) : profile_(profile) {}
+  explicit BookmarkIndex(Profile* profile);
+  ~BookmarkIndex();
 
   // Invoked when a bookmark has been added to the model.
   void Add(const BookmarkNode* node);
@@ -55,31 +55,7 @@ class BookmarkIndex {
   typedef std::set<const BookmarkNode*> NodeSet;
   typedef std::map<string16, NodeSet> Index;
 
-  // Used when finding the set of bookmarks that match a query. Each match
-  // represents a set of terms (as an interator into the Index) matching the
-  // query as well as the set of nodes that contain those terms in their titles.
-  struct Match {
-    // List of terms matching the query.
-    std::list<Index::const_iterator> terms;
-
-    // The set of nodes matching the terms. As an optimization this is empty
-    // when we match only one term, and is filled in when we get more than one
-    // term. We can do this as when we have only one matching term we know
-    // the set of matching nodes is terms.front()->second.
-    //
-    // Use nodes_begin() and nodes_end() to get an iterator over the set as
-    // it handles the necessary switching between nodes and terms.front().
-    NodeSet nodes;
-
-    // Returns an iterator to the beginning of the matching nodes. See
-    // description of nodes for why this should be used over nodes.begin().
-    NodeSet::const_iterator nodes_begin() const;
-
-    // Returns an iterator to the beginning of the matching nodes. See
-    // description of nodes for why this should be used over nodes.end().
-    NodeSet::const_iterator nodes_end() const;
-  };
-
+  struct Match;
   typedef std::vector<Match> Matches;
 
   // Pairs BookmarkNodes and the number of times the nodes' URLs were typed.

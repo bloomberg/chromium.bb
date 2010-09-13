@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <list>
 
 #include "app/l10n_util.h"
 #include "base/string16.h"
@@ -15,6 +16,31 @@
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/profile.h"
 
+// Used when finding the set of bookmarks that match a query. Each match
+// represents a set of terms (as an interator into the Index) matching the
+// query as well as the set of nodes that contain those terms in their titles.
+struct BookmarkIndex::Match {
+  // List of terms matching the query.
+  std::list<Index::const_iterator> terms;
+
+  // The set of nodes matching the terms. As an optimization this is empty
+  // when we match only one term, and is filled in when we get more than one
+  // term. We can do this as when we have only one matching term we know
+  // the set of matching nodes is terms.front()->second.
+  //
+  // Use nodes_begin() and nodes_end() to get an iterator over the set as
+  // it handles the necessary switching between nodes and terms.front().
+  NodeSet nodes;
+
+  // Returns an iterator to the beginning of the matching nodes. See
+  // description of nodes for why this should be used over nodes.begin().
+  NodeSet::const_iterator nodes_begin() const;
+
+  // Returns an iterator to the beginning of the matching nodes. See
+  // description of nodes for why this should be used over nodes.end().
+  NodeSet::const_iterator nodes_end() const;
+};
+
 BookmarkIndex::NodeSet::const_iterator
     BookmarkIndex::Match::nodes_begin() const {
   return nodes.empty() ? terms.front()->second.begin() : nodes.begin();
@@ -22,6 +48,12 @@ BookmarkIndex::NodeSet::const_iterator
 
 BookmarkIndex::NodeSet::const_iterator BookmarkIndex::Match::nodes_end() const {
   return nodes.empty() ? terms.front()->second.end() : nodes.end();
+}
+
+BookmarkIndex::BookmarkIndex(Profile* profile) : profile_(profile) {
+}
+
+BookmarkIndex::~BookmarkIndex() {
 }
 
 void BookmarkIndex::Add(const BookmarkNode* node) {

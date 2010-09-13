@@ -56,7 +56,7 @@ class BookmarkNode : public TreeNode<BookmarkNode> {
   explicit BookmarkNode(const GURL& url);
   // Creates a new node with the specified url and id.
   BookmarkNode(int64 id, const GURL& url);
-  virtual ~BookmarkNode() {}
+  virtual ~BookmarkNode();
 
   // Returns the URL.
   const GURL& GetURL() const { return url_; }

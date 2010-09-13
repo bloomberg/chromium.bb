@@ -24,6 +24,9 @@ class IOBuffer;
 // is synchronized via the lock. Each entry in 'contents' represents one data
 // buffer and its size in bytes.
 struct DownloadBuffer {
+  DownloadBuffer();
+  ~DownloadBuffer();
+
   Lock lock;
   typedef std::pair<net::IOBuffer*, int> Contents;
   std::vector<Contents> contents;
@@ -31,6 +34,11 @@ struct DownloadBuffer {
 
 // Holds the information about how to save a download file.
 struct DownloadSaveInfo {
+  DownloadSaveInfo();
+  DownloadSaveInfo(const DownloadSaveInfo& info);
+  ~DownloadSaveInfo();
+  DownloadSaveInfo& operator=(const DownloadSaveInfo& info);
+
   FilePath file_path;
   linked_ptr<net::FileStream> file_stream;
 };

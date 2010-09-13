@@ -31,13 +31,8 @@ class BookmarkLoadDetails {
   BookmarkLoadDetails(BookmarkNode* bb_node,
                       BookmarkNode* other_folder_node,
                       BookmarkIndex* index,
-                      int64 max_id)
-      : bb_node_(bb_node),
-        other_folder_node_(other_folder_node),
-        index_(index),
-        max_id_(max_id),
-        ids_reassigned_(false) {
-  }
+                      int64 max_id);
+  ~BookmarkLoadDetails();
 
   BookmarkNode* bb_node() { return bb_node_.get(); }
   BookmarkNode* release_bb_node() { return bb_node_.release(); }

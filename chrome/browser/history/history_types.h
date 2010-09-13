@@ -60,25 +60,16 @@ typedef int64 URLID;
 // dirty bits will not be in sync for these copies.
 class URLRow {
  public:
-  URLRow() {
-    Initialize();
-  }
+  URLRow();
 
-  explicit URLRow(const GURL& url) : url_(url) {
-    // Initialize will not set the URL, so our initialization above will stay.
-    Initialize();
-  }
+  explicit URLRow(const GURL& url);
 
   // We need to be able to set the id of a URLRow that's being passed through
   // an IPC message.  This constructor should probably not be used otherwise.
-  URLRow(const GURL& url, URLID id) : url_(url) {
-    // Initialize will not set the URL, so our initialization above will stay.
-    Initialize();
-    // Initialize will zero the id_, so set it here.
-    id_ = id;
-  }
+  URLRow(const GURL& url, URLID id);
 
-  virtual ~URLRow() {}
+  virtual ~URLRow();
+  URLRow& operator=(const URLRow& other);
 
   URLID id() const { return id_; }
   const GURL& url() const { return url_; }
@@ -208,6 +199,7 @@ class VisitRow {
            VisitID arg_referring_visit,
            PageTransition::Type arg_transition,
            SegmentID arg_segment_id);
+  ~VisitRow();
 
   // ID of this row (visit ID, used a a referrer for other visits).
   VisitID visit_id;
@@ -299,6 +291,7 @@ struct StarredEntry {
   };
 
   StarredEntry();
+  ~StarredEntry();
 
   void Swap(StarredEntry* other);
 
@@ -343,17 +336,12 @@ struct StarredEntry {
 
 class URLResult : public URLRow {
  public:
-  URLResult() {}
-  URLResult(const GURL& url, base::Time visit_time)
-      : URLRow(url),
-        visit_time_(visit_time) {
-  }
+  URLResult();
+  URLResult(const GURL& url, base::Time visit_time);
   // Constructor that create a URLResult from the specified URL and title match
   // positions from title_matches.
-  URLResult(const GURL& url, const Snippet::MatchPositions& title_matches)
-      : URLRow(url) {
-    title_match_positions_ = title_matches;
-  }
+  URLResult(const GURL& url, const Snippet::MatchPositions& title_matches);
+  ~URLResult();
 
   base::Time visit_time() const { return visit_time_; }
   void set_visit_time(base::Time visit_time) { visit_time_ = visit_time; }
@@ -593,7 +581,7 @@ class HistoryAddPageArgs
  private:
   friend class base::RefCountedThreadSafe<HistoryAddPageArgs>;
 
-  ~HistoryAddPageArgs() {}
+  ~HistoryAddPageArgs();
 
   DISALLOW_COPY_AND_ASSIGN(HistoryAddPageArgs);
 };

@@ -125,6 +125,22 @@ class BookmarkStorage::LoadTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(LoadTask);
 };
 
+// BookmarkLoadDetails ---------------------------------------------------------
+
+BookmarkLoadDetails::BookmarkLoadDetails(BookmarkNode* bb_node,
+                                         BookmarkNode* other_folder_node,
+                                         BookmarkIndex* index,
+                                         int64 max_id)
+    : bb_node_(bb_node),
+      other_folder_node_(other_folder_node),
+      index_(index),
+      max_id_(max_id),
+      ids_reassigned_(false) {
+}
+
+BookmarkLoadDetails::~BookmarkLoadDetails() {
+}
+
 // BookmarkStorage -------------------------------------------------------------
 
 BookmarkStorage::BookmarkStorage(Profile* profile, BookmarkModel* model)

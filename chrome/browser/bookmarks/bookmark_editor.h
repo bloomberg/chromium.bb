@@ -43,12 +43,9 @@ class BookmarkEditor {
       NEW_FOLDER
     };
 
-    EditDetails() : type(NEW_URL), existing_node(NULL) {}
-
-    explicit EditDetails(const BookmarkNode* node)
-        : type(EXISTING_NODE),
-          existing_node(node) {
-    }
+    EditDetails();
+    explicit EditDetails(const BookmarkNode* node);
+    ~EditDetails();
 
     // See description of enum value for details.
     Type type;

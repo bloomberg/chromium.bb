@@ -12,7 +12,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/history/download_types.h"
+#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
