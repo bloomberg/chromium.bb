@@ -2006,7 +2006,7 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   // Clear the target frame buffer.
   {
     ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
-    glClearColor(0, 1, 0, 1);
+    glClearColor(0, 0, 0, 0);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearStencil(0);
     glStencilMaskSeparate(GL_FRONT, GL_TRUE);
