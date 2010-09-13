@@ -1748,6 +1748,7 @@ if not ARGUMENTS.get('nocpp'):
         'src/shared/npruntime/nacl.scons',
         'src/shared/platform/nacl.scons',
         'src/shared/ppapi/nacl.scons',
+        'src/shared/ppapi_proxy/nacl.scons',
         'src/untrusted/gpu/nacl.scons',
         ####  ALPHABETICALLY SORTED ####
       ],
@@ -1774,7 +1775,6 @@ nacl_extra_sdk_env.Append(
       ####  ALPHABETICALLY SORTED ####
       'src/include/nacl/nacl.scons',
       'src/shared/gio/nacl.scons',
-      'src/shared/ppapi_proxy/nacl.scons',
       'src/shared/srpc/nacl.scons',
       'src/third_party/crt/nacl.scons',
       'src/untrusted/av/nacl.scons',
