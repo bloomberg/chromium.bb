@@ -388,22 +388,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoginWithUserAndPass,
                                     LoginWithUserAndPass)
 #endif  // defined(OS_CHROMEOS)
-
-    IPC_MESSAGE_UNHANDLED(OnUnhandledMessage());
   IPC_END_MESSAGE_MAP()
-}
-
-void AutomationProvider::OnUnhandledMessage() {
-  // We should not hang here. Print a message to indicate what's going on,
-  // and disconnect the channel to notify the caller about the error
-  // in a way it can't ignore, and make any further attempts to send
-  // messages fail fast.
-  LOG(ERROR) << "AutomationProvider received a message it can't handle. "
-             << "Please make sure that you use switches::kTestingChannelID "
-             << "for test code (TestingAutomationProvider), and "
-             << "switches::kAutomationClientChannelID for everything else "
-             << "(like ChromeFrame). Closing the automation channel.";
-  channel_->Close();
 }
 
 // This task just adds another task to the event queue.  This is useful if
