@@ -49,6 +49,7 @@ const char kMangledSymbolPrefix[] = "_Z";
 const char kSymbolCharacters[] =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
+#if !defined(USE_SYMBOLIZE)
 // Demangles C++ symbols in the given text. Example:
 //
 // "sconsbuild/Debug/base_unittests(_ZN10StackTraceC1Ev+0x20) [0x817778c]"
@@ -94,6 +95,7 @@ void DemangleSymbols(std::string* text) {
 
 #endif  // defined(__GLIBCXX__)
 }
+#endif  // !defined(USE_SYMBOLIZE)
 
 // Gets the backtrace as a vector of strings. If possible, resolve symbol
 // names and attach these. Otherwise just use raw addresses. Returns true
