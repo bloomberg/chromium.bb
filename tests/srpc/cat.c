@@ -11,6 +11,14 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#ifdef __GLIBC__
+/*
+ * TODO(mseaborn): Add a NaCl-specific header, separate from
+ * <sys/stat.h>, that defines this.
+ */
+# define S_IFSHM 0000240000
+#endif
+
 NaClSrpcError Cat(NaClSrpcChannel *channel,
                   NaClSrpcArg **in_args,
                   NaClSrpcArg **out_args) {

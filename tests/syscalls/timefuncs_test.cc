@@ -48,7 +48,10 @@ int TestTimeFuncs() {
   START_TEST("test gettimeofday,nanosleep function");
   struct timeval tv1;   // Used by gettimeofday
 
+  /* Passing NULL as the first argument causes a warning with glibc. */
+#ifndef __GLIBC__
   EXPECT(0 != gettimeofday(NULL, NULL));
+#endif
 
   /*
    * gettimeofday takes two args: timeval and timezone pointers.

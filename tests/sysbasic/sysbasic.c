@@ -10,8 +10,14 @@
 
 #define CHECK_ERRNO 1
 
-#include <bits/mman.h>
 #include <sys/nacl_syscalls.h>
+/*
+ * These must come after <sys/nacl_syscalls.h> when using nacl-newlib
+ * otherwise we get errors about conflicting types.  This is a bug in
+ * nacl-newlib.
+ */
+#include <sys/mman.h>
+#include <unistd.h>
 
 /* NOTE: defining CHECK_ERRNO pulls in some newlib magic (reent.h, etc.) */
 #if defined(CHECK_ERRNO)

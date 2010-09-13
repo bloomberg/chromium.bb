@@ -374,6 +374,12 @@ int main() {
       deps=glibc_toolchain_deps + ["dummy_libnacl"],
       scons_args=["--nacl_glibc", "run_hello_world_test"])
 
+  # Check that all the Scons tests build, but don't try running them yet.
+  AddSconsModule(
+      "scons_compile_tests",
+      deps=glibc_toolchain_deps + ["nacl_libs_glibc"],
+      scons_args=["--nacl_glibc", "MODE=nacl"])
+
   return module_list
 
 

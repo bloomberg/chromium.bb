@@ -13,7 +13,7 @@
 #include <sys/nacl_syscalls.h>
 
 /*
- * This mocking of gettimeofday is only useful for testing the libc
+ * The mocking of gettimeofday is only useful for testing the libc
  * code, i.e., it's not very useful from the point of view of testing
  * Native Client.  To test the NaCl gettimeofday syscall
  * implementation, we need to match the "At the tone..." message and
@@ -23,16 +23,6 @@
  * loaded continuous build/test machines.
  */
 
-time_t gMockTime = 0;
-
-int mock_gettimeofday(struct timeval *tv, void *tz) {
-  tv->tv_sec = gMockTime;
-  tv->tv_usec = 0;
-  return 0;
-}
-
-int (*timeofdayfn)(struct timeval *, void *) = gettimeofday;
-
 int main(int ac,
          char **av) {
   int             opt;
@@ -40,14 +30,16 @@ int main(int ac,
   struct tm       t_broken_out;
   char            ctime_buf[26];
   char            *timestr;
+  int             use_real_time = 1;
+  time_t          mock_time = 0;
 
   while (EOF != (opt = getopt(ac, av, "mt:"))) {
     switch (opt) {
       case 'm':
-        timeofdayfn = mock_gettimeofday;
+        use_real_time = 0;
         break;
       case 't':
-        gMockTime = strtol(optarg, (char **) NULL, 0);
+        mock_time = strtol(optarg, (char **) NULL, 0);
         break;
       default:
         fprintf(stderr,
@@ -56,10 +48,15 @@ int main(int ac,
         return 1;
     }
   }
-  if (0 != (*timeofdayfn)(&t_now, NULL)) {
-    perror("gettimeofday_test: gettimeofday failed");
-    printf("FAIL\n");
-    return 2;
+  if (use_real_time) {
+    if (0 != (*gettimeofday)(&t_now, NULL)) {
+      perror("gettimeofday_test: gettimeofday failed");
+      printf("FAIL\n");
+      return 2;
+    }
+  } else {
+    t_now.tv_sec = mock_time;
+    t_now.tv_usec = 0;
   }
   printf("At the tone, the system time is %ld.%06ld seconds.  BEEP!\n",
          t_now.tv_sec, t_now.tv_usec);

@@ -44,7 +44,11 @@ mandel_nav_files = [
     'images/cycle_colors.png'
 ]
 
+# _XOPEN_SOURCE is for MAXFLOAT in glibc.  An alternative is to use
+# <values.h>, but that is not in newlib and is marked as obsolete in
+# glibc.
 env.ComponentProgram('mandel_nav.nexe', 'mandel_nav.c',
+                     CPPDEFINES=['_XOPEN_SOURCE'],
                      EXTRA_LIBS=['av', 'srpc', 'google_nacl_imc_c', 'pthread'])
 
 env.Publish('mandel_nav.nexe', 'run', mandel_nav_files)

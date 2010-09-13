@@ -30,6 +30,11 @@
 
 Import('env')
 
+if env.Bit('nacl_glibc'):
+  # This test does not build successfully with nacl-glibc yet.
+  # TODO(mseaborn): Fix this to build.
+  Return()
+
 ######################################################################
 # Smoke Test
 ######################################################################

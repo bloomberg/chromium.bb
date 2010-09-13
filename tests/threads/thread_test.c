@@ -266,8 +266,12 @@ void TestSemaphoreInitDestroy() {
   sem_t sem;
   int rv;
   TEST_FUNCTION_START;
+
+  /* This produces a compile-time overflow warning with glibc. */
+#ifndef __GLIBC__
   rv = sem_init(&sem, 0, SEM_VALUE_MAX + 1);
   EXPECT_EQ(-1, rv);  /* failure */
+#endif
 
   rv = sem_init(&sem, 0, SEM_VALUE_MAX);
   EXPECT_EQ(0, rv);  /* success */
@@ -688,7 +692,8 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc > 2) {
-    if (stricmp(argv[2],"intrinsic") == 0) g_run_intrinsic = 1;
+    if (strcasecmp(argv[2], "intrinsic") == 0)
+      g_run_intrinsic = 1;
   }
 
   TestTlsAndSync();

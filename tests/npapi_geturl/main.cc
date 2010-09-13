@@ -13,6 +13,12 @@
 #include <sys/stat.h>
 #include "native_client/tests/npapi_runtime/plugin.h"
 
+#ifdef __GLIBC__
+// TODO(mseaborn): Add a NaCl-specific header, separate from
+// <sys/stat.h>, that defines this.
+# define S_IFSHM 0000240000
+#endif
+
 NPNetscapeFuncs* browser;
 
 // Create a new instance of a plugin.

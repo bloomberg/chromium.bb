@@ -11,6 +11,10 @@ if ARGUMENTS.get('bitcode'):
 
 # This leaves a gap between the code and data segments.
 def GetLinkFlag(env):
+  if env.Bit('nacl_glibc'):
+    # When using dynamic linking, the dynamic linker is responsible
+    # for reserving this space rather than the executable.
+    return ''
   if env['TARGET_ARCHITECTURE'] == 'arm':
     # On ARM, we invoke the linker directly rather than via gcc.
     # TODO(mseaborn): Change driver script to accept -Wl args.

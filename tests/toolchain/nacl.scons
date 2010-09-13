@@ -11,6 +11,10 @@ Import('env')
 if ARGUMENTS.get('bitcode'):
   Return()
 
+if env.Bit('nacl_glibc'):
+  # This test does not build successfully with nacl-glibc yet.
+  Return()
+
 # force inclusion of entire library, so that we can validate it
 # NOTE: This approach does not work for -lc because of tons of
 #       undefined symbols which would have to be stubbed out

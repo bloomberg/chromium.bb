@@ -16,6 +16,14 @@
 #define kNumRounds 10
 #define kHelloWorldString "hello world\n"
 
+#ifdef __GLIBC__
+/*
+ * This is a non-standard typedef that nacl-newlib provides but
+ * nacl-glibc does not provide.
+ */
+typedef int AtomicInt32;
+#endif
+
 
 /* tls */
 __thread int tls_var_data_int = 666;

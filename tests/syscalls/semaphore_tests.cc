@@ -41,12 +41,15 @@ int TestSemInitErrors() {
 
   sem_t my_semaphore;
 
+  // This produces a compile-time overflow warning with glibc.
+#ifndef __GLIBC__
   // Create a value just beyond SEM_VALUE_MAX, try to initialize the semaphore.
   const unsigned int sem_max_plus_1 = SEM_VALUE_MAX + 1;
 
   // sem_init should return -1 and errno should equal EINVAL
   EXPECT(-1 == sem_init(&my_semaphore, 0, sem_max_plus_1));
   EXPECT(EINVAL == errno);
+#endif
 
   // Try with the largest possible unsigned int.
   EXPECT(-1 == sem_init(&my_semaphore,
