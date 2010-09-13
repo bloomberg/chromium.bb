@@ -365,8 +365,10 @@ void FileIO::Close() {
 int32_t FileIO::GetOSFileDescriptor() {
 #if defined(OS_POSIX)
   return file_;
-#else
+#elif defined(OS_WIN)
   return reinterpret_cast<uintptr_t>(file_);
+#else
+#error "Platform not supported."
 #endif
 }
 
