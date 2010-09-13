@@ -40,6 +40,7 @@ const int kMinWebWidth = 50;
   DCHECK(delegate);
   if ((self = [super init])) {
     sidebarView_.reset([sidebarView retain]);
+    [sidebarView_ setDelegate:self];
     delegate_ = delegate;
     sidebarContents_ = NULL;
   }
@@ -78,7 +79,7 @@ const int kMinWebWidth = 50;
     DCHECK_GE([subviews count], 1u);
 
     // |sidebarView| is a TabContentsViewCocoa object, whose ViewID was
-    // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
+    // set to VIEW_ID_TAB_CONTAINER initially, so change it to
     // VIEW_ID_SIDE_BAR_CONTAINER here.
     NSView* sidebarView = sidebarContents->GetNativeView();
     view_id_util::SetID(sidebarView, VIEW_ID_SIDE_BAR_CONTAINER);
@@ -119,6 +120,16 @@ const int kMinWebWidth = 50;
       [oldSidebarContentsView removeFromSuperview];
     }
   }
+}
+
+// NSSplitViewDelegate protocol.
+- (BOOL)splitView:(NSSplitView *)splitView
+    shouldAdjustSizeOfSubview:(NSView *)subview {
+  // Return NO for the sidebar view to indicate that it should not be resized
+  // automatically.  The sidebar keeps the width set by the user.
+  if ([[sidebarView_ subviews] indexOfObject:subview] == 1)
+    return NO;
+  return YES;
 }
 
 @end
