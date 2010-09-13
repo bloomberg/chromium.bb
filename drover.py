@@ -402,9 +402,8 @@ def drover(options, args):
   # Override the default properties if there is a drover.properties file.
   global file_pattern_
   if os.path.exists("drover.properties"):
-    f = open("drover.properties")
-    exec(f)
-    f.close()
+    FILE_PATTERN = file_pattern_
+    execfile("drover.properties")
     if FILE_PATTERN:
       file_pattern_ = FILE_PATTERN
 
