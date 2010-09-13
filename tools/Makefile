@@ -32,11 +32,23 @@
 #
 #  Usage:
 #    Option 1: Build by unpacking the tarballs and applying patches:
-#      make SDKLOC=/your/path clean build
+#      goto "Perform the actual build"
 #    Option 2: Build by copying the sources from the Git repository:
 #      git clone http://git.chromium.org/git/nacl-toolchain.git SRC
 #      make prepare-git-src
+#    Perform the actual build:
 #      make SDKLOC=/your/path clean build
+#
+#  Usage (building glibc, 32bit):
+#    Option 1: Build by unpacking the tarballs and applying patches:
+#      goto "Perform the actual build"
+#    Option 2: Build by copying the sources from Git repositories:
+#      git clone http://git.chromium.org/git/nacl-toolchain.git SRC
+#      make fetch-glibc-sources-readonly
+#    Option 3: Committer access:
+#      make fetch-git-rw-sources
+#    Perform the actual build:
+#      make build-with-glibc CROSSARCH=nacl MULTILIB=no SDKLOC=/your/path
 #
 #  WARNING:
 #    This Makefile does *not* support incremental rebuilds of individial
@@ -52,6 +64,7 @@ THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 SHELL=/bin/bash
 
 CROSSARCH=nacl64
+GITRW=ssh://git@gitrw.chromium.org:9222
 TOOLCHAINLOC?=/usr/local
 SDKLOC?=$(TOOLCHAINLOC)
 SDKNAME=nacl-sdk
@@ -63,13 +76,21 @@ MULTILIB_CFGOPT=$(if $(filter no,$(MULTILIB)),--disable-multilib,)
 # Convert CROSSARCH (nacl or nacl64) to (32 or 64).
 BITSPLATFORM=$(subst 3264,64,$(subst nacl,32,$(CROSSARCH)))
 
+# Convert (nacl or nacl64) to (i486 or x86_64).
+GLIBC_ARCH=$(if $(filter 32,$(BITSPLATFORM)),i486,x86_64)
+
+# Convert (nacl or nacl64) to ("-march=i486" or "").
+GLIBC_MARCH=$(if $(filter 32,$(BITSPLATFORM)),-march=i486,)
+
 LINUX_HEADERS="$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
 HPREFIX=../src/trusted/service_runtime/include
 NACL_SYS_HEADERS= \
       "$(HPREFIX)/sys/nacl_imc_api.h" \
       "$(HPREFIX)/sys/nacl_syscalls.h" \
       "$(HPREFIX)/sys/audio_video.h"
-NACL_BITS_HEADERS="$(HPREFIX)/bits/nacl_imc_api.h"
+NACL_BITS_HEADERS= \
+      "$(HPREFIX)/bits/nacl_imc_api.h" \
+      "$(HPREFIX)/bits/nacl_syscalls.h"
 NACL_MACHINE_HEADERS="$(HPREFIX)/machine/_types.h"
 
 ifeq ($(shell uname -s), Darwin)
@@ -169,6 +190,23 @@ prepare-git-src: ALWAYS
 	touch SRC/stamp-newlib
 	touch SRC/stamp-gdb
 	touch stamp-src
+
+# Prepare glibc sources (checked out by hand) for building.
+prepare-git-glibc-src: ALWAYS
+	touch SRC/stamp-glibc
+	touch SRC/stamp-linux-headers
+
+fetch-git-rw-sources: ALWAYS
+	if [ -d SRC ] ; then \
+	  echo "Error: SRC exists." \
+	    "Remove the source directory before fetching new sources." ; \
+	else \
+	  git clone $(GITRW)/nacl-toolchain.git SRC && \
+	  $(MAKE) -f $(THISMAKEFILE) prepare-git-src && \
+	  git clone $(GITRW)/nacl-glibc.git SRC/glibc && \
+	  touch SRC/stamp-glibc && \
+	  $(MAKE) -f $(THISMAKEFILE) prepare-git-glibc-src ; \
+	fi
 
 # Unpack binutils, apply patches.
 SRC/binutils: | SRC
@@ -280,6 +318,25 @@ unpack-gcc-extras: ALWAYS | SRC
 	    mv mpfr-$(MPFR_VERSION) gcc/mpfr && \
 	  cd .. ; \
 	fi ;
+
+fetch-glibc-sources-readonly: SRC/stamp-glibc SRC/stamp-linux-headers
+	@echo "Fetching glibc and linux headers done."
+
+# Create glibc source directory, and mark that we've done that.
+SRC/stamp-glibc: | SRC
+	rm -rf SRC/glibc
+	@echo "Fetching glibc"
+	git clone http://src.chromium.org/git/nacl-glibc.git SRC/glibc
+	touch $@
+
+# Create linux headers source directory, and mark that we've done that.
+SRC/stamp-linux-headers: | SRC
+	@echo "Fetching linux headers for glibc."
+	git clone http://repo.or.cz/r/linux-headers-for-nacl.git \
+	  SRC/linux-headers-for-nacl
+	cd SRC/linux-headers-for-nacl && \
+	  git checkout 2dc04f8190a54defc0d59e693fa6cff3e8a916a9
+	touch $@
 
 # Unpack gdb, apply patches.
 SRC/gdb: | SRC
@@ -474,19 +531,21 @@ newlib: BUILD/stamp-newlib
 ##################################################################
 # glibc:
 ##################################################################
-BUILD/stamp-glibc:
+BUILD/stamp-glibc: SRC/stamp-glibc SRC/stamp-linux-headers
 	rm -rf BUILD/build-glibc-$(CROSSARCH)
 	mkdir -p BUILD/build-glibc-$(CROSSARCH)/lib
-	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
-	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
+	echo '/* Intentionally empty */' > \
+		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
+	echo '/* Intentionally empty */' > \
+		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
 	cd BUILD/build-glibc-$(CROSSARCH) && \
 	  PATH=$(BUILDPATH) \
 	  BUILD_CC="gcc -O2" \
 	    libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes ../../SRC/glibc/configure \
-	      CFLAGS="-march=i486 -pipe -fno-strict-aliasing -O2 -mno-tls-direct-seg-refs -g" \
+	      CFLAGS="$(GLIBC_MARCH) -pipe -fno-strict-aliasing -O2 -mno-tls-direct-seg-refs -g" \
 	      CC=$(CROSSARCH)-gcc \
 	      --prefix=$(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
-	      --host=i486-linux-gnu \
+	      --host=$(GLIBC_ARCH)-linux-gnu \
 	      --with-headers=$(LINUX_HEADERS) \
 	      --enable-kernel=2.2.0
 	PATH=$(BUILDPATH) \
@@ -500,16 +559,33 @@ BUILD/stamp-glibc:
 # Ad hoc linker scripts and a selection of NaCl headers for GCC.
 ##################################################################
 BUILD/stamp-glibc-adhoc-files:
-	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/ldscripts/
+	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* \
+	    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/ldscripts/
 	cp -rf $(LINUX_HEADERS)/* $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include
 	mkdir -p $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/{sys,machine}
 	cp -f $(NACL_BITS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/bits
 	cp -f $(NACL_SYS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/sys
 	cp -f $(NACL_MACHINE_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine
-	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine/_default_types.h
-	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
-	echo '/* Intentionally empty */' > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
+	echo '/* Intentionally empty */' > \
+		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine/_default_types.h
+	echo '/* Intentionally empty */' > \
+		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
+	echo '/* Intentionally empty */' > \
+		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
+	echo '/* Intentionally empty */' > \
+		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnosys.so
 	cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) && rm -rf lib32 && ln -s lib lib32
+	touch $@
+
+##################################################################
+# Native Client libraries.
+##################################################################
+BUILD/stamp-nacl-libs-glibc: BUILD/stamp-glibc-adhoc-files
+	cd .. && \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl_extra_sdk --nacl_glibc \
+	    extra_sdk_update_header extra_sdk_update \
+	    targetplatform=x86-$(BITSPLATFORM) --verbose )
 	touch $@
 
 ##################################################################
@@ -770,6 +846,7 @@ build-with-glibc: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-full-gcc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-nacl-libs-glibc
 
 build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
@@ -813,6 +890,17 @@ check: ALWAYS
 	        SIM=$(abspath ../scons-out/dbg-linux-x86-$(BITSPLATFORM)/staging/sel_ldr)" \
 	    LDFLAGS_FOR_TARGET="-lnosys" \
 	    check
+
+
+##################################################################
+# Compile Native Client tests with the toolchain and run them.
+##################################################################
+nacl-check: ALWAYS
+	(cd .. && \
+	  ./$(SCONS) -k naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
+	    --mode=nacl platform=x86-$(BITSPLATFORM) \
+	    sdl=none --nacl_glibc --verbose)
+
 
 ##################################################################
 # Remove the BUILD directory.
