@@ -235,8 +235,13 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeleteCreatePluginInNPNEvaluate) {
 
 #endif
 
-// Flaky. See http://crbug.com/17645
-TEST_F(NPAPIVisiblePluginTester, DISABLED_OpenPopupWindowWithPlugin) {
+// FLAKY. See bug http://crbug.com/17645. This bug report indicates that this
+// test is crashy. I could not repro the crash on my local setup. Leaving this
+// marked as FLAKY for now while we watch this on the builders.
+TEST_F(NPAPIVisiblePluginTester, FLAKY_OpenPopupWindowWithPlugin) {
+  if (UITest::in_process_renderer())
+    return;
+
   const FilePath test_case(
       FILE_PATH_LITERAL("get_javascript_open_popup_with_plugin.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
