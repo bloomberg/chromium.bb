@@ -378,6 +378,10 @@ class TabContents;
 // or the download shelf), so that future shrinking will occur from the bottom.
 - (void)resetWindowGrowthState;
 
+// Computes by how far in each direction, horizontal and vertical, the
+// |source| rect doesn't fit into |target|.
+- (NSSize)overflowFrom:(NSRect)source
+                    to:(NSRect)target;
 @end  // @interface BrowserWindowController(TestingAPI)
 
 

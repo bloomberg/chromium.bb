@@ -1155,7 +1155,15 @@
   gfx::Rect browserRect(windowRect.origin.x, windowRect.origin.y,
                         windowRect.size.width, windowRect.size.height);
 
-  NSRect tabRect = [tabView frame];
+  NSRect sourceTabRect = [tabView frame];
+  NSView* tabStrip = [self tabStripView];
+
+  // Pushes tabView's frame back inside the tabstrip.
+  NSSize tabOverflow =
+      [self overflowFrom:[tabStrip convertRectToBase:sourceTabRect]
+                      to:[tabStrip frame]];
+  NSRect tabRect = NSOffsetRect(sourceTabRect,
+                                -tabOverflow.width, -tabOverflow.height);
 
   // Before detaching the tab, store the pinned state.
   bool isPinned = browser_->tabstrip_model()->IsTabPinned(index);
@@ -1682,6 +1690,27 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   windowTopGrowth_ = 0;
   windowBottomGrowth_ = 0;
   isShrinkingFromZoomed_ = NO;
+}
+
+- (NSSize)overflowFrom:(NSRect)source
+                    to:(NSRect)target {
+  // If |source|'s boundary is outside of |target|'s, set its distance
+  // to |x|.  Note that |source| can overflow to both side, but we
+  // have nothing to do for such case.
+  CGFloat x = 0;
+  if (NSMaxX(target) < NSMaxX(source)) // |source| overflows to right
+    x = NSMaxX(source) - NSMaxX(target);
+  else if (NSMinX(source) < NSMinX(target)) // |source| overflows to left
+    x = NSMinX(source) - NSMinX(target);
+
+  // Same as |x| above.
+  CGFloat y = 0;
+  if (NSMaxY(target) < NSMaxY(source))
+    y = NSMaxY(source) - NSMaxY(target);
+  else if (NSMinY(source) < NSMinY(target))
+    y = NSMinY(source) - NSMinY(target);
+
+  return NSMakeSize(x, y);
 }
 
 // Override to swap in the correct tab strip controller based on the new
