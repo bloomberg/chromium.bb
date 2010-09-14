@@ -179,6 +179,13 @@ class TaskManagerGtk : public TaskManagerModelObserver {
         CompareImpl(model, a, b, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
   }
 
+  // Sqlite memory sorting callback.
+  static gint CompareSqliteMemoryUsed(GtkTreeModel* model, GtkTreeIter* a,
+                                      GtkTreeIter* b, gpointer task_manager) {
+    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
+        CompareImpl(model, a, b, IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);
+  }
+
   // Goats Teleported sorting callback.
   static gint CompareGoatsTeleported(GtkTreeModel* model, GtkTreeIter* a,
                                      GtkTreeIter* b, gpointer task_manager) {
