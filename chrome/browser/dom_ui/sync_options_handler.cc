@@ -11,7 +11,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -47,27 +46,4 @@ void SyncOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_THEMES));
   localized_strings->SetString("syncapps",
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_APPS));
-}
-
-void SyncOptionsHandler::Initialize() {
-  ProfileSyncService* service =
-      dom_ui_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
-  DCHECK(service);
-
-  DictionaryValue args;
-  SyncSetupFlow::GetArgsForChooseDataTypes(service, &args);
-
-  dom_ui_->CallJavascriptFunction(L"SyncOptions.setRegisteredDataTypes", args);
-}
-
-void SyncOptionsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("updatePreferredDataTypes",
-      NewCallback(this, &SyncOptionsHandler::OnPreferredDataTypesUpdated));
-}
-
-void SyncOptionsHandler::OnPreferredDataTypesUpdated(const ListValue* args) {
-  NotificationService::current()->Notify(
-      NotificationType::SYNC_DATA_TYPES_UPDATED,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
 }

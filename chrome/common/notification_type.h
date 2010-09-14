@@ -1043,11 +1043,6 @@ class NotificationType {
     // accepted passphrase.
     SYNC_PASSPHRASE_ACCEPTED,
 
-    // Sent when the set of data types that should be synced has been modified
-    // externally (eg. by the dom_ui options screen).
-    // There are no source or details for this notification.
-    SYNC_DATA_TYPES_UPDATED,
-
     // Cookies -----------------------------------------------------------------
 
     // Sent when a cookie changes. The source is a Profile object, the details
