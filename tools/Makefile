@@ -49,6 +49,8 @@
 #      make fetch-git-rw-sources
 #    Perform the actual build:
 #      make build-with-glibc CROSSARCH=nacl MULTILIB=no SDKLOC=/your/path
+#    Run Native Client tests:
+#      make nacl-check CROSSARCH=nacl SDKLOC=/your/path
 #
 #  WARNING:
 #    This Makefile does *not* support incremental rebuilds of individial
@@ -598,6 +600,8 @@ BUILD/stamp-nacl-libs-glibc: BUILD/stamp-glibc-adhoc-files
 BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
+	# See http://code.google.com/p/nativeclient/issues/detail?id=854
+	ln -s include $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 	cd BUILD/build-full-gcc-$(CROSSARCH) && \
 	  PATH=$(BUILDPATH) CC="gcc" \
 	  CFLAGS="-m32 -Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
@@ -901,8 +905,8 @@ check: ALWAYS
 nacl-check: ALWAYS
 	(cd .. && \
 	  ./$(SCONS) -k naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
-	    --mode=nacl platform=x86-$(BITSPLATFORM) \
-	    sdl=none --nacl_glibc --verbose)
+	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
+	    --nacl_glibc --verbose run_hello_world_test)
 
 
 ##################################################################
