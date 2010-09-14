@@ -227,26 +227,26 @@ DictionaryValue* LanguageOptionsHandler::GetUiLanguageCodeSet() {
 
 void LanguageOptionsHandler::InputMethodDisableCallback(
     const ListValue* args) {
-  std::string input_method_id = WideToASCII(ExtractStringValue(args));
-  // TODO(satorux): Record the input method ID code as well.
-  UserMetrics::RecordAction(
-      UserMetricsAction("LanguageOptions_DisableInputMethod"));
+  const std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  const std::string action = StringPrintf(
+      "LanguageOptions_DisableInputMethod_%s", input_method_id.c_str());
+  UserMetrics::RecordComputedAction(action);
 }
 
 void LanguageOptionsHandler::InputMethodEnableCallback(
     const ListValue* args) {
-  std::string input_method_id = WideToASCII(ExtractStringValue(args));
-  // TODO(satorux): Record the input method ID code as well.
-  UserMetrics::RecordAction(
-      UserMetricsAction("LanguageOptions_EnableInputMethod"));
+  const std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  const std::string action = StringPrintf(
+      "LanguageOptions_EnableInputMethod_%s", input_method_id.c_str());
+  UserMetrics::RecordComputedAction(action);
 }
 
 void LanguageOptionsHandler::InputMethodOptionsOpenCallback(
     const ListValue* args) {
-  std::string input_method_id = WideToASCII(ExtractStringValue(args));
-  // TODO(satorux): Record the input method ID code as well.
-  UserMetrics::RecordAction(
-      UserMetricsAction("InputMethodOptions_Open"));
+  const std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  const std::string action = StringPrintf(
+      "InputMethodOptions_Open_%s", input_method_id.c_str());
+  UserMetrics::RecordComputedAction(action);
 }
 
 void LanguageOptionsHandler::LanguageOptionsOpenCallback(
@@ -256,12 +256,12 @@ void LanguageOptionsHandler::LanguageOptionsOpenCallback(
 
 void LanguageOptionsHandler::UiLanguageChangeCallback(
     const ListValue* args) {
-  // TODO(satorux): Record the language code as well.
-  UserMetrics::RecordAction(
-      UserMetricsAction("LanguageOptions_UiLanguageChange"));
-
-  std::string language_code = WideToASCII(ExtractStringValue(args));
+  const std::string language_code = WideToASCII(ExtractStringValue(args));
   CHECK(!language_code.empty());
+  const std::string action = StringPrintf(
+      "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
+  UserMetrics::RecordComputedAction(action);
+
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetString(prefs::kApplicationLocale, language_code);
   prefs->SavePersistentPrefs();

@@ -16,6 +16,7 @@ See also:
   http://wiki.corp.google.com/twiki/bin/view/Main/ChromeUserExperienceMetrics
 
 Run it from the chrome/tools directory like:
+  export PYTHONPATH=../../tools/python  # for google.path_utils
   extract_actions.py
 or
   extract_actions.py --hash
@@ -43,6 +44,60 @@ KNOWN_COMPUTED_USERS = (
   'new_tab_ui.cc',  # most visited clicks 1-9
   'extension_metrics_module.cc', # extensions hook for user metrics
   'safe_browsing_blocking_page.cc', # various interstitial types and actions
+  'language_options_handler.cc', # languages and input methods in chrome os
+)
+
+# Language codes used in Chrome. The list should be updated when a new
+# language is added to app/l10n_util.cc, as follows:
+#
+# % (cat app/l10n_util.cc | \
+#    perl -n0e 'print $1 if /kAcceptLanguageList.*?\{(.*?)\}/s' | \
+#    perl -nle 'print $1, if /"(.*)"/'; echo 'es-419') | \
+#   sort | perl -pe "s/(.*)\n/'\$1', /" | \
+#   fold -w75 -s | perl -pe 's/^/  /;s/ $//'; echo
+#
+# The script extracts language codes from kAcceptLanguageList, but es-419
+# (Spanish in Latin America) is an exception.
+LANGUAGE_CODES = (
+  'af', 'am', 'ar', 'az', 'be', 'bg', 'bh', 'bn', 'br', 'bs', 'ca', 'co',
+  'cs', 'cy', 'da', 'de', 'de-AT', 'de-CH', 'de-DE', 'el', 'en', 'en-AU',
+  'en-CA', 'en-GB', 'en-NZ', 'en-US', 'en-ZA', 'eo', 'es', 'es-419', 'et',
+  'eu', 'fa', 'fi', 'fil', 'fo', 'fr', 'fr-CA', 'fr-CH', 'fr-FR', 'fy',
+  'ga', 'gd', 'gl', 'gn', 'gu', 'ha', 'haw', 'he', 'hi', 'hr', 'hu', 'hy',
+  'ia', 'id', 'is', 'it', 'it-CH', 'it-IT', 'ja', 'jw', 'ka', 'kk', 'km',
+  'kn', 'ko', 'ku', 'ky', 'la', 'ln', 'lo', 'lt', 'lv', 'mk', 'ml', 'mn',
+  'mo', 'mr', 'ms', 'mt', 'nb', 'ne', 'nl', 'nn', 'no', 'oc', 'om', 'or',
+  'pa', 'pl', 'ps', 'pt', 'pt-BR', 'pt-PT', 'qu', 'rm', 'ro', 'ru', 'sd',
+  'sh', 'si', 'sk', 'sl', 'sn', 'so', 'sq', 'sr', 'st', 'su', 'sv', 'sw',
+  'ta', 'te', 'tg', 'th', 'ti', 'tk', 'to', 'tr', 'tt', 'tw', 'ug', 'uk',
+  'ur', 'uz', 'vi', 'xh', 'yi', 'yo', 'zh', 'zh-CN', 'zh-TW', 'zu',
+)
+
+# Input method IDs used in Chrome OS. The list should be updated when a
+# new input method is added to platform/assets/input_methods/whitelist.txt
+# in the Chrome OS tree, as follows:
+#
+# % sort chromeos/src/platform/assets/input_methods/whitelist.txt | \
+#   perl -ne "print \"'\$1', \" if /^([^#]+?)\s/" | \
+#   fold -w75 -s | perl -pe 's/^/  /;s/ $//'; echo
+#
+# The script extracts input method IDs from whitelist.txt.
+INPUT_METHOD_IDS = (
+  'chewing', 'hangul', 'm17n:ar:kbd', 'm17n:fa:isiri', 'm17n:hi:itrans',
+  'm17n:th:kesmanee', 'm17n:th:pattachote', 'm17n:th:tis820',
+  'm17n:vi:tcvn', 'm17n:vi:telex', 'm17n:vi:viqr', 'm17n:vi:vni',
+  'm17n:zh:cangjie', 'm17n:zh:quick', 'mozc', 'mozc-dv', 'mozc-jp',
+  'pinyin', 'xkb:be::fra', 'xkb:be::ger', 'xkb:be::nld', 'xkb:bg::bul',
+  'xkb:bg:phonetic:bul', 'xkb:br::por', 'xkb:ca::fra', 'xkb:ca:eng:eng',
+  'xkb:ch::ger', 'xkb:ch:fr:fra', 'xkb:cz::cze', 'xkb:de::ger',
+  'xkb:dk::dan', 'xkb:ee::est', 'xkb:es::spa', 'xkb:es:cat:cat',
+  'xkb:fi::fin', 'xkb:fr::fra', 'xkb:gb:extd:eng', 'xkb:gr::gre',
+  'xkb:hr::scr', 'xkb:hu::hun', 'xkb:il::heb', 'xkb:it::ita', 'xkb:jp::jpn',
+  'xkb:kr:kr104:kor', 'xkb:lt::lit', 'xkb:lv::lav', 'xkb:nl::nld',
+  'xkb:no::nor', 'xkb:pl::pol', 'xkb:pt::por', 'xkb:ro::rum', 'xkb:rs::srp',
+  'xkb:ru::rus', 'xkb:ru:phonetic:rus', 'xkb:se::swe', 'xkb:si::slv',
+  'xkb:sk::slo', 'xkb:tr::tur', 'xkb:ua::ukr', 'xkb:us::eng',
+  'xkb:us:altgr-intl:eng', 'xkb:us:dvorak:eng',
 )
 
 number_of_files_total = 0
@@ -71,6 +126,14 @@ def AddComputedActions(actions):
   for interstitial in ('Phishing', 'Malware', 'Multiple'):
     for action in ('Show', 'Proceed', 'DontProceed'):
       actions.add('SBInterstitial%s%s' % (interstitial, action))
+
+  # Actions for language_options_handler.cc (Chrome OS specific).
+  for input_method_id in INPUT_METHOD_IDS:
+    actions.add('LanguageOptions_DisableInputMethod_%s' % input_method_id)
+    actions.add('LanguageOptions_EnableInputMethod_%s' % input_method_id)
+    actions.add('InputMethodOptions_Open_%s' % input_method_id)
+  for language_code in LANGUAGE_CODES:
+    actions.add('LanguageOptions_UiLanguageChange_%s' % language_code)
 
 def AddWebKitEditorActions(actions):
   """Add editor actions from editor_client_impl.cc.
