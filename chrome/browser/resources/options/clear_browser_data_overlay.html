@@ -2,56 +2,60 @@
   <h1 i18n-content="clearBrowsingDataTitle"></h1>
   <h3 i18n-content="clearBrowsingDataLabel"></h3>
   <div id="checkboxListData">
-    <label>
+    <div>
       <input id="deleteBrowsingHistoryCheckbox"
-             pref="browser.clear_data.browsing_history" type="checkbox">
-      <span i18n-content="deleteBrowsingHistoryCheckbox"></span>
-    </label>
-    <label>
+          pref="browser.clear_data.browsing_history" type="checkbox">
+      <label for="deleteBrowsingHistoryCheckbox"
+          i18n-content="deleteBrowsingHistoryCheckbox"></label>
+    </div>
+    <div>
       <input id="deleteDownloadHistoryCheckbox"
-             pref="browser.clear_data.download_history" type="checkbox">
-      <span i18n-content="deleteDownloadHistoryCheckbox"></span>
-    </label>
-    <label>
+          pref="browser.clear_data.download_history" type="checkbox">
+      <label for="deleteDownloadHistoryCheckbox"
+          i18n-content="deleteDownloadHistoryCheckbox"></label>
+    </div>
+    <div>
       <input id="deleteCacheCheckbox"
-             pref="browser.clear_data.cache" type="checkbox">
-      <span i18n-content="deleteCacheCheckbox"></span>
-    </label>
-    <label>
+          pref="browser.clear_data.cache" type="checkbox">
+      <label for="deleteCacheCheckbox"
+          i18n-content="deleteCacheCheckbox"></label>
+    </div>
+    <div>
       <input id="deleteCookiesCheckbox"
-             pref="browser.clear_data.cookies" type="checkbox">
-      <span i18n-content="deleteCookiesCheckbox"></span>
-    </label>
-    <label>
+          pref="browser.clear_data.cookies" type="checkbox">
+      <label for="deleteCookiesCheckbox"
+          i18n-content="deleteCookiesCheckbox"></label>
+    </div>
+    <div>
       <input id="deletePasswordsCheckbox"
-             pref="browser.clear_data.passwords" type="checkbox">
-      <span i18n-content="deletePasswordsCheckbox"></span>
-    </label>
-    <label>
+          pref="browser.clear_data.passwords" type="checkbox">
+      <label for="deletePasswordsCheckbox"
+          i18n-content="deletePasswordsCheckbox"></label>
+    </div>
+    <div>
       <input id="deleteFormDataCheckbox"
-             pref="browser.clear_data.form_data" type="checkbox">
-      <span i18n-content="deleteFormDataCheckbox"></span>
-    </label>
+          pref="browser.clear_data.form_data" type="checkbox">
+      <label for="deleteFormDataCheckbox"
+          i18n-content="deleteFormDataCheckbox"></label>
+    </div>
   </div>
   <div>
-    <div>
-      <label>
-        <span i18n-content="clearBrowsingDataTimeLabel"></span>
-        <select id="clearBrowsingDataTimePeriod"
-                pref="browser.clear_data.time_period"></select>
-      </label>
-    </div>
+    <label for="" i18n-content="clearBrowsingDataTimeLabel"></label>
+    <select id="clearBrowsingDataTimePeriod"
+        pref="browser.clear_data.time_period"></select>
+  </div>
+  <div class="button-strip">
     <span id="cbdThrobber"></span>
     <if expr="os == 'win32'">
       <button id="clearBrowsingDataCommit"
-              i18n-content="clearBrowsingDataCommit"></button>
+          i18n-content="clearBrowsingDataCommit"></button>
     </if>
     <button id="clearBrowsingDataDismiss" i18n-content="cancel"
-            onclick="ClearBrowserDataOverlay.dismiss();">
+        onclick="ClearBrowserDataOverlay.dismiss();">
     </button>
     <if expr="os != 'win32'">
       <button id="clearBrowsingDataCommit"
-              i18n-content="clearBrowsingDataCommit"></button>
+          i18n-content="clearBrowsingDataCommit"></button>
     </if>
   </div>
   <hr>
