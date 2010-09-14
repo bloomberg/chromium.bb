@@ -1975,12 +1975,14 @@ void RenderViewHost::OnExtensionPostMessage(
 }
 
 void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
-  view()->OnAccessibilityFocusChange(acc_obj_id);
+  if (view())
+    view()->OnAccessibilityFocusChange(acc_obj_id);
 }
 
 void RenderViewHost::OnAccessibilityObjectStateChange(
     const webkit_glue::WebAccessibility& acc_obj) {
-  view()->OnAccessibilityObjectStateChange(acc_obj);
+  if (view())
+    view()->OnAccessibilityObjectStateChange(acc_obj);
 
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
@@ -1990,7 +1992,8 @@ void RenderViewHost::OnAccessibilityObjectStateChange(
 
 void RenderViewHost::OnAccessibilityObjectChildrenChange(
     const std::vector<webkit_glue::WebAccessibility>& acc_changes) {
-  view()->OnAccessibilityObjectChildrenChange(acc_changes);
+  if (view())
+    view()->OnAccessibilityObjectChildrenChange(acc_changes);
 
   if (acc_changes.size() > 0) {
     NotificationService::current()->Notify(
