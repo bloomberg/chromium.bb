@@ -3071,14 +3071,14 @@ if (!use_plugin_math) {
   for (var i in o3djs.flat_math) {
     o3djs.math[i] = o3djs.flat_math[i];
   }
+
+  /**
+   * True if we are using the plugin math library in which matrices are
+   * represented by 2-dimensional arrays.
+   * @type {boolean}
+   * @private
+   */
+  o3djs.math.usePluginMath_ = false;
 }
 
-
-/**
- * True if we are using the plugin math library in which matrices are
- * represented by 2-dimensional arrays.
- * @type {boolean}
- * @private
- */
-o3djs.math.usePluginMath_ = true;
 
