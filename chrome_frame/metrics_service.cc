@@ -106,6 +106,8 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
 
   ~ChromeFrameUploadRequestContext() {
     DLOG(INFO) << __FUNCTION__;
+    delete http_transaction_factory_;
+    delete http_auth_handler_factory_;
   }
 
   void Initialize() {
