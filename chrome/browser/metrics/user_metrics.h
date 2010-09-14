@@ -46,7 +46,8 @@ class UserMetrics {
   // This function has identical input and behavior to RecordAction, but is
   // not automatically found by the action-processing scripts.  It can be used
   // when it's a pain to enumerate all possible actions, but if you use this
-  // you need to also update the rules for extracting known actions.
+  // you need to also update the rules for extracting known actions in
+  // chrome/tools/extract_actions.py.
   static void RecordComputedAction(const std::string& action,
                                    Profile* profile);
 
