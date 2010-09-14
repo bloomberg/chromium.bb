@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/test/test_suite.h"
 #include "chrome/test/test_launcher/test_runner.h"
+#include "chrome/test/test_timeouts.h"
 #include "chrome/test/unit/chrome_test_suite.h"
 
 #if defined(OS_WIN)
@@ -35,15 +36,10 @@ const char kGTestOutputFlag[] = "gtest_output";
 const char kGTestRepeatFlag[] = "gtest_repeat";
 const char kSingleProcessTestsFlag[]   = "single_process";
 const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
-const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
 // The following is kept for historical reasons (so people that are used to
 // using it don't get surprised).
 const char kChildProcessFlag[]   = "child";
 const char kHelpFlag[]   = "help";
-
-// This value was changed from 30000 (30sec) to 45000 due to
-// http://crbug.com/43862.
-const int64 kDefaultTestTimeoutMs = 45000;
 
 class OutOfProcTestRunner : public tests::TestRunner {
  public:
@@ -92,19 +88,11 @@ class OutOfProcTestRunner : public tests::TestRunner {
     if (!base::LaunchApp(new_cmd_line, false, false, &process_handle))
       return false;
 
-    int test_terminate_timeout_ms = kDefaultTestTimeoutMs;
-    if (cmd_line->HasSwitch(kTestTerminateTimeoutFlag)) {
-      std::string timeout_str =
-          cmd_line->GetSwitchValueASCII(kTestTerminateTimeoutFlag);
-      int timeout;
-      base::StringToInt(timeout_str, &timeout);
-      test_terminate_timeout_ms = std::max(test_terminate_timeout_ms, timeout);
-    }
-
     int exit_code = 0;
-    if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
-                                          test_terminate_timeout_ms)) {
-      LOG(ERROR) << "Test timeout (" << test_terminate_timeout_ms
+    if (!base::WaitForExitCodeWithTimeout(
+            process_handle, &exit_code,
+            TestTimeouts::medium_test_timeout_ms())) {
+      LOG(ERROR) << "Test timeout (" << TestTimeouts::medium_test_timeout_ms()
                  << " ms) exceeded for " << test_name;
 
       exit_code = -1;  // Set a non-zero exit code to signal a failure.
@@ -141,9 +129,6 @@ void PrintUsage() {
       "    debugging a specific test in a debugger.\n"
       "  --single-process\n"
       "    Same as above, and also runs Chrome in single-process mode.\n"
-      "  --test-terminate-timeout\n"
-      "    Specifies a timeout (in milliseconds) after which a running test\n"
-      "    will be forcefully terminated.\n"
       "  --help\n"
       "    Shows this message.\n"
       "  --gtest_help\n"
@@ -206,6 +191,8 @@ int main(int argc, char** argv) {
     return entry_point(GetModuleHandle(NULL), &sandbox_info, GetCommandLineW());
   }
 #endif
+
+  TestTimeouts::Initialize();
 
   fprintf(stdout,
       "Starting tests...\n"

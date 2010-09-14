@@ -69,13 +69,6 @@ const wchar_t kUnitTestShowWindows[] = L"show-windows";
 // Passed as value of kTestType.
 static const char kBrowserTestType[] = "browser";
 
-// Default delay for the time-out at which we stop the
-// inner-message loop the first time.
-const int kInitialTimeoutInMS = 30000;
-
-// Delay for sub-sequent time-outs once the initial time-out happened.
-const int kSubsequentTimeoutInMS = 5000;
-
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       test_server_(net::TestServer::TYPE_HTTP,
@@ -83,8 +76,7 @@ InProcessBrowserTest::InProcessBrowserTest()
       show_window_(false),
       dom_automation_enabled_(false),
       tab_closeable_state_watcher_enabled_(false),
-      original_single_process_(false),
-      initial_timeout_(kInitialTimeoutInMS) {
+      original_single_process_(false) {
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() {
@@ -302,11 +294,6 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   browser_ = CreateBrowser(profile);
   pool.Recycle();
 
-  // Start the timeout timer to prevent hangs.
-  MessageLoopForUI::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(this, &InProcessBrowserTest::TimedOut),
-      initial_timeout_);
-
   // Pump any pending events that were created as a result of creating a
   // browser.
   MessageLoopForUI::current()->RunAllPending();
@@ -332,20 +319,4 @@ void InProcessBrowserTest::QuitBrowsers() {
       FROM_HERE,
       NewRunnableFunction(&BrowserList::CloseAllBrowsersAndExit));
   ui_test_utils::RunMessageLoop();
-}
-
-void InProcessBrowserTest::TimedOut() {
-  std::string error_message = "Test timed out. Each test runs for a max of ";
-  error_message += base::IntToString(initial_timeout_);
-  error_message += " ms (kInitialTimeoutInMS).";
-
-  MessageLoopForUI::current()->Quit();
-
-  // WARNING: This must be after Quit as it returns.
-  FAIL() << error_message;
-}
-
-void InProcessBrowserTest::SetInitialTimeoutInMS(int timeout_value) {
-  DCHECK_GT(timeout_value, 0);
-  initial_timeout_ = timeout_value;
 }
