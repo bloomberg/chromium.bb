@@ -129,6 +129,7 @@ CreditCard::CreditCard(const string16& label, int unique_id)
     : expiration_month_(0),
       expiration_year_(0),
       label_(label),
+      billing_address_id_(0),
       unique_id_(unique_id) {
 }
 
@@ -139,6 +140,7 @@ CreditCard::CreditCard(const CreditCard& card) : FormGroup() {
 CreditCard::CreditCard()
     : expiration_month_(0),
       expiration_year_(0),
+      billing_address_id_(0),
       unique_id_(0) {
 }
 
