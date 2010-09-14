@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/notifier/registration_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "google/cacheinvalidation/invalidation-client-impl.h"
 
 namespace sync_notifier {
 
@@ -41,9 +42,17 @@ void ChromeInvalidationClient::Start(
 
   invalidation::ClientType client_type;
   client_type.set_type(invalidation::ClientType::CHROME_SYNC);
+  // TODO(akalin): Use InvalidationClient::Create() once it supports
+  // taking a ClientConfig.
+  invalidation::ClientConfig client_config;
+  // Bump up limits so that we reduce the number of registration
+  // replies we get.
+  client_config.max_registrations_per_message = 20;
+  client_config.max_ops_per_message = 40;
   invalidation_client_.reset(
-      invalidation::InvalidationClient::Create(
-          &chrome_system_resources_, client_type, client_id, this));
+      new invalidation::InvalidationClientImpl(
+          &chrome_system_resources_, client_type, client_id, this,
+          client_config));
   cache_invalidation_packet_handler_.reset(
       new CacheInvalidationPacketHandler(xmpp_client,
                                          invalidation_client_.get()));

@@ -1936,7 +1936,8 @@ void SyncManager::SyncInternal::OnIncomingNotification(
        browser_sync::kSyncServiceUrl)) {
     LOG(INFO) << "P2P: Updates on server, pushing syncer";
     if (syncer_thread()) {
-      syncer_thread()->NudgeSyncer(0, SyncerThread::kNotification);
+      // Introduce a delay to help coalesce initial notifications.
+      syncer_thread()->NudgeSyncer(250, SyncerThread::kNotification);
     }
     allstatus_.IncrementNotificationsReceived();
   } else {
