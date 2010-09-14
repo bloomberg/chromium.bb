@@ -96,7 +96,9 @@
 <script src="options/personal_options.js"></script>
 <script src="options/search_engine_manager.js"></script>
 <script src="options/search_engine_manager_engine_list.js"></script>
-<script>
+<script src="options/stop_syncing_overlay.js"></script>
+<script src="options/sync_options.js">
+</script>
 
 var AddStartupPageOverlay = options.AddStartupPageOverlay;
 var AdvancedOptions = options.AdvancedOptions;
@@ -113,10 +115,13 @@ var FontSettingsOverlay = options.FontSettingsOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
 var OptionsPage = options.OptionsPage;
 var PasswordsExceptions = options.PasswordsExceptions;
+var PasswordsRemoveAllOverlay = options.PasswordsRemoveAllOverlay;
 var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
-var SearchEngineManager = options.SearchEngineManager;
 var ProxyOptions = options.ProxyOptions;
+var SearchEngineManager = options.SearchEngineManager;
+var StopSyncingOverlay = options.StopSyncingOverlay;
+var SyncOptions = options.SyncOptions;
 
 /**
  * Window onload handler, sets up the page.
@@ -140,6 +145,7 @@ function load() {
   OptionsPage.registerSubPage(CookiesView.getInstance());
   OptionsPage.registerSubPage(PasswordsExceptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance());
+  OptionsPage.registerSubPage(SyncOptions.getInstance());
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
@@ -175,10 +181,6 @@ function load() {
     OptionsPage.registerSubPage(ProxyOptions.getInstance());
   }
 
-  var syncSettings = new OptionsPage('sync',
-                                     localStrings.getString('syncPage'),
-                                     'syncPage');
-  OptionsPage.registerSubPage(syncSettings);
   var languageModifierKeysOverlay = new OptionsPage(
       'languageCustomizeModifierKeysOverlay',
       localStrings.getString('languageCustomizeModifierKeysOverlay'),
