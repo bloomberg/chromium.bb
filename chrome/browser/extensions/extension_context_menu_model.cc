@@ -128,9 +128,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
   }
 }
 
-void ExtensionContextMenuModel::InstallUIProceed(bool create_app) {
-  DCHECK(!create_app);
-
+void ExtensionContextMenuModel::InstallUIProceed() {
   std::string id = extension_->id();
   profile_->GetExtensionsService()->UninstallExtension(id, false);
 

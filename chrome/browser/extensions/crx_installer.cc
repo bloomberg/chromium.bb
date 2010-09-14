@@ -78,7 +78,6 @@ CrxInstaller::CrxInstaller(const FilePath& install_directory,
       delete_source_(false),
       allow_privilege_increase_(false),
       limit_web_extent_to_download_host_(false),
-      create_app_shortcut_(false),
       frontend_(frontend),
       client_(client),
       apps_require_extension_mime_type_(false),
@@ -267,12 +266,7 @@ void CrxInstaller::ConfirmInstall() {
   return;
 }
 
-void CrxInstaller::InstallUIProceed(bool create_app_shortcut) {
-  if (create_app_shortcut) {
-    DCHECK(extension_->GetFullLaunchURL().is_valid());
-    create_app_shortcut_ = true;
-  }
-
+void CrxInstaller::InstallUIProceed() {
   ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &CrxInstaller::CompleteInstall));
@@ -314,25 +308,6 @@ void CrxInstaller::CompleteInstall() {
         l10n_util::GetStringUTF8(
             IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED));
     return;
-  }
-
-  if (create_app_shortcut_) {
-    SkBitmap icon = install_icon_.get() ? *install_icon_ :
-        *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_EXTENSION_DEFAULT_ICON);
-
-    ShellIntegration::ShortcutInfo shortcut_info;
-    shortcut_info.url = extension_->GetFullLaunchURL();
-    shortcut_info.extension_id = UTF8ToUTF16(extension_->id());
-    shortcut_info.title = UTF8ToUTF16(extension_->name());
-    shortcut_info.description = UTF8ToUTF16(extension_->description());
-    shortcut_info.favicon = icon;
-    shortcut_info.create_on_desktop = true;
-
-    // TODO(aa): Seems nasty to be reusing the old webapps code this way. What
-    // baggage am I inheriting?
-    web_app::CreateShortcut(frontend_->profile()->GetPath(), shortcut_info,
-                            NULL);
   }
 
   // This is lame, but we must reload the extension because absolute paths

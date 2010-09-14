@@ -29,7 +29,7 @@ const int kPanelHorizMargin = 13;
 void OnDialogResponse(GtkDialog* dialog, int response_id,
                       ExtensionInstallUI::Delegate* delegate) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
-    delegate->InstallUIProceed(false);
+    delegate->InstallUIProceed();
   } else {
     delegate->InstallUIAbort();
   }

@@ -39,7 +39,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
    public:
     // We call this method after ConfirmInstall()/ConfirmUninstall() to signal
     // that the installation/uninstallation should continue.
-    virtual void InstallUIProceed(bool create_app_shortcut) = 0;
+    virtual void InstallUIProceed() = 0;
 
     // We call this method after ConfirmInstall()/ConfirmUninstall() to signal
     // that the installation/uninstallation should stop.

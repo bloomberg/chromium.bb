@@ -34,8 +34,8 @@ class ExtensionDisabledDialogDelegate
     install_ui_->ConfirmInstall(this, extension_);
   }
 
-  // ExtensionInstallUI::Delegate
-  virtual void InstallUIProceed(bool create_app_shortcut) {
+  // Overridden from ExtensionInstallUI::Delegate:
+  virtual void InstallUIProceed() {
     ExtensionPrefs* prefs = service_->extension_prefs();
     prefs->SetDidExtensionEscalatePermissions(extension_, false);
     service_->EnableExtension(extension_->id());

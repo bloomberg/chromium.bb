@@ -52,7 +52,7 @@ class AppLauncherHandler
  private:
   // ExtensionInstallUI::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.
-  virtual void InstallUIProceed(bool create_app_shortcut);
+  virtual void InstallUIProceed();
   virtual void InstallUIAbort();
 
   // Returns the ExtensionInstallUI object for this class, creating it if

@@ -216,10 +216,7 @@ ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
   return install_ui_.get();
 }
 
-void AppLauncherHandler::InstallUIProceed(bool create_app_shortcut) {
-  // We only ever use ExtensionInstallUI for uninstalling, which should never
-  // result in it telling us to create a shortcut.
-  DCHECK(!create_app_shortcut);
+void AppLauncherHandler::InstallUIProceed() {
   DCHECK(!extension_id_prompting_.empty());
 
   // The extension can be uninstalled in another window while the UI was

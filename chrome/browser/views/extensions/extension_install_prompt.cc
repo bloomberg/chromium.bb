@@ -74,9 +74,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   }
 
   virtual bool Accept() {
-    // We don't support shortcut creation from this dialog anymore.
-    // TODO(aa): Remove this param from ExtensionInstallUI::Delegate.
-    delegate_->InstallUIProceed(false);
+    delegate_->InstallUIProceed();
     return true;
   }
 
@@ -84,7 +82,6 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     delegate_->InstallUIAbort();
     return true;
   }
-
 
   // WindowDelegate
   virtual bool IsModal() const { return true; }

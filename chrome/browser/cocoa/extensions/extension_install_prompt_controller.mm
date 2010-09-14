@@ -117,7 +117,7 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 }
 
 - (IBAction)ok:(id)sender {
-  delegate_->InstallUIProceed(false);  // Don't create shortcut.
+  delegate_->InstallUIProceed();
   [NSApp endSheet:[self window]];
 }
 

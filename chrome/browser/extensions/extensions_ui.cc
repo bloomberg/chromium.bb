@@ -520,11 +520,7 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
   GetExtensionInstallUI()->ConfirmUninstall(this, extension);
 }
 
-void ExtensionsDOMHandler::InstallUIProceed(bool create_app_shortcut) {
-  // We only ever use ExtensionInstallUI for uninstalling, which should never
-  // result in it telling us to create a shortcut.
-  DCHECK(!create_app_shortcut);
-
+void ExtensionsDOMHandler::InstallUIProceed() {
   DCHECK(!extension_id_prompting_.empty());
 
   // The extension can be uninstalled in another window while the UI was

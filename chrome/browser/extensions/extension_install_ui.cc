@@ -179,7 +179,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
     DCHECK(!previous_use_system_theme_);
 #endif
 
-    delegate->InstallUIProceed(false);
+    delegate->InstallUIProceed();
     return;
   }
 

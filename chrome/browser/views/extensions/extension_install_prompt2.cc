@@ -183,7 +183,7 @@ int InstallDialogContent2::GetDefaultDialogButton() const {
 }
 
 bool InstallDialogContent2::Accept() {
-  delegate_->InstallUIProceed(false);  // create shortcut
+  delegate_->InstallUIProceed();
   return true;
 }
 

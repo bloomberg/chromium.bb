@@ -41,7 +41,7 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
   [alert setIcon:gfx::SkBitmapToNSImage(*icon)];
 
   if ([alert runModal] == NSAlertFirstButtonReturn) {
-    delegate->InstallUIProceed(false);
+    delegate->InstallUIProceed();
   } else {
     delegate->InstallUIAbort();
   }

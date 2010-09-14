@@ -72,8 +72,8 @@ class CrxInstaller
   void InstallUserScript(const FilePath& source_file,
                          const GURL& original_url);
 
-  // ExtensionInstallUI::Delegate
-  virtual void InstallUIProceed(bool create_app_shortcut);
+  // Overridden from ExtensionInstallUI::Delegate:
+  virtual void InstallUIProceed();
   virtual void InstallUIAbort();
 
   const GURL& original_url() const { return original_url_; }

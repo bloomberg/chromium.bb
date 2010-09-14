@@ -45,8 +45,7 @@ class AsyncUninstaller : public ExtensionInstallUI::Delegate {
   ~AsyncUninstaller() {}
 
   // Overridden by ExtensionInstallUI::Delegate.
-  virtual void InstallUIProceed(bool create_shortcut) {
-    DCHECK(!create_shortcut);
+  virtual void InstallUIProceed() {
     profile_->GetExtensionsService()->
         UninstallExtension(extension_->id(), false);
   }
