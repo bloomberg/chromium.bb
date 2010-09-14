@@ -409,7 +409,7 @@ def _main(_):
                                  "[-t <test> ...]")
   parser.disable_interspersed_args()
   parser.add_option("-b", "--build_dir",
-                    help="the location of the output of the compiler output")
+                    help="the location of the compiler output")
   parser.add_option("-t", "--test", action="append", default=[],
                     help="which test to run, supports test:gtest_filter format "
                          "as well.")

@@ -41,11 +41,6 @@ class BaseTool(object):
   TMP_DIR = "testing.tmp"
 
   def __init__(self):
-    # If we have a testing.tmp directory, we didn't cleanup last time.
-    if os.path.exists(self.TMP_DIR):
-      shutil.rmtree(self.TMP_DIR)
-    os.mkdir(self.TMP_DIR)
-
     self.option_parser_hooks = []
 
   def ToolName(self):
@@ -775,6 +770,74 @@ class DrMemory(BaseTool):
     return ret
 
 
+# RaceVerifier support. See
+# http://code.google.com/p/data-race-test/wiki/RaceVerifier for more details.
+
+class ThreadSanitizerRV1Mixin(object):
+  """First pass: run ThreadSanitizer as usual, but don't clean up logs"""
+
+  def ParseArgv(self, args):
+    ret = super(ThreadSanitizerRV1Mixin, self).ParseArgv(args)
+    self._nocleanup_on_exit = True
+    return ret
+
+class ThreadSanitizerRV2Mixin(object):
+  """Second pass: run the same command line in RaceVerifier mode"""
+
+  def ToolSpecificFlags(self):
+    proc = super(ThreadSanitizerRV2Mixin, self).ToolSpecificFlags()
+    proc += ['--race-verifier=' + self.TMP_DIR + '/race.log']
+    return proc
+
+class ThreadSanitizerRV1Posix(ThreadSanitizerRV1Mixin, ThreadSanitizerPosix):
+  pass
+
+class ThreadSanitizerRV2Posix(ThreadSanitizerRV2Mixin, ThreadSanitizerPosix):
+  pass
+
+class ThreadSanitizerRV1Windows(ThreadSanitizerRV1Mixin,
+                                ThreadSanitizerWindows):
+  pass
+
+class ThreadSanitizerRV2Windows(ThreadSanitizerRV2Mixin,
+                                ThreadSanitizerWindows):
+  pass
+
+class RaceVerifier(object):
+  """Runs tests under RaceVerifier/Valgrind."""
+
+  def RV1Factory(self):
+    if common.IsWindows():
+      return ThreadSanitizerRV1Windows()
+    else:
+      return ThreadSanitizerRV1Posix()
+
+  def RV2Factory(self):
+    if common.IsWindows():
+      return ThreadSanitizerRV2Windows()
+    else:
+      return ThreadSanitizerRV2Posix()
+
+  def JoinLogs(self):
+    """Concatenate all logs from the first pass"""
+    filenames = glob.glob(BaseTool.TMP_DIR + "/tsan" + ".*")
+    out_filename = BaseTool.TMP_DIR + "/race.log"
+    data = [open(fn, "r").read() for fn in filenames]
+    open(out_filename, "w").write("\n".join(data))
+
+  def Main(self, args, check_sanity):
+    cmd1 = self.RV1Factory()
+    ret = cmd1.Main(args, check_sanity)
+    # Verify race reports, if there are any.
+    if ret == -1:
+      self.JoinLogs()
+      cmd2 = self.RV2Factory()
+      ret = cmd2.Main(args, check_sanity)
+    else:
+      logging.info("No reports, skipping RaceVerifier step")
+    return ret
+
+
 class ToolFactory:
   def Create(self, tool_name):
     if tool_name == "memcheck" and not common.IsWine():
@@ -783,12 +846,13 @@ class ToolFactory:
       return Memcheck()
     if tool_name == "tsan":
       if common.IsWindows():
-        logging.info("WARNING: ThreadSanitizer on Windows is experimental.")
         return ThreadSanitizerWindows()
       else:
         return ThreadSanitizerPosix()
     if tool_name == "drmemory":
       return DrMemory()
+    if tool_name == "tsan_rv":
+      return RaceVerifier()
     try:
       platform_name = common.PlatformNames()[0]
     except common.NotImplementedError:
@@ -797,6 +861,11 @@ class ToolFactory:
                                                                  platform_name)
 
 def RunTool(argv, module):
+  # If we have a testing.tmp directory, we didn't cleanup last time.
+  if os.path.exists(BaseTool.TMP_DIR):
+    shutil.rmtree(BaseTool.TMP_DIR)
+  os.mkdir(BaseTool.TMP_DIR)
+
   # TODO(timurrrr): customize optparse instead
   tool_name = "memcheck"
   args = argv[1:]
