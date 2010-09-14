@@ -42,11 +42,41 @@ PageInfoModel::PageInfoModel(Profile* profile,
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
     empty_subject_name = true;
   }
+
+  // Some of what IsCertStatusError classifies as errors we want to show as
+  // warnings instead.
+  static const int cert_warnings =
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION |
+      net::CERT_STATUS_NO_REVOCATION_MECHANISM;
+  int status_with_warnings_removed = ssl.cert_status() & ~cert_warnings;
+
   if (ssl.cert_id() &&
       CertStore::GetSharedInstance()->RetrieveCert(ssl.cert_id(), &cert) &&
-      !net::IsCertStatusError(ssl.cert_status())) {
-    // OK HTTPS page.
-    if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) != 0) {
+      !net::IsCertStatusError(status_with_warnings_removed)) {
+    // No error found so far, check cert_status warnings.
+    int cert_status = ssl.cert_status();
+    if (cert_status & cert_warnings) {
+      string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
+      if (issuer_name.empty()) {
+        issuer_name.assign(l10n_util::GetStringUTF16(
+            IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
+      }
+      description.assign(l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
+
+      description += ASCIIToUTF16("\n\n");
+      if (cert_status & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
+        description += l10n_util::GetStringUTF16(
+            IDS_PAGE_INFO_SECURITY_TAB_UNABLE_TO_CHECK_REVOCATION);
+      } else if (cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
+        description += l10n_util::GetStringUTF16(
+            IDS_PAGE_INFO_SECURITY_TAB_NO_REVOCATION_MECHANISM);
+      } else {
+        NOTREACHED() << "Need to specify string for this warning";
+      }
+      state = SECTION_STATE_WARNING_MINOR;
+    } else if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) != 0) {
+      // EV HTTPS page.
       DCHECK(!cert->subject().organization_names.empty());
       headline =
           l10n_util::GetStringFUTF16(IDS_PAGE_INFO_EV_IDENTITY_TITLE,
@@ -76,7 +106,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
           locality,
           UTF8ToUTF16(cert->issuer().GetDisplayName())));
     } else {
-      // Non EV OK HTTPS.
+      // Non-EV OK HTTPS page.
       if (empty_subject_name)
         headline.clear();  // Don't display any title.
       else
@@ -85,13 +115,12 @@ PageInfoModel::PageInfoModel(Profile* profile,
       if (issuer_name.empty()) {
         issuer_name.assign(l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
-      } else {
-        description.assign(l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
       }
+      description.assign(l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
     }
   } else {
-    // HTTP or bad HTTPS.
+    // HTTP or HTTPS with errors (not warnings).
     description.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
     state = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?

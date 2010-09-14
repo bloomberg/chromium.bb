@@ -5481,13 +5481,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV" desc="The text of the identity section when the page is secured with an EV cert.">
         The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>.
       </message>
-
       <message name="IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY" desc="The default name used when we did not find a principal name.">
         unknown name
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY" desc="The text of the identity section when the page is not secure.">
         The identity of this website has not been verified.
       </message>
+
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_UNABLE_TO_CHECK_REVOCATION" desc="The text of the identity section when we were unable to check if the certificate has been revoked.">
+        Unable to check whether the certificate has been revoked.
+      </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_NO_REVOCATION_MECHANISM" desc="The text of the identity section when there is no certificate revocation mechanism.">
+        The certificate does not specify a mechanism to check whether it has been revoked.
+      </message>
+
       <message name="IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE" desc="The name of the connection section.">
         Connection
       </message>
