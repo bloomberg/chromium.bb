@@ -202,7 +202,7 @@ void BrowserMainParts::EarlyInitialization() {
 // mechanisms.
 void BrowserMainParts::ConnectionFieldTrial() {
   const FieldTrial::Probability kConnectDivisor = 100;
-  const FieldTrial::Probability kConnectProbability = 20;  // 20% probability
+  const FieldTrial::Probability kConnectProbability = 1;  // 1% probability
 
   scoped_refptr<FieldTrial> connect_trial =
       new FieldTrial("ConnCountImpact", kConnectDivisor);
@@ -288,23 +288,14 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
 void BrowserMainParts::ProxyConnectionsFieldTrial() {
   const FieldTrial::Probability kProxyConnectionsDivisor = 100;
   // 25% probability
-  const FieldTrial::Probability kProxyConnectionProbability = 25;
+  const FieldTrial::Probability kProxyConnectionProbability = 1;
 
   scoped_refptr<FieldTrial> proxy_connection_trial =
       new FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor);
 
   // The number of max sockets per group cannot be greater than the max number
-  // of sockets per proxy server.  Consequently, we eliminate the
-  // |proxy_connections_8| trial group if we do happen to pass this lower bound
-  // (which may vary due to the existence of field trials). This leaves us with
-  // [16, 32, 64] to choose from. Otherwise, we have a set of four values:
-  // [8, 16, 32, 64].
-  int proxy_connections_8 = -1;
-  if (net::HttpNetworkSession::max_sockets_per_group() <= 8) {
-    proxy_connections_8 =
-        proxy_connection_trial->AppendGroup("proxy_connections_8",
-                                            kProxyConnectionProbability);
-  }
+  // of sockets per proxy server.  We tried using 8, and it can easily
+  // lead to total browser stalls.
   const int proxy_connections_16 =
       proxy_connection_trial->AppendGroup("proxy_connections_16",
                                           kProxyConnectionProbability);
@@ -322,9 +313,7 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
 
   const int proxy_connections_trial_group = proxy_connection_trial->group();
 
-  if (proxy_connections_trial_group == proxy_connections_8) {
-    net::HttpNetworkSession::set_max_sockets_per_proxy_server(8);
-  } else if (proxy_connections_trial_group == proxy_connections_16) {
+  if (proxy_connections_trial_group == proxy_connections_16) {
     net::HttpNetworkSession::set_max_sockets_per_proxy_server(16);
   } else if (proxy_connections_trial_group == proxy_connections_32) {
     net::HttpNetworkSession::set_max_sockets_per_proxy_server(32);
