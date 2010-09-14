@@ -29,8 +29,6 @@ TEST(SymmetricKeyTest, GenerateRandomKey) {
   EXPECT_NE(raw_key, raw_key2);
 }
 
-// TODO(albertb): Port this test to Mac.
-#if defined(USE_NSS) || defined(OS_WIN)
 TEST(SymmetricKeyTest, ImportGeneratedKey) {
   scoped_ptr<base::SymmetricKey> key1(
       base::SymmetricKey::GenerateRandomKey(base::SymmetricKey::AES, 256));
@@ -47,14 +45,12 @@ TEST(SymmetricKeyTest, ImportGeneratedKey) {
 
   EXPECT_EQ(raw_key1, raw_key2);
 }
-#endif  // USE_NSS || OS_WIN
 
-// TODO(albertb): Port this test to Win and Mac.
-#if defined(USE_NSS)
 TEST(SymmetricKeyTest, ImportDerivedKey) {
   scoped_ptr<base::SymmetricKey> key1(
       base::SymmetricKey::DeriveKeyFromPassword(base::SymmetricKey::HMAC_SHA1,
-                                                "password", "salt", 1024, 160));
+                                                "password", "somesalt", 1024,
+                                                160));
   ASSERT_TRUE(NULL != key1.get());
   std::string raw_key1;
   EXPECT_TRUE(key1->GetRawKey(&raw_key1));
@@ -68,7 +64,6 @@ TEST(SymmetricKeyTest, ImportDerivedKey) {
 
   EXPECT_EQ(raw_key1, raw_key2);
 }
-#endif  // USE_NSS
 
 struct PBKDF2TestVector {
   const char* password;

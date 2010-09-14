@@ -455,17 +455,28 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
 // static
 SymmetricKey* SymmetricKey::Import(Algorithm algorithm,
                                    const std::string& raw_key) {
-  // TODO(wtc): support HMAC.
-  DCHECK_EQ(algorithm, AES);
+  DWORD provider_type = 0;
+  ALG_ID alg = 0;
+  switch (algorithm) {
+    case AES:
+      provider_type = PROV_RSA_AES;
+      alg = GetAESAlgIDForKeySize(raw_key.size() * 8);
+      break;
+    case HMAC_SHA1:
+      provider_type = PROV_RSA_FULL;
+      alg = CALG_HMAC;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  if (provider_type == 0 || alg == 0)
+    return NULL;
 
   ScopedHCRYPTPROV provider;
   BOOL ok = CryptAcquireContext(provider.receive(), NULL, NULL,
-                                PROV_RSA_AES, CRYPT_VERIFYCONTEXT);
+                                provider_type, CRYPT_VERIFYCONTEXT);
   if (!ok)
-    return NULL;
-
-  ALG_ID alg = GetAESAlgIDForKeySize(raw_key.size() * 8);
-  if (alg == 0)
     return NULL;
 
   ScopedHCRYPTKEY key;
