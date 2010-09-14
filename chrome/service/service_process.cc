@@ -58,7 +58,8 @@ ServiceProcess::ServiceProcess()
   g_service_process = this;
 }
 
-bool ServiceProcess::Initialize(MessageLoop* message_loop) {
+bool ServiceProcess::Initialize(MessageLoop* message_loop,
+                                const CommandLine& command_line) {
   main_message_loop_ = message_loop;
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   base::Thread::Options options;
@@ -71,6 +72,12 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
     Teardown();
     return false;
   }
+
+  // See if we have been suppiled an LSID in the command line. This LSID will
+  // override the credentials we use for Cloud Print.
+  std::string lsid = command_line.GetSwitchValueASCII(
+          switches::kServiceAccountLsid);
+
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   FilePath pref_path = user_data_dir.Append(chrome::kServiceStateFileName);
@@ -87,14 +94,17 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
     // If true then we start the host.
     StartChromotingHost();
   }
+  // Enable Cloud Print if needed. First check the command-line.
+  bool cloud_print_proxy_enabled =
+      command_line.HasSwitch(switches::kEnableCloudPrintProxy);
+  if (!cloud_print_proxy_enabled) {
+    // Then check if the cloud print proxy was previously enabled.
+    values->GetBoolean(prefs::kCloudPrintProxyEnabled,
+                       &cloud_print_proxy_enabled);
+  }
 
-  bool cloud_print_proxy_enabled = false;
-
-  // Check if the cloud print proxy is already enabled.
-  if (values->GetBoolean(prefs::kCloudPrintProxyEnabled,
-                         &cloud_print_proxy_enabled) &&
-      cloud_print_proxy_enabled) {
-    GetCloudPrintProxy()->EnableForUser(std::string());
+  if (cloud_print_proxy_enabled) {
+    GetCloudPrintProxy()->EnableForUser(lsid);
   }
 
   LOG(INFO) << "Starting Service Process IPC Server";

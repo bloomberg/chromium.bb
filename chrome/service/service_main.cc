@@ -29,15 +29,7 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
 #endif   // defined(OS_WIN)
 
   ServiceProcess service_process;
-  service_process.Initialize(&main_message_loop);
-
-  // Enable Cloud Print if needed.
-  if (parameters.command_line_.HasSwitch(switches::kEnableCloudPrintProxy)) {
-    std::string lsid =
-        parameters.command_line_.GetSwitchValueASCII(
-            switches::kServiceAccountLsid);
-    service_process.GetCloudPrintProxy()->EnableForUser(lsid);
-  }
+  service_process.Initialize(&main_message_loop, parameters.command_line_);
 
   MessageLoop::current()->Run();
   service_process.Teardown();

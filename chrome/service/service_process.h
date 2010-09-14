@@ -28,6 +28,8 @@ class HostKeyPair;
 class JsonHostConfig;
 }
 
+class CommandLine;
+
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
 class ServiceProcess : public RemotingDirectoryService::Client,
@@ -37,7 +39,7 @@ class ServiceProcess : public RemotingDirectoryService::Client,
   ~ServiceProcess();
 
   // Initialize the ServiceProcess with the message loop that it should run on.
-  bool Initialize(MessageLoop* message_loop);
+  bool Initialize(MessageLoop* message_loop, const CommandLine& command_line);
   bool Teardown();
   // TODO(sanjeevr): Change various parts of the code such as
   // net::ProxyService::CreateSystemProxyConfigService to take in

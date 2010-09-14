@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/crypto/rsa_private_key.h"
 #include "base/message_loop.h"
 #include "base/waitable_event.h"
@@ -16,7 +17,8 @@
 TEST(ServiceProcessTest, DISABLED_Run) {
   MessageLoopForUI main_message_loop;
   ServiceProcess process;
-  EXPECT_TRUE(process.Initialize(&main_message_loop));
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
   EXPECT_TRUE(process.Teardown());
 }
 
@@ -25,7 +27,8 @@ TEST(ServiceProcessTest, DISABLED_Run) {
 TEST(ServiceProcessTest, DISABLED_RunChromoting) {
   MessageLoopForUI main_message_loop;
   ServiceProcess process;
-  EXPECT_TRUE(process.Initialize(&main_message_loop));
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
 
   // Then config the chromoting host and start it.
   remoting::HostKeyPair key;
@@ -49,7 +52,8 @@ ACTION_P(QuitMessageLoop, message_loop) {
 TEST(ServiceProcessTest, DISABLED_RunChromotingUntilShutdown) {
   MessageLoopForUI main_message_loop;
   MockServiceProcess process;
-  EXPECT_TRUE(process.Initialize(&main_message_loop));
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
 
   // Expect chromoting shutdown be called because the login token is invalid.
   EXPECT_CALL(process, OnChromotingHostShutdown())
