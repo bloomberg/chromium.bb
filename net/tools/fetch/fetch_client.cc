@@ -140,7 +140,7 @@ int main(int argc, char**argv) {
                                     NULL));
 
   scoped_refptr<net::ProxyService> proxy_service(
-      net::ProxyService::CreateNull());
+      net::ProxyService::CreateDirect());
   scoped_refptr<net::SSLConfigService> ssl_config_service(
       net::SSLConfigService::CreateSystemSSLConfigService());
   net::HttpTransactionFactory* factory = NULL;
