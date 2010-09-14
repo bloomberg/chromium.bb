@@ -205,9 +205,9 @@ string16 GetErrorDetailsString(const std::string& error_domain,
   const char* error_string;
   if (error_domain == net::kErrorDomain) {
     error_page_template = IDS_ERRORPAGES_DETAILS_TEMPLATE;
+    error_string = net::ErrorToString(error_code);
     DCHECK(error_code < 0);  // Net error codes are negative.
     error_code = -error_code;
-    error_string = net::ErrorToString(error_code);
   } else if (error_domain == LocalizedError::kHttpErrorDomain) {
     error_page_template = IDS_ERRORPAGES_HTTP_DETAILS_TEMPLATE;
     error_string = HttpErrorToString(error_code);
