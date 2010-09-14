@@ -2605,3 +2605,12 @@
    fun:_ZN14RenderViewHost14OnMsgDOMUISendERK4GURLRKSsS4_
    fun:_Z16DispatchToMethodI14RenderViewHostMS0_FvRK4GURLRKSsS5_ES1_SsSsEvPT_T0_RK6Tuple3IT1_T2_T3_E
 }
+{
+   bug_55533
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN5IDMapIN3IPC7Channel8ListenerEL23IDMapOwnershipSemantics*
+   fun:_ZN17RenderProcessHost*Profile
+   fun:_ZN21MockRenderProcessHost*Profile
+}
