@@ -128,7 +128,18 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
     DCHECK(proxy_service_);
 
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
-    http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
+
+    url_security_manager_.reset(
+        net::URLSecurityManager::Create(NULL, NULL));
+
+    std::string csv_auth_schemes = "basic,digest,ntlm,negotiate";
+    std::vector<std::string> supported_schemes;
+    SplitString(csv_auth_schemes, ',', &supported_schemes);
+
+    http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
+        supported_schemes, url_security_manager_.get(), host_resolver_, false,
+        false);
+
     http_transaction_factory_ = new net::HttpCache(
         net::HttpNetworkLayer::CreateFactory(host_resolver_,
                                              proxy_service_,
@@ -147,6 +158,7 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
   std::string user_agent_;
   MessageLoop* io_loop_;
   scoped_ptr<net::NetLog> net_log_;
+  scoped_ptr<net::URLSecurityManager> url_security_manager_;
 };
 
 // This class provides an interface to retrieve the URL request context for
