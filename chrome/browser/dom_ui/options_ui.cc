@@ -29,10 +29,8 @@
 #include "chrome/browser/dom_ui/font_settings_handler.h"
 #include "chrome/browser/dom_ui/import_data_handler.h"
 #include "chrome/browser/dom_ui/passwords_exceptions_handler.h"
-#include "chrome/browser/dom_ui/passwords_remove_all_handler.h"
 #include "chrome/browser/dom_ui/personal_options_handler.h"
 #include "chrome/browser/dom_ui/search_engine_manager_handler.h"
-#include "chrome/browser/dom_ui/stop_syncing_handler.h"
 #include "chrome/browser/dom_ui/sync_options_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -141,11 +139,9 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new PasswordsExceptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new PasswordsRemoveAllHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
-  AddOptionsPageUIHandler(localized_strings, new StopSyncingHandler());
   AddOptionsPageUIHandler(localized_strings, new SyncOptionsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings, new AboutPageHandler());

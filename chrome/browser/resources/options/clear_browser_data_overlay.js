@@ -92,7 +92,7 @@ cr.define('options', function() {
     if (state)
       $('clearBrowsingDataCommit').disabled = true;
     else
-      AlertOverlay.getInstance().updateCommitButtonState_();
+      ClearBrowserDataOverlay.getInstance().updateCommitButtonState_();
 
     function advanceThrobber() {
       var throbber = $('cbdThrobber');

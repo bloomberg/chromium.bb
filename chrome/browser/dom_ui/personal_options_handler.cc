@@ -49,6 +49,11 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
   localized_strings->SetString("stop_sync",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL));
+  localized_strings->SetString("stop_syncing_explanation",
+      l10n_util::GetStringFUTF16(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("stop_syncing_title",
+      l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE));
 
   localized_strings->SetString("passwords",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_GROUP_NAME));

@@ -41,12 +41,13 @@ var OptionsPage = options.OptionsPage;
         chrome.send('autoOpenFileTypesAction');
       };
       $('fontSettingsConfigureFontsOnlyButton').onclick = function(event) {
-        OptionsPage.showOverlay('fontSettingsOverlay');
+        OptionsPage.showPageByName('fontSettings');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
       if (!cr.isChromeOS) {
         $('optionsReset').onclick = function(event) {
-          AlertOverlay.show(localStrings.getString('optionsResetMessage'),
+          AlertOverlay.show(undefined,
+              localStrings.getString('optionsResetMessage'),
               localStrings.getString('optionsResetOkLabel'),
               localStrings.getString('optionsResetCancelLabel'),
               function() { chrome.send('resetToDefaults'); });
