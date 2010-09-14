@@ -766,7 +766,7 @@ WebKit::WebDeviceOrientationClientMock*
 TestShell::device_orientation_client_mock() {
   if (!device_orientation_client_mock_.get()) {
     device_orientation_client_mock_.reset(
-        new WebKit::WebDeviceOrientationClientMock());
+        WebKit::WebDeviceOrientationClientMock::create());
   }
   return device_orientation_client_mock_.get();
 }
