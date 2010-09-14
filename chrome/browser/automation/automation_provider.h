@@ -192,6 +192,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   CancelableRequestConsumer consumer_;
 
  private:
+  void OnUnhandledMessage();
+
   // IPC Message callbacks.
   void WindowSimulateDrag(int handle,
                           std::vector<gfx::Point> drag_path,
