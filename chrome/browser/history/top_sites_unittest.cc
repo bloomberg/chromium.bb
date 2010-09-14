@@ -1140,8 +1140,10 @@ TEST_F(TopSitesTest, Blacklisting) {
   EXPECT_EQ("http://google.com/", urls()[1].url.spec());
   EXPECT_EQ(welcome_url(), urls()[2].url);
   EXPECT_EQ(themes_url(), urls()[3].url);
+  EXPECT_FALSE(top_sites().HasBlacklistedItems());
 
   top_sites().AddBlacklistedURL(GURL("http://google.com/"));
+  EXPECT_TRUE(top_sites().HasBlacklistedItems());
   {
     Lock& l = lock();
     AutoLock lock(l);  // IsBlacklisted must be in a lock.
@@ -1162,6 +1164,7 @@ TEST_F(TopSitesTest, Blacklisting) {
   EXPECT_EQ(themes_url(), urls()[2].url);
 
   top_sites().AddBlacklistedURL(welcome_url());
+  EXPECT_TRUE(top_sites().HasBlacklistedItems());
   top_sites().GetMostVisitedURLs(
       &c,
       NewCallback(static_cast<TopSitesTest*>(this),
@@ -1171,6 +1174,7 @@ TEST_F(TopSitesTest, Blacklisting) {
   EXPECT_EQ(themes_url(), urls()[1].url);
 
   top_sites().RemoveBlacklistedURL(GURL("http://google.com/"));
+  EXPECT_TRUE(top_sites().HasBlacklistedItems());
   {
     Lock& l = lock();
     AutoLock lock(l);  // IsBlacklisted must be in a lock.
@@ -1187,6 +1191,7 @@ TEST_F(TopSitesTest, Blacklisting) {
   EXPECT_EQ(themes_url(), urls()[2].url);
 
   top_sites().ClearBlacklistedURLs();
+  EXPECT_FALSE(top_sites().HasBlacklistedItems());
   top_sites().GetMostVisitedURLs(
       &c,
       NewCallback(static_cast<TopSitesTest*>(this),

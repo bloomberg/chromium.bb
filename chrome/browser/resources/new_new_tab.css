@@ -232,7 +232,7 @@ html[dir=rtl] #attribution {
 }
 
 #attribution.obscured {
-  opacity: 0.3;
+  visibility: hidden;
 }
 
 html[hasattribution=false] #attribution > div {
@@ -309,39 +309,6 @@ html[anim=true] .section > h2 > .disclosure {
   -webkit-padding-end: 5px;
   position: relative;
   z-index: 2;
-}
-
-.section > h2 .settings-wrapper {
-  position: absolute;
-  top: -1px;
-  right: 0;
-  width: 21px;
-  height: 21px;
-  z-index: 3;
-}
-
-html[dir=rtl] .section > h2 .settings-wrapper {
-  left: 0;
-  right: auto;
-}
-
-.section > h2 .settings {
-  /* TODO(aa): Need a better image. This one is semi-transparent. Also, I think
-  a gear would be better. */
-  background-color: transparent;
-  background-image: url(chrome://theme/IDR_BALLOON_WRENCH);
-  background-position: center center;
-  background-repeat: no-repeat;
-  border: 0;
-  height: 13px;
-  left: 5px;
-  position: absolute;
-  top: 5px;
-  width: 13px;
-}
-
-.section.hidden > h2 .settings-wrapper {
-  display: none;
 }
 
 .maxiview {

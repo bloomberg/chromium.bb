@@ -669,6 +669,10 @@ $('main').addEventListener('click', function(e) {
   toggleSectionVisibilityAndAnimate(p.getAttribute('section'));
 });
 
+$('most-visited-settings').addEventListener('click', function() {
+  $('clear-all-blacklisted').execute();
+});
+
 function toggleSectionVisibilityAndAnimate(section) {
   if (!section)
     return;
@@ -924,9 +928,10 @@ var mostVisited = new MostVisited(
     useSmallGrid(),
     shownSections & Section.THUMB);
 
-function mostVisitedPages(data, firstRun) {
+function mostVisitedPages(data, firstRun, hasBlacklistedUrls) {
   logEvent('received most visited pages');
 
+  mostVisited.updateSettingsLink(hasBlacklistedUrls);
   mostVisited.data = data;
   mostVisited.layout();
   layoutSections();

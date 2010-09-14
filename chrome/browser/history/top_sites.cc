@@ -669,6 +669,11 @@ void TopSites::StartMigration() {
   MigratePinnedURLs();
 }
 
+bool TopSites::HasBlacklistedItems() const {
+  AutoLock lock(lock_);
+  return !blacklist_->empty();
+}
+
 void TopSites::AddBlacklistedURL(const GURL& url) {
   AutoLock lock(lock_);
   RemovePinnedURLLocked(url);

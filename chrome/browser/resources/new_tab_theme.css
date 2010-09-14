@@ -1,6 +1,6 @@
 html,
-.section > h2 .settings-wrapper,
-.section > h2 span {
+.section > h2 span,
+#most-visited-settings {
   background-attachment: fixed;
   background-color: $2; /* COLOR_NTP_BACKGROUND */
   background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
@@ -9,8 +9,8 @@ html,
 }
 
 html[bookmarkbarattached='true'],
-html[bookmarkbarattached='true'] .section > h2 .settings-wrapper,
-html[bookmarkbarattached='true'] .section > h2 span {
+html[bookmarkbarattached='true'] .section > h2 span,
+html[bookmarkbarattached='true'] #most-visited-settings {
   background-position: $4;
 }
 

@@ -104,6 +104,13 @@ var MostVisited = (function() {
       this.data[sourceIndex] = destinationData;
     },
 
+    updateSettingsLink: function(hasBlacklistedUrls) {
+      if (hasBlacklistedUrls)
+        $('most-visited-settings').classList.add('has-blacklist');
+      else
+        $('most-visited-settings').classList.remove('has-blacklist');
+    },
+
     blacklist: function(el) {
       var self = this;
       var url = el.href;
@@ -126,7 +133,11 @@ var MostVisited = (function() {
 
       // Send 'getMostVisitedPages' with a callback since we want to find the
       // new page and add that in the place of the removed page.
-      chromeSend('getMostVisited', [], 'mostVisitedPages', function(data) {
+      chromeSend('getMostVisited', [], 'mostVisitedPages',
+                 function(data, firstRun, hasBlacklistedUrls) {
+        // Update settings link.
+        self.updateSettingsLink(hasBlacklistedUrls);
+
         // Find new item.
         var newItem;
         for (var i = 0; i < data.length; i++) {

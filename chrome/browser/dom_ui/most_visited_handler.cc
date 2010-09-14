@@ -132,9 +132,13 @@ void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
 
 void MostVisitedHandler::SendPagesValue() {
   if (pages_value_.get()) {
+    history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
     FundamentalValue first_run(IsFirstRun());
+    FundamentalValue has_blacklisted_urls(ts->HasBlacklistedItems());
     dom_ui_->CallJavascriptFunction(L"mostVisitedPages",
-                                    *(pages_value_.get()), first_run);
+                                    *(pages_value_.get()),
+                                    first_run,
+                                    has_blacklisted_urls);
     pages_value_.reset();
   }
 }

@@ -102,6 +102,9 @@ class TopSites :
 
   // Blacklisted URLs
 
+  // Returns true if there is at least one item in the blacklist.
+  bool HasBlacklistedItems() const;
+
   // Add a  URL to the blacklist.
   void AddBlacklistedURL(const GURL& url);
 
