@@ -526,7 +526,7 @@ class Browser : public TabStripModelDelegate,
   void ShowDownloadsTab();
   void ShowExtensionsTab();
   void ShowBrokenPageTab(TabContents* contents);
-  void ShowOptionsTab(const char* sub_page);
+  void ShowOptionsTab(const std::string& sub_page);
   void OpenClearBrowsingDataDialog();
   void OpenOptionsDialog();
   void OpenKeywordEditor();

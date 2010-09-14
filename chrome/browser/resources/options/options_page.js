@@ -49,6 +49,16 @@ cr.define('options', function() {
   };
 
   /**
+   * Called on load. Dispatch the URL hash to the given page's handleHash
+   * function.
+   * @param {string} pageName The string name of the (registered) options page.
+   * @param {string} hash The value of the hash component of the URL.
+   */
+  OptionsPage.handleHashForPage = function(pageName, hash) {
+    OptionsPage.registeredPages_[pageName].handleHash(hash);
+  };
+
+  /**
    * Shows a registered Overlay page.
    * @param {string} overlayName Page name.
    */
@@ -225,7 +235,18 @@ cr.define('options', function() {
       }
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
-    }
+    },
+
+    /**
+     * Handles a hash value in the URL (such as bar in
+     * chrome://options/foo#bar). Called on page load. By default, this shows
+     * an overlay that matches the hash name, but can be overriden by individual
+     * OptionsPage subclasses to get other behavior.
+     * @param {string} hash The hash value.
+     */
+    handleHash: function(hash) {
+      OptionsPage.showOverlay(hash);
+    },
   };
 
   // Export

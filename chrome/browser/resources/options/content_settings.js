@@ -59,6 +59,16 @@ cr.define('options', function() {
         OptionsPage.showPageByName('cookiesView');
       };
     },
+
+    /**
+     * Handles a hash value in the URL (such as bar in
+     * chrome://options/foo#bar). Overrides the default action of showing an
+     * overlay by instead navigating to a particular subtab.
+     * @param {string} hash The hash value.
+     */
+    handleHash: function(hash) {
+      OptionsPage.showTab($(hash + '-nav-tab'));
+    },
   };
 
   /**

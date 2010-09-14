@@ -25,29 +25,6 @@ typedef HostContentSettingsMap::ContentSettingsDetails ContentSettingsDetails;
 
 namespace {
 
-std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-      return "cookies";
-    case CONTENT_SETTINGS_TYPE_IMAGES:
-      return "images";
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      return "javascript";
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return "plugins";
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-      return "popups";
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      return "location";
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      return "notifications";
-
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
   if (name == "cookies")
     return CONTENT_SETTINGS_TYPE_COOKIES;
@@ -485,4 +462,29 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
       L"ContentSettings.patternValidityCheckComplete", *type,
                                                        *pattern_value.get(),
                                                        *valid_value.get());
+}
+
+// static
+std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
+    ContentSettingsType type) {
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+      return "cookies";
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+      return "images";
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+      return "javascript";
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      return "plugins";
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      return "popups";
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      return "location";
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return "notifications";
+
+    default:
+      NOTREACHED();
+      return "";
+  }
 }

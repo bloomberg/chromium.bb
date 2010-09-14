@@ -28,6 +28,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Gets a string identifier for the group name, for use in HTML.
+  static std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
+
  private:
   void UpdateAllExceptionsDefaultsFromModel();
   void UpdateExceptionsDefaultFromModel(ContentSettingsType type);

@@ -198,9 +198,10 @@ function load() {
   var hash = document.location.hash;
 
   if (path.length > 1) {
-    OptionsPage.showPageByName(path.slice(1));
+    var pageName = path.slice(1);
+    OptionsPage.showPageByName(pageName);
     if (hash.length > 1)
-      OptionsPage.showOverlay(hash.slice(1));
+      OptionsPage.handleHashForPage(pageName, hash.slice(1));
   } else {
     // TODO(csilv): Save/restore last selected page.
     if (cr.isChromeOS) {

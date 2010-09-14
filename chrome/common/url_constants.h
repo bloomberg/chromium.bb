@@ -130,6 +130,7 @@ extern const char kAdvancedOptionsSubPage[];
 extern const char kSearchEnginesOptionsSubPage[];
 extern const char kClearBrowserDataSubPage[];
 extern const char kImportDataSubPage[];
+extern const char kContentSettingsSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kSystemOptionsSubPage[];
 extern const char kLanguageOptionsSubPage[];

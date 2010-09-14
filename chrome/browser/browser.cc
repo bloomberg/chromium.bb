@@ -36,6 +36,7 @@
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/dock_info.h"
+#include "chrome/browser/dom_ui/content_settings_handler.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -139,6 +140,8 @@ static const char* const kHelpContentUrl =
 static const std::string kBrokenPageUrl =
     "http://www.google.com/support/chrome/bin/request.py?contact_type="
     "broken_website&format=inproduct&p.page_title=$1&p.page_url=$2";
+
+static const std::string kHashMark = "#";
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1775,8 +1778,8 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
   ShowSingletonTab(GURL(report_page_url));
 }
 
-void Browser::ShowOptionsTab(const char* sub_page) {
-  GURL url(StringPrintf("%s%s", chrome::kChromeUIOptionsURL, sub_page));
+void Browser::ShowOptionsTab(const std::string& sub_page) {
+  GURL url(chrome::kChromeUIOptionsURL + sub_page);
 
   // See if there is already an options tab open that we can use.
   for (int i = 0; i < tabstrip_model_.count(); i++) {
@@ -1805,8 +1808,9 @@ void Browser::OpenClearBrowsingDataDialog() {
                             profile_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
-    ShowOptionsTab(StringPrintf("%s#%s", chrome::kAdvancedOptionsSubPage,
-        chrome::kClearBrowserDataSubPage).c_str());
+    ShowOptionsTab(
+        chrome::kAdvancedOptionsSubPage + kHashMark +
+        chrome::kClearBrowserDataSubPage);
   } else {
     window_->ShowClearBrowsingDataDialog();
   }
@@ -1826,8 +1830,9 @@ void Browser::OpenKeywordEditor() {
   UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"), profile_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
-    ShowOptionsTab(StringPrintf("%s#%s", chrome::kBrowserOptionsSubPage,
-        chrome::kSearchEnginesOptionsSubPage).c_str());
+    ShowOptionsTab(
+        chrome::kBrowserOptionsSubPage + kHashMark +
+        chrome::kSearchEnginesOptionsSubPage);
   } else {
     window_->ShowSearchEnginesDialog();
   }
@@ -1841,8 +1846,9 @@ void Browser::OpenImportSettingsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"), profile_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
-    ShowOptionsTab(StringPrintf("%s#%s", chrome::kPersonalOptionsSubPage,
-        chrome::kImportDataSubPage).c_str());
+    ShowOptionsTab(
+        chrome::kPersonalOptionsSubPage + kHashMark +
+        chrome::kImportDataSubPage);
   } else {
     window_->ShowImportDialog();
   }
@@ -2978,8 +2984,16 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
 }
 
 void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
-  window()->ShowContentSettingsWindow(content_type,
-                                      profile_->GetOriginalProfile());
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    ShowOptionsTab(
+        chrome::kContentSettingsSubPage + kHashMark +
+        ContentSettingsHandler::ContentSettingsTypeToGroupName(content_type));
+  } else {
+    window()->ShowContentSettingsWindow(content_type,
+                                        profile_->GetOriginalProfile());
+  }
 }
 
 void Browser::ShowCollectedCookiesDialog(TabContents *tab_contents) {
