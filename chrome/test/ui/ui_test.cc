@@ -195,43 +195,14 @@ void UITestBase::LaunchBrowserAndServer() {
   server_.reset(CreateAutomationProxy(
                     TestTimeouts::command_execution_timeout_ms()));
 
-  const int kTries = 3;
-  for (int i = 0; i < kTries; i++) {
-    if (i > 0) {
-      LOG(ERROR) << "Launching browser again, retry #" << i;
-    }
+  LaunchBrowser(launch_arguments_, clear_profile_);
+  server_->WaitForAppLaunch();
+  if (wait_for_initial_loads_)
+    ASSERT_TRUE(server_->WaitForInitialLoads());
+  else
+    PlatformThread::Sleep(sleep_timeout_ms());
 
-    LaunchBrowser(launch_arguments_, clear_profile_);
-    AutomationLaunchResult launch_result = server_->WaitForAppLaunch();
-    if (launch_result == AUTOMATION_SUCCESS) {
-      bool initial_loads_result = false;
-      if (wait_for_initial_loads_) {
-        initial_loads_result = server_->WaitForInitialLoads();
-      } else {
-        PlatformThread::Sleep(sleep_timeout_ms());
-        initial_loads_result = true;
-      }
-
-      if (initial_loads_result) {
-        if (automation()->SetFilteredInet(ShouldFilterInet())) {
-          return;
-        } else {
-          LOG(ERROR) << "SetFilteredInet failed";
-        }
-      } else {
-        LOG(ERROR) << "WaitForInitialLoadsFailed";
-      }
-    } else {
-      LOG(ERROR) << "WaitForAppLaunch failed: " << launch_result;
-    }
-
-    // The browser is likely hosed or already down at this point. Do not wait
-    // for it, just kill anything that is still running, preparing a clean
-    // environment for the next retry.
-    CleanupAppProcesses();
-  }
-
-  FAIL() << "Failed to launch browser";
+  EXPECT_TRUE(automation()->SetFilteredInet(ShouldFilterInet()));
 }
 
 void UITestBase::CloseBrowserAndServer() {
