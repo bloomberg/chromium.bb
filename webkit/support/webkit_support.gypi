@@ -16,6 +16,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         'appcache',
+        'blob',
         'database',
         'glue',
       ],

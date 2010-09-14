@@ -44,8 +44,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-#include "webkit/blob/blob_storage_controller.h"
-#include "webkit/blob/blob_url_request_job.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
@@ -104,16 +102,6 @@ class URLRequestTestShellFileJob : public URLRequestFileJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestTestShellFileJob);
 };
 
-URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
-                                        const std::string& scheme) {
-  webkit_blob::BlobStorageController* blob_storage_controller =
-      static_cast<TestShellRequestContext*>(request->context())->
-          blob_storage_controller();
-  return new webkit_blob::BlobURLRequestJob(
-      request,
-      blob_storage_controller->GetBlobDataFromUrl(request->url()),
-      NULL);
-}
 
 }  // namespace
 
@@ -157,8 +145,6 @@ TestShell::TestShell()
     filter->AddHostnameHandler("test-shell-resource", "inspector",
                                &URLRequestTestShellFileJob::InspectorFactory);
     url_util::AddStandardScheme("test-shell-resource");
-
-    URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
 
     if (!file_system_root_.CreateUniqueTempDir()) {
       LOG(WARNING) << "Failed to create a temp dir for the filesystem."

@@ -58,8 +58,10 @@
 #include "net/socket/ssl_client_socket_nss_factory.h"
 #endif
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_storage_controller.h"
+#include "webkit/blob/blob_url_request_job.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
@@ -87,6 +89,17 @@ struct TestShellRequestContextParams {
   bool no_proxy;
   bool accept_all_cookies;
 };
+
+static URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
+                                               const std::string& scheme) {
+  webkit_blob::BlobStorageController* blob_storage_controller =
+      static_cast<TestShellRequestContext*>(request->context())->
+          blob_storage_controller();
+  return new webkit_blob::BlobURLRequestJob(
+      request,
+      blob_storage_controller->GetBlobDataFromUrl(request->url()),
+      NULL);
+}
 
 TestShellRequestContextParams* g_request_context_params = NULL;
 URLRequestContext* g_request_context = NULL;
@@ -123,9 +136,11 @@ class IOThread : public base::Thread {
 
     SimpleAppCacheSystem::InitializeOnIOThread(g_request_context);
     SimpleSocketStreamBridge::InitializeOnIOThread(g_request_context);
+
     TestShellWebBlobRegistryImpl::InitializeOnIOThread(
         static_cast<TestShellRequestContext*>(g_request_context)->
             blob_storage_controller());
+    URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
   }
 
   virtual void CleanUp() {
