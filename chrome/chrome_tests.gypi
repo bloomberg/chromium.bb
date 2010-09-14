@@ -867,6 +867,7 @@
         'browser/chromeos/login/owner_manager_unittest.cc',
         'browser/chromeos/login/ownership_service_unittest.cc',
         'browser/chromeos/login/signed_settings_unittest.cc',
+        'browser/chromeos/login/signed_settings_helper_unittest.cc',
         'browser/chromeos/notifications/desktop_notifications_unittest.cc',
         'browser/chromeos/offline/offline_load_page_unittest.cc',
         'browser/chromeos/options/language_config_model_unittest.cc',

@@ -551,6 +551,8 @@
         'browser/chromeos/login/screen_observer.h',
         'browser/chromeos/login/signed_settings.cc',
         'browser/chromeos/login/signed_settings.h',
+        'browser/chromeos/login/signed_settings_helper.cc',
+        'browser/chromeos/login/signed_settings_helper.h',
         'browser/chromeos/login/update_screen.cc',
         'browser/chromeos/login/update_screen.h',
         'browser/chromeos/login/update_view.cc',

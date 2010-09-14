@@ -78,6 +78,7 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
 
  private:
   friend class SignedSettingsTest;
+  friend class SignedSettingsHelperTest;
 
   void set_service(OwnershipService* service) { service_ = service; }
 };

@@ -11,7 +11,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
-#include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/mock_ownership_service.h"
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,19 +62,6 @@ class Quitter : public DummyDelegate<bool> {
 };
 }  // anonymous namespace
 
-class MockService : public OwnershipService {
- public:
-  MOCK_METHOD0(IsAlreadyOwned, bool(void));
-  MOCK_METHOD0(StartLoadOwnerKeyAttempt, bool(void));
-  MOCK_METHOD0(StartTakeOwnershipAttempt, bool(void));
-  MOCK_METHOD2(StartSigningAttempt, void(const std::string&,
-                                         OwnerManager::Delegate*));
-  MOCK_METHOD3(StartVerifyAttempt, void(const std::string&,
-                                        const std::vector<uint8>&,
-                                        OwnerManager::Delegate*));
-  MOCK_METHOD0(CurrentUserIsOwner, bool(void));
-};
-
 class SignedSettingsTest : public ::testing::Test {
  public:
   SignedSettingsTest()
@@ -99,7 +86,7 @@ class SignedSettingsTest : public ::testing::Test {
     OwnerKeyUtils::set_factory(NULL);
   }
 
-  void mock_service(SignedSettings* s, MockService* m) {
+  void mock_service(SignedSettings* s, MockOwnershipService* m) {
     s->set_service(m);
   }
 
@@ -162,7 +149,7 @@ class SignedSettingsTest : public ::testing::Test {
   const std::string fake_email_;
   const std::string fake_prop_;
   const std::string fake_value_;
-  MockService m_;
+  MockOwnershipService m_;
 
   ScopedTempDir tmpdir_;
   FilePath tmpfile_;
