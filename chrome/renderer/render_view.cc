@@ -50,6 +50,7 @@
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
 #include "chrome/renderer/extension_groups.h"
+#include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
@@ -2283,6 +2284,13 @@ void RenderView::show(WebNavigationPolicy policy) {
   if (did_show_)
     return;
   did_show_ = true;
+
+  // Extensions and apps always allowed to create unrequested popups. The second
+  // check is necessary to include content scripts.
+  if (ExtensionRendererInfo::GetByURL(creator_url_) ||
+      bindings_utils::GetInfoForCurrentContext()) {
+    opened_by_user_gesture_ = true;
+  }
 
   // Force new windows to a popup if they were not opened with a user gesture.
   if (!opened_by_user_gesture_) {

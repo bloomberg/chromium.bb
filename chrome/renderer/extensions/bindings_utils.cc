@@ -73,6 +73,11 @@ ContextList GetContextsForExtension(const std::string& extension_id) {
 }
 
 ContextInfo* GetInfoForCurrentContext() {
+  // This can happen in testing scenarios and v8::Context::GetCurrent() crashes
+  // if there is no JavaScript currently running.
+  if (!v8::Context::InContext())
+    return NULL;
+
   v8::Local<v8::Context> context = v8::Context::GetCurrent();
   ContextList::iterator context_iter = FindContext(context);
   if (context_iter == GetContexts().end())
