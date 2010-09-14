@@ -203,6 +203,7 @@
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" type="BINDATA" />
+      <include name="IDR_MATCH_PREVIEW_TEAR" file="match_preview_tear.png" type="BINDATA" />
       <include name="IDR_MAXIMIZE_BUTTON_MASK" file="maximize_button_mask.png" type="BINDATA" />
       <include name="IDR_MINIMIZE_BUTTON_MASK" file="minimize_button_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON" file="newtab.png" type="BINDATA" />
