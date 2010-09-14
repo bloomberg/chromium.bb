@@ -202,6 +202,7 @@ body {
 #dataTabContent,
 #dnsTabContent,
 #socketsTabContent,
+#serviceProvidersTabContent,
 #testTabContent {
   overflow: auto;
   padding: 10px;

@@ -51,6 +51,9 @@
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/tcp_client_socket_pool.h"
 #include "net/url_request/url_request_context.h"
+#ifdef OS_WIN
+#include "chrome/browser/net/service_providers_win.h"
+#endif
 
 namespace {
 
@@ -210,6 +213,9 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnStartConnectionTests(const ListValue* list);
   void OnGetHttpCacheInfo(const ListValue* list);
   void OnGetSocketPoolInfo(const ListValue* list);
+#ifdef OS_WIN
+  void OnGetServiceProviders(const ListValue* list);
+#endif
 
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
@@ -393,6 +399,11 @@ void NetInternalsMessageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "getSocketPoolInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetSocketPoolInfo));
+#ifdef OS_WIN
+  dom_ui_->RegisterMessageCallback(
+      "getServiceProviders",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetServiceProviders));
+#endif
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -580,6 +591,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   OnGetHostResolverCache(NULL);
   OnGetHttpCacheInfo(NULL);
   OnGetSocketPoolInfo(NULL);
+#ifdef OS_WIN
+  OnGetServiceProviders(NULL);
+#endif
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
@@ -769,15 +783,57 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
     const ListValue* list) {
-  net::HttpNetworkSession *http_network_session =
+  net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(context_getter_->GetURLRequestContext());
 
-  Value *socket_pool_info = NULL;
+  Value* socket_pool_info = NULL;
   if (http_network_session)
     socket_pool_info = http_network_session->SocketPoolInfoToValue();
 
   CallJavascriptFunction(L"g_browser.receivedSocketPoolInfo", socket_pool_info);
 }
+
+#ifdef OS_WIN
+void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
+    const ListValue* list) {
+
+  DictionaryValue* service_providers = new DictionaryValue();
+
+  WinsockLayeredServiceProviderList layered_providers;
+  GetWinsockLayeredServiceProviders(&layered_providers);
+  ListValue* layered_provider_list = new ListValue();
+  for (size_t i = 0; i < layered_providers.size(); ++i) {
+    DictionaryValue* service_dict = new DictionaryValue();
+    service_dict->SetString("name", layered_providers[i].name);
+    service_dict->SetInteger("version", layered_providers[i].version);
+    service_dict->SetInteger("chain_length", layered_providers[i].chain_length);
+    service_dict->SetInteger("socket_type", layered_providers[i].socket_type);
+    service_dict->SetInteger("socket_protocol",
+        layered_providers[i].socket_protocol);
+    service_dict->SetString("path", layered_providers[i].path);
+
+    layered_provider_list->Append(service_dict);
+  }
+  service_providers->Set("service_providers", layered_provider_list);
+
+  WinsockNamespaceProviderList namespace_providers;
+  GetWinsockNamespaceProviders(&namespace_providers);
+  ListValue* namespace_list = new ListValue;
+  for (size_t i = 0; i < namespace_providers.size(); ++i) {
+    DictionaryValue* namespace_dict = new DictionaryValue();
+    namespace_dict->SetString("name", namespace_providers[i].name);
+    namespace_dict->SetBoolean("active", namespace_providers[i].active);
+    namespace_dict->SetInteger("version", namespace_providers[i].version);
+    namespace_dict->SetInteger("type", namespace_providers[i].type);
+
+    namespace_list->Append(namespace_dict);
+  }
+  service_providers->Set("namespace_providers", namespace_list);
+
+  CallJavascriptFunction(L"g_browser.receivedServiceProviders",
+                         service_providers);
+}
+#endif
 
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     net::NetLog::EventType type,

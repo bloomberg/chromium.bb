@@ -24,6 +24,7 @@ found in the LICENSE file.
     <script src="loggrouper.js"></script>
     <script src="proxyview.js"></script>
     <script src="socketsview.js"></script>
+    <script src="serviceprovidersview.js"></script>
   </head>
   <body onload="onLoaded()">
     <!-- Tab switcher for main categories. -->
@@ -35,6 +36,8 @@ found in the LICENSE file.
         <li><a href="#dns" id=dnsTab>DNS</a></li>
         <li><a href="#sockets" id=socketsTab>Sockets</a></li>
         <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
+        <!-- Tab is only shown on Windows -->
+        <li><a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a></li>
         <li><a href="#tests" id=testTab>Tests</a></li>
       </ul>
       <div style="clear: both;"></div>
@@ -130,6 +133,37 @@ found in the LICENSE file.
 
       <h4>Statistics</h4>
       <div id=httpCacheStats>Nothing loaded yet.</div>
+    </div>
+    <!-- Only shown on Windows -->
+    <div id=serviceProvidersTabContent style="display: none;">
+      <h4>Layered Service Providers</h4>
+      <table class="styledTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Type</th>
+            <th>Socket Type</th>
+            <th>Protocol</th>
+            <th>Path</th>
+          </tr>
+        </thead>
+        <tbody id=serviceProvidersTbody>
+        </tbody>
+      </table>
+      <h4>Namespace Providers</h4>
+      <table class="styledTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Namespace</th>
+            <th>Active</th>
+          </tr>
+        </thead>
+        <tbody id=namespaceProvidersTbody>
+        </tbody>
+      </table>
     </div>
     <!-- Import/Export data -->
     <div id=dataTabContent>

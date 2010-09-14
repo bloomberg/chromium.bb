@@ -83,6 +83,15 @@ function onLoaded() {
                                     "socketTabTbody",
                                     "socketPoolGroupsDiv");
 
+
+  var serviceView;
+  if (g_browser.isPlatformWindows()) {
+    serviceView = new ServiceProvidersView("serviceProvidersTab",
+                                           "serviceProvidersTabContent",
+                                           "serviceProvidersTbody",
+                                           "namespaceProvidersTbody");
+  }
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher =
       new TabSwitcherView(new DivView('categoryTabHandles'));
@@ -94,6 +103,8 @@ function onLoaded() {
   categoryTabSwitcher.addTab('socketsTab', socketsView, false);
   categoryTabSwitcher.addTab('httpCacheTab', httpCacheView, false);
   categoryTabSwitcher.addTab('dataTab', dataView, false);
+  if (g_browser.isPlatformWindows())
+    categoryTabSwitcher.addTab('serviceProvidersTab', serviceView, false);
   categoryTabSwitcher.addTab('testTab', testView, false);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
@@ -142,6 +153,7 @@ function BrowserBridge() {
   this.hostResolverCache_ =
       new PollableDataHelper('onHostResolverCacheChanged');
   this.socketPoolInfo_ = new PollableDataHelper('onSocketPoolInfoChanged');
+  this.serviceProviders_ = new PollableDataHelper('onServiceProvidersChanged');
 
   // Cache of the data received.
   // TODO(eroman): the controls to clear data in the "Requests" tab should be
@@ -167,6 +179,10 @@ BrowserBridge.prototype.sendReady = function() {
   // the observers.
   window.setInterval(
       this.doPolling_.bind(this), BrowserBridge.POLL_INTERVAL_MS);
+};
+
+BrowserBridge.prototype.isPlatformWindows = function() {
+  return /Win/.test(navigator.platform);
 };
 
 BrowserBridge.prototype.sendGetProxySettings = function() {
@@ -206,6 +222,10 @@ BrowserBridge.prototype.sendGetHttpCacheInfo = function() {
 
 BrowserBridge.prototype.sendGetSocketPoolInfo = function() {
   chrome.send('getSocketPoolInfo');
+};
+
+BrowserBridge.prototype.sendGetServiceProviders = function() {
+  chrome.send('getServiceProviders');
 };
 
 //------------------------------------------------------------------------------
@@ -268,6 +288,10 @@ function(hostResolverCache) {
 
 BrowserBridge.prototype.receivedSocketPoolInfo = function(socketPoolInfo) {
   this.socketPoolInfo_.update(socketPoolInfo);
+};
+
+BrowserBridge.prototype.receivedServiceProviders = function(serviceProviders) {
+  this.serviceProviders_.update(serviceProviders);
 };
 
 BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
@@ -388,6 +412,16 @@ BrowserBridge.prototype.addSocketPoolInfoObserver = function(observer) {
 };
 
 /**
+ * Adds a listener of the service providers info. |observer| will be called
+ * back when data is received, through:
+ *
+ *   observer.onServiceProvidersChanged(serviceProviders)
+ */
+BrowserBridge.prototype.addServiceProvidersObserver = function(observer) {
+  this.serviceProviders_.addObserver(observer);
+};
+
+/**
  * Adds a listener for the progress of the connection tests.
  * The observer will be called back with:
  *
@@ -451,6 +485,8 @@ BrowserBridge.prototype.doPolling_ = function() {
   this.sendGetHostResolverCache();
   this.sendGetHttpCacheInfo();
   this.sendGetSocketPoolInfo();
+  if (this.isPlatformWindows())
+    this.sendGetServiceProviders();
 };
 
 /**

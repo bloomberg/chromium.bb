@@ -2102,6 +2102,8 @@
         'browser/net/resolve_proxy_msg_helper.h',
         'browser/net/sdch_dictionary_fetcher.cc',
         'browser/net/sdch_dictionary_fetcher.h',
+        'browser/net/service_providers_win.cc',
+        'browser/net/service_providers_win.h',
         'browser/net/sqlite_persistent_cookie_store.cc',
         'browser/net/sqlite_persistent_cookie_store.h',
         'browser/net/ssl_config_service_manager.h',
