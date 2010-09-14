@@ -363,9 +363,9 @@ extern const char kKioskMode[];
 #endif
 
 #ifndef NDEBUG
+extern const char kClearTokenService[];
 extern const char kGearsPluginPathOverride[];
-extern const char kInvalidateSyncLogin[];
-extern const char kInvalidateSyncXmppLogin[];
+extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];
 #endif
 

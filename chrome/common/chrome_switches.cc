@@ -1220,16 +1220,15 @@ const char kKioskMode[]                     = "kiosk";
 #endif
 
 #ifndef NDEBUG
+// Clear the token service before using it.  This allows simulating
+// the expiration of credentials during testing.
+const char kClearTokenService[]             = "clear-token-service";
+
 // Debug only switch to specify which gears plugin dll to load.
 const char kGearsPluginPathOverride[]       = "gears-plugin-path";
 
-// Makes sure any sync login attempt will fail with an error.  (Only
-// used for testing.)
-const char kInvalidateSyncLogin[]           = "invalidate-sync-login";
-
-// Makes sure any sync xmpp login attempt will fail with an error.  (Only
-// used for testing.)
-const char kInvalidateSyncXmppLogin[]       = "invalidate-sync-xmpp-login";
+// Sets a token in the token service, for testing.
+const char kSetToken[]                      = "set-token";
 
 // Debug only switch to specify which websocket live experiment host to be used.
 // If host is specified, it also makes initial delay shorter (5 min to 5 sec)

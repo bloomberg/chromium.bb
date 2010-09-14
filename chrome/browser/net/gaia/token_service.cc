@@ -4,9 +4,11 @@
 
 #include "chrome/browser/net/gaia/token_service.h"
 
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -40,6 +42,24 @@ void TokenService::Initialize(const char* const source,
   // Thus we have to go for explicit access.
   web_data_service_ = profile->GetWebDataService(Profile::EXPLICIT_ACCESS);
   source_ = std::string(source);
+
+#ifndef NDEBUG
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  // Allow the token service to be cleared from the command line.
+  if (cmd_line->HasSwitch(switches::kClearTokenService))
+    EraseTokensFromDB();
+
+  // Allow a token to be injected from the command line.
+  if (cmd_line->HasSwitch(switches::kSetToken)) {
+    std::string value = cmd_line->GetSwitchValueASCII(switches::kSetToken);
+    int separator = value.find(':');
+    std::string service = value.substr(0, separator);
+    std::string token = value.substr(separator + 1);
+    token_map_[service] = token;
+    SaveAuthTokenToDB(service, token);
+  }
+#endif
+
   registrar_.Add(this,
                  NotificationType::TOKEN_UPDATED,
                  NotificationService::AllSources());

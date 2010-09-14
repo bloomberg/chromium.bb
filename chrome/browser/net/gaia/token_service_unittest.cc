@@ -6,6 +6,8 @@
 
 #include "chrome/browser/net/gaia/token_service_unittest.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
@@ -256,3 +258,23 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
 }
+
+#ifndef NDEBUG
+class TokenServiceCommandLineTest : public TokenServiceTestHarness {
+ public:
+  virtual void SetUp() {
+    CommandLine original_cl(*CommandLine::ForCurrentProcess());
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kSetToken, "my_service:my_value");
+    TokenServiceTestHarness::SetUp();
+    service_.UpdateCredentials(credentials_);
+
+    *CommandLine::ForCurrentProcess() = original_cl;
+  }
+};
+
+TEST_F(TokenServiceCommandLineTest, TestValueOverride) {
+  EXPECT_TRUE(service_.HasTokenForService("my_service"));
+  EXPECT_EQ("my_value", service_.GetTokenForService("my_service"));
+}
+#endif   // ifndef NDEBUG
