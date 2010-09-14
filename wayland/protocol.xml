@@ -1,4 +1,4 @@
-<protocol>
+<protocol name="wayland">
 
   <interface name="display" version="1">
     <request name="sync">

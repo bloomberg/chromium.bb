@@ -57,6 +57,8 @@ usage(int ret)
 #define XML_BUFFER_SIZE 4096
 
 struct protocol {
+	char *name;
+	char *uppercase_name;
 	struct wl_list interface_list;
 };
 
@@ -139,7 +141,15 @@ start_element(void *data, const char *element_name, const char **atts)
 			interface_name = atts[i + 1];
 	}
 
-	if (strcmp(element_name, "interface") == 0) {
+	if (strcmp(element_name, "protocol") == 0) {
+		if (name == NULL) {
+			fprintf(stderr, "no protocol name given\n");
+			exit(EXIT_FAILURE);
+		}
+
+		ctx->protocol->name = strdup(name);
+		ctx->protocol->uppercase_name = uppercase_dup(name);
+	} else if (strcmp(element_name, "interface") == 0) {
 		if (name == NULL) {
 			fprintf(stderr, "no interface name given\n");
 			exit(EXIT_FAILURE);
@@ -499,10 +509,11 @@ static void
 emit_header(struct protocol *protocol, int server)
 {
 	struct interface *i;
+	const char *s = server ? "SERVER" : "CLIENT";
 
 	printf("%s\n\n"
-	       "#ifndef WAYLAND_PROTOCOL_H\n"
-	       "#define WAYLAND_PROTOCOL_H\n"
+	       "#ifndef %s_%s_PROTOCOL_H\n"
+	       "#define %s_%s_PROTOCOL_H\n"
 	       "\n"
 	       "#ifdef  __cplusplus\n"
 	       "extern \"C\" {\n"
@@ -510,7 +521,10 @@ emit_header(struct protocol *protocol, int server)
 	       "\n"
 	       "#include <stdint.h>\n"
 	       "#include \"wayland-util.h\"\n\n"
-	       "struct wl_client;\n\n", copyright);
+	       "struct wl_client;\n\n",
+	       copyright,
+	       protocol->uppercase_name, s,
+	       protocol->uppercase_name, s);
 
 	wl_list_for_each(i, &protocol->interface_list, link)
 		printf("struct wl_%s;\n", i->name);
