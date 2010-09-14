@@ -55,6 +55,7 @@ html[dir='rtl'] #close-overlay {
 }
 
 .overlay .button-strip {
+  padding-top: 20px;
   text-align: end;
 }
 
