@@ -58,6 +58,10 @@ const SkColor kFooterBottomColor = SkColorSetRGB(0xee, 0xee, 0xee);
 const SkColor kShortcutColor = SkColorSetRGB(0x61, 0x61, 0x61);
 const SkColor kDisabledShortcutColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
 
+// We'll use a bigger font size, so Chinese characters are more readable
+// in the candidate window.
+const int kFontSizeDelta = 2;  // Two size bigger.
+
 // The minimum width of candidate labels in the vertical candidate
 // window. We use this value to prevent the candidate window from being
 // too narrow when all candidates are short.
@@ -66,6 +70,29 @@ const int kMinCandidateLabelWidth = 100;
 // window. We use this value to prevent the candidate window from being
 // too wide when one of candidates are long.
 const int kMaxCandidateLabelWidth = 500;
+
+// VerticalCandidateLabel is used for rendering candidate text in
+// the vertical candidate window.
+class VerticalCandidateLabel : public views::Label {
+  virtual ~VerticalCandidateLabel() {}
+
+  // Returns the preferred size, but guarantees that the width has at
+  // least kMinCandidateLabelWidth pixels.
+  virtual gfx::Size GetPreferredSize() {
+    gfx::Size size = Label::GetPreferredSize();
+    // Hack. +2 is needed to prevent labels from getting elided like
+    // "abc..." in some cases. TODO(satorux): Figure out why it's
+    // necessary.
+    size.set_width(size.width() + 2);
+    if (size.width() < kMinCandidateLabelWidth) {
+      size.set_width(kMinCandidateLabelWidth);
+    }
+    if (size.width() > kMaxCandidateLabelWidth) {
+      size.set_width(kMaxCandidateLabelWidth);
+    }
+    return size;
+  }
+};
 
 // Wraps the given view with some padding, and returns it.
 views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
@@ -84,6 +111,150 @@ views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
   // Add the view contents.
   layout->AddView(view);  // |view| is owned by |wraper|, not |layout|.
   return wrapper;
+}
+
+// Creates shortcut text from the given index and the orientation.
+std::wstring CreateShortcutText(int index,
+    chromeos::InputMethodLookupTable::Orientation orientation) {
+  // Choose the character used for the shortcut label.
+  const wchar_t kShortcutCharacters[] = L"1234567890ABCDEF";
+  // The default character should not be used but just in case.
+  wchar_t shortcut_character = L'?';
+  // -1 to exclude the null character at the end.
+  if (index < static_cast<int>(arraysize(kShortcutCharacters) - 1)) {
+    shortcut_character = kShortcutCharacters[index];
+  }
+
+  std::wstring shortcut_text;
+  if (orientation == chromeos::InputMethodLookupTable::kVertical) {
+    shortcut_text = base::StringPrintf(L"%lc", shortcut_character);
+  } else {
+    shortcut_text = base::StringPrintf(L"%lc.", shortcut_character);
+  }
+
+  return shortcut_text;
+}
+
+// Creates the shortcut label, and returns it (never returns NULL).
+// The label text is not set in this function.
+views::Label* CreateShortcutLabel(
+    chromeos::InputMethodLookupTable::Orientation orientation) {
+  // Create the shortcut label. The label will be owned by
+  // |wrapped_shortcut_label|, hence it's deleted when
+  // |wrapped_shortcut_label| is deleted.
+  views::Label* shortcut_label = new views::Label;
+
+  if (orientation == chromeos::InputMethodLookupTable::kVertical) {
+    shortcut_label->SetFont(
+        shortcut_label->font().DeriveFont(kFontSizeDelta, gfx::Font::BOLD));
+  } else {
+    shortcut_label->SetFont(
+        shortcut_label->font().DeriveFont(kFontSizeDelta));
+  }
+  // TODO(satorux): Maybe we need to use language specific fonts for
+  // candidate_label, like Chinese font for Chinese input method?
+  shortcut_label->SetColor(kShortcutColor);
+
+  return shortcut_label;
+}
+
+// Wraps the shortcut label, then decorates wrapped shortcut label
+// and returns it (never returns NULL).
+// The label text is not set in this function.
+views::View* CreateWrappedShortcutLabel(views::Label* shortcut_label,
+    chromeos::InputMethodLookupTable::Orientation orientation) {
+  // Wrap it with padding.
+  const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
+  const gfx::Insets kHorizontalShortcutLabelInsets(1, 3, 1, 0);
+  const gfx::Insets insets =
+      (orientation == chromeos::InputMethodLookupTable::kVertical ?
+       kVerticalShortcutLabelInsets :
+       kHorizontalShortcutLabelInsets);
+  views::View* wrapped_shortcut_label =
+      WrapWithPadding(shortcut_label, insets);
+
+  // Add decoration based on the orientation.
+  if (orientation == chromeos::InputMethodLookupTable::kVertical) {
+    // Set the background color.
+    wrapped_shortcut_label->set_background(
+        views::Background::CreateSolidBackground(
+            kShortcutBackgroundColor));
+  }
+
+  return wrapped_shortcut_label;
+}
+
+// Creates the candidate label, and returns it (never returns NULL).
+// The label text is not set in this function.
+views::Label* CreateCandidateLabel(
+    chromeos::InputMethodLookupTable::Orientation orientation) {
+  views::Label* candidate_label = NULL;
+
+  // Create the candidate label. The label will be added to |this| as a
+  // child view, hence it's deleted when |this| is deleted.
+  if (orientation == chromeos::InputMethodLookupTable::kVertical) {
+    candidate_label = new VerticalCandidateLabel;
+  } else {
+    candidate_label = new views::Label;
+  }
+
+  // Change the font size.
+  candidate_label->SetFont(
+      candidate_label->font().DeriveFont(kFontSizeDelta));
+  candidate_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+
+  return candidate_label;
+}
+
+// Computes shortcut column width.
+int ComputeShortcutColumnWidth(
+    const chromeos::InputMethodLookupTable& lookup_table) {
+  int shortcut_column_width = 0;
+  // Create the shortcut label. The label will be owned by
+  // |wrapped_shortcut_label|, hence it's deleted when
+  // |wrapped_shortcut_label| is deleted.
+  views::Label* shortcut_label = CreateShortcutLabel(lookup_table.orientation);
+  scoped_ptr<views::View> wrapped_shortcut_label(
+      CreateWrappedShortcutLabel(shortcut_label, lookup_table.orientation));
+
+  // Compute the max width in shortcut labels.
+  // We'll create temporary shortcut labels, and choose the largest width.
+  for (int i = 0; i < lookup_table.page_size; ++i) {
+    shortcut_label->SetText(
+        CreateShortcutText(i, lookup_table.orientation));
+    shortcut_column_width =
+        std::max(shortcut_column_width,
+                 wrapped_shortcut_label->GetPreferredSize().width());
+  }
+
+  return shortcut_column_width;
+}
+
+// Computes candidate column width.
+int ComputeCandidateColumnWidth(
+    const chromeos::InputMethodLookupTable& lookup_table) {
+  int candidate_column_width = 0;
+  scoped_ptr<views::Label> candidate_label(
+      CreateCandidateLabel(lookup_table.orientation));
+
+  // Compute the start index of |lookup_table_|.
+  const int current_page_index =
+      lookup_table.cursor_absolute_index / lookup_table.page_size;
+  const size_t start_from = current_page_index * lookup_table.page_size;
+
+  // Compute the max width in candidate labels.
+  // We'll create temporary candidate labels, and choose the largest width.
+  for (size_t i = 0; i < lookup_table.candidates.size(); ++i) {
+    const size_t index = start_from + i;
+
+    candidate_label->SetText(
+        UTF8ToWide(lookup_table.candidates[index]));
+    candidate_column_width =
+        std::max(candidate_column_width,
+                 candidate_label->GetPreferredSize().width());
+  }
+
+  return candidate_column_width;
 }
 
 }  // namespace
@@ -166,8 +337,7 @@ class CandidateWindowView : public views::View {
  private:
   // Initializes the candidate views if needed.
   void MaybeInitializeCandidateViews(
-      int num_views,
-      InputMethodLookupTable::Orientation orientation);
+      const InputMethodLookupTable& lookup_table);
 
   // Creates the footer area, where we show status information.
   // For instance, we show a cursor position like 2/19.
@@ -219,6 +389,10 @@ class CandidateWindowView : public views::View {
   views::Label* header_label_;
   // The footer label is shown in the footer area.
   views::Label* footer_label_;
+
+  // Current columns width in |candidate_area_|.
+  int previous_shortcut_column_width_;
+  int previous_candidate_column_width_;
 };
 
 // CandidateRow renderes a row of a candidate.
@@ -228,16 +402,16 @@ class CandidateView : public views::View {
                 int index_in_page,
                 InputMethodLookupTable::Orientation orientation);
   virtual ~CandidateView() {}
-  void Init();
+  // Initializes the candidate view with the given column widths.
+  // A width of 0 means that the column is resizable.
+  void Init(int shortcut_column_width,
+            int candidate_column_width);
 
   // Sets candidate text to the given text.
   void SetCandidateText(const std::wstring& text);
 
   // Sets shortcut text to the given text.
   void SetShortcutText(const std::wstring& text);
-
-  // Sets shortcut text from the given integer.
-  void SetShortcutTextFromInt(int index);
 
   // Selects the candidate row. Changes the appearance to make it look
   // like a selected candidate.
@@ -283,29 +457,6 @@ class CandidateView : public views::View {
   views::Label* candidate_label_;
 };
 
-// VerticalCandidateLabel is used for rendering candidate text in
-// the vertical candidate window.
-class VerticalCandidateLabel : public views::Label {
-  virtual ~VerticalCandidateLabel() {}
-
-  // Returns the preferred size, but guarantees that the width has at
-  // least kMinCandidateLabelWidth pixels.
-  virtual gfx::Size GetPreferredSize() {
-    gfx::Size size = Label::GetPreferredSize();
-    // Hack. +2 is needed to prevent labels from getting elided like
-    // "abc..." in some cases. TODO(satorux): Figure out why it's
-    // necessary.
-    size.set_width(size.width() + 2);
-    if (size.width() < kMinCandidateLabelWidth) {
-      size.set_width(kMinCandidateLabelWidth);
-    }
-    if (size.width() > kMaxCandidateLabelWidth) {
-      size.set_width(kMaxCandidateLabelWidth);
-    }
-    return size;
-  }
-};
-
 // CandidateWindowController controls the CandidateWindow.
 class CandidateWindowController : public CandidateWindowView::Observer {
  public:
@@ -316,7 +467,7 @@ class CandidateWindowController : public CandidateWindowView::Observer {
   // Returns the work area of the monitor nearest the candidate window.
   gfx::Rect GetMonitorWorkAreaNearestWindow();
 
-  // Moves the candidate window per the the given cursor location, and the
+  // Moves the candidate window per the given cursor location, and the
   // horizontal offset.
   void MoveCandidateWindow(const gfx::Rect& cursor_location,
                            int horizontal_offset);
@@ -388,74 +539,38 @@ CandidateView::CandidateView(
       candidate_label_(NULL) {
 }
 
-void CandidateView::Init() {
+void CandidateView::Init(int shortcut_column_width,
+                         int candidate_column_width) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);  // |this| owns |layout|.
 
-  // Create the shortcut label. The label will eventually be part of the
-  // tree of |this| via |wrapped_shortcut_label|, hence it's deleted when
-  // |this| is deleted.
-  shortcut_label_ = new views::Label();
-
-  // Wrap it with padding.
-  const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
-  const gfx::Insets kHorizontalShortcutLabelInsets(1, 3, 1, 0);
-  const gfx::Insets insets =
-      (orientation_ == InputMethodLookupTable::kVertical ?
-       kVerticalShortcutLabelInsets :
-       kHorizontalShortcutLabelInsets);
+  // Create Labels.
+  shortcut_label_ = CreateShortcutLabel(orientation_);
   views::View* wrapped_shortcut_label =
-      WrapWithPadding(shortcut_label_, insets);
-  // We'll use a bigger font size, so Chinese characters are more readable
-  // in the candidate window.
-  const int kFontSizeDelta = 2;  // Two size bigger.
-  // Make the font bold, and change the size.
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    shortcut_label_->SetFont(
-        shortcut_label_->font().DeriveFont(kFontSizeDelta, gfx::Font::BOLD));
-  } else {
-    shortcut_label_->SetFont(
-        shortcut_label_->font().DeriveFont(kFontSizeDelta));
-  }
-  // TODO(satorux): Maybe we need to use language specific fonts for
-  // candidate_label, like Chinese font for Chinese input method?
-
-  // Add decoration based on the orientation.
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    // Set the background color.
-    wrapped_shortcut_label->set_background(
-        views::Background::CreateSolidBackground(
-            kShortcutBackgroundColor));
-  }
-  shortcut_label_->SetColor(kShortcutColor);
-
-  // Create the candidate label. The label will be added to |this| as a
-  // child view, hence it's deleted when |this| is deleted.
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    candidate_label_ = new VerticalCandidateLabel;
-  } else {
-    candidate_label_ = new views::Label;
-  }
-  // Change the font size.
-  candidate_label_->SetFont(
-      candidate_label_->font().DeriveFont(kFontSizeDelta));
-
-  candidate_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      CreateWrappedShortcutLabel(shortcut_label_, orientation_);
+  candidate_label_ = CreateCandidateLabel(orientation_);
 
   // Initialize the column set with two columns.
   views::ColumnSet* column_set = layout->AddColumnSet(0);
+
+  // If orientation is vertical, each column width is fixed.
+  // Otherwise the width is resizable.
+  const views::GridLayout::SizeType column_type =
+      orientation_ == InputMethodLookupTable::kVertical ?
+          views::GridLayout::FIXED : views::GridLayout::USE_PREF;
+
+  const int padding_column_width =
+      orientation_ == InputMethodLookupTable::kVertical ? 4 : 6;
+
+  // Set shortcut column type and width.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0, views::GridLayout::USE_PREF, 0, 0);
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    column_set->AddPaddingColumn(0, 4);
-  }
+                        0, column_type, shortcut_column_width, 0);
+  column_set->AddPaddingColumn(0, padding_column_width);
+
+  // Set candidate column type and width.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0, views::GridLayout::USE_PREF, 0, 0);
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    column_set->AddPaddingColumn(0, 4);
-  } else {
-    column_set->AddPaddingColumn(0, 6);
-  }
+                        0, column_type, candidate_column_width, 0);
+  column_set->AddPaddingColumn(0, padding_column_width);
 
   // Add the shortcut label and the candidate label.
   layout->StartRow(0, 0);
@@ -470,21 +585,6 @@ void CandidateView::SetCandidateText(const std::wstring& text) {
 
 void CandidateView::SetShortcutText(const std::wstring& text) {
   shortcut_label_->SetText(text);
-}
-
-void CandidateView::SetShortcutTextFromInt(int index) {
-  // Choose the character used for the shortcut label.
-  const wchar_t kShortcutCharacters[] = L"1234567890ABCDEF";
-  // The default character should not be used but just in case.
-  wchar_t shortcut_character = L'?';
-  if (index < static_cast<int>(arraysize(kShortcutCharacters) - 1)) {
-    shortcut_character = kShortcutCharacters[index];
-  }
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    shortcut_label_->SetText(base::StringPrintf(L"%lc", shortcut_character));
-  } else {
-    shortcut_label_->SetText(base::StringPrintf(L"%lc.", shortcut_character));
-  }
 }
 
 void CandidateView::Select() {
@@ -542,7 +642,9 @@ CandidateWindowView::CandidateWindowView(
       footer_area_(NULL),
       header_area_(NULL),
       header_label_(NULL),
-      footer_label_(NULL) {
+      footer_label_(NULL),
+      previous_shortcut_column_width_(0),
+      previous_candidate_column_width_(0) {
 }
 
 void CandidateWindowView::Init() {
@@ -616,8 +718,11 @@ void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
 void CandidateWindowView::UpdateCandidates(
     const InputMethodLookupTable& lookup_table) {
   // Initialize candidate views if necessary.
-  MaybeInitializeCandidateViews(lookup_table.page_size,
-                                lookup_table.orientation);
+  MaybeInitializeCandidateViews(lookup_table);
+
+  // In MaybeInitializeCandidateViews(),
+  // |lookup_table| values and |lookup_table_| values are compared,
+  // so this substitution is needed after the function.
   lookup_table_ = lookup_table;
 
   // Compute the index of the current page.
@@ -645,7 +750,8 @@ void CandidateWindowView::UpdateCandidates(
       // (ex. show 6, 7, 8, ... in empty rows when the number of
       // candidates is 5). Second, we want to add a period after each
       // shortcut label when the candidate window is horizontal.
-      candidate_view->SetShortcutTextFromInt(i);
+      candidate_view->SetShortcutText(
+          CreateShortcutText(i, lookup_table_.orientation));
     }
     // Set the candidate text.
     if (candidate_index < lookup_table_.candidates.size()) {
@@ -666,14 +772,34 @@ void CandidateWindowView::UpdateCandidates(
 }
 
 void CandidateWindowView::MaybeInitializeCandidateViews(
-    int num_views,
-    InputMethodLookupTable::Orientation orientation) {
-  // If the requested number of views matches the number of current views,
-  // just reuse these.
-  if (num_views == static_cast<int>(candidate_views_.size()) &&
-      orientation == lookup_table_.orientation) {
+    const InputMethodLookupTable& lookup_table) {
+  const InputMethodLookupTable::Orientation orientation =
+      lookup_table.orientation;
+  const int page_size = lookup_table.page_size;
+
+  // Current column width.
+  int shortcut_column_width = 0;
+  int candidate_column_width = 0;
+
+  // If orientation is horizontal, don't need to compute width,
+  // because each label is left aligned.
+  if (orientation == InputMethodLookupTable::kVertical) {
+    shortcut_column_width = ComputeShortcutColumnWidth(lookup_table);
+    candidate_column_width = ComputeCandidateColumnWidth(lookup_table);
+  }
+
+  // If the requested number of views matches the number of current views, and
+  // previous and current column width are same, just reuse these.
+  if (static_cast<int>(candidate_views_.size()) == page_size &&
+      lookup_table_.orientation == orientation &&
+      previous_shortcut_column_width_ == shortcut_column_width &&
+      previous_candidate_column_width_ == candidate_column_width) {
     return;
   }
+
+  // Update the previous column widths.
+  previous_shortcut_column_width_ = shortcut_column_width;
+  previous_candidate_column_width_ = candidate_column_width;
 
   // Clear the existing candidate_views if any.
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
@@ -691,7 +817,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
                           views::GridLayout::FILL,
                           0, views::GridLayout::USE_PREF, 0, 0);
   } else {
-    for (int i = 0; i < num_views; ++i) {
+    for (int i = 0; i < page_size; ++i) {
       column_set->AddColumn(views::GridLayout::FILL,
                             views::GridLayout::FILL,
                             0, views::GridLayout::USE_PREF, 0, 0);
@@ -712,16 +838,25 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   if (orientation == InputMethodLookupTable::kHorizontal) {
     layout->StartRow(0, 0);
   }
-  for (int i = 0; i < num_views; ++i) {
+
+  for (int i = 0; i < page_size; ++i) {
     CandidateView* candidate_row = new CandidateView(this, i, orientation);
-    candidate_row->Init();
+    candidate_row->Init(shortcut_column_width, candidate_column_width);
     candidate_views_.push_back(candidate_row);
     if (orientation == InputMethodLookupTable::kVertical) {
       layout->StartRow(0, 0);
     }
-    // |candidate_row| will be owned by candidate_area_|.
+    // |candidate_row| will be owned by |candidate_area_|.
     layout->AddView(candidate_row);
   }
+
+  // Compute views size in |layout|.
+  // If we don't call this function, GetHorizontalOffset() often
+  // returns invalid value (returns 0), then candidate window
+  // moves right from the correct position in MoveCandidateWindow().
+  // TODO(nhiroki): Figure out why it returns invalid value.
+  // It seems that the x-position of the candidate labels is not set.
+  layout->Layout(this);
 }
 
 views::View* CandidateWindowView::CreateHeaderArea() {
