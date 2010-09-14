@@ -9,6 +9,7 @@ for more details on the presubmit API built into gcl.
 
 def CheckChange(input_api, output_api):
   """Checks the memcheck suppressions files for bad data."""
+  suppressions = {}
   errors = []
   skip_next_line = False
   func_re = input_api.re.compile('[a-z_.]+\(.+\)$')
@@ -19,6 +20,13 @@ def CheckChange(input_api, output_api):
       continue
 
     if skip_next_line:
+      if suppressions.has_key(line):
+        errors.append('suppression with name "%s" at %s line %s has already '
+                      'been defined at line %s' % (line, f.LocalPath(),
+                                                   line_num,
+                                                   suppressions[line][1]))
+      else:
+        suppressions[line] = (f, line_num)
       skip_next_line = False
       continue
     if line == '{':
