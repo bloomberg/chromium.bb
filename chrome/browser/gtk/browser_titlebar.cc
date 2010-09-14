@@ -171,6 +171,7 @@ void PopupPageMenuModel::Build() {
   AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
   AddSeparator();
   AddItemWithStringId(IDC_SHOW_AS_TAB, IDS_SHOW_AS_TAB);
+  AddItemWithStringId(IDC_COPY_URL, IDS_APP_MENU_COPY_URL);
   AddSeparator();
   AddItemWithStringId(IDC_CUT, IDS_CUT);
   AddItemWithStringId(IDC_COPY, IDS_COPY);
@@ -184,6 +185,9 @@ void PopupPageMenuModel::Build() {
   encoding_menu_model_.reset(new EncodingMenuModel(browser_));
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
                          encoding_menu_model_.get());
+
+  AddSeparator();
+  AddItemWithStringId(IDC_CLOSE_WINDOW, IDS_CLOSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
