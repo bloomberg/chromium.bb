@@ -1,34 +1,11 @@
-# -*- python -*-
-# Copyright 2008, Google Inc.
-# All rights reserved.
+# Copyright (c) 2008 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# This file now builds two plugin shared libraries, NPAPI and PPAPI, plus tests.
 
-# This file now builds two plugin shared libraries plus tests.
+# TODO(polina): for Mac build check if no longer need .r files and/or document
+# target browsers for each bundle target.
 
 Import('env')
 
@@ -142,6 +119,11 @@ if plugin_env.Bit('linux'):
 if plugin_env.Bit('windows'):
   os_libs += ['gdi32', 'user32', ]
 
+
+###############################################################################
+# NPAPI Plugin Build
+###############################################################################
+
 # The NPAPI plugin build is for use as an out-of-process plugin on Chrome
 # and for browsers other than Chrome.  It relies on code in the npapi
 # subdirectory and the google_nacl_npruntime library, which performs NPAPI
@@ -221,6 +203,10 @@ else:
   npapi_env.AddPluginPrerequisite([bundle_name])
 
 
+###############################################################################
+# NPAPI Plugin Test
+###############################################################################
+
 # The test for the NPAPI plugin mostly determines that the proper entry
 # points are defined and that there are no unresolved external symbols in
 # the .so.
@@ -256,11 +242,18 @@ if env['TARGET_ARCHITECTURE'] != 'arm':
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_string_encoding_test')
 
 
-# The PPAPI (Pepper v2) plugin is used in Chrome.  We build a shared library
-# with this build script to allow easier build testing.  The actual PPAPI
-# integration uses the same sources, but is part of the Chrome build through
-# gyp.
-# The PPAPI plugin uses specific code from the ppapi subdirectory and will
+###############################################################################
+# PPAPI Plugin Build
+###############################################################################
+
+# The PPAPI (Pepper v2) plugin is used in Chrome only.
+#
+# We build a shared library with this build script to allow easier build
+# testing. This library can also be loaded into Chrome using --no-sandbox
+# --register-pepper-plugin="path/to/library;application/x-ppapi-nacl-srpc".
+# In the future, this plugin will be integrated with Chrome via gyp.
+#
+# The PPAPI plugin uses specific code from the ppapi/ subdirectory and will
 # soon require a library for proxying PPAPI to NaCl modules.
 ppapi_inputs = [
     'ppapi/array_ppapi.cc',
@@ -274,22 +267,54 @@ ppapi_inputs = [
 ppNaClPlugin = 'ppNaClPlugin'
 
 ppapi_env = plugin_env.Clone()
+
+# Set #define for NACL_PPAPI. Force the source files to rebuild with it. Use an
+# alternate prefix to avoid "two environments with different actions" error.
 ppapi_env.Append(CPPDEFINES = ['NACL_PPAPI'])
+ppapi_env.Replace(OBJPREFIX='ppapi_', SHOBJPREFIX='ppapi_');
+
 ppapi_libs = common_libs + [ 'ppapi_cpp', 'ppapi_browser', 'nonnacl_srpc' ]
 if ppapi_env['SHARED_LIBS_SPECIAL']:
   ppapi_env.Append(LIBS=[l + '_shared' for l in ppapi_libs] + os_libs)
 else:
   ppapi_env.Append(LIBS=ppapi_libs + os_libs)
 
-if ((ppapi_env.Bit('linux') or ppapi_env.Bit('windows')) and
-    not ppapi_env.Bit('chrome')):
-  ppapi_plugin = ppapi_env.ComponentLibrary(
-      ppNaClPlugin,
-      common_inputs + ppapi_inputs,
-      OBJPREFIX='ppapi_', SHOBJPREFIX='ppapi_',
-      no_import_lib=True)
+if not ppapi_env.Bit('chrome'):
+  if not env.Bit('mac'):  # linux, windows, arm
+    # This builds with
+    #   MODE=... ppNaClPlugin sel_ldr sdl=none
+    # with the output going to
+    #   scons-out/.../staging/libppNaClPlugin.so on Linux and
+    #   scons-out/.../staging/libppNaClPlugin.dll on Windows.
+    ppapi_plugin = ppapi_env.ComponentLibrary(ppNaClPlugin,
+                                              common_inputs + ppapi_inputs,
+                                              no_import_lib=True)
+    # we need this to build the plugin, so register it here
+    ppapi_env.AddPluginPrerequisite([ppapi_plugin[0]])
+  else:  # mac
+    # This builds with
+    #   MODE=... scons-out/.../staging/ppNaClPlugin.bundle sel_ldr sdl=none.
+    REZ = '/Developer/Tools/Rez'
+    ppapi_env.Command(target='ppNaClPlugin.rsrc',
+                      source='osx_ppapi/ppNaClPlugin.r',
+                      action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
+    exe = ppapi_env.ComponentProgram(ppNaClPlugin,
+                                     common_inputs + ppapi_inputs,
+                                     no_import_lib=True)
+    # Bundle pattern can be found in
+    # site_scons/site_tools/target_platform_mac.py
+    bundle_name = '${STAGING_DIR}/' + ppNaClPlugin + '.bundle'
+    ppapi_env.Bundle(bundle_name,
+                     BUNDLE_EXE = exe[0],
+                     BUNDLE_PKGINFO_FILENAME = 0,
+                     BUNDLE_RESOURCES = 'ppNaClPlugin.rsrc',
+                     BUNDLE_INFO_PLIST = 'osx_ppapi/Info.plist')
+    # we need this to build the plugin, so register it here
+    ppapi_env.AddPluginPrerequisite([bundle_name])
 
-  # we need this to build the plugin, so register it here
-  ppapi_env.AddPluginPrerequisite([ppapi_plugin[0]])
+
+###############################################################################
+# PPAPI Plugin Test
+###############################################################################
 
 # TODO(polina,sehr): add a test for the PPAPI plugin.
