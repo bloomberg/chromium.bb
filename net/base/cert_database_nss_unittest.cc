@@ -186,7 +186,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
 
   // Import it.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_SSL,
                                          &failed));
 
@@ -215,7 +215,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
 
   // Import it.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_EMAIL,
                                          &failed));
 
@@ -243,7 +243,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
 
   // Import it.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_OBJ_SIGN,
                                          &failed));
 
@@ -271,7 +271,7 @@ TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
 
   // Import it.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   EXPECT_EQ(true,
             cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_SSL, &failed));
   ASSERT_EQ(1U, failed.size());
@@ -291,7 +291,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
   ASSERT_TRUE(ReadCertIntoList("www_us_army_mil_cert.der", &certs));
 
   // Import it.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   // Have to specify email trust for the cert verification of the child cert to
   // work (see
   // http://mxr.mozilla.org/mozilla/source/security/nss/lib/certhigh/certvfy.c#752
@@ -315,7 +315,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
   ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
 
   // First import just the root.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   EXPECT_EQ(true, cert_db_.ImportCACerts(
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
@@ -353,7 +353,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
   ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
 
   // Import it.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::UNTRUSTED,
                                          &failed));
 
@@ -375,7 +375,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
   ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
 
   // Import it.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   EXPECT_EQ(true, cert_db_.ImportCACerts(
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
@@ -399,7 +399,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
   ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
 
   // Import it.
-  CertDatabase::ImportCertResultList failed;
+  CertDatabase::ImportCertFailureList failed;
   EXPECT_EQ(true, cert_db_.ImportCACerts(
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL |
       CertDatabase::TRUSTED_OBJ_SIGN, &failed));
