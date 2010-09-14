@@ -372,13 +372,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   in_startup = process_startup;
   DCHECK(profile);
 
-#if defined(OS_WIN)
-  // Disable the DPI-virtualization mode of Windows Vista or later because it
-  // causes some problems when using system messages (such as WM_NCHITTEST and
-  // WM_GETTITLEBARINFOEX) on a custom frame.
-  win_util::CallSetProcessDPIAware();
-#endif
-
   // Continue with the off-the-record profile from here on if --incognito
   if (command_line.HasSwitch(switches::kIncognito))
     profile = profile->GetOffTheRecordProfile();

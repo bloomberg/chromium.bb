@@ -22,7 +22,6 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_handle_win.h"
-#include "base/scoped_native_library.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "gfx/codec/png_codec.h"
@@ -580,20 +579,6 @@ void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd) {
 
   // Cleanup.
   base::UnloadNativeLibrary(shell32_library);
-}
-
-void CallSetProcessDPIAware() {
-  // This functionality is only available on Vista or later.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
-    return;
-
-  base::ScopedNativeLibrary user32(
-      FilePath(base::GetNativeLibraryName(L"user32")));
-  typedef BOOL (*SetProcessDPIAwareFunc)();
-  SetProcessDPIAwareFunc set_process_dpi_aware =
-      (SetProcessDPIAwareFunc)user32.GetFunctionPointer("SetProcessDPIAware");
-  if (set_process_dpi_aware)
-    set_process_dpi_aware();
 }
 
 }  // namespace win_util

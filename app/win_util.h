@@ -216,13 +216,6 @@ extern const int kAutoHideTaskbarThicknessPx;
 // do not group together on the Win7 task bar.
 void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd);
 
-// Calls SetProcessDPIAware() to declare this application is DPI-aware and to
-// disable the DPI virtualization of Windows. Unfortunately, calling this
-// function after creating a window confuses some APIs, i.e. some APIs still
-// have the DPI virtualization enabled after calling SetProcessDPIAware().
-// Therefore, we need to call this function before creating the first window.
-void CallSetProcessDPIAware();
-
 }  // namespace win_util
 
 #endif  // APP_WIN_UTIL_H_
