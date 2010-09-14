@@ -77,10 +77,8 @@ static HWND CreateDrawWindow(int width, int height) {
   window_class.lpfnWndProc = DefWindowProc;
   window_class.hCursor = 0;
 
-  if (RegisterClass(&window_class) == 0) {
-    LOG(ERROR) << "Failed to register window class";
-    return false;
-  }
+  RegisterClass(&window_class);
+
   HWND window = CreateWindow(kWindowClass,
                              kWindowTitle,
                              kWindowStyleFlags,
@@ -197,6 +195,81 @@ class RenderToWindowHandler : public MftH264DecoderHandler {
         has_output_(false) {
   }
   virtual ~RenderToWindowHandler() {}
+  bool RenderSoftwareFrame(scoped_refptr<VideoFrame> frame) {
+    int width = frame->width();
+    int height = frame->height();
+
+    // Assume height does not change.
+    static uint8* rgb_frame = new uint8[height * frame->stride(0) * 4];
+    uint8* frame_y = static_cast<uint8*>(frame->data(VideoFrame::kYPlane));
+    uint8* frame_u = static_cast<uint8*>(frame->data(VideoFrame::kUPlane));
+    uint8* frame_v = static_cast<uint8*>(frame->data(VideoFrame::kVPlane));
+    media::ConvertYUVToRGB32(frame_y, frame_v, frame_u, rgb_frame,
+                             width, height,
+                             frame->stride(0), frame->stride(1),
+                             4 * frame->stride(0), media::YV12);
+    PAINTSTRUCT ps;
+    InvalidateRect(window_, NULL, TRUE);
+    HDC hdc = BeginPaint(window_, &ps);
+    BITMAPINFOHEADER hdr;
+    hdr.biSize = sizeof(BITMAPINFOHEADER);
+    hdr.biWidth = width;
+    hdr.biHeight = -height;      // minus means top-down bitmap
+    hdr.biPlanes = 1;
+    hdr.biBitCount = 32;
+    hdr.biCompression = BI_RGB;  // no compression
+    hdr.biSizeImage = 0;
+    hdr.biXPelsPerMeter = 1;
+    hdr.biYPelsPerMeter = 1;
+    hdr.biClrUsed = 0;
+    hdr.biClrImportant = 0;
+    int rv = StretchDIBits(hdc, 0, 0, width, height, 0, 0, width, height,
+                           rgb_frame, reinterpret_cast<BITMAPINFO*>(&hdr),
+                           DIB_RGB_COLORS, SRCCOPY);
+    EndPaint(window_, &ps);
+    return rv != 0;
+  }
+  bool RenderD3dSurface(scoped_refptr<VideoFrame> frame) {
+    ScopedComPtr<IDirect3DSurface9> surface;
+    IDirect3DDevice9* device = decoder_->device();
+    surface.Attach(static_cast<IDirect3DSurface9*>(frame->d3d_texture(0)));
+    HRESULT hr;
+    hr = device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0),
+                       1.0f, 0);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Device->Clear() failed";
+      return false;
+    }
+    ScopedComPtr<IDirect3DSurface9> backbuffer;
+    hr = device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO,
+                               backbuffer.Receive());
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Device->GetBackBuffer() failed";
+      return false;
+    }
+    hr = device->StretchRect(surface.get(), NULL, backbuffer.get(), NULL,
+                             D3DTEXF_NONE);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Device->StretchRect() failed";
+      return false;
+    }
+    hr = device->Present(NULL, NULL, NULL, NULL);
+    if (FAILED(hr)) {
+      if (hr == E_FAIL) {
+        LOG(WARNING) << "Present() returned E_FAIL";
+      } else {
+        static int frames_dropped = 0;
+        LOG(ERROR) << "Device->Present() failed "
+                   << std::hex << std::showbase << hr;
+        if (++frames_dropped == 10) {
+          LOG(ERROR) << "Dropped too many frames, quitting";
+          MessageLoopForUI::current()->QuitNow();
+          return false;
+        }
+      }
+    }
+    return true;
+  }
   virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
     has_output_ = true;
     if (frame.get()) {
@@ -206,40 +279,14 @@ class RenderToWindowHandler : public MftH264DecoderHandler {
             FROM_HERE,
             NewRunnableMethod(this, &RenderToWindowHandler::DecodeSingleFrame),
             frame->GetDuration().InMilliseconds());
-
-        int width = frame->width();
-        int height = frame->height();
-
-        // Assume height does not change.
-        static uint8* rgb_frame = new uint8[height * frame->stride(0) * 4];
-        uint8* frame_y = static_cast<uint8*>(frame->data(VideoFrame::kYPlane));
-        uint8* frame_u = static_cast<uint8*>(frame->data(VideoFrame::kUPlane));
-        uint8* frame_v = static_cast<uint8*>(frame->data(VideoFrame::kVPlane));
-        media::ConvertYUVToRGB32(frame_y, frame_v, frame_u, rgb_frame,
-                                 width, height,
-                                 frame->stride(0), frame->stride(1),
-                                 4 * frame->stride(0), media::YV12);
-        PAINTSTRUCT ps;
-        InvalidateRect(window_, NULL, TRUE);
-        HDC hdc = BeginPaint(window_, &ps);
-        BITMAPINFOHEADER hdr;
-        hdr.biSize = sizeof(BITMAPINFOHEADER);
-        hdr.biWidth = width;
-        hdr.biHeight = -height;      // minus means top-down bitmap
-        hdr.biPlanes = 1;
-        hdr.biBitCount = 32;
-        hdr.biCompression = BI_RGB;  // no compression
-        hdr.biSizeImage = 0;
-        hdr.biXPelsPerMeter = 1;
-        hdr.biYPelsPerMeter = 1;
-        hdr.biClrUsed = 0;
-        hdr.biClrImportant = 0;
-        int rv = StretchDIBits(hdc, 0, 0, width, height, 0, 0, width, height,
-                               rgb_frame, reinterpret_cast<BITMAPINFO*>(&hdr),
-                               DIB_RGB_COLORS, SRCCOPY);
-        EndPaint(window_, &ps);
-        if (!rv) {
-          LOG(ERROR) << "StretchDIBits failed";
+        bool success;
+        if (decoder_->use_dxva()) {
+          success = RenderD3dSurface(frame);
+        } else {
+          success = RenderSoftwareFrame(frame);
+        }
+        if (!success) {
+          LOG(ERROR) << "Render failed";
           loop_->QuitNow();
         }
       } else {    // if frame is type EMPTY, there will be no more frames.
@@ -287,17 +334,19 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
   config.width = width;
   config.height = height;
   HWND window = NULL;
-  if (render) {
+  if (use_dxva || render) {
     window = CreateDrawWindow(width, height);
+    if (!render)
+      ShowWindow(window, SW_HIDE);
     if (window == NULL) {
       LOG(ERROR) << "Failed to create window";
       return -1;
     }
   }
 
-  scoped_ptr<MftH264Decoder> mft(new MftH264Decoder(use_dxva));
+  scoped_ptr<MftH264Decoder> mft(new MftH264Decoder(use_dxva, window));
   if (!mft.get()) {
-    LOG(ERROR) << "Failed to create fake MFT";
+    LOG(ERROR) << "Failed to create MFT";
     return -1;
   }
 
@@ -309,11 +358,15 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
   handler->SetDecoder(mft.get());
   handler->SetReader(reader.get());
   if (!handler.get()) {
-    LOG(ERROR) << "FAiled to create handler";
+    LOG(ERROR) << "Failed to create handler";
     return -1;
   }
 
   mft->Initialize(MessageLoop::current(), handler.get(), config);
+  if (!handler->info_.success) {
+    LOG(ERROR) << "Failed to initialize decoder";
+    return -1;
+  }
   scoped_ptr<WindowObserver> observer;
   if (render) {
     observer.reset(new WindowObserver(reader.get(), mft.get()));

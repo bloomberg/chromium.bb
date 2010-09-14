@@ -24,6 +24,37 @@ namespace media {
 static const int kDecoderMaxWidth = 1920;
 static const int kDecoderMaxHeight = 1088;
 
+static HWND CreateDrawWindow(int width, int height) {
+  static const wchar_t kClassName[] = L"Test";
+  static const wchar_t kWindowTitle[] = L"MFT Unittest Draw Window";
+  WNDCLASS window_class = {0};
+  window_class.lpszClassName = kClassName;
+  window_class.hInstance = NULL;
+  window_class.hbrBackground = 0;
+  window_class.lpfnWndProc = DefWindowProc;
+  window_class.hCursor = 0;
+
+  RegisterClass(&window_class);
+
+  HWND window = CreateWindow(kClassName,
+                             kWindowTitle,
+                             (WS_OVERLAPPEDWINDOW | WS_VISIBLE) &
+                              ~(WS_MAXIMIZEBOX | WS_THICKFRAME),
+                             100,
+                             100,
+                             width,
+                             height,
+                             NULL,
+                             NULL,
+                             NULL,
+                             NULL);
+  if (window == NULL) {
+    LOG(ERROR) << "Failed to create window";
+    return NULL;
+  }
+  return window;
+}
+
 class BaseMftReader : public base::RefCountedThreadSafe<BaseMftReader> {
  public:
   virtual ~BaseMftReader() {}
@@ -165,7 +196,7 @@ TEST_F(MftH264DecoderTest, LibraryInit) {
 }
 
 TEST_F(MftH264DecoderTest, DecoderUninitializedAtFirst) {
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(true));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(true, NULL));
   ASSERT_TRUE(decoder.get());
   EXPECT_EQ(MftH264Decoder::kUninitialized, decoder->state());
 }
@@ -174,7 +205,7 @@ TEST_F(MftH264DecoderTest, DecoderInitMissingArgs) {
   VideoCodecConfig config;
   config.width = 800;
   config.height = 600;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(NULL, NULL, config);
   EXPECT_EQ(MftH264Decoder::kUninitialized, decoder->state());
@@ -186,7 +217,7 @@ TEST_F(MftH264DecoderTest, DecoderInitNoDxva) {
   VideoCodecConfig config;
   config.width = 800;
   config.height = 600;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(1, handler.init_count_);
@@ -200,12 +231,15 @@ TEST_F(MftH264DecoderTest, DecoderInitDxva) {
   VideoCodecConfig config;
   config.width = 800;
   config.height = 600;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(true));
+  HWND hwnd = CreateDrawWindow(config.width, config.height);
+  ASSERT_TRUE(hwnd);
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(true, hwnd));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(1, handler.init_count_);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   decoder->Uninitialize();
+  DestroyWindow(hwnd);
 }
 
 TEST_F(MftH264DecoderTest, DecoderUninit) {
@@ -214,7 +248,7 @@ TEST_F(MftH264DecoderTest, DecoderUninit) {
   VideoCodecConfig config;
   config.width = 800;
   config.height = 600;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
@@ -229,7 +263,7 @@ TEST_F(MftH264DecoderTest, UninitBeforeInit) {
   VideoCodecConfig config;
   config.width = 800;
   config.height = 600;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Uninitialize();
   EXPECT_EQ(0, handler.uninit_count_);
@@ -241,7 +275,7 @@ TEST_F(MftH264DecoderTest, InitWithNegativeDimensions) {
   VideoCodecConfig config;
   config.width = -123;
   config.height = -456;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
@@ -256,7 +290,7 @@ TEST_F(MftH264DecoderTest, InitWithTooHighDimensions) {
   VideoCodecConfig config;
   config.width = kDecoderMaxWidth + 1;
   config.height = kDecoderMaxHeight + 1;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
@@ -271,7 +305,7 @@ TEST_F(MftH264DecoderTest, DrainOnEmptyBuffer) {
   VideoCodecConfig config;
   config.width = 1024;
   config.height = 768;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
@@ -300,7 +334,7 @@ TEST_F(MftH264DecoderTest, NoOutputOnGarbageInput) {
   VideoCodecConfig config;
   config.width = 1024;
   config.height = 768;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
@@ -328,7 +362,7 @@ TEST_F(MftH264DecoderTest, FlushAtStart) {
   VideoCodecConfig config;
   config.width = 1024;
   config.height = 768;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
@@ -348,7 +382,7 @@ TEST_F(MftH264DecoderTest, NoFlushAtStopped) {
   VideoCodecConfig config;
   config.width = 1024;
   config.height = 768;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false));
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
@@ -391,7 +425,9 @@ void DecodeValidVideo(const std::string& filename, int num_frames, bool dxva) {
   VideoCodecConfig config;
   config.width = 1;
   config.height = 1;
-  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(dxva));
+  HWND hwnd = CreateDrawWindow(config.width, config.height);
+  ASSERT_TRUE(hwnd);
+  scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(dxva, hwnd));
   ASSERT_TRUE(decoder.get());
   decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
@@ -410,6 +446,7 @@ void DecodeValidVideo(const std::string& filename, int num_frames, bool dxva) {
   EXPECT_GE(handler.empty_buffer_callback_count_, num_frames);
   EXPECT_EQ(num_frames, handler.fill_buffer_callback_count_ - 1);
   decoder->Uninitialize();
+  DestroyWindow(hwnd);
 }
 
 TEST_F(MftH264DecoderTest, DecodeValidVideoDxva) {

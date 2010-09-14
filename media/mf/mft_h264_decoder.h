@@ -33,7 +33,7 @@ class MftH264Decoder : public media::VideoDecodeEngine {
     kStopped,         // upon output EOS received.
   } State;
 
-  explicit MftH264Decoder(bool use_dxva);
+  explicit MftH264Decoder(bool use_dxva, HWND draw_window);
   ~MftH264Decoder();
   virtual void Initialize(MessageLoop* message_loop,
                           media::VideoDecodeEngine::EventHandler* event_handler,
@@ -45,6 +45,7 @@ class MftH264Decoder : public media::VideoDecodeEngine {
   virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
 
   bool use_dxva() const { return use_dxva_; }
+  IDirect3DDevice9* device() const { return device_.get(); }
   State state() const { return state_; }
 
  private:
@@ -73,7 +74,7 @@ class MftH264Decoder : public media::VideoDecodeEngine {
   ScopedComPtr<IDirect3D9> d3d9_;
   ScopedComPtr<IDirect3DDevice9> device_;
   ScopedComPtr<IDirect3DDeviceManager9> device_manager_;
-  HWND device_window_;
+  HWND draw_window_;
   ScopedComPtr<IMFTransform> decoder_;
 
   MFT_INPUT_STREAM_INFO input_stream_info_;

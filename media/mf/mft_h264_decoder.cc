@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"  // For OS_WIN.
-
-#if defined(OS_WIN)
-
 #include "media/mf/mft_h264_decoder.h"
 
 #include <d3d9.h>
@@ -24,6 +20,8 @@
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfplat.lib")
+
+using base::TimeDelta;
 
 namespace {
 
@@ -131,18 +129,32 @@ static IMFSample* CreateInputSample(const uint8* stream, int size,
   return sample.Detach();
 }
 
+const GUID ConvertVideoFrameFormatToGuid(media::VideoFrame::Format format) {
+  switch (format) {
+    case media::VideoFrame::NV12:
+      return MFVideoFormat_NV12;
+    case media::VideoFrame::YV12:
+      return MFVideoFormat_YV12;
+    default:
+      NOTREACHED() << "Unsupported VideoFrame format";
+      return GUID_NULL;
+  }
+  NOTREACHED();
+  return GUID_NULL;
+}
+
 }  // namespace
 
 namespace media {
 
 // public methods
 
-MftH264Decoder::MftH264Decoder(bool use_dxva)
+MftH264Decoder::MftH264Decoder(bool use_dxva, HWND draw_window)
     : use_dxva_(use_dxva),
       d3d9_(NULL),
       device_(NULL),
       device_manager_(NULL),
-      device_window_(NULL),
+      draw_window_(draw_window),
       decoder_(NULL),
       input_stream_info_(),
       output_stream_info_(),
@@ -177,8 +189,8 @@ void MftH264Decoder::Initialize(
   // TODO(jiesun): Actually it is more likely an NV12 D3DSuface9.
   // Until we had hardware composition working.
   if (use_dxva_) {
-    info_.stream_info.surface_format = VideoFrame::YV12;
-    info_.stream_info.surface_type = VideoFrame::TYPE_SYSTEM_MEMORY;
+    info_.stream_info.surface_format = VideoFrame::NV12;
+    info_.stream_info.surface_type = VideoFrame::TYPE_D3D_TEXTURE;
   } else {
     info_.stream_info.surface_format = VideoFrame::YV12;
     info_.stream_info.surface_type = VideoFrame::TYPE_SYSTEM_MEMORY;
@@ -206,8 +218,6 @@ void MftH264Decoder::Uninitialize() {
   // Cannot shutdown COM libraries here because the COM objects still needs
   // to be Release()'ed. We can explicitly release them here, or move the
   // uninitialize to GpuVideoService...
-  if (device_window_)
-    DestroyWindow(device_window_);
   decoder_.Release();
   device_manager_.Release();
   device_.Release();
@@ -319,31 +329,20 @@ void MftH264Decoder::ShutdownComLibraries() {
 }
 
 bool MftH264Decoder::CreateD3DDevManager() {
+  CHECK(draw_window_);
   d3d9_.Attach(Direct3DCreate9(D3D_SDK_VERSION));
   if (d3d9_.get() == NULL) {
     LOG(ERROR) << "Failed to create D3D9";
     return false;
   }
-  static const TCHAR kWindowName[] = TEXT("MFT Decoder Hidden Window");
-  static const TCHAR kClassName[] = TEXT("STATIC");
-  device_window_ = CreateWindowEx(WS_EX_NOACTIVATE,
-                                  kClassName,
-                                  kWindowName,
-                                  WS_DISABLED | WS_POPUP,
-                                  0, 0, 1, 1,
-                                  HWND_MESSAGE,
-                                  NULL,
-                                  GetModuleHandle(NULL),
-                                  NULL);
-  CHECK(device_window_);
 
   D3DPRESENT_PARAMETERS present_params = {0};
-  present_params.BackBufferWidth = 1;
-  present_params.BackBufferHeight = 1;
+  present_params.BackBufferWidth = 0;
+  present_params.BackBufferHeight = 0;
   present_params.BackBufferFormat = D3DFMT_UNKNOWN;
   present_params.BackBufferCount = 1;
   present_params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-  present_params.hDeviceWindow = device_window_;
+  present_params.hDeviceWindow = draw_window_;
   present_params.Windowed = TRUE;
   present_params.Flags = D3DPRESENTFLAG_VIDEO;
   present_params.FullScreen_RefreshRateInHz = 0;
@@ -353,7 +352,7 @@ bool MftH264Decoder::CreateD3DDevManager() {
   // (Is it even needed for just video decoding?)
   HRESULT hr = d3d9_->CreateDevice(D3DADAPTER_DEFAULT,
                                    D3DDEVTYPE_HAL,
-                                   device_window_,
+                                   draw_window_,
                                    (D3DCREATE_HARDWARE_VERTEXPROCESSING |
                                     D3DCREATE_MULTITHREADED),
                                    &present_params,
@@ -412,7 +411,7 @@ bool MftH264Decoder::InitDecoder() {
         MFT_MESSAGE_SET_D3D_MANAGER,
         reinterpret_cast<ULONG_PTR>(device_manager_.get()));
     if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to set D3D9 device to decoder";
+      LOG(ERROR) << "Failed to set D3D9 device to decoder " << std::hex << hr;
       return false;
     }
   }
@@ -443,8 +442,8 @@ bool MftH264Decoder::CheckDecoderDxvaSupport() {
 bool MftH264Decoder::SetDecoderMediaTypes() {
   if (!SetDecoderInputMediaType())
     return false;
-  return SetDecoderOutputMediaType(use_dxva_ ? MFVideoFormat_NV12
-                                             : MFVideoFormat_YV12);
+  return SetDecoderOutputMediaType(ConvertVideoFrameFormatToGuid(
+                                       info_.stream_info.surface_format));
 }
 
 bool MftH264Decoder::SetDecoderInputMediaType() {
@@ -592,8 +591,8 @@ bool MftH264Decoder::DoDecode() {
 
   if (FAILED(hr)) {
     if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
-      hr = SetDecoderOutputMediaType(use_dxva_ ? MFVideoFormat_NV12
-                                               : MFVideoFormat_YV12);
+      hr = SetDecoderOutputMediaType(ConvertVideoFrameFormatToGuid(
+                                         info_.stream_info.surface_format));
       if (SUCCEEDED(hr)) {
         event_handler_->OnFormatChange(info_.stream_info);
         return true;
@@ -656,74 +655,51 @@ bool MftH264Decoder::DoDecode() {
     return true;
   }
 
-  VideoFrame::CreateFrame(info_.stream_info.surface_format,
-                          info_.stream_info.surface_width,
-                          info_.stream_info.surface_height,
-                          base::TimeDelta::FromMicroseconds(timestamp),
-                          base::TimeDelta::FromMicroseconds(duration),
-                          &frame);
+
+
+  if (use_dxva_) {
+    ScopedComPtr<IDirect3DSurface9> surface;
+    hr = MFGetService(output_buffer, MR_BUFFER_SERVICE,
+                      IID_PPV_ARGS(surface.Receive()));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get surface from buffer";
+      return true;
+    }
+
+    // No distinction between the 3 planes - all 3 point to the handle of
+    // the texture. (There are actually only 2 planes since the output
+    // D3D surface is in NV12 format.)
+    VideoFrame::D3dTexture textures[VideoFrame::kMaxPlanes] = { surface.get(),
+                                                                surface.get(),
+                                                                surface.get() };
+    VideoFrame::CreateFrameD3dTexture(info_.stream_info.surface_format,
+                                      info_.stream_info.surface_width,
+                                      info_.stream_info.surface_height,
+                                      textures,
+                                      TimeDelta::FromMicroseconds(timestamp),
+                                      TimeDelta::FromMicroseconds(duration),
+                                      &frame);
   if (!frame.get()) {
-    LOG(ERROR) << "Failed to allocate video frame";
+    LOG(ERROR) << "Failed to allocate video frame for d3d texture";
     event_handler_->OnError();
     return true;
   }
 
-  if (use_dxva_) {
-    // temporary until we figure out how to send a D3D9 surface handle.
-    ScopedComPtr<IDirect3DSurface9> surface;
-    hr = MFGetService(output_buffer, MR_BUFFER_SERVICE,
-                      IID_PPV_ARGS(surface.Receive()));
-    if (FAILED(hr))
-      return true;
-
-    // TODO(imcheng):
-    // This is causing some problems (LockRect does not work always).
-    // We won't need this when we figure out how to use the d3d
-    // surface directly.
-    // NV12 to YV12
-    D3DLOCKED_RECT d3dlocked_rect;
-    hr = surface->LockRect(&d3dlocked_rect, NULL, D3DLOCK_READONLY);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "LockRect";
-      return true;
-    }
-    D3DSURFACE_DESC desc;
-    hr = surface->GetDesc(&desc);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "GetDesc";
-      CHECK(SUCCEEDED(surface->UnlockRect()));
-      return true;
-    }
-
-    uint32 src_stride = d3dlocked_rect.Pitch;
-    uint32 dst_stride = config_.width;
-    uint8* src_y = static_cast<uint8*>(d3dlocked_rect.pBits);
-    uint8* src_uv = src_y + src_stride * desc.Height;
-    uint8* dst_y = static_cast<uint8*>(frame->data(VideoFrame::kYPlane));
-    uint8* dst_u = static_cast<uint8*>(frame->data(VideoFrame::kVPlane));
-    uint8* dst_v = static_cast<uint8*>(frame->data(VideoFrame::kUPlane));
-
-    for (int y = 0; y < config_.height; ++y) {
-      for (int x = 0; x < config_.width; ++x) {
-        dst_y[x] = src_y[x];
-        if (!(y & 1)) {
-          if (x & 1)
-            dst_v[x>>1] = src_uv[x];
-          else
-            dst_u[x>>1] = src_uv[x];
-        }
-      }
-      dst_y += dst_stride;
-      src_y += src_stride;
-      if (!(y & 1)) {
-        src_uv += src_stride;
-        dst_v += dst_stride >> 1;
-        dst_u += dst_stride >> 1;
-      }
-    }
-    CHECK(SUCCEEDED(surface->UnlockRect()));
+  // The reference is now in the VideoFrame.
+  surface.Detach();
   } else {
     // Not DXVA.
+    VideoFrame::CreateFrame(info_.stream_info.surface_format,
+                            info_.stream_info.surface_width,
+                            info_.stream_info.surface_height,
+                            TimeDelta::FromMicroseconds(timestamp),
+                            TimeDelta::FromMicroseconds(duration),
+                            &frame);
+    if (!frame.get()) {
+      LOG(ERROR) << "Failed to allocate video frame for yuv plane";
+      event_handler_->OnError();
+      return true;
+    }
     uint8* src_y;
     DWORD max_length, current_length;
     HRESULT hr = output_buffer->Lock(&src_y, &max_length, &current_length);
@@ -740,5 +716,3 @@ bool MftH264Decoder::DoDecode() {
 }
 
 }  // namespace media
-
-#endif  // defined(OS_WIN)
