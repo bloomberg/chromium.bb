@@ -30,8 +30,7 @@
 // Disabled on Toolkit views bot. See http://crbug.com/42614
 #define MAYBE_Tab1Tab3Escape DISABLED_Tab1Tab3Escape
 #else
-// Flaky, see http://crbug.com/21092.
-#define MAYBE_Tab1Tab3Escape FLAKY_Tab1Tab3Escape
+#define MAYBE_Tab1Tab3Escape Tab1Tab3Escape
 #endif
 
 // These tests fail on Linux because we haven't implemented all of tab dragging
