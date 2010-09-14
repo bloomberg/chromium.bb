@@ -23,6 +23,7 @@ Hello from includes.c
 Hello from inc.h
 Hello from include1.h
 Hello from subdir/inc2/include2.h
+Hello from shadow2/shadow.h
 """
 test.run_built_executable('includes', stdout=expect, chdir='relocate/src')
 

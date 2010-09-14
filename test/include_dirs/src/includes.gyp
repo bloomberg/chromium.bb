@@ -10,9 +10,13 @@
       'dependencies': [
         'subdir/subdir_includes.gyp:subdir_includes',
       ],
+      'cflags': [
+        '-Ishadow1',
+      ],
       'include_dirs': [
         '.',
         'inc1',
+        'shadow2',
         'subdir/inc2',
       ],
       'sources': [

@@ -195,9 +195,9 @@ sed -e "s|^$(notdir $@)|$@|" $(depfile).raw >> $(depfile)
 # We remove slashes and replace spaces with new lines;
 # remove blank lines;
 # delete the first line and append a colon to the remaining lines.
-sed -e 's|\\||' -e 's| |\n|g' $(depfile).raw |\
-  grep -v '^$$'                              |\
-  sed -e 1d -e 's|$$|:|'                      \
+sed -e 's|\\||' -e 'y| |\n|' $(depfile).raw |\
+  grep -v '^$$'                             |\
+  sed -e 1d -e 's|$$|:|'                     \
     >> $(depfile)
 rm $(depfile).raw
 endef
@@ -901,12 +901,16 @@ class MakefileWriter:
 # CFLAGS et al overrides must be target-local.
 # See "Target-specific Variable Values" in the GNU Make manual.""")
       self.WriteLn("$(OBJS): TOOLSET := $(TOOLSET)")
-      self.WriteLn("$(OBJS): GYP_CFLAGS := $(CFLAGS_$(BUILDTYPE)) "
-                   "$(CFLAGS_C_$(BUILDTYPE)) "
-                   "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
-      self.WriteLn("$(OBJS): GYP_CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) "
-                   "$(CFLAGS_CC_$(BUILDTYPE)) "
-                   "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
+      self.WriteLn("$(OBJS): GYP_CFLAGS := "
+                   "$(DEFS_$(BUILDTYPE)) "
+                   "$(INCS_$(BUILDTYPE)) "
+                   "$(CFLAGS_$(BUILDTYPE)) "
+                   "$(CFLAGS_C_$(BUILDTYPE))")
+      self.WriteLn("$(OBJS): GYP_CXXFLAGS := "
+                   "$(DEFS_$(BUILDTYPE)) "
+                   "$(INCS_$(BUILDTYPE)) "
+                   "$(CFLAGS_$(BUILDTYPE)) "
+                   "$(CFLAGS_CC_$(BUILDTYPE))")
 
     self.WriteLn()
 
