@@ -21,11 +21,9 @@ RenderWidgetFullscreen* RenderWidgetFullscreen::Create(
   return widget.release();
 }
 
-// static
-WebWidget* RenderWidgetFullscreen::CreateWebWidget(
-    RenderWidgetFullscreen* render_widget) {
+WebWidget* RenderWidgetFullscreen::CreateWebWidget() {
   // TODO(boliu): Handle full screen render widgets here.
-  return RenderWidget::CreateWebWidget(render_widget);
+  return RenderWidget::CreateWebWidget(this);
 }
 
 void RenderWidgetFullscreen::Init(int32 opener_id) {
@@ -33,7 +31,7 @@ void RenderWidgetFullscreen::Init(int32 opener_id) {
 
   RenderWidget::DoInit(
       opener_id,
-      RenderWidgetFullscreen::CreateWebWidget(this),
+      CreateWebWidget(),
       new ViewHostMsg_CreateFullscreenWidget(
           opener_id, popup_type_, &routing_id_));
 }

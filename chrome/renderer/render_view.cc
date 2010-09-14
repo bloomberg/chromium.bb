@@ -70,6 +70,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/render_widget_fullscreen.h"
+#include "chrome/renderer/render_widget_fullscreen_pepper.h"
 #include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/speech_input_dispatcher.h"
@@ -1761,6 +1762,14 @@ WebWidget* RenderView::createFullscreenWindow(WebKit::WebPopupType popup_type) {
                                                         render_thread_,
                                                         popup_type);
   return widget->webwidget();
+}
+
+pepper::FullscreenContainer* RenderView::CreatePepperFullscreenContainer(
+    pepper::PluginInstance* plugin) {
+  RenderWidgetFullscreenPepper* widget =
+      RenderWidgetFullscreenPepper::Create(routing_id_, render_thread_, plugin);
+  widget->show(WebKit::WebNavigationPolicyIgnore);
+  return widget->container();
 }
 
 WebStorageNamespace* RenderView::createSessionStorageNamespace(unsigned quota) {

@@ -21,6 +21,7 @@
 #include "third_party/ppapi/c/dev/ppb_file_system_dev.h"
 #include "third_party/ppapi/c/dev/ppb_find_dev.h"
 #include "third_party/ppapi/c/dev/ppb_font_dev.h"
+#include "third_party/ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "third_party/ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "third_party/ppapi/c/dev/ppb_opengles_dev.h"
 #include "third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -231,6 +232,8 @@ const void* GetInterface(const char* name) {
     return Font::GetInterface();
   if (strcmp(name, PPB_FIND_DEV_INTERFACE) == 0)
     return PluginInstance::GetFindInterface();
+  if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
+    return PluginInstance::GetFullscreenInterface();
   if (strcmp(name, PPB_URLUTIL_DEV_INTERFACE) == 0)
     return UrlUtil::GetInterface();
   if (strcmp(name, PPB_PRIVATE_INTERFACE) == 0)

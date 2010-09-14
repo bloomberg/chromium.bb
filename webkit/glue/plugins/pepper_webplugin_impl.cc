@@ -81,7 +81,8 @@ NPObject* WebPluginImpl::scriptableObject() {
 }
 
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {
-  instance_->Paint(canvas, plugin_rect_, rect);
+  if (!instance_->IsFullscreen())
+    instance_->Paint(canvas, plugin_rect_, rect);
 }
 
 void WebPluginImpl::updateGeometry(
@@ -90,7 +91,8 @@ void WebPluginImpl::updateGeometry(
     const WebVector<WebRect>& cut_outs_rects,
     bool is_visible) {
   plugin_rect_ = window_rect;
-  instance_->ViewChanged(plugin_rect_, clip_rect);
+  if (!instance_->IsFullscreen())
+    instance_->ViewChanged(plugin_rect_, clip_rect);
 }
 
 void WebPluginImpl::updateFocus(bool focused) {
@@ -105,6 +107,8 @@ bool WebPluginImpl::acceptsInputEvents() {
 
 bool WebPluginImpl::handleInputEvent(const WebKit::WebInputEvent& event,
                                      WebKit::WebCursorInfo& cursor_info) {
+  if (instance_->IsFullscreen())
+    return false;
   return instance_->HandleInputEvent(event, &cursor_info);
 }
 

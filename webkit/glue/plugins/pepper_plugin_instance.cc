@@ -23,6 +23,7 @@
 #include "skia/ext/vector_platform_device.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/ppapi/c/dev/ppb_find_dev.h"
+#include "third_party/ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "third_party/ppapi/c/dev/ppp_find_dev.h"
 #include "third_party/ppapi/c/dev/ppp_zoom_dev.h"
 #include "third_party/ppapi/c/pp_event.h"
@@ -44,6 +45,7 @@
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_graphics_2d.h"
 #include "webkit/glue/plugins/pepper_event_conversion.h"
+#include "webkit/glue/plugins/pepper_fullscreen_container.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
@@ -207,6 +209,25 @@ const PPB_Find_Dev ppb_find = {
   &SelectedFindResultChanged,
 };
 
+bool IsFullscreen(PP_Instance instance_id) {
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return false;
+  return instance->IsFullscreen();
+}
+
+bool SetFullscreen(PP_Instance instance_id, bool fullscreen) {
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return false;
+  return instance->SetFullscreen(fullscreen);
+}
+
+const PPB_Fullscreen_Dev ppb_fullscreen = {
+  &IsFullscreen,
+  &SetFullscreen,
+};
+
 }  // namespace
 
 PluginInstance::PluginInstance(PluginDelegate* delegate,
@@ -225,7 +246,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       pdf_output_done_(false),
 #endif  // defined (OS_LINUX)
       plugin_print_interface_(NULL),
-      plugin_graphics_3d_interface_(NULL) {
+      plugin_graphics_3d_interface_(NULL),
+      fullscreen_container_(NULL) {
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   DCHECK(delegate);
   module_->InstanceCreated(this);
@@ -252,6 +274,11 @@ const PPB_Find_Dev* PluginInstance::GetFindInterface() {
   return &ppb_find;
 }
 
+// static
+const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
+  return &ppb_fullscreen;
+}
+
 PP_Instance PluginInstance::GetPPInstance() {
   return reinterpret_cast<intptr_t>(this);
 }
@@ -264,12 +291,19 @@ void PluginInstance::Paint(WebCanvas* canvas,
 }
 
 void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
-  if (!container_ || position_.IsEmpty())
-    return;  // Nothing to do.
-  if (rect.IsEmpty())
-    container_->invalidate();
-  else
-    container_->invalidateRect(rect);
+  if (fullscreen_container_) {
+    if (rect.IsEmpty())
+      fullscreen_container_->Invalidate();
+    else
+      fullscreen_container_->InvalidateRect(rect);
+  } else {
+    if (!container_ || position_.IsEmpty())
+      return;  // Nothing to do.
+    if (rect.IsEmpty())
+      container_->invalidate();
+    else
+      container_->invalidateRect(rect);
+  }
 }
 
 PP_Var PluginInstance::GetWindowObject() {
@@ -379,6 +413,10 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
 void PluginInstance::Delete() {
   instance_interface_->Delete(GetPPInstance());
 
+  if (fullscreen_container_) {
+    fullscreen_container_->Destroy();
+    fullscreen_container_ = NULL;
+  }
   container_ = NULL;
 }
 
@@ -638,6 +676,31 @@ void PluginInstance::Graphics3DContextLost() {
   }
   if (plugin_graphics_3d_interface_)
     plugin_graphics_3d_interface_->Graphics3DContextLost(GetPPInstance());
+}
+
+bool PluginInstance::IsFullscreen() {
+  return fullscreen_container_ != NULL;
+}
+
+bool PluginInstance::SetFullscreen(bool fullscreen) {
+  bool is_fullscreen = (fullscreen_container_ != NULL);
+  if (fullscreen == is_fullscreen)
+    return true;
+  LOG(INFO) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
+  if (fullscreen) {
+    fullscreen_container_ = delegate_->CreateFullscreenContainer(this);
+  } else {
+    fullscreen_container_->Destroy();
+    fullscreen_container_ = NULL;
+    // TODO(piman): currently the fullscreen container resizes the plugin to the
+    // fullscreen size so we need to reset the size here. Eventually it will
+    // transparently scale and this won't be necessary.
+    if (container_) {
+      container_->reportGeometry();
+      container_->invalidate();
+    }
+  }
+  return true;
 }
 
 bool PluginInstance::PrintPDFOutput(PP_Resource print_output,

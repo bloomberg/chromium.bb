@@ -19,12 +19,10 @@ class RenderWidgetFullscreen : public RenderWidget {
                                         RenderThreadBase* render_thread,
                                         WebKit::WebPopupType popup_type);
 
-  static WebKit::WebWidget* CreateWebWidget(
-      RenderWidgetFullscreen* render_widget);
-
   virtual void show(WebKit::WebNavigationPolicy);
 
  protected:
+  virtual WebKit::WebWidget* CreateWebWidget();
   RenderWidgetFullscreen(RenderThreadBase* render_thread,
                          WebKit::WebPopupType popup_type);
 

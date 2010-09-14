@@ -67,6 +67,8 @@ class PepperPluginDelegateImpl
                              int flags,
                              AsyncOpenFileCallback* callback);
   virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
+  virtual pepper::FullscreenContainer* CreateFullscreenContainer(
+      pepper::PluginInstance* instance);
 
  private:
   // Pointer to the RenderView that owns us.

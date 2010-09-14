@@ -159,6 +159,8 @@
         'renderer/render_widget.h',
         'renderer/render_widget_fullscreen.cc',
         'renderer/render_widget_fullscreen.h',
+        'renderer/render_widget_fullscreen_pepper.cc',
+        'renderer/render_widget_fullscreen_pepper.h',
         'renderer/renderer_glue.cc',
         'renderer/renderer_histogram_snapshots.cc',
         'renderer/renderer_histogram_snapshots.h',

@@ -641,3 +641,9 @@ scoped_refptr<base::MessageLoopProxy>
 PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
   return RenderThread::current()->GetFileThreadMessageLoopProxy();
 }
+
+pepper::FullscreenContainer*
+PepperPluginDelegateImpl::CreateFullscreenContainer(
+    pepper::PluginInstance* instance) {
+  return render_view_->CreatePepperFullscreenContainer(instance);
+}

@@ -90,6 +90,11 @@ class Point;
 class Rect;
 }
 
+namespace pepper {
+class PluginInstance;
+class FullscreenContainer;
+}
+
 namespace webkit_glue {
 class ImageResourceFetcher;
 struct FileUploadData;
@@ -281,6 +286,10 @@ class RenderView : public RenderWidget,
   // pointer must not be dereferenced as this is called from the destructor of
   // the plugin.
   void OnPepperPluginDestroy(WebPluginDelegatePepper* pepper_plugin);
+
+  // Creates a fullscreen container for a pepper plugin instance.
+  pepper::FullscreenContainer* CreatePepperFullscreenContainer(
+      pepper::PluginInstance* plugin);
 
   // Create a new plugin without checking the content settings.
   WebKit::WebPlugin* CreatePluginNoCheck(WebKit::WebFrame* frame,

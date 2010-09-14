@@ -46,6 +46,7 @@ namespace pepper {
 
 class FileIO;
 class PluginInstance;
+class FullscreenContainer;
 
 // Virtual interface that the browser implements to implement features for
 // Pepper plugins.
@@ -167,6 +168,11 @@ class PluginDelegate {
   // of the file thread in this renderer.
   virtual scoped_refptr<base::MessageLoopProxy>
   GetFileThreadMessageLoopProxy() = 0;
+
+  // Create a fullscreen container for a plugin instance. This effectively
+  // switches the plugin to fullscreen.
+  virtual FullscreenContainer* CreateFullscreenContainer(
+      PluginInstance* instance) = 0;
 };
 
 }  // namespace pepper

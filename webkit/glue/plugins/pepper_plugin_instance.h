@@ -24,6 +24,7 @@
 struct PP_Var;
 struct PPB_Instance;
 struct PPB_Find_Dev;
+struct PPB_Fullscreen_Dev;
 struct PPP_Find_Dev;
 struct PPP_Instance;
 struct PPP_Zoom_Dev;
@@ -47,6 +48,7 @@ class ImageData;
 class PluginDelegate;
 class PluginModule;
 class URLLoader;
+class FullscreenContainer;
 
 class PluginInstance : public base::RefCounted<PluginInstance> {
  public:
@@ -63,6 +65,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Returns a pointer to the interface implementing PPB_Find that is
   // exposed to the plugin.
   static const PPB_Find_Dev* GetFindInterface();
+  static const PPB_Fullscreen_Dev* GetFullscreenInterface();
 
   PluginDelegate* delegate() const { return delegate_; }
   PluginModule* module() const { return module_.get(); }
@@ -127,6 +130,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   void PrintEnd();
 
   void Graphics3DContextLost();
+
+  // Implementation of PPB_Fullscreen_Dev.
+  bool IsFullscreen();
+  bool SetFullscreen(bool fullscreen);
 
  private:
   bool LoadFindInterface();
@@ -209,6 +216,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // Containes the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;
+
+  // Plugin container for fullscreen mode. NULL if not in fullscreen mode.
+  FullscreenContainer* fullscreen_container_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };
