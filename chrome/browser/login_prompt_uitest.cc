@@ -121,8 +121,16 @@ TEST_F(LoginPromptTest, TestTwoAuths) {
   EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_), title);
 }
 
+// http://crbug.com/55380 - NavigateToURL is making this flaky.
+#if defined(OS_WIN)
+#define MAYBE_TestCancelAuth FLAKY_TestCancelAuth
+#elif defined(OS_LINUX)
+#define MAYBE_TestCancelAuth FLAKY_TestCancelAuth
+#else
+#define MAYBE_TestCancelAuth TestCancelAuth
+#endif
 // Test that cancelling authentication works.
-TEST_F(LoginPromptTest, TestCancelAuth) {
+TEST_F(LoginPromptTest, MAYBE_TestCancelAuth) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
