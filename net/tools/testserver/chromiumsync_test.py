@@ -7,8 +7,6 @@
 
 import unittest
 
-from google.protobuf import text_format
-
 import chromiumsync
 import sync_pb2
 
@@ -20,21 +18,23 @@ class SyncDataModelTest(unittest.TestCase):
     self.model._entries[proto.id_string] = proto
 
   def testPermanentItemSpecs(self):
-    SPECS = chromiumsync.SyncDataModel._PERMANENT_ITEM_SPECS
-    # parent_tags must be declared before use.
+    specs = chromiumsync.SyncDataModel._PERMANENT_ITEM_SPECS
+
     declared_specs = set(['0'])
-    for spec in SPECS:
-      self.assertTrue(spec.parent_tag in declared_specs)
+    for spec in specs:
+      self.assertTrue(spec.parent_tag in declared_specs, 'parent tags must '
+                      'be declared before use')
       declared_specs.add(spec.tag)
-    # Every sync datatype should have a permanent folder associated with it.
-    unique_datatypes = set([x.sync_type for x in SPECS])
-    self.assertEqual(unique_datatypes,
-                     set(chromiumsync.ALL_TYPES))
+
+    unique_datatypes = set([x.sync_type for x in specs])
+    self.assertEqual(unique_datatypes, set(chromiumsync.ALL_TYPES),
+                     'Every sync datatype should have a permanent folder '
+                     'associated with it')
 
   def testSaveEntry(self):
     proto = sync_pb2.SyncEntity()
-    proto.id_string = 'abcd';
-    proto.version = 0;
+    proto.id_string = 'abcd'
+    proto.version = 0
     self.assertFalse(self.model._ItemExists(proto.id_string))
     self.model._SaveEntry(proto)
     self.assertEqual(1, proto.version)
@@ -136,7 +136,7 @@ class SyncDataModelTest(unittest.TestCase):
       new_version, changes = self.model.GetChangesFromTimestamp(
           chromiumsync.ALL_TYPES, 0)
       self.assertEqual(len(chromiumsync.SyncDataModel._PERMANENT_ITEM_SPECS),
-          new_version)
+                       new_version)
       self.assertEqual(new_version, len(changes))
       version, changes = self.model.GetChangesFromTimestamp(request_types, 0)
       self.assertEqual(new_version, version)
@@ -156,16 +156,16 @@ class SyncDataModelTest(unittest.TestCase):
       version, changes = self.model.GetChangesFromTimestamp(request_types, 0)
       self.assertEqual(self.model._BATCH_SIZE, version)
       version, changes = self.model.GetChangesFromTimestamp(request_types,
-          version)
+                                                            version)
       self.assertEqual(self.model._BATCH_SIZE*2, version)
       version, changes = self.model.GetChangesFromTimestamp(request_types,
-          version)
+                                                            version)
       self.assertEqual(self.model._BATCH_SIZE*3, version)
       expected_dingleberry = self.ExpectedPermanentItemCount(sync_type)
       version, changes = self.model.GetChangesFromTimestamp(request_types,
-          version)
+                                                            version)
       self.assertEqual(self.model._BATCH_SIZE*3 + expected_dingleberry,
-          version)
+                       version)
 
       # Now delete a third of the items.
       for i in xrange(self.model._BATCH_SIZE*3 - 1, 0, -3):
@@ -178,14 +178,14 @@ class SyncDataModelTest(unittest.TestCase):
       version, changes = self.model.GetChangesFromTimestamp(request_types, 0)
       self.assertEqual(self.model._BATCH_SIZE, len(changes))
       version, changes = self.model.GetChangesFromTimestamp(request_types,
-          version)
+                                                            version)
       self.assertEqual(self.model._BATCH_SIZE, len(changes))
       version, changes = self.model.GetChangesFromTimestamp(request_types,
-          version)
+                                                            version)
       self.assertEqual(self.model._BATCH_SIZE, len(changes))
       expected_dingleberry = self.ExpectedPermanentItemCount(sync_type)
       version, changes = self.model.GetChangesFromTimestamp(request_types,
-          version)
+                                                            version)
       self.assertEqual(expected_dingleberry, len(changes))
       self.assertEqual(self.model._BATCH_SIZE*4 + expected_dingleberry, version)
 
@@ -201,7 +201,8 @@ class SyncDataModelTest(unittest.TestCase):
       original_version, original_changes = (
           self.model.GetChangesFromTimestamp([sync_type], 0))
 
-      def DoCommit(original=None, id='', name=None, parent=None, prev=None):
+      def DoCommit(original=None, id_string='', name=None, parent=None,
+                   prev=None):
         proto = sync_pb2.SyncEntity()
         if original is not None:
           proto.version = original.version
@@ -209,7 +210,7 @@ class SyncDataModelTest(unittest.TestCase):
           proto.parent_id_string = original.parent_id_string
           proto.name = original.name
         else:
-          proto.id_string = id
+          proto.id_string = id_string
           proto.version = 0
         proto.specifics.CopyFrom(specifics)
         if name is not None:
@@ -227,14 +228,14 @@ class SyncDataModelTest(unittest.TestCase):
         return (proto, result)
 
       # Commit a new item.
-      proto1, result1 = DoCommit(name='namae', id='Foo',
+      proto1, result1 = DoCommit(name='namae', id_string='Foo',
                                  parent=original_changes[-1])
       # Commit an item whose parent is another item (referenced via the
       # pre-commit ID).
-      proto2, result2 = DoCommit(name='Secondo', id='Bar',
+      proto2, result2 = DoCommit(name='Secondo', id_string='Bar',
                                  parent=proto1)
         # Commit a sibling of the second item.
-      proto3, result3 = DoCommit(name='Third!', id='Baz',
+      proto3, result3 = DoCommit(name='Third!', id_string='Baz',
                                  parent=proto1, prev=proto2)
 
       self.assertEqual(3, len(commit_session))
@@ -243,21 +244,21 @@ class SyncDataModelTest(unittest.TestCase):
         self.assertEqual(r.originator_client_item_id, p.id_string)
         self.assertEqual(r.originator_cache_guid, my_cache_guid)
         self.assertTrue(r is not self.model._entries[r.id_string],
-            "Commit result didn't make a defensive copy.")
+                        "Commit result didn't make a defensive copy.")
         self.assertTrue(p is not self.model._entries[r.id_string],
-            "Commit result didn't make a defensive copy.")
+                        "Commit result didn't make a defensive copy.")
         self.assertEqual(commit_session.get(p.id_string), r.id_string)
         self.assertTrue(r.version > original_version)
       self.assertEqual(result1.parent_id_string, proto1.parent_id_string)
       self.assertEqual(result2.parent_id_string, result1.id_string)
       version, changes = self.model.GetChangesFromTimestamp([sync_type],
-          original_version)
+                                                            original_version)
       self.assertEqual(3, len(changes))
       self.assertEqual(original_version + 3, version)
       self.assertEqual([result1, result2, result3], changes)
       for c in changes:
         self.assertTrue(c is not self.model._entries[c.id_string],
-            "GetChanges didn't make a defensive copy.")
+                        "GetChanges didn't make a defensive copy.")
       self.assertTrue(result2.position_in_parent < result3.position_in_parent)
       self.assertEqual(0, result2.position_in_parent)
 
@@ -270,15 +271,15 @@ class SyncDataModelTest(unittest.TestCase):
       my_cache_guid = 'A different GUID'
       proto2b, result2b = DoCommit(original=result2,
                                    parent=original_changes[-1])
-      proto4, result4 = DoCommit(id='ID4', name='Four',
+      proto4, result4 = DoCommit(id_string='ID4', name='Four',
                                  parent=result2, prev=None)
       proto1b, result1b = DoCommit(original=result1,
                                    parent=result2, prev=proto4)
-      proto5, result5 = DoCommit(id='ID5', name='Five', parent=result2,
+      proto5, result5 = DoCommit(id_string='ID5', name='Five', parent=result2,
                                  prev=result1)
 
-      self.assertEqual(2, len(commit_session),
-          'Only new items in second batch should be in the session')
+      self.assertEqual(2, len(commit_session), 'Only new items in second '
+                       'batch should be in the session')
       for p, r, original in [(proto2b, result2b, proto2),
                              (proto4, result4, proto4),
                              (proto1b, result1b, proto1),
@@ -286,25 +287,25 @@ class SyncDataModelTest(unittest.TestCase):
         self.assertEqual(r.originator_client_item_id, original.id_string)
         if original is not p:
           self.assertEqual(r.id_string, p.id_string,
-              'Ids should be stable after first commit')
+                           'Ids should be stable after first commit')
           self.assertEqual(r.originator_cache_guid, old_cache_guid)
         else:
           self.assertNotEqual(r.id_string, p.id_string)
           self.assertEqual(r.originator_cache_guid, my_cache_guid)
           self.assertEqual(commit_session.get(p.id_string), r.id_string)
         self.assertTrue(r is not self.model._entries[r.id_string],
-            "Commit result didn't make a defensive copy.")
+                        "Commit result didn't make a defensive copy.")
         self.assertTrue(p is not self.model._entries[r.id_string],
-            "Commit didn't make a defensive copy.")
+                        "Commit didn't make a defensive copy.")
         self.assertTrue(r.version > p.version)
       version, changes = self.model.GetChangesFromTimestamp([sync_type],
-          original_version)
+                                                            original_version)
       self.assertEqual(5, len(changes))
       self.assertEqual(original_version + 7, version)
       self.assertEqual([result3, result2b, result4, result1b, result5], changes)
       for c in changes:
         self.assertTrue(c is not self.model._entries[c.id_string],
-            "GetChanges didn't make a defensive copy.")
+                        "GetChanges didn't make a defensive copy.")
       self.assertTrue(result4.parent_id_string ==
                       result1b.parent_id_string ==
                       result5.parent_id_string ==
@@ -312,6 +313,7 @@ class SyncDataModelTest(unittest.TestCase):
       self.assertTrue(result4.position_in_parent <
                       result1b.position_in_parent <
                       result5.position_in_parent)
+
 
 if __name__ == '__main__':
   unittest.main()
