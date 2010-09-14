@@ -167,7 +167,7 @@ deps = {
     Var("libvpx_revision"),
 
   "src/third_party/ppapi":
-    (Var("googlecode_url") % "ppapi") + "/trunk@244",
+    (Var("googlecode_url") % "ppapi") + "/trunk@247",
 
   "src/third_party/libjingle/source":
     (Var("googlecode_url") % "libjingle") + "/branches/nextsnap@" +
