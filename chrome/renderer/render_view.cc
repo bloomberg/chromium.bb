@@ -5414,7 +5414,7 @@ void RenderView::focusAccessibilityObject(
 
 void RenderView::didChangeAccessibilityObjectState(
     const WebAccessibilityObject& acc_obj) {
-  if (!accessibility_.get())
+  if (!accessibility_.get() || (accessibility_->addOrGetId(acc_obj) < 0))
     return;
 
   Send(new ViewHostMsg_AccessibilityObjectStateChange(
@@ -5423,7 +5423,7 @@ void RenderView::didChangeAccessibilityObjectState(
 
 void RenderView::didChangeAccessibilityObjectChildren(
     const WebAccessibilityObject& acc_obj) {
-  if (!accessibility_.get())
+  if (!accessibility_.get() || (accessibility_->addOrGetId(acc_obj) < 0))
     return;
 
   if (accessibility_changes_.empty()) {
