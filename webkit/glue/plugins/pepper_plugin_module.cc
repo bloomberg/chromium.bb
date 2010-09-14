@@ -25,6 +25,7 @@
 #include "third_party/ppapi/c/dev/ppb_opengles_dev.h"
 #include "third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "third_party/ppapi/c/dev/ppb_testing_dev.h"
+#include "third_party/ppapi/c/dev/ppb_transport_dev.h"
 #include "third_party/ppapi/c/dev/ppb_url_loader_dev.h"
 #include "third_party/ppapi/c/dev/ppb_url_request_info_dev.h"
 #include "third_party/ppapi/c/dev/ppb_url_response_info_dev.h"
@@ -58,6 +59,7 @@
 #include "webkit/glue/plugins/pepper_private.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 #include "webkit/glue/plugins/pepper_scrollbar.h"
+#include "webkit/glue/plugins/pepper_transport.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 #include "webkit/glue/plugins/pepper_url_response_info.h"
@@ -201,6 +203,8 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_OPENGLES_DEV_INTERFACE) == 0)
     return Graphics3D::GetOpenGLESInterface();
 #endif  // ENABLE_GPU
+  if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
+    return Transport::GetInterface();
   if (strcmp(name, PPB_URLLOADER_DEV_INTERFACE) == 0)
     return URLLoader::GetInterface();
   if (strcmp(name, PPB_URLREQUESTINFO_DEV_INTERFACE) == 0)

@@ -228,6 +228,8 @@
         'plugins/pepper_resource.h',
         'plugins/pepper_scrollbar.cc',
         'plugins/pepper_scrollbar.h',
+        'plugins/pepper_transport.cc',
+        'plugins/pepper_transport.h',
         'plugins/pepper_url_loader.cc',
         'plugins/pepper_url_loader.h',
         'plugins/pepper_url_request_info.cc',

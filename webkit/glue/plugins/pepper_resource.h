@@ -28,6 +28,7 @@ class PluginModule;
 class PrivateFontFile;
 class Scrollbar;
 class StringVar;
+class Transport;
 class URLLoader;
 class URLRequestInfo;
 class URLResponseInfo;
@@ -94,6 +95,7 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   virtual PrivateFontFile* AsPrivateFontFile() { return NULL; }
   virtual Scrollbar* AsScrollbar() { return NULL; }
   virtual StringVar* AsStringVar() { return NULL; }
+  virtual Transport* AsTransport() { return NULL; }
   virtual URLLoader* AsURLLoader() { return NULL; }
   virtual URLRequestInfo* AsURLRequestInfo() { return NULL; }
   virtual URLResponseInfo* AsURLResponseInfo() { return NULL; }
@@ -142,6 +144,7 @@ DEFINE_RESOURCE_CAST(ObjectVar)
 DEFINE_RESOURCE_CAST(PrivateFontFile)
 DEFINE_RESOURCE_CAST(Scrollbar)
 DEFINE_RESOURCE_CAST(StringVar);
+DEFINE_RESOURCE_CAST(Transport)
 DEFINE_RESOURCE_CAST(URLLoader)
 DEFINE_RESOURCE_CAST(URLRequestInfo)
 DEFINE_RESOURCE_CAST(URLResponseInfo)
