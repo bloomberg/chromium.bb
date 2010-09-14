@@ -48,38 +48,56 @@ class MediaTest : public UITest {
   }
 };
 
-// Crashes, see http://crbug.com/54939
-TEST_F(MediaTest, DISABLED_VideoBearTheora) {
+#if defined(OS_WIN)
+
+// Tests may fail on windows:  http://crbug.com/55477
+#define MAYBE_VideoBearTheora FLAKY_VideoBearTheora
+#define MAYBE_VideoBearSilentTheora FLAKY_VideoBearSilentTheora
+#define MAYBE_VideoBearWebm FLAKY_VideoBearWebm
+#define MAYBE_VideoBearSilentWebm FLAKY_VideoBearSilentWebm
+#define MAYBE_VideoBearMp4 FLAKY_VideoBearMp4
+#define MAYBE_VideoBearSilentMp4 FLAKY_VideoBearSilentMp4
+#define MAYBE_MediaUILayoutTest FLAKY_MediaUILayoutTest
+
+#else
+
+#define MAYBE_VideoBearTheora VideoBearTheora
+#define MAYBE_VideoBearSilentTheora VideoBearSilentTheora
+#define MAYBE_VideoBearWebm VideoBearWebm
+#define MAYBE_VideoBearSilentWebm VideoBearSilentWebm
+#define MAYBE_VideoBearMp4 VideoBearMp4
+#define MAYBE_VideoBearSilentMp4 VideoBearSilentMp4
+#define MAYBE_MediaUILayoutTest MediaUILayoutTest
+
+#endif
+
+TEST_F(MediaTest, MAYBE_VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
 
-// Crashes, see http://crbug.com/54939
-TEST_F(MediaTest, DISABLED_VideoBearSilentTheora) {
+TEST_F(MediaTest, MAYBE_VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv");
 }
 
-// Crashes, see http://crbug.com/54939
-TEST_F(MediaTest, DISABLED_VideoBearWebm) {
+TEST_F(MediaTest, MAYBE_VideoBearWebm) {
   PlayVideo("bear.webm");
 }
 
-// Crashes, see http://crbug.com/54939
-TEST_F(MediaTest, DISABLED_VideoBearSilentWebm) {
+TEST_F(MediaTest, MAYBE_VideoBearSilentWebm) {
   PlayVideo("bear_silent.webm");
 }
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-TEST_F(MediaTest, VideoBearMp4) {
+TEST_F(MediaTest, MAYBE_VideoBearMp4) {
   PlayVideo("bear.mp4");
 }
 
-TEST_F(MediaTest, VideoBearSilentMp4) {
+TEST_F(MediaTest, MAYBE_VideoBearSilentMp4) {
   PlayVideo("bear_silent.mp4");
 }
 #endif
 
-// Crashes, see http://crbug.com/54939
-TEST_F(UILayoutTest, DISABLED_MediaUILayoutTest) {
+TEST_F(UILayoutTest, MAYBE_MediaUILayoutTest) {
   static const char* kResources[] = {
     "content",
     "media-file.js",
