@@ -1390,7 +1390,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 4, ExprSize8 },
   { ExprConstant[0] , -0x1, ExprSize32 | ExprSignedHex },
 };
-0000000000000000: 64 48 33 14 25 28 00 00 00                   xor %rdx, %fs[0x28]
+0000000000000000: 64 48 33 14 25 28 00 00 00                   xor %rdx, %fs:[0x28]
   33                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
     Xor $G, $E
       G_Operand               OpUse OpSet OpDest

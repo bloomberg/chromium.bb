@@ -249,9 +249,7 @@ static int NaClPrintDisassembledSegmentAddr(struct Gio* file,
                                             int index) {
   assert(ExprSegmentAddress == vector->node[index].kind);
   index = NaClPrintDisassembledExp(file, vector, index + 1);
-  if (vector->node[index].kind != ExprMemOffset) {
-    gprintf(file, ":");
-  }
+  gprintf(file, ":");
   return NaClPrintDisassembledExp(file, vector, index);
 }
 
@@ -361,7 +359,7 @@ char* NaClInstStateInstructionToString(struct NaClInstState* state) {
 #endif
 
     NaClInstStateInstPrint(g, state);
-    fclose(file);
+    GioFileClose(g);
 
     if (stat("out_file", &st)) break;
 
@@ -377,7 +375,7 @@ char* NaClInstStateInstructionToString(struct NaClInstState* state) {
     fread_items = fread(out_string, file_size, 1, file);
     if (fread_items != 1) break;
 
-    GioFileClose(g);
+    fclose(file);
     unlink("out_file");
     out_string[file_size] = 0;
     return out_string;
