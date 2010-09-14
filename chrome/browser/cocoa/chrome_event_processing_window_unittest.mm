@@ -50,19 +50,6 @@ class ChromeEventProcessingWindowTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
-  // Returns a canonical snapshot of the window.
-  NSData* WindowContentsAsTIFF() {
-    NSRect frame([window_ frame]);
-    frame.origin = [window_ convertScreenToBase:frame.origin];
-
-    NSData* pdfData = [window_ dataWithPDFInsideRect:frame];
-
-    // |pdfData| can differ for windows which look the same, so make it
-    // canonical.
-    NSImage* image = [[[NSImage alloc] initWithData:pdfData] autorelease];
-    return [image TIFFRepresentation];
-  }
-
   ChromeEventProcessingWindow* window_;
 };
 

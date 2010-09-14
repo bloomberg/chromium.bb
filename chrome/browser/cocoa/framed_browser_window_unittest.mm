@@ -41,15 +41,20 @@ class FramedBrowserWindowTest : public CocoaTest {
 
   // Returns a canonical snapshot of the window.
   NSData* WindowContentsAsTIFF() {
-    NSRect frame([window_ frame]);
-    frame.origin = [window_ convertScreenToBase:frame.origin];
+    [window_ display];
 
-    NSData* pdfData = [window_ dataWithPDFInsideRect:frame];
+    NSView* frameView = [window_ contentView];
+    while ([frameView superview]) {
+      frameView = [frameView superview];
+    }
+    const NSRect bounds = [frameView bounds];
 
-    // |pdfData| can differ for windows which look the same, so make it
-    // canonical.
-    NSImage* image = [[[NSImage alloc] initWithData:pdfData] autorelease];
-    return [image TIFFRepresentation];
+    [frameView lockFocus];
+    scoped_nsobject<NSBitmapImageRep> bitmap(
+        [[NSBitmapImageRep alloc] initWithFocusedViewRect:bounds]);
+    [frameView unlockFocus];
+
+    return [bitmap TIFFRepresentation];
   }
 
   FramedBrowserWindow* window_;
@@ -76,7 +81,7 @@ TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
   NSData* thisTitleData = WindowContentsAsTIFF();
 
   // The default window with a title should look different from the
-  // window with an emtpy title.
+  // window with an empty title.
   EXPECT_FALSE([emptyTitleData isEqualToData:thisTitleData]);
 
   [window_ setShouldHideTitle:YES];

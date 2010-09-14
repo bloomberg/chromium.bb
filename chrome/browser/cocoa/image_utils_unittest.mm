@@ -103,11 +103,7 @@ class ImageUtilTest : public CocoaTest {
         [[NSBitmapImageRep alloc] initWithFocusedViewRect:bounds]);
     [view_ unlockFocus];
 
-    scoped_nsobject<NSImage> image(
-        [[NSImage alloc] initWithSize:bounds.size]);
-    [image addRepresentation:bitmap];
-
-    return [image TIFFRepresentation];
+    return [bitmap TIFFRepresentation];
   }
 
   NSData* SnapshotViewBase() {
