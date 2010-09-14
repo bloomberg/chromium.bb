@@ -233,11 +233,12 @@ class Extension {
   static GURL GetBaseURLFromExtensionId(const std::string& extension_id);
 
   // Returns whether the browser has apps enabled (either as the default or if
-  // it was explictly turned on via a command line switch).
+  // it was explicitly turned on via a command line switch).
   static bool AppsAreEnabled();
 
   // Returns the url prefix for the extension/apps gallery. Can be set via the
-  // --apps-gallery-url switch.
+  // --apps-gallery-url switch. The URL returned will not contain a trailing
+  // slash.
   static std::string ChromeStoreURL();
 
   // Initialize the extension from a parsed manifest.
