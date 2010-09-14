@@ -31,7 +31,6 @@ bool TestTimeouts::initialized_ = false;
 // static
 int TestTimeouts::action_timeout_ms_ = 2000;
 int TestTimeouts::action_max_timeout_ms_ = 15000;
-int TestTimeouts::medium_test_timeout_ms_ = 30 * 1000;
 int TestTimeouts::large_test_timeout_ms_ = 10 * 60 * 1000;
 
 // static
@@ -54,13 +53,11 @@ void TestTimeouts::Initialize() {
   InitializeTimeout(switches::kUiTestActionTimeout, &action_timeout_ms_);
   InitializeTimeout(switches::kUiTestActionMaxTimeout,
                     &action_max_timeout_ms_);
-  InitializeTimeout(switches::kMediumTestTimeout, &medium_test_timeout_ms_);
   InitializeTimeout(switches::kUiTestTimeout, &large_test_timeout_ms_);
 
   // The timeout values should be increasing in the right order.
   CHECK(action_timeout_ms_ <= action_max_timeout_ms_);
-  CHECK(action_max_timeout_ms_ <= medium_test_timeout_ms_);
-  CHECK(medium_test_timeout_ms_ <= large_test_timeout_ms_);
+  CHECK(action_max_timeout_ms_ <= large_test_timeout_ms_);
 
   InitializeTimeout(switches::kUiTestSleepTimeout, &sleep_timeout_ms_);
   InitializeTimeout(switches::kUiTestCommandExecutionTimeout,

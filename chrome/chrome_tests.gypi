@@ -2337,6 +2337,7 @@
         '<(INTERMEDIATE_DIR)',
         '<(protoc_out_dir)',
       ],
+      # TODO(phajdan.jr): Only temporary, to make transition easier.
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'app/chrome_dll.rc',

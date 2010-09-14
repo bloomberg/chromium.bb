@@ -10,10 +10,6 @@ const char switches::kExtraChromeFlags[] = "extra-chrome-flags";
 // Enable displaying error dialogs (for debugging).
 const char switches::kEnableErrorDialogs[] = "enable-errdialogs";
 
-// Timeout for medium tests, like browser_tests.
-// TODO(phajdan.jr): Clean up the switch name.
-const char switches::kMediumTestTimeout[] = "test-terminate-timeout";
-
 // Number of iterations that page cycler tests will run.
 const char switches::kPageCyclerIterations[] = "page-cycler-iterations";
 

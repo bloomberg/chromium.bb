@@ -11,7 +11,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kExtraChromeFlags[];
 extern const char kEnableErrorDialogs[];
-extern const char kMediumTestTimeout[];
 extern const char kPageCyclerIterations[];
 extern const char kUiTestActionTimeout[];
 extern const char kUiTestActionMaxTimeout[];
