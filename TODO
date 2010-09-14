@@ -21,6 +21,19 @@ Core wayland protocol
 
  - glyph cache
 
+      buffer = drm.create_buffer(); /* buffer with stuff in it */
+
+      cache.upload(buffer, x, y, width, height, int key)
+
+      drm.buffer: id, name, stride etc /* event to announce cache buffer */
+
+      cache.image: key, buffer, x, y, stride /* event to announce
+					      * location in cache */
+
+      cache.retire: buffer /* cache has stopped using buffer, please
+			    * reupload whatever you had in that buffer */
+
+
  - DnD issues:
 
    Root window must send NULL type (to decline drop) or
@@ -36,6 +49,46 @@ Core wayland protocol
    dnd.register_surface() method so clients can opt-in the surfaces
    that will participate in dnd.  Or just assume client is not
    participating until we receive an accept request.
+
+ - Selection/copy+paste
+
+    - Similar to dnd, create a selection object for a device to offer
+      selection data:
+
+	 selection = shell.create(input_device)
+
+	Requests:
+	 - selection.offer(type)
+	 - selection.activate(time)
+	 - selection.destroy()
+
+	Events:
+	 - selection.finish(type, fd)
+	 - selection.discard() /* somebody else took the selection */
+
+    - Notes: no window owner, which seems to be mostly there as a way
+      to identify the client and to allow None (instead of a release
+      request).  Possibly also to make the selection go away
+      automatically when the window with the contents go away, or
+      possibly as a way for the source to distinguish between multiple
+      selections.  Toolkits generally just create a dummy-toplevel for
+      selections though.
+
+    - Per-device selection.  The selection is per device.  Different
+      keyboards copy and paste to different selections.
+
+    - Selection offer object.  Introduced just before a surface
+      receives keyboard_focus event or when somebody claims the
+      selection and on keyboard_focus?  That way only keyboard_focus
+      owner will know the types... limits pasting to the
+      keyboard_focus surface.
+
+	Requests:
+	 - selection_offer.receive(type, fd)
+
+	Events:
+	 - selection_offer.offer(type)
+	 - selection_offer.keyboard_focus()
 
  - Pointer image issue:
 
@@ -59,6 +112,51 @@ Core wayland protocol
  - Initial placement of surfaces.  Guess we can do, 1)
    surface-relative (menus), 2) pointer-relative (tooltips and
    right-click menus) or 3) server-decides (all other top-levels).
+
+ - Per client id space.  Each client has an entire 32 bit id namespace
+   to itself.  On the server side, each struct wl_client has an object
+   hash table.  Object announcements use a server id space and clients
+   must respond with subscribe request with a client id for the
+   object.  Part of wl_proxy_create_for_id():
+
+      wl_display_subscribe(display, id, new_id, my_version);
+
+   or maybe
+
+      wl_display_bind(display, id, new_id, my_version);
+
+   Fixes a few things:
+
+    - Maps the global object into the client id space, lets client
+      allocate the id.  All ids are allocated by the client this way,
+      which fixes the range protocol problem.
+
+    - Tells the server that the client is interested in events from
+      the object.  Lets the server know that a client participates in a
+      certain protocol (like drag and drop), so the server can account
+      for whether or not the client is expected to reply
+
+    - Server emits initial object state event(s) in reponse to
+      receiving the subscribe request.  Introduces an extra round trip
+      at initialization time, but the server will still announces all
+      objects in one burst and the client can subscribe in a burst as
+      well.
+
+    - Separates client resources, since each client will have it's own
+      hash table.  It's not longer possible to guess the id of another
+      surface and access it.
+
+    - Server must track the client id for each client an object is
+      exposed to.  In some cases we know this (a surface is always
+      only owned by one client), in other cases it provides a way to
+      track who's interested in the object events.  For input device
+      events, we can look up the client name when it receives pointer
+      focus or keyboard focus and cache it in the device.
+
+    - Server must know which id to send when passing object references
+      in events.  We could say that any object we're passing to a
+      client must have a server id, and each client has a server id ->
+      client id hash.
 
  - When a surface is the size of the screen and on top, we can set the
    scanout buffer to that surface directly.  Like compiz unredirect
