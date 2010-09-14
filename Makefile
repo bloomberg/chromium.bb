@@ -1,9 +1,9 @@
 include config.mk
 
-subdirs = clients spec data
+subdirs = compositor clients spec data
 libs = libwayland-server.so libwayland-client.so
 
-all : $(libs) compositor subdirs-all scanner
+all : $(libs) subdirs-all scanner
 
 headers =					\
 	wayland-util.h				\
@@ -44,16 +44,6 @@ $(libs) : LDLIBS += $(FFI_LIBS)
 $(libs) :
 	gcc -shared $^ $(LDLIBS)  -o $@
 
-compositor :					\
-	compositor.o				\
-	compositor-drm.o			\
-	compositor-x11.o			\
-	screenshooter.o				\
-	drm.o
-
-compositor : CFLAGS += $(COMPOSITOR_CFLAGS)
-compositor : LDLIBS += ./libwayland-server.so $(COMPOSITOR_LIBS) -rdynamic -lrt -lEGL -lm
-
 scanner :					\
 	scanner.o				\
 	wayland-util.o
@@ -71,7 +61,7 @@ install : $(libs) compositor subdirs-install
 	install 70-wayland.rules ${udev_rules_dir}
 
 clean : subdirs-clean
-	rm -f compositor scanner *.o *.so .*.deps
+	rm -f scanner *.o *.so .*.deps
 	rm -f wayland-protocol.c \
 		wayland-server-protocol.h wayland-client-protocol.h
 
