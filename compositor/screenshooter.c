@@ -21,18 +21,15 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include "compositor.h"
+#include "screenshooter-server-protocol.h"
 
-struct screenshooter {
+struct wl_screenshooter {
 	struct wl_object base;
 	struct wlsc_compositor *ec;
 };
 
-struct screenshooter_interface {
-	void (*shoot)(struct wl_client *client, struct screenshooter *shooter);
-};
-
 static void
-screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
+screenshooter_shoot(struct wl_client *client, struct wl_screenshooter *shooter)
 {
 	struct wlsc_compositor *ec = shooter->ec;
 	struct wlsc_output *output;
@@ -70,30 +67,20 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 	}
 }
 
-static const struct wl_message screenshooter_methods[] = {
-	{ "shoot", "", NULL }
-};
-
-static const struct wl_interface screenshooter_interface = {
-	"screenshooter", 1,
-	ARRAY_LENGTH(screenshooter_methods),
-	screenshooter_methods,
-};
-
-struct screenshooter_interface screenshooter_implementation = {
+struct wl_screenshooter_interface screenshooter_implementation = {
 	screenshooter_shoot
 };
 
 void
 screenshooter_create(struct wlsc_compositor *ec)
 {
-	struct screenshooter *shooter;
+	struct wl_screenshooter *shooter;
 
 	shooter = malloc(sizeof *shooter);
 	if (shooter == NULL)
 		return;
 
-	shooter->base.interface = &screenshooter_interface;
+	shooter->base.interface = &wl_screenshooter_interface;
 	shooter->base.implementation =
 		(void(**)(void)) &screenshooter_implementation;
 	shooter->ec = ec;

@@ -10,7 +10,16 @@ compositor :					\
 	compositor-drm.o			\
 	compositor-x11.o			\
 	screenshooter.o				\
+	screenshooter-protocol.o		\
 	drm.o
+
+screenshooter.c : screenshooter-server-protocol.h
+
+screenshooter-protocol.c : screenshooter.xml
+	../wayland/scanner code < $< > $@
+
+screenshooter-server-protocol.h : screenshooter.xml
+	../wayland/scanner server-header < $< > $@
 
 clean :
 	rm -f compositor *.o .*.deps
