@@ -549,7 +549,7 @@ void EventSendingController::keyDown(
     } else if (L"insert" == code_str) {
       code = app::VKEY_INSERT;
     } else if (L"delete" == code_str) {
-      code = app::VKEY_BACK;
+      code = app::VKEY_DELETE;
     } else if (L"pageUp" == code_str) {
       code = app::VKEY_PRIOR;
     } else if (L"pageDown" == code_str) {
