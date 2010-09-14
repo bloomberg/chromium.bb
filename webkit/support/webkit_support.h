@@ -120,6 +120,9 @@ WebKit::WebURL RewriteLayoutTestsURL(const std::string& utf8_url);
 // Set the directory of specified file: URL as the current working directory.
 bool SetCurrentDirectoryForFileURL(const WebKit::WebURL& fileUrl);
 
+// Convert a file:/// URL to a base64 encoded data: URL.
+WebKit::WebURL LocalFileToDataURL(const WebKit::WebURL& fileUrl);
+
 // -------- Time
 int64 GetCurrentTimeInMillisecond();
 

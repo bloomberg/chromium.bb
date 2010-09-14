@@ -5,6 +5,7 @@
 #include "webkit/support/webkit_support.h"
 
 #include "base/at_exit.h"
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
 #include "base/file_path.h"
@@ -407,9 +408,26 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
 }
 
 bool SetCurrentDirectoryForFileURL(const WebKit::WebURL& fileUrl) {
-  FilePath localPath;
-  return net::FileURLToFilePath(fileUrl, &localPath)
-      && file_util::SetCurrentDirectory(localPath.DirName());
+  FilePath local_path;
+  return net::FileURLToFilePath(fileUrl, &local_path)
+      && file_util::SetCurrentDirectory(local_path.DirName());
+}
+
+WebURL LocalFileToDataURL(const WebURL& fileUrl) {
+  FilePath local_path;
+  if (!net::FileURLToFilePath(fileUrl, &local_path))
+    return WebURL();
+
+  std::string contents;
+  if (!file_util::ReadFileToString(local_path, &contents))
+    return WebURL();
+
+  std::string contents_base64;
+  if (!base::Base64Encode(contents, &contents_base64))
+    return WebURL();
+
+  const char kDataUrlPrefix[] = "data:text/css;charset=utf-8;base64,";
+  return WebURL(GURL(kDataUrlPrefix + contents_base64));
 }
 
 int64 GetCurrentTimeInMillisecond() {

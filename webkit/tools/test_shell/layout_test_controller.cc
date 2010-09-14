@@ -8,13 +8,16 @@
 
 #include "webkit/tools/test_shell/layout_test_controller.h"
 
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/net_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAnimationController.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
@@ -664,12 +667,28 @@ void LayoutTestController::setUserStyleSheetEnabled(
 
 void LayoutTestController::setUserStyleSheetLocation(
     const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
   if (args.size() > 0 && args[0].isString()) {
     GURL location(TestShell::RewriteLocalUrl(args[0].ToString()));
+
+    FilePath local_path;
+    if (!net::FileURLToFilePath(location, &local_path))
+      return;
+
+    std::string contents;
+    if (!file_util::ReadFileToString(local_path, &contents))
+      return;
+
+    std::string contents_base64;
+    if (!base::Base64Encode(contents, &contents_base64))
+      return;
+
+    const char kDataUrlPrefix[] = "data:text/css;charset=utf-8;base64,";
+    location = GURL(kDataUrlPrefix + contents_base64);
+
     shell_->delegate()->SetUserStyleSheetLocation(location);
   }
-
-  result->SetNull();
 }
 
 void LayoutTestController::setAuthorAndUserStylesEnabled(
