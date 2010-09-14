@@ -64,7 +64,7 @@ class URLRequestTestContext : public URLRequestContext {
     host_resolver_ =
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                       NULL);
-    proxy_service_ = net::ProxyService::CreateDirect();
+    proxy_service_ = net::ProxyService::CreateNull();
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
     http_transaction_factory_ = new net::HttpCache(

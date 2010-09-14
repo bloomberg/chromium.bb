@@ -117,9 +117,6 @@ const char kDebugPrint[]                    = "debug-print";
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
-// Disable gpu-accelerated 2d canvas.
-const char kDisableAccelerated2dCanvas[]     = "disable-accelerated-2d-canvas";
-
 // Disables accelerated compositing.
 const char kDisableAcceleratedCompositing[] =
     "disable-accelerated-compositing";
@@ -354,6 +351,9 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
 // Enable displaying net log events on the command line.
 extern const char kLogNetLog[]              = "log-net-log";
+
+// Enable gpu-accelerated 2d canvas.
+const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";

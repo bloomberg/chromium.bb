@@ -127,7 +127,7 @@ class TestURLRequestContext : public URLRequestContext {
     host_resolver_ =
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                       NULL);
-    proxy_service_ = net::ProxyService::CreateDirect();
+    proxy_service_ = net::ProxyService::CreateNull();
     Init();
   }
 
