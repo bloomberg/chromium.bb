@@ -525,7 +525,7 @@ get_pointer_location(struct window *window, int32_t x, int32_t y)
 }
 
 static void
-set_pointer_image(struct input *input, int pointer)
+set_pointer_image(struct input *input, uint32_t time, int pointer)
 {
 	struct display *display = input->display;
 	struct wl_buffer *buffer;
@@ -564,7 +564,7 @@ set_pointer_image(struct input *input, int pointer)
 		if (input->current_pointer_image == POINTER_DEFAULT)
 			return;
 
-		wl_input_device_attach(input->input_device, NULL, 0, 0);
+		wl_input_device_attach(input->input_device, time, NULL, 0, 0);
 		input->current_pointer_image = POINTER_DEFAULT;
 		return;
 	default:
@@ -577,7 +577,7 @@ set_pointer_image(struct input *input, int pointer)
 	input->current_pointer_image = pointer;
 	surface = display->pointer_surfaces[pointer];
 	buffer = display_get_buffer_for_surface(display, surface);
-	wl_input_device_attach(input->input_device, buffer,
+	wl_input_device_attach(input->input_device, time, buffer,
 			       pointer_images[pointer].hotspot_x,
 			       pointer_images[pointer].hotspot_y);
 }
@@ -603,7 +603,7 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 						    x, y, sx, sy,
 						    window->user_data);
 
-	set_pointer_image(input, pointer);
+	set_pointer_image(input, time, pointer);
 }
 
 static void
@@ -703,7 +703,7 @@ window_handle_pointer_focus(void *data,
 							    x, y, sx, sy,
 							    window->user_data);
 
-		set_pointer_image(input, pointer);
+		set_pointer_image(input, time, pointer);
 	} else {
 		input->pointer_focus = NULL;
 		input->current_pointer_image = POINTER_UNSET;

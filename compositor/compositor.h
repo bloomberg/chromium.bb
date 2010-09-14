@@ -99,6 +99,7 @@ struct wlsc_input_device {
 	struct wlsc_surface *keyboard_focus;
 	struct wl_array keys;
 	uint32_t modifier_state;
+	uint32_t pointer_focus_time;
 
 	enum wlsc_grab_type grab;
 	struct wlsc_surface *grab_surface;

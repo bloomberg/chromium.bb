@@ -49,7 +49,7 @@ scanner :					\
 
 scanner : LDLIBS += $(EXPAT_LIBS)
 
-install : $(libs) compositor
+install : $(libs)
 	install -d $(libdir) $(includedir) $(libdir)/pkgconfig
 	install wayland-server.pc wayland-client.pc $(libdir)/pkgconfig
 	install $(libs) $(libdir)

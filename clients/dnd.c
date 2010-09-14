@@ -52,6 +52,7 @@ struct dnd_drag {
 	int hotspot_x, hotspot_y;
 	struct dnd *dnd;
 	struct input *input;
+	uint32_t time;
 };
 
 struct dnd_offer {
@@ -245,7 +246,7 @@ drag_target(void *data,
 		surface = dnd_drag->translucent;
 
 	buffer = display_get_buffer_for_surface(dnd->display, surface);
-	wl_input_device_attach(device, buffer,
+	wl_input_device_attach(device, dnd_drag->time, buffer,
 			       dnd_drag->hotspot_x, dnd_drag->hotspot_y);
 }
 
@@ -488,6 +489,7 @@ dnd_button_handler(struct window *window,
 		dnd_drag = malloc(sizeof *dnd_drag);
 		dnd_drag->dnd = dnd;
 		dnd_drag->input = input;
+		dnd_drag->time = time;
 
 		dnd_drag->opaque =
 			create_drag_cursor(dnd_drag, item, x, y, 1);

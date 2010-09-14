@@ -706,6 +706,7 @@ wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
 						    WLSC_POINTER_LEFT_PTR);
 
 	device->pointer_focus = surface;
+	device->pointer_focus_time = time;
 }
 
 static struct wlsc_surface *
@@ -980,12 +981,15 @@ notify_key(struct wlsc_input_device *device,
 static void
 input_device_attach(struct wl_client *client,
 		    struct wl_input_device *device_base,
+		    uint32_t time,
 		    struct wl_buffer *buffer_base, int32_t x, int32_t y)
 {
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) device_base;
 	struct wlsc_buffer *buffer = (struct wlsc_buffer *) buffer_base;
 
+	if (time < device->pointer_focus_time)
+		return;
 	if (device->pointer_focus == NULL)
 		return;
 	if (device->pointer_focus->base.client != client &&

@@ -6,12 +6,6 @@ Core wayland protocol
    another menu item), but we need events for the popup menu surface
    as well.
 
- - input_device.attach() should use a timestamp so the server can
-   discard late requests (sending a request to set the pointer image
-   in response to a motion event, the pointer leaves and then reenters
-   the surface, before the server receives the reqest -> the server
-   must discard it).
-
  - The message format has to include information about number of fds
    in the message so we can skip a message correctly.  Or we should
    just give up on trying to recover from unknown messages.
