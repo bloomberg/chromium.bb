@@ -84,9 +84,10 @@ class PluginDelegate {
   class PlatformAudio {
    public:
     class Client {
-     public:
+     protected:
       virtual ~Client() {}
 
+     public:
       // Called when the stream is created.
       virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
                                  size_t shared_memory_size,
@@ -144,8 +145,8 @@ class PluginDelegate {
 
   // Notifies that the number of find results has changed.
   virtual void DidChangeNumberOfFindResults(int identifier,
-                                           int total,
-                                           bool final_result) = 0;
+                                            int total,
+                                            bool final_result) = 0;
 
   // Notifies that the index of the currently selected item has been updated.
   virtual void DidChangeSelectedFindResult(int identifier, int index) = 0;
