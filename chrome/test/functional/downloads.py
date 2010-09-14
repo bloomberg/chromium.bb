@@ -27,6 +27,7 @@ class DownloadsTest(pyauto.PyUITest):
     self._existing_downloads = []
     if os.path.isdir(download_dir):
       self._existing_downloads += os.listdir(download_dir)
+    self.files_to_remove = []  # Files to remove after browser shutdown
 
   def tearDown(self):
     # Cleanup all files we created in the download dir
@@ -34,8 +35,10 @@ class DownloadsTest(pyauto.PyUITest):
     if os.path.isdir(download_dir):
       for name in os.listdir(download_dir):
         if name not in self._existing_downloads:
-          pyauto_utils.RemovePath(os.path.join(download_dir, name))
+          self.files_to_remove.append(os.path.join(download_dir, name))
     pyauto.PyUITest.tearDown(self)
+    for item in self.files_to_remove:
+      pyauto_utils.RemovePath(item)
 
   def _GetDangerousDownload(self):
     """Returns the file url for a dangerous download for this OS."""
@@ -361,7 +364,7 @@ class DownloadsTest(pyauto.PyUITest):
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self.PerformActionOnDownload(self._GetDownloadId(), 'cancel')
-    os.path.exists(file_path) and os.remove(file_path)
+    self.files_to_remove.append(file_path)
 
     state = self.GetDownloadsInfo().Downloads()[0]['state']
     if state == 'COMPLETE':
