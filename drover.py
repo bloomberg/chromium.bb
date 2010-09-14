@@ -403,7 +403,9 @@ def drover(options, args):
   global file_pattern_
   if os.path.exists("drover.properties"):
     FILE_PATTERN = file_pattern_
-    execfile("drover.properties")
+    f = open("drover.properties")
+    exec(f)
+    f.close()
     if FILE_PATTERN:
       file_pattern_ = FILE_PATTERN
 
