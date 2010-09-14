@@ -645,8 +645,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnShowAutoFillDialog();
   void OnFillAutoFillFormData(int query_id,
                               const webkit_glue::FormData& form,
-                              const string16& value,
-                              const string16& label,
                               int unique_id);
 
   void OnShowDesktopNotification(

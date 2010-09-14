@@ -2212,7 +2212,7 @@ void RenderView::didUpdateInspectorSetting(const WebString& key,
 void RenderView::queryAutofillSuggestions(const WebNode& node,
                                           const WebString& name,
                                           const WebString& value) {
-  autofill_helper_->QueryAutoFillSuggestions(node, name, value);
+  autofill_helper_->QueryAutoFillSuggestions(node);
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,
@@ -2225,15 +2225,14 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& label,
                                              int unique_id,
                                              unsigned index) {
-  autofill_helper_->DidAcceptAutoFillSuggestion(node, value, label, unique_id,
-                                                index);
+  autofill_helper_->DidAcceptAutoFillSuggestion(node, value, unique_id, index);
 }
 
 void RenderView::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& value,
                                              const WebKit::WebString& label,
                                              int unique_id) {
-  autofill_helper_->DidSelectAutoFillSuggestion(node, value, label, unique_id);
+  autofill_helper_->DidSelectAutoFillSuggestion(node, unique_id);
 }
 
 void RenderView::didClearAutoFillSelection(const WebKit::WebNode& node) {

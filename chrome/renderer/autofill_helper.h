@@ -33,11 +33,9 @@ class AutoFillHelper : public PageClickListener {
 
   // Queries the browser for Autocomplete and AutoFill suggestions for the given
   // |node|.
-  void QueryAutoFillSuggestions(const WebKit::WebNode& node,
-                                const WebKit::WebString& name,
-                                const WebKit::WebString& value);
+  void QueryAutoFillSuggestions(const WebKit::WebNode& node);
 
-  // Removes the Autocomplete suggestion |value| for the field names |name|.
+  // Removes the Autocomplete suggestion |value| for the field named |name|.
   void RemoveAutocompleteSuggestion(const WebKit::WebString& name,
                                     const WebKit::WebString& value);
 
@@ -56,14 +54,11 @@ class AutoFillHelper : public PageClickListener {
   // happens when the user hovers over an suggestion or navigates the popup with
   // the arrow keys).
   void DidSelectAutoFillSuggestion(const WebKit::WebNode& node,
-                                   const WebKit::WebString& value,
-                                   const WebKit::WebString& label,
                                    int unique_id);
 
   // Called by Webkit when the user has accepted a suggestion in the popup.
   void DidAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                    const WebKit::WebString& value,
-                                   const WebKit::WebString& label,
                                    int unique_id,
                                    unsigned index);
 
@@ -121,8 +116,6 @@ class AutoFillHelper : public PageClickListener {
   // profile's unique ID.  |action| specifies whether to Fill or Preview the
   // values returned from the AutoFillManager.
   void QueryAutoFillFormData(const WebKit::WebNode& node,
-                             const WebKit::WebString& value,
-                             const WebKit::WebString& label,
                              int unique_id,
                              AutoFillAction action);
 

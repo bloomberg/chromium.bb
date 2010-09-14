@@ -58,8 +58,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                       const webkit_glue::FormField& field);
   virtual bool FillAutoFillFormData(int query_id,
                                     const webkit_glue::FormData& form,
-                                    const string16& value,
-                                    const string16& label,
                                     int unique_id);
   virtual void ShowAutoFillDialog();
 

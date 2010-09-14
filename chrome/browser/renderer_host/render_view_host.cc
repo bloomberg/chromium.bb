@@ -1713,16 +1713,13 @@ void RenderViewHost::OnShowAutoFillDialog() {
 
 void RenderViewHost::OnFillAutoFillFormData(int query_id,
                                             const FormData& form,
-                                            const string16& name,
-                                            const string16& label,
                                             int unique_id) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
   if (!autofill_delegate)
     return;
 
-  autofill_delegate->FillAutoFillFormData(
-      query_id, form, name, label, unique_id);
+  autofill_delegate->FillAutoFillFormData(query_id, form, unique_id);
 }
 
 void RenderViewHost::AutoFillSuggestionsReturned(

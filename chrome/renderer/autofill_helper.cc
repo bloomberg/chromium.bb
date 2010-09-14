@@ -40,9 +40,7 @@ AutoFillHelper::AutoFillHelper(RenderView* render_view)
       suggestions_options_index_(-1) {
 }
 
-void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node,
-                                              const WebString& name,
-                                              const WebString& value) {
+void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node) {
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
   autofill_query_node_ = node;
@@ -151,16 +149,13 @@ void AutoFillHelper::FormDataFilled(int query_id,
 }
 
 void AutoFillHelper::DidSelectAutoFillSuggestion(const WebNode& node,
-                                                 const WebString& value,
-                                                 const WebString& label,
                                                  int unique_id) {
   DidClearAutoFillSelection(node);
-  QueryAutoFillFormData(node, value, label, unique_id, AUTOFILL_PREVIEW);
+  QueryAutoFillFormData(node, unique_id, AUTOFILL_PREVIEW);
 }
 
 void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
                                                  const WebString& value,
-                                                 const WebString& label,
                                                  int unique_id,
                                                  unsigned index) {
   if (suggestions_options_index_ != -1 &&
@@ -190,7 +185,7 @@ void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
       webframe->notifiyPasswordListenerOfAutocomplete(element);
   } else {
     // Fill the values for the whole form.
-    QueryAutoFillFormData(node, value, label, unique_id, AUTOFILL_FILL);
+    QueryAutoFillFormData(node, unique_id, AUTOFILL_FILL);
   }
 
   suggestions_clear_index_ = -1;
@@ -258,12 +253,10 @@ void AutoFillHelper::ShowSuggestions(
     return;
   }
 
-  QueryAutoFillSuggestions(element, name, value);
+  QueryAutoFillSuggestions(element);
 }
 
 void AutoFillHelper::QueryAutoFillFormData(const WebNode& node,
-                                           const WebString& value,
-                                           const WebString& label,
                                            int unique_id,
                                            AutoFillAction action) {
   static int query_counter = 0;
@@ -277,8 +270,7 @@ void AutoFillHelper::QueryAutoFillFormData(const WebNode& node,
 
   autofill_action_ = action;
   render_view_->Send(new ViewHostMsg_FillAutoFillFormData(
-      render_view_->routing_id(), autofill_query_id_, form, value, label,
-      unique_id));
+      render_view_->routing_id(), autofill_query_id_, form, unique_id));
 }
 
 void AutoFillHelper::SendForms(WebFrame* frame) {

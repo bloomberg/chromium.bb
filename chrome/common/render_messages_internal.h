@@ -1994,11 +1994,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Instructs the browser to fill in the values for a form using AutoFill
   // profile data.
-  IPC_MESSAGE_ROUTED5(ViewHostMsg_FillAutoFillFormData,
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_FillAutoFillFormData,
                       int /* id of this message */,
                       webkit_glue::FormData /* the form  */,
-                      string16 /* profile name */,
-                      string16 /* profile label */,
                       int /* profile unique ID */)
 
   // Instructs the browser to remove the specified Autocomplete entry from the

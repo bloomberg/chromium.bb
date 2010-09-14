@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
+#include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -203,7 +203,7 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
     }
   }
 
-  if (autofill_field == NULL)
+  if (!autofill_field)
     return false;
 
   std::vector<string16> values;
@@ -254,11 +254,8 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   return true;
 }
 
-// TODO(jhawkins): Remove the |value| parameter.
 bool AutoFillManager::FillAutoFillFormData(int query_id,
                                            const FormData& form,
-                                           const string16& value,
-                                           const string16& label,
                                            int unique_id) {
   if (!IsAutoFillEnabled())
     return false;

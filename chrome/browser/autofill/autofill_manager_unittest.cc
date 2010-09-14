@@ -777,8 +777,7 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   // an IPC message back to the renderer.
   const int kPageID = 1;
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, string16(), ASCIIToUTF16("Elvis Aaron Presley; *3456"),
-      AutoFillManager::PackIDs(4, 1)));
+      kPageID, form, AutoFillManager::PackIDs(4, 1)));
 
   int page_id = 0;
   FormData results;
@@ -861,8 +860,7 @@ TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
   // an IPC message back to the renderer.
   const int kPageID = 1;
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, string16(), ASCIIToUTF16("Elvis Aaron Presley; 8765"),
-      AutoFillManager::PackIDs(4, 7)));
+      kPageID, form, AutoFillManager::PackIDs(4, 7)));
 
   int page_id = 0;
   FormData results;
@@ -932,8 +930,7 @@ TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
   // an IPC message back to the renderer.
   const int kPageID = 1;
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, string16(), ASCIIToUTF16("Home; 8765; *3456"),
-      AutoFillManager::PackIDs(4, 7)));
+      kPageID, form, AutoFillManager::PackIDs(4, 7)));
 
   int page_id = 0;
   FormData results;
@@ -1046,8 +1043,6 @@ TEST_F(AutoFillManagerTest, FillPhoneNumber) {
     EXPECT_TRUE(
         autofill_manager_->FillAutoFillFormData(page_id,
                                                 form,
-                                                ASCIIToUTF16(test_data),
-                                                ASCIIToUTF16("Work"),
                                                 work_profile->unique_id()));
     page_id = 0;
     FormData results;
@@ -1103,9 +1098,7 @@ TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, ASCIIToUTF16("Elvis"), ASCIIToUTF16("Elvis Aaron Presley"),
-      1));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(kPageID, form, 1));
 
   int page_id = 0;
   FormData results;
@@ -1168,9 +1161,7 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, ASCIIToUTF16("Elvis"), ASCIIToUTF16("Elvis Aaron Presley"),
-      1));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(kPageID, form, 1));
 
   int page_id = 0;
   FormData results;

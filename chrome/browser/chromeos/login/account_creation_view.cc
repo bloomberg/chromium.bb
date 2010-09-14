@@ -61,8 +61,6 @@ class AccountCreationTabContents : public WizardWebPageViewTabContents,
 
   virtual bool FillAutoFillFormData(int query_id,
                                     const webkit_glue::FormData& form,
-                                    const string16& name,
-                                    const string16& label,
                                     int unique_id) {
     return false;
   }

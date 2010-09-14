@@ -528,8 +528,6 @@ class RenderViewHostDelegate {
     // RenderViewHost::AutoFillFormDataFilled has been called.
     virtual bool FillAutoFillFormData(int query_id,
                                       const webkit_glue::FormData& form,
-                                      const string16& value,
-                                      const string16& label,
                                       int unique_id) = 0;
 
     // Called when the user selects the 'AutoFill Options...' suggestions in the
