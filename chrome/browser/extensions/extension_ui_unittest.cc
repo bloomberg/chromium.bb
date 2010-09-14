@@ -31,7 +31,7 @@ namespace {
 #if defined(OS_WIN)
     FilePath path(FILE_PATH_LITERAL("c:\\foo"));
 #elif defined(OS_POSIX)
-  FilePath path(FILE_PATH_LITERAL("/foo"));
+    FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
     Extension extension(path);
     std::string error;

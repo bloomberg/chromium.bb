@@ -57,15 +57,23 @@
 
 namespace {
 
-static bool ShouldShowExtension(Extension* extension) {
-  // Don't show the themes since this page's UI isn't really useful for
-  // themes.
+bool ShouldShowExtension(Extension* extension) {
+
+  // Don't show themes since this page's UI isn't really useful for themes.
   if (extension->is_theme())
     return false;
 
   // Don't show component extensions because they are only extensions as an
   // implementation detail of Chrome.
   if (extension->location() == Extension::COMPONENT)
+    return false;
+
+  // Always show unpacked extensions and apps.
+  if (extension->location() == Extension::LOAD)
+    return true;
+
+  // Unless they are unpacked, never show hosted apps.
+  if (extension->is_hosted_app())
     return false;
 
   return true;
@@ -786,6 +794,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
       service ? service->AllowFileAccess(extension) : false);
   extension_data->SetBoolean("allow_reload",
                              extension->location() == Extension::LOAD);
+  extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
 
   // Determine the sort order: Extensions loaded through --load-extensions show
   // up at the top. Disabled extensions show up at the bottom.

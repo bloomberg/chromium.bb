@@ -359,6 +359,7 @@ var extensionDataFormat = {
       'wantsFileAccess': 'false',
       'allowFileAccess': 'false',
       'allow_reload': true,
+      'is_hosted_app': false,
       'order': 1,
       'options_url': 'options.html',
       'icon': 'relative-path-to-icon.png',
@@ -403,6 +404,7 @@ var extensionDataFormat = {
       'wantsFileAccess': 'false',
       'allowFileAccess': 'false',
       'allow_reload': false,
+      'is_hosted_app': false,
       'order': 2,
       'icon': '',
       'content_scripts': [
@@ -871,7 +873,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                             i18n-content="viewIncognito">(INCOGNITO)</span>
                     </span>
                   </li>
-                  <li i18n-content="inspectPopupsInstructions" 
+                  <li i18n-content="inspectPopupsInstructions"
                       class="inspectPopupNote" jsdisplay="hasPopupAction">
                     INSPECT POPUP INSRUCTIONS
                   </li>
@@ -916,8 +918,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   href="javascript:void 0;"
                   i18n-content="options"
                   >OPTIONS</a>
-                <label
-                  jsdisplay="enabled">
+                <label jsdisplay="enabled && !is_hosted_app">
                 <input type="checkbox"
                   jsvalues=".extensionId:id;.enabled:enabled"
                   jsdisplay="enabled"
