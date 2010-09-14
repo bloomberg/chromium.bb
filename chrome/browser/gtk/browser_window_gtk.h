@@ -123,6 +123,8 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void Copy();
   virtual void Paste();
   virtual void ToggleTabStripMode() {}
+  virtual void ShowMatchPreview();
+  virtual void HideMatchPreview();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

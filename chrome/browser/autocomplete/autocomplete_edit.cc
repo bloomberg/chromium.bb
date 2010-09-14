@@ -129,11 +129,10 @@ void AutocompleteEditModel::RestoreState(const State& state) {
   }
 }
 
-GURL AutocompleteEditModel::CurrentURL(PageTransition::Type* transition_type) {
+AutocompleteMatch AutocompleteEditModel::CurrentMatch() {
   AutocompleteMatch match;
   GetInfoForCurrentText(&match, NULL);
-  *transition_type = match.transition;
-  return match.destination_url;
+  return match;
 }
 
 bool AutocompleteEditModel::UpdatePermanentText(

@@ -16,10 +16,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
+#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/match_preview.h"
@@ -98,7 +100,8 @@ LocationBarView::LocationBarView(Profile* profile,
       mode_(mode),
       show_focus_rect_(false),
       bubble_type_(FirstRun::MINIMAL_BUBBLE),
-      template_url_model_(NULL) {
+      template_url_model_(NULL),
+      update_match_preview_(true) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
@@ -714,13 +717,33 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event,
 #endif
 
 void LocationBarView::OnAutocompleteWillClosePopup() {
+  if (!update_match_preview_)
+    return;
+
+  MatchPreview* match_preview = delegate_->GetMatchPreview();
+  if (match_preview)
+    match_preview->DestroyPreviewContents();
 }
 
 void LocationBarView::OnAutocompleteLosingFocus(
     gfx::NativeView view_gaining_focus) {
+  SetSuggestedText(string16());
+
+  MatchPreview* match_preview = delegate_->GetMatchPreview();
+  if (!match_preview)
+    return;
+
+  if (!match_preview->is_active() || !match_preview->preview_contents())
+    return;
+
+  if (ShouldCommitMatchPreviewOnFocusLoss(view_gaining_focus))
+    match_preview->CommitCurrentPreview();
+  else
+    match_preview->DestroyPreviewContents();
 }
 
 void LocationBarView::OnAutocompleteWillAccept() {
+  update_match_preview_ = false;
 }
 
 void LocationBarView::OnAutocompleteAccept(
@@ -728,34 +751,39 @@ void LocationBarView::OnAutocompleteAccept(
     WindowOpenDisposition disposition,
     PageTransition::Type transition,
     const GURL& alternate_nav_url) {
-  if (!url.is_valid())
-    return;
+  // WARNING: don't add an early return here. The calls after the if must
+  // happen.
+  if (url.is_valid()) {
+    location_input_ = UTF8ToWide(url.spec());
+    disposition_ = disposition;
+    transition_ = transition;
 
-  location_input_ = UTF8ToWide(url.spec());
-  disposition_ = disposition;
-  transition_ = transition;
-
-  if (command_updater_) {
-    if (!alternate_nav_url.is_valid()) {
-      command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-      return;
-    }
-
-    AlternateNavURLFetcher* fetcher =
-        new AlternateNavURLFetcher(alternate_nav_url);
-    // The AlternateNavURLFetcher will listen for the pending navigation
-    // notification that will be issued as a result of the "open URL." It
-    // will automatically install itself into that navigation controller.
-    command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-    if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
-      // I'm not sure this should be reachable, but I'm not also sure enough
-      // that it shouldn't to stick in a NOTREACHED().  In any case, this is
-      // harmless.
-      delete fetcher;
-    } else {
-      // The navigation controller will delete the fetcher.
+    if (command_updater_) {
+      if (!alternate_nav_url.is_valid()) {
+        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+      } else {
+        AlternateNavURLFetcher* fetcher =
+            new AlternateNavURLFetcher(alternate_nav_url);
+        // The AlternateNavURLFetcher will listen for the pending navigation
+        // notification that will be issued as a result of the "open URL." It
+        // will automatically install itself into that navigation controller.
+        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+        if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
+          // I'm not sure this should be reachable, but I'm not also sure enough
+          // that it shouldn't to stick in a NOTREACHED().  In any case, this is
+          // harmless.
+          delete fetcher;
+        } else {
+          // The navigation controller will delete the fetcher.
+        }
+      }
     }
   }
+
+  if (delegate_->GetMatchPreview())
+    delegate_->GetMatchPreview()->DestroyPreviewContents();
+
+  update_match_preview_ = true;
 }
 
 void LocationBarView::OnChanged() {
@@ -765,13 +793,21 @@ void LocationBarView::OnChanged() {
   Layout();
   SchedulePaint();
 
-  if (MatchPreview::IsEnabled() && GetTabContents() &&
-      !profile_->IsOffTheRecord()) {
-    PageTransition::Type transition_type;
-    GURL url = location_entry_->model()->user_input_in_progress() ?
-        location_entry_->model()->CurrentURL(&transition_type) : GURL();
-    GetTabContents()->match_preview()->Update(url);
+  MatchPreview* match_preview = delegate_->GetMatchPreview();
+  string16 suggested_text;
+  if (update_match_preview_ && match_preview && GetTabContents()) {
+    if (location_entry_->model()->user_input_in_progress() &&
+        location_entry_->model()->popup_model()->IsOpen()) {
+      match_preview->Update(GetTabContents(),
+                            location_entry_->model()->CurrentMatch(),
+                            WideToUTF16(location_entry_->GetText()),
+                            &suggested_text);
+    } else {
+      match_preview->DestroyPreviewContents();
+    }
   }
+
+  SetSuggestedText(suggested_text);
 }
 
 void LocationBarView::OnInputInProgress(bool in_progress) {
@@ -1024,7 +1060,7 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   ShowFirstRunBubbleInternal(bubble_type);
 }
 
-void LocationBarView::SetSuggestedText(const std::wstring& text) {
+void LocationBarView::SetSuggestedText(const string16& text) {
   if (!text.empty()) {
     if (!suggested_text_view_) {
       suggested_text_view_ = new views::Label();
@@ -1032,13 +1068,13 @@ void LocationBarView::SetSuggestedText(const std::wstring& text) {
       suggested_text_view_->SetColor(
           GetColor(ToolbarModel::NONE,
                    LocationBarView::DEEMPHASIZED_TEXT));
-      suggested_text_view_->SetText(text);
+      suggested_text_view_->SetText(UTF16ToWide(text));
       suggested_text_view_->SetFont(location_entry_->GetFont());
       AddChildView(suggested_text_view_);
-    } else if (suggested_text_view_->GetText() == text) {
+    } else if (suggested_text_view_->GetText() == UTF16ToWide(text)) {
       return;
     } else {
-      suggested_text_view_->SetText(text);
+      suggested_text_view_->SetText(UTF16ToWide(text));
     }
   } else if (suggested_text_view_) {
     delete suggested_text_view_;
@@ -1141,3 +1177,28 @@ void LocationBarView::OnTemplateURLModelChanged() {
   ShowFirstRunBubble(bubble_type_);
 }
 
+bool LocationBarView::ShouldCommitMatchPreviewOnFocusLoss(
+    gfx::NativeView view_gaining_focus) {
+  // The MatchPreview is active. Destroy it if the user didn't click on the
+  // RenderWidgetHostView (or one of its children).
+#if defined(OS_WIN)
+  MatchPreview* match_preview = delegate_->GetMatchPreview();
+  if (!view_gaining_focus ||
+      !match_preview->preview_contents()->GetRenderWidgetHostView()) {
+    return false;
+  }
+  RenderWidgetHostView* rwhv =
+      match_preview->preview_contents()->GetRenderWidgetHostView();
+  gfx::NativeView rwhv_native_view = rwhv->GetNativeView();
+  gfx::NativeView view_gaining_focus_ancestor = view_gaining_focus;
+  while (view_gaining_focus_ancestor &&
+         view_gaining_focus_ancestor != rwhv_native_view) {
+    view_gaining_focus_ancestor = ::GetParent(view_gaining_focus_ancestor);
+  }
+  return view_gaining_focus_ancestor != NULL;
+#else
+  // TODO: implement me.
+  NOTIMPLEMENTED();
+  return false;
+#endif
+}

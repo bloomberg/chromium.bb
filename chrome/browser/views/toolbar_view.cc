@@ -270,6 +270,10 @@ TabContents* ToolbarView::GetTabContents() {
   return browser_->GetSelectedTabContents();
 }
 
+MatchPreview* ToolbarView::GetMatchPreview() {
+  return browser_->match_preview();
+}
+
 void ToolbarView::OnInputInProgress(bool in_progress) {
   // The edit should make sure we're only notified when something changes.
   DCHECK(model_->input_in_progress() != in_progress);

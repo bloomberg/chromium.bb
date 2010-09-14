@@ -564,6 +564,16 @@ void BrowserWindowCocoa::OpenTabpose() {
   [controller_ openTabpose];
 }
 
+void BrowserWindowCocoa::ShowMatchPreview() {
+  // TODO: implement me
+  NOTIMPLEMENTED();
+}
+
+void BrowserWindowCocoa::HideMatchPreview() {
+  // TODO: implement me
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

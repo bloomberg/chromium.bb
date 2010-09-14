@@ -124,6 +124,11 @@ std::wstring LocationBarViewMac::GetInputString() const {
   return location_input_;
 }
 
+void LocationBarViewMac::SetSuggestedText(const string16& text) {
+  // TODO: implement me.
+  NOTIMPLEMENTED();
+}
+
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
   return disposition_;
 }

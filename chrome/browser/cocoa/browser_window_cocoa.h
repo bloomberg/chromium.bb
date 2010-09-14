@@ -106,6 +106,8 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void Paste();
   virtual void ToggleTabStripMode();
   virtual void OpenTabpose();
+  virtual void ShowMatchPreview();
+  virtual void HideMatchPreview();
 
   // Overridden from NotificationObserver
   virtual void Observe(NotificationType type,

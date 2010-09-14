@@ -7,20 +7,204 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/history/history_marshaling.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/tab_contents/match_preview_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
+#include "gfx/codec/png_codec.h"
 #include "ipc/ipc_message.h"
+
+namespace {
+
+const char kUserInputScript[] =
+    "if (window.chrome.userInput) window.chrome.userInput(\"$1\");";
+
+// Sends the user input script to |tab_contents|. |text| is the text the user
+// input into the omnibox.
+void SendUserInputScript(TabContents* tab_contents,
+                         const string16& text,
+                         bool done) {
+  // TODO: support done.
+  string16 escaped_text(text);
+  ReplaceSubstringsAfterOffset(&escaped_text, 0L, ASCIIToUTF16("\""),
+                               ASCIIToUTF16("\\\""));
+  string16 script = ReplaceStringPlaceholders(ASCIIToUTF16(kUserInputScript),
+                                              escaped_text, NULL);
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      std::wstring(),
+      UTF16ToWide(script));
+}
+
+}  // namespace
+
+// FrameLoadObserver is responsible for waiting for the TabContents to finish
+// loading and when done sending the necessary script down to the page.
+class MatchPreview::FrameLoadObserver : public NotificationObserver {
+ public:
+  FrameLoadObserver(MatchPreview* match_preview, const string16& text)
+      : match_preview_(match_preview),
+        tab_contents_(match_preview->preview_contents()),
+        unique_id_(tab_contents_->controller().pending_entry()->unique_id()),
+        text_(text),
+        send_done_(false) {
+    registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+                   Source<TabContents>(tab_contents_));
+    registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                   Source<TabContents>(tab_contents_));
+  }
+
+  // Sets the text to send to the page.
+  void set_text(const string16& text) { text_ = text; }
+
+  // Invoked when the MatchPreview releases ownership of the TabContents and
+  // the page hasn't finished loading.
+  void DetachFromPreview() {
+    match_preview_ = NULL;
+    send_done_ = true;
+  }
+
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::LOAD_COMPLETED_MAIN_FRAME: {
+        int page_id = *(Details<int>(details).ptr());
+        NavigationEntry* active_entry =
+            tab_contents_->controller().GetActiveEntry();
+        if (!active_entry || active_entry->page_id() != page_id ||
+            active_entry->unique_id() != unique_id_) {
+          return;
+        }
+
+        SendUserInputScript(tab_contents_, text_, send_done_);
+
+        if (match_preview_)
+          match_preview_->PageFinishedLoading();
+
+        delete this;
+        return;
+      }
+
+      case NotificationType::TAB_CONTENTS_DESTROYED:
+        delete this;
+        return;
+
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+ private:
+  // MatchPreview that created us.
+  MatchPreview* match_preview_;
+
+  // The TabContents we're listening for changes on.
+  TabContents* tab_contents_;
+
+  // unique_id of the NavigationEntry we're waiting on.
+  const int unique_id_;
+
+  // Text to send down to the page.
+  string16 text_;
+
+  // Passed to SendScript.
+  bool send_done_;
+
+  // Registers and unregisters us for notifications.
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameLoadObserver);
+};
+
+// PaintObserver implementation. When the RenderWidgetHost paints itself this
+// notifies MatchPreview, which makes the TabContents active.
+class MatchPreview::PaintObserverImpl : public RenderWidgetHost::PaintObserver {
+ public:
+  explicit PaintObserverImpl(MatchPreview* preview)
+      : match_preview_(preview) {
+  }
+
+  virtual void RenderWidgetHostWillPaint(RenderWidgetHost* rwh) {
+  }
+
+  virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh) {
+    match_preview_->PreviewDidPaint();
+    rwh->set_paint_observer(NULL);
+    // WARNING: we've been deleted.
+  }
+
+ private:
+  MatchPreview* match_preview_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintObserverImpl);
+};
 
 class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
  public:
   explicit TabContentsDelegateImpl(MatchPreview* match_preview)
-      : match_preview_(match_preview) {
+      : match_preview_(match_preview),
+        installed_paint_observer_(false),
+        waiting_for_new_page_(true) {
+  }
+
+  // Invoked prior to loading a new URL.
+  void PrepareForNewLoad() {
+    waiting_for_new_page_ = true;
+    add_page_vector_.clear();
+  }
+
+  // Invoked when removed as the delegate. Gives a chance to do any necessary
+  // cleanup.
+  void Reset() {
+    installed_paint_observer_ = false;
+  }
+
+  // Commits the currently buffered history.
+  void CommitHistory() {
+    TabContents* tab = match_preview_->preview_contents();
+    if (tab->profile()->IsOffTheRecord())
+      return;
+
+    for (size_t i = 0; i < add_page_vector_.size(); ++i)
+      tab->UpdateHistoryForNavigation(add_page_vector_[i].get());
+
+    NavigationEntry* active_entry = tab->controller().GetActiveEntry();
+    DCHECK(active_entry);
+    tab->UpdateHistoryPageTitle(*active_entry);
+
+    FaviconService* favicon_service =
+        tab->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+
+    if (favicon_service && active_entry->favicon().is_valid() &&
+        !active_entry->favicon().bitmap().empty()) {
+      std::vector<unsigned char> image_data;
+      gfx::PNGCodec::EncodeBGRASkBitmap(active_entry->favicon().bitmap(), false,
+                                        &image_data);
+      favicon_service->SetFavicon(active_entry->url(),
+                                  active_entry->favicon().url(),
+                                  image_data);
+    }
   }
 
   virtual void OpenURLFromTab(TabContents* source,
@@ -28,14 +212,24 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
                               WindowOpenDisposition disposition,
                               PageTransition::Type transition) {}
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) {}
+                                      unsigned changed_flags) {
+    if (!installed_paint_observer_ && source->controller().entry_count()) {
+      // The load has been committed. Install an observer that waits for the
+      // first paint then makes the preview active. We wait for the load to be
+      // committed before waiting on paint as there is always an initial paint
+      // when a new renderer is created from the resize so that if we showed the
+      // preview after the first paint we would end up with a white rect.
+      installed_paint_observer_ = true;
+      source->GetRenderWidgetHostView()->GetRenderWidgetHost()->
+          set_paint_observer(new PaintObserverImpl(match_preview_));
+    }
+  }
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) {}
   virtual void ActivateContents(TabContents* contents) {
-    match_preview_->CommitCurrentPreview();
   }
   virtual void DeactivateContents(TabContents* contents) {}
   virtual void LoadingStateChanged(TabContents* source) {}
@@ -59,9 +253,7 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void ConvertContentsToApplication(TabContents* source) {}
   virtual bool CanReloadContents(TabContents* source) const { return true; }
   virtual gfx::Rect GetRootWindowResizerRect() const {
-    return match_preview_->host_->delegate() ?
-        match_preview_->host_->delegate()->GetRootWindowResizerRect() :
-        gfx::Rect();
+    return gfx::Rect();
   }
   virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window) {}
@@ -82,7 +274,6 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual bool TakeFocus(bool reverse) { return false; }
   virtual void SetTabContentBlocked(TabContents* contents, bool blocked) {}
   virtual void TabContentsFocused(TabContents* tab_content) {
-    match_preview_->CommitCurrentPreview();
   }
   virtual int GetExtraRenderViewHeight() const { return 0; }
   virtual bool CanDownload(int request_id) { return false; }
@@ -108,16 +299,22 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void ShowContentSettingsWindow(ContentSettingsType content_type) {}
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) {}
   virtual bool OnGoToEntryOffset(int offset) { return false; }
-  virtual bool ShouldAddNavigationToHistory(
+  virtual bool ShouldAddNavigationsToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type) {
+    if (waiting_for_new_page_ && navigation_type == NavigationType::NEW_PAGE)
+      waiting_for_new_page_ = false;
+
+    if (!waiting_for_new_page_) {
+      add_page_vector_.push_back(
+          scoped_refptr<history::HistoryAddPageArgs>(add_page_args.Clone()));
+    }
     return false;
   }
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id) {}
   virtual gfx::NativeWindow GetFrameNativeWindow() {
-    return match_preview_->host_->delegate() ?
-        match_preview_->host_->delegate()->GetFrameNativeWindow() : NULL;
+    return NULL;
   }
   virtual void TabContentsCreated(TabContents* new_contents) {}
   virtual bool infobars_enabled() { return false; }
@@ -125,21 +322,37 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
   virtual void ContentTypeChanged(TabContents* source) {}
 
+  virtual void OnSetSuggestResult(int32 page_id, const std::string& result) {
+    TabContents* source = match_preview_->preview_contents();
+    // TODO: only allow for default search provider.
+    if (source->controller().GetActiveEntry() &&
+        page_id == source->controller().GetActiveEntry()->page_id()) {
+      match_preview_->SetCompleteSuggestedText(UTF8ToUTF16(result));
+    }
+  }
+
  private:
+  typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
+      AddPageVector;
+
   MatchPreview* match_preview_;
+
+  // Has the paint observer been installed? See comment in
+  // NavigationStateChanged for details on this.
+  bool installed_paint_observer_;
+
+  // Used to cache data that needs to be added to history. Normally entries are
+  // added to history as the user types, but for match preview we only want to
+  // add the items to history if the user commits the match preview. So, we
+  // cache them here and if committed then add the items to history.
+  AddPageVector add_page_vector_;
+
+  // Are we we waiting for a NavigationType of NEW_PAGE? If we're waiting for
+  // NEW_PAGE navigation we don't add history items to add_page_vector_.
+  bool waiting_for_new_page_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
 };
-
-MatchPreview::MatchPreview(TabContents* host) : host_(host) {
-  delegate_.reset(new TabContentsDelegateImpl(this));
-}
-
-MatchPreview::~MatchPreview() {
-  // Delete the TabContents before the delegate as the TabContents holds a
-  // reference to the delegate.
-  preview_contents_.reset(NULL);
-}
 
 // static
 bool MatchPreview::IsEnabled() {
@@ -153,44 +366,163 @@ bool MatchPreview::IsEnabled() {
   return enabled;
 }
 
-void MatchPreview::Update(const GURL& url) {
-  if (url_ == url)
+MatchPreview::MatchPreview(MatchPreviewDelegate* delegate)
+    : delegate_(delegate),
+      tab_contents_(NULL),
+      is_active_(false),
+      template_url_id_(0) {
+  preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
+}
+
+MatchPreview::~MatchPreview() {
+  // Delete the TabContents before the delegate as the TabContents holds a
+  // reference to the delegate.
+  preview_contents_.reset(NULL);
+}
+
+void MatchPreview::Update(TabContents* tab_contents,
+                          const AutocompleteMatch& match,
+                          const string16& user_text,
+                          string16* suggested_text) {
+  if (tab_contents != tab_contents_)
+    DestroyPreviewContents();
+
+  tab_contents_ = tab_contents;
+
+  if (url_ == match.destination_url)
     return;
 
-  url_ = url;
+  url_ = match.destination_url;
 
   if (url_.is_empty() || !url_.is_valid()) {
     DestroyPreviewContents();
     return;
   }
 
-  if (!preview_contents_.get()) {
+  user_text_ = user_text;
+
+  if (preview_contents_.get() == NULL) {
     preview_contents_.reset(
-        new TabContents(host_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
-    preview_contents_->set_delegate(delegate_.get());
-    NotificationService::current()->Notify(
-        NotificationType::MATCH_PREVIEW_TAB_CONTENTS_CREATED,
-        Source<TabContents>(host_),
-        NotificationService::NoDetails());
+        new TabContents(tab_contents_->profile(), NULL, MSG_ROUTING_NONE,
+                        NULL, NULL));
+    // Propagate the max page id. That way if we end up merging the two
+    // NavigationControllers (which happens if we commit) none of the page ids
+    // will overlap.
+    int32 max_page_id = tab_contents_->GetMaxPageID();
+    if (max_page_id != -1)
+      preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
+
+    preview_contents_->set_delegate(preview_tab_contents_delegate_.get());
+
+    gfx::Rect tab_bounds;
+    tab_contents_->view()->GetContainerBounds(&tab_bounds);
+    preview_contents_->view()->SizeContents(tab_bounds.size());
+
+    preview_contents_->ShowContents();
+  }
+  preview_tab_contents_delegate_->PrepareForNewLoad();
+
+  const TemplateURL* template_url = match.template_url;
+  if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
+      match.type == AutocompleteMatch::SEARCH_HISTORY ||
+      match.type == AutocompleteMatch::SEARCH_SUGGEST) {
+    TemplateURLModel* model = tab_contents->profile()->GetTemplateURLModel();
+    template_url = model ? model->GetDefaultSearchProvider() : NULL;
+  }
+  TemplateURLID template_url_id = template_url ? template_url->id() : 0;
+
+  if (template_url && template_url->supports_instant() &&
+      TemplateURL::SupportsReplacement(template_url)) {
+    if (template_url_id == template_url_id_) {
+      if (frame_load_observer_.get()) {
+        // The page hasn't loaded yet. We'll send the script down when it does.
+        frame_load_observer_->set_text(user_text_);
+        return;
+      }
+      SendUserInputScript(preview_contents_.get(), user_text_, false);
+      if (complete_suggested_text_.size() > user_text_.size() &&
+          !complete_suggested_text_.compare(0, user_text_.size(), user_text_)) {
+        *suggested_text = complete_suggested_text_.substr(user_text_.size());
+      }
+    } else {
+      // TODO: should we use a different url for instant?
+      GURL url = GURL(template_url->url()->ReplaceSearchTerms(
+          *template_url, std::wstring(),
+          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
+      // user_text_ is sent once the page finishes loading by FrameLoadObserver.
+      preview_contents_->controller().LoadURL(url, GURL(), match.transition);
+      frame_load_observer_.reset(new FrameLoadObserver(this, user_text_));
+    }
+  } else {
+    frame_load_observer_.reset(NULL);
+    preview_contents_->controller().LoadURL(url_, GURL(), match.transition);
   }
 
-  // TODO: figure out transition type.
-  preview_contents_->controller().LoadURL(url, GURL(),
-                                          PageTransition::GENERATED);
+  template_url_id_ = template_url_id;
 }
 
 void MatchPreview::DestroyPreviewContents() {
-  url_ = GURL();
-  preview_contents_.reset(NULL);
+  delegate_->HideMatchPreview();
+  delete ReleasePreviewContents(false);
 }
 
 void MatchPreview::CommitCurrentPreview() {
   DCHECK(preview_contents_.get());
-  if (host_->delegate())
-    host_->delegate()->CommitMatchPreview(host_);
+  delegate_->CommitMatchPreview();
 }
 
-TabContents* MatchPreview::ReleasePreviewContents() {
+TabContents* MatchPreview::ReleasePreviewContents(bool commit_history) {
+  template_url_id_ = 0;
   url_ = GURL();
+  user_text_.clear();
+  complete_suggested_text_.clear();
+  if (frame_load_observer_.get()) {
+    frame_load_observer_->DetachFromPreview();
+    // FrameLoadObserver will delete itself either when the TabContents is
+    // deleted, or when the page finishes loading.
+    FrameLoadObserver* unused ALLOW_UNUSED = frame_load_observer_.release();
+  }
+  if (preview_contents_.get()) {
+    if (commit_history)
+      preview_tab_contents_delegate_->CommitHistory();
+    // Destroy the paint observer.
+    if (preview_contents_->GetRenderWidgetHostView()) {
+      // RenderWidgetHostView may be null during shutdown.
+      preview_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->
+          set_paint_observer(NULL);
+    }
+    preview_contents_->set_delegate(NULL);
+    preview_tab_contents_delegate_->Reset();
+    is_active_ = false;
+  }
   return preview_contents_.release();
+}
+
+void MatchPreview::SetCompleteSuggestedText(
+    const string16& complete_suggested_text) {
+  if (complete_suggested_text == complete_suggested_text_)
+    return;
+
+  if (user_text_.compare(0, user_text_.size(), complete_suggested_text,
+                         0, user_text_.size())) {
+    // The user text no longer contains the suggested text, ignore it.
+    complete_suggested_text_.clear();
+    delegate_->SetSuggestedText(string16());
+    return;
+  }
+
+  complete_suggested_text_ = complete_suggested_text;
+  delegate_->SetSuggestedText(
+      complete_suggested_text_.substr(user_text_.size()));
+}
+
+void MatchPreview::PreviewDidPaint() {
+  DCHECK(!is_active_);
+  is_active_ = true;
+  delegate_->ShowMatchPreview();
+}
+
+void MatchPreview::PageFinishedLoading() {
+  // FrameLoadObserver deletes itself after this call.
+  FrameLoadObserver* unused ALLOW_UNUSED = frame_load_observer_.release();
 }

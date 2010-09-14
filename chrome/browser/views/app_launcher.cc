@@ -85,6 +85,7 @@ class InfoBubbleContentsView : public views::View,
   // WARNING: this is not the TabContents of the bubble!  Use
   // GetBubbleTabContents() to get the bubble's TabContents.
   virtual TabContents* GetTabContents();
+  virtual MatchPreview* GetMatchPreview() { return NULL; }
   virtual void OnInputInProgress(bool in_progress) {}
 
   // CommandUpdater::CommandUpdaterDelegate implementation:

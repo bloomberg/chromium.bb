@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tab_contents/match_preview_delegate.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/toolbar_model.h"
@@ -35,6 +37,7 @@
 class BrowserWindow;
 class Extension;
 class FindBarController;
+class MatchPreview;
 class PrefService;
 class Profile;
 class SessionStorageNamespace;
@@ -53,7 +56,8 @@ class Browser : public TabStripModelDelegate,
                 public NotificationObserver,
                 public SelectFileDialog::Listener,
                 public TabRestoreServiceObserver,
-                public ProfileSyncServiceObserver {
+                public ProfileSyncServiceObserver,
+                public MatchPreviewDelegate {
  public:
   // If you change the values in this enum you'll need to update browser_proxy.
   // TODO(sky): move into a common place that is referenced by both ui_tests
@@ -162,6 +166,10 @@ class Browser : public TabStripModelDelegate,
   Type type() const { return type_; }
   Profile* profile() const { return profile_; }
   const std::vector<std::wstring>& user_data_dir_profiles() const;
+
+  // Returns the MatchPreview or NULL if there is no MatchPreview for this
+  // Browser.
+  MatchPreview* match_preview() const { return match_preview_.get(); }
 
 #if defined(UNIT_TEST)
   // Sets the BrowserWindow. This is intended for testing and generally not
@@ -758,7 +766,6 @@ class Browser : public TabStripModelDelegate,
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id);
   virtual void ContentTypeChanged(TabContents* source);
-  virtual void CommitMatchPreview(TabContents* source);
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);
@@ -770,6 +777,12 @@ class Browser : public TabStripModelDelegate,
 
   // Overridden from ProfileSyncServiceObserver:
   virtual void OnStateChanged();
+
+  // Overriden from MatchPreviewDelegate:
+  virtual void ShowMatchPreview();
+  virtual void HideMatchPreview();
+  virtual void CommitMatchPreview();
+  virtual void SetSuggestedText(const string16& text);
 
   // Command and state updating ///////////////////////////////////////////////
 
@@ -1080,6 +1093,8 @@ class Browser : public TabStripModelDelegate,
   // The profile's tab restore service. The service is owned by the profile,
   // and we install ourselves as an observer.
   TabRestoreService* tab_restore_service_;
+
+  scoped_ptr<MatchPreview> match_preview_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

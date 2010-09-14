@@ -77,7 +77,6 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
-#include "chrome/browser/tab_contents/match_preview.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -434,9 +433,6 @@ TabContents::TabContents(Profile* profile,
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(profile))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
-
-  if (MatchPreview::IsEnabled())
-    match_preview_.reset(new MatchPreview(this));
 }
 
 TabContents::~TabContents() {

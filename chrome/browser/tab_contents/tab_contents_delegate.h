@@ -285,11 +285,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // PDF using the internal PDF plugin.
   virtual void ContentTypeChanged(TabContents* source);
 
-  // Sent when the user does a gesture that results in committing the match
-  // preview. The delegate should replace |source| with the |source|'s match
-  // preview TabContents.
-  virtual void CommitMatchPreview(TabContents* source);
-
   // Notifies the delegate that the page has a suggest result.
   virtual void OnSetSuggestResult(int32 page_id, const std::string& result);
 

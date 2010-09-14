@@ -277,7 +277,7 @@ class TemplateURL {
   // Generates a favicon URL from the specified url.
   static GURL GenerateFaviconURL(const GURL& url);
 
-  // Returns true if |true| is non-null and has a search URL that supports
+  // Returns true if |turl| is non-null and has a search URL that supports
   // replacement.
   static bool SupportsReplacement(const TemplateURL* turl);
 
@@ -296,6 +296,10 @@ class TemplateURL {
     short_name_ = short_name;
   }
   const std::wstring& short_name() const { return short_name_; }
+
+  // Returns true if this search engine supports showing instant results.
+  // TODO(sky): make this real.
+  bool supports_instant() const { return false; }
 
   // An accessor for the short_name, but adjusted so it can be appropriately
   // displayed even if it is LTR and the UI is RTL.

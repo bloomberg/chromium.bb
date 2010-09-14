@@ -254,6 +254,11 @@ Browser::Browser(Type type, Profile* profile)
 
   if (profile_->GetProfileSyncService())
     profile_->GetProfileSyncService()->AddObserver(this);
+
+  if (type == TYPE_NORMAL && MatchPreview::IsEnabled() &&
+      !profile->IsOffTheRecord()) {
+    match_preview_.reset(new MatchPreview(this));
+  }
 }
 
 Browser::~Browser() {
@@ -1263,6 +1268,13 @@ void Browser::OpenCurrentURL() {
   LocationBar* location_bar = window_->GetLocationBar();
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
+  // TODO(sky): support other dispositions.
+  if (open_disposition == CURRENT_TAB && match_preview() &&
+      match_preview()->is_active()) {
+    match_preview()->CommitCurrentPreview();
+    return;
+  }
+
   GURL url(WideToUTF8(location_bar->GetInputString()));
 
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
@@ -2500,6 +2512,9 @@ void Browser::TabDetachedAt(TabContents* contents, int index) {
 }
 
 void Browser::TabDeselectedAt(TabContents* contents, int index) {
+  if (match_preview())
+    match_preview()->DestroyPreviewContents();
+
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
   window_->GetLocationBar()->SaveStateToContents(contents);
@@ -3039,16 +3054,6 @@ void Browser::ContentTypeChanged(TabContents* source) {
     UpdateZoomCommandsForTabState();
 }
 
-void Browser::CommitMatchPreview(TabContents* source) {
-  int index = tabstrip_model_.GetIndexOfTabContents(source);
-  DCHECK_NE(-1, index);
-  TabContents* preview_contents =
-      source->match_preview()->ReleasePreviewContents();
-  // TabStripModel takes ownership of preview_contents.
-  tabstrip_model_.ReplaceTabContentsAt(
-      index, preview_contents, TabStripModelObserver::REPLACE_MATCH_PREVIEW);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SelectFileDialog::Listener implementation:
 
@@ -3215,6 +3220,37 @@ void Browser::OnStateChanged() {
 
   command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
       show_main_ui && profile_->IsSyncAccessible());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Browser, MatchPreviewDelegate implementation:
+
+void Browser::ShowMatchPreview() {
+  DCHECK(match_preview_->tab_contents() == GetSelectedTabContents());
+  window_->ShowMatchPreview();
+}
+
+void Browser::HideMatchPreview() {
+  if (match_preview_->tab_contents() == GetSelectedTabContents())
+    window_->HideMatchPreview();
+}
+
+void Browser::CommitMatchPreview() {
+  TabContents* tab_contents = match_preview_->tab_contents();
+  int index = tabstrip_model_.GetIndexOfTabContents(tab_contents);
+  DCHECK_NE(-1, index);
+  scoped_ptr<TabContents> preview_contents(
+      match_preview()->ReleasePreviewContents(true));
+  preview_contents->controller().CopyStateFromAndPrune(
+      tab_contents->controller());
+  // TabStripModel takes ownership of preview_contents.
+  tabstrip_model_.ReplaceTabContentsAt(
+      index, preview_contents.release(),
+      TabStripModelObserver::REPLACE_MATCH_PREVIEW);
+}
+
+void Browser::SetSuggestedText(const string16& text) {
+  window()->GetLocationBar()->SetSuggestedText(text);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

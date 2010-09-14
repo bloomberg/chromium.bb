@@ -43,6 +43,7 @@
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/download_shelf_view.h"
 #include "chrome/browser/views/frame/browser_view_layout.h"
+#include "chrome/browser/views/frame/contents_container.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
 #include "chrome/browser/views/status_bubble_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
@@ -134,75 +135,6 @@ static gfx::NativeWindow GetNormalBrowserWindowForBrowser(Browser* browser,
   return browser->window()->GetNativeHandle();
 }
 #endif  // defined(OS_CHROMEOS)
-
-// ContentsContainer is responsible for managing the TabContents views.
-// ContentsContainer has up to two children: one for the currently active
-// TabContents and one for the match preview TabContents.
-class BrowserView::ContentsContainer : public views::View {
- public:
-  ContentsContainer(BrowserView* browser_view, views::View* active)
-      : browser_view_(browser_view),
-        active_(active),
-        preview_(NULL) {
-    AddChildView(active_);
-  }
-
-  // Makes the preview view the active view and nulls out the old active view.
-  // It's assumed the caller will delete or remove the old active view
-  // separately.
-  void MakePreviewContentsActiveContents() {
-    active_ = preview_;
-    preview_ = NULL;
-    Layout();
-  }
-
-  // Sets the preview view. This does not delete the old.
-  void SetPreview(views::View* preview) {
-    if (preview == preview_)
-      return;
-
-    if (preview_)
-      RemoveChildView(preview_);
-    preview_ = preview;
-    if (preview_)
-      AddChildView(preview_);
-
-    Layout();
-  }
-
-  virtual void Layout() {
-    // The active view always gets the full bounds.
-    active_->SetBounds(0, 0, width(), height());
-
-    if (preview_) {
-      // The preview view gets the full width and is positioned beneath the
-      // bottom of the autocompleted popup.
-      int max_autocomplete_y = browser_view_->toolbar()->location_bar()->
-          location_entry()->model()->popup_model()->view()->GetMaxYCoordinate();
-      gfx::Point screen_origin;
-      views::View::ConvertPointToScreen(this, &screen_origin);
-      DCHECK_GT(max_autocomplete_y, screen_origin.y());
-      int preview_origin = max_autocomplete_y - screen_origin.y();
-      if (preview_origin < height()) {
-        preview_->SetBounds(0, preview_origin, width(),
-                            height() - preview_origin);
-      } else {
-        preview_->SetBounds(0, 0, 0, 0);
-      }
-    }
-
-    // Need to invoke views::View in case any views whose bounds didn't change
-    // still need a layout.
-    views::View::Layout();
-  }
-
- private:
-  BrowserView* browser_view_;
-  views::View* active_;
-  views::View* preview_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentsContainer);
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
@@ -1422,6 +1354,26 @@ void BrowserView::ToggleTabStripMode() {
   frame_->TabStripDisplayModeChanged();
 }
 
+void BrowserView::ShowMatchPreview() {
+  if (!preview_container_)
+    preview_container_ = new TabContentsContainer();
+  TabContents* preview_tab_contents =
+      browser_->match_preview()->preview_contents();
+  contents_->SetPreview(preview_container_, preview_tab_contents);
+  preview_container_->ChangeTabContents(preview_tab_contents);
+}
+
+void BrowserView::HideMatchPreview() {
+  if (!preview_container_)
+    return;
+
+  // The contents must be changed before SetPreview is invoked.
+  preview_container_->ChangeTabContents(NULL);
+  contents_->SetPreview(NULL, NULL);
+  delete preview_container_;
+  preview_container_ = NULL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 
@@ -1460,25 +1412,6 @@ void BrowserView::Observe(NotificationType type,
         Layout();
       }
       break;
-
-    case NotificationType::MATCH_PREVIEW_TAB_CONTENTS_CREATED:
-      if (Source<TabContents>(source).ptr() ==
-          browser_->GetSelectedTabContents()) {
-        ShowMatchPreview();
-      }
-      break;
-
-    case NotificationType::TAB_CONTENTS_DESTROYED: {
-      if (MatchPreview::IsEnabled()) {
-        TabContents* selected_contents = browser_->GetSelectedTabContents();
-        if (selected_contents &&
-            selected_contents->match_preview()->preview_contents() ==
-            Source<TabContents>(source).ptr()) {
-          HideMatchPreview();
-        }
-      }
-      break;
-    }
 
     case NotificationType::SIDEBAR_CHANGED:
       if (Details<SidebarContainer>(details)->tab_contents() ==
@@ -1983,13 +1916,6 @@ void BrowserView::Init() {
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
-
-  registrar_.Add(this,
-                 NotificationType::MATCH_PREVIEW_TAB_CONTENTS_CREATED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::TAB_CONTENTS_DESTROYED,
-                 NotificationService::AllSources());
 }
 
 #if defined(OS_WIN)
@@ -2470,25 +2396,6 @@ void BrowserView::InitHangMonitor() {
                              hung_plugin_detect_freq);
   }
 #endif
-}
-
-void BrowserView::ShowMatchPreview() {
-  if (!preview_container_)
-    preview_container_ = new TabContentsContainer();
-  contents_->SetPreview(preview_container_);
-  preview_container_->ChangeTabContents(
-      browser_->GetSelectedTabContents()->match_preview()->preview_contents());
-}
-
-void BrowserView::HideMatchPreview() {
-  if (!preview_container_)
-    return;
-
-  // The contents must be changed before SetPreview is invoked.
-  preview_container_->ChangeTabContents(NULL);
-  contents_->SetPreview(NULL);
-  delete preview_container_;
-  preview_container_ = NULL;
 }
 
 void BrowserView::ProcessTabSelected(TabContents* new_contents,

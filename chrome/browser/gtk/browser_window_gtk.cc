@@ -1129,6 +1129,16 @@ void BrowserWindowGtk::Paste() {
   DoCutCopyPaste(this, &RenderViewHost::Paste, "paste-clipboard");
 }
 
+void BrowserWindowGtk::ShowMatchPreview() {
+  // TODO: implement me
+  NOTIMPLEMENTED();
+}
+
+void BrowserWindowGtk::HideMatchPreview() {
+  // TODO: implement me
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }

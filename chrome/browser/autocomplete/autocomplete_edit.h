@@ -134,10 +134,9 @@ class AutocompleteEditModel : public NotificationObserver {
   // Restores local state from the saved |state|.
   void RestoreState(const State& state);
 
-  // Returns the url and transition type for the current text. If the user has
-  // not edited the text this is the permanent url, otherwise it is the url the
-  // user would navigate to if they accept the current edit.
-  GURL CurrentURL(PageTransition::Type* transition_type);
+  // Returns the match for the current text. If the user has not edited the text
+  // this is the match corresponding to the permanent text.
+  AutocompleteMatch CurrentMatch();
 
   // Called when the user wants to export the entire current text as a URL.
   // Sets the url, and if known, the title and favicon.

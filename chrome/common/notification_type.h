@@ -397,10 +397,6 @@ class NotificationType {
     // pointer.
     RENDER_VIEW_HOST_CREATED_FOR_TAB,
 
-    // Sent when MatchPreview creates the preview TabContents. The source is the
-    // TabContents the MatchPreview is associated with.
-    MATCH_PREVIEW_TAB_CONTENTS_CREATED,
-
     // Stuff inside the tabs ---------------------------------------------------
 
     // This message is sent after a constrained window has been closed.  The

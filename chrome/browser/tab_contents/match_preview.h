@@ -4,31 +4,31 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_MATCH_PREVIEW_H_
 #define CHROME_BROWSER_TAB_CONTENTS_MATCH_PREVIEW_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
+#include "base/timer.h"
+#include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
+struct AutocompleteMatch;
+class MatchPreviewDelegate;
 class TabContents;
 
 // MatchPreview maintains a TabContents that is intended to give a preview of
-// a URL. MatchPreview is owned by TabContents.
-//
-// As the user types in the omnibox the LocationBar updates MatchPreview by
-// way of 'Update'. If the user does a gesture on the preview, say clicks a
-// link, the TabContentsDelegate of the hosting TabContents is notified with
-// CommitMatchPreview and the TabContents maintained by MatchPreview replaces
-// the current TabContents in the TabStripModel.
+// a URL. MatchPreview is owned by Browser.
 //
 // At any time the TabContents maintained by MatchPreview may be destroyed by
-// way of 'DestroyPreviewContents'. Consumers of MatchPreview can detect the
-// preview TabContents was destroyed by observing TAB_CONTENTS_DESTROYED.
-//
-// Consumers of MatchPreview can detect a new TabContents was created by
-// MatchPreview by listening for MATCH_PREVIEW_TAB_CONTENTS_CREATED.
+// way of |DestroyPreviewContents|, which results in |HideMatchPreview| being
+// invoked on the delegate. Similarly the preview may be committed at any time
+// by invoking |CommitCurrentPreview|, which results in |CommitMatchPreview|
+// being invoked on the delegate.
 class MatchPreview {
  public:
-  explicit MatchPreview(TabContents* host);
+  explicit MatchPreview(MatchPreviewDelegate* delegate);
   ~MatchPreview();
 
   // Is MatchPreview enabled?
@@ -38,7 +38,10 @@ class MatchPreview {
   // the url is empty and there is a preview TabContents it is destroyed. If url
   // is non-empty and the preview TabContents has not been created it is
   // created.
-  void Update(const GURL& url);
+  void Update(TabContents* tab_contents,
+              const AutocompleteMatch& match,
+              const string16& user_text,
+              string16* suggested_text);
 
   // Destroys the preview TabContents. Does nothing if the preview TabContents
   // has not been created.
@@ -49,30 +52,69 @@ class MatchPreview {
   void CommitCurrentPreview();
 
   // Releases the preview TabContents passing ownership to the caller. This is
-  // intended to be called when the preview TabContents is committed.
-  TabContents* ReleasePreviewContents();
+  // intended to be called when the preview TabContents is committed. This does
+  // not notify the delegate.
+  TabContents* ReleasePreviewContents(bool commit_history);
 
-  // The TabContents we're maintaining the preview for.
-  TabContents* host() { return host_; }
+  // TabContents the match is being shown for.
+  TabContents* tab_contents() const { return tab_contents_; }
 
   // The preview TabContents; may be null.
-  TabContents* preview_contents() { return preview_contents_.get(); }
+  TabContents* preview_contents() const { return preview_contents_.get(); }
+
+  // Returns true if the preview TabContents is active. In some situations this
+  // may return false yet preview_contents() returns non-NULL.
+  bool is_active() const { return is_active_; }
+
+  const GURL& url() const { return url_; }
 
  private:
+  class FrameLoadObserver;
+  class PaintObserverImpl;
   class TabContentsDelegateImpl;
+
+  // Invoked when the page wants to update the suggested text. If |user_text_|
+  // starts with |suggested_text|, then the delegate is notified of the change,
+  // which results in updating the omnibox.
+  void SetCompleteSuggestedText(const string16& suggested_text);
+
+  // Invoked when the preview paints. This notifies the delegate the preview is
+  // ready to be shown.
+  void PreviewDidPaint();
+
+  // Invoked once the page has finished loading and the script has been sent.
+  void PageFinishedLoading();
+
+  MatchPreviewDelegate* delegate_;
+
+  // The TabContents last passed to |Update|.
+  TabContents* tab_contents_;
 
   // The url we're displaying.
   GURL url_;
 
-  // The TabContents we're providing the preview for.
-  TabContents* host_;
-
   // Delegate of the preview TabContents. Used to detect when the user does some
   // gesture on the TabContents and the preview needs to be activated.
-  scoped_ptr<TabContentsDelegateImpl> delegate_;
+  scoped_ptr<TabContentsDelegateImpl> preview_tab_contents_delegate_;
 
   // The preview TabContents; may be null.
   scoped_ptr<TabContents> preview_contents_;
+
+  // Has notification been sent out that the preview TabContents is ready to be
+  // shown?
+  bool is_active_;
+
+  // The text the user typed in the omnibox.
+  string16 user_text_;
+
+  // The latest suggestion from the page.
+  string16 complete_suggested_text_;
+
+  // If we're showing instant results this is the ID of the TemplateURL driving
+  // the results. A value of 0 means there is no TemplateURL.
+  TemplateURLID template_url_id_;
+
+  scoped_ptr<FrameLoadObserver> frame_load_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MatchPreview);
 };

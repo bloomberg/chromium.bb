@@ -43,6 +43,7 @@ class BookmarkBarView;
 class Browser;
 class BrowserBubble;
 class BrowserViewLayout;
+class ContentsContainer;
 class DownloadShelfView;
 class EncodingMenuModel;
 class FullscreenExitBubble;
@@ -319,6 +320,8 @@ class BrowserView : public BrowserBubbleHost,
   virtual void Copy();
   virtual void Paste();
   virtual void ToggleTabStripMode();
+  virtual void ShowMatchPreview();
+  virtual void HideMatchPreview();
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;
@@ -420,8 +423,6 @@ class BrowserView : public BrowserBubbleHost,
  private:
   friend class BrowserViewLayout;
 
-  class ContentsContainer;
-
 #if defined(OS_WIN)
   // Creates the system menu.
   void InitSystemMenu();
@@ -493,12 +494,6 @@ class BrowserView : public BrowserBubbleHost,
   // Initialize the hung plugin detector.
   void InitHangMonitor();
 
-  // Shows the match preview for the selected tab contents.
-  void ShowMatchPreview();
-
-  // Hides the match preview for the selected tab contents.
-  void HideMatchPreview();
-
   // Invoked from TabSelectedAt or when the match preview is made active.  Is
   // |change_tab_contents| is true, |new_contents| is added to the view
   // hierarchy, if |change_tab_contents| is false, it's assumed |new_contents|
@@ -521,13 +516,13 @@ class BrowserView : public BrowserBubbleHost,
   // |         |--------------------------------------------------------------|
   // |         | Navigation buttons, menus and the address bar (toolbar_)     |
   // |         |--------------------------------------------------------------|
-  // |         | All infobars (infobar_container_)                            |
+  // |         | All infobars (infobar_container_) *                          |
   // |         |--------------------------------------------------------------|
-  // |         | Bookmarks (bookmark_bar_view_)                               |
+  // |         | Bookmarks (bookmark_bar_view_) *                             |
   // |         |--------------------------------------------------------------|
   // |         |Page content (contents_)              ||                      |
   // |         |--------------------------------------|| Sidebar content      |
-  // |         || contents_container_ or             ||| (sidebar_container_) |
+  // |         || contents_container_ and/or         ||| (sidebar_container_) |
   // |         || preview_container_                 |||                      |
   // |         ||                                    |(3)                     |
   // | Tabs (2)||                                    |||                      |
@@ -549,6 +544,11 @@ class BrowserView : public BrowserBubbleHost,
   // (2) - tabstrip_, position when side tabs are enabled
   // (3) - sidebar_split_
   // (4) - contents_split_
+  //
+  // * - The bookmark bar and info bar are swapped when on the new tab page.
+  //     Additionally contents_ is positioned on top of the bookmark bar when
+  //     the bookmark bar is detached. This is done to allow the
+  //     preview_container_ to appear over the bookmark bar.
 
   // Tool/Info bars that we are currently showing. Used for layout.
   // active_bookmark_bar_ is either NULL, if the bookmark bar isn't showing,

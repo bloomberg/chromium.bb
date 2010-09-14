@@ -312,6 +312,12 @@ class BrowserWindow {
   virtual void OpenTabpose() = 0;
 #endif
 
+  // Invoked when the match preview's tab contents should be shown.
+  virtual void ShowMatchPreview() = 0;
+
+  // Invoked when the match preview's tab contents should be hidden.
+  virtual void HideMatchPreview() = 0;
+
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 

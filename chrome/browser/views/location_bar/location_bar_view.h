@@ -38,6 +38,7 @@ class ExtensionAction;
 class GURL;
 class KeywordHintView;
 class LocationIconView;
+class MatchPreview;
 class PageActionWithBadgeView;
 class Profile;
 class SelectedKeywordView;
@@ -71,6 +72,9 @@ class LocationBarView : public LocationBar,
    public:
     // Should return the current tab contents.
     virtual TabContents* GetTabContents() = 0;
+
+    // Returns the MatchPreview, or NULL if there isn't one.
+    virtual MatchPreview* GetMatchPreview() = 0;
 
     // Called by the location bar view when the user starts typing in the edit.
     // This forces our security style to be UNKNOWN for the duration of the
@@ -201,7 +205,7 @@ class LocationBarView : public LocationBar,
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
-  virtual void SetSuggestedText(const std::wstring& text);
+  virtual void SetSuggestedText(const string16& text);
   virtual std::wstring GetInputString() const;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const;
   virtual PageTransition::Type GetPageTransition() const;
@@ -293,6 +297,11 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
+  // Returns true if the CommitMatchPreview should be invoked on the
+  // MatchPreview as the result of a focus loss. If this returns false
+  // DestroyPreviewContents is invoked.
+  bool ShouldCommitMatchPreviewOnFocusLoss(gfx::NativeView view_gaining_focus);
+
   // Current profile. Not owned by us.
   Profile* profile_;
 
@@ -380,6 +389,12 @@ class LocationBarView : public LocationBar,
 #if defined(OS_LINUX)
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 #endif
+
+  // Should the match preview be updated? This is set to false in
+  // OnAutocompleteWillAccept and true in OnAutocompleteAccept. This is needed
+  // as prior to accepting an autocomplete suggestion the model is reverted
+  // which triggers resetting the match preview.
+  bool update_match_preview_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };

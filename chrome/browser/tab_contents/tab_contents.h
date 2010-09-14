@@ -72,7 +72,6 @@ class Extension;
 class FileSelectHelper;
 class InfoBarDelegate;
 class LoadNotificationDetails;
-class MatchPreview;
 class OmniboxSearchHint;
 class PasswordManager;
 class PluginInstaller;
@@ -167,9 +166,6 @@ class TabContents : public PageNavigator,
 
   // Returns the TabContentsSSLHelper, creating it if necessary.
   TabContentsSSLHelper* GetSSLHelper();
-
-  // Returns the MatchPreview. Returns NULL if MatchPreview is not enabled.
-  MatchPreview* match_preview() { return match_preview_.get(); }
 
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
@@ -1276,8 +1272,6 @@ class TabContents : public PageNavigator,
 
   // See description in RenderViewHostDelegate::SetDisplayingPDFContent.
   bool displaying_pdf_content_;
-
-  scoped_ptr<MatchPreview> match_preview_;
 
   // ---------------------------------------------------------------------------
 

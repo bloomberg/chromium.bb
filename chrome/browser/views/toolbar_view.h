@@ -88,6 +88,7 @@ class ToolbarView : public AccessibleToolbarView,
 
   // Overridden from LocationBarView::Delegate:
   virtual TabContents* GetTabContents();
+  virtual MatchPreview* GetMatchPreview();
   virtual void OnInputInProgress(bool in_progress);
 
   // Overridden from AnimationDelegate:

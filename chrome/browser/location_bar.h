@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -28,12 +29,9 @@ class LocationBar {
   // Shows the first run information bubble anchored to the location bar.
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) = 0;
 
-  // TODO: port
-#if defined(TOOLKIT_VIEWS)
   // Sets the suggested text to show in the omnibox. This is shown in addition
   // to the current text of the omnibox.
-  virtual void SetSuggestedText(const std::wstring& text) = 0;
-#endif
+  virtual void SetSuggestedText(const string16& text) = 0;
 
   // Returns the string of text entered in the location bar.
   virtual std::wstring GetInputString() const = 0;

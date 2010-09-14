@@ -93,16 +93,18 @@ class TestBrowserWindow : public BrowserWindow {
                               gfx::NativeWindow parent_window) {}
   virtual void UserChangedTheme() {}
   virtual int GetExtraRenderViewHeight() const { return 0; }
-  virtual void TabContentsFocused(TabContents* tab_contents) { }
+  virtual void TabContentsFocused(TabContents* tab_contents) {}
   virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
-                            bool show_history) { }
-  virtual void Cut() { }
-  virtual void Copy() { }
-  virtual void Paste() { }
+                            bool show_history) {}
+  virtual void Cut() {}
+  virtual void Copy() {}
+  virtual void Paste() {}
   virtual void ToggleTabStripMode() {}
   virtual void OpenTabpose() {}
+  virtual void ShowMatchPreview() {}
+  virtual void HideMatchPreview() {}
 
  protected:
   virtual void DestroyBrowser() {}
