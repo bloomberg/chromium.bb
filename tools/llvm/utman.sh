@@ -120,7 +120,7 @@ readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
 readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 
 # Current milestones in each repo
-readonly LLVM_REV=b4fc83014b81
+readonly LLVM_REV=e1e4163a5fa2
 readonly LLVM_GCC_REV=6da5d51ee4ac
 readonly NEWLIB_REV=03ddd92d699d
 readonly BINUTILS_REV=a5b54c0cc733
@@ -1538,14 +1538,12 @@ binutils-liberty-x86-configure() {
 
   mkdir -p "${objdir}"
   spushd "${objdir}"
-
   RunWithLog binutils.liberty.x86.configure \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    CC=${CC} \
-    CXX=${CXX} \
-    ${srcdir}/binutils-2.20/configure --prefix=${PNACL_CLIENT_TC_ROOT} \
-                                      --with-sysroot=${NEWLIB_INSTALL_DIR}
+      env -i \
+      PATH="/usr/bin:/bin" \
+      CC=${CC} \
+      CXX=${CXX} \
+      ${srcdir}/binutils-2.20/configure --prefix=${PNACL_CLIENT_TC_ROOT}
   spopd
 }
 
@@ -1567,8 +1565,8 @@ binutils-liberty-x86-make() {
   ts-touch-open "${objdir}"
 
   RunWithLog binutils.liberty.x86.make \
-    env -i PATH="/usr/bin:/bin" \
-    make ${MAKE_OPTS} all-libiberty
+      env -i PATH="/usr/bin:/bin" \
+      make ${MAKE_OPTS} all-libiberty
 
   ts-touch-commit "${objdir}"
 
@@ -1582,8 +1580,8 @@ binutils-liberty-x86-install() {
   spushd "${objdir}"
 
   RunWithLog binutils.liberty.x86.install \
-    env -i PATH="/usr/bin:/bin" \
-    make install-libiberty ${MAKE_OPTS}
+      env -i PATH="/usr/bin:/bin" \
+      make install-libiberty ${MAKE_OPTS}
 
   spopd
 }
