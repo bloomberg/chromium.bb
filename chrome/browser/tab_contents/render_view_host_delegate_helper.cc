@@ -284,8 +284,13 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kShowCompositedLayerBorders);
     web_prefs.accelerated_compositing_enabled =
         !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
+    // Force this flag off for mac for now. crbug.com/54197
+#if defined(OS_MACOSX)
+    web_prefs.accelerated_2d_canvas_enabled = false;
+#else
     web_prefs.accelerated_2d_canvas_enabled =
         !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
+#endif
     web_prefs.memory_info_enabled =
         command_line.HasSwitch(switches::kEnableMemoryInfo);
     // The user stylesheet watcher may not exist in a testing profile.
