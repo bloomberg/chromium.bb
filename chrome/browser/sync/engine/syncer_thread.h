@@ -10,7 +10,6 @@
 #pragma once
 
 #include <list>
-#include <queue>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -169,17 +168,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // Handle of the running thread.
   base::Thread thread_;
 
-  typedef std::pair<base::TimeTicks, NudgeSource> NudgeObject;
-
-  struct IsTimeTicksGreater {
-    inline bool operator() (const NudgeObject& lhs, const NudgeObject& rhs) {
-      return lhs.first > rhs.first;
-    }
-  };
-
-  typedef std::priority_queue<NudgeObject, std::vector<NudgeObject>,
-                              IsTimeTicksGreater> NudgeQueue;
-
   // Fields that are modified / accessed by multiple threads go in this struct
   // for clarity and explicitness.
   struct ProtectedFields {
@@ -197,9 +185,12 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     // State of the server connection.
     bool connected_;
 
-    // A queue of all scheduled nudges.  One insertion for every call to
-    // NudgeQueue().
-    NudgeQueue nudge_queue_;
+    // kUnknown if there is no pending nudge.  (Theoretically, there
+    // could be a pending nudge of type kUnknown, so it's better to
+    // check pending_nudge_time_.)
+    NudgeSource pending_nudge_source_;
+    // null iff there is no pending nudge.
+    base::TimeTicks pending_nudge_time_;
 
     // The wait interval for to the current iteration of our main loop.  This is
     // only written to by the syncer thread, and since the only reader from a
@@ -213,7 +204,8 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
           pause_requested_(false),
           paused_(false),
           syncer_(NULL),
-          connected_(false) {}
+          connected_(false),
+          pending_nudge_source_(kUnknown) {}
   } vault_;
 
   // Gets signaled whenever a thread outside of the syncer thread changes a

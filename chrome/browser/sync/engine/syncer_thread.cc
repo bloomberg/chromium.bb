@@ -294,10 +294,10 @@ void SyncerThread::ThreadMainLoop() {
         WaitInterval::THROTTLED;
     // If we are throttled, we must wait.  Otherwise, wait until either the next
     // nudge (if one exists) or the poll interval.
-    const TimeTicks end_wait = throttled ? next_poll :
-        !vault_.nudge_queue_.empty() &&
-        vault_.nudge_queue_.top().first < next_poll ?
-        vault_.nudge_queue_.top().first : next_poll;
+    TimeTicks end_wait = next_poll;
+    if (!throttled && !vault_.pending_nudge_time_.is_null()) {
+      end_wait = std::min(end_wait, vault_.pending_nudge_time_);
+    }
     LOG(INFO) << "end_wait is " << end_wait.ToInternalValue();
     LOG(INFO) << "next_poll is " << next_poll.ToInternalValue();
 
@@ -527,13 +527,17 @@ bool SyncerThread::UpdateNudgeSource(bool was_throttled,
   }
   // Update the nudge source if a new nudge has come through during the
   // previous sync cycle.
-  while (!vault_.nudge_queue_.empty() &&
-         TimeTicks::Now() >= vault_.nudge_queue_.top().first) {
+  if (!vault_.pending_nudge_time_.is_null()) {
     if (!was_throttled && !nudged) {
-      nudge_source = vault_.nudge_queue_.top().second;
+      nudge_source = vault_.pending_nudge_source_;
       nudged = true;
     }
-    vault_.nudge_queue_.pop();
+    LOG(INFO) << "Clearing pending nudge from "
+              << vault_.pending_nudge_source_
+              << " at tick "
+              << vault_.pending_nudge_time_.ToInternalValue();
+    vault_.pending_nudge_source_ = kUnknown;
+    vault_.pending_nudge_time_ = base::TimeTicks();
   }
   SetUpdatesSource(nudged, nudge_source, initial_sync);
   return nudged;
@@ -700,8 +704,16 @@ void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
 
   const TimeTicks nudge_time = TimeTicks::Now() +
       TimeDelta::FromMilliseconds(milliseconds_from_now);
-  NudgeObject nudge_object(nudge_time, source);
-  vault_.nudge_queue_.push(nudge_object);
+  if (nudge_time <= vault_.pending_nudge_time_) {
+    LOG(INFO) << "Nudge for source " << source
+              << " dropped due to existing later pending nudge";
+    return;
+  }
+
+  LOG(INFO) << "Replacing pending nudge for source "
+            << source << " at " << nudge_time.ToInternalValue();
+  vault_.pending_nudge_source_ = source;
+  vault_.pending_nudge_time_ = nudge_time;
   vault_field_changed_.Broadcast();
 }
 
