@@ -60,25 +60,25 @@ WebVideoFrame::Format WebVideoFrameImpl::format() const {
 unsigned WebVideoFrameImpl::width() const {
   if (video_frame_.get())
     return video_frame_->width();
-  return NULL;
+  return 0;
 }
 
 unsigned WebVideoFrameImpl::height() const {
   if (video_frame_.get())
     return video_frame_->height();
-  return NULL;
+  return 0;
 }
 
 unsigned WebVideoFrameImpl::planes() const {
   if (video_frame_.get())
     return video_frame_->planes();
-  return NULL;
+  return 0;
 }
 
 int WebVideoFrameImpl::stride(unsigned plane) const {
   if (video_frame_.get())
     return static_cast<int>(video_frame_->stride(plane));
-  return NULL;
+  return 0;
 }
 
 const void* WebVideoFrameImpl::data(unsigned plane) const {

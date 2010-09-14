@@ -18,7 +18,7 @@
 const char* TokenService::kServices[] = {GaiaConstants::kSyncService,
                                          GaiaConstants::kTalkService};
 TokenService::TokenService()
-    : token_loading_query_(NULL) {
+    : token_loading_query_(0) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
@@ -56,7 +56,7 @@ void TokenService::ResetCredentialsInMemory() {
   // Cancel pending loads. Callbacks will not return.
   if (token_loading_query_) {
     web_data_service_->CancelRequest(token_loading_query_);
-    token_loading_query_ = NULL;
+    token_loading_query_ = 0;
   }
 
   token_map_.clear();
@@ -181,7 +181,7 @@ void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
                                                const WDTypedResult* result) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(token_loading_query_);
-  token_loading_query_ = NULL;
+  token_loading_query_ = 0;
 
   // If the fetch failed, there will be no result. In that case, we just don't
   // load any tokens at all from the DB.

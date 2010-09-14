@@ -20,7 +20,7 @@ PP_Resource CreateTransport(PP_Module module,
                             const char* name,
                             const char* proto) {
   // TODO(juberti): implement me
-  PP_Resource p(NULL);
+  PP_Resource p(0);
   return p;
 }
 
@@ -68,7 +68,7 @@ int32_t GetNextAddress(PP_Resource transport,
 // from the remote peer.
 int32_t ReceiveRemoteAddress(PP_Resource transport,
                              PP_Var address) {
-  // TODO(juberti): impelement me
+  // TODO(juberti): implement me
   return 0;
 }
 

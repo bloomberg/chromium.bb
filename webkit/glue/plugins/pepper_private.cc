@@ -94,29 +94,29 @@ PP_Resource GetResourceImage(PP_Module module_id, PP_ResourceImage image_id) {
     }
   }
   if (res_id == 0)
-    return NULL;
+    return 0;
 
   SkBitmap* res_bitmap =
       ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
 
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
-    return NULL;
+    return 0;
   scoped_refptr<pepper::ImageData> image_data(new pepper::ImageData(module));
   if (!image_data->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                         res_bitmap->width(), res_bitmap->height(), false)) {
-    return NULL;
+    return 0;
   }
 
   ImageDataAutoMapper mapper(image_data);
   if (!mapper.is_valid())
-    return NULL;
+    return 0;
 
   skia::PlatformCanvas* canvas = image_data->mapped_canvas();
   SkBitmap& ret_bitmap =
       const_cast<SkBitmap&>(canvas->getTopPlatformDevice().accessBitmap(true));
   if (!res_bitmap->copyTo(&ret_bitmap, SkBitmap::kARGB_8888_Config, NULL)) {
-    return NULL;
+    return 0;
   }
 
   return image_data->GetReference();
@@ -128,14 +128,14 @@ PP_Resource GetFontFileWithFallback(
 #if defined(OS_LINUX)
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
-    return NULL;
+    return 0;
 
   int fd = webkit_glue::MatchFontWithFallback(description->face,
                                               description->weight >= 700,
                                               description->italic,
                                               description->charset);
   if (fd == -1)
-    return NULL;
+    return 0;
 
   scoped_refptr<PrivateFontFile> font(new PrivateFontFile(module, fd));
 
@@ -143,7 +143,7 @@ PP_Resource GetFontFileWithFallback(
 #else
   // For trusted pepper plugins, this is only needed in Linux since font loading
   // on Windows and Mac works through the renderer sandbox.
-  return false;
+  return 0;
 #endif
 }
 
