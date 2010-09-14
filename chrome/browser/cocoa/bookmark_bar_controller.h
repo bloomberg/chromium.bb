@@ -49,7 +49,8 @@ const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
 const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
 const CGFloat kBookmarkVerticalPadding = 2.0;
-const CGFloat kBookmarkHorizontalPadding = 5.0;
+const CGFloat kBookmarkHorizontalPadding = 1.0;
+const CGFloat kBookmarkSubMenuHorizontalPadding = 5.0;
 const CGFloat kBookmarkHorizontalScreenPadding = 8.0;
 
 // Our NSScrollView is supposed to be just barely big enough to fit its

@@ -703,10 +703,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   // and grown vertically.
   NSRect expectedToWindowFrame = oldToWindowFrame;
   expectedToWindowFrame.origin.x -= horizontalShift;
-  expectedToWindowFrame.origin.y -=
-      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
-  expectedToWindowFrame.size.height +=
-      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
+  CGFloat diff = (bookmarks::kBookmarkBarHeight +
+                  2*bookmarks::kBookmarkVerticalPadding);
+  expectedToWindowFrame.origin.y -= diff;
+  expectedToWindowFrame.size.height += diff;
   EXPECT_NSRECT_EQ(expectedToWindowFrame, newToWindowFrame);
 
   // Move the button back to the bar at the beginning.
@@ -767,10 +767,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragCopyBarBookmarkToFolder) {
   EXPECT_NSRECT_EQ(oldToFolderFrame, newToFolderFrame);
   // The toWindow should have shifted down vertically and grown vertically.
   NSRect expectedToWindowFrame = oldToWindowFrame;
-  expectedToWindowFrame.origin.y -=
-      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
-  expectedToWindowFrame.size.height +=
-      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
+  CGFloat diff = (bookmarks::kBookmarkBarHeight +
+                  2*bookmarks::kBookmarkVerticalPadding);
+  expectedToWindowFrame.origin.y -= diff;
+  expectedToWindowFrame.size.height += diff;
   EXPECT_NSRECT_EQ(expectedToWindowFrame, newToWindowFrame);
 
   // Copy the button back to the bar after "3b".
@@ -1138,7 +1138,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   NSWindow* folderMenu = [folderController window];
   EXPECT_TRUE(folderMenu);
   CGFloat expectedHeight = (CGFloat)bookmarks::kBookmarkButtonHeight +
-      bookmarks::kBookmarkVerticalPadding;
+      (2*bookmarks::kBookmarkVerticalPadding);
   NSRect menuFrame = [folderMenu frame];
   CGFloat menuHeight = NSHeight(menuFrame);
   EXPECT_CGFLOAT_EQ(expectedHeight, menuHeight);
@@ -1158,7 +1158,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   button = [folderController buttonWithTitleEqualTo:@"a"];
   CGFloat buttonWidth = NSWidth([button frame]);
   CGFloat expectedWidth =
-      buttonWidth + (2 * bookmarks::kBookmarkHorizontalPadding);
+      buttonWidth + (2 * bookmarks::kBookmarkSubMenuHorizontalPadding);
   EXPECT_CGFLOAT_EQ(expectedWidth, menuWidth);
 
   // Add a wider bookmark and make sure the button widths match.
