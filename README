@@ -1,5 +1,30 @@
-These instructions assume some familiarity with git and building and
-running experimental software.  And be prepared that this project
+What is Wayland
+
+Wayland is a project to define a protocol for a compositor to talk to
+its clients as well as a library implementation of the protocol.  The
+compositor can be a standalone display server running on Linux kernel
+modesetting and evdev input devices, an X applications, or a wayland
+client itself.  The clients can be traditional appliactions, X servers
+(rootless or fullscreen) or other display servers.
+
+The wayland protocol is essentially only about input handling and
+buffer management.  The compositor receives input events and forwards
+them to the relevant client.  The clients creates buffers and renders
+into them and notifies the compositor when it needs to redraw.  The
+protocol also handles drag and drop, selections, window management and
+other interactions that must go throught the compositor.  However, the
+protocol does not handle rendering, which is one of the features that
+makes wayland so simple.  All clients are expected to handle rendering
+themselves, typically through cairo or OpenGL.
+
+The wayland repository includes a compositor and a few clients, but
+both the compositor and clients are essentially test cases.
+
+
+Building Instructions
+
+The instructions below assume some familiarity with git and building
+and running experimental software.  And be prepared that this project
 isn't at all useful right now, it's still very much a prototype.  When
 the instructions suggest to clone a git repo, you can of course just
 add a remote and fetch instead, if you have a clone of that repo
