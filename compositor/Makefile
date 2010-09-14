@@ -1,7 +1,7 @@
 include ../config.mk
 
 CFLAGS += $(COMPOSITOR_CFLAGS)
-LDLIBS += -L.. -lwayland-server $(COMPOSITOR_LIBS) -rdynamic -lrt -lEGL -lm
+LDLIBS += -L../wayland -lwayland-server $(COMPOSITOR_LIBS) -rdynamic -lrt -lm
 
 all : compositor
 
@@ -16,3 +16,4 @@ clean :
 	rm -f compositor *.o .*.deps
 
 install :
+	install 70-wayland.rules ${udev_rules_dir}

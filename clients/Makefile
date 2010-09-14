@@ -1,7 +1,7 @@
 include ../config.mk
 
 CFLAGS += -I.. $(CLIENT_CFLAGS)
-LDLIBS += -L.. -lwayland-client $(CLIENT_LIBS) -lrt -lm
+LDLIBS += -L../wayland -lwayland-client $(CLIENT_LIBS) -lrt -lm
 
 egl_clients = gears
 cairo_clients = flower screenshot terminal image view dnd
