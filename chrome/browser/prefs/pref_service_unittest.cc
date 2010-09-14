@@ -212,6 +212,11 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
   scoped_ptr<Value> default_value(Value::CreateStringValue(default_string));
   prefs_.RegisterStringPref(name_, default_string);
   prefs_.AddPrefObserver(name_, &observer_);
+  // Changing the controlling store from default to user triggers notification.
+  SetExpectPrefChanged();
+  prefs_.Set(name_, *default_value);
+  Mock::VerifyAndClearExpectations(&observer_);
+
   SetExpectNoNotification();
   prefs_.Set(name_, *default_value);
   Mock::VerifyAndClearExpectations(&observer_);
@@ -228,6 +233,8 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   prefs_.RegisterDictionaryPref(name_);
   prefs_.AddPrefObserver(name_, &observer_);
 
+  // Dictionary values are special: setting one to NULL is the same as clearing
+  // the user value, allowing the NULL default to take (or keep) control.
   SetExpectNoNotification();
   prefs_.Set(name_, *null_value_);
   Mock::VerifyAndClearExpectations(&observer_);
@@ -260,6 +267,8 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   prefs_.RegisterListPref(name_);
   prefs_.AddPrefObserver(name_, &observer_);
 
+  // List values are special: setting one to NULL is the same as clearing the
+  // user value, allowing the NULL default to take (or keep) control.
   SetExpectNoNotification();
   prefs_.Set(name_, *null_value_);
   Mock::VerifyAndClearExpectations(&observer_);

@@ -78,8 +78,7 @@ TEST_F(PrefsControllerTest, ShowAndClose) {
   pref_controller_ = nil;
 }
 
-// Crashes, http://crbug.com/54950
-TEST_F(PrefsControllerTest, DISABLED_ValidateCustomHomePagesTable) {
+TEST_F(PrefsControllerTest, ValidateCustomHomePagesTable) {
   // First, insert two valid URLs into the CustomHomePagesModel.
   GURL url1("http://www.google.com/");
   GURL url2("http://maps.google.com/");

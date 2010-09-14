@@ -87,7 +87,6 @@ void ExtensionPrefStore::GetExtensionIDs(std::vector<std::string>* result) {
 // installed extensions will be trying to control any preferences, so stick
 // with this simpler algorithm until it causes a problem.
 void ExtensionPrefStore::UpdateOnePref(const char* path) {
-  scoped_ptr<Value> old_value;
   PrefService* pref_service = GetPrefService();
 
   // There are at least two PrefServices, one for local state and one for
@@ -95,30 +94,44 @@ void ExtensionPrefStore::UpdateOnePref(const char* path) {
   // in each; if this one doesn't have the desired pref registered, we ignore
   // it and let the other one handle it.
   // The pref_service may be NULL in unit testing.
-  if (pref_service) {
-    const PrefService::Preference* pref = pref_service->FindPreference(path);
-    if (!pref)
+  if (pref_service && !pref_service->FindPreference(path))
       return;
-    old_value.reset(pref->GetValue()->DeepCopy());
-  }
+
+  // Save the old value before removing it from the local cache.
+  Value* my_old_value_ptr = NULL;
+  prefs_->Get(path, &my_old_value_ptr);
+  scoped_ptr<Value> my_old_value;
+  if (my_old_value_ptr)
+    my_old_value.reset(my_old_value_ptr->DeepCopy());
 
   // DictionaryValue::Set complains if a key is overwritten with the same
-  // value, so delete it first.
+  // value, so remove it first.
   prefs_->Remove(path, NULL);
 
   // Find the first extension that wants to set this pref and use its value.
+  Value* my_new_value = NULL;
   for (ExtensionStack::iterator ext_iter = extension_stack_.begin();
         ext_iter != extension_stack_.end(); ++ext_iter) {
     PrefValueMap::iterator value_iter = (*ext_iter)->pref_values->find(path);
     if (value_iter != (*ext_iter)->pref_values->end()) {
       prefs_->Set(path, (*value_iter).second->DeepCopy());
+      my_new_value = (*value_iter).second;
       break;
     }
   }
 
   if (pref_service) {
-    pref_service->pref_notifier()->OnPreferenceSet(
-        path, type_, old_value.get());
+    bool value_changed = true;
+    if (!my_old_value.get() && !my_new_value) {
+      value_changed = false;
+    } else if (my_old_value.get() &&
+               my_new_value &&
+               my_old_value->Equals(my_new_value)) {
+      value_changed = false;
+    }
+
+    if (value_changed)
+      pref_service->pref_notifier()->OnPreferenceSet(path, type_);
   }
 }
 

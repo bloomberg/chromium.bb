@@ -32,6 +32,7 @@ class PrefNotifier : public NonThreadSafe,
   //   COMMAND_LINE contains preference values set by command-line switches.
   //   USER contains all user-set preference values.
   //   RECOMMENDED contains all recommended (policy) preference values.
+  //   DEFAULT contains all application default preference values.
   // This enum is kept in pref_notifier.h rather than pref_value_store.h in
   // order to minimize additional headers needed by the *PrefStore files.
   enum PrefStoreType {
@@ -43,7 +44,8 @@ class PrefNotifier : public NonThreadSafe,
     COMMAND_LINE_STORE,
     USER_STORE,
     RECOMMENDED_STORE,
-    PREF_STORE_TYPE_MAX = RECOMMENDED_STORE
+    DEFAULT_STORE,
+    PREF_STORE_TYPE_MAX = DEFAULT_STORE
   };
 
   // The |service| with which this notifier is associated will be sent as the
@@ -52,18 +54,17 @@ class PrefNotifier : public NonThreadSafe,
 
   virtual ~PrefNotifier();
 
-  // For the given pref_name, fire any observer of the pref if |old_value| is
-  // different from the current value, or if the store controlling the value
-  // has changed.
-  // TODO(pamg): Currently notifies in some cases when it shouldn't. See
-  // comments for PrefHasChanged() in pref_value_store.h.
+  // For the given pref_name, fire any observer of the pref if the effective
+  // value of the pref or the store controlling its value has changed, been
+  // added, or been removed (but not if it's re-setting the same value it had
+  // already). |new_store| should be the PrefStoreType of the store reporting
+  // the change.
   void OnPreferenceSet(const char* pref_name,
-                       PrefNotifier::PrefStoreType new_store,
-                       const Value* old_value);
+                       PrefNotifier::PrefStoreType new_store);
 
   // Convenience method to be called when a preference is set in the
   // USER_STORE. See OnPreferenceSet().
-  void OnUserPreferenceSet(const char* pref_name, const Value* old_value);
+  void OnUserPreferenceSet(const char* pref_name);
 
   // For the given pref_name, fire any observer of the pref. Virtual so it can
   // be mocked for unit testing.
