@@ -291,6 +291,7 @@ void InfoBubbleGtk::UpdateWindowShape() {
   mask_region_ = gdk_region_polygon(&points[0],
                                     points.size(),
                                     GDK_EVEN_ODD_RULE);
+  gdk_window_shape_combine_region(window_->window, NULL, 0, 0);
   gdk_window_shape_combine_region(window_->window, mask_region_, 0, 0);
 }
 
