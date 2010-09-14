@@ -13,11 +13,19 @@ clean :
 
 flower : flower.o window.o wayland-glib.o cairo-util.o
 gears : gears.o window.o wayland-glib.o cairo-util.o
-screenshot : screenshot.o wayland-glib.o cairo-util.o
+screenshot : screenshot.o screenshooter-protocol.o wayland-glib.o cairo-util.o
 terminal : terminal.o window.o wayland-glib.o cairo-util.o
 image : image.o window.o wayland-glib.o cairo-util.o
 view : view.o window.o wayland-glib.o cairo-util.o
 dnd : dnd.o window.o wayland-glib.o cairo-util.o
+
+screenshoot.c : screenshooter-client-protocol.h
+
+screenshooter-protocol.c : ../compositor/screenshooter.xml
+	../wayland/scanner code < $< > $@
+
+screenshooter-client-protocol.h : ../compositor/screenshooter.xml
+	../wayland/scanner client-header < $< > $@
 
 terminal : LDLIBS += -lutil
 view : CFLAGS += $(POPPLER_CFLAGS)

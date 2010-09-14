@@ -29,6 +29,7 @@
 
 #include "wayland-client.h"
 #include "wayland-glib.h"
+#include "screenshooter-client-protocol.h"
 
 /* The screenshooter is a good example of a custom object exposed by
  * the compositor and serves as a test bed for implementing client
@@ -36,36 +37,14 @@
 
 static const char socket_name[] = "\0wayland";
 
-#define SCREENSHOOTER_SHOOT 0
-
-struct screenshooter;
-
-static const struct wl_message screenshooter_requests[] = {
-	{ "shoot", "" },
-};
-
-static const struct wl_interface screenshooter_interface = {
-	"screenshooter", 1,
-	ARRAY_LENGTH(screenshooter_requests), screenshooter_requests,
-	0, NULL
-};
-
-static inline void
-screenshooter_shoot(struct screenshooter *shooter)
-{
-	wl_proxy_marshal((struct wl_proxy *) shooter, SCREENSHOOTER_SHOOT);
-}
-
 static void
 handle_global(struct wl_display *display, uint32_t id,
 	      const char *interface, uint32_t version, void *data)
 {
-	struct screenshooter **screenshooter = data;
+	struct wl_screenshooter **screenshooter = data;
 
 	if (strcmp(interface, "screenshooter") == 0)
-		*screenshooter = (struct screenshooter *)
-			wl_proxy_create_for_id(display,
-					       &screenshooter_interface, id);
+		*screenshooter = wl_screenshooter_create(display, id);
 }
 
 int main(int argc, char *argv[])
@@ -73,7 +52,7 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	GMainLoop *loop;
 	GSource *source;
-	struct screenshooter *screenshooter;
+	struct wl_screenshooter *screenshooter;
 
 	display = wl_display_create(socket_name, sizeof socket_name);
 	if (display == NULL) {
@@ -93,7 +72,7 @@ int main(int argc, char *argv[])
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	screenshooter_shoot(screenshooter);
+	wl_screenshooter_shoot(screenshooter);
 
 	g_idle_add((GSourceFunc) g_main_loop_quit, loop);
 	g_main_loop_run(loop);
