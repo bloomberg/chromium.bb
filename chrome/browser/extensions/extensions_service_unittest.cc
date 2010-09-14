@@ -2538,7 +2538,7 @@ TEST_F(ExtensionsServiceTest, StorageQuota) {
   EXPECT_FALSE(profile_->IsOffTheRecord());
 
   // Open the database from each origin to make the tracker aware
-  // of the existance of these origins and to get their quotas.
+  // of the existence of these origins and to get their quotas.
   int64 limited_quota = -1;
   int64 unlimited_quota = -1;
   string16 limited_quota_identifier =

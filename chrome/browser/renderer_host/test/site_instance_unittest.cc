@@ -75,7 +75,7 @@ class TestSiteInstance : public SiteInstance {
 
 // Test to ensure no memory leaks for SiteInstance objects.
 TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
-  // The existance of these factories will cause TabContents to create our test
+  // The existence of these factories will cause TabContents to create our test
   // one instead of the real one.
   MockRenderProcessHostFactory rph_factory;
   TestRenderViewHostFactory rvh_factory(&rph_factory);

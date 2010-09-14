@@ -415,7 +415,7 @@ void Predictor::GetHtmlInfo(std::string* output) {
   UrlInfo::GetHtmlTable(name_preresolved,
       "Preresolution DNS records performed for ", brief, output);
   UrlInfo::GetHtmlTable(name_not_found,
-      "Preresolving DNS records revealed non-existance for ", brief, output);
+      "Preresolving DNS records revealed non-existence for ", brief, output);
 }
 
 UrlInfo* Predictor::AppendToResolutionQueue(
