@@ -56,8 +56,8 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
                                const char* url_scheme_to_be_skipped,
                                const std::vector<string16>& protected_origins);
 
-  // Delete the session storage namespace associated with this id.  Called from
-  // the UI thread.
+  // Delete the session storage namespace associated with this id.  Can be
+  // called from any thread.
   void DeleteSessionStorageNamespace(int64 session_storage_namespace_id);
 
  private:

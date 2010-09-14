@@ -50,6 +50,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/hung_renderer_dialog.h"
+#include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/message_box_handler.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
@@ -317,9 +318,11 @@ int TabContents::find_request_id_counter_ = -1;
 TabContents::TabContents(Profile* profile,
                          SiteInstance* site_instance,
                          int routing_id,
-                         const TabContents* base_tab_contents)
+                         const TabContents* base_tab_contents,
+                         SessionStorageNamespace* session_storage_namespace)
     : delegate_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(controller_(this, profile)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
+          this, profile, session_storage_namespace)),
       ALLOW_THIS_IN_INITIALIZER_LIST(view_(
           TabContentsView::Create(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
@@ -929,7 +932,7 @@ TabContents* TabContents::Clone() {
   // processes for some reason.
   TabContents* tc = new TabContents(profile(),
                                     SiteInstance::CreateSiteInstance(profile()),
-                                    MSG_ROUTING_NONE, this);
+                                    MSG_ROUTING_NONE, this, NULL);
   tc->controller().CopyStateFrom(controller_);
   tc->extension_app_ = extension_app_;
   tc->extension_app_icon_ = extension_app_icon_;
@@ -1452,7 +1455,8 @@ TabContents* TabContents::CloneAndMakePhantom() {
   navigations.push_back(tab_nav);
 
   TabContents* new_contents =
-      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL);
+      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL,
+                      controller_.session_storage_namespace()->Clone());
   new_contents->SetExtensionApp(extension_app_);
   new_contents->controller().RestoreFromState(navigations, 0, false);
 

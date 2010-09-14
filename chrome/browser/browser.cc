@@ -962,9 +962,11 @@ TabContents* Browser::AddRestoredTab(
     const std::string& extension_app_id,
     bool select,
     bool pin,
-    bool from_last_session) {
-  TabContents* new_tab = new TabContents(profile(), NULL,
-      MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
+    bool from_last_session,
+    SessionStorageNamespace* session_storage_namespace) {
+  TabContents* new_tab = new TabContents(
+      profile(), NULL, MSG_ROUTING_NONE,
+      tabstrip_model_.GetSelectedTabContents(), session_storage_namespace);
   new_tab->SetExtensionAppById(extension_app_id);
   new_tab->controller().RestoreFromState(navigations, selected_navigation,
                                          from_last_session);
@@ -1000,9 +1002,11 @@ void Browser::ReplaceRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int selected_navigation,
     bool from_last_session,
-    const std::string& extension_app_id) {
+    const std::string& extension_app_id,
+    SessionStorageNamespace* session_storage_namespace) {
   TabContents* replacement = new TabContents(profile(), NULL,
-      MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
+      MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents(),
+      session_storage_namespace);
   replacement->SetExtensionAppById(extension_app_id);
   replacement->controller().RestoreFromState(navigations, selected_navigation,
                                              from_last_session);
@@ -2306,7 +2310,7 @@ TabContents* Browser::CreateTabContentsForURL(
     PageTransition::Type transition, bool defer_load,
     SiteInstance* instance) const {
   TabContents* contents = new TabContents(profile, instance,
-      MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
+      MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents(), NULL);
 
   if (!defer_load) {
     // Load the initial URL before adding the new tab contents to the tab strip

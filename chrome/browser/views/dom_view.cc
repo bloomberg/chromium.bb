@@ -31,7 +31,7 @@ bool DOMView::Init(Profile* profile, SiteInstance* instance) {
 
 TabContents* DOMView::CreateTabContents(Profile* profile,
                                         SiteInstance* instance) {
-  return new TabContents(profile, instance, MSG_ROUTING_NONE, NULL);
+  return new TabContents(profile, instance, MSG_ROUTING_NONE, NULL, NULL);
 }
 
 void DOMView::LoadURL(const GURL& url) {

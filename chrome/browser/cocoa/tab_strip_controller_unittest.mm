@@ -150,7 +150,7 @@ TEST_F(TabStripControllerTest, AddRemoveTabs) {
       SiteInstance::CreateSiteInstance(browser_helper_.profile());
   TabContents* tab_contents =
       new TabContents(browser_helper_.profile(), instance, MSG_ROUTING_NONE,
-                      NULL);
+                      NULL, NULL);
   model_->AppendTabContents(tab_contents, true);
   EXPECT_EQ(model_->count(), 1);
 }

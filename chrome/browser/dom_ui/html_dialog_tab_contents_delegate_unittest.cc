@@ -141,7 +141,7 @@ TEST_F(HtmlDialogTabContentsDelegateTest, AddNewContentsTest) {
   test_tab_contents_delegate_->SetWindowForNextCreatedBrowser(window);
 
   TabContents* contents =
-      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL);
+      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   test_tab_contents_delegate_->AddNewContents(
       NULL, contents, NEW_FOREGROUND_TAB, gfx::Rect(), false);
   EXPECT_EQ(0, browser()->tab_count());

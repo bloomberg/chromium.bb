@@ -6,8 +6,6 @@
 
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browsing_instance.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -28,10 +26,7 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
   Profile* profile = site_instance->browsing_instance()->profile();
 
   // TODO(rafaelw): Implement correct session storage.
-  int64 session_storage_namespace_id = profile->GetWebKitContext()->
-      dom_storage_context()->AllocateSessionStorageNamespaceId();
-  render_view_host_ = new RenderViewHost(site_instance, this, routing_id,
-                                         session_storage_namespace_id);
+  render_view_host_ = new RenderViewHost(site_instance, this, routing_id, NULL);
   render_view_host_->AllowScriptToClose(true);
 
   // Close ourselves when the application is shutting down.

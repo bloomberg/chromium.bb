@@ -217,7 +217,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
       int routing_id,
-      int64 session_storage_namespace_id);
+      SessionStorageNamespace* session_storage);
 
  private:
   // This is a bit of a hack. With the current design of the site instances /

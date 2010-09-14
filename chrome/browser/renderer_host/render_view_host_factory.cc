@@ -15,13 +15,13 @@ RenderViewHost* RenderViewHostFactory::Create(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     int routing_id,
-    int64 session_storage_namespace_id) {
+    SessionStorageNamespace* session_storage_namespace) {
   if (factory_) {
     return factory_->CreateRenderViewHost(instance, delegate, routing_id,
-                                          session_storage_namespace_id);
+                                          session_storage_namespace);
   }
   return new RenderViewHost(instance, delegate, routing_id,
-                            session_storage_namespace_id);
+                            session_storage_namespace);
 }
 
 // static

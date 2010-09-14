@@ -53,7 +53,7 @@ WizardWebPageViewTabContents::WizardWebPageViewTabContents(
     Profile* profile,
     SiteInstance* site_instance,
     WebPageDelegate* page_delegate)
-      : TabContents(profile, site_instance, MSG_ROUTING_NONE, NULL),
+      : TabContents(profile, site_instance, MSG_ROUTING_NONE, NULL, NULL),
         page_delegate_(page_delegate) {
   }
 

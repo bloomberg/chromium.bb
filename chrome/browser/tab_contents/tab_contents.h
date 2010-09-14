@@ -79,6 +79,7 @@ class PluginInstaller;
 class Profile;
 struct RendererPreferences;
 class RenderViewHost;
+class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
 class TabContents;
@@ -119,10 +120,16 @@ class TabContents : public PageNavigator,
 
   // |base_tab_contents| is used if we want to size the new tab contents view
   // based on an existing tab contents view.  This can be NULL if not needed.
+  //
+  // The session storage namespace parameter allows multiple render views and
+  // tab contentses to share the same session storage (part of the WebStorage
+  // spec) space. Passing in NULL simply allocates a new one (which is useful
+  // for testing).
   TabContents(Profile* profile,
               SiteInstance* site_instance,
               int routing_id,
-              const TabContents* base_tab_contents);
+              const TabContents* base_tab_contents,
+              SessionStorageNamespace* session_storage_namespace);
   virtual ~TabContents();
 
   static void RegisterUserPrefs(PrefService* prefs);

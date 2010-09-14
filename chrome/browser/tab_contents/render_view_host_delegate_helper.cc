@@ -103,7 +103,8 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
       new TabContents(profile,
                       site,
                       route_id,
-                      opener->GetAsTabContents());
+                      opener->GetAsTabContents(),
+                      NULL);
   new_contents->set_opener_dom_ui_type(domui_type);
   TabContentsView* new_view = new_contents->view();
 

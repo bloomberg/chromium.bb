@@ -12,8 +12,7 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_url_handler.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -114,8 +113,10 @@ size_t NavigationController::max_entry_count_ =
 // static
 bool NavigationController::check_for_repost_ = true;
 
-NavigationController::NavigationController(TabContents* contents,
-                                           Profile* profile)
+NavigationController::NavigationController(
+    TabContents* contents,
+    Profile* profile,
+    SessionStorageNamespace* session_storage_namespace)
     : profile_(profile),
       pending_entry_(NULL),
       last_committed_entry_index_(-1),
@@ -125,10 +126,11 @@ NavigationController::NavigationController(TabContents* contents,
       max_restored_page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_manager_(this)),
       needs_reload_(false),
-      session_storage_namespace_id_(profile->GetWebKitContext()->
-          dom_storage_context()->AllocateSessionStorageNamespaceId()),
+      session_storage_namespace_(session_storage_namespace),
       pending_reload_(NO_RELOAD) {
   DCHECK(profile_);
+  if (!session_storage_namespace_)
+    session_storage_namespace_ = new SessionStorageNamespace(profile_);
 }
 
 NavigationController::~NavigationController() {
@@ -138,10 +140,6 @@ NavigationController::~NavigationController() {
       NotificationType::TAB_CLOSED,
       Source<NavigationController>(this),
       NotificationService::NoDetails());
-
-  // When we go away, the session storage namespace will no longer be reachable.
-  profile_->GetWebKitContext()->DeleteSessionStorageNamespace(
-      session_storage_namespace_id_);
 }
 
 void NavigationController::RestoreFromState(
@@ -947,9 +945,7 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
   needs_reload_ = true;
   InsertEntriesFrom(source, source.entry_count());
 
-  session_storage_namespace_id_ =
-      profile_->GetWebKitContext()->dom_storage_context()->CloneSessionStorage(
-          source.session_storage_namespace_id_);
+  session_storage_namespace_ = source.session_storage_namespace_->Clone();
 
   FinishRestore(source.last_committed_entry_index_, false);
 }

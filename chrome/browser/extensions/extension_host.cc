@@ -23,8 +23,6 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/message_box_handler.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -131,10 +129,8 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
       url_(url),
       extension_host_type_(host_type),
       associated_tab_contents_(NULL) {
-  int64 session_storage_namespace_id = profile_->GetWebKitContext()->
-      dom_storage_context()->AllocateSessionStorageNamespaceId();
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
-                                         session_storage_namespace_id);
+                                         NULL);
   render_view_host_->set_is_extension_process(true);
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)

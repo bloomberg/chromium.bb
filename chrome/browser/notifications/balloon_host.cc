@@ -5,7 +5,6 @@
 #include "chrome/browser/notifications/balloon_host.h"
 
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/profile.h"
@@ -135,11 +134,8 @@ RendererPreferences BalloonHost::GetRendererPrefs(Profile* profile) const {
 
 void BalloonHost::Init() {
   DCHECK(!render_view_host_) << "BalloonViewHost already initialized.";
-  int64 session_storage_namespace_id = balloon_->profile()->GetWebKitContext()->
-      dom_storage_context()->AllocateSessionStorageNamespaceId();
-  RenderViewHost* rvh = new RenderViewHost(site_instance_.get(),
-                                           this, MSG_ROUTING_NONE,
-                                           session_storage_namespace_id);
+  RenderViewHost* rvh = new RenderViewHost(
+      site_instance_.get(), this, MSG_ROUTING_NONE, NULL);
   if (GetProfile()->GetExtensionsService()) {
     extension_function_dispatcher_.reset(
         ExtensionFunctionDispatcher::Create(

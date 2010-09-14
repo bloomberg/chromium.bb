@@ -119,7 +119,7 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
                                                &siteDeleteCounter,
                                                &browsingDeleteCounter);
   {
-    TabContents contents(profile.get(), instance, MSG_ROUTING_NONE, NULL);
+    TabContents contents(profile.get(), instance, MSG_ROUTING_NONE, NULL, NULL);
     EXPECT_EQ(1, siteDeleteCounter);
     EXPECT_EQ(1, browsingDeleteCounter);
   }

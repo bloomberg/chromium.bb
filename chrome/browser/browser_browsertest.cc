@@ -114,7 +114,7 @@ class BrowserTest : public ExtensionBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     TabContents* app_contents = new TabContents(browser()->profile(), NULL,
-                                                MSG_ROUTING_NONE, NULL);
+                                                MSG_ROUTING_NONE, NULL, NULL);
     app_contents->SetExtensionApp(extension_app);
 
     model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* app_contents = new TabContents(browser()->profile(), NULL,
-                                              MSG_ROUTING_NONE, NULL);
+                                              MSG_ROUTING_NONE, NULL, NULL);
   app_contents->SetExtensionApp(extension_app);
 
   model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
@@ -554,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   Extension* extension_app = GetExtension();
   ui_test_utils::NavigateToURL(browser(), url);
   TabContents* app_contents = new TabContents(browser()->profile(), NULL,
-                                              MSG_ROUTING_NONE, NULL);
+                                              MSG_ROUTING_NONE, NULL, NULL);
   app_contents->SetExtensionApp(extension_app);
   model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);

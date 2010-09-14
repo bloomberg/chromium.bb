@@ -12,6 +12,7 @@
 
 #include "base/observer_list.h"
 #include "base/time.h"
+#include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -19,8 +20,8 @@
 class Browser;
 class NavigationController;
 class Profile;
-struct SessionWindow;
 class TabRestoreServiceObserver;
+struct SessionWindow;
 
 // TabRestoreService is responsible for maintaining the most recently closed
 // tabs and windows. When a tab is closed
@@ -94,6 +95,9 @@ class TabRestoreService : public BaseSessionService {
 
     // If non-empty gives the id of the extension for the tab.
     std::string extension_app_id;
+
+    // The associated session storage namespace (if any).
+    scoped_refptr<SessionStorageNamespace> session_storage_namespace;
   };
 
   // Represents a previously open window.

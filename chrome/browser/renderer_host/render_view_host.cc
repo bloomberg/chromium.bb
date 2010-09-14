@@ -20,6 +20,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -114,7 +115,7 @@ RenderViewHost* RenderViewHost::FromID(int render_process_id,
 RenderViewHost::RenderViewHost(SiteInstance* instance,
                                RenderViewHostDelegate* delegate,
                                int routing_id,
-                               int64 session_storage_namespace_id)
+                               SessionStorageNamespace* session_storage)
     : RenderWidgetHost(instance->GetProcess(), routing_id),
       instance_(instance),
       delegate_(delegate),
@@ -129,10 +130,15 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
-      session_storage_namespace_id_(session_storage_namespace_id),
+      session_storage_namespace_(session_storage),
       is_extension_process_(false),
       autofill_query_id_(0),
       save_accessibility_tree_for_testing_(false) {
+  if (!session_storage_namespace_) {
+    session_storage_namespace_ =
+        new SessionStorageNamespace(process()->profile());
+  }
+
   DCHECK(instance_);
   DCHECK(delegate_);
 }
@@ -189,7 +195,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
       delegate_->GetRendererPrefs(process()->profile());
   params.web_preferences = webkit_prefs;
   params.view_id = routing_id();
-  params.session_storage_namespace_id = session_storage_namespace_id_;
+  params.session_storage_namespace_id = session_storage_namespace_->id();
   params.frame_name = frame_name;
   Send(new ViewMsg_New(params));
 

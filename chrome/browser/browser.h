@@ -37,6 +37,7 @@ class Extension;
 class FindBarController;
 class PrefService;
 class Profile;
+class SessionStorageNamespace;
 class SkBitmap;
 class StatusBubble;
 class TabNavigation;
@@ -370,7 +371,8 @@ class Browser : public TabStripModelDelegate,
                               const std::string& extension_app_id,
                               bool select,
                               bool pin,
-                              bool from_last_session);
+                              bool from_last_session,
+                              SessionStorageNamespace* storage_namespace);
   // Creates a new tab with the already-created TabContents 'new_contents'.
   // The window for the added contents will be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
@@ -401,7 +403,8 @@ class Browser : public TabStripModelDelegate,
       const std::vector<TabNavigation>& navigations,
       int selected_navigation,
       bool from_last_session,
-      const std::string& extension_app_id);
+      const std::string& extension_app_id,
+      SessionStorageNamespace* session_storage_namespace);
 
   // Navigate to an index in the tab history, opening a new tab depending on the
   // disposition.

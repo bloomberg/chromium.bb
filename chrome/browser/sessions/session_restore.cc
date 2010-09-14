@@ -518,7 +518,8 @@ class SessionRestoreImpl : public NotificationObserver {
                                    tab.extension_app_id,
                                    false,
                                    tab.pinned,
-                                   true)->controller());
+                                   true,
+                                   NULL)->controller());
     }
   }
 

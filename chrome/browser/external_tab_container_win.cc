@@ -106,7 +106,8 @@ bool ExternalTabContainer::Init(Profile* profile,
     tab_contents_ = existing_contents;
     tab_contents_->controller().set_profile(profile);
   } else {
-    tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
+    tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE,
+                                    NULL, NULL);
   }
 
   tab_contents_->set_delegate(this);

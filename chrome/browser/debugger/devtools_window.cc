@@ -14,6 +14,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -64,7 +65,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       is_loaded_(false),
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE) {
   // Create TabContents with devtools.
-  tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
+  tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   tab_contents_->render_view_host()->AllowBindings(BindingsPolicy::DOM_UI);
   tab_contents_->controller().LoadURL(
       GetDevToolsUrl(), GURL(), PageTransition::START_PAGE);

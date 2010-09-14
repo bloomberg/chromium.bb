@@ -22,7 +22,7 @@ SidebarContainer::SidebarContainer(TabContents* tab,
       icon_(new SkBitmap) {
   // Create TabContents for sidebar.
   sidebar_contents_.reset(
-      new TabContents(tab->profile(), NULL, MSG_ROUTING_NONE, NULL));
+      new TabContents(tab->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
   sidebar_contents_->render_view_host()->set_is_extension_process(true);
   sidebar_contents_->render_view_host()->AllowBindings(
       BindingsPolicy::EXTENSION);

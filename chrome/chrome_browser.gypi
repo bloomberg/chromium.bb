@@ -1989,6 +1989,8 @@
         'browser/in_process_webkit/indexed_db_dispatcher_host.h',
         'browser/in_process_webkit/indexed_db_key_utility_client.cc',
         'browser/in_process_webkit/indexed_db_key_utility_client.h',
+        'browser/in_process_webkit/session_storage_namespace.cc',
+        'browser/in_process_webkit/session_storage_namespace.h',
         'browser/in_process_webkit/webkit_context.cc',
         'browser/in_process_webkit/webkit_context.h',
         'browser/in_process_webkit/webkit_thread.cc',

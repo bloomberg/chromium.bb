@@ -265,8 +265,8 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
 }
 
 - (void)loadDialogContents {
-  tabContents_.reset(
-      new TabContents(delegate_->profile(), NULL, MSG_ROUTING_NONE, NULL));
+  tabContents_.reset(new TabContents(
+      delegate_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
   [[self window] setContentView:tabContents_->GetNativeView()];
   tabContents_->set_delegate(delegate_.get());
 

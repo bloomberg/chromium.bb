@@ -20,7 +20,8 @@ class TabposeWindowTest : public CocoaTest {
 
   void AppendTabToStrip() {
     TabContents* tab_contents = new TabContents(
-        browser_helper_.profile(), site_instance_, MSG_ROUTING_NONE, NULL);
+        browser_helper_.profile(), site_instance_, MSG_ROUTING_NONE,
+        NULL, NULL);
     browser_helper_.browser()->tabstrip_model()->AppendTabContents(
         tab_contents, /*foreground=*/true);
   }

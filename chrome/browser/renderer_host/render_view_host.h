@@ -29,6 +29,7 @@ class FilePath;
 class GURL;
 class ListValue;
 class RenderViewHostDelegate;
+class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
 class ViewMsg_Navigate;
@@ -98,11 +99,14 @@ class RenderViewHost : public RenderWidgetHost {
   static RenderViewHost* FromID(int render_process_id, int render_view_id);
 
   // routing_id could be a valid route id, or it could be MSG_ROUTING_NONE, in
-  // which case RenderWidgetHost will create a new one.
+  // which case RenderWidgetHost will create a new one. The session storage
+  // namespace parameter allows multiple render views to share the same session
+  // storage (part of the WebStorage spec) space. Passing in NULL simply
+  // allocates a new one (which is useful for testing).
   RenderViewHost(SiteInstance* instance,
                  RenderViewHostDelegate* delegate,
                  int routing_id,
-                 int64 session_storage_namespace_id);
+                 SessionStorageNamespace* session_storage_namespace);
   virtual ~RenderViewHost();
 
   SiteInstance* site_instance() const { return instance_; }
@@ -743,8 +747,8 @@ class RenderViewHost : public RenderWidgetHost {
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;
 
-  // The session storage namespace id to be used by the associated render view.
-  int64 session_storage_namespace_id_;
+  // The session storage namespace to be used by the associated render view.
+  scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
 
   // Whether this render view will get extension api bindings. This controls
   // what process type we use.

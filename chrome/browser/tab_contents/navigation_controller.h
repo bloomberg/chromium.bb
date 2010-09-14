@@ -21,6 +21,7 @@
 
 class NavigationEntry;
 class Profile;
+class SessionStorageNamespace;
 class SiteInstance;
 class TabContents;
 class TabNavigation;
@@ -137,7 +138,13 @@ class NavigationController {
 
   // ---------------------------------------------------------------------------
 
-  NavigationController(TabContents* tab_contents, Profile* profile);
+  // The session storage namespace parameter allows multiple render views and
+  // tab contentses to share the same session storage (part of the WebStorage
+  // spec) space. Passing in NULL simply allocates a new one which is often the
+  // correct thing to do (especially in tests.
+  NavigationController(TabContents* tab_contents,
+                       Profile* profile,
+                       SessionStorageNamespace* session_storage_namespace);
   ~NavigationController();
 
   // Returns the profile for this controller. It can never be NULL.
@@ -396,9 +403,9 @@ class NavigationController {
   // if it was restored from a previous session.  (-1 otherwise)
   int32 max_restored_page_id() const { return max_restored_page_id_; }
 
-  // The session storage namespace id that all child render views should use.
-  int64 session_storage_namespace_id() const {
-    return session_storage_namespace_id_;
+  // The session storage namespace that all child render views should use.
+  SessionStorageNamespace* session_storage_namespace() const {
+    return session_storage_namespace_;
   }
 
   // Disables checking for a repost and prompting the user. This is used during
@@ -583,7 +590,7 @@ class NavigationController {
   base::TimeTicks last_document_loaded_;
 
   // The session storage id that any (indirectly) owned RenderView should use.
-  int64 session_storage_namespace_id_;
+  scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
 
   // Should Reload check for post data? The default is true, but is set to false
   // when testing.

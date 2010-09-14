@@ -13,7 +13,7 @@
 #include "chrome/common/notification_service.h"
 
 TestTabContents::TestTabContents(Profile* profile, SiteInstance* instance)
-    : TabContents(profile, instance, MSG_ROUTING_NONE, NULL),
+    : TabContents(profile, instance, MSG_ROUTING_NONE, NULL, NULL),
       transition_cross_site(false) {
   // Listen for infobar events so we can call InfoBarClosed() on the infobar
   // delegates and give them an opportunity to delete themselves.  (Since we

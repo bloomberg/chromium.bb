@@ -81,6 +81,7 @@ class TranslationInfoBarTest : public CocoaTest {
         new TabContents(browser_helper_.profile(),
                         NULL,
                         MSG_ROUTING_NONE,
+                        NULL,
                         NULL));
     CreateInfoBar();
   }

@@ -166,7 +166,7 @@ void MatchPreview::Update(const GURL& url) {
 
   if (!preview_contents_.get()) {
     preview_contents_.reset(
-        new TabContents(host_->profile(), NULL, MSG_ROUTING_NONE, NULL));
+        new TabContents(host_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
     preview_contents_->set_delegate(delegate_.get());
     NotificationService::current()->Notify(
         NotificationType::MATCH_PREVIEW_TAB_CONTENTS_CREATED,

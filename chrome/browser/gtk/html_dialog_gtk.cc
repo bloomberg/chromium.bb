@@ -124,7 +124,7 @@ void HtmlDialogGtk::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 
 void HtmlDialogGtk::InitDialog() {
   tab_contents_.reset(
-      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL));
+      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
   tab_contents_->set_delegate(this);
 
   // This must be done before loading the page; see the comments in

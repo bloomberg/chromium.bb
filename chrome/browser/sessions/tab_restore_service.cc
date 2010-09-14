@@ -338,7 +338,8 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
                                     tab.extension_app_id,
                                     (static_cast<int>(tab_i) ==
                                         window->selected_tab_index),
-                                    tab.pinned, tab.from_last_session);
+                                    tab.pinned, tab.from_last_session,
+                                    tab.session_storage_namespace);
         if (restored_tab)
           restored_tab->controller().LoadIfNecessary();
       }
@@ -475,6 +476,8 @@ void TabRestoreService::PopulateTab(Tab* tab,
   Extension* extension = controller->tab_contents()->extension_app();
   if (extension)
     tab->extension_app_id = extension->id();
+
+  tab->session_storage_namespace = controller->session_storage_namespace();
 
   // Browser may be NULL during unit tests.
   if (browser) {
@@ -866,7 +869,8 @@ Browser* TabRestoreService::RestoreTab(const Tab& tab,
     browser->ReplaceRestoredTab(tab.navigations,
                                 tab.current_navigation_index,
                                 tab.from_last_session,
-                                tab.extension_app_id);
+                                tab.extension_app_id,
+                                tab.session_storage_namespace);
   } else {
     if (tab.has_browser())
       browser = BrowserList::FindBrowserWithID(tab.browser_id);
@@ -889,7 +893,8 @@ Browser* TabRestoreService::RestoreTab(const Tab& tab,
                             tab_index,
                             tab.current_navigation_index,
                             tab.extension_app_id,
-                            true, tab.pinned, tab.from_last_session);
+                            true, tab.pinned, tab.from_last_session,
+                            tab.session_storage_namespace);
   }
   return browser;
 }

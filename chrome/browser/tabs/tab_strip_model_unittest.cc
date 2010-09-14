@@ -104,13 +104,13 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
 class TabStripModelTest : public RenderViewHostTestHarness {
  public:
   TabContents* CreateTabContents() {
-    return new TabContents(profile(), NULL, 0, NULL);
+    return new TabContents(profile(), NULL, 0, NULL, NULL);
   }
 
   TabContents* CreateTabContentsWithSharedRPH(TabContents* tab_contents) {
     TabContents* retval = new TabContents(profile(),
         tab_contents->render_view_host()->site_instance(), MSG_ROUTING_NONE,
-        NULL);
+        NULL, NULL);
     EXPECT_EQ(retval->GetRenderProcessHost(),
               tab_contents->GetRenderProcessHost());
     return retval;
@@ -1172,7 +1172,7 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
 
 // Added for http://b/issue?id=958960
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
-  TabContents fake_destinations_tab(profile(), NULL, 0, NULL);
+  TabContents fake_destinations_tab(profile(), NULL, 0, NULL, NULL);
   TabStripDummyDelegate delegate(&fake_destinations_tab);
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
