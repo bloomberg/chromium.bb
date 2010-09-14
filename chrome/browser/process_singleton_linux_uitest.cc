@@ -164,7 +164,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
 
   // Wait to make sure the browser process is actually stopped.
   // It's necessary when running with valgrind.
-  HANDLE_EINTR(waitpid(pid, 0, WUNTRACED));
+  EXPECT_GE(HANDLE_EINTR(waitpid(pid, 0, WUNTRACED)), 0);
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROCESS_NONE,
