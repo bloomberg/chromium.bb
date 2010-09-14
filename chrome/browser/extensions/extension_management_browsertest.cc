@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   // is race-prone, because instantating the ExtensionService starts a read
   // of external_extensions.json before this test function starts.
   service->AddPendingExtensionFromExternalUpdateUrl(
-      kExtensionId, GURL("http://localhost/autoupdate/manifest"));
+      kExtensionId, GURL("http://localhost/autoupdate/manifest"), false);
 
   // Run autoupdate and make sure version 2 of the extension was installed.
   service->updater()->CheckNow();

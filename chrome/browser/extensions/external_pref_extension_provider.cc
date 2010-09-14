@@ -18,6 +18,7 @@ const char kLocation[] = "location";
 const char kState[] = "state";
 const char kExternalCrx[] = "external_crx";
 const char kExternalVersion[] = "external_version";
+const char kIncognito[] = "incognito";
 const char kExternalUpdateUrl[] = "external_update_url";
 
 ExternalPrefExtensionProvider::ExternalPrefExtensionProvider() {
@@ -57,12 +58,15 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
     FilePath::StringType external_crx;
     std::string external_version;
     std::string external_update_url;
+    bool enable_incognito_on_install = false;
 
     bool has_external_crx = extension->GetString(kExternalCrx, &external_crx);
     bool has_external_version = extension->GetString(kExternalVersion,
                                                      &external_version);
     bool has_external_update_url = extension->GetString(kExternalUpdateUrl,
                                                         &external_update_url);
+    extension->GetBoolean(kIncognito, &enable_incognito_on_install);
+
     if (has_external_crx != has_external_version) {
       LOG(WARNING) << "Malformed extension dictionary for extension: "
                    << extension_id.c_str() << ".  " << kExternalCrx
@@ -117,7 +121,8 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
                    << "\".";
       continue;
     }
-    visitor->OnExternalExtensionUpdateUrlFound(extension_id, update_url);
+    visitor->OnExternalExtensionUpdateUrlFound(extension_id, update_url,
+                                               enable_incognito_on_install);
   }
 }
 

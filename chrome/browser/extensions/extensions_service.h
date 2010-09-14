@@ -225,8 +225,10 @@ class ExtensionsService
 
   // Given an extension id and an update URL, schedule the extension
   // to be fetched, installed, and activated.
-  void AddPendingExtensionFromExternalUpdateUrl(const std::string& id,
-                                                const GURL& update_url);
+  void AddPendingExtensionFromExternalUpdateUrl(
+      const std::string& id,
+      const GURL& update_url,
+      bool enable_incognito_on_install);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
@@ -561,8 +563,10 @@ class ExtensionsServiceBackend
                                             const FilePath& path,
                                             Extension::Location location);
 
-  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
-                                                 const GURL& update_url);
+  virtual void OnExternalExtensionUpdateUrlFound(
+      const std::string& id,
+      const GURL& update_url,
+      bool enable_incognito_on_install);
 
   // Reloads the given extensions from their manifests on disk (instead of what
   // we have cached in the prefs).
