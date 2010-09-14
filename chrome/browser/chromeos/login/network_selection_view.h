@@ -21,6 +21,7 @@ class SmoothedThrobber;
 
 namespace chromeos {
 
+class NetworkDropdownButton;
 class NetworkScreenDelegate;
 class ScreenObserver;
 
@@ -40,14 +41,7 @@ class NetworkSelectionView : public views::View {
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
 
-  // Gets/Sets the selected item in the network combobox.
-  int GetSelectedNetworkItem() const;
-  void SetSelectedNetworkItem(int index);
-
   gfx::NativeWindow GetNativeWindow();
-
-  // Inform the network combobox that its model changed.
-  void NetworkModelChanged();
 
   // Shows network connecting status or network selection otherwise.
   void ShowConnectingStatus(bool connecting, const string16& network_id);
@@ -69,7 +63,6 @@ class NetworkSelectionView : public views::View {
   void UpdateConnectingNetworkLabel();
 
   // Dialog controls.
-  views::Combobox* network_combobox_;
   views::MenuButton* languages_menubutton_;
   views::Label* welcome_label_;
   views::Label* select_language_label_;
@@ -80,6 +73,8 @@ class NetworkSelectionView : public views::View {
 
   // Tab index of continue button.
   int continue_button_order_index_;
+
+  NetworkDropdownButton* network_dropdown_;
 
   // NetworkScreen delegate.
   NetworkScreenDelegate* delegate_;

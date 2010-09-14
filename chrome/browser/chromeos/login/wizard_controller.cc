@@ -343,7 +343,7 @@ void WizardController::OwnBackground(
 
 chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
   if (!network_screen_.get())
-    network_screen_.reset(new chromeos::NetworkScreen(this, is_out_of_box_));
+    network_screen_.reset(new chromeos::NetworkScreen(this));
   return network_screen_.get();
 }
 

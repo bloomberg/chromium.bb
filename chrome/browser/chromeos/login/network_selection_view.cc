@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
+#include "chrome/browser/chromeos/status/network_dropdown_button.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -47,11 +48,15 @@ const int kSelectionBoxSpacing = 7;
 // Menu button is drawn using our custom icons in resources. See
 // TextButtonBorder::Paint() for details. So this offset compensate
 // horizontal size, eaten by those icons.
-const int kMenuButtonHorizontalOffset = 1;
+const int kMenuHorizontalOffset = -1;
 
 // Vertical addition to the menu window to make it appear exactly below
 // MenuButton.
-const int kMenuButtonVerticalOffset = 3;
+const int kMenuVerticalOffset = 3;
+
+// Offset that compensates menu width so that it matches
+// menu button visual width when being in pushed state.
+const int kMenuWidthOffset = 6;
 
 const SkColor kWelcomeColor = 0xFF1D6AB1;
 
@@ -63,8 +68,7 @@ const int kThrobberStartDelayMs = 500;
 namespace chromeos {
 
 NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
-    : network_combobox_(NULL),
-      languages_menubutton_(NULL),
+    : languages_menubutton_(NULL),
       welcome_label_(NULL),
       select_language_label_(NULL),
       select_network_label_(NULL),
@@ -72,12 +76,11 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       continue_button_(NULL),
       throbber_(NULL),
       continue_button_order_index_(-1),
+      network_dropdown_(NULL),
       delegate_(delegate) {
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
-  network_combobox_->set_listener(NULL);
-  network_combobox_ = NULL;
   throbber_->Stop();
   throbber_ = NULL;
 }
@@ -114,22 +117,24 @@ void NetworkSelectionView::Init() {
   throbber_->set_start_delay_ms(kThrobberStartDelayMs);
   AddChildView(throbber_);
 
-  network_combobox_ = new views::Combobox(delegate_);
-  network_combobox_->set_listener(delegate_);
-
   languages_menubutton_ = new views::MenuButton(
       NULL, std::wstring(), delegate_->language_switch_menu(), true);
   languages_menubutton_->SetFocusable(true);
   languages_menubutton_->SetNormalHasBorder(true);
-  delegate_->language_switch_menu()->set_menu_offset(
-      kMenuButtonHorizontalOffset, kMenuButtonVerticalOffset);
+  // Menu is positioned by bottom right corner of the MenuButton.
+  delegate_->language_switch_menu()->set_menu_offset(kMenuHorizontalOffset,
+                                                     kMenuVerticalOffset);
 
   AddChildView(welcome_label_);
   AddChildView(select_language_label_);
   AddChildView(select_network_label_);
   AddChildView(connecting_network_label_);
   AddChildView(languages_menubutton_);
-  AddChildView(network_combobox_);
+
+  network_dropdown_ = new NetworkDropdownButton(false, GetNativeWindow());
+  network_dropdown_->SetNormalHasBorder(true);
+  network_dropdown_->SetFocusable(true);
+  AddChildView(network_dropdown_);
 
   UpdateLocalizedStrings();
 }
@@ -157,18 +162,6 @@ void NetworkSelectionView::ChildPreferredSizeChanged(View* child) {
 
 void NetworkSelectionView::OnLocaleChanged() {
   UpdateLocalizedStrings();
-
-  int index_to_restore = GetSelectedNetworkItem();
-  NetworkModelChanged();
-  index_to_restore = std::max(index_to_restore, 0);
-  index_to_restore = std::min<int>(index_to_restore,
-                                   delegate_->GetItemCount() - 1);
-  if (index_to_restore >= 0) {
-    // Only localized names of networking options has changed
-    // so we should restore networking option selected previously.
-    SetSelectedNetworkItem(index_to_restore);
-  }
-
   Layout();
   SchedulePaint();
 }
@@ -193,14 +186,14 @@ void NetworkSelectionView::Layout() {
 
   // Use menu preffered size to calculate boxes width accordingly.
   int box_width = delegate_->language_switch_menu()->GetFirstLevelMenuWidth() +
-      kMenuButtonHorizontalOffset * 2;
+      kMenuWidthOffset;
   const int widest_label = std::max(
       select_language_label_->GetPreferredSize().width(),
       select_network_label_->GetPreferredSize().width());
   if (box_width < kSelectionBoxWidthMin) {
     box_width = kSelectionBoxWidthMin;
     delegate_->language_switch_menu()->SetFirstLevelMenuWidth(
-        box_width - kMenuButtonHorizontalOffset * 2);
+        box_width - kMenuWidthOffset);
   } else if (widest_label + box_width + 2 * kHorizontalSpacing > width()) {
     box_width = width() - widest_label - 2 * kHorizontalSpacing;
   }
@@ -239,7 +232,7 @@ void NetworkSelectionView::Layout() {
       throbber_->GetPreferredSize().width(),
       throbber_->GetPreferredSize().height());
 
-  network_combobox_->SetBounds(selection_box_x, y - label_y_offset,
+  network_dropdown_->SetBounds(selection_box_x, y - label_y_offset,
                                box_width, kSelectionBoxHeight);
 
   y = height() - continue_button_->GetPreferredSize().height() - kSpacing;
@@ -251,27 +244,14 @@ void NetworkSelectionView::Layout() {
       continue_button_->GetPreferredSize().height());
 
   // Need to refresh combobox layout explicitly.
-  network_combobox_->Layout();
   continue_button_->Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkSelectionView, public:
 
-int NetworkSelectionView::GetSelectedNetworkItem() const {
-  return network_combobox_->selected_item();
-}
-
-void NetworkSelectionView::SetSelectedNetworkItem(int index) {
-  network_combobox_->SetSelectedItem(index);
-}
-
 gfx::NativeWindow NetworkSelectionView::GetNativeWindow() {
   return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
-}
-
-void NetworkSelectionView::NetworkModelChanged() {
-  network_combobox_->ModelChanged();
 }
 
 void NetworkSelectionView::ShowConnectingStatus(bool connecting,
@@ -281,12 +261,13 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
   select_language_label_->SetVisible(!connecting);
   languages_menubutton_->SetVisible(!connecting);
   select_network_label_->SetVisible(!connecting);
-  network_combobox_->SetVisible(!connecting);
+  network_dropdown_->SetVisible(!connecting);
   continue_button_->SetVisible(!connecting);
   connecting_network_label_->SetVisible(connecting);
   Layout();
   if (connecting) {
     throbber_->Start();
+    network_dropdown_->CancelMenu();
   } else {
     throbber_->Stop();
   }

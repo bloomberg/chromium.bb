@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/status/network_menu_button.h"
+#include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_service.h"
@@ -227,7 +227,7 @@ ListValue* InternetOptionsHandler::GetWiredList() {
     SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
     if (!ethernet_network.connecting() &&
         !ethernet_network.connected()) {
-      icon = chromeos::NetworkMenuButton::IconForDisplay(icon,
+      icon = chromeos::NetworkMenu::IconForDisplay(icon,
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
     }
     list->Append(GetNetwork(
@@ -251,10 +251,10 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WifiNetworkVector& wifi_networks = cros->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
-    SkBitmap icon = chromeos::NetworkMenuButton::IconForNetworkStrength(
+    SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(
         it->strength(), true);
     if (it->encrypted()) {
-      icon = chromeos::NetworkMenuButton::IconForDisplay(icon,
+      icon = chromeos::NetworkMenu::IconForDisplay(icon,
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
     }
     list->Append(GetNetwork(
@@ -271,10 +271,10 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cros->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
-    SkBitmap icon = chromeos::NetworkMenuButton::IconForNetworkStrength(
+    SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(
         it->strength(), true);
     SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
-    icon = chromeos::NetworkMenuButton::IconForDisplay(icon, badge);
+    icon = chromeos::NetworkMenu::IconForDisplay(icon, badge);
     list->Append(GetNetwork(
         it->service_path(),
         icon,
@@ -312,7 +312,7 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
     SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
     if (it->encrypted()) {
-      icon = chromeos::NetworkMenuButton::IconForDisplay(icon,
+      icon = chromeos::NetworkMenu::IconForDisplay(icon,
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
     }
     list->Append(GetNetwork(
@@ -331,7 +331,7 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
     SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
     SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
-    icon = chromeos::NetworkMenuButton::IconForDisplay(icon, badge);
+    icon = chromeos::NetworkMenu::IconForDisplay(icon, badge);
     list->Append(GetNetwork(
         it->service_path(),
         icon,

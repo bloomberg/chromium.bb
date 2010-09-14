@@ -47,7 +47,7 @@ CreateMockWizardScreenHelper<T>::Create(WizardController* wizard) {
 template <> MockOutShowHide<chromeos::NetworkScreen>*
 CreateMockWizardScreenHelper<chromeos::NetworkScreen>::Create(
     WizardController* wizard) {
-  return new MockOutShowHide<chromeos::NetworkScreen>(wizard, true);
+  return new MockOutShowHide<chromeos::NetworkScreen>(wizard);
 }
 
 #define MOCK(mock_var, screen_name, mocked_class)                              \

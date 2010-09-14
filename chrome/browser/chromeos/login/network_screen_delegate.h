@@ -16,9 +16,7 @@ namespace chromeos {
 class LanguageSwitchMenu;
 
 // Interface that NetworkScreen exposes to the NetworkSelectionView.
-class NetworkScreenDelegate : public ComboboxModel,
-                              public views::Combobox::Listener,
-                              public views::ButtonListener,
+class NetworkScreenDelegate : public views::ButtonListener,
                               public NetworkLibrary::Observer {
  public:
   virtual LanguageSwitchMenu* language_switch_menu() = 0;
