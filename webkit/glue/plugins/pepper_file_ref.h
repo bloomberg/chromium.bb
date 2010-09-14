@@ -45,6 +45,14 @@ class FileRef : public Resource {
   // Returns the system path corresponding to this file.
   const FilePath& system_path() const { return system_path_; }
 
+  // Returns a FileRef instance pointing to a file that should not be
+  // accessible by the plugin. Should be used for testing only.
+  static FileRef* GetInaccessibleFileRef(PluginModule* module);
+
+  // Returns a FileRef instance pointing to a nonexistent file.
+  // Should be used for testing only.
+  static FileRef* GetNonexistentFileRef(PluginModule* module);
+
  private:
   FilePath system_path_;
   PP_FileSystemType_Dev fs_type_;

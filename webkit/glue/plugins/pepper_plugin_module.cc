@@ -172,11 +172,27 @@ uint32_t GetLiveObjectCount(PP_Module module_id) {
   return ResourceTracker::Get()->GetLiveObjectsForModule(module);
 }
 
+PP_Resource GetInaccessibleFileRef(PP_Module module_id) {
+  PluginModule* module = PluginModule::FromPPModule(module_id);
+  if (!module)
+    return static_cast<uint32_t>(-1);
+  return FileRef::GetInaccessibleFileRef(module)->GetReference();
+}
+
+PP_Resource GetNonexistentFileRef(PP_Module module_id) {
+  PluginModule* module = PluginModule::FromPPModule(module_id);
+  if (!module)
+    return static_cast<uint32_t>(-1);
+  return FileRef::GetNonexistentFileRef(module)->GetReference();
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLiveObjectCount
+  &GetLiveObjectCount,
+  &GetInaccessibleFileRef,
+  &GetNonexistentFileRef
 };
 
 // GetInterface ----------------------------------------------------------------

@@ -4,6 +4,8 @@
 
 #include "webkit/glue/plugins/pepper_file_ref.h"
 
+#include "base/base_paths.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_var.h"
@@ -169,6 +171,23 @@ scoped_refptr<FileRef> FileRef::GetParent() {
 
   FileRef* parent_ref = new FileRef(module(), fs_type_, parent_path, origin_);
   return parent_ref;
+}
+
+// static
+FileRef* FileRef::GetInaccessibleFileRef(PluginModule* module) {
+  FilePath inaccessible_path;
+  if (!PathService::Get(base::FILE_MODULE, &inaccessible_path))
+    return NULL;
+  return new FileRef(module, inaccessible_path);
+}
+
+// static
+FileRef* FileRef::GetNonexistentFileRef(PluginModule* module) {
+  FilePath dir_module_path;
+  if (!PathService::Get(base::DIR_MODULE, &dir_module_path))
+    return NULL;
+  return new FileRef(module, dir_module_path.Append(
+      FILE_PATH_LITERAL("nonexistent_file")));
 }
 
 }  // namespace pepper
