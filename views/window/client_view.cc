@@ -50,7 +50,9 @@ void ClientView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && child == this) {
     DCHECK(GetWidget());
     DCHECK(contents_view_); // |contents_view_| must be valid now!
-    AddChildView(contents_view_);
+    // Insert |contents_view_| at index 0 so it is first in the focus chain.
+    // (the OK/Cancel buttons are inserted before contents_view_)
+    AddChildView(0, contents_view_);
   }
 }
 
