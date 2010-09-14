@@ -492,21 +492,24 @@ void RenderWidgetHost::ForwardKeyboardEvent(
       suppress_next_char_events_ = false;
     }
 
-    // We need to set |suppress_next_char_events_| to true if
-    // PreHandleKeyboardEvent() returns true, but |this| may already be
-    // destroyed at that time. So set |suppress_next_char_events_| true here,
-    // then revert it afterwards when necessary.
-    if (key_event.type == WebKeyboardEvent::RawKeyDown)
-      suppress_next_char_events_ = true;
-
     bool is_keyboard_shortcut = false;
-    // Tab switching/closing accelerators aren't sent to the renderer to avoid a
-    // hung/malicious renderer from interfering.
-    if (PreHandleKeyboardEvent(key_event, &is_keyboard_shortcut))
-      return;
+    // Only pre-handle the key event if it's not handled by the input method.
+    if (!key_event.skip_in_browser) {
+      // We need to set |suppress_next_char_events_| to true if
+      // PreHandleKeyboardEvent() returns true, but |this| may already be
+      // destroyed at that time. So set |suppress_next_char_events_| true here,
+      // then revert it afterwards when necessary.
+      if (key_event.type == WebKeyboardEvent::RawKeyDown)
+        suppress_next_char_events_ = true;
 
-    if (key_event.type == WebKeyboardEvent::RawKeyDown)
-      suppress_next_char_events_ = false;
+      // Tab switching/closing accelerators aren't sent to the renderer to avoid
+      // a hung/malicious renderer from interfering.
+      if (PreHandleKeyboardEvent(key_event, &is_keyboard_shortcut))
+        return;
+
+      if (key_event.type == WebKeyboardEvent::RawKeyDown)
+        suppress_next_char_events_ = false;
+    }
 
     // Don't add this key to the queue if we have no way to send the message...
     if (!process_->HasConnection())
