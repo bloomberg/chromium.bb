@@ -50,9 +50,15 @@
       <input type="text" id="email"></label></div>
 
   <div class="button-strip">
-    <button type="submit" id="autoFillEditAddressApplyButton" disabled
-        i18n-content="ok"></button>
+    <if expr="os == 'win32'">
+      <button type="submit" id="autoFillEditAddressApplyButton" disabled
+          i18n-content="ok"></button>
+    </if>
     <button type="reset" id="autoFillEditAddressCancelButton"
         i18n-content="cancel"></button>
+    <if expr="os != 'win32'">
+      <button type="submit" id="autoFillEditAddressApplyButton" disabled
+          i18n-content="ok"></button>
+    </if>
   </div>
 </div>
