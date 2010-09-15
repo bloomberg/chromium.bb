@@ -73,10 +73,6 @@ SPECIAL_CASES = {
         "Name": "pywebsocket",
         "URL": "http://code.google.com/p/pywebsocket/",
     },
-    os.path.join('third_party', 'skia'): {
-        "Name": "skia",
-        "URL": "http://code.google.com/p/skia/",
-    },
     os.path.join('third_party', 'WebKit'): {
         "Name": "WebKit",
         "URL": "http://webkit.org/",
