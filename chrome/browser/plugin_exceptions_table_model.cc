@@ -34,6 +34,7 @@ void PluginExceptionsTableModel::RemoveRows(const Rows& rows) {
   // Iterate in reverse over the rows to get the indexes right.
   for (Rows::const_reverse_iterator it = rows.rbegin();
        it != rows.rend(); ++it) {
+    DCHECK_LT(*it, settings_.size());
     SettingsEntry& entry = settings_[*it];
     HostContentSettingsMap* map = entry.is_otr ? otr_map_ : map_;
     map->SetContentSetting(entry.pattern,
@@ -59,16 +60,14 @@ void PluginExceptionsTableModel::RemoveRows(const Rows& rows) {
 }
 
 void PluginExceptionsTableModel::RemoveAll() {
-  int old_row_count = RowCount();
-  {
-    AutoReset<bool> tmp(&updates_disabled_, true);
-    map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS);
-    if (otr_map_)
-      otr_map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS);
-  }
+  AutoReset<bool> tmp(&updates_disabled_, true);
+  map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS);
+  if (otr_map_)
+    otr_map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS);
+
   ClearSettings();
   if (observer_)
-    observer_->OnItemsRemoved(0, old_row_count);
+    observer_->OnModelChanged();
 }
 
 int PluginExceptionsTableModel::RowCount() {

@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "app/table_model_observer.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/plugin_exceptions_table_model.h"
+#include "chrome/browser/mock_plugin_exceptions_table_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
@@ -26,31 +27,12 @@ class MockTableModelObserver : public TableModelObserver {
   MOCK_METHOD2(OnItemsRemoved, void(int start, int length));
 };
 
-class TestingPluginExceptionsTableModel : public PluginExceptionsTableModel {
- public:
-  TestingPluginExceptionsTableModel(HostContentSettingsMap* map,
-                                    HostContentSettingsMap* otr_map)
-      : PluginExceptionsTableModel(map, otr_map) {}
-  virtual ~TestingPluginExceptionsTableModel() {}
-
-  void set_plugins(const std::vector<WebPluginInfo>& plugins) {
-    plugins_ = plugins;
-  }
-
- protected:
-  virtual void GetPlugins(std::vector<WebPluginInfo>* plugins) {
-    *plugins = plugins_;
-  }
-
- private:
-  std::vector<WebPluginInfo> plugins_;
-};
-
 class PluginExceptionsTableModelTest : public testing::Test {
  public:
   PluginExceptionsTableModelTest()
       : ui_thread_(ChromeThread::UI, &message_loop_),
-        command_line_(*CommandLine::ForCurrentProcess()) {}
+        command_line_(CommandLine::ForCurrentProcess(),
+                      *CommandLine::ForCurrentProcess()) {}
 
   virtual void SetUp() {
     CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -75,7 +57,7 @@ class PluginExceptionsTableModelTest : public testing::Test {
                            "bar",
                            CONTENT_SETTING_ALLOW);
 
-    table_model_.reset(new TestingPluginExceptionsTableModel(map, NULL));
+    table_model_.reset(new MockPluginExceptionsTableModel(map, NULL));
 
     std::vector<WebPluginInfo> plugins;
     WebPluginInfo foo_plugin;
@@ -91,10 +73,6 @@ class PluginExceptionsTableModelTest : public testing::Test {
 
     table_model_->set_plugins(plugins);
     table_model_->ReloadSettings();
-  }
-
-  virtual void TearDown() {
-    *CommandLine::ForCurrentProcess() = command_line_;
   }
 
  protected:
@@ -136,10 +114,10 @@ class PluginExceptionsTableModelTest : public testing::Test {
   ChromeThread ui_thread_;
 
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<TestingPluginExceptionsTableModel> table_model_;
+  scoped_ptr<MockPluginExceptionsTableModel> table_model_;
 
  private:
-  CommandLine command_line_;
+  AutoReset<CommandLine> command_line_;
 };
 
 TEST_F(PluginExceptionsTableModelTest, Basic) {
@@ -179,7 +157,7 @@ TEST_F(PluginExceptionsTableModelTest, RemoveAllRows) {
   MockTableModelObserver observer;
   table_model_->SetObserver(&observer);
 
-  EXPECT_CALL(observer, OnItemsRemoved(0, 3));
+  EXPECT_CALL(observer, OnModelChanged());
   table_model_->RemoveAll();
   EXPECT_EQ(0, table_model_->RowCount());
   EXPECT_EQ(0, static_cast<int>(table_model_->GetGroups().size()));

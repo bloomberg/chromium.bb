@@ -11,8 +11,25 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
+#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/plugin_exceptions_table_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+@interface SimpleContentExceptionsWindowController (Testing)
+
+@property(readonly, nonatomic) TableModelArrayController* arrayController;
+
+@end
+
+@implementation SimpleContentExceptionsWindowController (Testing)
+
+- (TableModelArrayController*)arrayController {
+  return arrayController_;
+}
+
+@end
+
 
 namespace {
 
@@ -21,12 +38,13 @@ class SimpleContentExceptionsWindowControllerTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     TestingProfile* profile = browser_helper_.profile();
-    settingsMap_ = new GeolocationContentSettingsMap(profile);
+    geolocation_settings_ = new GeolocationContentSettingsMap(profile);
+    content_settings_ = new HostContentSettingsMap(profile);
   }
 
   SimpleContentExceptionsWindowController* GetController() {
-  GeolocationExceptionsTableModel* model =  // Freed by window controller.
-      new GeolocationExceptionsTableModel(settingsMap_.get());
+    GeolocationExceptionsTableModel* model =  // Freed by window controller.
+        new GeolocationExceptionsTableModel(geolocation_settings_.get());
     id controller = [SimpleContentExceptionsWindowController
         controllerWithTableModel:model];
     [controller showWindow:nil];
@@ -34,17 +52,27 @@ class SimpleContentExceptionsWindowControllerTest : public CocoaTest {
   }
 
   void ClickRemoveAll(SimpleContentExceptionsWindowController* controller) {
-    [controller removeAll:nil];
+    [controller.arrayController removeAll:nil];
   }
 
  protected:
   BrowserTestHelper browser_helper_;
-  scoped_refptr<GeolocationContentSettingsMap> settingsMap_;
+  scoped_refptr<GeolocationContentSettingsMap> geolocation_settings_;
+  scoped_refptr<HostContentSettingsMap> content_settings_;
 };
 
 TEST_F(SimpleContentExceptionsWindowControllerTest, Construction) {
   GeolocationExceptionsTableModel* model =  // Freed by window controller.
-      new GeolocationExceptionsTableModel(settingsMap_.get());
+      new GeolocationExceptionsTableModel(geolocation_settings_.get());
+  SimpleContentExceptionsWindowController* controller =
+      [SimpleContentExceptionsWindowController controllerWithTableModel:model];
+  [controller showWindow:nil];
+  [controller close];  // Should autorelease.
+}
+
+TEST_F(SimpleContentExceptionsWindowControllerTest, ShowPluginExceptions) {
+  PluginExceptionsTableModel* model =  // Freed by window controller.
+      new PluginExceptionsTableModel(content_settings_.get(), NULL);
   SimpleContentExceptionsWindowController* controller =
       [SimpleContentExceptionsWindowController controllerWithTableModel:model];
   [controller showWindow:nil];
@@ -52,7 +80,7 @@ TEST_F(SimpleContentExceptionsWindowControllerTest, Construction) {
 }
 
 TEST_F(SimpleContentExceptionsWindowControllerTest, AddExistingEditAdd) {
-  settingsMap_->SetContentSetting(
+  geolocation_settings_->SetContentSetting(
       GURL("http://myhost"), GURL(), CONTENT_SETTING_BLOCK);
 
   SimpleContentExceptionsWindowController* controller = GetController();
@@ -60,7 +88,7 @@ TEST_F(SimpleContentExceptionsWindowControllerTest, AddExistingEditAdd) {
 
   [controller close];
 
-  EXPECT_EQ(0u, settingsMap_->GetAllOriginsSettings().size());
+  EXPECT_EQ(0u, geolocation_settings_->GetAllOriginsSettings().size());
 }
 
 }  // namespace

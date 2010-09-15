@@ -21,6 +21,7 @@
 #import "chrome/browser/host_content_settings_map.h"
 #import "chrome/browser/notifications/desktop_notification_service.h"
 #import "chrome/browser/notifications/notification_exceptions_table_model.h"
+#include "chrome/browser/plugin_exceptions_table_model.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -344,7 +345,21 @@ class PrefObserverDisabler {
 }
 
 - (IBAction)showPluginsExceptions:(id)sender {
-  [self showExceptionsForType:CONTENT_SETTINGS_TYPE_PLUGINS];
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableResourceContentSettings)) {
+    HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
+    HostContentSettingsMap* offTheRecordSettingsMap =
+        profile_->HasOffTheRecordProfile() ?
+            profile_->GetOffTheRecordProfile()->GetHostContentSettingsMap() :
+            NULL;
+    PluginExceptionsTableModel* model =
+        new PluginExceptionsTableModel(settingsMap, offTheRecordSettingsMap);
+    model->LoadSettings();
+    [[SimpleContentExceptionsWindowController controllerWithTableModel:model]
+        attachSheetTo:[self window]];
+  } else {
+    [self showExceptionsForType:CONTENT_SETTINGS_TYPE_PLUGINS];
+  }
 }
 
 - (IBAction)showPopupsExceptions:(id)sender {

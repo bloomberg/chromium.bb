@@ -1085,6 +1085,8 @@
         'browser/cocoa/tab_view_picker_table.mm',
         'browser/cocoa/tab_window_controller.h',
         'browser/cocoa/tab_window_controller.mm',
+        'browser/cocoa/table_model_array_controller.h',
+        'browser/cocoa/table_model_array_controller.mm',
         'browser/cocoa/table_row_nsimage_cache.h',
         'browser/cocoa/table_row_nsimage_cache.mm',
         'browser/cocoa/tabpose_window.h',
