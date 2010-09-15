@@ -542,8 +542,7 @@ void NativeMenuWin::SetMenuItemLabel(int menu_index,
   MENUITEMINFO mii = {0};
   mii.cbSize = sizeof(mii);
   UpdateMenuItemInfoForString(&mii, model_index, label);
-  if (!owner_draw_)
-    SetMenuItemInfo(menu_, menu_index, MF_BYPOSITION, &mii);
+  SetMenuItemInfo(menu_, menu_index, MF_BYPOSITION, &mii);
 }
 
 void NativeMenuWin::UpdateMenuItemInfoForString(
@@ -565,13 +564,10 @@ void NativeMenuWin::UpdateMenuItemInfoForString(
   // version around.
   items_[model_index]->label = formatted;
 
-  // Windows only requires a pointer to the label string if it's going to be
-  // doing the drawing.
-  if (!owner_draw_) {
-    mii->fMask |= MIIM_STRING;
-    mii->dwTypeData =
-        const_cast<wchar_t*>(items_.at(model_index)->label.c_str());
-  }
+  // Give Windows a pointer to the label string.
+  mii->fMask |= MIIM_STRING;
+  mii->dwTypeData =
+      const_cast<wchar_t*>(items_.at(model_index)->label.c_str());
 }
 
 UINT NativeMenuWin::GetAlignmentFlags(int alignment) const {
