@@ -276,6 +276,7 @@ GoogleServiceAuthError GaiaAuthenticator2::GenerateAuthError(
     std::string captcha_url;
     std::string captcha_token;
     ParseClientLoginFailure(data, &error, &url, &captcha_url, &captcha_token);
+    LOG(WARNING) << "ClientLogin failed with " << error;
 
     if (error == kCaptchaError) {
       GURL image_url(kCaptchaUrlPrefix + captcha_url);
