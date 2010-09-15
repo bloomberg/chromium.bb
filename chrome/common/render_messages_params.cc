@@ -10,6 +10,80 @@
 #include "chrome/common/render_messages.h"
 #include "net/base/upload_data.h"
 
+ViewMsg_Navigate_Params::ViewMsg_Navigate_Params()
+    : page_id(-1),
+      pending_history_list_offset(-1),
+      current_history_list_offset(-1),
+      current_history_list_length(0),
+      transition(PageTransition::LINK),
+      navigation_type(NORMAL) {
+}
+
+ViewMsg_Navigate_Params::~ViewMsg_Navigate_Params() {
+}
+
+ViewHostMsg_FrameNavigate_Params::ViewHostMsg_FrameNavigate_Params()
+    : page_id(0),
+      transition(PageTransition::TYPED),
+      should_update_history(false),
+      gesture(NavigationGestureUser),
+      is_post(false),
+      is_content_filtered(false),
+      was_within_same_page(false),
+      http_status_code(0) {
+}
+
+ViewHostMsg_FrameNavigate_Params::~ViewHostMsg_FrameNavigate_Params() {
+}
+
+ViewHostMsg_UpdateRect_Params::ViewHostMsg_UpdateRect_Params()
+    : dx(0),
+      dy(0),
+      flags(0) {
+}
+
+ViewHostMsg_UpdateRect_Params::~ViewHostMsg_UpdateRect_Params() {
+}
+
+ViewMsg_ClosePage_Params::ViewMsg_ClosePage_Params()
+    : closing_process_id(0),
+      closing_route_id(0),
+      for_cross_site_transition(false),
+      new_render_process_host_id(0),
+      new_request_id(0) {
+}
+
+ViewMsg_ClosePage_Params::~ViewMsg_ClosePage_Params() {
+}
+
+ViewHostMsg_Resource_Request::ViewHostMsg_Resource_Request()
+    : load_flags(0),
+      origin_child_id(0),
+      resource_type(ResourceType::MAIN_FRAME),
+      request_context(0),
+      appcache_host_id(0),
+      download_to_file(false),
+      host_renderer_id(0),
+      host_render_view_id(0) {
+}
+
+ViewHostMsg_Resource_Request::~ViewHostMsg_Resource_Request() {
+}
+
+ViewMsg_Print_Params::ViewMsg_Print_Params()
+    : margin_top(0),
+      margin_left(0),
+      dpi(0),
+      min_shrink(0),
+      max_shrink(0),
+      desired_dpi(0),
+      document_cookie(0),
+      selection_only(false) {
+}
+
+ViewMsg_Print_Params::~ViewMsg_Print_Params() {
+}
+
 bool ViewMsg_Print_Params::Equals(const ViewMsg_Print_Params& rhs) const {
   return page_size == rhs.page_size &&
          printable_size == rhs.printable_size &&
@@ -28,6 +102,116 @@ bool ViewMsg_Print_Params::IsEmpty() const {
          page_size.IsEmpty() && !margin_top && !margin_left;
 }
 
+ViewMsg_PrintPage_Params::ViewMsg_PrintPage_Params()
+    : page_number(0) {
+}
+
+ViewMsg_PrintPage_Params::~ViewMsg_PrintPage_Params() {
+}
+
+ViewMsg_PrintPages_Params::ViewMsg_PrintPages_Params() {
+}
+
+ViewMsg_PrintPages_Params::~ViewMsg_PrintPages_Params() {
+}
+
+ViewHostMsg_DidPrintPage_Params::ViewHostMsg_DidPrintPage_Params()
+    : data_size(0),
+      document_cookie(0),
+      page_number(0),
+      actual_shrink(0),
+      has_visible_overlays(false) {
+#if defined(OS_WIN)
+    // Initialize |metafile_data_handle| only on Windows because it maps
+  // base::SharedMemoryHandle to HANDLE. We do not need to initialize this
+  // variable on Posix because it maps base::SharedMemoryHandle to
+  // FileDescriptior, which has the default constructor.
+  metafile_data_handle = INVALID_HANDLE_VALUE;
+#endif
+}
+
+ViewHostMsg_DidPrintPage_Params::~ViewHostMsg_DidPrintPage_Params() {
+}
+
+ViewHostMsg_Audio_CreateStream_Params::ViewHostMsg_Audio_CreateStream_Params()
+    : packet_size(0) {
+}
+
+ViewHostMsg_Audio_CreateStream_Params::
+    ~ViewHostMsg_Audio_CreateStream_Params() {
+}
+
+ViewHostMsg_ShowPopup_Params::ViewHostMsg_ShowPopup_Params()
+    : item_height(0),
+      item_font_size(0),
+      selected_item(0),
+      right_aligned(false) {
+}
+
+ViewHostMsg_ShowPopup_Params::~ViewHostMsg_ShowPopup_Params() {
+}
+
+ViewHostMsg_ScriptedPrint_Params::ViewHostMsg_ScriptedPrint_Params()
+    : routing_id(0),
+      host_window_id(0),
+      cookie(0),
+      expected_pages_count(0),
+      has_selection(false),
+      use_overlays(false) {
+}
+
+ViewHostMsg_ScriptedPrint_Params::~ViewHostMsg_ScriptedPrint_Params() {
+}
+
+ViewMsg_DOMStorageEvent_Params::ViewMsg_DOMStorageEvent_Params()
+    : storage_type_(DOM_STORAGE_LOCAL) {
+}
+
+ViewMsg_DOMStorageEvent_Params::~ViewMsg_DOMStorageEvent_Params() {
+}
+
+ViewHostMsg_IDBFactoryOpen_Params::ViewHostMsg_IDBFactoryOpen_Params()
+    : routing_id_(0),
+      response_id_(0) {
+}
+
+ViewHostMsg_IDBFactoryOpen_Params::~ViewHostMsg_IDBFactoryOpen_Params() {
+}
+
+ViewHostMsg_IDBDatabaseCreateObjectStore_Params::
+    ViewHostMsg_IDBDatabaseCreateObjectStore_Params()
+    : response_id_(0),
+      auto_increment_(false),
+      idb_database_id_(0) {
+}
+
+ViewHostMsg_IDBDatabaseCreateObjectStore_Params::
+    ~ViewHostMsg_IDBDatabaseCreateObjectStore_Params() {
+}
+
+ViewHostMsg_IDBObjectStoreCreateIndex_Params::
+    ViewHostMsg_IDBObjectStoreCreateIndex_Params()
+    : response_id_(0),
+      unique_(false),
+      idb_object_store_id_(0) {
+}
+
+ViewHostMsg_IDBObjectStoreCreateIndex_Params::
+    ~ViewHostMsg_IDBObjectStoreCreateIndex_Params() {
+}
+
+ViewHostMsg_IDBObjectStoreOpenCursor_Params::
+    ViewHostMsg_IDBObjectStoreOpenCursor_Params()
+    : response_id_(0),
+      flags_(0),
+      direction_(0),
+      idb_object_store_id_(0) {
+}
+
+ViewHostMsg_IDBObjectStoreOpenCursor_Params::
+    ~ViewHostMsg_IDBObjectStoreOpenCursor_Params() {
+}
+
 ViewMsg_ExecuteCode_Params::ViewMsg_ExecuteCode_Params() {
 }
 
@@ -41,6 +225,114 @@ ViewMsg_ExecuteCode_Params::ViewMsg_ExecuteCode_Params(
     : request_id(request_id), extension_id(extension_id),
       host_permissions(host_permissions), is_javascript(is_javascript),
       code(code), all_frames(all_frames) {
+}
+
+ViewMsg_ExecuteCode_Params::~ViewMsg_ExecuteCode_Params() {
+}
+
+ViewHostMsg_CreateWorker_Params::ViewHostMsg_CreateWorker_Params()
+    : is_shared(false),
+      document_id(0),
+      render_view_route_id(0),
+      route_id(0),
+      parent_appcache_host_id(0),
+      script_resource_appcache_id(0) {
+}
+
+ViewHostMsg_CreateWorker_Params::~ViewHostMsg_CreateWorker_Params() {
+}
+
+ViewHostMsg_ShowNotification_Params::ViewHostMsg_ShowNotification_Params()
+    : is_html(false),
+      direction(WebKit::WebTextDirectionDefault),
+      notification_id(0) {
+}
+
+ViewHostMsg_ShowNotification_Params::~ViewHostMsg_ShowNotification_Params() {
+}
+
+ViewMsg_New_Params::ViewMsg_New_Params()
+    : parent_window(0),
+      view_id(0),
+      session_storage_namespace_id(0) {
+}
+
+ViewMsg_New_Params::~ViewMsg_New_Params() {
+}
+
+ViewHostMsg_CreateWindow_Params::ViewHostMsg_CreateWindow_Params()
+    : opener_id(0),
+      user_gesture(false),
+      window_container_type(WINDOW_CONTAINER_TYPE_NORMAL),
+      session_storage_namespace_id(0) {
+}
+
+ViewHostMsg_CreateWindow_Params::~ViewHostMsg_CreateWindow_Params() {
+}
+
+ViewHostMsg_RunFileChooser_Params::ViewHostMsg_RunFileChooser_Params()
+    : mode(Open) {
+}
+
+ViewHostMsg_RunFileChooser_Params::~ViewHostMsg_RunFileChooser_Params() {
+}
+
+ViewMsg_ExtensionRendererInfo::ViewMsg_ExtensionRendererInfo()
+    : location(Extension::INVALID) {
+}
+
+ViewMsg_ExtensionRendererInfo::~ViewMsg_ExtensionRendererInfo() {
+}
+
+ViewMsg_ExtensionsUpdated_Params::ViewMsg_ExtensionsUpdated_Params() {
+}
+
+ViewMsg_ExtensionsUpdated_Params::~ViewMsg_ExtensionsUpdated_Params() {
+}
+
+ViewMsg_DeviceOrientationUpdated_Params::
+    ViewMsg_DeviceOrientationUpdated_Params()
+    : can_provide_alpha(false),
+      alpha(0),
+      can_provide_beta(false),
+      beta(0),
+      can_provide_gamma(false),
+      gamma(0) {
+}
+
+ViewMsg_DeviceOrientationUpdated_Params::
+    ~ViewMsg_DeviceOrientationUpdated_Params() {
+}
+
+ViewHostMsg_DomMessage_Params::ViewHostMsg_DomMessage_Params()
+    : request_id(0),
+      has_callback(false),
+      user_gesture(false) {
+}
+
+ViewHostMsg_DomMessage_Params::~ViewHostMsg_DomMessage_Params() {
+}
+
+ViewHostMsg_OpenFileSystemRequest_Params::
+    ViewHostMsg_OpenFileSystemRequest_Params()
+    : routing_id(0),
+      request_id(0),
+      type(WebKit::WebFileSystem::TypeTemporary),
+      requested_size(0) {
+}
+
+ViewHostMsg_OpenFileSystemRequest_Params::
+    ~ViewHostMsg_OpenFileSystemRequest_Params() {
+}
+
+ViewMsg_FileSystem_DidReadDirectory_Params::
+    ViewMsg_FileSystem_DidReadDirectory_Params()
+    : request_id(0),
+      has_more(false) {
+}
+
+ViewMsg_FileSystem_DidReadDirectory_Params::
+    ~ViewMsg_FileSystem_DidReadDirectory_Params() {
 }
 
 namespace IPC {

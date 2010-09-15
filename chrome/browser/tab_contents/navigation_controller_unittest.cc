@@ -741,7 +741,7 @@ TEST_F(NavigationControllerTest, Redirect) {
   EXPECT_EQ(controller().pending_entry_index(), -1);
   EXPECT_EQ(url1, controller().GetActiveEntry()->url());
 
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
   params.url = url2;
   params.transition = PageTransition::SERVER_REDIRECT;
@@ -796,7 +796,7 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
   EXPECT_EQ(controller().pending_entry_index(), -1);
   EXPECT_EQ(url1, controller().GetActiveEntry()->url());
 
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
   params.url = url2;
   params.transition = PageTransition::SERVER_REDIRECT;
@@ -841,7 +841,7 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
   EXPECT_EQ(controller().pending_entry_index(), -1);
   EXPECT_EQ(url1, controller().GetActiveEntry()->url());
 
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
   params.url = url2;
   params.transition = PageTransition::SERVER_REDIRECT;
@@ -882,7 +882,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
       NotificationType::NAV_ENTRY_COMMITTED));
 
   const GURL url2("http://foo2");
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 1;
   params.url = url2;
   params.transition = PageTransition::MANUAL_SUBFRAME;
@@ -917,7 +917,7 @@ TEST_F(NavigationControllerTest, SubframeOnEmptyPage) {
 
   // Navigation controller currently has no entries.
   const GURL url("http://foo2");
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 1;
   params.url = url;
   params.transition = PageTransition::AUTO_SUBFRAME;
@@ -942,7 +942,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
       NotificationType::NAV_ENTRY_COMMITTED));
 
   const GURL url2("http://foo2");
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
   params.url = url2;
   params.transition = PageTransition::AUTO_SUBFRAME;
@@ -972,7 +972,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // First manual subframe navigation.
   const GURL url2("http://foo2");
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 1;
   params.url = url2;
   params.transition = PageTransition::MANUAL_SUBFRAME;
@@ -1055,7 +1055,7 @@ TEST_F(NavigationControllerTest, InPage) {
 
   // First navigation.
   const GURL url2("http://foo#a");
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 1;
   params.url = url2;
   params.transition = PageTransition::LINK;
@@ -1135,7 +1135,7 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
 
   // First navigation.
   const GURL url2("http://foo#a");
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;  // Same page_id
   params.url = url2;
   params.transition = PageTransition::LINK;
@@ -1184,7 +1184,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
   // Navigate within the page.
   {
     const GURL url("http://foo2/#a");
-    ViewHostMsg_FrameNavigate_Params params = {0};
+    ViewHostMsg_FrameNavigate_Params params;
     params.page_id = 1;  // Same page_id
     params.url = url;
     params.transition = PageTransition::LINK;
@@ -1207,7 +1207,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
   // Perform a client redirect to a new page.
   {
     const GURL url("http://foo3/");
-    ViewHostMsg_FrameNavigate_Params params = {0};
+    ViewHostMsg_FrameNavigate_Params params;
     params.page_id = 2;  // New page_id
     params.url = url;
     params.transition = PageTransition::CLIENT_REDIRECT;
@@ -1342,7 +1342,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
             our_controller.GetEntryAtIndex(0)->restore_type());
 
   // Say we navigated to that entry.
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
   params.url = url;
   params.transition = PageTransition::LINK;
@@ -1608,7 +1608,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
 
   // Navigate a subframe that would normally count as in-page.
   const GURL subframe("http://www.google.com/#");
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
   params.url = subframe;
   params.transition = PageTransition::AUTO_SUBFRAME;
@@ -1633,7 +1633,7 @@ TEST_F(NavigationControllerTest, ViewSourceRedirect) {
 
   controller().LoadURL(url, GURL(), PageTransition::TYPED);
 
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
   params.url = result_url;
   params.transition = PageTransition::SERVER_REDIRECT;
@@ -1696,7 +1696,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   // Send a subframe update from the first page, as if one had just
   // automatically loaded. Auto subframes don't increment the page ID.
   const GURL url1_sub("http://foo/subframe");
-  ViewHostMsg_FrameNavigate_Params params = {0};
+  ViewHostMsg_FrameNavigate_Params params;
   params.page_id = controller().GetLastCommittedEntry()->page_id();
   params.url = url1_sub;
   params.transition = PageTransition::AUTO_SUBFRAME;

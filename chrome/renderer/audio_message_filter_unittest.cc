@@ -117,8 +117,8 @@ TEST(AudioMessageFilterTest, Basic) {
   delegate.Reset();
 
   // ViewMsg_NotifyAudioStreamStateChanged
-  const ViewMsg_AudioStreamState_Params kState =
-      { ViewMsg_AudioStreamState_Params::kPlaying };
+  const ViewMsg_AudioStreamState_Params kState(
+      ViewMsg_AudioStreamState_Params::kPlaying);
   EXPECT_FALSE(delegate.state_changed_received());
   filter->OnMessageReceived(
       ViewMsg_NotifyAudioStreamStateChanged(kRouteId, stream_id, kState));

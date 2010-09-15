@@ -105,12 +105,12 @@ TEST_F(AudioRendererImplTest, SetVolume) {
 
 TEST_F(AudioRendererImplTest, Stop) {
   // Declare some state messages.
-  const ViewMsg_AudioStreamState_Params kError =
-      { ViewMsg_AudioStreamState_Params::kError };
-  const ViewMsg_AudioStreamState_Params kPlaying =
-      { ViewMsg_AudioStreamState_Params::kPlaying };
-  const ViewMsg_AudioStreamState_Params kPaused =
-      { ViewMsg_AudioStreamState_Params::kPaused };
+  const ViewMsg_AudioStreamState_Params kError(
+      ViewMsg_AudioStreamState_Params::kError);
+  const ViewMsg_AudioStreamState_Params kPlaying(
+      ViewMsg_AudioStreamState_Params::kPlaying);
+  const ViewMsg_AudioStreamState_Params kPaused(
+      ViewMsg_AudioStreamState_Params::kPaused);
 
   // Execute Stop() codepath to create an IPC message.
   EXPECT_CALL(stop_callback_, OnFilterCallback());
