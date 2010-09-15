@@ -213,6 +213,10 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     ReportFailure("Excessively large key or signature");
     return false;
   }
+  if (header.key_size == 0) {
+    ReportFailure("Key length is zero");
+    return false;
+  }
 
   std::vector<uint8> key;
   key.resize(header.key_size);
