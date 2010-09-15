@@ -16,7 +16,6 @@
 
 #include "base/basictypes.h"
 #include "base/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/webkit_param_traits.h"
 #include "gfx/native_widget_types.h"
@@ -35,6 +34,9 @@
 // predefined IPC message.
 
 struct PluginMsg_Init_Params {
+  PluginMsg_Init_Params();
+  ~PluginMsg_Init_Params();
+
   gfx::NativeViewId containing_window;
   GURL url;
   GURL page_url;
@@ -45,6 +47,9 @@ struct PluginMsg_Init_Params {
 };
 
 struct PluginHostMsg_URLRequest_Params {
+  PluginHostMsg_URLRequest_Params();
+  ~PluginHostMsg_URLRequest_Params();
+
   std::string url;
   std::string method;
   std::string target;
@@ -54,6 +59,9 @@ struct PluginHostMsg_URLRequest_Params {
 };
 
 struct PluginMsg_DidReceiveResponseParams {
+  PluginMsg_DidReceiveResponseParams();
+  ~PluginMsg_DidReceiveResponseParams();
+
   unsigned long id;
   std::string mime_type;
   std::string headers;
@@ -63,6 +71,9 @@ struct PluginMsg_DidReceiveResponseParams {
 };
 
 struct NPIdentifier_Param {
+  NPIdentifier_Param();
+  ~NPIdentifier_Param();
+
   NPIdentifier identifier;
 };
 
@@ -83,6 +94,9 @@ enum NPVariant_ParamEnum {
 };
 
 struct NPVariant_Param {
+  NPVariant_Param();
+  ~NPVariant_Param();
+
   NPVariant_ParamEnum type;
   bool bool_value;
   int int_value;
@@ -92,6 +106,9 @@ struct NPVariant_Param {
 };
 
 struct PluginMsg_UpdateGeometry_Param {
+  PluginMsg_UpdateGeometry_Param();
+  ~PluginMsg_UpdateGeometry_Param();
+
   gfx::Rect window_rect;
   gfx::Rect clip_rect;
   TransportDIB::Handle windowless_buffer;
@@ -114,116 +131,25 @@ namespace IPC {
 template <>
 struct ParamTraits<PluginMsg_Init_Params> {
   typedef PluginMsg_Init_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.containing_window);
-    WriteParam(m, p.url);
-    WriteParam(m, p.page_url);
-    DCHECK(p.arg_names.size() == p.arg_values.size());
-    WriteParam(m, p.arg_names);
-    WriteParam(m, p.arg_values);
-    WriteParam(m, p.load_manually);
-    WriteParam(m, p.host_render_view_routing_id);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->containing_window) &&
-           ReadParam(m, iter, &p->url) &&
-           ReadParam(m, iter, &p->page_url) &&
-           ReadParam(m, iter, &p->arg_names) &&
-           ReadParam(m, iter, &p->arg_values) &&
-           ReadParam(m, iter, &p->load_manually) &&
-           ReadParam(m, iter, &p->host_render_view_routing_id);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.containing_window, l);
-    l->append(", ");
-    LogParam(p.url, l);
-    l->append(", ");
-    LogParam(p.page_url, l);
-    l->append(", ");
-    LogParam(p.arg_names, l);
-    l->append(", ");
-    LogParam(p.arg_values, l);
-    l->append(", ");
-    LogParam(p.load_manually, l);
-    l->append(", ");
-    LogParam(p.host_render_view_routing_id, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<PluginHostMsg_URLRequest_Params> {
   typedef PluginHostMsg_URLRequest_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.url);
-    WriteParam(m, p.method);
-    WriteParam(m, p.target);
-    WriteParam(m, p.buffer);
-    WriteParam(m, p.notify_id);
-    WriteParam(m, p.popups_allowed);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->method) &&
-      ReadParam(m, iter, &p->target) &&
-      ReadParam(m, iter, &p->buffer) &&
-      ReadParam(m, iter, &p->notify_id) &&
-      ReadParam(m, iter, &p->popups_allowed);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.url, l);
-    l->append(", ");
-    LogParam(p.method, l);
-    l->append(", ");
-    LogParam(p.target, l);
-    l->append(", ");
-    LogParam(p.buffer, l);
-    l->append(", ");
-    LogParam(p.notify_id, l);
-    l->append(", ");
-    LogParam(p.popups_allowed, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<PluginMsg_DidReceiveResponseParams> {
   typedef PluginMsg_DidReceiveResponseParams param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.id);
-    WriteParam(m, p.mime_type);
-    WriteParam(m, p.headers);
-    WriteParam(m, p.expected_length);
-    WriteParam(m, p.last_modified);
-    WriteParam(m, p.request_is_seekable);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return
-      ReadParam(m, iter, &r->id) &&
-      ReadParam(m, iter, &r->mime_type) &&
-      ReadParam(m, iter, &r->headers) &&
-      ReadParam(m, iter, &r->expected_length) &&
-      ReadParam(m, iter, &r->last_modified) &&
-      ReadParam(m, iter, &r->request_is_seekable);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.id, l);
-    l->append(", ");
-    LogParam(p.mime_type, l);
-    l->append(", ");
-    LogParam(p.headers, l);
-    l->append(", ");
-    LogParam(p.expected_length, l);
-    l->append(", ");
-    LogParam(p.last_modified, l);
-    l->append(", ");
-    LogParam(p.request_is_seekable, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 typedef const WebKit::WebInputEvent* WebInputEventPointer;
@@ -290,67 +216,9 @@ struct ParamTraits<NPIdentifier_Param> {
 template <>
 struct ParamTraits<NPVariant_Param> {
   typedef NPVariant_Param param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p.type));
-    if (p.type == NPVARIANT_PARAM_BOOL) {
-      WriteParam(m, p.bool_value);
-    } else if (p.type == NPVARIANT_PARAM_INT) {
-      WriteParam(m, p.int_value);
-    } else if (p.type == NPVARIANT_PARAM_DOUBLE) {
-      WriteParam(m, p.double_value);
-    } else if (p.type == NPVARIANT_PARAM_STRING) {
-      WriteParam(m, p.string_value);
-    } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
-               p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
-      // This is the routing id used to connect NPObjectProxy in the other
-      // process with NPObjectStub in this process or to identify the raw
-      // npobject pointer to be used in the callee process.
-      WriteParam(m, p.npobject_routing_id);
-    } else {
-      DCHECK(p.type == NPVARIANT_PARAM_VOID || p.type == NPVARIANT_PARAM_NULL);
-    }
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int type;
-    if (!ReadParam(m, iter, &type))
-      return false;
-
-    bool result = false;
-    r->type = static_cast<NPVariant_ParamEnum>(type);
-    if (r->type == NPVARIANT_PARAM_BOOL) {
-      result = ReadParam(m, iter, &r->bool_value);
-    } else if (r->type == NPVARIANT_PARAM_INT) {
-      result = ReadParam(m, iter, &r->int_value);
-    } else if (r->type == NPVARIANT_PARAM_DOUBLE) {
-      result = ReadParam(m, iter, &r->double_value);
-    } else if (r->type == NPVARIANT_PARAM_STRING) {
-      result = ReadParam(m, iter, &r->string_value);
-    } else if (r->type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
-               r->type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
-      result = ReadParam(m, iter, &r->npobject_routing_id);
-    } else if ((r->type == NPVARIANT_PARAM_VOID) ||
-               (r->type == NPVARIANT_PARAM_NULL)) {
-      result = true;
-    } else {
-      NOTREACHED();
-    }
-
-    return result;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    if (p.type == NPVARIANT_PARAM_BOOL) {
-      LogParam(p.bool_value, l);
-    } else if (p.type == NPVARIANT_PARAM_INT) {
-      LogParam(p.int_value, l);
-    } else if (p.type == NPVARIANT_PARAM_DOUBLE) {
-      LogParam(p.double_value, l);
-    } else if (p.type == NPVARIANT_PARAM_STRING) {
-      LogParam(p.string_value, l);
-    } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
-               p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
-      LogParam(p.npobject_routing_id, l);
-    }
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 // For windowless plugins, windowless_buffer
@@ -360,46 +228,9 @@ struct ParamTraits<NPVariant_Param> {
 template <>
 struct ParamTraits<PluginMsg_UpdateGeometry_Param> {
   typedef PluginMsg_UpdateGeometry_Param param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.window_rect);
-    WriteParam(m, p.clip_rect);
-    WriteParam(m, p.windowless_buffer);
-    WriteParam(m, p.background_buffer);
-    WriteParam(m, p.transparent);
-#if defined(OS_MACOSX)
-    WriteParam(m, p.ack_key);
-#endif
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return
-      ReadParam(m, iter, &r->window_rect) &&
-      ReadParam(m, iter, &r->clip_rect) &&
-      ReadParam(m, iter, &r->windowless_buffer) &&
-      ReadParam(m, iter, &r->background_buffer) &&
-      ReadParam(m, iter, &r->transparent)
-#if defined(OS_MACOSX)
-      &&
-      ReadParam(m, iter, &r->ack_key)
-#endif
-      ;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.window_rect, l);
-    l->append(", ");
-    LogParam(p.clip_rect, l);
-    l->append(", ");
-    LogParam(p.windowless_buffer, l);
-    l->append(", ");
-    LogParam(p.background_buffer, l);
-    l->append(", ");
-    LogParam(p.transparent, l);
-#if defined(OS_MACOSX)
-    l->append(", ");
-    LogParam(p.ack_key, l);
-#endif
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 }  // namespace IPC

@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/string_split.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"

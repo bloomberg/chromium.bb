@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/common/common_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -24,6 +23,9 @@ typedef std::pair<string16, std::vector<int> > QueuedMessage;
 // IPC message. The data members directly correspond to parameters of
 // WebWorkerClient::postConsoleMessageToWorkerObject()
 struct WorkerHostMsg_PostConsoleMessageToWorkerObject_Params {
+  WorkerHostMsg_PostConsoleMessageToWorkerObject_Params();
+  ~WorkerHostMsg_PostConsoleMessageToWorkerObject_Params();
+
   int source_identifier;
   int message_type;
   int message_level;
@@ -34,6 +36,9 @@ struct WorkerHostMsg_PostConsoleMessageToWorkerObject_Params {
 
 // Parameter structure for WorkerProcessMsg_CreateWorker.
 struct WorkerProcessMsg_CreateWorker_Params {
+  WorkerProcessMsg_CreateWorker_Params();
+  ~WorkerProcessMsg_CreateWorker_Params();
+
   GURL url;
   bool is_shared;
   string16 name;
@@ -50,80 +55,18 @@ namespace IPC {
 template <>
 struct ParamTraits<WorkerHostMsg_PostConsoleMessageToWorkerObject_Params> {
   typedef WorkerHostMsg_PostConsoleMessageToWorkerObject_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.source_identifier);
-    WriteParam(m, p.message_type);
-    WriteParam(m, p.message_level);
-    WriteParam(m, p.message);
-    WriteParam(m, p.line_number);
-    WriteParam(m, p.source_url);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->source_identifier) &&
-      ReadParam(m, iter, &p->message_type) &&
-      ReadParam(m, iter, &p->message_level) &&
-      ReadParam(m, iter, &p->message) &&
-      ReadParam(m, iter, &p->line_number) &&
-      ReadParam(m, iter, &p->source_url);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.source_identifier, l);
-    l->append(", ");
-    LogParam(p.message_type, l);
-    l->append(", ");
-    LogParam(p.message_level, l);
-    l->append(", ");
-    LogParam(p.message, l);
-    l->append(", ");
-    LogParam(p.line_number, l);
-    l->append(", ");
-    LogParam(p.source_url, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 // Traits for WorkerProcessMsg_CreateWorker_Params.
 template <>
 struct ParamTraits<WorkerProcessMsg_CreateWorker_Params> {
   typedef WorkerProcessMsg_CreateWorker_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.url);
-    WriteParam(m, p.is_shared);
-    WriteParam(m, p.name);
-    WriteParam(m, p.route_id);
-    WriteParam(m, p.creator_process_id);
-    WriteParam(m, p.creator_appcache_host_id);
-    WriteParam(m, p.shared_worker_appcache_id);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->is_shared) &&
-      ReadParam(m, iter, &p->name) &&
-      ReadParam(m, iter, &p->route_id) &&
-      ReadParam(m, iter, &p->creator_process_id) &&
-      ReadParam(m, iter, &p->creator_appcache_host_id) &&
-      ReadParam(m, iter, &p->shared_worker_appcache_id);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.url, l);
-    l->append(", ");
-    LogParam(p.is_shared, l);
-    l->append(", ");
-    LogParam(p.name, l);
-    l->append(", ");
-    LogParam(p.route_id, l);
-    l->append(", ");
-    LogParam(p.creator_process_id, l);
-    l->append(", ");
-    LogParam(p.creator_appcache_host_id, l);
-    l->append(", ");
-    LogParam(p.shared_worker_appcache_id, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 }  // namespace IPC
