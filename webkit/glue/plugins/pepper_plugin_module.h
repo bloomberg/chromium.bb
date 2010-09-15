@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/native_library.h"
 #include "base/ref_counted.h"
+#include "base/weak_ptr.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/ppb.h"
 
@@ -26,7 +27,8 @@ class PluginDelegate;
 class PluginInstance;
 class PluginObject;
 
-class PluginModule : public base::RefCounted<PluginModule> {
+class PluginModule : public base::RefCounted<PluginModule>,
+                     public base::SupportsWeakPtr<PluginModule> {
  public:
   typedef const void* (*PPP_GetInterfaceFunc)(const char*);
   typedef int (*PPP_InitializeModuleFunc)(PP_Module, PPB_GetInterface);
