@@ -91,9 +91,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
   ASSERT_NO_FATAL_FAILURE(DoTest());
 }
 
-// Fullscreen test is crashy
-// http://crbug.com/55643
-IN_PROC_BROWSER_TEST_F(ViewIDTest, DISABLED_Fullscreen) {
+IN_PROC_BROWSER_TEST_F(ViewIDTest, Fullscreen) {
   browser()->window()->SetFullscreen(true);
   ASSERT_NO_FATAL_FAILURE(DoTest());
 }

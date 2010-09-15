@@ -47,6 +47,11 @@ const int kMinWebWidth = 50;
   return self;
 }
 
+- (void)dealloc {
+  [sidebarView_ setDelegate:nil];
+  [super dealloc];
+}
+
 - (void)updateSidebarForTabContents:(TabContents*)contents {
   // Get the active sidebar content.
   if (SidebarManager::GetInstance() == NULL)  // Happens in tests.
