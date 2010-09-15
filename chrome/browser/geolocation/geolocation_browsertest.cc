@@ -386,7 +386,14 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForDeniedOrigin) {
+#if defined(OS_MACOSX)
+// Fails sometimes on mac: http://crbug.com/47053
+#define MAYBE_NoInfobarForDeniedOrigin FLAKY_NoInfobarForDeniedOrigin
+#else
+#define MAYBE_NoInfobarForDeniedOrigin NoInfobarForDeniedOrigin
+#endif
+
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   current_browser_->profile()->GetGeolocationContentSettingsMap()->
       SetContentSetting(current_url_, current_url_, CONTENT_SETTING_BLOCK);
