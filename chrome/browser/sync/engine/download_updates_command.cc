@@ -94,7 +94,9 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   LOG(INFO) << "GetUpdates from ts " << get_updates->from_timestamp()
             << " returned " << update_response.get_updates().entries_size()
-            << " updates.";
+            << " updates and indicated "
+            << update_response.get_updates().changes_remaining()
+            << " updates left on server.";
 }
 
 void DownloadUpdatesCommand::SetRequestedTypes(

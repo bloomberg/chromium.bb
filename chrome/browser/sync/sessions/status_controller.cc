@@ -230,8 +230,14 @@ bool StatusController::ServerSaysNothingMoreToDownload() const {
       return false;
     }
   }
-  // The server indicates "you're up to date" by not sending a new
-  // timestamp.
+  // Changes remaining is an estimate, but if it's estimated to be
+  // zero, that's firm and we don't have to ask again.
+  if (updates_response().get_updates().has_changes_remaining() &&
+      updates_response().get_updates().changes_remaining() == 0) {
+    return true;
+  }
+  // Otherwise, the server can also indicate "you're up to date"
+  // by not sending a new timestamp.
   return !updates_response().get_updates().has_new_timestamp();
 }
 
