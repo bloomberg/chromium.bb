@@ -300,7 +300,7 @@ class SpdySessionDependencies {
   // Default set of dependencies -- "null" proxy service.
   SpdySessionDependencies()
       : host_resolver(new MockHostResolver),
-        proxy_service(ProxyService::CreateNull()),
+        proxy_service(ProxyService::CreateDirect()),
         ssl_config_service(new SSLConfigServiceDefaults),
         socket_factory(new MockClientSocketFactory),
         deterministic_socket_factory(new DeterministicMockClientSocketFactory),
@@ -362,7 +362,7 @@ class SpdyURLRequestContext : public URLRequestContext {
  public:
   SpdyURLRequestContext() {
     host_resolver_ = new MockHostResolver;
-    proxy_service_ = ProxyService::CreateNull();
+    proxy_service_ = ProxyService::CreateDirect();
     spdy_session_pool_ = new SpdySessionPool(NULL);
     ssl_config_service_ = new SSLConfigServiceDefaults;
     http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault();
