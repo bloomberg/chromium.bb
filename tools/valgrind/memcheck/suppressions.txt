@@ -2526,6 +2526,22 @@
    fun:_ZN26RenderWidgetFullscreenHostC1EP17RenderProcessHosti
 }
 {
+   bug_52834_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK28MockRenderProcessHostFactory23CreateRenderProcessHostEP7Profile
+   fun:_ZN12SiteInstance10GetProcessEv
+   fun:_ZN14RenderViewHostC2EP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN18TestRenderViewHostC1EP12SiteInstanceP22RenderViewHostDelegatei
+   fun:_ZN25TestRenderViewHostFactory20CreateRenderViewHostEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostFactory6CreateEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostManager4InitEP7ProfileP12SiteInstancei
+   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
+   fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
+   fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
+   fun:_ZN25RenderViewHostTestHarness5SetUpEv
+}
+{
    bug_52837
    Memcheck:Leak
    fun:_Znw*
