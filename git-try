@@ -38,7 +38,7 @@ def GetRietveldServerUrl():
 
 
 if __name__ == '__main__':
-  args = sys.argv[:]
+  args = sys.argv[1:]
   patchset = GetRietveldPatchsetNumber()
   if patchset:
     args.extend([
