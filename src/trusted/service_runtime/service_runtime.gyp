@@ -210,7 +210,6 @@
       'dependencies': [
         'gio_shm',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        '<(DEPTH)/native_client/src/trusted/base/base.gyp:nacl_base',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
@@ -283,7 +282,6 @@
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        '<(DEPTH)/native_client/src/trusted/base/base.gyp:nacl_base',
       ],
     },
     {
@@ -317,7 +315,6 @@
           'dependencies': [
             'gio_shm64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
-            '<(DEPTH)/native_client/src/trusted/base/base.gyp:nacl_base64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncopcode_utils_gen',
@@ -384,7 +381,6 @@
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
-            '<(DEPTH)/native_client/src/trusted/base/base.gyp:nacl_base64',
           ],
         },
         {

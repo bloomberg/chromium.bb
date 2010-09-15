@@ -8,14 +8,8 @@
  * with a single instruction
  */
 
-/*
- * windows expects _ before function names, linux does not
- * define both...
- */
-.globl onestore_memmove4
-.globl _onestore_memmove4
-.globl onestore_memmove8
-.globl _onestore_memmove8
+#include "native_client/src/include/nacl_asm.h"
+
 
 #if defined(__i386__) || (defined(_WIN32) && !defined(_WIN64))
 
@@ -25,8 +19,7 @@
  * src = 0x8(%esp)
  */
 
-onestore_memmove4:
-_onestore_memmove4:
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove4):
   /*
    * gcc generates a single store for this, but it would be scary
    * to rely on that
@@ -38,8 +31,7 @@ _onestore_memmove4:
   ret
   .align 8
 
-onestore_memmove8:
-_onestore_memmove8:
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove8):
   /* gcc generates two stores for this, use SSE registers instead */
   movl   0x8(%esp),%eax
   movl   0x4(%esp),%edx
@@ -66,8 +58,7 @@ _onestore_memmove8:
 # define SRC %rsi
 #endif
 
-onestore_memmove4:
-_onestore_memmove4:
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove4):
   /*
    * gcc generates a single store for this, but it would be terrifying
    * to rely on that
@@ -77,8 +68,7 @@ _onestore_memmove4:
   retq
   .align 8
 
-onestore_memmove8:
-_onestore_memmove8:
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove8):
   /*
    * gcc generates a single store for this, but it would be frightful
    * to rely on that

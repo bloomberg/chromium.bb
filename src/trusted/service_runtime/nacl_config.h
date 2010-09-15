@@ -14,6 +14,7 @@
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/nacl_asm.h"
 
 /* maximum number of elf program headers allowed. */
 #define NACL_MAX_PROGRAM_HEADERS  128
@@ -120,43 +121,6 @@
  * whole NaCl app.
  */
 #define NACL_HALT_SLED_SIZE     32
-
-/*
- * macros to provide uniform access to identifiers from assembly due
- * to different C -> asm name mangling conventions and other platform-specific
- * requirements
- */
-#if NACL_OSX
-# define IDENTIFIER(n)  _##n
-#elif NACL_LINUX
-# define IDENTIFIER(n)  n
-#elif NACL_WINDOWS
-# if _WIN64
-#   define IDENTIFIER(n)  n
-# else
-#   define IDENTIFIER(n)  _##n
-# endif
-#elif defined(__native_client__)
-# define IDENTIFIER(n)  n
-#else
-# error "Unrecognized OS"
-#endif
-
-#if NACL_OSX
-# define HIDDEN(n)  .private_extern IDENTIFIER(n)
-#elif NACL_LINUX
-# define HIDDEN(n)  .hidden IDENTIFIER(n)
-#elif NACL_WINDOWS
-/* On Windows, symbols are hidden by default. */
-# define HIDDEN(n)
-#elif defined(__native_client__)
-# define HIDDEN(n)  .hidden IDENTIFIER(n)
-#else
-# error "Unrecognized OS"
-#endif
-
-#define DEFINE_GLOBAL_HIDDEN_IDENTIFIER(n) \
-  .globl IDENTIFIER(n); HIDDEN(n); IDENTIFIER(n)
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 

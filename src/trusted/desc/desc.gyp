@@ -1,3 +1,4 @@
+# -*- python -*-
 # Copyright 2008, Google Inc.
 # All rights reserved.
 #
@@ -154,7 +155,7 @@
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
-            '<(DEPTH)/native_client/src/trusted/base/base.gyp:nacl_base64',
+            '<(DEPTH)/native_client/src/trusted/nacl_base/nacl_base.gyp:nacl_base64',
           ],
         },
       ],
@@ -170,7 +171,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-        '<(DEPTH)/native_client/src/trusted/base/base.gyp:nacl_base',
+        '<(DEPTH)/native_client/src/trusted/nacl_base/nacl_base.gyp:nacl_base',
       ],
     },
   ],

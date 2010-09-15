@@ -4,8 +4,8 @@
  * be found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_BASE_NACL_REFCOUNT_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_BASE_NACL_REFCOUNT_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_NACL_BASE_NACL_REFCOUNT_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_NACL_BASE_NACL_REFCOUNT_H_
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
