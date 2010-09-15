@@ -5,5 +5,3 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// Supress while fix is landed upstream
-BUGWK45814 : fast/dom/DeviceOrientation/add-listener-from-callback.html = TEXT PASS
