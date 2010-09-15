@@ -77,6 +77,22 @@ class TopMostFinder : public BaseWindowFinder {
       return false;
     }
 
+    LONG ex_styles = GetWindowLong(hwnd, GWL_EXSTYLE);
+    if (ex_styles & WS_EX_TRANSPARENT || ex_styles & WS_EX_LAYERED) {
+      // Mouse events fall through WS_EX_TRANSPARENT windows, so we ignore them.
+      //
+      // WS_EX_LAYERED is trickier. Apps like Switcher create a totally
+      // transparent WS_EX_LAYERED window that is always on top. If we don't
+      // ignore WS_EX_LAYERED windows and there are totally transparent
+      // WS_EX_LAYERED windows then there are effectively holes on the screen
+      // that the user can't reattach tabs to. So we ignore them. This is a bit
+      // problematic in so far as WS_EX_LAYERED windows need not be totally
+      // transparent in which case we treat chrome windows as not being obscured
+      // when they really are, but this is better than not being able to
+      // reattach tabs.
+      return false;
+    }
+
     // hwnd is at the point. Make sure the point is within the windows region.
     if (GetWindowRgn(hwnd, tmp_region_.Get()) == ERROR) {
       // There's no region on the window and the window contains the point. Stop
