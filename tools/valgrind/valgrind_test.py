@@ -210,7 +210,7 @@ class ValgrindTool(BaseTool):
   ExtendOptionParser() for tool-specific stuff.
   """
   def __init__(self):
-    BaseTool.__init__(self)
+    super(ValgrindTool, self).__init__()
     self.RegisterOptionParserHook(ValgrindTool.ExtendOptionParser)
 
   def UseXML(self):
@@ -471,7 +471,7 @@ class Memcheck(ValgrindTool):
   """
 
   def __init__(self):
-    ValgrindTool.__init__(self)
+    super(Memcheck, self).__init__()
     self.RegisterOptionParserHook(Memcheck.ExtendOptionParser)
 
   def ToolName(self):
@@ -518,9 +518,6 @@ class PinTool(BaseTool):
   Always subclass this and implement ToolSpecificFlags() and
   ExtendOptionParser() for tool-specific stuff.
   """
-  def __init__(self):
-    BaseTool.__init__(self)
-
   def PrepareForTest(self):
     pass
 
@@ -564,6 +561,7 @@ class ThreadSanitizerBase(object):
                "ThreadSanitizer"
 
   def __init__(self):
+    super(ThreadSanitizerBase, self).__init__()
     self.RegisterOptionParserHook(ThreadSanitizerBase.ExtendOptionParser)
 
   def ToolName(self):
@@ -641,10 +639,6 @@ class ThreadSanitizerBase(object):
     return ret
 
 class ThreadSanitizerPosix(ThreadSanitizerBase, ValgrindTool):
-  def __init__(self):
-    ValgrindTool.__init__(self)
-    ThreadSanitizerBase.__init__(self)
-
   def ToolSpecificFlags(self):
     proc = ThreadSanitizerBase.ToolSpecificFlags(self)
     # The -v flag is needed for printing the list of used suppressions and
@@ -664,9 +658,9 @@ class ThreadSanitizerPosix(ThreadSanitizerBase, ValgrindTool):
     return ret
 
 class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
+
   def __init__(self):
-    PinTool.__init__(self)
-    ThreadSanitizerBase.__init__(self)
+    super(ThreadSanitizerWindows, self).__init__()
     self.RegisterOptionParserHook(ThreadSanitizerWindows.ExtendOptionParser)
 
   def ExtendOptionParser(self, parser):
@@ -714,7 +708,7 @@ class DrMemory(BaseTool):
   """
 
   def __init__(self):
-    BaseTool.__init__(self)
+    super(DrMemory, self).__init__()
     self.RegisterOptionParserHook(DrMemory.ExtendOptionParser)
 
   def ToolName(self):
@@ -776,6 +770,13 @@ class DrMemory(BaseTool):
 class ThreadSanitizerRV1Mixin(object):
   """First pass: run ThreadSanitizer as usual, but don't clean up logs"""
 
+  def __init__(self):
+    super(ThreadSanitizerRV1Mixin, self).__init__()
+    self.RegisterOptionParserHook(ThreadSanitizerRV1Mixin.ExtendOptionParser)
+
+  def ExtendOptionParser(self, parser):
+    parser.set_defaults(hybrid="yes")
+
   def ParseArgv(self, args):
     ret = super(ThreadSanitizerRV1Mixin, self).ParseArgv(args)
     self._nocleanup_on_exit = True
@@ -784,9 +785,20 @@ class ThreadSanitizerRV1Mixin(object):
 class ThreadSanitizerRV2Mixin(object):
   """Second pass: run the same command line in RaceVerifier mode"""
 
+  def __init__(self):
+    super(ThreadSanitizerRV2Mixin, self).__init__()
+    self.RegisterOptionParserHook(ThreadSanitizerRV2Mixin.ExtendOptionParser)
+
+  def ExtendOptionParser(self, parser):
+    parser.add_option("", "--race-verifier-sleep-ms",
+                            dest="race_verifier_sleep_ms", default=10,
+                            help="duration of RaceVerifier delays")
+
   def ToolSpecificFlags(self):
     proc = super(ThreadSanitizerRV2Mixin, self).ToolSpecificFlags()
-    proc += ['--race-verifier=' + self.TMP_DIR + '/race.log']
+    proc += ['--race-verifier=' + self.TMP_DIR + '/race.log',
+             '--race-verifier-sleep-ms=%d' %
+             int(self._options.race_verifier_sleep_ms)]
     return proc
 
 class ThreadSanitizerRV1Posix(ThreadSanitizerRV1Mixin, ThreadSanitizerPosix):
