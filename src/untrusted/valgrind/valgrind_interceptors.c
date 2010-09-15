@@ -155,6 +155,8 @@ INLINE static size_t handle_malloc_after(size_t ptr, size_t size) {
 INLINE static void handle_free(OrigFn fn, size_t ptr) {
   uint64_t base;
   size_t size;
+  if (!ptr)
+    return;
   start_ignore_all_accesses_and_sync();
   /* Get the size of allocated region, check sanity. */
   ptr -= kRedZoneSize;
