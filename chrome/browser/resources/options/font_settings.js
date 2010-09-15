@@ -7,20 +7,20 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
 
   /**
-   * FontSettingsOverlay class
-   * Encapsulated handling of the 'Font Settings' overlay page.
+   * FontSettings class
+   * Encapsulated handling of the 'Font Settings' page.
    * @class
    */
-  function FontSettingsOverlay() {
-    OptionsPage.call(this, 'fontSettingsOverlay',
-                     templateData.fontSettingsOverlayTitle,
-                     'fontSettingsOverlay');
+  function FontSettings() {
+    OptionsPage.call(this, 'fontSettings',
+                     templateData.fontSettingsTitle,
+                     'fontSettings');
   }
 
-  cr.addSingletonGetter(FontSettingsOverlay);
+  cr.addSingletonGetter(FontSettings);
 
-  FontSettingsOverlay.prototype = {
-    // Inherit FontSettingsOverlay from OptionsPage.
+  FontSettings.prototype = {
+    // Inherit FontSettings from OptionsPage.
     __proto__: OptionsPage.prototype,
 
     /**
@@ -48,28 +48,28 @@ cr.define('options', function() {
     }
   };
 
-  FontSettingsOverlay.setupFontPreview = function(id, font, size) {
+  FontSettings.setupFontPreview = function(id, font, size) {
     $(id).textContent = font + " " + size;
     $(id).style.fontFamily = font;
     $(id).style.fontSize = size + "pt";
   }
 
   // Chrome callbacks
-  FontSettingsOverlay.setupSerifFontPreview = function(text, size) {
+  FontSettings.setupSerifFontPreview = function(text, size) {
     this.setupFontPreview('fontSettingsSerifPreview', text, size);
   }
 
-  FontSettingsOverlay.setupSansSerifFontPreview = function(text, size) {
+  FontSettings.setupSansSerifFontPreview = function(text, size) {
     this.setupFontPreview('fontSettingsSansSerifPreview', text, size);
   }
 
-  FontSettingsOverlay.setupFixedFontPreview = function(text, size) {
+  FontSettings.setupFixedFontPreview = function(text, size) {
     this.setupFontPreview('fontSettingsFixedWidthPreview', text, size);
   }
 
   // Export
   return {
-    FontSettingsOverlay: FontSettingsOverlay
+    FontSettings: FontSettings
   };
 
 });

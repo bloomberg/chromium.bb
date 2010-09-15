@@ -138,7 +138,7 @@ void FontSettingsHandler::SetupSerifFontPreview() {
   StringValue font_value(serif_font_.GetValue());
   FundamentalValue size_value(default_font_size_.GetValue());
   dom_ui_->CallJavascriptFunction(
-      L"FontSettingsOverlay.setupSerifFontPreview", font_value, size_value);
+      L"FontSettings.setupSerifFontPreview", font_value, size_value);
 }
 
 void FontSettingsHandler::SetupSansSerifFontPreview() {
@@ -146,7 +146,7 @@ void FontSettingsHandler::SetupSansSerifFontPreview() {
   StringValue font_value(sans_serif_font_.GetValue());
   FundamentalValue size_value(default_font_size_.GetValue());
   dom_ui_->CallJavascriptFunction(
-      L"FontSettingsOverlay.setupSansSerifFontPreview", font_value, size_value);
+      L"FontSettings.setupSansSerifFontPreview", font_value, size_value);
 }
 
 void FontSettingsHandler::SetupFixedFontPreview() {
@@ -154,6 +154,6 @@ void FontSettingsHandler::SetupFixedFontPreview() {
   StringValue font_value(fixed_font_.GetValue());
   FundamentalValue size_value(default_fixed_font_size_.GetValue());
   dom_ui_->CallJavascriptFunction(
-      L"FontSettingsOverlay.setupFixedFontPreview", font_value, size_value);
+      L"FontSettings.setupFixedFontPreview", font_value, size_value);
 }
 

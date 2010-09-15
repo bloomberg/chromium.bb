@@ -89,7 +89,7 @@
 <script src="options/cookies_tree.js"></script>
 <script src="options/cookies_view.js"></script>
 <script src="options/edit_search_engine_overlay.js"></script>
-<script src="options/font_settings_overlay.js"></script>
+<script src="options/font_settings.js"></script>
 <script src="options/import_data_overlay.js"></script>
 <script src="options/passwords_exceptions.js"></script>
 <script src="options/passwords_exceptions_list.js"></script>
@@ -109,7 +109,7 @@ var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
 var ContentSettings = options.ContentSettings;
 var CookiesView = options.CookiesView;
 var EditSearchEngineOverlay = options.EditSearchEngineOverlay;
-var FontSettingsOverlay = options.FontSettingsOverlay;
+var FontSettings = options.FontSettings;
 var ImportDataOverlay = options.ImportDataOverlay;
 var OptionsPage = options.OptionsPage;
 var PasswordsExceptions = options.PasswordsExceptions;
@@ -138,6 +138,7 @@ function load() {
   OptionsPage.registerSubPage(AutoFillOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
   OptionsPage.registerSubPage(CookiesView.getInstance());
+  OptionsPage.registerSubPage(FontSettings.getInstance());
   OptionsPage.registerSubPage(PasswordsExceptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance());
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
@@ -146,7 +147,6 @@ function load() {
   OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
   OptionsPage.registerOverlay(EditSearchEngineOverlay.getInstance());
-  OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
 
   if (cr.isChromeOS) {
@@ -234,7 +234,6 @@ window.onpopstate = function(e) {
   <include src="options/autofill_edit_creditcard_overlay.html">
   <include src="options/clear_browser_data_overlay.html">
   <include src="options/edit_search_engine_overlay.html">
-  <include src="options/font_settings_overlay.html">
   <include src="options/import_data_overlay.html">
   <if expr="pp_ifdef('chromeos')">
      <include src="options/chromeos_language_add_language_overlay.html">
@@ -275,6 +274,7 @@ window.onpopstate = function(e) {
        <include src="options/browser_options.html">
        <include src="options/content_settings.html">
        <include src="options/cookies_view.html">
+       <include src="options/font_settings.html">
        <include src="options/passwords_exceptions.html">
        <include src="options/personal_options.html">
        <include src="options/search_engine_manager.html">
