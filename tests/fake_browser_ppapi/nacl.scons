@@ -29,7 +29,7 @@ if trusted_env.Bit('linux'):
 
     # We usually try to build things statically, but the plugin is a .so
     trusted_env.FilterOut(LINKFLAGS=['-static'])
-    trusted_env.Replace(LIBS=['dl', 'pthread', '$OPTIONAL_COVERAGE_LIBS'])
+    trusted_env.Append(LIBS=['dl', 'pthread'])
 
 if trusted_env.Bit('windows'):
     trusted_env.Append(
@@ -51,7 +51,10 @@ fake_browser = trusted_env.ComponentProgram('fake_browser_ppapi',
                                              'fake_instance.cc',
                                              'fake_object.cc',
                                              'fake_window.cc',
-                                             'main.cc'])
+                                             'main.cc',
+                                             'test_scriptable.cc'])
+
+ppapi_basic_object_nexe = env.File('${STAGING_DIR}/ppapi_basic_object.nexe')
 
 if trusted_env.Bit('mac'):
   plugin = trusted_env.File('${STAGING_DIR}/ppNaClPlugin')
@@ -65,12 +68,12 @@ node = env.CommandTest('fake_browser_ppapi.out',
                        [fake_browser[0],
                         plugin,
                         'http://localhost:5103/srpc_hw.html',
-                        '"id=nacl_module;src=srpc_hw.nexe"',
+                        '"id=nacl_module;src=ppapi_basic_object.nexe"',
                         '${STAGING_DIR}'
                        ],
                        'medium',
                        osenv=('NACL_SEL_LDR=%s,NACLLOG=%s'
                               % (sel_ldr, log_file)),
-                       extra_deps=[sel_ldr])
+                       extra_deps=[sel_ldr, ppapi_basic_object_nexe])
 
 env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_ppapi_test')

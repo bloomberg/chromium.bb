@@ -1547,8 +1547,7 @@ nacl_env.Append(
     'tests/null/nacl.scons',
     'tests/nullptr/nacl.scons',
     'tests/pepper_plugin/nacl.scons',
-    # TODO(sehr): activate this test after proxy is checked in.
-    #'tests/ppapi_stub/nacl.scons',
+    'tests/ppapi_proxy/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/signal_handler/nacl.scons',
     'tests/srpc/nacl.scons',

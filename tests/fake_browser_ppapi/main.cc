@@ -14,6 +14,8 @@
 #include "native_client/tests/fake_browser_ppapi/fake_core.h"
 #include "native_client/tests/fake_browser_ppapi/fake_host.h"
 #include "native_client/tests/fake_browser_ppapi/fake_instance.h"
+#include "native_client/tests/fake_browser_ppapi/fake_window.h"
+#include "native_client/tests/fake_browser_ppapi/test_scriptable.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_var.h"
@@ -74,7 +76,7 @@ bool ParseArgs(const char* str,
 }
 
 // Test instance execution.
-void TestInstance(const PPP_Instance* instance,
+void TestInstance(const PPP_Instance* instance_interface,
                   const char* page_url,
                   uint32_t argc,
                   const char** argn,
@@ -86,9 +88,17 @@ void TestInstance(const PPP_Instance* instance,
   fake_browser_ppapi::Instance browser_instance(&window);
   PP_Instance instance_id = reinterpret_cast<PP_Instance>(&browser_instance);
   // Create a plugin instance.
-  CHECK(instance->New(instance_id));
+  CHECK(instance_interface->New(instance_id));
   // Initialize the instance.
-  CHECK(instance->Initialize(instance_id, argc, argn, argv));
+  CHECK(instance_interface->Initialize(instance_id, argc, argn, argv));
+  // Test the scriptable object for the instance.
+  PP_Var instance_object = instance_interface->GetInstanceObject(instance_id);
+  const PPB_Var* var_interface =
+      reinterpret_cast<const PPB_Var*>(FakeGetInterface(PPB_VAR_INTERFACE));
+  TestScriptableObject(instance_object,
+                       browser_instance.GetInterface(),
+                       var_interface,
+                       instance_id);
 }
 
 int main(int argc, char** argv) {
@@ -116,10 +126,10 @@ int main(int argc, char** argv) {
   CHECK(host->InitializeModule(FakeGenModuleId(), FakeGetInterface) == PP_OK);
 
   // Get an instance of the plugin.
-  const PPP_Instance* instance =
+  const PPP_Instance* instance_interface =
       reinterpret_cast<const PPP_Instance*>(
           host->GetInterface(PPP_INSTANCE_INTERFACE));
-  CHECK(instance != NULL);
+  CHECK(instance_interface != NULL);
   const char* page_url = argv[2];
 
   // Get the embed argc/argn/argv.
@@ -134,7 +144,11 @@ int main(int argc, char** argv) {
   setenv("NACL_PPAPI_LOCAL_ORIGIN", root_path, 1);
 
   // Test an instance.
-  TestInstance(instance, page_url, embed_argc, embed_argn, embed_argv);
+  TestInstance(instance_interface,
+               page_url,
+               embed_argc,
+               embed_argn,
+               embed_argv);
 
   // Shutdown.
   host->ShutdownModule();
