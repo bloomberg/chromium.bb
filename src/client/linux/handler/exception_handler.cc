@@ -85,11 +85,11 @@
 #include <vector>
 
 #include "common/linux/linux_libc_support.h"
-#include "common/linux/linux_syscall_support.h"
 #include "common/linux/memory.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "common/linux/guid_creator.h"
 #include "common/linux/eintr_wrapper.h"
+#include "third_party/lss/linux_syscall_support.h"
 
 #ifndef PR_SET_PTRACER
 #define PR_SET_PTRACER 0x59616d61

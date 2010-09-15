@@ -36,12 +36,12 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 
+#include "breakpad_googletest_includes.h"
 #include "client/linux/handler/exception_handler.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/linux_libc_support.h"
-#include "common/linux/linux_syscall_support.h"
-#include "breakpad_googletest_includes.h"
+#include "third_party/lss/linux_syscall_support.h"
 
 using namespace google_breakpad;
 

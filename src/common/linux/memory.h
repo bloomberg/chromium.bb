@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#include "common/linux/linux_syscall_support.h"
+#include "third_party/lss/linux_syscall_support.h"
 
 namespace google_breakpad {
 

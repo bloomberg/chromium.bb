@@ -65,7 +65,7 @@
 #include "client/linux/minidump_writer/linux_dumper.h"
 #include "client/linux/minidump_writer/minidump_extension_linux.h"
 #include "common/linux/linux_libc_support.h"
-#include "common/linux/linux_syscall_support.h"
+#include "third_party/lss/linux_syscall_support.h"
 
 // Minidump defines register structures which are different from the raw
 // structures which we get from the kernel. These are platform specific

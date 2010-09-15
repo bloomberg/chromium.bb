@@ -48,10 +48,10 @@
 #include <string>
 #include <vector>
 
+#include "client/linux/minidump_writer/minidump_extension_linux.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "google_breakpad/common/minidump_cpu_x86.h"
-#include "client/linux/minidump_writer/minidump_extension_linux.h"
-#include "common/linux/linux_syscall_support.h"
+#include "third_party/lss/linux_syscall_support.h"
 
 
 #if __WORDSIZE == 64
