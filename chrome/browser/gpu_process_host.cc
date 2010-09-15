@@ -122,6 +122,11 @@ GpuProcessHost* GpuProcessHost::Get() {
   return sole_instance_;
 }
 
+// static
+void GpuProcessHost::SendAboutGpuCrash() {
+  Get()->Send(new GpuMsg_Crash());
+}
+
 bool GpuProcessHost::Send(IPC::Message* msg) {
   if (!EnsureInitialized())
     return false;

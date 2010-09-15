@@ -273,7 +273,7 @@ std::string AboutAbout() {
     html.append(kAllAboutPaths[i]);
     html.append("</a>\n");
   }
-  const char *debug[] = { "crash", "hang", "shorthang" };
+  const char *debug[] = { "crash", "hang", "shorthang", "gpucrash" };
   html.append("</ul><h2>For Debug</h2>");
   html.append("</ul><p>The following pages are for debugging purposes only. "
               "Because they crash or hang the renderer, they're not linked "
@@ -1206,6 +1206,12 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
     // Induce an intentional crash in the browser process.
     int* bad_pointer = NULL;
     *bad_pointer = 42;
+    return true;
+  }
+
+  // Handle URL to crash the gpu process.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
+    GpuProcessHost::SendAboutGpuCrash();
     return true;
   }
 

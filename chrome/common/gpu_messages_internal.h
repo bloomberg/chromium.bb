@@ -50,6 +50,9 @@ IPC_BEGIN_MESSAGES(Gpu)
   // information.
   IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
+  // Tells the GPU process to crash.
+  IPC_MESSAGE_CONTROL0(GpuMsg_Crash)
+
   // Creates a new backing store.
   IPC_MESSAGE_ROUTED2(GpuMsg_NewBackingStore,
                       int32, /* backing_store_routing_id */

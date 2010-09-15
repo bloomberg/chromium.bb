@@ -89,6 +89,8 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnNewRenderWidgetHostView)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo,
                         OnCollectGraphicsInfo)
+    IPC_MESSAGE_HANDLER(GpuMsg_Crash,
+                        OnCrash)
   IPC_END_MESSAGE_MAP_EX()
 }
 
@@ -159,4 +161,10 @@ void GpuThread::OnCollectGraphicsInfo() {
   }
 
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info));
+}
+
+void GpuThread::OnCrash() {
+  // Good bye, cruel world.
+  volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
+  *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
 }
