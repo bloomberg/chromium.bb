@@ -18,7 +18,14 @@ class ExtensionGalleryInstallApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionGalleryInstallApiTest, InstallAndUninstall) {
+// http://crbug.com/55642 - failing on XP.
+#if defined (OS_WIN)
+#define MAYBE_InstallAndUninstall FAILS_InstallAndUninstall
+#else
+#define MAYBE_InstallAndUninstall InstallAndUninstall
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionGalleryInstallApiTest,
+                       MAYBE_InstallAndUninstall) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
