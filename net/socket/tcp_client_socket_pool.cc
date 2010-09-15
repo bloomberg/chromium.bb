@@ -23,7 +23,7 @@ namespace net {
 TCPSocketParams::TCPSocketParams(const HostPortPair& host_port_pair,
                                  RequestPriority priority, const GURL& referrer,
                                  bool disable_resolver_cache)
-    : destination_(host_port_pair.host(), host_port_pair.port()) {
+    : destination_(host_port_pair) {
   Initialize(priority, referrer, disable_resolver_cache);
 }
 
@@ -31,7 +31,7 @@ TCPSocketParams::TCPSocketParams(const HostPortPair& host_port_pair,
 TCPSocketParams::TCPSocketParams(const std::string& host, int port,
                                  RequestPriority priority, const GURL& referrer,
                                  bool disable_resolver_cache)
-    : destination_(host, port) {
+    : destination_(HostPortPair(host, port)) {
   Initialize(priority, referrer, disable_resolver_cache);
 }
 
@@ -223,9 +223,7 @@ int TCPClientSocketPool::RequestSocket(
         NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
         new NetLogStringParameter(
             "host_and_port",
-            StringPrintf("%s [port %d]",
-                         casted_params->get()->destination().hostname().c_str(),
-                         casted_params->get()->destination().port())));
+            casted_params->get()->destination().host_port_pair().ToString()));
   }
 
   return base_.RequestSocket(group_name, *casted_params, priority, handle,

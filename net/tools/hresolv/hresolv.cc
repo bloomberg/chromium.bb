@@ -190,7 +190,7 @@ class DelayedResolve : public base::RefCounted<DelayedResolve> {
 
   void Start() {
     net::CompletionCallback* callback = (is_async_) ? &io_callback_ : NULL;
-    net::HostResolver::RequestInfo request_info(host_, 80);
+    net::HostResolver::RequestInfo request_info(net::HostPortPair(host_, 80));
     int rv = resolver_->Resolve(request_info,
                                 &address_list_,
                                 callback,

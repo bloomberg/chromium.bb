@@ -52,8 +52,8 @@ class Predictor::LookupRequest {
   // net:ERR_IO_PENDING ==> Network will callback later with result.
   // anything else ==> Host was not found synchronously.
   int Start() {
-    net::HostResolver::RequestInfo resolve_info(url_.HostNoBrackets(),
-                                                url_.EffectiveIntPort());
+    net::HostResolver::RequestInfo resolve_info(
+        net::HostPortPair::FromURL(url_));
 
     // Make a note that this is a speculative resolve request. This allows us
     // to separate it from real navigations in the observer's callback, and

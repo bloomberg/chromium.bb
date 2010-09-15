@@ -118,8 +118,7 @@ void XmppConnectionGenerator::UseNextConnection() {
     // Resolve the server.
     const net::HostPortPair& server =
         server_list_[server_index_].server;
-    net::HostResolver::RequestInfo request_info(
-        server.host(), server.port());
+    net::HostResolver::RequestInfo request_info(server);
     int status =
         host_resolver_.Resolve(
             request_info, &address_list_, resolve_callback_.get(),

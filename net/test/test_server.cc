@@ -202,8 +202,7 @@ bool TestServer::GetAddressList(AddressList* address_list) const {
 
   scoped_refptr<HostResolver> resolver(
       CreateSystemHostResolver(HostResolver::kDefaultParallelism, NULL));
-  HostResolver::RequestInfo info(host_port_pair_.host(),
-                                 host_port_pair_.port());
+  HostResolver::RequestInfo info(host_port_pair_);
   int rv = resolver->Resolve(info, address_list, NULL, NULL, BoundNetLog());
   if (rv != net::OK) {
     LOG(ERROR) << "Failed to resolve hostname: " << host_port_pair_.host();

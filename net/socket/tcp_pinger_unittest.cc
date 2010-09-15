@@ -69,7 +69,8 @@ TEST_F(TCPPingerTest, Ping) {
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     NULL));
 
-  net::HostResolver::RequestInfo info("localhost", listen_port_);
+  net::HostResolver::RequestInfo info(
+      net::HostPortPair("localhost", listen_port_));
   int rv = resolver->Resolve(info, &addr, NULL, NULL, net::BoundNetLog());
   EXPECT_EQ(rv, net::OK);
 
@@ -87,7 +88,8 @@ TEST_F(TCPPingerTest, PingFail) {
   // "Kill" "server"
   listen_sock_ = NULL;
 
-  net::HostResolver::RequestInfo info("localhost", listen_port_);
+  net::HostResolver::RequestInfo info(
+      net::HostPortPair("localhost", listen_port_));
   int rv = resolver->Resolve(info, &addr, NULL, NULL, net::BoundNetLog());
   EXPECT_EQ(rv, net::OK);
 
