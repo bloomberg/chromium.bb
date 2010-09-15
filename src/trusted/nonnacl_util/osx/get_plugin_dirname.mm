@@ -12,6 +12,12 @@
 
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
+// Dummy class object to be used with bundleForClass below.
+@interface Dummy: NSObject {}
+@end
+@implementation Dummy
+@end
+
 namespace nacl {
 
 // For OSX we get the bundle pathname to the browser plugin or the main bundle.
@@ -20,13 +26,11 @@ namespace nacl {
 void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {
   // Guard our temporary objects below with our own autorelease pool.
   // (We cannot guarantee this is being called from a thread with a pool.)
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-  // Identify the path the plugin was loaded from.
-  // Create the identifier the build specified in Info.plist.
-  NSString* ident = @"com.google.npGoogleNaClPlugin";
-  // Find the executable path for that bundle.
-  NSString* nspath = [[NSBundle bundleWithIdentifier:ident]
+  // Find the executable path for the bundle the plugin was loaded from.
+  // Expect the sel_ldr to be within the bundle directory.
+  NSString* nspath = [[NSBundle bundleForClass:[Dummy class] ]
                       pathForResource:@"sel_ldr" ofType:nil];
   // Convert it to a C string.
   char const* pathname = [nspath fileSystemRepresentation];
@@ -38,7 +42,7 @@ void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {
     pathname = [nspath fileSystemRepresentation];
   }
 
- if (NULL == pathname) {
+  if (NULL == pathname) {
     [pool release];
     buffer[0] = '\0';
   } else {
@@ -48,7 +52,7 @@ void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {
     [pool release];
     char* path_end = strrchr(buffer, '/');
     if (NULL != path_end) {
-        *path_end = '\0';
+      *path_end = '\0';
     }
   }
 }
