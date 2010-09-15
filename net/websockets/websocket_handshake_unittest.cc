@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "net/websockets/websocket_handshake.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,7 +141,7 @@ TEST_F(WebSocketHandshakeTest, Connect) {
       "\r\n"
       "\x30\x73\x74\x33\x52\x6C\x26\x71\x2D\x32\x5A\x55\x5E\x77\x65\x75";
   std::vector<std::string> response_lines;
-  SplitStringDontTrim(kResponse, '\n', &response_lines);
+  base::SplitStringDontTrim(kResponse, '\n', &response_lines);
 
   EXPECT_EQ(WebSocketHandshake::MODE_INCOMPLETE, handshake->mode());
   // too short

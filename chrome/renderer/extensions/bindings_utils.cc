@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/renderer/extensions/bindings_utils.h"
 
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -127,7 +128,7 @@ v8::Handle<v8::Value> CallFunctionInContext(v8::Handle<v8::Context> context,
   v8::Local<v8::Value> value =
       context->Global()->GetHiddenValue(v8::String::New(kChromeHidden));
   std::vector<std::string> components;
-  SplitStringDontTrim(function_name, '.', &components);
+  base::SplitStringDontTrim(function_name, '.', &components);
   for (size_t i = 0; i < components.size(); ++i) {
     if (!value.IsEmpty() && value->IsObject())
       value = value->ToObject()->Get(v8::String::New(components[i].c_str()));

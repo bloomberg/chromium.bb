@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -630,7 +631,7 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
         tags_list->GetString(index, &tag);
         if (StartsWithASCII(tag, kTagsHashTagName, false)) {
           std::vector<std::string> tag_parts;
-          SplitStringDontTrim(tag, '=', &tag_parts);
+          base::SplitStringDontTrim(tag, '=', &tag_parts);
           DCHECK(tag_parts.size() == 2);
           if (tag_parts.size() == 2) {
             printer_info_cloud.tags_hash = tag_parts[1];

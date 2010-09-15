@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAnimationController.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
@@ -416,7 +417,7 @@ static int ParseSingleIconSize(const string16& text) {
 // If the input couldn't be parsed, a size with a width/height < 0 is returned.
 static gfx::Size ParseIconSize(const string16& text) {
   std::vector<string16> sizes;
-  SplitStringDontTrim(text, L'x', &sizes);
+  base::SplitStringDontTrim(text, L'x', &sizes);
   if (sizes.size() != 2)
     return gfx::Size();
 
