@@ -164,6 +164,10 @@ void IEEventSink::Uninitialize() {
         } else {
           DCHECK(wait == WAIT_TIMEOUT);
           DLOG(ERROR) << "Wait for IE timed out";
+          if (!TerminateProcess(process, 0)) {
+            DLOG(ERROR) << "Failed to terminate IE. Error:"
+                        << ::GetLastError();
+          }
           break;
         }
         base::TimeDelta elapsed = base::Time::Now() - start;

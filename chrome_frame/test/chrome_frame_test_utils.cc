@@ -27,8 +27,6 @@
 
 namespace chrome_frame_test {
 
-const int kDefaultWaitForIEToTerminateMs = 10 * 1000;
-
 const wchar_t kIEImageName[] = L"iexplore.exe";
 const wchar_t kIEBrokerImageName[] = L"ieuser.exe";
 const wchar_t kFirefoxImageName[] = L"firefox.exe";
