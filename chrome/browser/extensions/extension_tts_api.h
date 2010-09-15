@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_H_
 
-#include "base/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_tts_api_util.h"
 
 class ExtensionTtsSpeakFunction : public SyncExtensionFunction {
   ~ExtensionTtsSpeakFunction() {}

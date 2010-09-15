@@ -12,43 +12,13 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 
-using base::DoubleToString;
+namespace util = extension_tts_api_util;
 
-const char kNameKey[] = "name";
-const char kLanguageNameKey[] = "languageName";
-const char kGenderKey[] = "gender";
-const char kRateKey[] = "rate";
-const char kPitchKey[] = "pitch";
-const char kVolumeKey[] = "volume";
-const char kEqualStr[] = "=";
-const char kDelimiter[] = ";";
+using base::DoubleToString;
 
 namespace {
   const char kCrosLibraryNotLoadedError[] =
       "Cros shared library not loaded.";
-
-  bool ReadNumberByKey(DictionaryValue* dict, const char* key,
-      double* ret_value) {
-    Value* value;
-    dict->Get(key, &value);
-    if (value->IsType(Value::TYPE_INTEGER)) {
-      int int_value;
-      if (!dict->GetInteger(key, &int_value))
-        return false;
-      *ret_value = int_value;
-    } else if (value->IsType(Value::TYPE_REAL)) {
-      if (!dict->GetReal(key, ret_value))
-        return false;
-    } else {
-      return false;
-    }
-    return true;
-  }
-
-  void AppendSpeakOption(std::string key, std::string value,
-      std::string* options) {
-    *options += key + kEqualStr + value + kDelimiter;
-  }
 };
 
 bool ExtensionTtsSpeakFunction::RunImpl() {
@@ -59,26 +29,31 @@ bool ExtensionTtsSpeakFunction::RunImpl() {
   if (args_->GetDictionary(1, &speak_options)) {
     std::string str_value;
     double real_value;
-    if (speak_options->HasKey(kLanguageNameKey) &&
-        speak_options->GetString(kLanguageNameKey, &str_value)) {
-      AppendSpeakOption(std::string(kNameKey), str_value, &options);
+    if (speak_options->HasKey(util::kLanguageNameKey) &&
+      speak_options->GetString(util::kLanguageNameKey, &str_value)) {
+        util::AppendSpeakOption(
+            std::string(util::kNameKey), str_value, &options);
     }
-    if (speak_options->HasKey(kGenderKey) &&
-        speak_options->GetString(kGenderKey, &str_value)) {
-      AppendSpeakOption(std::string(kGenderKey), str_value, &options);
+    if (speak_options->HasKey(util::kGenderKey) &&
+      speak_options->GetString(util::kGenderKey, &str_value)) {
+        util::AppendSpeakOption(
+            std::string(util::kGenderKey), str_value, &options);
     }
-    if (ReadNumberByKey(speak_options, kRateKey, &real_value))
+    if (util::ReadNumberByKey(speak_options, util::kRateKey, &real_value)) {
       // The TTS service allows a range of 0 to 5 for speech rate.
-      AppendSpeakOption(std::string(kRateKey),
-                        DoubleToString(real_value * 5), &options);
-    if (ReadNumberByKey(speak_options, kPitchKey, &real_value))
+      util::AppendSpeakOption(std::string(util::kRateKey),
+          DoubleToString(real_value * 5), &options);
+    }
+    if (util::ReadNumberByKey(speak_options, util::kPitchKey, &real_value)) {
       // The TTS service allows a range of 0 to 2 for speech pitch.
-      AppendSpeakOption(std::string(kPitchKey),
-                        DoubleToString(real_value * 2), &options);
-    if (ReadNumberByKey(speak_options, kVolumeKey, &real_value))
+      util::AppendSpeakOption(std::string(util::kPitchKey),
+          DoubleToString(real_value * 2), &options);
+    }
+    if (util::ReadNumberByKey(speak_options, util::kVolumeKey, &real_value)) {
       // The TTS service allows a range of 0 to 5 for speech volume.
-      AppendSpeakOption(std::string(kVolumeKey),
-                        DoubleToString(real_value * 5), &options);
+      util::AppendSpeakOption(std::string(util::kVolumeKey),
+          DoubleToString(real_value * 5), &options);
+    }
   }
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     if (!options.empty()) {

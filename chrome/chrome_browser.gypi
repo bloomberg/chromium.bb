@@ -1468,6 +1468,8 @@
         'browser/extensions/extension_tts_api.h',
         'browser/extensions/extension_tts_api_gtk.cc',
         'browser/extensions/extension_tts_api_mac.mm',
+        'browser/extensions/extension_tts_api_util.cc',
+        'browser/extensions/extension_tts_api_util.h',
         'browser/extensions/extension_tts_api_win.cc',
         'browser/extensions/extension_toolbar_model.cc',
         'browser/extensions/extension_toolbar_model.h',
