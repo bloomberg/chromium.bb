@@ -81,13 +81,7 @@ case ":$PATH:" in
 esac
 
 # Always use our ffmpeg and other shared libs.
-if [[ -n "$LD_LIBRARY_PATH" ]]; then
-  LD_LIBRARY_PATH="$HERE:$HERE/lib:$HERE/lib.target:$LD_LIBRARY_PATH"
-else
-  LD_LIBRARY_PATH="$HERE:$HERE/lib:$HERE/lib.target"
-fi
-export LD_LIBRARY_PATH
-
+export LD_LIBRARY_PATH="$HERE:$HERE/lib:$HERE/lib.target${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
 MISSING_LIBS=$(ldd "$HERE/chrome" 2> /dev/null |grep "not found$" | cut -d" " -f 1|sed 's/\t//')
 CHROME_ARCH=$(check_executable "$HERE/chrome")
