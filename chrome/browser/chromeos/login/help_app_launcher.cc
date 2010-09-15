@@ -48,7 +48,7 @@ static GURL GetLocalFileUrl(const std::string& base_path,
 }
 
 void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
-  if (help_topic_id >= HELP_TOPIC_COUNT) {
+  if (help_topic_id < 0 || help_topic_id >= HELP_TOPIC_COUNT) {
     LOG(ERROR) << "Unknown help topic ID was requested: " << help_topic_id;
     return;
   }

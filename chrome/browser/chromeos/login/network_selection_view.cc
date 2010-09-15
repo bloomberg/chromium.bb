@@ -11,9 +11,9 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/status/network_dropdown_button.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -73,10 +73,12 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       select_language_label_(NULL),
       select_network_label_(NULL),
       connecting_network_label_(NULL),
+      network_dropdown_(NULL),
       continue_button_(NULL),
       throbber_(NULL),
+      proxy_settings_link_(NULL),
       continue_button_order_index_(-1),
-      network_dropdown_(NULL),
+      continue_button_enabled_(false),
       delegate_(delegate) {
 }
 
@@ -125,16 +127,21 @@ void NetworkSelectionView::Init() {
   delegate_->language_switch_menu()->set_menu_offset(kMenuHorizontalOffset,
                                                      kMenuVerticalOffset);
 
+  proxy_settings_link_ = new views::Link();
+  proxy_settings_link_->SetController(this);
+  proxy_settings_link_->SetVisible(false);
+  proxy_settings_link_->SetFocusable(false);
+
   AddChildView(welcome_label_);
   AddChildView(select_language_label_);
   AddChildView(select_network_label_);
   AddChildView(connecting_network_label_);
   AddChildView(languages_menubutton_);
-
   network_dropdown_ = new NetworkDropdownButton(false, GetNativeWindow());
   network_dropdown_->SetNormalHasBorder(true);
   network_dropdown_->SetFocusable(true);
   AddChildView(network_dropdown_);
+  AddChildView(proxy_settings_link_);
 
   UpdateLocalizedStrings();
 }
@@ -149,6 +156,8 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
       l10n_util::GetString(IDS_LANGUAGE_SELECTION_SELECT));
   select_network_label_->SetText(
       l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
+  proxy_settings_link_->SetText(
+      l10n_util::GetString(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
   UpdateConnectingNetworkLabel();
 }
 
@@ -162,6 +171,9 @@ void NetworkSelectionView::ChildPreferredSizeChanged(View* child) {
 
 void NetworkSelectionView::OnLocaleChanged() {
   UpdateLocalizedStrings();
+  // Proxy settings dialog contains localized title.  Zap it.
+  proxy_settings_dialog_.reset(NULL);
+
   Layout();
   SchedulePaint();
 }
@@ -235,6 +247,13 @@ void NetworkSelectionView::Layout() {
   network_dropdown_->SetBounds(selection_box_x, y - label_y_offset,
                                box_width, kSelectionBoxHeight);
 
+  y += kSelectionBoxHeight + kSelectionBoxSpacing;
+  proxy_settings_link_->SetBounds(
+      selection_box_x,
+      y,
+      std::min(box_width, proxy_settings_link_->GetPreferredSize().width()),
+      proxy_settings_link_->GetPreferredSize().height());
+
   y = height() - continue_button_->GetPreferredSize().height() - kSpacing;
   continue_button_->SetBounds(
       width() - kContinueButtonSpacingX -
@@ -274,8 +293,26 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
 }
 
 void NetworkSelectionView::EnableContinue(bool enabled) {
+  continue_button_enabled_ = enabled;
   if (continue_button_)
     continue_button_->SetEnabled(enabled);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// views::LinkController implementation:
+
+void NetworkSelectionView::LinkActivated(views::Link* source, int) {
+  if (source == proxy_settings_link_) {
+    if (!proxy_settings_dialog_.get()) {
+      static const char kProxySettingsURL[] = "chrome://options";
+      proxy_settings_dialog_.reset(new LoginHtmlDialog(
+          this,
+          GetNativeWindow(),
+          l10n_util::GetString(IDS_OPTIONS_PROXY_TAB_LABEL),
+          GURL(kProxySettingsURL)));
+    }
+    proxy_settings_dialog_->Show();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -288,7 +325,7 @@ void NetworkSelectionView::RecreateNativeControls() {
   continue_button_ = new views::NativeButton(
       delegate_,
       l10n_util::GetString(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
-  continue_button_->SetEnabled(false);
+  continue_button_->SetEnabled(continue_button_enabled_);
   if (continue_button_order_index_ < 0) {
     continue_button_order_index_ = GetChildViewCount();
   }
