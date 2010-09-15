@@ -48,6 +48,7 @@
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)',
+	'<(DEPTH)/third_party/glog/glog/src/windows/',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
