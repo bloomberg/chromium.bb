@@ -71,7 +71,10 @@ class TestLauncher(object):
     env = os.environ.copy()
     env['GTEST_TOTAL_SHARDS'] = str(self._num_shards)
     env['GTEST_SHARD_INDEX'] = str(self._shard)
-    self._test = subprocess.Popen(args=self._args,
+
+    args = self._args + ['--test-server-shard=' + str(self._shard)]
+
+    self._test = subprocess.Popen(args=args,
                                   executable=self._executable,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT,

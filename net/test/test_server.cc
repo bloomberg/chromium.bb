@@ -14,6 +14,7 @@
 #include "net/base/x509_certificate.h"
 #endif
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/leak_annotations.h"
 #include "base/logging.h"
@@ -37,10 +38,12 @@ const int kServerConnectionAttempts = 10;
 // Connection timeout in milliseconds for tests.
 const int kServerConnectionTimeoutMs = 1000;
 
-int GetPort(net::TestServer::Type type) {
+const char kTestServerShardFlag[] = "test-server-shard";
+
+int GetPortBase(net::TestServer::Type type) {
   switch (type) {
     case net::TestServer::TYPE_FTP:
-      return 1338;
+      return 3117;
     case net::TestServer::TYPE_HTTP:
       return 1337;
     case net::TestServer::TYPE_HTTPS:
@@ -53,6 +56,22 @@ int GetPort(net::TestServer::Type type) {
       NOTREACHED();
   }
   return -1;
+}
+
+int GetPort(net::TestServer::Type type) {
+  int port = GetPortBase(type);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kTestServerShardFlag)) {
+    std::string shard_str(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                              kTestServerShardFlag));
+    int shard = -1;
+    if (base::StringToInt(shard_str, &shard)) {
+      port += shard;
+    } else {
+      LOG(FATAL) << "Got invalid " << kTestServerShardFlag << " flag value. "
+                 << "An integer is expected.";
+    }
+  }
+  return port;
 }
 
 std::string GetHostname(net::TestServer::Type type) {
