@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/size.h"
@@ -110,7 +111,16 @@ void SadTabView::Layout() {
 void SadTabView::LinkActivated(views::Link* source, int event_flags) {
   if (tab_contents_ != NULL && source == learn_more_link_) {
     string16 url = l10n_util::GetStringUTF16(IDS_CRASH_REASON_URL);
-    tab_contents_->OpenURL(GURL(url), GURL(), CURRENT_TAB,
+    WindowOpenDisposition disposition(CURRENT_TAB);
+#if defined(OS_CHROMEOS)
+    if (tab_contents_->delegate() &&
+        tab_contents_->delegate()->IsPopup(tab_contents_)) {
+      // Popup windows are generally too small to effectively show help,
+      // so open the help content in a new foregreound tab.
+      disposition = NEW_FOREGROUND_TAB;
+    }
+#endif
+    tab_contents_->OpenURL(GURL(url), GURL(), disposition,
         PageTransition::LINK);
   }
 }
