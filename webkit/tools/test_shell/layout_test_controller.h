@@ -200,6 +200,8 @@ class LayoutTestController : public CppBoundClass {
   void grantDesktopNotificationPermission(const CppArgumentList& args,
                                           CppVariant* result);
 
+  void setDomainRelaxationForbiddenForURLScheme(
+      const CppArgumentList& args, CppVariant* result);
   void setEditingBehavior(const CppArgumentList&, CppVariant*);
 
   // The following are only stubs.  TODO(pamg): Implement any of these that

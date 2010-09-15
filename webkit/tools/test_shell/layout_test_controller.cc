@@ -165,6 +165,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("numberOfPages", &LayoutTestController::numberOfPages);
   BindMethod("dumpSelectionRect", &LayoutTestController::dumpSelectionRect);
   BindMethod("grantDesktopNotificationPermission", &LayoutTestController::grantDesktopNotificationPermission);
+  BindMethod("setDomainRelaxationForbiddenForURLScheme", &LayoutTestController::setDomainRelaxationForbiddenForURLScheme);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -965,6 +966,15 @@ void LayoutTestController::grantDesktopNotificationPermission(
   std::string origin = args[0].ToString();
   shell_->notification_presenter()->grantPermission(origin);
   result->Set(true);
+}
+
+void LayoutTestController::setDomainRelaxationForbiddenForURLScheme(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() != 2 || !args[0].isBool() || !args[1].isString())
+    return;
+
+  shell_->webView()->setDomainRelaxationForbidden(
+      CppVariantToBool(args[0]), WebString::fromUTF8(args[1].ToString()));
 }
 
 //
