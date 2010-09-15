@@ -38,7 +38,7 @@ var pageState;
 var deleteQueue = [];
 var deleteInFlight = false;
 var selectionAnchor = -1;
-var id2checkbox = [];
+var idToCheckbox = [];
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,6 +53,7 @@ function Page(result, continued, model, id) {
   this.model_ = model;
   this.title_ = result.title;
   this.url_ = result.url;
+  this.domain_ = this.getDomainFromURL_(this.url_);
   this.starred_ = result.starred;
   this.snippet_ = result.snippet || "";
   this.id_ = id;
@@ -79,51 +80,68 @@ function Page(result, continued, model, id) {
 
 // Page, Public: --------------------------------------------------------------
 /**
- * @return {DOMObject} Gets the DOM representation of the page
- *     for use in browse results.
+ * Returns a dom structure for a browse page result or a search page result.
+ * @param {boolean} Flag to indicate if result is a search result.
+ * @return {Element} The dom structure.
  */
-Page.prototype.getBrowseResultDOM = function() {
-  var node = createElementWithClassName('div', 'entry');
+Page.prototype.getResultDOM = function(searchResultFlag) {
+  var node = createElementWithClassName('li', 'entry');
   var time = createElementWithClassName('div', 'time');
-  if (this.model_.getEditMode()) {
-    var checkbox = document.createElement('input');
-    checkbox.type = "checkbox";
-    checkbox.name = this.id_;
-    checkbox.time = this.time.toString();
-    checkbox.addEventListener("click", checkboxClicked, false);
-    id2checkbox[this.id_] = checkbox;
-    time.appendChild(checkbox);
-  }
-  time.appendChild(document.createTextNode(this.dateTimeOfDay));
+  var domain = createElementWithClassName('span', 'domain');
+  domain.style.backgroundImage =
+    'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
+  domain.textContent = this.domain_;
   node.appendChild(time);
+  node.appendChild(domain);
   node.appendChild(this.getTitleDOM_());
+  if (searchResultFlag) {
+    time.textContent = this.dateShort;
+    var snippet = createElementWithClassName('div', 'snippet');
+    this.addHighlightedText_(snippet,
+                             this.snippet_,
+                             this.model_.getSearchText());
+    node.appendChild(snippet);
+  } else {
+    if (this.model_.getEditMode()) {
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.name = this.id_;
+      checkbox.time = this.time.toString();
+      checkbox.addEventListener("click", checkboxClicked);
+      idToCheckbox[this.id_] = checkbox;
+      time.appendChild(checkbox);
+    }
+    time.appendChild(document.createTextNode(this.dateTimeOfDay));
+  }
   return node;
 };
 
+// Page, private: -------------------------------------------------------------
 /**
- * @return {DOMObject} Gets the DOM representation of the page for
- *     use in search results.
+ * Extracts and returns the domain (and subdomains) from a URL.
+ * @param {string} The url
+ * @return (string) The domain. An empty string is returned if no domain can
+ *     be found.
  */
-Page.prototype.getSearchResultDOM = function() {
-  var row = createElementWithClassName('tr', 'entry');
-  var datecell = createElementWithClassName('td', 'time');
-  datecell.appendChild(document.createTextNode(this.dateShort));
-  row.appendChild(datecell);
-
-  var titleCell = document.createElement('td');
-  titleCell.valign = 'top';
-  titleCell.appendChild(this.getTitleDOM_());
-  var snippet = createElementWithClassName('div', 'snippet');
-  this.addHighlightedText_(snippet,
-                           this.snippet_,
-                           this.model_.getSearchText());
-  titleCell.appendChild(snippet);
-  row.appendChild(titleCell);
-
-  return row;
+Page.prototype.getDomainFromURL_ = function(url) {
+  var domain = url.replace(/^.+:\/\//, '').match(/[^/]+/);
+  return domain ? domain[0] : '';
 };
 
-// Page, private: -------------------------------------------------------------
+/**
+ * Truncates a string to a maximum lenth (including ... if truncated)
+ * @param {string} The string to be truncated
+ * @param {number} The length to truncate the string to
+ * @return (string) The truncated string
+ */
+Page.prototype.truncateString_ = function(str, maxLength) {
+  if (str.length > maxLength) {
+    return str.substr(0, maxLength - 3) + '...';
+  } else {
+    return str;
+  }
+};
+
 /**
  * Add child text nodes to a node such that occurrences of the spcified text is
  * highligted.
@@ -158,15 +176,19 @@ Page.prototype.addHighlightedText_ = function(node, content, highlightText) {
  * @return {DOMObject} DOM representation for the title block.
  */
 Page.prototype.getTitleDOM_ = function() {
-  var node = document.createElement('div');
+  var node = document.createElement('span');
   node.className = 'title';
   var link = document.createElement('a');
   link.href = this.url_;
-  link.style.backgroundImage =
-      'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
   link.id = "id-" + this.id_;
-  this.addHighlightedText_(link, this.title_, this.model_.getSearchText());
 
+  var content = this.truncateString_(this.title_, 80);
+
+  // If we have truncated the title, add a tooltip.
+  if (content.length != this.title_.length) {
+    link.title = this.title_;
+  }
+  this.addHighlightedText_(link, content, this.model_.getSearchText());
   node.appendChild(link);
 
   if (this.starred_) {
@@ -354,7 +376,7 @@ HistoryModel.prototype.clearModel_ = function() {
   this.pages_ = []; // Date-sorted list of pages.
   this.last_id_ = 0;
   selectionAnchor = -1;
-  id2checkbox = [];
+  idToCheckbox = [];
 
   // The page that the view wants to see - we only fetch slightly past this
   // point. If the view requests a page that we don't have data for, we try
@@ -572,46 +594,57 @@ HistoryView.prototype.displayResults_ = function() {
       this.pageIndex_ * RESULTS_PER_PAGE + RESULTS_PER_PAGE);
 
   if (this.model_.getSearchText()) {
-    var resultTable = createElementWithClassName('table', 'results');
-    resultTable.cellSpacing = 0;
-    resultTable.cellPadding = 0;
-    resultTable.border = 0;
-
+    var searchResults = createElementWithClassName('ol', 'search-results');
     for (var i = 0, page; page = results[i]; i++) {
       if (!page.isRendered) {
-        resultTable.appendChild(page.getSearchResultDOM());
+        searchResults.appendChild(page.getResultDOM(true));
         this.setPageRendered_(page);
       }
     }
-    this.resultDiv_.appendChild(resultTable);
+    this.resultDiv_.appendChild(searchResults);
   } else {
+    var resultsFragment = document.createDocumentFragment();
     var lastTime = Math.infinity;
+    var dayResults;
     for (var i = 0, page; page = results[i]; i++) {
       if (page.isRendered) {
         continue;
       }
       // Break across day boundaries and insert gaps for browsing pauses.
+      // Create a dayResults element to contain results for each day
       var thisTime = page.time.getTime();
 
       if ((i == 0 && page.continued) || !page.continued) {
-        var day = createElementWithClassName('div', 'day');
+        var day = createElementWithClassName('h2', 'day');
         day.appendChild(document.createTextNode(page.dateRelativeDay));
-
         if (i == 0 && page.continued) {
           day.appendChild(document.createTextNode(' ' +
               localStrings.getString('cont')));
         }
 
-        this.resultDiv_.appendChild(day);
+        // If there is an existing dayResults element, append it.
+        if (dayResults) {
+          resultsFragment.appendChild(dayResults);
+        }
+        resultsFragment.appendChild(day);
+        dayResults = createElementWithClassName('ol', 'day-results');
       } else if (lastTime - thisTime > BROWSING_GAP_TIME) {
-        this.resultDiv_.appendChild(createElementWithClassName('div', 'gap'));
+        if (dayResults) {
+          dayResults.appendChild(createElementWithClassName('li', 'gap'));
+        }
       }
       lastTime = thisTime;
-
       // Add entry.
-      this.resultDiv_.appendChild(page.getBrowseResultDOM());
-      this.setPageRendered_(page);
+      if (dayResults) {
+        dayResults.appendChild(page.getResultDOM(false));
+        this.setPageRendered_(page);
+      }
     }
+    // Add final dayResults element.
+    if (dayResults) {
+      resultsFragment.appendChild(dayResults);
+    }
+    this.resultDiv_.appendChild(resultsFragment);
   }
 
   this.displaySummaryBar_();
@@ -999,7 +1032,7 @@ function checkboxClicked(event) {
     var begin = Math.min(this.name, selectionAnchor);
     var end = Math.max(this.name, selectionAnchor);
     for (var i = begin; i <= end; i++) {
-      id2checkbox[i].checked = checked;
+      idToCheckbox[i].checked = checked;
     }
   }
   selectionAnchor = this.name;
@@ -1081,11 +1114,15 @@ function historyDeleted() {
 }
 #results-display {
   max-width:740px;
+  overflow: hidden;
+  margin: 16px 4px 0 4px;
 }
 .day {
-  margin-top:18px;
-  padding:0px 3px;
-  display:inline-block;
+  color: #6a6a6a;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  font-size: 13px;
 }
 .edit-button {
   display: inline;
@@ -1100,72 +1137,75 @@ function historyDeleted() {
   font:inherit;
 }
 .gap {
-  margin-left:18px;
-  width:15px;
-  border-right:1px solid #ddd;
-  height:14px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  width: 15px;
+  -webkit-border-end: 1px solid #ddd;
+  height: 14px;
 }
 .entry {
-  margin-left:18px;
-  margin-top:6px;
-  overflow:auto;
+  margin: 0;
+  -webkit-margin-start: 90px;
+  list-style: none;
+  padding: 0;
+  position: relative;
+  line-height: 1.6em;
 }
-table.results {
-  margin-left:4px;
+.search-results, .day-results {
+  margin: 0 0 24px 0;
+  padding: 0;
+}
+.snippet {
+  font-size: 11px;
+  line-height: 1.6em;
+  margin-bottom: 12px;
+}
+.entry .domain {
+  color: #282;
+  -webkit-padding-start: 20px;
+  -webkit-padding-end: 8px;
+  background-repeat: no-repeat;
+  background-position-y: center;
+  display: inline-block; /* Fixes RTL wrapping issue */
+}
+html[dir='rtl'] .entry .domain {
+  background-position-x: right;
 }
 .entry .time {
-  color:#888;
-  float:left;
-  min-width:56px;
-  margin-right:5px;
-  padding-top:1px;
+  color:#9a9a9a;
+  left: -90px;
+  width: 90px;
+  position: absolute;
+  top: 0;
   white-space:nowrap;
 }
 html[dir='rtl'] .time {
-  margin-right:0px;
-  margin-left:5px;
-  float:right;
-}
-.entry .title {
-  max-width:600px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.results .time, .results .title {
-  margin-top:18px;
+  left: auto;
+  right: -90px;
 }
 .title > .starred {
   background:url('shared/images/star_small.png');
   background-repeat:no-repeat;
   display:inline-block;
-  margin-left:12px;
-  margin-right:0;
+  -webkit-margin-start: 4px;
   width:11px;
   height:11px;
 }
-html[dir='rtl'] .title > .starred {
-  margin-left:0;
-  margin-right:12px;
+/* Fixes RTL wrapping */
+html[dir='rtl'] .title  {
+  display: inline-block;
 }
 .entry .title > a {
-  -webkit-box-sizing: border-box;
-  background-repeat:no-repeat;
-  background-size:16px;
-  background-position:0px 1px;
-  padding:1px 0px 4px 22px;
-  display:inline-block;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  color: #11c;
+  text-decoration: none;
 }
-html[dir='rtl'] .entry .title > a {
-  background-position-x:right;
-  padding-left:0px;
-  padding-right:22px;
+.entry .title > a:hover {
+  text-decoration: underline;
 }
-#results-pagination {
-  padding-top:24px;
-  margin-left:18px;
+/* Since all history links are visited, we can make them blue. */
+.entry .title > a:visted {
+  color: #11c;
 }
 
 </style>
@@ -1175,7 +1215,6 @@ html[dir='rtl'] .entry .title > a {
   <a href="" onclick="setSearch(''); return false;">
     <img src="shared/images/history_section.png"
          width="67" height="67" class="logo" border="0"></a>
-  Debug: this is History 2
   <form method="post" action=""
       onsubmit="setSearch(this.term.value); return false;"
       class="form">
