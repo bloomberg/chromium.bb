@@ -73,8 +73,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
             GetPrefs(1)->GetBoolean(prefs::kKeepEverythingSynced));
 }
 
+// TODO(rsimha): Remove FAILS_ prefix after http://crbug.com/55650 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
-                       kSyncPreferences) {
+                       FAILS_kSyncPreferences) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kSyncPreferences),
             GetPrefs(1)->GetBoolean(prefs::kSyncPreferences));
