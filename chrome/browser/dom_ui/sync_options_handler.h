@@ -16,8 +16,14 @@ class SyncOptionsHandler : public OptionsPageUIHandler {
 
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void Initialize();
+  virtual void RegisterMessages();
 
  private:
+  // Called when the user updates the set of enabled data types to sync. |args|
+  // is ignored.
+  void OnPreferredDataTypesUpdated(const ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(SyncOptionsHandler);
 };
 

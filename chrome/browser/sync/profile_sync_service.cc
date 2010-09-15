@@ -81,6 +81,9 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                  NotificationType::SYNC_CONFIGURE_DONE,
                  NotificationService::AllSources());
   registrar_.Add(this,
+                 NotificationType::SYNC_DATA_TYPES_UPDATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
                  NotificationType::SYNC_PASSPHRASE_REQUIRED,
                  NotificationService::AllSources());
   registrar_.Add(this,
@@ -879,6 +882,14 @@ void ProfileSyncService::Observe(NotificationType type,
     case NotificationType::SYNC_PASSPHRASE_REQUIRED: {
       // TODO(sync): Show the passphrase UI here.
       SetPassphrase("dummy passphrase");
+      break;
+    }
+    case NotificationType::SYNC_DATA_TYPES_UPDATED: {
+      if (!HasSyncSetupCompleted()) break;
+
+      syncable::ModelTypeSet types;
+      GetPreferredDataTypes(&types);
+      OnUserChoseDatatypes(false, types);
       break;
     }
     case NotificationType::SYNC_PASSPHRASE_ACCEPTED: {
