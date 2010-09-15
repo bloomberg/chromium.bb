@@ -108,11 +108,14 @@ LSSharedFileListItemRef GetLoginItemForApp() {
   return NULL;
 }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
 // kLSSharedFileListLoginItemHidden is supported on
 // 10.5, but missing from the 10.5 headers.
 // http://openradar.appspot.com/6482251
 static NSString* kLSSharedFileListLoginItemHidden =
     @"com.apple.loginitem.HideOnLaunch";
+#endif
 
 bool IsHiddenLoginItem(LSSharedFileListItemRef item) {
   scoped_cftyperef<CFBooleanRef> hidden(reinterpret_cast<CFBooleanRef>(
@@ -622,8 +625,9 @@ void AddToLoginItems(bool hide_on_startup) {
 
   BOOL hide = hide_on_startup ? YES : NO;
   NSDictionary* properties =
-      [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:hide]
-                                  forKey:kLSSharedFileListLoginItemHidden];
+      [NSDictionary
+        dictionaryWithObject:[NSNumber numberWithBool:hide]
+                      forKey:(NSString*)kLSSharedFileListLoginItemHidden];
 
   scoped_cftyperef<LSSharedFileListItemRef> new_item;
   new_item.reset(LSSharedFileListInsertItemURL(
