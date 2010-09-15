@@ -24,9 +24,6 @@
 #include "net/base/net_util.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
-#if defined(USE_NSS)
-#include "net/ocsp/nss_ocsp.h"
-#endif  // defined(USE_NSS)
 
 namespace {
 
@@ -177,12 +174,6 @@ void IOThread::ChangedToOnTheRecord() {
 
 void IOThread::Init() {
   BrowserProcessSubThread::Init();
-
-  DCHECK_EQ(MessageLoop::TYPE_IO, message_loop()->type());
-
-#if defined(USE_NSS)
-  net::SetMessageLoopForOCSP();
-#endif // defined(USE_NSS)
 
   DCHECK(!globals_);
   globals_ = new Globals;
