@@ -15,28 +15,27 @@ class ImportDataHandler : public OptionsPageUIHandler,
   ImportDataHandler();
   virtual ~ImportDataHandler();
 
-  virtual void Initialize();
-
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void Initialize();
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 
  private:
-  void LoadImporter(const ListValue* args);
-  void DetectSupportedBrowsers();
   void ImportData(const ListValue* args);
 
-  //Callback from ImporterHost. Close the Dialog.
+  // ImporterHost observer implementation.
   virtual void ImportStarted();
   virtual void ImportItemStarted(importer::ImportItem item);
   virtual void ImportItemEnded(importer::ImportItem item);
   virtual void ImportEnded();
 
+  scoped_ptr<ImporterList> importer_list_;
+
   // If non-null it means importing is in progress. ImporterHost takes care
   // of deleting itself when done import.
-  scoped_refptr<ImporterHost> importer_host_;
+  ImporterHost* importer_host_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(ImportDataHandler);
 };

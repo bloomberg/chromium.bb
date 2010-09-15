@@ -2,34 +2,35 @@
   <h1 i18n-content="import_data_title"></h1>
   <div>
     <span i18n-content="import_from_label"></span>
-    <select id="supported-browsers"></select>
+    <select id="import-browsers"></select>
   </div>
-  <div id="checkboxList">
+  <div id="import-checkboxes">
     <div i18n-content="import_description"></div>
-    <label>
-      <input id="import-favorites" type="checkbox">
-      <span i18n-content="import_favorites">
-    </label><br>
-    <label>
-      <input id="import-search" type="checkbox">
-      <span i18n-content="import_search">
-    </label><br>
-    <label>
-      <input id="import-passwords" type="checkbox">
-      <span i18n-content="import_passwords">
-    </label><br>
-    <label>
+    <div>
       <input id="import-history" type="checkbox">
-      <span i18n-content="import_history">
-    </label><br>
+      <label for="import-history" i18n-content="import_history">
+    </div>
+    <div>
+      <input id="import-favorites" type="checkbox">
+      <label for="import-favorites" i18n-content="import_favorites">
+    </div>
+    <div>
+      <input id="import-passwords" type="checkbox">
+      <label for="import-passwords" i18n-content="import_passwords">
+    </div>
+    <div>
+      <input id="import-search" type="checkbox">
+      <label for="import-search" i18n-content="import_search">
+    </div>
   </div>
-  <if expr="os == 'win32'">
-    <button id="import-data-commit" i18n-content="import_commit"></button>
-  </if>
-    <button id="import-data-cancel" i18n-content="cancel"
-            onclick="ImportDataOverlay.dismiss();"></button>
-  <if expr="os != 'win32'">
-    <button id="import-data-commit" i18n-content="import_commit"></button>
-  </if>
-  <span id="import-throbber"></span>
+  <div class="button-strip">
+    <span id="import-throbber"></span>
+    <if expr="os == 'win32'">
+      <button id="import-data-commit" i18n-content="import_commit"></button>
+    </if>
+    <button id="import-data-cancel" i18n-content="cancel"></button>
+    <if expr="os != 'win32'">
+      <button id="import-data-commit" i18n-content="import_commit"></button>
+    </if>
+  </div>
 </div>

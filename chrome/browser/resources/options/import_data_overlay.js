@@ -18,7 +18,6 @@ cr.define('options', function() {
   }
 
   ImportDataOverlay.throbIntervalId = 0
-  ImportDataOverlay.checkboxMask = '';
 
   cr.addSingletonGetter(ImportDataOverlay);
 
@@ -34,51 +33,51 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
-      var checkboxList =
-          document.querySelectorAll('#checkboxList input[type=checkbox]');
-      for (var i = 0; i < checkboxList.length; i++) {
-        if(checkboxList[i].type == 'checkbox')
-          checkboxList[i].onchange = function(e) {
-            self.countCheckboxes_();
-          };
+      var checkboxes =
+          document.querySelectorAll('#import-checkboxes input[type=checkbox]');
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].onchange = function() {
+          self.validateCommitButton_();
+        };
       }
 
-      $('import-data-commit').onclick = function(e) {
-        /** The first digit in paramList indicates browser selected
-         *  The rest indicate the checkboxes (1 is checked, 0 is not)
-         */
-        var selectedBrowser = $('supported-browsers').selectedIndex;
-        var paramList =
-            String(selectedBrowser) + ImportDataOverlay.checkboxMask;
+      $('import-browsers').onchange = function() {
+        self.updateCheckboxes_();
+        self.validateCommitButton_();
+      }
 
-        chrome.send('importData', [paramList]);
+      $('import-data-commit').onclick = function() {
+        chrome.send('importData', [
+            String($('import-browsers').selectedIndex),
+            String($('import-history').checked),
+            String($('import-favorites').checked),
+            String($('import-passwords').checked),
+            String($('import-search').checked)]);
+      }
+
+      $('import-data-cancel').onclick = function() {
+        ImportDataOverlay.dismiss();
       }
     },
 
-    countCheckboxes_: function() {
-      ImportDataOverlay.checkboxMask = "";
-      var checkboxList =
-          document.querySelectorAll('#checkboxList input[type=checkbox]');
-      for (var i = 0; i < checkboxList.length; i++) {
-        if (checkboxList[i].type == 'checkbox') {
-          if(checkboxList[i].checked)
-            ImportDataOverlay.checkboxMask += "1";
-          else
-            ImportDataOverlay.checkboxMask += "0";
-        }
-      }
-      if (ImportDataOverlay.checkboxMask.indexOf("1") == -1)
-        $('import-data-commit').disabled = true;
-      else
-        $('import-data-commit').disabled = false;
+    validateCommitButton_: function() {
+      var somethingToImport =
+          $('import-history').checked || $('import-favorites').checked ||
+          $('import-passwords').checked || $('import-search').checked;
+      $('import-data-commit').disabled = !somethingToImport;
     },
 
-    /**
-     * Clear the supported browsers popup
-     * @private
-     */
-    clearSupportedBrowsers_: function() {
-      $('supported-browsers').textContent = '';
+    updateCheckboxes_: function() {
+      var index = $('import-browsers').selectedIndex;
+      var browserProfile = ImportDataOverlay.browserProfiles[index];
+      $('import-history').disabled = !browserProfile['history'];
+      $('import-history').checked = browserProfile['history'];
+      $('import-favorites').disabled = !browserProfile['favorites'];
+      $('import-favorites').checked = browserProfile['favorites'];
+      $('import-passwords').disabled = !browserProfile['passwords'];
+      $('import-passwords').checked = browserProfile['passwords'];
+      $('import-search').disabled = !browserProfile['search'];
+      $('import-search').checked = browserProfile['search'];
     },
 
     /**
@@ -86,48 +85,51 @@ cr.define('options', function() {
      * @param {Array} list of supported browsers name.
      */
     updateSupportedBrowsers_: function(browsers) {
-      this.clearSupportedBrowsers_();
-      browserSelect = $('supported-browsers');
+      ImportDataOverlay.browserProfiles = browsers;
+      browserSelect = $('import-browsers');
+      browserSelect.textContent = '';
       browserCount = browsers.length;
 
-      if(browserCount == 0) {
+      if (browserCount == 0) {
         var option = new Option(templateData.no_profile_found, 0);
         browserSelect.appendChild(option);
 
-        ImportDataOverlay.setDisable(true);
-      }
-      else {
+        var checkboxes =
+            document.querySelectorAll(
+            '#import-checkboxes input[type=checkbox]');
+        for (var i = 0; i < checkboxes.length; i++) {
+          checkboxes[i].checked = false;
+          checkboxes[i].disabled = true;
+        }
+      } else {
         for (var i = 0; i < browserCount; i++) {
           var browser = browsers[i]
           var option = new Option(browser['name'], browser['index']);
           browserSelect.appendChild(option);
-
-        ImportDataOverlay.setDisable(false);
-        this.countCheckboxes_();
         }
+
+        this.updateCheckboxes_();
+        this.validateCommitButton_();
       }
     },
-  };
-
-  ImportDataOverlay.loadImporter = function() {
-    chrome.send('loadImporter');
   };
 
   ImportDataOverlay.updateSupportedBrowsers = function(browsers) {
     ImportDataOverlay.getInstance().updateSupportedBrowsers_(browsers);
   };
 
-  ImportDataOverlay.setDisable = function(state) {
-    $('supported-browsers').disabled = state;
-    $('import-favorites').disabled = state;
-    $('import-search').disabled = state;
-    $('import-passwords').disabled = state;
-    $('import-history').disabled = state;
-    $('import-data-commit').disabled = state;
-  };
-
   ImportDataOverlay.setImportingState = function(state) {
-    ImportDataOverlay.setDisable(state);
+    if (state) {
+      ImportDataOverlay.getInstance().updateCheckboxes_();
+    } else {
+      var checkboxes =
+          document.querySelectorAll('#import-checkboxes input[type=checkbox]');
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].disabled = true;
+      }
+    }
+    $('import-browsers').disabled = state;
+    $('import-data-commit').disabled = state;
     $('import-throbber').style.visibility = state ? "visible" : "hidden";
 
     function advanceThrobber() {
@@ -137,8 +139,7 @@ cr.define('options', function() {
           % 576) + 'px';
     }
     if (state) {
-      ImportDataOverlay.throbIntervalId =
-          setInterval(advanceThrobber, 30);
+      ImportDataOverlay.throbIntervalId = setInterval(advanceThrobber, 30);
     } else {
       clearInterval(ImportDataOverlay.throbIntervalId);
     }

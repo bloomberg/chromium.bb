@@ -62,10 +62,13 @@ cr.define('options', function() {
 
       if (!cr.isChromeOS) {
         $('stop-sync').onclick = function(event) {
-          OptionsPage.showOverlay('stopSyncingOverlay');
+          AlertOverlay.show(localStrings.getString('stop_syncing_title'),
+              localStrings.getString('stop_syncing_explanation'),
+              localStrings.getString('yesButtonLabel'),
+              localStrings.getString('noButtonLabel'),
+              function() { chrome.send('stopSyncing'); });
         };
         $('import_data').onclick = function(event) {
-          ImportDataOverlay.loadImporter();
           OptionsPage.showOverlay('importDataOverlay');
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };
