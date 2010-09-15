@@ -28,6 +28,7 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
+#include "chrome_frame/policy_settings.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
 #include "googleurl/src/gurl.h"
@@ -686,19 +687,34 @@ bool DeleteConfigValue(const wchar_t* value_name) {
 }
 
 bool IsGcfDefaultRenderer() {
-  // TODO(tommi): Implement caching for this config value as it gets
-  // checked frequently.
   DWORD is_default = 0;  // NOLINT
-  RegKey config_key;
-  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ)) {
-    config_key.ReadValueDW(kEnableGCFRendererByDefault, &is_default);
+
+  // First check policy settings
+  Singleton<PolicySettings> policy;
+  PolicySettings::RendererForUrl renderer = policy->default_renderer();
+  if (renderer != PolicySettings::RENDERER_NOT_SPECIFIED) {
+    is_default = (renderer == PolicySettings::RENDER_IN_CHROME_FRAME);
+  } else {
+    // TODO(tommi): Implement caching for this config value as it gets
+    // checked frequently.
+    RegKey config_key;
+    if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ)) {
+      config_key.ReadValueDW(kEnableGCFRendererByDefault, &is_default);
+    }
   }
 
   return is_default != 0;
 }
 
 bool IsOptInUrl(const wchar_t* url) {
-  // TODO(tommi): Unit test.
+  // First check if the default renderer settings are specified by policy.
+  // If so, then that overrides the user settings.
+  Singleton<PolicySettings> policy;
+  PolicySettings::RendererForUrl renderer = policy->GetRendererForUrl(url);
+  if (renderer != PolicySettings::RENDERER_NOT_SPECIFIED) {
+    return (renderer == PolicySettings::RENDER_IN_CHROME_FRAME);
+  }
+
   RegKey config_key;
   if (!config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ))
     return false;
