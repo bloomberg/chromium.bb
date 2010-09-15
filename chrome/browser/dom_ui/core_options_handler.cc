@@ -166,8 +166,10 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
       break;
     default:
       NOTREACHED();
+      return;
   }
 
+  pref_service->ScheduleSavePersistentPrefs();
   ProcessUserMetric(pref_type, value_string, metric);
 }
 
@@ -181,8 +183,7 @@ void CoreOptionsHandler::ProcessUserMetric(Value::ValueType pref_type,
   if (pref_type == Value::TYPE_BOOLEAN)
     metric_string += (value_string == "true" ? "_Enable" : "_Disable");
 
-  UserMetricsRecordAction(UserMetricsAction(metric_string.c_str()),
-                          dom_ui_->GetProfile()->GetPrefs());
+  UserMetricsRecordAction(UserMetricsAction(metric_string.c_str()));
 }
 
 void CoreOptionsHandler::StopObservingPref(const std::string& path) {
@@ -300,7 +301,7 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args,
 void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
   std::string metric = WideToUTF8(ExtractStringValue(args));
   if (!metric.empty())
-    UserMetricsRecordAction(UserMetricsAction(metric.c_str()), NULL);
+    UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
 }
 
 void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {

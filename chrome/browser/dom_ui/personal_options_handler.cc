@@ -143,16 +143,14 @@ void PersonalOptionsHandler::SetSyncStatusUIString(const ListValue* args) {
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
   DCHECK(dom_ui_);
 
-  UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"),
-                          dom_ui_->GetProfile()->GetPrefs());
+  UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"));
   dom_ui_->GetProfile()->ClearTheme();
 }
 
 void PersonalOptionsHandler::ThemesGallery(const ListValue* args) {
   DCHECK(dom_ui_);
 
-  UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"),
-                          dom_ui_->GetProfile()->GetPrefs());
+  UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"));
   BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
 
@@ -160,8 +158,7 @@ void PersonalOptionsHandler::ThemesGallery(const ListValue* args) {
 void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
   DCHECK(dom_ui_);
 
-  UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"),
-                          dom_ui_->GetProfile()->GetPrefs());
+  UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"));
   dom_ui_->GetProfile()->SetNativeTheme();
 }
 #endif

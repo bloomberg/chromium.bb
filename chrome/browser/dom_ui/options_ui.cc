@@ -108,10 +108,8 @@ OptionsPageUIHandler::~OptionsPageUIHandler() {
 }
 
 void OptionsPageUIHandler::UserMetricsRecordAction(
-    const UserMetricsAction& action, PrefService* prefs) {
+    const UserMetricsAction& action) {
   UserMetrics::RecordAction(action, dom_ui_->GetProfile());
-  if (prefs)
-    prefs->ScheduleSavePersistentPrefs();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

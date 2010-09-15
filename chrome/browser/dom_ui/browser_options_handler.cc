@@ -142,8 +142,7 @@ void BrowserOptionsHandler::UpdateDefaultBrowserState() {
 }
 
 void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
-  UserMetricsRecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"),
-                          NULL);
+  UserMetricsRecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
 #if defined(OS_MACOSX)
   if (ShellIntegration::SetAsDefaultBrowser())
     UpdateDefaultBrowserState();
@@ -232,8 +231,7 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
       selected_index < static_cast<int>(model_urls.size()))
     template_url_model_->SetDefaultSearchProvider(model_urls[selected_index]);
 
-  UserMetricsRecordAction(UserMetricsAction("Options_SearchEngineChanged"),
-                          NULL);
+  UserMetricsRecordAction(UserMetricsAction("Options_SearchEngineChanged"));
 }
 
 void BrowserOptionsHandler::UpdateSearchEngines() {

@@ -65,8 +65,7 @@ class OptionsPageUIHandler : public DOMMessageHandler,
                        const NotificationSource& source,
                        const NotificationDetails& details) {}
 
-  void UserMetricsRecordAction(const UserMetricsAction& action,
-                               PrefService* prefs);
+  void UserMetricsRecordAction(const UserMetricsAction& action);
 
  protected:
   NotificationRegistrar registrar_;
