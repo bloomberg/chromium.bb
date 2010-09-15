@@ -46,7 +46,11 @@ void ChromeNetLog::AddEntry(EventType type,
                             const Source& source,
                             EventPhase phase,
                             EventParameters* params) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  // This must be invoked when we're on the IO thread, or if the IO thread's
+  // message loop isn't valid. The later can happen if this is invoked when the
+  // IOThread is shuting down the MessageLoop.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO) ||
+         !ChromeThread::IsMessageLoopValid(ChromeThread::IO));
 
   // Notify all of the log observers.
   FOR_EACH_OBSERVER(Observer, observers_,

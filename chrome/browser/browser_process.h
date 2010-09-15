@@ -76,7 +76,7 @@ class BrowserProcess {
   // need a MessageLoop*.  If you just want to post a task, use
   // ChromeThread::PostTask (or other variants) as they take care of checking
   // that a thread is still alive, race conditions, lifetime differences etc.
-  // If you still must use this, need to check the return value for NULL.
+  // If you still must use this check the return value for NULL.
   virtual IOThread* io_thread() = 0;
 
   // Returns the thread that we perform random file operations on. For code

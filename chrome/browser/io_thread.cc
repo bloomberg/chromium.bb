@@ -236,9 +236,6 @@ void IOThread::CleanUp() {
   delete globals_;
   globals_ = NULL;
 
-  // URLRequest instances must NOT outlive the IO thread.
-  base::LeakTracker<URLRequest>::CheckForLeaks();
-
   BrowserProcessSubThread::CleanUp();
 }
 
@@ -249,6 +246,13 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
   // combine the two cleanups.
   deferred_net_log_to_delete_.reset();
   BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
+
+  // URLRequest instances must NOT outlive the IO thread.
+  //
+  // To allow for URLRequests to be deleted from
+  // MessageLoop::DestructionObserver this check has to happen after CleanUp
+  // (which runs before DestructionObservers).
+  base::LeakTracker<URLRequest>::CheckForLeaks();
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(

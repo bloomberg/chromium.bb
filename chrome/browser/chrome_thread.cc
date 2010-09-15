@@ -119,6 +119,14 @@ bool ChromeThread::CurrentlyOn(ID identifier) {
 }
 
 // static
+bool ChromeThread::IsMessageLoopValid(ID identifier) {
+  AutoLock lock(lock_);
+  DCHECK(identifier >= 0 && identifier < ID_COUNT);
+  return chrome_threads_[identifier] &&
+         chrome_threads_[identifier]->message_loop();
+}
+
+// static
 bool ChromeThread::PostTask(ID identifier,
                             const tracked_objects::Location& from_here,
                             Task* task) {
