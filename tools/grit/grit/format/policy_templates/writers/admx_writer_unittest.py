@@ -40,7 +40,7 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     }
     # Grit messages.
     messages = {}
-    self.writer = admx_writer.ADMXWriter(config, messages)
+    self.writer = admx_writer.GetWriter(config, messages)
     self.writer.Prepare()
 
   def testEmpty(self):
@@ -154,6 +154,19 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         ' valuePrefix=""/>\n</elements>')
 
     self.AssertXMLEquals(output, expected_output)
+
+  def testPlatform(self):
+    # Test that the writer correctly chooses policies of platform Windows.
+    self.assertTrue(self.writer.IsPolicySupported({
+      'annotations': {
+        'platforms': ['win', 'zzz', 'aaa']
+      }
+    }))
+    self.assertFalse(self.writer.IsPolicySupported({
+      'annotations': {
+        'platforms': ['mac', 'linux', 'aaa']
+      }
+    }))
 
 
 if __name__ == '__main__':

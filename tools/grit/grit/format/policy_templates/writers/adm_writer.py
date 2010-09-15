@@ -6,12 +6,12 @@
 from grit.format.policy_templates.writers import template_writer
 
 
-def GetWriter(info, messages):
+def GetWriter(config, messages):
   '''Factory method for creating AdmWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return AdmWriter(info, messages)
+  return AdmWriter(['win'], config, messages)
 
 
 class AdmWriter(template_writer.TemplateWriter):

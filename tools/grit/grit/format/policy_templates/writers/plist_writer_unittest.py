@@ -87,6 +87,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'policies': [{
               'name': 'MainPolicy',
               'type': 'main',
+              'annotations': {'platforms': ['mac']},
             }],
           },
         ],
@@ -132,6 +133,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'policies': [{
               'name': 'StringPolicy',
               'type': 'string',
+              'annotations': {'platforms': ['mac']},
             }],
           },
         ],
@@ -182,7 +184,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               'items': [
                 {'name': 'ProxyServerDisabled', 'value': '0'},
                 {'name': 'ProxyServerAutoDetect', 'value': '1'},
-              ]
+              ],
+              'annotations': {'platforms': ['mac']},
             }],
           },
         ],
@@ -225,6 +228,39 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         </array>
       </dict>
     </array>''')
+    self.assertEquals(output.strip(), expected_output.strip())
+
+  def testNonSupportedPolicy(self):
+    # Tests a policy that is not supported on Mac, so it shouldn't
+    # be included in the plist file.
+    grd = self.PrepareTest('''
+      {
+        'policy_groups': [
+          {
+            'name': 'NonMacGroup',
+            'policies': [{
+              'name': 'NonMacPolicy',
+              'type': 'string',
+              'annotations': {'platforms': ['win', 'linux']},
+            }],
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_GROUP_NONMACGROUP_CAPTION">This is not tested here. (1)</message>
+          <message name="IDS_POLICY_GROUP_NONMACGROUP_DESC">This is not tested here. (2)</message>
+          <message name="IDS_POLICY_NONMACPOLICY_CAPTION">This is not tested here. (3)</message>
+        </messages>
+      ''' )
+    output = self.GetOutput(
+        grd,
+        'fr',
+        {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
+        'plist',
+        'en')
+    expected_output = \
+        self._GetExpectedOutputs('Google Chrome', 'com.example.Test2', '''<array/>''')
     self.assertEquals(output.strip(), expected_output.strip())
 
 

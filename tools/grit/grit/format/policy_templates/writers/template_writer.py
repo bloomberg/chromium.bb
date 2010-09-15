@@ -8,10 +8,11 @@ class TemplateWriter(object):
   The methods of this class will be called by PolicyTemplateGenerator.
   '''
 
-  def __init__(self, config, messages):
+  def __init__(self, platforms, config, messages):
     '''Initializes a TemplateWriter object.
 
     Args:
+      platforms: List of platforms for which this writer can write policies.
       config: A dictionary of information required to generate the template.
         It contains some key-value pairs, including the following examples:
           'build': 'chrome' or 'chromium'
@@ -25,6 +26,7 @@ class TemplateWriter(object):
         IDS_POLICY_WIN_SUPPORTED_WINXPSP2 message in ADM files, because that
         cannot be associated with any policy or group.
     '''
+    self.platforms = platforms
     self.config = config
     self.messages = messages
 
@@ -78,3 +80,17 @@ class TemplateWriter(object):
       The generated template from the the internal buffer as a string.
     '''
     raise NotImplementedError()
+
+  def IsPolicySupported(self, policy):
+    '''Checks if the writer is interested in writing a given policy.
+
+    Args:
+      policy: The dictionary of the policy.
+
+    Returns:
+      True if the writer chooses to include 'policy' in its output.
+    '''
+    for platform in self.platforms:
+      if platform in policy['annotations']['platforms']:
+        return True
+    return False

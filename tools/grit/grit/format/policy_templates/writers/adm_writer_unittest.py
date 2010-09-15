@@ -71,6 +71,7 @@ chromium="Chromium"'''
             'policies': [{
               'name': 'MainPolicy',
               'type': 'main',
+              'annotations': {'platforms': ['win']}
             }],
           },
         ],
@@ -119,6 +120,7 @@ MainGroup_Explain="Description of main."'''
             'policies': [{
               'name': 'StringPolicy',
               'type': 'string',
+              'annotations': {'platforms': ['win']}
             }],
           },
         ],
@@ -172,7 +174,8 @@ StringPolicy_Part="Caption of policy."
               'items': [
                 {'name': 'ProxyServerDisabled', 'value': '0'},
                 {'name': 'ProxyServerAutoDetect', 'value': '1'},
-              ]
+              ],
+              'annotations': {'platforms': ['win']}
             }],
           },
         ],
@@ -234,6 +237,7 @@ ProxyServerAutoDetect_DropDown="Option2"
             'policies': [{
               'name': 'ListPolicy',
               'type': 'list',
+              'annotations': {'platforms': ['win']}
             }],
           },
         ],
@@ -275,6 +279,42 @@ ListPolicy_Part="Caption of list policy."
 '''
     self.CompareOutputs(output, expected_output)
 
+  def testNonSupportedPolicy(self):
+    # Tests a policy that is not supported on Windows, so it shouldn't
+    # be included in the ADM file.
+    grd = self.PrepareTest('''
+      {
+        'policy_groups': [
+          {
+            'name': 'NonWinGroup',
+            'policies': [{
+              'name': 'NonWinPolicy',
+              'type': 'list',
+              'annotations': {'platforms': ['linux', 'mac']}
+            }],
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_GROUP_NONWINGROUP_CAPTION">Group caption.</message>
+          <message name="IDS_POLICY_GROUP_NONWINGROUP_DESC">Group description.</message>
+          <message name="IDS_POLICY_NONWINPOLICY_CAPTION">Caption of list policy.</message>
+          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.16</message>
+        </messages>
+      ''')
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+    expected_output = '''CLASS MACHINE
+  CATEGORY !!chromium
+    KEYNAME "Software\\Policies\\Chromium"
+
+  END CATEGORY
+
+[Strings]
+SUPPORTED_WINXPSP2="At least Windows 3.16"
+chromium="Chromium"
+'''
+    self.CompareOutputs(output, expected_output)
 
 if __name__ == '__main__':
   unittest.main()

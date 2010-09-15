@@ -34,5 +34,8 @@ class MockWriter(TemplateWriter):
   def GetTemplateText(self):
     pass
 
+  def IsPolicySupported(self, policy):
+    return True
+
   def Test(self):
     pass

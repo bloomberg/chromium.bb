@@ -57,6 +57,7 @@ Chromium.pfm_description = "Chromium preferen\\"ces";
             'policies': [{
               'name': 'MainPolicy',
               'type': 'main',
+              'annotations': {'platforms': ['mac']},
             }],
           },
         ],
@@ -93,6 +94,7 @@ MainPolicy.pfm_description = "Title of main.";
             'policies': [{
               'name': 'StringPolicy',
               'type': 'string',
+              'annotations': {'platforms': ['mac']},
             }],
           },
         ],
@@ -133,7 +135,8 @@ StringPolicy.pfm_description = "Description of group.\\nWith a newline.";
               'items': [
                 {'name': 'ProxyServerDisabled', 'value': '0'},
                 {'name': 'ProxyServerAutoDetect', 'value': '1'},
-              ]
+              ],
+              'annotations': {'platforms': ['mac']},
             }],
           },
         ],
@@ -160,6 +163,42 @@ StringPolicy.pfm_description = "Description of group.\\nWith a newline.";
 Google Chrome.pfm_description = "Google Chrome preferences";
 EnumPolicy.pfm_title = "Caption of policy.";
 EnumPolicy.pfm_description = "0 - Option1\\n1 - Option2\\nDescription of policy.";
+        '''
+    self.assertEquals(output.strip(), expected_output.strip())
+
+  def testNonSupportedPolicy(self):
+    # Tests a policy that is not supported on Mac, so its strings shouldn't
+    # be included in the plist string table.
+    grd = self.PrepareTest('''
+      {
+        'policy_groups': [
+          {
+            'name': 'NonMacGroup',
+            'policies': [{
+              'name': 'NonMacPolicy',
+              'type': 'string',
+              'annotations': {'platforms': ['win', 'linux']},
+            }],
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_GROUP_NONMACGROUP_CAPTION">Caption of group.</message>
+          <message name="IDS_POLICY_GROUP_NONMACGROUP_DESC">Description of group.</message>
+          <message name="IDS_POLICY_NONMACPOLICY_CAPTION">Caption of policy.</message>
+          <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
+        </messages>
+      ''' )
+    output = self.GetOutput(
+        grd,
+        'fr',
+        {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
+        'plist_strings',
+        'en')
+    expected_output = \
+'''Google Chrome.pfm_title = "Google Chrome";
+Google Chrome.pfm_description = "Google Chrome preferences";
         '''
     self.assertEquals(output.strip(), expected_output.strip())
 

@@ -2,10 +2,7 @@
 # policy_templates.json - Metafile for policy templates
 #
 # This file is used as input to generate the following policy templates:
-# ADM (TODO(gfeher): MCX,ADMX,DOC)
-#
-# TODO(gfeher): The format description also mentions Mac support,
-#               but that functionality is not committed to the tree yet.
+# ADM,ADMX+ADML,MCX/plist
 #
 # Policy templates are user interface definitions or documents about the
 # policies that can be used to configure Chrome. Each policy is a name-value
@@ -33,7 +30,7 @@
 #     For example on Windows this policy will be assigned to the Enable/Disable
 #     buttons of the group, and if it is set to Disabled then other policies of
 #     the group will not be visible to Chrome.
-#  'list' - a list of string values
+#   'list' - a list of string values
 #
 # Policy group descriptions, policy captions and similar texts are localized
 # strings taken from the <message> nodes of the .grd file. Their name
@@ -75,6 +72,15 @@
 #     e.g. the name of the caption of ProxyServerDisabled:
 #       IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION
 #
+# Annotations:
+#   Each policy has metadata under the key 'annotations'. Currently only
+#   the value of 'platforms' is used. It is a list enumerating the platforms
+#   on which Chrome supports the given policy. In a given template, only
+#   those policies are included that are compatible with the target OS of
+#   that template.
+#     Windows: ADM,ADMX,ADML
+#     Mac: plist,plist_strings
+#
   'policy_groups': [
     # The homepage-related policies are split into two groups, because if they
     # are in the same group, then Windows does not allow to set them undefined
@@ -84,6 +90,11 @@
       'policies': [{
         'name':  'HomepageLocation',
         'type': 'string',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }],
     },
     {
@@ -91,6 +102,11 @@
       'policies': [{
         'name': 'HomepageIsNewTabPage',
         'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }],
     },
     {
@@ -98,6 +114,11 @@
       'policies': [{
         'name': 'ApplicationLocaleValue',
         'type': 'string',
+        'annotations': {
+          'platforms': ['win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 0},
+        }
       }]
     },
     {
@@ -105,20 +126,34 @@
       'policies': [{
         'name': 'AlternateErrorPagesEnabled',
         'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
       'name': 'SearchSuggestEnabled',
       'policies': [{
         'name': 'SearchSuggestEnabled',
-        'type': 'main'
+        'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }],
     },
     {
       'name': 'DnsPrefetchingEnabled',
       'policies': [{
         'name': 'DnsPrefetchingEnabled',
-        'type': 'main'
+        'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 0},
+        }
       }],
     },
     {
@@ -126,13 +161,23 @@
       'policies': [{
         'name': 'SafeBrowsingEnabled',
         'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 0},
+        }
       }]
     },
     {
       'name': 'MetricsReportingEnabled',
       'policies': [{
         'name': 'MetricsReportingEnabled',
-        'type': 'main'
+        'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 0},
+        }
       }],
     },
     {
@@ -140,6 +185,11 @@
       'policies': [{
         'name': 'PasswordManagerEnabled',
         'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
@@ -147,6 +197,11 @@
       'policies': [{
         'name': 'PasswordManagerAllowShowPasswords',
         'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
@@ -154,6 +209,11 @@
       'policies': [{
         'name': 'AutoFillEnabled',
         'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
@@ -161,6 +221,11 @@
       'policies': [{
         'name': 'DisabledPlugins',
         'type': 'list',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
@@ -168,6 +233,11 @@
       'policies': [{
         'name': 'SyncDisabled',
         'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
@@ -182,18 +252,38 @@
             {'name': 'ProxyServerManual', 'value': '2'},
             {'name': 'ProxyServerUseSystem', 'value': '3'},
           ],
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 0},
+          }
         },
         {
           'name': 'ProxyServer',
-          'type': 'string'
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 0},
+          }
         },
         {
           'name': 'ProxyPacUrl',
-          'type': 'string'
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 0},
+          }
         },
         {
           'name': 'ProxyBypassList',
-          'type': 'string'
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 0},
+          }
         },
       ]
     },
@@ -202,6 +292,11 @@
       'policies': [{
         'name': 'ExtensionInstallBlacklist',
         'type': 'list',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
@@ -209,6 +304,11 @@
       'policies': [{
         'name': 'ExtensionInstallWhitelist',
         'type': 'list',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
@@ -216,6 +316,11 @@
       'policies': [{
         'name': 'ShowHomeButton',
         'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
@@ -228,28 +333,52 @@
           {'name': 'RestoreOnStartupIsLastSession', 'value': '1'},
           {'name': 'RestoreOnStartupIsURLs', 'value': '4'},
         ],
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       },{
         'name': 'RestoreOnStartupURLs',
         'type': 'list',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 1},
+        }
       }]
     },
     {
       'name': 'ChromeFrameRendererSettings',
       'policies': [{
-          'name': 'ChromeFrameRendererSettings',
-          'type': 'enum',
-          'items': [
+        'name': 'ChromeFrameRendererSettings',
+        'type': 'enum',
+        'items': [
             {'name': 'RenderInHost', 'value': '0'},
             {'name': 'RenderInChromeFrame', 'value': '1'},
-          ],
-        }, {
-          'name': 'RenderInChromeFrameList',
-          'type': 'list',
-        }, {
-          'name': 'RenderInHostList',
-          'type': 'list',
-        },
-      ],
+        ],
+        'annotations': {
+          'platforms': ['win'],
+          'products': ['chrome_frame'],
+          'features': {'dynamic_refresh': 0},
+        }
+      }, {
+        'name': 'RenderInChromeFrameList',
+        'type': 'list',
+        'annotations': {
+          'platforms': ['win'],
+          'products': ['chrome_frame'],
+          'features': {'dynamic_refresh': 0},
+        }
+      }, {
+        'name': 'RenderInHostList',
+        'type': 'list',
+        'annotations': {
+          'platforms': ['win'],
+          'products': ['chrome_frame'],
+          'features': {'dynamic_refresh': 0},
+        }
+      }],
     },
   ],
   'placeholders': [

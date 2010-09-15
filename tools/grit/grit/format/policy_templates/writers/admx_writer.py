@@ -11,7 +11,7 @@ def GetWriter(config, messages):
   GetWriter method because the TemplateFormatter uses this method to
   instantiate a Writer.
   '''
-  return ADMXWriter(config, messages)
+  return ADMXWriter(['win'], config, messages)
 
 
 class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):

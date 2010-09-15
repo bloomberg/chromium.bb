@@ -6,12 +6,12 @@ from xml.dom import minidom
 from grit.format.policy_templates.writers import xml_formatted_writer
 
 
-def GetWriter(info, messages):
+def GetWriter(config, messages):
   '''Factory method for instanciating the ADMLWriter. Every Writer needs a
   GetWriter method because the TemplateFormatter uses this method to
   instantiate a Writer.
   '''
-  return ADMLWriter(info, messages)
+  return ADMLWriter(['win'], config, messages)
 
 
 class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):

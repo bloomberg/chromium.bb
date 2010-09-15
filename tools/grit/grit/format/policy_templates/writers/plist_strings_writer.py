@@ -11,7 +11,7 @@ def GetWriter(config, messages):
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return PListStringsWriter(config, messages)
+  return PListStringsWriter(['mac'], config, messages)
 
 
 class PListStringsWriter(template_writer.TemplateWriter):

@@ -12,7 +12,7 @@ def GetWriter(config, messages):
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return PListWriter(config, messages)
+  return PListWriter(['mac'], config, messages)
 
 
 class PListWriter(xml_formatted_writer.XMLFormattedWriter):
