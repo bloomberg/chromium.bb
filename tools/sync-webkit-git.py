@@ -12,6 +12,8 @@ See http://code.google.com/p/chromium/wiki/UsingWebKitGit for details on
 how to use this.
 """
 
+import logging
+import optparse
 import os
 import re
 import subprocess
@@ -20,10 +22,13 @@ import sys
 def RunGit(command):
   """Run a git subcommand, returning its output."""
   # On Windows, use shell=True to get PATH interpretation.
+  command = ['git'] + command
+  logging.info(' '.join(command))
   shell = (os.name == 'nt')
-  proc = subprocess.Popen(['git'] + command, shell=shell,
-                          stdout=subprocess.PIPE)
-  return proc.communicate()[0].strip()
+  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE)
+  out = proc.communicate()[0].strip()
+  logging.info('Returned "%s"' % out)
+  return out
 
 def GetGClientBranchName():
   """Returns the name of the magic branch that lets us know that DEPS is
@@ -67,11 +72,10 @@ def FindSVNRev(target_rev):
   commit_re = re.compile(r'^commit ([a-f\d]{40})$')
   # regexp matching the git-svn line from the log.
   git_svn_re = re.compile(r'^\s+git-svn-id: [^@]+@(\d+) ')
-
-  log = subprocess.Popen(['git', 'log', '--no-color', '--first-parent',
-                          '--pretty=medium', 'origin'],
-                         shell=(os.name == 'nt'),
-                         stdout=subprocess.PIPE)
+  cmd = ['git', 'log', '--no-color', '--first-parent', '--pretty=medium',
+         'origin/master']
+  logging.info(' '.join(cmd))
+  log = subprocess.Popen(cmd, shell=(os.name == 'nt'), stdout=subprocess.PIPE)
   # Track whether we saw a revision *later* than the one we're seeking.
   saw_later = False
   for line in log.stdout:
@@ -135,6 +139,11 @@ def UpdateCurrentCheckoutIfAppropriate(magic_gclient_branch):
     subprocess.check_call(['git', 'reset', '--hard'], shell=(os.name == 'nt'))
 
 def main():
+  parser = optparse.OptionParser()
+  parser.add_option('-v', '--verbose', action='store_true')
+  options, args = parser.parse_args()
+  if options.verbose:
+    logging.basicConfig(level=logging.INFO)
   if not os.path.exists('third_party/WebKit/.git'):
     if os.path.exists('third_party/WebKit'):
       print "ERROR: third_party/WebKit appears to not be under git control."
