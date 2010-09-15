@@ -129,7 +129,6 @@ class UserController : public views::ButtonListener,
 
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();
-  virtual void OnChangePhoto();
 
   // Selects user entry with specified |index|.
   void SelectUser(int index);

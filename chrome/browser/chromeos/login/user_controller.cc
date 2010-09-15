@@ -255,9 +255,9 @@ void UserController::IsActiveChanged(bool active) {
   is_user_selected_ = active;
   if (active) {
     delegate_->OnUserSelected(this);
-    user_view_->SetMenuVisible(!is_guest_);
+    user_view_->SetRemoveButtonVisible(!is_guest_);
   } else {
-    user_view_->SetMenuVisible(false);
+    user_view_->SetRemoveButtonVisible(false);
     delegate_->ClearErrors();
   }
 }
@@ -436,10 +436,6 @@ void UserController::NavigateAway() {
 
 void UserController::OnRemoveUser() {
   delegate_->RemoveUser(this);
-}
-
-void UserController::OnChangePhoto() {
-  // TODO(dpolukhin): implement change user photo, see http://crosbug.com/2348
 }
 
 void UserController::SelectUser(int index) {

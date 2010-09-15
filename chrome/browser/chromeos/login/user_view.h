@@ -8,17 +8,15 @@
 
 #include <string>
 
-#include "app/menus/simple_menu_model.h"
+#include "views/controls/button/button.h"
 #include "views/controls/link.h"
-#include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 class SkBitmap;
 
 namespace views {
 class ImageView;
-class Menu2;
-class MenuButton;
+class TextButton;
 class Throbber;
 }  // namespace views
 
@@ -28,8 +26,7 @@ class SignoutView;
 
 class UserView : public views::View,
                  public views::LinkController,
-                 public views::ViewMenuDelegate,
-                 public menus::SimpleMenuModel::Delegate {
+                 public views::ButtonListener {
  public:
   class Delegate {
    public:
@@ -40,10 +37,6 @@ class UserView : public views::View,
 
     // Notifies that user would like to remove this user from login screen.
     virtual void OnRemoveUser() {}
-
-    // Notifies that user would like to take new picture for this user on
-    // login screen.
-    virtual void OnChangePhoto() {}
   };
 
   // Creates UserView for login screen (|is_login| == true) or screen locker.
@@ -65,8 +58,8 @@ class UserView : public views::View,
   void StartThrobber();
   void StopThrobber();
 
-  // Show/Hide menu for user specific actions.
-  void SetMenuVisible(bool flag);
+  // Show/Hide remove button.
+  void SetRemoveButtonVisible(bool flag);
 
   // Enable/Disable sign-out button.
   void SetSignoutEnabled(bool enabled);
@@ -75,15 +68,8 @@ class UserView : public views::View,
   // Called when a signout link is clicked.
   virtual void LinkActivated(views::Link* source, int event_flags);
 
-  // ViewMenuDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt);
-
-  // menus::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
+  // Overridden from views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
   void Init();
@@ -98,10 +84,7 @@ class UserView : public views::View,
 
   views::Throbber* throbber_;
 
-  // Menu for user specific actions.
-  scoped_ptr<menus::SimpleMenuModel> menu_model_;
-  scoped_ptr<views::Menu2> menu_;
-  views::MenuButton* menu_button_;
+  views::TextButton* remove_button_;
 
   DISALLOW_COPY_AND_ASSIGN(UserView);
 };
