@@ -45,11 +45,6 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('simple_thread_test.nexe')],
     size='small',
     )
-# This test is extremely (and unpredictably) slow under Memcheck on the Karmic
-# buildbot because of what seems to be starvation on the critical section.
-# The second thread manages to acquire the CS only after ~30 seconds of
-# spinning.
-# Somehow this can not be reproduced on desktop machines.
 env.AddNodeToTestSuite(node, TEST_SUITES, 'run_simple_thread_test')
 
 env.ComponentProgram('race_test.nexe',
