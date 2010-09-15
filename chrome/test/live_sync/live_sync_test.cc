@@ -229,14 +229,11 @@ void LiveSyncTest::SetUpInProcessBrowserTestFixture() {
   net::RuleBasedHostResolverProc* resolver =
       new net::RuleBasedHostResolverProc(host_resolver());
   resolver->AllowDirectLookup("*.google.com");
-  // Allow direct lookup of thawte.com.  On Linux, we use Chromium's nss
-  // implementation which uses ocsp.thawte.com for certificate verification.
-  // Without this, running the test case on Linux causes an error as we make an
-  // external DNS lookup of "ocsp.thawte.com".
+  // On Linux, we use Chromium's NSS implementation which uses the following
+  // hosts for certificate verification. Without these overrides, running the
+  // integration tests on Linux causes error as we make external DNS lookups.
   resolver->AllowDirectLookup("*.thawte.com");
-  // The new XMPP cert seems to use crl.geotrust.com on Linux.
   resolver->AllowDirectLookup("*.geotrust.com");
-  // SSL chain.
   resolver->AllowDirectLookup("*.gstatic.com");
   mock_host_resolver_override_.reset(
       new net::ScopedDefaultHostResolverProc(resolver));
@@ -268,26 +265,18 @@ void LiveSyncTest::TearDownLocalTestServer() {
 void LiveSyncTest::EnableNetwork(Profile* profile) {
   SetProxyConfig(profile->GetRequestContext(),
                  net::ProxyConfig::CreateDirect());
-  // Bugs: http://crbug.com/53857
-  //       http://crbug.com/53858
+  // TODO(rsimha): Remove this line once http://crbug.com/53857 is fixed.
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 }
 
 void LiveSyncTest::DisableNetwork(Profile* profile) {
-  // Set the current proxy configuration to a nonexistent proxy to
-  // effectively disable networking.
+  // Set the current proxy configuration to a nonexistent proxy to effectively
+  // disable networking.
   net::ProxyConfig config;
   config.proxy_rules().ParseFromString("http=127.0.0.1:0");
   SetProxyConfig(profile->GetRequestContext(), config);
+  // TODO(rsimha): Remove this line once http://crbug.com/53857 is fixed.
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-}
-
-bool LiveSyncTest::EnsureSyncServerConfiguration() {
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (!cl->HasSwitch(switches::kSyncServiceURL))
-    return true;
-
-  return ConfigureSyncServer("user_email", username_);
 }
 
 void LiveSyncTest::SetProxyConfig(URLRequestContextGetter* context_getter,
@@ -300,20 +289,4 @@ void LiveSyncTest::SetProxyConfig(URLRequestContextGetter* context_getter,
                              context_getter,
                              proxy_config));
   done.Wait();
-}
-
-bool LiveSyncTest::ConfigureSyncServer(const std::string& name,
-                                       const std::string& value) {
-  std::string url = StringPrintf("http://%s:%d/chromiumsync/configure",
-                                 test_server_.host_port_pair().host().c_str(),
-                                 test_server_.host_port_pair().port());
-  std::string data = EscapePath(name) + "=" + EscapePath(value);
-  ConfigureURLFectcherDelegate delegate;
-  scoped_ptr<URLFetcher> fetcher(
-      URLFetcher::Create(0, GURL(url), URLFetcher::POST, &delegate));
-  fetcher->set_request_context(Profile::GetDefaultRequestContext());
-  fetcher->set_upload_data("application/x-www-form-urlencoded", data);
-  fetcher->Start();
-  MessageLoop::current()->Run();
-  return delegate.success();
 }

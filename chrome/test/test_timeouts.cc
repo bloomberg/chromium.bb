@@ -43,6 +43,9 @@ int TestTimeouts::command_execution_timeout_ms_ = 25000;
 int TestTimeouts::wait_for_terminate_timeout_ms_ = 15000;
 
 // static
+int TestTimeouts::live_operation_timeout_ms_ = 30000;
+
+// static
 void TestTimeouts::Initialize() {
   if (initialized_) {
     NOTREACHED();
@@ -64,4 +67,7 @@ void TestTimeouts::Initialize() {
                     &command_execution_timeout_ms_);
   InitializeTimeout(switches::kUiTestTerminateTimeout,
                     &wait_for_terminate_timeout_ms_);
+
+  InitializeTimeout(switches::kLiveOperationTimeout,
+                    &live_operation_timeout_ms_);
 }

@@ -66,7 +66,11 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   static bool AwaitQuiescence(
       std::vector<ProfileSyncServiceTestHarness*>& clients);
 
+  // Returns the ProfileSyncService member of the the sync client.
   ProfileSyncService* service() { return service_; }
+
+  // Returns the status of the ProfileSyncService member of the the sync client.
+  ProfileSyncService::Status GetStatus();
 
   // See ProfileSyncService::ShouldPushChanges().
   bool ServiceIsPushingChanges() { return service_->ShouldPushChanges(); }
@@ -77,18 +81,21 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   enum WaitState {
     // The sync client awaits the OnBackendInitialized() callback.
     WAITING_FOR_ON_BACKEND_INITIALIZED = 0,
-    // The sync client is waiting for notifications_enabled to become true.
-    WAITING_FOR_NOTIFICATIONS_ENABLED,
+
+    // The sync client is waiting for the first sync cycle to complete.
+    WAITING_FOR_INITIAL_SYNC,
+
     // The sync client is waiting for an ongoing sync cycle to complete.
     WAITING_FOR_SYNC_TO_FINISH,
+
     // The sync client anticipates incoming updates leading to a new sync cycle.
     WAITING_FOR_UPDATES,
-    // The sync client is waiting for server_reachable to become true.
-    WAITING_FOR_SERVER_REACHABLE,
+
+    // The sync client cannot reach the server.
+    SERVER_UNREACHABLE,
+
     // The sync client is fully synced and there are no pending updates.
     FULLY_SYNCED,
-    // An authentication error has occurred.
-    AUTH_ERROR,
     NUMBER_OF_STATES,
   };
 
@@ -101,12 +108,14 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   bool RunStateChangeMachine();
 
   // Returns true if a status change took place, false on timeout.
-  virtual bool AwaitStatusChangeWithTimeout(int timeout_seconds,
+  virtual bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
                                             const std::string& reason);
 
-  // Returns true if the service initialized correctly. Set is_auth_retry to
-  // true when calling this method second time after an authentication failure.
+  // Returns true if the service initialized correctly.
   bool WaitForServiceInit();
+
+  // Returns true if the sync client has no unsynced items.
+  bool IsSynced();
 
   // Logs message with relevant info about client's sync state (if available).
   void LogClientInfo(std::string message);
@@ -119,8 +128,9 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // Returns a snapshot of the current sync session.
   const SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
-  // State tracking.  Used for debugging and tracking of state.
-  ProfileSyncService::Status last_status_;
+  // Updates |last_timestamp_| with the timestamp of the current sync session.
+  // Returns the new value of |last_timestamp_|.
+  int64 GetUpdatedTimestamp();
 
   // This value tracks the max sync timestamp (e.g. synced-to revision) inside
   // the sync engine.  It gets updated when a sync cycle ends and the session

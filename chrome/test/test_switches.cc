@@ -10,6 +10,9 @@ const char switches::kExtraChromeFlags[] = "extra-chrome-flags";
 // Enable displaying error dialogs (for debugging).
 const char switches::kEnableErrorDialogs[] = "enable-errdialogs";
 
+// Time (in milliseconds) for which we wait for live operations to complete.
+const char switches::kLiveOperationTimeout[] = "live-operation-timeout";
+
 // Number of iterations that page cycler tests will run.
 const char switches::kPageCyclerIterations[] = "page-cycler-iterations";
 

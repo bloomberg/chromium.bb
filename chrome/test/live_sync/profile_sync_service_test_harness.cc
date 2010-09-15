@@ -15,14 +15,13 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
+#include "chrome/test/test_timeouts.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The default value for min_timestamp_needed_ when we're not in the
 // WAITING_FOR_UPDATES state.
 static const int kMinTimestampNeededNone = -1;
-
-static const ProfileSyncService::Status kInvalidStatus = {};
 
 // Simple class to implement a timeout using PostDelayedTask.  If it is not
 // aborted before picked up by a message queue, then it asserts with the message
@@ -88,7 +87,6 @@ ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(Profile* p,
     const std::string& username, const std::string& password, int id)
     : wait_state_(WAITING_FOR_ON_BACKEND_INITIALIZED),
       profile_(p), service_(NULL),
-      last_status_(kInvalidStatus),
       last_timestamp_(0),
       min_timestamp_needed_(kMinTimestampNeededNone),
       username_(username), password_(password), id_(id) {
@@ -99,15 +97,14 @@ ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(Profile* p,
 
 bool ProfileSyncServiceTestHarness::SetupSync() {
   service_ = profile_->GetProfileSyncService("");
+  EXPECT_FALSE(service_ == NULL) << "SetupSync(): service_ is null.";
   service_->AddObserver(this);
   service_->signin_.StartSignIn(username_, password_, "", "");
-
   return WaitForServiceInit();
 }
 
 void ProfileSyncServiceTestHarness::SignalStateCompleteWithNextState(
     WaitState next_state) {
-
   wait_state_ = next_state;
   SignalStateComplete();
 }
@@ -117,78 +114,62 @@ void ProfileSyncServiceTestHarness::SignalStateComplete() {
 }
 
 bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
-  WaitState state = wait_state_;
-  ProfileSyncService::Status status(service_->QueryDetailedSyncStatus());
+  WaitState original_wait_state = wait_state_;
   switch (wait_state_) {
     case WAITING_FOR_ON_BACKEND_INITIALIZED: {
       LogClientInfo("WAITING_FOR_ON_BACKEND_INITIALIZED");
-      if (service_->GetAuthError().state() != GoogleServiceAuthError::NONE) {
-        SignalStateCompleteWithNextState(AUTH_ERROR);
-      }
-      if (service_->sync_initialized()) {
-        SignalStateCompleteWithNextState(WAITING_FOR_NOTIFICATIONS_ENABLED);
+      if (service()->sync_initialized()) {
+        // The sync backend is initialized. Start waiting for the first sync
+        // cycle to complete.
+        SignalStateCompleteWithNextState(WAITING_FOR_INITIAL_SYNC);
       }
       break;
     }
-    case WAITING_FOR_NOTIFICATIONS_ENABLED: {
-      LogClientInfo("WAITING_FOR_NOTIFICATIONS_ENABLED");
-      if (status.notifications_enabled) {
+    case WAITING_FOR_INITIAL_SYNC: {
+      LogClientInfo("WAITING_FOR_INITIAL_SYNC");
+      if (IsSynced()) {
+        // The first sync cycle is now complete. We can start running tests.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
       }
       break;
     }
-    case WAITING_FOR_SERVER_REACHABLE: {
-      LogClientInfo("WAITING_FOR_SERVER_REACHABLE");
-      const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-      if (!status.server_reachable) {
-        break;
-      }
-      if (service()->backend()->HasUnsyncedItems() ||
-          snap->has_more_to_sync || snap->unsynced_count != 0) {
-        SignalStateCompleteWithNextState(WAITING_FOR_SYNC_TO_FINISH);
-        break;
-      }
-      last_timestamp_ = snap->max_local_timestamp;
-      SignalStateCompleteWithNextState(FULLY_SYNCED);
-      break;
-    }
     case WAITING_FOR_SYNC_TO_FINISH: {
       LogClientInfo("WAITING_FOR_SYNC_TO_FINISH");
-      const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-      DCHECK(snap) << "Should have been at least one sync session by now";
-      // TODO(rsimha): In an ideal world, snap->has_more_to_sync == false should
-      // be a sufficient condition for sync to have completed. However, the
-      // additional check of snap->unsynced_count is required due to
-      // http://crbug.com/48989.
-      if (service()->backend()->HasUnsyncedItems() ||
-          snap->has_more_to_sync || snap->unsynced_count != 0) {
-        if (!status.server_reachable)
-          SignalStateCompleteWithNextState(WAITING_FOR_SERVER_REACHABLE);
+      if (!IsSynced()) {
+        // The client is not yet fully synced. Continue waiting.
+        if (!GetStatus().server_reachable) {
+          // The client cannot reach the sync server because the network is
+          // disabled. There is no need to wait anymore.
+          SignalStateCompleteWithNextState(SERVER_UNREACHABLE);
+        }
         break;
       }
-      EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
-      last_timestamp_ = snap->max_local_timestamp;
+      GetUpdatedTimestamp();
       SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
     case WAITING_FOR_UPDATES: {
       LogClientInfo("WAITING_FOR_UPDATES");
-      const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-      DCHECK(snap) << "Should have been at least one sync session by now";
-      if (snap->max_local_timestamp < min_timestamp_needed_) {
+      if (!IsSynced() || GetUpdatedTimestamp() < min_timestamp_needed_) {
+        // The client is not yet fully synced. Continue waiting until the client
+        // is at the required minimum timestamp.
         break;
       }
-      EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
-      last_timestamp_ = snap->max_local_timestamp;
       SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
-    case FULLY_SYNCED: {
-      LogClientInfo("FULLY_SYNCED");
+    case SERVER_UNREACHABLE: {
+      LogClientInfo("SERVER_UNREACHABLE");
+      if (GetStatus().server_reachable) {
+        // The client was offline due to the network being disabled, but is now
+        // back online. Wait for the pending sync cycle to complete.
+        SignalStateCompleteWithNextState(WAITING_FOR_SYNC_TO_FINISH);
+      }
       break;
     }
-    case AUTH_ERROR: {
-      LogClientInfo("AUTH_ERROR");
+    case FULLY_SYNCED: {
+      // The client is online and fully synced. There is nothing to do.
+      LogClientInfo("FULLY_SYNCED");
       break;
     }
     default:
@@ -196,8 +177,7 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       // classes using the the UI message loop.  Defer to their handling.
       break;
   }
-  last_status_ = status;
-  return state != wait_state_;
+  return original_wait_state != wait_state_;
 }
 
 void ProfileSyncServiceTestHarness::OnStateChanged() {
@@ -207,18 +187,33 @@ void ProfileSyncServiceTestHarness::OnStateChanged() {
 bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
     const std::string& reason) {
   LogClientInfo("AwaitSyncCycleCompletion");
-  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-  DCHECK(snap) << "Should have been at least one sync session by now";
-  // TODO(rsimha): Remove additional checks of snap->has_more_to_sync and
-  // snap->unsynced_count once http://crbug.com/48989 is fixed.
-  if (service()->backend()->HasUnsyncedItems() ||
-      snap->has_more_to_sync ||
-      snap->unsynced_count != 0) {
-    wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
-    return AwaitStatusChangeWithTimeout(60, reason);
+  if (!IsSynced()) {
+    if (wait_state_ == SERVER_UNREACHABLE) {
+      // Client was offline; wait for it to go online, and then wait for sync.
+      AwaitStatusChangeWithTimeout(
+          TestTimeouts::live_operation_timeout_ms(), reason);
+      EXPECT_EQ(wait_state_, WAITING_FOR_SYNC_TO_FINISH);
+      return AwaitStatusChangeWithTimeout(
+          TestTimeouts::live_operation_timeout_ms(), reason);
+    } else {
+      EXPECT_TRUE(service()->sync_initialized());
+      wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
+      AwaitStatusChangeWithTimeout(
+          TestTimeouts::live_operation_timeout_ms(), reason);
+      if (wait_state_ == FULLY_SYNCED) {
+        // Client is online; sync was successful.
+        return true;
+      } else if (wait_state_ == SERVER_UNREACHABLE){
+        // Client is offline; sync was unsuccessful.
+        return false;
+      } else {
+        LOG(FATAL) << "Invalid wait state:" << wait_state_;
+        return false;
+      }
+    }
   } else {
-    EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
-    last_timestamp_ = snap->max_local_timestamp;
+    // Client is already synced; don't wait.
+    GetUpdatedTimestamp();
     return true;
   }
 }
@@ -270,18 +265,17 @@ bool ProfileSyncServiceTestHarness::WaitUntilTimestampIsAtLeast(
     int64 timestamp, const std::string& reason) {
   LogClientInfo("WaitUntilTimestampIsAtLeast");
   min_timestamp_needed_ = timestamp;
-  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-  DCHECK(snap) << "Should have been at least one sync session by now";
-  if (snap->max_local_timestamp < min_timestamp_needed_) {
+  if (GetUpdatedTimestamp() < min_timestamp_needed_) {
     wait_state_ = WAITING_FOR_UPDATES;
-    return AwaitStatusChangeWithTimeout(60, reason);
+    return AwaitStatusChangeWithTimeout(
+        TestTimeouts::live_operation_timeout_ms(), reason);
   } else {
     return true;
   }
 }
 
 bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
-    int timeout_seconds,
+    int timeout_milliseconds,
     const std::string& reason) {
   LogClientInfo("AwaitStatusChangeWithTimeout");
   scoped_refptr<StateChangeTimeoutEvent> timeout_signal(
@@ -291,7 +285,7 @@ bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
       FROM_HERE,
       NewRunnableMethod(timeout_signal.get(),
                         &StateChangeTimeoutEvent::Callback),
-      1000 * timeout_seconds);
+      timeout_milliseconds);
   LogClientInfo("Before RunMessageLoop");
   ui_test_utils::RunMessageLoop();
   LogClientInfo("After RunMessageLoop");
@@ -303,12 +297,11 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
 
   // Wait for the OnBackendInitialized() callback.
   EXPECT_EQ(wait_state_, WAITING_FOR_ON_BACKEND_INITIALIZED);
-  EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
-      "Waiting for OnBackendInitialized().")) <<
-      "OnBackendInitialized() not seen after 30 seconds.";
-
-  if (wait_state_ == AUTH_ERROR) {
-    return false;
+  if (!AwaitStatusChangeWithTimeout(TestTimeouts::live_operation_timeout_ms(),
+      "Waiting for OnBackendInitialized().")) {
+    LOG(FATAL) << "OnBackendInitialized() not seen after "
+               << TestTimeouts::live_operation_timeout_ms() / 1000
+               << " seconds.";
   }
 
   // Choose datatypes to be synced.
@@ -317,15 +310,36 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
       i < syncable::MODEL_TYPE_COUNT; ++i) {
     set.insert(syncable::ModelTypeFromInt(i));
   }
-  service_->OnUserChoseDatatypes(true, set);
+  service()->OnUserChoseDatatypes(true, set);
 
-  // Wait for notifications_enabled to be set to true.
-  EXPECT_EQ(wait_state_, WAITING_FOR_NOTIFICATIONS_ENABLED);
-  EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
-      "Waiting for notifications_enabled to be set to true.")) <<
-      "notifications_enabled not set to true after 30 seconds.";
+  // Wait for initial sync cycle to complete.
+  EXPECT_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
+  if (!AwaitStatusChangeWithTimeout(TestTimeouts::live_operation_timeout_ms(),
+      "Waiting for initial sync cycle to complete.")) {
+    LOG(FATAL) << "Initial sync cycle did not complete after "
+               << TestTimeouts::live_operation_timeout_ms() / 1000
+               << " seconds.";
+  }
 
   return true;
+}
+
+ProfileSyncService::Status ProfileSyncServiceTestHarness::GetStatus() {
+  EXPECT_FALSE(service() == NULL) << "GetStatus(): service() is NULL.";
+  return service()->QueryDetailedSyncStatus();
+}
+
+bool ProfileSyncServiceTestHarness::IsSynced() {
+  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
+  // TODO(rsimha): Remove additional checks of snap->has_more_to_sync and
+  // snap->unsynced_count once http://crbug.com/48989 is fixed.
+  return (service() &&
+          snap &&
+          ServiceIsPushingChanges() &&
+          GetStatus().notifications_enabled &&
+          !service()->backend()->HasUnsyncedItems() &&
+          !snap->has_more_to_sync &&
+          snap->unsynced_count == 0);
 }
 
 const SyncSessionSnapshot*
@@ -337,14 +351,24 @@ const SyncSessionSnapshot*
   return NULL;
 }
 
+int64 ProfileSyncServiceTestHarness::GetUpdatedTimestamp() {
+  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
+  EXPECT_FALSE(snap == NULL) << "GetUpdatedTimestamp(): Sync snapshot is NULL.";
+  EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
+  last_timestamp_ = snap->max_local_timestamp;
+  return last_timestamp_;
+}
+
 void ProfileSyncServiceTestHarness::LogClientInfo(std::string message) {
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   if (snap) {
     LOG(INFO) << "Client " << id_ << ": " << message << ": "
-        << "has_more_to_sync: " << snap->has_more_to_sync
-        << ", max_local_timestamp: " << snap->max_local_timestamp
+        << "max_local_timestamp: " << snap->max_local_timestamp
+        << ", has_more_to_sync: " << snap->has_more_to_sync
         << ", unsynced_count: " << snap->unsynced_count
         << ", has_unsynced_items: " << service()->backend()->HasUnsyncedItems()
+        << ", notifications_enabled: " << GetStatus().notifications_enabled
+        << ", ServiceIsPushingChanges(): " << ServiceIsPushingChanges()
         << ".";
   } else {
     LOG(INFO) << "Client " << id_ << ": " << message << ": "

@@ -619,19 +619,6 @@ class TestServer(object):
     # The implementation supports exactly one account; its state is here.
     self.account = SyncDataModel()
     self.account_lock = threading.Lock()
-    self.account_user_email = 'syncjuser@chromium.org'
-
-  def HandleConfigure(self, config):
-    """Handles various test configuration parameters sent from the client.
-
-    Args:
-      config: Dictionary of configuration parameters.
-    Returns:
-      True if configuration was successful.
-    """
-    if config.has_key('user_email'):
-      self.account_user_email = config['user_email'][0]
-    return True
 
   def HandleCommand(self, raw_request):
     """Decode and handle a sync command from a raw input of bytes.
@@ -661,7 +648,7 @@ class TestServer(object):
         print 'Authenticate'
         # We accept any authentication token, and support only one account.
         # TODO(nick): Mock out the GAIA authentication as well; hook up here.
-        response.authenticate.user.email = self.account_user_email
+        response.authenticate.user.email = 'syncjuser@chromium'
         response.authenticate.user.display_name = 'Sync J User'
       elif contents == sync_pb2.ClientToServerMessage.COMMIT:
         print 'Commit'

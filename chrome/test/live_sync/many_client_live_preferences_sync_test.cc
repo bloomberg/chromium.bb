@@ -4,8 +4,7 @@
 
 #include "chrome/test/live_sync/live_preferences_sync_test.h"
 
-// TODO(rsimha): Marking this as flaky until crbug.com/53931 is fixed.
-IN_PROC_BROWSER_TEST_F(ManyClientLivePreferencesSyncTest, FLAKY_Sanity) {
+IN_PROC_BROWSER_TEST_F(ManyClientLivePreferencesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   bool new_value = !GetVerifierPrefs()->GetBoolean(

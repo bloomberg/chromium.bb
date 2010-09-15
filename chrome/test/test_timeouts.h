@@ -45,6 +45,12 @@ class TestTimeouts {
     return wait_for_terminate_timeout_ms_;
   }
 
+  // Timeout to wait for a live operation to complete. Used by tests that access
+  // external services.
+  static int live_operation_timeout_ms() {
+    return live_operation_timeout_ms_;
+  }
+
  private:
   static bool initialized_;
 
@@ -54,6 +60,7 @@ class TestTimeouts {
   static int sleep_timeout_ms_;
   static int command_execution_timeout_ms_;
   static int wait_for_terminate_timeout_ms_;
+  static int live_operation_timeout_ms_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TestTimeouts);
 };

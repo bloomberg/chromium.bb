@@ -129,9 +129,6 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Enable outgoing network connections for the given profile.
   virtual void EnableNetwork(Profile* profile);
 
-  // Configure mock server with test's options.
-  virtual bool EnsureSyncServerConfiguration();
-
  protected:
   // InProcessBrowserTest override. Destroys all the sync clients and sync
   // profiles created by a test.
@@ -169,9 +166,6 @@ class LiveSyncTest : public InProcessBrowserTest {
   // clearing an invalid proxy configuration.
   void SetProxyConfig(URLRequestContextGetter* context,
                       const net::ProxyConfig& proxy_config);
-
-  // Sends configuration options to the mock sync server.
-  bool ConfigureSyncServer(const std::string& name, const std::string& value);
 
   // Used to differentiate between single-client, two-client, multi-client and
   // many-client tests.
