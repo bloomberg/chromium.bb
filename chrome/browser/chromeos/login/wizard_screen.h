@@ -12,6 +12,9 @@ class WizardScreen;
 namespace chromeos {
 class ScreenObserver;
 }  // namespace chromeos
+namespace gfx {
+class Size;
+}  // namespace gfx
 namespace views {
 class View;
 }  // namespace views
@@ -37,6 +40,8 @@ class WizardScreen {
   virtual void Show() = 0;
   // Makes wizard screen invisible.
   virtual void Hide() = 0;
+  // Returns the size the screen.
+  virtual gfx::Size GetScreenSize() const = 0;
 
  protected:
   explicit WizardScreen(WizardScreenDelegate* delegate): delegate_(delegate) {}

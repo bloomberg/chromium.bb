@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -41,6 +42,7 @@ class Rect;
 namespace views {
 class Views;
 class Widget;
+class WidgetGtk;
 }
 
 // Class that manages control flow between wizard screens. Wizard controller
@@ -162,6 +164,16 @@ class WizardController : public chromeos::ScreenObserver,
   void OnRegistrationSkipped();
   void OnOOBECompleted();
 
+  // Creates wizard screen window with the specified |bounds|.
+  // If |initial_show| initial animation (window & background) is shown.
+  // Otherwise only window is animated.
+  views::WidgetGtk* CreateScreenWindow(const gfx::Rect& bounds,
+                                       bool initial_show);
+
+  // Returns bounds for the wizard screen host window in screen coordinates.
+  // Calculates bounds using screen_bounds_.
+  gfx::Rect GetWizardScreenBounds(int screen_width, int screen_height) const;
+
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
 
@@ -194,6 +206,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Contents view.
   views::View* contents_;
 
+  // Used to calculate position of the wizard screen.
+  gfx::Rect screen_bounds_;
+
   // Screens.
   scoped_ptr<chromeos::NetworkScreen> network_screen_;
   scoped_ptr<chromeos::LoginScreen> login_screen_;
@@ -219,6 +234,9 @@ class WizardController : public chromeos::ScreenObserver,
   // True if this is run under automation test and we need to show only
   // login screen.
   bool is_test_mode_;
+
+  // Value of the screen name that WizardController was started with.
+  std::string first_screen_name_;
 
   // NULL by default - controller itself is observer. Mock could be assigned.
   ScreenObserver* observer_;

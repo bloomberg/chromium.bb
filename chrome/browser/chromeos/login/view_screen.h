@@ -7,17 +7,24 @@
 #pragma once
 
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "gfx/size.h"
 
 template <class V>
 class ViewScreen : public WizardScreen {
  public:
+  // Create screen with default size.
   explicit ViewScreen(WizardScreenDelegate* delegate);
+
+  // Create screen with the specified size.
+  ViewScreen(WizardScreenDelegate* delegate, int width, int height);
   virtual ~ViewScreen();
 
   // Overridden from WizardScreen:
   virtual void Show();
   virtual void Hide();
+  virtual gfx::Size GetScreenSize() const { return size_; }
 
   V* view() { return view_; }
 
@@ -35,6 +42,9 @@ class ViewScreen : public WizardScreen {
   friend class AutomationProvider;
 
   V* view_;
+
+  // Size of the screen.
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewScreen);
 };
@@ -54,7 +64,16 @@ class DefaultViewScreen : public ViewScreen<V> {
 template <class V>
 ViewScreen<V>::ViewScreen(WizardScreenDelegate* delegate)
     : WizardScreen(delegate),
-      view_(NULL) {
+      view_(NULL),
+      size_(chromeos::login::kWizardScreenWidth,
+            chromeos::login::kWizardScreenHeight) {
+}
+
+template <class V>
+ViewScreen<V>::ViewScreen(WizardScreenDelegate* delegate, int width, int height)
+    : WizardScreen(delegate),
+      view_(NULL),
+      size_(width, height) {
 }
 
 template <class V>

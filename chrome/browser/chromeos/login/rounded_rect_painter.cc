@@ -15,7 +15,9 @@ namespace chromeos {
 
 namespace {
 
-const int kCornerRadius = 5;
+const int kScreenCornerRadius = 10;
+const int kUserCornerRadius = 5;
+
 const SkColor kScreenTopColor = SkColorSetRGB(250, 251, 251);
 const SkColor kScreenBottomColor = SkColorSetRGB(204, 209, 212);
 const SkColor kScreenShadowColor = SkColorSetARGB(64, 34, 54, 115);
@@ -231,7 +233,7 @@ const BorderDefinition BorderDefinition::kScreenBorder = {
   SK_ColorBLACK,
   kScreenShadow,
   kScreenShadowColor,
-  kCornerRadius,
+  kScreenCornerRadius,
   kScreenTopColor,
   kScreenBottomColor
 };
@@ -241,7 +243,7 @@ const BorderDefinition BorderDefinition::kUserBorder = {
   SK_ColorBLACK,
   0,
   kScreenShadowColor,
-  kCornerRadius,
+  kUserCornerRadius,
   kScreenTopColor,
   kScreenBottomColor
 };

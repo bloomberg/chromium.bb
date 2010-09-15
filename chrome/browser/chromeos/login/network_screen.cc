@@ -21,6 +21,10 @@ namespace {
 // Time in seconds for connection timeout.
 const int kConnectionTimeoutSec = 15;
 
+// Considering 10px shadow from each side.
+const int kWelcomeScreenWidth = 580;
+const int kWelcomeScreenHeight = 305;
+
 }  // namespace
 
 namespace chromeos {
@@ -29,7 +33,9 @@ namespace chromeos {
 // NetworkScreen, public:
 
 NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate)
-    : ViewScreen<NetworkSelectionView>(delegate),
+    : ViewScreen<NetworkSelectionView>(delegate,
+                                       kWelcomeScreenWidth,
+                                       kWelcomeScreenHeight),
       is_network_subscribed_(false),
       continue_pressed_(false) {
 }

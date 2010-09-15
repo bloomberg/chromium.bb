@@ -37,7 +37,7 @@ using views::WidgetGtk;
 
 namespace {
 
-const int kWelcomeLabelY = 170;
+const int kWelcomeLabelY = 70;
 const int kContinueButtonSpacingX = 30;
 const int kSpacing = 25;
 const int kHorizontalSpacing = 25;
