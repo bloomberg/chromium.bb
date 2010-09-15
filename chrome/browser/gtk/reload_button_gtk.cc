@@ -32,7 +32,7 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
       theme_provider_(browser ?
                       GtkThemeProvider::GetFrom(browser->profile()) : NULL),
       reload_(theme_provider_, IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0),
-      stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0),
+      stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, IDR_STOP_D),
       widget_(gtk_chrome_button_new()) {
   gtk_widget_set_size_request(widget(), reload_.Width(), reload_.Height());
 
@@ -75,8 +75,30 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
     timer_.Stop();
     visible_mode_ = mode;
 
+    stop_.set_paint_override(-1);
+    gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(widget_.get()));
+
     UpdateThemeButtons();
     gtk_widget_queue_draw(widget());
+  } else if (visible_mode_ != MODE_RELOAD) {
+    // If you read the views implementation of reload_button.cc, you'll see
+    // that instead of screwing with paint states, the views implementation
+    // just changes whether the view is enabled. We can't do that here because
+    // changing the widget state to GTK_STATE_INSENSITIVE will cause a cascade
+    // of messages on all its children and will also trigger a synthesized
+    // leave notification and prevent the real leave notification from turning
+    // the button back to normal. So instead, override the stop_ paint state
+    // for chrome-theme mode, and use this as a flag to discard click events.
+    stop_.set_paint_override(GTK_STATE_INSENSITIVE);
+
+    // Also set the gtk_chrome_button paint state to insensitive to hide
+    // the border drawn around the stop icon.
+    gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(widget_.get()),
+                                      GTK_STATE_INSENSITIVE);
+
+    // If we're in GTK theme mode, we need to also render the correct icon for
+    // the stop/insensitive since we won't be using |stop_| to render the icon.
+    UpdateThemeButtons();
   }
 }
 
@@ -98,6 +120,11 @@ void ReloadButtonGtk::OnButtonTimer() {
 
 void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
   if (visible_mode_ == MODE_STOP) {
+    // The stop button is disabled because the user hovered over the button
+    // until the stop action is no longer selectable.
+    if (stop_.paint_override() == GTK_STATE_INSENSITIVE)
+      return;
+
     if (browser_)
       browser_->Stop();
 
@@ -182,13 +209,29 @@ void ReloadButtonGtk::UpdateThemeButtons() {
   bool use_gtk = theme_provider_ && theme_provider_->UseGtkTheme();
 
   if (use_gtk) {
-    GdkPixbuf* pixbuf = gtk_widget_render_icon(widget(),
-        (intended_mode_ == MODE_RELOAD) ? GTK_STOCK_REFRESH : GTK_STOCK_STOP,
-        GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
+    gtk_widget_ensure_style(widget());
+    GtkIconSet* icon_set = gtk_style_lookup_icon_set(
+        widget()->style,
+        (visible_mode_ == MODE_RELOAD) ? GTK_STOCK_REFRESH : GTK_STOCK_STOP);
+    if (icon_set) {
+      GtkStateType state = static_cast<GtkStateType>(
+          GTK_WIDGET_STATE(widget()));
+      if (visible_mode_ == MODE_STOP && stop_.paint_override() != -1)
+        state = static_cast<GtkStateType>(stop_.paint_override());
 
-    gtk_button_set_image(GTK_BUTTON(widget()),
-                         gtk_image_new_from_pixbuf(pixbuf));
-    g_object_unref(pixbuf);
+      GdkPixbuf* pixbuf = gtk_icon_set_render_icon(
+          icon_set,
+          widget()->style,
+          gtk_widget_get_direction(widget()),
+          state,
+          GTK_ICON_SIZE_SMALL_TOOLBAR,
+          widget(),
+          NULL);
+
+      gtk_button_set_image(GTK_BUTTON(widget()),
+                           gtk_image_new_from_pixbuf(pixbuf));
+      g_object_unref(pixbuf);
+    }
 
     gtk_widget_set_size_request(widget(), -1, -1);
     GtkRequisition req;
