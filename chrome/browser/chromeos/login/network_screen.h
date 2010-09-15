@@ -8,10 +8,12 @@
 
 #include "base/task.h"
 #include "base/timer.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
+#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/network_list.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -20,15 +22,19 @@ class WizardScreenDelegate;
 
 namespace chromeos {
 
+class HelpAppLauncher;
 class NetworkSelectionView;
 
 class NetworkScreen : public ViewScreen<NetworkSelectionView>,
+                      public MessageBubbleDelegate,
                       public NetworkScreenDelegate {
  public:
   explicit NetworkScreen(WizardScreenDelegate* delegate);
   virtual ~NetworkScreen();
 
   // NetworkScreenDelegate implementation:
+  virtual void ClearErrors();
+
   virtual LanguageSwitchMenu* language_switch_menu() {
     return &language_switch_menu_;
   }
@@ -48,6 +54,13 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   // ViewScreen implementation:
   virtual void CreateView();
   virtual NetworkSelectionView* AllocateView();
+
+  // Overridden from views::InfoBubbleDelegate.
+  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
+                                 bool closed_by_escape) { bubble_ = NULL; }
+  virtual bool CloseOnEscape() { return true; }
+  virtual bool FadeInOnShow() { return false; }
+  virtual void OnHelpLinkActivated();
 
   // Subscribes to network change notifications.
   void SubscribeNetworkNotification();
@@ -84,6 +97,13 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   base::OneShotTimer<NetworkScreen> connection_timer_;
 
   LanguageSwitchMenu language_switch_menu_;
+
+  // Pointer to shown message bubble. We don't need to delete it because
+  // it will be deleted on bubble closing.
+  MessageBubble* bubble_;
+
+  // Help application used for help dialogs.
+  scoped_ptr<HelpAppLauncher> help_app_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

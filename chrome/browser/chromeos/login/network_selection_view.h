@@ -19,7 +19,7 @@ namespace views {
 class Combobox;
 class Label;
 class NativeButton;
-class SmoothedThrobber;
+class Throbber;
 }  // namespace views
 
 namespace chromeos {
@@ -46,7 +46,11 @@ class NetworkSelectionView : public views::View,
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
 
-  gfx::NativeWindow GetNativeWindow();
+  // Returns top level native window for the view.
+  gfx::NativeWindow GetNativeWindow() const;
+
+  // Returns network control view.
+  views::View* GetNetworkControlView() const;
 
   // Shows network connecting status or network selection otherwise.
   void ShowConnectingStatus(bool connecting, const string16& network_id);
@@ -81,7 +85,7 @@ class NetworkSelectionView : public views::View,
   views::Label* connecting_network_label_;
   NetworkDropdownButton* network_dropdown_;
   views::NativeButton* continue_button_;
-  views::SmoothedThrobber* throbber_;
+  views::Throbber* throbber_;
   views::Link* proxy_settings_link_;
 
   // Tab index of continue button.

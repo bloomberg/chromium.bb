@@ -460,6 +460,10 @@ void ExistingUserController::OnHelpLinkActivated() {
       help_app_->ShowHelpTopic(
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE);
       break;
+    case(GoogleServiceAuthError::ACCOUNT_DISABLED):
+        help_app_->ShowHelpTopic(
+            HelpAppLauncher::HELP_ACCOUNT_DISABLED);
+        break;
     default:
       help_app_->ShowHelpTopic(login_timed_out_ ?
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE :

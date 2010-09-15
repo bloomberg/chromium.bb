@@ -19,6 +19,9 @@ class LanguageSwitchMenu;
 class NetworkScreenDelegate : public views::ButtonListener,
                               public NetworkLibrary::Observer {
  public:
+  // Cleares all error notifications.
+  virtual void ClearErrors() = 0;
+
   virtual LanguageSwitchMenu* language_switch_menu() = 0;
 
  protected:

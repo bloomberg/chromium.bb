@@ -5,13 +5,17 @@
 #include "chrome/browser/chromeos/login/network_screen.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
@@ -37,7 +41,8 @@ NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate)
                                        kWelcomeScreenWidth,
                                        kWelcomeScreenHeight),
       is_network_subscribed_(false),
-      continue_pressed_(false) {
+      continue_pressed_(false),
+      bubble_(NULL) {
 }
 
 NetworkScreen::~NetworkScreen() {
@@ -45,11 +50,21 @@ NetworkScreen::~NetworkScreen() {
   UnsubscribeNetworkNotification();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// NetworkScreen, NetworkScreenDelegate implementation:
+
+void NetworkScreen::ClearErrors() {
+  // bubble_ will be set to NULL in callback.
+  if (bubble_)
+    bubble_->Close();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener implementation:
 
 void NetworkScreen::ButtonPressed(views::Button* sender,
                                   const views::Event& event) {
+  ClearErrors();
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
   if (network && network->Connected()) {
     NotifyOnConnection();
@@ -76,6 +91,15 @@ void NetworkScreen::CreateView() {
 
 NetworkSelectionView* NetworkScreen::AllocateView() {
   return new NetworkSelectionView(this);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// NetworkScreen, views::InfoBubbleDelegate implementation:
+
+void NetworkScreen::OnHelpLinkActivated() {
+  if (!help_app_.get())
+    help_app_.reset(new HelpAppLauncher(view()->GetNativeWindow()));
+  help_app_->ShowHelpTopic(HelpAppLauncher::HELP_CONNECTIVITY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -113,8 +137,20 @@ void NetworkScreen::NotifyOnConnection() {
 }
 
 void NetworkScreen::OnConnectionTimeout() {
-  // TODO(nkostylev): Notify on connection error.
   StopWaitingForConnection(network_id_);
+  // Show error bubble.
+  ClearErrors();
+  views::View* network_control = view()->GetNetworkControlView();
+  bubble_ = MessageBubble::Show(
+      network_control->GetWidget(),
+      network_control->GetScreenBounds(),
+      BubbleBorder::LEFT_TOP,
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
+      l10n_util::GetStringF(IDS_NETWORK_SELECTION_ERROR,
+                            l10n_util::GetString(IDS_PRODUCT_OS_NAME),
+                            UTF16ToWide(network_id_)),
+      l10n_util::GetString(IDS_NETWORK_SELECTION_ERROR_HELP),
+      this);
 }
 
 void NetworkScreen::UpdateStatus(NetworkLibrary* network) {

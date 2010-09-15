@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -19,7 +20,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
 #include "views/widget/widget.h"
@@ -30,7 +30,6 @@
 
 using views::Background;
 using views::Label;
-using views::SmoothedThrobber;
 using views::View;
 using views::Widget;
 using views::WidgetGtk;
@@ -60,12 +59,68 @@ const int kMenuWidthOffset = 6;
 
 const SkColor kWelcomeColor = 0xFF1D6AB1;
 
-const int kThrobberFrameMs = 60;
-const int kThrobberStartDelayMs = 500;
-
 }  // namespace
 
 namespace chromeos {
+
+// NetworkDropdownButton with custom accelerator enabled.
+class NetworkControlWithAccelerators : public NetworkDropdownButton {
+ public:
+  NetworkControlWithAccelerators(bool browser_mode,
+                                 gfx::NativeWindow parent_window,
+                                 NetworkScreenDelegate* delegate)
+      : NetworkDropdownButton(browser_mode, parent_window),
+        delegate_(delegate),
+        accel_clear_errors_(views::Accelerator(app::VKEY_ESCAPE,
+                                               false, false, false)) {
+    AddAccelerator(accel_clear_errors_);
+  }
+
+  // Overridden from View:
+  bool AcceleratorPressed(const views::Accelerator& accel) {
+    if (accel == accel_clear_errors_) {
+      delegate_->ClearErrors();
+      return true;
+    }
+    return false;
+  }
+
+  // Overridden from MenuButton:
+  virtual bool Activate() {
+    delegate_->ClearErrors();
+    return MenuButton::Activate();
+  }
+
+ private:
+  NetworkScreenDelegate* delegate_;
+
+  // ESC accelerator for closing error info bubble.
+  views::Accelerator accel_clear_errors_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkControlWithAccelerators);
+};
+
+// MenuButton with custom processing on focus events.
+class NotifyingMenuButton : public views::MenuButton {
+ public:
+  NotifyingMenuButton(views::ButtonListener* listener,
+                      const std::wstring& text,
+                      views::ViewMenuDelegate* menu_delegate,
+                      bool show_menu_marker,
+                      NetworkScreenDelegate* delegate)
+      : MenuButton(listener, text, menu_delegate, show_menu_marker),
+        delegate_(delegate) {}
+
+  // Overridden from View:
+  virtual void DidGainFocus() {
+    delegate_->ClearErrors();
+  }
+
+ private:
+  NetworkScreenDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotifyingMenuButton);
+};
 
 NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
     : languages_menubutton_(NULL),
@@ -75,7 +130,7 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       connecting_network_label_(NULL),
       network_dropdown_(NULL),
       continue_button_(NULL),
-      throbber_(NULL),
+      throbber_(CreateDefaultSmoothedThrobber()),
       proxy_settings_link_(NULL),
       continue_button_order_index_(-1),
       continue_button_enabled_(false),
@@ -113,19 +168,19 @@ void NetworkSelectionView::Init() {
   connecting_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
   connecting_network_label_->SetVisible(false);
 
-  throbber_ = new views::SmoothedThrobber(kThrobberFrameMs);
-  throbber_->SetFrames(
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_SPINNER));
-  throbber_->set_start_delay_ms(kThrobberStartDelayMs);
-  AddChildView(throbber_);
-
-  languages_menubutton_ = new views::MenuButton(
-      NULL, std::wstring(), delegate_->language_switch_menu(), true);
+  languages_menubutton_ = new NotifyingMenuButton(
+      NULL, std::wstring(), delegate_->language_switch_menu(), true, delegate_);
   languages_menubutton_->SetFocusable(true);
   languages_menubutton_->SetNormalHasBorder(true);
   // Menu is positioned by bottom right corner of the MenuButton.
   delegate_->language_switch_menu()->set_menu_offset(kMenuHorizontalOffset,
                                                      kMenuVerticalOffset);
+
+  network_dropdown_ = new NetworkControlWithAccelerators(false,
+                                                         GetNativeWindow(),
+                                                         delegate_);
+  network_dropdown_->SetNormalHasBorder(true);
+  network_dropdown_->SetFocusable(true);
 
   proxy_settings_link_ = new views::Link();
   proxy_settings_link_->SetController(this);
@@ -136,10 +191,8 @@ void NetworkSelectionView::Init() {
   AddChildView(select_language_label_);
   AddChildView(select_network_label_);
   AddChildView(connecting_network_label_);
+  AddChildView(throbber_);
   AddChildView(languages_menubutton_);
-  network_dropdown_ = new NetworkDropdownButton(false, GetNativeWindow());
-  network_dropdown_->SetNormalHasBorder(true);
-  network_dropdown_->SetFocusable(true);
   AddChildView(network_dropdown_);
   AddChildView(proxy_settings_link_);
 
@@ -269,8 +322,12 @@ void NetworkSelectionView::Layout() {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkSelectionView, public:
 
-gfx::NativeWindow NetworkSelectionView::GetNativeWindow() {
+gfx::NativeWindow NetworkSelectionView::GetNativeWindow() const {
   return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
+}
+
+views::View* NetworkSelectionView::GetNetworkControlView() const {
+  return network_dropdown_;
 }
 
 void NetworkSelectionView::ShowConnectingStatus(bool connecting,
