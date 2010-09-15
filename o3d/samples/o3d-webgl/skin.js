@@ -412,6 +412,9 @@ o3d.SkinEval.getMaxNumBones = function(obj) {
   // The value must be at least 128. See glUniform.
   var gl = obj.gl;
   var maxVertexUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
+  if (!maxVertexUniformVectors) {
+    maxVertexUniformVectors = 128;
+  }
   return Math.floor((maxVertexUniformVectors - 32) / 3);
 };
 
