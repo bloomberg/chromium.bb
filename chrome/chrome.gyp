@@ -1559,6 +1559,29 @@
                 '../breakpad/breakpad.gyp:dump_syms',
               ],
             }],
+            ['linux_strip_reliability_tests==1', {
+              'actions': [
+                {
+                  'action_name': 'strip_reliability_tests',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/automated_ui_tests',
+                    '<(PRODUCT_DIR)/reliability_tests',
+                    '<(PRODUCT_DIR)/lib.target/_pyautolib.so',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/strip_reliability_tests.stamp',
+                  ],
+                  'action': ['strip',
+                             '-g',
+                             '<@(_inputs)'],
+                  'message': 'Stripping reliability tests',
+                },
+              ],
+              'dependencies': [
+                'automated_ui_tests',
+                'reliability_tests',
+              ],
+            }],
           ],
         }
       ],
