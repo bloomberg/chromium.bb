@@ -496,8 +496,10 @@ class SandboxIPCProcess  {
     Pickle reply;
     SendRendererReply(fds, reply, font_fd);
 
-    if (font_fd >= 0)
-      HANDLE_EINTR(close(font_fd));
+    if (font_fd >= 0) {
+      if (HANDLE_EINTR(close(font_fd)) < 0)
+        PLOG(ERROR) << "close";
+    }
   }
 
   // MSCharSetToFontconfig translates a Microsoft charset identifier to a
