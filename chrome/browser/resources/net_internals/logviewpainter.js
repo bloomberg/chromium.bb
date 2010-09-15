@@ -57,7 +57,7 @@ function canCollapseBeginWithEnd(beginEntry) {
              beginEntry.end.orig.wasPassivelyCaptured;
 }
 
-PrintSourceEntriesAsText = function(sourceEntries, doStripCookies) {
+PrintSourceEntriesAsText = function(sourceEntries, doSecurityStripping) {
   var entries = LogGroupEntry.createArrayFrom(sourceEntries);
   if (entries.length == 0)
     return '';
@@ -112,7 +112,8 @@ PrintSourceEntriesAsText = function(sourceEntries, doStripCookies) {
     // Output the extra parameters.
     if (entry.orig.params != undefined) {
       // Add a continuation row for each line of text from the extra parameters.
-      var extraParamsText = getTextForExtraParams(entry.orig, doStripCookies);
+      var extraParamsText = getTextForExtraParams(entry.orig,
+                                                  doSecurityStripping);
       var extraParamsTextLines = extraParamsText.split('\n');
 
       for (var j = 0; j < extraParamsTextLines.length; ++j) {
@@ -135,17 +136,17 @@ PrintSourceEntriesAsText = function(sourceEntries, doStripCookies) {
   return tablePrinter.toText();
 }
 
-function getTextForExtraParams(entry, doStripCookies) {
+function getTextForExtraParams(entry, doSecurityStripping) {
   // Format the extra parameters (use a custom formatter for certain types,
   // but default to displaying as JSON).
   switch (entry.type) {
     case LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
     case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
-      return getTextForRequestHeadersExtraParam(entry, doStripCookies);
+      return getTextForRequestHeadersExtraParam(entry, doSecurityStripping);
 
     case LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS:
     case LogEventType.HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS:
-      return getTextForResponseHeadersExtraParam(entry, doStripCookies);
+      return getTextForResponseHeadersExtraParam(entry, doSecurityStripping);
 
     case LogEventType.PROXY_CONFIG_CHANGED:
       return getTextForProxyConfigChangedExtraParam(entry);
@@ -154,7 +155,8 @@ function getTextForExtraParams(entry, doStripCookies) {
       var out = [];
       for (var k in entry.params) {
         if (k == 'headers' && entry.params[k] instanceof Array) {
-          out.push(getTextForResponseHeadersExtraParam(entry, doStripCookies));
+          out.push(getTextForResponseHeadersExtraParam(entry,
+                                                       doSecurityStripping));
           continue;
         }
         var value = entry.params[k];
@@ -220,8 +222,22 @@ function indentLines(start, lines) {
   return start + lines.join('\n' + makeRepeatedString(' ', start.length));
 }
 
-function stripCookie(line) {
-  var patterns = [/^set-cookie:/i, /^set-cookie2:/i, /^cookie:/i];
+/**
+ * Removes a cookie or unencrypted login information from a single HTTP header
+ * line, if present, and returns the modified line.  Otherwise, just returns
+ * the original line.
+ */
+function stripCookieOrLoginInfo(line) {
+  var patterns = [
+      // Cookie patterns
+      /^set-cookie:/i,
+      /^set-cookie2:/i,
+      /^cookie:/i,
+
+      // Unencrypted authentication patterns
+      /^authorization: \S*/i,
+      /^proxy-authorization: \S*/i];
+
   for (var i = 0; i < patterns.length; i++) {
     var match = patterns[i].exec(line);
     if (match != null)
@@ -230,27 +246,31 @@ function stripCookie(line) {
   return line;
 }
 
-function stripCookies(headers) {
-  return headers.map(stripCookie);
+/**
+ * Removes all cookie and unencrypted login text from a list of HTTP
+ * header lines.
+ */
+function stripCookiesAndLoginInfo(headers) {
+  return headers.map(stripCookieOrLoginInfo);
 }
 
-function getTextForRequestHeadersExtraParam(entry, doStripCookies) {
+function getTextForRequestHeadersExtraParam(entry, doSecurityStripping) {
   var params = entry.params;
 
   // Strip the trailing CRLF that params.line contains.
   var lineWithoutCRLF = params.line.replace(/\r\n$/g, '');
 
   var headers = params.headers;
-  if (doStripCookies)
-    headers = stripCookies(headers);
+  if (doSecurityStripping)
+    headers = stripCookiesAndLoginInfo(headers);
 
   return indentLines(' --> ', [lineWithoutCRLF].concat(headers));
 }
 
-function getTextForResponseHeadersExtraParam(entry, doStripCookies) {
+function getTextForResponseHeadersExtraParam(entry, doSecurityStripping) {
   var headers = entry.params.headers;
-  if (doStripCookies)
-    headers = stripCookies(headers);
+  if (doSecurityStripping)
+    headers = stripCookiesAndLoginInfo(headers);
   return indentLines(' --> ', headers);
 }
 

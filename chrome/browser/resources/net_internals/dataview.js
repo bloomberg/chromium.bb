@@ -15,13 +15,14 @@
 function DataView(mainBoxId,
                   outputTextBoxId,
                   exportTextButtonId,
-                  stripCookiesCheckboxId,
+                  securityStrippingCheckboxId,
                   passivelyCapturedCountId,
                   activelyCapturedCountId) {
   DivView.call(this, mainBoxId);
 
   this.textPre_ = document.getElementById(outputTextBoxId);
-  this.stripCookiesCheckbox_ = document.getElementById(stripCookiesCheckboxId);
+  this.securityStrippingCheckbox_ =
+      document.getElementById(securityStrippingCheckboxId);
 
   var exportTextButton = document.getElementById(exportTextButtonId);
   exportTextButton.onclick = this.onExportToText_.bind(this);
@@ -233,7 +234,7 @@ DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
     out.push('------------------------------------------');
 
     out.push(PrintSourceEntriesAsText(eventList,
-                                      this.stripCookiesCheckbox_.checked));
+        this.securityStrippingCheckbox_.checked));
   }
 };
 
