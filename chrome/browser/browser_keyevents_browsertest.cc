@@ -532,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 #define MAYBE_AccessKeys FLAKY_AccessKeys
 #else
 #define MAYBE_AccessKeys AccessKeys
-#end
+#endif
 
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 #if defined(OS_MACOSX)
