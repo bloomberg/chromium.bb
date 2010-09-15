@@ -4,13 +4,13 @@
  * be found in the LICENSE file.
  */
 
-#include "launcher.h"
+#include "native_client/tests/posix_over_srpc/launcher.h"
 
 #include <fcntl.h>
 
 #include <iostream>
 
-#include "linux_lib/posix_over_srpc_linux.h"
+#include "native_client/tests/posix_over_srpc/linux_lib/posix_over_srpc_linux.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
@@ -38,7 +38,7 @@ bool PosixOverSrpcLauncher::ValueByHandle(int child_id, int handle,
 int PosixOverSrpcLauncher::NewHandle(int child_id, HandledValue val) {
   ValueByHandleMap* pmap = value_by_handle_maps_[child_id];
   ++last_used_handles_[child_id];
-  while(pmap->find(last_used_handles_[child_id]) != pmap->end()) {
+  while (pmap->find(last_used_handles_[child_id]) != pmap->end()) {
     ++last_used_handles_[child_id];
   }
   (*pmap)[last_used_handles_[child_id]] = val;
@@ -85,7 +85,7 @@ PosixOverSrpcLauncher::PosixOverSrpcLauncher() {
 
 PosixOverSrpcLauncher::~PosixOverSrpcLauncher() {
   pthread_mutex_lock(&data_mu_);
-  while(nchildren_) {
+  while (nchildren_) {
     pthread_cond_wait(&all_children_died_cv_, &data_mu_);
   }
   pthread_mutex_unlock(&data_mu_);

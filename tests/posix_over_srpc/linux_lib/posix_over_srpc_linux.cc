@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#include "posix_over_srpc_linux.h"
+#include "native_client/tests/posix_over_srpc/linux_lib/posix_over_srpc_linux.h"
 
 PosixOverSrpcLauncher* GetLauncher(NaClSrpcChannel* channel) {
   return

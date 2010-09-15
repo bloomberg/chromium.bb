@@ -6,11 +6,11 @@
 
 #include <errno.h>
 
-#include "posix_over_srpc.h"
+#include "native_client/src/untrusted/posix_over_srpc/posix_over_srpc.h"
 
 struct sockaddr {
-    unsigned short    sa_family;    // address family, AF_xxx
-    char              sa_data[14];  // 14 bytes of protocol address
+  unsigned short sa_family;
+  char sa_data[14];
 };
 
 typedef unsigned long socklen_t;

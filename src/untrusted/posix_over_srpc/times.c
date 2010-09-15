@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <sys/times.h>
 
-#include "posix_over_srpc.h"
+#include "native_client/src/untrusted/posix_over_srpc/posix_over_srpc.h"
 
 clock_t times(struct tms *buffer) {
   __psrpc_request_t request;

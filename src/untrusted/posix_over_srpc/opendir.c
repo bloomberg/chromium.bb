@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "posix_over_srpc.h"
+#include "native_client/src/untrusted/posix_over_srpc/posix_over_srpc.h"
 
 DIR* nacl_opendir(const char* dir_name) {
   __psrpc_request_t request;

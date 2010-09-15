@@ -9,7 +9,7 @@
 #include <cerrno>
 
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
-#include "posix_over_srpc_linux.h"
+#include "native_client/tests/posix_over_srpc/linux_lib/posix_over_srpc_linux.h"
 
 NaClSrpcError nonnacl_socket(NaClSrpcChannel* channel,
                              NaClSrpcArg** ins,

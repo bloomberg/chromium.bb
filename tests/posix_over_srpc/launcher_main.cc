@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 
-#include "launcher.h"
+#include "native_client/tests/posix_over_srpc/launcher.h"
 
 int main(int argc, char **argv) {
   if (argc < 2) {

@@ -6,7 +6,7 @@
 
 #include <unistd.h>
 
-#include "posix_over_srpc.h"
+#include "native_client/src/untrusted/posix_over_srpc/posix_over_srpc.h"
 
 int nacl_close(int fd) {
   int result = close(fd);

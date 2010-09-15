@@ -6,8 +6,6 @@
 
 #include <string.h>
 
-#include "posix_over_srpc.h"
-
 #define PATH_MAX 4096
 
 char* getcwd(char* buf, size_t size);

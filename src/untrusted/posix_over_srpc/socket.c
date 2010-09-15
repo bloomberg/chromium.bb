@@ -6,7 +6,7 @@
 
 #include <errno.h>
 
-#include "posix_over_srpc.h"
+#include "native_client/src/untrusted/posix_over_srpc/posix_over_srpc.h"
 
 int socket(int domain, int type, int protocol) {
   __psrpc_request_t request;

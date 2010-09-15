@@ -56,18 +56,19 @@ void* test_pathconf(void* arg) {
   return NULL;
 }
 
+char test_file_name[] = "some_impossible_file_name.txt";
+
 void* test_open_read(void* arg) {
-  char file_name[] = "some_impossible_file_name.txt";
   char buf[32];
   int nbytes = 16;
-  int fd = open(file_name, O_RDONLY);
+  int fd = open(test_file_name, O_RDONLY);
   int r;
   assert(fd > 0);
   r = read(fd, buf, nbytes);
   assert(-1 != r);
   buf[r] = '\0';
-  printf("test_open_read: %d bytes from %s(fd = %d): %s\n", nbytes, file_name,
-         fd, buf);
+  printf("test_open_read: %d bytes from %s(fd = %d): %s\n", nbytes,
+         test_file_name, fd, buf);
   assert(0 == close(fd));
   return NULL;
 }
@@ -140,7 +141,13 @@ void* empty_routine(void* arg) {
 
 int main(int argc, char **argv) {
   int y;
+  int fd = open(test_file_name, O_CREAT | O_RDWR);
+  char test_string[] = "abracadabra";
   pthread_t threads[NTHREADS];
+
+  assert(strlen(test_string) == write(fd, test_string, strlen(test_string)));
+  close(fd);
+
   pthread_create(&threads[0], NULL, empty_routine, NULL);
   pthread_create(&threads[1], NULL, test_open_read, NULL);
   pthread_create(&threads[2], NULL, test_pathconf, NULL);
@@ -154,6 +161,9 @@ int main(int argc, char **argv) {
   pthread_create(&threads[10], NULL, test_pipe, NULL);
   for (y = 11; y < NTHREADS; ++y) {
     pthread_create(&threads[y], NULL, test_times, NULL);
+  }
+  for(y = 0; y < NTHREADS; ++y) {
+    pthread_join(threads[y], NULL);
   }
   return 0;
 }

@@ -11,9 +11,6 @@
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-
-// TODO(mikhailt): Decide how to avoid this absolute path. Mb launcher+linux_lib
-// should be one entity - libpsrpc_launcher.
 #include "native_client/tests/posix_over_srpc/launcher.h"
 
 // This structure is used like server_instance_data to make it possible to know

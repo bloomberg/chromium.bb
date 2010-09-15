@@ -6,7 +6,7 @@
 
 #include <errno.h>
 
-#include "posix_over_srpc.h"
+#include "native_client/src/untrusted/posix_over_srpc/posix_over_srpc.h"
 
 int pipe(int fd[2]) {
   __psrpc_request_t request;

@@ -10,7 +10,7 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "posix_over_srpc_linux.h"
+#include "native_client/tests/posix_over_srpc/linux_lib/posix_over_srpc_linux.h"
 
 NaClSrpcError nonnacl_pipe(NaClSrpcChannel* channel,
                            NaClSrpcArg** ins,

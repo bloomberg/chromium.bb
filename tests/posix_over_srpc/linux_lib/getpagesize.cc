@@ -6,7 +6,7 @@
 
 #include <unistd.h>
 
-#include "posix_over_srpc_linux.h"
+#include "native_client/tests/posix_over_srpc/linux_lib/posix_over_srpc_linux.h"
 
 NaClSrpcError nonnacl_getpagesize(NaClSrpcChannel* channel,
                                   NaClSrpcArg** ins,

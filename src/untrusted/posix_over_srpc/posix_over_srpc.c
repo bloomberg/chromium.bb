@@ -40,10 +40,18 @@
  * and main() procedure finished and main thread waits
  * in __srpc_wait or __pthread_shutdown for handler completion.
  * If main thread is done the magic number of threads meaning
- * handler have to exit is 4.
+ * handler have to exit is 3.
  */
 
-#include "posix_over_srpc.h"
+/*
+ * This macro determines number of threads when handler have to stop provided
+ * that main thread completed its execution. These 3 threads are: main thread
+ * plus two threads for two srpc channels created by SelLdrLauncher. Look at
+ * SelLdrLauncher::OpenSrpcChannels.
+ */
+#define NUMBER_OF_THREADS_WHEN_HANDLER_EXITS 3
+
+#include "native_client/src/untrusted/posix_over_srpc/posix_over_srpc.h"
 
 #include <malloc.h>
 #include <pthread.h>
@@ -393,7 +401,8 @@ void __psrpc_upcall_handler() {
       request = __psrpc_queue_pop(&__psrpc_queue);
       if (request->upcall_id == PSRPC_EXIT_HOOK) {
         if (__psrpc_main_thread_completion_flag
-            && (__psrpc_number_of_threads <= 4)) {
+            && (__psrpc_number_of_threads
+                <= NUMBER_OF_THREADS_WHEN_HANDLER_EXITS)) {
           exit_flag = 1;
         }
       } else {

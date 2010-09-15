@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "posix_over_srpc.h"
+#include "native_client/src/untrusted/posix_over_srpc/posix_over_srpc.h"
 
 struct dirent* nacl_readdir(DIR *dir) {
   __psrpc_request_t request;
