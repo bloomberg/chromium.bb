@@ -220,7 +220,9 @@ cr.define('options', function() {
     },
 
     updateIndicator: function() {
-      $(this.id + '-value').textContent = this.value;
+      if ($(this.id + '-value')) {
+        $(this.id + '-value').textContent = this.value;
+      }
     }
   };
 
