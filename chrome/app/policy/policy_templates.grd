@@ -138,13 +138,13 @@ templates and will be translated for each locale. -->
     <!-- Strings for ADM/ADMX/MCX policy templates: -->
 
     <message name="IDS_POLICY_GROUP_HOMEPAGELOCATION_DESC" desc="Description of the 'homepage' policy settings page.">
-      Configures the default homepage URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
+      Configures the default home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
 
       The homepage type can either be set to a URL you specify here or set to the New Tab Page.
 
-      If you specify the New Tab Page as the homepage type, then this policy is ignored.
+      If you select the New Tab Page, then this policy is ignored.
 
-      If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they still can choose the New Tab Page as their homepage.
+      If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.
     </message>
     <message name="IDS_POLICY_GROUP_HOMEPAGELOCATION_CAPTION" desc="Caption of the homepage URL text field in the homepage policy settings page.">
       Configure the homepage URL
@@ -221,8 +221,8 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_GROUP_AUTOFILLENABLED_DESC" desc="Description of
       the 'autofill' policy settings page.">
     Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill
-    feature and allows users to auto-complete web-forms using previously stored
-    information like address or credit card information.
+    feature and allows users to auto complete web forms using previously stored
+    information such as address or credit card information.
 
     If you enable this setting, AutoFill is always active.
 
@@ -262,10 +262,10 @@ templates and will be translated for each locale. -->
     </message>
 
     <message name="IDS_POLICY_GROUP_SYNCDISABLED_CAPTION" desc="Caption of the 'disable sync' policy settings page.">
-      Disallow synchronization of data with Google
+      Disable synchronization of data with Google
     </message>
     <message name="IDS_POLICY_GROUP_SYNCDISABLED_DESC" desc="Description of the 'disable sync' policy settings page.">
-      Disallows data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
+      Disables data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
 
       If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
@@ -340,7 +340,7 @@ templates and will be translated for each locale. -->
       <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
     </message>
     <message name="IDS_POLICY_PROXYPACURL_DESC" desc="The description of the 'proxy pac URL' policy when displayed in OSX Workgroup Manager.">
-      You can specify an URL to a proxy .pac file here.
+      You can specify a URL to a proxy .pac file here.
 
       This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
@@ -367,7 +367,7 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_GROUP_PASSWORDMANAGERENABLED_DESC" desc="Description of the 'password manager' policy settings page.">
       Enables saving passwords and using saved passwords in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you enable this setting, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time you log into a site.
+      If you enable this setting, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time they log in to a site.
 
       If you disable this setting, users are not able to save passwords or use already saved passwords.
 
@@ -375,7 +375,7 @@ templates and will be translated for each locale. -->
     </message>
 
     <message name="IDS_POLICY_GROUP_PASSWORDMANAGERALLOWSHOWPASSWORDS_CAPTION" desc="Caption of the 'allow show passwords in password manager' policy settings page.">
-      Allow to show passwords in Password Manager
+      Allow users to show passwords in Password Manager
     </message>
     <message name="IDS_POLICY_GROUP_PASSWORDMANAGERALLOWSHOWPASSWORDS_DESC" desc="Description of the 'allow show passwords in password manager' policy settings page.">
       Controls whether the user may show passwords in clear text in the password manager.
@@ -386,12 +386,12 @@ templates and will be translated for each locale. -->
     </message>
 
     <message name="IDS_POLICY_GROUP_DISABLEDPLUGINS_CAPTION" desc="Caption of the 'disable plugins' policy settings page.">
-      Specify a list of plugins that are disabled
+      Specify a list of disabled plugins
     </message>
     <message name="IDS_POLICY_GROUP_DISABLEDPLUGINS_DESC" desc="Description of the 'disable plugins' policy settings page.">
       Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
-      If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them.
+      If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.
     </message>
     <message name="IDS_POLICY_DISABLEDPLUGINS_CAPTION" desc="Label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
       List of disabled plugins
@@ -406,7 +406,7 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLBLACKLIST_DESC" desc="Description of the 'extension blacklist' policy settings page.">
       Allows you to specify which extensions the users can NOT install.
 
-      A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.
+      A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the whitelist.
     </message>
 
     <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLWHITELIST_CAPTION" desc="Caption of the 'extension whitelist' policy settings page.">
@@ -418,13 +418,13 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLWHITELIST_DESC" desc="Description of the 'extension whitelist' policy settings page.">
       Allows you to specify which extensions are not subject to the blacklist.
 
-      A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.
+      A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
 
       By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.
     </message>
 
     <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2" desc="A label specifying the oldest possible compatible version of Windows. This text will appear right next to a label containing the text 'Supported on:'.">
-      At least Microsoft Windows XP SP2
+      Microsoft Windows XP SP2 or later
     </message>
     <message name="IDS_POLICY_MAC_CHROME_PREFERENCES" desc="A text indicating in Mac OS X Workgroup Manager, that currently the preferences of Chrome are being edited">
       <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> preferences
@@ -438,17 +438,17 @@ templates and will be translated for each locale. -->
       the 'restore on startup' policy settings page.">
       Allows you to configure the pages that are loaded on startup.
 
-      If you choose 'open home page on startup' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 
+      If you choose 'open home page on startup' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you choose 'Reopen the URLs that were open last', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopend.
+      If you choose 'Reopen the URLs that were open last', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopened.
 
-      If you choose 'Open a list of URLs on startup', the list of 'URLs to open on startup' will be opened when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is started.
+      If you choose 'Open a list of URLs on startup', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>   
    
     <message name="IDS_POLICY_RESTOREONSTARTUP_CAPTION" desc="Caption of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'.">
-      Action on Startup 
+      Action on startup 
     </message>
     <message name="IDS_POLICY_RESTOREONSTARTUP_DESC" desc="Description of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'">
       Allows you to specify the behavior on startup.
@@ -468,7 +468,7 @@ templates and will be translated for each locale. -->
       URLs to open on startup
     </message>
     <message name="IDS_POLICY_RESTOREONSTARTUPURLS_DESC" desc="Description of the list editor 'restore startup urls' of the policy settings page 'restore on startup'.">
-      If 'Open a list of URLs' is selected as action on startup, this allows you to specify the list of URLs that are opened on startup.
+      If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened.
     </message>
 
     <!-- Begin Chrome Frame messages -->
