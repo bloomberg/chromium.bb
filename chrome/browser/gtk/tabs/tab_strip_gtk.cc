@@ -1445,7 +1445,7 @@ int TabStripGtk::tab_start_x() const {
   return 0;
 }
 
-void TabStripGtk::ResizeLayoutTabs() {
+bool TabStripGtk::ResizeLayoutTabs() {
   resize_layout_factory_.RevokeAll();
 
   // It is critically important that this is unhooked here, otherwise we will
@@ -1457,7 +1457,7 @@ void TabStripGtk::ResizeLayoutTabs() {
   if (mini_tab_count == GetTabCount()) {
     // Only mini tabs, we know the tab widths won't have changed (all mini-tabs
     // have the same width), so there is nothing to do.
-    return;
+    return false;
   }
   TabGtk* first_tab = GetTabAt(mini_tab_count);
   double unselected, selected;
@@ -1466,8 +1466,12 @@ void TabStripGtk::ResizeLayoutTabs() {
 
   // We only want to run the animation if we're not already at the desired
   // size.
-  if (abs(first_tab->width() - w) > 1)
+  if (abs(first_tab->width() - w) > 1) {
     StartResizeLayoutAnimation();
+    return true;
+  }
+
+  return false;
 }
 
 bool TabStripGtk::IsCursorInTabStripZone() const {
@@ -1902,15 +1906,11 @@ void TabStripGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   if (GetTabCount() == 0)
     return;
 
-  // Do a regular layout on the first configure-event so we don't animate
-  // the first tab.
-  // TODO(jhawkins): Windows resizes the layout tabs continuously during
-  // a resize.  I need to investigate which signal to watch in order to
-  // reproduce this behavior.
-  if (GetTabCount() == 1)
+  // When there is only one tab, Layout() so we don't animate it. With more
+  // tabs, do ResizeLayoutTabs(). In RTL(), we will also need to manually
+  // Layout() when ResizeLayoutTabs() is a no-op.
+  if ((GetTabCount() == 1) || (!ResizeLayoutTabs() && base::i18n::IsRTL()))
     Layout();
-  else
-    ResizeLayoutTabs();
 }
 
 gboolean TabStripGtk::OnDragMotion(GtkWidget* widget, GdkDragContext* context,

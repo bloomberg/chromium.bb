@@ -307,8 +307,9 @@ class TabStripGtk : public TabStripModelObserver,
   // Returns the x-coordinate tabs start from.
   int tab_start_x() const;
 
-  // Perform an animated resize-relayout of the TabStrip immediately.
-  void ResizeLayoutTabs();
+  // Perform an animated resize-relayout of the TabStrip immediately. The
+  // value returned indicates whether a resize actually took place.
+  bool ResizeLayoutTabs();
 
   // Returns whether or not the cursor is currently in the "tab strip zone"
   // which is defined as the region above the TabStrip and a bit below it.
