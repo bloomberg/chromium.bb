@@ -120,10 +120,63 @@ UNINITIALIZED READ
 ...
 *!*lipboard*
 
+UNINITIALIZED READ
+KERNEL32.dll!WideCharToMultiByte
+KERNEL32.dll!WideCharToMultiByte
+USER32.dll!DeregisterShellHookWindow
+*!*lipboard*
+
+# http://code.google.com/p/drmemory/issues/detail?id=48
+UNINITIALIZED READ
+system call NtContinue
+*!*SetThreadName
+
+# http://code.google.com/p/drmemory/issues/detail?id=49
+UNADDRESSABLE ACCESS
+...
+ntdll.dll!RtlInitializeCriticalSection*
+KERNEL32.dll!InitializeCriticalSection*
+
 UNADDRESSABLE ACCESS
 drmemorylib.dll!replace_*
+
+UNADDRESSABLE ACCESS
+ntdll.dll!RtlDeleteCriticalSection
+*!LockImpl::~LockImpl
+
+UNADDRESSABLE ACCESS
+*!file_util::ReadFileToString
+
+UNADDRESSABLE ACCESS
+*!*Zlib*
+
+UNADDRESSABLE ACCESS
+*!Send
+
+UNADDRESSABLE ACCESS
 ...
-*!*lipboard*
+*!tracked_objects::Tracked::Tracked
+
+UNADDRESSABLE ACCESS
+*!Pickle::Pickle
+
+UNADDRESSABLE ACCESS
+...
+*!IPC::ChannelProxy::Context::On*Message*
+
+# http://code.google.com/p/drmemory/issues/detail?id=52
+UNINITIALIZED READ
+...
+DBGHELP.dll!SymInitialize
+
+UNINITIALIZED READ
+...
+DBGHELP.dll!SymEnumSourceFiles
+
+UNINITIALIZED READ
+...
+msvcrt.dll!_RTDynamicCast 
+
 
 ############################
 # TODO(timurrrr): investigate these
@@ -175,10 +228,50 @@ UNINITIALIZED READ
 ...
 USER32.dll!DrawText*
 
+UNINITIALIZED READ
+...
+GDI32.dll!GetTextExtentPoint32*
+
 # This one looks interesting
 INVALID HEAP ARGUMENT
 ...
 KERNEL32.dll!ExitProcess
+
+UNINITIALIZED READ
+...
+*!SyncSocketClientListener::OnMsgClassResponse
+
+############################
+# Intentional errors in Chromium tests (ToolsSanityTests)
+
+UNADDRESSABLE ACCESS
+base_unittests.exe!ReadValueOutOfArrayBoundsLeft
+base_unittests.exe!MakeSomeErrors
+base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+
+UNADDRESSABLE ACCESS
+base_unittests.exe!ReadValueOutOfArrayBoundsRight
+base_unittests.exe!MakeSomeErrors
+base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+
+UNADDRESSABLE ACCESS
+base_unittests.exe!WriteValueOutOfArrayBoundsLeft
+base_unittests.exe!MakeSomeErrors
+base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+
+UNADDRESSABLE ACCESS
+base_unittests.exe!WriteValueOutOfArrayBoundsRight
+base_unittests.exe!MakeSomeErrors
+base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+
+# Write after free
+UNADDRESSABLE ACCESS
+base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+
+# Write after delete []
+UNADDRESSABLE ACCESS
+base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
+
 
 ############################
 # Real issues in Chromium
