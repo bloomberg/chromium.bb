@@ -69,8 +69,20 @@ class TestLauncher(object):
 
   def launch(self):
     env = os.environ.copy()
-    env['GTEST_TOTAL_SHARDS'] = str(self._num_shards)
-    env['GTEST_SHARD_INDEX'] = str(self._shard)
+    if 'GTEST_TOTAL_SHARDS' in env:
+      # Handle the requested sharding transparently.
+      outer_shards = int(env['GTEST_TOTAL_SHARDS'])
+      outer_index = int(env['GTEST_SHARD_INDEX'])
+
+      env['GTEST_TOTAL_SHARDS'] = str(self._num_shards * outer_shards)
+
+      # Calculate the right shard index to pass to the child. This is going
+      # to be a shard of a shard.
+      env['GTEST_SHARD_INDEX'] = str((self._num_shards * outer_index) +
+                                     self._shard)
+    else:
+      env['GTEST_TOTAL_SHARDS'] = str(self._num_shards)
+      env['GTEST_SHARD_INDEX'] = str(self._shard)
 
     args = self._args + ['--test-server-shard=' + str(self._shard)]
 
@@ -113,6 +125,12 @@ def main(argv):
 
   if not args:
     print 'You must provide path to the test binary'
+    return 1
+
+  env = os.environ
+  if bool('GTEST_TOTAL_SHARDS' in env) != bool('GTEST_SHARD_INDEX' in env):
+    print 'Inconsistent environment. GTEST_TOTAL_SHARDS and GTEST_SHARD_INDEX'
+    print 'should either be both defined, or both undefined.'
     return 1
 
   launchers = []
