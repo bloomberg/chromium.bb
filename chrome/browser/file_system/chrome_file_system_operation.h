@@ -8,9 +8,9 @@
 #include "webkit/fileapi/file_system_operation.h"
 
 // This class is designed to serve one-time file system operation per instance.
-// Each operation method (CreateFile, CreateDirectory, Copy, Move,
-// DirectoryExists, GetMetadata, ReadDirectory and Remove) must be called
-// only once in its lifetime.
+// Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,
+// GetMetadata, ReadDirectory and Remove) may be called during the lifetime of
+// this object and it should be called no more than once.
 class ChromeFileSystemOperation : public fileapi::FileSystemOperation {
  public:
   ChromeFileSystemOperation(
