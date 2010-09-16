@@ -529,6 +529,12 @@ function updateAttributionDisplay(contentBottom) {
   var contentRect = main.getBoundingClientRect();
   var attributionRect = attribution.getBoundingClientRect();
 
+  // Hack. See comments for '.haslayout' in new_new_tab.css.
+  if (attributionRect.width == 0)
+    return;
+  else
+    attribution.classList.remove('nolayout');
+
   if (contentBottom > attribution.offsetTop) {
     if ((!rtl && contentRect.right > attributionRect.left) ||
         (rtl && attributionRect.right > contentRect.left)) {

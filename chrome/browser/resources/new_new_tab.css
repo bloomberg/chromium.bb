@@ -219,6 +219,19 @@ html[dir=rtl] .item {
   pointer-events: none;
 }
 
+/**
+ * Unfortunately, there seems to be a bug in WebKit where this div doesn't
+ * immediately get layout. It still doesn't have it in 'load', but gains it
+ * sometime after.
+ *
+ * We detect this in the JS by looking for offsetWidth > 0, and when it occurs,
+ * remove the 'nolayout' class.
+ */
+#attribution.nolayout {
+  position: static;
+  visibility: hidden;
+}
+
 #attribution {
   position: fixed;
   right: 5px;
