@@ -51,8 +51,16 @@ wstring ExpectedTitleFromAuth(const wstring& username,
   return username + L"/" + password;
 }
 
+// http://crbug.com/55380 - NavigateToURL is making this flaky.
+#if defined(OS_WIN)
+#define MAYBE_TestBasicAuth FLAKY_TestBasicAuth
+#elif defined(OS_LINUX)
+#define MAYBE_TestBasicAuth FLAKY_TestBasicAuth
+#else
+#define MAYBE_TestBasicAuth TestBasicAuth 
+#endif
 // Test that "Basic" HTTP authentication works.
-TEST_F(LoginPromptTest, TestBasicAuth) {
+TEST_F(LoginPromptTest, MAYBE_TestBasicAuth) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
