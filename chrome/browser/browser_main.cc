@@ -246,8 +246,8 @@ void BrowserMainParts::ConnectionFieldTrial() {
 // packet and possibly another RTT to re-establish the connection.
 void BrowserMainParts::SocketTimeoutFieldTrial() {
   const FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
-  // 25% probability
-  const FieldTrial::Probability kSocketTimeoutProbability = 25;
+  // 1% probability for all experimental settings.
+  const FieldTrial::Probability kSocketTimeoutProbability = 1;
 
   scoped_refptr<FieldTrial> socket_timeout_trial =
       new FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor);
@@ -255,19 +255,14 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   const int socket_timeout_5 =
       socket_timeout_trial->AppendGroup("idle_timeout_5",
                                         kSocketTimeoutProbability);
+  const int socket_timeout_10 =
+      socket_timeout_trial->AppendGroup("idle_timeout_10",
+                                        kSocketTimeoutProbability);
   const int socket_timeout_20 =
       socket_timeout_trial->AppendGroup("idle_timeout_20",
                                         kSocketTimeoutProbability);
   const int socket_timeout_60 =
       socket_timeout_trial->AppendGroup("idle_timeout_60",
-                                        kSocketTimeoutProbability);
-  // This (10 seconds) is the current default value. Declaring it at the end
-  // allows for assigning the remainder of the probability space to it; which
-  // will make it to modify this value (by changing |kSocketTimeoutProbability|)
-  // down the road if we see the need to, while the remaining groups are
-  // are assigned an equal share of the probability space.
-  const int socket_timeout_10 =
-      socket_timeout_trial->AppendGroup("idle_timeout_10",
                                         FieldTrial::kAllRemainingProbability);
 
   const int idle_to_trial_group = socket_timeout_trial->group();
@@ -339,18 +334,14 @@ void BrowserMainParts::SpdyFieldTrial() {
     net::HttpNetworkLayer::EnableSpdy(spdy_mode);
   } else {
     const FieldTrial::Probability kSpdyDivisor = 1000;
-    // To enable 100% npn_with_spdy, set npnhttp_probability = 0 and set
-    // npnspdy_probability = FieldTrial::kAllRemainingProbability.
-    FieldTrial::Probability npnhttp_probability = 50;
-    FieldTrial::Probability npnspdy_probability = 950;
+    FieldTrial::Probability npnhttp_probability = 10;  // 1% to preclude SPDY.
     scoped_refptr<FieldTrial> trial =
         new FieldTrial("SpdyImpact", kSpdyDivisor);
     // npn with only http support, no spdy.
-    int npn_http_grp =
-        trial->AppendGroup("npn_with_http", npnhttp_probability);
+    int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
     // npn with spdy support.
-    int npn_spdy_grp =
-        trial->AppendGroup("npn_with_spdy", npnspdy_probability);
+    int npn_spdy_grp = trial->AppendGroup("npn_with_spdy",
+                                          FieldTrial::kAllRemainingProbability);
     int trial_grp = trial->group();
     if (trial_grp == npn_http_grp) {
       is_spdy_trial = true;
@@ -365,7 +356,7 @@ void BrowserMainParts::SpdyFieldTrial() {
 }
 
 // If neither --enable-content-prefetch or --disable-content-prefetch
-// is set, users will be in an A/B test for prefetching.
+// is set, users will not be in an A/B test for prefetching.
 void BrowserMainParts::PrefetchFieldTrial() {
   if (parsed_command_line().HasSwitch(switches::kEnableContentPrefetch))
     ResourceDispatcherHost::set_is_prefetch_enabled(true);
@@ -400,14 +391,14 @@ void BrowserMainParts::ConnectBackupJobsFieldTrial() {
   } else {
     const FieldTrial::Probability kConnectBackupJobsDivisor = 100;
     // 50% probability.
-    const FieldTrial::Probability kConnectBackupJobsProbability = 50;
-    scoped_refptr<FieldTrial> trial =
-      new FieldTrial("ConnnectBackupJobs", kConnectBackupJobsDivisor);
+    const FieldTrial::Probability kConnectBackupJobsProbability = 1;  // 1%.
+    scoped_refptr<FieldTrial> trial = new FieldTrial("ConnnectBackupJobs",
+                                                     kConnectBackupJobsDivisor);
+    trial->AppendGroup("ConnectBackupJobsDisabled",
+                       kConnectBackupJobsProbability);
     const int connect_backup_jobs_enabled =
         trial->AppendGroup("ConnectBackupJobsEnabled",
-            kConnectBackupJobsProbability);
-    trial->AppendGroup("ConnectBackupJobsDisabled",
-                       FieldTrial::kAllRemainingProbability);
+                           FieldTrial::kAllRemainingProbability);
     const int trial_group = trial->group();
     net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
         trial_group == connect_backup_jobs_enabled);

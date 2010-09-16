@@ -57,26 +57,8 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
       net::HostResolverImpl* host_resolver_impl =
           global_host_resolver->GetAsHostResolverImpl();
       if (host_resolver_impl != NULL) {
-        // (optionally) Use probe to decide if support is warranted.
-        bool use_ipv6_probe = true;
-
-#if defined(OS_WIN)
-        // Measure impact of probing to allow IPv6.
-        // Some users report confused OS handling of IPv6, leading to large
-        // latency.  If we can show that IPv6 is not supported, then disabliing
-        // it will work around such problems. This is the test of the probe.
-        const FieldTrial::Probability kDivisor = 100;
-        const FieldTrial::Probability kProbability = 50;  // 50% probability.
-        FieldTrial* trial = new FieldTrial("IPv6_Probe", kDivisor);
-        int skip_group = trial->AppendGroup("IPv6_probe_skipped",
-                                            kProbability);
-        trial->AppendGroup("IPv6_probe_done",
-                           FieldTrial::kAllRemainingProbability);
-        use_ipv6_probe = (trial->group() != skip_group);
-#endif
-
-        if (use_ipv6_probe)
-          host_resolver_impl->ProbeIPv6Support();
+        // Use probe to decide if support is warranted.
+        host_resolver_impl->ProbeIPv6Support();
       }
     }
   }

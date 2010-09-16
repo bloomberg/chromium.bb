@@ -122,15 +122,6 @@ void UrlInfo::SetFoundState() {
   if (kMaxNonNetworkDnsLookupDuration <= resolve_duration_) {
     UMA_HISTOGRAM_CUSTOM_TIMES("DNS.PrefetchResolution", resolve_duration_,
         kMaxNonNetworkDnsLookupDuration, TimeDelta::FromMinutes(15), 100);
-
-    static bool use_ipv6_histogram(FieldTrialList::Find("IPv6_Probe") &&
-        !FieldTrialList::Find("IPv6_Probe")->group_name().empty());
-    if (use_ipv6_histogram) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          FieldTrial::MakeName("DNS.PrefetchResolution", "IPv6_Probe"),
-          resolve_duration_, kMaxNonNetworkDnsLookupDuration,
-          TimeDelta::FromMinutes(15), 100);
-    }
   }
   sequence_number_ = sequence_counter++;
   DLogResultsStats("DNS PrefetchFound");
