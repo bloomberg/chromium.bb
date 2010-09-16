@@ -163,7 +163,7 @@ bool SameObject(HANDLE handle, const wchar_t* full_path) {
     return false;
 
   // Ignore the nulls at the end.
-  vol_length -= 2;
+  vol_length = static_cast<DWORD>(wcslen(vol_name));
 
   // The two paths should be the same length.
   if (vol_length + path.size() - (colon_pos + 1) != actual_path.size())
