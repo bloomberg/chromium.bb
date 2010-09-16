@@ -7,6 +7,9 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 
@@ -24,39 +27,46 @@ Value* CreateSettingsBooleanValue(bool value, bool managed) {
 namespace chromeos {
 
 UserCrosSettingsProvider::UserCrosSettingsProvider()
-    : dict_(new DictionaryValue) {
-  bool is_owner = UserManager::Get()->current_user_is_owner();
+    : cache_(new DictionaryValue) {
+  current_user_is_owner_ = UserManager::Get()->current_user_is_owner();
 
-  Set(kAccountsPrefAllowBWSI, CreateSettingsBooleanValue(true, !is_owner));
-  Set(kAccountsPrefAllowGuest, CreateSettingsBooleanValue(true, !is_owner));
-  Set(kAccountsPrefShowUserNamesOnSignIn,
-      CreateSettingsBooleanValue(true, !is_owner));
+  StartFetchingBoolSetting(kAccountsPrefAllowBWSI, true);
+  StartFetchingBoolSetting(kAccountsPrefAllowGuest, true);
+  StartFetchingBoolSetting(kAccountsPrefShowUserNamesOnSignIn, true);
 
-  ListValue* user_list = new ListValue;
+  LoadUserWhitelist();
+}
 
-  DictionaryValue* mock_user = new DictionaryValue;
-  mock_user->SetString("email", "mock_user_1@gmail.com");
-  mock_user->SetString("name", "Mock User One");
-  mock_user->SetBoolean("owner", true);
-  user_list->Append(mock_user);
-
-  mock_user = new DictionaryValue;
-  mock_user->SetString("email", "mock_user_2@gmail.com");
-  mock_user->SetString("name", "Mock User Two");
-  mock_user->SetBoolean("owner", false);
-  user_list->Append(mock_user);
-
-  Set(kAccountsPrefUsers, user_list);
+UserCrosSettingsProvider::~UserCrosSettingsProvider() {
+  // Cancels all pending callbacks from us.
+  SignedSettingsHelper::Get()->CancelCallback(this);
 }
 
 void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
-  dict_->Set(path, in_value);
+  if (path == kAccountsPrefAllowBWSI ||
+      path == kAccountsPrefAllowGuest ||
+      path == kAccountsPrefShowUserNamesOnSignIn) {
+    bool bool_value = false;
+    if (in_value->GetAsBoolean(&bool_value)) {
+      cache_->Set(path, in_value);
+
+      std::string value = bool_value ? "true" : "false";
+      SignedSettingsHelper::Get()->StartStorePropertyOp(path, value, this);
+
+      LOG(INFO) << "Set cros setting " << path << "=" << value;
+    }
+  } else if (path == kAccountsPrefUsers) {
+    LOG(INFO) << "Setting user whitelist is not implemented."
+              << "Please use whitelist/unwhitelist instead.";
+  } else {
+    LOG(WARNING) << "Try to set unhandled cros setting " << path;
+  }
 }
 
 bool UserCrosSettingsProvider::Get(const std::string& path,
                                    Value** out_value) const {
   Value* value = NULL;
-  if (dict_->Get(path, &value) && value) {
+  if (cache_->Get(path, &value) && value) {
     *out_value = value->DeepCopy();
     return true;
   }
@@ -66,6 +76,97 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
 
 bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
   return ::StartsWithASCII(path, "cros.accounts.", true);
+}
+
+void UserCrosSettingsProvider::OnWhitelistCompleted(bool success,
+    const std::string& email) {
+  LOG(INFO) << "Add " << email << " to whitelist, success=" << success;
+
+  // Reload the whitelist on settings op failure.
+  if (!success)
+    LoadUserWhitelist();
+}
+
+void UserCrosSettingsProvider::OnUnwhitelistCompleted(bool success,
+    const std::string& email) {
+  LOG(INFO) << "Remove " << email << " from whitelist, success=" << success;
+
+  // Reload the whitelist on settings op failure.
+  if (!success)
+    LoadUserWhitelist();
+}
+
+void UserCrosSettingsProvider::OnStorePropertyCompleted(
+    bool success, const std::string& name, const std::string& value) {
+  LOG(INFO) << "Store cros setting " << name << "=" << value
+            << ", success=" << success;
+
+  // Reload the setting if store op fails.
+  if (!success)
+    SignedSettingsHelper::Get()->StartRetrieveProperty(name, this);
+}
+
+void UserCrosSettingsProvider::OnRetrievePropertyCompleted(
+    bool success, const std::string& name, const std::string& value) {
+  if (!success) {
+    LOG(WARNING) << "Failed to retrieve cros setting, name=" << name;
+    return;
+  }
+
+  LOG(INFO) << "Retrieved cros setting " << name << "=" << value;
+
+  bool bool_value = value == "true" ? true : false;
+  cache_->Set(name,
+      CreateSettingsBooleanValue(bool_value, !current_user_is_owner_));
+  CrosSettings::Get()->FireObservers(name.c_str());
+}
+
+void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {
+  SignedSettingsHelper::Get()->StartWhitelistOp(email, true, this);
+}
+
+void UserCrosSettingsProvider::UnwhitelistUser(const std::string& email) {
+  SignedSettingsHelper::Get()->StartWhitelistOp(email, false, this);
+}
+
+void UserCrosSettingsProvider::StartFetchingBoolSetting(
+    const std::string& name,
+    bool default_value) {
+  if (!cache_->HasKey(name)) {
+    cache_->Set(name,
+        CreateSettingsBooleanValue(default_value, !current_user_is_owner_));
+  }
+
+  if (CrosLibrary::Get()->EnsureLoaded())
+    SignedSettingsHelper::Get()->StartRetrieveProperty(name, this);
+}
+
+void UserCrosSettingsProvider::LoadUserWhitelist() {
+  ListValue* user_list = new ListValue;
+
+  std::vector<std::string> whitelist;
+  if (!CrosLibrary::Get()->EnsureLoaded() ||
+      !CrosLibrary::Get()->GetLoginLibrary()->EnumerateWhitelisted(
+          &whitelist)) {
+    LOG(WARNING) << "Failed to retrieve user whitelist.";
+  } else {
+    const UserManager::User& current_user =
+        UserManager::Get()->logged_in_user();
+    for (size_t i = 0; i < whitelist.size(); ++i) {
+      const std::string& email = whitelist[i];
+
+      DictionaryValue* user = new DictionaryValue;
+      user->SetString("email", email);
+      user->SetString("name", "");
+      user->SetBoolean("owner",
+          current_user_is_owner_ && email == current_user.email());
+
+      user_list->Append(user);
+    }
+  }
+
+  cache_->Set(kAccountsPrefUsers, user_list);
+  CrosSettings::Get()->FireObservers(kAccountsPrefUsers);
 }
 
 }  // namespace chromeos

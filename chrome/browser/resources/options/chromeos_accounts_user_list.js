@@ -69,7 +69,7 @@ cr.define('options.accounts', function() {
       var index = this.findUserByEmail_(user.email);
       if (index == -1) {
         this.dataModel.push(user);
-        this.updateBackend_();
+        chrome.send('whitelistUser', [user.email]);
       }
     },
 
@@ -82,7 +82,7 @@ cr.define('options.accounts', function() {
       var index = dataModel.indexOf(user);
       if (index >= 0) {
         dataModel.splice(index, 1);
-        this.updateBackend_();
+        chrome.send('unwhitelistUser', [user.email]);
       }
     },
 
@@ -108,13 +108,6 @@ cr.define('options.accounts', function() {
      */
     load_: function(users) {
       this.dataModel = new ArrayDataModel(users);
-    },
-
-    /**
-     * Updates backend.
-     */
-    updateBackend_: function() {
-      Preferences.setObjectPref(this.pref, this.dataModel.slice());
     }
   };
 

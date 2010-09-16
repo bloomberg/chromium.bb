@@ -22,6 +22,14 @@ AccountsOptionsHandler::AccountsOptionsHandler()
 AccountsOptionsHandler::~AccountsOptionsHandler() {
 }
 
+void AccountsOptionsHandler::RegisterMessages() {
+  DCHECK(dom_ui_);
+  dom_ui_->RegisterMessageCallback("whitelistUser",
+      NewCallback(this, &AccountsOptionsHandler::WhitelistUser));
+  dom_ui_->RegisterMessageCallback("unwhitelistUser",
+      NewCallback(this, &AccountsOptionsHandler::UnwhitelistUser));
+}
+
 void AccountsOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
@@ -44,6 +52,28 @@ void AccountsOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("current_user_is_owner",
       UserManager::Get()->current_user_is_owner() ?
       ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+}
+
+UserCrosSettingsProvider* AccountsOptionsHandler::users_settings() const {
+  return static_cast<UserCrosSettingsProvider*>(settings_provider_.get());
+}
+
+void AccountsOptionsHandler::WhitelistUser(const ListValue* args) {
+  std::string email;
+  if (!args->GetString(0, &email)) {
+    return;
+  }
+
+  users_settings()->WhitelistUser(email);
+}
+
+void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
+  std::string email;
+  if (!args->GetString(0, &email)) {
+    return;
+  }
+
+  users_settings()->UnwhitelistUser(email);
 }
 
 }  // namespace chromeos

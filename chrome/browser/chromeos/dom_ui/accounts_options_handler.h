@@ -10,16 +10,27 @@
 
 namespace chromeos {
 
+class UserCrosSettingsProvider;
+
 // ChromeOS accounts options page handler.
 class AccountsOptionsHandler : public CrosOptionsPageUIHandler {
  public:
   AccountsOptionsHandler();
   virtual ~AccountsOptionsHandler();
 
+  // DOMMessageHandler implementation.
+  virtual void RegisterMessages();
+
   // OptionsUIHandler implementation:
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
  private:
+  UserCrosSettingsProvider* users_settings() const;
+
+  // Javascript callbacks to whitelist/unwhitelist user.
+  void WhitelistUser(const ListValue* args);
+  void UnwhitelistUser(const ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(AccountsOptionsHandler);
 };
 
