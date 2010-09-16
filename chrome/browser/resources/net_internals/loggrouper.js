@@ -74,7 +74,7 @@ LogGroupEntry.createArrayFrom = function(origEntries) {
 
         // Consider this as the terminator for all open BEGINs up until
         // parentIndex.
-        for (var j = 0; j < parentStack.length - parentIndex; ++j) {
+        while (parentIndex < parentStack.length) {
           var p = parentStack.pop();
           p.end = groupEntry;
         }
