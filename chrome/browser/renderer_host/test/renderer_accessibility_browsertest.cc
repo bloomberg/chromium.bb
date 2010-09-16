@@ -17,6 +17,11 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
+#if defined(OS_WIN)
+#include <atlbase.h>
+#include <atlcom.h>
+#endif
+
 using webkit_glue::WebAccessibility;
 
 namespace {
@@ -25,33 +30,44 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
  public:
   RendererAccessibilityBrowserTest() {}
 
+  // InProcessBrowserTest
+  void SetUpInProcessBrowserTestFixture();
+  void TearDownInProcessBrowserTestFixture();
+
  protected:
-  const char *GetAttr(const WebAccessibility& node,
+  std::string GetAttr(const WebAccessibility& node,
                       const WebAccessibility::Attribute attr);
 };
 
+void RendererAccessibilityBrowserTest::SetUpInProcessBrowserTestFixture() {
+#if defined(OS_WIN)
+  // ATL needs a pointer to a COM module.
+  static CComModule module;
+  _pAtlModule = &module;
+
+  // Make sure COM is initialized for this thread; it's safe to call twice.
+  ::CoInitialize(NULL);
+#endif
+}
+
+void RendererAccessibilityBrowserTest::TearDownInProcessBrowserTestFixture() {
+#if defined(OS_WIN)
+  ::CoUninitialize();
+#endif
+}
 // Convenience method to get the value of a particular WebAccessibility
 // node attribute as a UTF-8 const char*.
-const char *RendererAccessibilityBrowserTest::GetAttr(
+std::string RendererAccessibilityBrowserTest::GetAttr(
     const WebAccessibility& node, const WebAccessibility::Attribute attr) {
   std::map<int32, string16>::const_iterator iter = node.attributes.find(attr);
   if (iter != node.attributes.end())
-    return UTF16ToUTF8(iter->second).c_str();
+    return UTF16ToUTF8(iter->second);
   else
     return "";
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/53853
-#define MAYBE_TestCrossPlatformAccessibilityTree \
-    DISABLED_TestCrossPlatformAccessibilityTree
-#else
-#define MAYBE_TestCrossPlatformAccessibilityTree \
-    TestCrossPlatformAccessibilityTree
-#endif
-
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
-                       MAYBE_TestCrossPlatformAccessibilityTree) {
+                       TestCrossPlatformAccessibilityTree) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
@@ -69,34 +85,39 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   RenderWidgetHost* host = host_view->GetRenderWidgetHost();
   RenderViewHost* view_host = static_cast<RenderViewHost*>(host);
   view_host->set_save_accessibility_tree_for_testing(true);
-  host->Send(new ViewMsg_GetAccessibilityTree(host->routing_id()));
+  view_host->EnableRendererAccessibility();
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check properties of the root element of the tree.
   const WebAccessibility& tree = view_host->accessibility_tree();
-  EXPECT_STREQ(url_str, GetAttr(tree, WebAccessibility::ATTR_DOC_URL));
-  EXPECT_STREQ("Accessibility Test",
-               GetAttr(tree, WebAccessibility::ATTR_DOC_TITLE));
-  EXPECT_STREQ("html", GetAttr(tree, WebAccessibility::ATTR_DOC_DOCTYPE));
-  EXPECT_STREQ("text/html", GetAttr(tree, WebAccessibility::ATTR_DOC_MIMETYPE));
+  EXPECT_STREQ(url_str, GetAttr(tree, WebAccessibility::ATTR_DOC_URL).c_str());
+  EXPECT_STREQ(
+      "Accessibility Test",
+      GetAttr(tree, WebAccessibility::ATTR_DOC_TITLE).c_str());
+  EXPECT_STREQ(
+      "html", GetAttr(tree, WebAccessibility::ATTR_DOC_DOCTYPE).c_str());
+  EXPECT_STREQ(
+      "text/html", GetAttr(tree, WebAccessibility::ATTR_DOC_MIMETYPE).c_str());
   EXPECT_EQ(WebAccessibility::ROLE_WEB_AREA, tree.role);
 
   // Check properites of the BODY element.
   ASSERT_EQ(1U, tree.children.size());
   const WebAccessibility& body = tree.children[0];
   EXPECT_EQ(WebAccessibility::ROLE_GROUP, body.role);
-  EXPECT_STREQ("BODY", GetAttr(body, WebAccessibility::ATTR_HTML_TAG));
-  EXPECT_STREQ("block", GetAttr(body, WebAccessibility::ATTR_DISPLAY));
+  EXPECT_STREQ("BODY", GetAttr(body, WebAccessibility::ATTR_HTML_TAG).c_str());
+  EXPECT_STREQ("block", GetAttr(body, WebAccessibility::ATTR_DISPLAY).c_str());
 
   // Check properties of the two children of the BODY element.
   ASSERT_EQ(2U, body.children.size());
 
   const WebAccessibility& button = body.children[0];
   EXPECT_EQ(WebAccessibility::ROLE_BUTTON, button.role);
-  EXPECT_STREQ("INPUT", GetAttr(button, WebAccessibility::ATTR_HTML_TAG));
+  EXPECT_STREQ(
+      "INPUT", GetAttr(button, WebAccessibility::ATTR_HTML_TAG).c_str());
   EXPECT_STREQ("push", UTF16ToUTF8(button.name).c_str());
-  EXPECT_STREQ("inline-block", GetAttr(button, WebAccessibility::ATTR_DISPLAY));
+  EXPECT_STREQ(
+      "inline-block", GetAttr(button, WebAccessibility::ATTR_DISPLAY).c_str());
   ASSERT_EQ(2U, button.html_attributes.size());
   EXPECT_STREQ("type", UTF16ToUTF8(button.html_attributes[0].first).c_str());
   EXPECT_STREQ("button", UTF16ToUTF8(button.html_attributes[0].second).c_str());
@@ -105,14 +126,16 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
 
   const WebAccessibility& checkbox = body.children[1];
   EXPECT_EQ(WebAccessibility::ROLE_CHECKBOX, checkbox.role);
-  EXPECT_STREQ("INPUT", GetAttr(checkbox, WebAccessibility::ATTR_HTML_TAG));
-  EXPECT_STREQ("inline-block",
-               GetAttr(checkbox, WebAccessibility::ATTR_DISPLAY));
+  EXPECT_STREQ(
+      "INPUT", GetAttr(checkbox, WebAccessibility::ATTR_HTML_TAG).c_str());
+  EXPECT_STREQ(
+      "inline-block",
+      GetAttr(checkbox, WebAccessibility::ATTR_DISPLAY).c_str());
   ASSERT_EQ(1U, checkbox.html_attributes.size());
-  EXPECT_STREQ("type",
-               UTF16ToUTF8(checkbox.html_attributes[0].first).c_str());
-  EXPECT_STREQ("checkbox",
-               UTF16ToUTF8(checkbox.html_attributes[0].second).c_str());
+  EXPECT_STREQ(
+      "type", UTF16ToUTF8(checkbox.html_attributes[0].first).c_str());
+  EXPECT_STREQ(
+    "checkbox", UTF16ToUTF8(checkbox.html_attributes[0].second).c_str());
 }
 
 }  // namespace
