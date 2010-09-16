@@ -57,9 +57,9 @@ void GpuChannel::OnMessageReceived(const IPC::Message& message) {
   if (message.routing_id() == MSG_ROUTING_CONTROL) {
     OnControlMessageReceived(message);
   } else {
-    // The sender should know not to route messages to an object after it
-    // has been destroyed.
-    CHECK(router_.RouteMessage(message));
+    // Fail silently if the GPU process has destroyed while the IPC message was
+    // en-route.
+    router_.RouteMessage(message);
   }
 }
 

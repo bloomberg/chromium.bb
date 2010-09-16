@@ -38,9 +38,12 @@ const GPUInfo& GpuChannelHost::gpu_info() const {
 
 void GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(message.routing_id() != MSG_ROUTING_CONTROL);
-  if (!router_.RouteMessage(message)) {
-    NOTREACHED() << "GpuChannelHost failed to route message";
-  }
+
+  // The object to which the message is addressed might have been destroyed.
+  // This is expected, for example an asynchronous SwapBuffers notification
+  // to a command buffer proxy that has since been destroyed. This function
+  // fails silently in that case.
+  router_.RouteMessage(message);
 }
 
 void GpuChannelHost::OnChannelConnected(int32 peer_pid) {
