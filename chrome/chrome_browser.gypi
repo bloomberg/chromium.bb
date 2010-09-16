@@ -3186,6 +3186,12 @@
             ],
           },
         }],
+        ['use_gnome_keyring==0', {
+          'sources!': [
+            'browser/password_manager/native_backend_gnome_x.h',
+            'browser/password_manager/native_backend_gnome_x.cc',
+          ],
+        }],
         ['touchui==0', {
           'sources!': [
             # Nothing yet.
@@ -3220,7 +3226,7 @@
             'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
           ],
           'conditions': [
-            ['chromeos==0', {
+            ['use_gnome_keyring==1', {
               'dependencies': [
                 '../build/linux/system.gyp:gnome-keyring',
               ],

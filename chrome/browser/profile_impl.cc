@@ -93,7 +93,9 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
 #include "base/xdg_util.h"
+#if defined(USE_GNOME_KEYRING)
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
+#endif
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #endif
@@ -965,12 +967,14 @@ void ProfileImpl::CreatePasswordStore() {
       backend.reset();
   } else if (desktop_env == base::DESKTOP_ENVIRONMENT_GNOME ||
              desktop_env == base::DESKTOP_ENVIRONMENT_XFCE) {
+#if defined(USE_GNOME_KEYRING)
     LOG(INFO) << "Trying GNOME keyring for password storage.";
     backend.reset(new NativeBackendGnome());
     if (backend->Init())
       LOG(INFO) << "Using GNOME keyring for password storage.";
     else
       backend.reset();
+#endif  // defined(USE_GNOME_KEYRING)
   }
   // TODO(mdm): this can change to a WARNING when we detect by default.
   if (!backend.get())
