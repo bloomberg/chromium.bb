@@ -26,6 +26,12 @@ class MockConfigurationPolicyStore : public ConfigurationPolicyStore {
   typedef std::map<ConfigurationPolicyStore::PolicyType, Value*> PolicyMap;
   const PolicyMap& policy_map() { return policy_map_; }
 
+  // Get a value for the given policy. Returns NULL if that key doesn't exist.
+  const Value* Get(ConfigurationPolicyStore::PolicyType type) const {
+    PolicyMap::const_iterator entry(policy_map_.find(type));
+    return entry == policy_map_.end() ? NULL : entry->second;
+  }
+
   // ConfigurationPolicyStore implementation.
   virtual void Apply(PolicyType policy, Value* value) {
     std::swap(policy_map_[policy], value);

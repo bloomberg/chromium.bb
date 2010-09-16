@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -9,6 +11,7 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/common/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +23,8 @@ namespace policy {
 const int kSettleIntervalSecondsForTesting = 0;
 const int kReloadIntervalMinutesForTesting = 1;
 
-class ConfigDirPolicyProviderTestBase : public testing::Test {
+template<typename BASE>
+class ConfigDirPolicyProviderTestBase : public BASE {
  protected:
   ConfigDirPolicyProviderTestBase()
       : ui_thread_(ChromeThread::UI, &loop_),
@@ -61,7 +65,7 @@ class ConfigDirPolicyProviderTestBase : public testing::Test {
   ChromeThread file_thread_;
 };
 
-// A mock provider that allows us to capture to reload notifications.
+// A mock provider that allows us to capture reload notifications.
 class MockConfigDirPolicyProvider : public ConfigDirPolicyProvider {
  public:
   explicit MockConfigDirPolicyProvider(const FilePath& config_dir_)
@@ -73,18 +77,19 @@ class MockConfigDirPolicyProvider : public ConfigDirPolicyProvider {
   MOCK_METHOD0(NotifyStoreOfPolicyChange, void());
 };
 
-class PolicyDirLoaderTest : public ConfigDirPolicyProviderTestBase {
+class PolicyDirLoaderTest
+    : public ConfigDirPolicyProviderTestBase<testing::Test> {
  protected:
   PolicyDirLoaderTest() {}
 
   virtual void SetUp() {
-    ConfigDirPolicyProviderTestBase::SetUp();
+    ConfigDirPolicyProviderTestBase<testing::Test>::SetUp();
     provider_.reset(new MockConfigDirPolicyProvider(test_dir_));
   }
 
   virtual void TearDown() {
     provider_.reset(NULL);
-    ConfigDirPolicyProviderTestBase::TearDown();
+    ConfigDirPolicyProviderTestBase<testing::Test>::TearDown();
   }
 
   scoped_ptr<MockConfigDirPolicyProvider> provider_;
@@ -142,15 +147,21 @@ TEST_F(PolicyDirLoaderTest, TestRefresh) {
   loader_->Stop();
 }
 
-class ConfigDirPolicyProviderTest : public ConfigDirPolicyProviderTestBase {
+template<typename BASE>
+class ConfigDirPolicyProviderTestWithMockStore
+    : public ConfigDirPolicyProviderTestBase<BASE> {
  protected:
   virtual void SetUp() {
-    ConfigDirPolicyProviderTestBase::SetUp();
+    ConfigDirPolicyProviderTestBase<BASE>::SetUp();
     // Create a fresh policy store mock.
     policy_store_.reset(new MockConfigurationPolicyStore());
   }
 
   scoped_ptr<MockConfigurationPolicyStore> policy_store_;
+};
+
+class ConfigDirPolicyProviderTest
+    : public ConfigDirPolicyProviderTestWithMockStore<testing::Test> {
 };
 
 // The preferences dictionary is expected to be empty when there are no files to
@@ -182,15 +193,12 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsSinglePref) {
       ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
 
   EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  const MockConfigurationPolicyStore::PolicyMap& policy_map(
-      policy_store_->policy_map());
-  EXPECT_EQ(1U, policy_map.size());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator entry =
-      policy_map.find(ConfigurationPolicyStore::kPolicyHomePage);
-  ASSERT_TRUE(entry != policy_map.end());
-
+  EXPECT_EQ(1U, policy_store_->policy_map().size());
+  const Value* value =
+      policy_store_->Get(ConfigurationPolicyStore::kPolicyHomePage);
+  ASSERT_TRUE(value);
   std::string str_value;
-  EXPECT_TRUE(entry->second->GetAsString(&str_value));
+  EXPECT_TRUE(value->GetAsString(&str_value));
   EXPECT_EQ("http://www.google.com", str_value);
 }
 
@@ -213,16 +221,208 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
       ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
 
   EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  const MockConfigurationPolicyStore::PolicyMap& policy_map(
-      policy_store_->policy_map());
-  EXPECT_EQ(1U, policy_map.size());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator entry =
-      policy_map.find(ConfigurationPolicyStore::kPolicyHomePage);
-  ASSERT_TRUE(entry != policy_map.end());
-
+  EXPECT_EQ(1U, policy_store_->policy_map().size());
+  const Value* value =
+      policy_store_->Get(ConfigurationPolicyStore::kPolicyHomePage);
+  ASSERT_TRUE(value);
   std::string str_value;
-  EXPECT_TRUE(entry->second->GetAsString(&str_value));
+  EXPECT_TRUE(value->GetAsString(&str_value));
   EXPECT_EQ("http://foo.com", str_value);
 }
+
+// Holds policy type, corresponding policy key string and a valid value for use
+// in parametrized value tests.
+class ValueTestParams {
+ public:
+  // Assumes ownership of |test_value|.
+  ValueTestParams(ConfigurationPolicyStore::PolicyType type,
+                  const char* policy_key,
+                  Value* test_value)
+      : type_(type),
+        policy_key_(policy_key),
+        test_value_(test_value) {}
+
+  // testing::TestWithParam does copying, so provide copy constructor and
+  // assignment operator.
+  ValueTestParams(const ValueTestParams& other)
+      : type_(other.type_),
+        policy_key_(other.policy_key_),
+        test_value_(other.test_value_->DeepCopy()) {}
+
+  const ValueTestParams& operator=(ValueTestParams other) {
+    swap(other);
+    return *this;
+  }
+
+  void swap(ValueTestParams& other) {
+    std::swap(type_, other.type_);
+    std::swap(policy_key_, other.policy_key_);
+    test_value_.swap(other.test_value_);
+  }
+
+  ConfigurationPolicyStore::PolicyType type() const { return type_; }
+  const char* policy_key() const { return policy_key_; }
+  const Value* test_value() const { return test_value_.get(); }
+
+  // Factory methods that create parameter objects for different value types.
+  static ValueTestParams ForStringPolicy(
+      ConfigurationPolicyStore::PolicyType type,
+      const char* policy_key) {
+    return ValueTestParams(type, policy_key, Value::CreateStringValue("test"));
+  }
+  static ValueTestParams ForBooleanPolicy(
+      ConfigurationPolicyStore::PolicyType type,
+      const char* policy_key) {
+    return ValueTestParams(type, policy_key, Value::CreateBooleanValue(true));
+  }
+  static ValueTestParams ForIntegerPolicy(
+      ConfigurationPolicyStore::PolicyType type,
+      const char* policy_key) {
+    return ValueTestParams(type, policy_key, Value::CreateIntegerValue(42));
+  }
+  static ValueTestParams ForListPolicy(
+      ConfigurationPolicyStore::PolicyType type,
+      const char* policy_key) {
+    ListValue* value = new ListValue();
+    value->Set(0U, Value::CreateStringValue("first"));
+    value->Set(1U, Value::CreateStringValue("second"));
+    return ValueTestParams(type, policy_key, value);
+  }
+
+ private:
+  ConfigurationPolicyStore::PolicyType type_;
+  const char* policy_key_;
+  scoped_ptr<Value> test_value_;
+};
+
+// Tests whether the provider correctly reads a value from the file and forwards
+// it to the store.
+class ConfigDirPolicyProviderValueTest
+    : public ConfigDirPolicyProviderTestWithMockStore<
+          testing::TestWithParam<ValueTestParams> > {
+};
+
+TEST_P(ConfigDirPolicyProviderValueTest, Default) {
+  ConfigDirPolicyProvider provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
+  EXPECT_TRUE(provider.Provide(policy_store_.get()));
+  EXPECT_TRUE(policy_store_->policy_map().empty());
+}
+
+TEST_P(ConfigDirPolicyProviderValueTest, NullValue) {
+  DictionaryValue dict;
+  dict.Set(GetParam().policy_key(), Value::CreateNullValue());
+  WriteConfigFile(dict, "empty");
+  ConfigDirPolicyProvider provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
+  EXPECT_TRUE(provider.Provide(policy_store_.get()));
+  EXPECT_TRUE(policy_store_->policy_map().empty());
+}
+
+TEST_P(ConfigDirPolicyProviderValueTest, TestValue) {
+  DictionaryValue dict;
+  dict.Set(GetParam().policy_key(), GetParam().test_value()->DeepCopy());
+  WriteConfigFile(dict, "policy");
+  ConfigDirPolicyProvider provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
+  EXPECT_TRUE(provider.Provide(policy_store_.get()));
+  EXPECT_EQ(1U, policy_store_->policy_map().size());
+  const Value* value = policy_store_->Get(GetParam().type());
+  ASSERT_TRUE(value);
+  EXPECT_TRUE(GetParam().test_value()->Equals(value));
+}
+
+// Test parameters for all supported policies.
+INSTANTIATE_TEST_CASE_P(
+    ConfigDirPolicyProviderValueTestInstance,
+    ConfigDirPolicyProviderValueTest,
+    testing::Values(
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyHomePage,
+            key::kHomepageLocation),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
+            key::kHomepageIsNewTabPage),
+        ValueTestParams::ForIntegerPolicy(
+            ConfigurationPolicyStore::kPolicyRestoreOnStartup,
+            key::kRestoreOnStartup),
+        ValueTestParams::ForListPolicy(
+            ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
+            key::kURLsToRestoreOnStartup),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
+            key::kDefaultSearchProviderName),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
+            key::kDefaultSearchProviderKeyword),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
+            key::kDefaultSearchProviderSearchURL),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyDefaultSearchProviderSuggestURL,
+            key::kDefaultSearchProviderSuggestURL),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyDefaultSearchProviderIconURL,
+            key::kDefaultSearchProviderIconURL),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyDefaultSearchProviderEncodings,
+            key::kDefaultSearchProviderEncodings),
+        ValueTestParams::ForIntegerPolicy(
+            ConfigurationPolicyStore::kPolicyProxyServerMode,
+            key::kProxyServerMode),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyProxyServer,
+            key::kProxyServer),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyProxyPacUrl,
+            key::kProxyPacUrl),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyProxyBypassList,
+            key::kProxyBypassList),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
+            key::kAlternateErrorPagesEnabled),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
+            key::kSearchSuggestEnabled),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
+            key::kDnsPrefetchingEnabled),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
+            key::kSafeBrowsingEnabled),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
+            key::kMetricsReportingEnabled),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyPasswordManagerEnabled,
+            key::kPasswordManagerEnabled),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyPasswordManagerAllowShowPasswords,
+            key::kPasswordManagerAllowShowPasswords),
+        ValueTestParams::ForListPolicy(
+            ConfigurationPolicyStore::kPolicyDisabledPlugins,
+            key::kDisabledPlugins),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyAutoFillEnabled,
+            key::kAutoFillEnabled),
+        ValueTestParams::ForStringPolicy(
+            ConfigurationPolicyStore::kPolicyApplicationLocale,
+            key::kApplicationLocaleValue),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicySyncDisabled,
+            key::kSyncDisabled),
+        ValueTestParams::ForListPolicy(
+            ConfigurationPolicyStore::kPolicyExtensionInstallAllowList,
+            key::kExtensionInstallAllowList),
+        ValueTestParams::ForListPolicy(
+            ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
+            key::kExtensionInstallDenyList),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyShowHomeButton,
+            key::kShowHomeButton),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyPrintingEnabled,
+            key::kPrintingEnabled)));
 
 }  // namespace policy

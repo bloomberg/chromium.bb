@@ -35,6 +35,9 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   virtual PrefReadError ReadPrefs();
   virtual DictionaryValue* prefs() { return prefs_.get(); }
 
+  // ConfigurationPolicyStore methods:
+  virtual void Apply(PolicyType setting, Value* value);
+
   // Creates a ConfigurationPolicyPrefStore that reads managed policy.
   static ConfigurationPolicyPrefStore* CreateManagedPolicyPrefStore();
 
@@ -46,9 +49,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
       GetChromePolicyValueMap();
 
  private:
-  // For unit tests.
-  friend class ConfigurationPolicyPrefStoreTest;
-
   // Policies that map to a single preference are handled
   // by an automated converter. Each one of these policies
   // has an entry in |simple_policy_map_| with the following type.
@@ -86,16 +86,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // to use the system proxy.
   bool use_system_proxy_;
 
-  // ConfigurationPolicyStore methods:
-  virtual void Apply(PolicyType setting, Value* value);
-
-  // Initializes default preference values from proxy-related command-line
-  // switches in |command_line_|.
-  void ApplyProxySwitches();
-
-  bool ApplyPolicyFromMap(PolicyType policy, Value* value,
-                          const PolicyToPreferenceMapEntry map[], int size);
-
   // Returns the map entry that corresponds to |policy| in the map.
   const PolicyToPreferenceMapEntry* FindPolicyInMap(PolicyType policy,
       const PolicyToPreferenceMapEntry* map, int size);
@@ -104,6 +94,13 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // any such preferences were found and removed.
   bool RemovePreferencesOfMap(const PolicyToPreferenceMapEntry* map,
                               int table_size);
+
+  bool ApplyPolicyFromMap(PolicyType policy, Value* value,
+                          const PolicyToPreferenceMapEntry map[], int size);
+
+  // Initializes default preference values from proxy-related command-line
+  // switches in |command_line_|.
+  void ApplyProxySwitches();
 
   // Processes proxy-specific policies. Returns true if the specified policy
   // is a proxy-related policy. ApplyProxyPolicy assumes the ownership

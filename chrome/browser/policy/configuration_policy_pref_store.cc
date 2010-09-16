@@ -163,6 +163,18 @@ ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
         Value::TYPE_INTEGER, key::kRestoreOnStartup },
     { ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
         Value::TYPE_LIST, key::kURLsToRestoreOnStartup },
+    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
+        Value::TYPE_STRING, key::kDefaultSearchProviderName },
+    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
+        Value::TYPE_STRING, key::kDefaultSearchProviderKeyword },
+    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
+        Value::TYPE_STRING, key::kDefaultSearchProviderSearchURL },
+    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderSuggestURL,
+        Value::TYPE_STRING, key::kDefaultSearchProviderSuggestURL },
+    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderIconURL,
+        Value::TYPE_STRING, key::kDefaultSearchProviderIconURL },
+    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderEncodings,
+        Value::TYPE_STRING, key::kDefaultSearchProviderEncodings },
     { ConfigurationPolicyStore::kPolicyProxyServerMode,
         Value::TYPE_INTEGER, key::kProxyServerMode },
     { ConfigurationPolicyStore::kPolicyProxyServer,
@@ -222,40 +234,6 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
       use_system_proxy_(false) {
 }
 
-void ConfigurationPolicyPrefStore::ApplyProxySwitches() {
-  bool proxy_disabled = command_line_->HasSwitch(switches::kNoProxyServer);
-  if (proxy_disabled) {
-    prefs_->Set(prefs::kNoProxyServer, Value::CreateBooleanValue(true));
-  }
-  bool has_explicit_proxy_config = false;
-  if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
-    has_explicit_proxy_config = true;
-    prefs_->Set(prefs::kProxyAutoDetect, Value::CreateBooleanValue(true));
-  }
-  if (command_line_->HasSwitch(switches::kProxyServer)) {
-    has_explicit_proxy_config = true;
-    prefs_->Set(prefs::kProxyServer, Value::CreateStringValue(
-        command_line_->GetSwitchValueASCII(switches::kProxyServer)));
-  }
-  if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
-    has_explicit_proxy_config = true;
-    prefs_->Set(prefs::kProxyPacUrl, Value::CreateStringValue(
-        command_line_->GetSwitchValueASCII(switches::kProxyPacUrl)));
-  }
-  if (command_line_->HasSwitch(switches::kProxyBypassList)) {
-    has_explicit_proxy_config = true;
-    prefs_->Set(prefs::kProxyBypassList, Value::CreateStringValue(
-        command_line_->GetSwitchValueASCII(switches::kProxyBypassList)));
-  }
-
-  // Warn about all the other proxy config switches we get if
-  // the --no-proxy-server command-line argument is present.
-  if (proxy_disabled && has_explicit_proxy_config) {
-    LOG(WARNING) << "Additional command-line proxy switches specified when --"
-                 << switches::kNoProxyServer << " was also specified.";
-  }
-}
-
 PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
   // Initialize proxy preference values from command-line switches. This is done
   // before calling Provide to allow the provider to overwrite proxy-related
@@ -270,6 +248,29 @@ PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
   FinalizeDefaultSearchPolicySettings();
   return success ? PrefStore::PREF_READ_ERROR_NONE :
                    PrefStore::PREF_READ_ERROR_OTHER;
+}
+
+void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
+  if (ApplyProxyPolicy(policy, value))
+    return;
+
+  if (ApplySyncPolicy(policy, value))
+    return;
+
+  if (ApplyAutoFillPolicy(policy, value))
+    return;
+
+  if (ApplyPolicyFromMap(policy, value, default_search_policy_map_,
+                         arraysize(default_search_policy_map_)))
+    return;
+
+  if (ApplyPolicyFromMap(policy, value, simple_policy_map_,
+                         arraysize(simple_policy_map_)))
+    return;
+
+  // Other policy implementations go here.
+  NOTIMPLEMENTED();
+  delete value;
 }
 
 // static
@@ -306,6 +307,54 @@ bool ConfigurationPolicyPrefStore::RemovePreferencesOfMap(
       found_one = true;
   }
   return found_one;
+}
+
+bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(PolicyType policy,
+    Value* value, const PolicyToPreferenceMapEntry map[], int size) {
+  const PolicyToPreferenceMapEntry* end = map + size;
+  for (const PolicyToPreferenceMapEntry* current = map;
+       current != end; ++current) {
+    if (current->policy_type == policy) {
+      DCHECK(current->value_type == value->GetType());
+      prefs_->Set(current->preference_path, value);
+      return true;
+    }
+  }
+  return false;
+}
+
+void ConfigurationPolicyPrefStore::ApplyProxySwitches() {
+  bool proxy_disabled = command_line_->HasSwitch(switches::kNoProxyServer);
+  if (proxy_disabled) {
+    prefs_->Set(prefs::kNoProxyServer, Value::CreateBooleanValue(true));
+  }
+  bool has_explicit_proxy_config = false;
+  if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
+    has_explicit_proxy_config = true;
+    prefs_->Set(prefs::kProxyAutoDetect, Value::CreateBooleanValue(true));
+  }
+  if (command_line_->HasSwitch(switches::kProxyServer)) {
+    has_explicit_proxy_config = true;
+    prefs_->Set(prefs::kProxyServer, Value::CreateStringValue(
+        command_line_->GetSwitchValueASCII(switches::kProxyServer)));
+  }
+  if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
+    has_explicit_proxy_config = true;
+    prefs_->Set(prefs::kProxyPacUrl, Value::CreateStringValue(
+        command_line_->GetSwitchValueASCII(switches::kProxyPacUrl)));
+  }
+  if (command_line_->HasSwitch(switches::kProxyBypassList)) {
+    has_explicit_proxy_config = true;
+    prefs_->Set(prefs::kProxyBypassList, Value::CreateStringValue(
+        command_line_->GetSwitchValueASCII(switches::kProxyBypassList)));
+  }
+
+  // Warn about all the other proxy config switches we get if
+  // the --no-proxy-server command-line argument is present.
+  if (proxy_disabled && has_explicit_proxy_config) {
+    LOG(WARNING) << "Additional command-line proxy switches specified when --"
+                 << switches::kNoProxyServer << " was also specified.";
+  }
 }
 
 bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
@@ -448,42 +497,6 @@ bool ConfigurationPolicyPrefStore::ApplyAutoFillPolicy(PolicyType policy,
   return false;
 }
 
-bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(PolicyType policy,
-    Value* value, const PolicyToPreferenceMapEntry map[], int size) {
-
-  const PolicyToPreferenceMapEntry* match_entry =
-      FindPolicyInMap(policy, map, size);
-  if (match_entry) {
-    DCHECK(match_entry->value_type == value->GetType());
-    prefs_->Set(match_entry->preference_path, value);
-    return true;
-  }
-  return false;
-}
-
-void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
-  if (ApplyProxyPolicy(policy, value))
-    return;
-
-  if (ApplySyncPolicy(policy, value))
-    return;
-
-  if (ApplyAutoFillPolicy(policy, value))
-    return;
-
-  if (ApplyPolicyFromMap(policy, value, default_search_policy_map_,
-                         arraysize(default_search_policy_map_)))
-    return;
-
-  if (ApplyPolicyFromMap(policy, value, simple_policy_map_,
-                         arraysize(simple_policy_map_)))
-    return;
-
-  // Other policy implementations go here.
-  NOTIMPLEMENTED();
-  delete value;
-}
-
 void ConfigurationPolicyPrefStore::EnsureStringPrefExists(
     const std::string& path) {
   std::string value;
@@ -546,4 +559,3 @@ void ConfigurationPolicyPrefStore::FinalizeDefaultSearchPolicySettings() {
 }
 
 }  // namespace policy
-
