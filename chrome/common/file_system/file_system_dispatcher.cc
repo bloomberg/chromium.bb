@@ -51,55 +51,63 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
 void FileSystemDispatcher::Move(
     const string16& src_path, const string16& dest_path,
     WebFileSystemCallbacks* callbacks) {
+  FilePath src_file_path = webkit_glue::WebStringToFilePath(src_path);
+  FilePath dest_file_path = webkit_glue::WebStringToFilePath(dest_path);
   int request_id = callbacks_.Add(callbacks);
-  ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Move(request_id, src_path, dest_path));
+  ChildThread::current()->Send(new ViewHostMsg_FileSystem_Move(
+      request_id, src_file_path, dest_file_path));
 }
 
 void FileSystemDispatcher::Copy(
     const string16& src_path, const string16& dest_path,
     WebFileSystemCallbacks* callbacks) {
+  FilePath src_file_path = webkit_glue::WebStringToFilePath(src_path);
+  FilePath dest_file_path = webkit_glue::WebStringToFilePath(dest_path);
   int request_id = callbacks_.Add(callbacks);
-  ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Copy(request_id, src_path, dest_path));
+  ChildThread::current()->Send(new ViewHostMsg_FileSystem_Copy(
+      request_id, src_file_path, dest_file_path));
 }
 
 void FileSystemDispatcher::Remove(
     const string16& path, WebFileSystemCallbacks* callbacks) {
+  FilePath file_path = webkit_glue::WebStringToFilePath(path);
   int request_id = callbacks_.Add(callbacks);
   ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Remove(request_id, path));
+      new ViewHostMsg_FileSystem_Remove(request_id, file_path));
 }
 
 void FileSystemDispatcher::ReadMetadata(
     const string16& path, WebFileSystemCallbacks* callbacks) {
+  FilePath file_path = webkit_glue::WebStringToFilePath(path);
   int request_id = callbacks_.Add(callbacks);
   ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_ReadMetadata(request_id, path));
+      new ViewHostMsg_FileSystem_ReadMetadata(request_id, file_path));
 }
 
 void FileSystemDispatcher::Create(
     const string16& path, bool exclusive, bool is_directory,
     WebFileSystemCallbacks* callbacks) {
+  FilePath file_path = webkit_glue::WebStringToFilePath(path);
   int request_id = callbacks_.Add(callbacks);
-  ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Create(request_id, path, exclusive,
-                                        is_directory));
+  ChildThread::current()->Send(new ViewHostMsg_FileSystem_Create(
+      request_id, file_path, exclusive, is_directory));
 }
 
 void FileSystemDispatcher::Exists(
     const string16& path, bool is_directory,
     WebFileSystemCallbacks* callbacks) {
+  FilePath file_path = webkit_glue::WebStringToFilePath(path);
   int request_id = callbacks_.Add(callbacks);
   ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Exists(request_id, path, is_directory));
+      new ViewHostMsg_FileSystem_Exists(request_id, file_path, is_directory));
 }
 
 void FileSystemDispatcher::ReadDirectory(
     const string16& path, WebFileSystemCallbacks* callbacks) {
+  FilePath file_path = webkit_glue::WebStringToFilePath(path);
   int request_id = callbacks_.Add(callbacks);
   ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_ReadDirectory(request_id, path));
+      new ViewHostMsg_FileSystem_ReadDirectory(request_id, file_path));
 }
 
 void FileSystemDispatcher::DidSucceed(int request_id) {

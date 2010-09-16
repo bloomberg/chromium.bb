@@ -151,73 +151,61 @@ void FileSystemDispatcherHost::OnOpenFileSystem(
 }
 
 void FileSystemDispatcherHost::OnMove(
-    int request_id, const string16& src_path, const string16& dest_path) {
-  FilePath src_file_path = webkit_glue::WebStringToFilePath(src_path);
-  FilePath dest_file_path = webkit_glue::WebStringToFilePath(dest_path);
-
-  if (!CheckValidFileSystemPath(src_file_path, request_id) ||
-      !CheckValidFileSystemPath(dest_file_path, request_id))
+    int request_id, const FilePath& src_path, const FilePath& dest_path) {
+  if (!CheckValidFileSystemPath(src_path, request_id) ||
+      !CheckValidFileSystemPath(dest_path, request_id))
     return;
 
-  GetNewOperation(request_id)->Move(src_file_path, dest_file_path);
+  GetNewOperation(request_id)->Move(src_path, dest_path);
 }
 
 void FileSystemDispatcherHost::OnCopy(
-    int request_id, const string16& src_path, const string16& dest_path) {
-  FilePath src_file_path = webkit_glue::WebStringToFilePath(src_path);
-  FilePath dest_file_path = webkit_glue::WebStringToFilePath(dest_path);
-
-  if (!CheckValidFileSystemPath(src_file_path, request_id) ||
-      !CheckValidFileSystemPath(dest_file_path, request_id))
+    int request_id, const FilePath& src_path, const FilePath& dest_path) {
+  if (!CheckValidFileSystemPath(src_path, request_id) ||
+      !CheckValidFileSystemPath(dest_path, request_id))
     return;
 
-  GetNewOperation(request_id)->Copy(src_file_path, dest_file_path);
+  GetNewOperation(request_id)->Copy(src_path, dest_path);
 }
 
-void FileSystemDispatcherHost::OnRemove(
-    int request_id, const string16& path) {
-  FilePath file_path = webkit_glue::WebStringToFilePath(path);
-  if (!CheckValidFileSystemPath(file_path, request_id))
+void FileSystemDispatcherHost::OnRemove(int request_id, const FilePath& path) {
+  if (!CheckValidFileSystemPath(path, request_id))
     return;
-  GetNewOperation(request_id)->Remove(file_path);
+  GetNewOperation(request_id)->Remove(path);
 }
 
 void FileSystemDispatcherHost::OnReadMetadata(
-    int request_id, const string16& path) {
-  FilePath file_path = webkit_glue::WebStringToFilePath(path);
-  if (!CheckValidFileSystemPath(file_path, request_id))
+    int request_id, const FilePath& path) {
+  if (!CheckValidFileSystemPath(path, request_id))
     return;
-  GetNewOperation(request_id)->GetMetadata(file_path);
+  GetNewOperation(request_id)->GetMetadata(path);
 }
 
 void FileSystemDispatcherHost::OnCreate(
-    int request_id, const string16& path, bool exclusive, bool is_directory) {
-  FilePath file_path = webkit_glue::WebStringToFilePath(path);
-  if (!CheckValidFileSystemPath(file_path, request_id))
+    int request_id, const FilePath& path, bool exclusive, bool is_directory) {
+  if (!CheckValidFileSystemPath(path, request_id))
     return;
   if (is_directory)
-    GetNewOperation(request_id)->CreateDirectory(file_path, exclusive);
+    GetNewOperation(request_id)->CreateDirectory(path, exclusive);
   else
-    GetNewOperation(request_id)->CreateFile(file_path, exclusive);
+    GetNewOperation(request_id)->CreateFile(path, exclusive);
 }
 
 void FileSystemDispatcherHost::OnExists(
-    int request_id, const string16& path, bool is_directory) {
-  FilePath file_path = webkit_glue::WebStringToFilePath(path);
-  if (!CheckValidFileSystemPath(file_path, request_id))
+    int request_id, const FilePath& path, bool is_directory) {
+  if (!CheckValidFileSystemPath(path, request_id))
     return;
   if (is_directory)
-    GetNewOperation(request_id)->DirectoryExists(file_path);
+    GetNewOperation(request_id)->DirectoryExists(path);
   else
-    GetNewOperation(request_id)->FileExists(file_path);
+    GetNewOperation(request_id)->FileExists(path);
 }
 
 void FileSystemDispatcherHost::OnReadDirectory(
-    int request_id, const string16& path) {
-  FilePath file_path = webkit_glue::WebStringToFilePath(path);
-  if (!CheckValidFileSystemPath(file_path, request_id))
+    int request_id, const FilePath& path) {
+  if (!CheckValidFileSystemPath(path, request_id))
     return;
-  GetNewOperation(request_id)->ReadDirectory(file_path);
+  GetNewOperation(request_id)->ReadDirectory(path);
 }
 
 void FileSystemDispatcherHost::DidFail(

@@ -35,32 +35,20 @@ class FileSystemDispatcherHost
   bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
 
   void OnOpenFileSystem(const ViewHostMsg_OpenFileSystemRequest_Params&);
-  void OnMove(
-      int request_id,
-      const string16& src_path,
-      const string16& dest_path);
-  void OnCopy(
-      int request_id,
-      const string16& src_path,
-      const string16& dest_path);
-  void OnRemove(
-      int request_id,
-      const string16& path);
-  void OnReadMetadata(
-      int request_id,
-      const string16& path);
-  void OnCreate(
-      int request_id,
-      const string16& path,
-      bool exclusive,
-      bool is_directory);
-  void OnExists(
-      int request_id,
-      const string16& path,
-      bool is_directory);
-  void OnReadDirectory(
-      int request_id,
-      const string16& path);
+  void OnMove(int request_id,
+              const FilePath& src_path,
+              const FilePath& dest_path);
+  void OnCopy(int request_id,
+              const FilePath& src_path,
+              const FilePath& dest_path);
+  void OnRemove(int request_id, const FilePath& path);
+  void OnReadMetadata(int request_id, const FilePath& path);
+  void OnCreate(int request_id,
+                const FilePath& path,
+                bool exclusive,
+                bool is_directory);
+  void OnExists(int request_id, const FilePath& path, bool is_directory);
+  void OnReadDirectory(int request_id, const FilePath& path);
   void Send(IPC::Message* message);
 
   // FileSystemOperationClient methods.

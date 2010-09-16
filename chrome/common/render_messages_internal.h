@@ -2772,42 +2772,42 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebFileSystem::move() message.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Move,
                        int /* request_id */,
-                       string16 /* src path */,
-                       string16 /* dest path */)
+                       FilePath /* src path */,
+                       FilePath /* dest path */)
 
   // WebFileSystem::copy() message.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Copy,
                        int /* request_id */,
-                       string16 /* src path */,
-                       string16 /* dest path */)
+                       FilePath /* src path */,
+                       FilePath /* dest path */)
 
   // WebFileSystem::remove() message.
   IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_Remove,
                        int /* request_id */,
-                       string16 /* path */)
+                       FilePath /* path */)
 
   // WebFileSystem::readMetadata() message.
   IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_ReadMetadata,
                        int /* request_id */,
-                       string16 /* path */)
+                       FilePath /* path */)
 
   // WebFileSystem::create() message.
   IPC_MESSAGE_CONTROL4(ViewHostMsg_FileSystem_Create,
                        int /* request_id */,
-                       string16 /* path */,
+                       FilePath /* path */,
                        bool /* exclusive */,
                        bool /* is_directory */)
 
   // WebFileSystem::exists() messages.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Exists,
                        int /* request_id */,
-                       string16 /* path */,
+                       FilePath /* path */,
                        bool /* is_directory */)
 
   // WebFileSystem::readDirectory() message.
   IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_ReadDirectory,
                        int /* request_id */,
-                       string16 /* path */)
+                       FilePath /* path */)
 
   //---------------------------------------------------------------------------
   // Blob messages:
