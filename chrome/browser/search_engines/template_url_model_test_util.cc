@@ -9,6 +9,8 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -187,6 +189,9 @@ std::wstring TemplateURLModelTestUtil::GetAndClearSearchTerm() {
 void TemplateURLModelTestUtil::SetGoogleBaseURL(
     const std::string& base_url) const {
   TemplateURLRef::SetGoogleBaseURL(new std::string(base_url));
+  NotificationService::current()->Notify(NotificationType::GOOGLE_URL_UPDATED,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
 }
 
 WebDataService* TemplateURLModelTestUtil::GetWebDataService() {

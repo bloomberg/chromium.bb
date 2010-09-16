@@ -733,7 +733,6 @@ TEST_F(TemplateURLModelTest, ChangeGoogleBaseValue) {
   // Change the Google base url.
   test_util_.ResetObserverCount();
   SetGoogleBaseURL("http://foo.com/");
-  model()->GoogleBaseURLChanged();
   VerifyObserverCount(1);
 
   // Make sure the host->TemplateURL map was updated appropriately.
