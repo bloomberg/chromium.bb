@@ -125,6 +125,11 @@ TEST_F(SignedSettingsHelperTest, CanceledOps) {
   EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
   EXPECT_CALL(cb, OnUnwhitelistCompleted(true, _))
       .Times(1);
+
+  // CheckWhitelistOp for cb_to_be_canceled still gets executed but callback
+  // does not happen.
+  EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
+
   EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
   EXPECT_CALL(cb, OnStorePropertyCompleted(true, _, _))
       .Times(1);
@@ -132,7 +137,7 @@ TEST_F(SignedSettingsHelperTest, CanceledOps) {
   EXPECT_CALL(cb, OnRetrievePropertyCompleted(true, _, _))
       .Times(1);
 
-  pending_ops_ = 5;  // 3 below and 2 after cb_to_be_canceled
+  pending_ops_ = 6;
   SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_, &cb);
   SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, true, &cb);
   SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, false, &cb);
@@ -140,7 +145,7 @@ TEST_F(SignedSettingsHelperTest, CanceledOps) {
   MockSignedSettingsHelperCallback cb_to_be_canceled;
   SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_,
       &cb_to_be_canceled);
-  SignedSettingsHelper::Get()->Cancel(&cb_to_be_canceled);
+  SignedSettingsHelper::Get()->CancelCallback(&cb_to_be_canceled);
 
   SignedSettingsHelper::Get()->StartStorePropertyOp(fake_prop_, fake_value_,
       &cb);

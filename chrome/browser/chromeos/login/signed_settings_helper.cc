@@ -35,18 +35,29 @@ class OpContext {
     if (delegate_)
       delegate_->OnOpCreated(this);
 
-    executing_ = true;
-    op_->Execute();
-
-    if (delegate_)
-      delegate_->OnOpStarted(this);
+    // Note that the context could be released when op_->Execute() returns.
+    // So keep a local copy of delegate and executing flag to use after
+    // the call.
+    Delegate* delegate = delegate_;
+    bool executing = executing_ = op_->Execute();
+    if (executing) {
+      if (delegate)
+        delegate->OnOpStarted(this);
+    } else {
+      OnOpFailed();
+    }
   }
 
-  // Cancels callback.
-  void Cancel() {
+  // Cancels the callback.
+  void CancelCallback() {
     callback_ = NULL;
+  }
 
-    if (!executing_)
+  // Cancels the callback and cancels the op if it is not executing.
+  void Cancel() {
+    CancelCallback();
+
+   if (!executing_)
       OnOpCompleted();
   }
 
@@ -80,6 +91,11 @@ class OpContext {
       delegate_->OnOpCompleted(this);
 
     delete this;
+  }
+
+  // Callback on op failure.
+  virtual void OnOpFailed() {
+    OnOpCompleted();
   }
 
   bool executing_;
@@ -130,24 +146,7 @@ class WhitelistOpContext : public SignedSettings::Delegate<bool>,
   }
 
   virtual void OnSettingsOpFailed() {
-    if (callback_) {
-      switch (type_) {
-        case CHECK:
-          callback_->OnCheckWhiteListCompleted(false, email_);
-          break;
-        case ADD:
-          callback_->OnWhitelistCompleted(false, email_);
-          break;
-        case REMOVE:
-          callback_->OnUnwhitelistCompleted(false, email_);
-          break;
-        default:
-          LOG(ERROR) << "Unknown WhitelistOpContext type " << type_;
-          break;
-      }
-    }
-
-    OnOpCompleted();
+    OnOpFailed();
   }
 
  protected:
@@ -167,6 +166,27 @@ class WhitelistOpContext : public SignedSettings::Delegate<bool>,
         LOG(ERROR) << "Unknown WhitelistOpContext type " << type_;
         break;
     }
+  }
+
+  virtual void OnOpFailed() {
+    if (callback_) {
+      switch (type_) {
+        case CHECK:
+          callback_->OnCheckWhiteListCompleted(false, email_);
+          break;
+        case ADD:
+          callback_->OnWhitelistCompleted(false, email_);
+          break;
+        case REMOVE:
+          callback_->OnUnwhitelistCompleted(false, email_);
+          break;
+        default:
+          LOG(ERROR) << "Unknown WhitelistOpContext type " << type_;
+          break;
+      }
+    }
+
+    OnOpCompleted();
   }
 
  private:
@@ -196,15 +216,19 @@ class StorePropertyOpContext : public SignedSettings::Delegate<bool>,
   }
 
   virtual void OnSettingsOpFailed() {
-    if (callback_)
-      callback_->OnStorePropertyCompleted(false, name_, value_);
-    OnOpCompleted();
+    OnOpFailed();
   }
 
  protected:
   // OpContext implemenetation
   virtual void CreateOp() {
     op_ = SignedSettings::CreateStorePropertyOp(name_, value_, this);
+  }
+
+  virtual void OnOpFailed() {
+    if (callback_)
+      callback_->OnStorePropertyCompleted(false, name_, value_);
+    OnOpCompleted();
   }
 
  private:
@@ -234,15 +258,19 @@ class RetrievePropertyOpContext
   }
 
   virtual void OnSettingsOpFailed() {
-    if (callback_)
-      callback_->OnRetrievePropertyCompleted(false, name_, std::string());
-    OnOpCompleted();
+    OnOpFailed();
   }
 
  protected:
   // OpContext implemenetation
   virtual void CreateOp() {
     op_ = SignedSettings::CreateRetrievePropertyOp(name_, this);
+  }
+
+  virtual void OnOpFailed() {
+    if (callback_)
+      callback_->OnRetrievePropertyCompleted(false, name_, std::string());
+    OnOpCompleted();
   }
 
  private:
@@ -268,7 +296,7 @@ class SignedSettingsHelperImpl : public SignedSettingsHelper,
                                     Callback* callback);
   virtual void StartRetrieveProperty(const std::string& name,
                                      Callback* callback);
-  virtual void Cancel(Callback* callback);
+  virtual void CancelCallback(Callback* callback);
 
   // OpContext::Delegate implementation
   virtual void OnOpCreated(OpContext* context);
@@ -282,15 +310,13 @@ class SignedSettingsHelperImpl : public SignedSettingsHelper,
   void AddOpContext(OpContext* context);
   void ClearAll();
 
-  OpContext* current_context_;
   std::vector<OpContext*> pending_contexts_;
 
   friend struct DefaultSingletonTraits<SignedSettingsHelperImpl>;
   DISALLOW_COPY_AND_ASSIGN(SignedSettingsHelperImpl);
 };
 
-SignedSettingsHelperImpl::SignedSettingsHelperImpl()
-    : current_context_(NULL) {
+SignedSettingsHelperImpl::SignedSettingsHelperImpl() {
 }
 
 SignedSettingsHelperImpl::~SignedSettingsHelperImpl() {
@@ -342,14 +368,13 @@ void SignedSettingsHelperImpl::StartRetrieveProperty(
       this));
 }
 
-void SignedSettingsHelperImpl::Cancel(
+void SignedSettingsHelperImpl::CancelCallback(
     SignedSettingsHelper::Callback* callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   for (size_t i = 0; i < pending_contexts_.size(); ++i) {
     if (pending_contexts_[i]->callback() == callback) {
-      pending_contexts_[i]->Cancel();
-      pending_contexts_.erase(pending_contexts_.begin() + i);
+      pending_contexts_[i]->CancelCallback();
     }
   }
 }
@@ -359,7 +384,7 @@ void SignedSettingsHelperImpl::AddOpContext(OpContext* context) {
   CHECK(context);
 
   pending_contexts_.push_back(context);
-  if (current_context_ == NULL && pending_contexts_.size() == 1)
+  if (pending_contexts_.size() == 1)
     context->Execute();
 }
 
@@ -378,8 +403,6 @@ void SignedSettingsHelperImpl::OnOpCreated(OpContext* context) {
 
 void SignedSettingsHelperImpl::OnOpStarted(OpContext* context) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(current_context_ == NULL);
-  current_context_ = context;
 
   if (test_delegate_)
     test_delegate_->OnOpStarted(context->op());
@@ -387,15 +410,10 @@ void SignedSettingsHelperImpl::OnOpStarted(OpContext* context) {
 
 void SignedSettingsHelperImpl::OnOpCompleted(OpContext* context) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(pending_contexts_.front() == context);
 
-  if (current_context_ == context) {
-    current_context_ = NULL;
-
-    if (pending_contexts_.front() == context)
-      pending_contexts_.erase(pending_contexts_.begin());
-  }
-
-  if (current_context_ == NULL && !pending_contexts_.empty())
+  pending_contexts_.erase(pending_contexts_.begin());
+  if (!pending_contexts_.empty())
     pending_contexts_.front()->Execute();
 
   if (test_delegate_)

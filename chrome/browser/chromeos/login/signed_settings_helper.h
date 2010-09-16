@@ -55,8 +55,8 @@ class SignedSettingsHelper {
   virtual void StartRetrieveProperty(const std::string& name,
                                      Callback* callback) = 0;
 
-  // Cancels all pending calls associated with given callback.
-  virtual void Cancel(Callback* callback) = 0;
+  // Cancels all pending calls of given callback.
+  virtual void CancelCallback(Callback* callback) = 0;
 
   class TestDelegate {
    public:
