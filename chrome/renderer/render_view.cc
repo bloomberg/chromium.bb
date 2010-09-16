@@ -45,16 +45,19 @@
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/autofill_helper.h"
+#include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/device_orientation_dispatcher.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
+#include "chrome/renderer/dom_ui_bindings.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/geolocation_dispatcher.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
@@ -1575,10 +1578,13 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
 }
 
 void RenderView::BindDOMAutomationController(WebFrame* frame) {
-  dom_automation_controller_.set_message_sender(this);
-  dom_automation_controller_.set_routing_id(routing_id_);
-  dom_automation_controller_.BindToJavascript(frame,
-                                              L"domAutomationController");
+  if (!dom_automation_controller_.get()) {
+    dom_automation_controller_.reset(new DomAutomationController());
+  }
+  dom_automation_controller_->set_message_sender(this);
+  dom_automation_controller_->set_routing_id(routing_id_);
+  dom_automation_controller_->BindToJavascript(frame,
+                                               L"domAutomationController");
 }
 
 bool RenderView::RunJavaScriptMessage(int type,
@@ -3075,14 +3081,20 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
   if (BindingsPolicy::is_dom_automation_enabled(enabled_bindings_))
     BindDOMAutomationController(frame);
   if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
-    dom_ui_bindings_.set_message_sender(this);
-    dom_ui_bindings_.set_routing_id(routing_id_);
-    dom_ui_bindings_.BindToJavascript(frame, L"chrome");
+    if (!dom_ui_bindings_.get()) {
+      dom_ui_bindings_.reset(new DOMUIBindings());
+    }
+    dom_ui_bindings_->set_message_sender(this);
+    dom_ui_bindings_->set_routing_id(routing_id_);
+    dom_ui_bindings_->BindToJavascript(frame, L"chrome");
   }
   if (BindingsPolicy::is_external_host_enabled(enabled_bindings_)) {
-    external_host_bindings_.set_message_sender(this);
-    external_host_bindings_.set_routing_id(routing_id_);
-    external_host_bindings_.BindToJavascript(frame, L"externalHost");
+    if (!external_host_bindings_.get()) {
+      external_host_bindings_.reset(new ExternalHostBindings());
+    }
+    external_host_bindings_->set_message_sender(this);
+    external_host_bindings_->set_routing_id(routing_id_);
+    external_host_bindings_->BindToJavascript(frame, L"externalHost");
   }
 }
 
@@ -4185,7 +4197,8 @@ void RenderView::OnAllowBindings(int enabled_bindings_flags) {
 void RenderView::OnSetDOMUIProperty(const std::string& name,
                                     const std::string& value) {
   DCHECK(BindingsPolicy::is_dom_ui_enabled(enabled_bindings_));
-  dom_ui_bindings_.SetProperty(name, value);
+  DCHECK(dom_ui_bindings_.get());
+  dom_ui_bindings_->SetProperty(name, value);
 }
 
 void RenderView::OnReservePageIDRange(int size_of_range) {
@@ -4541,8 +4554,9 @@ void RenderView::OnHandleMessageFromExternalHost(const std::string& message,
                                                  const std::string& target) {
   if (message.empty())
     return;
-  external_host_bindings_.ForwardMessageFromExternalHost(message, origin,
-                                                         target);
+  DCHECK(external_host_bindings_.get());
+  external_host_bindings_->ForwardMessageFromExternalHost(message, origin,
+                                                          target);
 }
 
 void RenderView::OnDisassociateFromPopupCount() {

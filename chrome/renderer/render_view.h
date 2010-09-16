@@ -28,9 +28,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
-#include "chrome/renderer/automation/dom_automation_controller.h"
-#include "chrome/renderer/dom_ui_bindings.h"
-#include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
@@ -59,6 +56,9 @@ class DictionaryValue;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DevToolsClient;
+class DomAutomationController;
+class DOMUIBindings;
+class ExternalHostBindings;
 class FilePath;
 class GeolocationDispatcher;
 class GURL;
@@ -1328,14 +1328,14 @@ class RenderView : public RenderWidget,
 
   // Allows JS to access DOM automation. The JS object is only exposed when the
   // DOM automation bindings are enabled.
-  DomAutomationController dom_automation_controller_;
+  scoped_ptr<DomAutomationController> dom_automation_controller_;
 
   // Allows DOM UI pages (new tab page, etc.) to talk to the browser. The JS
   // object is only exposed when DOM UI bindings are enabled.
-  DOMUIBindings dom_ui_bindings_;
+  scoped_ptr<DOMUIBindings> dom_ui_bindings_;
 
   // External host exposed through automation controller.
-  ExternalHostBindings external_host_bindings_;
+  scoped_ptr<ExternalHostBindings> external_host_bindings_;
 
   // Pending openFileSystem completion objects.
   struct PendingOpenFileSystem;
