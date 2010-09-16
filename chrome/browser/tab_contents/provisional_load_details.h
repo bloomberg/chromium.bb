@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 // This class captures some of the information associated to the provisional
@@ -33,13 +32,6 @@ class ProvisionalLoadDetails {
   void set_error_code(int error_code) { error_code_ = error_code; }
   int error_code() const { return error_code_; }
 
-  void set_transition_type(PageTransition::Type transition_type) {
-    transition_type_ = transition_type;
-  }
-  PageTransition::Type transition_type() const {
-    return transition_type_;
-  }
-
   const GURL& url() const { return url_; }
 
   bool main_frame() const { return is_main_frame_; }
@@ -58,7 +50,6 @@ class ProvisionalLoadDetails {
 
  private:
   int error_code_;
-  PageTransition::Type transition_type_;
   GURL url_;
   bool is_main_frame_;
   bool is_in_page_navigation_;

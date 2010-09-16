@@ -13,11 +13,9 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/provisional_load_details.h"
+#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
-#include "net/base/net_errors.h"
 
 namespace keys = extension_webnavigation_api_constants;
 
@@ -30,13 +28,7 @@ ExtensionWebNavigationEventRouter::GetInstance() {
 void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
-                   NotificationType::FRAME_PROVISIONAL_LOAD_START,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
+                   NotificationType::NAV_ENTRY_COMMITTED,
                    NotificationService::AllSources());
   }
 }
@@ -46,90 +38,40 @@ void ExtensionWebNavigationEventRouter::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::FRAME_PROVISIONAL_LOAD_START:
-      FrameProvisionalLoadStart(
+    case NotificationType::NAV_ENTRY_COMMITTED:
+      NavEntryCommitted(
           Source<NavigationController>(source).ptr(),
-          Details<ProvisionalLoadDetails>(details).ptr());
-      break;
-    case NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED:
-      FrameProvisionalLoadCommitted(
-          Source<NavigationController>(source).ptr(),
-          Details<ProvisionalLoadDetails>(details).ptr());
-      break;
-    case NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR:
-      FailProvisionalLoadWithError(
-          Source<NavigationController>(source).ptr(),
-          Details<ProvisionalLoadDetails>(details).ptr());
+          Details<NavigationController::LoadCommittedDetails>(details).ptr());
       break;
 
     default:
       NOTREACHED();
   }
 }
-void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
+
+void ExtensionWebNavigationEventRouter::NavEntryCommitted(
     NavigationController* controller,
-    ProvisionalLoadDetails* details) {
+    NavigationController::LoadCommittedDetails* details) {
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
   dict->SetString(keys::kUrlKey,
-                  details->url().spec());
-  dict->SetInteger(keys::kFrameIdKey, 0);
-  dict->SetInteger(keys::kRequestIdKey, 0);
-  dict->SetReal(keys::kTimeStampKey,
-                (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(controller->profile(), keys::kOnBeforeNavigate, json_args);
-}
-
-void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
-    NavigationController* controller,
-    ProvisionalLoadDetails* details) {
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger(keys::kTabIdKey,
-                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey,
-                  details->url().spec());
-  dict->SetInteger(keys::kFrameIdKey, 0);
+                  details->entry->url().spec());
+  dict->SetInteger(keys::kFrameIdKey,
+                   details->is_main_frame ? 0 : details->entry->page_id());
   dict->SetString(keys::kTransitionTypeKey,
                   PageTransition::CoreTransitionString(
-                      details->transition_type()));
+                      details->entry->transition_type()));
   dict->SetString(keys::kTransitionQualifiersKey,
                   PageTransition::QualifierString(
-                      details->transition_type()));
-  dict->SetReal(keys::kTimeStampKey,
-                (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
+                      details->entry->transition_type()));
+  dict->SetReal(keys::kTimeStampKey, base::Time::Now().ToDoubleT());
   args.Append(dict);
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
   DispatchEvent(controller->profile(), keys::kOnCommitted, json_args);
-}
-
-void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
-    NavigationController* controller,
-    ProvisionalLoadDetails* details) {
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger(keys::kTabIdKey,
-                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey,
-                  details->url().spec());
-  dict->SetInteger(keys::kFrameIdKey, 0);
-  dict->SetString(keys::kErrorKey,
-                  std::string(net::ErrorToString(details->error_code())));
-  dict->SetReal(keys::kTimeStampKey,
-                (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(controller->profile(), keys::kOnErrorOccurred, json_args);
 }
 
 void ExtensionWebNavigationEventRouter::DispatchEvent(

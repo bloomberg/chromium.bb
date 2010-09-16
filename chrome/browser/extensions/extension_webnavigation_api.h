@@ -12,12 +12,9 @@
 
 #include "base/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/notification_observer.h"
+#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-
-class NavigationController;
-class ProvisionalLoadDetails;
 
 // Observes navigation notifications and routes them as events to the extension
 // system.
@@ -39,23 +36,11 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Handler for the FRAME_PROVISIONAL_LOAD_START event. The method takes the
-  // details of such an event and constructs a suitable JSON formatted extension
-  // event from it.
-  void FrameProvisionalLoadStart(NavigationController* controller,
-                                 ProvisionalLoadDetails* details);
-
-  // Handler for the FRAME_PROVISIONAL_LOAD_COMMITTED event. The method takes
-  // the details of such an event and constructs a suitable JSON formatted
-  // extension event from it.
-  void FrameProvisionalLoadCommitted(NavigationController* controller,
-                                     ProvisionalLoadDetails* details);
-
-  // Handler for the FAIL_PROVISIONAL_LOAD_WITH_ERROR event. The method takes
-  // the details of such an event and constructs a suitable JSON formatted
-  // extension event from it.
-  void FailProvisionalLoadWithError(NavigationController* controller,
-                                    ProvisionalLoadDetails* details);
+  // Handler for the NAV_ENTRY_COMMITTED event. The method takes the details of
+  // such an event and constructs a suitable JSON formatted extension event
+  // from it.
+  void NavEntryCommitted(NavigationController* controller,
+                         NavigationController::LoadCommittedDetails* details);
 
   // This method dispatches events to the extension message service.
   void DispatchEvent(Profile* context,

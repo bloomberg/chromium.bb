@@ -13,7 +13,6 @@ ProvisionalLoadDetails::ProvisionalLoadDetails(bool is_main_frame,
                                                const std::string& security_info,
                                                bool is_content_filtered)
       : error_code_(net::OK),
-        transition_type_(PageTransition::LINK),
         url_(url),
         is_main_frame_(is_main_frame),
         is_in_page_navigation_(is_in_page_navigation),
