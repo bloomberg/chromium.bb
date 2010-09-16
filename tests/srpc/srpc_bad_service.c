@@ -124,14 +124,11 @@ static void *acceptor(void *arg) {
 
 int main() {
   pthread_t acceptor_tid;
-  int       is_embedded;
 
-  is_embedded = (srpc_get_fd() != -1);
-  if (is_embedded) {
-    /* Start the acceptor thread.  */
-    pthread_create(&acceptor_tid, NULL, acceptor, (void *) 1);
-    pthread_detach(acceptor_tid);
-  }
+  /* This test can only run as embedded. */
+  /* Start the acceptor thread.  */
+  pthread_create(&acceptor_tid, NULL, acceptor, (void *) 1);
+  pthread_detach(acceptor_tid);
   /* Wait forever so that acceptor and clients can run. */
   while (1) {
     sleep(1);

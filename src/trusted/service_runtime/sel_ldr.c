@@ -82,8 +82,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->dynamic_mapcache_size = 0;
   nap->dynamic_mapcache_ret = 0;
 
-  nap->srpc_fd = -1;
-
   nap->service_port = NULL;
   nap->service_address = NULL;
   nap->secure_channel = NULL;

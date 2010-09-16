@@ -102,6 +102,10 @@ int NaClStartNativeWebWorker(char *buffer,
     return -1;
   }
 
+  /*
+   * Set a flag making it look like this is embedded in the browser.
+   */
+  NaClSrpcSetEmbedded(TRUE);
 
   /*
    * AllModulesInit/Fini are used for per-process initialization, and hence

@@ -13,8 +13,7 @@
 
 
 int NaClSrpcMain(const struct NaClSrpcHandlerDesc *methods) {
-  int stand_alone = (srpc_get_fd() == -1);
-  if (stand_alone) {
+  if (NaClSrpcIsStandalone()) {
     return NaClSrpcCommandLoopMain(methods);
   } else {
     int sock_fd;

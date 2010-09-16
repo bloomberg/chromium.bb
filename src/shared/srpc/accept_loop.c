@@ -56,14 +56,11 @@ static int shutdown_done = 0;
 extern void __srpc_wait_hook() __attribute__((weak));
 
 void __srpc_wait() {
-  int       is_embedded;
-
   if (__srpc_wait_hook) {
     __srpc_wait_hook();
   }
   if (ShouldDoImplicitSrpcSetup()) {
-    is_embedded = (srpc_get_fd() != -1);
-    if (is_embedded) {
+    if (!NaClSrpcIsStandalone()) {
       pthread_mutex_lock(&shutdown_wait_mu);
       while (!shutdown_done) {
         pthread_cond_wait(&shutdown_wait_cv, &shutdown_wait_mu);
@@ -174,7 +171,6 @@ static void *srpc_default_acceptor(void *arg) {
  */
 void __srpc_init() {
   pthread_t acceptor_tid;
-  int       is_embedded;
   static int init_done = 0;
 
   /*
@@ -189,8 +185,7 @@ void __srpc_init() {
   init_done = 1;
 
   if (ShouldDoImplicitSrpcSetup()) {
-    is_embedded = (srpc_get_fd() != -1);
-    if (is_embedded) {
+    if (!NaClSrpcIsStandalone()) {
       /*
        * Start the acceptor thread.
        */

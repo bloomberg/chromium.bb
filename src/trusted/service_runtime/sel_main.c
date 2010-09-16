@@ -120,7 +120,6 @@ static void PrintUsage() {
   fprintf(stderr,
           "Usage: sel_ldr [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
-          "               [-P SRPC port number]\n"
           "\n"
           "               [-X d] [-dmMv] -- [nacl_file] [args]\n"
           "\n");
@@ -132,7 +131,6 @@ static void PrintUsage() {
           "    respectively\n"
           " -i associates an IMC handle D with app desc d\n"
           " -f file to load; if omitted, 1st arg after \"--\" is loaded\n"
-          " -P set SRPC port number for SRPC calls\n"
           " -v increases verbosity\n"
           " -X create a bound socket and export the address via an\n"
           "    IMC message to a corresponding NaCl app descriptor\n"
@@ -187,7 +185,6 @@ int main(int  ac,
   int                           main_thread_only = 1;
   int                           export_addr_to = -2;
   enum NaClAbiCheckOption       check_abi = NACL_ABI_CHECK_OPTION_CHECK;
-  int32_t                       srpc_fd = -1;
 
   struct NaClApp                *nap;
 
@@ -258,8 +255,7 @@ int main(int  ac,
     exit(1);
   }
 
-
-  while ((opt = getopt(ac, av, "acf:gh:i:Il:mMP:Qr:svw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "acf:gh:i:Il:mMQr:svw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -317,10 +313,6 @@ int main(int  ac,
         break;
       case 'f':
         nacl_file = optarg;
-        break;
-      case 'P':
-        /* Conduit to convey the descriptor ID to the application code. */
-        srpc_fd = strtol(optarg, (char **) 0, 0);
         break;
       case 'v':
         ++verbosity;
@@ -422,7 +414,6 @@ int main(int  ac,
   state.restrict_to_main_thread = main_thread_only;
   state.ignore_validator_result = debug_mode_ignore_validator;
   state.validator_stub_out_mode = stub_out_mode;
-  state.srpc_fd = srpc_fd;
 
   nap = &state;
   errcode = LOAD_OK;

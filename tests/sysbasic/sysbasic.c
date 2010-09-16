@@ -111,11 +111,6 @@ int main() {
   PrintInt(i);
   if (kSysbreakBase != i) Error("bad sysbrk() value\n");
 
-  myprint("\nsrpc_get_fd()\n");
-  i = srpc_get_fd();
-  PrintInt(i);
-  if (69 != i) Error("bad  srpc_get_fd() value\n");
-
   myprint("\nmmap()\n");
   i = (int) mmap(0, kMmapSize,
                  PROT_READ, MAP_ANONYMOUS | MAP_SHARED,

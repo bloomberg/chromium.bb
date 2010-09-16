@@ -39,9 +39,10 @@ char const *const kNaClEnvWhitelist[] = {
   "LC_PAPER",
   "LC_TELEPHONE",
   "LC_TIME",
-  "NACL_NPAPI_DEBUG",    /* src/shared/npruntime/naclnp_util.cc */
-  "NACL_PLUGIN_DEBUG",  /* src/trusted/plugin/srpc/utility.cc */
-  "NACL_SRPC_DEBUG",    /* src/shared/srpc/utility.c */
+  "NACL_NPAPI_DEBUG",      /* src/shared/npruntime/naclnp_util.cc */
+  "NACL_PLUGIN_DEBUG",     /* src/trusted/plugin/srpc/utility.cc */
+  "NACL_SRPC_DEBUG",       /* src/shared/srpc/utility.c */
+  "NACL_SRPC_STANDALONE",  /* src/shared/srpc/nacl_srpc.c */
   NULL,
 };
 

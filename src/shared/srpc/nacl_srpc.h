@@ -816,6 +816,12 @@ extern void NaClSrpcCommandLoop(NaClSrpcService* service,
                                 NaClSrpcImcDescType default_socket_address);
 
 /**
+ *  @serverSrpc  Returns whether the srpc server is being run "standalone";
+ *  that is, not as a subprocess of sel_universal, the browser plugin, etc.
+ */
+int NaClSrpcIsStandalone();
+
+/**
  * Runs a text-based interpreter given a list of SRPC methods.  This
  * calls NaClSrpcCommandLoop().
  * @return Returns zero on success, non-zero otherwise.

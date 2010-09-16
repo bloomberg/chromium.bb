@@ -247,16 +247,6 @@ extern int video_blt_rgb(int width, int height, unsigned char const *data);
 
 /**
  *  @nacl
- *  Returns the value of the -P parameter passed on the command line to
- *  sel_ldr.  This is where sel_ldr instances created by either sel_universal
- *  or the SRPC interaction of the browser plugin convey the file descriptor of
- *  the socket used to perform RPCs.
- *  @return srcp_get_fd returns the file descriptor passed as -P on the
- *  command line, or -1 if it was not passed.
- */
-extern int srpc_get_fd(void);
-/**
- *  @nacl
  *  Creates a bound IMC socket and returns a descriptor for the socket and the
  *  socket address.
  *  @param sock_and_addr An array of two file descriptors.  On successful

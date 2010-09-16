@@ -152,16 +152,12 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
 bool ServiceRuntime::Start(const char* nacl_file) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_file='%s')\n", nacl_file));
   // The arguments we want to pass to the service runtime are
-  // "-P 5" sets the default SRPC channel to be over descriptor 5.  The 5 needs
-  //      to match the 5 in the Launcher invocation below.
   // "-X 5" causes the service runtime to create a bound socket and socket
   //      address at descriptors 3 and 4.  The socket address is transferred as
   //      the first IMC message on descriptor 5.  This is used when connecting
   //      to socket addresses.
   // "-d" (not default) invokes the service runtime in debug mode.
-  // const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
-  const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
-  // TODO(sehr): remove -P support and default channels.
+  const char* kSelLdrArgs[] = { "-X", "5" };
   const int kSelLdrArgLength = NACL_ARRAY_SIZE(kSelLdrArgs);
   vector<nacl::string> kArgv(kSelLdrArgs, kSelLdrArgs + kSelLdrArgLength);
   vector<nacl::string> kEmpty;

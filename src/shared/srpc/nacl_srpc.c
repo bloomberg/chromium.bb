@@ -192,3 +192,14 @@ void NaClSrpcGetTimes(NaClSrpcChannel* channel,
   *imc_read_time = channel->imc_read_usec;
   *imc_write_time = channel->imc_write_usec;
 }
+
+/*
+ * A standalone SRPC server is not a subprocess of the browser or
+ * sel_universal.  As this is a mode used for testing, the parent environment
+ * must set the following variable to indicate that fact.
+ */
+const char kSrpcStandalone[] = "NACL_SRPC_STANDALONE";
+
+int NaClSrpcIsStandalone() {
+  return (NULL != getenv(kSrpcStandalone));
+}

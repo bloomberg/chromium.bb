@@ -153,12 +153,6 @@ struct NaClApp {
    */
 
   /*
-   * for srpc_get_fd syscall, set at startup for conduit between browser
-   * plugin and NaCl module.
-   */
-  int32_t                   srpc_fd;
-
-  /*
    * The socket at which the app should be accepting connections.  The
    * corresponding socket address are made available by the JavaScript
    * bridge to other NaCl modules.

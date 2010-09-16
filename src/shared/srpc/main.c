@@ -19,18 +19,17 @@
 #include <sys/nacl_syscalls.h>
 
 int __attribute__ ((weak)) main(int argc, char* argv[]) {
-  const int stand_alone = (-1 == srpc_get_fd());
-  /* NOTE: stand_alone mode happens when a nacl_module is run directly
-   * via sel_ldr not using sel_universal or a plugin
+  /* NOTE: when a nacl_module is run directly via sel_ldr not using
+   * sel_universal or a plugin, it is not embedded.
    */
-  if (stand_alone) {
+  if (NaClSrpcIsStandalone()) {
     return NaClSrpcCommandLoopMain(__kNaClSrpcHandlers);
   }
   /* NOTE: in the "else case" we implicitly call the sequence
    *  __srpc_init();
    *  __srpc_wait();
    *  via the startup code
-   * TODO: make this code more straight forward
+   * TODO: make this code more straightforward
    */
 
   return 0;

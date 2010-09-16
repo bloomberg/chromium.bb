@@ -468,10 +468,6 @@ int32_t NaClSysAudio_Shutdown(struct NaClAppThread *natp) {
 
 #endif /* HAVE_SDL */
 
-int32_t NaClSysSrpc_Get_Fd(struct NaClAppThread *natp) {
-  return natp->nap->srpc_fd;
-}
-
 int32_t NaClSysImc_MakeBoundSock(struct NaClAppThread *natp,
                                  int32_t              *sap) {
   return NaClCommonSysImc_MakeBoundSock(natp, sap);

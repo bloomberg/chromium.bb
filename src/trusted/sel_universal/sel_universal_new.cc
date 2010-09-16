@@ -103,8 +103,6 @@ int main(int  argc, char *argv[]) {
     if (nacl::string("--") == argv[i]) break;
   }
 
-  sel_ldr_argv.push_back("-P");
-  sel_ldr_argv.push_back("5");
   sel_ldr_argv.push_back("-X");
   sel_ldr_argv.push_back("5");
   if (pass_debug) {

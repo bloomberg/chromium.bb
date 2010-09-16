@@ -86,7 +86,6 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles) {
   }
 
   state.restrict_to_main_thread = main_thread_only;
-  state.srpc_fd = export_addr_to;
 
   nap = &state;
   errcode = LOAD_OK;

@@ -17,7 +17,6 @@
 
 #define MAX_NACL_FILES  16
 
-extern int srpc_get_fd();
 extern int __real_open(char const *pathname, int flags, int perms);
 extern int __real_close(int dd);
 extern int __real_read(int, void *, size_t);
@@ -111,7 +110,7 @@ int __wrap_open(char *pathname, int mode, int perms) {
   int dd;
 
   if (-1 == nacl_file_embedded) {
-    nacl_file_embedded = srpc_get_fd() != -1;
+    nacl_file_embedded = NaClSrpcIsEmbedded();
   }
   if (!nacl_file_embedded) {
     return __real_open(pathname, mode, perms);
@@ -166,7 +165,7 @@ int __wrap_close(int dd) {
   struct nacl_file_map *entry;
 
   if (-1 == nacl_file_embedded) {
-    nacl_file_embedded = srpc_get_fd() != -1;
+    nacl_file_embedded = NaClSrpcIsEmbedded();
   }
   if (!nacl_file_embedded) {
     return __real_close(dd);
@@ -180,7 +179,7 @@ int __wrap_close(int dd) {
 int __wrap_read(int dd, void *buf, size_t count) {
   int got;
   if (-1 == nacl_file_embedded) {
-    nacl_file_embedded = srpc_get_fd() != -1;
+    nacl_file_embedded = !NaClSrpcIsStandalone();
   }
   if (!nacl_file_embedded) {
     return __real_read(dd, buf, count);
@@ -202,7 +201,7 @@ int __wrap_read(int dd, void *buf, size_t count) {
 
 off_t __wrap_lseek(int dd, off_t offset, int whence) {
   if (-1 == nacl_file_embedded) {
-    nacl_file_embedded = srpc_get_fd() != -1;
+    nacl_file_embedded = !NaClSrpcIsStandalone();
   }
   if (!nacl_file_embedded) {
     return __real_lseek(dd, offset, whence);

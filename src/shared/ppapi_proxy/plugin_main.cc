@@ -32,7 +32,7 @@ static NaClSrpcError Interpreter(NaClSrpcService* service,
 // the plugin RPC definitions are resolved from the library.
 
 int main(int argc, char* argv[]) {
-  const int stand_alone = (-1 == srpc_get_fd());
+  const int stand_alone = NaClSrpcIsStandalone();
   // NOTE: stand_alone mode happens when a nacl_module is run directly
   // via sel_ldr not using sel_universal or a plugin
   if (stand_alone) {

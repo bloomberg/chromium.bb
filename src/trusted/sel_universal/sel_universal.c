@@ -59,7 +59,7 @@ int main(int  argc, char *argv[]) {
   const char**               sel_ldr_argv;
   int                        module_argc;
   const char**               module_argv;
-  static const char*         kFixedArgs[] = { "-P", "5", "-X", "5" };
+  static const char*         kFixedArgs[] = { "-X", "5" };
   int                        pass_debug = 0;
 
 

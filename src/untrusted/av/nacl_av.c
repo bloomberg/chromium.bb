@@ -88,8 +88,7 @@ static inline float gettimeofdayf() {
  * (by invoking nacl_multimedia_bridge).
  */
 void __av_wait() {
-  const int is_embedded = (srpc_get_fd() != -1);
-  if (is_embedded) {
+  if (!NaClSrpcIsStandalone()) {
     pthread_mutex_lock(&init_wait_mu);
     while (!multimedia_init_done) {
       pthread_cond_wait(&init_wait_cv, &init_wait_mu);
