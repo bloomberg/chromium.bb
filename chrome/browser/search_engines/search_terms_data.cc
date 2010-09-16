@@ -75,12 +75,7 @@ std::wstring UIThreadSearchTermsData::GetRlzParameterValue() const {
   DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
          ChromeThread::CurrentlyOn(ChromeThread::UI));
   std::wstring rlz_string;
-  // For organic brandcodes do not use rlz at all. Empty brandcode usually
-  // means a chromium install. This is ok.
-  std::wstring brand;
-  if (GoogleUpdateSettings::GetBrand(&brand) && !brand.empty() &&
-      !GoogleUpdateSettings::IsOrganic(brand))
-    RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
+  RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
   return rlz_string;
 }
 #endif
