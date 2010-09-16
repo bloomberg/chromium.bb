@@ -66,12 +66,11 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
     service_prefs_->prefs()->GetString(prefs::kCloudPrintXMPPAuthToken,
                                        &cloud_print_xmpp_token);
     DCHECK(!cloud_print_xmpp_token.empty());
-    std::string cloud_print_email;
     service_prefs_->prefs()->GetString(prefs::kCloudPrintEmail,
-                                       &cloud_print_email);
-    DCHECK(!cloud_print_email.empty());
+                                       &cloud_print_email_);
+    DCHECK(!cloud_print_email_.empty());
     backend_->InitializeWithToken(cloud_print_token, cloud_print_xmpp_token,
-                                  cloud_print_email, proxy_id);
+                                  cloud_print_email_, proxy_id);
   }
   if (client_) {
     client_->OnCloudPrintProxyEnabled();
@@ -80,10 +79,19 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
 
 void CloudPrintProxy::DisableForUser() {
   DCHECK(CalledOnValidThread());
+  cloud_print_email_.clear();
   Shutdown();
   if (client_) {
     client_->OnCloudPrintProxyDisabled();
   }
+}
+
+bool CloudPrintProxy::IsEnabled(std::string* email) const {
+  bool enabled = !cloud_print_email().empty();
+  if (enabled && email) {
+    *email = cloud_print_email();
+  }
+  return enabled;
 }
 
 void CloudPrintProxy::Shutdown() {
@@ -107,6 +115,7 @@ void CloudPrintProxy::OnAuthenticated(
     const std::string& cloud_print_xmpp_token,
     const std::string& email) {
   DCHECK(CalledOnValidThread());
+  cloud_print_email_ = email;
   service_prefs_->prefs()->SetString(prefs::kCloudPrintAuthToken,
                                      cloud_print_token);
   service_prefs_->prefs()->SetString(prefs::kCloudPrintXMPPAuthToken,

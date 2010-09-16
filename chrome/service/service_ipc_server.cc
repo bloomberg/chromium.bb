@@ -68,6 +68,8 @@ void ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
                         OnEnableRemotingWithTokens)
     IPC_MESSAGE_HANDLER(ServiceMsg_DisableCloudPrintProxy,
                         OnDisableCloudPrintProxy)
+    IPC_MESSAGE_HANDLER(ServiceMsg_IsCloudPrintProxyEnabled,
+                        OnIsCloudPrintProxyEnabled)
     IPC_MESSAGE_HANDLER(ServiceMsg_Hello, OnHello);
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
   IPC_END_MESSAGE_MAP()
@@ -81,6 +83,11 @@ void ServiceIPCServer::OnEnableCloudPrintProxyWithTokens(
     const std::string& cloud_print_token, const std::string& talk_token) {
   // TODO(sanjeevr): Implement this.
   NOTIMPLEMENTED();
+}
+
+void ServiceIPCServer::OnIsCloudPrintProxyEnabled(bool* is_enabled,
+                                                  std::string* email) {
+  *is_enabled = g_service_process->GetCloudPrintProxy()->IsEnabled(email);
 }
 
 void ServiceIPCServer::OnEnableRemotingWithTokens(

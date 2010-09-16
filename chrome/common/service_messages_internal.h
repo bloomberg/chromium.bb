@@ -29,6 +29,12 @@ IPC_BEGIN_MESSAGES(Service)
   // Tell the service process to disable the cloud proxy.
   IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)
 
+  // Queries whether the cloud print proxy is enabled.
+  IPC_SYNC_MESSAGE_ROUTED0_2(ServiceMsg_IsCloudPrintProxyEnabled,
+                             bool,       /* out: is_enabled*/
+                             std::string /* out: Email address of account */
+                                         /* used for Cloud Print, if enabled*/)
+
   // This message is for testing purpose.
   IPC_MESSAGE_CONTROL0(ServiceMsg_Hello)
 
