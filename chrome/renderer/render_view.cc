@@ -5208,6 +5208,60 @@ void RenderView::DumpLoadHistograms() const {
         "PLT.BeginToFinishDoc_LinkLoad", "CacheSize"), begin_to_finish_doc);
   }
 
+  // Histograms to determine if cache throttling has an impact on PLT.
+  static bool use_cache_histogram2(FieldTrialList::Find("CacheThrottle") &&
+      !FieldTrialList::Find("CacheThrottle")->group_name().empty());
+  if (use_cache_histogram2) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.Abandoned", "CacheThrottle"),
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::RELOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_Reload", "CacheThrottle"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::HISTORY_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_HistoryLoad", "CacheThrottle"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad", "CacheThrottle"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal", "CacheThrottle"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadReload", "CacheThrottle"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadStaleOk", "CacheThrottle"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_ONLY:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadCacheOnly", "CacheThrottle"),
+            begin_to_finish_all_loads);
+        break;
+      default:
+        break;
+    }
+    if (NavigationState::RELOAD <= load_type &&
+        NavigationState::LINK_LOAD_CACHE_ONLY >= load_type) {
+      PLT_HISTOGRAM(FieldTrial::MakeName(
+          "PLT.BeginToFinish", "CacheThrottle"),
+           begin_to_finish_all_loads);
+    }
+  }
+
   // For the SPDY field trials, we need to verify that the page loaded was
   // the type we requested:
   //   if we asked for a SPDY request, we got a SPDY request
