@@ -13,7 +13,6 @@
 #include <map>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 
@@ -39,7 +38,6 @@ namespace sync_api {
 class ChangeReorderBuffer {
  public:
   typedef SyncManager::ChangeRecord ChangeRecord;
-  typedef SyncManager::ExtraChangeRecordData ExtraChangeRecordData;
 
   ChangeReorderBuffer();
   ~ChangeReorderBuffer();
@@ -66,10 +64,6 @@ class ChangeReorderBuffer {
   void PushUpdatedItem(int64 id, bool position_changed) {
     operations_[id] = position_changed ? OP_UPDATE_POSITION_AND_PROPERTIES :
                                          OP_UPDATE_PROPERTIES_ONLY;
-  }
-
-  void SetExtraDataForId(int64 id, ExtraChangeRecordData* extra) {
-    extra_data_[id] = make_linked_ptr<ExtraChangeRecordData>(extra);
   }
 
   void SetSpecificsForId(int64 id, const sync_pb::EntitySpecifics& specifics) {
@@ -102,7 +96,6 @@ class ChangeReorderBuffer {
   };
   typedef std::map<int64, Operation> OperationMap;
   typedef std::map<int64, sync_pb::EntitySpecifics> SpecificsMap;
-  typedef std::map<int64, linked_ptr<ExtraChangeRecordData> > ExtraDataMap;
 
   // Stores the items that have been pushed into the buffer, and the type of
   // operation that was associated with them.
@@ -110,9 +103,6 @@ class ChangeReorderBuffer {
 
   // Stores entity-specific ChangeRecord data per-ID.
   SpecificsMap specifics_;
-
-  // Stores type-specific extra data per-ID.
-  ExtraDataMap extra_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeReorderBuffer);
 };

@@ -29,7 +29,6 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/token_migrator.h"
 #include "chrome/browser/sync/util/user_settings.h"
@@ -208,16 +207,16 @@ void ProfileSyncService::Initialize() {
 void ProfileSyncService::RegisterAuthNotifications() {
   registrar_.Add(this,
                  NotificationType::TOKEN_AVAILABLE,
-                 Source<TokenService>(profile_->GetTokenService()));
+                 NotificationService::AllSources());
   registrar_.Add(this,
                  NotificationType::TOKEN_LOADING_FINISHED,
-                 Source<TokenService>(profile_->GetTokenService()));
+                 NotificationService::AllSources());
   registrar_.Add(this,
                  NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
-                 Source<SigninManager>(&signin_));
+                 NotificationService::AllSources());
   registrar_.Add(this,
                  NotificationType::GOOGLE_SIGNIN_FAILED,
-                 Source<SigninManager>(&signin_));
+                 NotificationService::AllSources());
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -329,8 +328,6 @@ void ProfileSyncService::RegisterPreferences() {
       enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncManaged, false);
   pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken, "");
-  pref_service->RegisterBooleanPref(prefs::kSyncUsingSecondaryPassphrase,
-      false);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -818,11 +815,8 @@ bool ProfileSyncService::IsCryptographerReady() const {
 }
 
 void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
-  if (!sync_initialized()) {
-    cached_passphrase_ = passphrase;
-  } else {
-    backend_->SetPassphrase(passphrase);
-  }
+  DCHECK(backend_.get());
+  backend_->SetPassphrase(passphrase);
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {
@@ -879,12 +873,6 @@ void ProfileSyncService::Observe(NotificationType type,
         return;
       }
 
-      if (!cached_passphrase_.empty()) {
-        // Don't hold on to the passphrase in raw form longer than needed.
-        SetPassphrase(cached_passphrase_);
-        cached_passphrase_.clear();
-      }
-
       // TODO(sync): Less wizard, more toast.
       wizard_.Step(SyncSetupWizard::DONE);
       FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -892,16 +880,8 @@ void ProfileSyncService::Observe(NotificationType type,
       break;
     }
     case NotificationType::SYNC_PASSPHRASE_REQUIRED: {
-      DCHECK(backend_.get());
-      if (!cached_passphrase_.empty()) {
-        SetPassphrase(cached_passphrase_);
-        cached_passphrase_.clear();
-        break;
-      }
-
       // TODO(sync): Show the passphrase UI here.
-      UpdateAuthErrorState(GoogleServiceAuthError(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+      SetPassphrase("dummy passphrase");
       break;
     }
     case NotificationType::SYNC_DATA_TYPES_UPDATED: {
@@ -935,17 +915,14 @@ void ProfileSyncService::Observe(NotificationType type,
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_SUCCESSFUL: {
-      if (!profile_->GetPrefs()->GetBoolean(
-          prefs::kSyncUsingSecondaryPassphrase)) {
-        const GoogleServiceSigninSuccessDetails* successful =
-            (Details<const GoogleServiceSigninSuccessDetails>(details).ptr());
-        SetPassphrase(successful->password);
-      }
+      LOG(INFO) << "Signin OK. Waiting on tokens.";
+      // TODO(chron): UI update?
+      // TODO(chron): Timeout?
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_FAILED: {
       GoogleServiceAuthError error =
-          *(Details<const GoogleServiceAuthError>(details).ptr());
+          *(Details<GoogleServiceAuthError>(details).ptr());
       UpdateAuthErrorState(error);
       break;
     }

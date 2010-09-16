@@ -141,21 +141,6 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
   PasswordModelAssociator::PasswordVector deleted_passwords;
 
   for (int i = 0; i < change_count; ++i) {
-    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
-        changes[i].action) {
-      DCHECK(changes[i].specifics.HasExtension(sync_pb::password))
-          << "Password specifics data not present on delete!";
-      DCHECK(changes[i].extra.get());
-      sync_api::SyncManager::ExtraPasswordChangeRecordData* extra =
-          static_cast<sync_api::SyncManager::ExtraPasswordChangeRecordData*>(
-              changes[i].extra.get());
-      const sync_pb::PasswordSpecificsData& password = extra->unencrypted();
-      webkit_glue::PasswordForm form;
-      PasswordModelAssociator::CopyPassword(password, &form);
-      deleted_passwords.push_back(form);
-      model_associator_->Disassociate(changes[i].id);
-      continue;
-    }
 
     sync_api::ReadNode sync_node(trans);
     if (!sync_node.InitByIdLookup(changes[i].id)) {
@@ -171,19 +156,20 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     const sync_pb::PasswordSpecificsData& password_data =
         sync_node.GetPasswordSpecifics();
     webkit_glue::PasswordForm password;
-    PasswordModelAssociator::CopyPassword(password_data, &password);
+    PasswordModelAssociator::CopyPassword(password_data,
+                                          &password);
 
     if (sync_api::SyncManager::ChangeRecord::ACTION_ADD == changes[i].action) {
-      std::string tag(PasswordModelAssociator::MakeTag(password));
-      model_associator_->Associate(&tag, sync_node.GetId());
       new_passwords.push_back(password);
+    } else if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
+               changes[i].action) {
+      deleted_passwords.push_back(password);
     } else {
       DCHECK(sync_api::SyncManager::ChangeRecord::ACTION_UPDATE ==
              changes[i].action);
       updated_passwords.push_back(password);
     }
   }
-
   if (!model_associator_->WriteToPasswordStore(&new_passwords,
                                                &updated_passwords,
                                                &deleted_passwords)) {

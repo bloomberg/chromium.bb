@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
@@ -104,7 +102,7 @@ void SyncBackendHost::Initialize(
     registrar_.workers[GROUP_PASSWORD] =
         new PasswordModelWorker(password_store);
   } else {
-    LOG(WARNING) << "Password store not initialized, cannot sync passwords";
+    LOG(ERROR) << "Password store not initialized, cannot sync passwords";
   }
 
   // Any datatypes that we want the syncer to pull down must
@@ -113,11 +111,6 @@ void SyncBackendHost::Initialize(
   for (syncable::ModelTypeSet::const_iterator it = types.begin();
       it != types.end(); ++it) {
     registrar_.routing_info[(*it)] = GROUP_PASSIVE;
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncPasswords)) {
-    registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
   }
 
   InitCore(Core::DoInitializeOptions(
@@ -168,15 +161,6 @@ void SyncBackendHost::StartSyncingWithServer() {
 }
 
 void SyncBackendHost::SetPassphrase(const std::string& passphrase) {
-  // TODO(tim): This should be encryption-specific instead of passwords
-  // specific.  For now we have to do this to avoid NIGORI node lookups when
-  // we haven't downloaded that node.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncPasswords)) {
-    LOG(WARNING) << "Silently dropping SetPassphrase request.";
-    return;
-  }
-
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoSetPassphrase,
                         passphrase));

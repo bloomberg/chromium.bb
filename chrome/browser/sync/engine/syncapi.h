@@ -46,7 +46,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -555,15 +554,6 @@ class SyncManager {
   // internal types from clients of the interface.
   class SyncInternal;
 
-  // TODO(tim): Depending on how multi-type encryption pans out, maybe we
-  // should turn ChangeRecord itself into a class.  Or we could template this
-  // wrapper / add a templated method to return unencrypted protobufs.
-  class ExtraChangeRecordData {
-   public:
-    ExtraChangeRecordData() {}
-    virtual ~ExtraChangeRecordData() {}
-  };
-
   // ChangeRecord indicates a single item that changed as a result of a sync
   // operation.  This gives the sync id of the node that changed, and the type
   // of change.  To get the actual property values after an ADD or UPDATE, the
@@ -578,21 +568,6 @@ class SyncManager {
     int64 id;
     Action action;
     sync_pb::EntitySpecifics specifics;
-    linked_ptr<ExtraChangeRecordData> extra;
-  };
-
-  // Since PasswordSpecifics is just an encrypted blob, we extend to provide
-  // access to unencrypted bits.
-  class ExtraPasswordChangeRecordData : public ExtraChangeRecordData {
-   public:
-    ExtraPasswordChangeRecordData(const sync_pb::PasswordSpecificsData& data)
-        : unencrypted_(data) {}
-    virtual ~ExtraPasswordChangeRecordData() {}
-    const sync_pb::PasswordSpecificsData& unencrypted() {
-      return unencrypted_;
-    }
-   private:
-    sync_pb::PasswordSpecificsData unencrypted_;
   };
 
   // Status encapsulates detailed state about the internals of the SyncManager.

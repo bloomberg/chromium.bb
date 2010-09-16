@@ -940,10 +940,6 @@ const char kSyncCredentialsMigrated[] = "sync.credentials_migrated";
 // startup so that the user doesn't need to provide credentials on each start.
 const char kEncryptionBootstrapToken[] = "sync.encryption_bootstrap_token";
 
-// Boolean tracking whether the user chose to specify a secondary encryption
-// passphrase.
-const char kSyncUsingSecondaryPassphrase[] = "sync.using_secondary_passphrase";
-
 // String that identifies the user logged into sync and other google services.
 const char kGoogleServicesUsername[] = "google.services.username";
 
