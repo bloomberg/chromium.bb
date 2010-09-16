@@ -70,7 +70,7 @@ class XmppConnectionTest : public testing::Test {
   virtual ~XmppConnectionTest() {}
 
   virtual void TearDown() {
-    // Clear out any messages posted by XmppConnections.
+    // Clear out any messages posted by XmppConnection's destructor.
     message_loop_.RunAllPending();
   }
 
@@ -94,6 +94,10 @@ TEST_F(XmppConnectionTest, ImmediateFailure) {
 
   XmppConnection xmpp_connection(buzz::XmppClientSettings(),
                                  &mock_xmpp_connection_delegate_, NULL);
+
+  // We need to do this *before* |xmpp_connection| gets destroyed or
+  // our delegate won't be called.
+  message_loop_.RunAllPending();
 }
 
 TEST_F(XmppConnectionTest, PreAuthFailure) {
@@ -109,6 +113,10 @@ TEST_F(XmppConnectionTest, PreAuthFailure) {
   XmppConnection xmpp_connection(
       buzz::XmppClientSettings(), &mock_xmpp_connection_delegate_,
       mock_pre_xmpp_auth_.release());
+
+  // We need to do this *before* |xmpp_connection| gets destroyed or
+  // our delegate won't be called.
+  message_loop_.RunAllPending();
 }
 
 TEST_F(XmppConnectionTest, FailureAfterPreAuth) {
@@ -123,6 +131,10 @@ TEST_F(XmppConnectionTest, FailureAfterPreAuth) {
   XmppConnection xmpp_connection(
       buzz::XmppClientSettings(), &mock_xmpp_connection_delegate_,
       mock_pre_xmpp_auth_.release());
+
+  // We need to do this *before* |xmpp_connection| gets destroyed or
+  // our delegate won't be called.
+  message_loop_.RunAllPending();
 }
 
 TEST_F(XmppConnectionTest, RaisedError) {
