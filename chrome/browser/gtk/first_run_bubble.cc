@@ -14,6 +14,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
@@ -133,13 +134,11 @@ void FirstRunBubble::InitializeContentForLarge() {
   GtkWidget* label2 = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT).c_str());
   labels_.push_back(label2);
-  gtk_label_set_line_wrap(GTK_LABEL(label2), TRUE);
 
   string16 search_engine = GetDefaultSearchEngineName(profile_);
   GtkWidget* label3 = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_QUESTION, search_engine).c_str());
   labels_.push_back(label3);
-  gtk_label_set_line_wrap(GTK_LABEL(label3), TRUE);
 
   GtkWidget* keep_button = gtk_button_new_with_label(
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_OK, search_engine).c_str());
@@ -188,7 +187,6 @@ void FirstRunBubble::InitializeContentForMinimal() {
   GtkWidget* label2 =
       gtk_label_new(l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT).c_str());
   labels_.push_back(label2);
-  gtk_label_set_line_wrap(GTK_LABEL(label2), TRUE);
 
   gtk_box_pack_start(GTK_BOX(content_), label1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content_), label2, FALSE, FALSE, 0);
@@ -204,8 +202,8 @@ void FirstRunBubble::InitializeLabels(int width_resource) {
     // Resize the labels so that they don't wrap more than necessary.  We leave
     // |content_| unsized so that it'll expand as needed to hold the other
     // widgets -- the buttons may be wider than |width| on high-DPI displays.
-    gtk_widget_set_size_request(labels_[i], width, -1);
-    gtk_misc_set_alignment(GTK_MISC(labels_[i]), 0, .5);
+    gtk_util::SetLabelWidth(labels_[i], width);
+    gtk_misc_set_alignment(GTK_MISC(labels_[i]), 0, 0.5);
   }
 }
 

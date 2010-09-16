@@ -44,7 +44,7 @@ static const GdkColor kSyncLabelErrorBgColor = GDK_COLOR_RGB(0xff, 0x9a, 0x9a);
 
 // Helper for WrapLabelAtAllocationHack.
 void OnLabelAllocate(GtkWidget* label, GtkAllocation* allocation) {
-  gtk_widget_set_size_request(label, allocation->width, -1);
+  gtk_util::SetLabelWidth(label, allocation->width);
 
   // Disconnect ourselves.  Repeatedly resizing based on allocation causes
   // the dialog to become unshrinkable.
@@ -337,8 +337,7 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   sync_status_label_ = gtk_label_new("");
   WrapLabelAtAllocationHack(sync_status_label_);
 
-  gtk_label_set_line_wrap(GTK_LABEL(sync_status_label_), TRUE);
-  gtk_misc_set_alignment(GTK_MISC(sync_status_label_), 0, 0);
+  gtk_misc_set_alignment(GTK_MISC(sync_status_label_), 0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), sync_status_label_background_, FALSE,
                      FALSE, 0);
   gtk_container_add(GTK_CONTAINER(sync_status_label_background_),

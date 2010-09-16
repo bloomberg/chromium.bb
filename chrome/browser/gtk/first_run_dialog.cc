@@ -173,8 +173,7 @@ void FirstRunDialog::ShowSearchEngineWindow() {
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
   gtk_misc_set_alignment(GTK_MISC(explanation), 0, 0.5);
   gtk_util::SetLabelColor(explanation, &gfx::kGdkBlack);
-  gtk_label_set_line_wrap(GTK_LABEL(explanation), TRUE);
-  gtk_widget_set_size_request(explanation, kExplanationWidth, -1);
+  gtk_util::SetLabelWidth(explanation, kExplanationWidth);
   gtk_box_pack_start(GTK_BOX(bubble_area_box), explanation, FALSE, FALSE, 0);
 
   // We will fill this in after the TemplateURLModel has loaded.
