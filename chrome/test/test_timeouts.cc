@@ -54,15 +54,19 @@ void TestTimeouts::Initialize() {
   }
   initialized_ = true;
 
+  // The timeout values should be increasing in the right order, and while
+  // initially they are, overrides may not respect this. Move the checks to
+  // before the point at which they get overridden while all build scripts
+  // are updated.
+  // TODO(robertshield): Move these checks back once the bots are updated.
+  CHECK(action_timeout_ms_ <= action_max_timeout_ms_);
+  CHECK(action_max_timeout_ms_ <= large_test_timeout_ms_);
+  CHECK(large_test_timeout_ms_ <= huge_test_timeout_ms_);
+
   InitializeTimeout(switches::kUiTestActionTimeout, &action_timeout_ms_);
   InitializeTimeout(switches::kUiTestActionMaxTimeout, &action_max_timeout_ms_);
   InitializeTimeout(switches::kTestLargeTimeout, &large_test_timeout_ms_);
   InitializeTimeout(switches::kUiTestTimeout, &huge_test_timeout_ms_);
-
-  // The timeout values should be increasing in the right order.
-  CHECK(action_timeout_ms_ <= action_max_timeout_ms_);
-  CHECK(action_max_timeout_ms_ <= large_test_timeout_ms_);
-  CHECK(large_test_timeout_ms_ <= huge_test_timeout_ms_);
 
   InitializeTimeout(switches::kUiTestSleepTimeout, &sleep_timeout_ms_);
   InitializeTimeout(switches::kUiTestCommandExecutionTimeout,
