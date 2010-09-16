@@ -47,6 +47,10 @@ static WebPluginInfo kPlugin4043 = {
     std::vector<WebPluginMimeType>(), true };
 
 class PluginGroupTest : public testing::Test {
+ protected:
+  virtual void TearDown() {
+    PluginGroup::SetPolicyDisabledPluginPatterns(std::set<string16>());
+  }
 };
 
 TEST(PluginGroupTest, PluginGroupMatch) {
@@ -167,4 +171,17 @@ TEST(PluginGroupTest, VersionExtraction) {
     data->GetString("version", &version);
     EXPECT_EQ(versions[i][1], version);
   }
+}
+
+TEST(PluginGroupTest, DisabledByPolicy) {
+  std::set<string16> disabled_plugins;
+  disabled_plugins.insert(ASCIIToUTF16("Disable this!"));
+  disabled_plugins.insert(ASCIIToUTF16("*Google*"));
+  PluginGroup::SetPolicyDisabledPluginPatterns(disabled_plugins);
+
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(ASCIIToUTF16("42")));
+  EXPECT_TRUE(PluginGroup::IsPluginNameDisabledByPolicy(
+      ASCIIToUTF16("Disable this!")));
+  EXPECT_TRUE(PluginGroup::IsPluginNameDisabledByPolicy(
+      ASCIIToUTF16("Google Earth")));
 }

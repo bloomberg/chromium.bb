@@ -71,7 +71,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {};
 #endif
 
 /*static*/
-std::set<string16>* PluginGroup::policy_disabled_plugins_;
+std::set<string16>* PluginGroup::policy_disabled_plugin_patterns_;
 
 /*static*/
 const PluginGroupDefinition* PluginGroup::GetPluginGroupDefinitions() {
@@ -85,18 +85,28 @@ size_t PluginGroup::GetPluginGroupDefinitionsSize() {
 }
 
 /*static*/
-void PluginGroup::SetPolicyDisabledPluginSet(const std::set<string16>& set) {
-  if (!policy_disabled_plugins_)
-    policy_disabled_plugins_ = new std::set<string16>(set);
+void PluginGroup::SetPolicyDisabledPluginPatterns(
+    const std::set<string16>& set) {
+  if (!policy_disabled_plugin_patterns_)
+    policy_disabled_plugin_patterns_ = new std::set<string16>(set);
   else
-    *policy_disabled_plugins_ = set;
+    *policy_disabled_plugin_patterns_ = set;
 }
 
 /*static*/
 bool PluginGroup::IsPluginNameDisabledByPolicy(const string16& plugin_name) {
-  return policy_disabled_plugins_ &&
-      policy_disabled_plugins_->find(plugin_name) !=
-          policy_disabled_plugins_->end();
+  if (!policy_disabled_plugin_patterns_)
+    return false;
+
+  std::set<string16>::const_iterator pattern(
+      policy_disabled_plugin_patterns_->begin());
+  while (pattern != policy_disabled_plugin_patterns_->end()) {
+    if (MatchPattern(plugin_name, *pattern))
+      return true;
+    ++pattern;
+  }
+
+  return false;
 }
 
 /*static*/

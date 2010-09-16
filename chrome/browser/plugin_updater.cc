@@ -126,20 +126,20 @@ void PluginUpdater::Observe(NotificationType type,
 }
 
 void PluginUpdater::DisablePluginsFromPolicy(const ListValue* plugin_names) {
-  // Generate the set of unique disabled plugins from the disabled
+  // Generate the set of unique disabled plugin patterns from the disabled
   // plugins list.
-  std::set<string16> policy_disabled_plugins;
+  std::set<string16> policy_disabled_plugin_patterns;
   if (plugin_names) {
     ListValue::const_iterator end(plugin_names->end());
     for (ListValue::const_iterator current(plugin_names->begin());
          current != end; ++current) {
       string16 plugin_name;
       if ((*current)->GetAsString(&plugin_name)) {
-        policy_disabled_plugins.insert(plugin_name);
+        policy_disabled_plugin_patterns.insert(plugin_name);
       }
     }
   }
-  PluginGroup::SetPolicyDisabledPluginSet(policy_disabled_plugins);
+  PluginGroup::SetPolicyDisabledPluginPatterns(policy_disabled_plugin_patterns);
 
   // Disable all of the plugins and plugin groups that are disabled by policy.
   // There's currenly a bug that makes it impossible to correctly re-enable
@@ -259,7 +259,7 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
     }
   }
 
-  // Build the set of policy-disabled plugins once and cache it.
+  // Build the set of policy-disabled plugin patterns once and cache it.
   // Don't do this in the constructor, there's no profile available there.
   const ListValue* plugin_blacklist =
       profile->GetPrefs()->GetList(prefs::kPluginsPluginsBlacklist);

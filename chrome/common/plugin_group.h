@@ -55,8 +55,9 @@ class PluginGroup {
   // otherwise.
   static PluginGroup* FindHardcodedPluginGroup(const WebPluginInfo& info);
 
-  // Configures the set of plugin names that are disabled by policy.
-  static void SetPolicyDisabledPluginSet(const std::set<string16>& set);
+  // Configures the set of plugin name patterns for disabling plugins via
+  // enterprise configuration management.
+  static void SetPolicyDisabledPluginPatterns(const std::set<string16>& set);
 
   // Tests to see if a plugin is on the blacklist using its name as
   // the lookup key.
@@ -139,7 +140,7 @@ class PluginGroup {
   // enabled one, or if all plugins are disabled, simply the first one.
   void UpdateActivePlugin(const WebPluginInfo& plugin);
 
-  static std::set<string16>* policy_disabled_plugins_;
+  static std::set<string16>* policy_disabled_plugin_patterns_;
 
   string16 group_name_;
   string16 name_matcher_;
