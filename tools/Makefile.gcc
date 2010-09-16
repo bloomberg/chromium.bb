@@ -1,0 +1,100 @@
+# Copyright 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# Standard directory variables.
+# (see http://www.gnu.org/prep/standards/html_node/Directory-Variables.html#Directory-Variables)
+ifndef prefix
+$(error prefix: Undefined)
+endif
+ifndef srcdir
+$(error srcdir: Undefined)
+endif
+
+ifndef target
+$(error target: Undefined)
+endif
+
+ifndef DEFAULT_ALIGN_BYTES
+$(error DEFAULT_ALIGN_BYTES: Undefined)
+endif
+ifndef DEFAULT_ALIGN_POW2
+$(error DEFAULT_ALIGN_POW2: Undefined)
+endif
+
+
+GCC_CONFIGURE_FLAGS = \
+    --disable-decimal-float \
+    --disable-libgomp \
+    --disable-libmudflap \
+    --disable-libssp \
+    --disable-libstdcxx-pch \
+    --prefix=$(prefix) \
+    --target=$(target)
+
+# At the moment multilib build with glibc is broken.
+# TODO(eaeltsin): fix glibc and get rid of MULTILIB variable!
+ifdef MULTILIB
+ifeq ($(MULTILIB),no)
+GCC_CONFIGURE_FLAGS += --disable-multilib
+else
+$(error MULTILIB: Bad value)
+endif
+endif
+
+
+GCC_CC = gcc -m32
+
+
+GCC_CFLAGS = -O2
+
+GCC_DEFINES = \
+    -Dinhibit_libc \
+    -D__gthr_posix_h \
+    -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
+    -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)
+
+
+GCC_LDFLAGS =
+
+
+GCC_CONFIGURE_VARS = \
+    CC="$(GCC_CC)" \
+    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
+    LDFLAGS="$(GCC_LDFLAGS)" \
+    CFLAGS_FOR_TARGET="-O2 -g" \
+    CXXFLAGS_FOR_TARGET="-O2 -g"
+
+
+.PHONY: configure-pregcc
+configure-pregcc:
+	$(srcdir)/configure \
+	    $(GCC_CONFIGURE_VARS) \
+	    $(GCC_CONFIGURE_FLAGS) \
+	    --disable-shared \
+	    --disable-threads \
+	    --enable-languages="c" \
+	    --without-headers
+
+
+.PHONY: configure-gcc-with-newlib
+configure-gcc-with-newlib:
+	$(srcdir)/configure \
+	    $(GCC_CONFIGURE_VARS) \
+	    $(GCC_CONFIGURE_FLAGS) \
+	    --disable-shared \
+	    --enable-languages="c,c++" \
+	    --enable-threads=nacl \
+	    --enable-tls \
+	    --with-newlib
+
+
+.PHONY: configure-gcc-with-glibc
+configure-gcc-with-glibc:
+	$(srcdir)/configure \
+	    $(GCC_CONFIGURE_VARS) \
+	    $(GCC_CONFIGURE_FLAGS) \
+	    --enable-shared \
+	    --enable-languages="c,c++" \
+	    --enable-threads=nacl \
+	    --enable-tls

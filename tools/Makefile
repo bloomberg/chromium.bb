@@ -73,7 +73,6 @@ SDKNAME=nacl-sdk
 SDKROOT=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
-MULTILIB_CFGOPT=$(if $(filter no,$(MULTILIB)),--disable-multilib,)
 
 # Convert CROSSARCH (nacl or nacl64) to (32 or 64).
 BITSPLATFORM=$(subst 3264,64,$(subst nacl,32,$(CROSSARCH)))
@@ -418,39 +417,22 @@ binutils: BUILD/stamp-binutils
 # Builds the cross gcc used to build the libraries.
 ##################################################################
 
-GCC_CONFIGURE_FLAGS = \
-    --disable-decimal-float \
-    --disable-libgomp \
-    --disable-libmudflap \
-    --disable-libssp \
-    --disable-libstdcxx-pch \
-    --disable-shared \
-    --prefix=$(SDKROOT) \
-    --target=$(CROSSARCH)
-
 BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
-	cd BUILD/build-pregcc-$(CROSSARCH) && \
-	  PATH=$(BUILDPATH) CC="gcc" \
-		CFLAGS="-m32 -Dinhibit_libc -D__gthr_posix_h -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
-	  LDFLAGS="-s" \
-	    ../../SRC/gcc/configure \
-	      $(GCC_CONFIGURE_FLAGS) \
-	      --disable-threads \
-	      --enable-languages="c" \
-	      $(MULTILIB_CFGOPT) \
-	      --without-headers
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2" \
-		  CXXFLAGS_FOR_TARGET="-O2" \
-	    all-gcc all-target-libgcc ;
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2" \
-		  CXXFLAGS_FOR_TARGET="-O2" \
-	    DESTDIR=$(DESTDIR) install-gcc install-target-libgcc ; \
+	$(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) -f ../../Makefile.gcc \
+	    prefix=$(SDKROOT) \
+	    srcdir=../../SRC/gcc \
+	    target=$(CROSSARCH) \
+	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
+	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
+	    MULTILIB=$(MULTILIB) \
+	    configure-pregcc
+	$(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
+	    all-gcc all-target-libgcc
+	$(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
+	    DESTDIR=$(DESTDIR) \
+	    install-gcc install-target-libgcc
 	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
 		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
 	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/32/libgcc.a \
@@ -602,32 +584,19 @@ BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
 	ln -s include $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
-	cd BUILD/build-full-gcc-$(CROSSARCH) && \
-	  PATH=$(BUILDPATH) CC="gcc" \
-	  CFLAGS="-m32 -Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
-	    ../../SRC/gcc/configure \
-		--disable-libmudflap \
-		--disable-decimal-float \
-		--disable-libssp \
-		--disable-libstdcxx-pch \
-		--enable-shared \
-		--target=$(CROSSARCH) \
-		$(MULTILIB_CFGOPT) \
-		--enable-threads=nacl \
-		--enable-tls \
-		--disable-libgomp \
-		--prefix=$(DESTDIR)$(SDKROOT) \
-		--enable-languages="c,c++"
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+	$(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) -f ../../Makefile.gcc \
+	    prefix=$(SDKROOT) \
+	    srcdir=../../SRC/gcc \
+	    target=$(CROSSARCH) \
+	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
+	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
+	    MULTILIB=$(MULTILIB) \
+	    configure-gcc-with-glibc
+	$(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    all
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
-	    DESTDIR= install
+	$(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) \
+	    DESTDIR=$(DESTDIR) \
+	    install
 	touch $@
 
 ##################################################################
@@ -644,28 +613,19 @@ ifeq ($(CYGWIN17), 1)
 	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
 	    BUILD/build-gcc-$(CROSSARCH)/$(CROSSARCH)
 endif
-	cd BUILD/build-gcc-$(CROSSARCH) && \
-	  PATH=$(BUILDPATH) CC="gcc" \
-		CFLAGS="-m32 -Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
-		CFLAGS_FOR_TARGET="-O2 -g" \
-		CXXFLAGS_FOR_TARGET="-O2 -g" \
-	  LDFLAGS="-s" \
-	    ../../SRC/gcc/configure \
-	      $(GCC_CONFIGURE_FLAGS) \
-	      --enable-languages="c,c++" \
-	      --enable-threads=nacl \
-	      --enable-tls \
-	      --with-newlib
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+	$(MAKE) -C BUILD/build-gcc-$(CROSSARCH) -f ../../Makefile.gcc \
+	    prefix=$(SDKROOT) \
+	    srcdir=../../SRC/gcc \
+	    target=$(CROSSARCH) \
+	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
+	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
+	    MULTILIB=$(MULTILIB) \
+	    configure-gcc-with-newlib
+	$(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
 	    all
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
-	    DESTDIR=$(DESTDIR) install
+	$(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
+	    DESTDIR=$(DESTDIR) \
+	    install
 	$(MAKE) -f $(THISMAKEFILE) redirector
 ifeq ($(PLATFORM), Cygwin)
 	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
