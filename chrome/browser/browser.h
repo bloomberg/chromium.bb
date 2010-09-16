@@ -23,7 +23,8 @@
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/tab_contents/match_preview_delegate.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -44,6 +45,7 @@ class SessionStorageNamespace;
 class SkBitmap;
 class StatusBubble;
 class TabNavigation;
+class TabStripModel;
 namespace gfx {
 class Point;
 }
@@ -317,26 +319,16 @@ class Browser : public TabStripModelDelegate,
   // TabStripModel pass-thrus /////////////////////////////////////////////////
 
   TabStripModel* tabstrip_model() const {
-    return const_cast<TabStripModel*>(&tabstrip_model_);
+    return const_cast<TabStripModel*>(tabstrip_model_.get());
   }
 
-  int tab_count() const { return tabstrip_model_.count(); }
-  int selected_index() const { return tabstrip_model_.selected_index(); }
-  int GetIndexOfController(const NavigationController* controller) const {
-    return tabstrip_model_.GetIndexOfController(controller);
-  }
-  TabContents* GetTabContentsAt(int index) const {
-    return tabstrip_model_.GetTabContentsAt(index);
-  }
-  TabContents* GetSelectedTabContents() const {
-    return tabstrip_model_.GetSelectedTabContents();
-  }
-  void SelectTabContentsAt(int index, bool user_gesture) {
-    tabstrip_model_.SelectTabContentsAt(index, user_gesture);
-  }
-  void CloseAllTabs() {
-    tabstrip_model_.CloseAllTabs();
-  }
+  int tab_count() const;
+  int selected_index() const;
+  int GetIndexOfController(const NavigationController* controller) const;
+  TabContents* GetTabContentsAt(int index) const;
+  TabContents* GetSelectedTabContents() const;
+  void SelectTabContentsAt(int index, bool user_gesture);
+  void CloseAllTabs();
 
   // Tab adding/showing functions /////////////////////////////////////////////
 
@@ -984,7 +976,7 @@ class Browser : public TabStripModelDelegate,
   BrowserWindow* window_;
 
   // This Browser's TabStripModel.
-  TabStripModel tabstrip_model_;
+  scoped_ptr<TabStripModel> tabstrip_model_;
 
   // The CommandUpdater that manages the browser window commands.
   CommandUpdater command_updater_;

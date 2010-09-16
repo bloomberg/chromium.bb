@@ -24,9 +24,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#if defined(OS_WIN)
-#include "chrome/browser/views/frame/browser_view.h"
-#endif
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -39,6 +37,10 @@
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 #include "sandbox/src/dep.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/views/frame/browser_view.h"
+#endif
 
 #if defined(OS_LINUX)
 #include "base/singleton.h"

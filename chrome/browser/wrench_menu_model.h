@@ -10,11 +10,12 @@
 #include "app/menus/button_menu_item_model.h"
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class Browser;
+class TabStripModel;
 
 namespace {
 class MockWrenchMenuModel;

@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 
 // Incognito profiles are not long-lived, so we always want to store a
 // non-incognito profile.

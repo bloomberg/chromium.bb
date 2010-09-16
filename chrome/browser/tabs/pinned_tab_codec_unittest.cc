@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "chrome/browser/tabs/pinned_tab_codec.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"

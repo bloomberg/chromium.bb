@@ -28,12 +28,17 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
+#include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_job.h"
@@ -42,22 +47,17 @@
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
 #endif
 
-#include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
-
 static const char kPropertyPath[] = "path";
 static const char kPropertyForce[] = "force";
 static const char kPropertyOffset[] = "currentOffset";
 static const char kPropertyError[] = "error";
 
-const char* kMediaplayerURL = "chrome://mediaplayer";
-const char* kMediaplayerPlaylistURL = "chrome://mediaplayer#playlist";
-const int kPopupLeft = 0;
-const int kPopupTop = 0;
-const int kPopupWidth = 350;
-const int kPopupHeight = 300;
+static const char* kMediaplayerURL = "chrome://mediaplayer";
+static const char* kMediaplayerPlaylistURL = "chrome://mediaplayer#playlist";
+static const int kPopupLeft = 0;
+static const int kPopupTop = 0;
+static const int kPopupWidth = 350;
+static const int kPopupHeight = 300;
 
 class MediaplayerUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:

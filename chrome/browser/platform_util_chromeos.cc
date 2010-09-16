@@ -11,14 +11,14 @@
 #include "base/process_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/filebrowse_ui.h"
+#include "chrome/browser/dom_ui/mediaplayer_ui.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/process_watcher.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
-
-#include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/dom_ui/filebrowse_ui.h"
-#include "chrome/browser/dom_ui/mediaplayer_ui.h"
 
 class Profile;
 

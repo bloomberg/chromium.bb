@@ -20,9 +20,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/frame/browser_view.h"
-#endif
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
@@ -31,6 +29,10 @@
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/frame/browser_view.h"
+#endif
 
 const std::string kSubscribePage = "/subscribe.html";
 const std::string kFeedPage = "files/feeds/feed.html";

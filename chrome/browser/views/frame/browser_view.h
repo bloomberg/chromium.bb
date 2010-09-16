@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/views/frame/browser_bubble_host.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
@@ -53,6 +53,7 @@ class LocationBarView;
 class SideTabStrip;
 class StatusBubbleViews;
 class TabContentsContainer;
+class TabStripModel;
 class ToolbarView;
 class ZoomMenuModel;
 

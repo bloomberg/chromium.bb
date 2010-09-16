@@ -20,6 +20,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/notification_service.h"
 #include "views/widget/root_view.h"

@@ -18,6 +18,7 @@
 #import "chrome/browser/cocoa/applescript/tab_applescript.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 
 @interface WindowAppleScript(WindowAppleScriptPrivateMethods)

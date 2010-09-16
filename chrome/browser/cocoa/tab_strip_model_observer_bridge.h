@@ -8,9 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-#include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 
 class TabContents;
+class TabStripModel;
 
 // A C++ bridge class to handle receiving notifications from the C++ tab strip
 // model. When the caller allocates a bridge, it automatically registers for

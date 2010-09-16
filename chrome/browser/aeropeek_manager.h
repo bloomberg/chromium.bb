@@ -10,15 +10,15 @@
 
 #include <list>
 
-#include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "gfx/insets.h"
 
 namespace gfx {
 class Size;
 }
-class TabContents;
 class AeroPeekWindow;
 class SkBitmap;
+class TabContents;
 
 // A class which defines interfaces called from AeroPeekWindow.
 // This class is used for dispatching an event received by a thumbnail window

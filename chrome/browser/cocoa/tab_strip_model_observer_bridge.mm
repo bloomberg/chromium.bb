@@ -4,6 +4,8 @@
 
 #include "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 
+#include "chrome/browser/tabs/tab_strip_model.h"
+
 TabStripModelObserverBridge::TabStripModelObserverBridge(TabStripModel* model,
                                                          id controller)
     : controller_(controller), model_(model) {

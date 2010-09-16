@@ -19,12 +19,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/app_launcher.h"
-#include "chrome/browser/views/extensions/extension_installed_bubble.h"
-#elif defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/extension_installed_bubble_gtk.h"
-#endif
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -37,13 +32,19 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "chrome/browser/cocoa/extension_installed_bubble_bridge.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/app_launcher.h"
+#include "chrome/browser/views/extensions/extension_installed_bubble.h"
+#endif
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
+#include "chrome/browser/gtk/extension_installed_bubble_gtk.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
 
 // static

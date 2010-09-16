@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/find_bar_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/view_ids.h"

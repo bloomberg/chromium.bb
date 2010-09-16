@@ -9,6 +9,7 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TabposeWindowTest : public CocoaTest {

@@ -6,9 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
-#if defined(OS_WIN)
-#include "base/i18n/rtl.h"
-#endif
 #include "base/file_path.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
@@ -26,8 +23,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/pinned_tab_codec.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -38,6 +36,10 @@
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
+
+#if defined(OS_WIN)
+#include "base/i18n/rtl.h"
+#endif
 
 namespace {
 

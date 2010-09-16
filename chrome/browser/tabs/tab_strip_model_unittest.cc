@@ -22,6 +22,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_observer_mock.h"
@@ -83,6 +84,7 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   virtual bool CanCloseContentsAt(int index) { return can_close_ ; }
   virtual bool CanBookmarkAllTabs() const { return false; }
   virtual void BookmarkAllTabs() {}
+  virtual bool CanCloseTab() const { return true; }
   virtual bool UseVerticalTabs() const { return false; }
   virtual void ToggleUseVerticalTabs() {}
   virtual bool LargeIconsPermitted() const { return true; }
