@@ -21,6 +21,7 @@
 namespace {
 
 enum PlanPurchaseType {
+  UNKNOWN,
   NO_PURCHASE,                // No purchase happened.
   PURCHASED_DATA,             // Purchased limited data plan.
   PURCHASED_UNLIMITED_DATA    // Purchased unlimited data plan.
@@ -42,7 +43,7 @@ struct PlanDetails {
 void GetPlanDetails(const chromeos::CellularNetwork& cellular,
                     PlanDetails* details) {
   // Free 5M 30day plan.
-  details->last_purchase_type = NO_PURCHASE;
+  details->last_purchase_type = UNKNOWN;
   details->last_purchase_time = base::Time::Now();
   details->purchased_data = 5 * 1024 * 1024;
   details->purchased_time = base::TimeDelta::FromDays(30);
@@ -202,6 +203,15 @@ void CellularConfigView::Update() {
       expiration_info_->SetText(UTF16ToWide(
           TimeFormat::TimeRemaining(details.remaining_time)));
       break;
+    case UNKNOWN: {
+      // TODO(xiyuan): Remove this when underlying data is provided.
+      const wchar_t kPlanType[] = L"Purchased plan: <Not yet implemented>";
+      const wchar_t kNotImplemented[] = L"<Not yet implemented>";
+      purchase_info_->SetText(kPlanType);
+      remaining_data_info_->SetText(kNotImplemented);
+      expiration_info_->SetText(kNotImplemented);
+      break;
+    }
     default:
       NOTREACHED() << "Unknown mobile plan purchase type.";
       break;
