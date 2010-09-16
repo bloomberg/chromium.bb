@@ -9,12 +9,11 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityRole.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 
 namespace WebKit {
 class WebAccessibilityCache;
+class WebAccessibilityObject;
 }
 
 namespace webkit_glue {

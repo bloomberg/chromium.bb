@@ -1174,8 +1174,8 @@ void RenderWidgetHost::AccessibilityDoDefaultAction(int acc_obj_id) {
   Send(new ViewMsg_AccessibilityDoDefaultAction(routing_id(), acc_obj_id));
 }
 
-void RenderWidgetHost::AccessibilityObjectChildrenChangeAck() {
-  Send(new ViewMsg_AccessibilityObjectChildrenChange_ACK(routing_id()));
+void RenderWidgetHost::AccessibilityNotificationsAck() {
+  Send(new ViewMsg_AccessibilityNotifications_ACK(routing_id()));
 }
 
 void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {

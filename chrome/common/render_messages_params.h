@@ -34,6 +34,7 @@
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/resource_type.h"
+#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -951,6 +952,25 @@ struct ViewMsg_FileSystem_DidReadDirectory_Params {
   bool has_more;
 };
 
+struct ViewHostMsg_AccessibilityNotification_Params {
+  enum NotificationType {
+    // The node checked state has changed.
+    NOTIFICATION_TYPE_CHECK_STATE_CHANGED,
+
+    // The node tree structure has changed.
+    NOTIFICATION_TYPE_CHILDREN_CHANGED,
+
+    // The node value has changed.
+    NOTIFICATION_TYPE_VALUE_CHANGED,
+  };
+
+  // Type of notification.
+  NotificationType notification_type;
+
+  // The accessibility node tree.
+  webkit_glue::WebAccessibility acc_obj;
+};
+
 namespace IPC {
 
 class Message;
@@ -1215,6 +1235,14 @@ struct ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params> {
 template <>
 struct ParamTraits<base::file_util_proxy::Entry> {
   typedef base::file_util_proxy::Entry param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewHostMsg_AccessibilityNotification_Params> {
+  typedef ViewHostMsg_AccessibilityNotification_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

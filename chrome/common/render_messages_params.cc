@@ -525,6 +525,30 @@ struct ParamTraits<Extension::Location> {
   }
 };
 
+template <>
+struct ParamTraits
+    <ViewHostMsg_AccessibilityNotification_Params::NotificationType> {
+  typedef ViewHostMsg_AccessibilityNotification_Params params;
+  typedef params::NotificationType param_type;
+  static void Write(Message* m, const param_type& p) {
+    int val = static_cast<int>(p);
+    WriteParam(m, val);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int val = 0;
+    if (!ReadParam(m, iter, &val) ||
+        val < params::NOTIFICATION_TYPE_CHECK_STATE_CHANGED ||
+        val > params::NOTIFICATION_TYPE_VALUE_CHANGED) {
+      return false;
+    }
+    *p = static_cast<param_type>(val);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    ParamTraits<int>::Log(static_cast<int>(p), l);
+  }
+};
+
 
 void ParamTraits<ViewMsg_Navigate_Params>::Write(Message* m,
                                                  const param_type& p) {
@@ -1796,6 +1820,32 @@ void ParamTraits<base::file_util_proxy::Entry>::Log(
   LogParam(p.name, l);
   l->append(", ");
   LogParam(p.is_directory, l);
+  l->append(")");
+}
+
+void ParamTraits<ViewHostMsg_AccessibilityNotification_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, p.notification_type);
+  WriteParam(m, p.acc_obj);
+}
+
+bool ParamTraits<ViewHostMsg_AccessibilityNotification_Params>::Read(
+    const Message* m,
+    void** iter,
+    param_type* p) {
+  return
+      ReadParam(m, iter, &p->notification_type) &&
+      ReadParam(m, iter, &p->acc_obj);
+}
+
+void ParamTraits<ViewHostMsg_AccessibilityNotification_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("(");
+  LogParam(p.notification_type, l);
+  l->append(", ");
+  LogParam(p.acc_obj, l);
   l->append(")");
 }
 

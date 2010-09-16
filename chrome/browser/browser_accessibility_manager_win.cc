@@ -8,6 +8,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 
 using webkit_glue::WebAccessibility;
 
@@ -113,39 +114,31 @@ void BrowserAccessibilityManager::OnAccessibilityFocusChange(int renderer_id) {
   ::NotifyWinEvent(EVENT_OBJECT_FOCUS, parent_hwnd_, OBJID_CLIENT, child_id);
 }
 
-void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
-    const webkit_glue::WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
-  if (!new_browser_acc)
-    return;
-
-  NotifyWinEvent(
-      EVENT_OBJECT_STATECHANGE,
-      parent_hwnd_,
-      OBJID_CLIENT,
-      new_browser_acc->child_id());
-}
-
-void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
-    const std::vector<webkit_glue::WebAccessibility>& acc_changes) {
+void BrowserAccessibilityManager::OnAccessibilityNotifications(
+    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   if (delegate_)
-    delegate_->AccessibilityObjectChildrenChangeAck();
+    delegate_->AccessibilityNotificationsAck();
 
-  // For each accessibility object child change.
-  for (unsigned int index = 0; index < acc_changes.size(); index++) {
-    const webkit_glue::WebAccessibility& acc_obj = acc_changes[index];
-    BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
-    if (!new_browser_acc)
-      continue;
+  for (uint32 index = 0; index < params.size(); index++) {
+    const ViewHostMsg_AccessibilityNotification_Params& param = params[index];
 
-    LONG child_id;
-    if (root_ != new_browser_acc) {
-      child_id = new_browser_acc->GetParent()->child_id();
-    } else {
-      child_id = CHILDID_SELF;
+    switch (param.notification_type) {
+      case ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
+        OnAccessibilityObjectStateChange(param.acc_obj);
+        break;
+      case ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_CHILDREN_CHANGED:
+        OnAccessibilityObjectChildrenChange(param.acc_obj);
+        break;
+      case ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_VALUE_CHANGED:
+        OnAccessibilityObjectValueChange(param.acc_obj);
+        break;
+      default:
+        DCHECK(0);
+        break;
     }
-
-    NotifyWinEvent(EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, child_id);
   }
 }
 
@@ -192,6 +185,44 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
 
     return new_browser_acc;
   }
+}
+
+void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
+    const webkit_glue::WebAccessibility& acc_obj) {
+  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  if (!new_browser_acc)
+    return;
+
+  LONG child_id = new_browser_acc->child_id();
+  NotifyWinEvent(
+      EVENT_OBJECT_STATECHANGE, parent_hwnd_, OBJID_CLIENT, child_id);
+}
+
+void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
+    const webkit_glue::WebAccessibility& acc_obj) {
+  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  if (!new_browser_acc)
+    return;
+
+  LONG child_id;
+  if (root_ != new_browser_acc) {
+    child_id = new_browser_acc->GetParent()->child_id();
+  } else {
+    child_id = CHILDID_SELF;
+  }
+
+  NotifyWinEvent(EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, child_id);
+}
+
+void BrowserAccessibilityManager::OnAccessibilityObjectValueChange(
+    const webkit_glue::WebAccessibility& acc_obj) {
+  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  if (!new_browser_acc)
+    return;
+
+  LONG child_id = new_browser_acc->child_id();
+  NotifyWinEvent(
+      EVENT_OBJECT_VALUECHANGE, parent_hwnd_, OBJID_CLIENT, child_id);
 }
 
 LONG BrowserAccessibilityManager::GetNextChildID() {

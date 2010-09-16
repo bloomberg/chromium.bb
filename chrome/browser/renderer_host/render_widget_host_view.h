@@ -32,6 +32,7 @@ class RenderProcessHost;
 class RenderWidgetHost;
 class VideoLayer;
 class WebCursor;
+struct ViewHostMsg_AccessibilityNotification_Params;
 struct WebMenuItem;
 
 namespace webkit_glue {
@@ -252,10 +253,9 @@ class RenderWidgetHostView {
   virtual void UpdateAccessibilityTree(
       const webkit_glue::WebAccessibility& tree) { }
   virtual void OnAccessibilityFocusChange(int acc_obj_id) { }
-  virtual void OnAccessibilityObjectStateChange(
-      const webkit_glue::WebAccessibility& acc_obj) { }
-  virtual void OnAccessibilityObjectChildrenChange(
-       const std::vector<webkit_glue::WebAccessibility>& acc_changes) { }
+  virtual void OnAccessibilityNotifications(
+      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
+  }
 
  protected:
   // Interface class only, do not construct.

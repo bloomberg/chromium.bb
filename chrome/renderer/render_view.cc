@@ -185,6 +185,7 @@ using webkit_glue::PasswordFormDomManager;
 using webkit_glue::SiteIsolationMetrics;
 using webkit_glue::WebAccessibility;
 using WebKit::WebAccessibilityCache;
+using WebKit::WebAccessibilityNotification;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
@@ -803,8 +804,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityFocus, OnSetAccessibilityFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityDoDefaultAction,
                         OnAccessibilityDoDefaultAction)
-    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityObjectChildrenChange_ACK,
-                        OnAccessibilityObjectChildrenChangeAck)
+    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
+                        OnAccessibilityNotificationsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_OpenFileSystemRequest_Complete,
                         OnOpenFileSystemRequestComplete)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
@@ -1474,7 +1475,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
     accessibility_->clear();
     accessibility_.reset();
   }
-  accessibility_changes_.clear();
+  pending_accessibility_notifications_.clear();
 }
 
 // Tell the embedding application that the title of the active page has changed
@@ -4382,7 +4383,7 @@ void RenderView::OnGetAccessibilityTree() {
     accessibility_->clear();
     accessibility_.reset(WebAccessibilityCache::create());
     accessibility_->initialize(webview());
-  accessibility_changes_.clear();
+  pending_accessibility_notifications_.clear();
 
   WebAccessibilityObject src_tree = webview()->accessibilityObject();
   WebAccessibility dst_tree(src_tree, accessibility_.get());
@@ -4412,17 +4413,17 @@ void RenderView::OnAccessibilityDoDefaultAction(int acc_obj_id) {
   }
 }
 
-void RenderView::OnAccessibilityObjectChildrenChangeAck() {
+void RenderView::OnAccessibilityNotificationsAck() {
   if (!accessibility_.get())
     return;
 
-  if (!accessibility_changes_.empty()) {
-    Send(new ViewHostMsg_AccessibilityObjectChildrenChange(
+  if (!pending_accessibility_notifications_.empty()) {
+    Send(new ViewHostMsg_AccessibilityNotifications(
         routing_id_,
-        accessibility_changes_));
+        pending_accessibility_notifications_));
   }
 
-  accessibility_changes_.clear();
+  pending_accessibility_notifications_.clear();
 }
 
 void RenderView::OnGetAllSavableResourceLinksForCurrentPage(
@@ -5412,27 +5413,41 @@ void RenderView::focusAccessibilityObject(
 #endif
 }
 
-void RenderView::didChangeAccessibilityObjectState(
-    const WebAccessibilityObject& acc_obj) {
-  if (!accessibility_.get() || (accessibility_->addOrGetId(acc_obj) < 0))
+void RenderView::postAccessibilityNotification(
+    const WebAccessibilityObject& obj,
+    WebAccessibilityNotification notification) {
+  if (!accessibility_.get() || (accessibility_->addOrGetId(obj) < 0))
     return;
 
-  Send(new ViewHostMsg_AccessibilityObjectStateChange(
-      routing_id_, WebAccessibility(acc_obj, accessibility_.get())));
-}
+  ViewHostMsg_AccessibilityNotification_Params param;
+  switch (notification) {
+    case WebKit::WebAccessibilityNotificationCheckedStateChanged:
+      param.notification_type =
+          ViewHostMsg_AccessibilityNotification_Params::
+              NOTIFICATION_TYPE_CHECK_STATE_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationChildrenChanged:
+      param.notification_type =
+          ViewHostMsg_AccessibilityNotification_Params::
+              NOTIFICATION_TYPE_CHILDREN_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationValueChanged:
+      param.notification_type =
+          ViewHostMsg_AccessibilityNotification_Params::
+              NOTIFICATION_TYPE_VALUE_CHANGED;
+      break;
+    default:
+      return;
+  }
+  param.acc_obj = WebAccessibility(obj, accessibility_.get());
 
-void RenderView::didChangeAccessibilityObjectChildren(
-    const WebAccessibilityObject& acc_obj) {
-  if (!accessibility_.get() || (accessibility_->addOrGetId(acc_obj) < 0))
-    return;
-
-  if (accessibility_changes_.empty()) {
-    Send(new ViewHostMsg_AccessibilityObjectChildrenChange(
-        routing_id_, std::vector<WebAccessibility>()));
+  if (pending_accessibility_notifications_.empty()) {
+    Send(new ViewHostMsg_AccessibilityNotifications(
+        routing_id_,
+        pending_accessibility_notifications_));
   }
 
-  accessibility_changes_.push_back(
-      WebAccessibility(acc_obj, accessibility_.get()));
+  pending_accessibility_notifications_.push_back(param);
 }
 
 void RenderView::Print(WebFrame* frame, bool script_initiated) {

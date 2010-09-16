@@ -847,10 +847,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnExtensionPostMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityFocusChange,
                         OnAccessibilityFocusChange)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityObjectStateChange,
-                        OnAccessibilityObjectStateChange)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityObjectChildrenChange,
-                        OnAccessibilityObjectChildrenChange)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
+                        OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
@@ -1979,23 +1977,12 @@ void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
     view()->OnAccessibilityFocusChange(acc_obj_id);
 }
 
-void RenderViewHost::OnAccessibilityObjectStateChange(
-    const webkit_glue::WebAccessibility& acc_obj) {
+void RenderViewHost::OnAccessibilityNotifications(
+    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   if (view())
-    view()->OnAccessibilityObjectStateChange(acc_obj);
+    view()->OnAccessibilityNotifications(params);
 
-  NotificationService::current()->Notify(
-      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-      Source<RenderViewHost>(this),
-      NotificationService::NoDetails());
-}
-
-void RenderViewHost::OnAccessibilityObjectChildrenChange(
-    const std::vector<webkit_glue::WebAccessibility>& acc_changes) {
-  if (view())
-    view()->OnAccessibilityObjectChildrenChange(acc_changes);
-
-  if (acc_changes.size() > 0) {
+  if (params.size() > 0) {
     NotificationService::current()->Notify(
         NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         Source<RenderViewHost>(this),

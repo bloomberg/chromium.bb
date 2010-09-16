@@ -1504,19 +1504,10 @@ void RenderWidgetHostViewWin::OnAccessibilityFocusChange(int acc_obj_id) {
   }
 }
 
-void RenderWidgetHostViewWin::OnAccessibilityObjectStateChange(
-    const webkit_glue::WebAccessibility& acc_obj) {
-  if (browser_accessibility_manager_.get()) {
-    browser_accessibility_manager_->OnAccessibilityObjectStateChange(acc_obj);
-  }
-}
-
-void RenderWidgetHostViewWin::OnAccessibilityObjectChildrenChange(
-    const std::vector<webkit_glue::WebAccessibility>& acc_changes) {
-  if (browser_accessibility_manager_.get()) {
-    browser_accessibility_manager_->OnAccessibilityObjectChildrenChange(
-        acc_changes);
-  }
+void RenderWidgetHostViewWin::OnAccessibilityNotifications(
+    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
+  if (browser_accessibility_manager_.get())
+    browser_accessibility_manager_->OnAccessibilityNotifications(params);
 }
 
 void RenderWidgetHostViewWin::Observe(NotificationType type,
@@ -1561,8 +1552,8 @@ void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
   render_widget_host_->AccessibilityDoDefaultAction(acc_obj_id);
 }
 
-void RenderWidgetHostViewWin::AccessibilityObjectChildrenChangeAck() {
-  render_widget_host_->AccessibilityObjectChildrenChangeAck();
+void RenderWidgetHostViewWin::AccessibilityNotificationsAck() {
+  render_widget_host_->AccessibilityNotificationsAck();
 }
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
@@ -1592,8 +1583,13 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
         VARIANT var;
         var.vt = VT_I4;
         var.lVal = STATE_SYSTEM_BUSY;
-        pAccPropServices->SetHwndProp(m_hWnd, OBJID_CLIENT,
-            CHILDID_SELF, PROPID_ACC_STATE, var);
+        pAccPropServices->SetHwndProp(
+            m_hWnd, OBJID_CLIENT, CHILDID_SELF, PROPID_ACC_STATE, var);
+
+        // Annotate with ROLE_SYSTEM_DOCUMENT, indicates page is a document.
+        var.lVal = ROLE_SYSTEM_DOCUMENT;
+        pAccPropServices->SetHwndProp(
+            m_hWnd, OBJID_CLIENT, CHILDID_SELF, PROPID_ACC_ROLE, var);
       }
     }
 

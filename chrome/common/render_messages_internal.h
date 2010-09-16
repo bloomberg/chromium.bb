@@ -997,10 +997,9 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
                       int /* object id */)
 
-  // Tells the render view that a ViewHostMsg_AccessibilityObjectChildrenChange
-  // message was processed, and the render view host is ready for additional
-  // children change messages.
-  IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityObjectChildrenChange_ACK)
+  // Tells the render view that a ViewHostMsg_AccessibilityNotifications
+  // message was processed and it can send addition notifications.
+  IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
 
   // Relay a speech recognition result, either partial or final.
   IPC_MESSAGE_ROUTED2(ViewMsg_SpeechInput_SetRecognitionResult,
@@ -2237,10 +2236,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityObjectStateChange,
                       webkit_glue::WebAccessibility)
 
-  // Sent by the renderer as a result of an accessibility node children change.
-  // The browser responds with a ViewMsg_AccessibilityObjectChildrenChange_ACK.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityObjectChildrenChange,
-                      std::vector<webkit_glue::WebAccessibility>)
+  // Sent to notify the browser about renderer accessibility notifications.
+  // The browser responds with a ViewMsg_AccessibilityNotifications_ACK.
+  IPC_MESSAGE_ROUTED1(
+      ViewHostMsg_AccessibilityNotifications,
+      std::vector<ViewHostMsg_AccessibilityNotification_Params>)
 
   // Send the tree of accessibility data to the browser, where it's cached
   // in order to respond to OS accessibility queries immediately.

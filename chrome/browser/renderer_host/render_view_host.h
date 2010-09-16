@@ -37,6 +37,7 @@ struct ContentSettings;
 struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ThumbnailScore;
+struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_RunFileChooser_Params;
@@ -655,10 +656,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnExtensionRequest(const ViewHostMsg_DomMessage_Params& params);
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityFocusChange(int acc_obj_id);
-  void OnAccessibilityObjectStateChange(
-      const webkit_glue::WebAccessibility& acc_obj);
-  void OnAccessibilityObjectChildrenChange(
-      const std::vector<webkit_glue::WebAccessibility>& acc_changes);
+  void OnAccessibilityNotifications(
+      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
   void OnAccessibilityTree(const webkit_glue::WebAccessibility& tree);
   void OnCSSInserted();
   void OnPageContents(const GURL& url,

@@ -385,8 +385,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // on a node with this accessibility object id.
   void AccessibilityDoDefaultAction(int acc_obj_id);
 
-  // Acknowledges a ViewHostMsg_AccessibilityObjectChildrenChange message.
-  void AccessibilityObjectChildrenChangeAck();
+  // Acknowledges a ViewHostMsg_AccessibilityNotifications message.
+  void AccessibilityNotificationsAck();
 
   // Sets the active state (i.e., control tints).
   virtual void SetActive(bool active);
