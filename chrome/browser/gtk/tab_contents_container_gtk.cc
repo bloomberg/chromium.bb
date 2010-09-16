@@ -178,8 +178,7 @@ void TabContentsContainerGtk::OnSetFloatingPosition(
   gtk_container_child_set_property(GTK_CONTAINER(floating_container),
                                    status->widget(), "x", &value);
 
-  int child_y = std::max(
-      allocation->y + allocation->height - requisition.height, 0);
+  int child_y = std::max(allocation->height - requisition.height, 0);
   g_value_set_int(&value, child_y + status->y_offset());
   gtk_container_child_set_property(GTK_CONTAINER(floating_container),
                                    status->widget(), "y", &value);

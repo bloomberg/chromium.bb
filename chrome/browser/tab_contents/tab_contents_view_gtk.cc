@@ -383,28 +383,27 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
 
 void TabContentsViewGtk::OnSetFloatingPosition(
     GtkWidget* floating_container, GtkAllocation* allocation) {
+  if (!constrained_window_)
+    return;
+
   // Place each ConstrainedWindow in the center of the view.
-  int half_view_width = std::max((allocation->x + allocation->width) / 2, 0);
-  int half_view_height = std::max((allocation->y + allocation->height) / 2, 0);
-  if (constrained_window_) {
-    GtkWidget* widget = constrained_window_->widget();
-    DCHECK(widget->parent == floating_.get());
+  GtkWidget* widget = constrained_window_->widget();
+  DCHECK(widget->parent == floating_.get());
 
-    GtkRequisition requisition;
-    gtk_widget_size_request(widget, &requisition);
+  GtkRequisition requisition;
+  gtk_widget_size_request(widget, &requisition);
 
-    GValue value = { 0, };
-    g_value_init(&value, G_TYPE_INT);
+  GValue value = { 0, };
+  g_value_init(&value, G_TYPE_INT);
 
-    int child_x = std::max(half_view_width - (requisition.width / 2), 0);
-    g_value_set_int(&value, child_x);
-    gtk_container_child_set_property(GTK_CONTAINER(floating_container),
-                                     widget, "x", &value);
+  int child_x = std::max((allocation->width - requisition.width) / 2, 0);
+  g_value_set_int(&value, child_x);
+  gtk_container_child_set_property(GTK_CONTAINER(floating_container),
+                                   widget, "x", &value);
 
-    int child_y = std::max(half_view_height - (requisition.height / 2), 0);
-    g_value_set_int(&value, child_y);
-    gtk_container_child_set_property(GTK_CONTAINER(floating_container),
-                                     widget, "y", &value);
-    g_value_unset(&value);
-  }
+  int child_y = std::max((allocation->height - requisition.height) / 2, 0);
+  g_value_set_int(&value, child_y);
+  gtk_container_child_set_property(GTK_CONTAINER(floating_container),
+                                   widget, "y", &value);
+  g_value_unset(&value);
 }
