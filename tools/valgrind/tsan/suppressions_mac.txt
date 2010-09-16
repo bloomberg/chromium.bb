@@ -155,7 +155,6 @@
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
 
-# Nothing here yet, but updates will be submitted soon.
 {
   bug_30960
   ThreadSanitizer:Race
@@ -170,3 +169,9 @@
   fun:YUVConvertTest_YV12_Test*
 }
 
+{
+  bug_55946
+  ThreadSanitizer:Race
+  ...
+  fun:DiskCacheBackendTest_NewEvictionDisableSuccess4_Test*
+}
