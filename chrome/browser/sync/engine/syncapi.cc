@@ -1310,10 +1310,7 @@ bool SyncManager::SyncInternal::Init(
       (notifier_options_.notification_method == notifier::NOTIFICATION_SERVER) ?
       new sync_notifier::ServerNotifierThread(notifier_options) :
       new notifier::MediatorThreadImpl(notifier_options);
-  const bool kInitializeSsl = true;
-  const bool kConnectImmediately = false;
-  talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, kInitializeSsl,
-      kConnectImmediately, false));
+  talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, false));
   if (notifier_options_.notification_method != notifier::NOTIFICATION_LEGACY &&
       notifier_options_.notification_method != notifier::NOTIFICATION_SERVER) {
     if (notifier_options_.notification_method ==

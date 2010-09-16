@@ -27,10 +27,7 @@ class TalkMediatorImpl
  public:
   // Takes ownership of |mediator_thread|.
   TalkMediatorImpl(
-      MediatorThread* mediator_thread,
-      bool initialize_ssl,
-      bool connect_immediately,
-      bool invalidate_xmpp_auth_token);
+      MediatorThread* mediator_thread, bool invalidate_xmpp_auth_token);
   virtual ~TalkMediatorImpl();
 
   // TalkMediator implementation.
@@ -61,12 +58,11 @@ class TalkMediatorImpl
  private:
   struct TalkMediatorState {
     TalkMediatorState()
-        : started(0), connected(0), initialized(0), logging_in(0),
+        : started(0), initialized(0), logging_in(0),
           logged_in(0), subscribed(0) {
     }
 
     unsigned int started : 1;      // Background thread has started.
-    unsigned int connected : 1;    // Connected to the mediator thread signal.
     unsigned int initialized : 1;  // Initialized with login information.
     unsigned int logging_in : 1;   // Logging in to the mediator's
                                    // authenticator.

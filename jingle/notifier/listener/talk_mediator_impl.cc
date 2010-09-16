@@ -5,55 +5,19 @@
 #include "jingle/notifier/listener/talk_mediator_impl.h"
 
 #include "base/logging.h"
-#include "base/singleton.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"
 #include "talk/base/cryptstring.h"
-#include "talk/base/ssladapter.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "talk/xmpp/xmppengine.h"
 
 namespace notifier {
 
-// Before any authorization event from TalkMediatorImpl, we need to initialize
-// the SSL library.
-class SslInitializationSingleton {
- public:
-  virtual ~SslInitializationSingleton() {
-    talk_base::CleanupSSL();
-  };
-
-  void RegisterClient() {}
-
-  static SslInitializationSingleton* GetInstance() {
-    return Singleton<SslInitializationSingleton>::get();
-  }
-
- private:
-  friend struct DefaultSingletonTraits<SslInitializationSingleton>;
-
-  SslInitializationSingleton() {
-    talk_base::InitializeSSL();
-  };
-
-  DISALLOW_COPY_AND_ASSIGN(SslInitializationSingleton);
-};
-
 TalkMediatorImpl::TalkMediatorImpl(
-    MediatorThread* mediator_thread,
-    bool initialize_ssl,
-    bool connect_immediately,
-    bool invalidate_xmpp_auth_token)
+    MediatorThread* mediator_thread, bool invalidate_xmpp_auth_token)
     : delegate_(NULL),
       mediator_thread_(mediator_thread),
       invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  if (initialize_ssl) {
-    SslInitializationSingleton::GetInstance()->RegisterClient();
-  }
-  if (connect_immediately) {
-    mediator_thread_->SetDelegate(this);
-    state_.connected = 1;
-  }
   mediator_thread_->Start();
   state_.started = 1;
 }
@@ -68,10 +32,7 @@ TalkMediatorImpl::~TalkMediatorImpl() {
 bool TalkMediatorImpl::Login() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   // Connect to the mediator thread and start processing messages.
-  if (!state_.connected) {
-    mediator_thread_->SetDelegate(this);
-    state_.connected = 1;
-  }
+  mediator_thread_->SetDelegate(this);
   if (state_.initialized && !state_.logging_in && !state_.logged_in) {
     state_.logging_in = true;
     mediator_thread_->Login(xmpp_settings_);
@@ -82,9 +43,6 @@ bool TalkMediatorImpl::Login() {
 
 bool TalkMediatorImpl::Logout() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  if (state_.connected) {
-    state_.connected = 0;
-  }
   if (state_.started) {
     state_.started = 0;
     state_.logging_in = 0;

@@ -317,12 +317,10 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   auth_token_ = cloud_print_token;
 
   const notifier::NotifierOptions kNotifierOptions;
-  const bool kInitializeSsl = true;
-  const bool kConnectImmediately = false;
   const bool kInvalidateXmppAuthToken = false;
   talk_mediator_.reset(new notifier::TalkMediatorImpl(
       new notifier::MediatorThreadImpl(kNotifierOptions),
-      kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken));
+      kInvalidateXmppAuthToken));
   talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
   talk_mediator_->SetDelegate(this);
   talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,

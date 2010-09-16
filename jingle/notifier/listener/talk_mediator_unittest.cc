@@ -38,23 +38,10 @@ class TalkMediatorImplTest : public testing::Test {
   TalkMediatorImplTest() {}
   virtual ~TalkMediatorImplTest() {}
 
-  TalkMediatorImpl* NewTalkMediator() {
-    const notifier::NotifierOptions kNotifierOptions;
-    const bool kInitializeSsl = true;
-    const bool kConnectImmediately = false;
-    const bool kInvalidateXmppAuthToken = false;
-    return new TalkMediatorImpl(
-        new MediatorThreadImpl(kNotifierOptions), kInitializeSsl,
-        kConnectImmediately, kInvalidateXmppAuthToken);
-  }
-
   TalkMediatorImpl* NewMockedTalkMediator(
       MockMediatorThread* mock_mediator_thread) {
-    const bool kInitializeSsl = false;
-    const bool kConnectImmediately = true;
     const bool kInvalidateXmppAuthToken = false;
     return new TalkMediatorImpl(mock_mediator_thread,
-                                kInitializeSsl, kConnectImmediately,
                                 kInvalidateXmppAuthToken);
   }
 
@@ -66,11 +53,6 @@ class TalkMediatorImplTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(TalkMediatorImplTest);
 };
-
-TEST_F(TalkMediatorImplTest, ConstructionOfTheClass) {
-  // Constructing a single talk mediator enables SSL through the singleton.
-  scoped_ptr<TalkMediatorImpl> talk1(NewTalkMediator());
-}
 
 TEST_F(TalkMediatorImplTest, SetAuthTokenWithBadInput) {
   scoped_ptr<TalkMediatorImpl> talk1(
