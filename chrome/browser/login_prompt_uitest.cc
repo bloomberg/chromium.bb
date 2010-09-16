@@ -57,7 +57,7 @@ wstring ExpectedTitleFromAuth(const wstring& username,
 #elif defined(OS_LINUX)
 #define MAYBE_TestBasicAuth FLAKY_TestBasicAuth
 #else
-#define MAYBE_TestBasicAuth TestBasicAuth 
+#define MAYBE_TestBasicAuth TestBasicAuth
 #endif
 // Test that "Basic" HTTP authentication works.
 TEST_F(LoginPromptTest, MAYBE_TestBasicAuth) {
@@ -81,8 +81,16 @@ TEST_F(LoginPromptTest, MAYBE_TestBasicAuth) {
             GetActiveTabTitle());
 }
 
+// http://crbug.com/55380 - NavigateToURL is making this flaky.
+#if defined(OS_WIN)
+#define MAYBE_TestDigestAuth FLAKY_TestDigestAuth
+#elif defined(OS_LINUX)
+#define MAYBE_TestDigestAuth FLAKY_TestDigestAuth
+#else
+#define MAYBE_TestDigestAuth TestDigestAuth
+#endif
 // Test that "Digest" HTTP authentication works.
-TEST_F(LoginPromptTest, TestDigestAuth) {
+TEST_F(LoginPromptTest, MAYBE_TestDigestAuth) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
