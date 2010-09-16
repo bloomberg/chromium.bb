@@ -13,6 +13,7 @@ extern const char kExtraChromeFlags[];
 extern const char kEnableErrorDialogs[];
 extern const char kLiveOperationTimeout[];
 extern const char kPageCyclerIterations[];
+extern const char kTestLargeTimeout[];
 extern const char kUiTestActionTimeout[];
 extern const char kUiTestActionMaxTimeout[];
 extern const char kUiTestCommandExecutionTimeout[];

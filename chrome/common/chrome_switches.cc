@@ -662,18 +662,6 @@ const char kInProcessWebGL[]                = "in-process-webgl";
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 
-// Back up the profile.
-const char kInstallerTestBackup[]           = "backup";
-
-// Control the build under test.
-const char kInstallerTestBuild[]            = "build";
-
-// Uninstall before running the tests.
-const char kInstallerTestClean[]            = "clean";
-
-// Force the installer tests to run, regardless of the current platform.
-const char kInstallerTestForce[]            = "force";
-
 // Runs the Native Client inside the renderer process.
 const char kInternalNaCl[]                  = "internal-nacl";
 

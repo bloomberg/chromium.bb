@@ -370,7 +370,7 @@ class UITestBase {
     return TestTimeouts::sleep_timeout_ms();
   }
   static int test_timeout_ms() {
-    return TestTimeouts::large_test_timeout_ms();
+    return TestTimeouts::huge_test_timeout_ms();
   }
 
   void set_ui_test_name(const std::string& name) {

@@ -4,9 +4,11 @@
 
 #include "chrome/test/mini_installer_test/chrome_mini_installer.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
+#include "base/process.h"
 #include "base/process_util.h"
 #include "base/registry.h"
 #include "base/string_number_conversions.h"
@@ -130,10 +132,12 @@ void ChromeMiniInstaller::InstallMiniInstaller(bool over_install,
   printf("\nChrome will be installed at %ls level\n", install_type_.c_str());
   printf("\nWill proceed with the test only if this path exists: %ls\n\n",
          path.c_str());
-  ASSERT_TRUE(file_util::PathExists(FilePath(path)));
+  ASSERT_TRUE(file_util::PathExists(FilePath(path))) << path
+                                                     << " does not exist.";
   LaunchInstaller(path, exe_name.c_str());
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  ASSERT_TRUE(CheckRegistryKey(dist->GetVersionKey()));
+  ASSERT_TRUE(CheckRegistryKey(dist->GetVersionKey())) << dist->GetVersionKey()
+                                                       << " does not exist.";
   VerifyInstall(over_install);
 }
 
@@ -265,12 +269,15 @@ void ChromeMiniInstaller::UnInstall() {
     uninstall_args.append(L" --chrome-frame");
   if (install_type_ == mini_installer_constants::kSystemInstall)
     uninstall_args = uninstall_args + L" --system-level";
-  base::LaunchApp(uninstall_args, false, false, NULL);
+
+  base::ProcessHandle setup_handle;
+  base::LaunchApp(uninstall_args, false, false, &setup_handle);
+
   if (is_chrome_frame_)
     ASSERT_TRUE(CloseUninstallWindow());
-  ASSERT_TRUE(MiniInstallerTestUtil::VerifyProcessClose(
-      mini_installer_constants::kChromeSetupExecutable));
+  ASSERT_TRUE(MiniInstallerTestUtil::VerifyProcessHandleClosed(setup_handle));
   ASSERT_FALSE(CheckRegistryKeyOnUninstall(dist->GetVersionKey()));
+
   DeleteUserDataFolder();
   // Close IE survey window that gets launched on uninstall.
   if (!is_chrome_frame_) {
@@ -399,7 +406,7 @@ void ChromeMiniInstaller::DeleteFolder(const wchar_t* folder_name) {
   }
   printf("This path will be deleted: %ls\n", install_path.value().c_str());
   ASSERT_TRUE(file_util::Delete(install_path, true));
- }
+}
 
 // Will delete user data profile.
 void ChromeMiniInstaller::DeleteUserDataFolder() {
@@ -534,21 +541,24 @@ HKEY ChromeMiniInstaller::GetRootRegistryKey() {
 void ChromeMiniInstaller::LaunchInstaller(const std::wstring& path,
                                           const wchar_t* process_name) {
   ASSERT_TRUE(file_util::PathExists(FilePath(path)));
-  if (install_type_ == mini_installer_constants::kSystemInstall) {
-    std::wstring launch_args;
-    if (is_chrome_frame_) {
-      launch_args.append(L" --do-not-create-shortcuts");
-      launch_args.append(L" --do-not-register-for-update-launch");
-      launch_args.append(L" --chrome-frame");
-    }
-    launch_args.append(L" --system-level");
-    base::LaunchApp(L"\"" + path + L"\"" + launch_args, false, false, NULL);
-  } else {
-    base::LaunchApp(L"\"" + path + L"\"", false, false, NULL);
+  std::wstring launch_args(L" --verbose-logging");
+  if (is_chrome_frame_) {
+    launch_args.append(L" --do-not-create-shortcuts");
+    launch_args.append(L" --do-not-launch-chrome");
+    launch_args.append(L" --do-not-register-for-update-launch");
+    launch_args.append(L" --chrome-frame");
   }
+  if (install_type_ == mini_installer_constants::kSystemInstall) {
+    launch_args.append(L" --system-level");
+  }
+
+  base::ProcessHandle app_handle;
+  base::LaunchApp(L"\"" + path + L"\"" + launch_args, false, false,
+                  &app_handle);
+
   printf("Waiting while this process is running  %ls ....\n", process_name);
   MiniInstallerTestUtil::VerifyProcessLaunch(process_name, true);
-  ASSERT_TRUE(MiniInstallerTestUtil::VerifyProcessClose(process_name));
+  ASSERT_TRUE(MiniInstallerTestUtil::VerifyProcessHandleClosed(app_handle));
 }
 
 // Gets the path to launch Chrome.
@@ -599,26 +609,30 @@ void ChromeMiniInstaller::VerifyInstall(bool over_install) {
 // launch IE with cf:about:version, then check if
 // chrome.exe process got spawned.
 void ChromeMiniInstaller::VerifyChromeFrameInstall() {
-  std::wstring browser_path = GetChromeInstallDirectoryLocation();
-  if (is_chrome_frame_) {
-    file_util::AppendToPath(&browser_path,
-                            mini_installer_constants::kIELocation);
-    file_util::AppendToPath(&browser_path,
-                            mini_installer_constants::kIEProcessName);
-  }
+  FilePath browser_path;
+  PathService::Get(base::DIR_PROGRAM_FILES, &browser_path);
+  browser_path = browser_path.Append(mini_installer_constants::kIELocation);
+  browser_path = browser_path.Append(mini_installer_constants::kIEProcessName);
+
+  CommandLine cmd_line(browser_path);
+  cmd_line.AppendArgNative(L"gcf:about:version");
 
   // Launch IE
-  LaunchBrowser(browser_path, L"gcf:about:version",
-                mini_installer_constants::kIEProcessName,
-                true);
+  base::LaunchApp(cmd_line, false, false, NULL);
 
   // Check if Chrome process got spawned.
   MiniInstallerTestUtil::VerifyProcessLaunch(installer_util::kChromeExe, true);
-  PlatformThread::Sleep(1500);
 
   // Verify if IExplore folder got created
   FilePath path = GetUserDataDirPath();
   path = path.AppendASCII("IEXPLORE");
+  if (!file_util::PathExists(path)) {
+    // The profile folder for IE 6 and 7 lives in the user's Temporary Internet
+    // Files folder. Check there if the previous one was not found.
+    PathService::Get(base::DIR_IE_INTERNET_CACHE, &path);
+    path = path.AppendASCII("Google Chrome Frame");
+  }
+
   ASSERT_TRUE(file_util::PathExists(path));
 }
 

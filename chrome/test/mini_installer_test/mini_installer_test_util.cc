@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/logging_installer.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
+#include "chrome/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Change current directory so that chrome.dll from current folder
@@ -289,7 +290,7 @@ bool MiniInstallerTestUtil::VerifyProcessClose(
   if (base::GetProcessCount(process_name, NULL) > 0) {
     LOG(INFO) << "Waiting for this process to end: " << process_name;
     while ((base::GetProcessCount(process_name, NULL) > 0) &&
-           (timer < 60000)) {
+           (timer < TestTimeouts::large_test_timeout_ms())) {
       PlatformThread::Sleep(200);
       timer = timer + 200;
     }
@@ -298,4 +299,11 @@ bool MiniInstallerTestUtil::VerifyProcessClose(
       return false;
   }
   return true;
+}
+
+bool MiniInstallerTestUtil::VerifyProcessHandleClosed(
+    base::ProcessHandle handle) {
+  DWORD result = WaitForSingleObject(handle,
+      TestTimeouts::large_test_timeout_ms());
+  return result == WAIT_OBJECT_0;
 }

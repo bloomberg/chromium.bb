@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "chrome/test/mini_installer_test/chrome_mini_installer.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "chrome_mini_installer.h"
 
 // Although the C++ style guide disallows use of namespace directive, use
 // here because this is not only a .cc file, but also a test.
@@ -22,75 +23,73 @@ using namespace mini_installer_constants;
 namespace {
 
 class MiniInstallTest : public testing::Test {
-   protected:
-    // Whether these tests should be run regardless of our running platform.
-    bool force_tests_;
+ public:
+   MiniInstallTest() : force_tests_(false), chrome_frame_(false) {}
 
-    // Decided if ChromeFrame tests should be run.
-    bool chrome_frame_;
-
-    // Installers created in test fixture setup for convenience.
-    scoped_ptr<ChromeMiniInstaller> user_inst_, sys_inst_;
-
-   public:
-
-    static void CleanTheSystem() {
-      const CommandLine* cmd = CommandLine::ForCurrentProcess();
-      if (cmd->HasSwitch(installer_util::switches::kChromeFrame)) {
-        ChromeMiniInstaller systeminstall(kSystemInstall,
-            cmd->HasSwitch(installer_util::switches::kChromeFrame));
-        systeminstall.UnInstall();
-      } else {
-        ChromeMiniInstaller userinstall(kUserInstall,
-            cmd->HasSwitch(installer_util::switches::kChromeFrame));
-        userinstall.UnInstall();
-        ChromeMiniInstaller systeminstall(kSystemInstall,
-            cmd->HasSwitch(installer_util::switches::kChromeFrame));
-        systeminstall.UnInstall();
-      }
+  static void CleanTheSystem() {
+    const CommandLine* cmd = CommandLine::ForCurrentProcess();
+    if (cmd->HasSwitch(installer_util::switches::kChromeFrame)) {
+      ChromeMiniInstaller systeminstall(kSystemInstall,
+          cmd->HasSwitch(installer_util::switches::kChromeFrame));
+      systeminstall.UnInstall();
+    } else {
+      ChromeMiniInstaller userinstall(kUserInstall,
+          cmd->HasSwitch(installer_util::switches::kChromeFrame));
+      userinstall.UnInstall();
+      ChromeMiniInstaller systeminstall(kSystemInstall,
+          cmd->HasSwitch(installer_util::switches::kChromeFrame));
+      systeminstall.UnInstall();
     }
+  }
 
-    virtual void SetUp() {
-      // Parse test command-line arguments.
-      const CommandLine* cmd = CommandLine::ForCurrentProcess();
-      std::wstring build =
-          cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
-      if (build.empty())
-        build = L"latest";
-      force_tests_ = cmd->HasSwitch(switches::kInstallerTestForce);
-      chrome_frame_ = cmd->HasSwitch(installer_util::switches::kChromeFrame);
-      if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA ||
-          force_tests_) {
-        CleanTheSystem();
-        // Separate the test output from cleaning output
-        printf("\nBEGIN test----------------------------------------\n");
-
-        // Create a few differently configured installers that are used in
-        // the tests, for convenience.
-        if (chrome_frame_) {
-          sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall,
-                                                  chrome_frame_));
-          sys_inst_->SetBuildUnderTest(build);
-        } else {
-          user_inst_.reset(new ChromeMiniInstaller(kUserInstall,
-                                                   chrome_frame_));
-          user_inst_->SetBuildUnderTest(build);
-          sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall,
-                                                  chrome_frame_));
-          sys_inst_->SetBuildUnderTest(build);
-        }
-      } else {
-        printf("These tests don't run on this platform.\n");
-        exit(0);
-      }
-    }
-
-    static void TearDownTestCase() {
-      // Uninstall Chrome from the system after tests are run.
+  virtual void SetUp() {
+    // Parse test command-line arguments.
+    const CommandLine* cmd = CommandLine::ForCurrentProcess();
+    std::wstring build =
+        cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
+    if (build.empty())
+      build = L"latest";
+    force_tests_ = cmd->HasSwitch(switches::kInstallerTestForce);
+    chrome_frame_ = cmd->HasSwitch(installer_util::switches::kChromeFrame);
+    if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA ||
+        force_tests_) {
       CleanTheSystem();
+      // Separate the test output from cleaning output
+      printf("\nBEGIN test----------------------------------------\n");
+
+      // Create a few differently configured installers that are used in
+      // the tests, for convenience.
+      user_inst_.reset(new ChromeMiniInstaller(kUserInstall,
+                                               chrome_frame_));
+      sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall,
+                                              chrome_frame_));
+      sys_inst_->SetBuildUnderTest(build);
+      user_inst_->SetBuildUnderTest(build);
+
+    } else {
+      printf("These tests don't run on this platform.\n");
+      exit(0);
     }
+  }
+
+  static void TearDownTestCase() {
+    // Uninstall Chrome from the system after tests are run.
+    CleanTheSystem();
+  }
+
+ protected:
+  // Whether these tests should be run regardless of our running platform.
+  bool force_tests_;
+
+  // Decided if ChromeFrame tests should be run.
+  bool chrome_frame_;
+
+  // Installers created in test fixture setup for convenience.
+  scoped_ptr<ChromeMiniInstaller> user_inst_;
+  scoped_ptr<ChromeMiniInstaller> sys_inst_;
 };
-};
+
+}  // namespace
 
 #if defined(GOOGLE_CHROME_BUILD)
 // Could use a parameterized gtest to slim down this list of tests, but since
@@ -177,8 +176,7 @@ TEST_F(MiniInstallTest, InstallMiniInstallerSys) {
 }
 
 TEST_F(MiniInstallTest, InstallMiniInstallerUser) {
-  if (!chrome_frame_)
-    user_inst_->Install();
+  user_inst_->Install();
 }
 
 TEST_F(MiniInstallTest, MiniInstallTestValidWindowsVersion) {

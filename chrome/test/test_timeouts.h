@@ -24,10 +24,13 @@ class TestTimeouts {
   // is not sufficient.
   static int action_max_timeout_ms() { return action_max_timeout_ms_; }
 
-  // Timeout for a large test (like running a layout test inside the browser).
+  // Timeout for a large test that may take a few minutes to run.
+  static int large_test_timeout_ms() { return large_test_timeout_ms_; }
+
+  // Timeout for a huge test (like running a layout test inside the browser).
   // Do not use unless absolutely necessary - try to make the test smaller.
   // Do not use multiple times in a single test.
-  static int large_test_timeout_ms() { return large_test_timeout_ms_; }
+  static int huge_test_timeout_ms() { return huge_test_timeout_ms_; }
 
   // Timeout used when calling Sleep. Deprecated (recommended
   // replacement is action_timeout_ms).
@@ -57,6 +60,7 @@ class TestTimeouts {
   static int action_timeout_ms_;
   static int action_max_timeout_ms_;
   static int large_test_timeout_ms_;
+  static int huge_test_timeout_ms_;
   static int sleep_timeout_ms_;
   static int command_execution_timeout_ms_;
   static int wait_for_terminate_timeout_ms_;

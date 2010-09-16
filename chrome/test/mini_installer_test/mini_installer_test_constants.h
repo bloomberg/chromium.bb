@@ -6,7 +6,6 @@
 
 #ifndef CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_CONSTANTS_H__
 #define CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_CONSTANTS_H__
-#pragma once
 
 namespace mini_installer_constants {
 
@@ -60,6 +59,14 @@ extern const wchar_t kChromeApplyTagParameters[];
 extern const wchar_t kChromeDiffInstallerLocation[];
 extern const wchar_t kChromeMetaInstallerExe[];
 extern const wchar_t kChromeStandAloneInstallerLocation[];
-}
+}  // namespace mini_installer_constants
+
+// Command line switches.
+namespace switches {
+extern const char kInstallerTestBackup[];
+extern const char kInstallerTestBuild[];
+extern const char kInstallerTestClean[];
+extern const char kInstallerTestForce[];
+}  // namespace switches
 
 #endif  // CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_CONSTANTS_H__

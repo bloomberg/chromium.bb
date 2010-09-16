@@ -62,7 +62,23 @@ const wchar_t kChromeStandAloneInstallerLocation[] =
 const wchar_t kChromeApplyTagExe[] =
     L"\\\\172.23.44.61\\shared\\chrome_autotest\\ApplyTag.exe";
 const wchar_t kChromeApplyTagParameters[] =
-    L"\"appguid={8A69D345-D564-463C-AFF1-A69D9E530F96}&appname=Chrome&needsadmin=false\"";
+    L"\"appguid={8A69D345-D564-463C-AFF1-A69D9E530F96}"
+    L"&appname=Chrome&needsadmin=false\"";
 const wchar_t kChromeDiffInstallerLocation[] =
     L"\\\\172.24.6.7\\shares\\chromeclient\\builds\\chrome\\";
-}
+
+}  // namespace mini_installer_constants
+
+namespace switches {
+// Back up the profile.
+const char kInstallerTestBackup[] = "backup";
+
+// Control the build under test.
+const char kInstallerTestBuild[] = "build";
+
+// Uninstall before running the tests.
+const char kInstallerTestClean[] = "clean";
+
+// Force the installer tests to run, regardless of the current platform.
+const char kInstallerTestForce[] = "force";
+}  // namespace switches

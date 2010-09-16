@@ -146,6 +146,7 @@
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/base.gyp:base_i18n',
             '<(DEPTH)/base/base.gyp:test_support_base',
+            '<(DEPTH)/chrome/chrome.gyp:test_support_common',
             '<(DEPTH)/testing/gtest.gyp:gtest',
           ],
           'include_dirs': [

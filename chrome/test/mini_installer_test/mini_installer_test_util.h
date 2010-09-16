@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/process.h"
 
 class FilePath;
 
@@ -97,6 +98,10 @@ class MiniInstallerTestUtil {
 
   // Verifies if the given process stops running.
   static bool VerifyProcessClose(const wchar_t* process_name);
+
+  // Waits on the given process name until it returns or until a timeout is
+  // reached.
+  static bool VerifyProcessHandleClosed(base::ProcessHandle handle);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MiniInstallerTestUtil);
