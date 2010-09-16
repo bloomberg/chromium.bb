@@ -201,6 +201,8 @@ Int
 Int0
 Int3
 Iret
+Iretd
+Iretq
 Jb
 Jbe
 Jcxz

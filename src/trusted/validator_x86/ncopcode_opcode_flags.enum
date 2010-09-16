@@ -36,6 +36,10 @@ ModRmModIs0x3
 # must not be 0x3.
 ModRmModIsnt0x3
 
+# Defines requirement that the S_Operand value (modrm reg field) can only be
+# 0..5.
+ModRmRegSOperand
+
 # Defines instruction that the ModR/M byte contains a register operand and
 # an r/m operand. Intel's notation is /r.
 OpcodeUsesModRm

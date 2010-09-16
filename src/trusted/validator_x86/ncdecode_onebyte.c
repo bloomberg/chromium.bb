@@ -801,19 +801,21 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefOp(G_Operand, NACL_OPFLAG(OpSet));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
-  /* TODO(karl) what is SReg (second argument) in 0x8c*/
   NaClDefInstChoices_32_64(0x8c, 1, 2);
   NaClDefInst(0x8c, NACLi_ILLEGAL,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w),
+              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
+              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(ModRmRegSOperand),
               InstMov);
   NaClDefOp(E_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(S_Operand, NACL_OPFLAG(OpUse));
 
-  /* TODO(karl) what is SReg (second argument) in 0x8c*/
   NaClDefInst(0x8c, NACLi_ILLEGAL,
               NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeUsesRexW),
+              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeUsesRexW) |
+              NACL_IFLAG(ModRmRegSOperand),
               InstMov);
   NaClDefOp(E_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(S_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInstChoices_32_64(0x8d, 1, 2);
   NaClDefInst(0x8d, NACLi_386,
@@ -830,19 +832,21 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefOp(G_Operand, NACL_OPFLAG(OpSet));
   NaClDefOp(M_Operand, NACL_OPFLAG(OpAddress));
 
-  /* TODO(karl) what is SReg (first argument) in 0x8e*/
   NaClDefInstChoices_32_64(0x8e, 1, 2);
   NaClDefInst(0x8e, NACLi_ILLEGAL,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w),
+              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
+              NACL_IFLAG(ModRmRegSOperand),
               InstMov);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(S_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
-  /* TODO(karl) what is SReg (first argument) in 0x8e*/
   NaClDefInst(0x8e, NACLi_ILLEGAL,
               NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeUsesRexW),
+              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeUsesRexW) |
+              NACL_IFLAG(ModRmRegSOperand),
               InstMov);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(S_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInstMrmChoices(0x8f, Opcode0, 2);
   NaClDefInst(0x8f, NACLi_386,
@@ -1347,7 +1351,12 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
 
   NaClDefInst(0xce, NACLi_ILLEGAL, NACL_IFLAG(Opcode32Only), InstInt0);
 
-  NaClDefInst(0xcf, NACLi_SYSTEM, 0, InstIret);
+  NaClDefInstChoices_32_64(0xcf, 2, 3);
+  NaClDefInst(0xcf, NACLi_SYSTEM, NACL_IFLAG(OperandSize_v), InstIretd);
+  NaClDefInst(0xcf, NACLi_SYSTEM, NACL_IFLAG(OperandSize_w), InstIret);
+  NaClDefInst(0xcf, NACLi_SYSTEM,
+              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(Opcode64Only),
+              InstIretq);
 
   /* Group 2 - 0xC0, 0xC1, 0xD0, 0XD1, 0xD2, 0xD3 */
   NaClDefGroup2OpcodesInModRm();

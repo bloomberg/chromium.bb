@@ -429,6 +429,12 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
         return FALSE;
       }
     }
+    if ((state->inst->flags & NACL_IFLAG(ModRmRegSOperand)) &&
+        (modrm_reg(byte) > 5)) {
+      DEBUG(NaClLog(LOG_INFO,
+                    "Can't match, modrm reg field doesn't index segment\n"));
+      return FALSE;
+    }
     state->modrm = byte;
     state->length++;
     state->num_disp_bytes = 0;

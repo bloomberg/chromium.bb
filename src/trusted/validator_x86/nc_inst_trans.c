@@ -868,6 +868,22 @@ static NaClExp* NaClAppendEsOpReg(
   return results;
 }
 
+/* Returns the corresponding segment register for the given index (0..7) */
+static NaClExp* NaClAppendModRmSegmentReg(NaClInstState* state) {
+  static NaClOpKind seg[8] = {
+    RegES,
+    RegCS,
+    RegSS,
+    RegDS,
+    RegFS,
+    RegGS,
+    /* These should not happen. */
+    RegUnknown,
+    RegUnknown
+  };
+  return NaClAppendReg(seg[modrm_reg(state->modrm)], &state->nodes);
+}
+
 /* For the given instruction state, and the corresponding 3-bit specification
  * of a register, update it to a 4-bit specification, based on the REX.R bit.
  */
@@ -1689,6 +1705,9 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
 
     case RegES_EDI:
       return NaClAppendES_EDI(state);
+
+    case S_Operand:
+      return NaClAppendModRmSegmentReg(state);
 
     case Const_1:
       return NaClAppendConst(1,

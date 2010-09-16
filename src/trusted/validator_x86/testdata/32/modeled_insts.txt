@@ -957,18 +957,20 @@ Target: x86-32 bit mode
       G_Operand               OpSet OperandZeroExtends_v
       E_Operand               OpUse
   --- 8c ---
-  8c                          ILLEGAL OpcodeUsesModRm OperandSize_w
-    Mov $E
+  8c                          ILLEGAL ModRmRegSOperand OpcodeUsesModRm OperandSize_w OperandSize_v
+    Mov $E, %Sreg
       E_Operand               OpSet
+      S_Operand               OpUse
   --- 8d ---
   8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_w OperandSize_v
     Lea $G, $M
       G_Operand               OpSet OperandZeroExtends_v
       M_Operand               OpAddress
   --- 8e ---
-  8e                          ILLEGAL OpcodeUsesModRm OperandSize_w
-    Mov $E
-      E_Operand               OpSet
+  8e                          ILLEGAL ModRmRegSOperand OpcodeUsesModRm OperandSize_w
+    Mov %Sreg, $E
+      S_Operand               OpSet
+      E_Operand               OpUse
   --- 8f ---
   8f / 0                      386 OpcodeInModRm OperandSize_w
     Pop {%RESP}, $E
@@ -1458,7 +1460,9 @@ Target: x86-32 bit mode
   ce                          ILLEGAL 
     Int0
   --- cf ---
-  cf                          SYSTEM 
+  cf                          SYSTEM OperandSize_v
+    Iretd
+  cf                          SYSTEM OperandSize_w
     Iret
   --- d0 ---
   d0 / 0                      OPINMRM OpcodeInModRm OperandSize_b

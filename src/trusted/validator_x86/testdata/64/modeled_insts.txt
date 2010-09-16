@@ -1021,12 +1021,14 @@ Target: x86-64 bit mode
       G_Operand               OpSet
       E_Operand               OpUse
   --- 8c ---
-  8c                          ILLEGAL OpcodeUsesModRm OperandSize_w
-    Mov $E
+  8c                          ILLEGAL ModRmRegSOperand OpcodeUsesModRm OperandSize_w OperandSize_v
+    Mov $E, %Sreg
       E_Operand               OpSet
-  8c                          ILLEGAL OpcodeUsesRexW OpcodeUsesModRm OperandSize_o
-    Mov $E
+      S_Operand               OpUse
+  8c                          ILLEGAL OpcodeUsesRexW ModRmRegSOperand OpcodeUsesModRm OperandSize_o
+    Mov $E, %Sreg
       E_Operand               OpSet
+      S_Operand               OpUse
   --- 8d ---
   8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_w OperandSize_v
     Lea $G, $M
@@ -1037,12 +1039,14 @@ Target: x86-64 bit mode
       G_Operand               OpSet
       M_Operand               OpAddress
   --- 8e ---
-  8e                          ILLEGAL OpcodeUsesModRm OperandSize_w
-    Mov $E
-      E_Operand               OpSet
-  8e                          ILLEGAL OpcodeUsesRexW OpcodeUsesModRm OperandSize_o
-    Mov $E
-      E_Operand               OpSet
+  8e                          ILLEGAL ModRmRegSOperand OpcodeUsesModRm OperandSize_w
+    Mov %Sreg, $E
+      S_Operand               OpSet
+      E_Operand               OpUse
+  8e                          ILLEGAL OpcodeUsesRexW ModRmRegSOperand OpcodeUsesModRm OperandSize_o
+    Mov %Sreg, $E
+      S_Operand               OpSet
+      E_Operand               OpUse
   --- 8f ---
   8f / 0                      386 OpcodeInModRm OperandSize_w
     Pop {%RESP}, $E
@@ -1626,8 +1630,12 @@ Target: x86-64 bit mode
     Int $I
       I_Operand               OpUse
   --- cf ---
-  cf                          SYSTEM 
+  cf                          SYSTEM OperandSize_v
+    Iretd
+  cf                          SYSTEM OperandSize_w
     Iret
+  cf                          SYSTEM OperandSize_o
+    Iretq
   --- d0 ---
   d0 / 0                      OPINMRM OpcodeInModRm OpcodeRex OperandSize_b
     Rol $E, 1

@@ -3281,3 +3281,35 @@ NaClExpVector[6] = {
   { OperandReference[1] , 2, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
 };
+0000000000000000: 8c 00                                        mov [%rax], %es
+  8c                          ILLEGAL ModRmRegSOperand OpcodeUsesModRm OperandSize_w OperandSize_v
+    Mov $E, %Sreg
+      E_Operand               OpSet
+      S_Operand               OpUse
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %es, ExprUsed | ExprSize16 },
+};
+0000000000000000: 64 48 8e 00                                  mov %es, %fs:[%rax]
+  8e                          ILLEGAL OpcodeUsesRexW ModRmRegSOperand OpcodeUsesModRm OperandSize_o
+    Mov %Sreg, $E
+      S_Operand               OpSet
+      E_Operand               OpUse
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %es, ExprSet | ExprSize16 },
+  { OperandReference[1] , 1, 0 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %fs, ExprUsed | ExprSize16 },
+  { ExprMemOffset[4] , 0, ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+};
