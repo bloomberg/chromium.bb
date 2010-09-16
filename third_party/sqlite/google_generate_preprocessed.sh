@@ -13,7 +13,7 @@ OPTS=""
 # These options should match those in ../../tools/config.mk.
 OPTS="$OPTS -DSQLITE_OMIT_LOAD_EXTENSION=1"
 make "OPTS=$OPTS" $FILES
-cp -f $FILES ../preprocessed
+cp -f $FILES ../../preprocessed
 
 cd ..
 rm -rf bld
