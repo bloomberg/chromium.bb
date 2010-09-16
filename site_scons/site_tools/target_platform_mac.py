@@ -123,7 +123,7 @@ def generate(env):
 
   # Preserve some variables that get blown away by the tools.
   saved = dict()
-  for k in ['CFLAGS', 'CCFLAGS', 'CXXFLAGS', 'LINKFLAGS', 'LIBS']:
+  for k in ['ASFLAGS', 'CFLAGS', 'CCFLAGS', 'CXXFLAGS', 'LINKFLAGS', 'LIBS']:
     saved[k] = env.get(k, [])
     env[k] = []
 

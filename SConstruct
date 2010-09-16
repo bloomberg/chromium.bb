@@ -1337,7 +1337,10 @@ mac_env = unix_like_env.Clone(
 )
 
 mac_env.Append(
+    # TODO(bradnelson): Update the hard-coded -m32 flags when we support
+    # 64-bit builds on the Mac.
     CCFLAGS = ['-mmacosx-version-min=10.4', '-m32', '-fPIC'],
+    ASFLAGS = ['-m32'],
     LINKFLAGS = ['-mmacosx-version-min=10.4', '-m32', '-fPIC'],
     # TODO(bradnelson): remove UNIX_LIKE_CFLAGS when scons bug is fixed
     CPPDEFINES = [['NACL_WINDOWS', '0'],
