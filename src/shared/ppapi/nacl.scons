@@ -5,6 +5,8 @@
 # This file needs to be in sync with $SOURCE_ROOT/ppapi/ppapi.gyp
 # at the revision specified in $SOURCE_ROOT/native_client/DEPS.
 
+import os
+
 Import('env')
 
 # Underlay $SOURCE_ROOT/ppapi in this directory.
@@ -145,7 +147,10 @@ cpp_headers = [
     'cpp/module_embedder.h'
     ]
 
-header_install = env.AddHeaderToSdk(
-  ['$SOURCE_ROOT/ppapi/' + h for h in c_headers + cpp_headers])
+c_header_install = env.AddHeaderToSdk(
+  ['$SOURCE_ROOT/ppapi/' + h for h in c_headers], os.path.join('ppapi', 'c'))
+cpp_header_install = env.AddHeaderToSdk(
+  ['$SOURCE_ROOT/ppapi/' + h for h in cpp_headers],
+  os.path.join('ppapi', 'cpp'))
 env.AddLibraryToSdk(['ppapi_cpp'])
-env.Requires('ppapi_cpp', header_install)
+env.Requires('ppapi_cpp', [c_header_install, cpp_header_install])
