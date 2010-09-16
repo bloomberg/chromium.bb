@@ -257,7 +257,8 @@ if env['TARGET_ARCHITECTURE'] != 'arm':
 # soon require a library for proxying PPAPI to NaCl modules.
 #
 # Note that url loading is not yet supported, so one must set
-# $NACL_PPAPI_LOCAL_ORIGIN to load files from a location at the local host.
+# $NACL_PPAPI_LOCAL_ORIGIN=/path/to/client/native_client
+# to load files from a location at the local host.
 ppapi_inputs = [
     'ppapi/array_ppapi.cc',
     'ppapi/browser_interface_ppapi.cc',
@@ -297,8 +298,9 @@ if not ppapi_env.Bit('chrome'):
   else:  # mac
     # This builds with
     #   MODE=... scons-out/.../staging/ppNaClPlugin.bundle sel_ldr sdl=none.
-    # Must either set NACL_SEL_LDR=scons-out/.../staging/sel_ldr or manually
-    # copy sel_ldr to scons-out/.../staging/ppNaClPlugin/Contents/Resources/.
+    # This places both ppNaClPlugin.bundle/ and sel_ldr into staging/.
+    # One must either set $NACL_SEL_LDR=path/to/sel_ldr or manually
+    # copy sel_ldr to path/to/ppNaClPlugin.bundle/Contents/Resources/.
     REZ = '/Developer/Tools/Rez'
     ppapi_env.Command(target='ppNaClPlugin.rsrc',
                       source='osx_ppapi/ppNaClPlugin.r',
