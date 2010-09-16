@@ -9,22 +9,6 @@
 #include "base/string_number_conversions.h"
 
 namespace net {
-
-// static
-void TestServer::AppendToPythonPath(const FilePath& dir) {
-  const char kPythonPath[] = "PYTHONPATH";
-  const char* oldpath = getenv(kPythonPath);
-  // setenv() leaks memory intentionally on Mac
-  if (!oldpath) {
-    setenv(kPythonPath, dir.value().c_str(), 1);
-  } else if (!strstr(oldpath, dir.value().c_str())) {
-    std::string newpath(oldpath);
-    newpath.append(":");
-    newpath.append(dir.value());
-    setenv(kPythonPath, newpath.c_str(), 1);
-  }
-}
-
 bool TestServer::LaunchPython(const FilePath& testserver_path) {
   std::vector<std::string> command_line;
   command_line.push_back("python");
