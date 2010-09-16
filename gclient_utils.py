@@ -73,7 +73,15 @@ def Popen(args, **kwargs):
     # executable, but shell=True makes subprocess on Linux fail when it's called
     # with a list because it only tries to execute the first item in the list.
     kwargs['shell'] = (sys.platform=='win32')
-  return subprocess.Popen(args, **kwargs)
+  try:
+    return subprocess.Popen(args, **kwargs)
+  except OSError, e:
+    if e.errno == errno.EAGAIN and sys.platform == 'cygwin':
+      raise Error(
+          'Visit '
+          'http://code.google.com/p/chromium/wiki/CygwinDllRemappingFailure to '
+          'learn how to fix this error; you need to rebase your cygwin dlls')
+    raise
 
 
 def CheckCall(command, cwd=None, print_error=True):
