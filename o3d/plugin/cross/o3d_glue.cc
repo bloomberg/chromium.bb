@@ -296,18 +296,18 @@ void PluginObject::DeleteRenderer() {
 // It records the time of the event and tries to read the selected tab value
 // from Safari (on other browsers this tab value should always be NULL).
 // Written so that last_mac_event_time_ is always valid or NULL.
-void PluginObject::MacEventReceived() {
+void PluginObject::MacEventReceived(bool updateTab) {
   CFDateRef now = CFDateCreate(NULL, CFAbsoluteTimeGetCurrent());
   CFDateRef previousTime = last_mac_event_time_;
   last_mac_event_time_ = now;
   if (previousTime != NULL) {
     CFRelease(previousTime);
   }
-  if (!mac_cocoa_window_) {
-    mac_cocoa_window_ = o3d::SafariBrowserWindowForWindowRef(mac_window_);
+  mac_cocoa_window_ = o3d::SafariBrowserWindowForWindowRef(mac_window_);
+  if (!mac_window_selected_tab_ || updateTab) {
+    mac_window_selected_tab_ =
+        o3d::SelectedTabForSafariBrowserWindow(mac_cocoa_window_);
   }
-  mac_window_selected_tab_ =
-      o3d::SelectedTabForSafariBrowserWindow(mac_cocoa_window_);
 }
 
 // Returns the time elapsed since the MacEventReceived function was last called.

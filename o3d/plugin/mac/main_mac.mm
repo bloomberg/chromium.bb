@@ -737,7 +737,7 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
   // Help the plugin keep track of when we last saw an event so the CFTimer can
   // notice if we get cut off, eg by our tab being hidden by Safari, which there
   // is no other way for us to detect.
-  obj->MacEventReceived();
+  obj->MacEventReceived(the_event->what != nsPluginEventType_LoseFocusEvent);
 
   switch (the_event->what) {
     case nullEvent:
@@ -831,7 +831,9 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event,
 
   if (g_logger) g_logger->UpdateLogging();
 
-  obj->MacEventReceived();
+  bool lostFocus = the_event->type == NPCocoaEventFocusChanged &&
+      !the_event->data.focus.hasFocus;
+  obj->MacEventReceived(!lostFocus);
   switch (the_event->type) {
     case NPCocoaEventDrawRect:
       // We need to call the render callback from here if we are rendering

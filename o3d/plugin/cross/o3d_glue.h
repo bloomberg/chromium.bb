@@ -466,7 +466,7 @@ class PluginObject: public NPObject {
 
 #ifdef OS_MACOSX
   // Methods needed for the Safari tab-switching hack.
-  void MacEventReceived();
+  void MacEventReceived(bool updateTab);
 
   CFTimeInterval TimeSinceLastMacEvent();
 
