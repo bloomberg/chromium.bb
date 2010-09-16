@@ -55,7 +55,13 @@ void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
 
 bool UserCrosSettingsProvider::Get(const std::string& path,
                                    Value** out_value) const {
-  return dict_->Get(path, out_value);
+  Value* value = NULL;
+  if (dict_->Get(path, &value) && value) {
+    *out_value = value->DeepCopy();
+    return true;
+  }
+
+  return false;
 }
 
 bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {

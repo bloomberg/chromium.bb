@@ -22,7 +22,7 @@ Value* CoreChromeOSOptionsHandler::FetchPref(const std::string& pref_name) {
 
   Value* pref_value = NULL;
   CrosSettings::Get()->Get(pref_name, &pref_value);
-  return pref_value ? pref_value->DeepCopy() : Value::CreateNullValue();
+  return pref_value ? pref_value : Value::CreateNullValue();
 }
 
 void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {

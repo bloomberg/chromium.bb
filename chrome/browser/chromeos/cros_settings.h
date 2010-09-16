@@ -39,7 +39,7 @@ class CrosSettings : public NonThreadSafe {
   void FireObservers(const char* path);
 
   // Gets settings value of given |path| to |out_value|.
-  // Note that |out_value| is still owned by this class.
+  // Note that the caller owns |out_value| returned.
   bool Get(const std::string& path, Value** out_value) const;
 
   // Convenience forms of Set().  These methods will replace any existing
