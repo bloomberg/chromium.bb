@@ -208,7 +208,8 @@
     // offscreen, but there will always be enough window onscreen to
     // drag the whole window back into view.
     NSSize minSize = [[self window] minSize];
-    gfx::Rect windowRect = browser_->GetSavedWindowBounds();
+    gfx::Rect desiredContentRect = browser_->GetSavedWindowBounds();
+    gfx::Rect windowRect = desiredContentRect;
     if (windowRect.width() < minSize.width)
       windowRect.set_width(minSize.width);
     if (windowRect.height() < minSize.height)
@@ -222,6 +223,9 @@
       windowRect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
     }
 
+    // Size and position the window.  Note that it is not yet onscreen.  Popup
+    // windows may get resized later on in this function, once the actual size
+    // of the toolbar/tabstrip is known.
     windowShim_->SetBounds(windowRect);
 
     // Puts the incognito badge on the window frame, if necessary.
@@ -290,6 +294,27 @@
 
     // Force a relayout of all the various bars.
     [self layoutSubviews];
+
+    // For a popup window, |desiredContentRect| contains the desired height of
+    // the content, not of the whole window.  Now that all the views are laid
+    // out, measure the current content area size and grow if needed.  The
+    // window has not been placed onscreen yet, so this extra resize will not
+    // cause visible jank.
+    if (browser_->type() & Browser::TYPE_POPUP) {
+      CGFloat deltaH = desiredContentRect.height() -
+                       NSHeight([[self tabContentArea] frame]);
+      // Do not shrink the window, as that may break minimum size invariants.
+      if (deltaH > 0) {
+        // Convert from tabContentArea coordinates to window coordinates.
+        NSSize convertedSize =
+            [[self tabContentArea] convertSize:NSMakeSize(0, deltaH)
+                                        toView:nil];
+        NSRect frame = [[self window] frame];
+        frame.size.height += convertedSize.height;
+        frame.origin.y -= convertedSize.height;
+        [[self window] setFrame:frame display:NO];
+      }
+    }
 
     // Create the bridge for the status bubble.
     statusBubble_ = new StatusBubbleMac([self window], self);
