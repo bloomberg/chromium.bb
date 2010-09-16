@@ -41,6 +41,12 @@ class WebGraphicsContext3DCommandBufferImpl
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
   virtual bool initialize(WebGraphicsContext3D::Attributes attributes,
+                          WebKit::WebView*,
+                          bool renderDirectlyToWebView);
+
+  // TODO(kbr): remove this overload once upstream code no longer
+  // defines this virtual.
+  virtual bool initialize(WebGraphicsContext3D::Attributes attributes,
                           WebKit::WebView*);
 
   virtual bool makeContextCurrent();
@@ -340,6 +346,26 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void synthesizeGLError(unsigned long error);
   virtual bool supportsBGRA();
+
+  virtual bool supportsMapSubCHROMIUM();
+  virtual void* mapBufferSubDataCHROMIUM(
+      unsigned target, int offset, int size, unsigned access);
+  virtual void unmapBufferSubDataCHROMIUM(const void*);
+  virtual void* mapTexSubImage2DCHROMIUM(
+      unsigned target,
+      int level,
+      int xoffset,
+      int yoffset,
+      int width,
+      int height,
+      unsigned format,
+      unsigned type,
+      unsigned access);
+  virtual void unmapTexSubImage2DCHROMIUM(const void*);
+
+  virtual bool supportsCopyTextureToParentTextureCHROMIUM();
+  virtual void copyTextureToParentTextureCHROMIUM(
+      unsigned texture, unsigned parentTexture);
 
   virtual unsigned createCompositorTexture(unsigned width, unsigned height);
   virtual void deleteCompositorTexture(unsigned parent_texture);

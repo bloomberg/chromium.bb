@@ -39,6 +39,15 @@ WebGraphicsContext3DCommandBufferImpl::
 
 bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
+    WebKit::WebView* web_view,
+    bool render_directly_to_web_view) {
+  // TODO(kbr): implement this fully once WebView::graphicsContext3D()
+  // is exposed upstream.
+  return initialize(attributes, web_view);
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::initialize(
+    WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view) {
   bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableAcceleratedCompositing);
@@ -252,6 +261,53 @@ bool WebGraphicsContext3DCommandBufferImpl::supportsBGRA() {
     supports_extension("GL_EXT_texture_format_BGRA8888") &&
     supports_extension("GL_EXT_read_format_bgra");
   return is_supported;
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::supportsMapSubCHROMIUM() {
+  static bool is_supported = supports_extension("GL_CHROMIUM_map_sub");
+  return is_supported;
+}
+
+void* WebGraphicsContext3DCommandBufferImpl::mapBufferSubDataCHROMIUM(
+    unsigned target,
+    int offset,
+    int size,
+    unsigned access) {
+  return glMapBufferSubData(target, offset, size, access);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::unmapBufferSubDataCHROMIUM(
+    const void* mem) {
+  return glUnmapBufferSubData(mem);
+}
+
+void* WebGraphicsContext3DCommandBufferImpl::mapTexSubImage2DCHROMIUM(
+    unsigned target,
+    int level,
+    int xoffset,
+    int yoffset,
+    int width,
+    int height,
+    unsigned format,
+    unsigned type,
+    unsigned access) {
+  return glMapTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, access);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
+    const void* mem) {
+  glUnmapTexSubImage2D(mem);
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::
+    supportsCopyTextureToParentTextureCHROMIUM() {
+  return true;
+}
+
+void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
+    unsigned texture, unsigned parentTexture) {
+  copyTextureToCompositor(texture, parentTexture);
 }
 
 // Helper macros to reduce the amount of code.
