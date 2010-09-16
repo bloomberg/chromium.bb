@@ -9,6 +9,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "gfx/gtk_util.h"
 #include "grit/theme_resources.h"
@@ -46,13 +47,14 @@ void ExtensionInfoBarGtk::OnImageLoaded(
 
 void ExtensionInfoBarGtk::BuildWidgets() {
   // Start loading the image for the menu button.
-  ExtensionResource icon_resource;
   Extension* extension = delegate_->extension_host()->extension();
-  Extension::Icons size = extension->GetIconResourceAllowLargerSize(
-      &icon_resource, Extension::EXTENSION_ICON_BITTY);
+  ExtensionResource icon_resource = extension->GetIconResource(
+      Extension::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
   if (!icon_resource.relative_path().empty()) {
     // Create a tracker to load the image. It will report back on OnImageLoaded.
-    tracker_.LoadImage(extension, icon_resource, gfx::Size(size, size),
+    tracker_.LoadImage(extension, icon_resource,
+                       gfx::Size(Extension::EXTENSION_ICON_BITTY,
+                                 Extension::EXTENSION_ICON_BITTY),
                        ImageLoadingTracker::DONT_CACHE);
   } else {
     OnImageLoaded(NULL, icon_resource, 0);  // |image|, |index|.

@@ -1309,6 +1309,7 @@
         'common/extensions/extension_action_unittest.cc',
         'common/extensions/extension_extent_unittest.cc',
         'common/extensions/extension_file_util_unittest.cc',
+        'common/extensions/extension_icon_set_unittest.cc',
         'common/extensions/extension_l10n_util_unittest.cc',
         'common/extensions/extension_localization_peer_unittest.cc',
         'common/extensions/extension_manifests_unittest.cc',

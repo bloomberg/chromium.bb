@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -42,7 +43,7 @@ bool ExtractInt(const ListValue* list, size_t index, int* out_int) {
 
 std::string GetIconURL(Extension* extension, Extension::Icons icon,
                        const std::string& default_val) {
-  GURL url = extension->GetIconURL(icon);
+  GURL url = extension->GetIconURL(icon, ExtensionIconSet::MATCH_EXACTLY);
   if (!url.is_empty())
     return url.spec();
   else

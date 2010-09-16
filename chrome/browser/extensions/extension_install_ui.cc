@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/notification_service.h"
@@ -359,7 +360,8 @@ void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
   // Load the image asynchronously. For the response, check OnImageLoaded.
   prompt_type_ = prompt_type;
   ExtensionResource image =
-      extension_->GetIconResource(Extension::EXTENSION_ICON_LARGE);
+      extension_->GetIconResource(Extension::EXTENSION_ICON_LARGE,
+                                  ExtensionIconSet::MATCH_EXACTLY);
   tracker_.LoadImage(extension_, image,
                      gfx::Size(kIconSize, kIconSize),
                      ImageLoadingTracker::DONT_CACHE);

@@ -46,6 +46,8 @@
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/child_process_info.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -672,8 +674,8 @@ void BrowserRenderProcessHost::SendExtensionInfo() {
     info.web_extent = extension->web_extent();
     info.name = extension->name();
     info.location = extension->location();
-    info.icon_url =
-        extension->GetIconURLAllowLargerSize(Extension::EXTENSION_ICON_MEDIUM);
+    info.icon_url = extension->GetIconURL(Extension::EXTENSION_ICON_MEDIUM,
+                                          ExtensionIconSet::MATCH_BIGGER);
     params.extensions.push_back(info);
   }
 

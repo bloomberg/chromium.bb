@@ -134,8 +134,10 @@ Extension* LoadExtension(const FilePath& extension_path,
 
 bool ValidateExtension(Extension* extension, std::string* error) {
   // Validate icons exist.
-  for (std::map<int, std::string>::const_iterator iter =
-       extension->icons().begin(); iter != extension->icons().end(); ++iter) {
+  for (ExtensionIconSet::IconMap::const_iterator iter =
+           extension->icons().map().begin();
+       iter != extension->icons().map().end();
+       ++iter) {
     const FilePath path = extension->GetResource(iter->second).GetFilePath();
     if (!file_util::PathExists(path)) {
       *error =

@@ -16,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_extent.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "gfx/size.h"
@@ -306,7 +307,8 @@ class Extension {
   bool HasAccessToAllHosts() const;
 
   const GURL& update_url() const { return update_url_; }
-  const std::map<int, std::string>& icons() const { return icons_; }
+
+  const ExtensionIconSet& icons() const { return icons_; }
 
   // Returns the Google Gallery URL for this extension, if one exists. For
   // third-party extensions, this returns a blank GURL.
@@ -325,19 +327,10 @@ class Extension {
   // the browser might load (like themes and page action icons).
   std::set<FilePath> GetBrowserImages();
 
-  // Returns an absolute path to the given icon inside of the extension. Returns
-  // an empty FilePath if the extension does not have that icon.
-  ExtensionResource GetIconResource(Icons icon);
-
-  // Looks for an extension icon of dimension |icon|. If not found, checks if
-  // the next larger size exists (until one is found or the end is reached). If
-  // an icon is found, the path is returned in |resource| and the dimension
-  // found is returned to the caller (as function return value).
-  // NOTE: |resource| is not guaranteed to be non-empty.
-  Icons GetIconResourceAllowLargerSize(ExtensionResource* resource, Icons icon);
-
-  GURL GetIconURL(Icons icon);
-  GURL GetIconURLAllowLargerSize(Icons icon);
+  // Get an extension icon as a resource or URL.
+  ExtensionResource GetIconResource(int size,
+                                    ExtensionIconSet::MatchType match_type);
+  GURL GetIconURL(int size, ExtensionIconSet::MatchType match_type);
 
   const DictionaryValue* manifest_value() const {
     return manifest_value_.get();
@@ -447,11 +440,6 @@ class Extension {
   // kPermissionNames).
   bool IsAPIPermission(const std::string& permission);
 
-  // Utility functions to get the icon relative path used to create an
-  // ExtensionResource or URL.
-  std::string GetIconPath(Icons icon);
-  Icons GetIconPathAllowLargerSize(std::string* path, Icons icon);
-
   // The absolute path to the directory the extension is stored in.
   FilePath path_;
 
@@ -535,8 +523,8 @@ class Extension {
   // The sites this extension has permission to talk to (using XHR, etc).
   URLPatternList host_permissions_;
 
-  // The paths to the icons the extension contains mapped by their width.
-  std::map<int, std::string> icons_;
+  // The icons for the extension.
+  ExtensionIconSet icons_;
 
   // URL for fetching an update manifest
   GURL update_url_;

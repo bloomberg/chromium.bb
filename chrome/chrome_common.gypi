@@ -188,6 +188,8 @@
         'common/extensions/extension_extent.h',
         'common/extensions/extension_file_util.cc',
         'common/extensions/extension_file_util.h',
+        'common/extensions/extension_icon_set.cc',
+        'common/extensions/extension_icon_set.h',
         'common/extensions/extension_l10n_util.cc',
         'common/extensions/extension_l10n_util.h',
         'common/extensions/extension_localization_peer.cc',

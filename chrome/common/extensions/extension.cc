@@ -960,7 +960,8 @@ bool Extension::HasEffectiveBrowsingHistoryPermission() const {
 void Extension::DecodeIcon(Extension* extension,
                            Icons icon_size,
                            scoped_ptr<SkBitmap>* result) {
-  FilePath icon_path = extension->GetIconResource(icon_size).GetFilePath();
+  FilePath icon_path = extension->GetIconResource(
+      icon_size, ExtensionIconSet::MATCH_EXACTLY).GetFilePath();
   DecodeIconFromPath(icon_path, icon_size, result);
 }
 
@@ -1146,7 +1147,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
               errors::kInvalidIconPath, key);
           return false;
         }
-        icons_[kIconSizes[i]] = icon_path;
+        icons_.Add(kIconSizes[i], icon_path);
       }
     }
   }
@@ -1653,8 +1654,8 @@ std::set<FilePath> Extension::GetBrowserImages() {
   // indicate that we're doing something wrong.
 
   // Extension icons.
-  for (std::map<int, std::string>::iterator iter = icons_.begin();
-       iter != icons_.end(); ++iter) {
+  for (ExtensionIconSet::IconMap::const_iterator iter = icons_.map().begin();
+       iter != icons_.map().end(); ++iter) {
     image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
   }
 
@@ -1767,57 +1768,20 @@ SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
   return NULL;
 }
 
-std::string Extension::GetIconPath(Icons icon) {
-  std::map<int, std::string>::const_iterator iter = icons_.find(icon);
-  if (iter == icons_.end())
-    return std::string();
-  return iter->second;
-}
-
-Extension::Icons Extension::GetIconPathAllowLargerSize(
-    std::string* path, Icons icon) {
-  *path = GetIconPath(icon);
-  if (!path->empty())
-    return icon;
-  if (icon == EXTENSION_ICON_BITTY)
-    return GetIconPathAllowLargerSize(path, EXTENSION_ICON_SMALL);
-  if (icon == EXTENSION_ICON_SMALL)
-    return GetIconPathAllowLargerSize(path, EXTENSION_ICON_MEDIUM);
-  if (icon == EXTENSION_ICON_MEDIUM)
-    return GetIconPathAllowLargerSize(path, EXTENSION_ICON_LARGE);
-  return EXTENSION_ICON_LARGE;
-}
-
-ExtensionResource Extension::GetIconResource(Icons icon) {
-  std::string path = GetIconPath(icon);
+ExtensionResource Extension::GetIconResource(
+    int size, ExtensionIconSet::MatchType match_type) {
+  std::string path = icons_.Get(size, match_type);
   if (path.empty())
     return ExtensionResource();
   return GetResource(path);
 }
 
-Extension::Icons Extension::GetIconResourceAllowLargerSize(
-    ExtensionResource* resource, Icons icon) {
-  std::string path;
-  Extension::Icons ret = GetIconPathAllowLargerSize(&path, icon);
-  if (path.empty())
-    *resource = ExtensionResource();
-  else
-    *resource = GetResource(path);
-  return ret;
-}
-
-GURL Extension::GetIconURL(Icons icon) {
-  std::string path = GetIconPath(icon);
+GURL Extension::GetIconURL(int size, ExtensionIconSet::MatchType match_type) {
+  std::string path = icons_.Get(size, match_type);
   if (path.empty())
     return GURL();
   else
     return GetResourceURL(path);
-}
-
-GURL Extension::GetIconURLAllowLargerSize(Icons icon) {
-  std::string path;
-  GetIconPathAllowLargerSize(&path, icon);
-  return GetResourceURL(path);
 }
 
 bool Extension::CanAccessURL(const URLPattern pattern) const {

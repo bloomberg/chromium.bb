@@ -8,6 +8,7 @@
 #include "app/slide_animation.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "gfx/rect.h"
 #include "views/controls/image_view.h"
@@ -72,7 +73,8 @@ AppLaunchedAnimationWin::AppLaunchedAnimationWin(Extension* extension,
   DCHECK(extension);
   app_icon_loader_.LoadImage(
       extension,
-      extension->GetIconResource(Extension::EXTENSION_ICON_LARGE),
+      extension->GetIconResource(Extension::EXTENSION_ICON_LARGE,
+                                 ExtensionIconSet::MATCH_EXACTLY),
       rect_.size(),
       ImageLoadingTracker::DONT_CACHE);
 }

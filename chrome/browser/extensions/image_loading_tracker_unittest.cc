@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
@@ -102,7 +103,8 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
-      extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH);
+      extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH,
+                                 ExtensionIconSet::MATCH_EXACTLY);
   gfx::Size max_size(Extension::EXTENSION_ICON_SMALLISH,
                      Extension::EXTENSION_ICON_SMALLISH);
   ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
@@ -148,7 +150,8 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
-      extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH);
+      extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH,
+                                 ExtensionIconSet::MATCH_EXACTLY);
   ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
   loader.LoadImage(extension.get(),
                    image_resource,

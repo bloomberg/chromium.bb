@@ -88,6 +88,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/navigation_types.h"
@@ -3114,7 +3115,8 @@ void TabContents::UpdateExtensionAppIcon(Extension* extension) {
     extension_app_image_loader_.reset(new ImageLoadingTracker(this));
     extension_app_image_loader_->LoadImage(
         extension,
-        extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH),
+        extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH,
+                                   ExtensionIconSet::MATCH_EXACTLY),
         gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
                   Extension::EXTENSION_ICON_SMALLISH),
         ImageLoadingTracker::CACHE);

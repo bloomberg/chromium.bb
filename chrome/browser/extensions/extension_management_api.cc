@@ -17,8 +17,10 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 
@@ -59,7 +61,7 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
     info->SetString(kAppLaunchUrlKey,
                     extension.GetFullLaunchURL().possibly_invalid_spec());
 
-  const std::map<int, std::string>& icons = extension.icons();
+  const ExtensionIconSet::IconMap& icons = extension.icons().map();
   if (!icons.empty()) {
     ListValue* icon_list = new ListValue();
     std::map<int, std::string>::const_iterator icon_iter;

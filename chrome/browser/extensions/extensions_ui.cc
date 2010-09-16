@@ -38,6 +38,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -404,16 +405,8 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
 
 ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
     Extension* extension) {
-  // Try to fetch the medium sized icon, then (if missing) go for the large one.
-  const std::map<int, std::string>& icons = extension->icons();
-  std::map<int, std::string>::const_iterator iter =
-      icons.find(Extension::EXTENSION_ICON_MEDIUM);
-  if (iter == icons.end())
-    iter = icons.find(Extension::EXTENSION_ICON_LARGE);
-  if (iter != icons.end())
-    return extension->GetResource(iter->second);
-  else
-    return ExtensionResource();
+  return extension->GetIconResource(Extension::EXTENSION_ICON_MEDIUM,
+                                    ExtensionIconSet::MATCH_BIGGER);
 }
 
 ExtensionInstallUI* ExtensionsDOMHandler::GetExtensionInstallUI() {
