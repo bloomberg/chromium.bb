@@ -718,6 +718,7 @@
         'gpu/gpu_video_service.h',
         'gpu/gpu_view_win.cc',
         'gpu/gpu_view_win.h',
+        'gpu/media/gpu_video_device.h',
         'gpu/media/fake_gl_video_decode_engine.cc',
         'gpu/media/fake_gl_video_decode_engine.h',
       ],

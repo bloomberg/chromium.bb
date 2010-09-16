@@ -187,10 +187,52 @@ void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
   output_param.flags = frame->IsEndOfStream() ?
       GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream : 0;
   // TODO(hclam): We should have the conversion between VideoFrame and the
-  // IPC transport param done in GpuVideoDecodeContext.
+  // IPC transport param done in GpuVideoDevice.
   // This is a hack to pass texture back as a param.
   output_param.texture = frame->gl_texture(media::VideoFrame::kRGBPlane);
   SendFillBufferDone(output_param);
+}
+
+void* GpuVideoDecoder::GetDevice() {
+  // Simply delegate the method call to GpuVideoDevice.
+  return decode_context_->GetDevice();
+}
+
+void GpuVideoDecoder::AllocateVideoFrames(
+    int n, size_t width, size_t height,
+    AllocationCompleteCallback* callback) {
+  // Since the communication between Renderer and GPU process is by GL textures.
+  // We need to obtain a set of GL textures by sending IPC commands to the
+  // Renderer process. The recipient of these commands will be IpcVideoDecoder.
+  //
+  // After IpcVideoDecoder replied with a set of textures. We'll assign these
+  // textures to GpuVideoDevice. They will be used to generate platform
+  // specific VideoFrames objects that are used by VideoDecodeEngine.
+  //
+  // After GL textures are assigned we'll proceed with allocation the
+  // VideoFrames. GpuVideoDevice::CreateVideoFramesFromGlTextures() will be
+  // called.
+  //
+  // When GpuVideoDevice replied with a set of VideoFrames we'll give
+  // that to VideoDecodeEngine and the cycle of video frame allocation is done.
+  //
+  // Note that this method is called when there's no video frames allocated or
+  // they were all released.
+}
+
+void GpuVideoDecoder::ReleaseVideoFrames(int n, VideoFrame* frames) {
+  // This method will first call to GpuVideoDevice to release all the resource
+  // associated with a VideoFrame.
+  //
+  // And when we'll call GpuVideoDevice::ReleaseVideoFrames to remove the set
+  // of Gl textures associated with the context.
+  //
+  // And finally we'll send IPC commands to IpcVideoDecoder to destroy all
+  // GL textures generated.
+}
+
+void GpuVideoDecoder::Destroy(DestructionCompleteCallback* callback) {
+  //  TODO(hclam): I still need to think what I should do here.
 }
 
 GpuVideoDecoder::GpuVideoDecoder(

@@ -10,6 +10,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/gpu_video_common.h"
+#include "chrome/gpu/media/gpu_video_device.h"
+#include "media/video/video_decode_context.h"
 #include "media/video/video_decode_engine.h"
 #include "ipc/ipc_channel.h"
 
@@ -27,18 +29,64 @@ class GLES2Decoder;
 
 class GpuChannel;
 
+// A GpuVideoDecoder is a platform independent video decoder that uses platform
+// specific VideoDecodeEngine and GpuVideoDevice for the actual decoding
+// operations.
+//
+// In addition to delegating video related commamnds to VideoDecodeEngine it
+// has the following important functions:
+//
+// Buffer Allocation
+//
+// VideoDecodeEngine requires platform specific video frame buffer to operate.
+// In order to abstract the platform specific bits GpuVideoDecoderContext is
+// used to allocate video frames that a VideoDecodeEngine can use.
+//
+// Since all the video frames appear to the Renderer process as textures, the
+// first thing GpuVideoDecoder needs to do is to ask Renderer process to
+// generate and allocate textures. This will establish a texture record in the
+// command buffer decoder. After the texture is allocated, this class will
+// pass the textures meaningful in the local GLES context to
+// GpuVideoDevice for generating VideoFrames that VideoDecodeEngine
+// can actually use.
+//
+// In order to coordinate these operations, GpuVideoDecoder implements
+// VideoDecodeContext and is injected into the VideoDecodeEngine.
+//
+// The sequence of operations is:
+// 1. VideoDecodeEngine requests by call AllocateVideoFrames().
+// 2. GpuVideoDecoder receives AllocateVideoFrames() and then call to the
+//    Renderer process to generate textures.
+// 3. Renderer process replied with textures.
+// 4. Textures generated are passed into GpuVideoDevice.
+// 5. GpuVideoDevice::AllocateVideoFrames() is called to generate
+//    VideoFrame(s) from the textures.
+// 6. GpuVideoDecoder sends the VideoFrame(s) generated to VideoDecodeEngine.
+//
+// Buffer Translation
+//
+// GpuVideoDecoder will be working with VideoDecodeEngine, they exchange
+// buffers that are only meaningful to VideoDecodeEngine. In order to translate
+// that to something we can transport in the IPC channel we need a mapping
+// between VideoFrame and buffer ID known between GpuVideoDecoder and
+// GpuVideoDecoderHost in the Renderer process.
+//
+// After texture allocation and VideoFrame allocation are done, GpuVideoDecoder
+// will maintain such mapping.
+//
 class GpuVideoDecoder
     : public IPC::Channel::Listener,
       public base::RefCountedThreadSafe<GpuVideoDecoder>,
-      public media::VideoDecodeEngine::EventHandler {
+      public media::VideoDecodeEngine::EventHandler,
+      public media::VideoDecodeContext {
 
  public:
-  // IPC::Channel::Listener.
+  // IPC::Channel::Listener implementation.
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
   virtual void OnMessageReceived(const IPC::Message& message);
 
-  // VideoDecodeEngine::EventHandler.
+  // VideoDecodeEngine::EventHandler implementation.
   virtual void OnInitializeComplete(const VideoCodecInfo& info);
   virtual void OnUninitializeComplete();
   virtual void OnFlushComplete();
@@ -48,6 +96,14 @@ class GpuVideoDecoder
   virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer);
   virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame);
 
+  // VideoDecodeContext implementation.
+  virtual void* GetDevice();
+  virtual void AllocateVideoFrames(int n, size_t width, size_t height,
+                                   AllocationCompleteCallback* callback);
+  virtual void ReleaseVideoFrames(int n, VideoFrame* frames);
+  virtual void Destroy(DestructionCompleteCallback* callback);
+
+  // Constructor and destructor.
   GpuVideoDecoder(const GpuVideoDecoderInfoParam* param,
                   GpuChannel* channel_,
                   base::ProcessHandle handle,
@@ -81,6 +137,7 @@ class GpuVideoDecoder
   scoped_ptr<base::SharedMemory> output_transfer_buffer_;
 
   scoped_ptr<media::VideoDecodeEngine> decode_engine_;
+  scoped_ptr<GpuVideoDevice> decode_context_;
   media::VideoCodecConfig config_;
   media::VideoCodecInfo info_;
 
