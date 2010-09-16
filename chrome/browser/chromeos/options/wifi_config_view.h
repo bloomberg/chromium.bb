@@ -39,9 +39,7 @@ class WifiConfigView : public views::View,
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents);
   virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke& keystroke) {
-    return false;
-  }
+                               const views::Textfield::Keystroke& keystroke);
 
   // views::ButtonListener
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

@@ -87,6 +87,21 @@ void WifiConfigView::ContentsChanged(views::Textfield* sender,
   UpdateCanLogin();
 }
 
+bool WifiConfigView::HandleKeystroke(
+    views::Textfield* sender,
+    const views::Textfield::Keystroke& keystroke) {
+  if (sender == passphrase_textfield_) {
+    if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+      parent_->Accept();
+      return true;
+    } else if (keystroke.GetKeyboardCode() == app::VKEY_ESCAPE) {
+      parent_->Cancel();
+      return true;
+    }
+  }
+  return false;
+}
+
 void WifiConfigView::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
   if (sender == passphrase_visible_button_) {
