@@ -61,7 +61,9 @@ class ImageLoadingTracker : public NotificationObserver {
   ~ImageLoadingTracker();
 
   // Specify image resource to load. If the loaded image is larger than
-  // |max_size| it will be resized to those dimensions.
+  // |max_size| it will be resized to those dimensions. IMPORTANT NOTE: this
+  // function may call back your observer synchronously (ie before it returns)
+  // if the image was found in the cache.
   void LoadImage(Extension* extension,
                  const ExtensionResource& resource,
                  const gfx::Size& max_size,
