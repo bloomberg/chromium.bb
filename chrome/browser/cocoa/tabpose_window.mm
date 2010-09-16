@@ -10,6 +10,7 @@
 #include "base/mac_util.h"
 #include "base/scoped_callback_factory.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
@@ -462,6 +463,17 @@ class TileSet {
   Tile& tile_at(int index) { return *tiles_[index]; }
   const Tile& tile_at(int index) const { return *tiles_[index]; }
 
+  // These return which index needs to be selected when the user presses
+  // up, down, left, or right respectively.
+  int up_index() const;
+  int down_index() const;
+  int left_index() const;
+  int right_index() const;
+
+  // These return which index needs to be selected on tab / shift-tab.
+  int next_index() const;
+  int previous_index() const;
+
   // Inserts a new Tile object containing |contents| at |index|. Does no
   // relayout.
   void InsertTileAt(int index, TabContents* contents);
@@ -476,8 +488,29 @@ class TileSet {
   void MoveTileFromTo(int from_index, int to_index);
 
  private:
+  int count_x() const {
+    return ceilf(tiles_.size() / static_cast<float>(count_y_));
+  }
+  int count_y() const {
+    return count_y_;
+  }
+  int last_row_count_x() const {
+    return tiles_.size() - count_x() * (count_y() - 1);
+  }
+  int tiles_in_row(int row) const {
+    return row != count_y() - 1 ? count_x() : last_row_count_x();
+  }
+  void index_to_tile_xy(int index, int* tile_x, int* tile_y) const {
+    *tile_x = index % count_x();
+    *tile_y = index / count_x();
+  }
+  int tile_xy_to_index(int tile_x, int tile_y) const {
+    return tile_y * count_x() + tile_x;
+  }
+
   ScopedVector<Tile> tiles_;
   int selected_index_;
+  int count_y_;
 
   DISALLOW_COPY_AND_ASSIGN(TileSet);
 };
@@ -542,19 +575,17 @@ void TileSet::Layout(NSRect containing_rect) {
       tile_count, aspect,
       container_width, container_height - kFooterExtraHeight,
       kSmallPaddingX, kSmallPaddingY + kFooterExtraHeight);
-  int count_y(roundf(fny));
-  int count_x(ceilf(tile_count / float(count_y)));
-  int last_row_count_x = tile_count - count_x * (count_y - 1);
+  count_y_ = roundf(fny);
 
-  // Now that |count_x| and |count_y| are known, it's straightforward to compute
-  // thumbnail width/height. See comment in
+  // Now that |count_x()| and |count_y_| are known, it's straightforward to
+  // compute thumbnail width/height. See comment in
   // |FitNRectsWithAspectIntoBoundingSizeWithConstantPadding| for the derivation
   // of these two formulas.
   int small_width =
-      floor((container_width + kSmallPaddingX) / float(count_x) -
+      floor((container_width + kSmallPaddingX) / static_cast<float>(count_x()) -
             kSmallPaddingX);
   int small_height =
-      floor((container_height + kSmallPaddingY) / float(count_y) -
+      floor((container_height + kSmallPaddingY) / static_cast<float>(count_y_) -
             (kSmallPaddingY + kFooterExtraHeight));
 
   // |small_width / small_height| has only roughly an aspect ratio of |aspect|.
@@ -562,21 +593,22 @@ void TileSet::Layout(NSRect containing_rect) {
   // the extra space won by shrinking to the outer padding.
   int smallExtraPaddingLeft = 0;
   int smallExtraPaddingTop = 0;
-  if (aspect > small_width/float(small_height)) {
+  if (aspect > small_width/static_cast<float>(small_height)) {
     small_height = small_width / aspect;
     CGFloat all_tiles_height =
-        (small_height + kSmallPaddingY + kFooterExtraHeight) * count_y -
+        (small_height + kSmallPaddingY + kFooterExtraHeight) * count_y() -
         (kSmallPaddingY + kFooterExtraHeight);
     smallExtraPaddingTop = (container_height - all_tiles_height)/2;
   } else {
     small_width = small_height * aspect;
     CGFloat all_tiles_width =
-        (small_width + kSmallPaddingX) * count_x - kSmallPaddingX;
+        (small_width + kSmallPaddingX) * count_x() - kSmallPaddingX;
     smallExtraPaddingLeft = (container_width - all_tiles_width)/2;
   }
 
   // Compute inter-tile padding in the zoomed-out view.
-  CGFloat scale_small_to_big = NSWidth(containing_rect) / float(small_width);
+  CGFloat scale_small_to_big =
+      NSWidth(containing_rect) / static_cast<float>(small_width);
   CGFloat big_padding_x = kSmallPaddingX * scale_small_to_big;
   CGFloat big_padding_y =
       (kSmallPaddingY + kFooterExtraHeight) * scale_small_to_big;
@@ -586,7 +618,7 @@ void TileSet::Layout(NSRect containing_rect) {
   // X X X X
   // X X
   for (int row = 0, i = 0; i < tile_count; ++row) {
-    for (int col = 0; col < count_x && i < tile_count; ++col, ++i) {
+    for (int col = 0; col < count_x() && i < tile_count; ++col, ++i) {
       // Compute the smalled, zoomed-out thumbnail rect.
       tiles_[i]->thumb_rect_.size = NSMakeSize(small_width, small_height);
 
@@ -629,12 +661,12 @@ void TileSet::Layout(NSRect containing_rect) {
   // X X X X
   // X X X X
   //   X X
-  int last_row_empty_tiles_x = count_x - last_row_count_x;
+  int last_row_empty_tiles_x = count_x() - last_row_count_x();
   CGFloat small_last_row_shift_x =
       last_row_empty_tiles_x * (small_width + kSmallPaddingX) / 2;
   CGFloat big_last_row_shift_x =
       last_row_empty_tiles_x * (NSWidth(containing_rect) + big_padding_x) / 2;
-  for (int i = tile_count - last_row_count_x; i < tile_count; ++i) {
+  for (int i = tile_count - last_row_count_x(); i < tile_count; ++i) {
     tiles_[i]->thumb_rect_.origin.x += small_last_row_shift_x;
     tiles_[i]->start_thumb_rect_.origin.x += big_last_row_shift_x;
     tiles_[i]->favicon_rect_.origin.x += small_last_row_shift_x;
@@ -646,6 +678,84 @@ void TileSet::set_selected_index(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, static_cast<int>(tiles_.size()));
   selected_index_ = index;
+}
+
+// Given a |value| in [0, from_scale), map it into [0, to_scale) such that:
+// * [0, from_scale) ends up in the middle of [0, to_scale) if the latter is
+//   a bigger range
+// * The middle of [0, from_scale) is mapped to [0, to_scale), and the parts
+//   of the former that don't fit are mapped to 0 and to_scale - respectively
+//   if the former is a bigger range.
+static int rescale(int value, int from_scale, int to_scale) {
+  int left = (to_scale - from_scale) / 2;
+  int result = value + left;
+  if (result < 0)
+    return 0;
+  if (result >= to_scale)
+    return to_scale - 1;
+  return result;
+}
+
+int TileSet::up_index() const {
+  int tile_x, tile_y;
+  index_to_tile_xy(selected_index(), &tile_x, &tile_y);
+  tile_y -= 1;
+  if (tile_y == count_y() - 2) {
+    // Transition from last row to second-to-last row.
+    tile_x = rescale(tile_x, last_row_count_x(), count_x());
+  } else if (tile_y < 0) {
+    // Transition from first row to last row.
+    tile_x = rescale(tile_x, count_x(), last_row_count_x());
+    tile_y = count_y() - 1;
+  }
+  return tile_xy_to_index(tile_x, tile_y);
+}
+
+int TileSet::down_index() const {
+  int tile_x, tile_y;
+  index_to_tile_xy(selected_index(), &tile_x, &tile_y);
+  tile_y += 1;
+  if (tile_y == count_y() - 1) {
+    // Transition from second-to-last row to last row.
+    tile_x = rescale(tile_x, count_x(), last_row_count_x());
+  } else if (tile_y >= count_y()) {
+    // Transition from last row to first row.
+    tile_x = rescale(tile_x, last_row_count_x(), count_x());
+    tile_y = 0;
+  }
+  return tile_xy_to_index(tile_x, tile_y);
+}
+
+int TileSet::left_index() const {
+  int tile_x, tile_y;
+  index_to_tile_xy(selected_index(), &tile_x, &tile_y);
+  tile_x -= 1;
+  if (tile_x < 0)
+    tile_x = tiles_in_row(tile_y) - 1;
+  return tile_xy_to_index(tile_x, tile_y);
+}
+
+int TileSet::right_index() const {
+  int tile_x, tile_y;
+  index_to_tile_xy(selected_index(), &tile_x, &tile_y);
+  tile_x += 1;
+  if (tile_x >= tiles_in_row(tile_y))
+    tile_x = 0;
+  return tile_xy_to_index(tile_x, tile_y);
+}
+
+int TileSet::next_index() const {
+  int new_index = selected_index() + 1;
+  if (new_index >= static_cast<int>(tiles_.size()))
+    new_index = 0;
+  return new_index;
+}
+
+int TileSet::previous_index() const {
+  int new_index = selected_index() - 1;
+  if (new_index < 0)
+    new_index = tiles_.size() - 1;
+  return new_index;
 }
 
 void TileSet::InsertTileAt(int index, TabContents* contents) {
@@ -935,14 +1045,44 @@ void AnimateCALayerFrameFromTo(
  return YES;
 }
 
+// Handle key events that should be executed repeatedly while the key is down.
 - (void)keyDown:(NSEvent*)event {
-  // Overridden to prevent beeps.
+  if (state_ == tabpose::kFadingOut)
+    return;
+  NSString* characters = [event characters];
+  if ([characters length] < 1)
+    return;
+
+  unichar character = [characters characterAtIndex:0];
+  int newIndex = -1;
+  switch (character) {
+    case NSUpArrowFunctionKey:
+      newIndex = tileSet_->up_index();
+      break;
+    case NSDownArrowFunctionKey:
+      newIndex = tileSet_->down_index();
+      break;
+    case NSLeftArrowFunctionKey:
+      newIndex = tileSet_->left_index();
+      break;
+    case NSRightArrowFunctionKey:
+      newIndex = tileSet_->right_index();
+      break;
+    case NSTabCharacter:
+      newIndex = tileSet_->next_index();
+      break;
+    case NSBackTabCharacter:
+      newIndex = tileSet_->previous_index();
+      break;
+  }
+  if (newIndex != -1)
+    [self selectTileAtIndexWithoutAnimation:newIndex];
 }
 
+// Handle keyboard events that should be executed once when the key is released.
 - (void)keyUp:(NSEvent*)event {
   if (state_ == tabpose::kFadingOut)
     return;
-
   NSString* characters = [event characters];
   if ([characters length] < 1)
     return;
@@ -959,8 +1099,29 @@ void AnimateCALayerFrameFromTo(
       tileSet_->set_selected_index(tabStripModel_->selected_index());
       [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
       break;
-    // TODO(thakis): Support moving the selection via arrow keys.
   }
+}
+
+// Handle keyboard events that contain cmd or ctrl.
+- (BOOL)performKeyEquivalent:(NSEvent*)event {
+  if (state_ == tabpose::kFadingOut)
+    return NO;
+  NSString* characters = [event characters];
+  if ([characters length] < 1)
+    return NO;
+  unichar character = [characters characterAtIndex:0];
+  if ([event modifierFlags] & NSCommandKeyMask) {
+    if (character >= '1' && character <= '9') {
+      int index =
+          character == '9' ? tabStripModel_->count() - 1 : character - '1';
+      if (index < tabStripModel_->count()) {
+        tileSet_->set_selected_index(index);
+        [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
+        return YES;
+      }
+    }
+  }
+  return NO;
 }
 
 - (void)mouseMoved:(NSEvent*)event {
@@ -997,12 +1158,15 @@ void AnimateCALayerFrameFromTo(
 }
 
 - (void)commandDispatch:(id)sender {
-  // Without this, -validateUserInterfaceItem: is not called.
+  if ([sender tag] == IDC_TABPOSE)
+    [self fadeAway:NO];
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-  // Disable all browser-related menu items.
-  return NO;
+  // Disable all browser-related menu items except the tab overview toggle.
+  SEL action = [item action];
+  NSInteger tag = [item tag];
+  return action == @selector(commandDispatch:) && tag == IDC_TABPOSE;
 }
 
 - (void)fadeAway:(BOOL)slomo {
