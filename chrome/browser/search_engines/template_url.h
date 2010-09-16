@@ -130,7 +130,7 @@ class TemplateURLRef {
  private:
   friend class SearchHostToURLsMapTest;
   friend class TemplateURL;
-  friend class TemplateURLModelTest;
+  friend class TemplateURLModelTestUtil;
   friend class TemplateURLTest;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterKnown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterUnknown);
