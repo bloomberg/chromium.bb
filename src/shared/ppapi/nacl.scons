@@ -71,6 +71,9 @@ c_headers = [
     'c/ppp.h',
     'c/ppp_class.h',
     'c/ppp_instance.h',
+    ]
+
+c_dev_headers = [
     # Dev interfaces.
     'c/dev/pp_cursor_type_dev.h',
     'c/dev/pp_file_info_dev.h',
@@ -124,6 +127,11 @@ cpp_headers = [
     'cpp/scriptable_object.h',
     'cpp/size.h',
     'cpp/var.h',
+    # from  ppapi.gyp:ppapi_cpp
+    'cpp/module_embedder.h'
+    ]
+
+cpp_dev_headers = [
     # Dev interfaces.
     'cpp/dev/audio_config_dev.h',
     'cpp/dev/audio_dev.h',
@@ -143,14 +151,21 @@ cpp_headers = [
     'cpp/dev/url_util_dev.h',
     'cpp/dev/video_decoder_dev.h',
     'cpp/dev/widget_dev.h',
-    # from  ppapi.gyp:ppapi_cpp
-    'cpp/module_embedder.h'
     ]
 
 c_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in c_headers], os.path.join('ppapi', 'c'))
+c_dev_header_install = env.AddHeaderToSdk(
+  ['$SOURCE_ROOT/ppapi/' + h for h in c_dev_headers],
+  os.path.join('ppapi', 'dev', 'c'))
 cpp_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in cpp_headers],
   os.path.join('ppapi', 'cpp'))
+cpp_dev_header_install = env.AddHeaderToSdk(
+  ['$SOURCE_ROOT/ppapi/' + h for h in cpp_dev_headers],
+  os.path.join('ppapi', 'dev', 'cpp'))
 env.AddLibraryToSdk(['ppapi_cpp'])
-env.Requires('ppapi_cpp', [c_header_install, cpp_header_install])
+env.Requires('ppapi_cpp', [c_header_install,
+                           c_dev_header_install,
+                           cpp_header_install,
+                           cpp_dev_header_install])
