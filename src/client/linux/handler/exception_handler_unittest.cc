@@ -126,6 +126,7 @@ TEST(ExceptionHandlerTest, ChildCrash) {
   ASSERT_EQ(stat(minidump_filename.c_str(), &st), 0);
   ASSERT_GT(st.st_size, 0u);
   unlink(minidump_filename.c_str());
+  free(filename);
 }
 
 static const unsigned kControlMsgSize =
