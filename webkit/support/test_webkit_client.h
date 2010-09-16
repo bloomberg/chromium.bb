@@ -11,6 +11,7 @@
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 
@@ -28,6 +29,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebCookieJar* cookieJar();
   virtual WebKit::WebBlobRegistry* blobRegistry();
+  virtual WebKit::WebFileSystem* fileSystem();
 
   virtual bool sandboxEnabled();
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
@@ -76,6 +78,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   SimpleDatabaseSystem database_system_;
   SimpleWebCookieJarImpl cookie_jar_;
   scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
+  SimpleFileSystem file_system_;
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
 

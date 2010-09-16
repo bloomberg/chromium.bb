@@ -29,6 +29,9 @@ include_rules = [
   # Allow inclusion of the database library.
   "+webkit/database",
 
+  # Allow inclusion of the fileapi library.
+  "+webkit/fileapi",
+
   # Allow Apple code ImageAndTextCell.
   "+third_party/apple",
 

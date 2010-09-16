@@ -19,6 +19,7 @@
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
@@ -53,6 +54,10 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebBlobRegistry* blobRegistry() {
     return blob_registry_.get();
+  }
+
+  virtual WebKit::WebFileSystem* fileSystem() {
+    return &file_system_;
   }
 
   virtual bool sandboxEnabled() {
@@ -162,6 +167,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   SimpleDatabaseSystem database_system_;
   SimpleWebCookieJarImpl cookie_jar_;
   scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
+  SimpleFileSystem file_system_;
 
 #if defined(OS_WIN)
   WebKit::WebThemeEngine* active_theme_engine_;

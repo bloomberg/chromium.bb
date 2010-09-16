@@ -6,6 +6,7 @@
   'includes': [
     '../appcache/webkit_appcache.gypi',
     '../blob/webkit_blob.gypi',
+    '../fileapi/webkit_fileapi.gypi',
     '../database/webkit_database.gypi',
     '../glue/webkit_glue.gypi',
     # TODO(tkent): Merge npapi_layout_test_plugin into TestNetscapePlugIn

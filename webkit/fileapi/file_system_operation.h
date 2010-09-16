@@ -2,25 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_OPERATION_H_
-#define CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_OPERATION_H_
+#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
+#define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
 
 #include <vector>
 
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
+
+namespace fileapi {
 
 class FileSystemOperationClient;
 
 // This class is designed to serve one-time file system operation per instance.
 // Each operation method (CreateFile, CreateDirectory, Copy, Move,
-// DIrectoryExists, GetMetadata, ReadDirectory and Remove) must be called
+// DirectoryExists, GetMetadata, ReadDirectory and Remove) must be called
 // only once in its lifetime.
 class FileSystemOperation {
  public:
-  FileSystemOperation(int request_id, FileSystemOperationClient* client);
+  FileSystemOperation(
+      FileSystemOperationClient* client,
+      scoped_refptr<base::MessageLoopProxy> proxy);
 
   void CreateFile(const FilePath& path,
                   bool exclusive);
@@ -32,8 +38,8 @@ class FileSystemOperation {
             const FilePath& dest_path);
 
   // If |dest_path| exists and is a directory, behavior is unspecified or
-  // varies for different platforms.
-  // TODO(kkanetkar): Add more checks.
+  // varies for different platforms. TODO(kkanetkar): Fix this as per spec
+  // when it is addressed in spec.
   void Move(const FilePath& src_path,
             const FilePath& dest_path);
 
@@ -46,6 +52,10 @@ class FileSystemOperation {
   void ReadDirectory(const FilePath& path);
 
   void Remove(const FilePath& path);
+
+ protected:
+  // Proxy for calling file_util_proxy methods.
+  scoped_refptr<base::MessageLoopProxy> proxy_;
 
  private:
   // Callbacks for above methods.
@@ -75,9 +85,6 @@ class FileSystemOperation {
   // Not owned.
   FileSystemOperationClient* client_;
 
-  // Client's request id.
-  int request_id_;
-
   base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;
 
   // A flag to make sure we call operation only once per instance.
@@ -86,4 +93,7 @@ class FileSystemOperation {
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
 };
 
-#endif  // CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_OPERATION_H_
+}  // namespace fileapi
+
+#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
+

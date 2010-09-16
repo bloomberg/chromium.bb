@@ -14,6 +14,7 @@
 #include "media/base/media.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
@@ -39,6 +40,7 @@
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
@@ -156,6 +158,10 @@ WebKit::WebCookieJar* TestWebKitClient::cookieJar() {
 
 WebKit::WebBlobRegistry* TestWebKitClient::blobRegistry() {
   return blob_registry_.get();
+}
+
+WebKit::WebFileSystem* TestWebKitClient::fileSystem() {
+  return &file_system_;
 }
 
 bool TestWebKitClient::sandboxEnabled() {

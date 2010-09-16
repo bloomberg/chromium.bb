@@ -18,6 +18,7 @@
         'appcache',
         'blob',
         'database',
+        'fileapi',
         'glue',
       ],
       'include_dirs': [
@@ -51,6 +52,8 @@
         '<(DEPTH)/webkit/tools/test_shell/mock_webclipboard_impl.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_appcache_system.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_appcache_system.h',
+        '<(DEPTH)/webkit/tools/test_shell/simple_file_system.cc',
+        '<(DEPTH)/webkit/tools/test_shell/simple_file_system.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_clipboard_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_database_system.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_database_system.h',

@@ -221,25 +221,37 @@ void FileSystemDispatcherHost::OnReadDirectory(
 }
 
 void FileSystemDispatcherHost::DidFail(
-    WebKit::WebFileError status, int request_id) {
+    WebKit::WebFileError status,
+    fileapi::FileSystemOperation* operation) {
+  int request_id =
+      static_cast<ChromeFileSystemOperation*>(operation)->request_id();
   Send(new ViewMsg_FileSystem_DidFail(request_id, status));
   operations_.Remove(request_id);
 }
 
-void FileSystemDispatcherHost::DidSucceed(int request_id) {
+void FileSystemDispatcherHost::DidSucceed(
+    fileapi::FileSystemOperation* operation) {
+  int request_id =
+      static_cast<ChromeFileSystemOperation*>(operation)->request_id();
   Send(new ViewMsg_FileSystem_DidSucceed(request_id));
   operations_.Remove(request_id);
 }
 
 void FileSystemDispatcherHost::DidReadMetadata(
-    const base::PlatformFileInfo& info, int request_id) {
+    const base::PlatformFileInfo& info,
+    fileapi::FileSystemOperation* operation) {
+  int request_id =
+      static_cast<ChromeFileSystemOperation*>(operation)->request_id();
   Send(new ViewMsg_FileSystem_DidReadMetadata(request_id, info));
   operations_.Remove(request_id);
 }
 
 void FileSystemDispatcherHost::DidReadDirectory(
     const std::vector<base::file_util_proxy::Entry>& entries,
-    bool has_more, int request_id) {
+    bool has_more,
+    fileapi::FileSystemOperation* operation) {
+  int request_id =
+      static_cast<ChromeFileSystemOperation*>(operation)->request_id();
   ViewMsg_FileSystem_DidReadDirectory_Params params;
   params.request_id = request_id;
   params.entries = entries;
@@ -268,10 +280,10 @@ bool FileSystemDispatcherHost::CheckValidFileSystemPath(
   return true;
 }
 
-FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
+ChromeFileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
     int request_id) {
-  scoped_ptr<FileSystemOperation> operation(
-      new FileSystemOperation(request_id, this));
+  scoped_ptr<ChromeFileSystemOperation> operation(
+      new ChromeFileSystemOperation(request_id, this));
   operations_.AddWithID(operation.get(), request_id);
   return operation.release();
 }
