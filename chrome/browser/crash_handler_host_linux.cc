@@ -83,17 +83,19 @@ CrashHandlerHostLinux::~CrashHandlerHostLinux() {
 }
 
 void CrashHandlerHostLinux::Init() {
-  SetProcessType();
-  uploader_thread_.reset(
-      new base::Thread(std::string(process_type_ + "_crash_uploader").c_str()));
-  uploader_thread_->Start();
-
   MessageLoopForIO* ml = MessageLoopForIO::current();
   CHECK(ml->WatchFileDescriptor(
       browser_socket_, true /* persistent */,
       MessageLoopForIO::WATCH_READ,
       &file_descriptor_watcher_, this));
   ml->AddDestructionObserver(this);
+}
+
+void CrashHandlerHostLinux::InitCrashUploaderThread() {
+  SetProcessType();
+  uploader_thread_.reset(
+      new base::Thread(std::string(process_type_ + "_crash_uploader").c_str()));
+  uploader_thread_->Start();
 }
 
 void CrashHandlerHostLinux::OnFileCanWriteWithoutBlocking(int fd) {
@@ -336,6 +338,7 @@ void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
 }
 
 PluginCrashHandlerHostLinux::PluginCrashHandlerHostLinux() {
+  InitCrashUploaderThread();
 }
 
 PluginCrashHandlerHostLinux::~PluginCrashHandlerHostLinux() {
@@ -346,6 +349,7 @@ void PluginCrashHandlerHostLinux::SetProcessType() {
 }
 
 RendererCrashHandlerHostLinux::RendererCrashHandlerHostLinux() {
+  InitCrashUploaderThread();
 }
 
 RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {

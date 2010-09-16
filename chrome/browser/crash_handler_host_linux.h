@@ -45,9 +45,10 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
  protected:
   CrashHandlerHostLinux();
   virtual ~CrashHandlerHostLinux();
+
 #if defined(USE_LINUX_BREAKPAD)
-  // This is here on purpose to make CrashHandlerHostLinux abstract.
-  virtual void SetProcessType() = 0;
+  // Only called in concrete subclasses.
+  void InitCrashUploaderThread();
 
   std::string process_type_;
 #endif
@@ -55,8 +56,14 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
  private:
   void Init();
 
+#if defined(USE_LINUX_BREAKPAD)
+  // This is here on purpose to make CrashHandlerHostLinux abstract.
+  virtual void SetProcessType() = 0;
+#endif
+
   int process_socket_;
   int browser_socket_;
+
 #if defined(USE_LINUX_BREAKPAD)
   MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
   scoped_ptr<base::Thread> uploader_thread_;
