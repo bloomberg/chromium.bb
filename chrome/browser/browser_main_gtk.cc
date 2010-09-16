@@ -25,7 +25,7 @@ bool g_in_x11_io_error_handler = false;
 
 int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
   if (!g_in_x11_io_error_handler)
-    LOG(ERROR) << x11_util::GetErrorEventDescription(error);
+    LOG(ERROR) << x11_util::GetErrorEventDescription(d, error);
   return 0;
 }
 

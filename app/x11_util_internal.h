@@ -40,7 +40,7 @@ namespace x11_util {
                            XIOErrorHandler io_error_handler);
 
   // Returns a string suitable for logging the error event.
-  std::string GetErrorEventDescription(XErrorEvent* error_event);
+  std::string GetErrorEventDescription(Display* dpy, XErrorEvent* error_event);
 };
 
 #endif  // APP_X11_UTIL_INTERNAL_H_

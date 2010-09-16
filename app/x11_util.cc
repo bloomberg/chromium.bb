@@ -55,7 +55,7 @@ CachedPictFormats* get_cached_pict_formats() {
 const size_t kMaxCacheSize = 5;
 
 int DefaultX11ErrorHandler(Display* d, XErrorEvent* e) {
-  LOG(FATAL) << GetErrorEventDescription(e);
+  LOG(FATAL) << GetErrorEventDescription(d, e);
   return 0;
 }
 
@@ -834,9 +834,13 @@ void SetX11ErrorHandlers(XErrorHandler error_handler,
       io_error_handler ? io_error_handler : DefaultX11IOErrorHandler);
 }
 
-std::string GetErrorEventDescription(XErrorEvent* error_event) {
+std::string GetErrorEventDescription(Display* dpy, XErrorEvent* error_event) {
+  char buf[255];
+  XGetErrorText(dpy, error_event->error_code, buf, 254);
   return base::StringPrintf(
-      "X Error detected: %lu error_code %u request_code %u minor_code %u",
+      "X Error detected: %s "
+      "(serial: %lu, error_code: %u, request_code: %u, minor_code: %u)",
+      buf,
       error_event->serial,
       error_event->error_code,
       error_event->request_code,
