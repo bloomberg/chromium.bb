@@ -28,6 +28,7 @@ command_buffer_client_srcs = [
     'command_buffer/client/gles2_cmd_helper.cc',
     'command_buffer/client/gles2_implementation.cc',
     'command_buffer/client/gles2_lib.cc',
+    'command_buffer/client/mapped_memory.cc',
     'command_buffer/client/ring_buffer.cc',
     'command_buffer/common/id_allocator.cc',
     ]
