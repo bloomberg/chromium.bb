@@ -168,7 +168,7 @@ MULTIPROCESS_TEST_MAIN(RunTestDescriptorClient) {
   struct stat st;
   const int fd = open(kDevZeroPath, O_RDONLY);
   fstat(fd, &st);
-  HANDLE_EINTR(close(fd));
+  EXPECT_GE(HANDLE_EINTR(close(fd)), 0);
 
   return TestDescriptorClient(st.st_ino);
 }
