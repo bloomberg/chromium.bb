@@ -44,7 +44,7 @@ class DownloadsTest(pyauto.PyUITest):
     """Returns the file url for a dangerous download for this OS."""
     sub_path = os.path.join(self.DataDir(), 'downloads', 'dangerous')
     if self.IsMac():
-      return os.path.join(sub_path, 'dangerous.dmg')
+      return os.path.join(sub_path, 'invalid-dummy.dmg')
     return os.path.join(sub_path, 'dangerous.exe')
 
   def _EqualFileContents(self, file1, file2):
