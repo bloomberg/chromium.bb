@@ -564,6 +564,10 @@ class CandidateWindowController : public CandidateWindowView::Observer {
   static void OnUpdateLookupTable(void* input_method_library,
                                   const InputMethodLookupTable& lookup_table);
 
+  // This function is called by libcros when ibus connects or disconnects.
+  // |input_method_library| is a void pointer to this object.
+  static void OnConnectionChange(void* input_method_library, bool connected);
+
   // The connection is used for communicating with input method UI logic
   // in libcros.
   InputMethodUiStatusConnection* ui_status_connection_;
@@ -1090,6 +1094,8 @@ bool CandidateWindowController::Init() {
     LOG(ERROR) << "MonitorInputMethodUiStatus() failed.";
     return false;
   }
+  MonitorInputMethodConnection(ui_status_connection_,
+                               &CandidateWindowController::OnConnectionChange);
 
   // Create the candidate window view.
   CreateView();
@@ -1258,6 +1264,15 @@ void CandidateWindowController::OnCandidateCommitted(int index,
                                                      int button,
                                                      int flags) {
   NotifyCandidateClicked(ui_status_connection_, index, button, flags);
+}
+
+void CandidateWindowController::OnConnectionChange(
+    void* input_method_library,
+    bool connected) {
+  if (!connected) {
+    MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                          new MessageLoop::QuitTask());
+  }
 }
 
 }  // namespace chromeos
