@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "base/task.h"
 #include "gfx/point.h"
 
@@ -135,20 +136,19 @@ class MenuGtk {
   void ExecuteCommand(menus::MenuModel* model, int id);
 
   // Callback for when a menu item is clicked.
-  static void OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu);
+  CHROMEGTK_CALLBACK_0(MenuGtk, void, OnMenuItemActivated);
 
   // Called when one of the buttons are pressed.
-  static void OnMenuButtonPressed(GtkMenuItem* menuitem, int command_id,
-                                  MenuGtk* menu);
+  CHROMEGTK_CALLBACK_1(MenuGtk, void, OnMenuButtonPressed, int);
+
+  // Updates all the menu items' state.
+  CHROMEGTK_CALLBACK_0(MenuGtk, void, OnMenuShow);
+
+  // Sets the activating widget back to a normal appearance.
+  CHROMEGTK_CALLBACK_0(MenuGtk, void, OnMenuHidden);
 
   // Sets the check mark and enabled/disabled state on our menu items.
   static void SetMenuItemInfo(GtkWidget* widget, void* raw_menu);
-
-  // Updates all the menu items' state.
-  static void OnMenuShow(GtkWidget* widget, MenuGtk* menu);
-
-  // Sets the activating widget back to a normal appearance.
-  static void OnMenuHidden(GtkWidget* widget, MenuGtk* menu);
 
   // Queries this object about the menu state.
   MenuGtk::Delegate* delegate_;

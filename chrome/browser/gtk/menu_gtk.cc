@@ -178,8 +178,8 @@ MenuGtk::~MenuGtk() {
 void MenuGtk::ConnectSignalHandlers() {
   // We connect afterwards because OnMenuShow calls SetMenuItemInfo, which may
   // take a long time or even start a nested message loop.
-  g_signal_connect(menu_, "show", G_CALLBACK(OnMenuShow), this);
-  g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHidden), this);
+  g_signal_connect(menu_, "show", G_CALLBACK(OnMenuShowThunk), this);
+  g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHiddenThunk), this);
 }
 
 GtkWidget* MenuGtk::AppendMenuItemWithLabel(int command_id,
@@ -227,7 +227,7 @@ GtkWidget* MenuGtk::AppendMenuItemToMenu(int index,
   if (connect_to_activate) {
     SetMenuItemID(menu_item, index);
     g_signal_connect(menu_item, "activate",
-                     G_CALLBACK(OnMenuItemActivated), this);
+                     G_CALLBACK(OnMenuItemActivatedThunk), this);
   }
 
   // AppendMenuItemToMenu is used both internally when we control menu creation
@@ -389,7 +389,7 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
   // Set up the callback to the model for when it is clicked.
   g_object_set_data(G_OBJECT(menu_item), "button-model", model);
   g_signal_connect(menu_item, "button-pushed",
-                   G_CALLBACK(OnMenuButtonPressed), this);
+                   G_CALLBACK(OnMenuButtonPressedThunk), this);
 
   GtkSizeGroup* group = NULL;
   for (int i = 0; i < model->GetItemCount(); ++i) {
@@ -446,14 +446,13 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
   return menu_item;
 }
 
-// static
-void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
+void MenuGtk::OnMenuItemActivated(GtkWidget* menuitem) {
   if (block_activation_)
     return;
 
   // We receive activation messages when highlighting a menu that has a
   // submenu. Ignore them.
-  if (gtk_menu_item_get_submenu(menuitem))
+  if (gtk_menu_item_get_submenu(GTK_MENU_ITEM(menuitem)))
     return;
 
   // The activate signal is sent to radio items as they get deselected;
@@ -464,24 +463,23 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
   }
 
   int id;
-  if (!GetMenuItemID(GTK_WIDGET(menuitem), &id))
+  if (!GetMenuItemID(menuitem, &id))
     return;
 
-  menus::MenuModel* model = ModelForMenuItem(menuitem);
+  menus::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(menuitem));
 
   // The menu item can still be activated by hotkeys even if it is disabled.
   if (model->IsEnabledAt(id))
-    menu->ExecuteCommand(model, id);
+    ExecuteCommand(model, id);
 }
 
-void MenuGtk::OnMenuButtonPressed(GtkMenuItem* menu_item, int command_id,
-                                  MenuGtk* menu) {
+void MenuGtk::OnMenuButtonPressed(GtkWidget* menu_item, int command_id) {
   menus::ButtonMenuItemModel* model =
       reinterpret_cast<menus::ButtonMenuItemModel*>(
           g_object_get_data(G_OBJECT(menu_item), "button-model"));
   if (model && model->IsCommandIdEnabled(command_id)) {
-    if (menu->delegate_)
-      menu->delegate_->CommandWillBeExecuted();
+    if (delegate_)
+      delegate_->CommandWillBeExecuted();
 
     model->ActivatedCommand(command_id);
   }
@@ -560,16 +558,14 @@ void MenuGtk::ExecuteCommand(menus::MenuModel* model, int id) {
   model->ActivatedAt(id);
 }
 
-// static
-void MenuGtk::OnMenuShow(GtkWidget* widget, MenuGtk* menu) {
+void MenuGtk::OnMenuShow(GtkWidget* widget) {
   MessageLoop::current()->PostTask(FROM_HERE,
-      menu->factory_.NewRunnableMethod(&MenuGtk::UpdateMenu));
+      factory_.NewRunnableMethod(&MenuGtk::UpdateMenu));
 }
 
-// static
-void MenuGtk::OnMenuHidden(GtkWidget* widget, MenuGtk* menu) {
-  if (menu->delegate_)
-    menu->delegate_->StoppedShowing();
+void MenuGtk::OnMenuHidden(GtkWidget* widget) {
+  if (delegate_)
+    delegate_->StoppedShowing();
 }
 
 // static
