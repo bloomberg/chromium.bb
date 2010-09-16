@@ -2452,6 +2452,30 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   bool did_navigate = controller_.RendererDidNavigate(
       params, extra_invalidate_flags, &details);
 
+  // Send notification about committed provisional loads. This notification is
+  // different from the NAV_ENTRY_COMMITTED notification which doesn't include
+  // the actual URL navigated to and isn't sent for AUTO_SUBFRAME navigations.
+  if (details.type != NavigationType::NAV_IGNORE) {
+    ProvisionalLoadDetails load_details(details.is_main_frame,
+                                        details.is_in_page,
+                                        params.url, std::string(), false);
+    load_details.set_transition_type(params.transition);
+    // Whether or not a page transition was triggered by going backward or
+    // forward in the history is only stored in the navigation controller's
+    // entry list.
+    if (did_navigate &&
+        (controller_.GetActiveEntry()->transition_type() &
+            PageTransition::FORWARD_BACK)) {
+      load_details.set_transition_type(
+          params.transition | PageTransition::FORWARD_BACK);
+    }
+    NotificationService::current()->Notify(
+        NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED,
+        Source<NavigationController>(&controller_),
+        Details<ProvisionalLoadDetails>(&load_details));
+
+  }
+
   // Update history. Note that this needs to happen after the entry is complete,
   // which WillNavigate[Main,Sub]Frame will do before this function is called.
   if (params.should_update_history) {

@@ -103,9 +103,16 @@ class NotificationType {
 
     // A frame is staring a provisional load.  The source is a
     // Source<NavigationController> corresponding to the tab in which the load
-    // occurs.  Details is a bool specifying if the load occurs in the main
-    // frame (or a sub-frame if false).
+    // occurs.  Details is a ProvisionalLoadDetails object.
     FRAME_PROVISIONAL_LOAD_START,
+
+    // The provisional load for a frame was committed. The source is a
+    // NavigationController corresponding to the tab in which the load occured.
+    // Details is a ProvisionalLoadDetails object. In contrast to
+    // NAV_ENTRY_COMMITTED, this notification is sent when the load was
+    // committed, even if no navigation entry was committed (such as
+    // AUTO_SUBFRAME navigations).
+    FRAME_PROVISIONAL_LOAD_COMMITTED,
 
     // Content was loaded from an in-memory cache.  The source will be a
     // Source<NavigationController> corresponding to the tab in which the load

@@ -16,98 +16,221 @@ function checkExpectations() {
   chrome.test.succeed();
 }
 
-chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
-    console.log('---onCommitted: ' + details.url);
+chrome.experimental.webNavigation.onBeforeNavigate.addListener(
+  function(details) {
+    console.log('---onBeforeNavigate: ' + details.url);
     // normalize details.
     details.timeStamp = 0;
     if (details.frameId != 0) {
       details.frameId = 1;
     }
-    capturedEventData.push(details);
+    capturedEventData.push(["onBeforeNavigate", details]);
+    checkExpectations();
+});
+
+chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
+  console.log('---onCommitted: ' + details.url);
+  // normalize details.
+  details.timeStamp = 0;
+  if (details.frameId != 0) {
+    details.frameId = 1;
+  }
+  capturedEventData.push(["onCommitted", details]);
+  checkExpectations();
+});
+
+chrome.experimental.webNavigation.onErrorOccurred.addListener(
+  function(details) {
+    console.log('---onErrorOccurred: ' + details.url);
+    // normalize details.
+    details.timeStamp = 0;
+    if (details.frameId != 0) {
+      details.frameId = 1;
+    }
+    capturedEventData.push(["onErrorOccurred", details]);
     checkExpectations();
 });
 
 var getURL = chrome.extension.getURL;
 chrome.tabs.getSelected(null, function(tab) {
-    var tabId = tab.id;
+  var tabId = tab.id;
 
-    chrome.test.runTests([
-        /* Navigates to an URL */
-        function simpleLoad() {
-          expect([
-            { frameId: 0,
-              tabId: tabId,
-              timeStamp: 0,
-              transitionQualifiers: "",
-              transitionType: "link",
-              url: getURL('simpleLoad/a.html') }]);
-          chrome.tabs.update(tabId, { url: getURL('simpleLoad/a.html') });
-        },
+  chrome.test.runTests([
+    /* Navigates to an URL */
+    function simpleLoad() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('simpleLoad/a.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('simpleLoad/a.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('simpleLoad/a.html') });
+    },
 
-        /* Navigates to a.html that redirects to b.html (using javascript)
-           after a delay of 500ms, so the initial navigation is completed and
-           the redirection is marked as client_redirect */
-        function clientRedirect() {
-          expect([
-            { frameId: 0,
-              tabId: tabId,
-              timeStamp: 0,
-              transitionQualifiers: "",
-              transitionType: "link",
-              url: getURL('clientRedirect/a.html') },
-            { frameId: 0,
-              tabId: tabId,
-              timeStamp: 0,
-              transitionQualifiers: "client_redirect",
-              transitionType: "link",
-              url: getURL('clientRedirect/b.html') }]);
-          chrome.tabs.update(tabId, { url: getURL('clientRedirect/a.html') });
-        },
+    /* Navigates to a.html that redirects to b.html (using javascript)
+       after a delay of 500ms, so the initial navigation is completed and
+       the redirection is marked as client_redirect */
+    function clientRedirect() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('clientRedirect/a.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('clientRedirect/a.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('clientRedirect/b.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "client_redirect",
+            transitionType: "link",
+            url: getURL('clientRedirect/b.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('clientRedirect/a.html') });
+    },
 
-        /* First navigates to a.html which redirects to to b.html which uses
-           history.back() to navigate back to a.html */
-        function forwardBack() {
-          expect([
-            { frameId: 0,
-              tabId: tabId,
-              timeStamp: 0,
-              transitionQualifiers: "",
-              transitionType: "link",
-              url: getURL('forwardBack/a.html') },
-            { frameId: 0,
-              tabId: tabId,
-              timeStamp: 0,
-              transitionQualifiers: "client_redirect",
-              transitionType: "link",
-              url: getURL('forwardBack/b.html') },
-            { frameId: 0,
-              tabId: tabId,
-              timeStamp: 0,
-              transitionQualifiers: "forward_back",
-              transitionType: "link",
-              url: getURL('forwardBack/a.html') }]);
-          chrome.tabs.update(tabId, { url: getURL('forwardBack/a.html') });
-        },
+    /* First navigates to a.html which redirects to to b.html which uses
+       history.back() to navigate back to a.html */
+    function forwardBack() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('forwardBack/a.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('forwardBack/a.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('forwardBack/b.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "client_redirect",
+            transitionType: "link",
+            url: getURL('forwardBack/b.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('forwardBack/a.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "forward_back",
+            transitionType: "link",
+            url: getURL('forwardBack/a.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('forwardBack/a.html') });
+    },
 
-        /* Navigates to a.html which includes b.html as an iframe. b.html
-           redirects to c.html. Note that all navigation entries are for
-           a.html. Also, b.html does not generate a navigation entry. */
-        function iframe() {
-          expect([
-            { frameId: 0,
-              tabId: tabId,
-              timeStamp: 0,
-              transitionQualifiers: "",
-              transitionType: "link",
-              url: getURL('iframe/a.html') },
-            { frameId: 1,
-              tabId: tabId,
-              timeStamp: 0,
-              transitionQualifiers: "",
-              transitionType: "link",
-              url: getURL('iframe/a.html') }]);
-          chrome.tabs.update(tabId, { url: getURL('iframe/a.html') });
-        },
-    ]);
+    /* Navigates to a.html which includes b.html as an iframe. b.html
+       redirects to c.html. */
+    function iframe() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/a.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('iframe/a.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/b.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "auto_subframe",
+            url: getURL('iframe/b.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/c.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "manual_subframe",
+            url: getURL('iframe/c.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('iframe/a.html') });
+    },
+
+    /* Navigates to a non-existant page. */
+    function nonExistant() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('nonexistant.html') }],
+        [ "onErrorOccurred",
+          { error: "net::ERR_FILE_NOT_FOUND",
+            frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('nonexistant.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: "chrome://chromewebdata/"}],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('nonexistant.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('nonexistant.html') });
+    },
+  ]);
 });
 </script>
