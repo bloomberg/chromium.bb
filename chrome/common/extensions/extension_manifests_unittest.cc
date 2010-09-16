@@ -137,7 +137,7 @@ TEST_F(ExtensionManifestTest, ValidApp) {
             extension->web_extent().patterns()[0].GetAsString());
   EXPECT_EQ("http://www.google.com/foobar/*",
             extension->web_extent().patterns()[1].GetAsString());
-  EXPECT_EQ(Extension::LAUNCH_TAB, extension->launch_container());
+  EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
   EXPECT_EQ("http://www.google.com/mail/", extension->launch_web_url());
 }
 
@@ -165,13 +165,13 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
   scoped_ptr<Extension> extension;
 
   extension.reset(LoadAndExpectSuccess("launch_tab.json"));
-  EXPECT_EQ(Extension::LAUNCH_TAB, extension->launch_container());
+  EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
 
   extension.reset(LoadAndExpectSuccess("launch_panel.json"));
-  EXPECT_EQ(Extension::LAUNCH_PANEL, extension->launch_container());
+  EXPECT_EQ(extension_misc::LAUNCH_PANEL, extension->launch_container());
 
   extension.reset(LoadAndExpectSuccess("launch_default.json"));
-  EXPECT_EQ(Extension::LAUNCH_TAB, extension->launch_container());
+  EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
 
   extension.reset(LoadAndExpectSuccess("launch_width.json"));
   EXPECT_EQ(640, extension->launch_width());

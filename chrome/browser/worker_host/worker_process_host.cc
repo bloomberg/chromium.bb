@@ -471,8 +471,7 @@ void WorkerProcessHost::OnForwardToWorker(const IPC::Message& message) {
 }
 
 void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,
-                                         unsigned long long document_id)
-{
+                                         unsigned long long document_id) {
   // Walk all instances and remove the document from their document set.
   for (Instances::iterator i = instances_.begin(); i != instances_.end();) {
     if (!i->shared()) {
@@ -513,6 +512,9 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       worker_document_set_(new WorkerDocumentSet()) {
   DCHECK(!request_context ||
          (off_the_record == request_context->is_off_the_record()));
+}
+
+WorkerProcessHost::WorkerInstance::~WorkerInstance() {
 }
 
 // Compares an instance based on the algorithm in the WebWorkers spec - an

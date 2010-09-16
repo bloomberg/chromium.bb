@@ -522,9 +522,10 @@ TabContents* Browser::OpenApplication(Profile* profile,
 }
 
 // static
-TabContents* Browser::OpenApplication(Profile* profile,
-                                      Extension* extension,
-                                      Extension::LaunchContainer container) {
+TabContents* Browser::OpenApplication(
+    Profile* profile,
+    Extension* extension,
+    extension_misc::LaunchContainer container) {
   TabContents* tab = NULL;
 
   // If the app is loaded in an existing window or panel, focus it.
@@ -548,12 +549,12 @@ TabContents* Browser::OpenApplication(Profile* profile,
 
   // The app is not yet open.  Load it.
   switch (container) {
-    case Extension::LAUNCH_WINDOW:
-    case Extension::LAUNCH_PANEL:
+    case extension_misc::LAUNCH_WINDOW:
+    case extension_misc::LAUNCH_PANEL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
                                            GURL(), &browser);
       break;
-    case Extension::LAUNCH_TAB: {
+    case extension_misc::LAUNCH_TAB: {
       tab = Browser::OpenApplicationTab(profile, extension, &browser);
       break;
     }
@@ -568,7 +569,7 @@ TabContents* Browser::OpenApplication(Profile* profile,
 TabContents* Browser::OpenApplicationWindow(
     Profile* profile,
     Extension* extension,
-    Extension::LaunchContainer container,
+    extension_misc::LaunchContainer container,
     const GURL& url_input,
     Browser** browser) {
   GURL url;
@@ -585,7 +586,7 @@ TabContents* Browser::OpenApplicationWindow(
   std::string app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
-  bool as_panel = extension && (container == Extension::LAUNCH_PANEL);
+  bool as_panel = extension && (container == extension_misc::LAUNCH_PANEL);
   Browser* local_browser = Browser::CreateForApp(app_name, extension, profile,
                                                  as_panel);
   TabContents* tab_contents = local_browser->AddTabWithURL(
@@ -619,8 +620,8 @@ TabContents* Browser::OpenApplicationWindow(
 // static
 TabContents* Browser::OpenApplicationWindow(Profile* profile,
                                             GURL& url, Browser** browser) {
-  return OpenApplicationWindow(profile, NULL, Extension::LAUNCH_WINDOW, url,
-                               browser);
+  return OpenApplicationWindow(profile, NULL, extension_misc::LAUNCH_WINDOW,
+                               url, browser);
 }
 
 // static

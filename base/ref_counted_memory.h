@@ -64,6 +64,8 @@ class RefCountedBytes : public RefCountedMemory {
   // Constructs a RefCountedBytes object by _copying_ from |initializer|.
   RefCountedBytes(const std::vector<unsigned char>& initializer);
 
+  virtual ~RefCountedBytes();
+
   virtual const unsigned char* front() const;
   virtual size_t size() const;
 

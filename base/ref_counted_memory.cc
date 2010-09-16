@@ -26,6 +26,9 @@ RefCountedBytes::RefCountedBytes(const std::vector<unsigned char>& initializer)
     : data(initializer) {
 }
 
+RefCountedBytes::~RefCountedBytes() {
+}
+
 const unsigned char* RefCountedBytes::front() const {
   // STL will assert if we do front() on an empty vector, but calling code
   // expects a NULL.

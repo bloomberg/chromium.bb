@@ -28,7 +28,7 @@
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/toolbar_model.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/page_zoom.h"
@@ -225,9 +225,10 @@ class Browser : public TabStripModelDelegate,
 
   // Open |extension| in |container|.  Returns the TabContents* that was created
   // or NULL.
-  static TabContents* OpenApplication(Profile* profile,
-                                      Extension* extension,
-                                      Extension::LaunchContainer container);
+  static TabContents* OpenApplication(
+      Profile* profile,
+      Extension* extension,
+      extension_misc::LaunchContainer container);
 
   // Opens a new application window for the specified url. If |as_panel|
   // is true, the application will be opened as a Browser::Type::APP_PANEL in
@@ -239,7 +240,7 @@ class Browser : public TabStripModelDelegate,
   static TabContents* OpenApplicationWindow(
       Profile* profile,
       Extension* extension,
-      Extension::LaunchContainer container,
+      extension_misc::LaunchContainer container,
       const GURL& url,
       Browser** browser);
 

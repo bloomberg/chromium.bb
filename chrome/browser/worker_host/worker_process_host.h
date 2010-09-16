@@ -48,6 +48,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
                    int parent_appcache_host_id,
                    int64 main_resource_appcache_id,
                    ChromeURLRequestContext* request_context);
+    ~WorkerInstance();
 
     // Unique identifier for a worker client.
     typedef std::pair<IPC::Message::Sender*, int> SenderInfo;

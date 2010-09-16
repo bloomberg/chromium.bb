@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_type.h"

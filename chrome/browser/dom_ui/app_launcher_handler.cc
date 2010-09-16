@@ -164,7 +164,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
       extensions_service_->GetExtensionById(extension_id, false);
   DCHECK(extension);
   Profile* profile = extensions_service_->profile();
-  Extension::LaunchContainer container = extension->launch_container();
+  extension_misc::LaunchContainer container = extension->launch_container();
 
   // To give a more "launchy" experience when using the NTP launcher, we close
   // it automatically.

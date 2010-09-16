@@ -702,7 +702,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   Browser* second_browser = CreateBrowser(profile_);
   second_browser->window()->Show();
 
-  Browser::OpenApplication(profile_, extension_app_, Extension::LAUNCH_TAB);
+  Browser::OpenApplication(profile_, extension_app_,
+                           extension_misc::LAUNCH_TAB);
   ASSERT_EQ(2, second_browser->tab_count()) <<
       "Expect the app to open in a tab under |second_browser|.";
   int second_app_tab_index = second_browser->selected_index();
@@ -719,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
 
   // Open the app in a panel.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_PANEL, GURL(), NULL);
+                                 extension_misc::LAUNCH_PANEL, GURL(), NULL);
   Browser* app_panel = BrowserList::GetLastActive();
   ASSERT_TRUE(app_panel);
   ASSERT_NE(app_panel, browser()) << "New browser should have opened.";
@@ -760,7 +761,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
 
   // Open a panel with the app.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_PANEL, GURL(), NULL);
+                                 extension_misc::LAUNCH_PANEL, GURL(), NULL);
   Browser* app_panel = BrowserList::GetLastActive();
   ASSERT_TRUE(app_panel);
   ASSERT_NE(app_panel, browser()) << "New browser should have opened.";

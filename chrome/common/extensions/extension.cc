@@ -723,9 +723,9 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
   }
 
   if (launch_container_string == values::kLaunchContainerPanel) {
-    launch_container_ = LAUNCH_PANEL;
+    launch_container_ = extension_misc::LAUNCH_PANEL;
   } else if (launch_container_string == values::kLaunchContainerTab) {
-    launch_container_ = LAUNCH_TAB;
+    launch_container_ = extension_misc::LAUNCH_TAB;
   } else {
     *error = errors::kInvalidLaunchContainer;
     return false;
@@ -733,8 +733,8 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
 
   // Validate the container width if present.
   if (manifest->Get(keys::kLaunchWidth, &temp)) {
-    if (launch_container_ != LAUNCH_PANEL &&
-        launch_container_ != LAUNCH_WINDOW) {
+    if (launch_container_ != extension_misc::LAUNCH_PANEL &&
+        launch_container_ != extension_misc::LAUNCH_WINDOW) {
       *error = errors::kInvalidLaunchWidthContainer;
       return false;
     }
@@ -747,8 +747,8 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
 
   // Validate container height if present.
   if (manifest->Get(keys::kLaunchHeight, &temp)) {
-    if (launch_container_ != LAUNCH_PANEL &&
-        launch_container_ != LAUNCH_WINDOW) {
+    if (launch_container_ != extension_misc::LAUNCH_PANEL &&
+        launch_container_ != extension_misc::LAUNCH_WINDOW) {
       *error = errors::kInvalidLaunchHeightContainer;
       return false;
     }
@@ -785,7 +785,7 @@ Extension::Extension(const FilePath& path)
     : converted_from_user_script_(false),
       is_theme_(false),
       is_app_(false),
-      launch_container_(LAUNCH_TAB),
+      launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
       launch_height_(0),
       incognito_split_mode_(true),

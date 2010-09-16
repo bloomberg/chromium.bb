@@ -14,6 +14,7 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -73,12 +74,6 @@ class Extension {
     EXTENSION_ICON_SMALL = 32,
     EXTENSION_ICON_SMALLISH = 24,
     EXTENSION_ICON_BITTY = 16,
-  };
-
-  enum LaunchContainer {
-    LAUNCH_WINDOW,
-    LAUNCH_PANEL,
-    LAUNCH_TAB
   };
 
   bool apps_enabled() const { return apps_enabled_; }
@@ -364,7 +359,9 @@ class Extension {
   void set_launch_web_url(const std::string& launch_web_url) {
     launch_web_url_ = launch_web_url;
   }
-  LaunchContainer launch_container() const { return launch_container_; }
+  extension_misc::LaunchContainer launch_container() const {
+    return launch_container_;
+  }
   int launch_width() const { return launch_width_; }
   int launch_height() const { return launch_height_; }
   bool incognito_split_mode() const { return incognito_split_mode_; }
@@ -572,7 +569,7 @@ class Extension {
   std::string launch_web_url_;
 
   // The type of container to launch into.
-  LaunchContainer launch_container_;
+  extension_misc::LaunchContainer launch_container_;
 
   // The default size of the container when launching. Only respected for
   // containers like panels and windows.
