@@ -560,10 +560,9 @@ static bool EnterSandbox() {
   // chrooted.
   const char* const sandbox_fd_string = getenv("SBX_D");
 
-  if (switches::SeccompSandboxEnabled()) {
-    PreSandboxInit();
-    SkiaFontConfigUseIPCImplementation(kMagicSandboxIPCDescriptor);
-  } else if (sandbox_fd_string) {  // Use the SUID sandbox.
+  if (sandbox_fd_string) {
+    // Use the SUID sandbox.  This still allows the seccomp sandbox to
+    // be enabled by the process later.
     g_suid_sandbox_active = true;
 
     char* endptr;
@@ -623,6 +622,9 @@ static bool EnterSandbox() {
         return false;
       }
     }
+  } else if (switches::SeccompSandboxEnabled()) {
+    PreSandboxInit();
+    SkiaFontConfigUseIPCImplementation(kMagicSandboxIPCDescriptor);
   } else {
     SkiaFontConfigUseDirectImplementation();
   }
