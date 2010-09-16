@@ -28,7 +28,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_pinger.h"
-#include "net/test/python_utils.h"
 #include "testing/platform_test.h"
 
 namespace {
