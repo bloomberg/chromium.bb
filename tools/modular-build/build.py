@@ -375,11 +375,10 @@ int main() {
       scons_args=["--nacl_glibc", "run_hello_world_test"])
 
   # Check that all the Scons tests build, but don't try running them yet.
-  # TODO(mseaborn): Enable this when it passes fully.
-  #AddSconsModule(
-  #    "scons_compile_tests",
-  #    deps=glibc_toolchain_deps + ["nacl_libs_glibc"],
-  #    scons_args=["--nacl_glibc", "MODE=nacl"])
+  AddSconsModule(
+      "scons_compile_tests",
+      deps=glibc_toolchain_deps + ["nacl_libs_glibc"],
+      scons_args=["--nacl_glibc", "MODE=nacl"])
 
   return module_list
 
