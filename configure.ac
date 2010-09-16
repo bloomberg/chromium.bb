@@ -65,7 +65,8 @@ AC_ARG_ENABLE(m32,
                              [(default is no)]),
               [case "${enableval}" in
                  yes)
-		   CFLAGS=$(CFLAGS) -m32
+                   CFLAGS="${CFLAGS} -m32"
+                   CXXFLAGS="${CXXFLAGS} -m32"
                    usem32=true
                    ;;
                  no)
