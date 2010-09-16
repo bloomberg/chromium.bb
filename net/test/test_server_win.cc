@@ -74,22 +74,6 @@ bool LaunchTestServerAsJob(const std::wstring& cmdline,
 }  // namespace
 
 namespace net {
-
-// static
-void TestServer::AppendToPythonPath(const FilePath& dir) {
-  const wchar_t kPythonPath[] = L"PYTHONPATH";
-  // TODO(dkegel): handle longer PYTHONPATH variables
-  wchar_t oldpath[4096];
-  if (GetEnvironmentVariable(kPythonPath, oldpath, arraysize(oldpath)) == 0) {
-    SetEnvironmentVariableW(kPythonPath, dir.value().c_str());
-  } else if (!wcsstr(oldpath, dir.value().c_str())) {
-    std::wstring newpath(oldpath);
-    newpath.append(L";");
-    newpath.append(dir.value());
-    SetEnvironmentVariableW(kPythonPath, newpath.c_str());
-  }
-}
-
 bool TestServer::LaunchPython(const FilePath& testserver_path) {
   FilePath python_exe;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &python_exe))
