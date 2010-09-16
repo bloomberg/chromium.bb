@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-# Standard directory variables.
-# (see http://www.gnu.org/prep/standards/html_node/Directory-Variables.html#Directory-Variables)
-ifndef prefix
-$(error prefix: Undefined)
-endif
+# Directory variables:
+# prefix - common prefix for installation directories. Can be empty.
+# srcdir - directory for sources being compiled.
+# (see http://www.gnu.org/prep/standards/html_node/Directory-Variables.html)
 ifndef srcdir
 $(error srcdir: Undefined)
 endif

@@ -420,7 +420,9 @@ binutils: BUILD/stamp-binutils
 BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
-	$(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) -f ../../Makefile.gcc \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-pregcc-$(CROSSARCH) \
+	    -f ../../Makefile.gcc \
 	    prefix=$(SDKROOT) \
 	    srcdir=../../SRC/gcc \
 	    target=$(CROSSARCH) \
@@ -428,9 +430,11 @@ BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    MULTILIB=$(MULTILIB) \
 	    configure-pregcc
-	$(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-pregcc-$(CROSSARCH) \
 	    all-gcc all-target-libgcc
-	$(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-pregcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
 	    install-gcc install-target-libgcc
 	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
@@ -584,7 +588,9 @@ BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
 	ln -s include $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
-	$(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) -f ../../Makefile.gcc \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-full-gcc-$(CROSSARCH) \
+	    -f ../../Makefile.gcc \
 	    prefix=$(SDKROOT) \
 	    srcdir=../../SRC/gcc \
 	    target=$(CROSSARCH) \
@@ -592,9 +598,11 @@ BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    MULTILIB=$(MULTILIB) \
 	    configure-gcc-with-glibc
-	$(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    all
-	$(MAKE) -C BUILD/build-full-gcc-$(CROSSARCH) \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
 	    install
 	touch $@
@@ -613,7 +621,9 @@ ifeq ($(CYGWIN17), 1)
 	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
 	    BUILD/build-gcc-$(CROSSARCH)/$(CROSSARCH)
 endif
-	$(MAKE) -C BUILD/build-gcc-$(CROSSARCH) -f ../../Makefile.gcc \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-gcc-$(CROSSARCH) \
+	    -f ../../Makefile.gcc \
 	    prefix=$(SDKROOT) \
 	    srcdir=../../SRC/gcc \
 	    target=$(CROSSARCH) \
@@ -621,9 +631,11 @@ endif
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    MULTILIB=$(MULTILIB) \
 	    configure-gcc-with-newlib
-	$(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-gcc-$(CROSSARCH) \
 	    all
-	$(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-gcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
 	    install
 	$(MAKE) -f $(THISMAKEFILE) redirector
