@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
@@ -98,9 +97,6 @@ class LoginUtilsImpl : public LoginUtils,
                        const NotificationDetails& details);
 
  private:
-  // Attempt to connect to the preferred network if available.
-  void ConnectToPreferredNetwork();
-
   NotificationRegistrar registrar_;
 
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
@@ -156,7 +152,6 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   }
 
   UserManager::Get()->UserLoggedIn(username);
-  ConnectToPreferredNetwork();
 
   // Now launch the initial browser window.
   FilePath user_data_dir;
@@ -238,7 +233,6 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   LOG(INFO) << "Completing off the record login";
 
   UserManager::Get()->OffTheRecordUserLoggedIn();
-  ConnectToPreferredNetwork();
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // For BWSI we ask session manager to restart Chrome with --bwsi flag.
@@ -290,11 +284,6 @@ void LoginUtilsImpl::Observe(NotificationType type,
                              const NotificationDetails& details) {
   if (type == NotificationType::LOGIN_USER_CHANGED)
     base::OpenPersistentNSSDB();
-}
-
-void LoginUtilsImpl::ConnectToPreferredNetwork() {
-  CrosLibrary::Get()->GetNetworkLibrary()->
-      ConnectToPreferredNetworkIfAvailable();
 }
 
 LoginUtils* LoginUtils::Get() {

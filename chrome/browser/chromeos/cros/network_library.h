@@ -300,18 +300,6 @@ class NetworkLibrary {
   // Force an update of the system info.
   virtual void UpdateSystemInfo() = 0;
 
-  // Attempt to connect to the preferred network if available and it is set up.
-  // This call will return true if connection is started.
-  // If the preferred network is not available or not setup, returns false.
-  // Note: For dogfood purposes, we hardcode the preferred network to Google-A.
-  virtual bool ConnectToPreferredNetworkIfAvailable() = 0;
-
-  // Returns true if we are currently connected to the preferred network.
-  virtual bool PreferredNetworkConnected() = 0;
-
-  // Returns true if we failed to connect to the preferred network.
-  virtual bool PreferredNetworkFailed() = 0;
-
   // Connect to the specified wireless network with password.
   virtual void ConnectToWifiNetwork(WifiNetwork network,
                                     const std::string& password,

@@ -14,9 +14,6 @@
 
 namespace chromeos {
 
-static const std::string kGoogleWifi = "Google";
-static const std::string kGoogleAWifi = "Google-A";
-
 // Helper function to wrap Html with <th> tag.
 static std::string WrapWithTH(std::string text) {
   return "<th>" + text + "</th>";
@@ -339,71 +336,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
     FreeDeviceNetworkList(network_list);
     return true;
-  }
-
-  bool ConnectToPreferredNetworkIfAvailable() {
-    // TODO(chocobo): Add the concept of preferred network to libcros.
-    // So that we don't have to hard-code Google-A here.
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      LOG(INFO) << "Attempting to auto-connect to Google wifi.";
-      // First force a refresh of the system info.
-      UpdateSystemInfo();
-
-      // If ethernet is connected, then don't bother.
-      if (ethernet_connected()) {
-        LOG(INFO) << "Ethernet connected, so don't need Google wifi.";
-        return false;
-      }
-
-      WifiNetwork* wifi = GetPreferredNetwork();
-      if (!wifi) {
-        LOG(INFO) <<
-            "Google-A/Google wifi not found or set to not auto-connect.";
-        return false;
-      }
-
-      // Save the wifi path, so we know which one we want to auto-connect to.
-      const std::string wifi_path = wifi->service_path();
-
-      // It takes some time for the enterprise daemon to start up and populate
-      // the certificate and identity. So we wait at most 3 seconds here. And
-      // every 100ms, we refetch the system info and check the cert and identify
-      // on the wifi. The enterprise daemon takes between 0.4 to 0.9 seconds to
-      // setup.
-      bool setup = false;
-      for (int i = 0; i < 30; i++) {
-        // Update the system and refetch the network.
-        UpdateSystemInfo();
-        wifi = GetWirelessNetworkByPath(wifi_networks_, wifi_path);
-        // See if identity and certpath are available.
-        if (wifi && !wifi->identity().empty() && !wifi->cert_path().empty()) {
-          LOG(INFO) << "Google wifi set up after " << (i*0.1) << " seconds.";
-          setup = true;
-          break;
-        }
-        PlatformThread::Sleep(100);
-      }
-
-      if (!setup) {
-        LOG(INFO) << "Google wifi not set up after 3 seconds.";
-        return false;
-      }
-
-      // Now that we have a setup Google wifi, we can connect to it.
-      ConnectToNetwork(wifi_path.c_str(), NULL);
-      return true;
-    }
-    return false;
-  }
-
-  bool PreferredNetworkConnected() {
-    WifiNetwork* wifi = GetPreferredNetwork();
-    return wifi && wifi->connected();
-  }
-
-  bool PreferredNetworkFailed() {
-    WifiNetwork* wifi = GetPreferredNetwork();
-    return !wifi || wifi->failed();
   }
 
   void ConnectToWifiNetwork(WifiNetwork network,
@@ -776,23 +708,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  WifiNetwork* GetPreferredNetwork() {
-    // First look for Google-A then look for Google.
-    // Only care if set to auto-connect.
-    WifiNetwork* wifi = GetWifiNetworkByName(kGoogleAWifi);
-    // If wifi found and set to not auto-connect, then ignore it.
-    if (wifi && !wifi->auto_connect())
-      wifi = NULL;
-
-    if (!wifi) {
-      wifi = GetWifiNetworkByName(kGoogleWifi);
-      // If wifi found and set to not auto-connect, then ignore it.
-      if (wifi && !wifi->auto_connect())
-        wifi = NULL;
-    }
-    return wifi;
-  }
-
   WifiNetwork* GetWifiNetworkByName(const std::string& name) {
     for (size_t i = 0; i < wifi_networks_.size(); ++i) {
       if (wifi_networks_[i].name().compare(name) == 0) {
@@ -968,9 +883,6 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
       const std::string& path, CellularNetwork* result) const { return false; }
   void RequestWifiScan() {}
   bool GetWifiAccessPoints(WifiAccessPointVector* result) { return false; }
-  bool ConnectToPreferredNetworkIfAvailable() { return false; }
-  bool PreferredNetworkConnected() { return false; }
-  bool PreferredNetworkFailed() { return false; }
   void ConnectToWifiNetwork(WifiNetwork network,
                             const std::string& password,
                             const std::string& identity,
