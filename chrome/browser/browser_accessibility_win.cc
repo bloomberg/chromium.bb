@@ -1106,6 +1106,8 @@ void BrowserAccessibility::InitRoleAndState(LONG web_role,
     state_ |= STATE_SYSTEM_READONLY;
   if ((web_state >> WebAccessibility::STATE_TRAVERSED) & 1)
     state_ |= STATE_SYSTEM_TRAVERSED;
+  if ((web_state >> WebAccessibility::STATE_BUSY) & 1)
+    state_ |= STATE_SYSTEM_BUSY;
   if ((web_state >> WebAccessibility::STATE_UNAVAILABLE) & 1)
     state_ |= STATE_SYSTEM_UNAVAILABLE;
 

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/scoped_comptr_win.h"
+#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -50,6 +51,10 @@ void AccessibilityWinBrowserTest::SetUpInProcessBrowserTestFixture() {
     ::SendNotifyMessage(
         HWND_BROADCAST, WM_SETTINGCHANGE, SPI_GETSCREENREADER, 0);
   }
+
+  // If the mouse happens to be on the document then it will have the unexpected
+  // STATE_SYSTEM_HOTTRACKED state. Move it to a non-document location.
+  ui_controls::SendMouseMove(0, 0);
 }
 
 void AccessibilityWinBrowserTest::TearDownInProcessBrowserTestFixture() {
@@ -344,19 +349,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
   // the accessibility tree is being requested from the renderer.
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  document_checker.SetExpectedState(STATE_SYSTEM_BUSY);
+  document_checker.SetExpectedState(
+      STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED |
+      STATE_SYSTEM_BUSY);
   document_checker.CheckAccessible(GetRendererAccessible());
 
-  // Wait for the initial accessibility tree to load.
+  // Wait for the initial accessibility tree to load. Busy state should clear.
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
-
-  // TODO(ctguil): Fix: We should not be expecting busy state here.
-  if (0) {
-    // Run when above todo is fixed.
-    document_checker.SetExpectedState(0L);
-    document_checker.CheckAccessible(GetRendererAccessible());
-  }
+  document_checker.SetExpectedState(
+      STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED);
+  document_checker.CheckAccessible(GetRendererAccessible());
 
   GURL tree_url(
       "data:text/html,<html><head><title>Accessibility Win Test</title></head>"

@@ -143,6 +143,7 @@ struct WebAccessibility {
     STATE_PROTECTED,
     STATE_READONLY,
     STATE_TRAVERSED,
+    STATE_BUSY,
     STATE_UNAVAILABLE
   };
 

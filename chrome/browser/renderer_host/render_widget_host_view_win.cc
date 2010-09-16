@@ -1566,44 +1566,18 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
   if (!browser_accessibility_manager_.get()) {
     render_widget_host_->EnableRendererAccessibility();
 
-    if (!loading_accessible_.get()) {
-      // Create IAccessible to return while waiting for the accessibility tree
-      // from the renderer.
-      HRESULT hr = ::CreateStdAccessibleObject(
-          m_hWnd, OBJID_CLIENT, IID_IAccessible,
-          reinterpret_cast<void **>(&loading_accessible_));
+    // Return busy document tree while renderer accessibility tree loads.
+    webkit_glue::WebAccessibility loading_tree;
+    loading_tree.role = WebAccessibility::ROLE_DOCUMENT;
+    loading_tree.state = (1 << WebAccessibility::STATE_BUSY);
+    browser_accessibility_manager_.reset(
+      new BrowserAccessibilityManager(m_hWnd, loading_tree, this));
+  }
 
-      // Annotate with STATE_SYSTEM_BUSY to indicate that the page is loading.
-      // We annotate the HWND, not the loading_accessible IAccessible, but the
-      // IAccessible will reflect the state annotation.
-      ScopedComPtr<IAccPropServices> pAccPropServices;
-      hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-          IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-      if (SUCCEEDED(hr)) {
-        VARIANT var;
-        var.vt = VT_I4;
-        var.lVal = STATE_SYSTEM_BUSY;
-        pAccPropServices->SetHwndProp(
-            m_hWnd, OBJID_CLIENT, CHILDID_SELF, PROPID_ACC_STATE, var);
-
-        // Annotate with ROLE_SYSTEM_DOCUMENT, indicates page is a document.
-        var.lVal = ROLE_SYSTEM_DOCUMENT;
-        pAccPropServices->SetHwndProp(
-            m_hWnd, OBJID_CLIENT, CHILDID_SELF, PROPID_ACC_ROLE, var);
-      }
-    }
-
-    if (loading_accessible_.get()) {
-      return LresultFromObject(
-          IID_IAccessible, wparam,
-          static_cast<IAccessible*>(loading_accessible_));
-    }
-  } else {
-    BrowserAccessibility* root = browser_accessibility_manager_->GetRoot();
-    if (root) {
-      return LresultFromObject(IID_IAccessible, wparam,
-          static_cast<IAccessible*>(root->NewReference()));
-    }
+  BrowserAccessibility* root = browser_accessibility_manager_->GetRoot();
+  if (root) {
+    return LresultFromObject(IID_IAccessible, wparam,
+        static_cast<IAccessible*>(root->NewReference()));
   }
 
   handled = false;

@@ -259,9 +259,6 @@ class RenderWidgetHostViewWin
   // Whether the window should be activated.
   bool IsActivatable() const;
 
-  // MSAA IAccessible returned while page contents is loading.
-  ScopedComPtr<IAccessible> loading_accessible_;
-
   // The associated Model.
   RenderWidgetHost* render_widget_host_;
 
