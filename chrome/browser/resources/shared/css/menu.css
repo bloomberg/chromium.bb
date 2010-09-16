@@ -49,11 +49,11 @@ menu > [hidden] {
   display: none;
 }
 
-menu > [selected] {
+menu > :not(hr)[selected] {
   background-color: #dce5fa;
 }
 
-menu > [selected]:active {
+menu > :not(hr)[selected]:active {
   background-color: #426dc9;
   color: #fff;
 }
