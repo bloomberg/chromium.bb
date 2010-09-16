@@ -232,6 +232,94 @@ class Zygote {
     }
   }
 
+  // This is equivalent to fork(), except that, when using the SUID
+  // sandbox, it returns the real PID of the child process as it
+  // appears outside the sandbox, rather than returning the PID inside
+  // the sandbox.
+  int ForkWithRealPid() {
+    if (!g_suid_sandbox_active)
+      return fork();
+
+    int dummy_fd;
+    ino_t dummy_inode;
+    int pipe_fds[2] = { -1, -1 };
+    base::ProcessId pid;
+
+    dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
+    if (dummy_fd < 0) {
+      LOG(ERROR) << "Failed to create dummy FD";
+      goto error;
+    }
+    if (!base::FileDescriptorGetInode(&dummy_inode, dummy_fd)) {
+      LOG(ERROR) << "Failed to get inode for dummy FD";
+      goto error;
+    }
+    if (pipe(pipe_fds) != 0) {
+      LOG(ERROR) << "Failed to create pipe";
+      goto error;
+    }
+
+    pid = fork();
+    if (pid < 0) {
+      goto error;
+    } else if (pid == 0) {
+      // In the child process.
+      close(pipe_fds[1]);
+      char buffer[1];
+      // Wait until the parent process has discovered our PID.  We
+      // should not fork any child processes (which the seccomp
+      // sandbox does) until then, because that can interfere with the
+      // parent's discovery of our PID.
+      if (HANDLE_EINTR(read(pipe_fds[0], buffer, 1)) != 1 ||
+          buffer[0] != 'x') {
+        LOG(FATAL) << "Failed to synchronise with parent zygote process";
+      }
+      close(pipe_fds[0]);
+      close(dummy_fd);
+      return 0;
+    } else {
+      // In the parent process.
+      close(dummy_fd);
+      dummy_fd = -1;
+      close(pipe_fds[0]);
+      pipe_fds[0] = -1;
+      uint8_t reply_buf[512];
+      Pickle request;
+      request.WriteInt(LinuxSandbox::METHOD_GET_CHILD_WITH_INODE);
+      request.WriteUInt64(dummy_inode);
+
+      const ssize_t r = base::SendRecvMsg(kMagicSandboxIPCDescriptor,
+                                          reply_buf, sizeof(reply_buf),
+                                          NULL, request);
+      if (r == -1) {
+        LOG(ERROR) << "Failed to get child process's real PID";
+        goto error;
+      }
+
+      base::ProcessId real_pid;
+      Pickle reply(reinterpret_cast<char*>(reply_buf), r);
+      void* iter2 = NULL;
+      if (!reply.ReadInt(&iter2, &real_pid))
+        goto error;
+      real_pids_to_sandbox_pids[real_pid] = pid;
+      if (HANDLE_EINTR(write(pipe_fds[1], "x", 1)) != 1) {
+        LOG(ERROR) << "Failed to synchronise with child process";
+        goto error;
+      }
+      close(pipe_fds[1]);
+      return real_pid;
+    }
+
+   error:
+    if (dummy_fd >= 0)
+      close(dummy_fd);
+    if (pipe_fds[0] >= 0)
+      close(pipe_fds[0]);
+    if (pipe_fds[1] >= 0)
+      close(pipe_fds[1]);
+    return -1;
+  }
+
   // Handle a 'fork' request from the browser: this means that the browser
   // wishes to start a new renderer.
   bool HandleForkRequest(int fd, const Pickle& pickle, void* iter,
@@ -240,8 +328,6 @@ class Zygote {
     int argc, numfds;
     base::GlobalDescriptors::Mapping mapping;
     base::ProcessId child;
-    uint64_t dummy_inode = 0;
-    int dummy_fd = -1;
 
     if (!pickle.ReadInt(&iter, &argc))
       goto error;
@@ -268,16 +354,7 @@ class Zygote {
     mapping.push_back(std::make_pair(
         static_cast<uint32_t>(kSandboxIPCChannel), kMagicSandboxIPCDescriptor));
 
-    if (g_suid_sandbox_active) {
-      dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
-      if (dummy_fd < 0)
-        goto error;
-
-      if (!base::FileDescriptorGetInode(&dummy_inode, dummy_fd))
-        goto error;
-    }
-
-    child = fork();
+    child = ForkWithRealPid();
 
     if (!child) {
 #if defined(SECCOMP_SANDBOX)
@@ -313,47 +390,19 @@ class Zygote {
       goto error;
     }
 
-    {
-      base::ProcessId proc_id;
-      if (g_suid_sandbox_active) {
-        close(dummy_fd);
-        dummy_fd = -1;
-        uint8_t reply_buf[512];
-        Pickle request;
-        request.WriteInt(LinuxSandbox::METHOD_GET_CHILD_WITH_INODE);
-        request.WriteUInt64(dummy_inode);
+    for (std::vector<int>::const_iterator
+         i = fds.begin(); i != fds.end(); ++i)
+      close(*i);
 
-        const ssize_t r = base::SendRecvMsg(kMagicSandboxIPCDescriptor,
-                                            reply_buf, sizeof(reply_buf),
-                                            NULL, request);
-        if (r == -1)
-          goto error;
-
-        Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-        void* iter2 = NULL;
-        if (!reply.ReadInt(&iter2, &proc_id))
-          goto error;
-        real_pids_to_sandbox_pids[proc_id] = child;
-      } else {
-        proc_id = child;
-      }
-
-      for (std::vector<int>::const_iterator
-           i = fds.begin(); i != fds.end(); ++i)
-        close(*i);
-
-      if (HANDLE_EINTR(write(fd, &proc_id, sizeof(proc_id))) < 0)
-        PLOG(ERROR) << "write";
-      return false;
-    }
+    if (HANDLE_EINTR(write(fd, &child, sizeof(child))) < 0)
+      PLOG(ERROR) << "write";
+    return false;
 
    error:
     LOG(ERROR) << "Error parsing fork request from browser";
     for (std::vector<int>::const_iterator
          i = fds.begin(); i != fds.end(); ++i)
       close(*i);
-    if (dummy_fd >= 0)
-      close(dummy_fd);
     return false;
   }
 
