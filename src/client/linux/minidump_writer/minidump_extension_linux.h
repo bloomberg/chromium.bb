@@ -42,6 +42,7 @@
 #include <stddef.h>
 
 #include "google_breakpad/common/breakpad_types.h"
+#include "google_breakpad/common/minidump_format.h"
 
 // These are additional minidump stream values which are specific to the linux
 // breakpad implementation.
