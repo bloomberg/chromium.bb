@@ -82,6 +82,11 @@ class CryptohomeLibrary {
   // nuke it.
   virtual bool Remove(const std::string& user_email) = 0;
 
+  // Asks cryptohomed to asynchronously try to find the cryptohome for
+  // |user_email| and then nuke it.
+  virtual bool AsyncRemove(const std::string& user_email,
+                           Delegate* callback) = 0;
+
   // Asks cryptohomed if a drive is currently mounted.
   virtual bool IsMounted() = 0;
 

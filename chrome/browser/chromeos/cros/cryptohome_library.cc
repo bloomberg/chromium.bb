@@ -53,10 +53,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
         "Couldn't initiate aync migration of user's key");
   }
 
-  bool Remove(const std::string& user_email) {
-    return chromeos::CryptohomeRemove(user_email.c_str());
-  }
-
   bool Mount(const std::string& user_email,
              const std::string& passhash,
              int* error_code) {
@@ -82,6 +78,17 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return CacheCallback(chromeos::CryptohomeAsyncMountGuest(),
                          d,
                          "Couldn't initiate async mount of cryptohome.");
+  }
+
+  bool Remove(const std::string& user_email) {
+    return chromeos::CryptohomeRemove(user_email.c_str());
+  }
+
+  bool AsyncRemove(const std::string& user_email, Delegate* d) {
+    return CacheCallback(
+        chromeos::CryptohomeAsyncRemove(user_email.c_str()),
+        d,
+        "Couldn't initiate async removal of cryptohome.");
   }
 
   bool IsMounted() {
@@ -164,6 +171,13 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   bool Remove(const std::string& user_email) {
+    return true;
+  }
+
+  bool AsyncRemove(const std::string& user_email, Delegate* callback) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
 
