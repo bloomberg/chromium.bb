@@ -165,8 +165,8 @@ static bool RetrieveTest(TestMap *range_map, const RangeTest *range_test) {
       }
 
       linked_ptr<CountedObject> object;
-      AddressType retrieved_base;
-      AddressType retrieved_size;
+      AddressType retrieved_base = AddressType();
+      AddressType retrieved_size = AddressType();
       bool retrieved = range_map->RetrieveRange(address, &object,
                                                 &retrieved_base,
                                                 &retrieved_size);
@@ -209,8 +209,8 @@ static bool RetrieveTest(TestMap *range_map, const RangeTest *range_test) {
         expected_nearest = false;
 
       linked_ptr<CountedObject> nearest_object;
-      AddressType nearest_base;
-      AddressType nearest_size;
+      AddressType nearest_base = AddressType();
+      AddressType nearest_size = AddressType();
       bool retrieved_nearest = range_map->RetrieveNearestRange(address,
                                                                &nearest_object,
                                                                &nearest_base,

@@ -100,7 +100,8 @@ bool PostfixEvaluator<ValueType>::EvaluateInternal(
 
     if (operation != BINARY_OP_NONE) {
       // Get the operands.
-      ValueType operand1, operand2;
+      ValueType operand1 = ValueType();
+      ValueType operand2 = ValueType();
       if (!PopValues(&operand1, &operand2)) {
         BPLOG(ERROR) << "Could not PopValues to get two values for binary "
                         "operation " << token << ": " << expression;
@@ -257,7 +258,7 @@ PostfixEvaluator<ValueType>::PopValueOrIdentifier(
   // '-' sign (6.0.13); others do not (6.0.9). Since we require it, we
   // handle it explicitly here.
   istringstream token_stream(token);
-  ValueType literal;
+  ValueType literal = ValueType();
   bool negative;
   if (token_stream.peek() == '-') {
     negative = true;
@@ -283,7 +284,7 @@ PostfixEvaluator<ValueType>::PopValueOrIdentifier(
 
 template<typename ValueType>
 bool PostfixEvaluator<ValueType>::PopValue(ValueType *value) {
-  ValueType literal;
+  ValueType literal = ValueType();
   string token;
   PopResult result;
   if ((result = PopValueOrIdentifier(&literal, &token)) == POP_RESULT_FAIL) {
