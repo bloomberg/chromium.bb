@@ -360,6 +360,8 @@ public:
     const BlockEntry* GetLast();
     const BlockEntry* GetNext(const BlockEntry*) const;
     const BlockEntry* GetEntry(const Track*);
+    const BlockEntry* GetMaxKey(const VideoTrack*);
+
 protected:
     Cluster(Segment*, size_t, long long off);
 
@@ -417,6 +419,12 @@ public:
 
     Cluster* GetNext(const Cluster*);
     Cluster* GetCluster(long long time_nanoseconds);
+
+    void GetCluster(
+        __int64 time_nanoseconds,
+        Track*,
+        Cluster*&,
+        const BlockEntry*&);
 
 private:
     long long m_pos;  //absolute file posn; what has been consumed so far

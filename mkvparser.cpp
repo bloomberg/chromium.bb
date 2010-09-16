@@ -1648,6 +1648,186 @@ Cluster* Segment::GetCluster(long long time_ns)
 }
 
 
+
+void Segment::GetCluster(
+    __int64 time_ns,
+    Track* pTrack,
+    Cluster*& pCluster,
+    const BlockEntry*& pBlockEntry)
+{
+    assert(pTrack);
+
+    if ((m_clusters == NULL) || (m_clusterCount <= 0))
+    {
+        pCluster = &m_eos;
+        pBlockEntry = pTrack->GetEOS();
+
+        return;
+    }
+
+    Cluster** const i = m_clusters;
+    assert(i);
+
+    {
+        pCluster = *i;
+        assert(pCluster);
+
+        if (time_ns <= pCluster->GetTime())
+        {
+            pBlockEntry = pCluster->GetEntry(pTrack);
+            return;
+        }
+    }
+
+    Cluster** const j = i + m_clusterCount;
+
+    if (pTrack->GetType() == 2)  //audio
+    {
+        //TODO: we could decide to use cues for this, as we do for video.
+        //But we only use it for video because looking around for a keyframe
+        //can get expensive.  Audio doesn't require anything special we a
+        //straight cluster search is good enough (we assume).
+#if 0
+        iter_t k = std::upper_bound(i, j, time_ns, Cluster::CompareTime());
+        assert(k != i);
+
+        pCluster = *--k;
+        assert(pCluster);
+        assert(pCluster->GetTime() <= time_ns);
+#else
+        Cluster** lo = i;
+        Cluster** hi = j;
+
+        while (lo < hi)
+        {
+            //INVARIANT:
+            //[i, lo) <= time_ns
+            //[lo, hi) ?
+            //[hi, j)  > time_ns
+
+            Cluster** const mid = lo + (hi - lo) / 2;
+            assert(mid < hi);
+
+            Cluster* const pCluster = *mid;
+            assert(pCluster);
+
+            const long long t = pCluster->GetTime();
+
+            if (t <= time_ns)
+                lo = mid + 1;
+            else
+                hi = mid;
+
+            assert(lo <= hi);
+        }
+
+        assert(lo == hi);
+        assert(lo > i);
+        assert(lo <= j);
+
+        pCluster = *--lo;
+        assert(pCluster);
+        assert(pCluster->GetTime() <= time_ns);
+#endif
+
+        pBlockEntry = pCluster->GetEntry(pTrack);
+        return;
+    }
+
+    assert(pTrack->GetType() == 1);  //video
+
+#if 0  //TODO: add cues support
+    if (SearchCues(time_ns, pTrack, pCluster, pBlockEntry))
+        return;
+#endif
+
+#if 0
+    iter_t k = std::upper_bound(i, j, time_ns, Cluster::CompareTime());
+    assert(k != i);
+
+    pCluster = *--k;
+    assert(pCluster);
+    assert(pCluster->GetTime() <= time_ns);
+#else
+    Cluster** lo = i;
+    Cluster** hi = j;
+
+    while (lo < hi)
+    {
+        //INVARIANT:
+        //[i, lo) <= time_ns
+        //[lo, hi) ?
+        //[hi, j)  > time_ns
+
+        Cluster** const mid = lo + (hi - lo) / 2;
+        assert(mid < hi);
+
+        Cluster* const pCluster = *mid;
+        assert(pCluster);
+
+        const long long t = pCluster->GetTime();
+
+        if (t <= time_ns)
+            lo = mid + 1;
+        else
+            hi = mid;
+
+        assert(lo <= hi);
+    }
+
+    assert(lo == hi);
+    assert(lo > i);
+    assert(lo <= j);
+
+    pCluster = *--lo;
+    assert(pCluster);
+    assert(pCluster->GetTime() <= time_ns);
+#endif
+
+    {
+        pBlockEntry = pCluster->GetEntry(pTrack);
+        assert(pBlockEntry);
+
+        if (!pBlockEntry->EOS())  //found a keyframe
+        {
+            const Block* const pBlock = pBlockEntry->GetBlock();
+            assert(pBlock);
+
+            //TODO: this isn't necessarily the keyframe we want,
+            //since there might another keyframe on this same
+            //cluster with a greater timecode that but that is
+            //still less than the requested time.  For now we
+            //simply return the first keyframe we find.
+
+            if (pBlock->GetTime(pCluster) <= time_ns)
+                return;
+        }
+    }
+
+    const VideoTrack* const pVideo = static_cast<VideoTrack*>(pTrack);
+
+    while (lo != i)
+    {
+        pCluster = *--lo;
+        assert(pCluster);
+        assert(pCluster->GetTime() <= time_ns);
+
+        pBlockEntry = pCluster->GetMaxKey(pVideo);
+        assert(pBlockEntry);
+
+        if (!pBlockEntry->EOS())
+            return;
+    }
+
+    //weird: we're on the first cluster, but no keyframe found
+    //should never happen but we must return something anyway
+
+    pCluster = &m_eos;
+    pBlockEntry = pTrack->GetEOS();
+}
+
+
+
 Tracks* Segment::GetTracks() const
 {
     return m_pTracks;
@@ -2897,16 +3077,19 @@ const BlockEntry* Cluster::GetLast()
 const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
 {
     assert(pEntry);
+    assert(m_pEntries);
+    assert(m_entriesCount);
 
     size_t idx = pEntry->GetIndex();
+    assert(idx < m_entriesCount);
+    assert(m_pEntries[idx] == pEntry);
 
     ++idx;
 
-    if (idx == m_entriesCount)
+    if (idx >= m_entriesCount)
       return NULL;
 
     return m_pEntries[idx];
-
 }
 
 
@@ -2919,12 +3102,14 @@ const BlockEntry* Cluster::GetEntry(const Track* pTrack)
 
     LoadBlockEntries();
 
-    BlockEntry* i = *m_pEntries;
-    BlockEntry* j = *m_pEntries + m_entriesCount;
+    BlockEntry** i = m_pEntries;
+    assert(i);
+
+    BlockEntry** const j = i + m_entriesCount;
+
     while (i != j)
     {
-        BlockEntry* pEntry = i;
-        i++;
+        const BlockEntry* const pEntry = *i++;
         assert(pEntry);
         assert(!pEntry->EOS());
 
@@ -2940,6 +3125,40 @@ const BlockEntry* Cluster::GetEntry(const Track* pTrack)
 
     return pTrack->GetEOS();  //no satisfactory block found
 }
+
+
+const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack)
+{
+    assert(pTrack);
+
+    if (m_pSegment == 0)  //EOS
+        return pTrack->GetEOS();
+
+    LoadBlockEntries();
+    assert(m_pEntries);
+
+    BlockEntry** i = m_pEntries + m_entriesCount;
+    BlockEntry** const j = m_pEntries;
+
+    while (i != j)
+    {
+        const BlockEntry* const pEntry = *--i;
+        assert(pEntry);
+        assert(!pEntry->EOS());
+
+        const Block* const pBlock = pEntry->GetBlock();
+        assert(pBlock);
+
+        if (pBlock->GetTrackNumber() != pTrack->GetNumber())
+            continue;
+
+        if (pBlock->IsKey())
+            return pEntry;
+    }
+
+    return pTrack->GetEOS();  //no satisfactory block found
+}
+
 
 
 BlockEntry::BlockEntry()
