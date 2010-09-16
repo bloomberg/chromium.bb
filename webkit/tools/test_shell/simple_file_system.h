@@ -53,7 +53,7 @@ class SimpleFileSystem
       WebKit::WebFileSystemCallbacks* callbacks);
   virtual void remove(const WebKit::WebString& path,
       WebKit::WebFileSystemCallbacks* callbacks);
-  virtual void getMetadata(const WebKit::WebString& path,
+  virtual void readMetadata(const WebKit::WebString& path,
       WebKit::WebFileSystemCallbacks* callbacks);
   virtual void createFile(const WebKit::WebString& path, bool exclusive,
       WebKit::WebFileSystemCallbacks* callbacks);
@@ -92,4 +92,3 @@ class SimpleFileSystem
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
-

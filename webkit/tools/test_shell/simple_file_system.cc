@@ -54,7 +54,7 @@ void SimpleFileSystem::remove(
   GetNewOperation(callbacks)->Remove(filepath);
 }
 
-void SimpleFileSystem::getMetadata(
+void SimpleFileSystem::readMetadata(
     const WebString& path, WebFileSystemCallbacks* callbacks) {
   FilePath filepath(webkit_glue::WebStringToFilePath(path));
 
