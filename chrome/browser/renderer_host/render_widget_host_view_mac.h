@@ -23,6 +23,7 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webmenuitem.h"
 
+@class AcceleratedPluginView;
 class RenderWidgetHostViewMac;
 class RWHVMEditCommandHelper;
 @class ToolTip;
@@ -237,7 +238,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
   virtual void GpuRenderingStateDidChange();
   void DrawAcceleratedSurfaceInstance(
-      CGLContextObj context, gfx::PluginWindowHandle plugin_handle);
+      CGLContextObj context,
+      gfx::PluginWindowHandle plugin_handle,
+      NSSize size);
   // Forces the textures associated with any accelerated plugin instances
   // to be reloaded.
   void ForceTextureReload();
@@ -284,7 +287,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // Current text input type.
   WebKit::WebTextInputType text_input_type_;
 
-  typedef std::map<gfx::PluginWindowHandle, NSView*> PluginViewMap;
+  typedef std::map<gfx::PluginWindowHandle, AcceleratedPluginView*>
+      PluginViewMap;
   PluginViewMap plugin_views_;  // Weak values.
 
   // Helper class for managing instances of accelerated plug-ins.

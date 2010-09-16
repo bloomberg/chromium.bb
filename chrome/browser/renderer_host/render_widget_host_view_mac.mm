@@ -156,6 +156,10 @@ void DisablePasswordInput() {
 
   // True if the backing IO surface was updated since we last painted.
   BOOL surfaceWasSwapped_;
+
+  // Cocoa methods can only be called on the main thread, so have a copy of the
+  // view's size, since it's required on the displaylink thread.
+  NSSize cachedSize_;
 }
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
@@ -164,10 +168,14 @@ void DisablePasswordInput() {
 
 // This _must_ be atomic, since it's accessed from several threads.
 @property BOOL surfaceWasSwapped;
+
+// This _must_ be atomic, since it's accessed from several threads.
+@property NSSize cachedSize;
 @end
 
 @implementation AcceleratedPluginView : NSView
 @synthesize surfaceWasSwapped = surfaceWasSwapped_;
+@synthesize cachedSize = cachedSize_;
 
 - (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime {
   // There is no autorelease pool when this method is called because it will be
@@ -200,6 +208,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   if ((self = [super initWithFrame:NSZeroRect])) {
     renderWidgetHostView_ = r;
     pluginHandle_ = pluginHandle;
+    cachedSize_ = NSZeroSize;
 
     [self setAutoresizingMask:NSViewMaxXMargin|NSViewMinYMargin];
 
@@ -241,8 +250,9 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   // Called on a background thread. Synchronized via the CGL context lock.
   CGLLockContext(cglContext_);
 
+  // TODO(thakis): Pixel or view coordinates for size?
   renderWidgetHostView_->DrawAcceleratedSurfaceInstance(
-      cglContext_, pluginHandle_);
+      cglContext_, pluginHandle_, [self cachedSize]);
 
   CGLFlushDrawable(cglContext_);
   CGLUnlockContext(cglContext_);
@@ -327,6 +337,16 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
     [static_cast<id>(newWindow) underlaySurfaceAdded];
   }
+}
+
+- (void)setFrame:(NSRect)frameRect {
+  [self setCachedSize:frameRect.size];
+  [super setFrame:frameRect];
+}
+
+- (void)setFrameSize:(NSSize)newSize {
+  [self setCachedSize:newSize];
+  [super setFrameSize:newSize];
 }
 @end
 
@@ -920,16 +940,11 @@ void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
 }
 
 void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
-      CGLContextObj context, gfx::PluginWindowHandle plugin_handle) {
+      CGLContextObj context,
+      gfx::PluginWindowHandle plugin_handle,
+      NSSize size) {
   // Called on the display link thread.
-  PluginViewMap::iterator it = plugin_views_.find(plugin_handle);
-  DCHECK(plugin_views_.end() != it);
-  if (plugin_views_.end() == it) {
-    return;
-  }
   CGLSetCurrentContext(context);
-  // TODO(thakis): Pixel or view coordinates?
-  NSSize size = [it->second frame].size;
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -1505,7 +1520,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       DCHECK(it != renderWidgetHostView_->plugin_views_.end());
       if (it != renderWidgetHostView_->plugin_views_.end() &&
           ![it->second isHidden]) {
-        gpuRect = [self flipNSRectToRect:[it->second frame]];
+        NSRect frame = [it->second frame];
+        frame.size = [it->second cachedSize];
+        gpuRect = [self flipNSRectToRect:frame];
       }
     }
 
