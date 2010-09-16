@@ -105,7 +105,7 @@ class SimpleDataSourceTest : public testing::Test {
     URLRequestStatus status;
     status.set_status(URLRequestStatus::SUCCESS);
     status.set_os_error(0);
-    data_source_->OnCompletedRequest(status, "");
+    data_source_->OnCompletedRequest(status, "", base::Time());
 
     // Let the tasks to be executed.
     MessageLoop::current()->RunAllPending();
@@ -122,7 +122,7 @@ class SimpleDataSourceTest : public testing::Test {
     URLRequestStatus status;
     status.set_status(URLRequestStatus::FAILED);
     status.set_os_error(100);
-    data_source_->OnCompletedRequest(status, "");
+    data_source_->OnCompletedRequest(status, "", base::Time());
 
     // Let the tasks to be executed.
     MessageLoop::current()->RunAllPending();

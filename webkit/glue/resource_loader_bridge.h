@@ -283,7 +283,8 @@ class ResourceLoaderBridge {
     // Called when the response is complete.  This method signals completion of
     // the resource load.ff
     virtual void OnCompletedRequest(const URLRequestStatus& status,
-                                    const std::string& security_info) = 0;
+                                    const std::string& security_info,
+                                    const base::Time& completion_time) = 0;
 
     // Returns the URL of the request, which allows us to display it in
     // debugging situations.

@@ -326,10 +326,11 @@ IPC_BEGIN_MESSAGES(View)
                       int /* data_len */)
 
   // Sent when the request has been completed.
-  IPC_MESSAGE_ROUTED3(ViewMsg_Resource_RequestComplete,
+  IPC_MESSAGE_ROUTED4(ViewMsg_Resource_RequestComplete,
                       int /* request_id */,
                       URLRequestStatus /* status */,
-                      std::string /* security info */)
+                      std::string /* security info */,
+                      base::Time /* completion_time */)
 
   // Sent when user prompting is required before a ViewHostMsg_GetCookies
   // message can complete.  This message indicates that the renderer should

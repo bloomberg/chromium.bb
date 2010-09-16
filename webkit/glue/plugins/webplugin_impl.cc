@@ -113,7 +113,7 @@ class MultiPartResponseClient : public WebURLLoaderClient {
     byte_range_lower_bound_ += data_size;
   }
 
-  virtual void didFinishLoading(WebURLLoader*) {}
+  virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
   virtual void didFail(WebURLLoader*, const WebURLError&) {}
 
   void Clear() {
@@ -917,7 +917,7 @@ void WebPluginImpl::didReceiveData(WebURLLoader* loader,
   }
 }
 
-void WebPluginImpl::didFinishLoading(WebURLLoader* loader) {
+void WebPluginImpl::didFinishLoading(WebURLLoader* loader, double finishTime) {
   ClientInfo* client_info = GetClientInfoFromLoader(loader);
   if (client_info && client_info->client) {
     MultiPartResponseHandlerMap::iterator index =

@@ -142,7 +142,8 @@ void SimpleDataSource::OnReceivedData(const char* data, int len) {
 }
 
 void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
-                                          const std::string& security_info) {
+                                          const std::string& security_info,
+                                          const base::Time& completion_time) {
   AutoLock auto_lock(lock_);
   // It's possible this gets called after Stop(), in which case |host_| is no
   // longer valid.

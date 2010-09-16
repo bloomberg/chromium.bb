@@ -301,7 +301,7 @@ void URLLoader::didReceiveData(WebURLLoader* loader,
   }
 }
 
-void URLLoader::didFinishLoading(WebURLLoader* loader) {
+void URLLoader::didFinishLoading(WebURLLoader* loader, double finishTime) {
   done_status_ = PP_OK;
   RunCallback(done_status_);
 }

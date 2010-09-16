@@ -42,7 +42,8 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
   virtual void OnDownloadedData(int len) {}
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(const URLRequestStatus& status,
-                                  const std::string& security_info);
+                                  const std::string& security_info,
+                                  const base::Time& completion_time);
   virtual GURL GetURLForDebugging() const;
 
  protected:
@@ -71,7 +72,8 @@ class BufferedPeer : public SecurityFilterPeer {
       bool content_filtered);
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(const URLRequestStatus& status,
-                                  const std::string& security_info);
+                                  const std::string& security_info,
+                                  const base::Time& completion_time);
 
  protected:
   // Invoked when the entire request has been processed before the data is sent
@@ -111,7 +113,8 @@ class ReplaceContentPeer : public SecurityFilterPeer {
       bool content_filtered);
   void OnReceivedData(const char* data, int len);
   void OnCompletedRequest(const URLRequestStatus& status,
-                          const std::string& security_info);
+                          const std::string& security_info,
+                          const base::Time& completion_time);
 
  private:
   webkit_glue::ResourceLoaderBridge::ResponseInfo response_info_;

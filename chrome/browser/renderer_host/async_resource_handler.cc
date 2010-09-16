@@ -244,10 +244,12 @@ bool AsyncResourceHandler::OnResponseCompleted(
     int request_id,
     const URLRequestStatus& status,
     const std::string& security_info) {
+  Time completion_time = Time::Now();
   receiver_->Send(new ViewMsg_Resource_RequestComplete(routing_id_,
                                                        request_id,
                                                        status,
-                                                       security_info));
+                                                       security_info,
+                                                       completion_time));
 
   // If we still have a read buffer, then see about caching it for later...
   // Note that we have to make sure the buffer is not still being used, so we

@@ -393,8 +393,9 @@ void ResourceDispatcherHost::BeginRequest(
           route_id,
           request_id,
           status,
-          std::string()));  // No security info needed, connection was not
-                            // established.
+          std::string(),   // No security info needed, connection was not
+          base::Time()));  // established.
+                            
     }
     return;
   }

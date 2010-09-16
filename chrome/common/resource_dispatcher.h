@@ -103,7 +103,8 @@ class ResourceDispatcher {
   void OnRequestComplete(
       int request_id,
       const URLRequestStatus& status,
-      const std::string& security_info);
+      const std::string& security_info,
+      const base::Time& completion_time);
 
   // Dispatch the message to one of the message response handlers.
   void DispatchMessage(const IPC::Message& message);

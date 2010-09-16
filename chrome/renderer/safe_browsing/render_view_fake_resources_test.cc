@@ -155,7 +155,8 @@ void RenderViewFakeResourcesTest::OnRequestResource(
       message.routing_id(),
       request_id,
       URLRequestStatus(),
-      std::string())));
+      std::string(),
+      base::Time())));
 }
 
 void RenderViewFakeResourcesTest::OnRenderViewReady() {

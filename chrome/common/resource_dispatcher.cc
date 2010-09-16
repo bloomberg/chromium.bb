@@ -445,7 +445,8 @@ void ResourceDispatcher::OnReceivedRedirect(
 
 void ResourceDispatcher::OnRequestComplete(int request_id,
                                            const URLRequestStatus& status,
-                                           const std::string& security_info) {
+                                           const std::string& security_info,
+                                           const base::Time& completion_time) {
   PendingRequestList::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     // this might happen for kill()ed requests on the webkit end, so perhaps
@@ -477,7 +478,7 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
-  peer->OnCompletedRequest(status, security_info);
+  peer->OnCompletedRequest(status, security_info, completion_time);
 
   webkit_glue::NotifyCacheStats();
 }

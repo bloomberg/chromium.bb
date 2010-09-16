@@ -68,8 +68,10 @@ class MockResourceLoaderBridgePeer
       bool content_filtered));
   MOCK_METHOD1(OnDownloadedData, void(int len));
   MOCK_METHOD2(OnReceivedData, void(const char* data, int len));
-  MOCK_METHOD2(OnCompletedRequest, void(
-      const URLRequestStatus& status, const std::string& security_info));
+  MOCK_METHOD3(OnCompletedRequest, void(
+      const URLRequestStatus& status,
+      const std::string& security_info,
+      const base::Time& completion_time));
   MOCK_CONST_METHOD0(GetURLForDebugging, GURL());
 
  private:
@@ -140,11 +142,11 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestBadURLRequestStatus) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(URLRequestStatus::CANCELED), ""));
+    IsURLRequestEqual(URLRequestStatus::CANCELED), "", base::Time()));
 
   URLRequestStatus status;
   status.set_status(URLRequestStatus::FAILED);
-  filter_peer->OnCompletedRequest(status, "");
+  filter_peer->OnCompletedRequest(status, "", base::Time());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
@@ -157,11 +159,11 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(URLRequestStatus::SUCCESS), ""));
+      IsURLRequestEqual(URLRequestStatus::SUCCESS), "", base::Time()));
 
   URLRequestStatus status;
   status.set_status(URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "");
+  filter_peer->OnCompletedRequest(status, "", base::Time());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
@@ -179,18 +181,18 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true)).Times(2);
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(URLRequestStatus::SUCCESS), "")).Times(2);
+      IsURLRequestEqual(URLRequestStatus::SUCCESS), "", base::Time())).Times(2);
 
   URLRequestStatus status;
   status.set_status(URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "");
+  filter_peer->OnCompletedRequest(status, "", base::Time());
 
   // Test if Send gets called again (it shouldn't be) when first call returned
   // an empty dictionary.
   filter_peer =
       CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
   SetData(filter_peer, "some text");
-  filter_peer->OnCompletedRequest(status, "");
+  filter_peer->OnCompletedRequest(status, "", base::Time());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
@@ -217,11 +219,11 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(URLRequestStatus::SUCCESS), ""));
+      IsURLRequestEqual(URLRequestStatus::SUCCESS), "", base::Time()));
 
   URLRequestStatus status;
   status.set_status(URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "");
+  filter_peer->OnCompletedRequest(status, "", base::Time());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
@@ -248,9 +250,9 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(URLRequestStatus::SUCCESS), ""));
+      IsURLRequestEqual(URLRequestStatus::SUCCESS), "", base::Time()));
 
   URLRequestStatus status;
   status.set_status(URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "");
+  filter_peer->OnCompletedRequest(status, "", base::Time());
 }

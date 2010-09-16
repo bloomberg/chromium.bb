@@ -43,7 +43,8 @@ class ExtensionLocalizationPeer
   virtual void OnDownloadedData(int len) {}
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(const URLRequestStatus& status,
-                                  const std::string& security_info);
+                                  const std::string& security_info,
+                                  const base::Time& completion_time);
   virtual GURL GetURLForDebugging() const;
 
  private:

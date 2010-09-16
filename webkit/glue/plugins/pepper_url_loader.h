@@ -55,7 +55,7 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   virtual void didReceiveData(WebKit::WebURLLoader* loader,
                               const char* data,
                               int data_length);
-  virtual void didFinishLoading(WebKit::WebURLLoader* loader);
+  virtual void didFinishLoading(WebKit::WebURLLoader* loader, double finishTime);
   virtual void didFail(WebKit::WebURLLoader* loader,
                        const WebKit::WebURLError& error);
 

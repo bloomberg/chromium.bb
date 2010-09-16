@@ -268,9 +268,10 @@ class RequestProxy : public URLRequest::Delegate,
   }
 
   void NotifyCompletedRequest(const URLRequestStatus& status,
-                              const std::string& security_info) {
+                              const std::string& security_info,
+                              const base::Time& complete_time) {
     if (peer_) {
-      peer_->OnCompletedRequest(status, security_info);
+      peer_->OnCompletedRequest(status, security_info, complete_time);
       DropPeer();  // ensure no further notifications
     }
   }
@@ -381,9 +382,14 @@ class RequestProxy : public URLRequest::Delegate,
   }
 
   virtual void OnCompletedRequest(const URLRequestStatus& status,
-                                  const std::string& security_info) {
+                                  const std::string& security_info,
+                                  const base::Time& complete_time) {
     owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::NotifyCompletedRequest, status, security_info));
+        this,
+        &RequestProxy::NotifyCompletedRequest,
+        status,
+        security_info,
+        complete_time));
   }
 
   // --------------------------------------------------------------------------
@@ -433,7 +439,7 @@ class RequestProxy : public URLRequest::Delegate,
       upload_progress_timer_.Stop();
     }
     DCHECK(request_.get());
-    OnCompletedRequest(request_->status(), std::string());
+    OnCompletedRequest(request_->status(), std::string(), base::Time());
     request_.reset();  // destroy on the io thread
   }
 
@@ -552,7 +558,8 @@ class SyncRequestProxy : public RequestProxy {
   }
 
   virtual void OnCompletedRequest(const URLRequestStatus& status,
-                                  const std::string& security_info) {
+                                  const std::string& security_info,
+                                  const base::Time& complete_time) {
     result_->status = status;
     event_.Signal();
   }

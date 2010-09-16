@@ -66,7 +66,9 @@ void ExtensionLocalizationPeer::OnReceivedData(const char* data, int len) {
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(
-    const URLRequestStatus& status, const std::string& security_info) {
+    const URLRequestStatus& status,
+    const std::string& security_info,
+    const base::Time& completion_time) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<ExtensionLocalizationPeer> this_deleter(this);
 
@@ -75,7 +77,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
     // We failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_, true);
     URLRequestStatus status(URLRequestStatus::CANCELED, net::ERR_ABORTED);
-    original_peer_->OnCompletedRequest(status, security_info);
+    original_peer_->OnCompletedRequest(status, security_info, completion_time);
     return;
   }
 
@@ -85,7 +87,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   if (!data_.empty())
     original_peer_->OnReceivedData(data_.data(),
                                    static_cast<int>(data_.size()));
-  original_peer_->OnCompletedRequest(status, security_info);
+  original_peer_->OnCompletedRequest(status, security_info, completion_time);
 }
 
 GURL ExtensionLocalizationPeer::GetURLForDebugging() const {

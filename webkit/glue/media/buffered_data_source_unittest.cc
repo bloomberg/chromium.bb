@@ -51,7 +51,7 @@ ACTION_P(RequestCanceled, loader) {
   URLRequestStatus status;
   status.set_status(URLRequestStatus::CANCELED);
   status.set_os_error(net::ERR_ABORTED);
-  loader->OnCompletedRequest(status, "");
+  loader->OnCompletedRequest(status, "", base::Time());
 }
 
 class BufferedResourceLoaderTest : public testing::Test {
@@ -315,7 +315,7 @@ TEST_F(BufferedResourceLoaderTest, BufferAndRead) {
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
   URLRequestStatus status;
   status.set_status(URLRequestStatus::SUCCESS);
-  loader_->OnCompletedRequest(status, "");
+  loader_->OnCompletedRequest(status, "", base::Time());
 
   // Try to read 10 from position 25 will just return with 5 bytes.
   EXPECT_CALL(*this, ReadCallback(5));
@@ -361,7 +361,7 @@ TEST_F(BufferedResourceLoaderTest, ReadOutsideBuffer) {
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
   URLRequestStatus status;
   status.set_status(URLRequestStatus::SUCCESS);
-  loader_->OnCompletedRequest(status, "");
+  loader_->OnCompletedRequest(status, "", base::Time());
 }
 
 TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
@@ -379,7 +379,7 @@ TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
   URLRequestStatus status;
   status.set_status(URLRequestStatus::FAILED);
-  loader_->OnCompletedRequest(status, "");
+  loader_->OnCompletedRequest(status, "", base::Time());
 }
 
 // Tests the logic of caching data to disk when media is paused.

@@ -204,7 +204,7 @@ class WebPluginImpl : public WebPlugin,
                                   const WebKit::WebURLResponse& response);
   virtual void didReceiveData(WebKit::WebURLLoader* loader, const char *buffer,
                               int length);
-  virtual void didFinishLoading(WebKit::WebURLLoader* loader);
+  virtual void didFinishLoading(WebKit::WebURLLoader* loader, double finishTime);
   virtual void didFail(WebKit::WebURLLoader* loader,
                        const WebKit::WebURLError& error);
 

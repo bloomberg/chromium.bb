@@ -130,7 +130,7 @@ void WebPluginImpl::didReceiveData(const char* data, int data_length) {
 
 void WebPluginImpl::didFinishLoading() {
   if (document_loader_) {
-    document_loader_->didFinishLoading(NULL);
+    document_loader_->didFinishLoading(NULL, 0);
     document_loader_ = NULL;
   }
 }

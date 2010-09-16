@@ -72,7 +72,7 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
     data_.append(data, data_length);
   }
 
-  virtual void didFinishLoading(WebURLLoader*) {}
+  virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
   virtual void didFail(WebURLLoader*, const WebURLError&) {}
 
   void Reset() {

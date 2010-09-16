@@ -267,7 +267,9 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnReceivedCachedMetadata(const char* data, int len);
   virtual void OnCompletedRequest(
-      const URLRequestStatus& status, const std::string& security_info);
+      const URLRequestStatus& status,
+      const std::string& security_info,
+      const base::Time& completion_time);
   virtual GURL GetURLForDebugging() const;
 
  private:
@@ -586,7 +588,8 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
     const URLRequestStatus& status,
-    const std::string& security_info) {
+    const std::string& security_info,
+    const base::Time& completion_time) {
   if (ftp_listing_delegate_.get()) {
     ftp_listing_delegate_->OnCompletedRequest();
     ftp_listing_delegate_.reset(NULL);
@@ -614,7 +617,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
       error.unreachableURL = request_.url();
       client_->didFail(loader_, error);
     } else {
-      client_->didFinishLoading(loader_);
+      client_->didFinishLoading(loader_, completion_time.ToDoubleT());
     }
   }
 
@@ -642,7 +645,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
       OnReceivedData(data.data(), data.size());
   }
 
-  OnCompletedRequest(status, info.security_info);
+  OnCompletedRequest(status, info.security_info, base::Time::Now());
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------

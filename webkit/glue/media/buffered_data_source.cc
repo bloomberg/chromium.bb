@@ -350,7 +350,9 @@ void BufferedResourceLoader::OnReceivedData(const char* data, int len) {
 }
 
 void BufferedResourceLoader::OnCompletedRequest(
-    const URLRequestStatus& status, const std::string& security_info) {
+    const URLRequestStatus& status,
+    const std::string& security_info,
+    const base::Time& completion_time) {
   DCHECK(bridge_.get());
 
   // Saves the information that the request has completed.

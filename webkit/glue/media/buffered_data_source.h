@@ -118,8 +118,10 @@ class BufferedResourceLoader :
       bool content_filtered);
   virtual void OnDownloadedData(int len) {}
   virtual void OnReceivedData(const char* data, int len);
-  virtual void OnCompletedRequest(const URLRequestStatus& status,
-      const std::string& security_info);
+  virtual void OnCompletedRequest(
+      const URLRequestStatus& status,
+      const std::string& security_info,
+      const base::Time& completion_time);
   GURL GetURLForDebugging() const { return url_; }
 
  protected:
