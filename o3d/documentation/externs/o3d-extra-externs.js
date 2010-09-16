@@ -34,6 +34,13 @@ var Vectormath;
 Vectormath.Aos = Vectormath.Aos || { };
 
 /**
+ * A stand-in class definition for Float32Array.
+ * @param {number} size The size.
+ * @constructor
+ */
+var Float32Array = function(size) { };
+
+/**
  * A 4x4 Matrix of floats
  * @type {!Array.<!Array.<number>>}
  */
