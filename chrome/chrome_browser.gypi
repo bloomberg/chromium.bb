@@ -1264,6 +1264,8 @@
         'browser/dom_ui/html_dialog_ui.h',
         'browser/dom_ui/import_data_handler.cc',
         'browser/dom_ui/import_data_handler.h',
+        'browser/dom_ui/keyboard_ui.cc',
+        'browser/dom_ui/keyboard_ui.h',
         'browser/dom_ui/labs_ui.cc',
         'browser/dom_ui/labs_ui.h',
         'browser/dom_ui/mediaplayer_ui.cc',
@@ -3194,7 +3196,8 @@
         }],
         ['touchui==0', {
           'sources!': [
-            # Nothing yet.
+            'browser/dom_ui/keyboard_ui.cc',
+            'browser/dom_ui/keyboard_ui.h',
           ],
         }],
         ['OS=="linux"', {

@@ -13,6 +13,9 @@
 #include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/history2_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#if defined(TOUCH_UI)
+#include "chrome/browser/dom_ui/keyboard_ui.h"
+#endif
 #include "chrome/browser/dom_ui/labs_ui.h"
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
@@ -121,6 +124,10 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<HistoryUI2>;
   if (about_labs::IsEnabled() && url.host() == chrome::kChromeUILabsHost)
     return &NewDOMUI<LabsUI>;
+#if defined(TOUCH_UI)
+  if (url.host() == chrome::kChromeUIKeyboardHost)
+    return &NewDOMUI<KeyboardUI>;
+#endif
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewDOMUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)

@@ -1,0 +1,12 @@
+{
+  "key": "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAMzY3+qeu4pXSEeSegJLHHhFFiiAq82w8noLxkJqNh+d7Np/scxDr4WkYezIhJTUOIAMxeyP2e//lxU8LTLJFySVWf/dQ5p9xBwzyk4qqJsIsqbrNUrzziN6qk/1Vj8+3qWnG5mSo7Ge4n0OGAVugd29xa/2o79VCFnohgoCHtDdAgMBAAECgYEAnyspGdoK6RyW6h4TtbJ9RaqQ5BnO5P3H+zMo8zQqJ/kDMGgmVAyH1vT6rgzEkAwydrT2GbFQ614THAntKNf9pScL3KmjTeuKCh4t7PJyABOH6Zby/mHN3JJCrX4fLorv7h8CILUrdrmnrAbDvYsF3LTyHkWFeptpgUhZTSysd5UCQQD7O4/yv8a4uvvtdfGNLRb0xfl9JAdq5l+LzN6uSgA74fQoEdcFycjFjxeT2yW7vSzbSXswaSntkdrXin7oqB3/AkEA0Lv7IHEeQ3MkL04ETjgLFJ+UalG51K8gh0X4H4Fqrq24hkqG2xLT+bQ2NvCayqz2xMzqriZagELwXrw+R2tJIwJAYKIwZDbPwQ5rCJNtLdhCFDRyGmhZUgz6g1Nx86gTHvVybFcwVdGfoB3B++U3RlclgdNpxt0se2y2uGFVHzhLEQJAQM4MAp98EN7fnhwvtAUsU4PT9UpYUpLom3b6uPVaJM9kmbTrt3pZ+42aw2Xh+QjIOIOSXO0lberaa98vysahVwJAUmbvLS8ao4FGYkgi0GdskvbudxbVSv1waZuaMttmqenev7xz/94tMyd4Xhsg6AIFf8xpAfPkKF5XlnFje/akUQ==",
+  "name": "Virtual Keyboard",
+  "version": "0.1",
+  "description": "Virtual Keyboard",
+  "permissions": [
+    "experimental"
+  ],
+  "chrome_url_overrides": {
+    "keyboard": "index.html"
+  }
+}

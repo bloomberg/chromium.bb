@@ -395,6 +395,11 @@ void ProfileImpl::InitExtensions() {
   component_extensions.push_back(
       std::make_pair("bookmark_manager", IDR_BOOKMARKS_MANIFEST));
 
+#if defined(TOUCH_UI)
+  component_extensions.push_back(
+      std::make_pair("keyboard", IDR_KEYBOARD_MANIFEST));
+#endif
+
   // Web Store.
   component_extensions.push_back(
       std::make_pair("web_store", IDR_WEBSTORE_MANIFEST));

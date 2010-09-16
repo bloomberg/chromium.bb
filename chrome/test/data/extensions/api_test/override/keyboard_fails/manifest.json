@@ -1,0 +1,9 @@
+{
+  "name": "Keyboard override test",
+  "version": "0.1",
+  "description": "Test chrome://keyboard override",
+  "background_page": "background.html",
+  "chrome_url_overrides": {
+    "keyboard": "keyboard.html"
+  }
+}
