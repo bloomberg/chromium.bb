@@ -35,6 +35,9 @@ class MetricsService : public MetricsServiceBase {
   void InitializeMetricsState();
 
  private:
+  // To enable the default traits object to create an instance of this class.
+  friend struct base::DefaultLazyInstanceTraits<MetricsService>;
+
   MetricsService();
   virtual ~MetricsService();
   // The MetricsService has a lifecycle that is stored as a state.
@@ -134,9 +137,6 @@ class MetricsService : public MetricsServiceBase {
 
   // A number that identifies the how many times the app has been launched.
   int session_id_;
-
-  static base::LazyInstance<base::ThreadLocalPointer<MetricsService> >
-      g_metrics_instance_;
 
   PlatformThreadId thread_;
 

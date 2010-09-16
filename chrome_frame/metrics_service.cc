@@ -52,6 +52,7 @@
 #endif
 
 #include "base/file_version_info.h"
+#include "base/lock.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/string_number_conversions.h"
@@ -90,8 +91,37 @@ static const int kInitialUMAUploadTimeoutMilliSeconds = 30000;
 // Default to one UMA upload per 10 mins.
 static const int kMinMilliSecondsPerUMAUpload = 600000;
 
-base::LazyInstance<base::ThreadLocalPointer<MetricsService> >
-    MetricsService::g_metrics_instance_(base::LINKER_INITIALIZED);
+base::LazyInstance<MetricsService>
+    g_metrics_instance_(base::LINKER_INITIALIZED);
+
+// Traits to create an instance of the ChromeFrame upload thread.
+struct UploadThreadInstanceTraits
+    : public base::DefaultLazyInstanceTraits<base::Thread> {
+  static base::Thread* New(void* instance) {
+    // Use placement new to initialize our instance in our preallocated space.
+    // The parenthesis is very important here to force POD type initialization.
+    base::Thread* upload_thread =
+        new (instance) base::Thread("ChromeFrameUploadThread");
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_IO;
+    bool ret = upload_thread->StartWithOptions(options);
+    if (!ret) {
+      NOTREACHED() << "Failed to start upload thread";
+    }
+    return upload_thread;
+  }
+};
+
+// ChromeFrame UMA uploads occur on this thread. This thread is started on the
+// IE UI thread. This thread needs to be stopped on the same thread it was
+// started on. We don't have a good way of achieving this at this point. This
+// thread object is currently leaked.
+// TODO(ananta)
+// Fix this.
+base::LazyInstance<base::Thread, UploadThreadInstanceTraits>
+    g_metrics_upload_thread_(base::LINKER_INITIALIZED);
+
+Lock g_metrics_service_lock;
 
 extern base::LazyInstance<StatisticsRecorder> g_statistics_recorder_;
 
@@ -209,8 +239,7 @@ class ChromeFrameMetricsDataUploader
   END_MSG_MAP()
 
   ChromeFrameMetricsDataUploader()
-      : fetcher_(NULL),
-        upload_thread_("ChromeFrameMetricsUploadThread") {
+      : fetcher_(NULL) {
     DLOG(INFO) << __FUNCTION__;
     creator_thread_id_ = PlatformThread::CurrentId();
   }
@@ -225,20 +254,25 @@ class ChromeFrameMetricsDataUploader
   }
 
   bool Initialize() {
+    bool ret = false;
+
     if (!Create(NULL, NULL, NULL, WS_OVERLAPPEDWINDOW)) {
       NOTREACHED() << "Failed to create window";
-      return false;
+      return ret;
     }
     DCHECK(IsWindow());
 
+    if (!g_metrics_upload_thread_.Get().IsRunning()) {
+      NOTREACHED() << "Upload thread is not running";
+      return ret;
+    }
+
+    ret = true;
     // Grab a reference to the current instance which ensures that it stays
     // around until the HTTP request initiated below completes.
     // Corresponding Release is in OnFinalMessage.
     AddRef();
-
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    return upload_thread_.StartWithOptions(options);
+    return ret;
   }
 
   bool Uninitialize() {
@@ -251,18 +285,28 @@ class ChromeFrameMetricsDataUploader
     scoped_refptr<ChromeFrameMetricsDataUploader> data_uploader =
         new ChromeFrameMetricsDataUploader();
 
-    data_uploader->Initialize();
-    DCHECK(data_uploader->upload_thread_.message_loop());
+    if (!data_uploader->Initialize()) {
+      NOTREACHED() << "Failed to initialize ChromeFrameMetricsDataUploader";
+      return E_FAIL;
+    }
 
-    data_uploader->upload_thread_.message_loop()->PostTask(FROM_HERE,
+    MessageLoop* io_loop = g_metrics_upload_thread_.Get().message_loop();
+    if (!io_loop) {
+      NOTREACHED() << "Failed to initialize ChromeFrame UMA upload thread";
+      return E_FAIL;
+    }
+
+    io_loop->PostTask(
+        FROM_HERE,
         NewRunnableMethod(data_uploader.get(),
                           &ChromeFrameMetricsDataUploader::UploadData,
-                          upload_data));
+                          upload_data, io_loop));
     return S_OK;
   }
 
-  void UploadData(const std::string& upload_data) {
+  void UploadData(const std::string& upload_data, MessageLoop* message_loop) {
     DCHECK(fetcher_ == NULL);
+    DCHECK(message_loop != NULL);
 
     BrowserDistribution* dist = ChromeFrameDistribution::GetDistribution();
     DCHECK(dist != NULL);
@@ -271,7 +315,7 @@ class ChromeFrameMetricsDataUploader
                               URLFetcher::POST, this);
 
     fetcher_->set_request_context(new ChromeFrameUploadRequestContextGetter(
-        upload_thread_.message_loop()));
+        message_loop));
     fetcher_->set_upload_data(kMetricsType, upload_data);
     fetcher_->Start();
   }
@@ -296,17 +340,13 @@ class ChromeFrameMetricsDataUploader
   }
 
  private:
-  base::Thread upload_thread_;
   URLFetcher* fetcher_;
   PlatformThreadId creator_thread_id_;
 };
 
 MetricsService* MetricsService::GetInstance() {
-  if (g_metrics_instance_.Pointer()->Get())
-    return g_metrics_instance_.Pointer()->Get();
-
-  g_metrics_instance_.Pointer()->Set(new MetricsService);
-  return g_metrics_instance_.Pointer()->Get();
+  AutoLock lock(g_metrics_service_lock);
+  return &g_metrics_instance_.Get();
 }
 
 MetricsService::MetricsService()
@@ -343,6 +383,12 @@ void MetricsService::InitializeMetricsState() {
 
   // Ensure that an instance of the StatisticsRecorder object is created.
   g_statistics_recorder_.Get();
+
+  if (user_permits_upload_) {
+    // Ensure that an instance of the metrics upload thread is created.
+    g_metrics_upload_thread_.Get();
+  }
+
   CrashMetricsReporter::GetInstance()->set_active(true);
 }
 
@@ -363,7 +409,6 @@ void MetricsService::Stop() {
 }
 
 void MetricsService::SetRecording(bool enabled) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
   if (enabled == recording_active_)
     return;
 
