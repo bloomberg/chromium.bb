@@ -1470,8 +1470,12 @@ nacl_env = pre_base_env.Clone(
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
     LIBS = ['${EXTRA_LIBS}'],
     LINKFLAGS = ['${EXTRA_LINKFLAGS}'],
-    # _GNU_SOURCE ensures that strtof() gets declared.
-    CPPDEFINES = ['_GNU_SOURCE'],
+    CPPDEFINES = [
+      # _GNU_SOURCE ensures that strtof() gets declared.
+      ['_GNU_SOURCE', 1],
+      # This ensures that PRId64 etc. get defined.
+      ['__STDC_FORMAT_MACROS', '1'],
+      ],
 )
 
 if ARGUMENTS.get('bitcode'):
