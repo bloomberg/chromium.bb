@@ -5,6 +5,7 @@
 cr.define('cr.ui', function() {
 
   const positionPopupAtPoint = cr.ui.positionPopupAtPoint;
+  const Menu = cr.ui.Menu;
 
   /**
    * Handles context menus.
@@ -39,6 +40,7 @@ cr.define('cr.ui', function() {
       doc.addEventListener('mousedown', this, true);
       doc.addEventListener('blur', this, true);
       doc.defaultView.addEventListener('resize', this);
+      menu.addEventListener('contextmenu', this);
       menu.addEventListener('activate', this);
       this.positionMenu_(e, menu);
     },
@@ -57,6 +59,7 @@ cr.define('cr.ui', function() {
       doc.removeEventListener('mousedown', this, true);
       doc.removeEventListener('blur', this, true);
       doc.defaultView.removeEventListener('resize', this);
+      menu.removeEventListener('contextmenu', this);
       menu.removeEventListener('activate', this);
       menu.selectedIndex = -1;
       this.menu_ = null;
@@ -64,7 +67,7 @@ cr.define('cr.ui', function() {
       // On windows we might hide the menu in a right mouse button up and if
       // that is the case we wait some short period before we allow the menu
       // to be shown again.
-      this.hideTimestamp_ = Date.now();
+      this.hideTimestamp_ = cr.isWindows ? Date.now() : 0;
     },
 
     /**
