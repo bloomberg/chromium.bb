@@ -100,10 +100,12 @@ class RenderViewHost : public RenderWidgetHost {
   static RenderViewHost* FromID(int render_process_id, int render_view_id);
 
   // routing_id could be a valid route id, or it could be MSG_ROUTING_NONE, in
-  // which case RenderWidgetHost will create a new one. The session storage
-  // namespace parameter allows multiple render views to share the same session
-  // storage (part of the WebStorage spec) space. Passing in NULL simply
-  // allocates a new one (which is useful for testing).
+  // which case RenderWidgetHost will create a new one.
+  //
+  // The session storage namespace parameter allows multiple render views and
+  // tab contentses to share the same session storage (part of the WebStorage
+  // spec) space. This is useful when restoring tabs, but most callers should
+  // pass in NULL which will cause a new SessionStorageNamespace to be created.
   RenderViewHost(SiteInstance* instance,
                  RenderViewHostDelegate* delegate,
                  int routing_id,

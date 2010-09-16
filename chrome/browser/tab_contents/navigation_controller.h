@@ -138,10 +138,6 @@ class NavigationController {
 
   // ---------------------------------------------------------------------------
 
-  // The session storage namespace parameter allows multiple render views and
-  // tab contentses to share the same session storage (part of the WebStorage
-  // spec) space. Passing in NULL simply allocates a new one which is often the
-  // correct thing to do (especially in tests.
   NavigationController(TabContents* tab_contents,
                        Profile* profile,
                        SessionStorageNamespace* session_storage_namespace);

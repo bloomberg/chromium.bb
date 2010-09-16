@@ -122,8 +122,8 @@ class TabContents : public PageNavigator,
   //
   // The session storage namespace parameter allows multiple render views and
   // tab contentses to share the same session storage (part of the WebStorage
-  // spec) space. Passing in NULL simply allocates a new one (which is useful
-  // for testing).
+  // spec) space. This is useful when restoring tabs, but most callers should
+  // pass in NULL which will cause a new SessionStorageNamespace to be created.
   TabContents(Profile* profile,
               SiteInstance* site_instance,
               int routing_id,
