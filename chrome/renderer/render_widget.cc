@@ -287,7 +287,7 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
   set_next_paint_is_restore_ack();
 
   // Generate a full repaint.
-  if (needs_repainting && !webwidget_->isAcceleratedCompositingActive()) {
+  if (!webwidget_->isAcceleratedCompositingActive()) {
     didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
   } else {
     scheduleComposite();
