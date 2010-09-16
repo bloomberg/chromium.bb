@@ -30,9 +30,9 @@ chrome.test.runTests([
             assertEq('data:image/jpg;base64,', imgDataUrl.substr(0,22));
             whiteImageUrl = imgDataUrl;
 
-            testAllPixelsAreExpectedColor(whiteImageUrl,
-                                          kWindowRect,
-                                          '255,255,255,255');  // White.
+            testPixelsAreExpectedColor(whiteImageUrl,
+                                       kWindowRect,
+                                       '255,255,255,255');  // White.
           }));
         }));
       }));
@@ -58,9 +58,9 @@ chrome.test.runTests([
 
             assertTrue(whiteImageUrl != blackImageUrl);
 
-            testAllPixelsAreExpectedColor(blackImageUrl,
-                                          kWindowRect,
-                                          '0,0,0,255');  // Black.
+            testPixelsAreExpectedColor(blackImageUrl,
+                                       kWindowRect,
+                                       '0,0,0,255');  // Black.
           }));
         }));
       }));

@@ -53,7 +53,10 @@ function waitForAllTabs(callback) {
   waitForTabs();
 }
 
-function getAllPixels(imgUrl, windowRect, callbackFn) {
+// Run callbackFn() with an array of strings representing the
+// color of each pixel in a small region of the image.  Strings
+// representing pixels look like this: '255,255,255,0'.
+function getPixels(imgUrl, windowRect, callbackFn) {
   assertEq('string', typeof(imgUrl));
   var img = new Image();
   img.width = windowRect.width;
@@ -62,14 +65,17 @@ function getAllPixels(imgUrl, windowRect, callbackFn) {
   img.onload = pass(function() {
     var canvas = document.createElement('canvas');
 
-    // Comparing pixels is slow enough to hit timeouts.  Compare
-    // a 10x10 region.
+    // Comparing pixels is slow enough to hit timeouts if we run on
+    // the whole image..  Compare a 10x10 region.
     canvas.setAttribute('width', 10);
     canvas.setAttribute('height', 10);
     var context = canvas.getContext('2d');
-    context.drawImage(img, 0, 0, 10, 10);
+    context.drawImage(
+      img,
+      10, 10, 20, 20,  // Source rect: Crop to x in 10..20, y in 10..20.
+      0, 0, 10, 10);   // Dest rect is 10x10.  No resizing is done.
 
-    var imageData = context.getImageData(1, 1, 9, 9).data;
+    var imageData = context.getImageData(0, 0, 10, 10).data;
 
     var pixelColors = [];
     for (var i = 0, n = imageData.length; i < n; i += 4) {
@@ -83,14 +89,14 @@ function getAllPixels(imgUrl, windowRect, callbackFn) {
   });
 }
 
-function testAllPixelsAreExpectedColor(imgUrl, windowRect, expectedColor) {
-  getAllPixels(imgUrl, windowRect, function(pixelColors) {
+// Check that pixels in a small region of |imgUrl| are the color
+// |expectedColor|.
+function testPixelsAreExpectedColor(imgUrl, windowRect, expectedColor) {
+  getPixels(imgUrl, windowRect, function(pixelColors) {
     var badPixels = [];
     for (var i = 0, ie = pixelColors.length; i < ie; ++i) {
       if (pixelColors[i] != expectedColor) {
-        badPixels.push({'i': i,
-                        'color': pixelColors[i]
-                       });
+        badPixels.push({'i': i, 'color': pixelColors[i]});
       }
     }
     assertEq('[]', JSON.stringify(badPixels, null, 2));
@@ -98,14 +104,14 @@ function testAllPixelsAreExpectedColor(imgUrl, windowRect, expectedColor) {
 }
 
 // Build a count of the number of times the colors in
-// |expectedColors| occur in the image at |imgUrl|.
+// |expectedColors| occur in a small part of the image at |imgUrl|.
 function countPixelsWithColors(imgUrl, windowRect, expectedColors, callback) {
   colorCounts = new Array(expectedColors.length);
   for (var i = 0; i < expectedColors.length; ++i) {
     colorCounts[i] = 0;
   }
 
-  getAllPixels(imgUrl, windowRect, function(pixelColors) {
+  getPixels(imgUrl, windowRect, function(pixelColors) {
     for (var i = 0, ie = pixelColors.length; i < ie; ++i) {
       var colorIdx = expectedColors.indexOf(pixelColors[i]);
       if (colorIdx != -1)

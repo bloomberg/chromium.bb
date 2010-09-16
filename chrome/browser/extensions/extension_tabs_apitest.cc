@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabJpeg) {
                                   "test_jpeg.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FAILS_CaptureVisibleTabPng) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabPng) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_png.html")) << message_;

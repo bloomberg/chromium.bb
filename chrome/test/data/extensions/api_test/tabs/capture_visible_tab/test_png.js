@@ -31,9 +31,9 @@ chrome.test.runTests([
             assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
             whiteImageUrl = imgDataUrl;
 
-            testAllPixelsAreExpectedColor(whiteImageUrl,
-                                          kWindowRect,
-                                          '255,255,255,255');  // White.
+            testPixelsAreExpectedColor(whiteImageUrl,
+                                       kWindowRect,
+                                       '255,255,255,255');  // White.
           }));
         }));
       }));
@@ -65,11 +65,16 @@ chrome.test.runTests([
                   // Some pixels should not be white, because the text
                   // is not white.  Can't test for black because
                   // antialiasing makes the pixels slightly different
-                  // on each display setting.
-
-                  assertTrue(totalPixelsChecked != colorCounts[0]);
+                  // on each display setting.  Test that all pixels are
+                  // not the same color.
+                  assertTrue(totalPixelsChecked > colorCounts[0],
+                             JSON.stringify({
+                               message: 'Some pixels should not be white.',
+                               totalPixelsChecked: totalPixelsChecked,
+                               numWhitePixels: colorCounts[0]
+                             }, null, 2));
                 }));
-          }));
+            }));
         }));
       }));
     }));
