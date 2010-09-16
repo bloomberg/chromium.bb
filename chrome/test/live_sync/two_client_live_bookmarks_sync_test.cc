@@ -1857,7 +1857,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
   const BookmarkNode* bm_bar0 = bm0->GetBookmarkBarNode();
-  const BookmarkNode* bm_bar1 = bm0->GetBookmarkBarNode();
+  const BookmarkNode* bm_bar1 = bm1->GetBookmarkBarNode();
 
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 
@@ -1880,6 +1880,47 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
+  BookmarkModelVerifier::VerifyNoDuplicates(bm0);
+}
+
+// Test Scribe ID - 373503.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       MC_BiDirectionalPush_AddingSameBMs) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  BookmarkModel* profile0_bookmark_model = GetBookmarkModel(0);
+  BookmarkModel* profile1_bookmark_model = GetBookmarkModel(1);
+
+  const BookmarkNode* profile0_bookmark_bar =
+      profile0_bookmark_model->GetBookmarkBarNode();
+  const BookmarkNode* profile1_bookmark_bar =
+      profile1_bookmark_model->GetBookmarkBarNode();
+
+  {
+    const BookmarkNode* profile0_bookmark1 = profile0_bookmark_model->AddURL(
+        profile0_bookmark_bar, 0, ASCIIToUTF16("Bookmark1_name"),
+        GURL("http://www.bookmark1name.com"));
+    ASSERT_TRUE(profile0_bookmark1 != NULL);
+    const BookmarkNode* profile0_bookmark2 = profile0_bookmark_model->AddURL(
+        profile0_bookmark_bar, 1, ASCIIToUTF16("Bookmark2_name"),
+        GURL("http://www.bookmark2name.com"));
+    ASSERT_TRUE(profile0_bookmark2 != NULL);
+
+    const BookmarkNode* profile1_bookmark1 = profile1_bookmark_model->AddURL(
+        profile1_bookmark_bar, 0, ASCIIToUTF16("Bookmark2_name"),
+        GURL("http://www.bookmark2name.com"));
+    ASSERT_TRUE(profile1_bookmark1 != NULL);
+    const BookmarkNode* profile1_bookmark2 = profile1_bookmark_model->AddURL(
+        profile1_bookmark_bar, 1, ASCIIToUTF16("Bookmark1_name"),
+        GURL("http://www.bookmark1name.com"));
+    ASSERT_TRUE(profile1_bookmark2 != NULL);
+  }
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+  BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
+      profile1_bookmark_model);
+  BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
 }
 
 // Test Scribe ID - 373506.
@@ -1892,6 +1933,58 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   v->ExpectMatch(bm0);
   v->ExpectMatch(bm1);
+}
+
+// Test Scribe ID - 373505.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       MC_Merge_CaseInsensitivity_InNames) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  BookmarkModel* profile0_bookmark_model = GetBookmarkModel(0);
+  BookmarkModel* profile1_bookmark_model = GetBookmarkModel(1);
+
+  const BookmarkNode* profile0_bookmark_bar =
+      profile0_bookmark_model->GetBookmarkBarNode();
+
+  const BookmarkNode* profile1_bookmark_bar =
+      profile1_bookmark_model->GetBookmarkBarNode();
+
+  {
+    const BookmarkNode* profile0_folder = profile0_bookmark_model->AddGroup(
+        profile0_bookmark_bar, 0, ASCIIToUTF16("TeSt BMFolder"));
+    ASSERT_TRUE(profile0_folder != NULL);
+    const BookmarkNode* profile0_bookmark1 = profile0_bookmark_model->AddURL(
+        profile0_folder, 0, ASCIIToUTF16("bookmark1_name"),
+        GURL("http://www.bookmark1name.com"));
+    ASSERT_TRUE(profile0_bookmark1 != NULL);
+    const BookmarkNode* profile0_bookmark2 = profile0_bookmark_model->AddURL(
+        profile0_folder, 1, ASCIIToUTF16("bookmark2_name"),
+        GURL("http://www.bookmark2name.com"));
+    ASSERT_TRUE(profile0_bookmark2 != NULL);
+    const BookmarkNode* profile0_bookmark3 = profile0_bookmark_model->AddURL(
+        profile0_folder, 2, ASCIIToUTF16("BOOKMARK3_NAME"),
+        GURL("http://www.bookmark3name.com"));
+    ASSERT_TRUE(profile0_bookmark3 != NULL);
+
+    const BookmarkNode* profile1_folder = profile1_bookmark_model->AddGroup(
+        profile1_bookmark_bar, 0, ASCIIToUTF16("test bMFolder"));
+    ASSERT_TRUE(profile1_folder != NULL);
+    const BookmarkNode* profile1_bookmark1 = profile1_bookmark_model->AddURL(
+        profile1_folder, 0, ASCIIToUTF16("bookmark3_name"),
+        GURL("http://www.bookmark3name.com"));
+    ASSERT_TRUE(profile1_bookmark1 != NULL);
+    const BookmarkNode* profile1_bookmark2 = profile1_bookmark_model->AddURL(
+        profile1_folder, 1, ASCIIToUTF16("bookMARK2_Name"),
+        GURL("http://www.bookmark2name.com"));
+    ASSERT_TRUE(profile1_bookmark2 != NULL);
+  }
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+  BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
+      profile1_bookmark_model);
+  BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
+  BookmarkModelVerifier::VerifyNoDuplicates(profile1_bookmark_model);
 }
 
 // Test Scribe ID - 373508.
