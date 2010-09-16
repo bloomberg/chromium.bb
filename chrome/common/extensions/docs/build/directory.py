@@ -9,6 +9,7 @@ import os
 import os.path
 import re
 import hashlib
+import zipfile
 import simplejson as json
 
 def parse_json_file(path, encoding="utf-8"):
@@ -34,8 +35,9 @@ def parse_json_file(path, encoding="utf-8"):
     json_obj = json.load(json_file, encoding)
   except ValueError, msg:
     raise Exception("Failed to parse JSON out of file %s: %s" % (path, msg))
+  finally:
+    json_file.close()
 
-  json_file.close()
   return json_obj
 
 class ApiManifest(object):
@@ -203,10 +205,16 @@ class SamplesManifest(object):
 
   def writeToFile(self, path):
     """ Writes the contents of this manifest file as a JSON-encoded text file.
+    For each sample written to the manifest, create a zip file with the sample
+    contents in the sample's parent directory.
 
     Args:
       path: The path to write the samples manifest file to.
     """
+
+    for sample in self._manifest_data['samples']:
+      sample.write_zip()
+
     manifest_text = json.dumps(self._manifest_data, indent=2)
     output_path = os.path.realpath(path)
     try:
@@ -558,3 +566,33 @@ class Sample(dict):
   def is_app(self):
     """ Returns true if the extension has an 'app' section in its manifest."""
     return self._manifest.has_key('app')
+
+  def write_zip(self):
+    """ Writes a zip file containing all of the files in this Sample's dir."""
+    sample_path = os.path.realpath(os.path.dirname(self._manifest_path))
+    sample_dirname = os.path.basename(sample_path)
+    sample_parentpath = os.path.dirname(sample_path)
+
+    zip_filename = "%s.zip" % sample_dirname
+    zip_path = os.path.join(sample_parentpath, zip_filename)
+    zip_file = zipfile.ZipFile(zip_path, 'w')
+
+    try:
+      for root, dirs, files in os.walk(sample_path):
+        if '.svn' in dirs:
+          dirs.remove('.svn')
+        for file in files:
+          # Absolute path to the file to be added.
+          abspath = os.path.realpath(os.path.join(root, file))
+          # Relative path to store the file in under the zip.
+          relpath = sample_dirname + abspath.replace(sample_path, "")
+          zip_file.write(abspath, relpath)
+
+      self['zip_path'] = os.path.join(
+          os.path.dirname(os.path.dirname(self._get_relative_path())),
+          zip_filename)
+
+    except RuntimeError, msg:
+      raise Exception("Could not write zip at " % zip_path)
+    finally:
+      zip_file.close()

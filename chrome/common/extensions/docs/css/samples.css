@@ -36,6 +36,9 @@ code a:hover {
 .sourcefiles code a {
   color: #0000cc !important;
 }
+.sourcefiles code a {
+  color: #8e0000 !important;
+}
 .apicalls, .sourcefiles {
   margin: 5px 0;
   padding: 0;

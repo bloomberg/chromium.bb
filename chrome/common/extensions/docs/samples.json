@@ -154,6 +154,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/browserAction/set_icon_path.zip", 
       "path": "examples/api/browserAction/set_icon_path/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -178,6 +179,7 @@
         "manifest.json", 
         "popup.html"
       ], 
+      "zip_path": "examples/api/browserAction/set_page_color.zip", 
       "path": "examples/api/browserAction/set_page_color/", 
       "api_calls": [
         "chrome.tabs.executeScript"
@@ -202,6 +204,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/browserAction/make_page_red.zip", 
       "path": "examples/api/browserAction/make_page_red/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -230,6 +233,7 @@
         "manifest.json", 
         "popup.html"
       ], 
+      "zip_path": "examples/api/i18n/getMessage.zip", 
       "path": "examples/api/i18n/getMessage/", 
       "api_calls": [
         "chrome.i18n.getAcceptLanguages", 
@@ -252,6 +256,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/pageAction/set_icon.zip", 
       "path": "examples/api/pageAction/set_icon/", 
       "api_calls": [
         "chrome.pageAction.hide", 
@@ -278,6 +283,7 @@
         "blank.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/override/blank_ntp.zip", 
       "path": "examples/api/override/blank_ntp/", 
       "api_calls": [], 
       "id": "9747e3d6a3eab39bc7c17f11a80573c62d44c7e5", 
@@ -301,6 +307,7 @@
         "manifest.json", 
         "options.html"
       ], 
+      "zip_path": "examples/extensions/fx.zip", 
       "path": "examples/extensions/fx/", 
       "api_calls": [
         "chrome.bookmarks.onCreated", 
@@ -345,6 +352,7 @@
         "options.html", 
         "popup.html"
       ], 
+      "zip_path": "examples/extensions/buildbot.zip", 
       "path": "examples/extensions/buildbot/", 
       "api_calls": [
         "chrome.browserAction.setBadgeBackgroundColor", 
@@ -372,6 +380,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/extensions/chrome_search.zip", 
       "path": "examples/extensions/chrome_search/", 
       "api_calls": [
         "chrome.experimental.omnibox.onInputChanged", 
@@ -402,6 +411,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/i18n/cld.zip", 
       "path": "examples/api/i18n/cld/", 
       "api_calls": [
         "chrome.browserAction.setBadgeText", 
@@ -428,6 +438,7 @@
         "manifest.json", 
         "sample.js"
       ], 
+      "zip_path": "examples/api/contextMenus/basic.zip", 
       "path": "examples/api/contextMenus/basic/", 
       "api_calls": [
         "chrome.contextMenus.create"
@@ -451,6 +462,7 @@
         "manager.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/cookies.zip", 
       "path": "examples/api/cookies/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -483,6 +495,7 @@
         "contentscript.js", 
         "manifest.json"
       ], 
+      "zip_path": "examples/howto/contentscript_xhr.zip", 
       "path": "examples/howto/contentscript_xhr/", 
       "api_calls": [
         "chrome.extension.onRequest", 
@@ -510,6 +523,7 @@
         "manifest.json", 
         "options.html"
       ], 
+      "zip_path": "examples/extensions/email_this_page.zip", 
       "path": "examples/extensions/email_this_page/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -541,6 +555,7 @@
         "manifest.json", 
         "popup.html"
       ], 
+      "zip_path": "examples/tutorials/analytics.zip", 
       "path": "examples/tutorials/analytics/", 
       "api_calls": [], 
       "id": "763a08e9b06595d785568a8d392b95a2f3700258", 
@@ -568,6 +583,7 @@
         "options.html", 
         "popup.html"
       ], 
+      "zip_path": "examples/extensions/gdocs.zip", 
       "path": "examples/extensions/gdocs/", 
       "api_calls": [
         "chrome.browserAction.setBadgeText", 
@@ -645,6 +661,7 @@
         "manifest.json", 
         "options.html"
       ], 
+      "zip_path": "examples/extensions/gmail.zip", 
       "path": "examples/extensions/gmail/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -687,6 +704,7 @@
         "popup.html", 
         "prettyload.js"
       ], 
+      "zip_path": "examples/extensions/wave.zip", 
       "path": "examples/extensions/wave/", 
       "api_calls": [
         "chrome.extension.getBackgroundPage", 
@@ -716,6 +734,7 @@
         "manifest.json", 
         "popup.html"
       ], 
+      "zip_path": "examples/tutorials/getstarted.zip", 
       "path": "examples/tutorials/getstarted/", 
       "api_calls": [], 
       "id": "14b9651fda4e57b2a5914ba73a779812201b750a", 
@@ -738,6 +757,7 @@
         "history.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/idle/idle_simple.zip", 
       "path": "examples/api/idle/idle_simple/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -760,6 +780,7 @@
         "manifest.json", 
         "redirect.html"
       ], 
+      "zip_path": "examples/api/override/override_igoogle.zip", 
       "path": "examples/api/override/override_igoogle/", 
       "api_calls": [], 
       "id": "0ea1588bd07b20338fc21f725de1542a5fdf9726", 
@@ -783,6 +804,7 @@
         "info.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/extensions/imageinfo.zip", 
       "path": "examples/extensions/imageinfo/", 
       "api_calls": [
         "chrome.contextMenus.create", 
@@ -814,6 +836,7 @@
         "mappy_content_script.js", 
         "popup.html"
       ], 
+      "zip_path": "examples/extensions/mappy.zip", 
       "path": "examples/extensions/mappy/", 
       "api_calls": [
         "chrome.extension.getBackgroundPage", 
@@ -846,6 +869,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/windows/merge_windows.zip", 
       "path": "examples/api/windows/merge_windows/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -874,6 +898,7 @@
         "page.js", 
         "popup.html"
       ], 
+      "zip_path": "examples/api/messaging/timer.zip", 
       "path": "examples/api/messaging/timer/", 
       "api_calls": [
         "chrome.extension.onConnect", 
@@ -901,6 +926,7 @@
         "manifest.json", 
         "popup.html"
       ], 
+      "zip_path": "examples/api/bookmarks/basic.zip", 
       "path": "examples/api/bookmarks/basic/", 
       "api_calls": [
         "chrome.bookmarks.create", 
@@ -927,6 +953,7 @@
         "feed.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/extensions/news.zip", 
       "path": "examples/extensions/news/", 
       "api_calls": [
         "chrome.tabs.create"
@@ -950,6 +977,7 @@
         "feed.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/extensions/news_a11y.zip", 
       "path": "examples/extensions/news_a11y/", 
       "api_calls": [
         "chrome.tabs.create"
@@ -976,6 +1004,7 @@
         "feed.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/extensions/news_i18n.zip", 
       "path": "examples/extensions/news_i18n/", 
       "api_calls": [
         "chrome.i18n.getMessage", 
@@ -1004,6 +1033,7 @@
         "manifest.json", 
         "options.html"
       ], 
+      "zip_path": "examples/api/notifications.zip", 
       "path": "examples/api/notifications/", 
       "api_calls": [
         "chrome.tabs.create"
@@ -1024,6 +1054,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/omnibox.zip", 
       "path": "examples/api/omnibox/", 
       "api_calls": [
         "chrome.experimental.omnibox.onInputChanged", 
@@ -1046,6 +1077,7 @@
         "contentscript.js", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/pageAction/pageaction_by_content.zip", 
       "path": "examples/api/pageAction/pageaction_by_content/", 
       "api_calls": [
         "chrome.extension.onRequest", 
@@ -1069,6 +1101,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/pageAction/pageaction_by_url.zip", 
       "path": "examples/api/pageAction/pageaction_by_url/", 
       "api_calls": [
         "chrome.pageAction.show", 
@@ -1098,6 +1131,7 @@
         "options.html", 
         "script.js"
       ], 
+      "zip_path": "examples/extensions/benchmark.zip", 
       "path": "examples/extensions/benchmark/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -1135,6 +1169,7 @@
         "background.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/api/browserAction/print.zip", 
       "path": "examples/api/browserAction/print/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -1164,6 +1199,7 @@
         "contacts.html", 
         "manifest.json"
       ], 
+      "zip_path": "examples/extensions/oauth_contacts.zip", 
       "path": "examples/extensions/oauth_contacts/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -1199,6 +1235,7 @@
         "manifest.json", 
         "popup.html"
       ], 
+      "zip_path": "examples/api/processes/show_tabs.zip", 
       "path": "examples/api/processes/show_tabs/", 
       "api_calls": [
         "chrome.experimental.processes.getProcessForTab", 
@@ -1229,6 +1266,7 @@
         "manifest.json", 
         "tabs_api.html"
       ], 
+      "zip_path": "examples/api/tabs/inspector.zip", 
       "path": "examples/api/tabs/inspector/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -1277,6 +1315,7 @@
         "screenshot.html", 
         "screenshot.js"
       ], 
+      "zip_path": "examples/api/tabs/screenshot.zip", 
       "path": "examples/api/tabs/screenshot/", 
       "api_calls": [
         "chrome.browserAction.onClicked", 
@@ -1304,6 +1343,7 @@
         "typedUrls.html", 
         "typedUrls.js"
       ], 
+      "zip_path": "examples/api/history/showHistory.zip", 
       "path": "examples/api/history/showHistory/", 
       "api_calls": [
         "chrome.history.getVisits", 
