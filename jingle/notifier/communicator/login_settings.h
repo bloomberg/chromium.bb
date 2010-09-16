@@ -19,7 +19,6 @@ class HostResolver;
 }
 
 namespace talk_base {
-class FirewallManager;
 class SocketAddress;
 }
 
@@ -31,34 +30,15 @@ class LoginSettings {
  public:
   LoginSettings(const buzz::XmppClientSettings& user_settings,
                 const ConnectionOptions& options,
-                const std::string& lang,
                 net::HostResolver* host_resolver,
                 ServerInformation* server_list,
                 int server_count,
-                talk_base::FirewallManager* firewall,
-                bool try_ssltcp_first,
-                bool proxy_only);
+                bool try_ssltcp_first);
 
   ~LoginSettings();
 
-  // Note: firewall() may return NULL.
-  //
-  // Could be a const method, but it allows
-  // modification of part (FirewallManager) of its state.
-  talk_base::FirewallManager* firewall() {
-    return firewall_;
-  }
-
   bool try_ssltcp_first() const {
     return try_ssltcp_first_;
-  }
-
-  bool proxy_only() const {
-    return proxy_only_;
-  }
-
-  const std::string& lang() const {
-    return lang_;
   }
 
   net::HostResolver* host_resolver() {
@@ -90,9 +70,6 @@ class LoginSettings {
 
  private:
   bool try_ssltcp_first_;
-  bool proxy_only_;
-  talk_base::FirewallManager* firewall_;
-  std::string lang_;
 
   net::HostResolver* host_resolver_;
   talk_base::scoped_array<ServerInformation> server_list_;

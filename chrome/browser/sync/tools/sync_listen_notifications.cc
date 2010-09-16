@@ -9,28 +9,27 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
+#include "base/observer_list.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "jingle/notifier/base/chrome_async_socket.h"
 #include "jingle/notifier/base/notification_method.h"
-#include "jingle/notifier/base/task_pump.h"
-#include "jingle/notifier/base/xmpp_client_socket_factory.h"
+#include "jingle/notifier/base/xmpp_connection.h"
 #include "jingle/notifier/listener/listen_task.h"
 #include "jingle/notifier/listener/notification_constants.h"
 #include "jingle/notifier/listener/subscribe_task.h"
+#include "jingle/notifier/listener/xml_element_util.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
 #include "talk/base/cryptstring.h"
 #include "talk/base/logging.h"
-#include "talk/base/sigslot.h"
+#include "talk/base/task.h"
 #include "talk/xmpp/jid.h"
-#include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "talk/xmpp/constants.h"
 #include "talk/xmpp/xmppengine.h"
@@ -43,119 +42,66 @@ namespace {
 
 // Main class that listens for and handles messages from the XMPP
 // client.
-class XmppNotificationClient : public sigslot::has_slots<> {
+class XmppNotificationClient : public notifier::XmppConnection::Delegate {
  public:
-  // A delegate is notified when we are logged in and out of XMPP or
-  // when an error occurs.
-  //
-  // TODO(akalin): Change Delegate to Observer so we can listen both
-  // to legacy and cache invalidation notifications.
-  class Delegate {
+  // An observer is notified when we are logged into XMPP or when an
+  // error occurs.
+  class Observer {
    public:
-    virtual ~Delegate() {}
+    virtual ~Observer() {}
 
-    // The given xmpp_client is valid until OnLogout() or OnError() is
-    // called.
-    virtual void OnLogin(
-        const buzz::XmppClientSettings& xmpp_client_settings,
-        buzz::XmppClient* xmpp_client) = 0;
+    virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) = 0;
 
-    virtual void OnLogout() = 0;
-
-    virtual void OnError(buzz::XmppEngine::Error error, int subcode) = 0;
+    virtual void OnError() = 0;
   };
 
-  explicit XmppNotificationClient(Delegate* delegate)
-      : delegate_(delegate),
-        xmpp_client_(NULL) {
-    CHECK(delegate_);
-  }
-
-  // Connect with the given XMPP settings and run until disconnected.
-  void Run(const buzz::XmppClientSettings& xmpp_client_settings) {
-    CHECK(!xmpp_client_);
-    xmpp_client_settings_ = xmpp_client_settings;
-    xmpp_client_ = new buzz::XmppClient(&task_pump_);
-    CHECK(xmpp_client_);
-    xmpp_client_->SignalLogInput.connect(
-        this, &XmppNotificationClient::OnXmppClientLogInput);
-    xmpp_client_->SignalLogOutput.connect(
-        this, &XmppNotificationClient::OnXmppClientLogOutput);
-    xmpp_client_->SignalStateChange.connect(
-        this, &XmppNotificationClient::OnXmppClientStateChange);
-
-    net::SSLConfig ssl_config;
-    bool use_fake_ssl_client_socket =
-        (xmpp_client_settings.protocol() == cricket::PROTO_SSLTCP);
-    buzz::AsyncSocket* buzz_async_socket =
-        new notifier::ChromeAsyncSocket(
-            new notifier::XmppClientSocketFactory(
-                net::ClientSocketFactory::GetDefaultFactory(),
-                use_fake_ssl_client_socket),
-            ssl_config, 4096, 64 * 1024, NULL);
-    CHECK(buzz_async_socket);
-    // Transfers ownership of buzz_async_socket.
-    buzz::XmppReturnStatus connect_status =
-        xmpp_client_->Connect(xmpp_client_settings_, "",
-                              buzz_async_socket, NULL);
-    CHECK_EQ(connect_status, buzz::XMPP_RETURN_OK);
-    xmpp_client_->Start();
-    MessageLoop::current()->Run();
-    DCHECK(!xmpp_client_);
-  }
-
- private:
-  void OnXmppClientStateChange(buzz::XmppEngine::State state) {
-    switch (state) {
-      case buzz::XmppEngine::STATE_START:
-        LOG(INFO) << "Starting...";
-        break;
-      case buzz::XmppEngine::STATE_OPENING:
-        LOG(INFO) << "Opening...";
-        break;
-      case buzz::XmppEngine::STATE_OPEN: {
-        LOG(INFO) << "Opened";
-        delegate_->OnLogin(xmpp_client_settings_, xmpp_client_);
-        break;
-      }
-      case buzz::XmppEngine::STATE_CLOSED:
-        LOG(INFO) << "Closed";
-        int subcode;
-        buzz::XmppEngine::Error error = xmpp_client_->GetError(&subcode);
-        if (error == buzz::XmppEngine::ERROR_NONE) {
-          delegate_->OnLogout();
-        } else {
-          delegate_->OnError(error, subcode);
-        }
-        MessageLoop::current()->Quit();
-        xmpp_client_ = NULL;
-        break;
+  template <class T> XmppNotificationClient(T begin, T end) {
+    for (T it = begin; it != end; ++it) {
+      observer_list_.AddObserver(*it);
     }
   }
 
-  void OnXmppClientLogInput(const char* data, int len) {
-    LOG(INFO) << "XMPP Input: " << std::string(data, len);
+  virtual ~XmppNotificationClient() {}
+
+  // Connect with the given XMPP settings and run until disconnected.
+  void Run(const buzz::XmppClientSettings& xmpp_client_settings) {
+    DCHECK(!xmpp_connection_.get());
+    xmpp_connection_.reset(
+        new notifier::XmppConnection(xmpp_client_settings, this, NULL));
+    MessageLoop::current()->Run();
+    DCHECK(!xmpp_connection_.get());
   }
 
-  void OnXmppClientLogOutput(const char* data, int len) {
-    LOG(INFO) << "XMPP Output: " << std::string(data, len);
+  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) {
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnConnect(base_task));
   }
 
-  Delegate* delegate_;
-  notifier::TaskPump task_pump_;
-  buzz::XmppClientSettings xmpp_client_settings_;
-  // Owned by task_pump.
-  buzz::XmppClient* xmpp_client_;
+  virtual void OnError(buzz::XmppEngine::Error error, int subcode,
+                       const buzz::XmlElement* stream_error) {
+    LOG(INFO) << "Error: " << error << ", subcode: " << subcode;
+    if (stream_error) {
+      LOG(INFO) << "Stream error: "
+                << notifier::XmlElementToString(*stream_error);
+    }
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnError());
+    // This has to go before the message loop quits.
+    xmpp_connection_.reset();
+    MessageLoop::current()->Quit();
+  }
+
+ private:
+  ObserverList<Observer> observer_list_;
+  scoped_ptr<notifier::XmppConnection> xmpp_connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(XmppNotificationClient);
 };
 
 // Delegate for legacy notifications.
-class LegacyNotifierDelegate : public XmppNotificationClient::Delegate {
+class LegacyNotifierDelegate : public XmppNotificationClient::Observer {
  public:
   virtual ~LegacyNotifierDelegate() {}
 
-  virtual void OnLogin(
-      const buzz::XmppClientSettings& xmpp_client_settings,
-      buzz::XmppClient* xmpp_client) {
+  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) {
     LOG(INFO) << "Logged in";
     notifier::NotificationMethod notification_method =
         notifier::NOTIFICATION_TRANSITIONAL;
@@ -167,23 +113,17 @@ class LegacyNotifierDelegate : public XmppNotificationClient::Delegate {
       }
       subscribed_services_list.push_back(browser_sync::kSyncServiceUrl);
     }
-    // Owned by xmpp_client.
+    // Owned by base_task.
     notifier::SubscribeTask* subscribe_task =
-        new notifier::SubscribeTask(xmpp_client, subscribed_services_list);
+        new notifier::SubscribeTask(base_task, subscribed_services_list);
     subscribe_task->Start();
     // Owned by xmpp_client.
     notifier::ListenTask* listen_task =
-        new notifier::ListenTask(xmpp_client);
+        new notifier::ListenTask(base_task);
     listen_task->Start();
   }
 
-  virtual void OnLogout() {
-    LOG(INFO) << "Logged out";
-  }
-
-  virtual void OnError(buzz::XmppEngine::Error error, int subcode) {
-    LOG(INFO) << "Error: " << error << ", subcode: " << subcode;
-  }
+  virtual void OnError() {}
 };
 
 // The actual listener for sync notifications.
@@ -217,32 +157,24 @@ class ChromeInvalidationListener
 
 // Delegate for server-side notifications.
 class CacheInvalidationNotifierDelegate
-    : public XmppNotificationClient::Delegate {
+    : public XmppNotificationClient::Observer {
  public:
   CacheInvalidationNotifierDelegate() {}
 
   virtual ~CacheInvalidationNotifierDelegate() {}
 
-  virtual void OnLogin(
-      const buzz::XmppClientSettings& xmpp_client_settings,
-      buzz::XmppClient* xmpp_client) {
+  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) {
     LOG(INFO) << "Logged in";
 
     // TODO(akalin): app_name should be per-client unique.
     const std::string kAppName = "cc_sync_listen_notifications";
     chrome_invalidation_client_.Start(kAppName,
                                       &chrome_invalidation_listener_,
-                                      xmpp_client);
+                                      base_task);
     chrome_invalidation_client_.RegisterTypes();
   }
 
-  virtual void OnLogout() {
-    LOG(INFO) << "Logged out";
-    chrome_invalidation_client_.Stop();
-  }
-
-  virtual void OnError(buzz::XmppEngine::Error error, int subcode) {
-    LOG(INFO) << "Error: " << error << ", subcode: " << subcode;
+  virtual void OnError() {
     chrome_invalidation_client_.Stop();
   }
 
@@ -269,8 +201,7 @@ int main(int argc, char* argv[]) {
   if (email.empty()) {
     printf("Usage: %s --email=foo@bar.com [--password=mypassword] "
            "[--server=talk.google.com] [--port=5222] [--allow-plain] "
-           "[--disable-tls] [--use-cache-invalidation] [--use-ssl-tcp] "
-           "[--use-chrome-async-socket]\n",
+           "[--disable-tls] [--use-cache-invalidation] [--use-ssl-tcp]\n",
            argv[0]);
     return -1;
   }
@@ -327,15 +258,17 @@ int main(int argc, char* argv[]) {
   // Connect and listen.
   LegacyNotifierDelegate legacy_notifier_delegate;
   CacheInvalidationNotifierDelegate cache_invalidation_notifier_delegate;
-  XmppNotificationClient::Delegate* delegate = NULL;
+  std::vector<XmppNotificationClient::Observer*> observers;
+  // TODO(akalin): Add switch to listen to both.
   if (command_line.HasSwitch(switches::kSyncUseCacheInvalidation)) {
-    delegate = &cache_invalidation_notifier_delegate;
+    observers.push_back(&cache_invalidation_notifier_delegate);
   } else {
-    delegate = &legacy_notifier_delegate;
+    observers.push_back(&legacy_notifier_delegate);
   }
   // TODO(akalin): Revert the move of all switches in this file into
   // chrome_switches.h.
-  XmppNotificationClient xmpp_notification_client(delegate);
+  XmppNotificationClient xmpp_notification_client(
+      observers.begin(), observers.end());
   xmpp_notification_client.Run(xmpp_client_settings);
 
   return 0;

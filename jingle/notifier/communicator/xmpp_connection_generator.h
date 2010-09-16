@@ -19,7 +19,6 @@
 namespace talk_base {
 struct ProxyInfo;
 class SignalThread;
-class Task;
 }
 
 namespace notifier {
@@ -37,18 +36,13 @@ struct ServerInformation {
 // combinations.
 class XmppConnectionGenerator : public sigslot::has_slots<> {
  public:
-  // parent is the parent for any tasks needed during this operation.
   // try_ssltcp_first indicates that SSLTCP is tried before XMPP. Used by tests.
-  // proxy_only indicates if true connections are only attempted using the
-  // proxy.
   // server_list is the list of connections to attempt in priority order.
   // server_count is the number of items in the server list.
   XmppConnectionGenerator(
-      talk_base::Task* parent,
       const scoped_refptr<net::HostResolver>& host_resolver,
       const ConnectionOptions* options,
       bool try_ssltcp_first,
-      bool proxy_only,
       const ServerInformation* server_list,
       int server_count);
   ~XmppConnectionGenerator();
@@ -59,8 +53,6 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
 
   void UseNextConnection();
   void UseCurrentConnection();
-
-  const talk_base::ProxyInfo& proxy() const;
 
   sigslot::signal1<const ConnectionSettings&> SignalNewSettings;
 
@@ -83,12 +75,10 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
   int server_count_;
   int server_index_;  // The server that is current being used.
   bool try_ssltcp_first_;  // Used when sync tests are run on chromium builders.
-  bool proxy_only_;
   bool successfully_resolved_dns_;
   int first_dns_error_;
   const ConnectionOptions* options_;
 
-  talk_base::Task* parent_;
   DISALLOW_COPY_AND_ASSIGN(XmppConnectionGenerator);
 };
 

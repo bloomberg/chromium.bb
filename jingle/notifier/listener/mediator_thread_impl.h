@@ -29,8 +29,6 @@
 #include "base/thread.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
-#include "jingle/notifier/communicator/login_connection_state.h"
-#include "jingle/notifier/communicator/login_failure.h"
 #include "jingle/notifier/listener/mediator_thread.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -81,19 +79,13 @@ class MediatorThreadImpl
   // Should only be called after Start().
   MessageLoop* worker_message_loop();
 
-  // Should only be called after OnConnectionStateChange() is called
-  // on the delegate with true and before it is called with false.
-  buzz::XmppClient* xmpp_client();
-
-  // This is virtual so that subclasses can also know when the
-  // connection state changes.
-  virtual void OnClientStateChangeMessage(LoginConnectionState state);
+  virtual void OnDisconnect();
 
   Delegate* delegate_;
   MessageLoop* parent_message_loop_;
+  base::WeakPtr<talk_base::Task> base_task_;
 
  private:
-  // Called from within the thread on internal events.
   void DoLogin(const buzz::XmppClientSettings& settings);
   void DoDisconnect();
   void DoSubscribeForUpdates(
@@ -107,17 +99,15 @@ class MediatorThreadImpl
   void OnIncomingNotification(
       const IncomingNotificationData& notification_data);
   void OnOutgoingNotification(bool success);
-  void OnLoginFailureMessage(const notifier::LoginFailure& failure);
+  void OnConnect(base::WeakPtr<talk_base::Task> parent);
   void OnSubscriptionStateChange(bool success);
 
   // Equivalents of the above functions called from the parent thread.
   void OnIncomingNotificationOnParentThread(
       const IncomingNotificationData& notification_data);
   void OnOutgoingNotificationOnParentThread(bool success);
-  void OnLoginFailureMessageOnParentThread(
-      const notifier::LoginFailure& failure);
-  void OnClientStateChangeMessageOnParentThread(
-      LoginConnectionState state);
+  void OnConnectOnParentThread();
+  void OnDisconnectOnParentThread();
   void OnSubscriptionStateChangeOnParentThread(
       bool success);
 
@@ -126,11 +116,6 @@ class MediatorThreadImpl
   base::Thread worker_thread_;
   scoped_refptr<net::HostResolver> host_resolver_;
 
-  // All buzz::XmppClients are owned by their parent.  The root parent is the
-  // SingleLoginTask created by the notifier::Login object.  This in turn is
-  // owned by the TaskPump.  They are destroyed either when processing is
-  // complete or the pump shuts down.
-  scoped_ptr<notifier::TaskPump> pump_;
   scoped_ptr<notifier::Login> login_;
 
   DISALLOW_COPY_AND_ASSIGN(MediatorThreadImpl);

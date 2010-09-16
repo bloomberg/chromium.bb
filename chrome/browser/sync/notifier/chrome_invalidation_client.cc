@@ -31,7 +31,7 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
 
 void ChromeInvalidationClient::Start(
     const std::string& client_id, Listener* listener,
-    buzz::XmppClient* xmpp_client) {
+    talk_base::Task* base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   Stop();
 
@@ -54,7 +54,7 @@ void ChromeInvalidationClient::Start(
           &chrome_system_resources_, client_type, client_id, this,
           client_config));
   cache_invalidation_packet_handler_.reset(
-      new CacheInvalidationPacketHandler(xmpp_client,
+      new CacheInvalidationPacketHandler(base_task,
                                          invalidation_client_.get()));
   registration_manager_.reset(
       new RegistrationManager(invalidation_client_.get()));

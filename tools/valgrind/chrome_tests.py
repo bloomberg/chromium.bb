@@ -235,6 +235,9 @@ class ChromeTests:
   def TestMedia(self):
     return self.SimpleTest("chrome", "media_unittests")
 
+  def TestNotifier(self):
+    return self.SimpleTest("chrome", "notifier_unit_tests")
+  
   def TestPrinting(self):
     return self.SimpleTest("chrome", "printing_unittests")
 
@@ -394,6 +397,7 @@ class ChromeTests:
     "layout": TestLayout,        "layout_tests": TestLayout,
     "media": TestMedia,          "media_unittests": TestMedia,
     "net": TestNet,              "net_unittests": TestNet,
+    "notifier": TestNotifier,    "notifier_unittests": TestNotifier,
     "printing": TestPrinting,    "printing_unittests": TestPrinting,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
     "startup": TestStartup,      "startup_tests": TestStartup,

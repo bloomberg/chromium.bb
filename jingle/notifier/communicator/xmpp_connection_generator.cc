@@ -37,11 +37,9 @@
 namespace notifier {
 
 XmppConnectionGenerator::XmppConnectionGenerator(
-    talk_base::Task* parent,
     const scoped_refptr<net::HostResolver>& host_resolver,
     const ConnectionOptions* options,
     bool try_ssltcp_first,
-    bool proxy_only,
     const ServerInformation* server_list,
     int server_count)
     : host_resolver_(host_resolver),
@@ -55,13 +53,10 @@ XmppConnectionGenerator::XmppConnectionGenerator(
       server_count_(server_count),
       server_index_(-1),
       try_ssltcp_first_(try_ssltcp_first),
-      proxy_only_(proxy_only),
       successfully_resolved_dns_(false),
       first_dns_error_(0),
-      options_(options),
-      parent_(parent) {
+      options_(options) {
   DCHECK(host_resolver);
-  DCHECK(parent);
   DCHECK(options);
   DCHECK_GT(server_count_, 0);
   for (int i = 0; i < server_count_; ++i) {
@@ -71,16 +66,6 @@ XmppConnectionGenerator::XmppConnectionGenerator(
 
 XmppConnectionGenerator::~XmppConnectionGenerator() {
   LOG(INFO) << "XmppConnectionGenerator::~XmppConnectionGenerator";
-}
-
-const talk_base::ProxyInfo& XmppConnectionGenerator::proxy() const {
-  DCHECK(settings_list_.get());
-  if (settings_index_ >= settings_list_->GetCount()) {
-    return settings_list_->proxy();
-  }
-
-  ConnectionSettings* settings = settings_list_->GetSettings(settings_index_);
-  return settings->proxy();
 }
 
 // Starts resolving proxy information.
@@ -178,8 +163,7 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
       ip_list,
       server_list_[server_index_].server.port(),
       server_list_[server_index_].special_port_magic,
-      try_ssltcp_first_,
-      proxy_only_);
+      try_ssltcp_first_);
 }
 
 static const char* const PROTO_NAMES[cricket::PROTO_LAST + 1] = {
@@ -197,10 +181,7 @@ void XmppConnectionGenerator::UseCurrentConnection() {
   LOG(INFO) << "*** Attempting "
             << ProtocolToString(settings->protocol()) << " connection to "
             << settings->server().IPAsString() << ":"
-            << settings->server().port()
-            << " (via " << ProxyToString(settings->proxy().type)
-            << " proxy @ " << settings->proxy().address.IPAsString() << ":"
-            << settings->proxy().address.port() << ")";
+            << settings->server().port();
 
   SignalNewSettings(*settings);
 }

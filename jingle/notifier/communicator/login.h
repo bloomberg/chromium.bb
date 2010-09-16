@@ -7,13 +7,12 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "jingle/notifier/base/sigslotrepeater.h"
-#include "jingle/notifier/communicator/login_connection_state.h"
+#include "base/weak_ptr.h"
 #include "net/base/network_change_notifier.h"
 #include "talk/base/proxyinfo.h"
-#include "talk/base/scoped_ptr.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppengine.h"
 
@@ -28,15 +27,13 @@ class HostResolver;
 }  // namespace net
 
 namespace talk_base {
-class FirewallManager;
-struct ProxyInfo;
+class Task;
 class TaskParent;
 }  // namespace talk_base
 
 namespace notifier {
 
 class ConnectionOptions;
-class LoginFailure;
 class LoginSettings;
 struct ServerInformation;
 class SingleLoginAttempt;
@@ -48,41 +45,26 @@ class Login : public net::NetworkChangeNotifier::Observer,
               public sigslot::has_slots<> {
  public:
   // firewall may be NULL.
-  Login(talk_base::TaskParent* parent,
-        const buzz::XmppClientSettings& user_settings,
+  Login(const buzz::XmppClientSettings& user_settings,
         const ConnectionOptions& options,
-        std::string lang,
         net::HostResolver* host_resolver,
         ServerInformation* server_list,
         int server_count,
-        talk_base::FirewallManager* firewall,
-        bool try_ssltcp_first,
-        bool proxy_only);
+        bool try_ssltcp_first);
   virtual ~Login();
 
   void StartConnection();
 
-  buzz::XmppClient* xmpp_client();
-
   // net::NetworkChangeNotifier::Observer implementation.
   virtual void OnIPAddressChanged();
 
-  sigslot::signal1<LoginConnectionState> SignalClientStateChange;
-
-  sigslot::signal1<const LoginFailure&> SignalLoginFailure;
-  sigslot::repeater2<const char*, int> SignalLogInput;
-  sigslot::repeater2<const char*, int> SignalLogOutput;
+  sigslot::signal1<base::WeakPtr<talk_base::Task> > SignalConnect;
+  sigslot::signal0<> SignalDisconnect;
 
  private:
-  void OnLoginFailure(const LoginFailure& failure);
   void OnLogoff();
   void OnRedirect(const std::string& redirect_server, int redirect_port);
-  void OnClientStateChange(buzz::XmppEngine::State state);
-
-  void ChangeState(LoginConnectionState new_state);
-
-  // Abort any existing connection.
-  void Disconnect();
+  void OnConnect(base::WeakPtr<talk_base::Task> parent);
 
   // Stops any existing reconnect timer and sets an initial reconnect
   // interval.
@@ -98,8 +80,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
 
   talk_base::TaskParent* parent_;
   scoped_ptr<LoginSettings> login_settings_;
-  LoginConnectionState state_;
-  SingleLoginAttempt* single_attempt_;
+  scoped_ptr<SingleLoginAttempt> single_attempt_;
 
   // reconnection state.
   base::TimeDelta reconnect_interval_;

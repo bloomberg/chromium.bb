@@ -17,17 +17,11 @@ namespace notifier {
 
 LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
                              const ConnectionOptions& options,
-                             const std::string& lang,
                              net::HostResolver* host_resolver,
                              ServerInformation* server_list,
                              int server_count,
-                             talk_base::FirewallManager* firewall,
-                             bool try_ssltcp_first,
-                             bool proxy_only)
+                             bool try_ssltcp_first)
     :  try_ssltcp_first_(try_ssltcp_first),
-       proxy_only_(proxy_only),
-       firewall_(firewall),
-       lang_(lang),
        host_resolver_(host_resolver),
        server_list_(new ServerInformation[server_count]),
        server_count_(server_count),

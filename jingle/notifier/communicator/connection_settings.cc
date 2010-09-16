@@ -26,26 +26,15 @@ void ConnectionSettings::FillXmppClientSettings(
   DCHECK(xcs);
   xcs->set_protocol(protocol_);
   xcs->set_server(server_);
-  xcs->set_proxy(proxy_.type);
-  if (proxy_.type != talk_base::PROXY_NONE) {
-    xcs->set_proxy_host(proxy_.address.IPAsString());
-    xcs->set_proxy_port(proxy_.address.port());
-  }
-  if ((proxy_.type != talk_base::PROXY_NONE) && !proxy_.username.empty()) {
-    xcs->set_use_proxy_auth(true);
-    xcs->set_proxy_user(proxy_.username);
-    xcs->set_proxy_pass(proxy_.password);
-  } else {
-    xcs->set_use_proxy_auth(false);
-  }
+  xcs->set_proxy(talk_base::PROXY_NONE);
+  xcs->set_use_proxy_auth(false);
 }
 
 void ConnectionSettingsList::AddPermutations(const std::string& hostname,
                                              const std::vector<uint32>& iplist,
                                              int16 port,
                                              bool special_port_magic,
-                                             bool try_ssltcp_first,
-                                             bool proxy_only) {
+                                             bool try_ssltcp_first) {
   // randomize the list. This ensures the iplist isn't always
   // evaluated in the order returned by DNS
   std::vector<uint32> iplist_random = iplist;
@@ -63,7 +52,7 @@ void ConnectionSettingsList::AddPermutations(const std::string& hostname,
   if (iplist_random.empty()) {
     // We couldn't pre-resolve the hostname, so let's hope it will resolve
     // further down the pipeline (by a proxy, for example).
-    PermuteForAddress(server, special_port_magic, try_ssltcp_first, proxy_only,
+    PermuteForAddress(server, special_port_magic, try_ssltcp_first,
                       &list_temp);
   } else {
     // Generate a set of possibilities for each server address.
@@ -76,7 +65,7 @@ void ConnectionSettingsList::AddPermutations(const std::string& hostname,
       iplist_seen_.push_back(iplist_random[index]);
       server.SetResolvedIP(iplist_random[index]);
       PermuteForAddress(server, special_port_magic, try_ssltcp_first,
-                        proxy_only, &list_temp);
+                        &list_temp);
     }
   }
 
@@ -92,7 +81,6 @@ void ConnectionSettingsList::PermuteForAddress(
     const talk_base::SocketAddress& server,
     bool special_port_magic,
     bool try_ssltcp_first,
-    bool proxy_only,
     std::deque<ConnectionSettings>* list_temp) {
   DCHECK(list_temp);
   *(template_.mutable_server()) = server;
@@ -105,35 +93,10 @@ void ConnectionSettingsList::PermuteForAddress(
     ConnectionSettings settings(template_);
     settings.set_protocol(cricket::PROTO_SSLTCP);
     settings.mutable_server()->SetPort(443);
-    // HTTPS proxies usually require port 443, so try it first. In addition,
-    // when certain tests like the sync integration tests are run on the
-    // chromium builders, we try the SSLTCP port (443) first because the XMPP
-    // port (5222) is blocked.
-    if ((template_.proxy().type == talk_base::PROXY_HTTPS) ||
-        (template_.proxy().type == talk_base::PROXY_UNKNOWN) ||
-        try_ssltcp_first) {
+    if (try_ssltcp_first) {
       list_temp->push_front(settings);
     } else {
       list_temp->push_back(settings);
-    }
-  }
-
-  if (!proxy_only) {
-    // Try without the proxy
-    if (template_.proxy().type != talk_base::PROXY_NONE) {
-      ConnectionSettings settings(template_);
-      settings.mutable_proxy()->type = talk_base::PROXY_NONE;
-      list_temp->push_back(settings);
-
-      if (special_port_magic) {
-        settings.set_protocol(cricket::PROTO_SSLTCP);
-        settings.mutable_server()->SetPort(443);
-        if (try_ssltcp_first) {
-          list_temp->push_front(settings);
-        } else {
-          list_temp->push_back(settings);
-        }
-      }
     }
   }
 }

@@ -7,63 +7,39 @@
 
 #include <string>
 
-#include "jingle/notifier/communicator/login.h"
-#include "talk/base/scoped_ptr.h"
+#include "base/scoped_ptr.h"
+#include "jingle/notifier/base/xmpp_connection.h"
+#include "jingle/notifier/communicator/xmpp_connection_generator.h"
 #include "talk/base/sigslot.h"
-#include "talk/base/task.h"
 #include "talk/xmpp/xmppengine.h"
 
-namespace buzz {
-class AsyncSocket;
-class PreXmppAuth;
-class XmppClient;
-class XmppClientSettings;
-class XmppClientSettings;
-}
-
 namespace talk_base {
-class FirewallManager;
-struct ProxyInfo;
-class SignalThread;
 class Task;
 }
 
 namespace notifier {
 
 class ConnectionSettings;
-class LoginFailure;
 class LoginSettings;
-struct ServerInformation;
 class XmppConnectionGenerator;
+class XmppConnection;
 
 // Handles all of the aspects of a single login attempt (across multiple ip
 // addresses) and maintainence. By containing this within one class, when
 // another login attempt is made, this class will be disposed and all of the
 // signalling for the previous login attempt will be cleaned up immediately.
-//
-// This is a task to allow for cleaning this up when a signal is being fired.
-// Technically, delete this during the firing of a signal could work but it is
-// fragile.
-class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
+class SingleLoginAttempt : public XmppConnection::Delegate,
+                           public sigslot::has_slots<> {
  public:
-  SingleLoginAttempt(talk_base::TaskParent* parent,
-                     LoginSettings* login_settings);
-  ~SingleLoginAttempt();
-  virtual int ProcessStart();
-  void UseNextConnection();
-  void UseCurrentConnection();
+  explicit SingleLoginAttempt(LoginSettings* login_settings);
 
-  buzz::XmppClient* xmpp_client() {
-    return client_;
-  }
+  virtual ~SingleLoginAttempt();
 
-  // Returns the proxy that is being used to connect (or the default proxy
-  // information if all attempted connections failed).
-  const talk_base::ProxyInfo& proxy() const;
+  virtual void OnConnect(base::WeakPtr<talk_base::Task> parent);
 
-  // Typically handled by creating a new SingleLoginAttempt and doing
-  // StartConnection.
-  sigslot::signal0<> SignalUnexpectedDisconnect;
+  virtual void OnError(buzz::XmppEngine::Error error,
+                       int error_subcode,
+                       const buzz::XmlElement* stream_error);
 
   // Typically handled by storing the redirect for 5 seconds, and setting it
   // into LoginSettings, then creating a new SingleLoginAttempt, and doing
@@ -74,52 +50,17 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
 
   sigslot::signal0<> SignalNeedAutoReconnect;
 
-  // SignalClientStateChange(buzz::XmppEngine::State new_state);
-  sigslot::signal1<buzz::XmppEngine::State> SignalClientStateChange;
-
-  // See the LoginFailure for how to handle this.
-  sigslot::signal1<const LoginFailure&> SignalLoginFailure;
-
-  // Sent when there is a graceful log-off (state goes to closed with no
-  // error).
-  sigslot::signal0<> SignalLogoff;
-
-  sigslot::repeater2<const char*, int> SignalLogInput;
-  sigslot::repeater2<const char*, int> SignalLogOutput;
-
- protected:
-  virtual void Stop();
+  sigslot::signal1<base::WeakPtr<talk_base::Task> > SignalConnect;
 
  private:
   void DoLogin(const ConnectionSettings& connection_settings);
-  buzz::AsyncSocket* CreateSocket(const buzz::XmppClientSettings& xcs);
-  static buzz::PreXmppAuth* CreatePreXmppAuth(
-      const buzz::XmppClientSettings& xcs);
 
-  // Cleans up any xmpp client state to get ready for a new one.
-  void ClearClient();
-
-  void HandleConnectionError(
-      buzz::XmppEngine::Error code,
-      int subcode,
-      const buzz::XmlElement* stream_error);
-  void HandleConnectionPasswordError();
-
-  void OnAuthenticationError();
-  void OnCertificateExpired();
-  void OnClientStateChange(buzz::XmppEngine::State state);
-  void OnClientStateChangeClosed(buzz::XmppEngine::State previous_state);
   void OnAttemptedAllConnections(bool successfully_resolved_dns,
                                  int first_dns_error);
 
-  buzz::XmppEngine::State state_;
-  buzz::XmppEngine::Error code_;
-  int subcode_;
-  bool need_authentication_;
-  bool certificate_expired_;
   LoginSettings* login_settings_;
-  buzz::XmppClient* client_;
-  scoped_ptr<XmppConnectionGenerator> connection_generator_;
+  XmppConnectionGenerator connection_generator_;
+  scoped_ptr<XmppConnection> xmpp_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleLoginAttempt);
 };

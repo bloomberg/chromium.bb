@@ -19,32 +19,21 @@ class ConnectionSettings {
 
   cricket::ProtocolType protocol() { return protocol_; }
   const talk_base::SocketAddress& server() const { return server_; }
-  const talk_base::ProxyInfo& proxy() const { return proxy_; }
 
   void set_protocol(cricket::ProtocolType protocol) { protocol_ = protocol; }
   talk_base::SocketAddress* mutable_server() { return &server_; }
-  talk_base::ProxyInfo* mutable_proxy() { return &proxy_; }
 
   void FillXmppClientSettings(buzz::XmppClientSettings* xcs) const;
 
  private:
   cricket::ProtocolType protocol_;  // PROTO_TCP, PROTO_SSLTCP, etc.
   talk_base::SocketAddress server_;  // Server.
-  talk_base::ProxyInfo proxy_;  // Proxy info.
   // Need copy constructor due to use in stl deque.
 };
 
 class ConnectionSettingsList {
  public:
   ConnectionSettingsList() {}
-
-  void SetProxy(const talk_base::ProxyInfo& proxy) {
-    *(template_.mutable_proxy()) = proxy;
-  }
-
-  const talk_base::ProxyInfo& proxy() const {
-    return template_.proxy();
-  }
 
   int GetCount() { return list_.size(); }
   ConnectionSettings* GetSettings(size_t index) { return &list_[index]; }
@@ -58,13 +47,11 @@ class ConnectionSettingsList {
                        const std::vector<uint32>& iplist,
                        int16 port,
                        bool special_port_magic,
-                       bool try_ssltcp_first,
-                       bool proxy_only);
+                       bool try_ssltcp_first);
  private:
   void PermuteForAddress(const talk_base::SocketAddress& server,
                          bool special_port_magic,
                          bool try_ssltcp_first,
-                         bool proxy_only,
                          std::deque<ConnectionSettings>* list_temp);
 
   ConnectionSettings template_;

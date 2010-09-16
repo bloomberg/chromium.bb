@@ -58,9 +58,7 @@ class ServerNotifierThread
   virtual void OnInvalidateAll();
 
  protected:
-  // Overridden to know what state we're in.
-  virtual void OnClientStateChangeMessage(
-      notifier::LoginConnectionState state);
+  virtual void OnDisconnect();
 
  private:
   // Posted to the worker thread by ListenForUpdates().
@@ -79,7 +77,6 @@ class ServerNotifierThread
   // thread by Stop().
   void StopInvalidationListener();
 
-  notifier::LoginConnectionState state_;
   scoped_ptr<ChromeInvalidationClient> chrome_invalidation_client_;
 };
 

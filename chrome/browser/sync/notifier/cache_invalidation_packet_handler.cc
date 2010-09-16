@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
-//#include "base/string_util.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 #include "jingle/notifier/listener/xml_element_util.h"
@@ -196,14 +195,14 @@ std::string MakeSid() {
 }  // namespace
 
 CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
-    buzz::XmppClient* xmpp_client,
+    talk_base::Task* base_task,
     invalidation::InvalidationClient* invalidation_client)
     : scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      xmpp_client_(xmpp_client),
+      base_task_(base_task),
       invalidation_client_(invalidation_client),
       seq_(0),
       sid_(MakeSid()) {
-  CHECK(xmpp_client_);
+  CHECK(base_task_);
   CHECK(invalidation_client_);
   invalidation::NetworkEndpoint* network_endpoint =
       invalidation_client_->network_endpoint();
@@ -211,10 +210,10 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
   network_endpoint->RegisterOutboundListener(
       scoped_callback_factory_.NewCallback(
           &CacheInvalidationPacketHandler::HandleOutboundPacket));
-  // Owned by xmpp_client.
+  // Owned by base_task.
   CacheInvalidationListenTask* listen_task =
       new CacheInvalidationListenTask(
-          xmpp_client, scoped_callback_factory_.NewCallback(
+          base_task, scoped_callback_factory_.NewCallback(
               &CacheInvalidationPacketHandler::HandleInboundPacket));
   listen_task->Start();
 }
@@ -237,9 +236,9 @@ void CacheInvalidationPacketHandler::HandleOutboundPacket(
                << message;
     return;
   }
-  // Owned by xmpp_client.
+  // Owned by base_task.
   CacheInvalidationSendMessageTask* send_message_task =
-      new CacheInvalidationSendMessageTask(xmpp_client_,
+      new CacheInvalidationSendMessageTask(base_task_,
                                            buzz::Jid(kBotJid),
                                            encoded_message,
                                            seq_, sid_);

@@ -11,13 +11,13 @@
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/notification_defines.h"
+#include "talk/xmpp/xmppclient.h"
 
 namespace sync_notifier {
 
 ServerNotifierThread::ServerNotifierThread(
     const notifier::NotifierOptions& notifier_options)
-    : notifier::MediatorThreadImpl(notifier_options),
-      state_(notifier::STATE_DISCONNECTED) {
+    : notifier::MediatorThreadImpl(notifier_options) {
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
             notifier_options.notification_method);
 }
@@ -85,24 +85,15 @@ void ServerNotifierThread::OnInvalidateAll() {
           &ServerNotifierThread::SignalIncomingNotification));
 }
 
-void ServerNotifierThread::OnClientStateChangeMessage(
-    notifier::LoginConnectionState state) {
+void ServerNotifierThread::OnDisconnect() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  state_ = state;
-  if (state_ != notifier::STATE_CONNECTED) {
-    StopInvalidationListener();
-  }
-  MediatorThreadImpl::OnClientStateChangeMessage(state);
+  StopInvalidationListener();
+  MediatorThreadImpl::OnDisconnect();
 }
 
 void ServerNotifierThread::StartInvalidationListener() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  if (state_ != notifier::STATE_CONNECTED) {
-    return;
-  }
-  buzz::XmppClient* client = xmpp_client();
-  if (client == NULL) {
-    LOG(DFATAL) << "xmpp_client() unexpectedly NULL";
+  if (!base_task_.get()) {
     return;
   }
 
@@ -114,15 +105,11 @@ void ServerNotifierThread::StartInvalidationListener() {
   // make it so that we won't receive any notifications that were
   // generated from our own changes.
   const std::string kClientId = "server_notifier_thread";
-  chrome_invalidation_client_->Start(kClientId, this, client);
+  chrome_invalidation_client_->Start(kClientId, this, base_task_);
 }
 
 void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  if (state_ != notifier::STATE_CONNECTED) {
-    return;
-  }
-
   chrome_invalidation_client_->RegisterTypes();
   parent_message_loop_->PostTask(
       FROM_HERE,

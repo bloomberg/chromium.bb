@@ -30,35 +30,24 @@ namespace notifier {
 // Redirect valid for 5 minutes.
 static const int kRedirectTimeoutMinutes = 5;
 
-Login::Login(talk_base::TaskParent* parent,
-             const buzz::XmppClientSettings& user_settings,
+Login::Login(const buzz::XmppClientSettings& user_settings,
              const ConnectionOptions& options,
-             std::string lang,
              net::HostResolver* host_resolver,
              ServerInformation* server_list,
              int server_count,
-             talk_base::FirewallManager* firewall,
-             bool try_ssltcp_first,
-             bool proxy_only)
-    : parent_(parent),
-      login_settings_(new LoginSettings(user_settings,
+             bool try_ssltcp_first)
+    : login_settings_(new LoginSettings(user_settings,
                                         options,
-                                        lang,
                                         host_resolver,
                                         server_list,
                                         server_count,
-                                        firewall,
-                                        try_ssltcp_first,
-                                        proxy_only)),
-      state_(STATE_DISCONNECTED),
-      single_attempt_(NULL),
+                                        try_ssltcp_first)),
       redirect_port_(0) {
   net::NetworkChangeNotifier::AddObserver(this);
   ResetReconnectState();
 }
 
 Login::~Login() {
-  Disconnect();
   net::NetworkChangeNotifier::RemoveObserver(this);
 }
 
@@ -75,37 +64,18 @@ void Login::StartConnection() {
     login_settings_->clear_server_override();
   }
 
-  Disconnect();
-
   LOG(INFO) << "Starting connection...";
 
-  single_attempt_ = new SingleLoginAttempt(parent_,
-                                           login_settings_.get());
+  single_attempt_.reset(new SingleLoginAttempt(login_settings_.get()));
 
   // Do the signaling hook-ups.
-  single_attempt_->SignalUnexpectedDisconnect.connect(
-      this,
-      &Login::TryReconnect);
   single_attempt_->SignalNeedAutoReconnect.connect(
       this,
       &Login::TryReconnect);
-  single_attempt_->SignalLoginFailure.connect(this, &Login::OnLoginFailure);
-  single_attempt_->SignalLogoff.connect(
-      this,
-      &Login::Disconnect);
   single_attempt_->SignalRedirect.connect(this, &Login::OnRedirect);
-  single_attempt_->SignalClientStateChange.connect(
+  single_attempt_->SignalConnect.connect(
       this,
-      &Login::OnClientStateChange);
-  SignalLogInput.repeat(single_attempt_->SignalLogInput);
-  SignalLogOutput.repeat(single_attempt_->SignalLogOutput);
-
-  single_attempt_->Start();
-}
-
-void Login::OnLoginFailure(const LoginFailure& failure) {
-  SignalLoginFailure(failure);
-  TryReconnect();
+      &Login::OnConnect);
 }
 
 void Login::OnRedirect(const std::string& redirect_server, int redirect_port) {
@@ -119,27 +89,9 @@ void Login::OnRedirect(const std::string& redirect_server, int redirect_port) {
   StartConnection();
 }
 
-void Login::OnClientStateChange(buzz::XmppEngine::State state) {
-  // We only care about when we're connected.
-  if (state == buzz::XmppEngine::STATE_OPEN) {
-    ResetReconnectState();
-    ChangeState(STATE_CONNECTED);
-  }
-}
-
-void Login::ChangeState(LoginConnectionState new_state) {
-  if (state_ != new_state) {
-    state_ = new_state;
-    LOG(INFO) << "Signalling new state " << state_;
-    SignalClientStateChange(state_);
-  }
-}
-
-buzz::XmppClient* Login::xmpp_client() {
-  if (!single_attempt_) {
-    return NULL;
-  }
-  return single_attempt_->xmpp_client();
+void Login::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
+  ResetReconnectState();
+  SignalConnect(base_task);
 }
 
 void Login::OnIPAddressChanged() {
@@ -150,15 +102,6 @@ void Login::OnIPAddressChanged() {
   TryReconnect();
 }
 
-void Login::Disconnect() {
-  if (single_attempt_) {
-    LOG(INFO) << "Disconnecting";
-    single_attempt_->Abort();
-    single_attempt_ = NULL;
-  }
-  ChangeState(STATE_DISCONNECTED);
-}
-
 void Login::ResetReconnectState() {
   reconnect_interval_ =
       base::TimeDelta::FromSeconds(base::RandInt(5, 25));
@@ -167,12 +110,13 @@ void Login::ResetReconnectState() {
 
 void Login::TryReconnect() {
   DCHECK_GT(reconnect_interval_.InSeconds(), 0);
-  Disconnect();
+  single_attempt_.reset();
   reconnect_timer_.Stop();
   LOG(INFO) << "Reconnecting in "
             << reconnect_interval_.InSeconds() << " seconds";
   reconnect_timer_.Start(
       reconnect_interval_, this, &Login::DoReconnect);
+  SignalDisconnect();
 }
 
 void Login::DoReconnect() {
