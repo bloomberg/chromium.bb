@@ -4,9 +4,9 @@
 
 #include "chrome/browser/search_engines/template_url_model_test_util.h"
 
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/test/testing_profile.h"
@@ -57,7 +57,7 @@ class TemplateURLModelTestingProfile : public TestingProfile {
 
  private:
   scoped_refptr<WebDataService> service_;
-  FilePath test_dir_;
+  ScopedTempDir temp_dir_;
   scoped_ptr<ChromeThread> db_thread_;
 };
 
@@ -92,15 +92,10 @@ void TemplateURLModelTestingProfile::SetUp() {
   db_thread_.reset(new ChromeThread(ChromeThread::DB));
   db_thread_->Start();
 
-  // Name a subdirectory of the temp directory.
-  ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-  test_dir_ = test_dir_.AppendASCII("TemplateURLModelTest");
+  // Make unique temp directory.
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-  // Create a fresh, empty copy of this directory.
-  file_util::Delete(test_dir_, true);
-  file_util::CreateDirectory(test_dir_);
-
-  FilePath path = test_dir_.AppendASCII("TestDataService.db");
+  FilePath path = temp_dir_.path().AppendASCII("TestDataService.db");
   service_ = new WebDataService;
   EXPECT_TRUE(service_->InitWithPath(path));
 }
@@ -113,9 +108,6 @@ void TemplateURLModelTestingProfile::TearDown() {
   // deleting the test profile directory, otherwise we may not be
   // able to delete it due to an open transaction.
   db_thread_->Stop();
-
-  ASSERT_TRUE(file_util::Delete(test_dir_, true));
-  ASSERT_FALSE(file_util::PathExists(test_dir_));
 }
 
 TemplateURLModelTestUtil::TemplateURLModelTestUtil()
