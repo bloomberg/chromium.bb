@@ -305,12 +305,12 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
   }
 
   // Choose datatypes to be synced.
-  syncable::ModelTypeSet set;
+  syncable::ModelTypeSet synced_datatypes;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    set.insert(syncable::ModelTypeFromInt(i));
+    synced_datatypes.insert(syncable::ModelTypeFromInt(i));
   }
-  service()->OnUserChoseDatatypes(true, set);
+  service()->OnUserChoseDatatypes(true, synced_datatypes);
 
   // Wait for initial sync cycle to complete.
   EXPECT_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
@@ -349,6 +349,59 @@ const SyncSessionSnapshot*
     return service_->backend()->GetLastSessionSnapshot();
   }
   return NULL;
+}
+
+void ProfileSyncServiceTestHarness::EnableSyncForDatatype(
+    syncable::ModelType datatype) {
+  syncable::ModelTypeSet synced_datatypes;
+  EXPECT_FALSE(service() == NULL)
+      << "EnableSyncForDatatype(): service() is null.";
+  service()->GetPreferredDataTypes(&synced_datatypes);
+  syncable::ModelTypeSet::iterator it = synced_datatypes.find(
+      syncable::ModelTypeFromInt(datatype));
+  if (it == synced_datatypes.end()) {
+    synced_datatypes.insert(syncable::ModelTypeFromInt(datatype));
+    service()->OnUserChoseDatatypes(false, synced_datatypes);
+    AwaitSyncCycleCompletion("Waiting for datatype configuration.");
+    LOG(INFO) << "EnableSyncForDatatype(): Enabled sync for datatype "
+              << syncable::ModelTypeToString(datatype) << ".";
+  } else {
+    LOG(INFO) << "EnableSyncForDatatype(): Sync already enabled for datatype "
+              << syncable::ModelTypeToString(datatype) << ".";
+  }
+}
+
+void ProfileSyncServiceTestHarness::DisableSyncForDatatype(
+    syncable::ModelType datatype) {
+  syncable::ModelTypeSet synced_datatypes;
+  EXPECT_FALSE(service() == NULL)
+      << "DisableSyncForDatatype(): service() is null.";
+  service()->GetPreferredDataTypes(&synced_datatypes);
+  syncable::ModelTypeSet::iterator it = synced_datatypes.find(
+      syncable::ModelTypeFromInt(datatype));
+  if (it != synced_datatypes.end()) {
+    synced_datatypes.erase(it);
+    service()->OnUserChoseDatatypes(false, synced_datatypes);
+    AwaitSyncCycleCompletion("Waiting for datatype configuration.");
+    LOG(INFO) << "DisableSyncForDatatype(): Disabled sync for datatype "
+              << syncable::ModelTypeToString(datatype) << ".";
+  } else {
+    LOG(INFO) << "DisableSyncForDatatype(): Sync already disabled for datatype "
+              << syncable::ModelTypeToString(datatype) << ".";
+  }
+}
+
+void ProfileSyncServiceTestHarness::EnableSyncForAllDatatypes() {
+  syncable::ModelTypeSet synced_datatypes;
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+      i < syncable::MODEL_TYPE_COUNT; ++i) {
+      synced_datatypes.insert(syncable::ModelTypeFromInt(i));
+  }
+  EXPECT_FALSE(service() == NULL)
+      << "EnableSyncForAllDatatypes(): service() is null.";
+  service()->OnUserChoseDatatypes(true, synced_datatypes);
+  AwaitSyncCycleCompletion("Waiting for datatype configuration.");
+  LOG(INFO) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes.";
 }
 
 int64 ProfileSyncServiceTestHarness::GetUpdatedTimestamp() {

@@ -75,6 +75,15 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // See ProfileSyncService::ShouldPushChanges().
   bool ServiceIsPushingChanges() { return service_->ShouldPushChanges(); }
 
+  // Enables sync for a particular sync datatype.
+  void EnableSyncForDatatype(syncable::ModelType datatype);
+
+  // Disables sync for a particular sync datatype.
+  void DisableSyncForDatatype(syncable::ModelType datatype);
+
+  // Enables sync for all sync datatypes.
+  void EnableSyncForAllDatatypes();
+
  private:
   friend class StateChangeTimeoutEvent;
 

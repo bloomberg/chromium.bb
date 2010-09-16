@@ -64,36 +64,30 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
   EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kSyncThemes),
             GetPrefs(1)->GetBoolean(prefs::kSyncThemes));
 
-  GetPrefs(0)->SetBoolean(prefs::kKeepEverythingSynced, 0);
-  GetPrefs(0)->SetBoolean(prefs::kSyncThemes, 0);
-  GetPrefs(1)->SetBoolean(prefs::kKeepEverythingSynced, 1);
-  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  GetClient(0)->DisableSyncForDatatype(syncable::THEMES);
 
   EXPECT_NE(GetPrefs(0)->GetBoolean(prefs::kKeepEverythingSynced),
             GetPrefs(1)->GetBoolean(prefs::kKeepEverythingSynced));
 }
 
-// TODO(rsimha): Remove FAILS_ prefix after http://crbug.com/55650 is fixed.
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
-                       FAILS_kSyncPreferences) {
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kSyncPreferences) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kSyncPreferences),
             GetPrefs(1)->GetBoolean(prefs::kSyncPreferences));
   EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kPasswordManagerEnabled),
             GetPrefs(1)->GetBoolean(prefs::kPasswordManagerEnabled));
 
-  GetPrefs(0)->SetBoolean(prefs::kKeepEverythingSynced, 0);
-  GetPrefs(0)->SetBoolean(prefs::kSyncPreferences, 0);
+  GetClient(0)->DisableSyncForDatatype(syncable::PREFERENCES);
+
   GetPrefs(0)->SetBoolean(prefs::kPasswordManagerEnabled, 1);
   GetPrefs(1)->SetBoolean(prefs::kPasswordManagerEnabled, 0);
-  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_NE(GetPrefs(0)->GetBoolean(prefs::kPasswordManagerEnabled),
             GetPrefs(1)->GetBoolean(prefs::kPasswordManagerEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
-                       SignInDialog) {
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, SignInDialog) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kSyncPreferences),
             GetPrefs(1)->GetBoolean(prefs::kSyncPreferences));
@@ -108,19 +102,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
   EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kKeepEverythingSynced),
             GetPrefs(1)->GetBoolean(prefs::kKeepEverythingSynced));
 
-  GetPrefs(0)->SetBoolean(prefs::kKeepEverythingSynced, 0);
-  GetPrefs(1)->SetBoolean(prefs::kKeepEverythingSynced, 1);
-  GetPrefs(0)->SetBoolean(prefs::kSyncAutofill, 0);
-  GetPrefs(1)->SetBoolean(prefs::kSyncAutofill, 1);
-  GetPrefs(0)->SetBoolean(prefs::kSyncBookmarks, 0);
-  GetPrefs(1)->SetBoolean(prefs::kSyncBookmarks, 1);
-  GetPrefs(0)->SetBoolean(prefs::kSyncExtensions, 0);
-  GetPrefs(1)->SetBoolean(prefs::kSyncExtensions, 1);
-  GetPrefs(0)->SetBoolean(prefs::kSyncThemes, 0);
-  GetPrefs(1)->SetBoolean(prefs::kSyncThemes, 1);
+  GetClient(0)->DisableSyncForDatatype(syncable::PREFERENCES);
+  GetClient(1)->EnableSyncForDatatype(syncable::PREFERENCES);
+  GetClient(0)->DisableSyncForDatatype(syncable::AUTOFILL);
+  GetClient(1)->EnableSyncForDatatype(syncable::AUTOFILL);
+  GetClient(0)->DisableSyncForDatatype(syncable::BOOKMARKS);
+  GetClient(1)->EnableSyncForDatatype(syncable::BOOKMARKS);
+  GetClient(0)->DisableSyncForDatatype(syncable::EXTENSIONS);
+  GetClient(1)->EnableSyncForDatatype(syncable::EXTENSIONS);
+  GetClient(0)->DisableSyncForDatatype(syncable::THEMES);
+  GetClient(1)->EnableSyncForDatatype(syncable::THEMES);
 
-  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
+  EXPECT_NE(GetPrefs(0)->GetBoolean(prefs::kSyncPreferences),
+            GetPrefs(1)->GetBoolean(prefs::kSyncPreferences));
   EXPECT_NE(GetPrefs(0)->GetBoolean(prefs::kSyncAutofill),
             GetPrefs(1)->GetBoolean(prefs::kSyncAutofill));
   EXPECT_NE(GetPrefs(0)->GetBoolean(prefs::kSyncBookmarks),
