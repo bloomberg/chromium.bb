@@ -1835,7 +1835,8 @@ Target: x86-64 bit mode
       M_Operand               OpUse
   --- d9 ---
   d9 / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fld $M
+    Fld %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
   d9 / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
     Fst $M, %ST0
@@ -1892,7 +1893,8 @@ Target: x86-64 bit mode
       M_Operand               OpUse
   --- db ---
   db / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fild $M
+    Fild %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
   db / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
     Fisttp $M, %ST0
@@ -1907,7 +1909,8 @@ Target: x86-64 bit mode
       M_Operand               OpSet
       RegST0                  OpUse
   db / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fld $M
+    Fld %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
   db / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
     Fstp $M, %ST0
@@ -1948,7 +1951,8 @@ Target: x86-64 bit mode
       M_Operand               OpUse
   --- dd ---
   dd / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fld $M
+    Fld %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
   dd / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
     Fisttp $M, %ST0
@@ -2006,7 +2010,8 @@ Target: x86-64 bit mode
       M_Operand               OpUse
   --- df ---
   df / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fild $M
+    Fild %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
   df / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
     Fisttp $M, %ST0
@@ -2021,10 +2026,12 @@ Target: x86-64 bit mode
       M_Operand               OpSet
       RegST0                  OpUse
   df / 4                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fbld $M
+    Fbld %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
   df / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fild $M
+    Fild %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
   df / 6                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
     Fbstp $M, %ST0
@@ -5212,35 +5219,43 @@ Target: x86-64 bit mode
 
   --- c0 ---
   d9 c0 - r0                  X87 OpcodePlusR
-    Fld %st
+    Fld %ST0, %st
+      RegST0                  OpSet
       St_Operand              OpUse
   --- c1 ---
   d9 c1 - r1                  X87 OpcodePlusR
-    Fld %st
+    Fld %ST0, %st
+      RegST0                  OpSet
       St_Operand              OpUse
   --- c2 ---
   d9 c2 - r2                  X87 OpcodePlusR
-    Fld %st
+    Fld %ST0, %st
+      RegST0                  OpSet
       St_Operand              OpUse
   --- c3 ---
   d9 c3 - r3                  X87 OpcodePlusR
-    Fld %st
+    Fld %ST0, %st
+      RegST0                  OpSet
       St_Operand              OpUse
   --- c4 ---
   d9 c4 - r4                  X87 OpcodePlusR
-    Fld %st
+    Fld %ST0, %st
+      RegST0                  OpSet
       St_Operand              OpUse
   --- c5 ---
   d9 c5 - r5                  X87 OpcodePlusR
-    Fld %st
+    Fld %ST0, %st
+      RegST0                  OpSet
       St_Operand              OpUse
   --- c6 ---
   d9 c6 - r6                  X87 OpcodePlusR
-    Fld %st
+    Fld %ST0, %st
+      RegST0                  OpSet
       St_Operand              OpUse
   --- c7 ---
   d9 c7 - r7                  X87 OpcodePlusR
-    Fld %st
+    Fld %ST0, %st
+      RegST0                  OpSet
       St_Operand              OpUse
   --- c8 ---
   d9 c8 - r0                  X87 OpcodePlusR
@@ -5335,22 +5350,24 @@ Target: x86-64 bit mode
       RegST0                  OpUse OpSet
   --- f1 ---
   d9 f1                       X87 
-    Fyl2x %ST1, %ST0
-      RegST1                  OpUse OpSet
-      RegST0                  OpUse
+    Fyl2x %ST0, %ST1
+      RegST0                  OpUse OpSet
+      RegST1                  OpUse
   --- f2 ---
   d9 f2                       X87 
-    Fptan %ST0
-      RegST0                  OpUse OpSet
+    Fptan %ST0, %ST1
+      RegST0                  OpSet
+      RegST1                  OpUse
   --- f3 ---
   d9 f3                       X87 
-    Fpatan %ST1, %ST0
-      RegST1                  OpUse OpSet
-      RegST0                  OpUse
+    Fpatan %ST0, %ST1
+      RegST0                  OpUse OpSet
+      RegST1                  OpUse
   --- f4 ---
   d9 f4                       X87 
-    Fxtract %ST0
-      RegST0                  OpUse OpSet
+    Fxtract %ST0, %ST1
+      RegST0                  OpSet
+      RegST1                  OpUse
   --- f5 ---
   d9 f5                       X87 
     Fprem1 %ST0, %ST1
@@ -5369,17 +5386,18 @@ Target: x86-64 bit mode
       RegST1                  OpUse
   --- f9 ---
   d9 f9                       X87 
-    Fyl2xp1 %ST1, %ST0
-      RegST1                  OpUse OpSet
-      RegST0                  OpUse
+    Fyl2xp1 %ST0, %ST1
+      RegST0                  OpUse OpSet
+      RegST1                  OpUse
   --- fa ---
   d9 fa                       X87 
     Fsqrt %ST0
       RegST0                  OpUse OpSet
   --- fb ---
   d9 fb                       X87 
-    Fsincos %ST0
-      RegST0                  OpUse OpSet
+    Fsincos %ST0, %ST1
+      RegST0                  OpSet
+      RegST1                  OpUse
   --- fc ---
   d9 fc                       X87 
     Frndint %ST0

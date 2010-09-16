@@ -107,6 +107,21 @@ static void NaClDefX87LtC0MoveMemSt0(const NaClInstPrefix prefix,
   NaClResetToDefaultInstPrefix();
 }
 
+/* Define an x87 instruciton that assigns St0 to the value in a
+ * memory pointer. */
+static void NaClDefX87LtC0MoveSt0Mem(const NaClInstPrefix prefix,
+                                     const uint8_t opcode,
+                                     const NaClOpKind opcode_in_modrm,
+                                     const NaClMnemonic mnemonic) {
+  NaClDefInstPrefix(prefix);
+  NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
+  NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpSet));
+  NaClDefOp(M_Operand, NACL_OPFLAG(OpUse));
+  NaClResetToDefaultInstPrefix();
+}
+
+
 /* Define an x87 binary instruction that has St0 as its first
  * argument, and a memory pointer as its second argument.
  */
@@ -120,6 +135,46 @@ static void NaClDefX87LtC0BinopSt0Mem(const NaClInstPrefix prefix,
   NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
   NaClDefOp(M_Operand, NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
+}
+
+/* Define an x87 instruciton that moves the value of st1 into st0.
+ */
+static void NaClDefX87MoveSt0St1(const NaClInstPrefix prefix,
+                                 const uint8_t opcode,
+                                 const NaClMnemonic mnemonic) {
+  NaClDefInstPrefix(prefix);
+  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
+  NaClDefOp(RegST0, NACL_OPFLAG(OpSet));
+  NaClDefOp(RegST1, NACL_OPFLAG(OpUse));
+  NaClResetToDefaultInstPrefix();
+}
+
+/* Define an x87 instruction that assigns sti (for base offset) to
+ * st0.
+ */
+static void NaClDefX87MoveSt0Sti(const NaClInstPrefix prefix,
+                                 const uint8_t opcode,
+                                 const int base_offset,
+                                 const NaClMnemonic mnemonic) {
+  NaClDefInstPrefix(prefix);
+  NaClDefInst(opcode + base_offset, NACLi_X87,
+               NACL_IFLAG(OpcodePlusR), mnemonic);
+  NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpSet));
+  NaClDefOp(St_Operand, NACL_OPFLAG(OpUse));
+  NaClResetToDefaultInstPrefix();
+}
+
+/* Define the grouip of x87 instructions that assigns all sti (for all i,
+ * 0<=i<=8) to st0.
+ */
+static void NaClDefX87MoveSt0StiGroup(const NaClInstPrefix prefix,
+                                       const uint8_t opcode,
+                                       const NaClMnemonic mnemonic) {
+  int i;
+  for (i = 0; i < 8; ++i) {
+    NaClDefX87MoveSt0Sti(prefix, opcode, i, mnemonic);
+  }
 }
 
 /* Define an x87 binary instruction that has St0 as its first
@@ -278,19 +333,6 @@ static void NaClDefX87BinopStiSt0Group(const NaClInstPrefix prefix,
   }
 }
 
-/* Define an x87 binary instruction that has st1 as the first argument,
- * and st0 as the second argument.
- */
-static void NaClDefX87BinopSt1St0(const NaClInstPrefix prefix,
-                                  const uint8_t opcode,
-                                  const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST1, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
 /* Define an x87 binary instruction that has st0 as the first argument,
  * and st1 as the second argument.
  */
@@ -380,7 +422,7 @@ void NaClDefX87Insts() {
 
   /* Define D9 x87 instructions. */
 
-  NaClDefX87LtC0Mem(NoPrefix, 0xd9, Opcode0, InstFld, NACL_OPFLAG(OpUse));
+  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xd9, Opcode0, InstFld);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xd9, Opcode2, InstFst);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xd9, Opcode3, InstFstp);
   NaClDefX87LtC0Mem(NoPrefix, 0xd9, Opcode4, InstFldenv, NACL_OPFLAG(OpUse));
@@ -389,7 +431,7 @@ void NaClDefX87Insts() {
                     NACL_OPFLAG(OpSet));
   NaClDefX87LtC0Mem(NoPrefix, 0xd9, Opcode7, InstFnstcw, NACL_OPFLAG(OpSet));
 
-  NaClDefX87StiGroup(PrefixD9, 0xc0, InstFld, NACL_OPFLAG(OpUse));
+  NaClDefX87MoveSt0StiGroup(PrefixD9, 0xc0, InstFld);
   NaClDefX87ExchangeSt0StiGroup(PrefixD9, 0xc8, InstFxch);
   NaClDefX87NoOperands(PrefixD9, 0xd0, InstFnop);
   NaClDefX87St0(PrefixD9, 0xe0, Opcode0, InstFchs,
@@ -409,17 +451,17 @@ void NaClDefX87Insts() {
   NaClDefX87ModifySt0(PrefixD9, 0xee, InstFldz);
   /* 0xef is not defined */
   NaClDefX87ModifySt0(PrefixD9, 0xf0, InstF2xm1);
-  NaClDefX87BinopSt1St0(PrefixD9, 0xf1, InstFyl2x);
-  NaClDefX87ModifySt0(PrefixD9, 0xf2, InstFptan);
-  NaClDefX87BinopSt1St0(PrefixD9, 0xf3, InstFpatan);
-  NaClDefX87ModifySt0(PrefixD9, 0xf4, InstFxtract);
+  NaClDefX87BinopSt0St1(PrefixD9, 0xf1, InstFyl2x);
+  NaClDefX87MoveSt0St1(PrefixD9, 0xf2, InstFptan);
+  NaClDefX87BinopSt0St1(PrefixD9, 0xf3, InstFpatan);
+  NaClDefX87MoveSt0St1(PrefixD9, 0xf4, InstFxtract);
   NaClDefX87BinopSt0St1(PrefixD9, 0xf5, InstFprem1);
   NaClDefX87NoOperands(PrefixD9, 0xf6, InstFdecstp);
   NaClDefX87NoOperands(PrefixD9, 0xf7, InstFincstp);
   NaClDefX87BinopSt0St1(PrefixD9, 0xf8, InstFprem);
-  NaClDefX87BinopSt1St0(PrefixD9, 0xf9, InstFyl2xp1);
+  NaClDefX87BinopSt0St1(PrefixD9, 0xf9, InstFyl2xp1);
   NaClDefX87ModifySt0(PrefixD9, 0xfa, InstFsqrt);
-  NaClDefX87ModifySt0(PrefixD9, 0xfb, InstFsincos);
+  NaClDefX87MoveSt0St1(PrefixD9, 0xfb, InstFsincos);
   NaClDefX87ModifySt0(PrefixD9, 0xfc, InstFrndint);
   NaClDefX87BinopSt0St1(PrefixD9, 0xfd, InstFscale);
   NaClDefX87ModifySt0(PrefixD9, 0xfe, InstFsin);
@@ -443,11 +485,11 @@ void NaClDefX87Insts() {
 
   /* Define DB x87 instructions. */
 
-  NaClDefX87LtC0Mem(NoPrefix, 0xdb, Opcode0, InstFild, NACL_OPFLAG(OpUse));
+  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdb, Opcode0, InstFild);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode1, InstFisttp);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode2, InstFist);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode3, InstFistp);
-  NaClDefX87LtC0Mem(NoPrefix, 0xdb, Opcode5, InstFld, NACL_OPFLAG(OpUse));
+  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdb, Opcode5, InstFld);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode7, InstFstp);
   NaClDefX87BinopSt0StiGroup(PrefixDB, 0xc0, InstFcmovnb);
   NaClDefX87BinopSt0StiGroup(PrefixDB, 0xc8, InstFcmovne);
@@ -477,7 +519,7 @@ void NaClDefX87Insts() {
 
   /* Define DD x87 instructions. */
 
-  NaClDefX87LtC0Mem(NoPrefix, 0xdd, Opcode0, InstFld, NACL_OPFLAG(OpUse));
+  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdd, Opcode0, InstFld);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode1, InstFisttp);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode2, InstFst);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode3, InstFstp);
@@ -510,12 +552,12 @@ void NaClDefX87Insts() {
 
   /* Define DF x87 instructions. */
 
-  NaClDefX87LtC0Mem(NoPrefix, 0xdf, Opcode0, InstFild, NACL_OPFLAG(OpUse));
+  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdf, Opcode0, InstFild);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode1, InstFisttp);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode2, InstFist);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode3, InstFistp);
-  NaClDefX87LtC0Mem(NoPrefix, 0xdf, Opcode4, InstFbld, NACL_OPFLAG(OpUse));
-  NaClDefX87LtC0Mem(NoPrefix, 0xdf, Opcode5, InstFild, NACL_OPFLAG(OpUse));
+  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdf, Opcode4, InstFbld);
+  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdf, Opcode5, InstFild);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode6, InstFbstp);
   NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode7, InstFistp);
 

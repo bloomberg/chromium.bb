@@ -2515,24 +2515,30 @@ NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
-0000000000000000: 41 db 2c 07                                  fld [%r15+%rax*1]
+0000000000000000: 41 db 2c 07                                  fld %st0, [%r15+%rax*1]
   db / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fld $M
+    Fld %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
-NaClExpVector[6] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %st0, ExprSet },
+  { OperandReference[1] , 2, 0 },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %r15, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
-0000000000000000: dd 04 24                                     fld [%rsp]
+0000000000000000: dd 04 24                                     fld %st0, [%rsp]
   dd / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fld $M
+    Fld %ST0, $M
+      RegST0                  OpSet
       M_Operand               OpUse
-NaClExpVector[6] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %st0, ExprSet },
+  { OperandReference[1] , 2, 0 },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
