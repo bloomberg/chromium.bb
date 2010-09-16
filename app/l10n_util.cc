@@ -362,6 +362,20 @@ void SplitAndNormalizeLanguageList(const std::string& env_language,
 }
 #endif
 
+// On Linux, the text layout engine Pango determines paragraph directionality
+// by looking at the first strongly-directional character in the text. This
+// means text such as "Google Chrome foo bar..." will be layed out LTR even
+// if "foo bar" is RTL. So this function prepends the necessary RLM in such
+// cases.
+void AdjustParagraphDirectionality(string16* paragraph) {
+#if defined(OS_LINUX)
+  if (base::i18n::IsRTL() &&
+      base::i18n::StringContainsStrongRTLChars(*paragraph)) {
+    paragraph->insert(0, 1, static_cast<char16>(base::i18n::kRightToLeftMark));
+  }
+#endif
+}
+
 }  // namespace
 
 namespace l10n_util {
@@ -490,18 +504,19 @@ string16 GetDisplayNameForLocale(const std::string& locale,
 }
 
 std::wstring GetString(int message_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return UTF16ToWide(rb.GetLocalizedString(message_id));
+  return UTF16ToWide(GetStringUTF16(message_id));
 }
 
 std::string GetStringUTF8(int message_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return UTF16ToUTF8(rb.GetLocalizedString(message_id));
+  return UTF16ToUTF8(GetStringUTF16(message_id));
 }
 
 string16 GetStringUTF16(int message_id) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetLocalizedString(message_id);
+  string16 str = rb.GetLocalizedString(message_id);
+  AdjustParagraphDirectionality(&str);
+
+  return str;
 }
 
 static string16 GetStringF(int message_id,
@@ -523,6 +538,8 @@ static string16 GetStringF(int message_id,
   subst.push_back(d);
   string16 formatted = ReplaceStringPlaceholders(format_string, subst,
                                                  offsets);
+  AdjustParagraphDirectionality(&formatted);
+
   return formatted;
 }
 
