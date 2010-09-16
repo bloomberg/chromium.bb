@@ -250,7 +250,7 @@ if env['TARGET_ARCHITECTURE'] != 'arm':
 #
 # We build a shared library with this build script to allow easier build
 # testing. This library can also be loaded into Chrome using --no-sandbox
-# --register-pepper-plugin="path/to/library;application/x-ppapi-nacl-srpc".
+# --register-pepper-plugins="path/to/library;application/x-ppapi-nacl-srpc".
 # In the future, this plugin will be integrated with Chrome via gyp.
 #
 # The PPAPI plugin uses specific code from the ppapi/ subdirectory and will
