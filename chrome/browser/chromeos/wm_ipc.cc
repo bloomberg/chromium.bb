@@ -11,8 +11,8 @@ extern "C" {
 
 #include "app/x11_util.h"
 #include "base/logging.h"
-#include "base/singleton.h"
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 
 namespace chromeos {
 

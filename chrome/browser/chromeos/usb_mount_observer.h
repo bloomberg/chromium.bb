@@ -11,9 +11,9 @@
 
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/common/notification_registrar.h"
 
 class Browser;
 class Profile;

@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/crypto/rsa_private_key.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
-#include "chrome/browser/chrome_thread.h"
 
 class FilePath;
 class NotificationDetails;

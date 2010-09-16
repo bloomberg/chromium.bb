@@ -8,12 +8,12 @@
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "chrome/common/chrome_paths.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_redirect_job.h"
-#include "googleurl/src/gurl.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
 namespace chromeos {

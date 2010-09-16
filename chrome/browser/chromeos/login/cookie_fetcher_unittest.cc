@@ -14,8 +14,8 @@
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 using ::testing::Return;

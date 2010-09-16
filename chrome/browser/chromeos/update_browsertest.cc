@@ -4,13 +4,13 @@
 
 #include "base/ref_counted.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/chromeos/update_observer.h"
 #include "chrome/browser/chromeos/cros/mock_update_library.h"
+#include "chrome/browser/chromeos/update_observer.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 

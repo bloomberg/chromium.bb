@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "gfx/canvas_skia.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/border.h"
 #include "views/painter.h"
 

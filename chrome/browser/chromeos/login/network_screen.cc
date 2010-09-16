@@ -6,9 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/logging.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"

@@ -14,8 +14,8 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/controls/throbber.h"
 #include "views/controls/link.h"
+#include "views/controls/throbber.h"
 
 namespace {
 

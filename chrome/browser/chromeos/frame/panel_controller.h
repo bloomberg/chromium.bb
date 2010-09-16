@@ -9,8 +9,8 @@
 #include <gtk/gtk.h>
 
 #include "app/x11_util.h"
-#include "views/controls/button/button.h"
 #include "cros/chromeos_wm_ipc_enums.h"
+#include "views/controls/button/button.h"
 
 class BrowserView;
 class SkBitmap;

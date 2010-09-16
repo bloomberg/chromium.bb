@@ -11,10 +11,10 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/language_combobox_model.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class WizardControllerTest_SwitchLanguage_Test;
 

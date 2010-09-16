@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/dom_ui/imageburner_ui.h"
 
-#include "base/i18n/rtl.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/singleton.h"

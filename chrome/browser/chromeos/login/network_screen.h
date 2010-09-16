@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SCREEN_H_
 #pragma once
 
-#include "base/task.h"
-#include "base/timer.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/task.h"
+#include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
+#include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/network_list.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"

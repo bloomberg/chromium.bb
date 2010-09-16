@@ -7,9 +7,9 @@
 #pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "views/controls/image_view.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
-#include "views/controls/image_view.h"
 
 class Browser;
 

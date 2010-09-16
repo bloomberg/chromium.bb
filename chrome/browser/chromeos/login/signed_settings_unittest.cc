@@ -10,10 +10,10 @@
 #include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/mock_ownership_service.h"
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -10,9 +10,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 
 // static
 WizardAccessibilityHelper* WizardAccessibilityHelper::GetInstance() {

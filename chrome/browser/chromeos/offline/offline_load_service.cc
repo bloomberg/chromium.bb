@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/offline/offline_load_service.h"
 
-#include "base/singleton.h"
 #include "base/ref_counted.h"
-#include "chrome/common/notification_service.h"
+#include "base/singleton.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
+#include "chrome/common/notification_service.h"
 
 namespace chromeos {
 

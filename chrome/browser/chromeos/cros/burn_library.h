@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/weak_ptr.h"
 
 #include "cros/chromeos_imageburn.h"
 

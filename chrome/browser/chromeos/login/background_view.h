@@ -8,8 +8,8 @@
 
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/chromeos/version_loader.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 

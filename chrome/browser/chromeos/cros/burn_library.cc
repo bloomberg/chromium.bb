@@ -6,8 +6,8 @@
 
 #include <cstring>
 #include "base/linked_ptr.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 
 namespace chromeos {
 

@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "app/combobox_model.h"
+#include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_util.h"

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_PROVIDER_USER_H_
 #pragma once
 
-#include "base/singleton.h"
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 
 class DictionaryValue;
