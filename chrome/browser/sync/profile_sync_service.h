@@ -463,6 +463,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   scoped_ptr<TokenMigrator> token_migrator_;
 
+  // Sometimes we need to temporarily hold on to a passphrase because we don't
+  // yet have a backend to send it to.  This happens during initialization as
+  // we don't StartUp until we have a valid token, which happens after valid
+  // credentials were provided.
+  std::string cached_passphrase_;
+
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
 

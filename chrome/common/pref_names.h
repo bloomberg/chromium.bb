@@ -346,6 +346,7 @@ extern const char kSyncManaged[];
 extern const char kSyncSuppressStart[];
 extern const char kGoogleServicesUsername[];
 extern const char kSyncCredentialsMigrated[];
+extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kEncryptionBootstrapToken[];
 
 extern const char kWebAppCreateOnDesktop[];
