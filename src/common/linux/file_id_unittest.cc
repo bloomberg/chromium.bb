@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,6 @@
 #include "breakpad_googletest_includes.h"
 
 using namespace google_breakpad;
-
 
 namespace {
 typedef testing::Test FileIDTest;
@@ -90,13 +89,14 @@ struct ElfClass64 {
 
 template<typename ElfClass>
 struct ElfishElf {
+  static const size_t kTextSectionSize = 128;
   typedef typename ElfClass::Ehdr Ehdr;
   typedef typename ElfClass::Shdr Shdr;
 
   Ehdr elf_header;
   Shdr text_header;
   Shdr string_header;
-  char text_section[128];
+  char text_section[kTextSectionSize];
   char string_section[8];
 
   static void Populate(ElfishElf* elf) {
@@ -109,8 +109,8 @@ struct ElfishElf {
     elf->text_header.sh_name = 0;
     elf->text_header.sh_type = SHT_PROGBITS;
     elf->text_header.sh_offset = offsetof(ElfishElf, text_section);
-    elf->text_header.sh_size = sizeof(text_section);
-    for (size_t i = 0; i < sizeof(text_section); ++i) {
+    elf->text_header.sh_size = kTextSectionSize;
+    for (size_t i = 0; i < kTextSectionSize; ++i) {
       elf->text_section[i] = i * 3;
     }
     elf->string_header.sh_offset = offsetof(ElfishElf, string_section);
