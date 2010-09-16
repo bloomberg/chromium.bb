@@ -335,7 +335,14 @@ void AudioRendererHost::OnCreateStream(
   }
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
-  scoped_refptr<media::AudioOutputController> controller = NULL;
+  // Create the shared memory and share with the renderer process.
+  if (!entry->shared_memory.Create(L"", false, false, hardware_packet_size) ||
+      !entry->shared_memory.Map(entry->shared_memory.max_size())) {
+    // If creation of shared memory failed then send an error message.
+    SendErrorMessage(msg.routing_id(), stream_id);
+    return;
+  }
+
   if (low_latency) {
     // If this is the low latency mode, we need to construct a SyncReader first.
     scoped_ptr<AudioSyncReader> reader(
@@ -350,44 +357,32 @@ void AudioRendererHost::OnCreateStream(
     // If we have successfully created the SyncReader then assign it to the
     // entry and construct an AudioOutputController.
     entry->reader.reset(reader.release());
-    controller =
+    entry->controller =
         media::AudioOutputController::CreateLowLatency(
             this, params.params,
             hardware_packet_size,
             entry->reader.get());
   } else {
     // The choice of buffer capacity is based on experiment.
-    controller =
+    entry->controller =
         media::AudioOutputController::Create(this, params.params,
                                              hardware_packet_size,
                                              3 * hardware_packet_size);
   }
 
-  if (!controller) {
+  if (!entry->controller) {
     SendErrorMessage(msg.routing_id(), stream_id);
     return;
   }
 
   // If we have created the controller successfully create a entry and add it
   // to the map.
-  entry->controller = controller;
   entry->render_view_id = msg.routing_id();
   entry->stream_id = stream_id;
 
-  // Create the shared memory and share with the renderer process.
-  if (!entry->shared_memory.Create(L"", false, false, hardware_packet_size) ||
-      !entry->shared_memory.Map(entry->shared_memory.max_size())) {
-    // If creation of shared memory failed then close the controller and
-    // sends an error message.
-    controller->Close();
-    SendErrorMessage(msg.routing_id(), stream_id);
-    return;
-  }
-
-  // If everything is successful then add it to the map.
-  audio_entries_.insert(std::make_pair(
-      AudioEntryId(msg.routing_id(), stream_id),
-      entry.release()));
+ audio_entries_.insert(std::make_pair(
+     AudioEntryId(msg.routing_id(), stream_id),
+     entry.release()));
 }
 
 void AudioRendererHost::OnPlayStream(const IPC::Message& msg, int stream_id) {
@@ -431,10 +426,8 @@ void AudioRendererHost::OnCloseStream(const IPC::Message& msg, int stream_id) {
 
   AudioEntry* entry = LookupById(msg.routing_id(), stream_id);
 
-  // Note that closing an audio stream is a blocking operation. This call may
-  // block the IO thread for up to 100ms.
   if (entry)
-    DeleteEntry(entry);
+    CloseAndDeleteStream(entry);
 }
 
 void AudioRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
@@ -519,10 +512,25 @@ void AudioRendererHost::SendErrorMessage(int32 render_view_id,
 void AudioRendererHost::DeleteEntries() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  while (!audio_entries_.empty()) {
-    DeleteEntry(audio_entries_.begin()->second);
+  for (AudioEntryMap::iterator i = audio_entries_.begin();
+       i != audio_entries_.end(); ++i) {
+    CloseAndDeleteStream(i->second);
   }
-  DCHECK(audio_entries_.empty());
+}
+
+void AudioRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
+  if (!entry->pending_close) {
+    entry->controller->Close(
+        NewRunnableMethod(this, &AudioRendererHost::OnStreamClosed, entry));
+    entry->pending_close = true;
+  }
+}
+
+void AudioRendererHost::OnStreamClosed(AudioEntry* entry) {
+  // Delete the entry after we've closed the stream.
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &AudioRendererHost::DeleteEntry, entry));
 }
 
 void AudioRendererHost::DeleteEntry(AudioEntry* entry) {
@@ -531,10 +539,7 @@ void AudioRendererHost::DeleteEntry(AudioEntry* entry) {
   // Delete the entry when this method goes out of scope.
   scoped_ptr<AudioEntry> entry_deleter(entry);
 
-  // Close the audio stream then remove the entry.
-  entry->controller->Close();
-
-  // Entry the entry from the map.
+  // Erase the entry from the map.
   audio_entries_.erase(
       AudioEntryId(entry->render_view_id, entry->stream_id));
 }
@@ -545,7 +550,7 @@ void AudioRendererHost::DeleteEntryOnError(AudioEntry* entry) {
   // Sends the error message first before we close the stream because
   // |entry| is destroyed in DeleteEntry().
   SendErrorMessage(entry->render_view_id, entry->stream_id);
-  DeleteEntry(entry);
+  CloseAndDeleteStream(entry);
 }
 
 AudioRendererHost::AudioEntry* AudioRendererHost::LookupById(
