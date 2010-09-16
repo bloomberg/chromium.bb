@@ -331,9 +331,15 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
 
   // Recursively create children.
   int child_count = src.childCount();
-  children.resize(child_count);
   for (int i = 0; i < child_count; i++) {
-    children[i].Init(src.childAt(i), cache);
+    WebAccessibilityObject child = src.childAt(i);
+
+    // The child may be invalid due to issues in webkit accessibility code.
+    // Don't add children are invalid thus preventing a crash.
+    // https://bugs.webkit.org/show_bug.cgi?id=44149
+    // TODO(ctguil): We may want to remove this check as webkit stabilizes.
+    if (child.isValid())
+      children.push_back(WebAccessibility(child, cache));
   }
 }
 
