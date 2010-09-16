@@ -74,7 +74,7 @@ class EnergyEndpointerFrameProcessor : public FrameProcessor {
       : endpointer_(endpointer) {}
 
   EpStatus ProcessFrame(int64 time, int16* samples, int frame_size) {
-    endpointer_->ProcessAudioFrame(time, samples, kFrameSize);
+    endpointer_->ProcessAudioFrame(time, samples, kFrameSize, NULL);
     int64 ep_time;
     return endpointer_->Status(&ep_time);
   }
@@ -117,7 +117,7 @@ class EndpointerFrameProcessor : public FrameProcessor {
       : endpointer_(endpointer) {}
 
   EpStatus ProcessFrame(int64 time, int16* samples, int frame_size) {
-    endpointer_->ProcessAudio(samples, kFrameSize);
+    endpointer_->ProcessAudio(samples, kFrameSize, NULL);
     int64 ep_time;
     return endpointer_->Status(&ep_time);
   }

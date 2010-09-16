@@ -44,7 +44,7 @@ const int kBubbleHorizontalMargin = 15;  // Space on either sides of controls.
   NSWindow* window = [self window];
   [[self bubble] setArrowLocation:info_bubble::kTopLeft];
   NSImage* icon = ResourceBundle::GetSharedInstance().GetNSImageNamed(
-      IDR_SPEECH_INPUT_RECORDING);
+      IDR_SPEECH_INPUT_MIC_EMPTY);
   [iconImage_ setImage:icon];
   [iconImage_ setNeedsDisplay:YES];
 
@@ -76,7 +76,7 @@ const int kBubbleHorizontalMargin = 15;  // Space on either sides of controls.
   int newWidth = size.width;
 
   NSImage* icon = ResourceBundle::GetSharedInstance().GetNSImageNamed(
-      IDR_SPEECH_INPUT_RECORDING);
+      IDR_SPEECH_INPUT_MIC_EMPTY);
   size = [icon size];
   newHeight += size.height + kBubbleControlVerticalSpacing;
   if (newWidth < size.width)

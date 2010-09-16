@@ -64,6 +64,9 @@ class SpeechInputBubbleController
   // bubble is hidden, |Show| must be called to make it appear on screen.
   void SetBubbleMessage(int caller_id, const string16& text);
 
+  // Updates the current captured audio volume displayed on screen.
+  void SetBubbleInputVolume(int caller_id, float volume);
+
   void CloseBubble(int caller_id);
 
   // SpeechInputBubble::Delegate methods.
@@ -71,10 +74,22 @@ class SpeechInputBubbleController
   virtual void InfoBubbleFocusChanged();
 
  private:
+  // The various calls received by this object and handled in the UI thread.
+  enum RequestType {
+    REQUEST_SET_RECORDING_MODE,
+    REQUEST_SET_RECOGNIZING_MODE,
+    REQUEST_SET_MESSAGE,
+    REQUEST_SET_INPUT_VOLUME,
+    REQUEST_CLOSE,
+  };
+
   void InvokeDelegateButtonClicked(int caller_id,
                                    SpeechInputBubble::Button button);
   void InvokeDelegateFocusChanged(int caller_id);
-  void SetBubbleRecordingModeOrMessage(int caller_id, const string16& text);
+  void ProcessRequestInUiThread(int caller_id,
+                                RequestType type,
+                                const string16& text,
+                                float volume);
 
   // Only accessed in the IO thread.
   Delegate* delegate_;

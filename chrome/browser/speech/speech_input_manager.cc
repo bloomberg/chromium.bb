@@ -40,6 +40,7 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   virtual void OnRecognizerError(int caller_id,
                                  SpeechRecognizer::ErrorCode error);
   virtual void DidCompleteEnvironmentEstimation(int caller_id);
+  virtual void SetInputVolume(int caller_id, float volume);
 
   // SpeechInputBubbleController::Delegate methods.
   virtual void InfoBubbleButtonClicked(int caller_id,
@@ -203,6 +204,13 @@ void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {
   // Speech recognizer has gathered enough background audio so we can ask the
   // user to start speaking.
   bubble_controller_->SetBubbleRecordingMode(caller_id);
+}
+
+void SpeechInputManagerImpl::SetInputVolume(int caller_id, float volume) {
+  DCHECK(HasPendingRequest(caller_id));
+  DCHECK_EQ(recording_caller_id_, caller_id);
+
+  bubble_controller_->SetBubbleInputVolume(caller_id, volume);
 }
 
 void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(int caller_id) {

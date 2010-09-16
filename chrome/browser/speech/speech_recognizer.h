@@ -63,6 +63,11 @@ class SpeechRecognizer
     // recognition UI once this callback is received.
     virtual void DidCompleteEnvironmentEstimation(int caller_id) = 0;
 
+    // Informs of a change in the captured audio level, useful if displaying
+    // a microphone volume indicator while recording.
+    // The value of |volume| is in the [0.0, 1.0] range.
+    virtual void SetInputVolume(int caller_id, float volume) = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -98,6 +103,7 @@ class SpeechRecognizer
   static const int kNumAudioChannels;
   static const int kNumBitsPerAudioSample;
   static const int kNoSpeechTimeoutSec;
+  static const int kEndpointerEstimationTimeMs;
 
  private:
   void ReleaseAudioBuffers();
@@ -120,6 +126,7 @@ class SpeechRecognizer
   scoped_ptr<SpeexEncoder> encoder_;
   Endpointer endpointer_;
   int num_samples_recorded_;
+  float audio_level_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
 };

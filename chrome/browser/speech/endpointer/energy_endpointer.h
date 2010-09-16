@@ -78,7 +78,9 @@ class EnergyEndpointer {
 
   // Computes the next input frame and modifies EnergyEndpointer status as
   // appropriate based on the computation.
-  void ProcessAudioFrame(int64 time_us, const int16* samples, int num_samples);
+  void ProcessAudioFrame(int64 time_us,
+                         const int16* samples, int num_samples,
+                         float* rms_out);
 
   // Returns the current state of the EnergyEndpointer and the time
   // corresponding to the most recently computed frame.

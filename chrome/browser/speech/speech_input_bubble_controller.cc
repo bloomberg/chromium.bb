@@ -46,77 +46,79 @@ void SpeechInputBubbleController::CreateBubble(int caller_id,
 }
 
 void SpeechInputBubbleController::CloseBubble(int caller_id) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &SpeechInputBubbleController::CloseBubble,
-                          caller_id));
-    return;
-  }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  if (current_bubble_caller_id_ == caller_id)
-    current_bubble_caller_id_ = 0;
-  delete bubbles_[caller_id];
-  bubbles_.erase(caller_id);
+  ProcessRequestInUiThread(caller_id, REQUEST_CLOSE, string16(), 0);
 }
 
 void SpeechInputBubbleController::SetBubbleRecordingMode(int caller_id) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
-        this, &SpeechInputBubbleController::SetBubbleRecordingMode,
-        caller_id));
-    return;
-  }
-  SetBubbleRecordingModeOrMessage(caller_id, string16());
+  ProcessRequestInUiThread(caller_id, REQUEST_SET_RECORDING_MODE,
+                           string16(), 0);
 }
 
 void SpeechInputBubbleController::SetBubbleRecognizingMode(int caller_id) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
-        this, &SpeechInputBubbleController::SetBubbleRecognizingMode,
-        caller_id));
-    return;
-  }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  // The bubble may have been closed before we got a chance to process this
-  // request. So check before proceeding.
-  if (!bubbles_.count(caller_id))
-    return;
+  ProcessRequestInUiThread(caller_id, REQUEST_SET_RECOGNIZING_MODE,
+                           string16(), 0);
+}
 
-  bubbles_[caller_id]->SetRecognizingMode();
+void SpeechInputBubbleController::SetBubbleInputVolume(int caller_id,
+                                                       float volume) {
+  ProcessRequestInUiThread(caller_id, REQUEST_SET_INPUT_VOLUME, string16(),
+                           volume);
 }
 
 void SpeechInputBubbleController::SetBubbleMessage(int caller_id,
                                                    const string16& text) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
-        this, &SpeechInputBubbleController::SetBubbleMessage,
-        caller_id, text));
-    return;
-  }
-  SetBubbleRecordingModeOrMessage(caller_id, text);
+  ProcessRequestInUiThread(caller_id, REQUEST_SET_MESSAGE, text, 0);
 }
 
-void SpeechInputBubbleController::SetBubbleRecordingModeOrMessage(
-    int caller_id, const string16& text) {
+void SpeechInputBubbleController::ProcessRequestInUiThread(
+    int caller_id, RequestType type, const string16& text, float volume) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
+        this, &SpeechInputBubbleController::ProcessRequestInUiThread,
+        caller_id, type, text, volume));
+    return;
+  }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // The bubble may have been closed before we got a chance to process this
   // request. So check before proceeding.
   if (!bubbles_.count(caller_id))
     return;
 
-  if (current_bubble_caller_id_ && current_bubble_caller_id_ != caller_id)
-    bubbles_[current_bubble_caller_id_]->Hide();
-
-  current_bubble_caller_id_ = caller_id;
-  SpeechInputBubble* bubble = bubbles_[caller_id];
-  if (text.empty()) {
-    bubble->SetRecordingMode();
-  } else {
-    bubble->SetMessage(text);
+  bool change_active_bubble = (type == REQUEST_SET_RECORDING_MODE ||
+                               type == REQUEST_SET_MESSAGE);
+  if (change_active_bubble) {
+    if (current_bubble_caller_id_ && current_bubble_caller_id_ != caller_id)
+      bubbles_[current_bubble_caller_id_]->Hide();
+    current_bubble_caller_id_ = caller_id;
   }
-  bubble->Show();
+
+  SpeechInputBubble* bubble = bubbles_[caller_id];
+  switch (type) {
+    case REQUEST_SET_RECORDING_MODE:
+      bubble->SetRecordingMode();
+      break;
+    case REQUEST_SET_RECOGNIZING_MODE:
+      bubble->SetRecognizingMode();
+      break;
+    case REQUEST_SET_MESSAGE:
+      bubble->SetMessage(text);
+      break;
+    case REQUEST_SET_INPUT_VOLUME:
+      bubble->SetInputVolume(volume);
+      break;
+    case REQUEST_CLOSE:
+      if (current_bubble_caller_id_ == caller_id)
+        current_bubble_caller_id_ = 0;
+      delete bubble;
+      bubbles_.erase(caller_id);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (change_active_bubble)
+    bubble->Show();
 }
 
 void SpeechInputBubbleController::InfoBubbleButtonClicked(

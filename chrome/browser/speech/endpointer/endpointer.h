@@ -60,7 +60,8 @@ class Endpointer {
 
   // Process a segment of audio, which may be more than one frame.
   // The status of the last frame will be returned.
-  EpStatus ProcessAudio(const int16* audio_data, int num_samples);
+  EpStatus ProcessAudio(const int16* audio_data, int num_samples,
+                        float* rms_out);
 
   // Get the status of the endpointer.
   EpStatus Status(int64 *time_us);

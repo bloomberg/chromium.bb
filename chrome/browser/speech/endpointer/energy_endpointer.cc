@@ -213,7 +213,8 @@ void EnergyEndpointer::SetUserInputMode() {
 
 void EnergyEndpointer::ProcessAudioFrame(int64 time_us,
                                          const int16* samples,
-                                         int num_samples) {
+                                         int num_samples,
+                                         float* rms_out) {
   endpointer_time_us_ = time_us;
   float rms = RMS(samples, num_samples);
 
@@ -310,13 +311,19 @@ void EnergyEndpointer::ProcessAudioFrame(int64 time_us,
     }
 
     // Set a floor
-    if (decision_threshold_ <params_.min_decision_threshold())
+    if (decision_threshold_ < params_.min_decision_threshold())
       decision_threshold_ = params_.min_decision_threshold();
   }
 
   // Update speech and noise levels.
   UpdateLevels(rms);
   ++frame_counter_;
+
+  if (rms_out) {
+    *rms_out = -120.0;
+    if ((noise_level_ > 0.0) && ((rms / noise_level_ ) > 0.000001))
+      *rms_out = static_cast<float>(20.0 * log10(rms / noise_level_));
+  }
 }
 
 void EnergyEndpointer::UpdateLevels(float rms) {

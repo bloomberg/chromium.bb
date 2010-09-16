@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_H_
 #pragma once
 
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 
 namespace gfx {
 class Rect;
 }
+class SkBitmap;
 class TabContents;
 
 // SpeechInputBubble displays a popup info bubble during speech recognition,
@@ -91,6 +93,9 @@ class SpeechInputBubble {
   // |Delegate::InfoBubbleFocusChanged| as well.
   virtual void Hide() = 0;
 
+  // Updates the current captured audio volume displayed on screen.
+  virtual void SetInputVolume(float volume) = 0;
+
   // The horizontal distance between the start of the html widget and the speech
   // bubble's arrow.
   static const int kBubbleTargetOffsetX;
@@ -112,15 +117,22 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   };
 
   SpeechInputBubbleBase();
+  virtual ~SpeechInputBubbleBase();
 
   // SpeechInputBubble methods
   virtual void SetRecordingMode();
   virtual void SetRecognizingMode();
   virtual void SetMessage(const string16& text);
+  virtual void SetInputVolume(float volume);
 
  protected:
   // Updates the platform specific UI layout for the current display mode.
   virtual void UpdateLayout() = 0;
+
+  // Sets the given image as the image to display in the speech bubble.
+  // TODO(satish): Make the SetRecognizingMode call use this to show an
+  // animation while waiting for results.
+  virtual void SetImage(const SkBitmap& image) = 0;
 
   DisplayMode display_mode() {
     return display_mode_;
@@ -133,6 +145,14 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
  private:
   DisplayMode display_mode_;
   string16 message_text_;  // Text displayed in DISPLAY_MODE_MESSAGE
+  // The current microphone image with volume level indication.
+  scoped_ptr<SkBitmap> mic_image_;
+  // A temporary buffer image used in creating the above mic image.
+  scoped_ptr<SkBitmap> buffer_image_;
+
+  static SkBitmap* mic_full_;  // Mic image with full volume.
+  static SkBitmap* mic_empty_;  // Mic image with zero volume.
+  static SkBitmap* mic_mask_;  // Gradient mask used by the volume indicator.
 };
 
 // This typedef is to workaround the issue with certain versions of

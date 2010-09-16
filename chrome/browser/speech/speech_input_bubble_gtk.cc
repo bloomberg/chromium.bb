@@ -47,6 +47,7 @@ class SpeechInputBubbleGtk
   virtual void Show();
   virtual void Hide();
   virtual void UpdateLayout();
+  virtual void SetImage(const SkBitmap& image);
 
   CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnCancelClicked);
   CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnTryAgainClicked);
@@ -181,7 +182,7 @@ void SpeechInputBubbleGtk::UpdateLayout() {
     gtk_label_set_text(GTK_LABEL(label_),
         l10n_util::GetStringUTF8(IDS_SPEECH_INPUT_BUBBLE_HEADING).c_str());
     SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        display_mode() == DISPLAY_MODE_RECORDING ? IDR_SPEECH_INPUT_RECORDING :
+        display_mode() == DISPLAY_MODE_RECORDING ? IDR_SPEECH_INPUT_MIC_EMPTY :
                                                    IDR_SPEECH_INPUT_PROCESSING);
     GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
     gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
@@ -189,6 +190,11 @@ void SpeechInputBubbleGtk::UpdateLayout() {
     gtk_widget_show(icon_);
     gtk_widget_hide(try_again_button_);
   }
+}
+
+void SpeechInputBubbleGtk::SetImage(const SkBitmap& image) {
+  // TODO(satish): Implement.
+  NOTREACHED();
 }
 
 }  // namespace

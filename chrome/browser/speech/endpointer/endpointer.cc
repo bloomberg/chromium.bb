@@ -87,7 +87,8 @@ EpStatus Endpointer::Status(int64 *time) {
   return energy_endpointer_.Status(time);
 }
 
-EpStatus Endpointer::ProcessAudio(const int16* audio_data, int num_samples) {
+EpStatus Endpointer::ProcessAudio(const int16* audio_data, int num_samples,
+                                  float* rms_out) {
   EpStatus ep_status = EP_PRE_SPEECH;
 
   // Process the input data in blocks of frame_size_, dropping any incomplete
@@ -98,7 +99,8 @@ EpStatus Endpointer::ProcessAudio(const int16* audio_data, int num_samples) {
     // Have the endpointer process the frame.
     energy_endpointer_.ProcessAudioFrame(audio_frame_time_us_,
                                          audio_data + sample_index,
-                                         frame_size_);
+                                         frame_size_,
+                                         rms_out);
     sample_index += frame_size_;
     audio_frame_time_us_ += (frame_size_ * Time::kMicrosecondsPerSecond) /
                          sample_rate_;

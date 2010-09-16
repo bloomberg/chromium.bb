@@ -28,7 +28,14 @@ const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
 // make sure it is within the byte range.
 COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
 
-const int kEndpointerEstimationTimeMs = 300;
+// The following constants are related to the volume level indicator shown in
+// the UI for recorded audio.
+// Multiplier used when new volume is greater than previous level.
+const float kUpSmoothingFactor = 0.9f;
+// Multiplier used when new volume is lesser than previous level.
+const float kDownSmoothingFactor = 0.4f;
+const float kAudioMeterMinDb = 10.0f;  // Lower bar for volume meter.
+const float kAudioMeterDbRange = 25.0f;
 }  // namespace
 
 namespace speech_input {
@@ -38,6 +45,7 @@ const int SpeechRecognizer::kAudioPacketIntervalMs = 100;
 const int SpeechRecognizer::kNumAudioChannels = 1;
 const int SpeechRecognizer::kNumBitsPerAudioSample = 16;
 const int SpeechRecognizer::kNoSpeechTimeoutSec = 8;
+const int SpeechRecognizer::kEndpointerEstimationTimeMs = 300;
 
 // Provides a simple interface to encode raw audio using the Speex codec.
 class SpeexEncoder {
@@ -102,7 +110,8 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate, int caller_id)
     : delegate_(delegate),
       caller_id_(caller_id),
       encoder_(new SpeexEncoder()),
-      endpointer_(kAudioSampleRate) {
+      endpointer_(kAudioSampleRate),
+      audio_level_(0.0f) {
   endpointer_.set_speech_input_complete_silence_length(
       base::Time::kMicrosecondsPerSecond / 2);
   endpointer_.set_long_speech_input_complete_silence_length(
@@ -259,18 +268,20 @@ void SpeechRecognizer::HandleOnData(string* data) {
   int num_samples = data->length() / sizeof(short);
 
   encoder_->Encode(samples, num_samples, &audio_buffers_);
-  endpointer_.ProcessAudio(samples, num_samples);
+  float rms;
+  endpointer_.ProcessAudio(samples, num_samples, &rms);
   delete data;
   num_samples_recorded_ += num_samples;
 
-  // Check if we have gathered enough audio for the endpointer to do environment
-  // estimation and should move on to detect speech/end of speech.
-  if (endpointer_.IsEstimatingEnvironment() &&
-      num_samples_recorded_ >= (kEndpointerEstimationTimeMs *
-                                kAudioSampleRate) / 1000) {
-    endpointer_.SetUserInputMode();
-    delegate_->DidCompleteEnvironmentEstimation(caller_id_);
-    return;
+  if (endpointer_.IsEstimatingEnvironment()) {
+    // Check if we have gathered enough audio for the endpointer to do
+    // environment estimation and should move on to detect speech/end of speech.
+    if (num_samples_recorded_ >= (kEndpointerEstimationTimeMs *
+                                  kAudioSampleRate) / 1000) {
+      endpointer_.SetUserInputMode();
+      delegate_->DidCompleteEnvironmentEstimation(caller_id_);
+    }
+    return;  // No more processing since we are still estimating environment.
   }
 
   // Check if we have waited too long without hearing any speech.
@@ -279,6 +290,17 @@ void SpeechRecognizer::HandleOnData(string* data) {
     InformErrorAndCancelRecognition(RECOGNIZER_ERROR_NO_SPEECH);
     return;
   }
+
+  // Calculate the input volume to display in the UI, smoothing towards the
+  // new level.
+  float level = (rms - kAudioMeterMinDb) / kAudioMeterDbRange;
+  level = std::min(std::max(0.0f, level), 1.0f);
+  if (level > audio_level_) {
+    audio_level_ += (level - audio_level_) * kUpSmoothingFactor;
+  } else {
+    audio_level_ += (level - audio_level_) * kDownSmoothingFactor;
+  }
+  delegate_->SetInputVolume(caller_id_, audio_level_);
 
   if (endpointer_.speech_input_complete()) {
     StopRecording();

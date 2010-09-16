@@ -15,10 +15,6 @@ using media::AudioInputController;
 using media::TestAudioInputController;
 using media::TestAudioInputControllerFactory;
 
-namespace {
-const int kAudioPacketLengthBytes = 1000;
-}
-
 namespace speech_input {
 
 class SpeechRecognizerTest : public SpeechRecognizerDelegate,
@@ -31,7 +27,8 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
         recording_complete_(false),
         recognition_complete_(false),
         result_received_(false),
-        error_(SpeechRecognizer::RECOGNIZER_NO_ERROR) {
+        error_(SpeechRecognizer::RECOGNIZER_NO_ERROR),
+        volume_(-1.0f) {
     int audio_packet_length_bytes =
         (SpeechRecognizer::kAudioSampleRate *
          SpeechRecognizer::kAudioPacketIntervalMs *
@@ -67,6 +64,10 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
     error_ = error;
   }
 
+  virtual void SetInputVolume(int caller_id, float volume) {
+    volume_ = volume;
+  }
+
   // testing::Test methods.
   virtual void SetUp() {
     URLFetcher::set_factory(&url_fetcher_factory_);
@@ -76,6 +77,12 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   virtual void TearDown() {
     URLFetcher::set_factory(NULL);
     AudioInputController::set_factory(NULL);
+  }
+
+  void FillPacketWithTestWaveform() {
+    // Fill the input with a simple pattern, a 125Hz sawtooth waveform.
+    for (size_t i = 0; i < audio_packet_.size(); ++i)
+      audio_packet_[i] = static_cast<uint8>(i);
   }
 
  protected:
@@ -89,6 +96,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   TestURLFetcherFactory url_fetcher_factory_;
   TestAudioInputControllerFactory audio_input_controller_factory_;
   std::vector<uint8> audio_packet_;
+  float volume_;
 };
 
 TEST_F(SpeechRecognizerTest, StopNoData) {
@@ -237,15 +245,54 @@ TEST_F(SpeechRecognizerTest, NoSpeechCallbackNotIssued) {
     controller->event_handler()->OnData(controller, &audio_packet_[0],
                                         audio_packet_.size());
   }
-  // Fill the rest of input with a simple pattern, a 125Hz sawtooth waveform.
-  for (size_t i = 0; i < audio_packet_.size(); ++i)
-    audio_packet_[i] = static_cast<uint8>(i);
+
+  FillPacketWithTestWaveform();
   for (int i = 0; i < num_packets / 2; ++i) {
     controller->event_handler()->OnData(controller, &audio_packet_[0],
                                         audio_packet_.size());
   }
 
   MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
+  EXPECT_FALSE(recording_complete_);
+  EXPECT_FALSE(recognition_complete_);
+  recognizer_->CancelRecognition();
+}
+
+TEST_F(SpeechRecognizerTest, SetInputVolumeCallback) {
+  // Start recording and give a lot of packets with audio samples set to zero
+  // and then some more with reasonably loud audio samples. Check that we don't
+  // get the callback during estimation phase, then get zero for the silence
+  // samples and proper volume for the loud audio.
+  EXPECT_TRUE(recognizer_->StartRecording());
+  TestAudioInputController* controller =
+      audio_input_controller_factory_.controller();
+  ASSERT_TRUE(controller);
+  controller = audio_input_controller_factory_.controller();
+  ASSERT_TRUE(controller);
+
+  // Feed some samples to begin with for the endpointer to do noise estimation.
+  int num_packets = SpeechRecognizer::kEndpointerEstimationTimeMs /
+                    SpeechRecognizer::kAudioPacketIntervalMs;
+  for (int i = 0; i < num_packets; ++i) {
+    controller->event_handler()->OnData(controller, &audio_packet_[0],
+                                        audio_packet_.size());
+  }
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(-1.0f, volume_);  // No audio volume set yet.
+
+  // The vector is already filled with zero value samples on create.
+  controller->event_handler()->OnData(controller, &audio_packet_[0],
+                                      audio_packet_.size());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(0, volume_);
+
+  FillPacketWithTestWaveform();
+  controller->event_handler()->OnData(controller, &audio_packet_[0],
+                                      audio_packet_.size());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_FLOAT_EQ(0.9f, volume_);
+
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);

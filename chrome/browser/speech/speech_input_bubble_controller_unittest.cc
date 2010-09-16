@@ -8,6 +8,8 @@
 #include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class SkBitmap;
+
 namespace speech_input {
 
 // A mock bubble class which fakes a focus change or recognition cancel by the
@@ -49,6 +51,7 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
   virtual void Show() {}
   virtual void Hide() {}
   virtual void UpdateLayout() {}
+  virtual void SetImage(const SkBitmap&) {}
 
  private:
   static BubbleType type_;

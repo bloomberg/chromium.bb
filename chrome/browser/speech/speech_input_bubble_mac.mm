@@ -25,6 +25,7 @@ class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
   virtual void Show();
   virtual void Hide();
   virtual void UpdateLayout();
+  virtual void SetImage(const SkBitmap& image);
 
  private:
   scoped_nsobject<SpeechInputWindowController> window_;
@@ -53,6 +54,11 @@ SpeechInputBubbleImpl::SpeechInputBubbleImpl(TabContents* tab_contents,
 
 SpeechInputBubbleImpl::~SpeechInputBubbleImpl() {
   [window_.get() close];
+}
+
+void SpeechInputBubbleImpl::SetImage(const SkBitmap& image) {
+  // TODO(satish): Implement.
+  NOTREACHED();
 }
 
 void SpeechInputBubbleImpl::Show() {

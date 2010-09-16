@@ -40,6 +40,7 @@ class ContentView
 
   void UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
                     const string16& message_text);
+  void SetImage(const SkBitmap& image);
 
   // views::ButtonListener methods.
   virtual void ButtonPressed(views::Button* source, const views::Event& event);
@@ -78,7 +79,7 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
 
   icon_ = new views::ImageView();
   icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_SPEECH_INPUT_RECORDING));
+      IDR_SPEECH_INPUT_MIC_EMPTY));
   icon_->SetHorizontalAlignment(views::ImageView::CENTER);
   AddChildView(icon_);
 
@@ -104,8 +105,12 @@ void ContentView::UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
   } else {
     icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) ?
-        IDR_SPEECH_INPUT_RECORDING : IDR_SPEECH_INPUT_PROCESSING));
+        IDR_SPEECH_INPUT_MIC_EMPTY : IDR_SPEECH_INPUT_PROCESSING));
   }
+}
+
+void ContentView::SetImage(const SkBitmap& image) {
+  icon_->SetImage(image);
 }
 
 void ContentView::ButtonPressed(views::Button* source,
@@ -203,6 +208,7 @@ class SpeechInputBubbleImpl
 
   // SpeechInputBubbleBase methods.
   virtual void UpdateLayout();
+  virtual void SetImage(const SkBitmap& image);
 
   // Returns the screen rectangle to use as the info bubble's target.
   // |element_rect| is the html element's bounds in page coordinates.
@@ -322,6 +328,11 @@ void SpeechInputBubbleImpl::UpdateLayout() {
     bubble_content_->UpdateLayout(display_mode(), message_text());
   if (info_bubble_)  // Will be null on first call.
     info_bubble_->SizeToContents();
+}
+
+void SpeechInputBubbleImpl::SetImage(const SkBitmap& image) {
+  if (bubble_content_)
+    bubble_content_->SetImage(image);
 }
 
 }  // namespace
