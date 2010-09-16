@@ -3849,6 +3849,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
      <message name="IDS_LABS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Options' lab.">
         Uses an in-tab UI for the Options (Preferences) dialog instead of a stand-alone window.
       </message>
+     <message name="IDS_LABS_INSTANT_NAME" desc="Description of the 'Instant' lab.">
+        Instant
+      </message>
+     <message name="IDS_LABS_INSTANT_DESCRIPTION" desc="Description of the 'Instant' lab.">
+        Makes the address bar load urls as you type.
+      </message>
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">

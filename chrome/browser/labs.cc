@@ -74,6 +74,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     switches::kEnableTabbedOptions
   },
+  {
+    "match-preview",  // Do not change; see above.
+    IDS_LABS_INSTANT_NAME,
+    IDS_LABS_INSTANT_DESCRIPTION,
+    kOsWin,
+    switches::kEnableMatchPreview
+  },
 };
 
 // Extracts the list of enabled lab experiments from a profile and stores them
