@@ -545,8 +545,9 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
       hklm_key.Close();
     }
 
-    if (installed_version.get()) {
-      // Unregister any dll servers that we may have registered.
+    // Unregister any dll servers that we may have registered for Chrome Frame
+    // builds only.
+    if (installed_version.get() && InstallUtil::IsChromeFrameProcess()) {
       std::wstring dll_path(installer::GetChromeInstallPath(system_uninstall));
       file_util::AppendToPath(&dll_path, installed_version->GetString());
 
