@@ -3183,7 +3183,7 @@ TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
   return new_turl;
 }
 
-void GetPrepopulatedTemplatefromPrefs(PrefService* prefs,
+void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
                                       std::vector<TemplateURL*>* t_urls) {
   const ListValue* list =
       prefs->GetList(prefs::kSearchProviderOverrides);
@@ -3243,7 +3243,7 @@ void GetPrepopulatedEngines(PrefService* prefs,
   // If there is a set of search engines in the preferences file, it overrides
   // the built-in set.
   *default_search_provider_index = 0;
-  GetPrepopulatedTemplatefromPrefs(prefs, t_urls);
+  GetPrepopulatedTemplateFromPrefs(prefs, t_urls);
   if (!t_urls->empty())
     return;
 

@@ -107,30 +107,30 @@ class ScopedRunnableMethodFactory {
 
   template <class Method, class A, class B, class C>
   inline CancelableTask* NewRunnableMethod(Method method,
-                                 const A& a,
-                                 const B& b,
-                                 const C& c) {
+                                           const A& a,
+                                           const B& b,
+                                           const C& c) {
     return new RunnableMethod<Method, Tuple3<A, B, C> >(
         weak_factory_.GetWeakPtr(), method, MakeTuple(a, b, c));
   }
 
   template <class Method, class A, class B, class C, class D>
   inline CancelableTask* NewRunnableMethod(Method method,
-                                 const A& a,
-                                 const B& b,
-                                 const C& c,
-                                 const D& d) {
+                                           const A& a,
+                                           const B& b,
+                                           const C& c,
+                                           const D& d) {
     return new RunnableMethod<Method, Tuple4<A, B, C, D> >(
         weak_factory_.GetWeakPtr(), method, MakeTuple(a, b, c, d));
   }
 
   template <class Method, class A, class B, class C, class D, class E>
   inline CancelableTask* NewRunnableMethod(Method method,
-                                 const A& a,
-                                 const B& b,
-                                 const C& c,
-                                 const D& d,
-                                 const E& e) {
+                                           const A& a,
+                                           const B& b,
+                                           const C& c,
+                                           const D& d,
+                                           const E& e) {
     return new RunnableMethod<Method, Tuple5<A, B, C, D, E> >(
         weak_factory_.GetWeakPtr(), method, MakeTuple(a, b, c, d, e));
   }
@@ -143,7 +143,8 @@ class ScopedRunnableMethodFactory {
   template <class Method, class Params>
   class RunnableMethod : public CancelableTask {
    public:
-    RunnableMethod(const base::WeakPtr<T>& obj, Method meth,
+    RunnableMethod(const base::WeakPtr<T>& obj,
+                   Method meth,
                    const Params& params)
         : obj_(obj),
           meth_(meth),
@@ -187,6 +188,7 @@ class DeleteTask : public CancelableTask {
   virtual void Cancel() {
     obj_ = NULL;
   }
+
  private:
   T* obj_;
 };
@@ -204,6 +206,7 @@ class ReleaseTask : public CancelableTask {
   virtual void Cancel() {
     obj_ = NULL;
   }
+
  private:
   T* obj_;
 };

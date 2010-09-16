@@ -47,7 +47,11 @@ class SearchProviderInstallStateDispatcherHost {
       IPC::Message* reply_msg,
       ViewHostMsg_GetSearchProviderInstallState_Params install_state);
 
+  // Used to reply to messages.
   ResourceMessageFilter* ipc_sender_;
+
+  // Copied from the profile since the profile can't be accessed on the I/O
+  // thread.
   const bool is_off_the_record_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProviderInstallStateDispatcherHost);

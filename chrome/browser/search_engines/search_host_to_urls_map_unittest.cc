@@ -26,10 +26,6 @@ class SearchHostToURLsMapTest : public testing::Test {
     TemplateURLRef::SetGoogleBaseURL(new std::string(base_url));
   }
 
-  void VerifyDefault(const std::string& origin) {
-    ASSERT_STREQ(origin.c_str(), provider_map_->default_search_origin_.c_str());
-  }
-
   scoped_ptr<SearchHostToURLsMap> provider_map_;
   TemplateURL t_urls_[2];
   std::string host_;
