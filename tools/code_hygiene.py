@@ -213,16 +213,6 @@ class GenericRegexChecker(object):
     pass
 
 
-class OpenCurlyChecker(GenericRegexChecker):
-  """Checks for orphan opening curly braces."""
-  def __init__(self):
-    GenericRegexChecker.__init__(self, r'^ *{ *$')
-    return
-
-  def FileFilter(self, props):
-    return '.h' in props or '.cc' in props or '.c' in props
-
-
 class TrailingWhiteSpaceChecker(GenericRegexChecker):
   """No trailing whitespaces in code we control."""
   def __init__(self):
@@ -519,7 +509,6 @@ CHECKS = [# fatal checks
           (True, 'untrusted_ifdef', UntrustedIfDefChecker()),
           (True, 'untrusted_asm', UntrustedAsmChecker()),
           # Non fatal checks
-          (False, 'open_curly', OpenCurlyChecker()),
           (False, 'line_length', LineLengthChecker()),
           (False, 'carriage_return', CarriageReturnChecker()),
           (False, 'rewrite', RewriteChecker()),
