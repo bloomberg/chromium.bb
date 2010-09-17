@@ -132,9 +132,12 @@ NotificationService::~NotificationService() {
     if (observer_counts_[i] > 0) {
       // This may not be completely fixable -- see
       // http://code.google.com/p/chromium/issues/detail?id=11010 .
-      // But any new leaks should be fixed.
-      LOG(INFO) << observer_counts_[i] << " notification observer(s) leaked"
-          << " of notification type " << i;
+
+      // It would be nice to track new leaks, but this currently
+      // spams the console too much to be useful, making it hard to track
+      // down other problems.
+      // LOG(INFO) << observer_counts_[i] << " notification observer(s) leaked"
+      //    << " of notification type " << i;
     }
   }
 #endif
