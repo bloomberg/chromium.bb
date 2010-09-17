@@ -3081,20 +3081,14 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
   if (BindingsPolicy::is_dom_automation_enabled(enabled_bindings_))
     BindDOMAutomationController(frame);
   if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
-    if (!dom_ui_bindings_.get()) {
-      dom_ui_bindings_.reset(new DOMUIBindings());
-    }
-    dom_ui_bindings_->set_message_sender(this);
-    dom_ui_bindings_->set_routing_id(routing_id_);
-    dom_ui_bindings_->BindToJavascript(frame, L"chrome");
+    GetDOMUIBindings()->set_message_sender(this);
+    GetDOMUIBindings()->set_routing_id(routing_id_);
+    GetDOMUIBindings()->BindToJavascript(frame, L"chrome");
   }
   if (BindingsPolicy::is_external_host_enabled(enabled_bindings_)) {
-    if (!external_host_bindings_.get()) {
-      external_host_bindings_.reset(new ExternalHostBindings());
-    }
-    external_host_bindings_->set_message_sender(this);
-    external_host_bindings_->set_routing_id(routing_id_);
-    external_host_bindings_->BindToJavascript(frame, L"externalHost");
+    GetExternalHostBindings()->set_message_sender(this);
+    GetExternalHostBindings()->set_routing_id(routing_id_);
+    GetExternalHostBindings()->BindToJavascript(frame, L"externalHost");
   }
 }
 
@@ -3802,6 +3796,20 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   return url;
 }
 
+DOMUIBindings* RenderView::GetDOMUIBindings() {
+  if (!dom_ui_bindings_.get()) {
+    dom_ui_bindings_.reset(new DOMUIBindings());
+  }
+  return dom_ui_bindings_.get();
+}
+
+ExternalHostBindings* RenderView::GetExternalHostBindings() {
+  if (!external_host_bindings_.get()) {
+    external_host_bindings_.reset(new ExternalHostBindings());
+  }
+  return external_host_bindings_.get();
+}
+
 WebKit::WebPlugin* RenderView::GetWebPluginFromPluginDocument() {
   return webview()->mainFrame()->document().to<WebPluginDocument>().plugin();
 }
@@ -4197,8 +4205,7 @@ void RenderView::OnAllowBindings(int enabled_bindings_flags) {
 void RenderView::OnSetDOMUIProperty(const std::string& name,
                                     const std::string& value) {
   DCHECK(BindingsPolicy::is_dom_ui_enabled(enabled_bindings_));
-  DCHECK(dom_ui_bindings_.get());
-  dom_ui_bindings_->SetProperty(name, value);
+  GetDOMUIBindings()->SetProperty(name, value);
 }
 
 void RenderView::OnReservePageIDRange(int size_of_range) {
@@ -4554,9 +4561,8 @@ void RenderView::OnHandleMessageFromExternalHost(const std::string& message,
                                                  const std::string& target) {
   if (message.empty())
     return;
-  DCHECK(external_host_bindings_.get());
-  external_host_bindings_->ForwardMessageFromExternalHost(message, origin,
-                                                          target);
+  GetExternalHostBindings()->ForwardMessageFromExternalHost(message, origin,
+                                                            target);
 }
 
 void RenderView::OnDisassociateFromPopupCount() {

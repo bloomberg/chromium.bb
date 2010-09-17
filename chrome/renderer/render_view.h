@@ -959,6 +959,10 @@ class RenderView : public RenderWidget,
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
 
+  DOMUIBindings* GetDOMUIBindings();
+
+  ExternalHostBindings* GetExternalHostBindings();
+
   // Should only be called if this object wraps a PluginDocument.
   WebKit::WebPlugin* GetWebPluginFromPluginDocument();
 
