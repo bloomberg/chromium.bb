@@ -20,15 +20,15 @@ void* Gles2VideoDecodeContext::GetDevice() {
 }
 
 void Gles2VideoDecodeContext::AllocateVideoFrames(
-    int n, size_t width, size_t height, media::VideoFrame::Format format,
-    std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task) {
+    int n, size_t width, size_t height, AllocationCompleteCallback* callback) {
   // TODO(hclam): Implement.
 }
 
-void Gles2VideoDecodeContext::ReleaseAllVideoFrames() {
+void Gles2VideoDecodeContext::ReleaseVideoFrames(int n,
+                                                 media::VideoFrame* frames) {
   // TODO(hclam): Implement.
 }
 
-void Gles2VideoDecodeContext::Destroy(Task* task) {
+void Gles2VideoDecodeContext::Destroy(DestructionCompleteCallback* callback) {
   // TODO(hclam): Implement.
 }

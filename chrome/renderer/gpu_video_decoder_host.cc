@@ -109,9 +109,12 @@ void GpuVideoDecoderHost::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
   // TODO(hclam): We should keep an IDMap to convert between a frame a buffer
   // ID so that we can signal GpuVideoDecoder in GPU process to use the buffer.
   // This eliminates one conversion step.
-  // TODO(hclam): Fill the param.
   GpuVideoDecoderOutputBufferParam param;
 
+  // TODO(hclam): This is a hack to pass the texture id to the hardware video
+  // decoder. We should have created a mapping between VideoFrame and buffer id
+  // and we pass the buffer id to the GPU process.
+  param.texture = frame->gl_texture(VideoFrame::kRGBPlane);
   if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_FillThisBuffer(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBuffer failed";
@@ -149,6 +152,13 @@ void GpuVideoDecoderHost::OnInitializeDone(
     if (!input_transfer_buffer_->Map(param.input_buffer_size))
       break;
 
+    if (!base::SharedMemory::IsHandleValid(param.output_buffer_handle))
+      break;
+    output_transfer_buffer_.reset(
+        new base::SharedMemory(param.output_buffer_handle, false));
+    if (!output_transfer_buffer_->Map(param.output_buffer_size))
+      break;
+
     success = true;
   } while (0);
 
@@ -158,6 +168,7 @@ void GpuVideoDecoderHost::OnInitializeDone(
 
 void GpuVideoDecoderHost::OnUninitializeDone() {
   input_transfer_buffer_.reset();
+  output_transfer_buffer_.reset();
 
   event_handler_->OnUninitializeDone();
 }
@@ -178,11 +189,27 @@ void GpuVideoDecoderHost::OnFillThisBufferDone(
 
   if (param.flags & GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream) {
     VideoFrame::CreateEmptyFrame(&frame);
-  } else {
+  } else if (done_param_.surface_type ==
+             media::VideoFrame::TYPE_SYSTEM_MEMORY) {
+    VideoFrame::CreateFrame(VideoFrame::YV12,
+                            init_param_.width,
+                            init_param_.height,
+                            base::TimeDelta::FromMicroseconds(param.timestamp),
+                            base::TimeDelta::FromMicroseconds(param.duration),
+                            &frame);
+    uint8* src = static_cast<uint8*>(output_transfer_buffer_->memory());
+    uint8* data0 = frame->data(0);
+    uint8* data1 = frame->data(1);
+    uint8* data2 = frame->data(2);
+    int32 size = init_param_.width * init_param_.height;
+    memcpy(data0, src, size);
+    memcpy(data1, src + size, size / 4);
+    memcpy(data2, src + size + size / 4, size / 4);
+  } else if (done_param_.surface_type == media::VideoFrame::TYPE_GL_TEXTURE) {
     // TODO(hclam): The logic in buffer allocation is pretty much around
-    // using shared memory for output buffer which needs to be adjusted.
-    // Fake the texture ID until we implement it properly.
-    VideoFrame::GlTexture textures[3] = { 0, 0, 0 };
+    // using shared memory for output buffer which needs to be adjusted. For
+    // now we have to add this hack to get the texture id.
+    VideoFrame::GlTexture textures[3] = { param.texture, 0, 0 };
     media::VideoFrame::CreateFrameGlTexture(
         media::VideoFrame::RGBA, init_param_.width, init_param_.height,
         textures,

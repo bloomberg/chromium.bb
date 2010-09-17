@@ -112,6 +112,7 @@ class GpuVideoDecoderHost
   // Transfer buffers for both input and output.
   // TODO(jiesun): remove output buffer when hardware composition is ready.
   scoped_ptr<base::SharedMemory> input_transfer_buffer_;
+  scoped_ptr<base::SharedMemory> output_transfer_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoderHost);
 };

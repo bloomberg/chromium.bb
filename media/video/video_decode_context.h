@@ -5,23 +5,20 @@
 #ifndef MEDIA_VIDEO_VIDEO_DECODE_CONTEXT_H_
 #define MEDIA_VIDEO_VIDEO_DECODE_CONTEXT_H_
 
-#include <vector>
-
-#include "base/task.h"
-#include "media/base/video_frame.h"
+#include "base/callback.h"
 
 namespace media {
 
 class VideoFrame;
 
-// A VideoDecodeContext is used by VideoDecodeEngine to provide the following
-// functions:
-//
-// 1. Provides access to hardware video decoding device.
-// 2. Allocate VideoFrame objects that are used to carry the decoded video
-//    frames.
+// A VideoDecodeContext provides resources like output video frame storage and
+// hardware decoder handle to a VideoDecodeEngine, it hides all the platform and
+// subsystem details from the decode engine.
 class VideoDecodeContext {
  public:
+  typedef Callback2<int, VideoFrame*[]>::Type AllocationCompleteCallback;
+  typedef Callback0::Type DestructionCompleteCallback;
+
   virtual ~VideoDecodeContext() {};
 
   // Obtain a handle to the hardware video decoder device. The type of the
@@ -31,26 +28,22 @@ class VideoDecodeContext {
   // If a hardware device is not needed this method should return NULL.
   virtual void* GetDevice() = 0;
 
-  // Allocate |n| video frames with dimension |width| and |height|. |task|
+  // Allocate |n| video frames with dimension |width| and |height|. |callback|
   // is called when allocation has completed.
-  //
-  // |frames| is the output parameter for VideFrame(s) allocated.
-  virtual void AllocateVideoFrames(
-      int n, size_t width, size_t height, VideoFrame::Format format,
-      std::vector<scoped_refptr<VideoFrame> >* frames,
-      Task* task) = 0;
+  virtual void AllocateVideoFrames(int n, size_t width, size_t height,
+                                   AllocationCompleteCallback* callback) = 0;
 
-  // Release all video frames allocated by the context. After making this call
+  // Release video frames allocated by the context. After making this call
   // VideoDecodeEngine should not use the VideoFrame allocated because they
   // could be destroyed.
-  virtual void ReleaseAllVideoFrames() = 0;
+  virtual void ReleaseVideoFrames(int n, VideoFrame* frames) = 0;
 
-  // Destroy this context asynchronously. When the operation is done |task|
+  // Destroy this context asynchronously. When the operation is done |callback|
   // is called.
   //
   // ReleaseVideoFrames() need to be called with all the video frames allocated
   // before making this call.
-  virtual void Destroy(Task* task) = 0;
+  virtual void Destroy(DestructionCompleteCallback* callback) = 0;
 };
 
 }  // namespace media

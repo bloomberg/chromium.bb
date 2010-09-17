@@ -86,22 +86,32 @@ void ParamTraits<GpuVideoDecoderInitParam>::Log(
 void ParamTraits<GpuVideoDecoderInitDoneParam>::Write(
     Message* m, const GpuVideoDecoderInitDoneParam& p) {
   WriteParam(m, p.success);
+  WriteParam(m, p.stride);
+  WriteParam(m, p.format);
+  WriteParam(m, p.surface_type);
   WriteParam(m, p.input_buffer_size);
+  WriteParam(m, p.output_buffer_size);
   WriteParam(m, p.input_buffer_handle);
+  WriteParam(m, p.output_buffer_handle);
 }
 
 bool ParamTraits<GpuVideoDecoderInitDoneParam>::Read(
     const Message* m, void** iter, GpuVideoDecoderInitDoneParam* r) {
   if (!ReadParam(m, iter, &r->success) ||
+      !ReadParam(m, iter, &r->stride) ||
+      !ReadParam(m, iter, &r->format) ||
+      !ReadParam(m, iter, &r->surface_type) ||
       !ReadParam(m, iter, &r->input_buffer_size) ||
-      !ReadParam(m, iter, &r->input_buffer_handle))
+      !ReadParam(m, iter, &r->output_buffer_size) ||
+      !ReadParam(m, iter, &r->input_buffer_handle) ||
+      !ReadParam(m, iter, &r->output_buffer_handle))
     return false;
   return true;
 }
 
 void ParamTraits<GpuVideoDecoderInitDoneParam>::Log(
     const GpuVideoDecoderInitDoneParam& p, std::string* l) {
-  l->append(StringPrintf("(%d %d)", p.success, p.input_buffer_size));
+  l->append(StringPrintf("(%d)", p.stride));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,29 +143,29 @@ void ParamTraits<GpuVideoDecoderInputBufferParam>::Log(
 
 void ParamTraits<GpuVideoDecoderOutputBufferParam>::Write(
     Message* m, const GpuVideoDecoderOutputBufferParam& p) {
-  WriteParam(m, p.frame_id);
   WriteParam(m, p.timestamp);
   WriteParam(m, p.duration);
   WriteParam(m, p.flags);
+  WriteParam(m, p.texture);
 }
 
 bool ParamTraits<GpuVideoDecoderOutputBufferParam>::Read(
     const Message* m, void** iter, GpuVideoDecoderOutputBufferParam* r) {
-  if (!ReadParam(m, iter, &r->frame_id) ||
-      !ReadParam(m, iter, &r->timestamp) ||
+  if (!ReadParam(m, iter, &r->timestamp) ||
       !ReadParam(m, iter, &r->duration) ||
-      !ReadParam(m, iter, &r->flags))
+      !ReadParam(m, iter, &r->flags) ||
+      !ReadParam(m, iter, &r->texture))
     return false;
   return true;
 }
 
 void ParamTraits<GpuVideoDecoderOutputBufferParam>::Log(
     const GpuVideoDecoderOutputBufferParam& p, std::string* l) {
-  l->append(StringPrintf("(%d %d %d %x)",
-                         p.frame_id,
+  l->append(StringPrintf("(%d %d) %x texture = x%d",
                          static_cast<int>(p.timestamp),
                          static_cast<int>(p.duration),
-                         p.flags));
+                         p.flags,
+                         p.texture));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -182,18 +192,21 @@ void ParamTraits<GpuVideoDecoderErrorInfoParam>::Log(
 void ParamTraits<GpuVideoDecoderFormatChangeParam>::Write(
     Message* m, const GpuVideoDecoderFormatChangeParam& p) {
   WriteParam(m, p.input_buffer_size);
+  WriteParam(m, p.output_buffer_size);
 }
 
 bool ParamTraits<GpuVideoDecoderFormatChangeParam>::Read(
     const Message* m, void** iter, GpuVideoDecoderFormatChangeParam* r) {
-  if (!ReadParam(m, iter, &r->input_buffer_size))
+  if (!ReadParam(m, iter, &r->input_buffer_size) ||
+      !ReadParam(m, iter, &r->output_buffer_size))
     return false;
   return true;
 }
 
 void ParamTraits<GpuVideoDecoderFormatChangeParam>::Log(
     const GpuVideoDecoderFormatChangeParam& p, std::string* l) {
-  l->append(StringPrintf("%d", p.input_buffer_size));
+  l->append(StringPrintf("(%d %d)", p.input_buffer_size,
+                         p.output_buffer_size));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
