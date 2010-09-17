@@ -683,6 +683,9 @@ function toggleSectionVisibilityAndAnimate(section) {
   if (!section)
     return;
 
+  // It looks better to return the scroll to the top when toggling sections.
+  document.body.scrollTop = 0;
+
   // We set it back in webkitTransitionEnd.
   document.documentElement.setAttribute('enable-section-animations', 'true');
   if (shownSections & Section[section]) {
