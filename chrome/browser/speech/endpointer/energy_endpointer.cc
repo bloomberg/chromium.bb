@@ -231,11 +231,6 @@ void EnergyEndpointer::ProcessAudioFrame(int64 time_us,
     } else {
       decision = (rms > decision_threshold_);
     }
-    DLOG(INFO) << "endpointer_time: " << endpointer_time_us_
-               << " user_input_start_time: " << user_input_start_time_us_
-               << " FA reject period "
-               << Secs2Usecs(params_.contamination_rejection_period())
-               << " decision: " << (decision ? "SPEECH +++" : "SIL ------");
 
     history_->Insert(endpointer_time_us_, decision);
 
