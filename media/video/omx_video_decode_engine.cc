@@ -82,7 +82,6 @@ static void ResetParamHeader(const OmxVideoDecodeEngine& dec, T* param) {
 void OmxVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
-    VideoDecodeContext* context,
     const VideoCodecConfig& config) {
   DCHECK_EQ(message_loop, MessageLoop::current());
 

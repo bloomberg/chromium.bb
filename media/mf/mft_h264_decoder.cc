@@ -170,7 +170,6 @@ MftH264Decoder::~MftH264Decoder() {
 void MftH264Decoder::Initialize(
     MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
-    VideoDecodeContext* context,
     const VideoCodecConfig& config) {
   LOG(INFO) << "MftH264Decoder::Initialize";
   if (state_ != kUninitialized) {

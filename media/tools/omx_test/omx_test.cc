@@ -189,7 +189,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
     config.width = av_stream_->codec->width;
     config.height = av_stream_->codec->height;
     engine_.reset(new OmxVideoDecodeEngine());
-    engine_->Initialize(&message_loop_, this, NULL, config);
+    engine_->Initialize(&message_loop_, this, config);
 
     // Execute the message loop so that we can run tasks on it. This call
     // will return when we call message_loop_.Quit().

@@ -36,8 +36,7 @@ class MftH264Decoder : public media::VideoDecodeEngine {
   explicit MftH264Decoder(bool use_dxva, HWND draw_window);
   ~MftH264Decoder();
   virtual void Initialize(MessageLoop* message_loop,
-                          VideoDecodeEngine::EventHandler* event_handler,
-                          VideoDecodeContext* context,
+                          media::VideoDecodeEngine::EventHandler* event_handler,
                           const VideoCodecConfig& config);
   virtual void Uninitialize();
   virtual void Flush();

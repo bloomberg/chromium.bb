@@ -99,10 +99,7 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
       int n, size_t width, size_t height, media::VideoFrame::Format format,
       std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task);
   virtual void ReleaseAllVideoFrames();
-  virtual void UploadToVideoFrame(void* buffer,
-                                  scoped_refptr<media::VideoFrame> frame,
-                                  Task* task);
-  virtual void Destroy(Task* task);
+  virtual void Destroy(Task* task) = 0;
 
   //--------------------------------------------------------------------------
   // Any thread

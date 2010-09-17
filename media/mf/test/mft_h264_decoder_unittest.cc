@@ -207,7 +207,7 @@ TEST_F(MftH264DecoderTest, DecoderInitMissingArgs) {
   config.height = 600;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(NULL, NULL, NULL, config);
+  decoder->Initialize(NULL, NULL, config);
   EXPECT_EQ(MftH264Decoder::kUninitialized, decoder->state());
 }
 
@@ -219,7 +219,7 @@ TEST_F(MftH264DecoderTest, DecoderInitNoDxva) {
   config.height = 600;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(1, handler.init_count_);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   decoder->Uninitialize();
@@ -235,7 +235,7 @@ TEST_F(MftH264DecoderTest, DecoderInitDxva) {
   ASSERT_TRUE(hwnd);
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(true, hwnd));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(1, handler.init_count_);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   decoder->Uninitialize();
@@ -250,7 +250,7 @@ TEST_F(MftH264DecoderTest, DecoderUninit) {
   config.height = 600;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   decoder->Uninitialize();
   EXPECT_EQ(1, handler.uninit_count_);
@@ -277,7 +277,7 @@ TEST_F(MftH264DecoderTest, InitWithNegativeDimensions) {
   config.height = -456;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   EXPECT_EQ(kDecoderMaxWidth, handler.info_.stream_info.surface_width);
   EXPECT_EQ(kDecoderMaxHeight, handler.info_.stream_info.surface_height);
@@ -292,7 +292,7 @@ TEST_F(MftH264DecoderTest, InitWithTooHighDimensions) {
   config.height = kDecoderMaxHeight + 1;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   EXPECT_EQ(kDecoderMaxWidth, handler.info_.stream_info.surface_width);
   EXPECT_EQ(kDecoderMaxHeight, handler.info_.stream_info.surface_height);
@@ -307,7 +307,7 @@ TEST_F(MftH264DecoderTest, DrainOnEmptyBuffer) {
   config.height = 768;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   scoped_refptr<Buffer> buffer(new DataBuffer(0));
 
@@ -336,7 +336,7 @@ TEST_F(MftH264DecoderTest, NoOutputOnGarbageInput) {
   config.height = 768;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   handler.SetReader(reader);
   handler.SetDecoder(decoder.get());
@@ -364,7 +364,7 @@ TEST_F(MftH264DecoderTest, FlushAtStart) {
   config.height = 768;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   decoder->Flush();
 
@@ -384,7 +384,7 @@ TEST_F(MftH264DecoderTest, NoFlushAtStopped) {
   config.height = 768;
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(false, NULL));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   handler.SetReader(reader);
   handler.SetDecoder(decoder.get());
@@ -429,7 +429,7 @@ void DecodeValidVideo(const std::string& filename, int num_frames, bool dxva) {
   ASSERT_TRUE(hwnd);
   scoped_ptr<MftH264Decoder> decoder(new MftH264Decoder(dxva, hwnd));
   ASSERT_TRUE(decoder.get());
-  decoder->Initialize(&loop, &handler, NULL, config);
+  decoder->Initialize(&loop, &handler, config);
   EXPECT_EQ(MftH264Decoder::kNormal, decoder->state());
   handler.SetReader(reader);
   handler.SetDecoder(decoder.get());

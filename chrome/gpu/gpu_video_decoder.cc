@@ -4,11 +4,9 @@
 
 #include "chrome/gpu/gpu_video_decoder.h"
 
-#include "chrome/common/child_thread.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/media/fake_gl_video_decode_engine.h"
-#include "chrome/gpu/media/fake_gl_video_device.h"
 #include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
 
@@ -112,10 +110,6 @@ void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
 }
 
 void* GpuVideoDecoder::GetDevice() {
-  bool ret = gles2_decoder_->MakeCurrent();
-  DCHECK(ret) << "Failed to switch context";
-
-  // Simply delegate the method call to GpuVideoDevice.
   return video_device_->GetDevice();
 }
 
@@ -161,31 +155,12 @@ void GpuVideoDecoder::ReleaseAllVideoFrames() {
   //
   // And finally we'll send IPC commands to IpcVideoDecoder to destroy all
   // GL textures generated.
-  bool ret = gles2_decoder_->MakeCurrent();
-  DCHECK(ret) << "Failed to switch context";
-
   for (VideoFrameMap::iterator i = video_frame_map_.begin();
        i != video_frame_map_.end(); ++i) {
     video_device_->ReleaseVideoFrame(i->second);
   }
   video_frame_map_.clear();
   SendReleaseAllVideoFrames();
-}
-
-void GpuVideoDecoder::UploadToVideoFrame(void* buffer,
-                                         scoped_refptr<media::VideoFrame> frame,
-                                         Task* task) {
-  // This method is called by VideoDecodeEngine to upload a buffer to a
-  // VideoFrame. We should just delegate this to GpuVideoDevice which contains
-  // the actual implementation.
-  bool ret = gles2_decoder_->MakeCurrent();
-  DCHECK(ret) << "Failed to switch context";
-
-  // Actually doing the upload on the main thread.
-  ret = video_device_->UploadToVideoFrame(buffer, frame);
-  DCHECK(ret) << "Failed to upload video content to a VideoFrame.";
-  task->Run();
-  delete task;
 }
 
 void GpuVideoDecoder::Destroy(Task* task) {
@@ -208,17 +183,17 @@ GpuVideoDecoder::GpuVideoDecoder(
   // TODO(jiesun): find a better way to determine which VideoDecodeEngine
   // to return on current platform.
   decode_engine_.reset(new FakeGlVideoDecodeEngine());
-  video_device_.reset(new FakeGlVideoDevice());
 }
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
   // TODO(hclam): Initialize the VideoDecodeContext first.
+
   // TODO(jiesun): codec id should come from |param|.
   config_.codec = media::kCodecH264;
   config_.width = param.width;
   config_.height = param.height;
   config_.opaque_context = NULL;
-  decode_engine_->Initialize(NULL, this, this, config_);
+  decode_engine_->Initialize(NULL, this, config_);
 }
 
 void GpuVideoDecoder::OnUninitialize() {
@@ -249,6 +224,8 @@ void GpuVideoDecoder::OnEmptyThisBuffer(
 void GpuVideoDecoder::OnFillThisBuffer(
     const GpuVideoDecoderOutputBufferParam& param) {
   // Switch context before calling to the decode engine.
+  // TODO(hclam): This is temporary to allow FakeGlVideoDecodeEngine to issue
+  // GL commands correctly.
   bool ret = gles2_decoder_->MakeCurrent();
   DCHECK(ret) << "Failed to switch context";
 
@@ -275,18 +252,19 @@ void GpuVideoDecoder::OnVideoFrameAllocated(int32 frame_id,
   // GpuVideoDevice. The VideoFrame created is added to the internal map.
   // If we have generated enough VideoFrame, we call |allocation_callack_| to
   // complete the allocation process.
+  media::VideoFrame::GlTexture gl_textures[media::VideoFrame::kMaxPlanes];
+  memset(gl_textures, 0, sizeof(gl_textures));
   for (size_t i = 0; i < textures.size(); ++i) {
-    media::VideoFrame::GlTexture gl_texture;
     // Translate the client texture id to service texture id.
-    bool ret = gles2_decoder_->GetServiceTextureId(textures[i], &gl_texture);
+    bool ret = gles2_decoder_->GetServiceTextureId(textures[i],
+                                                   gl_textures + i);
     DCHECK(ret) << "Cannot translate client texture ID to service ID";
-    textures[i] = gl_texture;
   }
 
   scoped_refptr<media::VideoFrame> frame;
   bool ret = video_device_->CreateVideoFrameFromGlTextures(
       pending_allocation_->width, pending_allocation_->height,
-      pending_allocation_->format, textures, &frame);
+      pending_allocation_->format, gl_textures, &frame);
 
   DCHECK(ret) << "Failed to allocation VideoFrame from GL textures)";
   pending_allocation_->frames->push_back(frame);

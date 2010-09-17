@@ -39,7 +39,7 @@ class GpuChannel;
 // In addition to delegating video related commamnds to VideoDecodeEngine it
 // has the following important functions:
 //
-// BUFFER ALLOCATION
+// Buffer Allocation
 //
 // VideoDecodeEngine requires platform specific video frame buffer to operate.
 // In order to abstract the platform specific bits GpuVideoDecoderContext is
@@ -66,20 +66,12 @@ class GpuChannel;
 //    VideoFrame(s) from the textures.
 // 6. GpuVideoDecoder sends the VideoFrame(s) generated to VideoDecodeEngine.
 //
-// BUFFER UPLOADING
-//
-// A VideoDecodeEngine always produces some device specific buffer. In order to
-// use them in Chrome we always upload them to GL textures. The upload step is
-// different on each platform and each subsystem. We perform these special
-// upload steps by using GpuVideoDevice which are written for each
-// VideoDecodeEngine.
-//
-// BUFFER MAPPING
+// Buffer Translation
 //
 // GpuVideoDecoder will be working with VideoDecodeEngine, they exchange
-// buffers that are only meaningful to VideoDecodeEngine. In order to map that
-// to something we can transport in the IPC channel we need a mapping between
-// VideoFrame and buffer ID known between GpuVideoDecoder and
+// buffers that are only meaningful to VideoDecodeEngine. In order to translate
+// that to something we can transport in the IPC channel we need a mapping
+// between VideoFrame and buffer ID known between GpuVideoDecoder and
 // GpuVideoDecoderHost in the Renderer process.
 //
 // After texture allocation and VideoFrame allocation are done, GpuVideoDecoder
@@ -113,9 +105,6 @@ class GpuVideoDecoder
       int n, size_t width, size_t height, media::VideoFrame::Format format,
       std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task);
   virtual void ReleaseAllVideoFrames();
-  virtual void UploadToVideoFrame(void* buffer,
-                                  scoped_refptr<media::VideoFrame> frame,
-                                  Task* task);
   virtual void Destroy(Task* task);
 
   // Constructor and destructor.

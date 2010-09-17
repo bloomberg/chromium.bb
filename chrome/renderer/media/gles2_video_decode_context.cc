@@ -29,11 +29,6 @@ void Gles2VideoDecodeContext::ReleaseAllVideoFrames() {
   // TODO(hclam): Implement.
 }
 
-void Gles2VideoDecodeContext::UploadToVideoFrame(
-    void* buffer, scoped_refptr<media::VideoFrame> frame, Task* task) {
-  // TODO(hclam): Implement.
-}
-
 void Gles2VideoDecodeContext::Destroy(Task* task) {
   // TODO(hclam): Implement.
 }

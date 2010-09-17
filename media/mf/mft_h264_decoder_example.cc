@@ -362,7 +362,11 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
     return -1;
   }
 
-  mft->Initialize(MessageLoop::current(), handler.get(), NULL, config);
+  mft->Initialize(MessageLoop::current(), handler.get(), config);
+  if (!handler->info_.success) {
+    LOG(ERROR) << "Failed to initialize decoder";
+    return -1;
+  }
   scoped_ptr<WindowObserver> observer;
   if (render) {
     observer.reset(new WindowObserver(reader.get(), mft.get()));

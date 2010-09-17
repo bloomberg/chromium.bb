@@ -5,8 +5,6 @@
 #ifndef CHROME_GPU_MEDIA_GPU_VIDEO_DEVICE_H_
 #define CHROME_GPU_MEDIA_GPU_VIDEO_DEVICE_H_
 
-#include <vector>
-
 #include "media/base/video_frame.h"
 #include "media/video/video_decode_context.h"
 
@@ -33,25 +31,16 @@ class GpuVideoDevice {
   //
   // VideoFrame generated is used by VideoDecodeEngine for output buffer.
   //
-  // |frame| will contain the VideoFrame generated.
+  // |frames| will contain the set of VideoFrame(s) generated.
   //
   // Return true if the operation was successful.
   virtual bool CreateVideoFrameFromGlTextures(
       size_t width, size_t height, media::VideoFrame::Format format,
-      const std::vector<media::VideoFrame::GlTexture>& textures,
+      media::VideoFrame::GlTexture const* textures,
       scoped_refptr<media::VideoFrame>* frame) = 0;
 
   // Release VideoFrame generated.
-  virtual void ReleaseVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame) = 0;
-
-  // Upload a device specific buffer to a VideoFrame object that can be used in
-  // the GPU process.
-  //
-  // Return true if successful.
-  // TODO(hclam): Rename this to ConvertToVideoFrame().
-  virtual bool UploadToVideoFrame(void* buffer,
-                                  scoped_refptr<media::VideoFrame> frame) = 0;
+  virtual void ReleaseVideoFrame(scoped_refptr<media::VideoFrame> frame) = 0;
 };
 
 #endif  // CHROME_GPU_MEDIA_GPU_VIDEO_DEVICE_H_

@@ -110,7 +110,7 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   config.opaque_context = NULL;
   config.width = width_;
   config.height = height_;
-  omx_engine_->Initialize(message_loop(), this, NULL, config);
+  omx_engine_->Initialize(message_loop(), this, config);
 }
 
 void OmxVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {

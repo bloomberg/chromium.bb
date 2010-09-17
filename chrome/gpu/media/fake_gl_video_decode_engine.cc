@@ -4,8 +4,7 @@
 
 #include "chrome/gpu/media/fake_gl_video_decode_engine.h"
 
-#include "media/base/video_frame.h"
-#include "media/video/video_decode_context.h"
+#include "app/gfx/gl/gl_bindings.h"
 
 FakeGlVideoDecodeEngine::FakeGlVideoDecodeEngine()
     : width_(0),
@@ -19,32 +18,10 @@ FakeGlVideoDecodeEngine::~FakeGlVideoDecodeEngine() {
 void FakeGlVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
     media::VideoDecodeEngine::EventHandler* event_handler,
-    media::VideoDecodeContext* context,
     const media::VideoCodecConfig& config) {
   handler_ = event_handler;
-  context_ = context;
   width_ = config.width;
   height_ = config.height;
-
-  // Create an internal VideoFrame that we can write to. This is going to be
-  // uploaded through VideoDecodeContext.
-  media::VideoFrame::CreateFrame(
-      media::VideoFrame::RGBA, width_, height_, base::TimeDelta(),
-      base::TimeDelta(), &internal_frame_);
-  memset(internal_frame_->data(media::VideoFrame::kRGBPlane), 0,
-         height_ * internal_frame_->stride(media::VideoFrame::kRGBPlane));
-
-  // Use VideoDecodeContext to allocate VideoFrame that can be consumed by
-  // external body.
-  context_->AllocateVideoFrames(
-      1, width_, height_, media::VideoFrame::RGBA, &external_frames_,
-      NewRunnableMethod(this,
-                        &FakeGlVideoDecodeEngine::AllocationCompleteTask));
-}
-
-void FakeGlVideoDecodeEngine::AllocationCompleteTask() {
-  DCHECK_EQ(1u, external_frames_.size());
-  DCHECK_EQ(media::VideoFrame::TYPE_GL_TEXTURE, external_frames_[0]->type());
 
   media::VideoCodecInfo info;
   info.success = true;
@@ -53,6 +30,9 @@ void FakeGlVideoDecodeEngine::AllocationCompleteTask() {
   info.stream_info.surface_type = media::VideoFrame::TYPE_GL_TEXTURE;
   info.stream_info.surface_width = width_;
   info.stream_info.surface_height = height_;
+
+  // TODO(hclam): When we have VideoDecodeContext we should use it to allocate
+  // video frames.
   handler_->OnInitializeComplete(info);
 }
 
@@ -82,7 +62,7 @@ void FakeGlVideoDecodeEngine::ProduceVideoFrame(
   scoped_array<uint8> buffer(new uint8[size]);
   memset(buffer.get(), 0, size);
 
-  uint8* row = internal_frame_->data(media::VideoFrame::kRGBPlane);
+  uint8* row = buffer.get();
   static int seed = 0;
 
   for (int y = 0; y < height_; ++y) {
@@ -95,18 +75,14 @@ void FakeGlVideoDecodeEngine::ProduceVideoFrame(
   }
   ++seed;
 
-  // After we have filled the content upload the internal frame to the
-  // VideoFrame allocated through VideoDecodeContext.
-  context_->UploadToVideoFrame(
-      internal_frame_, external_frames_[0],
-      NewRunnableMethod(this, &FakeGlVideoDecodeEngine::UploadCompleteTask,
-                        external_frames_[0]));
-}
+  // Assume we are in the right context and then upload the content to the
+  // texture.
+  glBindTexture(GL_TEXTURE_2D,
+                frame->gl_texture(media::VideoFrame::kRGBPlane));
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, buffer.get());
 
-void FakeGlVideoDecodeEngine::UploadCompleteTask(
-    scoped_refptr<media::VideoFrame> frame) {
-  // |frame| is the upload target. We can immediately send this frame out.
+  // We have done generating data to the frame so give it to the handler.
+  // TODO(hclam): Advance the timestamp every time we call this method.
   handler_->ConsumeVideoFrame(frame);
 }
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(FakeGlVideoDecodeEngine);

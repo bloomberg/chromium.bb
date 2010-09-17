@@ -721,8 +721,6 @@
         'gpu/media/gpu_video_device.h',
         'gpu/media/fake_gl_video_decode_engine.cc',
         'gpu/media/fake_gl_video_decode_engine.h',
-        'gpu/media/fake_gl_video_device.cc',
-        'gpu/media/fake_gl_video_device.h',
       ],
       'include_dirs': [
         '..',
