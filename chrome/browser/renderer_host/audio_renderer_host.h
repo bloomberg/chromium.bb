@@ -86,7 +86,8 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
     AudioEntry()
         : render_view_id(0),
           stream_id(0),
-          pending_buffer_request(false) {
+          pending_buffer_request(false),
+          pending_close(false) {
     }
 
     // The AudioOutputController that manages the audio stream.
@@ -106,6 +107,9 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
     scoped_ptr<media::AudioOutputController::SyncReader> reader;
 
     bool pending_buffer_request;
+
+    // Set to true after we called Close() for the controller.
+    bool pending_close;
   };
 
   typedef std::map<AudioEntryId, AudioEntry*> AudioEntryMap;
@@ -218,6 +222,13 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
 
   // Delete all audio entry and all audio streams
   void DeleteEntries();
+
+  // Closes the stream. The stream is then deleted in DeleteEntry() after it
+  // is closed.
+  void CloseAndDeleteStream(AudioEntry* entry);
+
+  // Called on the audio thread after the audio stream is closed.
+  void OnStreamClosed(AudioEntry* entry);
 
   // Delete an audio entry and close the related audio stream.
   void DeleteEntry(AudioEntry* entry);
