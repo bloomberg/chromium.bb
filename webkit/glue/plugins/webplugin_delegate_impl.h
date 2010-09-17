@@ -137,6 +137,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Returns a combination of PluginQuirks.
   int GetQuirks() const { return quirks_; }
 
+  // Informs the plugin that the view it is in has gained or lost focus.
+  void SetContentAreaHasFocus(bool has_focus);
+
 #if defined(OS_MACOSX)
   // Informs the plugin that the geometry has changed, as with UpdateGeometry,
   // but also includes the new buffer context for that new geometry.
@@ -150,16 +153,14 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   static WebPluginDelegateImpl* GetActiveDelegate();
   // Informs the plugin that the window it is in has gained or lost focus.
   void SetWindowHasFocus(bool has_focus);
-  // Informs the plugin that the view it is in has gained or lost first
-  // responder status.
-  void SetContentAreaHasFocus(bool has_focus);
   // Returns whether or not the window the plugin is in has focus.
   bool GetWindowHasFocus() const { return containing_window_has_focus_; }
   // Informs the plugin that its tab or window has been hidden or shown.
   void SetContainerVisibility(bool is_visible);
   // Informs the plugin that its containing window's frame has changed.
   // Frames are in screen coordinates.
-  void WindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
+  void WindowFrameChanged(const gfx::Rect& window_frame,
+                          const gfx::Rect& view_frame);
   // Informs the delegate that the plugin set a Carbon ThemeCursor.
   void SetThemeCursor(ThemeCursor cursor);
   // Informs the delegate that the plugin set a Carbon Cursor.
@@ -253,6 +254,14 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Tells the plugin about the current state of the window.
   // See NPAPI NPP_SetWindow for more information.
   void WindowlessSetWindow();
+
+  // Informs the plugin that it has gained or lost keyboard focus (on the Mac,
+  // this just means window first responder status).
+  void SetPluginHasFocus(bool focused);
+
+  // Handles the platform specific details of setting plugin focus. Returns
+  // false if the platform cancelled the focus tranfer.
+  bool PlatformSetPluginHasFocus(bool focused);
 
   //-----------------------------------------
   // used for windowed and windowless plugins
@@ -377,10 +386,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Updates everything that depends on the plugin's absolute screen location.
   void PluginScreenLocationChanged();
 
-  // Informs the plugin that it has gained or lost keyboard focus (i.e., window
-  // first responder status).
-  void SetPluginHasFocus(bool has_focus);
-
   // Returns the apparent zoom ratio for the given event, as inferred from our
   // current knowledge about about where on screen the plugin is.
   // This is a temporary workaround for <http://crbug.com/9996>; once that is
@@ -435,14 +440,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // relative to an upper-left (0,0).
   gfx::Point content_area_origin_;
 
-  // True if the plugin thinks it has keyboard focus
-  bool plugin_has_focus_;
-  // True if the plugin element has focus within the page, regardless of whether
-  // its containing view is currently the first responder for the window.
-  bool has_webkit_focus_;
-  // True if the containing view is the window's first responder.
-  bool containing_view_has_focus_;
-
   bool containing_window_has_focus_;
   bool initial_window_focus_;
   bool container_is_visible_;
@@ -494,6 +491,14 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Set to true initially and indicates if this is the first npp_setwindow
   // call received by the plugin.
   bool first_set_window_call_;
+
+  // True if the plugin thinks it has keyboard focus
+  bool plugin_has_focus_;
+  // True if the plugin element has focus within the web content, regardless of
+  // whether its containing view currently has focus.
+  bool has_webkit_focus_;
+  // True if the containing view currently has focus.
+  bool containing_view_has_focus_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateImpl);
 };

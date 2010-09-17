@@ -156,6 +156,30 @@ void WebPluginDelegateImpl::UpdateGeometry(
   }
 }
 
+void WebPluginDelegateImpl::SetFocus(bool focused) {
+  DCHECK(windowless_);
+  // This is called when internal WebKit focus (the focused element on the page)
+  // changes, but plugins need to know about OS-level focus, so we have an extra
+  // layer of focus tracking.
+  has_webkit_focus_ = focused;
+  if (containing_view_has_focus_)
+    SetPluginHasFocus(focused);
+}
+
+void WebPluginDelegateImpl::SetPluginHasFocus(bool focused) {
+  if (focused == plugin_has_focus_)
+    return;
+  if (PlatformSetPluginHasFocus(focused))
+    plugin_has_focus_ = focused;
+}
+
+void WebPluginDelegateImpl::SetContentAreaHasFocus(bool has_focus) {
+  containing_view_has_focus_ = has_focus;
+  if (!windowless_)
+    return;
+  SetPluginHasFocus(containing_view_has_focus_ && has_webkit_focus_);
+}
+
 NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
   return instance_->GetPluginScriptableObject();
 }

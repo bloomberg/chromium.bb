@@ -221,11 +221,11 @@ IPC_BEGIN_MESSAGES(Plugin)
                              bool /* handled */,
                              WebCursor /* cursor type*/)
 
-#if defined(OS_MACOSX)
-  IPC_MESSAGE_ROUTED1(PluginMsg_SetWindowFocus,
+  IPC_MESSAGE_ROUTED1(PluginMsg_SetContentAreaFocus,
                       bool /* has_focus */)
 
-  IPC_MESSAGE_ROUTED1(PluginMsg_SetContentAreaFocus,
+#if defined(OS_MACOSX)
+  IPC_MESSAGE_ROUTED1(PluginMsg_SetWindowFocus,
                       bool /* has_focus */)
 
   IPC_MESSAGE_ROUTED0(PluginMsg_ContainerHidden)
