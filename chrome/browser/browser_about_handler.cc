@@ -719,6 +719,7 @@ std::string AboutSync() {
   } else {
     SyncManager::Status full_status(service->QueryDetailedSyncStatus());
 
+    strings.SetString("service_url", service->sync_service_url().spec());
     strings.SetString("summary",
         ProfileSyncService::BuildSyncStatusSummaryText(
             full_status.summary));

@@ -90,13 +90,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
   // If this is an official build, it will always be one of the above.
   std::string channel = platform_util::GetVersionStringModifier();
   if (channel.empty() || channel == "beta") {
-    LOG(INFO) << "Detected official build, using official sync server.";
     sync_service_url_ = GURL(kSyncServerUrl);
-  } else {
-    LOG(INFO) << "Detected official build, but using dev channel sync server.";
   }
-#else
-  LOG(INFO) << "Unofficial build, using dev channel sync server.";
 #endif
 }
 
@@ -149,7 +144,6 @@ void ProfileSyncService::LoadMigratedCredentials(const std::string& username,
 }
 
 void ProfileSyncService::Initialize() {
-  LOG(INFO) << "Starting ProfileSyncService.";
   InitSettings();
   RegisterPreferences();
 
@@ -255,8 +249,6 @@ void ProfileSyncService::InitSettings() {
       }
     }
   }
-
-  LOG(INFO) << "Using " << sync_service_url_ << " for sync server URL.";
 
   // Override the notification server host from the command-line, if provided.
   if (command_line.HasSwitch(switches::kSyncNotificationHost)) {
@@ -386,8 +378,6 @@ void ProfileSyncService::StartUp() {
 
   DCHECK(AreCredentialsAvailable());
 
-  LOG(INFO) << "ProfileSyncService bringing up backend host.";
-
   last_synced_time_ = base::Time::FromInternalValue(
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
@@ -436,8 +426,6 @@ void ProfileSyncService::ClearServerData() {
 }
 
 void ProfileSyncService::DisableForUser() {
-  LOG(INFO) << "Disabling sync for user.";
-
   // Clear prefs (including SyncSetupHasCompleted) before shutting down so
   // PSS clients don't think we're set up while we're shutting down.
   ClearPreferences();

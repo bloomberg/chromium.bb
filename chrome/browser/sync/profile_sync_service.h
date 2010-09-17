@@ -325,6 +325,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // any model-modifying operations.
   bool ShouldPushChanges();
 
+  const GURL& sync_service_url() const { return sync_service_url_; }
+
  protected:
   // Used by ProfileSyncServiceMock only.
   //
