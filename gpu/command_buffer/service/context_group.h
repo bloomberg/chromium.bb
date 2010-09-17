@@ -32,10 +32,12 @@ class ContextGroup {
  public:
   struct ExtensionFlags {
     ExtensionFlags()
-        : ext_framebuffer_multisample(false) {
+        : ext_framebuffer_multisample(false),
+          oes_standard_derivatives(false) {
     }
 
     bool ext_framebuffer_multisample;
+    bool oes_standard_derivatives;
   };
 
   ContextGroup();

@@ -95,6 +95,10 @@ bool ContextGroup::Initialize() {
 
   // Check if we should support GL_OES_packed_depth_stencil and/or
   // GL_GOOGLE_depth_texture.
+  // NOTE: GL_OES_depth_texture requires support for depth
+  // cubemaps. GL_ARB_depth_texture requires other features that
+  // GL_OES_packed_depth_stencil does not provide. Therefore we made up
+  // GL_GOOGLE_depth_texture.
   bool enable_depth_texture = false;
   if (strstr(extensions, "GL_ARB_depth_texture") ||
       strstr(extensions, "GL_OES_depth_texture")) {
@@ -210,6 +214,12 @@ bool ContextGroup::Initialize() {
       gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
     AddExtensionString("GL_OES_depth24");
     validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
+  }
+
+  if (strstr(extensions, "GL_OES_standard_derivatives") ||
+      gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+    AddExtensionString("GL_OES_standard_derivatives");
+    extension_flags_.oes_standard_derivatives = true;
   }
 
   // TODO(gman): Add support for these extensions.

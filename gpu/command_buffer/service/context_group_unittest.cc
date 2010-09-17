@@ -68,6 +68,7 @@ TEST_F(ContextGroupTest, Basic) {
   EXPECT_TRUE(group_.program_manager() == NULL);
   EXPECT_TRUE(group_.shader_manager() == NULL);
   EXPECT_FALSE(group_.extension_flags().ext_framebuffer_multisample);
+  EXPECT_FALSE(group_.extension_flags().oes_standard_derivatives);
 }
 
 TEST_F(ContextGroupTest, InitializeNoExtensions) {
@@ -374,6 +375,13 @@ TEST_F(ContextGroupTest, InitializeOES_depth24) {
   EXPECT_THAT(group_.extensions(), HasSubstr("GL_OES_depth24"));
   EXPECT_TRUE(group_.validators()->render_buffer_format.IsValid(
       GL_DEPTH_COMPONENT24));
+}
+
+TEST_F(ContextGroupTest, InitializeOES_standard_derivatives) {
+  SetupInitExpectations("GL_OES_standard_derivatives");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_OES_standard_derivatives"));
+  EXPECT_TRUE(group_.extension_flags().oes_standard_derivatives);
 }
 
 }  // namespace gles2

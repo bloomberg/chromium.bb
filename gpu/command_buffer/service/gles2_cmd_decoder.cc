@@ -1654,9 +1654,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     resources.MaxFragmentUniformVectors =
         group_->max_fragment_uniform_vectors();
     resources.MaxDrawBuffers = 1;
-    // TODO(alokp): Figure out if OES_standard_derivatives extension is
-    // available.
-    resources.OES_standard_derivatives = 0;
+    resources.OES_standard_derivatives =
+        group_->extension_flags().oes_standard_derivatives ? 1 : 0;
     vertex_translator_.reset(new ShaderTranslator);
     if (!vertex_translator_->Init(EShLangVertex, &resources)) {
         DLOG(ERROR) << "Could not initialize vertex shader translator.";
