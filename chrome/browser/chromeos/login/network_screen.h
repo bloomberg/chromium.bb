@@ -51,6 +51,8 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   void Refresh();
 
  private:
+  FRIEND_TEST(NetworkScreenTest, Timeout);
+
   // ViewScreen implementation:
   virtual void CreateView();
   virtual NetworkSelectionView* AllocateView();

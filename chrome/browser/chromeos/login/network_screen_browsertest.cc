@@ -44,22 +44,11 @@ class DummyButtonListener : public views::ButtonListener {
                              const views::Event& event) {}
 };
 
-class DummyComboboxModel : public ComboboxModel {
- public:
-  virtual int GetItemCount() { return 2; }
-
-  virtual string16 GetItemAt(int index) {
-    return ASCIIToUTF16("Item ") + base::IntToString16(index);
-  }
-};
-
 class NetworkScreenTest : public WizardInProcessBrowserTest {
  public:
   NetworkScreenTest(): WizardInProcessBrowserTest("network"),
                        mock_login_library_(NULL),
                        mock_network_library_(NULL) {
-    cellular_.set_name("Cellular network");
-    wifi_.set_name("WiFi network");
   }
 
  protected:
@@ -75,24 +64,33 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     // Status bar expectations are defined with RetiresOnSaturation() so
     // these mocks will be active once status bar is initialized.
     EXPECT_CALL(*mock_network_library_, ethernet_connected())
-        .Times(1)
-        .WillOnce((Return(false)));
+        .Times(2)
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, ethernet_connecting())
         .Times(1)
-        .WillOnce((Return(false)));
-    EXPECT_CALL(*mock_network_library_, wifi_enabled())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_network_library_, wifi_connected())
+        .Times(2)
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_network_library_, wifi_connecting())
+        .Times(2)
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_network_library_, cellular_connected())
+        .Times(2)
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_network_library_, cellular_connecting())
+        .Times(2)
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_network_library_, Connected())
+        .Times(2)
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_network_library_, Connecting())
         .Times(1)
-        .WillOnce((Return(true)));
-    EXPECT_CALL(*mock_network_library_, wifi_networks())
-        .Times(1)
-        .WillOnce((ReturnRef(wifi_networks_)));
-    EXPECT_CALL(*mock_network_library_, cellular_networks())
-        .Times(1)
-        .WillOnce((ReturnRef(cellular_networks_)));
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, AddObserver(_))
-        .Times(1);
+        .Times(2);
     EXPECT_CALL(*mock_network_library_, RemoveObserver(_))
-        .Times(1);
+        .Times(2);
 
     cros_mock_->SetStatusAreaMocksExpectations();
   }
@@ -102,80 +100,14 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     cros_mock_->test_api()->SetLoginLibrary(NULL, false);
   }
 
-  void NetworkChangedExpectations(bool wifi_enabled) {
-    EXPECT_CALL(*mock_network_library_, wifi_enabled())
-        .Times(1)
-        .WillOnce((Return(wifi_enabled)));
-  }
-
-  void EthernetExpectations(bool connected, bool connecting) {
-    EXPECT_CALL(*mock_network_library_, ethernet_connected())
-        .Times(1)
-        .WillRepeatedly((Return(connected)));
-    EXPECT_CALL(*mock_network_library_, ethernet_connecting())
-        .Times(1)
-        .WillRepeatedly((Return(connecting)));
-  }
-
-  void WifiExpectations(bool connected, bool connecting) {
-    EXPECT_CALL(*mock_network_library_, wifi_connected())
-        .Times(1)
-        .WillOnce((Return(connected)));
-    EXPECT_CALL(*mock_network_library_, wifi_connecting())
-        .Times(1)
-        .WillOnce((Return(connecting)));
-  }
-
-  void SetupWifiNetwork(bool connected, bool connecting) {
-    wifi_networks_.clear();
-    wifi_.set_connected(connected);
-    wifi_.set_connecting(connecting);
-    wifi_networks_.push_back(wifi_);
-  }
-
-  void SetupCellularNetwork(bool connected, bool connecting) {
-    cellular_networks_.clear();
-    cellular_.set_connected(connected);
-    cellular_.set_connecting(connecting);
-    cellular_networks_.push_back(cellular_);
-  }
-
-  void CellularExpectations(bool connected, bool connecting) {
-    EXPECT_CALL(*mock_network_library_, cellular_connected())
-        .Times(1)
-        .WillOnce((Return(connected)));
-    EXPECT_CALL(*mock_network_library_, cellular_connecting())
-        .Times(1)
-        .WillOnce((Return(connecting)));
-  }
-
-  void WifiCellularNetworksExpectations() {
-    EXPECT_CALL(*mock_network_library_, wifi_networks())
-       .Times(1)
-       .WillOnce((ReturnRef(wifi_networks_)));
-    EXPECT_CALL(*mock_network_library_, cellular_networks())
-       .Times(1)
-       .WillOnce((ReturnRef(cellular_networks_)));
-  }
-
-  void WifiSsidExpectation(const std::string& ssid) {
-    EXPECT_CALL(*mock_network_library_, wifi_name())
-        .Times(1)
-        .WillOnce((ReturnRef(ssid)));
-  }
-
-  void CellularNameExpectation(const std::string& name) {
-    EXPECT_CALL(*mock_network_library_, cellular_name())
-        .Times(1)
-        .WillOnce((ReturnRef(name)));
-  }
-
   void EmulateContinueButtonExit(NetworkScreen* network_screen) {
     scoped_ptr<MockScreenObserver>
         mock_screen_observer(new MockScreenObserver());
     EXPECT_CALL(*mock_screen_observer,
                 OnExit(ScreenObserver::NETWORK_CONNECTED))
         .Times(1);
+    EXPECT_CALL(*mock_network_library_, Connected())
+        .WillOnce(Return(true));
     controller()->set_observer(mock_screen_observer.get());
     DummyButtonListener button_listener;
     views::TextButton button(&button_listener, L"Button");
@@ -190,19 +122,11 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   MockLoginLibrary* mock_login_library_;
   MockNetworkLibrary* mock_network_library_;
 
-  CellularNetworkVector cellular_networks_;
-  WifiNetworkVector wifi_networks_;
-
-  CellularNetwork cellular_;
-  WifiNetwork wifi_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);
 };
 
-#if 0
-
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, FAILS_Basic) {
+IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Ethernet) {
   ASSERT_TRUE(controller());
   NetworkScreen* network_screen = controller()->GetNetworkScreen();
   ASSERT_TRUE(network_screen != NULL);
@@ -210,330 +134,148 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, FAILS_Basic) {
 
   NetworkSelectionView* network_view = network_screen->view();
   ASSERT_TRUE(network_view != NULL);
-  ASSERT_EQ(1, network_screen->GetItemCount());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE),
-            network_screen->GetItemAt(0));
-}
+  EXPECT_FALSE(network_view->IsContinueEnabled());
 
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, FAILS_EnableWifi) {
-  ASSERT_TRUE(controller());
-  NetworkScreen* network_screen = controller()->GetNetworkScreen();
-  ASSERT_TRUE(network_screen != NULL);
-  ASSERT_EQ(network_screen, controller()->current_screen());
-  NetworkSelectionView* network_view = network_screen->view();
-  ASSERT_TRUE(network_view != NULL);
-  NetworkLibrary* network_library =
-       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wifi_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, cellular_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, ethernet_connecting())
+      .WillOnce((Return(true)));
 
-  // WiFi is disabled.
-  NetworkChangedExpectations(false);
-  EthernetExpectations(false, false);
-  WifiCellularNetworksExpectations();
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(2, network_screen->GetItemCount());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE),
-            network_screen->GetItemAt(0));
-  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-                l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)),
-            network_screen->GetItemAt(1));
+  network_screen->NetworkChanged(mock_network_library_);
+  EXPECT_FALSE(network_view->IsContinueEnabled());
+  EXPECT_TRUE(network_view->IsConnecting());
 
-  // Emulate "Enable Wifi" item press.
-  EXPECT_CALL(*mock_network_library_, EnableWifiNetworkDevice(true))
-      .Times(1);
-  DummyComboboxModel combobox_model;
-  views::Combobox combobox(&combobox_model);
-  network_screen->ItemChanged(&combobox, 0, 1);
-  network_view->SetSelectedNetworkItem(1);
-  ui_test_utils::RunAllPendingInMessageLoop();
-  ASSERT_EQ(network_screen, controller()->current_screen());
-}
+  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_network_library_, Connected())
+      .WillOnce(Return(true));
 
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, FAILS_NetworksConnectedNotSelected) {
-  ASSERT_TRUE(controller());
-  NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  NetworkScreen* network_screen = controller()->GetNetworkScreen();
-  ASSERT_TRUE(network_screen != NULL);
-  NetworkSelectionView* network_view = network_screen->view();
-  ASSERT_TRUE(network_view != NULL);
+  network_screen->NetworkChanged(mock_network_library_);
+  EXPECT_TRUE(network_view->IsContinueEnabled());
 
-  EthernetExpectations(true, false);
-  WifiCellularNetworksExpectations();
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  // Ethernet is preselected once.
-  EXPECT_EQ(1, network_view->GetSelectedNetworkItem());
-  ASSERT_EQ(network_screen, controller()->current_screen());
-  ASSERT_EQ(2, network_screen->GetItemCount());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
-            network_screen->GetItemAt(1));
-
-  // Ethernet - disconnected, WiFi & Cellular - connected.
-  EthernetExpectations(false, false);
-  SetupWifiNetwork(true, false);
-  WifiExpectations(true, false);
-  SetupCellularNetwork(true, false);
-  CellularExpectations(true, false);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_.name());
-  CellularNameExpectation(cellular_.name());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(network_screen, controller()->current_screen());
-  ASSERT_EQ(3, network_screen->GetItemCount());
-  EXPECT_EQ(ASCIIToUTF16(wifi_.name()), network_screen->GetItemAt(1));
-  EXPECT_EQ(ASCIIToUTF16(cellular_.name()), network_screen->GetItemAt(2));
-
-  // Ethernet, WiFi & Cellular - connected.
-  EthernetExpectations(true, false);
-  WifiExpectations(true, false);
-  CellularExpectations(true, false);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_.name());
-  CellularNameExpectation(cellular_.name());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(network_screen, controller()->current_screen());
-  ASSERT_EQ(4, network_screen->GetItemCount());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
-            network_screen->GetItemAt(1));
-  EXPECT_EQ(ASCIIToUTF16(wifi_.name()), network_screen->GetItemAt(2));
-  EXPECT_EQ(ASCIIToUTF16(cellular_.name()), network_screen->GetItemAt(3));
-  // Ethernet is only preselected once.
-  EXPECT_EQ(0, network_view->GetSelectedNetworkItem());
-}
-
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, FAILS_EthernetSelected) {
-  ASSERT_TRUE(controller());
-  NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  NetworkScreen* network_screen = controller()->GetNetworkScreen();
-  ASSERT_TRUE(network_screen != NULL);
-  NetworkSelectionView* network_view = network_screen->view();
-  ASSERT_TRUE(network_view != NULL);
-
-  // Emulate connecting to Ethernet.
-  EthernetExpectations(false, true);
-  WifiCellularNetworksExpectations();
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(2, network_screen->GetItemCount());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
-            network_screen->GetItemAt(1));
-  ASSERT_EQ(network_screen, controller()->current_screen());
-
-  // Emulate combobox selection - nothing happens.
-  DummyComboboxModel combobox_model;
-  views::Combobox combobox(&combobox_model);
-  network_screen->ItemChanged(&combobox, 0, 1);
-  network_view->SetSelectedNetworkItem(1);
-  ui_test_utils::RunAllPendingInMessageLoop();
-  ASSERT_EQ(network_screen, controller()->current_screen());
-
-  // Emulate connected Ethernet - it should be preselected.
-  EthernetExpectations(true, false);
-  WifiCellularNetworksExpectations();
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(2, network_screen->GetItemCount());
-  EXPECT_EQ(1, network_view->GetSelectedNetworkItem());
-  ASSERT_EQ(network_screen, controller()->current_screen());
-
-  // "Continue" button with connected network should proceed to next screen.
   EmulateContinueButtonExit(network_screen);
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, FAILS_WifiSelected) {
+IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
   ASSERT_TRUE(controller());
-  NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   NetworkScreen* network_screen = controller()->GetNetworkScreen();
   ASSERT_TRUE(network_screen != NULL);
+  ASSERT_EQ(network_screen, controller()->current_screen());
+
   NetworkSelectionView* network_view = network_screen->view();
   ASSERT_TRUE(network_view != NULL);
+  EXPECT_FALSE(network_view->IsContinueEnabled());
 
-  EthernetExpectations(false, false);
-  SetupWifiNetwork(false, false);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(std::string());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(2, network_screen->GetItemCount());
-  EXPECT_EQ(ASCIIToUTF16(wifi_.name()), network_screen->GetItemAt(1));
+  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wifi_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, cellular_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, ethernet_connecting())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wifi_connecting())
+      .WillOnce((Return(true)));
+  std::string wifi_name = "wifi";
+  EXPECT_CALL(*mock_network_library_, wifi_name())
+      .WillOnce(ReturnRef(wifi_name));
 
-  DummyComboboxModel combobox_model;
-  views::Combobox combobox(&combobox_model);
+  network_screen->NetworkChanged(mock_network_library_);
+  EXPECT_FALSE(network_view->IsContinueEnabled());
+  EXPECT_TRUE(network_view->IsConnecting());
 
-  // Emulate combobox selection.
-  EthernetExpectations(false, false);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(std::string());
-  network_screen->ItemChanged(&combobox, 0, 1);
-  network_view->SetSelectedNetworkItem(1);
-  EXPECT_CALL(*mock_network_library_,
-              ConnectToWifiNetwork(A<WifiNetwork>(), std::string(),
-                                   std::string(), std::string()))
-      .Times(1);
-  ui_test_utils::RunAllPendingInMessageLoop();
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(2, network_screen->GetItemCount());
+  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_network_library_, Connected())
+      .WillOnce(Return(true));
 
-  // Emulate connecting to WiFi network.
-  EthernetExpectations(false, false);
-  SetupWifiNetwork(false, true);
-  WifiExpectations(false, true);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_.name());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(network_screen, controller()->current_screen());
+  network_screen->NetworkChanged(mock_network_library_);
+  EXPECT_TRUE(network_view->IsContinueEnabled());
 
-  // Emulate connected WiFi network.
-  EthernetExpectations(false, false);
-  SetupWifiNetwork(true, false);
-  WifiExpectations(true, false);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_.name());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ui_test_utils::RunAllPendingInMessageLoop();
-  ASSERT_EQ(network_screen, controller()->current_screen());
-
-  // "Continue" button with connected network should proceed to next screen.
   EmulateContinueButtonExit(network_screen);
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, FAILS_CellularSelected) {
+IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
   ASSERT_TRUE(controller());
-  NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   NetworkScreen* network_screen = controller()->GetNetworkScreen();
   ASSERT_TRUE(network_screen != NULL);
+  ASSERT_EQ(network_screen, controller()->current_screen());
+
   NetworkSelectionView* network_view = network_screen->view();
   ASSERT_TRUE(network_view != NULL);
+  EXPECT_FALSE(network_view->IsContinueEnabled());
 
-  EthernetExpectations(false, false);
-  SetupCellularNetwork(false, false);
-  WifiCellularNetworksExpectations();
-  CellularNameExpectation(std::string());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(2, network_screen->GetItemCount());
-  EXPECT_EQ(ASCIIToUTF16(cellular_.name()), network_screen->GetItemAt(1));
+  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wifi_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, cellular_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, ethernet_connecting())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wifi_connecting())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, cellular_connecting())
+      .WillOnce((Return(true)));
+  std::string cellular_name = "3G";
+  EXPECT_CALL(*mock_network_library_, cellular_name())
+      .WillOnce(ReturnRef(cellular_name));
 
-  DummyComboboxModel combobox_model;
-  views::Combobox combobox(&combobox_model);
+  network_screen->NetworkChanged(mock_network_library_);
+  EXPECT_FALSE(network_view->IsContinueEnabled());
+  EXPECT_TRUE(network_view->IsConnecting());
 
-  // Emulate combobox selection.
-  EthernetExpectations(false, false);
-  WifiCellularNetworksExpectations();
-  CellularNameExpectation(std::string());
-  network_screen->ItemChanged(&combobox, 0, 1);
-  network_view->SetSelectedNetworkItem(1);
-  EXPECT_CALL(*mock_network_library_, ConnectToCellularNetwork(_))
-      .Times(1);
-  ui_test_utils::RunAllPendingInMessageLoop();
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(2, network_screen->GetItemCount());
+  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_network_library_, Connected())
+      .WillOnce(Return(true));
 
-  // Emulate connecting to cellular network.
-  EthernetExpectations(false, false);
-  SetupCellularNetwork(false, true);
-  CellularExpectations(false, true);
-  WifiCellularNetworksExpectations();
-  CellularNameExpectation(cellular_.name());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(network_screen, controller()->current_screen());
+  network_screen->NetworkChanged(mock_network_library_);
+  EXPECT_TRUE(network_view->IsContinueEnabled());
 
-  // Emulate connected cellular network.
-  EthernetExpectations(false, false);
-  SetupCellularNetwork(true, false);
-  CellularExpectations(true, false);
-  WifiCellularNetworksExpectations();
-  CellularNameExpectation(cellular_.name());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ui_test_utils::RunAllPendingInMessageLoop();
-  ASSERT_EQ(network_screen, controller()->current_screen());
-
-  // "Continue" button with connected network should proceed to next screen.
   EmulateContinueButtonExit(network_screen);
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, FAILS_WifiWaiting) {
+IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   ASSERT_TRUE(controller());
-  NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   NetworkScreen* network_screen = controller()->GetNetworkScreen();
   ASSERT_TRUE(network_screen != NULL);
-  NetworkSelectionView* network_view = network_screen->view();
-  ASSERT_TRUE(network_view != NULL);
-
-  EthernetExpectations(false, false);
-  SetupWifiNetwork(false, false);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(std::string());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-
-  DummyComboboxModel combobox_model;
-  views::Combobox combobox(&combobox_model);
-
-  // Emulate combobox selection.
-  EthernetExpectations(false, false);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(std::string());
-  network_screen->ItemChanged(&combobox, 0, 1);
-  network_view->SetSelectedNetworkItem(1);
-  EXPECT_CALL(*mock_network_library_,
-              ConnectToWifiNetwork(A<WifiNetwork>(), std::string(),
-                                   std::string(), std::string()))
-      .Times(1);
-  ui_test_utils::RunAllPendingInMessageLoop();
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(2, network_screen->GetItemCount());
-
-  // Emulate connecting to WiFi network.
-  EthernetExpectations(false, false);
-  SetupWifiNetwork(false, true);
-  WifiExpectations(false, true);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_.name());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-
-  // Continue but wait for connection.
-  scoped_ptr<MockScreenObserver>
-      mock_screen_observer(new MockScreenObserver());
-  EXPECT_CALL(*mock_screen_observer,
-              OnExit(ScreenObserver::NETWORK_CONNECTED))
-      .Times(1);
-  controller()->set_observer(mock_screen_observer.get());
-  DummyButtonListener button_listener;
-  views::TextButton button(&button_listener, L"Button");
-  views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
-                          0, 0,
-                          views::Event::EF_LEFT_BUTTON_DOWN);
-  network_screen->ButtonPressed(&button, event);
-  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_EQ(network_screen, controller()->current_screen());
 
-  // Emulate connected WiFi network.
-  EthernetExpectations(false, false);
-  SetupWifiNetwork(true, false);
-  WifiExpectations(true, false);
-  WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_.name());
-  NetworkChangedExpectations(true);
-  network_screen->NetworkChanged(network_library);
-  ui_test_utils::RunAllPendingInMessageLoop();
-  controller()->set_observer(NULL);
-}
+  NetworkSelectionView* network_view = network_screen->view();
+  ASSERT_TRUE(network_view != NULL);
+  EXPECT_FALSE(network_view->IsContinueEnabled());
 
-#endif  // #if 0
+  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wifi_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, cellular_connected())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, ethernet_connecting())
+      .WillOnce((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wifi_connecting())
+      .WillOnce((Return(true)));
+  std::string wifi_name = "wifi";
+  EXPECT_CALL(*mock_network_library_, wifi_name())
+      .WillOnce(ReturnRef(wifi_name));
+  EXPECT_CALL(*mock_network_library_, Connected())
+      .WillOnce(Return(false));
+
+  network_screen->NetworkChanged(mock_network_library_);
+  EXPECT_FALSE(network_view->IsContinueEnabled());
+  EXPECT_TRUE(network_view->IsConnecting());
+
+  network_screen->OnConnectionTimeout();
+  EXPECT_FALSE(network_view->IsContinueEnabled());
+  EXPECT_FALSE(network_view->IsConnecting());
+
+  // Close infobubble with error message - it makes test stable.
+  network_screen->ClearErrors();
+}
 
 }  // namespace chromeos

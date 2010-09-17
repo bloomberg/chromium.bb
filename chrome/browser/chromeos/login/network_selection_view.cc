@@ -133,7 +133,6 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       throbber_(CreateDefaultSmoothedThrobber()),
       proxy_settings_link_(NULL),
       continue_button_order_index_(-1),
-      continue_button_enabled_(false),
       delegate_(delegate) {
 }
 
@@ -349,10 +348,17 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
   }
 }
 
+bool NetworkSelectionView::IsConnecting() const {
+  return connecting_network_label_->IsVisible();
+}
+
 void NetworkSelectionView::EnableContinue(bool enabled) {
-  continue_button_enabled_ = enabled;
   if (continue_button_)
     continue_button_->SetEnabled(enabled);
+}
+
+bool NetworkSelectionView::IsContinueEnabled() const {
+  return continue_button_ && continue_button_->IsEnabled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -378,11 +384,12 @@ void NetworkSelectionView::LinkActivated(views::Link* source, int) {
 void NetworkSelectionView::RecreateNativeControls() {
   // There is no way to get native button preferred size after the button was
   // sized so delete and recreate the button on text update.
+  bool is_continue_enabled = IsContinueEnabled();
   delete continue_button_;
   continue_button_ = new views::NativeButton(
       delegate_,
       l10n_util::GetString(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
-  continue_button_->SetEnabled(continue_button_enabled_);
+  continue_button_->SetEnabled(is_continue_enabled);
   if (continue_button_order_index_ < 0) {
     continue_button_order_index_ = GetChildViewCount();
   }

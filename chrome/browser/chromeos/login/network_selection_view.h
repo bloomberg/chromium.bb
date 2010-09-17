@@ -55,8 +55,14 @@ class NetworkSelectionView : public views::View,
   // Shows network connecting status or network selection otherwise.
   void ShowConnectingStatus(bool connecting, const string16& network_id);
 
+  // Returns true if only throbber is visible, the view is in waiting status.
+  bool IsConnecting() const;
+
   // Sets whether continue control is enabled.
   void EnableContinue(bool enabled);
+
+  // Returns whether continue button is enabled.
+  bool IsContinueEnabled() const;
 
   // views::LinkController implementation.
   virtual void LinkActivated(views::Link* source, int);
@@ -90,9 +96,6 @@ class NetworkSelectionView : public views::View,
 
   // Tab index of continue button.
   int continue_button_order_index_;
-
-  // Whether continue_button is enabled.
-  bool continue_button_enabled_;
 
   // NetworkScreen delegate.
   NetworkScreenDelegate* delegate_;
