@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/task.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -72,6 +73,8 @@ SearchProviderInstallData::SearchProviderInstallData(
 }
 
 SearchProviderInstallData::~SearchProviderInstallData() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   if (load_handle_) {
     DCHECK(web_service_.get());
     web_service_->CancelRequest(load_handle_);
@@ -79,6 +82,8 @@ SearchProviderInstallData::~SearchProviderInstallData() {
 }
 
 void SearchProviderInstallData::CallWhenLoaded(Task* task) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   if (provider_map_.get()) {
     task->Run();
     delete task;
@@ -97,6 +102,7 @@ void SearchProviderInstallData::CallWhenLoaded(Task* task) {
 
 SearchProviderInstallData::State SearchProviderInstallData::GetInstallState(
     const GURL& requested_origin) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(provider_map_.get());
 
   // First check to see if the origin is the default search provider.
@@ -122,6 +128,8 @@ SearchProviderInstallData::State SearchProviderInstallData::GetInstallState(
 void SearchProviderInstallData::OnWebDataServiceRequestDone(
     WebDataService::Handle h,
     const WDTypedResult* result) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   // Reset the load_handle so that we don't try and cancel the load in
   // the destructor.
   load_handle_ = 0;
@@ -153,6 +161,8 @@ void SearchProviderInstallData::OnWebDataServiceRequestDone(
 }
 
 void SearchProviderInstallData::SetDefault(const TemplateURL* template_url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   if (!template_url) {
     default_search_origin_.clear();
     return;
@@ -169,6 +179,8 @@ void SearchProviderInstallData::SetDefault(const TemplateURL* template_url) {
 }
 
 void SearchProviderInstallData::OnLoadFailed() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   provider_map_.reset(new SearchHostToURLsMap());
   IOThreadSearchTermsData search_terms_data;
   provider_map_->Init(template_urls_.get(), search_terms_data);
@@ -177,6 +189,8 @@ void SearchProviderInstallData::OnLoadFailed() {
 }
 
 void SearchProviderInstallData::NotifyLoaded() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   task_queue_.Run();
 
   // Since we expect this request to be rare, clear out the information. This

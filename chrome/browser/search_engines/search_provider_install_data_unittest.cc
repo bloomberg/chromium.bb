@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -28,8 +29,8 @@ static TemplateURL* CreateTemplateURL(const std::string& url,
 class TestGetInstallState :
     public base::RefCountedThreadSafe<TestGetInstallState> {
  public:
-  explicit TestGetInstallState(WebDataService* web_data_service)
-      : install_data_(web_data_service),
+  explicit TestGetInstallState(SearchProviderInstallData* install_data)
+      : install_data_(install_data),
         main_loop_(NULL),
         passed_(false) {
   }
@@ -62,7 +63,7 @@ class TestGetInstallState :
   void VerifyInstallState(SearchProviderInstallData::State expected_state,
                           const std::string& url);
 
-  SearchProviderInstallData install_data_;
+  SearchProviderInstallData* install_data_;
   MessageLoop* main_loop_;
 
   // A host which should be a search provider but not the default.
@@ -98,7 +99,7 @@ TestGetInstallState::~TestGetInstallState() {
 }
 
 void TestGetInstallState::StartTestOnIOThread() {
-  install_data_.CallWhenLoaded(
+  install_data_->CallWhenLoaded(
       NewRunnableMethod(this,
                         &TestGetInstallState::DoInstallStateTests));
 }
@@ -137,7 +138,7 @@ void TestGetInstallState::VerifyInstallState(
     const std::string& url) {
 
   SearchProviderInstallData::State actual_state =
-      install_data_.GetInstallState(GURL(url));
+      install_data_->GetInstallState(GURL(url));
   if (expected_state == actual_state)
     return;
 
@@ -150,16 +151,23 @@ void TestGetInstallState::VerifyInstallState(
 // that use TemplateURLModelTestUtil.
 class SearchProviderInstallDataTest : public testing::Test {
  public:
-  SearchProviderInstallDataTest() {}
+  SearchProviderInstallDataTest()
+      : install_data_(NULL) {}
 
   virtual void SetUp() {
     testing::Test::SetUp();
     util_.SetUp();
+    install_data_ = new SearchProviderInstallData(util_.GetWebDataService());
     io_thread_.reset(new ChromeThread(ChromeThread::IO));
     io_thread_->Start();
   }
 
   virtual void TearDown() {
+    io_thread_->message_loop()->PostTask(
+        FROM_HERE,
+        new DeleteTask<SearchProviderInstallData>(install_data_));
+    install_data_ = NULL;
+    util_.BlockTillIOThreadProcessesRequests();
     io_thread_->Stop();
     io_thread_.reset();
     util_.TearDown();
@@ -169,6 +177,10 @@ class SearchProviderInstallDataTest : public testing::Test {
  protected:
   TemplateURLModelTestUtil util_;
   scoped_ptr<ChromeThread> io_thread_;
+
+  // Provides the search provider install state on the I/O thread. It must be
+  // deleted on the I/O thread, which is why it isn't a scoped_ptr.
+  SearchProviderInstallData* install_data_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProviderInstallDataTest);
 };
@@ -186,7 +198,7 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
 
   // Verify the search providers install state (with no default set).
   scoped_refptr<TestGetInstallState> test_get_install_state(
-      new TestGetInstallState(util_.GetWebDataService()));
+      new TestGetInstallState(install_data_));
   test_get_install_state->set_search_provider_host(host);
   EXPECT_TRUE(test_get_install_state->RunTests(*io_thread_.get()));
 

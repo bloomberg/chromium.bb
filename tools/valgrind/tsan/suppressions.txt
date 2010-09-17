@@ -39,13 +39,6 @@
   fun:*media*PipelineImpl*GetCurrentTime*
 }
 
-{
-  bug_56002
-  ThreadSanitizer:Race
-  fun:*scoped_ptr*
-  fun:*SearchProviderInstallData*
-}
-
 ############################
 # Real races in third_party
 {
