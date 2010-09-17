@@ -52,9 +52,6 @@ cr.define('options.language', function() {
           button.textContent += ' - ' + language.nativeDisplayName;
         }
         button.languageCode = language.code;
-        // Listen to user clicks.
-        // TODO(satorux): Fix this
-        //        button.addEventListener('click',this. handleLanguageClick_.bind(this));
         var li = document.createElement('li');
         li.languageCode = language.code;
         li.appendChild(button);
