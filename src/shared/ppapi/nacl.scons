@@ -62,6 +62,7 @@ c_headers = [
     'c/pp_resource.h',
     'c/pp_size.h',
     'c/pp_stdint.h',
+    'c/pp_time.h'
     'c/pp_var.h',
     'c/ppb.h',
     'c/ppb_core.h',
@@ -157,13 +158,13 @@ c_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in c_headers], os.path.join('ppapi', 'c'))
 c_dev_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in c_dev_headers],
-  os.path.join('ppapi', 'dev', 'c'))
+  os.path.join('ppapi', 'c', 'dev'))
 cpp_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in cpp_headers],
   os.path.join('ppapi', 'cpp'))
 cpp_dev_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in cpp_dev_headers],
-  os.path.join('ppapi', 'dev', 'cpp'))
+  os.path.join('ppapi', 'cpp', 'dev'))
 env.AddLibraryToSdk(['ppapi_cpp'])
 env.Requires('ppapi_cpp', [c_header_install,
                            c_dev_header_install,
