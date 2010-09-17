@@ -4,6 +4,7 @@
 
 #include "chrome/nacl/nacl_thread.h"
 
+#include "base/scoped_ptr.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/nacl_messages.h"
 
@@ -37,10 +38,9 @@ void NaClThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClThread::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
-  NaClHandle* array = new NaClHandle[handles.size()];
+  scoped_array<NaClHandle> array(new NaClHandle[handles.size()]);
   for (size_t i = 0; i < handles.size(); i++) {
     array[i] = nacl::ToNativeHandle(handles[i]);
   }
-  NaClMainForChromium(static_cast<int>(handles.size()), array);
-  delete array;
+  NaClMainForChromium(static_cast<int>(handles.size()), array.get());
 }
