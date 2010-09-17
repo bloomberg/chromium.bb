@@ -118,10 +118,6 @@ OperandSizeDefaultIs64
 # Operand size must be 64 in 64-bit mode.
 OperandSizeForce64
 
-# Address size defaults to size 32 in 64-bit mode. Use of Rex.w promotes
-# the address to 64 bits.
-AddressSizeDefaultIs32
-
 # Ignore multiple 66 prefices when counting the number of prefices allowed
 # in NACL.
 IgnorePrefixDATA16

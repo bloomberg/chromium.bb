@@ -88,11 +88,7 @@ static int NaClExtractOpSize(NaClInstState* state) {
  */
 static int NaClExtractAddressSize(NaClInstState* state) {
   if (NACL_TARGET_SUBARCH == 64) {
-    if (state->inst->flags & NACL_IFLAG(AddressSizeDefaultIs32)) {
-      return (state->rexprefix & 0x8) ? 64 : 32;
-    } else {
-      return (state->prefix_mask & kPrefixADDR16) ? 32 : 64;
-    }
+    return (state->prefix_mask & kPrefixADDR16) ? 32 : 64;
   } else {
     return (state->prefix_mask & kPrefixADDR16) ? 16 : 32;
   }

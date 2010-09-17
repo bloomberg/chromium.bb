@@ -239,7 +239,7 @@ void NaClDef0FInsts() {
 
   /* ISE reviewers suggested omitting bt. */
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xa3, Prefix0F, InstBt, Compare);
-  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal));
 
   /* ISE reviewers suggested omitting shld. */
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xa4, Prefix0F, InstShld, Binary);
@@ -257,7 +257,7 @@ void NaClDef0FInsts() {
 
   /* ISE reviewers suggested omitting btr. */
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xab, Prefix0F, InstBts, Binary);
-  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal));
 
   NaClDefInvalidIcode(Prefix660F, 0xae);
   NaClDefInvalidIcode(PrefixF20F, 0xae);
@@ -330,7 +330,7 @@ void NaClDef0FInsts() {
 
   /* ISE reviewers suggested omitting btr */
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xb3, Prefix0F, InstBtr, Binary);
-  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal));
 
   /* MOVZX */
   NaClDefInstChoices_32_64(0xb6, 1, 2);
@@ -398,7 +398,7 @@ void NaClDef0FInsts() {
 
   /* ISE reviewers suggested omitting btc */
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xbb, Prefix0F, InstBtc, Binary);
-  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal));
 
   NaClDefInstChoices_32_64(0xbc, 1, 2);
   NaClDefInst(0xbc, NACLi_386,

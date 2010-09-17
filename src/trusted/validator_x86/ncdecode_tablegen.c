@@ -1785,7 +1785,7 @@ static void NaClInstRemove64Stuff(NaClInst* inst) {
         NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeHasRexR) |
         NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
         NACL_IFLAG(AddressSize_o) | NACL_IFLAG(OperandSizeDefaultIs64) |
-        NACL_IFLAG(OperandSizeForce64) | NACL_IFLAG(AddressSizeDefaultIs32));
+        NACL_IFLAG(OperandSizeForce64));
 }
 
 /* Simplifies the instructions if possible. Mostly removes flags that

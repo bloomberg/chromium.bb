@@ -2505,7 +2505,7 @@ NaClExpVector[8] = {
 NaClExpVector[0] = {
 };
 0000000000000000: 41 0f a3 c0                                  bt %r8d, %eax
-  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Bt $E, $G
       E_Operand               OpUse
       G_Operand               OpUse
@@ -2545,60 +2545,60 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
-0000000000000000: 0f b3 20                                     btr [%eax], %esp
-  0f b3                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+0000000000000000: 0f b3 20                                     btr [%rax], %esp
+  0f b3                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Btr $E, $G
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize32 },
-  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
 };
-0000000000000000: 0f a3 20                                     bt [%eax], %esp
-  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+0000000000000000: 0f a3 20                                     bt [%rax], %esp
+  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Bt $E, $G
       E_Operand               OpUse
       G_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprMemOffset[4] , 0, ExprUsed | ExprSize32 },
-  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
 };
-0000000000000000: 0f bb 20                                     btc [%eax], %esp
-  0f bb                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+0000000000000000: 0f bb 20                                     btc [%rax], %esp
+  0f bb                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Btc $E, $G
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize32 },
-  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
 };
-0000000000000000: 0f ab 20                                     bts [%eax], %esp
-  0f ab                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+0000000000000000: 0f ab 20                                     bts [%rax], %esp
+  0f ab                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Bts $E, $G
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize32 },
-  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
@@ -3312,4 +3312,49 @@ NaClExpVector[10] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
+};
+0000000000000000: 0f a3 00                                     bt [%rax], %eax
+  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal
+    Bt $E, $G
+      E_Operand               OpUse
+      G_Operand               OpUse
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+};
+0000000000000000: 0f a3 04 00                                  bt [%rax+%rax*1], %eax
+  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal
+    Bt $E, $G
+      E_Operand               OpUse
+      G_Operand               OpUse
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+};
+0000000000000000: 0f a3 80 00 01 02 03                         bt [%rax+0x3020100], %eax
+  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal
+    Bt $E, $G
+      E_Operand               OpUse
+      G_Operand               OpUse
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x3020100, ExprSize32 | ExprSignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };

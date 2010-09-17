@@ -3032,7 +3032,7 @@ Target: x86-64 bit mode
       RegECX                  OpSet OpImplicit
       RegEDX                  OpSet OpImplicit
   --- a3 ---
-  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+  0f a3                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Bt $E, $G
       E_Operand               OpUse
       G_Operand               OpUse
@@ -3053,7 +3053,7 @@ Target: x86-64 bit mode
   --- a7 ---
   0f a7                       INVALID 
   --- ab ---
-  0f ab                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+  0f ab                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Bts $E, $G
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
@@ -3094,7 +3094,7 @@ Target: x86-64 bit mode
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- b3 ---
-  0f b3                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+  0f b3                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Btr $E, $G
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
@@ -3136,7 +3136,7 @@ Target: x86-64 bit mode
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
   --- bb ---
-  0f bb                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal AddressSizeDefaultIs32
+  0f bb                       386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Btc $E, $G
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
