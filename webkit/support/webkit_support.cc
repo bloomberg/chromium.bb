@@ -4,6 +4,7 @@
 
 #include "webkit/support/webkit_support.h"
 
+#include "app/gfx/gl/gl_implementation.h"
 #include "base/at_exit.h"
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -105,6 +106,10 @@ class TestEnvironment {
     if (!unit_test_mode) {
       at_exit_manager_.reset(new base::AtExitManager);
       InitLogging(false);
+
+      // Default to OSMesa for GL, for testing WebGL, 3D CSS and other
+      // GPU-related APIs.
+      gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
     }
     main_message_loop_.reset(new MessageLoopForUI);
     // TestWebKitClient must be instantiated after the MessageLoopForUI.
