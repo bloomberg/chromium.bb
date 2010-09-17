@@ -271,6 +271,17 @@
   [self didChangeText];
 }
 
+- (void)setSelectedRange:(NSRange)charRange
+                affinity:(NSSelectionAffinity)affinity
+          stillSelecting:(BOOL)flag {
+  [super setSelectedRange:charRange affinity:affinity stillSelecting:flag];
+
+  // We're only interested in selection changes directly caused by keyboard
+  // input from the user.
+  if (interpretingKeyEvents_)
+    textChangedByKeyEvents_ = YES;
+}
+
 - (void)interpretKeyEvents:(NSArray *)eventArray {
   DCHECK(!interpretingKeyEvents_);
   interpretingKeyEvents_ = YES;
