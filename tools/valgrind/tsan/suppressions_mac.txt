@@ -179,5 +179,6 @@
 {
   bug_55970
   ThreadSanitizer:Race
-  fun:disk_cache::BackendImpl::GetEntryCount
+  ...
+  fun:DiskCacheBackendTest_NewEvictionTrimInvalidEntry_Test*
 }
