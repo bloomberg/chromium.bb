@@ -1223,6 +1223,31 @@
     }, 
     {
       "features": [
+        "background_page", 
+        "experimental"
+      ], 
+      "icon": "sandwich-128.png", 
+      "description": "Shows an infobar on pages which contain the word 'sandwich'", 
+      "search_string": "SANDWICHBAR SHOWS AN INFOBAR ON PAGES WHICH CONTAIN THE WORD SANDWICH BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.INFOBARS.SHOW CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST", 
+      "source_files": [
+        "background.html", 
+        "contentscript.js", 
+        "infobar.html", 
+        "manifest.json"
+      ], 
+      "zip_path": "examples/api/infobars/sandwichbar.zip", 
+      "path": "examples/api/infobars/sandwichbar/", 
+      "api_calls": [
+        "chrome.experimental.infobars.show", 
+        "chrome.extension.onRequest", 
+        "chrome.extension.sendRequest"
+      ], 
+      "id": "38f6e1e17756ede38b1364c7114a738ca717dcbb", 
+      "protocols": [], 
+      "name": "SandwichBar"
+    }, 
+    {
+      "features": [
         "browser_action", 
         "experimental", 
         "popup", 
