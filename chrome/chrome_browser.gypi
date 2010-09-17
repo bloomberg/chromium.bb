@@ -479,6 +479,7 @@
         'browser/chromeos/login/account_creation_view.h',
         'browser/chromeos/login/account_screen.cc',
         'browser/chromeos/login/account_screen.h',
+        'browser/chromeos/login/authentication_notification_details.h'
         'browser/chromeos/login/authenticator.h',
         'browser/chromeos/login/auth_response_handler.cc',
         'browser/chromeos/login/auth_response_handler.h',
@@ -511,6 +512,7 @@
         'browser/chromeos/login/help_app_launcher.cc',
         'browser/chromeos/login/help_app_launcher.h',
         'browser/chromeos/login/helper.cc',
+        'browser/chromeos/login/helper.h',
         'browser/chromeos/login/html_page_screen.cc',
         'browser/chromeos/login/html_page_screen.h',
         'browser/chromeos/login/language_switch_menu.cc',
