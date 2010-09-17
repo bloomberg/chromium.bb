@@ -50,9 +50,11 @@ const CGFloat kLocBarBottomInset = 1;
   if ([self useVerticalTabs])
     factory = [SideTabStripController class];
 
+  DCHECK([sidebarController_ view]);
+  DCHECK([[sidebarController_ view] window]);
   tabStripController_.reset([[factory alloc]
                               initWithView:[self tabStripView]
-                                switchView:[self contentsContainer]
+                                switchView:[sidebarController_ view]
                                    browser:browser_.get()
                                   delegate:self]);
 }

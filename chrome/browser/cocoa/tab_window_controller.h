@@ -39,8 +39,6 @@
 @interface TabWindowController : NSWindowController<NSWindowDelegate> {
  @private
   IBOutlet FastResizeView* tabContentArea_;
-  IBOutlet NSSplitView* contentsContainer_;
-  IBOutlet NSSplitView* devToolsContainer_;
   // TODO(pinkerton): Figure out a better way to initialize one or the other
   // w/out needing both to be in the nib.
   IBOutlet TabStripView* topTabStripView_;
@@ -59,8 +57,6 @@
 }
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
-@property(readonly, nonatomic) NSSplitView* contentsContainer;
-@property(readonly, nonatomic) NSSplitView* devToolsContainer;
 
 // Used during tab dragging to turn on/off the overlay window when a tab
 // is torn off. If -deferPerformClose (below) is used, -removeOverlay will

@@ -30,19 +30,28 @@ const int kMinWebHeight = 50;
 
 @interface DevToolsController (Private)
 - (void)showDevToolsContents:(TabContents*)devToolsContents;
+- (void)resizeDevToolsToNewHeight:(CGFloat)height;
 @end
 
 
 @implementation DevToolsController
 
-- (id)initWithView:(NSSplitView*)devToolsView
-          delegate:(id<DevToolsControllerDelegate>)delegate {
-  DCHECK(delegate);
+- (id)init {
   if ((self = [super init])) {
-    devToolsView_.reset([devToolsView retain]);
-    delegate_ = delegate;
+    splitView_.reset([[NSSplitView alloc] initWithFrame:NSZeroRect]);
+    [splitView_ setDividerStyle:NSSplitViewDividerStyleThin];
+    [splitView_ setVertical:NO];
+    [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
   }
   return self;
+}
+
+- (NSView*)view {
+  return splitView_.get();
+}
+
+- (NSSplitView*)splitView {
+  return splitView_.get();
 }
 
 - (void)updateDevToolsForTabContents:(TabContents*)contents {
@@ -54,7 +63,7 @@ const int kMinWebHeight = 50;
 }
 
 - (void)showDevToolsContents:(TabContents*)devToolsContents {
-  NSArray* subviews = [devToolsView_ subviews];
+  NSArray* subviews = [splitView_ subviews];
   if (devToolsContents) {
     DCHECK_GE([subviews count], 1u);
 
@@ -73,23 +82,23 @@ const int kMinWebHeight = 50;
         // Initial load, set to default value.
         splitOffset = kDefaultContentsSplitOffset;
       }
-      [devToolsView_ addSubview:devToolsView];
+      [splitView_ addSubview:devToolsView];
     } else {
       DCHECK_EQ([subviews count], 2u);
       // If devtools are already visible, keep the current size.
       splitOffset = NSHeight([devToolsView frame]);
-      [devToolsView_ replaceSubview:[subviews objectAtIndex:1]
-                               with:devToolsView];
+      [splitView_ replaceSubview:[subviews objectAtIndex:1]
+                            with:devToolsView];
     }
 
     // Make sure |splitOffset| isn't too large or too small.
     splitOffset =
-        std::min(splitOffset, NSHeight([devToolsView_ frame]) - kMinWebHeight);
+        std::min(splitOffset, NSHeight([splitView_ frame]) - kMinWebHeight);
     DCHECK_GE(splitOffset, 0) << "kMinWebHeight needs to be smaller than "
                               << "smallest available tab contents space.";
     splitOffset = std::max(static_cast<CGFloat>(0), splitOffset);
 
-    [delegate_ resizeDevToolsToNewHeight:splitOffset];
+    [self resizeDevToolsToNewHeight:splitOffset];
   } else {
     if ([subviews count] > 1) {
       NSView* oldDevToolsContentsView = [subviews objectAtIndex:1];
@@ -101,5 +110,28 @@ const int kMinWebHeight = 50;
     }
   }
 }
+
+- (void)resizeDevToolsToNewHeight:(CGFloat)height {
+  NSArray* subviews = [splitView_ subviews];
+
+  // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
+  // but I can't figure out how to use it. Manually resize web and devtools.
+  // TODO(alekseys): either make setPosition:ofDividerAtIndex: work or to add a
+  // category on NSSplitView to handle manual resizing.
+  NSView* devToolsView = [subviews objectAtIndex:1];
+  NSRect devToolsFrame = [devToolsView frame];
+  devToolsFrame.size.height = height;
+  [devToolsView setFrame:devToolsFrame];
+
+  NSView* webView = [subviews objectAtIndex:0];
+  NSRect webFrame = [webView frame];
+  webFrame.size.height =
+      NSHeight([splitView_ frame]) - ([splitView_ dividerThickness] + height);
+  [webView setFrame:webFrame];
+
+  [splitView_ adjustSubviews];
+}
+
+
 
 @end

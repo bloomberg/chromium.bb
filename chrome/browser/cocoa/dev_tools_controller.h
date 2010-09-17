@@ -15,28 +15,23 @@
 
 class TabContents;
 
-// DevTools controller's delegate interface. Delegate is responsible
-// for the actual subviews resize and layout.
-@protocol DevToolsControllerDelegate
-
-// Resizes the devTools view to the new |height| and adjusts window layout
-// accordingly.
-- (void)resizeDevToolsToNewHeight:(CGFloat)height;
-
-@end
-
 // A class that handles updates of the devTools view within a browser window.
 // It swaps in the relevant devTools contents for a given TabContents or removes
 // the vew, if there's no devTools contents to show.
 @interface DevToolsController : NSObject {
  @private
   // A view hosting docked devTools contents.
-  scoped_nsobject<NSSplitView> devToolsView_;
-  id<DevToolsControllerDelegate> delegate_;  // weak
+  scoped_nsobject<NSSplitView> splitView_;
 }
 
-- (id)initWithView:(NSSplitView*)devToolsView
-          delegate:(id<DevToolsControllerDelegate>)delegate;
+- (id)init;
+
+// This controller's view.
+- (NSView*)view;
+
+// The compiler seems to have trouble handling a function named "view" that
+// returns an NSSplitView, so provide a differently-named method.
+- (NSSplitView*)splitView;
 
 // Depending on |contents|'s state, decides whether the docked web inspector
 // should be shown or hidden and adjusts its height (|delegate_| handles

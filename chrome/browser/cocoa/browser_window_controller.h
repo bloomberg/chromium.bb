@@ -17,9 +17,7 @@
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
-#import "chrome/browser/cocoa/dev_tools_controller.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
-#import "chrome/browser/cocoa/sidebar_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
@@ -32,6 +30,7 @@ class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
 class ConstrainedWindowMac;
+@class DevToolsController;
 @class DownloadShelfController;
 @class FindBarCocoaController;
 @class FullscreenController;
@@ -39,6 +38,7 @@ class ConstrainedWindowMac;
 @class IncognitoImageView;
 @class InfoBarContainerController;
 class LocationBarViewMac;
+@class SidebarController;
 class StatusBubbleMac;
 class TabContents;
 @class TabStripController;
@@ -51,8 +51,6 @@ class TabContents;
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
-                      DevToolsControllerDelegate,
-                      SidebarControllerDelegate,
                       TabStripControllerDelegate> {
  @private
   // The ordering of these members is important as it determines the order in

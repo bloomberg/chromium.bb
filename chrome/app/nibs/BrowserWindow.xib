@@ -56,27 +56,6 @@
 						<object class="NSCustomView" id="1858870">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">274</int>
-							<object class="NSMutableArray" key="NSSubviews">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSSplitView" id="321204824">
-									<reference key="NSNextResponder" ref="1858870"/>
-									<int key="NSvFlags">274</int>
-									<object class="NSMutableArray" key="NSSubviews">
-										<bool key="EncodedWithXMLCoder">YES</bool>
-										<object class="NSSplitView" id="267972061">
-											<reference key="NSNextResponder" ref="321204824"/>
-											<int key="NSvFlags">268</int>
-											<string key="NSFrameSize">{750, 600}</string>
-											<reference key="NSSuperview" ref="321204824"/>
-											<bool key="NSIsVertical">YES</bool>
-											<int key="NSDividerStyle">2</int>
-										</object>
-									</object>
-									<string key="NSFrameSize">{750, 600}</string>
-									<reference key="NSSuperview" ref="1858870"/>
-									<int key="NSDividerStyle">2</int>
-								</object>
-							</object>
 							<string key="NSFrameSize">{750, 600}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<string key="NSClassName">FastResizeView</string>
@@ -180,22 +159,6 @@
 					</object>
 					<int key="connectionID">90</int>
 				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">devToolsContainer_</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="321204824"/>
-					</object>
-					<int key="connectionID">94</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">contentsContainer_</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="267972061"/>
-					</object>
-					<int key="connectionID">98</int>
-				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -277,23 +240,8 @@
 						<reference key="object" ref="1858870"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="321204824"/>
 						</object>
 						<reference key="parent" ref="1006"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">91</int>
-						<reference key="object" ref="321204824"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="267972061"/>
-						</object>
-						<reference key="parent" ref="1858870"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">95</int>
-						<reference key="object" ref="267972061"/>
-						<reference key="parent" ref="321204824"/>
 					</object>
 				</object>
 			</object>
@@ -325,8 +273,6 @@
 					<string>84.IBPluginDependency</string>
 					<string>89.IBEditorWindowLastContentRect</string>
 					<string>89.IBPluginDependency</string>
-					<string>91.IBPluginDependency</string>
-					<string>95.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -356,8 +302,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{89, 611}, {236, 393}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>

@@ -41,8 +41,6 @@
 
 @implementation TabWindowController
 @synthesize tabContentArea = tabContentArea_;
-@synthesize contentsContainer = contentsContainer_;
-@synthesize devToolsContainer = devToolsContainer_;
 
 - (id)initWithWindow:(NSWindow*)window {
   if ((self = [super initWithWindow:window]) != nil) {

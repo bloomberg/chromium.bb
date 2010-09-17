@@ -22,6 +22,7 @@
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller_private.h"
+#import "chrome/browser/cocoa/dev_tools_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/fast_resize_view.h"
@@ -33,6 +34,7 @@
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/sad_tab_controller.h"
+#import "chrome/browser/cocoa/sidebar_controller.h"
 #import "chrome/browser/cocoa/status_bubble_mac.h"
 #import "chrome/browser/cocoa/tab_contents_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
@@ -231,6 +233,20 @@
     // Puts the incognito badge on the window frame, if necessary.
     [self installIncognitoBadge];
 
+    // Create a sub-controller for the docked devTools and add its view to the
+    // hierarchy.  This must happen before the sidebar controller is
+    // instantiated.
+    devToolsController_.reset([[DevToolsController alloc] init]);
+    [[devToolsController_ view] setFrame:[[self tabContentArea] bounds]];
+    [[self tabContentArea] addSubview:[devToolsController_ view]];
+
+    // Create a sub-controller for the docked sidebar and add its view to the
+    // hierarchy.  This must happen before the tabstrip controller is
+    // instantiated.
+    sidebarController_.reset([[SidebarController alloc] init]);
+    [[sidebarController_ view] setFrame:[[devToolsController_ view] bounds]];
+    [[devToolsController_ view] addSubview:[sidebarController_ view]];
+
     // Create a controller for the tab strip, giving it the model object for
     // this window's Browser and the tab strip view. The controller will handle
     // registering for the appropriate tab notifications from the back-end and
@@ -273,16 +289,6 @@
                                  positioned:NSWindowBelow
                                  relativeTo:[toolbarController_ view]];
     [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
-
-    // Create a sub-controller for the docked devTools.
-    devToolsController_.reset(
-        [[DevToolsController alloc] initWithView:[self devToolsContainer]
-                                        delegate:self]);
-
-    // Create a sub-controller for the docked devTools.
-    sidebarController_.reset(
-        [[SidebarController alloc] initWithView:[self contentsContainer]
-                                       delegate:self]);
 
     // We don't want to try and show the bar before it gets placed in its parent
     // view, so this step shoudn't be inside the bookmark bar controller's
@@ -1011,10 +1017,10 @@
 // TODO(alekseys): status bubble should respect web view bounds, not just its
 // vertical size. Now it can overlap sidebar contents. http://crbug.com/54882
 - (CGFloat)verticalOffsetForStatusBubble {
-  NSRect contents_bounds = [[self contentsContainer] bounds];
+  NSRect contents_bounds = [[sidebarController_ view] bounds];
   NSView* baseView = [[self window] contentView];
   return NSMinY([baseView convertRect:contents_bounds
-                             fromView:[self contentsContainer]]);
+                             fromView:[sidebarController_ view]]);
 }
 
 - (GTMWindowSheetController*)sheetController {
@@ -1336,52 +1342,6 @@
 // (Override of |TabWindowController| method.)
 - (BOOL)hasTabStrip {
   return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];
-}
-
-// DevToolsController protocol.
-- (void)resizeDevToolsToNewHeight:(CGFloat)height {
-  NSSplitView* container = [self devToolsContainer];
-  NSArray* subviews = [container subviews];
-
-  // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
-  // but I can't figure out how to use it. Manually resize web and devtools.
-  // TODO(alekseys): either make setPosition:ofDividerAtIndex: work or to add a
-  // category on NSSplitView to handle manual resizing.
-  NSView* devToolsView = [subviews objectAtIndex:1];
-  NSRect devToolsFrame = [devToolsView frame];
-  devToolsFrame.size.height = height;
-  [devToolsView setFrame:devToolsFrame];
-
-  NSView* webView = [subviews objectAtIndex:0];
-  NSRect webFrame = [webView frame];
-  webFrame.size.height =
-      NSHeight([container frame]) - ([container dividerThickness] + height);
-  [webView setFrame:webFrame];
-
-  [container adjustSubviews];
-}
-
-// SidebarController protocol.
-- (void)resizeSidebarToNewWidth:(CGFloat)width {
-  NSSplitView* container = [self contentsContainer];
-  NSArray* subviews = [container subviews];
-
-  // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
-  // but I can't figure out how to use it. Manually resize web and sidebar.
-  // TODO(alekseys): either make setPosition:ofDividerAtIndex: work or to add a
-  // category on NSSplitView to handle manual resizing.
-  NSView* sidebarView = [subviews objectAtIndex:1];
-  NSRect sidebarFrame = [sidebarView frame];
-  sidebarFrame.size.width = width;
-  [sidebarView setFrame:sidebarFrame];
-
-  NSView* webView = [subviews objectAtIndex:0];
-  NSRect webFrame = [webView frame];
-  webFrame.size.width =
-      NSWidth([container frame]) - ([container dividerThickness] + width);
-  [webView setFrame:webFrame];
-
-  [container adjustSubviews];
 }
 
 // TabStripControllerDelegate protocol.

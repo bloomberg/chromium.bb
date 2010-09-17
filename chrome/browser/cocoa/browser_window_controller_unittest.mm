@@ -50,6 +50,14 @@
   return [findBarCocoaController_ view];
 }
 
+- (NSView*)devToolsView {
+  return [devToolsController_ view];
+}
+
+- (NSView*)sidebarView {
+  return [sidebarController_ view];
+}
+
 - (BOOL)bookmarkBarVisible {
   return [bookmarkBarController_ isVisible];
 }
@@ -546,6 +554,20 @@ TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
 
   EXPECT_GT(findBar_index, toolbar_index);
   EXPECT_GT(findBar_index, bookmark_index);
+}
+
+// Tests that the sidebar view and devtools view are both non-opaque.
+TEST_F(BrowserWindowControllerTest, TestSplitViewsAreNotOpaque) {
+  // Add a subview to the sidebar view to mimic what happens when a tab is added
+  // to the window.  NSSplitView only marks itself as non-opaque when one of its
+  // subviews is non-opaque, so the test will not pass without this subview.
+  scoped_nsobject<NSView> view(
+      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]);
+  [[controller_ sidebarView] addSubview:view];
+
+  EXPECT_FALSE([[controller_ tabContentArea] isOpaque]);
+  EXPECT_FALSE([[controller_ devToolsView] isOpaque]);
+  EXPECT_FALSE([[controller_ sidebarView] isOpaque]);
 }
 
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {

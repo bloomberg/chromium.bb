@@ -30,26 +30,35 @@ const int kMinWebWidth = 50;
 
 @interface SidebarController (Private)
 - (void)showSidebarContents:(TabContents*)sidebarContents;
+- (void)resizeSidebarToNewWidth:(CGFloat)width;
 @end
 
 
 @implementation SidebarController
 
-- (id)initWithView:(NSSplitView*)sidebarView
-          delegate:(id<SidebarControllerDelegate>)delegate {
-  DCHECK(delegate);
+- (id)init {
   if ((self = [super init])) {
-    sidebarView_.reset([sidebarView retain]);
-    [sidebarView_ setDelegate:self];
-    delegate_ = delegate;
+    splitView_.reset([[NSSplitView alloc] initWithFrame:NSZeroRect]);
+    [splitView_ setDividerStyle:NSSplitViewDividerStyleThin];
+    [splitView_ setVertical:YES];
+    [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+    [splitView_ setDelegate:self];
     sidebarContents_ = NULL;
   }
   return self;
 }
 
 - (void)dealloc {
-  [sidebarView_ setDelegate:nil];
+  [splitView_ setDelegate:nil];
   [super dealloc];
+}
+
+- (NSView*)view {
+  return splitView_.get();
+}
+
+- (NSSplitView*)splitView {
+  return splitView_.get();
 }
 
 - (void)updateSidebarForTabContents:(TabContents*)contents {
@@ -79,7 +88,7 @@ const int kMinWebWidth = 50;
 }
 
 - (void)showSidebarContents:(TabContents*)sidebarContents {
-  NSArray* subviews = [sidebarView_ subviews];
+  NSArray* subviews = [splitView_ subviews];
   if (sidebarContents) {
     DCHECK_GE([subviews count], 1u);
 
@@ -97,24 +106,24 @@ const int kMinWebWidth = 50;
       if (sidebarWidth < 0) {
         // Initial load, set to default value.
         sidebarWidth =
-            NSWidth([sidebarView_ frame]) * kDefaultSidebarWidthRatio;
+            NSWidth([splitView_ frame]) * kDefaultSidebarWidthRatio;
       }
-      [sidebarView_ addSubview:sidebarView];
+      [splitView_ addSubview:sidebarView];
     } else {
       DCHECK_EQ([subviews count], 2u);
       sidebarWidth = NSWidth([[subviews objectAtIndex:1] frame]);
-      [sidebarView_ replaceSubview:[subviews objectAtIndex:1]
-                              with:sidebarView];
+      [splitView_ replaceSubview:[subviews objectAtIndex:1]
+                            with:sidebarView];
     }
 
     // Make sure |sidebarWidth| isn't too large or too small.
     sidebarWidth = std::min(sidebarWidth,
-                            NSWidth([sidebarView_ frame]) - kMinWebWidth);
+                            NSWidth([splitView_ frame]) - kMinWebWidth);
     DCHECK_GE(sidebarWidth, 0) << "kMinWebWidth needs to be smaller than "
                                << "smallest available tab contents space.";
     sidebarWidth = std::max(static_cast<CGFloat>(0), sidebarWidth);
 
-    [delegate_ resizeSidebarToNewWidth:sidebarWidth];
+    [self resizeSidebarToNewWidth:sidebarWidth];
   } else {
     if ([subviews count] > 1) {
       NSView* oldSidebarContentsView = [subviews objectAtIndex:1];
@@ -127,12 +136,33 @@ const int kMinWebWidth = 50;
   }
 }
 
+- (void)resizeSidebarToNewWidth:(CGFloat)width {
+  NSArray* subviews = [splitView_ subviews];
+
+  // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
+  // but I can't figure out how to use it. Manually resize web and sidebar.
+  // TODO(alekseys): either make setPosition:ofDividerAtIndex: work or to add a
+  // category on NSSplitView to handle manual resizing.
+  NSView* sidebarView = [subviews objectAtIndex:1];
+  NSRect sidebarFrame = [sidebarView frame];
+  sidebarFrame.size.width = width;
+  [sidebarView setFrame:sidebarFrame];
+
+  NSView* webView = [subviews objectAtIndex:0];
+  NSRect webFrame = [webView frame];
+  webFrame.size.width =
+      NSWidth([splitView_ frame]) - ([splitView_ dividerThickness] + width);
+  [webView setFrame:webFrame];
+
+  [splitView_ adjustSubviews];
+}
+
 // NSSplitViewDelegate protocol.
 - (BOOL)splitView:(NSSplitView *)splitView
     shouldAdjustSizeOfSubview:(NSView *)subview {
   // Return NO for the sidebar view to indicate that it should not be resized
   // automatically.  The sidebar keeps the width set by the user.
-  if ([[sidebarView_ subviews] indexOfObject:subview] == 1)
+  if ([[splitView_ subviews] indexOfObject:subview] == 1)
     return NO;
   return YES;
 }
