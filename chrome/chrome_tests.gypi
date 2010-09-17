@@ -1779,7 +1779,6 @@
         'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
         'browser/renderer_host/test/renderer_accessibility_browsertest.cc',
         'browser/renderer_host/test/web_cache_manager_browsertest.cc',
-        'browser/safe_browsing/safe_browsing_browsertest.cc',
         'browser/service/service_process_control_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
         'browser/sessions/tab_restore_service_browsertest.cc',
@@ -1935,6 +1934,39 @@
         }],
       ],  # conditions
     },  # target browser_tests
+    {
+      # Executable that runs safebrowsing test in a new process.
+      'target_name': 'safe_browsing_tests',
+      'type': 'executable',
+      'msvs_guid': 'BBF2BC2F-7CD8-463E-BE88-CB81AAD92BFE',
+      'dependencies': [
+        'chrome',
+        'test_support_common',
+        '../base/base.gyp:base',
+        '../net/net.gyp:net_test_support',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+      'sources': [
+        'browser/safe_browsing/safe_browsing_test.cc',
+        'test/in_process_browser_test.cc',
+        'test/in_process_browser_test.h',
+        'test/test_launcher/out_of_proc_test_runner.cc',
+        'test/test_launcher/test_runner.cc',
+        'test/test_launcher/test_runner.h',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
+      ],
+    },  # target safe_browsing_tests
     {
       'target_name': 'startup_tests',
       'type': 'executable',
