@@ -9,11 +9,11 @@
 // badly with URLRequestStatus::Status.
 #include "chrome/common/render_messages.h"
 
-#include <gtk/gtk.h>
+#include <cairo/cairo.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkx.h>
-#include <cairo/cairo.h>
+#include <gtk/gtk.h>
 
 #include <algorithm>
 #include <string>
@@ -25,7 +25,6 @@
 #include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"

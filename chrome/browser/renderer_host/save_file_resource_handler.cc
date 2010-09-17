@@ -74,8 +74,6 @@ bool SaveFileResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     read_buffer_ = new net::IOBuffer(*buf_size);
   }
   *buf = read_buffer_.get();
-  // TODO(willchan): Remove after debugging bug 16371.
-  CHECK(read_buffer_->data());
   return true;
 }
 

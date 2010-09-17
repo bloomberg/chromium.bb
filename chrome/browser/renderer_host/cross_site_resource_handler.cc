@@ -88,11 +88,7 @@ bool CrossSiteResourceHandler::OnWillStart(int request_id,
 
 bool CrossSiteResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                           int* buf_size, int min_size) {
-  bool rv = next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
-  // TODO(willchan): Remove after debugging bug 16371.
-  if (rv)
-    CHECK((*buf)->data());
-  return rv;
+  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
 }
 
 bool CrossSiteResourceHandler::OnReadCompleted(int request_id,

@@ -62,8 +62,6 @@ bool SyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                      int* buf_size, int min_size) {
   DCHECK(min_size == -1);
   *buf = read_buffer_.get();
-  // TODO(willchan): Remove after debugging bug 16371.
-  CHECK(read_buffer_->data());
   *buf_size = kReadBufSize;
   return true;
 }

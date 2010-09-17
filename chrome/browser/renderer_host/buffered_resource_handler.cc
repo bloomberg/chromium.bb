@@ -112,8 +112,6 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     my_buffer_ = new net::IOBuffer(net::kMaxBytesToSniff);
     *buf = my_buffer_.get();
     *buf_size = net::kMaxBytesToSniff;
-    // TODO(willchan): Remove after debugging bug 16371.
-    CHECK((*buf)->data());
     return true;
   }
 
@@ -124,8 +122,6 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     return false;
   }
   read_buffer_ = *buf;
-  // TODO(willchan): Remove after debugging bug 16371.
-  CHECK(read_buffer_->data());
   read_buffer_size_ = *buf_size;
   DCHECK_GE(read_buffer_size_, net::kMaxBytesToSniff * 2);
   bytes_read_ = 0;

@@ -91,8 +91,6 @@ bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
     min_size = 2 * net::kMaxBytesToSniff;
   tmp_buffer_ = new net::IOBuffer(min_size);
   *buf = tmp_buffer_.get();
-  // TODO(willchan): Remove after debugging bug 16371.
-  CHECK((*buf)->data());
   *buf_size = min_size;
   return true;
 }

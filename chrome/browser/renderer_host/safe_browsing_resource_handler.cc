@@ -115,11 +115,7 @@ bool SafeBrowsingResourceHandler::OnWillRead(int request_id,
                                              int min_size) {
   CHECK(state_ == STATE_NONE);
   CHECK(defer_state_ == DEFERRED_NONE);
-  bool rv = next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
-  // TODO(willchan): Remove after debugging bug 16371.
-  if (rv)
-    CHECK((*buf)->data());
-  return rv;
+  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
 }
 
 bool SafeBrowsingResourceHandler::OnReadCompleted(int request_id,
