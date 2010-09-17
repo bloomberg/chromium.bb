@@ -175,3 +175,9 @@
   ...
   fun:DiskCacheBackendTest_NewEvictionDisableSuccess4_Test*
 }
+
+{
+  bug_55970
+  ThreadSanitizer:Race
+  fun:disk_cache::BackendImpl::GetEntryCount
+}
