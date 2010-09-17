@@ -80,7 +80,7 @@ class SessionHistoryTest : public UITest {
   net::TestServer test_server_;
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/55380 - NavigateToURL to making this flaky
 #define MAYBE_BasicBackForward FLAKY_BasicBackForward
 #else
