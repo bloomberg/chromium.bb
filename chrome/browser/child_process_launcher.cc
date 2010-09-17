@@ -7,6 +7,7 @@
 #include <utility>  // For std::pair.
 
 #include "base/command_line.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
@@ -161,20 +162,29 @@ class ChildProcessLauncher::Context
       }
 #endif  // defined(OS_LINUX)
 
-      // Actually launch the app.
-      bool launched;
+      bool launched = false;
 #if defined(OS_MACOSX)
-      task_t child_task;
-      launched = base::LaunchAppAndGetTask(
-          cmd_line->argv(), env, fds_to_map, false, &child_task, &handle);
-      if (launched && child_task != MACH_PORT_NULL) {
-          MachBroker::instance()->RegisterPid(
-              handle,
-              MachBroker::MachInfo().SetTask(child_task));
-      }
-#else
-      launched = base::LaunchApp(cmd_line->argv(), env, fds_to_map,
-                                 /* wait= */false, &handle);
+      // It is possible for the child process to die immediately after
+      // launching.  To prevent leaking MachBroker map entries in this case,
+      // lock around all of LaunchApp().  If the child dies, the death
+      // notification will be processed by the MachBroker after the call to
+      // AddPlaceholderForPid(), enabling proper cleanup.
+      {  // begin scope for AutoLock
+        MachBroker* broker = MachBroker::instance();
+        AutoLock lock(broker->GetLock());
+
+        // This call to |PrepareForFork()| will start the MachBroker listener
+        // thread, if it is not already running.  Therefore the browser process
+        // will be listening for Mach IPC before LaunchApp() is called.
+        broker->PrepareForFork();
+#endif
+        // Actually launch the app.
+        launched = base::LaunchApp(cmd_line->argv(), env, fds_to_map,
+                                   /* wait= */false, &handle);
+#if defined(OS_MACOSX)
+        if (launched)
+          broker->AddPlaceholderForPid(handle);
+      }  // end scope for AutoLock
 #endif
       if (!launched)
         handle = base::kNullProcessHandle;

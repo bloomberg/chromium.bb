@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 #include <mach/mach.h>
 
@@ -37,6 +38,10 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   // Returns the global MachBroker.
   static MachBroker* instance();
 
+  // Performs any necessary setup that cannot happen in the constructor.
+  // Clients MUST call this method before fork()ing any children.
+  void PrepareForFork();
+
   struct MachInfo {
     MachInfo() : mach_task_(MACH_PORT_NULL) {}
 
@@ -48,11 +53,28 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
     mach_port_t mach_task_;
   };
 
-  // Adds mach info for a given pid.
-  void RegisterPid(base::ProcessHandle pid, const MachInfo& mach_info);
+  // Adds a placeholder to the map for the given pid with MACH_PORT_NULL.
+  // Callers are expected to later update the port with FinalizePid().  Callers
+  // MUST acquire the lock given by GetLock() before calling this method (and
+  // release the lock afterwards).
+  void AddPlaceholderForPid(base::ProcessHandle pid);
+
+  // Updates the mapping for |pid| to include the given |mach_info|.  Does
+  // nothing if PlaceholderForPid() has not already been called for the given
+  // |pid|.  Callers MUST acquire the lock given by GetLock() before calling
+  // this method (and release the lock afterwards).
+  void FinalizePid(base::ProcessHandle pid, const MachInfo& mach_info);
 
   // Removes all mappings belonging to |pid| from the broker.
-  void Invalidate(base::ProcessHandle pid);
+  void InvalidatePid(base::ProcessHandle pid);
+
+  // The lock that protects this MachBroker object.  Clients MUST acquire and
+  // release this lock around calls to PlaceholderForPid() and FinalizePid().
+  Lock& GetLock();
+
+  // Returns the Mach port name to use when sending or receiving messages.
+  // Does the Right Thing in the browser and in child processes.
+  static std::string GetMachPortName();
 
   // Implement |ProcessMetrics::PortProvider|.
   virtual mach_port_t TaskForPid(base::ProcessHandle process) const;
@@ -65,12 +87,12 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   // Private constructor.
   MachBroker();
 
+  // True if the listener thread has been started.
+  bool listener_thread_started_;
+
   // Used to register for notifications received by NotificationObserver.
   // Accessed only on the UI thread.
   NotificationRegistrar registrar_;
-
-  friend struct DefaultSingletonTraits<MachBroker>;
-  friend class MachBrokerTest;
 
   // Stores mach info for every process in the broker.
   typedef std::map<base::ProcessHandle, MachInfo> MachMap;
@@ -79,7 +101,10 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   // Mutex that guards |mach_map_|.
   mutable Lock lock_;
 
+  friend class MachBrokerTest;
   friend class RegisterNotificationTask;
+  // Needed in order to make the constructor private.
+  friend struct DefaultSingletonTraits<MachBroker>;
   DISALLOW_COPY_AND_ASSIGN(MachBroker);
 };
 
