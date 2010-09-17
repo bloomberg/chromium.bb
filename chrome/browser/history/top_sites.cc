@@ -104,9 +104,7 @@ void TopSites::ReadDatabase() {
   for (size_t i = 0; i < top_sites_.size(); i++) {
     GURL url = top_sites_[i].url;
     Images thumbnail = thumbnails[url];
-    if (!thumbnail.thumbnail.get() || !thumbnail.thumbnail->size()) {
-      LOG(INFO) << "No thumbnail for " << url.spec();
-    } else {
+    if (thumbnail.thumbnail.get() && thumbnail.thumbnail->size()) {
       SetPageThumbnailNoDB(url, thumbnail.thumbnail,
                            thumbnail.thumbnail_score);
     }
