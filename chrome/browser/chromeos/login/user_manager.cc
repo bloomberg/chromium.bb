@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -275,6 +276,8 @@ void UserManager::NotifyOnLogin() {
       StopInputMethodProcesses();
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);
+  // Ensure we've opened the real user's key/certificate database.
+  base::OpenPersistentNSSDB();
 
   // Schedules current user ownership check on file thread.
   ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,

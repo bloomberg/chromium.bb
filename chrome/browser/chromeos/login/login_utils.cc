@@ -8,7 +8,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lock.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -35,10 +34,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
@@ -57,15 +52,10 @@ const char kAuthSuffix[] = "\n";
 
 }  // namespace
 
-class LoginUtilsImpl : public LoginUtils,
-                       public NotificationObserver {
+class LoginUtilsImpl : public LoginUtils {
  public:
   LoginUtilsImpl()
       : browser_launch_enabled_(true) {
-    registrar_.Add(
-        this,
-        NotificationType::LOGIN_USER_CHANGED,
-        NotificationService::AllSources());
   }
 
   // Invoked after the user has successfully logged in. This launches a browser
@@ -91,14 +81,7 @@ class LoginUtilsImpl : public LoginUtils,
   // Returns auth token for 'cp' Contacts service.
   virtual const std::string& GetAuthToken() const { return auth_token_; }
 
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
  private:
-  NotificationRegistrar registrar_;
-
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
   bool browser_launch_enabled_;
 
@@ -204,10 +187,10 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
     if (locale != kFallbackInputMethodLocale) {
       StringPrefMember language_preload_engines;
       language_preload_engines.Init(prefs::kLanguagePreloadEngines,
-                                    profile->GetPrefs(), this);
+                                    profile->GetPrefs(), NULL);
       StringPrefMember language_preferred_languages;
       language_preferred_languages.Init(prefs::kLanguagePreferredLanguages,
-                                        profile->GetPrefs(), this);
+                                        profile->GetPrefs(), NULL);
 
       std::string preload_engines(language_preload_engines.GetValue());
       std::vector<std::string> input_method_ids;
@@ -277,13 +260,6 @@ void LoginUtilsImpl::EnableBrowserLaunch(bool enable) {
 
 bool LoginUtilsImpl::IsBrowserLaunchEnabled() const {
   return browser_launch_enabled_;
-}
-
-void LoginUtilsImpl::Observe(NotificationType type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
-  if (type == NotificationType::LOGIN_USER_CHANGED)
-    base::OpenPersistentNSSDB();
 }
 
 LoginUtils* LoginUtils::Get() {
