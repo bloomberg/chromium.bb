@@ -60,33 +60,23 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
     return false;
 
   // Now check the windows policy.
-  bool do_prompt;
-  hr = attachment_services->CheckPolicy();
-  if (S_FALSE == hr) {
-    // The user prompt is required.
-    do_prompt = true;
-  } else if (S_OK == hr) {
-    // An S_OK means that the file is safe to open without user consent.
-    do_prompt = false;
-  } else {
-    // It is possible that the last call returns an undocumented result
+  if (attachment_services->CheckPolicy() != S_OK) {
+    // It is possible that the above call returns an undocumented result
     // equal to 0x800c000e which seems to indicate that the URL failed the
     // the security check. If you proceed with the Prompt() call the
     // Shell might show a dialog that says:
     // "windows found that this file is potentially harmful. To help protect
     // your computer, Windows has blocked access to this file."
     // Upon dismissal of the dialog windows will delete the file (!!).
-    // So, we can 'return' here but maybe is best to let it happen to fail on
-    // the safe side.
-  }
-  if (do_prompt) {
+    // So, we can 'return' in that case but maybe is best to let it happen to
+    // fail on the safe side.
+
     ATTACHMENT_ACTION action;
     // We cannot control what the prompt says or does directly but it
-    // is a pretty decent dialog; for example, if an excutable is signed it can
+    // is a pretty decent dialog; for example, if an executable is signed it can
     // decode and show the publisher and the certificate.
     hr = attachment_services->Prompt(hwnd, ATTACHMENT_PROMPT_EXEC, &action);
-    if (FAILED(hr) || (ATTACHMENT_ACTION_CANCEL == action))
-    {
+    if (FAILED(hr) || (ATTACHMENT_ACTION_CANCEL == action)) {
       // The user has declined opening the item.
       return false;
     }
