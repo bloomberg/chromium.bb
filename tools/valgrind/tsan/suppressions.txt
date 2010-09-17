@@ -39,13 +39,6 @@
   fun:*media*PipelineImpl*GetCurrentTime*
 }
 
-{
-  bug_55970
-  ThreadSanitizer:Race
-  ...
-  fun:DiskCacheBackendTest_NewEvictionTrimInvalidEntry_Test*
-}
-
 ############################
 # Real races in third_party
 {

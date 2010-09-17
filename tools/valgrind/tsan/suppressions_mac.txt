@@ -156,13 +156,6 @@
 # running overnight and removing outdated bugs/suppressions.
 
 {
-  bug_30960
-  ThreadSanitizer:Race
-  ...
-  fun:*net*NetworkChangeNotifierThreadD*E*
-}
-
-{
   bug_46086
   ThreadSanitizer:Race
   ...
@@ -174,11 +167,4 @@
   ThreadSanitizer:Race
   ...
   fun:DiskCacheBackendTest_NewEvictionDisableSuccess4_Test*
-}
-
-{
-  bug_55970
-  ThreadSanitizer:Race
-  ...
-  fun:DiskCacheBackendTest_NewEvictionTrimInvalidEntry_Test*
 }
