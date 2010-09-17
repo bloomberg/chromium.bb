@@ -237,8 +237,6 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
       iter = manager->begin();
     }
   }
-  LOG(INFO) << "All ExtensionHosts loaded";
-
   return true;
 }
 

@@ -317,9 +317,6 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   FilePath extension_path = path_in;
   file_util::AbsolutePath(&extension_path);
 
-  LOG(INFO) << "Loading single extension from " <<
-      extension_path.BaseName().value();
-
   std::string error;
   Extension* extension = extension_file_util::LoadExtension(
       extension_path,
@@ -1055,8 +1052,6 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
     if (extension->is_app())
       GrantProtectedStorage(extension);
   }
-
-  LOG(INFO) << "Sending EXTENSION_LOADED";
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_LOADED,
