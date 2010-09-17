@@ -19,7 +19,7 @@ image : image.o window.o wayland-glib.o cairo-util.o
 view : view.o window.o wayland-glib.o cairo-util.o
 dnd : dnd.o window.o wayland-glib.o cairo-util.o
 
-screenshoot.c : screenshooter-client-protocol.h
+screenshot.c : screenshooter-client-protocol.h
 
 screenshooter-protocol.c : ../compositor/screenshooter.xml
 	../wayland/scanner code < $< > $@
