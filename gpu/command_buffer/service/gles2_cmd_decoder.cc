@@ -32,9 +32,9 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
+#include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
-#include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -268,19 +268,6 @@ class FrameBuffer {
   GLuint id_;
   DISALLOW_COPY_AND_ASSIGN(FrameBuffer);
 };
-
-void FinalizeShaderTranslator(void* /* dummy */) {
-  ShFinalize();
-}
-
-bool InitializeShaderTranslator() {
-  static bool initialized = false;
-  if (!initialized && ShInitialize()) {
-    base::AtExitManager::RegisterCallback(&FinalizeShaderTranslator, NULL);
-    initialized = true;
-  }
-  return initialized;
-}
 // }  // anonymous namespace.
 
 GLES2Decoder::GLES2Decoder(ContextGroup* group)
@@ -1272,8 +1259,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   error::Error current_decoder_error_;
 
   bool use_shader_translator_;
-  ShHandle vertex_compiler_;
-  ShHandle fragment_compiler_;
+  scoped_ptr<ShaderTranslator> vertex_translator_;
+  scoped_ptr<ShaderTranslator> fragment_translator_;
 
   // Cached from the context group.
   const Validators* validators_;
@@ -1526,8 +1513,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       anti_aliased_(false),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
-      vertex_compiler_(NULL),
-      fragment_compiler_(NULL),
       validators_(group->validators()),
       depth24_stencil8_oes_supported_(false) {
   attrib_0_value_.v[0] = 0.0f;
@@ -1656,12 +1641,6 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   }
 
   if (use_shader_translator_) {
-    if (!InitializeShaderTranslator()) {
-      DLOG(ERROR) << "Could not initialize shader translator.";
-      Destroy();
-      return false;
-    }
-
     TBuiltInResource resources;
     ShInitBuiltInResource(&resources);
     resources.MaxVertexAttribs = group_->max_vertex_attribs();
@@ -1678,17 +1657,15 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     // TODO(alokp): Figure out if OES_standard_derivatives extension is
     // available.
     resources.OES_standard_derivatives = 0;
-    vertex_compiler_ = ShConstructCompiler(EShLangVertex, EShSpecGLES2,
-        &resources);
-    if (vertex_compiler_ == NULL) {
-        DLOG(ERROR) << "Could not create vertex shader translator.";
+    vertex_translator_.reset(new ShaderTranslator);
+    if (!vertex_translator_->Init(EShLangVertex, &resources)) {
+        DLOG(ERROR) << "Could not initialize vertex shader translator.";
         Destroy();
         return false;
     }
-    fragment_compiler_ = ShConstructCompiler(EShLangFragment, EShSpecGLES2,
-        &resources);
-    if (fragment_compiler_ == NULL) {
-        DLOG(ERROR) << "Could not create fragment shader translator.";
+    fragment_translator_.reset(new ShaderTranslator);
+    if (!fragment_translator_->Init(EShLangFragment, &resources)) {
+        DLOG(ERROR) << "Could not initialize fragment shader translator.";
         Destroy();
         return false;
     }
@@ -2076,15 +2053,6 @@ void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
 }
 
 void GLES2DecoderImpl::Destroy() {
-  if (vertex_compiler_ != NULL) {
-    ShDestruct(vertex_compiler_);
-    vertex_compiler_ = NULL;
-  }
-  if (fragment_compiler_ != NULL) {
-    ShDestruct(fragment_compiler_);
-    fragment_compiler_ = NULL;
-  }
-
   if (context_.get()) {
     MakeCurrent();
 
@@ -3746,15 +3714,14 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   // glShaderSource and then glCompileShader.
   const char* shader_src = info->source().c_str();
   if (use_shader_translator_) {
-    int dbg_options = 0;
-    ShHandle compiler = info->shader_type() == GL_VERTEX_SHADER ?
-        vertex_compiler_ : fragment_compiler_;
+    ShaderTranslator* translator = info->shader_type() == GL_VERTEX_SHADER ?
+        vertex_translator_.get() : fragment_translator_.get();
 
-    if (!ShCompile(compiler, &shader_src, 1, EShOptNone, dbg_options)) {
-      info->SetStatus(false, ShGetInfoLog(compiler));
+    if (!translator->Translate(shader_src)) {
+      info->SetStatus(false, translator->info_log());
       return;
     }
-    shader_src = ShGetObjectCode(compiler);
+    shader_src = translator->translated_shader();
   }
 
   glShaderSource(info->service_id(), 1, &shader_src, NULL);

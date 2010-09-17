@@ -172,6 +172,8 @@
         'command_buffer/service/renderbuffer_manager.cc',
         'command_buffer/service/shader_manager.h',
         'command_buffer/service/shader_manager.cc',
+        'command_buffer/service/shader_translator.h',
+        'command_buffer/service/shader_translator.cc',
         'command_buffer/service/texture_manager.h',
         'command_buffer/service/texture_manager.cc',
       ],
