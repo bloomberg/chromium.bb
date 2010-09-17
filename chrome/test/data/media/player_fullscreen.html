@@ -1,54 +1,21 @@
 <html>
 <body>
 <div id="player_container"></div>
+<script src="player.js"></script>
 <script>
-var player = null;
-var ready = false;
 
 // Parse the location and load the media file accordingly.
-var url = window.location.href;
-var url_parts = url.split('?');
+var params = GetTestParameters();
 
-// Make sure the URL is of the form "player.html?media_url".
-var ok = false;
-if (url_parts.length > 1) {
-  var media_url = url_parts[1];
+// Make sure the URL is of the form "player_fullscreen.html?media_url".
+if (params) {
   ok = true;
-  var container = document.getElementById('player_container');
-  container.innerHTML = '<video id="player"></video>';
-  player = document.getElementById('player');
-
   // Install event handlers.
-  player.addEventListener('error', 
-                          function() {
-                            document.title = "ERROR = " + player.error.code;
-                          },
-                          false);
-  player.addEventListener('canplay',
-                          function() {
-                            if (!player.webkitSupportsFullscreen) {
-                              document.title = "ERROR fullscreen unsupported";
-                            } else {
-                              document.title = "READY";
-                            }
-                          },
-                          false);
-
+  SetupPlayer('video', true);
+  
   // Starts the player.
-  player.src = media_url;
-  player.play();
-  document.onclick = function () {
-    try {
-      player.webkitEnterFullScreen();
-    } catch (err) {}
-    if (!player.webkitDisplayingFullscreen) {
-      document.title = "ERROR entering to fullscreen";
-    } else {
-      document.title = "FULLSCREEN";
-    }
-  };
-}
-if (!ok) {
+  StartPlayer(params['url']);
+} else {
   document.title = 'FAILED';
 }
 </script>
