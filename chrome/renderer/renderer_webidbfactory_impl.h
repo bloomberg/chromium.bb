@@ -27,7 +27,8 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
   virtual void open(
       const WebKit::WebString& name, const WebKit::WebString& description,
       WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebSecurityOrigin& origin, WebKit::WebFrame* web_frame);
+      const WebKit::WebSecurityOrigin& origin, WebKit::WebFrame* web_frame,
+      const WebKit::WebString& dataDir);
   virtual void abortPendingTransactions(
       const WebKit::WebVector<int>& pendingIDs);
 };

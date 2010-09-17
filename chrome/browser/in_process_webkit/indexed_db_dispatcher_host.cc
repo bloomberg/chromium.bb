@@ -25,6 +25,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebIDBCursor;
@@ -38,6 +39,13 @@ using WebKit::WebIDBTransaction;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebVector;
+
+namespace {
+
+const FilePath::CharType kIndexedDBStorageDirectory[] =
+    FILE_PATH_LITERAL("IndexedDB");
+
+}
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     IPC::Message::Sender* sender, WebKitContext* webkit_context)
@@ -228,11 +236,17 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   // TODO(jorlow): Check the content settings map and use params.routing_id_
   //               if it's necessary to ask the user for permission.
 
+  FilePath base_path = webkit_context_->data_path();
+  FilePath indexed_db_path;
+  if (!base_path.empty())
+    indexed_db_path = base_path.Append(kIndexedDBStorageDirectory);
+
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   Context()->GetIDBFactory()->open(
       params.name_, params.description_,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
-      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL);
+      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL,
+      webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryAbortPendingTransactions(

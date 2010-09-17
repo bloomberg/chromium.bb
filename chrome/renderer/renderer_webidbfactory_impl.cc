@@ -26,7 +26,8 @@ RendererWebIDBFactoryImpl::~RendererWebIDBFactoryImpl() {
 void RendererWebIDBFactoryImpl::open(
     const WebString& name, const WebString& description,
     WebIDBCallbacks* callbacks, const WebSecurityOrigin& origin,
-    WebFrame* web_frame) {
+    WebFrame* web_frame, const WebString& dataDir) {
+  // Don't send the dataDir. We know what we want on the Browser side of things.
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBFactoryOpen(
