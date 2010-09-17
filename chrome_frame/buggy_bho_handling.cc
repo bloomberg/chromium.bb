@@ -27,15 +27,29 @@ const ModuleAndVersion kBuggyModules[] = {
   { "gbieh.dll", 3, 8 },  // troublemaker: 3.8.14.12
   { "gbiehcef.dll", 3, 8 },  // troublemaker: 3.8.11.23
   { "alot.dll", 2, 5 },  // troublemaker: 2.5.12000.509
+  { "ctbr.dll", 5, 1 },  // troublemaker: 5.1.0.95
   { "srchbxex.dll", 1, 2 },  // troublemaker: 1.2.123.0
+  { "iedvtool32.dll", 8, 0 },  // troublemaker: 8.0.0.4
+  { "mst164.dll", 9, 1 },  // troublemaker: 9.1.3700.1
+  { "deposit_ie_com.dll", 0, 1  },  // troublemaker: 0.1.0.72
+  { "rpshell32.dll", 6, 0 },  // troublemaker: 6.0.6000.1389
+  { "msgsres.dll", 6, 0 },  // troublemaker: 6.0.6000.1389
+  { "limewireinttb.dll", 4, 1  },  // troublemaker: 4.1.1.1000
+
+  // These BHOs seem to be out of the same buggy BHO factory
   { "tbabso.dll", 4, 5 },  // troublemaker: 4.5.156.0
   { "tbabs0.dll.dll", 4, 5 },  // troublemaker: 4.5.156.0
   { "tbbes0.dll", 4, 5 },  // troublemaker: 4.5.153.0
-  { "ctbr.dll", 5, 1 },  // troublemaker: 5.1.0.95
+  { "tbfre0.dll", 4, 5 },  // troublemaker: 4.5.181.1
+  { "tbmypl.dll", 4, 5 },  // troublemaker: 4.5.181.3
+  { "tbmul1.dll", 4, 5 },  // troublemaker: 4.5.181.1
+  { "tbdow1.dll", 4, 5 },  // troublemaker: 4.5.167.0
+  { "tbfree.dll", 4, 5 },  // troublemaker: 4.5.178.0
 
   // Viruses?
   { "msgsc2.dll", 0xffff, 0xffff },  // troublemaker: 1.2.3000.1
   { "essclis.dll", 0xffff, 0xffff },  // troublemaker: 4.3.1800.2
+  { "snagwb.dll", 0xffff, 0xffff },  // troublemaker: 2.6.0.28
 };
 
 bool IsBuggyBho(HMODULE mod) {
