@@ -149,7 +149,8 @@ void GpuVideoDecoder::AllocateVideoFrames(
   pending_allocation_->format = format;
   pending_allocation_->frames = frames;
   pending_allocation_->task = task;
-  SendAllocateVideoFrames(n, width, height, format);
+  // TODO(hclam): Fix this.
+  // SendAllocateVideoFrames(n, width, height, format);
 }
 
 void GpuVideoDecoder::ReleaseAllVideoFrames() {
