@@ -266,7 +266,7 @@ html[hasattribution=false] #attribution > div {
 
 .section {
   position: fixed;
-  font-size: 12px;
+  font-size: 92%;
 }
 
 html[anim=true][enable-section-animations=true] .section {
@@ -279,7 +279,7 @@ html[anim=true][enable-section-animations=true] .section {
 
 .section > h2 {
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 16px;
+  font-size: 133%;
   font-weight: normal;
   margin: 0;
   position: relative;
@@ -292,7 +292,8 @@ html[anim=true][enable-section-animations=true] .section {
 .section > h2 > .disclosure {
   position: absolute;
   left: -15px;
-  top: 4px;
+  margin-top: 50%;
+  top: -5px;
 }
 
 html[dir=rtl] .section > h2 > .disclosure {
@@ -312,14 +313,14 @@ html[anim=true] .section > h2 > .disclosure {
 .section > h2 .back {
   position: absolute;
   left: 0;
-  top: 9px;
+  top: 0.56em;
   width: 100%;
-  height: 24px;
+  height: 1.5em;
   z-index: 1;
 }
 
 .section > h2 span {
-  -webkit-padding-end: 5px;
+  -webkit-padding-end: 0.30em;
   position: relative;
   z-index: 2;
 }
