@@ -1173,7 +1173,8 @@ def Main(argv):
     # Make stdout auto-flush so buildbot doesn't kill us during lengthy
     # operations. Python as a strong tendency to buffer sys.stdout.
     sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
-
+    # Make stdout annotated with the thread ids.
+    sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
     # Do it late so all commands are listed.
     CMDhelp.usage = ('\n\nCommands are:\n' + '\n'.join([
         '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
