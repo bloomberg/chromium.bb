@@ -39,6 +39,7 @@
     'passwords',
     'plugins',
     'prefs',
+    'search_engines',
     'special_tabs',
     'test_basic.SimpleTest.testCanOpenGoogle',
     'themes',
