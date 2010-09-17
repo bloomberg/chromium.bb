@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/token_migrator.h"
 #include "chrome/browser/sync/util/user_settings.h"
@@ -195,16 +196,16 @@ void ProfileSyncService::Initialize() {
 void ProfileSyncService::RegisterAuthNotifications() {
   registrar_.Add(this,
                  NotificationType::TOKEN_AVAILABLE,
-                 NotificationService::AllSources());
+                 Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
                  NotificationType::TOKEN_LOADING_FINISHED,
-                 NotificationService::AllSources());
+                 Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
                  NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
-                 NotificationService::AllSources());
+                 Source<SigninManager>(&signin_));
   registrar_.Add(this,
                  NotificationType::GOOGLE_SIGNIN_FAILED,
-                 NotificationService::AllSources());
+                 Source<SigninManager>(&signin_));
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -316,6 +317,8 @@ void ProfileSyncService::RegisterPreferences() {
       enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncManaged, false);
   pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken, "");
+  pref_service->RegisterBooleanPref(prefs::kSyncUsingSecondaryPassphrase,
+      false);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -811,8 +814,19 @@ bool ProfileSyncService::IsCryptographerReady() const {
 }
 
 void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
-  DCHECK(backend_.get());
-  backend_->SetPassphrase(passphrase);
+  // TODO(tim): This should be encryption-specific instead of passwords
+  // specific.  For now we have to do this to avoid NIGORI node lookups when
+  // we haven't downloaded that node.
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncPasswords) ) {
+    LOG(WARNING) << "Silently dropping SetPassphrase request.";
+    return;
+  }
+
+  if (!sync_initialized()) {
+    cached_passphrase_ = passphrase;
+  } else {
+    backend_->SetPassphrase(passphrase);
+  }
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {
@@ -875,6 +889,12 @@ void ProfileSyncService::Observe(NotificationType type,
         return;
       }
 
+      if (!cached_passphrase_.empty()) {
+        // Don't hold on to the passphrase in raw form longer than needed.
+        SetPassphrase(cached_passphrase_);
+        cached_passphrase_.clear();
+      }
+
       // TODO(sync): Less wizard, more toast.
       wizard_.Step(SyncSetupWizard::DONE);
       FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -882,8 +902,16 @@ void ProfileSyncService::Observe(NotificationType type,
       break;
     }
     case NotificationType::SYNC_PASSPHRASE_REQUIRED: {
+      DCHECK(backend_.get());
+      if (!cached_passphrase_.empty()) {
+        SetPassphrase(cached_passphrase_);
+        cached_passphrase_.clear();
+        break;
+      }
+
       // TODO(sync): Show the passphrase UI here.
-      SetPassphrase("dummy passphrase");
+      UpdateAuthErrorState(GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
       break;
     }
     case NotificationType::SYNC_DATA_TYPES_UPDATED: {
@@ -917,14 +945,17 @@ void ProfileSyncService::Observe(NotificationType type,
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_SUCCESSFUL: {
-      LOG(INFO) << "Signin OK. Waiting on tokens.";
-      // TODO(chron): UI update?
-      // TODO(chron): Timeout?
+      if (!profile_->GetPrefs()->GetBoolean(
+          prefs::kSyncUsingSecondaryPassphrase)) {
+        const GoogleServiceSigninSuccessDetails* successful =
+            (Details<const GoogleServiceSigninSuccessDetails>(details).ptr());
+        SetPassphrase(successful->password);
+      }
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_FAILED: {
       GoogleServiceAuthError error =
-          *(Details<GoogleServiceAuthError>(details).ptr());
+          *(Details<const GoogleServiceAuthError>(details).ptr());
       UpdateAuthErrorState(error);
       break;
     }

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
@@ -102,7 +104,7 @@ void SyncBackendHost::Initialize(
     registrar_.workers[GROUP_PASSWORD] =
         new PasswordModelWorker(password_store);
   } else {
-    LOG(ERROR) << "Password store not initialized, cannot sync passwords";
+    LOG(WARNING) << "Password store not initialized, cannot sync passwords";
   }
 
   // Any datatypes that we want the syncer to pull down must
@@ -111,6 +113,13 @@ void SyncBackendHost::Initialize(
   for (syncable::ModelTypeSet::const_iterator it = types.begin();
       it != types.end(); ++it) {
     registrar_.routing_info[(*it)] = GROUP_PASSIVE;
+  }
+
+  // TODO(tim): This should be encryption-specific instead of passwords
+  // specific.  For now we have to do this to avoid NIGORI node lookups when
+  // we haven't downloaded that node.
+  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncPasswords) ) {
+    registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
   }
 
   InitCore(Core::DoInitializeOptions(

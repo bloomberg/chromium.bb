@@ -173,17 +173,27 @@ std::string BaseNode::GenerateSyncableHash(
   return encode_output;
 }
 
+sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
+    const sync_pb::EntitySpecifics& specifics, Cryptographer* crypto) {
+ if (!specifics.HasExtension(sync_pb::password))
+   return NULL;
+  const sync_pb::EncryptedData& encrypted =
+      specifics.GetExtension(sync_pb::password).encrypted();
+  scoped_ptr<sync_pb::PasswordSpecificsData> data(
+      new sync_pb::PasswordSpecificsData);
+  if (!crypto->Decrypt(encrypted, data.get()))
+    return NULL;
+  return data.release();
+}
+
 bool BaseNode::DecryptIfNecessary(Entry* entry) {
   if (GetIsFolder()) return true;  // Ignore the top-level password folder.
   const sync_pb::EntitySpecifics& specifics =
       entry->Get(syncable::SPECIFICS);
   if (specifics.HasExtension(sync_pb::password)) {
-    const sync_pb::EncryptedData& encrypted =
-        specifics.GetExtension(sync_pb::password).encrypted();
-    scoped_ptr<sync_pb::PasswordSpecificsData> data(
-        new sync_pb::PasswordSpecificsData);
-    if (!GetTransaction()->GetCryptographer()->Decrypt(encrypted,
-                                                       data.get()))
+    scoped_ptr<sync_pb::PasswordSpecificsData> data(DecryptPasswordSpecifics(
+        specifics, GetTransaction()->GetCryptographer()));
+    if (!data.get())
       return false;
     password_data_.swap(data);
   }
@@ -1022,6 +1032,7 @@ class SyncManager::SyncInternal
   void SetExtraChangeRecordData(int64 id,
                                 syncable::ModelType type,
                                 ChangeReorderBuffer* buffer,
+                                Cryptographer* cryptographer,
                                 const syncable::EntryKernel& original,
                                 bool existed_before,
                                 bool exists_now);
@@ -1289,6 +1300,8 @@ bool SyncManager::SyncInternal::Init(
   setup_for_test_mode_ = setup_for_test_mode;
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
+  share_.dir_manager->cryptographer()->Bootstrap(
+      restored_key_for_bootstrapping);
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, user_agent, post_factory));
@@ -1696,12 +1709,22 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
 
 void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
     syncable::ModelType type, ChangeReorderBuffer* buffer,
-    const syncable::EntryKernel& original, bool existed_before,
-    bool exists_now) {
+    Cryptographer* cryptographer, const syncable::EntryKernel& original,
+    bool existed_before, bool exists_now) {
   // If this is a deletion, attach the entity specifics as extra data
   // so that the delete can be processed.
   if (!exists_now && existed_before) {
     buffer->SetSpecificsForId(id, original.ref(SPECIFICS));
+    if (type == syncable::PASSWORDS) {
+      // Need to dig a bit deeper as passwords are encrypted.
+      scoped_ptr<sync_pb::PasswordSpecificsData> data(
+          DecryptPasswordSpecifics(original.ref(SPECIFICS), cryptographer));
+      if (!data.get()) {
+        NOTREACHED();
+        return;
+      }
+      buffer->SetExtraDataForId(id, new ExtraPasswordChangeRecordData(*data));
+    }
   }
 }
 
@@ -1735,7 +1758,8 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
     else if (exists_now && existed_before && VisiblePropertiesDiffer(*i, e))
       change_buffers_[type].PushUpdatedItem(id, VisiblePositionsDiffer(*i, e));
 
-    SetExtraChangeRecordData(id, type, &change_buffers_[type], *i,
+    SetExtraChangeRecordData(id, type, &change_buffers_[type],
+                             dir_manager()->cryptographer(), *i,
                              existed_before, exists_now);
   }
 }
