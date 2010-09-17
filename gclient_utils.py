@@ -295,31 +295,48 @@ def CheckCallAndFilterAndHeader(args, always=False, **kwargs):
   return CheckCallAndFilter(args, **kwargs)
 
 
-class StdoutAutoFlush(object):
-  """Automatically flush after N seconds."""
-  def __init__(self, stdout, delay=10):
-    self.lock = threading.Lock()
-    self.stdout = stdout
-    self.delay = delay
-    self.last_flushed_at = time.time()
-    self.stdout.flush()
+def SoftClone(obj):
+  """Clones an object. copy.copy() doesn't work on 'file' objects."""
+  class NewObject(object): pass
+  new_obj = NewObject()
+  for member in dir(obj):
+    if member.startswith('_'):
+      continue
+    setattr(new_obj, member, getattr(obj, member))
+  return new_obj
 
-  def write(self, out):
-    """Thread-safe."""
-    self.stdout.write(out)
+
+def MakeFileAutoFlush(fileobj, delay=10):
+  """Creates a file object clone to automatically flush after N seconds."""
+  if hasattr(fileobj, 'last_flushed_at'):
+    # Already patched. Just update delay.
+    fileobj.delay = delay
+    return fileobj
+
+  new_fileobj = SoftClone(fileobj)
+  new_fileobj.lock = threading.Lock()
+  new_fileobj.last_flushed_at = time.time()
+  new_fileobj.delay = delay
+  new_fileobj.old_auto_flush_write = fileobj.write
+  # Silence pylint.
+  new_fileobj.flush = fileobj.flush
+
+  def auto_flush_write(out):
+    new_fileobj.old_auto_flush_write(out)
     should_flush = False
-    self.lock.acquire()
+    new_fileobj.lock.acquire()
     try:
-      if (time.time() - self.last_flushed_at) > self.delay:
+      if (new_fileobj.delay and
+          (time.time() - new_fileobj.last_flushed_at) > new_fileobj.delay):
         should_flush = True
-        self.last_flushed_at = time.time()
+        new_fileobj.last_flushed_at = time.time()
     finally:
-      self.lock.release()
+      new_fileobj.lock.release()
     if should_flush:
-      self.stdout.flush()
+      new_fileobj.flush()
 
-  def flush(self):
-    self.stdout.flush()
+  new_fileobj.write = auto_flush_write
+  return new_fileobj
 
 
 class StdoutAnnotated(object):

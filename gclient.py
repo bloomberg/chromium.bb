@@ -1170,6 +1170,10 @@ def Main(argv):
   """Doesn't parse the arguments here, just find the right subcommand to
   execute."""
   try:
+    # Make stdout auto-flush so buildbot doesn't kill us during lengthy
+    # operations. Python as a strong tendency to buffer sys.stdout.
+    sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
+
     # Do it late so all commands are listed.
     CMDhelp.usage = ('\n\nCommands are:\n' + '\n'.join([
         '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
@@ -1198,8 +1202,8 @@ def Main(argv):
       options.entries_filename = options.config_filename + '_entries'
       if options.jobs < 1:
         parser.error('--jobs must be 1 or higher')
-      # Always autoflush so buildbot doesn't kill us during lengthy operations.
-      options.stdout = gclient_utils.StdoutAutoFlush(sys.stdout)
+      # TODO(maruel): Temporary, to be removed.
+      options.stdout = sys.stdout
 
       # These hacks need to die.
       if not hasattr(options, 'revisions'):

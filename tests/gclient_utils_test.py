@@ -25,10 +25,10 @@ class GclientUtilsUnittest(GclientUtilBase):
         'CheckCall', 'CheckCallError', 'CheckCallAndFilter',
         'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
-        'GetGClientRootAndEntries', 'GetNamedNodeText',
+        'GetGClientRootAndEntries', 'GetNamedNodeText', 'MakeFileAutoFlush',
         'GetNodeNamedAttributeText', 'PathDifference', 'ParseXML', 'Popen',
-        'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
-        'StdoutAnnotated', 'StdoutAutoFlush', 'SyntaxErrorToError', 'WorkItem',
+        'PrintableObject', 'RemoveDirectory', 'SoftClone', 'SplitUrlRevision',
+        'StdoutAnnotated', 'SyntaxErrorToError', 'WorkItem',
         'copy', 'errno', 'logging', 'os', 'Queue', 're', 'stat', 'subprocess',
         'sys','threading', 'time', 'xml',
     ]
