@@ -482,3 +482,53 @@ TEST_F(StatusBubbleMacTest, MovingWindowUpdatesPosition) {
   child = GetWindow();
   EXPECT_TRUE(NSEqualPoints([window frame].origin, [child frame].origin));
 }
+
+TEST_F(StatusBubbleMacTest, ExpandBubble) {
+  NSWindow* window = test_window();
+  ASSERT_TRUE(window);
+  NSRect window_frame = [window frame];
+  window_frame.size.width = 600.0;
+  [window setFrame:window_frame display:YES];
+
+  // Check basic expansion
+  bubble_->SetStatus(UTF8ToUTF16("Showing"));
+  EXPECT_TRUE(IsVisible());
+  bubble_->SetURL(GURL("http://www.battersbox.com/peter_paul_and_mary.html"),
+                  string16());
+  EXPECT_NSEQ(@"battersbox.com/peter_paul_and_\u2026", GetURLText());
+  bubble_->ExpandBubble();
+  EXPECT_TRUE(IsVisible());
+  EXPECT_NSEQ(@"www.battersbox.com/peter_paul_and_mary.html", GetURLText());
+  bubble_->Hide();
+
+  // Make sure bubble resets after hide.
+  bubble_->SetStatus(UTF8ToUTF16("Showing"));
+  bubble_->SetURL(GURL("http://www.snickersnee.com/pioneer_fishstix.html"),
+                  string16());
+  EXPECT_NSEQ(@"snickersnee.com/pioneer_fishstix\u2026", GetURLText());
+  // ...and that it expands again properly.
+  bubble_->ExpandBubble();
+  EXPECT_NSEQ(@"www.snickersnee.com/pioneer_fishstix.html", GetURLText());
+  // ...again, again!
+  bubble_->SetURL(GURL("http://www.battersbox.com/peter_paul_and_mary.html"),
+                  string16());
+  bubble_->ExpandBubble();
+  EXPECT_NSEQ(@"www.battersbox.com/peter_paul_and_mary.html", GetURLText());
+  bubble_->Hide();
+
+  window_frame = [window frame];
+  window_frame.size.width = 300.0;
+  [window setFrame:window_frame display:YES];
+
+  // Very long URL's will be cut off even in the expanded state.
+  bubble_->SetStatus(UTF8ToUTF16("Showing"));
+  bubble_->SetURL(GURL(
+      "http://www.diewahrscheinlichlaengstepralinederwelt.com/duuuuplo.html"),
+          string16());
+  EXPECT_NSEQ(@"diewahrscheinli\u2026", GetURLText());
+  bubble_->ExpandBubble();
+  EXPECT_NSEQ(@"diewahrscheinlichlaengstepralinederwelt.com/duu\u2026",
+      GetURLText());
+}
+
+

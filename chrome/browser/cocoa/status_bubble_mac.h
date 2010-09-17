@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "base/task.h"
 #include "chrome/browser/status_bubble.h"
+#include "googleurl/src/gurl.h"
 
 class GURL;
 class StatusBubbleMacTest;
@@ -54,6 +55,9 @@ class StatusBubbleMac : public StatusBubble {
   // completed.  This is public so that it may be visible to the CAAnimation
   // delegate, which is an Objective-C object.
   void AnimationDidStop(CAAnimation* animation, bool finished);
+
+  // Expand the bubble to fit a URL too long for the standard bubble size.
+  void ExpandBubble();
 
  private:
   friend class StatusBubbleMacTest;
@@ -103,11 +107,18 @@ class StatusBubbleMac : public StatusBubble {
   void StartShowing();
   void StartHiding();
 
+  // Cancel the expansion timer.
+  void CancelExpandTimer();
+
   // The timer factory used for show and hide delay timers.
   ScopedRunnableMethodFactory<StatusBubbleMac> timer_factory_;
 
-  // Calculate the appropriate frame for the status bubble window.
-  NSRect CalculateWindowFrame();
+  // The timer factory used for the expansion delay timer.
+  ScopedRunnableMethodFactory<StatusBubbleMac> expand_timer_factory_;
+
+  // Calculate the appropriate frame for the status bubble window. If
+  // |expanded_width|, use entire width of parent frame.
+  NSRect CalculateWindowFrame(bool expanded_width);
 
   // The window we attach ourselves to.
   NSWindow* parent_;  // WEAK
@@ -132,6 +143,18 @@ class StatusBubbleMac : public StatusBubble {
   // for delays and transitions.  Normally false, this should only be set to
   // true for testing.
   bool immediate_;
+
+  // True if the status bubble has been expanded. If the bubble is in the
+  // expanded state and encounters a new URL, change size immediately,
+  // with no hover delay.
+  bool is_expanded_;
+
+  // The original, non-elided URL.
+  GURL url_;
+
+  // Needs to be passed to ElideURL if the original URL string is wider than
+  // the standard bubble width.
+  string16 languages_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusBubbleMac);
 };
