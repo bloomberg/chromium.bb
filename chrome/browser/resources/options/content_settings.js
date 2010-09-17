@@ -84,18 +84,6 @@ cr.define('options', function() {
   };
 
   /**
-   * Called to set whether we show certain UI related to the cookies prompt.
-   * @param {boolean} enabled The value --enable-cookies-prompt.
-   *     that group.
-   */
-  ContentSettings.setCookiesPromptEnabled = function(enabled) {
-    cookiesExceptionsList.enableAskOption = enabled;
-
-    if (!enabled)
-      $('cookiesAskRadio').classList.add('hidden');
-  }
-
-  /**
    * Initializes an exceptions list.
    * @param {string} type The content type that we are setting exceptions for.
    * @param {Array} list An array of pairs, where the first element of each pair

@@ -66,9 +66,6 @@ void CookieFilterPageGtk::HighlightGroup(OptionsGroup highlight_group) {
 }
 
 GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
-  bool disable_cookie_prompt = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCookiePrompt);
-
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   allow_radio_ = gtk_radio_button_new_with_label(NULL,
@@ -76,15 +73,6 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   g_signal_connect(G_OBJECT(allow_radio_), "toggled",
                    G_CALLBACK(OnCookiesAllowToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), allow_radio_, FALSE, FALSE, 0);
-
-  if (!disable_cookie_prompt) {
-    ask_every_time_radio_ = gtk_radio_button_new_with_label_from_widget(
-        GTK_RADIO_BUTTON(allow_radio_),
-        l10n_util::GetStringUTF8(IDS_COOKIES_ASK_EVERY_TIME_RADIO).c_str());
-    g_signal_connect(G_OBJECT(ask_every_time_radio_), "toggled",
-                     G_CALLBACK(OnCookiesAllowToggledThunk), this);
-    gtk_box_pack_start(GTK_BOX(vbox), ask_every_time_radio_, FALSE, FALSE, 0);
-  }
 
   block_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(allow_radio_),

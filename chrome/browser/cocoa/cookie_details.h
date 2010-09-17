@@ -189,11 +189,6 @@ enum CocoaCookieDetailsType {
 // the cookie tree in |treeNode|.
 + (CocoaCookieDetails*)createFromCookieTreeNode:(CookieTreeNode*)treeNode;
 
-// A factory method to create a configured instance given a cookie prompt
-// modal dialog in |dialog|.
-+ (CocoaCookieDetails*)createFromPromptModalDialog:
-    (CookiePromptModalDialog*)dialog;
-
 @end
 
 // The subpanes of the cookie details view expect to be able to bind to methods

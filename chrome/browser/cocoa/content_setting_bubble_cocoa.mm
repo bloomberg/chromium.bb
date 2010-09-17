@@ -436,18 +436,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [[self window] setFrame:frame display:NO];
 }
 
-- (void)removeInfoButton {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCookiePrompt)) {
-    // Remove info button and resize vertically.
-    int deltaY = NSHeight([infoButton_ frame]);
-    [infoButton_ removeFromSuperview];
-    NSRect frame = [[self window] frame];
-    frame.size.height -= deltaY;
-    [[self window] setFrame:frame display:NO];
-  }
-}
-
 - (void)awakeFromNib {
   [[self bubble] setBubbleType:info_bubble::kWhiteInfoBubble];
   [[self bubble] setArrowLocation:info_bubble::kTopRight];
@@ -462,8 +450,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     [self sizeToFitLoadPluginsButton];
     [self initializeBlockedPluginsList];
   }
-  if (type == CONTENT_SETTINGS_TYPE_COOKIES)
-    [self removeInfoButton];
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
     [self initializeRadioGroup];
 

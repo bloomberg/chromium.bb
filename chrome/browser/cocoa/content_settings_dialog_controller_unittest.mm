@@ -58,9 +58,7 @@ TEST_F(ContentSettingsDialogControllerTest, CookieSetting) {
 
   settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                          CONTENT_SETTING_BLOCK);
-  // Since the cookie prompt is disabled per default, the index of the block
-  // radio is actually 1 == kCookieAskIndex.
-  EXPECT_EQ([controller_ cookieSettingIndex], kCookieAskIndex);
+  EXPECT_EQ([controller_ cookieSettingIndex], kCookieDisabledIndex);
 
   // Change dialog property, check setting.
   NSInteger setting;
@@ -69,9 +67,7 @@ TEST_F(ContentSettingsDialogControllerTest, CookieSetting) {
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 
-  // Since the cookie prompt is disabled per default, the index of the block
-  // radio is actually 1 == kCookieAskIndex.
-  [controller_ setCookieSettingIndex:kCookieAskIndex];
+  [controller_ setCookieSettingIndex:kCookieDisabledIndex];
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);

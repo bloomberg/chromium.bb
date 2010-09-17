@@ -88,9 +88,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
         tab_contents()->GetTabSpecificContentSettings()->IsContentAccessed(
             content_type()) &&
         !tab_contents()->GetTabSpecificContentSettings()->IsContentBlocked(
-            content_type()) &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableCookiePrompt)) {
+            content_type())) {
       title_ids = kAccessedTitleIDs;
     } else if (!bubble_content().resource_identifiers.empty()) {
       title_ids = kResourceSpecificBlockedTitleIDs;
@@ -127,9 +125,7 @@ class ContentSettingTitleLinkAndInfoModel
                                       Profile* profile,
                                       ContentSettingsType content_type)
       : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableCookiePrompt))
-      SetInfoLink();
+    SetInfoLink();
   }
 
  private:

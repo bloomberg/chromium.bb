@@ -16,8 +16,7 @@ const NSInteger kContentSettingsDisabledIndex = 1;
 
 // Indices of the various cookie settings in the cookie radio group.
 const NSInteger kCookieEnabledIndex = 0;
-const NSInteger kCookieAskIndex = 1;
-const NSInteger kCookieDisabledIndex = 2;
+const NSInteger kCookieDisabledIndex = 1;
 
 // Indices of the various plugin settings in the plugins radio group.
 const NSInteger kPluginsAllowIndex = 0;
@@ -49,7 +48,6 @@ class Profile;
   IBOutlet NSTabView* tabView_;
   IBOutlet TabViewPickerTable* tabViewPicker_;
   Profile* profile_;  // weak
-  BOOL disableCookiePrompt_;
   IntegerPrefMember lastSelectedTab_;
   BooleanPrefMember clearSiteDataOnExit_;
   scoped_ptr<ContentSettingsDialogControllerInternal::PrefObserverBridge>

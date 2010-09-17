@@ -10,7 +10,6 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/cookie_modal_dialog.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/labs_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
@@ -139,7 +138,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
 #endif
   BackgroundContentsService::RegisterUserPrefs(user_prefs);
-  CookiePromptModalDialog::RegisterUserPrefs(user_prefs);
   SigninManager::RegisterUserPrefs(user_prefs);
 }
 

@@ -390,9 +390,6 @@ const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 // Link: headers.
 const char kEnableContentPrefetch[]         = "enable-content-prefetch";
 
-// Enables the cookie prompt.
-const char kEnableCookiePrompt[]            = "enable-cookie-prompt";
-
 // Enable CoreLocation geoposition data provider
 const char kEnableCoreLocation[]            = "enable-core-location";
 

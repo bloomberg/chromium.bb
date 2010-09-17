@@ -21,31 +21,18 @@ const ContentSetting kSessionSettings[] = { CONTENT_SETTING_ALLOW,
                                             CONTENT_SETTING_SESSION_ONLY,
                                             CONTENT_SETTING_BLOCK };
 
-// The settings shown in the combobox if show_session_ is true, and we still
-// offer the cookie prompt mode.
-const ContentSetting kSessionAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                               CONTENT_SETTING_ASK,
-                                               CONTENT_SETTING_SESSION_ONLY,
-                                               CONTENT_SETTING_BLOCK };
-
 }  // namespace
 
 ContentSettingComboModel::ContentSettingComboModel(bool show_session)
-    : show_session_(show_session),
-      disable_cookie_prompt_(!CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kEnableCookiePrompt)) {
+    : show_session_(show_session) {
 }
 
 ContentSettingComboModel::~ContentSettingComboModel() {
 }
 
 int ContentSettingComboModel::GetItemCount() {
-  if (show_session_) {
-    return disable_cookie_prompt_ ?
-        arraysize(kSessionSettings) : arraysize(kSessionAskSettings);
-  } else {
-    return arraysize(kNoSessionSettings);
-  }
+  return show_session_ ? arraysize(kSessionSettings)
+                       : arraysize(kNoSessionSettings);
 }
 
 string16 ContentSettingComboModel::GetItemAt(int index) {
@@ -54,8 +41,6 @@ string16 ContentSettingComboModel::GetItemAt(int index) {
       return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON);
     case CONTENT_SETTING_BLOCK:
       return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON);
-    case CONTENT_SETTING_ASK:
-      return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON);
     case CONTENT_SETTING_SESSION_ONLY:
       return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
     default:
@@ -65,12 +50,7 @@ string16 ContentSettingComboModel::GetItemAt(int index) {
 }
 
 ContentSetting ContentSettingComboModel::SettingForIndex(int index) {
-  if (show_session_) {
-    return disable_cookie_prompt_ ?
-        kSessionSettings[index] : kSessionAskSettings[index];
-  } else {
-    return kNoSessionSettings[index];
-  }
+  return show_session_ ? kSessionSettings[index] : kNoSessionSettings[index];
 }
 
 int ContentSettingComboModel::IndexForSetting(ContentSetting setting) {

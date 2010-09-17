@@ -92,9 +92,7 @@ void ContentSettingBlockedImageModel::UpdateFromTabContents(
   if (content_settings->IsContentBlocked(get_content_settings_type())) {
     icon_ids = kBlockedIconIDs;
     tooltip_ids = kBlockedTooltipIDs;
-  } else if (!CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableCookiePrompt) &&
-             tab_contents->profile()->GetHostContentSettingsMap()->
+  } else if (tab_contents->profile()->GetHostContentSettingsMap()->
                  GetDefaultContentSetting(get_content_settings_type()) ==
                  CONTENT_SETTING_BLOCK &&
              content_settings->IsContentAccessed(get_content_settings_type())) {

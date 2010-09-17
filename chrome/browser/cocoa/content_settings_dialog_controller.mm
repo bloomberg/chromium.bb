@@ -126,8 +126,6 @@ class PrefObserverDisabler {
 
 - (id)initWithProfile:(Profile*)profile {
   DCHECK(profile);
-  disableCookiePrompt_ = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCookiePrompt);
   NSString* nibpath =
       [mac_util::MainAppBundle() pathForResource:@"ContentSettings"
                                           ofType:@"nib"];
@@ -181,9 +179,6 @@ class PrefObserverDisabler {
   DCHECK(tabView_);
   DCHECK(tabViewPicker_);
   DCHECK_EQ(self, [[self window] delegate]);
-
-  [tabView_ removeTabViewItem:[tabView_
-      tabViewItemAtIndex:disableCookiePrompt_ ? 0 : 1]];
 
   // Adapt views to potentially long localized strings.
   CGFloat windowDelta = 0;
@@ -243,13 +238,8 @@ class PrefObserverDisabler {
 
 - (void)setCookieSettingIndex:(NSInteger)value {
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  // If the cookie prompt is disabled, the radio button for "block" is at the
-  // position of the "ask" radio in the old dialog.
-  if (disableCookiePrompt_ && value == kCookieAskIndex)
-    value = kCookieDisabledIndex;
   switch (value) {
     case kCookieEnabledIndex:  setting = CONTENT_SETTING_ALLOW; break;
-    case kCookieAskIndex:      setting = CONTENT_SETTING_ASK; break;
     case kCookieDisabledIndex: setting = CONTENT_SETTING_BLOCK; break;
     default:
       NOTREACHED();
@@ -265,12 +255,7 @@ class PrefObserverDisabler {
   switch (profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES)) {
     case CONTENT_SETTING_ALLOW:        return kCookieEnabledIndex;
-    case CONTENT_SETTING_ASK:          return kCookieAskIndex;
-    // If the cookie prompt is disabled, the radio button for "block" is at the
-    // position of the "ask" radio in the old dialog.
-    case CONTENT_SETTING_BLOCK:        return disableCookiePrompt_ ?
-                                           kCookieAskIndex :
-                                           kCookieDisabledIndex;
+    case CONTENT_SETTING_BLOCK:        return kCookieDisabledIndex;
     default:
       NOTREACHED();
       return kCookieEnabledIndex;

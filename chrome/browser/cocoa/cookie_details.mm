@@ -8,7 +8,6 @@
 #import "base/i18n/time_formatting.h"
 #include "base/sys_string_conversions.h"
 #include "grit/generated_resources.h"
-#include "chrome/browser/cookie_modal_dialog.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "webkit/appcache/appcache_service.h"
 
@@ -254,39 +253,6 @@
   } else {
     return [[[CocoaCookieDetails alloc] initAsFolder] autorelease];
   }
-}
-
-+ (CocoaCookieDetails*)createFromPromptModalDialog:(CookiePromptModalDialog*)
-    dialog {
-  CookiePromptModalDialog::DialogType type(dialog->dialog_type());
-  CocoaCookieDetails* details = nil;
-  if (type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE) {
-    net::CookieMonster::ParsedCookie pc(dialog->cookie_line());
-    net::CookieMonster::CanonicalCookie cookie(dialog->origin(), pc);
-    const std::string& domain(pc.HasDomain() ? pc.Domain() :
-        dialog->origin().host());
-    NSString* domainString = base::SysUTF8ToNSString(domain);
-    details = [[CocoaCookieDetails alloc] initWithCookie:&cookie
-                                                  origin:domainString
-                                       canEditExpiration:YES];
-  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE) {
-    details = [[CocoaCookieDetails alloc]
-        initWithLocalStorage:dialog->origin().host()
-                         key:dialog->local_storage_key()
-                       value:dialog->local_storage_value()];
-  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_DATABASE) {
-    details = [[CocoaCookieDetails alloc]
-        initWithDatabase:dialog->origin().host()
-            databaseName:dialog->database_name()
-     databaseDescription:dialog->display_name()
-                fileSize:dialog->estimated_size()];
-  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
-    details = [[CocoaCookieDetails alloc]
-        initWithAppCacheManifestURL:dialog->appcache_manifest_url().spec()];
-  } else {
-    NOTIMPLEMENTED();
-  }
-  return [details autorelease];
 }
 
 @end

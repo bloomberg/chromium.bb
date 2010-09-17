@@ -207,7 +207,6 @@
                 'app/nibs/CollectedCookies.xib',
                 'app/nibs/Cookies.xib',
                 'app/nibs/CookieDetailsView.xib',
-                'app/nibs/CookiePrompt.xib',
                 'app/nibs/ContentBlockedCookies.xib',
                 'app/nibs/ContentBlockedImages.xib',
                 'app/nibs/ContentBlockedJavaScript.xib',

@@ -103,9 +103,7 @@ void ContentFilterPageView::InitControlLayout() {
                  Need_a_setting_for_every_content_settings_type);
   DCHECK_EQ(arraysize(kAskIDs),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  if (content_type_ != CONTENT_SETTINGS_TYPE_COOKIES ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCookiePrompt)) {
+  if (content_type_ != CONTENT_SETTINGS_TYPE_COOKIES) {
     if (kAskIDs[content_type_] != 0) {
       ask_radio_ = new views::RadioButton(
           l10n_util::GetString(kAskIDs[content_type_]), radio_button_group);

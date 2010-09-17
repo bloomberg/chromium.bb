@@ -32,9 +32,6 @@ class UpdatingContentSettingsObserver;
   // Is set if "Session" should be a valid option in the "action" popup.
   BOOL showSession_;
 
-  // Is set if the cookie prompt should be disabled.
-  BOOL disableCookiePrompt_;
-
   // Is set if adding and editing exceptions for the current OTR session should
   // be allowed.
   BOOL otrAllowed_;

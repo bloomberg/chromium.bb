@@ -210,12 +210,6 @@ void ContentSettingsHandler::Initialize() {
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setBlockThirdPartyCookies", *block_3rd_party.get());
 
-  scoped_ptr<Value> show_cookies_prompt(Value::CreateBooleanValue(
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCookiePrompt)));
-  dom_ui_->CallJavascriptFunction(
-      L"ContentSettings.setCookiesPromptEnabled", *show_cookies_prompt.get());
-
   UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
       this, NotificationType::CONTENT_SETTINGS_CHANGED,

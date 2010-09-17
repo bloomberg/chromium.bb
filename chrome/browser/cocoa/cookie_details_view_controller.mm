@@ -9,7 +9,6 @@
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/cookie_tree_node.h"
-#import "chrome/browser/cookie_modal_dialog.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace {

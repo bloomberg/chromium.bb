@@ -6,7 +6,6 @@
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/cookie_details.h"
 #include "chrome/browser/cocoa/cookie_details_view_controller.h"
-#include "chrome/browser/cookie_modal_dialog.h"
 
 namespace {
 

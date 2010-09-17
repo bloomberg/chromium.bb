@@ -9,7 +9,6 @@
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
-#include "chrome/browser/in_process_webkit/dom_storage_permission_request.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -98,18 +97,5 @@ bool DOMStorageArea::CheckContentSetting(
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
           origin_url_, CONTENT_SETTINGS_TYPE_COOKIES, "");
-
-  if (content_setting == CONTENT_SETTING_ASK) {
-    DOMStoragePermissionRequest request(origin_url_, key, value,
-                                        host_content_settings_map_);
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableFunction(&DOMStoragePermissionRequest::PromptUser,
-                            &request));
-    // Tell the renderer that it needs to run a nested message loop.
-    sender->Send(new ViewMsg_SignalCookiePromptEvent());
-    content_setting = request.WaitOnResponse();
-  }
-
   return (content_setting != CONTENT_SETTING_BLOCK);
 }

@@ -15,7 +15,6 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/browser/renderer_host/database_permission_request.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -390,26 +389,6 @@ void DatabaseDispatcherHost::OnAllowDatabase(const std::string& origin_url,
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
           url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  if (content_setting == CONTENT_SETTING_ASK) {
-    // Create a task for each possible outcome.
-    scoped_ptr<Task> on_allow(NewRunnableMethod(
-        this, &DatabaseDispatcherHost::AllowDatabaseResponse,
-        reply_msg, CONTENT_SETTING_ALLOW));
-    scoped_ptr<Task> on_block(NewRunnableMethod(
-        this, &DatabaseDispatcherHost::AllowDatabaseResponse,
-        reply_msg, CONTENT_SETTING_BLOCK));
-    // And then let the permission request object do the rest.
-    scoped_refptr<DatabasePermissionRequest> request(
-        new DatabasePermissionRequest(url, name, display_name, estimated_size,
-                                      on_allow.release(), on_block.release(),
-                                      host_content_settings_map_));
-    request->RequestPermission();
-
-    // Tell the renderer that it needs to run a nested message loop.
-    Send(new ViewMsg_SignalCookiePromptEvent());
-    return;
-  }
-
   AllowDatabaseResponse(reply_msg, content_setting);
 }
 
