@@ -3185,6 +3185,9 @@ TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
 
 void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
                                       std::vector<TemplateURL*>* t_urls) {
+  if (!prefs)
+    return;
+
   const ListValue* list =
       prefs->GetList(prefs::kSearchProviderOverrides);
   if (!list)

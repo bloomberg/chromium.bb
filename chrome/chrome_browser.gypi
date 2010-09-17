@@ -2465,6 +2465,7 @@
         'browser/search_engines/search_host_to_urls_map.h',
         'browser/search_engines/search_host_to_urls_map.cc',
         'browser/search_engines/search_provider_install_data.h',
+        'browser/search_engines/search_provider_install_data.cc',
         'browser/search_engines/search_provider_install_state_dispatcher_host.cc',
         'browser/search_engines/search_provider_install_state_dispatcher_host.h',
         'browser/search_engines/search_terms_data.cc',
