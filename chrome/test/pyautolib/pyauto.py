@@ -447,6 +447,32 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def GetSearchEngineInfo(self):
+    """Return info about search engines.
+
+    Returns:
+      An ordered list of dictionaries describing info about each search engine.
+
+      Example:
+       [ { u'description': u'',
+          u'in_default_list': True,
+          u'is_default': True,
+          u'keyword': u'google.com',
+          u'short_name': u'Google'},
+        { u'description': u'',
+          u'in_default_list': True,
+          u'is_default': False,
+          u'keyword': u'yahoo.com',
+          u'short_name': u'Yahoo!'},
+        { u'description': u'',
+          u'in_default_list': True,
+          u'is_default': False,
+          u'keyword': u'bing.com',
+          u'short_name': u'Bing'}]
+    """
+    cmd_dict = {'command': 'GetSearchEngineInfo'}
+    return self._GetResultFromJSONRequest(cmd_dict)['search_engines']
+
   def GetPrefsInfo(self):
     """Return info about preferences.
 

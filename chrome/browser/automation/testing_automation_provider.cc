@@ -45,6 +45,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -423,6 +424,25 @@ void TestingAutomationProvider::OnChannelError() {
   if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
     BrowserList::CloseAllBrowsersAndExit();
   AutomationProvider::OnChannelError();
+}
+
+ListValue* TestingAutomationProvider::ExtractSearchEngineInfo(
+    TemplateURLModel* url_model) {
+  ListValue* search_engines = new ListValue;
+  std::vector<const TemplateURL*> template_urls = url_model->GetTemplateURLs();
+  for (std::vector<const TemplateURL*>::const_iterator it =
+      template_urls.begin();
+      it != template_urls.end(); ++it) {
+    DictionaryValue* search_engine = new DictionaryValue;
+    search_engine->SetString("short_name", WideToUTF8((*it)->short_name()));
+    search_engine->SetString("description", WideToUTF8((*it)->description()));
+    search_engine->SetString("keyword", WideToUTF8((*it)->keyword()));
+    search_engine->SetBoolean("in_default_list", (*it)->ShowInDefaultList());
+    search_engine->SetBoolean("is_default",
+        (*it) == url_model->GetDefaultSearchProvider());
+    search_engines->Append(search_engine);
+  }
+  return search_engines;
 }
 
 void TestingAutomationProvider::CloseBrowser(int browser_handle,
@@ -2007,6 +2027,9 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["OmniboxMovePopupSelection"] =
       &TestingAutomationProvider::OmniboxMovePopupSelection;
 
+  handler_map["GetSearchEngineInfo"] =
+      &TestingAutomationProvider::GetSearchEngineInfo;
+
   handler_map["GetPrefsInfo"] = &TestingAutomationProvider::GetPrefsInfo;
   handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
 
@@ -2626,6 +2649,22 @@ void TestingAutomationProvider::PerformActionOnDownload(
   } else {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("Invalid action '%s' given.", action.c_str()));
+  }
+}
+
+void TestingAutomationProvider::GetSearchEngineInfo(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  TemplateURLModel* url_model(profile_->GetTemplateURLModel());
+  if (url_model->loaded()) {
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->Set("search_engines", ExtractSearchEngineInfo(url_model));
+    AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+  } else {
+    url_model->AddObserver(new AutomationProviderSearchEngineObserver(
+      this, reply_message));
+    url_model->Load();
   }
 }
 

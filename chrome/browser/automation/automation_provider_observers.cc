@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/page_translated_details.h"
@@ -1166,6 +1167,18 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadOpened(
 void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
   AutomationJSONReply(provider_, reply_message_).SendSuccess(NULL);
   download_manager_->RemoveObserver(this);
+  delete this;
+}
+
+void AutomationProviderSearchEngineObserver::OnTemplateURLModelChanged() {
+  TemplateURLModel* url_model = provider_->profile()->GetTemplateURLModel();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->Set("search_engines",
+                    provider_->ExtractSearchEngineInfo(url_model));
+
+  url_model->RemoveObserver(this);
+  AutomationJSONReply(provider_, reply_message_).SendSuccess(
+      return_value.get());
   delete this;
 }
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_registrar.h"
 
 // This is an automation provider containing testing calls.
@@ -28,6 +29,11 @@ class TestingAutomationProvider : public AutomationProvider,
   // IPC implementations
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
+
+  // Helper to extract search engine info.
+  // Caller owns returned DictionaryValue.
+  // This will only yield data if url model has loaded.
+  ListValue* ExtractSearchEngineInfo(TemplateURLModel* url_model);
 
  private:
   class PopupMenuWaiter;
@@ -421,6 +427,12 @@ class TestingAutomationProvider : public AutomationProvider,
   void AddHistoryItem(Browser* browser,
                       DictionaryValue* args,
                       IPC::Message* reply_message);
+
+  // Get search engines list.
+  // Uses the JSON interface for input/output.
+  void GetSearchEngineInfo(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
 
   // Get info about preferences.
   // Uses the JSON interface for input/output.

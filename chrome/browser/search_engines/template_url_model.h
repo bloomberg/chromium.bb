@@ -185,7 +185,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Loads the keywords. This has no effect if the keywords have already been
   // loaded.
   // Observers are notified when loading completes via the method
-  // OnTemplateURLsReset.
+  // OnTemplateURLModelChanged.
   void Load();
 
   // Whether or not the keywords have been loaded.

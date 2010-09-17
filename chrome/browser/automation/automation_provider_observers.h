@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 
+#include "chrome/browser/automation/testing_automation_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/download/download_item.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_observer.h"
@@ -727,6 +729,26 @@ class AutomationProviderDownloadModelChangedObserver
   DownloadManager* download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadModelChangedObserver);
+};
+
+// Allows automation provider to wait until TemplateURLModel has loaded
+// before looking up/returning search engine info.
+class AutomationProviderSearchEngineObserver
+    : public TemplateURLModelObserver {
+ public:
+  AutomationProviderSearchEngineObserver(
+      TestingAutomationProvider* provider,
+      IPC::Message* reply_message)
+    : provider_(provider),
+      reply_message_(reply_message) {}
+
+  void OnTemplateURLModelChanged();
+
+ private:
+  TestingAutomationProvider* provider_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationProviderSearchEngineObserver);
 };
 
 // Allows the automation provider to wait for history queries to finish.
