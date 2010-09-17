@@ -91,7 +91,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
     config_.height = kHeight;
     EXPECT_CALL(*this, OnInitializeComplete(_))
        .WillOnce(SaveInitializeResult(this));
-    test_engine_->Initialize(MessageLoop::current(), this, config_);
+    test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
     EXPECT_TRUE(info_.success);
   }
 
@@ -143,7 +143,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
   config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
-  test_engine_->Initialize(MessageLoop::current(), this, config_);
+  test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
   EXPECT_FALSE(info_.success);
 }
 
@@ -165,7 +165,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_InitThreadFails) {
   config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
-  test_engine_->Initialize(MessageLoop::current(), this, config_);
+  test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
   EXPECT_FALSE(info_.success);
 }
 
@@ -188,7 +188,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
-  test_engine_->Initialize(MessageLoop::current(), this, config_);
+  test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
   EXPECT_FALSE(info_.success);
 }
 

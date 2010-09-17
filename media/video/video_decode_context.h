@@ -20,6 +20,13 @@ class VideoFrame;
 // 1. Provides access to hardware video decoding device.
 // 2. Allocate VideoFrame objects that are used to carry the decoded video
 //    frames.
+// 3. Upload a device specific buffer to some common VideoFrame storage types.
+//    In many cases a VideoDecodeEngine provides its own buffer, these buffer
+//    are usually device specific and a conversion step is needed. Instead of
+//    handling these many cases in the renderer a VideoDecodeContext is used
+//    to convert the device specific buffer to a common storage format, e.g.
+//    GL textures or system memory. This way we keep the device specific code
+//    in the VideoDecodeEngine and VideoDecodeContext pair.
 class VideoDecodeContext {
  public:
   virtual ~VideoDecodeContext() {};
@@ -45,11 +52,30 @@ class VideoDecodeContext {
   // could be destroyed.
   virtual void ReleaseAllVideoFrames() = 0;
 
+  // Upload a device specific buffer to a video frame. The video frame was
+  // allocated via AllocateVideoFrames().
+  // This method is used if a VideoDecodeEngine cannot write directly to a
+  // VideoFrame, e.g. upload should be done on a different thread, the subsystem
+  // require some special treatment to generate a VideoFrame. The goal is to
+  // keep VideoDecodeEngine a reusable component and also adapt to different
+  // system by having a different VideoDecodeContext.
+  //
+  // |frame| is a VideoFrame allocated via AllocateVideoFrames().
+  //
+  // |buffer| is of type void*, it is of an internal type in VideoDecodeEngine
+  // that points to the buffer that contains the video frame.
+  // Implementor should know how to handle it.
+  //
+  // |task| is executed if the operation was completed successfully.
+  // TODO(hclam): Rename this to ConvertToVideoFrame().
+  virtual void UploadToVideoFrame(void* buffer, scoped_refptr<VideoFrame> frame,
+                                  Task* task) = 0;
+
   // Destroy this context asynchronously. When the operation is done |task|
   // is called.
   //
   // ReleaseVideoFrames() need to be called with all the video frames allocated
-  // before making this call.
+ // before making this call.
   virtual void Destroy(Task* task) = 0;
 };
 

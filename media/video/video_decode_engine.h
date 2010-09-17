@@ -12,6 +12,7 @@
 namespace media {
 
 class Buffer;
+class VideoDecodeContext;
 
 enum VideoCodec {
   kCodecH264,
@@ -116,13 +117,19 @@ class VideoDecodeEngine {
 
   virtual ~VideoDecodeEngine() {}
 
-  // Initialized the engine with specified configuration. |message_loop| could
-  // be NULL if every operation is synchronous. Engine should call the
-  // EventHandler::OnInitializeDone() no matter finished successfully or not.
-  // TODO(jiesun): remove message_loop and create thread inside openmax engine?
-  // or create thread in GpuVideoDecoder and pass message loop here?
+  // Initialize the engine with specified configuration.
+  //
+  // |decode_context| is used for allocation of VideoFrame.
+  // It is important that |decode_context| is called only on |message_loop|.
+  //
+  // TODO(hclam): Currently refactoring code to use VideoDecodeContext so
+  // |context| may be NULL in some cases.
+  //
+  // Engine should call EventHandler::OnInitializeDone() whether the
+  // initialization operation finished successfully or not.
   virtual void Initialize(MessageLoop* message_loop,
                           EventHandler* event_handler,
+                          VideoDecodeContext* context,
                           const VideoCodecConfig& config) = 0;
 
   // Uninitialize the engine. Engine should destroy all resources and call
