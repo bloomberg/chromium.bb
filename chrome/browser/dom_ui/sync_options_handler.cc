@@ -68,6 +68,6 @@ void SyncOptionsHandler::RegisterMessages() {
 void SyncOptionsHandler::OnPreferredDataTypesUpdated(const ListValue* args) {
   NotificationService::current()->Notify(
       NotificationType::SYNC_DATA_TYPES_UPDATED,
-      NotificationService::AllSources(),
+      Source<Profile>(dom_ui_->GetProfile()),
       NotificationService::NoDetails());
 }

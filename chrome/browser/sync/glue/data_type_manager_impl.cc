@@ -412,14 +412,14 @@ void DataTypeManagerImpl::RemoveObserver(NotificationType type) {
 void DataTypeManagerImpl::NotifyStart() {
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_START,
-      NotificationService::AllSources(),
+      Source<DataTypeManager>(this),
       NotificationService::NoDetails());
 }
 
 void DataTypeManagerImpl::NotifyDone(ConfigureResult result) {
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_DONE,
-      NotificationService::AllSources(),
+      Source<DataTypeManager>(this),
       Details<ConfigureResult>(&result));
 }
 

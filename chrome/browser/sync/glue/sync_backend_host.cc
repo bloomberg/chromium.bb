@@ -337,7 +337,7 @@ void SyncBackendHost::Core::NotifyResumed() {
 void SyncBackendHost::Core::NotifyPassphraseRequired() {
   NotificationService::current()->Notify(
       NotificationType::SYNC_PASSPHRASE_REQUIRED,
-      NotificationService::AllSources(),
+      Source<SyncBackendHost>(host_),
       NotificationService::NoDetails());
 }
 
@@ -346,7 +346,7 @@ void SyncBackendHost::Core::NotifyPassphraseAccepted(
   host_->PersistEncryptionBootstrapToken(bootstrap_token);
   NotificationService::current()->Notify(
       NotificationType::SYNC_PASSPHRASE_ACCEPTED,
-      NotificationService::AllSources(),
+      Source<SyncBackendHost>(host_),
       NotificationService::NoDetails());
 }
 

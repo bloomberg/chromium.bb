@@ -13,11 +13,17 @@
 #include "chrome/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-ACTION_P2(NotifyWithResult, type, result) {
+ACTION_P3(NotifyFromDataTypeManagerWithResult, dtm, type, result) {
   NotificationService::current()->Notify(
       type,
-      NotificationService::AllSources(),
+      Source<browser_sync::DataTypeManager>(dtm),
       Details<browser_sync::DataTypeManager::ConfigureResult>(result));
+}
+
+ACTION_P2(NotifyFromDataTypeManager, dtm, type) {
+  NotificationService::current()->Notify(type,
+      Source<browser_sync::DataTypeManager>(dtm),
+      NotificationService::NoDetails());
 }
 
 namespace browser_sync {
@@ -30,9 +36,10 @@ class DataTypeManagerMock : public DataTypeManager {
     // detail.
     ON_CALL(*this, Configure(testing::_)).
         WillByDefault(testing::DoAll(
-            Notify(NotificationType::SYNC_CONFIGURE_START),
-            NotifyWithResult(NotificationType::SYNC_CONFIGURE_DONE,
-                             &result_)));
+            NotifyFromDataTypeManager(this,
+                NotificationType::SYNC_CONFIGURE_START),
+            NotifyFromDataTypeManagerWithResult
+                 (this, NotificationType::SYNC_CONFIGURE_DONE, &result_)));
   }
 
   MOCK_METHOD1(Configure, void(const TypeSet&));

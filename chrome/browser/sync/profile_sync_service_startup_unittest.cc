@@ -175,9 +175,11 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   DataTypeManager::ConfigureResult result =
       DataTypeManager::ASSOCIATION_FAILED;
   EXPECT_CALL(*data_type_manager, Configure(_)).
-      WillOnce(DoAll(Notify(NotificationType::SYNC_CONFIGURE_START),
-                     NotifyWithResult(NotificationType::SYNC_CONFIGURE_DONE,
-                                      &result)));
+      WillOnce(DoAll(NotifyFromDataTypeManager(data_type_manager,
+                         NotificationType::SYNC_CONFIGURE_START),
+                     NotifyFromDataTypeManagerWithResult(data_type_manager,
+                         NotificationType::SYNC_CONFIGURE_DONE,
+                         &result)));
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));
 

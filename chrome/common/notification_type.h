@@ -1042,17 +1042,19 @@ class NotificationType {
     // The syncer requires a passphrase to decrypt sensitive updates. This
     // notification is sent when the first sensitive data type is setup by the
     // user as well as anytime any the passphrase is changed in another synced
-    // client.
+    // client.  The source is the SyncBackendHost wanting a passphrase.  No
+    // details.
     SYNC_PASSPHRASE_REQUIRED,
 
     // Sent when the passphrase provided by the user is accepted. After this
     // notification is sent, updates to sensitive nodes are encrypted using the
-    // accepted passphrase.
+    // accepted passphrase.  The source is the SyncBackendHost that accepted
+    // the passphrase.  No details.
     SYNC_PASSPHRASE_ACCEPTED,
 
     // Sent when the set of data types that should be synced has been modified
     // externally (eg. by the dom_ui options screen).
-    // There are no source or details for this notification.
+    // The source is the Profile, there are no details.
     SYNC_DATA_TYPES_UPDATED,
 
     // Cookies -----------------------------------------------------------------

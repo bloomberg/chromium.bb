@@ -75,20 +75,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
   DCHECK(factory);
   DCHECK(profile);
   registrar_.Add(this,
-                 NotificationType::SYNC_CONFIGURE_START,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::SYNC_CONFIGURE_DONE,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
                  NotificationType::SYNC_DATA_TYPES_UPDATED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::SYNC_PASSPHRASE_REQUIRED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::SYNC_PASSPHRASE_ACCEPTED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile));
 
   // By default, dev & chromium users will go to the development servers.
   // Dev servers have more features than standard sync servers.
@@ -401,6 +389,14 @@ void ProfileSyncService::StartUp() {
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
   CreateBackend();
+
+  registrar_.Add(this,
+                 NotificationType::SYNC_PASSPHRASE_REQUIRED,
+                 Source<SyncBackendHost>(backend_.get()));
+  registrar_.Add(this,
+                 NotificationType::SYNC_PASSPHRASE_ACCEPTED,
+                 Source<SyncBackendHost>(backend_.get()));
+
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might
   // be there.
@@ -824,6 +820,12 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     data_type_manager_.reset(
         factory_->CreateDataTypeManager(backend_.get(),
                                         data_type_controllers_));
+    registrar_.Add(this,
+                   NotificationType::SYNC_CONFIGURE_START,
+                   Source<DataTypeManager>(data_type_manager_.get()));
+    registrar_.Add(this,
+                   NotificationType::SYNC_CONFIGURE_DONE,
+                   Source<DataTypeManager>(data_type_manager_.get()));
   }
 
   syncable::ModelTypeSet types;
