@@ -56,7 +56,8 @@ TEST_F(RedirectTest, Server) {
 }
 
 // Tests a single client redirect.
-TEST_F(RedirectTest, Client) {
+// Flaky: see crbug.com/55380
+TEST_F(RedirectTest, FLAKY_Client) {
   ASSERT_TRUE(test_server_.Start());
 
   GURL final_url = test_server_.GetURL(std::string());
