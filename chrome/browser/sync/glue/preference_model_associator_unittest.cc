@@ -44,7 +44,7 @@ class AbstractPreferenceMergeTest : public testing::Test {
     const PrefService::Preference* pref =
         pref_service_->FindPreference(pref_name.c_str());
     ASSERT_TRUE(pref);
-    Value::ValueType type = pref->type();
+    Value::ValueType type = pref->GetType();
     if (type == Value::TYPE_DICTIONARY)
       empty_value.reset(new DictionaryValue);
     else if (type == Value::TYPE_LIST)

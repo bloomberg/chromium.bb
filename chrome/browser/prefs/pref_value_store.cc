@@ -4,7 +4,6 @@
 
 #include "chrome/browser/prefs/pref_value_store.h"
 
-#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -12,6 +11,27 @@
 #include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
+
+namespace {
+
+// Returns true if the actual value is a valid type for the expected type when
+// found in the given store.
+bool IsValidType(Value::ValueType expected, Value::ValueType actual,
+                 PrefNotifier::PrefStoreType store) {
+  if (expected == actual)
+    return true;
+
+  // Dictionaries and lists are allowed to hold TYPE_NULL values too, but only
+  // in the default pref store.
+  if (store == PrefNotifier::DEFAULT_STORE &&
+      actual == Value::TYPE_NULL &&
+      (expected == Value::TYPE_DICTIONARY || expected == Value::TYPE_LIST)) {
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 // static
 PrefValueStore* PrefValueStore::CreatePrefValueStore(
@@ -46,15 +66,32 @@ bool PrefValueStore::GetValue(const std::string& name,
                               Value** out_value) const {
   // Check the |PrefStore|s in order of their priority from highest to lowest
   // to find the value of the preference described by the given preference name.
+  // If the found value is not the correct type, keep looking. This allows a
+  // default value to override an outdated user-pref setting.
   for (size_t i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
     if (pref_stores_[i].get() &&
-        pref_stores_[i]->prefs()->Get(name.c_str(), out_value)) {
+        pref_stores_[i]->prefs()->Get(name.c_str(), out_value) &&
+        IsValidType(GetRegisteredType(name), (*out_value)->GetType(),
+                    static_cast<PrefNotifier::PrefStoreType>(i))) {
       return true;
     }
   }
-  // No value found for the given preference name: set the return false.
+  // No valid value found for the given preference name: set the return false.
   *out_value = NULL;
   return false;
+}
+
+void PrefValueStore::RegisterPreferenceType(const std::string& name,
+                                            Value::ValueType type) {
+  pref_types_[name] = type;
+}
+
+Value::ValueType PrefValueStore::GetRegisteredType(
+    const std::string& name) const {
+  PrefTypeMap::const_iterator found = pref_types_.find(name);
+  if (found == pref_types_.end())
+    return Value::TYPE_NULL;
+  return found->second;
 }
 
 bool PrefValueStore::WritePrefs() {
@@ -189,13 +226,17 @@ PrefNotifier::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
 }
 
 bool PrefValueStore::PrefValueInStore(const char* name,
-                                      PrefNotifier::PrefStoreType type) const {
-  if (!pref_stores_[type].get()) {
-    // No store of that type set, so this pref can't be in it.
+                                      PrefNotifier::PrefStoreType store) const {
+  if (!pref_stores_[store].get()) {
+    // No store of that type, so this pref can't be in it.
     return false;
   }
-  Value* tmp_value;
-  return pref_stores_[type]->prefs()->Get(name, &tmp_value);
+  Value* tmp_value = NULL;
+  if (pref_stores_[store]->prefs()->Get(name, &tmp_value) &&
+      IsValidType(GetRegisteredType(name), tmp_value->GetType(), store)) {
+    return true;
+  }
+  return false;
 }
 
 void PrefValueStore::RefreshPolicyPrefsCompletion(

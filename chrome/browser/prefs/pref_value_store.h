@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREFS_PREF_VALUE_STORE_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/common/pref_store.h"
@@ -21,7 +23,6 @@
 class FilePath;
 class PrefStore;
 class Profile;
-class Value;
 
 // The PrefValueStore manages various sources of values for Preferences
 // (e.g., configuration policies, extensions, and user settings). It returns
@@ -48,11 +49,19 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
 
   ~PrefValueStore();
 
-  // Get the preference value for the given preference name.
-  // Return true if a value for the given preference name was found in any of
-  // the available PrefStores. Most callers should use Preference::GetValue()
-  // instead of calling this method directly.
+  // Gets the value for the given preference name that has a valid value type;
+  // that is, the same type the preference was registered with, or NULL for
+  // default values of Dictionaries and Lists. Returns true if a valid value
+  // was found in any of the available PrefStores. Most callers should use
+  // Preference::GetValue() instead of calling this method directly.
   bool GetValue(const std::string& name, Value** out_value) const;
+
+  // Adds a preference to the mapping of names to types.
+  void RegisterPreferenceType(const std::string& name, Value::ValueType type);
+
+  // Gets the registered value type for the given preference name. Returns
+  // Value::TYPE_NULL if the preference has never been registered.
+  Value::ValueType GetRegisteredType(const std::string& name) const;
 
   // Read preference values into the three PrefStores so that they are available
   // through the GetValue method. Return the first error that occurs (but
@@ -68,7 +77,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // the user prefs are expected to be written out.
   void ScheduleWritePrefs();
 
-  // Returns true if the PrefValueStore contains the given preference.
+  // Returns true if the PrefValueStore contains the given preference with a
+  // non-default value set with the applicable (registered) type.
   bool HasPrefPath(const char* name) const;
 
   // Called by the PrefNotifier when the value of the preference at |path| has
@@ -175,8 +185,15 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
 
   scoped_ptr<PrefStore> pref_stores_[PrefNotifier::PREF_STORE_TYPE_MAX + 1];
 
+  // A mapping of preference names to their registered types.
+  typedef std::map<std::string, Value::ValueType> PrefTypeMap;
+  PrefTypeMap pref_types_;
+
+  // Returns true if the preference with the given name has a value in the
+  // given PrefStoreType, of the same value type as the preference was
+  // registered with.
   bool PrefValueInStore(const char* name,
-                        PrefNotifier::PrefStoreType type) const;
+                        PrefNotifier::PrefStoreType store) const;
 
   // Called during policy refresh after ReadPrefs completes on the thread
   // that initiated the policy refresh. RefreshPolicyPrefsCompletion takes

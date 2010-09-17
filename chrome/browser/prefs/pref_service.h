@@ -33,15 +33,15 @@ class PrefService : public NonThreadSafe {
     // dictionary (a branch), or list.  You shouldn't need to construct this on
     // your own; use the PrefService::Register*Pref methods instead.
     Preference(const PrefService* service,
-               const char* name,
-               Value::ValueType type);
+               const char* name);
     ~Preference() {}
-
-    Value::ValueType type() const { return type_; }
 
     // Returns the name of the Preference (i.e., the key, e.g.,
     // browser.window_placement).
     const std::string name() const { return name_; }
+
+    // Returns the registered type of the preference.
+    Value::ValueType GetType() const;
 
     // Returns the value of the Preference, falling back to the registered
     // default value if no other has been set.
@@ -81,7 +81,6 @@ class PrefService : public NonThreadSafe {
    private:
     friend class PrefService;
 
-    Value::ValueType type_;
     std::string name_;
 
     // Reference to the PrefService in which this pref was created.

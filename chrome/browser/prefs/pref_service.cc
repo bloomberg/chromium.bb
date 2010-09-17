@@ -312,10 +312,7 @@ bool PrefService::HasPrefPath(const char* path) const {
 const PrefService::Preference* PrefService::FindPreference(
     const char* pref_name) const {
   DCHECK(CalledOnValidThread());
-  // We only look up prefs by name, so the type is irrelevant, except that it
-  // must be one that Preference() allows (i.e., neither TYPE_NULL nor
-  // TYPE_BINARY).
-  Preference p(this, pref_name, Value::TYPE_INTEGER);
+  Preference p(this, pref_name);
   PreferenceSet::const_iterator it = prefs_.find(&p);
   return it == prefs_.end() ? NULL : *it;
 }
@@ -377,10 +374,13 @@ void PrefService::RegisterPreference(const char* path, Value* default_value) {
     return;
   }
 
+  Value::ValueType orig_type = default_value->GetType();
+  DCHECK(orig_type != Value::TYPE_NULL && orig_type != Value::TYPE_BINARY) <<
+         "invalid preference type: " << orig_type;
+
   // We set the default value of dictionaries and lists to be null so it's
   // easier for callers to check for empty dict/list prefs. The PrefValueStore
   // accepts ownership of the value (null or default_value).
-  Value::ValueType orig_type = default_value->GetType();
   if (Value::TYPE_LIST == orig_type || Value::TYPE_DICTIONARY == orig_type) {
     pref_value_store_->SetDefaultPrefValue(path, Value::CreateNullValue());
   } else {
@@ -388,7 +388,8 @@ void PrefService::RegisterPreference(const char* path, Value* default_value) {
     pref_value_store_->SetDefaultPrefValue(path, scoped_value.release());
   }
 
-  prefs_.insert(new Preference(this, path, orig_type));
+  pref_value_store_->RegisterPreferenceType(path, orig_type);
+  prefs_.insert(new Preference(this, path));
 }
 
 void PrefService::ClearPref(const char* path) {
@@ -416,11 +417,12 @@ void PrefService::Set(const char* path, const Value& value) {
   // user values.
   bool value_changed = false;
   if (value.GetType() == Value::TYPE_NULL &&
-      (pref->type() == Value::TYPE_DICTIONARY ||
-       pref->type() == Value::TYPE_LIST)) {
+      (pref->GetType() == Value::TYPE_DICTIONARY ||
+       pref->GetType() == Value::TYPE_LIST)) {
     value_changed = pref_value_store_->RemoveUserPrefValue(path);
-  } else if (pref->type() != value.GetType()) {
-    NOTREACHED() << "Trying to set pref " << path << " of type " << pref->type()
+  } else if (pref->GetType() != value.GetType()) {
+    NOTREACHED() << "Trying to set pref " << path
+                 << " of type " << pref->GetType()
                  << " to value of type " << value.GetType();
   } else {
     value_changed = pref_value_store_->SetUserPrefValue(path, value.DeepCopy());
@@ -493,7 +495,7 @@ DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
     NOTREACHED() << "Trying to get an unregistered pref: " << path;
     return NULL;
   }
-  if (pref->type() != Value::TYPE_DICTIONARY) {
+  if (pref->GetType() != Value::TYPE_DICTIONARY) {
     NOTREACHED() << "Wrong type for GetMutableDictionary: " << path;
     return NULL;
   }
@@ -518,7 +520,7 @@ ListValue* PrefService::GetMutableList(const char* path) {
     NOTREACHED() << "Trying to get an unregistered pref: " << path;
     return NULL;
   }
-  if (pref->type() != Value::TYPE_LIST) {
+  if (pref->GetType() != Value::TYPE_LIST) {
     NOTREACHED() << "Wrong type for GetMutableList: " << path;
     return NULL;
   }
@@ -555,8 +557,9 @@ void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
     NOTREACHED() << "Preference is managed: " << path;
     return;
   }
-  if (pref->type() != new_value->GetType()) {
-    NOTREACHED() << "Trying to set pref " << path << " of type " << pref->type()
+  if (pref->GetType() != new_value->GetType()) {
+    NOTREACHED() << "Trying to set pref " << path
+                 << " of type " << pref->GetType()
                  << " to value of type " << new_value->GetType();
     return;
   }
@@ -569,15 +572,15 @@ void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
 // PrefService::Preference
 
 PrefService::Preference::Preference(const PrefService* service,
-                                    const char* name,
-                                    Value::ValueType type)
-      : type_(type),
-        name_(name),
+                                    const char* name)
+      : name_(name),
         pref_service_(service) {
   DCHECK(name);
   DCHECK(service);
-  DCHECK(type != Value::TYPE_NULL && type != Value::TYPE_BINARY) <<
-         "invalid preference type: " << type;
+}
+
+Value::ValueType PrefService::Preference::GetType() const {
+  return pref_service_->pref_value_store_->GetRegisteredType(name_);
 }
 
 const Value* PrefService::Preference::GetValue() const {
@@ -585,18 +588,11 @@ const Value* PrefService::Preference::GetValue() const {
       "Must register pref before getting its value";
 
   Value* found_value = NULL;
-  if (pref_service_->pref_value_store_->GetValue(name_, &found_value)) {
-    Value::ValueType found_type = found_value->GetType();
-    // Dictionaries and lists have default values of TYPE_NULL.
-    if (found_type == type_ ||
-        (found_type == Value::TYPE_NULL
-         && (type_ == Value::TYPE_LIST || type_ == Value::TYPE_DICTIONARY))) {
-      return found_value;
-    }
-  }
+  if (pref_service_->pref_value_store_->GetValue(name_, &found_value))
+    return found_value;
 
   // Every registered preference has at least a default value.
-  NOTREACHED() << "no default value for registered pref " << name_;
+  NOTREACHED() << "no valid value found for registered pref " << name_;
   return NULL;
 }
 

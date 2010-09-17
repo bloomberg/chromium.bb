@@ -43,16 +43,6 @@ namespace prefs {
 }
 
 // Potentially expected values of all preferences used in this test program.
-// The "user" namespace is defined globally in an ARM system header, so we need
-// something different here.
-namespace user_pref {
-  const int kMaxTabsValue = 31;
-  const bool kDeleteCacheValue = true;
-  const char kCurrentThemeIDValue[] = "abcdefg";
-  const char kHomepageValue[] = "http://www.google.com";
-  const char kApplicationLocaleValue[] = "is-WRONG";
-}
-
 namespace enforced_pref {
   const std::string kHomepageValue = "http://www.topeka.com";
 }
@@ -68,6 +58,16 @@ namespace command_line_pref {
   const char kHomepageValue[] = "http://www.ferretcentral.org";
 }
 
+// The "user" namespace is defined globally in an ARM system header, so we need
+// something different here.
+namespace user_pref {
+  const int kMaxTabsValue = 31;
+  const bool kDeleteCacheValue = true;
+  const char kCurrentThemeIDValue[] = "abcdefg";
+  const char kHomepageValue[] = "http://www.google.com";
+  const char kApplicationLocaleValue[] = "is-WRONG";
+}
+
 namespace recommended_pref {
   const int kMaxTabsValue = 10;
   const bool kRecommendedPrefValue = true;
@@ -75,6 +75,7 @@ namespace recommended_pref {
 
 namespace default_pref {
   const int kDefaultValue = 7;
+  const char kHomepageValue[] = "default homepage";
 }
 
 class PrefValueStoreTest : public testing::Test {
@@ -111,6 +112,26 @@ class PrefValueStoreTest : public testing::Test {
         user_pref_store_,
         recommended_pref_store_,
         default_pref_store_);
+
+    // Register prefs with the PrefValueStore.
+    pref_value_store_->RegisterPreferenceType(prefs::kApplicationLocale,
+                                              Value::TYPE_STRING);
+    pref_value_store_->RegisterPreferenceType(prefs::kCurrentThemeID,
+                                              Value::TYPE_STRING);
+    pref_value_store_->RegisterPreferenceType(prefs::kDeleteCache,
+                                              Value::TYPE_BOOLEAN);
+    pref_value_store_->RegisterPreferenceType(prefs::kHomepage,
+                                              Value::TYPE_STRING);
+    pref_value_store_->RegisterPreferenceType(prefs::kMaxTabs,
+                                              Value::TYPE_INTEGER);
+    pref_value_store_->RegisterPreferenceType(prefs::kRecommendedPref,
+                                              Value::TYPE_BOOLEAN);
+    pref_value_store_->RegisterPreferenceType(prefs::kSampleDict,
+                                              Value::TYPE_DICTIONARY);
+    pref_value_store_->RegisterPreferenceType(prefs::kSampleList,
+                                              Value::TYPE_LIST);
+    pref_value_store_->RegisterPreferenceType(prefs::kDefaultPref,
+                                              Value::TYPE_INTEGER);
 
     ui_thread_.reset(new ChromeThread(ChromeThread::UI, &loop_));
     file_thread_.reset(new ChromeThread(ChromeThread::FILE, &loop_));
@@ -306,6 +327,37 @@ TEST_F(PrefValueStoreTest, GetValue) {
   ASSERT_TRUE(v_null == NULL);
 }
 
+// Make sure that if a preference changes type, so the wrong type is stored in
+// the user pref file, it uses the correct fallback value instead.
+TEST_F(PrefValueStoreTest, GetValueChangedType) {
+  // Check falling back to a recommended value.
+  user_pref_store_->prefs()->SetString(prefs::kMaxTabs, "not an integer");
+  Value* value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kMaxTabs, &value));
+  ASSERT_TRUE(value != NULL);
+  ASSERT_EQ(Value::TYPE_INTEGER, value->GetType());
+  int actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(recommended_pref::kMaxTabsValue, actual_int_value);
+
+  // Check falling back multiple times, to a default string.
+  enforced_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
+  extension_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
+  command_line_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
+  user_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
+  recommended_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
+  default_pref_store_->prefs()->SetString(prefs::kHomepage,
+                                          default_pref::kHomepageValue);
+
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomepage, &value));
+  ASSERT_TRUE(value != NULL);
+  ASSERT_EQ(Value::TYPE_STRING, value->GetType());
+  std::string actual_str_value;
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(default_pref::kHomepageValue, actual_str_value);
+}
+
 TEST_F(PrefValueStoreTest, HasPrefPath) {
   // Enforced preference
   EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
@@ -322,10 +374,15 @@ TEST_F(PrefValueStoreTest, HasPrefPath) {
 TEST_F(PrefValueStoreTest, PrefHasChanged) {
   // Setup.
   const char managed_pref_path[] = "managed_pref";
+  pref_value_store_->RegisterPreferenceType(managed_pref_path,
+                                            Value::TYPE_STRING);
   enforced_pref_store_->prefs()->SetString(managed_pref_path, "managed value");
   const char user_pref_path[] = "user_pref";
+  pref_value_store_->RegisterPreferenceType(user_pref_path, Value::TYPE_STRING);
   user_pref_store_->prefs()->SetString(user_pref_path, "user value");
   const char default_pref_path[] = "default_pref";
+  pref_value_store_->RegisterPreferenceType(default_pref_path,
+                                            Value::TYPE_STRING);
   default_pref_store_->prefs()->SetString(default_pref_path, "default value");
 
   // Check pref controlled by highest-priority store.
@@ -399,7 +456,7 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
 
   actual_value = NULL;
   std::string key(prefs::kSampleDict);
-  pref_value_store_->GetValue(key , &actual_value);
+  pref_value_store_->GetValue(key, &actual_value);
 
   ASSERT_EQ(expected_dict_value, actual_value);
   ASSERT_TRUE(expected_dict_value->Equals(actual_value));
