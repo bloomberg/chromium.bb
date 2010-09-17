@@ -82,8 +82,8 @@ const SkColor kDefaultColorNTPBackground = SK_ColorWHITE;
 const SkColor kDefaultColorNTPText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPLink = SkColorSetRGB(6, 55, 116);
 #endif
-const SkColor kDefaultColorNTPHeader = SkColorSetRGB(75, 140, 220);
-const SkColor kDefaultColorNTPSection = SkColorSetRGB(229, 239, 254);
+const SkColor kDefaultColorNTPHeader = SkColorSetRGB(150, 150, 150);
+const SkColor kDefaultColorNTPSection = SkColorSetRGB(229, 229, 229);
 const SkColor kDefaultColorNTPSectionText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(6, 55, 116);
 const SkColor kDefaultColorControlBackground = SkColorSetARGB(0, 0, 0, 0);

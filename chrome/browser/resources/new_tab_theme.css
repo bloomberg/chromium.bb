@@ -115,10 +115,7 @@ body {
 }
 
 .section > h2 .back {
-  background-image:
-      -webkit-gradient(radial, 50% -1753, 1750, 50% -1753, 1770,
-                       from($$9), to($$$2));
-  border-top: 1px solid $$9; /* COLOR_NTP_SECTION_HEADER_RULE */
+  border-top: 1px solid $$1; /* COLOR_NTP_SECTION  */
 }
 
 .section.hidden > h2 .back {
