@@ -52,7 +52,6 @@ extern const char kAboutMemoryURL[];
 extern const char kAboutNetInternalsURL[];
 extern const char kAboutPluginsURL[];
 extern const char kAboutShorthangURL[];
-extern const char kAboutSystemURL[];
 extern const char kAboutTermsURL[];
 extern const char kAboutVaporwareURL[];
 extern const char kAboutVersionURL[];
@@ -81,6 +80,7 @@ extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIPrintURL[];
 extern const char kChromeUIRegisterPageURL[];
 extern const char kChromeUISlideshowURL[];
+extern const char kChromeUISystemInfoURL[];
 
 // chrome components of URLs. Should be kept in sync with the full URLs
 // above.
@@ -111,6 +111,7 @@ extern const char kChromeUIResourcesHost[];
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISyncResourcesHost[];
+extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIThemePath[];
 extern const char kChromeUIThumbnailPath[];
 

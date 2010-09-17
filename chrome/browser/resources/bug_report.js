@@ -22,6 +22,10 @@ var localStrings = new LocalStrings();
 function selectImage(divId, thumbnailId) {
   var thumbnailDivs = $(divId).children;
   selectedThumbnailDivId = divId;
+  if (thumbnailDivs.length == 0) {
+    $(divId).style.display = 'none';
+    return;
+  }
   for (var i = 0; i < thumbnailDivs.length; i++) {
     // If the the current div matches the thumbnail id provided,
     // or there is no thumbnail id given, and we're at the first thumbnail.

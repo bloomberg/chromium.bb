@@ -449,6 +449,8 @@
         'browser/chromeos/dom_ui/language_pinyin_options_handler.h',
         'browser/chromeos/dom_ui/proxy_handler.cc',
         'browser/chromeos/dom_ui/proxy_handler.h',
+        'browser/chromeos/dom_ui/system_info_ui.cc',
+        'browser/chromeos/dom_ui/system_info_ui.h',
         'browser/chromeos/dom_ui/system_options_handler.cc',
         'browser/chromeos/dom_ui/system_options_handler.h',
         'browser/chromeos/dom_ui/system_settings_provider.cc',

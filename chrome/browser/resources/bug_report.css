@@ -94,6 +94,14 @@ th {
   color: #233478;
 }
 
+#main-panel {
+  display: -webkit-box;
+}
+
+.formpane {
+  margin-right: 20px;
+}
+
 body {
   -webkit-user-select: none;
 }

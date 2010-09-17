@@ -37,6 +37,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dom_ui/imageburner_ui.h"
+#include "chrome/browser/chromeos/dom_ui/system_info_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #include "chrome/browser/dom_ui/register_page_ui.h"
@@ -154,6 +155,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<SlideshowUI>;
   if (url.host() == chrome::kChromeUIOptionsHost)
     return &NewDOMUI<OptionsUI>;
+  if (url.host() == chrome::kChromeUISystemInfoHost)
+    return &NewDOMUI<SystemInfoUI>;
 #else
   if (url.host() == chrome::kChromeUIOptionsHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(

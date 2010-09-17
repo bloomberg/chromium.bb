@@ -478,7 +478,7 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
 #if defined(OS_CHROMEOS)
   // 1: user e-mail
   sys_info_ = GetSystemInformation();
-  dialog_defaults.Append(new StringValue(chrome::kAboutSystemURL));
+  dialog_defaults.Append(new StringValue(chrome::kChromeUISystemInfoURL));
 
   // 2: user e-mail
   dialog_defaults.Append(new StringValue(GetUserEmail()));

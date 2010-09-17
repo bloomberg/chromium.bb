@@ -19,6 +19,17 @@ function load() {
   // textContent on description-text textarea seems to default
   // to several spaces, this resets it to empty.
   $('description-text').textContent = '';
+  $('send-report-button').disabled = true;
+
+  $('issue-with-combo').addEventListener('change', function(e) {
+    $('send-report-button').disabled = 
+        this.selectedIndex <= 0 || $('description-text').value.length == 0;
+  });
+
+  $('description-text').addEventListener('keyup', function(e) {
+    $('send-report-button').disabled =
+        $('issue-with-combo').selectedIndex <= 0 || this.value.length == 0;
+  });
 
   $('current-screenshot').nextSibling.textContent =
       localStrings.getString('currentscreenshots');
@@ -78,6 +89,10 @@ function setupScreenshots(screenshots) {
     addScreenshot('current-screenshots', currentScreenshot);
 
     savedScreenshots = screenshots[1];
+    if (savedScreenshots.length == 0) {
+      $('saved-screenshots').disabled = true;
+      return;
+    }
     for (i = 0; i < savedScreenshots.length; ++i)
       addScreenshot('saved-screenshots', savedScreenshots[i]);
   }
@@ -88,7 +103,6 @@ function setupDialogDefaults(defaults) {
     $('page-url-text').value = defaults[0];
     if (defaults.length > 2) {
       // We're in Chromium OS.
-      $('sysinfo-url').href = defaults[1];
       $('user-email-text').value = defaults[2];
     }
   }
@@ -98,96 +112,103 @@ window.addEventListener('DOMContentLoaded', load);
 </script>
 </head>
 <body>
-<table>
-  <!--  Issue type dropdown -->
-  <tr>
-    <th id="issue-with" class="bug-report-label" i18n-content="issue-with">
-    </th>
-  </tr>
-  <tr>
-    <td>
-      <select id="issue-with-combo" class="bug-report-text">
-      </select>
-    </td>
-  </tr>
-  <!--  Page URL text box -->
-  <tr>
-    <th colspan="2" id="page-url" class="bug-report-label"
-        i18n-content="page-url">
-    </th>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <input id='page-url-text' maxlength=200 class="bug-report-text">
-    </td>
-  </tr>
-  <!--  Description -->
-  <tr>
-    <th id="description" colspan="2" class="bug-report-label"
-        i18n-content="description">
-    </th>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <textarea id='description-text' rows="10" class="bug-report-text">
-      </textarea>
-    </td>
-  </tr>
+<div>
+  <div id="main-panel">
+    <div class="formpane">
+      <table>
+        <!--  Issue type dropdown -->
+        <tr>
+          <th id="issue-with" class="bug-report-label" i18n-content="issue-with">
+          </th>
+        </tr>
+        <tr>
+          <td>
+            <select id="issue-with-combo" class="bug-report-text">
+            </select>
+          </td>
+        </tr>
+        <!--  Page URL text box -->
+        <tr>
+          <th colspan="2" id="page-url" class="bug-report-label"
+              i18n-content="page-url">
+          </th>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <input id='page-url-text' maxlength=200 class="bug-report-text">
+          </td>
+        </tr>
+        <!--  Description -->
+        <tr>
+          <th id="description" colspan="2" class="bug-report-label"
+              i18n-content="description">
+          </th>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <textarea id='description-text' rows="10" class="bug-report-text">
+            </textarea>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="formpane">
+      <table>
 <if expr="pp_ifdef('chromeos')">
-  <!--  System Information checkbox -->
-  <tr>
-    <td>
-      <input id="sys-info-checkbox" type="checkbox" value="sysinfo" checked>
-      <span id="sysinfo-label"></span> <a href='about:blank' id="sysinfo-url"
-            target="_blank" i18n-content="sysinfo">></a>
-    </td>
-  </tr>
-  <!--  Page URL text box -->
-  <tr>
-    <th id="user-email" class="bug-report-label" i18n-content="user-email">
-    </th>
-  </tr>
-  <tr>
-    <td>
-      <input id='user-email-text' maxlength=200 class="bug-report-text">
-    </td>
-  </tr>
+        <!--  Page URL text box -->
+        <tr>
+          <th id="user-email" class="bug-report-label" i18n-content="user-email">
+          </th>
+        </tr>
+        <tr>
+          <td>
+            <input id='user-email-text' maxlength=200 class="bug-report-text">
+          </td>
+        </tr>
+        <!--  System Information checkbox -->
+        <tr>
+          <td>
+            <input id="sys-info-checkbox" type="checkbox" value="sysinfo" checked>
+            <span id="sysinfo-label"></span> <a href='chrome://system/'
+                id="sysinfo-url"><span i18n-content="sysinfo"></span></a>
+          </td>
+        </tr>
 </if>
-  <!--  Screenshot radio buttons -->
-  <tr>
-    <th id="screenshot" class="bug-report-label" i18n-content="screenshot">
-    </th>
-  </tr>
-  <tr>
-    <td>
-      <input id="no-screenshot" type="radio" name="screenshot-group"
-             value="none" onclick="noneSelected()">
-      <br>
+        <!--  Screenshot radio buttons -->
+        <tr>
+          <th id="screenshot" class="bug-report-label" i18n-content="screenshot">
+          </th>
+        </tr>
+        <tr>
+          <td>
+            <input id="no-screenshot" type="radio" name="screenshot-group"
+                   value="none" onclick="noneSelected()">
+            <br>
 <if expr="pp_ifdef('chromeos')">
-      <input id="saved-screenshot" type="radio" name="screenshot-group"
-             value="saved" onclick="savedSelected()">
-      <br>
-      <div id="saved-screenshots" style="display: none;"
-           class="thumbnail-list">
-      </div>
+            <input id="saved-screenshot" type="radio" name="screenshot-group"
+                   value="saved" onclick="savedSelected()">
+            <br>
+            <div id="saved-screenshots" style="display: none;"
+                 class="thumbnail-list">
+            </div>
 </if>
-      <input id="current-screenshot" type="radio" name="screenshot-group"
-             value="current" checked onclick="currentSelected()">
-      <br>
-      <div id="current-screenshots" class="thumbnail-list">
-      </div>
-    </td>
-  </tr>
-  <!--  Buttons -->
-  <tr>
-    <td>
-      <hr>
-      <input id='send-report-button' type="submit" class="bug-report-button"
-             i18n-values="value:send-report" onclick="sendReport()">
-      <input id='cancel-button' type="submit" class="bug-report-button"
-             i18n-values="value:cancel" onclick="cancel()">
-    </td>
-  </tr>
-</table>
+            <input id="current-screenshot" type="radio" name="screenshot-group"
+                   value="current" checked onclick="currentSelected()">
+            <br>
+            <div id="current-screenshots" class="thumbnail-list">
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+<div id="buttons">
+    <!--  Buttons -->
+    <input id='send-report-button' type="submit" class="bug-report-button"
+          i18n-values="value:send-report" onclick="sendReport()">
+    <input id='cancel-button' type="submit" class="bug-report-button"
+           i18n-values="value:cancel" onclick="cancel()">
+</div>
 </body>
 </html>
