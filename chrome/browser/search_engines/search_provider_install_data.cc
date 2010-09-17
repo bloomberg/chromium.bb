@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
@@ -16,6 +17,11 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
 
@@ -24,7 +30,7 @@ namespace {
 // Implementation of SearchTermsData that may be used on the I/O thread.
 class IOThreadSearchTermsData : public SearchTermsData {
  public:
-  IOThreadSearchTermsData() {}
+  explicit IOThreadSearchTermsData(std::string google_base_url);
 
   // Implementation of SearchTermsData.
   virtual std::string GoogleBaseURLValue() const;
@@ -37,18 +43,103 @@ class IOThreadSearchTermsData : public SearchTermsData {
 #endif
 
  private:
+  std::string google_base_url_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadSearchTermsData);
 };
 
+IOThreadSearchTermsData::IOThreadSearchTermsData(std::string google_base_url)
+    : google_base_url_(google_base_url) {
+}
+
 std::string IOThreadSearchTermsData::GoogleBaseURLValue() const {
-  // TODO(levin): fix this.
-  return "http://FIXME.FIXME/";
+  return google_base_url_;
 }
 
 std::string IOThreadSearchTermsData::GetApplicationLocale() const {
   // This value doesn't matter for our purposes.
   return "yy";
+}
+
+// Handles telling SearchProviderInstallData about changes to the google base
+// url.
+class GoogleURLChangeNotifier
+    : public base::RefCountedThreadSafe<GoogleURLChangeNotifier> {
+ public:
+  explicit GoogleURLChangeNotifier(
+      const base::WeakPtr<SearchProviderInstallData>& install_data);
+
+  // Called on the I/O thread with the Google base URL whenever the value
+  // changes.
+  void OnChange(const std::string& google_base_url);
+
+ private:
+  friend class base::RefCountedThreadSafe<GoogleURLChangeNotifier>;
+  ~GoogleURLChangeNotifier() {}
+
+  base::WeakPtr<SearchProviderInstallData> install_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(GoogleURLChangeNotifier);
+};
+
+GoogleURLChangeNotifier::GoogleURLChangeNotifier(
+    const base::WeakPtr<SearchProviderInstallData>& install_data)
+    : install_data_(install_data) {
+}
+
+void GoogleURLChangeNotifier::OnChange(const std::string& google_base_url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (install_data_)
+    install_data_->OnGoogleURLChange(google_base_url);
+}
+
+// Notices changes in the Google base URL and sends them along
+// to the SearchProviderInstallData on the I/O thread.
+class GoogleURLObserver : public NotificationObserver {
+ public:
+  GoogleURLObserver(
+      GoogleURLChangeNotifier* change_notifier,
+      NotificationType ui_death_notification,
+      const NotificationSource& ui_death_source);
+
+  // Implementation of NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  virtual ~GoogleURLObserver() {}
+
+  scoped_refptr<GoogleURLChangeNotifier> change_notifier_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(GoogleURLObserver);
+};
+
+GoogleURLObserver::GoogleURLObserver(
+      GoogleURLChangeNotifier* change_notifier,
+      NotificationType ui_death_notification,
+      const NotificationSource& ui_death_source)
+    : change_notifier_(change_notifier) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, ui_death_notification, ui_death_source);
+}
+
+void GoogleURLObserver::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
+  if (type == NotificationType::GOOGLE_URL_UPDATED) {
+    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+                           NewRunnableMethod(
+                               change_notifier_.get(),
+                               &GoogleURLChangeNotifier::OnChange,
+                               UIThreadSearchTermsData().GoogleBaseURLValue()));
+  } else {
+    // This must be the death notification.
+    delete this;
+  }
 }
 
 // Indicates if the two inputs have the same security origin.
@@ -67,9 +158,16 @@ static bool IsSameOrigin(const GURL& requested_origin,
 }  // namespace
 
 SearchProviderInstallData::SearchProviderInstallData(
-    WebDataService* web_service)
+    WebDataService* web_service,
+    NotificationType ui_death_notification,
+    const NotificationSource& ui_death_source)
     : web_service_(web_service),
-      load_handle_(0) {
+      load_handle_(0),
+      google_base_url_(UIThreadSearchTermsData().GoogleBaseURLValue()) {
+  // GoogleURLObserver is responsible for killing itself when
+  // the given notification occurs.
+  new GoogleURLObserver(new GoogleURLChangeNotifier(AsWeakPtr()),
+                        ui_death_notification, ui_death_source);
 }
 
 SearchProviderInstallData::~SearchProviderInstallData() {
@@ -115,7 +213,7 @@ SearchProviderInstallData::State SearchProviderInstallData::GetInstallState(
   if (!urls)
     return NOT_INSTALLED;
 
-  IOThreadSearchTermsData search_terms_data;
+  IOThreadSearchTermsData search_terms_data(google_base_url_);
   for (TemplateURLSet::const_iterator i = urls->begin();
        i != urls->end(); ++i) {
     const TemplateURL* template_url = *i;
@@ -123,6 +221,11 @@ SearchProviderInstallData::State SearchProviderInstallData::GetInstallState(
       return INSTALLED_BUT_NOT_DEFAULT;
   }
   return NOT_INSTALLED;
+}
+
+void SearchProviderInstallData::OnGoogleURLChange(
+    const std::string& google_base_url) {
+  google_base_url_ = google_base_url;
 }
 
 void SearchProviderInstallData::OnWebDataServiceRequestDone(
@@ -153,7 +256,7 @@ void SearchProviderInstallData::OnWebDataServiceRequestDone(
   template_urls_.get().insert(template_urls_.get().begin(),
                               extracted_template_urls.begin(),
                               extracted_template_urls.end());
-  IOThreadSearchTermsData search_terms_data;
+  IOThreadSearchTermsData search_terms_data(google_base_url_);
   provider_map_.reset(new SearchHostToURLsMap());
   provider_map_->Init(template_urls_.get(), search_terms_data);
   SetDefault(default_search_provider);
@@ -168,7 +271,7 @@ void SearchProviderInstallData::SetDefault(const TemplateURL* template_url) {
     return;
   }
 
-  IOThreadSearchTermsData search_terms_data;
+  IOThreadSearchTermsData search_terms_data(google_base_url_);
   const GURL url(TemplateURLModel::GenerateSearchURLUsingTermsData(
       template_url, search_terms_data));
   if (!url.is_valid() || !url.has_host()) {
@@ -182,7 +285,7 @@ void SearchProviderInstallData::OnLoadFailed() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   provider_map_.reset(new SearchHostToURLsMap());
-  IOThreadSearchTermsData search_terms_data;
+  IOThreadSearchTermsData search_terms_data(google_base_url_);
   provider_map_->Init(template_urls_.get(), search_terms_data);
   SetDefault(NULL);
   NotifyLoaded();

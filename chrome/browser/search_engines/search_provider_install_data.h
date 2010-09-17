@@ -13,9 +13,12 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "base/task_queue.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
 class GURL;
+class NotificationSource;
+class NotificationType;
 class SearchHostToURLsMap;
 class Task;
 class TemplateURL;
@@ -24,7 +27,8 @@ class TemplateURL;
 // loading the data on demand (when CallWhenLoaded is called) and then throwing
 // away the results after the callbacks are done, so the results are always up
 // to date with what is in the database.
-class SearchProviderInstallData : public WebDataServiceConsumer {
+class SearchProviderInstallData : public WebDataServiceConsumer,
+    public base::SupportsWeakPtr<SearchProviderInstallData> {
  public:
   enum State {
     // The search provider is not installed.
@@ -37,19 +41,27 @@ class SearchProviderInstallData : public WebDataServiceConsumer {
     INSTALLED_AS_DEFAULT = 2
   };
 
-  explicit SearchProviderInstallData(WebDataService* web_service);
-  ~SearchProviderInstallData();
+  // |ui_death_notification| and |ui_death_source| indentify a notification that
+  // may be observed on the UI thread to know when this class no longer needs to
+  // be kept up to date. (Note that this class may be deleted before or after
+  // that notification occurs. It doesn't matter.)
+  SearchProviderInstallData(WebDataService* web_service,
+                            NotificationType ui_death_notification,
+                            const NotificationSource& ui_death_source);
+  virtual ~SearchProviderInstallData();
 
-  // Use to determine when the search provider information is loaded.
-  // The callback may happen synchronously or asynchronously. This
-  // takes ownership of |task|. There is no need to do anything special
-  // to make it function (as it just relies on the normal I/O thread message
-  // loop).
+  // Use to determine when the search provider information is loaded. The
+  // callback may happen synchronously or asynchronously. This takes ownership
+  // of |task|. There is no need to do anything special to make it function
+  // (as it just relies on the normal I/O thread message loop).
   void CallWhenLoaded(Task* task);
 
   // Returns the search provider install state for the given origin.
   // This should only be called while a task is called back from CallWhenLoaded.
   State GetInstallState(const GURL& requested_origin);
+
+  // Called when the google base url has changed.
+  void OnGoogleURLChange(const std::string& google_base_url);
 
  private:
   // WebDataServiceConsumer
@@ -87,6 +99,9 @@ class SearchProviderInstallData : public WebDataServiceConsumer {
 
   // The security origin for the default search provider.
   std::string default_search_origin_;
+
+  // The google base url.
+  std::string google_base_url_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProviderInstallData);
 };

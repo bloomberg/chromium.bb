@@ -13,6 +13,9 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_model_test_util.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Create a TemplateURL. The caller owns the returned TemplateURL*.
@@ -157,7 +160,10 @@ class SearchProviderInstallDataTest : public testing::Test {
   virtual void SetUp() {
     testing::Test::SetUp();
     util_.SetUp();
-    install_data_ = new SearchProviderInstallData(util_.GetWebDataService());
+    install_data_ = new SearchProviderInstallData(
+        util_.GetWebDataService(),
+        NotificationType::RENDERER_PROCESS_TERMINATED,
+        Source<SearchProviderInstallDataTest>(this));
     io_thread_.reset(new ChromeThread(ChromeThread::IO));
     io_thread_->Start();
   }
@@ -170,6 +176,14 @@ class SearchProviderInstallDataTest : public testing::Test {
     util_.BlockTillIOThreadProcessesRequests();
     io_thread_->Stop();
     io_thread_.reset();
+
+    // Make sure that the install data class on the UI thread gets cleaned up.
+    // It doesn't matter that this happens after install_data_ is deleted.
+    NotificationService::current()->Notify(
+        NotificationType::RENDERER_PROCESS_TERMINATED,
+        Source<SearchProviderInstallDataTest>(this),
+        NotificationService::NoDetails());
+
     util_.TearDown();
     testing::Test::TearDown();
   }
@@ -209,5 +223,43 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   util_.model()->Add(default_url);
   util_.model()->SetDefaultSearchProvider(default_url);
   test_get_install_state->set_default_search_provider_host(default_host);
+  EXPECT_TRUE(test_get_install_state->RunTests(*io_thread_.get()));
+}
+
+
+TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
+  scoped_refptr<TestGetInstallState> test_get_install_state(
+      new TestGetInstallState(install_data_));
+
+  // Set up the database.
+  util_.ChangeModelToLoadState();
+  std::string google_host = "w.com";
+  util_.SetGoogleBaseURL("http://" + google_host + "/");
+  // Wait for the I/O thread to process the update notification.
+  util_.BlockTillIOThreadProcessesRequests();
+
+  TemplateURL* t_url = CreateTemplateURL("{google:baseURL}?q={searchTerms}",
+                                         L"t");
+  util_.model()->Add(t_url);
+  TemplateURL* default_url = CreateTemplateURL("http://d.com/",
+                                               L"d");
+  util_.model()->Add(default_url);
+  util_.model()->SetDefaultSearchProvider(default_url);
+
+  // Wait for the changes to be saved.
+  util_.BlockTillServiceProcessesRequests();
+
+  // Verify the search providers install state (with no default set).
+  test_get_install_state->set_search_provider_host(google_host);
+  EXPECT_TRUE(test_get_install_state->RunTests(*io_thread_.get()));
+
+  // Change the Google base url.
+  google_host = "foo.com";
+  util_.SetGoogleBaseURL("http://" + google_host + "/");
+  // Wait for the I/O thread to process the update notification.
+  util_.BlockTillIOThreadProcessesRequests();
+
+  // Verify that the change got picked up.
+  test_get_install_state->set_search_provider_host(google_host);
   EXPECT_TRUE(test_get_install_state->RunTests(*io_thread_.get()));
 }

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_TEST_UTIL_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -13,14 +15,14 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 
-#include <string>
-
 class TemplateURLModel;
 class TemplateURLModelTestingProfile;
 class TestingTemplateURLModel;
 class TestingProfile;
 class WebDataService;
 
+// Implements functionality to make it easier to test TemplateURLModel and
+// make changes to it.
 class TemplateURLModelTestUtil : public TemplateURLModelObserver {
  public:
   TemplateURLModelTestUtil();
