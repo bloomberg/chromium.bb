@@ -14,7 +14,7 @@ vars = {
 
 deps = {
   "src/breakpad/src":
-    (Var("googlecode_url") % "google-breakpad") + "/trunk/src@657",
+    (Var("googlecode_url") % "google-breakpad") + "/trunk/src@692",
 
   "src/build/util/support":
     "/trunk/deps/support@20411",
