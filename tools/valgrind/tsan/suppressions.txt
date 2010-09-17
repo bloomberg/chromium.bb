@@ -39,6 +39,12 @@
   fun:*media*PipelineImpl*GetCurrentTime*
 }
 
+{
+  bug_55970
+  ThreadSanitizer:Race
+  fun:disk_cache::BackendImpl::GetEntryCount
+}
+
 ############################
 # Real races in third_party
 {
