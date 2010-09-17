@@ -381,7 +381,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleMessageFromExternalHost,
                         OnMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserMove, OnBrowserMoved)
-    IPC_MESSAGE_HANDLER(AutomationMsg_RunUnloadHandlers, OnRunUnloadHandlers)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_RunUnloadHandlers,
+                                    OnRunUnloadHandlers)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetZoomLevel, OnSetZoomLevel)
 #endif  // defined(OS_WIN)
 #if defined(OS_CHROMEOS)

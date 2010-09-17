@@ -415,12 +415,12 @@ class ChromeFrameAutomationClient
   // For IDeleteBrowsingHistorySupport
   void RemoveBrowsingData(int remove_mask);
 
-  // Sends an IPC message to the external tab container requesting it to run
-  // unload handlers on the page.
-  void RunUnloadHandlers(HWND notification_window, int notification_message);
-
   // Sets the current zoom level on the tab.
   void SetZoomLevel(PageZoom::Function zoom_level);
+
+  // Fires before unload and unload handlers on the page if any. Allows the
+  // the website to put up a confirmation dialog on unload.
+  void OnUnload(bool* should_unload);
 
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.

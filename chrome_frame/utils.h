@@ -550,4 +550,8 @@ bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
 // Call if you make irreversible patches.
 void PinModule();
 
+// Helper function to spin a message loop and dispatch messages while waiting
+// for a handle to be signaled.
+void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout);
+
 #endif  // CHROME_FRAME_UTILS_H_

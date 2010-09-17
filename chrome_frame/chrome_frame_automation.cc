@@ -122,6 +122,9 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
       case AutomationMsg_GetEnabledExtensions::ID:
         InvokeCallback<GetEnabledExtensionsContext>(msg, context);
         break;
+      case AutomationMsg_RunUnloadHandlers::ID:
+        InvokeCallback<UnloadContext>(msg, context);
+        break;
       default:
         NOTREACHED();
     }
@@ -1367,19 +1370,6 @@ void ChromeFrameAutomationClient::RemoveBrowsingData(int remove_mask) {
       new AutomationMsg_RemoveBrowsingData(0, remove_mask));
 }
 
-void ChromeFrameAutomationClient::RunUnloadHandlers(HWND notification_window,
-                                                    int notification_message) {
-  if (automation_server_) {
-    automation_server_->Send(
-        new AutomationMsg_RunUnloadHandlers(0, tab_handle_,
-                                            notification_window,
-                                            notification_message));
-  } else {
-    // Post this message to ensure that the caller exits his message loop.
-    ::PostMessage(notification_window, notification_message, 0, 0);
-  }
-}
-
 void ChromeFrameAutomationClient::SetUrlFetcher(
     PluginUrlRequestManager* url_fetcher) {
   DCHECK(url_fetcher != NULL);
@@ -1392,6 +1382,22 @@ void ChromeFrameAutomationClient::SetZoomLevel(PageZoom::Function zoom_level) {
   if (automation_server_) {
     automation_server_->Send(new AutomationMsg_SetZoomLevel(0, tab_handle_,
                                                             zoom_level));
+  }
+}
+
+void ChromeFrameAutomationClient::OnUnload(bool* should_unload) {
+  *should_unload = true;
+  if (automation_server_) {
+    const DWORD kUnloadEventTimeout = 20000;
+
+    IPC::SyncMessage* msg = new AutomationMsg_RunUnloadHandlers(0, tab_handle_,
+                                                                should_unload);
+    base::WaitableEvent unload_call_finished(false, false);
+    UnloadContext* unload_context = new UnloadContext(&unload_call_finished,
+                                                      should_unload);
+    automation_server_->SendAsAsync(msg, unload_context, this);
+    HANDLE done = unload_call_finished.handle();
+    WaitWithMessageLoop(&done, 1, kUnloadEventTimeout);
   }
 }
 

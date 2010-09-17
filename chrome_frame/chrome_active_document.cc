@@ -876,6 +876,19 @@ void ChromeActiveDocument::OnSetZoomRange(const GUID* cmd_group_guid,
   }
 }
 
+void ChromeActiveDocument::OnUnload(const GUID* cmd_group_guid,
+                                    DWORD command_id,
+                                    DWORD cmd_exec_opt,
+                                    VARIANT* in_args,
+                                    VARIANT* out_args) {
+  if (IsValid() && out_args) {
+    bool should_unload = true;
+    automation_client_->OnUnload(&should_unload);
+    out_args->vt = VT_BOOL;
+    out_args->boolVal = should_unload ? VARIANT_TRUE : VARIANT_FALSE;
+  }
+}
+
 void ChromeActiveDocument::OnOpenURL(int tab_handle,
                                      const GURL& url_to_open,
                                      const GURL& referrer,

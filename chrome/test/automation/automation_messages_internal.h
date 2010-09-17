@@ -1413,12 +1413,8 @@ IPC_BEGIN_MESSAGES(Automation)
   // runs unload handlers if any on the current page.
   // Request:
   //   -int: Tab handle
-  //   -gfx::NativeWindow: notification window
-  //   -int: notification message.
-  // Response:
-  //   None expected
-  IPC_MESSAGE_ROUTED3(AutomationMsg_RunUnloadHandlers, int, gfx::NativeWindow,
-                      int)
+  //   -bool: result: true->unload, false->don't unload
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_RunUnloadHandlers, int, bool)
 
   // This message sets the current zoom level on the tab
   // Request:

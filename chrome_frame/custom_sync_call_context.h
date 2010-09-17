@@ -6,6 +6,7 @@
 
 #include <vector>
 #include "base/ref_counted.h"
+#include "base/waitable_event.h"
 #include "chrome_frame/sync_msg_reply_dispatcher.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "ipc/ipc_sync_message.h"
@@ -120,6 +121,31 @@ class BeginNavigateContext
 
  private:
   scoped_refptr<ChromeFrameAutomationClient> client_;
+};
+
+// Class that maintains contextual information for the unload operation, i.e.
+// when the user attempts to navigate away from a page rendered in ChromeFrame.
+class UnloadContext
+    : public SyncMessageReplyDispatcher::SyncMessageCallContext {
+ public:
+  typedef Tuple1<bool> output_type;
+  explicit UnloadContext(base::WaitableEvent* unload_done, bool* should_unload)
+      : should_unload_(should_unload),
+        unload_done_(unload_done) {
+  }
+
+  void Completed(bool should_unload) {
+    *should_unload_ = should_unload;
+    unload_done_->Signal();
+    should_unload_ = NULL;
+    unload_done_ = NULL;
+    // This object will be destroyed after this. Cannot access any members
+    // on returning from this function.
+  }
+
+ private:
+  base::WaitableEvent* unload_done_;
+  bool* should_unload_;
 };
 
 #endif  // CHROME_FRAME_CUSTOM_SYNC_CALL_CONTEXT_H_

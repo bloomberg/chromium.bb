@@ -527,11 +527,10 @@ void AutomationProvider::NavigateExternalTabAtIndex(
 }
 
 void AutomationProvider::OnRunUnloadHandlers(
-    int handle, gfx::NativeWindow notification_window,
-    int notification_message) {
+    int handle, IPC::Message* reply_message) {
   ExternalTabContainer* external_tab = GetExternalTabForHandle(handle);
   if (external_tab) {
-    external_tab->RunUnloadHandlers(notification_window, notification_message);
+    external_tab->RunUnloadHandlers(reply_message);
   }
 }
 

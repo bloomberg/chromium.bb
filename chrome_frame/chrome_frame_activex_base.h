@@ -389,43 +389,6 @@ END_MSG_MAP()
     return true;
   }
 
-  // IOleInPlaceObject overrides.
-  STDMETHOD(InPlaceDeactivate)(void) {
-    static UINT onload_handlers_done_msg =
-        RegisterWindowMessage(L"ChromeFrame_OnloadHandlersDone");
-
-    if (m_bInPlaceActive && IsWindow() && IsValid()) {
-      static const int kChromeFrameUnloadEventTimerId = 0xdeadbeef;
-      static const int kChromeFrameUnloadEventTimeout = 1000;
-
-      // To prevent us from indefinitely waiting for an acknowledgement from
-      // Chrome indicating that unload handlers have been run, we set a 1
-      // second timer and exit the loop when it fires.
-      ::SetTimer(m_hWnd, kChromeFrameUnloadEventTimerId,
-                 kChromeFrameUnloadEventTimeout, NULL);
-
-      automation_client_->RunUnloadHandlers(m_hWnd, onload_handlers_done_msg);
-
-      MSG msg = {0};
-      while (GetMessage(&msg, NULL, 0, 0)) {
-        if (msg.message == onload_handlers_done_msg &&
-            msg.hwnd == m_hWnd) {
-          break;
-        }
-
-        if (msg.message == WM_TIMER &&
-            msg.wParam == kChromeFrameUnloadEventTimerId) {
-          break;
-        }
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-      }
-
-      ::KillTimer(m_hWnd, kChromeFrameUnloadEventTimerId);
-    }
-    return IOleInPlaceObjectWindowlessImpl<T>::InPlaceDeactivate();
-  }
-
  protected:
   virtual void GetProfilePath(const std::wstring& profile_name,
                               FilePath* profile_path) {

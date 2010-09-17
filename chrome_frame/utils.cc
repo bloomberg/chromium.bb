@@ -1453,3 +1453,37 @@ void PinModule() {
     }
   }
 }
+
+void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout) {
+  base::Time now = base::Time::Now();
+  base::Time wait_until = now + base::TimeDelta::FromMilliseconds(timeout);
+
+  while (wait_until >= now) {
+    base::TimeDelta wait_time = wait_until - now;
+    DWORD wait = MsgWaitForMultipleObjects(
+        count, handles, FALSE, static_cast<DWORD>(wait_time.InMilliseconds()),
+        QS_ALLINPUT);
+    switch (wait) {
+      case WAIT_OBJECT_0:
+      case WAIT_TIMEOUT:
+       return;
+
+      case WAIT_OBJECT_0 + 1: {
+        MSG msg = {0};
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+          TranslateMessage(&msg);
+          DispatchMessage(&msg);
+        }
+        break;
+      }
+
+      default: {
+        NOTREACHED() << "Unexpected return from MsgWaitForMultipleObjects :"
+                     << wait;
+        return;
+      }
+    }
+    now = base::Time::Now();
+  }
+}
+

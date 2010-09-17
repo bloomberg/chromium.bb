@@ -276,6 +276,7 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
                                OnDisplayPrivacyInfo)
   EXEC_COMMAND_HANDLER(NULL, OLECMDID_OPTICAL_GETZOOMRANGE, OnGetZoomRange)
   EXEC_COMMAND_HANDLER(NULL, OLECMDID_OPTICAL_ZOOM, OnSetZoomRange)
+  EXEC_COMMAND_HANDLER(NULL, OLECMDID_ONUNLOAD, OnUnload)
 END_EXEC_COMMAND_MAP()
 
   // IPCs from automation server.
@@ -389,6 +390,12 @@ END_EXEC_COMMAND_MAP()
 
   void OnSetZoomRange(const GUID* cmd_group_guid, DWORD command_id,
                       DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
+
+  // This function handles the OLECMDID_ONUNLOAD command. It enables Chrome to
+  // invoke before unload and unload handlers on the page if any, thereby
+  // enabling a webpage to potentially cancel the operation.
+  void OnUnload(const GUID* cmd_group_guid, DWORD command_id,
+                DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
 
   // Call exec on our site's command target
   HRESULT IEExec(const GUID* cmd_group_guid, DWORD command_id,

@@ -361,8 +361,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   void OnBrowserMoved(int handle);
 
-  void OnRunUnloadHandlers(int handle, gfx::NativeWindow notification_window,
-                           int notification_message);
+  void OnRunUnloadHandlers(int handle, IPC::Message* reply_message);
 
   void OnSetZoomLevel(int handle, int zoom_level);
 

@@ -148,15 +148,6 @@ class ExternalTabContainer : public TabContentsDelegate,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
 
-  // Overriden from TabContentsDelegate::AutomationResourceRoutingDelegate
-  virtual void RegisterRenderViewHost(RenderViewHost* render_view_host);
-  virtual void UnregisterRenderViewHost(RenderViewHost* render_view_host);
-
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // Handles the context menu display operation. This allows external
   // hosts to customize the menu.
   virtual bool HandleContextMenu(const ContextMenuParams& params);
@@ -171,6 +162,19 @@ class ExternalTabContainer : public TabContentsDelegate,
   // that should be parent of the dialog, or NULL for the default.
   virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window);
+
+  virtual void BeforeUnloadFired(TabContents* tab,
+                                 bool proceed,
+                                 bool* proceed_to_fire_unload);
+
+  // Overriden from TabContentsDelegate::AutomationResourceRoutingDelegate
+  virtual void RegisterRenderViewHost(RenderViewHost* render_view_host);
+  virtual void UnregisterRenderViewHost(RenderViewHost* render_view_host);
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Returns the ExternalTabContainer instance associated with the cookie
   // passed in. It also erases the corresponding reference from the map.
@@ -204,8 +208,7 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   virtual bool infobars_enabled();
 
-  void RunUnloadHandlers(gfx::NativeWindow notification_window,
-                         int notification_message);
+  void RunUnloadHandlers(IPC::Message* reply_message);
 
  protected:
   // Overridden from views::WidgetWin:
@@ -308,9 +311,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   // A mapping between accelerators and commands.
   std::map<views::Accelerator, int> accelerator_table_;
 
-  // Set to true if the tab is waiting for the unload event to complete.
-  bool waiting_for_unload_event_;
-
   // Contains the list of URL requests which are pending waiting for an ack
   // from the external host.
   std::vector<PendingTopLevelNavigation> pending_open_url_requests_;
@@ -326,8 +326,7 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   views::View* external_tab_view_;
 
-  gfx::NativeWindow notification_window_;
-  int notification_message_;
+  IPC::Message* unload_reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

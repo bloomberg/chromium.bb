@@ -57,13 +57,11 @@ ExternalTabContainer::ExternalTabContainer(
       handle_top_level_requests_(false),
       external_method_factory_(this),
       enabled_extension_automation_(false),
-      waiting_for_unload_event_(false),
       pending_(false),
       infobars_enabled_(true),
       focus_manager_(NULL),
       external_tab_view_(NULL),
-      notification_window_(NULL),
-      notification_message_(NULL) {
+      unload_reply_message_(NULL) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -417,15 +415,16 @@ void ExternalTabContainer::LoadingStateChanged(TabContents* source) {
 }
 
 void ExternalTabContainer::CloseContents(TabContents* source) {
-  static const int kExternalTabCloseContentsDelayMS = 100;
+  if (!automation_)
+    return;
 
-  if (waiting_for_unload_event_) {
-    PostMessage(notification_window_, notification_message_, 0, 0);
-    waiting_for_unload_event_ = false;
+  if (unload_reply_message_) {
+    AutomationMsg_RunUnloadHandlers::WriteReplyParams(unload_reply_message_,
+                                                      true);
+    automation_->Send(unload_reply_message_);
+    unload_reply_message_ = NULL;
   } else {
-    if (automation_) {
-      automation_->Send(new AutomationMsg_CloseExternalTab(0, tab_handle_));
-    }
+    automation_->Send(new AutomationMsg_CloseExternalTab(0, tab_handle_));
   }
 }
 
@@ -612,6 +611,27 @@ void ExternalTabContainer::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
   browser_->window()->ShowHTMLDialog(delegate, parent);
 }
 
+void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
+                                             bool proceed,
+                                             bool* proceed_to_fire_unload) {
+  DCHECK(unload_reply_message_);
+  *proceed_to_fire_unload = true;
+
+  if (!automation_) {
+    delete unload_reply_message_;
+    unload_reply_message_ = NULL;
+    return;
+  }
+
+  if (!proceed) {
+    AutomationMsg_RunUnloadHandlers::WriteReplyParams(unload_reply_message_,
+                                                      false);
+    automation_->Send(unload_reply_message_);
+    unload_reply_message_ = NULL;
+    *proceed_to_fire_unload = false;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, NotificationObserver implementation:
 
@@ -717,20 +737,24 @@ void ExternalTabContainer::OnFinalMessage(HWND window) {
   Release();
 }
 
-void ExternalTabContainer::RunUnloadHandlers(
-    gfx::NativeWindow notification_window,
-    int notification_message) {
-  DCHECK(::IsWindow(notification_window));
-  if (tab_contents_) {
-    notification_window_ = notification_window;
-    notification_message_ = notification_message;
-
-    if (Browser::RunUnloadEventsHelper(tab_contents_)) {
-      waiting_for_unload_event_ = true;
-    }
+void ExternalTabContainer::RunUnloadHandlers(IPC::Message* reply_message) {
+  if (!automation_) {
+    delete reply_message;
+    return;
   }
-  if (!waiting_for_unload_event_) {
-    PostMessage(notification_window, notification_message, 0, 0);
+
+  // If we have a pending unload message, then just respond back to this
+  // request and continue processing the previous unload message.
+  if (unload_reply_message_) {
+     AutomationMsg_RunUnloadHandlers::WriteReplyParams(reply_message, true);
+     automation_->Send(reply_message);
+     return;
+  }
+  if (tab_contents_ && Browser::RunUnloadEventsHelper(tab_contents_)) {
+    unload_reply_message_ = reply_message;
+  } else {
+    AutomationMsg_RunUnloadHandlers::WriteReplyParams(reply_message, true);
+    automation_->Send(reply_message);
   }
 }
 
