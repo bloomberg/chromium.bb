@@ -13,6 +13,8 @@
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/login/signed_settings.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_server.h"
@@ -32,7 +34,9 @@ namespace chromeos {
 // - TODO(kuan): persists proxy configuration settings on chromeos device using
 //   cros settings
 class ProxyConfigServiceImpl
-    : public base::RefCountedThreadSafe<ProxyConfigServiceImpl> {
+    : public base::RefCountedThreadSafe<ProxyConfigServiceImpl>,
+      public SignedSettings::Delegate<bool>,
+      public SignedSettings::Delegate<std::string> {
  public:
   // ProxyConfigServiceImpl is created on the UI thread in
   // chrome/browser/net/chrome_url_request_context.cc::CreateProxyConfigService
@@ -84,25 +88,40 @@ class ProxyConfigServiceImpl
 
     struct Setting {
       Setting() : source(SOURCE_NONE) {}
+      bool CanBeWrittenByUser(bool user_is_owner);
+      virtual DictionaryValue* Encode() const;
+      bool Decode(DictionaryValue* dict);
 
       Source source;
-      bool CanBeWrittenByUser(bool user_is_owner);
     };
 
     // Proxy setting for mode = direct or auto-detect or using pac script.
     struct AutomaticProxy : public Setting {
+      virtual DictionaryValue* Encode() const;
+      bool Decode(DictionaryValue* dict, Mode mode);
+
       GURL    pac_url;  // Set if proxy is using pac script.
     };
 
     // Proxy setting for mode = single-proxy or proxy-per-scheme.
     struct ManualProxy : public Setting {
+      virtual DictionaryValue* Encode() const;
+      bool Decode(DictionaryValue* dict, net::ProxyServer::Scheme scheme);
+
       net::ProxyServer  server;
     };
 
     ProxyConfig() : mode(MODE_DIRECT) {}
 
     // Converts |this| to net::ProxyConfig.
-    void ConvertToNetProxyConfig(net::ProxyConfig* net_config);
+    void ToNetProxyConfig(net::ProxyConfig* net_config);
+
+    // Serializes config into a DictionaryValue and then into std::string
+    // persisted as property on device.
+    bool Serialize(std::string* output);
+    // Deserializes from property value on device as std::string into a
+    // DictionaryValue and then into the config.  Opposite of Serialize.
+    bool Deserialize(const std::string& input);
 
     // Creates a textual dump of the configuration.
     std::string ToString() const;
@@ -124,6 +143,17 @@ class ProxyConfigServiceImpl
 
     // Exceptions for when not to use a proxy.
     net::ProxyBypassRules  bypass_rules;
+
+   private:
+    // Encodes |manual_proxy| and adds it as value into |key_name| of |dict|.
+    void EncodeManualProxy(const ManualProxy& manual_proxy,
+        DictionaryValue* dict, const char* key_name);
+    // Decodes value of |key_name| in |dict| into |manual_proxy| with |scheme|;
+    // if |ok_if_absent| is true, function returns true if |key_name| doesn't
+    // exist in |dict|.
+    bool DecodeManualProxy(DictionaryValue* dict, const char* key_name,
+        bool ok_if_absent, net::ProxyServer::Scheme scheme,
+        ManualProxy* manual_proxy);
   };
 
   // Usual constructor.
@@ -144,20 +174,40 @@ class ProxyConfigServiceImpl
   void UIGetProxyConfig(ProxyConfig* config);
 
   // Called from UI thread to update proxy configuration for different modes.
-  void UISetProxyConfigToDirect();
-  void UISetProxyConfigToAutoDetect();
-  void UISetProxyConfigToPACScript(const GURL& url);
-  void UISetProxyConfigToSingleProxy(const net::ProxyServer& server);
-  void UISetProxyConfigToProxyPerScheme(const std::string& scheme,
+  // Returns true if config is set properly and config service has proceeded to
+  // start activating it on network stack and persisting it to device.
+  // Returns false if config is not set properly, probably because information
+  // is incomplete or invalid; while config service won't proceed to activate or
+  // persist this config, the information is "cached" in the service, so that
+  // the next UIGetProxyConfig call will return this latest information.
+  bool UISetProxyConfigToDirect();
+  bool UISetProxyConfigToAutoDetect();
+  bool UISetProxyConfigToPACScript(const GURL& pac_url);
+  bool UISetProxyConfigToSingleProxy(const net::ProxyServer& server);
+  bool UISetProxyConfigToProxyPerScheme(const std::string& scheme,
                                         const net::ProxyServer& server);
   // Only valid for MODE_SINGLE_PROXY or MODE_PROXY_PER_SCHEME.
-  void UISetProxyConfigBypassRules(const net::ProxyBypassRules& bypass_rules);
+  bool UISetProxyConfigBypassRules(const net::ProxyBypassRules& bypass_rules);
+
+  // Implementation for SignedSettings::Delegate
+  virtual void OnSettingsOpSucceeded(bool value);
+  virtual void OnSettingsOpSucceeded(std::string value);
+  virtual void OnSettingsOpFailed();
 
  private:
   friend class base::RefCountedThreadSafe<ProxyConfigServiceImpl>;
 
+  // Init proxy to default config, i.e. AutoDetect.
+  // If |post_to_io_thread| is true, a task will be posted to IO thread to
+  // update |cached_config|.
+  void InitConfigToDefault(bool post_to_io_thread);
+
+  // Persists proxy config to device.
+  void PersistConfigToDevice();
+
   // Called from UI thread from the various UISetProxyConfigTo*
-  void OnUISetProxyConfig();
+  // |update_to_device| is true to persist new proxy config to device.
+  void OnUISetProxyConfig(bool update_to_device);
 
   // Posted from UI thread to IO thread to carry the new config information.
   void IOSetProxyConfig(const ProxyConfig& new_config);
@@ -170,6 +220,17 @@ class ProxyConfigServiceImpl
 
   // Data members.
 
+  // True if tasks can be posted, which can only happen if constructor has
+  // completed (NewRunnableMethod cannot be created for a RefCountedThreadBase's
+  // method until the class's ref_count is at least one).
+  bool can_post_task_;
+
+  // True if config has been fetched from device or initialized properly.
+  bool has_config_;
+
+  // True if there's a pending operation to store proxy setting to device.
+  bool persist_to_device_pending_;
+
   // Cached proxy configuration, to be converted to net::ProxyConfig and
   // returned by IOGetProxyConfig.
   // Initially populated from the UI thread, but afterwards only accessed from
@@ -181,7 +242,13 @@ class ProxyConfigServiceImpl
   // are called by UI to set new proxy but the config has not actually changed.
   ProxyConfig reference_config_;
 
+  // List of observers for changes in proxy config.
   ObserverList<net::ProxyConfigService::Observer> observers_;
+
+  // Operations to retrieve and store proxy setting from and to device
+  // respectively.
+  scoped_refptr<SignedSettings> retrieve_property_op_;
+  scoped_refptr<SignedSettings> store_property_op_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceImpl);
 };

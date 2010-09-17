@@ -13,9 +13,14 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if !defined(NDEBUG)
+#include "chrome/common/json_value_serializer.h"
+#endif  // !defined(NDEBUG)
 
 namespace chromeos {
 
@@ -38,11 +43,14 @@ struct Input {  // Fields of chromeos::ProxyConfigServiceImpl::ProxyConfig.
 // Shortcuts to declare enums within chromeos's ProxyConfig.
 #define MK_MODE(mode) ProxyConfigServiceImpl::ProxyConfig::MODE_##mode
 #define MK_SRC(src) ProxyConfigServiceImpl::ProxyConfig::SOURCE_##src
+#define MK_SCHM(scheme) net::ProxyServer::SCHEME_##scheme
 
 // Inspired from net/proxy/proxy_config_service_linux_unittest.cc.
 const struct {
   // Short description to identify the test
   std::string description;
+
+  bool is_valid;
 
   Input input;
 
@@ -53,6 +61,8 @@ const struct {
 } tests[] = {
   {
     TEST_DESC("No proxying"),
+    true,  // is_valid
+
     { // Input.
       MK_MODE(DIRECT),  // mode
     },
@@ -65,6 +75,8 @@ const struct {
 
   {
     TEST_DESC("Auto detect"),
+    true,  // is_valid
+
     { // Input.
       MK_MODE(AUTO_DETECT),  // mode
     },
@@ -77,6 +89,8 @@ const struct {
 
   {
     TEST_DESC("Valid PAC URL"),
+    true,  // is_valid
+
     { // Input.
       MK_MODE(PAC_SCRIPT),     // mode
       "http://wpad/wpad.dat",  // pac_url
@@ -90,6 +104,8 @@ const struct {
 
   {
     TEST_DESC("Invalid PAC URL"),
+    false,  // is_valid
+
     { // Input.
       MK_MODE(PAC_SCRIPT),  // mode
       "wpad.dat",           // pac_url
@@ -103,6 +119,8 @@ const struct {
 
   {
     TEST_DESC("Single-host in proxy list"),
+    true,  // is_valid
+
     { // Input.
       MK_MODE(SINGLE_PROXY),  // mode
       NULL,                   // pac_url
@@ -119,6 +137,8 @@ const struct {
 
   {
     TEST_DESC("Single-host, different port"),
+    true,  // is_valid
+
     { // Input.
       MK_MODE(SINGLE_PROXY),  // mode
       NULL,                   // pac_url
@@ -135,6 +155,8 @@ const struct {
 
   {
     TEST_DESC("Tolerate a scheme"),
+    true,  // is_valid
+
     { // Input.
       MK_MODE(SINGLE_PROXY),       // mode
       NULL,                        // pac_url
@@ -151,99 +173,48 @@ const struct {
 
   {
     TEST_DESC("Per-scheme proxy rules"),
+    true,  // is_valid
+
     { // Input.
       MK_MODE(PROXY_PER_SCHEME),  // mode
       NULL,                       // pac_url
       NULL,                       // single_uri
-      "www.google.com:80", "www.foo.com:110", "ftp.foo.com:121", // per-proto
-    },
-
-    // Expected result.
-    false,                                    // auto_detect
-    GURL(),                                   // pac_url
-    net::ProxyRulesExpectation::PerScheme(    // proxy_rules
-        "www.google.com:80",  // http
-        "www.foo.com:110",    // https
-        "ftp.foo.com:121",    // ftp
-        ""),                  // bypass rules
-  },
-
-// TODO(kuan): enable these.
-#if defined(TO_ENABLE_SOON)
-  {
-    TEST_DESC("socks"),
-    { // Input.
-      MK_MODE(PROXY_PER_SCHEME),  // mode
-      NULL,                       // pac_url
-      NULL,                       // single_uri
-      NULL, NULL, NULL,           // per-proto proxies
+      "www.google.com:80",        // http_uri
+      "www.foo.com:110",          // https_uri
+      "ftp.foo.com:121",          // ftp_uri
       "socks.com:888",            // socks_uri
     },
 
     // Expected result.
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Single(      // proxy_rules
-        "socks4://socks.com:888",  // single proxy
-        ""),                       // bypass rules
-  },
-
-  {
-    TEST_DESC("socks5"),
-    { // Input.
-      NULL,  // auto_proxy
-      "",  // all_proxy
-      NULL, NULL, NULL,  // per-proto proxies
-      "socks.com:888", "5",  // SOCKS
-      NULL,  // no_proxy
-    },
-
-    // Expected result.
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Single(      // proxy_rules
-        "socks5://socks.com:888",  // single proxy
-        ""),                       // bypass rules
-    ProxyConfigServiceImpl::READ_ONLY_MAIN,  // readonly for owner
-    ProxyConfigServiceImpl::READ_ONLY_MAIN,  // readonly for non-owner
-  },
-
-  {
-    TEST_DESC("socks default port"),
-    { // Input.
-      NULL,  // auto_proxy
-      "",  // all_proxy
-      NULL, NULL, NULL,  // per-proto proxies
-      "socks.com", NULL,  // SOCKS
-      NULL,  // no_proxy
-    },
-
-    // Expected result.
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Single(      // proxy_rules
-        "socks4://socks.com:1080",  // single proxy
+    false,                          // auto_detect
+    GURL(),                         // pac_url
+    net::ProxyRulesExpectation::PerSchemeWithSocks(  // proxy_rules
+        "www.google.com:80",        // http
+        "https://www.foo.com:110",  // https
+        "ftp.foo.com:121",          // ftp
+        "socks4://socks.com:888",   // fallback proxy
         ""),                        // bypass rules
   },
 
   {
-    TEST_DESC("bypass"),
+    TEST_DESC("Bypass rules"),
+    true,  // is_valid
+
     { // Input.
-      MK_MODE(PROXY_PER_SCHEME),  // mode
+      MK_MODE(SINGLE_PROXY),      // mode
       NULL,                       // pac_url
       "www.google.com",           // single_uri
-      NULL, NULL, NULL, NULL,     // per-proto & socks proxies
+      NULL, NULL, NULL, NULL,     // per-proto
       ".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8",  // bypass_rules
     },
 
-    // Expected result;
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Single(      // proxy_rules
-        "www.google.com:80",
-        "*.google.com,*foo.com:99,1.2.3.4:22,127.0.0.1/8"),
+    // Expected result.
+    false,                          // auto_detect
+    GURL(),                         // pac_url
+    net::ProxyRulesExpectation::Single(                      // proxy_rules
+        "www.google.com:80",                                 // single proxy
+        "*.google.com,*foo.com:99,1.2.3.4:22,127.0.0.1/8"),  // bypass_rules
   },
-#endif  // TO_ENABLE_SOON
 };  // tests
 
 }  // namespace
@@ -253,6 +224,7 @@ class ProxyConfigServiceImplTest : public PlatformTest {
   ProxyConfigServiceImplTest()
       : ui_thread_(ChromeThread::UI, &message_loop_),
         io_thread_(ChromeThread::IO, &message_loop_) {
+    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
   }
 
   virtual ~ProxyConfigServiceImplTest() {
@@ -282,14 +254,14 @@ class ProxyConfigServiceImplTest : public PlatformTest {
       ProxyConfigServiceImpl::ProxyConfig::Mode mode,
       ProxyConfigServiceImpl::ProxyConfig::Source source,
       const char* server_uri,
+      net::ProxyServer::Scheme scheme,
       ProxyConfigServiceImpl::ProxyConfig* config,
       ProxyConfigServiceImpl::ProxyConfig::ManualProxy* manual_proxy) {
     if (!server_uri)
       return;
     config->mode = mode;
     manual_proxy->source = source;
-    manual_proxy->server = net::ProxyServer::FromURI(server_uri,
-        net::ProxyServer::SCHEME_HTTP);
+    manual_proxy->server = net::ProxyServer::FromURI(server_uri, scheme);
   }
 
   void InitConfigWithTestInput(
@@ -304,18 +276,18 @@ class ProxyConfigServiceImplTest : public PlatformTest {
                           &init_config->automatic_proxy);
         return;
       case MK_MODE(SINGLE_PROXY):
-        SetManualProxy(input.mode, source, input.single_uri, init_config,
-                       &init_config->single_proxy);
+        SetManualProxy(input.mode, source, input.single_uri, MK_SCHM(HTTP),
+                       init_config, &init_config->single_proxy);
         break;
       case MK_MODE(PROXY_PER_SCHEME):
-        SetManualProxy(input.mode, source, input.http_uri, init_config,
-                       &init_config->http_proxy);
-        SetManualProxy(input.mode, source, input.https_uri, init_config,
-                       &init_config->https_proxy);
-        SetManualProxy(input.mode, source, input.ftp_uri, init_config,
-                       &init_config->ftp_proxy);
-        SetManualProxy(input.mode, source, input.socks_uri, init_config,
-                       &init_config->socks_proxy);
+        SetManualProxy(input.mode, source, input.http_uri, MK_SCHM(HTTP),
+                       init_config, &init_config->http_proxy);
+        SetManualProxy(input.mode, source, input.https_uri, MK_SCHM(HTTPS),
+                       init_config, &init_config->https_proxy);
+        SetManualProxy(input.mode, source, input.ftp_uri, MK_SCHM(HTTP),
+                       init_config, &init_config->ftp_proxy);
+        SetManualProxy(input.mode, source, input.socks_uri, MK_SCHM(SOCKS4),
+                       init_config, &init_config->socks_proxy);
         break;
     }
     if (input.bypass_rules) {
@@ -400,63 +372,70 @@ TEST_F(ProxyConfigServiceImplTest, ReadWriteAccess) {
 }
 
 TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
-  // Init with direct.
-  ProxyConfigServiceImpl::ProxyConfig init_config;
-  SetAutomaticProxy(MK_MODE(DIRECT), MK_SRC(OWNER), NULL, &init_config,
-                    &init_config.automatic_proxy);
-  CreateConfigService(init_config);
-
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
 
+    // Init with direct.
+    ProxyConfigServiceImpl::ProxyConfig init_config;
+    SetAutomaticProxy(MK_MODE(DIRECT), MK_SRC(OWNER), NULL, &init_config,
+                      &init_config.automatic_proxy);
+    CreateConfigService(init_config);
+
     // Set config to tests[i].input via UI.
     net::ProxyBypassRules bypass_rules;
-    net::ProxyServer::Scheme scheme = net::ProxyServer::SCHEME_HTTP;
     const Input& input = tests[i].input;
     switch (input.mode) {
       case MK_MODE(DIRECT) :
-        config_service()->UISetProxyConfigToDirect();
+        EXPECT_EQ(tests[i].is_valid,
+                  config_service()->UISetProxyConfigToDirect());
         break;
       case MK_MODE(AUTO_DETECT) :
-        config_service()->UISetProxyConfigToAutoDetect();
+        EXPECT_EQ(tests[i].is_valid,
+                  config_service()->UISetProxyConfigToAutoDetect());
         break;
       case MK_MODE(PAC_SCRIPT) :
-        config_service()->UISetProxyConfigToPACScript(GURL(input.pac_url));
+        EXPECT_EQ(tests[i].is_valid,
+                  config_service()->UISetProxyConfigToPACScript(
+                      GURL(input.pac_url)));
         break;
       case MK_MODE(SINGLE_PROXY) :
-        config_service()->UISetProxyConfigToSingleProxy(
-            net::ProxyServer::FromURI(input.single_uri,
-                                      net::ProxyServer::SCHEME_HTTP));
+        EXPECT_EQ(tests[i].is_valid,
+                  config_service()->UISetProxyConfigToSingleProxy(
+                      net::ProxyServer::FromURI(input.single_uri,
+                                                MK_SCHM(HTTP))));
         if (input.bypass_rules) {
           bypass_rules.ParseFromStringUsingSuffixMatching(input.bypass_rules);
-          config_service()->UISetProxyConfigBypassRules(bypass_rules);
+          EXPECT_EQ(tests[i].is_valid,
+                    config_service()->UISetProxyConfigBypassRules(
+                        bypass_rules));
         }
         break;
       case MK_MODE(PROXY_PER_SCHEME) :
         if (input.http_uri) {
-          config_service()->UISetProxyConfigToProxyPerScheme(
-              "http",
-              net::ProxyServer::FromURI(input.http_uri, scheme));
+          EXPECT_EQ(tests[i].is_valid,
+              config_service()->UISetProxyConfigToProxyPerScheme("http",
+                  net::ProxyServer::FromURI(input.http_uri, MK_SCHM(HTTP))));
         }
         if (input.https_uri) {
-          config_service()->UISetProxyConfigToProxyPerScheme(
-              "https",
-              net::ProxyServer::FromURI(input.https_uri, scheme));
+          EXPECT_EQ(tests[i].is_valid,
+              config_service()->UISetProxyConfigToProxyPerScheme("https",
+                  net::ProxyServer::FromURI(input.https_uri, MK_SCHM(HTTPS))));
         }
         if (input.ftp_uri) {
-          config_service()->UISetProxyConfigToProxyPerScheme(
-              "ftp",
-              net::ProxyServer::FromURI(input.ftp_uri, scheme));
+          EXPECT_EQ(tests[i].is_valid,
+              config_service()->UISetProxyConfigToProxyPerScheme("ftp",
+                  net::ProxyServer::FromURI(input.ftp_uri, MK_SCHM(HTTP))));
         }
         if (input.socks_uri) {
-          config_service()->UISetProxyConfigToProxyPerScheme(
-              "socks",
-              net::ProxyServer::FromURI(input.socks_uri, scheme));
+          EXPECT_EQ(tests[i].is_valid,
+              config_service()->UISetProxyConfigToProxyPerScheme("socks",
+                  net::ProxyServer::FromURI(input.socks_uri, MK_SCHM(SOCKS4))));
         }
         if (input.bypass_rules) {
           bypass_rules.ParseFromStringUsingSuffixMatching(input.bypass_rules);
-          config_service()->UISetProxyConfigBypassRules(bypass_rules);
+          EXPECT_EQ(tests[i].is_valid,
+              config_service()->UISetProxyConfigBypassRules(bypass_rules));
         }
         break;
     }
@@ -472,26 +451,29 @@ TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
     ProxyConfigServiceImpl::ProxyConfig ui_config;
     config_service()->UIGetProxyConfig(&ui_config);
     EXPECT_EQ(input.mode, ui_config.mode);
-    if (input.pac_url)
-      EXPECT_EQ(GURL(input.pac_url), ui_config.automatic_proxy.pac_url);
-    const net::ProxyRulesExpectation& proxy_rules = tests[i].proxy_rules;
-    if (input.single_uri)
-      EXPECT_EQ(proxy_rules.single_proxy,
-                ui_config.single_proxy.server.ToURI());
-    if (input.http_uri)
-      EXPECT_EQ(proxy_rules.proxy_for_http,
-                ui_config.http_proxy.server.ToURI());
-    if (input.https_uri)
-      EXPECT_EQ(proxy_rules.proxy_for_https,
-                ui_config.https_proxy.server.ToURI());
-    if (input.ftp_uri)
-      EXPECT_EQ(proxy_rules.proxy_for_ftp, ui_config.ftp_proxy.server.ToURI());
-    if (input.socks_uri) {
-      EXPECT_EQ(proxy_rules.fallback_proxy,
-                ui_config.socks_proxy.server.ToURI());
+    if (tests[i].is_valid) {
+      if (input.pac_url)
+        EXPECT_EQ(GURL(input.pac_url), ui_config.automatic_proxy.pac_url);
+      const net::ProxyRulesExpectation& proxy_rules = tests[i].proxy_rules;
+      if (input.single_uri)
+        EXPECT_EQ(proxy_rules.single_proxy,
+                  ui_config.single_proxy.server.ToURI());
+      if (input.http_uri)
+        EXPECT_EQ(proxy_rules.proxy_for_http,
+                  ui_config.http_proxy.server.ToURI());
+      if (input.https_uri)
+        EXPECT_EQ(proxy_rules.proxy_for_https,
+                  ui_config.https_proxy.server.ToURI());
+      if (input.ftp_uri)
+        EXPECT_EQ(proxy_rules.proxy_for_ftp,
+                  ui_config.ftp_proxy.server.ToURI());
+      if (input.socks_uri) {
+        EXPECT_EQ(proxy_rules.fallback_proxy,
+                  ui_config.socks_proxy.server.ToURI());
+      }
+      if (input.bypass_rules)
+        EXPECT_TRUE(bypass_rules.Equals(ui_config.bypass_rules));
     }
-    if (input.bypass_rules)
-      EXPECT_TRUE(bypass_rules.Equals(ui_config.bypass_rules));
   }
 }
 
@@ -529,14 +511,52 @@ TEST_F(ProxyConfigServiceImplTest, ProxyChangedObserver) {
   ProxyChangedObserver observer(config_service());
 
   // Set to pac script from UI.
-  config_service()->UISetProxyConfigToPACScript(GURL("http://wpad.dat"));
-
+  EXPECT_TRUE(config_service()->UISetProxyConfigToPACScript(
+      GURL("http://wpad.dat")));
   // Retrieve config from IO thread.
   net::ProxyConfig io_config;
   SyncGetLatestProxyConfig(&io_config);
 
   // Observer should have gotten the same new proxy config.
   EXPECT_TRUE(io_config.Equals(observer.config()));
+}
+
+TEST_F(ProxyConfigServiceImplTest, SerializeAndDeserialize) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    if (!tests[i].is_valid)
+      continue;
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
+                              tests[i].description.c_str()));
+
+    ProxyConfigServiceImpl::ProxyConfig source_config;
+    InitConfigWithTestInput(tests[i].input, &source_config);
+
+    // Serialize source_config into std::string.
+    std::string serialized_value;
+    EXPECT_TRUE(source_config.Serialize(&serialized_value));
+
+    // Deserialize std:string into target_config.
+    ProxyConfigServiceImpl::ProxyConfig target_config;
+    EXPECT_TRUE(target_config.Deserialize(serialized_value));
+
+    // Compare the configs after serialization and deserialization.
+    net::ProxyConfig net_src_cfg;
+    net::ProxyConfig net_tgt_cfg;
+    source_config.ToNetProxyConfig(&net_src_cfg);
+    target_config.ToNetProxyConfig(&net_tgt_cfg);
+#if !defined(NDEBUG)
+    if (!net_src_cfg.Equals(net_tgt_cfg)) {
+      std::string src_output, tgt_output;
+      JSONStringValueSerializer src_serializer(&src_output);
+      src_serializer.Serialize(*net_src_cfg.ToValue());
+      JSONStringValueSerializer tgt_serializer(&tgt_output);
+      tgt_serializer.Serialize(*net_tgt_cfg.ToValue());
+      LOG(INFO) << "source:\n" << src_output;
+      LOG(INFO) << "target:\n" << tgt_output;
+    }
+#endif  // !defined(NDEBUG)
+    EXPECT_TRUE(net_src_cfg.Equals(net_tgt_cfg));
+  }
 }
 
 }  // namespace chromeos

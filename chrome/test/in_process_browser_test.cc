@@ -64,6 +64,10 @@ class LinuxHostInit {
 }  // namespace
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#endif  // defined(OS_CHROMEOS)
+
 extern int BrowserMain(const MainFunctionParams&);
 
 const wchar_t kUnitTestShowWindows[] = L"show-windows";
@@ -191,6 +195,10 @@ void InProcessBrowserTest::SetUp() {
   // If ncecessary, disable TabCloseableStateWatcher.
   if (!tab_closeable_state_watcher_enabled_)
     command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
+
+#if defined(OS_CHROMEOS)
+  chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+#endif  // defined(OS_CHROMEOS)
 
   SandboxInitWrapper sandbox_wrapper;
   MainFunctionParams params(*command_line, sandbox_wrapper, NULL);

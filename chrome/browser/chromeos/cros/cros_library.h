@@ -41,6 +41,9 @@ class CrosLibrary {
     // Use the stub implementations of the library. This is mainly for
     // running the chromeos build of chrome on the desktop.
     void SetUseStubImpl();
+    // Reset the stub implementations of the library, called after
+    // SetUseStubImp is called.
+    void ResetUseStubImpl();
     // Passing true for own for these setters will cause them to be deleted
     // when the CrosLibrary is deleted (or other mocks are set).
     // Setter for LibraryLoader.

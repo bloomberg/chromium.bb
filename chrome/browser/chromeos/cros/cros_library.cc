@@ -121,6 +121,10 @@ void CrosLibrary::TestApi::SetUseStubImpl() {
   library_->use_stub_impl_ = true;
 }
 
+void CrosLibrary::TestApi::ResetUseStubImpl() {
+  library_->use_stub_impl_ = false;
+}
+
 void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
   if (library_->library_loader_ == loader)
     return;

@@ -25,6 +25,11 @@ namespace chromeos {
 class ClockMenuButtonTest : public InProcessBrowserTest {
  protected:
   ClockMenuButtonTest() : InProcessBrowserTest() {}
+  virtual void SetUpInProcessBrowserTestFixture() {
+    // This test requires actual libcros, but InProcessBrowserTest has set
+    // to use stub, so reset it here.
+    CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
+  }
   ClockMenuButton* GetClockMenuButton() {
     BrowserView* view = static_cast<BrowserView*>(browser()->window());
     return static_cast<StatusAreaView*>(view->
