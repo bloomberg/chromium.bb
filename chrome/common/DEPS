@@ -4,6 +4,7 @@ include_rules = [
   "+grit",  # For generated headers
   "+libxml",
   "+media/audio",
+  "+media/base",
   "+remoting/client/plugin",
   "+sandbox/src",
   "+skia/include",

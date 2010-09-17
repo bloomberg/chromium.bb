@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/shared_memory.h"
 #include "chrome/common/common_param_traits.h"
+#include "media/base/video_frame.h"
 
 struct GpuVideoServiceInfoParam {
   // route id for GpuVideoService on GPU process side for this channel.
@@ -46,20 +47,10 @@ struct GpuVideoDecoderInitParam {
 };
 
 struct GpuVideoDecoderInitDoneParam {
-  enum SurfaceType {
-    SurfaceTypeSystemMemory,
-    SurfaceTypeGlTexture,
-    SurfaceTypeD3dTexture,
-  };
-  enum SurfaceFormat {
-    SurfaceFormat_YV12,
-    SurfaceFormat_NV12,
-    SurfaceFormat_RGBA,
-  };
   int32 success;  // other parameter is only meaningful when this is true.
   int32 provides_buffer;
-  int32 format;
-  int32 surface_type;
+  media::VideoFrame::Format format;
+  int32 surface_type;  // TODO(hclam): Remove this. We only pass GL textures.
   int32 stride;
   int32 input_buffer_size;
   int32 output_buffer_size;
@@ -169,6 +160,15 @@ struct ParamTraits<GpuVideoDecoderFormatChangeParam> {
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
+
+template <>
+struct ParamTraits<media::VideoFrame::Format> {
+  typedef media::VideoFrame::Format param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
+
+}  // namespace IPC
 
 #endif  // CHROME_COMMON_GPU_VIDEO_COMMON_H_

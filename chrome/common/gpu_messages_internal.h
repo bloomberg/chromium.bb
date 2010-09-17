@@ -303,6 +303,12 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoder)
   // where output transfer buffer had to be guarded.
   IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_FillThisBufferDoneACK)
 
+  // Sent from Renderer process to the GPU process to notify that textures are
+  // generated for a video frame.
+  IPC_MESSAGE_ROUTED2(GpuVideoDecoderMsg_VideoFrameAllocated,
+                      int32, /* Video Frame ID */
+                      std::vector<uint32>) /* Textures for video frame */
+
 IPC_END_MESSAGES(GpuVideoDecoder)
 
 //------------------------------------------------------------------------------
@@ -329,6 +335,16 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
   IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_FillThisBufferDone,
                       GpuVideoDecoderOutputBufferParam)
 
+  // Allocate video frames for output of the hardware video decoder.
+  IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_AllocateVideoFrame,
+                      int32, /* Numer of video frames to generate */
+                      int32, /* Width of the video frame */
+                      int32, /* Height of the video frame */
+                      media::VideoFrame::Format /* Format of the video frame */)
+
+  // Release all video frames allocated for a hardware video decoder.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_ReleaseAllVideoFrames)
+
   // GpuVideoDecoder report output format change.
   IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_MediaFormatChange,
                       GpuVideoDecoderFormatChangeParam)
@@ -338,4 +354,3 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
                       GpuVideoDecoderErrorInfoParam)
 
 IPC_END_MESSAGES(GpuVideoDecoderHost)
-

@@ -106,19 +106,9 @@ void GpuVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
   }
 
   // Translate surface type.
-  param.surface_type = static_cast<GpuVideoDecoderInitDoneParam::SurfaceType>(
-      info.stream_info.surface_type);
-
-  // Translate surface format.
-  switch (info.stream_info.surface_format) {
-    case VideoFrame::YV12:
-      param.format = GpuVideoDecoderInitDoneParam::SurfaceFormat_YV12;
-      break;
-    case VideoFrame::RGBA:
-      param.format = GpuVideoDecoderInitDoneParam::SurfaceFormat_RGBA;
-    default:
-      NOTREACHED();
-  }
+  // TODO(hclam): Remove |surface_type| since we are always passing textures.
+  param.surface_type = static_cast<int>(info.stream_info.surface_type);
+  param.format = info.stream_info.surface_format;
 
   // TODO(jiesun): Check the assumption of input size < original size.
   param.input_buffer_size = config_.width * config_.height * 3 / 2;

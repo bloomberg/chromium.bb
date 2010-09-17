@@ -190,7 +190,7 @@ void GpuVideoDecoderHost::OnFillThisBufferDone(
   if (param.flags & GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream) {
     VideoFrame::CreateEmptyFrame(&frame);
   } else if (done_param_.surface_type ==
-             GpuVideoDecoderInitDoneParam::SurfaceTypeSystemMemory) {
+             media::VideoFrame::TYPE_SYSTEM_MEMORY) {
     VideoFrame::CreateFrame(VideoFrame::YV12,
                             init_param_.width,
                             init_param_.height,
@@ -205,8 +205,7 @@ void GpuVideoDecoderHost::OnFillThisBufferDone(
     memcpy(data0, src, size);
     memcpy(data1, src + size, size / 4);
     memcpy(data2, src + size + size / 4, size / 4);
-  } else if (done_param_.surface_type ==
-             GpuVideoDecoderInitDoneParam::SurfaceTypeGlTexture) {
+  } else if (done_param_.surface_type == media::VideoFrame::TYPE_GL_TEXTURE) {
     // TODO(hclam): The logic in buffer allocation is pretty much around
     // using shared memory for output buffer which needs to be adjusted. For
     // now we have to add this hack to get the texture id.
