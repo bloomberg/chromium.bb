@@ -45,9 +45,9 @@ void RendererWebIDBCursorImpl::value(
   RenderThread::current()->Send(
       new ViewHostMsg_IDBCursorValue(idb_cursor_id_, &scriptValue,
                                      &key));
-  DCHECK(scriptValue.is_null());
+  // Only one or the other type should have been "returned" to us.
+  DCHECK(scriptValue.is_null() != (key.type() == WebIDBKey::InvalidType));
   webScriptValue = scriptValue;
-  DCHECK(key.type() == WebIDBKey::InvalidType);
   webKey = key;
 }
 
