@@ -82,6 +82,13 @@ class GLES2Decoder : public CommonDecoder {
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
 
+  // Get the service texture ID corresponding to a client texture ID.
+  // If no such record is found then return false.
+  virtual bool GetServiceTextureId(uint32 client_texture_id,
+                                   uint32* service_texture_id) {
+    return false;
+  }
+
  protected:
   explicit GLES2Decoder(ContextGroup* group);
 

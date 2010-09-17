@@ -53,62 +53,16 @@ bool GpuVideoDecoder::CreateInputTransferBuffer(
   return true;
 }
 
-bool GpuVideoDecoder::CreateOutputTransferBuffer(
-    uint32 size,
-    base::SharedMemoryHandle* handle) {
-  output_transfer_buffer_.reset(new base::SharedMemory);
-  if (!output_transfer_buffer_.get())
-    return false;
-
-  if (!output_transfer_buffer_->Create(std::wstring(), false, false, size))
-    return false;
-
-  if (!output_transfer_buffer_->Map(size))
-    return false;
-
-  if (!output_transfer_buffer_->ShareToProcess(renderer_handle_, handle))
-    return false;
-
-  return true;
-}
-
-void GpuVideoDecoder::CreateVideoFrameOnTransferBuffer() {
-  const base::TimeDelta kZero;
-  uint8* data[media::VideoFrame::kMaxPlanes];
-  int32 strides[media::VideoFrame::kMaxPlanes];
-  memset(data, 0, sizeof(data));
-  memset(strides, 0, sizeof(strides));
-  data[0] = static_cast<uint8*>(output_transfer_buffer_->memory());
-  data[1] = data[0] + config_.width * config_.height;
-  data[2] = data[1] + config_.width * config_.height / 4;
-  strides[0] = config_.width;
-  strides[1] = strides[2] = config_.width >> 1;
-  media::VideoFrame:: CreateFrameExternal(
-      media::VideoFrame::TYPE_SYSTEM_MEMORY,
-      media::VideoFrame::YV12,
-      config_.width, config_.height, 3,
-      data, strides,
-      kZero, kZero,
-      NULL,
-      &frame_);
-}
-
 void GpuVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
   info_ = info;
   GpuVideoDecoderInitDoneParam param;
   param.success = false;
   param.input_buffer_handle = base::SharedMemory::NULLHandle();
-  param.output_buffer_handle = base::SharedMemory::NULLHandle();
 
   if (!info.success) {
     SendInitializeDone(param);
     return;
   }
-
-  // Translate surface type.
-  // TODO(hclam): Remove |surface_type| since we are always passing textures.
-  param.surface_type = static_cast<int>(info.stream_info.surface_type);
-  param.format = info.stream_info.surface_format;
 
   // TODO(jiesun): Check the assumption of input size < original size.
   param.input_buffer_size = config_.width * config_.height * 3 / 2;
@@ -118,31 +72,7 @@ void GpuVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
     return;
   }
 
-  if (info.stream_info.surface_type == VideoFrame::TYPE_SYSTEM_MEMORY) {
-    // TODO(jiesun): Allocate this according to the surface format.
-    // The format actually could change during streaming, we need to
-    // notify GpuVideoDecoderHost side when this happened and renegotiate
-    // the transfer buffer.
-    switch (info.stream_info.surface_format) {
-      case VideoFrame::YV12:
-        // TODO(jiesun): take stride into account.
-        param.output_buffer_size =
-            config_.width * config_.height * 3 / 2;
-        break;
-      default:
-        NOTREACHED();
-    }
-
-    if (!CreateOutputTransferBuffer(param.output_buffer_size,
-                                    &param.output_buffer_handle)) {
-      SendInitializeDone(param);
-      return;
-    }
-    CreateVideoFrameOnTransferBuffer();
-  }
-
   param.success = true;
-
   SendInitializeDone(param);
 }
 
@@ -176,21 +106,16 @@ void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
   output_param.duration = frame->GetDuration().InMicroseconds();
   output_param.flags = frame->IsEndOfStream() ?
       GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream : 0;
-  // TODO(hclam): We should have the conversion between VideoFrame and the
-  // IPC transport param done in GpuVideoDevice.
-  // This is a hack to pass texture back as a param.
-  output_param.texture = frame->gl_texture(media::VideoFrame::kRGBPlane);
   SendFillBufferDone(output_param);
 }
 
 void* GpuVideoDecoder::GetDevice() {
-  // Simply delegate the method call to GpuVideoDevice.
-  return decode_context_->GetDevice();
+  return video_device_->GetDevice();
 }
 
 void GpuVideoDecoder::AllocateVideoFrames(
-    int n, size_t width, size_t height,
-    AllocationCompleteCallback* callback) {
+    int n, size_t width, size_t height, media::VideoFrame::Format format,
+    std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task) {
   // Since the communication between Renderer and GPU process is by GL textures.
   // We need to obtain a set of GL textures by sending IPC commands to the
   // Renderer process. The recipient of these commands will be IpcVideoDecoder.
@@ -208,20 +133,37 @@ void GpuVideoDecoder::AllocateVideoFrames(
   //
   // Note that this method is called when there's no video frames allocated or
   // they were all released.
+  DCHECK(video_frame_map_.empty());
+
+  // Save the parameters for allocation.
+  pending_allocation_.reset(new PendingAllocation());
+  pending_allocation_->n = n;
+  pending_allocation_->width = width;
+  pending_allocation_->height = height;
+  pending_allocation_->format = format;
+  pending_allocation_->frames = frames;
+  pending_allocation_->task = task;
+  SendAllocateVideoFrames(n, width, height, format);
 }
 
-void GpuVideoDecoder::ReleaseVideoFrames(int n, VideoFrame* frames) {
+void GpuVideoDecoder::ReleaseAllVideoFrames() {
   // This method will first call to GpuVideoDevice to release all the resource
   // associated with a VideoFrame.
   //
-  // And when we'll call GpuVideoDevice::ReleaseVideoFrames to remove the set
+  // And then we'll call GpuVideoDevice::ReleaseVideoFrame() to remove the set
   // of Gl textures associated with the context.
   //
   // And finally we'll send IPC commands to IpcVideoDecoder to destroy all
   // GL textures generated.
+  for (VideoFrameMap::iterator i = video_frame_map_.begin();
+       i != video_frame_map_.end(); ++i) {
+    video_device_->ReleaseVideoFrame(i->second);
+  }
+  video_frame_map_.clear();
+  SendReleaseAllVideoFrames();
 }
 
-void GpuVideoDecoder::Destroy(DestructionCompleteCallback* callback) {
+void GpuVideoDecoder::Destroy(Task* task) {
   //  TODO(hclam): I still need to think what I should do here.
 }
 
@@ -231,7 +173,6 @@ GpuVideoDecoder::GpuVideoDecoder(
     base::ProcessHandle handle,
     gpu::gles2::GLES2Decoder* decoder)
     : decoder_host_route_id_(param->decoder_host_route_id),
-      output_transfer_buffer_busy_(false),
       pending_output_requests_(0),
       channel_(channel),
       renderer_handle_(handle),
@@ -260,8 +201,6 @@ void GpuVideoDecoder::OnUninitialize() {
 }
 
 void GpuVideoDecoder::OnFlush() {
-  // TODO(jiesun): this is wrong??
-  output_transfer_buffer_busy_ = false;
   pending_output_requests_ = 0;
 
   decode_engine_->Flush();
@@ -292,42 +231,56 @@ void GpuVideoDecoder::OnFillThisBuffer(
 
   if (info_.stream_info.surface_type == VideoFrame::TYPE_SYSTEM_MEMORY) {
     pending_output_requests_++;
-    if (!output_transfer_buffer_busy_) {
-      output_transfer_buffer_busy_ = true;
-      decode_engine_->ProduceVideoFrame(frame_);
-    }
   } else {
-    // TODO(hclam): I need to rethink how to delegate calls to
-    // VideoDecodeEngine, I may need to create a GpuVideoDecodeContext that
-    // provides a method for me to make calls to VideoDecodeEngine with the
-    // correct VideoFrame.
-    DCHECK_EQ(VideoFrame::TYPE_GL_TEXTURE, info_.stream_info.surface_type);
-
-    scoped_refptr<media::VideoFrame> frame;
-    VideoFrame::GlTexture textures[3] = { param.texture, 0, 0 };
-
-    media::VideoFrame:: CreateFrameGlTexture(
-        media::VideoFrame::RGBA, config_.width, config_.height, textures,
-        base::TimeDelta(), base::TimeDelta(), &frame);
-    decode_engine_->ProduceVideoFrame(frame);
   }
 }
 
 void GpuVideoDecoder::OnFillThisBufferDoneACK() {
   if (info_.stream_info.surface_type == VideoFrame::TYPE_SYSTEM_MEMORY) {
-    output_transfer_buffer_busy_ = false;
     pending_output_requests_--;
     if (pending_output_requests_) {
-      output_transfer_buffer_busy_ = true;
       decode_engine_->ProduceVideoFrame(frame_);
     }
+  }
+}
+
+void GpuVideoDecoder::OnVideoFrameAllocated(int32 frame_id,
+                                            std::vector<uint32> textures) {
+  // This method is called in response to a video frame allocation request sent
+  // to the Renderer process.
+  // We should use the textures to generate a VideoFrame by using
+  // GpuVideoDevice. The VideoFrame created is added to the internal map.
+  // If we have generated enough VideoFrame, we call |allocation_callack_| to
+  // complete the allocation process.
+  media::VideoFrame::GlTexture gl_textures[media::VideoFrame::kMaxPlanes];
+  memset(gl_textures, 0, sizeof(gl_textures));
+  for (size_t i = 0; i < textures.size(); ++i) {
+    // Translate the client texture id to service texture id.
+    bool ret = gles2_decoder_->GetServiceTextureId(textures[i],
+                                                   gl_textures + i);
+    DCHECK(ret) << "Cannot translate client texture ID to service ID";
+  }
+
+  scoped_refptr<media::VideoFrame> frame;
+  bool ret = video_device_->CreateVideoFrameFromGlTextures(
+      pending_allocation_->width, pending_allocation_->height,
+      pending_allocation_->format, gl_textures, &frame);
+
+  DCHECK(ret) << "Failed to allocation VideoFrame from GL textures)";
+  pending_allocation_->frames->push_back(frame);
+  video_frame_map_.insert(std::make_pair(frame_id, frame));
+
+  if (video_frame_map_.size() == pending_allocation_->n) {
+    pending_allocation_->task->Run();
+    delete pending_allocation_->task;
+    pending_allocation_.reset();
   }
 }
 
 void GpuVideoDecoder::SendInitializeDone(
     const GpuVideoDecoderInitDoneParam& param) {
   if (!channel_->Send(
-      new GpuVideoDecoderHostMsg_InitializeACK(route_id(), param))) {
+          new GpuVideoDecoderHostMsg_InitializeACK(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_InitializeACK failed";
   }
 }
@@ -346,14 +299,14 @@ void GpuVideoDecoder::SendFlushDone() {
 
 void GpuVideoDecoder::SendEmptyBufferDone() {
   if (!channel_->Send(
-      new GpuVideoDecoderHostMsg_EmptyThisBufferDone(route_id()))) {
+          new GpuVideoDecoderHostMsg_EmptyThisBufferDone(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBufferDone failed";
   }
 }
 
 void GpuVideoDecoder::SendEmptyBufferACK() {
   if (!channel_->Send(
-      new GpuVideoDecoderHostMsg_EmptyThisBufferACK(route_id()))) {
+          new GpuVideoDecoderHostMsg_EmptyThisBufferACK(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBufferACK failed";
   }
 }
@@ -361,7 +314,23 @@ void GpuVideoDecoder::SendEmptyBufferACK() {
 void GpuVideoDecoder::SendFillBufferDone(
     const GpuVideoDecoderOutputBufferParam& param) {
   if (!channel_->Send(
-      new GpuVideoDecoderHostMsg_FillThisBufferDone(route_id(), param))) {
+          new GpuVideoDecoderHostMsg_FillThisBufferDone(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBufferDone failed";
+  }
+}
+
+void GpuVideoDecoder::SendAllocateVideoFrames(
+    int n, size_t width, size_t height, media::VideoFrame::Format format) {
+  if (!channel_->Send(
+          new GpuVideoDecoderHostMsg_AllocateVideoFrames(
+              route_id(), n, width, height, format))) {
+    LOG(ERROR) << "GpuVideoDecoderMsg_AllocateVideoFrames failed";
+  }
+}
+
+void GpuVideoDecoder::SendReleaseAllVideoFrames() {
+  if (!channel_->Send(
+          new GpuVideoDecoderHostMsg_ReleaseAllVideoFrames(route_id()))) {
+    LOG(ERROR) << "GpuVideoDecoderMsg_ReleaseAllVideoFrames failed";
   }
 }

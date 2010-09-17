@@ -95,10 +95,11 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
 
   // media::VideoDecodeContext implementation.
   virtual void* GetDevice();
-  virtual void AllocateVideoFrames(int n, size_t width, size_t height,
-                                   AllocationCompleteCallback* callback);
-  virtual void ReleaseVideoFrames(int n, media::VideoFrame* frames);
-  virtual void Destroy(DestructionCompleteCallback* callback);
+  virtual void AllocateVideoFrames(
+      int n, size_t width, size_t height, media::VideoFrame::Format format,
+      std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task);
+  virtual void ReleaseAllVideoFrames();
+  virtual void Destroy(Task* task) = 0;
 
   //--------------------------------------------------------------------------
   // Any thread

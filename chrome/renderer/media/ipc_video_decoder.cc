@@ -111,10 +111,9 @@ void IpcVideoDecoder::OnInitializeDone(
                               media::mime_type::kUncompressedVideo);
     media_format_.SetAsInteger(media::MediaFormat::kWidth, width_);
     media_format_.SetAsInteger(media::MediaFormat::kHeight, height_);
-    media_format_.SetAsInteger(media::MediaFormat::kSurfaceType,
-                               static_cast<int>(param.surface_type));
-    media_format_.SetAsInteger(media::MediaFormat::kSurfaceFormat,
-                               static_cast<int>(param.format));
+    media_format_.SetAsInteger(
+        media::MediaFormat::kSurfaceType,
+        static_cast<int>(media::VideoFrame::TYPE_GL_TEXTURE));
     state_ = kPlaying;
   } else {
     LOG(ERROR) << "IpcVideoDecoder initialization failed!";
