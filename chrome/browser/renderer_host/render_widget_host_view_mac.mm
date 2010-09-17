@@ -173,7 +173,7 @@ void DisablePasswordInput() {
 @property NSSize cachedSize;
 @end
 
-@implementation AcceleratedPluginView : NSView
+@implementation AcceleratedPluginView
 @synthesize surfaceWasSwapped = surfaceWasSwapped_;
 @synthesize cachedSize = cachedSize_;
 
@@ -237,13 +237,14 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 
     // Set up a display link to do OpenGL rendering on a background thread.
     CVDisplayLinkCreateWithActiveCGDisplays(&displayLink_);
-    CVDisplayLinkSetOutputCallback(displayLink_,
-        &DrawOneAcceleratedPluginCallback, self);
-    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
-        displayLink_, cglContext_, cglPixelFormat_);
-    CVDisplayLinkStart(displayLink_);
   }
   return self;
+}
+
+- (void)dealloc {
+  CVDisplayLinkRelease(displayLink_);
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 
 - (void)drawView {
@@ -292,6 +293,10 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   glViewport(0, 0, size.width, size.height);
 
   CGLUnlockContext(cglContext_);
+
+  // Make sure the view is synchronized with the correct display.
+  CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
+       displayLink_, cglContext_, cglPixelFormat_);
 }
 
 - (void)renewGState {
@@ -314,14 +319,13 @@ static CVReturn DrawOneAcceleratedPluginCallback(
             selector:@selector(globalFrameDidChange:)
                 name:NSViewGlobalFrameDidChangeNotification
               object:self];
+    CVDisplayLinkSetOutputCallback(
+        displayLink_, &DrawOneAcceleratedPluginCallback, self);
+    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
+        displayLink_, cglContext_, cglPixelFormat_);
+    CVDisplayLinkStart(displayLink_);
   }
   [glContext_ makeCurrentContext];
-}
-
-- (void)dealloc {
-  CVDisplayLinkRelease(displayLink_);
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
@@ -336,6 +340,15 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 
   if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
     [static_cast<id>(newWindow) underlaySurfaceAdded];
+  }
+
+  // Stop the display link thread while the view is not visible.
+  if (newWindow) {
+    if (displayLink_ && !CVDisplayLinkIsRunning(displayLink_))
+      CVDisplayLinkStart(displayLink_);
+  } else {
+    if (displayLink_ && CVDisplayLinkIsRunning(displayLink_))
+      CVDisplayLinkStop(displayLink_);
   }
 }
 
