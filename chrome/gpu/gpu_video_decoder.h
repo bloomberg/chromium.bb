@@ -5,6 +5,9 @@
 #ifndef CHROME_GPU_GPU_VIDEO_DECODER_H_
 #define CHROME_GPU_GPU_VIDEO_DECODER_H_
 
+#include <map>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/ref_counted.h"
@@ -36,7 +39,7 @@ class GpuChannel;
 // In addition to delegating video related commamnds to VideoDecodeEngine it
 // has the following important functions:
 //
-// Buffer Allocation
+// BUFFER ALLOCATION
 //
 // VideoDecodeEngine requires platform specific video frame buffer to operate.
 // In order to abstract the platform specific bits GpuVideoDecoderContext is
@@ -63,20 +66,28 @@ class GpuChannel;
 //    VideoFrame(s) from the textures.
 // 6. GpuVideoDecoder sends the VideoFrame(s) generated to VideoDecodeEngine.
 //
-// Buffer Translation
+// BUFFER UPLOADING
+//
+// A VideoDecodeEngine always produces some device specific buffer. In order to
+// use them in Chrome we always upload them to GL textures. The upload step is
+// different on each platform and each subsystem. We perform these special
+// upload steps by using GpuVideoDevice which are written for each
+// VideoDecodeEngine.
+//
+// BUFFER MAPPING
 //
 // GpuVideoDecoder will be working with VideoDecodeEngine, they exchange
-// buffers that are only meaningful to VideoDecodeEngine. In order to translate
-// that to something we can transport in the IPC channel we need a mapping
-// between VideoFrame and buffer ID known between GpuVideoDecoder and
+// buffers that are only meaningful to VideoDecodeEngine. In order to map that
+// to something we can transport in the IPC channel we need a mapping between
+// VideoFrame and buffer ID known between GpuVideoDecoder and
 // GpuVideoDecoderHost in the Renderer process.
 //
 // After texture allocation and VideoFrame allocation are done, GpuVideoDecoder
 // will maintain such mapping.
 //
 class GpuVideoDecoder
-    : public IPC::Channel::Listener,
-      public base::RefCountedThreadSafe<GpuVideoDecoder>,
+    : public base::RefCountedThreadSafe<GpuVideoDecoder>,
+      public IPC::Channel::Listener,
       public media::VideoDecodeEngine::EventHandler,
       public media::VideoDecodeContext {
 
@@ -98,10 +109,14 @@ class GpuVideoDecoder
 
   // VideoDecodeContext implementation.
   virtual void* GetDevice();
-  virtual void AllocateVideoFrames(int n, size_t width, size_t height,
-                                   AllocationCompleteCallback* callback);
-  virtual void ReleaseVideoFrames(int n, VideoFrame* frames);
-  virtual void Destroy(DestructionCompleteCallback* callback);
+  virtual void AllocateVideoFrames(
+      int n, size_t width, size_t height, media::VideoFrame::Format format,
+      std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task);
+  virtual void ReleaseAllVideoFrames();
+  virtual void UploadToVideoFrame(void* buffer,
+                                  scoped_refptr<media::VideoFrame> frame,
+                                  Task* task);
+  virtual void Destroy(Task* task);
 
   // Constructor and destructor.
   GpuVideoDecoder(const GpuVideoDecoderInfoParam* param,
@@ -111,19 +126,45 @@ class GpuVideoDecoder
   virtual ~GpuVideoDecoder() {}
 
  private:
+  struct PendingAllocation {
+    size_t n;
+    size_t width;
+    size_t height;
+    media::VideoFrame::Format format;
+    std::vector<scoped_refptr<media::VideoFrame> >* frames;
+    Task* task;
+  };
+
   int32 route_id() { return decoder_host_route_id_; }
 
   bool CreateInputTransferBuffer(uint32 size,
                                  base::SharedMemoryHandle* handle);
-  bool CreateOutputTransferBuffer(uint32 size,
-                                  base::SharedMemoryHandle* handle);
-  void CreateVideoFrameOnTransferBuffer();
+
+  // These methods are message handlers for the messages sent from the Renderer
+  // process.
+  void OnInitialize(const GpuVideoDecoderInitParam& param);
+  void OnUninitialize();
+  void OnFlush();
+  void OnEmptyThisBuffer(const GpuVideoDecoderInputBufferParam& buffer);
+  void OnFillThisBuffer(const GpuVideoDecoderOutputBufferParam& param);
+  void OnFillThisBufferDoneACK();
+  void OnVideoFrameAllocated(int32 frame_id, std::vector<uint32> textures);
+
+  // Helper methods for sending messages to the Renderer process.
+  void SendInitializeDone(const GpuVideoDecoderInitDoneParam& param);
+  void SendUninitializeDone();
+  void SendFlushDone();
+  void SendEmptyBufferDone();
+  void SendEmptyBufferACK();
+  void SendFillBufferDone(const GpuVideoDecoderOutputBufferParam& param);
+  void SendAllocateVideoFrames(
+      int n, size_t width, size_t height, media::VideoFrame::Format format);
+  void SendReleaseAllVideoFrames();
 
   int32 decoder_host_route_id_;
 
   // Used only in system memory path. i.e. Remove this later.
   scoped_refptr<VideoFrame> frame_;
-  bool output_transfer_buffer_busy_;
   int32 pending_output_requests_;
 
   GpuChannel* channel_;
@@ -133,29 +174,26 @@ class GpuVideoDecoder
   // is used to switch context and translate client texture ID to service ID.
   gpu::gles2::GLES2Decoder* gles2_decoder_;
 
+  // Memory for transfering the input data for the hardware video decoder.
   scoped_ptr<base::SharedMemory> input_transfer_buffer_;
-  scoped_ptr<base::SharedMemory> output_transfer_buffer_;
 
+  // VideoDecodeEngine is used to do the actual video decoding.
   scoped_ptr<media::VideoDecodeEngine> decode_engine_;
-  scoped_ptr<GpuVideoDevice> decode_context_;
+
+  // GpuVideoDevice is used to generate VideoFrame(s) from GL textures. The
+  // frames generated are understood by the decode engine.
+  scoped_ptr<GpuVideoDevice> video_device_;
+
+  // Contain information for allocation VideoFrame(s).
+  scoped_ptr<PendingAllocation> pending_allocation_;
+
+  // Contains the mapping between a |frame_id| and VideoFrame generated by
+  // GpuVideoDevice from the associated GL textures.
+  typedef std::map<int32, scoped_refptr<media::VideoFrame> > VideoFrameMap;
+  VideoFrameMap video_frame_map_;
+
   media::VideoCodecConfig config_;
   media::VideoCodecInfo info_;
-
-  // Input message handler.
-  void OnInitialize(const GpuVideoDecoderInitParam& param);
-  void OnUninitialize();
-  void OnFlush();
-  void OnEmptyThisBuffer(const GpuVideoDecoderInputBufferParam& buffer);
-  void OnFillThisBuffer(const GpuVideoDecoderOutputBufferParam& param);
-  void OnFillThisBufferDoneACK();
-
-  // Output message helper.
-  void SendInitializeDone(const GpuVideoDecoderInitDoneParam& param);
-  void SendUninitializeDone();
-  void SendFlushDone();
-  void SendEmptyBufferDone();
-  void SendEmptyBufferACK();
-  void SendFillBufferDone(const GpuVideoDecoderOutputBufferParam& param);
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
 };

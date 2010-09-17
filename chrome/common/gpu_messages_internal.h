@@ -336,7 +336,7 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
                       GpuVideoDecoderOutputBufferParam)
 
   // Allocate video frames for output of the hardware video decoder.
-  IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_AllocateVideoFrame,
+  IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_AllocateVideoFrames,
                       int32, /* Numer of video frames to generate */
                       int32, /* Width of the video frame */
                       int32, /* Height of the video frame */

@@ -537,6 +537,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
 
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
+  virtual bool GetServiceTextureId(uint32 client_texture_id,
+                                   uint32* service_texture_id);
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
@@ -2049,6 +2051,17 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
 
 void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
+}
+
+bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
+                                           uint32* service_texture_id) {
+  TextureManager::TextureInfo* texture =
+      texture_manager()->GetTextureInfo(client_texture_id);
+  if (texture) {
+    *service_texture_id = texture->service_id();
+    return true;
+  }
+  return false;
 }
 
 void GLES2DecoderImpl::Destroy() {

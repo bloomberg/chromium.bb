@@ -35,6 +35,7 @@ FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {
 void FFmpegVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
+    VideoDecodeContext* context,
     const VideoCodecConfig& config) {
   allocator_.reset(new FFmpegVideoAllocator());
 

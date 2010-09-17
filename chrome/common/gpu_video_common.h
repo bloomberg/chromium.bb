@@ -48,15 +48,8 @@ struct GpuVideoDecoderInitParam {
 
 struct GpuVideoDecoderInitDoneParam {
   int32 success;  // other parameter is only meaningful when this is true.
-  int32 provides_buffer;
-  media::VideoFrame::Format format;
-  int32 surface_type;  // TODO(hclam): Remove this. We only pass GL textures.
-  int32 stride;
   int32 input_buffer_size;
-  int32 output_buffer_size;
   base::SharedMemoryHandle input_buffer_handle;
-  // we do not need this if hardware composition is ready.
-  base::SharedMemoryHandle output_buffer_handle;
 };
 
 struct GpuVideoDecoderInputBufferParam {
@@ -66,15 +59,13 @@ struct GpuVideoDecoderInputBufferParam {
   int32 flags;      // miscellaneous flag bit mask
 };
 
+// A message that contains formation of a video frame that is ready to be
+// rendered by the Renderer process.
 struct GpuVideoDecoderOutputBufferParam {
+  int32 frame_id;   // ID of the video frame that is ready to be rendered.
   int64 timestamp;  // In unit of microseconds.
   int64 duration;   // In unit of microseconds.
   int32 flags;      // miscellaneous flag bit mask
-
-  // TODO(hclam): This is really ugly and should be removed. Instead of sending
-  // a texture id we should send a buffer id that signals that a buffer is ready
-  // to be consumed. Before that we need API to establish the buffers.
-  int32 texture;
 
   enum {
     kFlagsEndOfStream     = 0x00000001,
@@ -88,11 +79,8 @@ struct GpuVideoDecoderErrorInfoParam {
 
 // TODO(jiesun): define this.
 struct GpuVideoDecoderFormatChangeParam {
-  int32 stride;
   int32 input_buffer_size;
-  int32 output_buffer_size;
   base::SharedMemoryHandle input_buffer_handle;
-  base::SharedMemoryHandle output_buffer_handle;
 };
 
 namespace IPC {
