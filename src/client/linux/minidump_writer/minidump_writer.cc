@@ -46,6 +46,8 @@
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "client/minidump_file_writer-inl.h"
 
+#include <algorithm>
+
 #include <errno.h>
 #include <fcntl.h>
 #include <link.h>
@@ -367,7 +369,8 @@ class MinidumpWriter {
         float_state_(NULL),
 #endif
         crashing_tid_(context->tid),
-        dumper_(crashing_pid) {
+        dumper_(crashing_pid),
+        memory_blocks_(dumper_.allocator()) {
   }
 
   bool Init() {
@@ -400,7 +403,9 @@ class MinidumpWriter {
 
     // A minidump file contains a number of tagged streams. This is the number
     // of stream which we write.
-    const unsigned kNumWriters = 11 + !!r_debug;
+    unsigned kNumWriters = 12;
+    if (r_debug)
+      ++kNumWriters;
 
     TypedMDRVA<MDRawHeader> header(&minidump_writer_);
     TypedMDRVA<MDRawDirectory> dir(&minidump_writer_);
@@ -424,6 +429,10 @@ class MinidumpWriter {
     dir.CopyIndex(dir_index++, &dirent);
 
     if (!WriteMappings(&dirent))
+      return false;
+    dir.CopyIndex(dir_index++, &dirent);
+
+    if (!WriteMemoryListStream(&dirent))
       return false;
     dir.CopyIndex(dir_index++, &dirent);
 
@@ -635,6 +644,50 @@ class MinidumpWriter {
         memory.Copy(stack_copy, stack_len);
         thread.stack.start_of_memory_range = (uintptr_t) (stack);
         thread.stack.memory = memory.location();
+        memory_blocks_.push_back(thread.stack);
+
+        // Copy 256 bytes around crashing instruction pointer to minidump.
+        const size_t kIPMemorySize = 256;
+        u_int64_t ip = GetInstructionPointer();
+        // Bound it to the upper and lower bounds of the memory map
+        // it's contained within. If it's not in mapped memory,
+        // don't bother trying to write it.
+        bool ip_is_mapped = false;
+        MDMemoryDescriptor ip_memory_d;
+        for (unsigned i = 0; i < dumper_.mappings().size(); ++i) {
+          const MappingInfo& mapping = *dumper_.mappings()[i];
+          if (ip >= mapping.start_addr &&
+              ip < mapping.start_addr + mapping.size) {
+            ip_is_mapped = true;
+            // Try to get 128 bytes before and after the IP, but
+            // settle for whatever's available.
+            ip_memory_d.start_of_memory_range =
+              std::min(mapping.start_addr,
+                       uintptr_t(ip - (kIPMemorySize / 2)));
+            ip_memory_d.memory.data_size =
+              std::min(ptrdiff_t(kIPMemorySize),
+                       ptrdiff_t(mapping.start_addr + mapping.size
+                                 - ip_memory_d.start_of_memory_range));
+            break;
+          }
+        }
+
+        if (ip_is_mapped) {
+          UntypedMDRVA ip_memory(&minidump_writer_);
+          if (!ip_memory.Allocate(ip_memory_d.memory.data_size))
+            return false;
+          uint8_t* memory_copy =
+            (uint8_t*) dumper_.allocator()->Alloc(ip_memory_d.memory.data_size);
+          dumper_.CopyFromProcess(
+            memory_copy,
+            thread.thread_id,
+            reinterpret_cast<void*>(ip_memory_d.start_of_memory_range),
+            ip_memory_d.memory.data_size);
+          ip_memory.Copy(memory_copy, ip_memory_d.memory.data_size);
+          ip_memory_d.memory = ip_memory.location();
+          memory_blocks_.push_back(ip_memory_d);
+        }
+
         TypedMDRVA<RawContextCPU> cpu(&minidump_writer_);
         if (!cpu.Allocate())
           return false;
@@ -657,6 +710,8 @@ class MinidumpWriter {
         memory.Copy(stack_copy, info.stack_len);
         thread.stack.start_of_memory_range = (uintptr_t)(info.stack);
         thread.stack.memory = memory.location();
+        memory_blocks_.push_back(thread.stack);
+
         TypedMDRVA<RawContextCPU> cpu(&minidump_writer_);
         if (!cpu.Allocate())
           return false;
@@ -754,6 +809,24 @@ class MinidumpWriter {
       list.CopyIndexAfterObject(j++, &mod, MD_MODULE_SIZE);
     }
 
+    return true;
+  }
+
+  bool WriteMemoryListStream(MDRawDirectory* dirent) {
+    TypedMDRVA<uint32_t> list(&minidump_writer_);
+    if (!list.AllocateObjectAndArray(memory_blocks_.size(),
+                                     sizeof(MDMemoryDescriptor)))
+      return false;
+
+    dirent->stream_type = MD_MEMORY_LIST_STREAM;
+    dirent->location = list.location();
+
+    *list.get() = memory_blocks_.size();
+
+    for (size_t i = 0; i < memory_blocks_.size(); ++i) {
+      list.CopyIndexAfterObject(i, &memory_blocks_[i],
+                                sizeof(MDMemoryDescriptor));
+    }
     return true;
   }
 
@@ -872,13 +945,25 @@ class MinidumpWriter {
   uintptr_t GetStackPointer() {
     return ucontext_->uc_mcontext.gregs[REG_ESP];
   }
+
+  uintptr_t GetInstructionPointer() {
+    return ucontext_->uc_mcontext.gregs[REG_EIP];
+  }
 #elif defined(__x86_64)
   uintptr_t GetStackPointer() {
     return ucontext_->uc_mcontext.gregs[REG_RSP];
   }
+
+  uintptr_t GetInstructionPointer() {
+    return ucontext_->uc_mcontext.gregs[REG_RIP];
+  }
 #elif defined(__ARM_EABI__)
   uintptr_t GetStackPointer() {
     return ucontext_->uc_mcontext.arm_sp;
+  }
+
+  uintptr_t GetInstructionPointer() {
+    return ucontext_->uc_mcontext.arm_ip;
   }
 #else
 #error "This code has not been ported to your platform yet."
@@ -1129,6 +1214,10 @@ popline:
   LinuxDumper dumper_;
   MinidumpFileWriter minidump_writer_;
   MDLocationDescriptor crashing_thread_context_;
+  // Blocks of memory written to the dump. These are all currently
+  // written while writing the thread list stream, but saved here
+  // so a memory list stream can be written afterwards.
+  wasteful_vector<MDMemoryDescriptor> memory_blocks_;
 };
 
 bool WriteMinidump(const char* filename, pid_t crashing_process,

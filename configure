@@ -14955,8 +14955,8 @@ fi
 if test "${enable_m32+set}" = set; then :
   enableval=$enable_m32; case "${enableval}" in
                  yes)
-		   CFLAGS="${CFLAGS} -m32"
-		   CXXFLAGS="${CXXFLAGS} -m32"
+                   CFLAGS="${CFLAGS} -m32"
+                   CXXFLAGS="${CXXFLAGS} -m32"
                    usem32=true
                    ;;
                  no)

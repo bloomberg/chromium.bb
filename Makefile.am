@@ -220,8 +220,13 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/md5.lo \
 	src/common/linux/file_id.lo \
 	src/common/linux/guid_creator.lo \
-	src/common/string_conversion.lo
-src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la
+	src/common/string_conversion.lo \
+	src/processor/basic_code_modules.lo \
+	src/processor/logging.lo \
+	src/processor/minidump.lo \
+	src/processor/pathname_stripper.lo
+
+src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la src/libbreakpad.la
 endif
 
 src_processor_address_map_unittest_SOURCES = \

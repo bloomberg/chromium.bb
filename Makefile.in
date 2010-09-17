@@ -801,9 +801,13 @@ TESTS_ENVIRONMENT =
 @LINUX_HOST_TRUE@	src/common/md5.lo \
 @LINUX_HOST_TRUE@	src/common/linux/file_id.lo \
 @LINUX_HOST_TRUE@	src/common/linux/guid_creator.lo \
-@LINUX_HOST_TRUE@	src/common/string_conversion.lo
+@LINUX_HOST_TRUE@	src/common/string_conversion.lo \
+@LINUX_HOST_TRUE@	src/processor/basic_code_modules.lo \
+@LINUX_HOST_TRUE@	src/processor/logging.lo \
+@LINUX_HOST_TRUE@	src/processor/minidump.lo \
+@LINUX_HOST_TRUE@	src/processor/pathname_stripper.lo
 
-@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la
+@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la src/libbreakpad.la
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
 
