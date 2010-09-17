@@ -37,11 +37,18 @@ WebIDBKey RendererWebIDBCursorImpl::key() const {
   return key;
 }
 
-WebSerializedScriptValue RendererWebIDBCursorImpl::value() const {
-  SerializedScriptValue value;
+void RendererWebIDBCursorImpl::value(
+    WebSerializedScriptValue& webScriptValue,
+    WebIDBKey& webKey) const {
+  SerializedScriptValue scriptValue;
+  IndexedDBKey key;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBCursorValue(idb_cursor_id_, &value));
-  return value;
+      new ViewHostMsg_IDBCursorValue(idb_cursor_id_, &scriptValue,
+                                     &key));
+  DCHECK(scriptValue.is_null());
+  webScriptValue = scriptValue;
+  DCHECK(key.type() == WebIDBKey::InvalidType);
+  webKey = key;
 }
 
 void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,

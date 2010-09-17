@@ -64,6 +64,22 @@ class IndexedDBDispatcher {
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_database_id);
 
+  void RequestIDBIndexOpenObjectCursor(
+      const WebKit::WebIDBKeyRange& idb_key_range, unsigned short direction,
+      WebKit::WebIDBCallbacks* callbacks, int32 idb_index_id);
+
+  void RequestIDBIndexOpenCursor(
+      const WebKit::WebIDBKeyRange& idb_key_range, unsigned short direction,
+      WebKit::WebIDBCallbacks* callbacks, int32 idb_index_id);
+
+  void RequestIDBIndexGetObject(
+      const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_index_id);
+
+  void RequestIDBIndexGet(
+      const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_index_id);
+
   void RequestIDBObjectStoreGet(
       const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id);

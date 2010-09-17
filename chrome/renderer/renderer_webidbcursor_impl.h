@@ -20,7 +20,8 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
 
   virtual unsigned short direction() const;
   virtual WebKit::WebIDBKey key() const;
-  virtual WebKit::WebSerializedScriptValue value() const;
+  virtual void value(WebKit::WebSerializedScriptValue&,
+                     WebKit::WebIDBKey&) const;
   virtual void update(const WebKit::WebSerializedScriptValue& value,
                       WebKit::WebIDBCallbacks* callback);
   virtual void continueFunction(const WebKit::WebIDBKey& key,

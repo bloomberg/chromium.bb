@@ -1271,6 +1271,48 @@ void ParamTraits<ViewHostMsg_IDBDatabaseCreateObjectStore_Params>::Log(
   l->append(")");
 }
 
+void ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, p.response_id_);
+  WriteParam(m, p.left_key_);
+  WriteParam(m, p.right_key_);
+  WriteParam(m, p.key_flags_);
+  WriteParam(m, p.direction_);
+  WriteParam(m, p.idb_index_id_);
+}
+
+bool ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params>::Read(
+    const Message* m,
+    void** iter,
+    param_type* p) {
+  return
+      ReadParam(m, iter, &p->response_id_) &&
+      ReadParam(m, iter, &p->left_key_) &&
+      ReadParam(m, iter, &p->right_key_) &&
+      ReadParam(m, iter, &p->key_flags_) &&
+      ReadParam(m, iter, &p->direction_) &&
+      ReadParam(m, iter, &p->idb_index_id_);
+}
+
+void ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("(");
+  LogParam(p.response_id_, l);
+  l->append(", ");
+  LogParam(p.left_key_, l);
+  l->append(", ");
+  LogParam(p.right_key_, l);
+  l->append(", ");
+  LogParam(p.key_flags_, l);
+  l->append(", ");
+  LogParam(p.direction_, l);
+  l->append(", ");
+  LogParam(p.idb_index_id_, l);
+  l->append(")");
+}
+
 void ParamTraits<ViewHostMsg_IDBObjectStoreCreateIndex_Params>::Write(
     Message* m,
     const param_type& p) {

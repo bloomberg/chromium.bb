@@ -17,6 +17,7 @@ class IndexedDBKey;
 class SerializedScriptValue;
 struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
 struct ViewHostMsg_IDBFactoryOpen_Params;
+struct ViewHostMsg_IDBIndexOpenCursor_Params;
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params;
 struct ViewHostMsg_IDBObjectStoreOpenCursor_Params;
 
@@ -127,8 +128,18 @@ class IndexedDBDispatcherHost
     void Send(IPC::Message* message);
 
     void OnName(int32 idb_index_id, IPC::Message* reply_msg);
+    void OnStoreName(int32 idb_index_id, IPC::Message* reply_msg);
     void OnKeyPath(int32 idb_index_id, IPC::Message* reply_msg);
     void OnUnique(int32 idb_index_id, IPC::Message* reply_msg);
+    void OnOpenObjectCursor(
+        const ViewHostMsg_IDBIndexOpenCursor_Params& params);
+    void OnOpenCursor(const ViewHostMsg_IDBIndexOpenCursor_Params& params);
+    void OnGetObject(int idb_index_id,
+                     int32 response_id,
+                     const IndexedDBKey& key);
+    void OnGet(int idb_index_id,
+               int32 response_id,
+               const IndexedDBKey& key);
     void OnDestroyed(int32 idb_index_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -159,6 +170,8 @@ class IndexedDBDispatcherHost
                  IPC::Message* reply_msg);
     void OnRemoveIndex(int32 idb_object_store_id, int32 response_id,
                        const string16& name);
+    void OnOpenCursor(
+        const ViewHostMsg_IDBObjectStoreOpenCursor_Params& params);
     void OnDestroyed(int32 idb_object_store_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -173,8 +186,6 @@ class IndexedDBDispatcherHost
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
-    void OnOpenCursor(
-        const ViewHostMsg_IDBObjectStoreOpenCursor_Params& params);
     void OnDirection(int32 idb_object_store_id, IPC::Message* reply_msg);
     void OnKey(int32 idb_object_store_id, IPC::Message* reply_msg);
     void OnValue(int32 idb_object_store_id, IPC::Message* reply_msg);

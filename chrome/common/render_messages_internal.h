@@ -2330,9 +2330,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               IndexedDBKey)
 
   // WebIDBCursor::value() message.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBCursorValue,
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_IDBCursorValue,
                               int32, /* idb_cursor_id */
-                              SerializedScriptValue)
+                              SerializedScriptValue, /* script_value */
+                              IndexedDBKey /* key */)
 
   // WebIDBCursor::update() message.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBCursorUpdate,
@@ -2424,6 +2425,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int32, /* idb_index_id */
                               string16 /* name */)
 
+  // WebIDBIndex::storeName() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexStoreName,
+                              int32, /* idb_index_id */
+                              string16 /* store_name */)
+
   // WebIDBIndex::keyPath() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexKeyPath,
                               int32, /* idb_index_id */
@@ -2433,6 +2439,26 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexUnique,
                               int32, /* idb_unique_id */
                               bool /* unique */)
+
+  // WebIDBIndex::openObjectCursor() message. (Uses openCursor's params though.)
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexOpenObjectCursor,
+                       ViewHostMsg_IDBIndexOpenCursor_Params)
+
+  // WebIDBIndex::openCursor() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexOpenCursor,
+                       ViewHostMsg_IDBIndexOpenCursor_Params)
+
+  // WebIDBIndex::getObject() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBIndexGetObject,
+                       int32, /* idb_index_id */
+                       int32, /* response_id */
+                       IndexedDBKey /* key */)
+
+  // WebIDBIndex::get() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBIndexGet,
+                       int32, /* idb_index_id */
+                       int32, /* response_id */
+                       IndexedDBKey /* key */)
 
   // WebIDBIndex::~WebIDBIndex() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexDestroyed,

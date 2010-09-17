@@ -652,6 +652,27 @@ struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params {
   int32 idb_database_id_;
 };
 
+// Used to open both cursors and object cursors in IndexedDB.
+struct ViewHostMsg_IDBIndexOpenCursor_Params {
+  // The response should have this id.
+  int32 response_id_;
+
+  // The serialized left key.
+  IndexedDBKey left_key_;
+
+  // The serialized right key.
+  IndexedDBKey right_key_;
+
+  // The key flags.
+  int32 key_flags_;
+
+  // The direction of this cursor.
+  int32 direction_;
+
+  // The index the index belongs to.
+  int32 idb_index_id_;
+};
+
 // Used to create an index.
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params {
   ViewHostMsg_IDBObjectStoreCreateIndex_Params();
@@ -680,15 +701,20 @@ struct ViewHostMsg_IDBObjectStoreOpenCursor_Params {
 
   // The response should have this id.
   int32 response_id_;
+
   // The serialized left key.
   IndexedDBKey left_key_;
+
   // The serialized right key.
   IndexedDBKey right_key_;
+
   // The key flags.
   int32 flags_;
+
   // The direction of this cursor.
   int32 direction_;
-  // The object store the index belongs to.
+
+  // The object store the cursor belongs to.
   int32 idb_object_store_id_;
 };
 
@@ -1115,6 +1141,14 @@ struct ParamTraits<ViewHostMsg_IDBFactoryOpen_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_IDBDatabaseCreateObjectStore_Params> {
   typedef ViewHostMsg_IDBDatabaseCreateObjectStore_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params> {
+  typedef ViewHostMsg_IDBIndexOpenCursor_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

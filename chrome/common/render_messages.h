@@ -92,6 +92,7 @@ struct ViewHostMsg_ScriptedPrint_Params;
 struct ViewMsg_DOMStorageEvent_Params;
 struct ViewHostMsg_IDBFactoryOpen_Params;
 struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
+struct ViewHostMsg_IDBIndexOpenCursor_Params;
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params;
 struct ViewHostMsg_IDBObjectStoreOpenCursor_Params;
 struct ViewMsg_ExecuteCode_Params;
