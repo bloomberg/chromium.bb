@@ -37,6 +37,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/scoped_ptr.h"
+#include "converter/cross/renderer_stub.h"
 #include "core/cross/class_manager.h"
 #include "core/cross/client.h"
 #include "core/cross/client_info.h"
@@ -279,7 +280,11 @@ bool Convert(const FilePath& in_filename,
   ErrorCollector error_collector(&service_locator);
 
   scoped_ptr<Renderer> renderer(
+#if !defined(RENDERER_CAIRO)
       Renderer::CreateDefaultRenderer(&service_locator));
+#else
+      RendererStub::CreateDefault(&service_locator));
+#endif
   renderer->InitCommon();
 
   Pack::Ref pack(object_manager.CreatePack());

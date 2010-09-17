@@ -298,10 +298,10 @@ class Renderer {
                      ParamCache* param_cache);
 
   // Pushes rendering states.
-  void PushRenderStates(State *state);
+  virtual void PushRenderStates(State *state);
 
   // Pops rendering states to back to their previous settings.
-  void PopRenderStates();
+  virtual void PopRenderStates();
 
   // Binds the passed surfaces to the color and depth buffers of the
   // renderer.
