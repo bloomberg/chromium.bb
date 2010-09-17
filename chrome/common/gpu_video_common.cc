@@ -213,13 +213,13 @@ void ParamTraits<GpuVideoDecoderFormatChangeParam>::Log(
 // Traits for media::VideoFrame::Format
 void ParamTraits<media::VideoFrame::Format>::Write(
     Message* m, const param_type& p) {
-  WriteParam(m, p);
+  m->WriteInt(p);
 }
 
 bool ParamTraits<media::VideoFrame::Format>::Read(
     const Message* m, void** iter, param_type* p) {
   int type;
-  if (!ReadParam(m, iter, &type))
+  if (!m->ReadInt(iter, &type))
     return false;
   *p = static_cast<param_type>(type);
   return true;
