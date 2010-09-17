@@ -20,7 +20,6 @@
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebData;
-using WebKit::WebFileInfo;
 using WebKit::WebHistoryItem;
 using WebKit::WebHTTPBody;
 using WebKit::WebPoint;
@@ -240,7 +239,7 @@ static void WriteFormData(const WebHTTPBody& http_body, SerializeObject* obj) {
       WriteString(element.filePath, obj);
       WriteInteger64(element.fileStart, obj);
       WriteInteger64(element.fileLength, obj);
-      WriteReal(element.fileInfo.modificationTime, obj);
+      WriteReal(element.modificationTime, obj);
     } else {
       WriteGURL(element.blobURL, obj);
     }
@@ -273,13 +272,14 @@ static WebHTTPBody ReadFormData(const SerializeObject* obj) {
       WebString file_path = ReadString(obj);
       long long file_start = 0;
       long long file_length = -1;
-      WebFileInfo file_info;
+      double modification_time = 0.0;
       if (obj->version >= 8) {
         file_start = ReadInteger64(obj);
         file_length = ReadInteger64(obj);
-        file_info.modificationTime = ReadReal(obj);
+        modification_time = ReadReal(obj);
       }
-      http_body.appendFileRange(file_path, file_start, file_length, file_info);
+      http_body.appendFileRange(file_path, file_start, file_length,
+                                modification_time);
     } else if (obj->version >= 10) {
       GURL blob_url = ReadGURL(obj);
       http_body.appendBlob(blob_url);

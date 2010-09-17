@@ -22,7 +22,6 @@
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebData;
-using WebKit::WebFileInfo;
 using WebKit::WebHTTPBody;
 using WebKit::WebString;
 using WebKit::WebFrame;
@@ -217,13 +216,11 @@ WebURLRequest URLRequestInfo::ToWebURLRequest(WebFrame* frame) const {
     http_body.initialize();
     for (size_t i = 0; i < body_.size(); ++i) {
       if (body_[i].file_ref) {
-        WebFileInfo file_info;
-        file_info.modificationTime = body_[i].expected_last_modified_time;
         http_body.appendFileRange(
             webkit_glue::FilePathToWebString(body_[i].file_ref->system_path()),
             body_[i].start_offset,
             body_[i].number_of_bytes,
-            file_info);
+            body_[i].expected_last_modified_time);
       } else {
         DCHECK(!body_[i].data.empty());
         http_body.appendData(WebData(body_[i].data));

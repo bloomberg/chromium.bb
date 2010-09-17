@@ -431,7 +431,7 @@ void WebURLLoaderImpl::Context::Start(
                 WebStringToFilePath(element.filePath),
                 static_cast<uint64>(element.fileStart),
                 static_cast<uint64>(element.fileLength),
-                base::Time::FromDoubleT(element.fileInfo.modificationTime));
+                base::Time::FromDoubleT(element.modificationTime));
           }
           break;
         case WebHTTPBody::Element::TypeBlob:
