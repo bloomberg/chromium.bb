@@ -204,8 +204,10 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   if (window_)
     WillDestroyWindow();
 
+#if defined(OS_MACOSX)
   if (render_view_)
     render_view_->UnregisterPluginDelegate(this);
+#endif
 
   if (channel_host_) {
     Send(new PluginMsg_DestroyInstance(instance_id_));
@@ -382,7 +384,9 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   IPC::Message* msg = new PluginMsg_Init(instance_id_, params, &result);
   Send(msg);
 
+#if defined(OS_MACOSX)
   render_view_->RegisterPluginDelegate(this);
+#endif
 
   return result;
 }
@@ -979,19 +983,19 @@ int WebPluginDelegateProxy::GetProcessId() {
   return channel_host_->peer_pid();
 }
 
-void WebPluginDelegateProxy::SetContentAreaFocus(bool has_focus) {
-  IPC::Message* msg = new PluginMsg_SetContentAreaFocus(instance_id_,
-                                                        has_focus);
+#if defined(OS_MACOSX)
+void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
+  IPC::Message* msg = new PluginMsg_SetWindowFocus(instance_id_,
+                                                   window_has_focus);
   // Make sure focus events are delivered in the right order relative to
   // sync messages they might interact with (Paint, HandleEvent, etc.).
   msg->set_unblock(true);
   Send(msg);
 }
 
-#if defined(OS_MACOSX)
-void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
-  IPC::Message* msg = new PluginMsg_SetWindowFocus(instance_id_,
-                                                   window_has_focus);
+void WebPluginDelegateProxy::SetContentAreaFocus(bool has_focus) {
+  IPC::Message* msg = new PluginMsg_SetContentAreaFocus(instance_id_,
+                                                        has_focus);
   // Make sure focus events are delivered in the right order relative to
   // sync messages they might interact with (Paint, HandleEvent, etc.).
   msg->set_unblock(true);

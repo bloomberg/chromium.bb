@@ -318,10 +318,10 @@ class RenderView : public RenderWidget,
                                          int32 height,
                                          TransportDIB::Handle transport_dib);
   void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
-#endif
 
   void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
   void UnregisterPluginDelegate(WebPluginDelegateProxy* delegate);
+#endif
 
   // IPC::Channel::Listener implementation -------------------------------------
 
@@ -610,8 +610,9 @@ class RenderView : public RenderWidget,
   virtual void DidFlushPaint();
   virtual void DidHandleKeyEvent();
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
-  virtual void OnSetFocus(bool enable);
+
 #if OS_MACOSX
+  virtual void OnSetFocus(bool enable);
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
 #endif
@@ -1217,10 +1218,12 @@ class RenderView : public RenderWidget,
 
   PepperPluginDelegateImpl pepper_delegate_;
 
+#if defined(OS_MACOSX)
   // All the currently active plugin delegates for this RenderView; kept so that
   // we can enumerate them to send updates about things like window location
   // or tab focus and visibily. These are non-owning references.
   std::set<WebPluginDelegateProxy*> plugin_delegates_;
+#endif
 
   // A list of all Pepper v1 plugins that we've created that haven't been
   // destroyed yet. Pepper v2 plugins are tracked by the pepper_delegate_.

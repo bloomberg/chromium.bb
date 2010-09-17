@@ -116,9 +116,9 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometrySync, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_SendJavaScriptStream,
                         OnSendJavaScriptStream)
-    IPC_MESSAGE_HANDLER(PluginMsg_SetContentAreaFocus, OnSetContentAreaFocus)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginMsg_SetWindowFocus, OnSetWindowFocus)
+    IPC_MESSAGE_HANDLER(PluginMsg_SetContentAreaFocus, OnSetContentAreaFocus)
     IPC_MESSAGE_HANDLER(PluginMsg_ContainerHidden, OnContainerHidden)
     IPC_MESSAGE_HANDLER(PluginMsg_ContainerShown, OnContainerShown)
     IPC_MESSAGE_HANDLER(PluginMsg_WindowFrameChanged, OnWindowFrameChanged)
@@ -336,13 +336,13 @@ void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,
   delegate_->SendJavaScriptStream(url, result, success, notify_id);
 }
 
-void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
-  delegate_->SetContentAreaHasFocus(has_focus);
-}
-
 #if defined(OS_MACOSX)
 void WebPluginDelegateStub::OnSetWindowFocus(bool has_focus) {
   delegate_->SetWindowHasFocus(has_focus);
+}
+
+void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
+  delegate_->SetContentAreaHasFocus(has_focus);
 }
 
 void WebPluginDelegateStub::OnContainerHidden() {

@@ -52,10 +52,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       parent_(containing_view),
       quirks_(0),
       handle_event_depth_(0),
-      first_set_window_call_(true),
-      plugin_has_focus_(false),
-      has_webkit_focus_(false),
-      containing_view_has_focus_(false) {
+      first_set_window_call_(true) {
   memset(&window_, 0, sizeof(window_));
   if (instance_->mime_type() == "application/x-shockwave-flash") {
     // Flash is tied to Firefox's whacky behavior with windowless plugins. See
@@ -541,7 +538,7 @@ void WebPluginDelegateImpl::WindowlessSetWindow() {
   }
 }
 
-bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
+void WebPluginDelegateImpl::SetFocus(bool focused) {
   DCHECK(instance()->windowless());
 
   NPEvent np_event = {0};
@@ -552,7 +549,6 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
   event.mode = -1;
   event.detail = NotifyDetailNone;
   instance()->NPP_HandleEvent(&np_event);
-  return true;
 }
 
 // Converts a WebInputEvent::Modifiers bitfield into a

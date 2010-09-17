@@ -597,15 +597,14 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
     return CreateNPAPIPlugin(frame, params, info.path, mime_type);
 }
 
+#if defined(OS_MACOSX)
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.insert(delegate);
   // If the renderer is visible, set initial visibility and focus state.
   if (!is_hidden()) {
-#if defined(OS_MACOSX)
     delegate->SetContainerVisibility(true);
     if (webview() && webview()->isActive())
       delegate->SetWindowFocus(true);
-#endif
     if (has_focus())
       delegate->SetContentAreaFocus(true);
   }
@@ -614,6 +613,7 @@ void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
 void RenderView::UnregisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.erase(delegate);
 }
+#endif
 
 void RenderView::Init(gfx::NativeViewId parent_hwnd,
                       int32 opener_id,
@@ -5632,7 +5632,6 @@ void RenderView::OnWasRestored(bool needs_repainting) {
     (*plugin_it)->SetContainerVisibility(true);
   }
 }
-#endif  // OS_MACOSX
 
 void RenderView::OnSetFocus(bool enable) {
   RenderWidget::OnSetFocus(enable);
@@ -5641,16 +5640,15 @@ void RenderView::OnSetFocus(bool enable) {
     std::set<WebPluginDelegateProxy*>::iterator plugin_it;
     for (plugin_it = plugin_delegates_.begin();
          plugin_it != plugin_delegates_.end(); ++plugin_it) {
-#if defined(OS_MACOSX)
       // RenderWidget's call to setFocus can cause the underlying webview's
       // activation state to change just like a call to setIsActive.
       if (enable)
         (*plugin_it)->SetWindowFocus(true);
-#endif
       (*plugin_it)->SetContentAreaFocus(enable);
     }
   }
 }
+#endif  // OS_MACOSX
 
 void RenderView::EnsureDocumentTag() {
   // TODO(darin): There's actually no reason for this to be here.  We should

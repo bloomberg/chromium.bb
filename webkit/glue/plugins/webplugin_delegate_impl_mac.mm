@@ -258,16 +258,16 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       layer_(nil),
       surface_(NULL),
       renderer_(nil),
+      plugin_has_focus_(false),
+      has_webkit_focus_(false),
+      containing_view_has_focus_(false),
       containing_window_has_focus_(false),
       initial_window_focus_(false),
       container_is_visible_(false),
       have_called_set_window_(false),
       external_drag_tracker_(new ExternalDragTracker()),
       handle_event_depth_(0),
-      first_set_window_call_(true),
-      plugin_has_focus_(false),
-      has_webkit_focus_(false),
-      containing_view_has_focus_(false) {
+      first_set_window_call_(true) {
   memset(&window_, 0, sizeof(window_));
 #ifndef NP_NO_CARBON
   memset(&np_cg_context_, 0, sizeof(np_cg_context_));
@@ -464,6 +464,15 @@ void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {
 
 void WebPluginDelegateImpl::Print(CGContextRef context) {
   NOTIMPLEMENTED();
+}
+
+void WebPluginDelegateImpl::SetFocus(bool focused) {
+  // This is called when internal WebKit focus (the focused element on the page)
+  // changes, but plugins need to know about actual first responder status, so
+  // we have an extra layer of focus tracking.
+  has_webkit_focus_ = focused;
+  if (containing_view_has_focus_)
+    SetPluginHasFocus(focused);
 }
 
 bool WebPluginDelegateImpl::PlatformHandleInputEvent(
@@ -814,9 +823,13 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
   }
 }
 
-bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
+void WebPluginDelegateImpl::SetPluginHasFocus(bool has_focus) {
   if (!have_called_set_window_)
-    return false;
+    return;
+
+  if (has_focus == plugin_has_focus_)
+    return;
+  plugin_has_focus_ = has_focus;
 
   ScopedActiveDelegate active_delegate(this);
 
@@ -824,7 +837,7 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
 #ifndef NP_NO_CARBON
     case NPEventModelCarbon: {
       NPEvent focus_event = { 0 };
-      if (focused)
+      if (plugin_has_focus_)
         focus_event.what = NPEventType_GetFocusEvent;
       else
         focus_event.what = NPEventType_LoseFocusEvent;
@@ -837,12 +850,16 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
       NPCocoaEvent focus_event;
       memset(&focus_event, 0, sizeof(focus_event));
       focus_event.type = NPCocoaEventFocusChanged;
-      focus_event.data.focus.hasFocus = focused;
+      focus_event.data.focus.hasFocus = plugin_has_focus_;
       instance()->NPP_HandleEvent(&focus_event);
       break;
     }
   }
-  return true;
+}
+
+void WebPluginDelegateImpl::SetContentAreaHasFocus(bool has_focus) {
+  containing_view_has_focus_ = has_focus;
+  SetPluginHasFocus(containing_view_has_focus_ && has_webkit_focus_);
 }
 
 void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
@@ -876,8 +893,8 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
     instance()->webplugin()->InvalidateRect(gfx::Rect());
 }
 
-void WebPluginDelegateImpl::WindowFrameChanged(const gfx::Rect& window_frame,
-                                               const gfx::Rect& view_frame) {
+void WebPluginDelegateImpl::WindowFrameChanged(gfx::Rect window_frame,
+                                               gfx::Rect view_frame) {
   instance()->set_window_frame(window_frame);
   SetContentAreaOrigin(gfx::Point(view_frame.x(), view_frame.y()));
 }

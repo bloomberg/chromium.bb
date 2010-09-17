@@ -78,12 +78,12 @@ class WebPluginDelegateProxy
                                 WebKit::WebCursorInfo* cursor);
   virtual int GetProcessId();
 
-  // Informs the plugin that its containing content view has gained or lost
-  // first responder status.
-  virtual void SetContentAreaFocus(bool has_focus);
 #if defined(OS_MACOSX)
   // Informs the plugin that its enclosing window has gained or lost focus.
   virtual void SetWindowFocus(bool window_has_focus);
+  // Informs the plugin that its containing content view has gained or lost
+  // first responder status.
+  virtual void SetContentAreaFocus(bool has_focus);
   // Informs the plugin that its container (window/tab) has changed visibility.
   virtual void SetContainerVisibility(bool is_visible);
   // Informs the plugin that its enclosing window's frame has changed.
