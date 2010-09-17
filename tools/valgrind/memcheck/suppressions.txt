@@ -2630,29 +2630,3 @@
    fun:_ZN17RenderProcessHost*Profile
    fun:_ZN21MockRenderProcessHost*Profile
 }
-{
-   bug_56018
-   Memcheck:Addr4
-   fun:_ZNSt8_Rb_treeIPvSt4pairIKS0_PN13CppBoundClass16PropertyCallbackEESt10_Select1stIS6_ESt4lessIS0_ESaIS6_EE8_M_beginEv
-   fun:_ZNSt8_Rb_treeIPvSt4pairIKS0_PN13CppBoundClass16PropertyCallbackEESt10_Select1stIS6_ESt4lessIS0_ESaIS6_EE4findERS2_
-   fun:_ZNSt3mapIPvPN13CppBoundClass16PropertyCallbackESt4lessIS0_ESaISt4pairIKS0_S3_EEE4findERS7_
-   fun:_ZN13CppBoundClass12BindPropertyERKSsPNS_16PropertyCallbackE
-   fun:_ZN13CppBoundClass12BindPropertyERKSsP10CppVariant
-   fun:_ZN21DOMBoundBrowserObject11SetPropertyERKSsS1_
-   fun:_ZN10RenderView18OnSetDOMUIPropertyERKSsS1_
-   fun:_Z16DispatchToMethodI10RenderViewMS0_FvRKSsS2_ESsSsEvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN3IPC16MessageWithTupleI6Tuple2ISsSsEE8DispatchI10RenderViewMS5_FvRKSsS7_EEEbPKNS_7MessageEPT_T0_
-   fun:_ZN10RenderView17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN13MessageRouter12RouteMessageERKN3IPC7MessageE
-   fun:_ZN13MessageRouter17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
