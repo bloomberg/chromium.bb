@@ -23,8 +23,8 @@ int GetSafeFd() {
 bool VerifyClosed(int fd) {
   const int duped = dup(fd);
   if (duped != -1) {
-    HANDLE_EINTR(close(duped));
-    HANDLE_EINTR(close(fd));
+    EXPECT_NE(HANDLE_EINTR(close(duped)), -1);
+    EXPECT_NE(HANDLE_EINTR(close(fd)), -1);
     return false;
   }
   return true;
