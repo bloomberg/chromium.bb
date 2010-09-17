@@ -112,7 +112,7 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
   EXPECT_STREQ("1\n", value.c_str());
 }
 
-TEST_F(SearchProviderTest, DISABLED_TestIsSearchProviderInstalled) {
+TEST_F(SearchProviderTest, TestIsSearchProviderInstalled) {
   ASSERT_TRUE(test_server_.Start());
 
   // Use the default search provider, other installed search provider, and
@@ -147,7 +147,7 @@ TEST_F(SearchProviderTest, DISABLED_TestIsSearchProviderInstalled) {
   }
 
   // Do the verification.
-  for (size_t i = 0; i < arraysize(test_hosts); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     FinishIsSearchProviderInstalledTest(test_data[i]);
   }
 }

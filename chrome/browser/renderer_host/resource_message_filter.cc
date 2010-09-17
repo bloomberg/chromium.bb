@@ -252,7 +252,8 @@ ResourceMessageFilter::ResourceMessageFilter(
               this->id(), profile->GetGeolocationPermissionContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           search_provider_install_state_dispatcher_host_(
-              new SearchProviderInstallStateDispatcherHost(this, profile))),
+              new SearchProviderInstallStateDispatcherHost(this, profile,
+                                                           child_id))),
       ALLOW_THIS_IN_INITIALIZER_LIST(device_orientation_dispatcher_host_(
           new device_orientation::DispatcherHost(this->id()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(

@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_SEARCH_PROVIDER_INSTALL_STATE_DISPATCHER_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
+#include "base/task.h"
+#include "chrome/browser/search_engines/search_provider_install_data.h"
 
 namespace IPC {
 class Message;
@@ -21,7 +24,8 @@ class SearchProviderInstallStateDispatcherHost {
  public:
   // Unlike the other methods, the constructor is called on the UI thread.
   SearchProviderInstallStateDispatcherHost(ResourceMessageFilter* ipc_sender,
-                                           Profile* profile);
+                                           Profile* profile,
+                                           int render_process_id);
   ~SearchProviderInstallStateDispatcherHost();
 
   // Send a message to the renderer process.
@@ -43,9 +47,16 @@ class SearchProviderInstallStateDispatcherHost {
                                           IPC::Message* reply_msg);
 
   // Sends the reply message about the search provider install state.
-  void ReplyWithProviderInstallState(
-      IPC::Message* reply_msg,
-      ViewHostMsg_GetSearchProviderInstallState_Params install_state);
+  void ReplyWithProviderInstallState(const GURL& page_location,
+                                     const GURL& requested_host,
+                                     IPC::Message* reply_msg);
+
+  // Used to schedule invocations of ReplyWithProviderInstallState.
+  ScopedRunnableMethodFactory<SearchProviderInstallStateDispatcherHost>
+      reply_with_provider_install_state_factory_;
+
+  // Used to do a load and get information about install states.
+  SearchProviderInstallData provider_data_;
 
   // Used to reply to messages.
   ResourceMessageFilter* ipc_sender_;
