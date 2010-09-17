@@ -113,11 +113,38 @@ static inline void stop_ignore_all_accesses_and_sync(void) {
 /*--- memory allocation                                        ---*/
 /*----------------------------------------------------------------*/
 
+typedef struct {
+  volatile int locked;
+} spinlock_t;
+
+static void spinlock_lock(spinlock_t* lock) {
+  while (!__sync_bool_compare_and_swap(&lock->locked, 0, 1)) {
+    while (lock->locked) {}
+  }
+}
+
+static void spinlock_unlock(spinlock_t* lock) {
+  __sync_lock_release(&lock->locked);
+}
+
 /* Create red zones of this size around malloc-ed memory.
  Must be >= 3*sizeof(size_t) */
 static const int kRedZoneSize = 32;
 /* Used for sanity checking. */
 static const size_t kMallocMagic = 0x1234abcd;
+
+/* We need to delay the reuse of free-ed memory so that memcheck can report
+ the uses of free-ed memory with detailed stacks.
+ When a pointer is passed to free(), we put it into this FIFO queue.
+ Instead of free-ing this pointer instantly, we free a pointer
+ in the back of the queue.
+ */
+enum {
+  kDelayReuseQueueSize = 1024
+};
+static size_t delay_reuse_queue[kDelayReuseQueueSize];
+static size_t drq_begin;
+static spinlock_t drq_lock; /* Protects delay_reuse_queue. */
 
 /* size: user-requested allocation size
    returns: real allocation size
@@ -154,7 +181,7 @@ INLINE static size_t handle_malloc_after(size_t ptr, size_t size) {
 /* Generic free() handler. */
 INLINE static void handle_free(OrigFn fn, size_t ptr) {
   uint64_t base;
-  size_t size;
+  size_t size, old_ptr;
   if (!ptr)
     return;
   start_ignore_all_accesses_and_sync();
@@ -172,7 +199,18 @@ INLINE static void handle_free(OrigFn fn, size_t ptr) {
   VALGRIND_MAKE_MEM_NOACCESS(base + 2 * sizeof(size_t),
       size - 2 * sizeof(size_t) + 2 * kRedZoneSize);
   VALGRIND_FREELIKE_BLOCK(base + kRedZoneSize, kRedZoneSize);
-  CALL_FN_v_W(fn, ptr);
+
+  /* Get a pointer free-ed some time ago from the reuse queue and put the
+     current pointer in its place. */
+  spinlock_lock(&drq_lock);
+  old_ptr = delay_reuse_queue[drq_begin];
+  delay_reuse_queue[drq_begin] = ptr;
+  drq_begin = (drq_begin + 1) % kDelayReuseQueueSize;
+  spinlock_unlock(&drq_lock);
+
+  /* Actually deallocate the old pointer. */
+  CALL_FN_v_W(fn, old_ptr);
+
   stop_ignore_all_accesses_and_sync();
 }
 
