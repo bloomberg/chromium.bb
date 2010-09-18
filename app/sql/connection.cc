@@ -277,6 +277,14 @@ bool Connection::OpenInternal(const std::string& file_name) {
     return false;
   }
 
+  // Enable extended result codes to provide more color on I/O errors.
+  // Not having extended result codes is not a fatal problem, as
+  // Chromium code does not attempt to handle I/O errors anyhow.  The
+  // current implementation always returns SQLITE_OK, the DCHECK is to
+  // quickly notify someone if SQLite changes.
+  err = sqlite3_extended_result_codes(db_, 1);
+  DCHECK_EQ(err, SQLITE_OK) << "Could not enable extended result codes";
+
   if (page_size_ != 0) {
     if (!Execute(StringPrintf("PRAGMA page_size=%d", page_size_).c_str()))
       NOTREACHED() << "Could not set page size";

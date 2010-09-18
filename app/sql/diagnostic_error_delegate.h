@@ -35,6 +35,9 @@ class DiagnosticErrorDelegate : public ErrorDelegate {
 
  private:
   static void RecordErrorInHistogram(int error) {
+    // Trim off the extended error codes.
+    error &= 0xff;
+
     // The histogram values from sqlite result codes go currently from 1 to
     // 26 currently but 50 gives them room to grow.
     UMA_HISTOGRAM_ENUMERATION(UniqueT::name(), error, 50);
