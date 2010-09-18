@@ -265,7 +265,10 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       user_gesture_msg_factory_(this),
       handle_event_depth_(0),
       mouse_hook_(NULL),
-      first_set_window_call_(true) {
+      first_set_window_call_(true),
+      plugin_has_focus_(false),
+      has_webkit_focus_(false),
+      containing_view_has_focus_(true) {
   memset(&window_, 0, sizeof(window_));
 
   const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
@@ -1051,7 +1054,7 @@ void WebPluginDelegateImpl::WindowlessSetWindow() {
   DCHECK(err == NPERR_NO_ERROR);
 }
 
-void WebPluginDelegateImpl::SetFocus(bool focused) {
+bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
   DCHECK(instance()->windowless());
 
   NPEvent focus_event;
@@ -1060,6 +1063,7 @@ void WebPluginDelegateImpl::SetFocus(bool focused) {
   focus_event.lParam = 0;
 
   instance()->NPP_HandleEvent(&focus_event);
+  return true;
 }
 
 static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
