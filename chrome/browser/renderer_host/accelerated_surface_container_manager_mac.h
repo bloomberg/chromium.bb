@@ -11,6 +11,7 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
+#include "base/lock.h"
 #include "gfx/native_widget_types.h"
 
 namespace webkit_glue {
@@ -105,6 +106,11 @@ class AcceleratedSurfaceContainerManagerMac {
   // and destroyed only when a renderer process exits. When the compositor was
   // created, this is set to |false| while the compositor is not needed.
   bool gpu_rendering_active_;
+
+  // Both |plugin_window_to_container_map_| and the
+  // AcceleratedSurfaceContainerMac in it are not threadsafe, but accessed from
+  // multiple threads. All these accesses are guarded by this lock.
+  mutable Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerManagerMac);
 };

@@ -18,6 +18,8 @@ AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
 gfx::PluginWindowHandle
 AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle(
     bool opaque, bool root) {
+  AutoLock lock(lock_);
+
   AcceleratedSurfaceContainerMac* container =
       new AcceleratedSurfaceContainerMac(this, opaque);
   gfx::PluginWindowHandle res =
@@ -32,6 +34,8 @@ AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle(
 
 void AcceleratedSurfaceContainerManagerMac::DestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle id) {
+  AutoLock lock(lock_);
+
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container) {
     if (container == root_container_) {
@@ -54,6 +58,8 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
+  AutoLock lock(lock_);
+
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container) {
     container->SetSizeAndIOSurface(width, height, io_surface_identifier);
@@ -65,6 +71,8 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
+  AutoLock lock(lock_);
+
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
     container->SetSizeAndTransportDIB(width, height, transport_dib);
@@ -72,6 +80,8 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndTransportDIB(
 
 void AcceleratedSurfaceContainerManagerMac::SetPluginContainerGeometry(
     const webkit_glue::WebPluginGeometry& move) {
+  AutoLock lock(lock_);
+
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(move.window);
   if (container)
     container->SetGeometry(move);
@@ -79,6 +89,8 @@ void AcceleratedSurfaceContainerManagerMac::SetPluginContainerGeometry(
 
 void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context,
                                                  gfx::PluginWindowHandle id) {
+  AutoLock lock(lock_);
+
   glColorMask(true, true, true, true);
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -101,6 +113,8 @@ void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context,
 }
 
 void AcceleratedSurfaceContainerManagerMac::ForceTextureReload() {
+  AutoLock lock(lock_);
+
   for (PluginWindowToContainerMap::const_iterator i =
           plugin_window_to_container_map_.begin();
        i != plugin_window_to_container_map_.end(); ++i) {
@@ -111,6 +125,8 @@ void AcceleratedSurfaceContainerManagerMac::ForceTextureReload() {
 
 void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
     gfx::PluginWindowHandle id) {
+  AutoLock lock(lock_);
+
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
     container->set_was_painted_to();
@@ -118,6 +134,8 @@ void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
 
 bool AcceleratedSurfaceContainerManagerMac::SurfaceShouldBeVisible(
     gfx::PluginWindowHandle id) const {
+  AutoLock lock(lock_);
+
   if (IsRootContainer(id) && !gpu_rendering_active_)
     return false;
 
