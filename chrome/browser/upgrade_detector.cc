@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/task.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
@@ -146,8 +147,15 @@ UpgradeDetector::UpgradeDetector()
   if (keystone_glue::KeystoneEnabled())
 #endif
   {
+    int interval_ms = kCheckForUpgradeEveryMs;
+    const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+    std::string interval =
+        cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
+    if (!interval.empty() && base::StringToInt(interval, &interval_ms))
+      interval_ms *= 1000;  // Command line value is in seconds.
+
     detect_upgrade_timer_.Start(
-        base::TimeDelta::FromMilliseconds(kCheckForUpgradeEveryMs),
+        base::TimeDelta::FromMilliseconds(interval_ms),
         this, &UpgradeDetector::CheckForUpgrade);
   }
 #endif

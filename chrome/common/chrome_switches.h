@@ -41,6 +41,7 @@ extern const char kBlockNonSandboxedPlugins[];
 extern const char kBrowserAssertTest[];
 extern const char kBrowserCrashTest[];
 extern const char kBrowserSubprocessPath[];
+extern const char kCheckForUpdateIntervalSec[];
 extern const char kChromeFrame[];
 extern const char kCloudPrintProxyId[];
 extern const char kCloudPrintServiceURL[];

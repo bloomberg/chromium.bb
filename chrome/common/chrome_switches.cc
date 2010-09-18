@@ -94,6 +94,10 @@ const char kBrowserCrashTest[]              = "crash-test";
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
+// How often (in seconds) to check for updates. Should only be used for
+// testing purposes.
+const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
+
 // Run Chrome in Chrome Frame mode. This means that Chrome expects to be run
 // as a dependent process of the Chrome Frame plugin.
 const char kChromeFrame[]                   = "chrome-frame";
