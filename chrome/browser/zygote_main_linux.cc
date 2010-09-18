@@ -50,9 +50,10 @@
 
 #include "unicode/timezone.h"
 
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX)
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
+    !defined(__clang__)
 // The seccomp sandbox is enabled on all ia32 and x86-64 processor as long as
-// we aren't using SELinux.
+// we aren't using SELinux or clang.
 #define SECCOMP_SANDBOX
 #endif
 

@@ -36,7 +36,8 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   //
   // The seccomp sandbox is started in the renderer.
   // http://code.google.com/p/seccompsandbox/
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX)
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
+    !defined(__clang__)
   // N.b. SupportsSeccompSandbox() returns a cached result, as we already
   // called it earlier in the zygote. Thus, it is OK for us to not pass in
   // a file descriptor for "/proc".
