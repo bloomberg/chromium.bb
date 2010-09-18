@@ -74,6 +74,10 @@ const char kAttachExternalTabPrefix[] = "attach_external_tab";
 // are handled by the chrome test crash server.
 const wchar_t kChromeFrameHeadlessMode[] = L"ChromeFrameHeadlessMode";
 
+// Indicates that we are running in an environment that expects chrome renderer
+// accessibility to be enabled for use in automation tests.
+const wchar_t kChromeFrameAccessibleMode[] = L"ChromeFrameAccessibleMode";
+
 // Indicates that we are running in an environment that wishes to avoid
 // DLL pinning, such as the perf tests.
 const wchar_t kChromeFrameUnpinnedMode[] = L"kChromeFrameUnpinnedMode";
@@ -958,6 +962,11 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
 bool IsHeadlessMode() {
   bool headless = GetConfigBool(false, kChromeFrameHeadlessMode);
   return headless;
+}
+
+bool IsAccessibleMode() {
+  bool accessible = GetConfigBool(false, kChromeFrameAccessibleMode);
+  return accessible;
 }
 
 bool IsUnpinnedMode() {

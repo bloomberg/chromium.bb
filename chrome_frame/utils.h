@@ -28,6 +28,7 @@ extern const wchar_t kChromeContentPrefix[];
 extern const char kGCFProtocol[];
 extern const wchar_t kChromeProtocolPrefix[];
 extern const wchar_t kChromeFrameHeadlessMode[];
+extern const wchar_t kChromeFrameAccessibleMode[];
 extern const wchar_t kChromeFrameUnpinnedMode[];
 extern const wchar_t kAllowUnsafeURLs[];
 extern const wchar_t kEnableBuggyBhoIntercept[];
@@ -238,6 +239,10 @@ bool DeleteConfigValue(const wchar_t* value_name);
 // Returns true if we are running in headless mode in which case we need to
 // gather crash dumps, etc to send them to the crash server.
 bool IsHeadlessMode();
+
+// Returns true if we are running in accessible mode in which we need to enable
+// renderer accessibility for use in automation.
+bool IsAccessibleMode();
 
 // Returns true if we are running in unpinned mode in which case DLL
 // eviction should be possible.

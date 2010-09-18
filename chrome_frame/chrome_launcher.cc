@@ -22,6 +22,7 @@ const wchar_t* kAllowedSwitches[] = {
   L"chrome-frame",
   L"disable-renderer-accessibility",
   L"enable-experimental-extension-apis",
+  L"force-renderer-accessibility",
   L"no-default-browser-check",
   L"noerrdialogs",
   L"no-first-run",

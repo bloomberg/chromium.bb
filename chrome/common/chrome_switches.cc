@@ -593,6 +593,11 @@ const char kFirstRun[]                      = "first-run";
 // current details.
 const char kForceFieldTestNameAndValue[]    = "force-fieldtest";
 
+// Force renderer accessibility to be on instead of enabling it on demand when
+// a screen reader is detected. The disable-renderer-accessibility switch
+// overrides this if present.
+const char kForceRendererAccessibility[]   = "force-renderer-accessibility";
+
 // Extra command line options for launching the GPU process (normally used
 // for debugging). Use like renderer-cmd-prefix.
 const char kGpuLauncher[]                   = "gpu-launcher";

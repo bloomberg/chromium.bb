@@ -38,18 +38,7 @@ int main(int argc, char **argv) {
   TestSuite test_suite(argc, argv);
 
   SetConfigBool(kChromeFrameHeadlessMode, true);
-
-  // Pretend that a screenreader is in use to cause Chrome to generate the
-  // accessibility tree during page load. Otherwise, Chrome will send back
-  // an unpopulated tree for the first request while it fetches the tree
-  // from the renderer.
-  BOOL is_screenreader_on = FALSE;
-  SystemParametersInfo(SPI_SETSCREENREADER, TRUE, NULL, 0);
-  SystemParametersInfo(SPI_GETSCREENREADER, 0, &is_screenreader_on, 0);
-  if (!is_screenreader_on) {
-    LOG(ERROR) << "Could not set screenreader property. Tests depending on "
-               << "MSAA in CF will likely fail...";
-  }
+  SetConfigBool(kChromeFrameAccessibleMode, true);
 
   base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
   int ret = -1;
@@ -72,6 +61,7 @@ int main(int argc, char **argv) {
   }
 
   DeleteConfigValue(kChromeFrameHeadlessMode);
+  DeleteConfigValue(kChromeFrameAccessibleMode);
 
   if (crash_service)
     base::KillProcess(crash_service, 0, false);

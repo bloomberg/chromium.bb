@@ -291,12 +291,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
   registrar_.Add(this,
                  NotificationType::RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
-
-  BOOL screenreader_running = FALSE;
-  if (SystemParametersInfo(SPI_GETSCREENREADER, 0, &screenreader_running, 0) &&
-      screenreader_running) {
-    render_widget_host_->EnableRendererAccessibility();
-  }
 }
 
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
