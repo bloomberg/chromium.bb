@@ -74,7 +74,7 @@ TEST(SafeBrowsingBloomFilter, BloomFilterUse) {
   double fp_rate = found_count * 100.0 / count;
   CHECK(fp_rate < 5.0);
 
-  LOG(INFO) << "For safe browsing bloom filter of size " << count <<
+  SB_DLOG(INFO) << "For safe browsing bloom filter of size " << count <<
       ", the FP rate was " << fp_rate << " %";
 }
 
@@ -114,4 +114,3 @@ TEST(SafeBrowsingBloomFilter, BloomFilterFile) {
 
   file_util::Delete(filter_path, false);
 }
-

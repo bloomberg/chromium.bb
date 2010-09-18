@@ -925,7 +925,7 @@ namespace {
 
 void PrintStat(const char* name) {
   int value = StatsTable::current()->GetCounterValue(name);
-  LOG(INFO) << StringPrintf("%s %d", name, value);
+  SB_DLOG(INFO) << StringPrintf("%s %d", name, value);
 }
 
 FilePath GetFullSBDataPath(const FilePath& path) {
@@ -989,16 +989,16 @@ void PerformUpdate(SafeBrowsingDatabaseBloom* database,
   gotIOCounters = gotIOCounters && metric->GetIOCounters(&after);
 
   if (gotIOCounters) {
-    LOG(INFO) << StringPrintf("I/O Read Bytes: %" PRIu64,
+    SB_DLOG(INFO) << StringPrintf("I/O Read Bytes: %" PRIu64,
         after.ReadTransferCount - before.ReadTransferCount);
-    LOG(INFO) << StringPrintf("I/O Write Bytes: %" PRIu64,
+    SB_DLOG(INFO) << StringPrintf("I/O Write Bytes: %" PRIu64,
         after.WriteTransferCount - before.WriteTransferCount);
-    LOG(INFO) << StringPrintf("I/O Reads: %" PRIu64,
+    SB_DLOG(INFO) << StringPrintf("I/O Reads: %" PRIu64,
         after.ReadOperationCount - before.ReadOperationCount);
-    LOG(INFO) << StringPrintf("I/O Writes: %" PRIu64,
+    SB_DLOG(INFO) << StringPrintf("I/O Writes: %" PRIu64,
         after.WriteOperationCount - before.WriteOperationCount);
   }
-  LOG(INFO) << StringPrintf("Finished in %" PRId64 " ms",
+  SB_DLOG(INFO) << StringPrintf("Finished in %" PRId64 " ms",
       (Time::Now() - before_time).InMilliseconds());
 
   PrintStat("c:SB.HostSelect");
