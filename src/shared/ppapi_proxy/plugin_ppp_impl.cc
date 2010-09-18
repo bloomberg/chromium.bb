@@ -40,11 +40,8 @@ bool StartMainSrpcChannel(const char* service_description,
 void StopMainSrpcChannel() {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   NaClSrpcService* service = channel->client;
-  // Invoke the dtor on the exported service.
   NaClSrpcServiceDtor(service);
-  // Remove the service from the channel.
   channel->client = NULL;
-  // Forget the main channel.
   ppapi_proxy::SetMainSrpcChannel(NULL);
 }
 
@@ -65,16 +62,13 @@ bool StartUpcallSrpcChannel(NaClSrpcImcDescType upcall_channel_desc) {
     free(upcall_channel);
     return false;
   }
-  // Remember the upcall channel client.
   ppapi_proxy::SetUpcallSrpcChannel(upcall_channel);
   return true;
 }
 
 void StopUpcallSrpcChannel() {
-  NaClSrpcChannel* channel = ppapi_proxy::GetUpcallSrpcChannel();
-  // Invoke the dtor on the upcall channel
-  NaClSrpcDtor(channel);
-  // Forget the upcall channel.
+  NaClSrpcChannel* upcall_channel = ppapi_proxy::GetUpcallSrpcChannel();
+  NaClSrpcDtor(upcall_channel);
   ppapi_proxy::SetUpcallSrpcChannel(NULL);
 }
 
@@ -105,6 +99,7 @@ NaClSrpcError PppRpcServer::PPP_InitializeModule(
     StopMainSrpcChannel();
     return NACL_SRPC_RESULT_APP_ERROR;
   }
+  ppapi_proxy::SetModuleIdForSrpcChannel(channel, module);
   *success = ::PPP_InitializeModule(module, ppapi_proxy::GetInterfaceProxy);
   *nacl_pid = GETPID();
   return NACL_SRPC_RESULT_OK;
@@ -113,9 +108,8 @@ NaClSrpcError PppRpcServer::PPP_InitializeModule(
 NaClSrpcError PppRpcServer::PPP_ShutdownModule(NaClSrpcChannel* channel) {
   DebugPrintf("PPP_ShutdownModule\n");
   ::PPP_ShutdownModule();
-  // Clean up the upcall channel.
+  ppapi_proxy::UnsetModuleIdForSrpcChannel(channel);
   StopUpcallSrpcChannel();
-  // Clean up the main channel.
   StopMainSrpcChannel();
   return NACL_SRPC_RESULT_OK;
 }

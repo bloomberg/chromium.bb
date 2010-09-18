@@ -93,14 +93,16 @@ void Object::GetAllPropertyNames(uint32_t* property_count,
   for (prop = browser_obj->properties()->begin();
        prop != browser_obj->properties()->end(); ++prop) {
     (*properties)[i] =
-        ppb_var->VarFromUtf8(prop->first.c_str(),
+        ppb_var->VarFromUtf8(browser_obj->module(),
+                             prop->first.c_str(),
                              static_cast<uint32_t>(prop->first.size()));
     ++i;
   }
   for (meth = browser_obj->methods()->begin();
        meth != browser_obj->methods()->end(); ++meth) {
     (*properties)[i] =
-        ppb_var->VarFromUtf8(meth->first.c_str(),
+        ppb_var->VarFromUtf8(browser_obj->module(),
+                             meth->first.c_str(),
                              static_cast<uint32_t>(meth->first.size()));
     ++i;
   }
@@ -195,7 +197,9 @@ void Object::Deallocate() {
   delete reinterpret_cast<Object*>(this);
 }
 
-Object::Object(const PropertyMap& properties, const MethodMap& methods) {
+Object::Object(PP_Module module,
+               const PropertyMap& properties,
+               const MethodMap& methods) : module_(module) {
   PropertyMap::const_iterator prop;
   for (prop = properties.begin(); prop != properties.end(); ++prop) {
     properties_[prop->first] = prop->second;
@@ -206,7 +210,9 @@ Object::Object(const PropertyMap& properties, const MethodMap& methods) {
   }
 }
 
-PP_Var Object::New(const PropertyMap& properties, const MethodMap& methods) {
+PP_Var Object::New(PP_Module module,
+                   const PropertyMap& properties,
+                   const MethodMap& methods) {
   // Save the PPB_Var interface to be used in constructing objects.
   if (ppb_var == NULL) {
     ppb_var = reinterpret_cast<const PPB_Var*>(PluginVar::GetInterface());
@@ -214,11 +220,11 @@ PP_Var Object::New(const PropertyMap& properties, const MethodMap& methods) {
       return PP_MakeVoid();
     }
   }
-  Object* obj = new Object(properties, methods);
+  Object* obj = new Object(module, properties, methods);
   if (obj == NULL) {
     return PP_MakeVoid();
   }
-  return ppb_var->CreateObject(&ppapi_proxy::Object::object_class, obj);
+  return ppb_var->CreateObject(module, &ppapi_proxy::Object::object_class, obj);
 }
 
 }  // namespace fake_browser_ppapi

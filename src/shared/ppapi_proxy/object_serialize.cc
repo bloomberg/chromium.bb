@@ -212,7 +212,8 @@ bool SerializePpVar(const PP_Var* vars,
 
 bool DeserializeString(char* p,
                        PP_Var* var,
-                       uint32_t* element_size) {
+                       uint32_t* element_size,
+                       NaClSrpcChannel* channel) {
   SerializedString* ss = reinterpret_cast<SerializedString*>(p);
   uint32_t string_length = ss->fixed.u.string_length;
   if (AddWouldOverflow(string_length, kStringRoundBase - 1)) {
@@ -222,7 +223,9 @@ bool DeserializeString(char* p,
   uint32_t rounded_length = RoundedStringBytes(string_length);
   if (0 == string_length) {
     // Zero-length string.  Rely on what the PPB_Var does.
-    *var = VarInterface()->VarFromUtf8(ss->string_bytes, 0);
+    *var = VarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
+                                       ss->string_bytes,
+                                       0);
   } else {
     // We need to copy the string payload using memory allocated by
     // NPN_MemAlloc.
@@ -233,7 +236,8 @@ bool DeserializeString(char* p,
     } else {
       memmove(copy, ss->string_bytes, string_length);
     }
-    *var = VarInterface()->VarFromUtf8(reinterpret_cast<const char*>(copy),
+    *var = VarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
+                                       reinterpret_cast<const char*>(copy),
                                        string_length);
   }
   // Compute the "element_size", or offset in the serialized form from
@@ -281,7 +285,7 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
         break;
       }
       case PP_VARTYPE_STRING:
-        if (!DeserializeString(p, &vars[i], &element_size)) {
+        if (!DeserializeString(p, &vars[i], &element_size, channel)) {
           return false;
         }
         break;

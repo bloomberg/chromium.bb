@@ -383,7 +383,7 @@ PP_Var TestObject::func_window(uint32_t argc,
   const char kLocation[] = "location";
   const uint32_t kLocationLength = static_cast<uint32_t>(strlen(kLocation));
   PP_Var location_name =
-      g_var_interface->VarFromUtf8(kLocation, kLocationLength);
+      g_var_interface->VarFromUtf8(g_module_id, kLocation, kLocationLength);
   PP_Var location =
       g_var_interface->GetProperty(argv[0], location_name, exception);
   if (location.type != PP_VARTYPE_OBJECT ||
@@ -394,7 +394,8 @@ PP_Var TestObject::func_window(uint32_t argc,
   // Get the href property on the returned object.
   const char kHref[] = "href";
   const uint32_t kHrefLength = static_cast<uint32_t>(strlen(kHref));
-  PP_Var href_name = g_var_interface->VarFromUtf8(kHref, kHrefLength);
+  PP_Var href_name =
+      g_var_interface->VarFromUtf8(g_module_id, kHref, kHrefLength);
   PP_Var href = g_var_interface->GetProperty(location, href_name, exception);
   printf("window.location.href = ");
   PrintPpVar(href);
@@ -480,7 +481,8 @@ PP_Var GetInstanceObject(PP_Instance instance) {
   printf("  g_var_interface = %p\n",
          reinterpret_cast<const void*>(g_var_interface));
   PP_Var retval =
-      g_var_interface->CreateObject(&object_class,
+      g_var_interface->CreateObject(g_module_id,
+                                    &object_class,
                                     static_cast<void*>(new TestObject));
   return retval;
 }

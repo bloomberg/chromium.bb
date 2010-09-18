@@ -369,7 +369,9 @@ PP_Var ObjectProxy::New(const ObjectCapability& capability,
   }
   Object* proxy = static_cast<Object*>(new ObjectProxy(capability, channel));
   PP_Var* var = new PP_Var;
-  *var = VarInterface()->CreateObject(&Object::object_class, proxy);
+  *var = VarInterface()->CreateObject(LookupModuleIdForSrpcChannel(channel),
+                                      &Object::object_class,
+                                      proxy);
   (*capability_proxy_map)[capability] = var;
   // TODO(sehr): increment the ref count of the object in var here.
   return *var;

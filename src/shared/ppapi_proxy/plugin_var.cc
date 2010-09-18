@@ -117,7 +117,8 @@ void Release(PP_Var var) {
   }
 }
 
-PP_Var VarFromUtf8(const char* data, uint32_t len) {
+PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
+  UNREFERENCED_PARAMETER(module_id);
   StrImpl* impl = new StrImpl(data, len);
   PP_Var result;
   result.type = PP_VARTYPE_STRING;
@@ -300,7 +301,10 @@ uint64_t GetVarId(PP_Var var) {
   return GetObjectId(VarToObjImpl(var));
 }
 
-PP_Var CreateObject(const PPP_Class* object_class, void* object_data) {
+PP_Var CreateObject(PP_Module module_id,
+                    const PPP_Class* object_class,
+                    void* object_data) {
+  UNREFERENCED_PARAMETER(module_id);
   PP_Var result;
   result.type = PP_VARTYPE_OBJECT;
   result.value.as_id =

@@ -6,9 +6,12 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_var.h"
+
+struct NaClSrpcChannel;
 
 namespace ppapi_proxy {
 
@@ -31,6 +34,14 @@ void SetBrowserPppForInstance(PP_Instance instance,
 void UnsetBrowserPppForInstance(PP_Instance instance);
 // Gets the BrowserPpp information remembered for a particular instance.
 BrowserPpp* LookupBrowserPppForInstance(PP_Instance instance);
+
+// To keep track of memory allocated by a particular module, we need to remember
+// the PP_Module corresponding to a particular NaClSrpcChannel*.
+void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id);
+// Removes the association with a given channel.
+void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel);
+// Looks up the association with a given channel.
+PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel);
 
 // We need to keep the browser GetInterface function pointer, as parts of the
 // proxy will need to invoke interfaces such as the 2D and 3D APIs.

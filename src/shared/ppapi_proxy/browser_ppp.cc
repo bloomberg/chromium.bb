@@ -31,9 +31,7 @@ int32_t BrowserPpp::InitializeModule(
     PP_Instance instance) {
   DebugPrintf("BrowserPpp::InitializeModule(%"NACL_PRIu64", %p)\n",
               module_id, get_browser_interface);
-  // Remember the GetInterface function pointer.
   SetBrowserGetInterface(get_browser_interface);
-  // Remember the instance to BrowserPpp relationship.
   SetBrowserPppForInstance(instance, this);
   nacl::scoped_ptr<nacl::DescWrapper> wrapper(
       BrowserUpcall::Start(&upcall_thread_, channel_));
@@ -55,6 +53,7 @@ int32_t BrowserPpp::InitializeModule(
   // Export the service on the channel.
   channel_->server = service;
   char* service_string = const_cast<char*>(service->service_string);
+  SetModuleIdForSrpcChannel(channel_, module_id);
   // Do the RPC.
   int32_t browser_pid = static_cast<int32_t>(GETPID());
   int32_t success;
@@ -77,8 +76,8 @@ int32_t BrowserPpp::InitializeModule(
 void BrowserPpp::ShutdownModule() {
   DebugPrintf("BrowserPpp::ShutdownModule\n");
   PppRpcClient::PPP_ShutdownModule(channel_);
-  // Clean up the upcall thread for the module.
   NaClThreadJoin(&upcall_thread_);
+  UnsetModuleIdForSrpcChannel(channel_);
 }
 
 const void* BrowserPpp::GetInterface(const char* interface_name) {

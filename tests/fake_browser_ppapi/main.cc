@@ -26,7 +26,9 @@ using ppapi_proxy::DebugPrintf;
 using fake_browser_ppapi::Host;
 using fake_browser_ppapi::FakeWindow;
 
-static fake_browser_ppapi::Host* host = NULL;
+namespace {
+
+Host* host = NULL;
 
 const void* FakeGetInterface(const char* interface_name) {
   DebugPrintf("Getting interface for name '%s'\n", interface_name);
@@ -40,7 +42,19 @@ const void* FakeGetInterface(const char* interface_name) {
   return NULL;
 }
 
-PP_Module FakeGenModuleId() {
+// Module ids are needed for some call APIs, but the fake browser does
+// not implement the storage tracking APIs that would use a real value.
+// TODO(sehr): implement storage tracking.
+// The storage allocated by the browser for the window object, etc., are
+// attributed to the browser's module id.
+PP_Module BrowserModuleId() {
+  static void* id;
+  return reinterpret_cast<PP_Module>(&id);
+}
+
+// The storage allocated by the plugin for its scriptable objects are
+// attributed to the its module id.
+PP_Module PluginModuleId() {
   static void* id;
   return reinterpret_cast<PP_Module>(&id);
 }
@@ -76,14 +90,15 @@ bool ParseArgs(const char* str,
 }
 
 // Test instance execution.
-void TestInstance(const PPP_Instance* instance_interface,
+void TestInstance(PP_Module browser_module_id,
+                  const PPP_Instance* instance_interface,
                   const char* page_url,
                   uint32_t argc,
                   const char** argn,
                   const char** argv) {
   printf("page url %s\n", page_url);
   // Create a fake window object.
-  FakeWindow window(host, page_url);
+  FakeWindow window(browser_module_id, host, page_url);
   // Create an instance and the corresponding id.
   fake_browser_ppapi::Instance browser_instance(&window);
   PP_Instance instance_id = reinterpret_cast<PP_Instance>(&browser_instance);
@@ -98,8 +113,11 @@ void TestInstance(const PPP_Instance* instance_interface,
   TestScriptableObject(instance_object,
                        browser_instance.GetInterface(),
                        var_interface,
-                       instance_id);
+                       instance_id,
+                       browser_module_id);
 }
+
+}  // namespace
 
 int main(int argc, char** argv) {
   // Turn off stdout buffering to aid debugging in case of a crash.
@@ -123,7 +141,7 @@ int main(int argc, char** argv) {
   CHECK(host != NULL);
 
   // Test startup.
-  CHECK(host->InitializeModule(FakeGenModuleId(), FakeGetInterface) == PP_OK);
+  CHECK(host->InitializeModule(PluginModuleId(), FakeGetInterface) == PP_OK);
 
   // Get an instance of the plugin.
   const PPP_Instance* instance_interface =
@@ -134,9 +152,9 @@ int main(int argc, char** argv) {
 
   // Get the embed argc/argn/argv.
   const char* embed_args = argv[3];
-  uint32_t embed_argc;
-  const char** embed_argn;
-  const char** embed_argv;
+  uint32_t embed_argc = 0;
+  const char** embed_argn = NULL;
+  const char** embed_argv = NULL;
   CHECK(ParseArgs(embed_args, &embed_argc, &embed_argn, &embed_argv));
 
   // Temporary support for reading files from disk rather than HTML.
@@ -144,7 +162,8 @@ int main(int argc, char** argv) {
   setenv("NACL_PPAPI_LOCAL_ORIGIN", root_path, 1);
 
   // Test an instance.
-  TestInstance(instance_interface,
+  TestInstance(BrowserModuleId(),
+               instance_interface,
                page_url,
                embed_argc,
                embed_argn,

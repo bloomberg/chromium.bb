@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_class.h"
 
@@ -53,19 +54,26 @@ class Object : public ppapi_proxy::Object {
   typedef std::map<std::string, Method> MethodMap;
 
   // Create a PP_Var object with a set of initial properties.
-  static PP_Var New(const PropertyMap& properties, const MethodMap& methods);
+  static PP_Var New(PP_Module module,
+                    const PropertyMap& properties,
+                    const MethodMap& methods);
 
   // Construct using a map of initial properties.
-  Object(const PropertyMap& properties, const MethodMap& methods);
+  Object(PP_Module module,
+         const PropertyMap& properties,
+         const MethodMap& methods);
 
   PropertyMap* properties() { return &properties_; }
   MethodMap* methods() { return &methods_; }
+  PP_Module module() const { return module_; }
 
  private:
   // Maintains the list of properties for Set/Get/Remove.
   PropertyMap properties_;
   // Maintains the list of methods that can be invoked by Call.
   MethodMap methods_;
+  // Keep track of the PP_Module that created us.
+  PP_Module module_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(Object);
 };

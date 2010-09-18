@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+#include "native_client/src/include/nacl_macros.h"
 #include <map>
 
 namespace ppapi_proxy {
@@ -13,6 +14,8 @@ namespace ppapi_proxy {
 namespace {
 
 std::map<PP_Instance, BrowserPpp*>* instance_to_ppp_map = NULL;
+std::map<NaClSrpcChannel*, PP_Module>* channel_to_module_id_map = NULL;
+
 // The GetInterface pointer from the browser.
 PPB_GetInterface get_interface;
 // For efficiency, cached results from GetInterface.
@@ -34,7 +37,7 @@ void UnsetBrowserPppForInstance(PP_Instance instance) {
   if (instance_to_ppp_map == NULL) {
     // Something major is wrong here.  We are deleting a map entry
     // when there is no map.
-    // TODO(sehr): a CHECK here would be appropriate if we had one in NaCl.
+    NACL_NOTREACHED();
     return;
   }
   // Erase the instance from the map.
@@ -51,6 +54,38 @@ BrowserPpp* LookupBrowserPppForInstance(PP_Instance instance) {
     return NULL;
   }
   return (*instance_to_ppp_map)[instance];
+}
+
+void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id) {
+  // If there was no map, create one.
+  if (channel_to_module_id_map == NULL) {
+    channel_to_module_id_map = new std::map<NaClSrpcChannel*, PP_Module>;
+  }
+  // Add the channel to the map.
+  (*channel_to_module_id_map)[channel] = module_id;
+}
+
+void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
+  if (channel_to_module_id_map == NULL) {
+    // Something major is wrong here.  We are deleting a map entry
+    // when there is no map.
+    NACL_NOTREACHED();
+    return;
+  }
+  // Erase the channel from the map.
+  channel_to_module_id_map->erase(channel);
+  // If there are no more channels alive, remove the map.
+  if (channel_to_module_id_map->size() == 0) {
+    delete channel_to_module_id_map;
+    channel_to_module_id_map = NULL;
+  }
+}
+
+PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
+  if (channel_to_module_id_map == NULL) {
+    return NULL;
+  }
+  return (*channel_to_module_id_map)[channel];
 }
 
 void SetBrowserGetInterface(PPB_GetInterface get_interface_function) {

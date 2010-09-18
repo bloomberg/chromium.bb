@@ -35,11 +35,14 @@ const char kStringValue[] = "hello, world";
 const PPB_Var* g_var_interface;
 const PPB_Instance* g_instance_interface;
 PP_Instance g_instance_id;
+PP_Instance g_browser_module_id;
 int64_t g_object_as_id;
 
 // TODO(sehr,polina): add this to the ppapi/c/ppb_var.h?
 PP_Var MakeString(const char* str) {
-  return g_var_interface->VarFromUtf8(str, static_cast<uint32_t>(strlen(str)));
+  return g_var_interface->VarFromUtf8(g_browser_module_id,
+                                      str,
+                                      static_cast<uint32_t>(strlen(str)));
 }
 
 // PP_Var of string type that names a property of the specified type.
@@ -348,7 +351,8 @@ void TestWindowScripting(PP_Var object) {
 void TestScriptableObject(PP_Var object,
                           const PPB_Instance* browser_instance_interface,
                           const PPB_Var* var_interface,
-                          PP_Instance instance_id) {
+                          PP_Instance instance_id,
+                          PP_Module browser_module_id) {
   // Receiver needs to be a valid scriptable object.  We cannot use
   // is_valid_value here because we haven't set g_object_as_id yet.
   CHECK(object.type == PP_VARTYPE_OBJECT);
@@ -358,6 +362,7 @@ void TestScriptableObject(PP_Var object,
   g_var_interface = var_interface;
   g_instance_interface = browser_instance_interface;
   g_instance_id = instance_id;
+  g_browser_module_id = browser_module_id;
   // And test the scriptable object interfaces one-by-one.
   TestHasProperty(object);
   TestSetProperty(object);

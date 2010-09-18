@@ -12,6 +12,7 @@ namespace {
 
 NaClSrpcChannel* main_srpc_channel;
 NaClSrpcChannel* upcall_srpc_channel;
+PP_Module module_id_for_plugin;
 
 }  // namespace;
 
@@ -29,6 +30,19 @@ NaClSrpcChannel* GetUpcallSrpcChannel() {
 
 void SetUpcallSrpcChannel(NaClSrpcChannel* channel) {
   upcall_srpc_channel = channel;
+}
+
+void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id) {
+  module_id_for_plugin = module_id;
+}
+
+void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
+  const PP_Module kInvalidModuleId = 0;
+  module_id_for_plugin = kInvalidModuleId;
+}
+
+PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
+  return module_id_for_plugin;
 }
 
 const PPB_Core* CoreInterface() {
