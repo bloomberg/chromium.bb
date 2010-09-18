@@ -2,8 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file needs to be in sync with $SOURCE_ROOT/ppapi/ppapi.gyp
-# at the revision specified in $SOURCE_ROOT/native_client/DEPS.
+# The source files (.cc and .h) listed in this file are maintained by the
+# script ./update-scons.py.  Update $SOURCE_ROOT/ppapi and run the script
+# ./update-scons.py to update all of the source files listed here.
+
+# update-scons.py reads the .scons files in this directory.  It replaces all
+# of the lines between the starting marker and the ending marker with the
+# corresponding list of files from the ppapi.gyp file.
+#
+# The starting marker format is:
+#   # From ppapi.gyp:TARGET:REGEXP
+# The ending marker format is:
+#   # End ppapi.gyp
+#
+# For example, if this exists in the .scons file:
+#   # From ppapi.gyp:ppapi_c:.*\.h
+#   ...
+#   # End ppapi.gyp
+#
+# then this script will remove all of the lines between the starting marker and
+# the ending marker.  It will then find the 'ppapi_c' target in the ppapi.gyp
+# file.  It will find all 'sources' for that target that match the regular
+# expression '.*\.h' and will insert each of those source files in between the
+# two markers.
 
 Import('env')
 
@@ -15,7 +36,8 @@ if env.Bit('windows'):
   env.FilterOut(CCFLAGS=['/WX'])
 
 cpp_sources = [
-    # from ppapi.gyp:ppapi_cpp_objects
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_cpp_objects:.*\.cc
     'cpp/core.cc',
     'cpp/graphics_2d.cc',
     'cpp/image_data.cc',
@@ -27,7 +49,6 @@ cpp_sources = [
     'cpp/resource.cc',
     'cpp/scriptable_object.cc',
     'cpp/var.cc',
-    # Dev interfaces.
     'cpp/dev/audio_config_dev.cc',
     'cpp/dev/audio_dev.cc',
     'cpp/dev/buffer_dev.cc',
@@ -37,6 +58,7 @@ cpp_sources = [
     'cpp/dev/file_io_dev.cc',
     'cpp/dev/file_ref_dev.cc',
     'cpp/dev/file_system_dev.cc',
+    'cpp/dev/find_dev.cc',
     'cpp/dev/font_dev.cc',
     'cpp/dev/fullscreen_dev.cc',
     'cpp/dev/graphics_3d_dev.cc',
@@ -49,8 +71,11 @@ cpp_sources = [
     'cpp/dev/url_util_dev.cc',
     'cpp/dev/video_decoder_dev.cc',
     'cpp/dev/widget_dev.cc',
-    # from ppapi.gyp::ppapi_cpp
+    # End ppapi.gyp
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_cpp:.*\.cc
     'cpp/ppp_entrypoints.cc',
+    # End ppapi.gyp
     ]
 
 env.DualLibrary('ppapi_cpp', cpp_sources)

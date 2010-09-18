@@ -2,8 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file needs to be in sync with $SOURCE_ROOT/ppapi/ppapi.gyp
-# at the revision specified in $SOURCE_ROOT/native_client/DEPS.
+# The source files (.cc and .h) listed in this file are maintained by the
+# script ./update-scons.py.  Update $SOURCE_ROOT/ppapi and run the script
+# ./update-scons.py to update all of the source files listed here.
+
+# update-scons.py reads the .scons files in this directory.  It replaces all
+# of the lines between the starting marker and the ending marker with the
+# corresponding list of files from the ppapi.gyp file.
+#
+# The starting marker format is:
+#   # From ppapi.gyp:TARGET:REGEXP
+# The ending marker format is:
+#   # End ppapi.gyp
+#
+# For example, if this exists in the .scons file:
+#   # From ppapi.gyp:ppapi_c:.*\.h
+#   ...
+#   # End ppapi.gyp
+#
+# then this script will remove all of the lines between the starting marker and
+# the ending marker.  It will then find the 'ppapi_c' target in the ppapi.gyp
+# file.  It will find all 'sources' for that target that match the regular
+# expression '.*\.h' and will insert each of those source files in between the
+# two markers.
 
 import os
 
@@ -13,7 +34,8 @@ Import('env')
 Dir('.').addRepository(Dir('#/../ppapi'))
 
 cpp_sources = [
-    # from ppapi.gyp:ppapi_cpp_objects
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_cpp_objects:.*\.cc
     'cpp/core.cc',
     'cpp/graphics_2d.cc',
     'cpp/image_data.cc',
@@ -25,7 +47,6 @@ cpp_sources = [
     'cpp/resource.cc',
     'cpp/scriptable_object.cc',
     'cpp/var.cc',
-    # Dev interfaces.
     'cpp/dev/audio_config_dev.cc',
     'cpp/dev/audio_dev.cc',
     'cpp/dev/buffer_dev.cc',
@@ -35,6 +56,7 @@ cpp_sources = [
     'cpp/dev/file_io_dev.cc',
     'cpp/dev/file_ref_dev.cc',
     'cpp/dev/file_system_dev.cc',
+    'cpp/dev/find_dev.cc',
     'cpp/dev/font_dev.cc',
     'cpp/dev/fullscreen_dev.cc',
     'cpp/dev/graphics_3d_dev.cc',
@@ -47,14 +69,18 @@ cpp_sources = [
     'cpp/dev/url_util_dev.cc',
     'cpp/dev/video_decoder_dev.cc',
     'cpp/dev/widget_dev.cc',
-    # from ppapi.gyp::ppapi_cpp
+    # End ppapi.gyp
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_cpp:.*\.cc
     'cpp/ppp_entrypoints.cc',
+    # End ppapi.gyp
     ]
 
 env.ComponentLibrary('ppapi_cpp', cpp_sources)
 
 c_headers = [
-    # from ppapi.gyp:ppapi_c
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_c:c/[^/]*\.h
     'c/pp_completion_callback.h',
     'c/pp_errors.h',
     'c/pp_event.h',
@@ -65,7 +91,7 @@ c_headers = [
     'c/pp_resource.h',
     'c/pp_size.h',
     'c/pp_stdint.h',
-    'c/pp_time.h'
+    'c/pp_time.h',
     'c/pp_var.h',
     'c/ppb.h',
     'c/ppb_core.h',
@@ -75,10 +101,12 @@ c_headers = [
     'c/ppp.h',
     'c/ppp_class.h',
     'c/ppp_instance.h',
+    # End ppapi.gyp
     ]
 
 c_dev_headers = [
-    # Dev interfaces.
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_c:c/dev/[^/]*\.h
     'c/dev/pp_cursor_type_dev.h',
     'c/dev/pp_file_info_dev.h',
     'c/dev/pp_video_dev.h',
@@ -115,10 +143,12 @@ c_dev_headers = [
     'c/dev/ppp_printing_dev.h',
     'c/dev/ppp_widget_dev.h',
     'c/dev/ppp_zoom_dev.h',
+    # End ppapi.gyp
     ]
 
 cpp_headers = [
-    # from  ppapi.gyp:ppapi_cpp_objects
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_cpp_objects:cpp/[^/]*\.h
     'cpp/completion_callback.h',
     'cpp/core.h',
     'cpp/graphics_2d.h',
@@ -134,12 +164,16 @@ cpp_headers = [
     'cpp/scriptable_object.h',
     'cpp/size.h',
     'cpp/var.h',
-    # from  ppapi.gyp:ppapi_cpp
+    # End ppapi.gyp
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_cpp:cpp/[^/]*\.h
     'cpp/module_embedder.h'
+    # End ppapi.gyp
     ]
 
 cpp_dev_headers = [
-    # Dev interfaces.
+    # Updated automatically by update-scons.py.
+    # From ppapi.gyp:ppapi_cpp_objects:cpp/dev/[^/]*\.h
     'cpp/dev/audio_config_dev.h',
     'cpp/dev/audio_dev.h',
     'cpp/dev/buffer_dev.h',
@@ -149,10 +183,10 @@ cpp_dev_headers = [
     'cpp/dev/file_io_dev.h',
     'cpp/dev/file_ref_dev.h',
     'cpp/dev/file_system_dev.h',
+    'cpp/dev/find_dev.h',
     'cpp/dev/font_dev.h',
     'cpp/dev/fullscreen_dev.h',
     'cpp/dev/graphics_3d_dev.h',
-    'cpp/dev/key_dev.h',
     'cpp/dev/scrollbar_dev.h',
     'cpp/dev/transport_dev.h',
     'cpp/dev/url_loader_dev.h',
@@ -161,6 +195,7 @@ cpp_dev_headers = [
     'cpp/dev/url_util_dev.h',
     'cpp/dev/video_decoder_dev.h',
     'cpp/dev/widget_dev.h',
+    # End ppapi.gyp
     ]
 
 c_header_install = env.AddHeaderToSdk(
