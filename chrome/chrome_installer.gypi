@@ -378,6 +378,10 @@
             'deb_arch': 'amd64',
             'rpm_arch': 'x86_64',
           }],
+          ['target_arch=="arm"', {
+            'deb_arch': 'arm',
+            'rpm_arch': 'arm',
+          }],
           ['internal_pdf', {
             'packaging_files_binaries': [
               '<(PRODUCT_DIR)/libpdf.so',
