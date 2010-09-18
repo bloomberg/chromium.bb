@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
-#include "native_client/src/include/nacl_macros.h"
+#include <stdio.h>
 #include <map>
+#include "native_client/src/include/nacl_macros.h"
 
 namespace ppapi_proxy {
 
