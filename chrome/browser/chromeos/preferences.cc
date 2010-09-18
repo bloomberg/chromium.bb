@@ -27,6 +27,12 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
   prefs->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   prefs->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
+  // Check if the accessibility pref is already registered, which can happen
+  // in WizardController::RegisterPrefs. We still want to try to register
+  // the pref here in case of Chrome/Linux with ChromeOS=1.
+  if (prefs->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
+    prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
+  }
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 3);
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");

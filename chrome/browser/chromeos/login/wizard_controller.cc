@@ -461,7 +461,11 @@ const chromeos::StartupCustomizationDocument*
 // static
 void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(kOobeComplete, false);
-  local_state->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
+  // Check if the pref is already registered in case
+  // Preferences::RegisterUserPrefs runs before this code in the future.
+  if (local_state->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
+    local_state->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
