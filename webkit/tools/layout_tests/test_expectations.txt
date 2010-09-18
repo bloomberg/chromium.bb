@@ -7,3 +7,4 @@
 
 // johnnyg to move upstream
 BUGJOHNNYG WIN : fast/canvas/webgl/tex-image-and-sub-image-2d-with-video.html = TEXT PASS
+BUGJOHNNYG LINUX : plugins/embed-attributes-style.html = IMAGE
