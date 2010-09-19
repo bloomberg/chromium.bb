@@ -16,8 +16,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
   }
 };
 
-// TODO(mpcomplete): http://crbug.com/56091
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_Basic) {
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, Basic) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
