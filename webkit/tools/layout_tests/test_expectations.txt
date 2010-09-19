@@ -8,9 +8,3 @@
 // johnnyg to move upstream
 BUGJOHNNYG WIN : fast/canvas/webgl/tex-image-and-sub-image-2d-with-video.html = TEXT PASS
 BUGJOHNNYG LINUX : plugins/embed-attributes-style.html = IMAGE
-
-// johnnyg to move upstream for mpcomplete
-BUGWK46025 : fast/dom/Window/slow-unload-handler-only-frame-is-stopped.html = TEXT
-BUGWK46025 : fast/dom/prototype-inheritance.html = TEXT
-BUGWK46025 : fast/events/focus-change-crash2.html = TEXT
-BUGWK46025 : fast/dom/Window/slow-unload-handler.html = TIMEOUT
