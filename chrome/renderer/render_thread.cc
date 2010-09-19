@@ -848,40 +848,80 @@ void RenderThread::EnsureWebKitInitialized() {
 
 #if defined(OS_WIN)
   // We don't yet support Gears on non-Windows, so don't tell pages that we do.
-  RegisterExtension(extensions_v8::GearsExtension::Get(), false);
+  WebScriptController::registerExtension(extensions_v8::GearsExtension::Get());
 #endif
-  RegisterExtension(extensions_v8::LoadTimesExtension::Get(), false);
-  RegisterExtension(extensions_v8::ChromeAppExtension::Get(), false);
-  RegisterExtension(extensions_v8::ExternalExtension::Get(), false);
+  WebScriptController::registerExtension(
+      extensions_v8::LoadTimesExtension::Get());
+  WebScriptController::registerExtension(
+      extensions_v8::ChromeAppExtension::Get());
+  WebScriptController::registerExtension(
+      extensions_v8::ExternalExtension::Get());
   v8::Extension* search_extension = extensions_v8::SearchExtension::Get();
   // search_extension is null if not enabled.
   if (search_extension)
-    RegisterExtension(search_extension, false);
+    WebScriptController::registerExtension(search_extension);
+
+  // TODO(rafaelw). Note that extension-related v8 extensions are being
+  // bound currently based on is_extension_process_. This means that
+  // non-extension renderers that slip into an extension process (for example,
+  // an extension page opening an iframe) will be extension bindings setup.
+  // This should be relatively rare, and the offending page won't be able to
+  // make extension API requests because it'll be denied on both sides of
+  // the renderer by a permission check. However, this is still fairly lame
+  // and we should consider implementing a V8Proxy delegate that calls out
+  // to the render thread and makes a decision as to whether to bind these
+  // extensions based on the frame's url.
+  // See: crbug.com/53610.
+
+  if (is_extension_process_)
+    WebScriptController::registerExtension(ExtensionProcessBindings::Get());
+
+  WebScriptController::registerExtension(
+      BaseJsV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(BaseJsV8Extension::Get());
+
+  WebScriptController::registerExtension(
+      JsonSchemaJsV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());
+
+  WebScriptController::registerExtension(
+      EventBindings::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(EventBindings::Get());
+
+  WebScriptController::registerExtension(
+      RendererExtensionBindings::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  if (is_extension_process_)
+    WebScriptController::registerExtension(RendererExtensionBindings::Get());
+
+  WebScriptController::registerExtension(
+      ExtensionApiTestV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  if (is_extension_process_)
+      WebScriptController::registerExtension(
+          ExtensionApiTestV8Extension::Get());
+
+  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
+  WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(switches::kEnableBenchmarking))
-    RegisterExtension(extensions_v8::BenchmarkingExtension::Get(), false);
+  if (command_line.HasSwitch(switches::kEnableBenchmarking)) {
+    WebScriptController::registerExtension(
+        extensions_v8::BenchmarkingExtension::Get());
+  }
 
   if (command_line.HasSwitch(switches::kPlaybackMode) ||
       command_line.HasSwitch(switches::kRecordMode) ||
       command_line.HasSwitch(switches::kNoJsRandomness)) {
-    RegisterExtension(extensions_v8::PlaybackExtension::Get(), false);
+    WebScriptController::registerExtension(
+        extensions_v8::PlaybackExtension::Get());
   }
 
-  if (command_line.HasSwitch(switches::kDomAutomationController))
-    RegisterExtension(DomAutomationV8Extension::Get(), false);
-
-  // Add v8 extensions related to chrome extensions.
-  RegisterExtension(ExtensionProcessBindings::Get(), true);
-  RegisterExtension(BaseJsV8Extension::Get(), true);
-  RegisterExtension(JsonSchemaJsV8Extension::Get(), true);
-  RegisterExtension(EventBindings::Get(), true);
-  RegisterExtension(RendererExtensionBindings::Get(), true);
-  RegisterExtension(ExtensionApiTestV8Extension::Get(), true);
-
-  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
-  WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
+  if (command_line.HasSwitch(switches::kDomAutomationController)) {
+    WebScriptController::registerExtension(DomAutomationV8Extension::Get());
+  }
 
   WebRuntimeFeatures::enableMediaPlayer(
       RenderProcess::current()->HasInitializedMediaLibrary());
@@ -1072,32 +1112,4 @@ RenderThread::GetFileThreadMessageLoopProxy() {
     file_thread_->Start();
   }
   return file_thread_->message_loop_proxy();
-}
-
-bool RenderThread::AllowScriptExtension(const std::string& v8_extension_name,
-                                        const GURL& url,
-                                        int extension_group) {
-  // If we don't know about it, it was added by WebCore, so we should allow it.
-  if (v8_extensions_.find(v8_extension_name) == v8_extensions_.end())
-    return true;
-
-  // If the V8 extension is not restricted, allow it to run anywhere.
-  bool restrict_to_extensions = v8_extensions_[v8_extension_name];
-  if (!restrict_to_extensions)
-    return true;
-
-  // Extension-only bindings should be restricted to content scripts and
-  // extension-blessed URLs.
-  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS ||
-      ExtensionRendererInfo::ExtensionBindingsAllowed(url)) {
-    return true;
-  }
-
-  return false;
-}
-
-void RenderThread::RegisterExtension(v8::Extension* extension,
-                                     bool restrict_to_extensions) {
-  WebScriptController::registerExtension(extension);
-  v8_extensions_[extension->name()] = restrict_to_extensions;
 }

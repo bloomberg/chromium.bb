@@ -262,11 +262,18 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   GURL url = ds->request().url();
   std::string extension_id = ExtensionRendererInfo::GetIdByURL(url);
 
-  if (!ExtensionRendererInfo::ExtensionBindingsAllowed(url) &&
+  // Note: because process isolation doesn't work correcly with redirects,
+  // it is possible that a page that IS in an extension process won't have
+  // bindings setup for it, so we must also check IsExtensionProcess, otherwise
+  // we'll attempt to invoke a JS function that doesn't exist.
+  // Fixing crbug.com/53610 should fix this as well.
+  RenderThread* current_thread = RenderThread::current();
+  if ((!current_thread ||
+       !current_thread->IsExtensionProcess() ||
+       !ExtensionRendererInfo::ExtensionBindingsAllowed(url)) &&
       !content_script) {
-    // This context is a regular non-extension web page or an unprivileged
-    // chrome app. Ignore it. We only care about content scripts and extension
-    // frames.
+    // This context is a regular non-extension web page.  Ignore it.  We only
+    // care about content scripts and extension frames.
     // (Unless we're in unit tests, in which case we don't care what the URL
     // is).
     DCHECK(frame_context.IsEmpty() || frame_context == context);

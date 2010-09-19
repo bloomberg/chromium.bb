@@ -553,9 +553,6 @@ class RenderView : public RenderWidget,
   virtual void didCreateScriptContext(WebKit::WebFrame* frame);
   virtual void didDestroyScriptContext(WebKit::WebFrame* frame);
   virtual void didCreateIsolatedScriptContext(WebKit::WebFrame* frame);
-  virtual bool allowScriptExtension(WebKit::WebFrame*,
-                                    const WebKit::WebString& extension_name,
-                                    int extensionGroup);
   virtual void logCrossFramePropertyAccess(
       WebKit::WebFrame* frame,
       WebKit::WebFrame* target,
