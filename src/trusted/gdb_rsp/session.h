@@ -40,14 +40,8 @@ class Packet;
 
 class Session {
  public:
-  explicit Session(port::ITransport *transport);
-  ~Session();
-
-  enum DPResult {
-    DPR_ERROR = -1,   // IO error on the stream, close the pipe
-    DPR_NO_DATA = 0,  // No data availible
-    DPR_OK = 1        // Completed OK
-  };
+  Session();
+  virtual ~Session();
 
   enum {
     IGNORE_ACK = 1,   // Do not emit or wait for '+' from RSP stream.
@@ -58,19 +52,20 @@ class Session {
   };
 
  public:
-  void  SetFlags(uint32_t flags);
-  void  ClearFlags(uint32_t flags);
-  uint32_t GetFlags();
+  virtual bool Init(port::ITransport *transport);
+  virtual void SetFlags(uint32_t flags);
+  virtual void ClearFlags(uint32_t flags);
+  virtual uint32_t GetFlags();
 
-  DPResult SendPacketOnly(Packet *packet);
-  DPResult SendPacket(Packet *packet);
-  DPResult GetPacket(Packet *packet);
-  bool DataAvailable();
-  bool Connected();
+  virtual bool SendPacketOnly(Packet *packet);
+  virtual bool SendPacket(Packet *packet);
+  virtual bool GetPacket(Packet *packet);
+  virtual bool DataAvailable();
+  virtual bool Connected();
 
  protected:
-  DPResult GetChar(char *ch);
-  DPResult SendStream(const char *str);
+  virtual bool GetChar(char *ch);
+  virtual bool SendStream(const char *str);
 
  private:
   Session(const Session&);

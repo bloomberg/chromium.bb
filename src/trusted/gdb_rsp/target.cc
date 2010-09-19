@@ -162,7 +162,7 @@ void Target::Run(Session *ses) {
     // Loop through packets until we process a continue
     // packet.
     do {
-      if (ses->GetPacket(&recv) == Session::DPR_OK) {
+      if (ses->GetPacket(&recv)) {
         reply.Clear();
         if (ProcessPacket(&recv, &reply)) {
           // If this is a continue command, break out of this loop
@@ -218,7 +218,6 @@ bool Target::GetFirstThreadId(uint32_t *id) {
 }
 
 bool Target::GetNextThreadId(uint32_t *id) {
-
   if (threadItr_ == threads_.end()) return false;
 
   *id = (*threadItr_).first;
@@ -479,8 +478,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     case 'c':
       return true;
 
-    default:
-    {
+    default: {
       // If the command is not recognzied, ignore it by sending an
       // empty reply.
       string str;

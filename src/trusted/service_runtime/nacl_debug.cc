@@ -122,7 +122,8 @@ void WINAPI NaClStubThread(void *ptr) {
       if (NULL == trans) continue;
 
       // Create a new session for this connection
-      ses = new Session(trans);
+      ses = new Session();
+      ses->Init(trans);
       ses->SetFlags(Session::DEBUG_MASK);
 
       // Run this session for as long as it lasts

@@ -29,18 +29,28 @@ int const kSessionTimeoutMs = 1000;
 
 namespace gdb_rsp {
 
-Session::Session(ITransport *io_ptr)
+Session::Session()
   : mutex_(NULL),
-    io_(io_ptr),
+    io_(NULL),
     flags_(0),
-    seq_(0) {
-  connected_ = (io_ptr != NULL);
-  mutex_ = IMutex::Allocate();
-  assert(io_);
-  assert(mutex_);
+    seq_(0),
+    connected_(false) {
 }
 
 Session::~Session() {
+  if (mutex_) IMutex::Free(mutex_);
+}
+
+
+bool Session::Init(port::ITransport *transport) {
+  if (NULL == transport) return false;
+
+  mutex_ = IMutex::Allocate();
+  if (NULL == mutex_) return false;
+
+  connected_ = true;
+  io_ = transport;
+  return true;
 }
 
 void Session::SetFlags(uint32_t flags) {
@@ -56,6 +66,8 @@ uint32_t Session::GetFlags() {
 }
 
 bool Session::DataAvailable() {
+  assert(io_);
+
   return io_->ReadWaitWithTimeout(kSessionTimeoutMs);
 }
 
@@ -63,53 +75,45 @@ bool Session::Connected() {
   return connected_;
 }
 
-Session::DPResult Session::GetChar(char *ch) {
+bool Session::GetChar(char *ch) {
+  assert(io_);
+
   // Attempt to select this IO for reading.
-  if (DataAvailable() == false) return DPR_NO_DATA;
+  if (DataAvailable() == false) return false;
 
   int32_t len = io_->Read(ch, 1);
-  if (len == 0) return DPR_NO_DATA;
+  if (len == 0) return false;
   if (len == -1) {
     io_->Disconnect();
     connected_ = false;
-    return DPR_ERROR;
+    return false;
   }
 
-  return DPR_OK;
+  return true;
 }
 
 
-Session::DPResult Session::SendPacket(Packet *pkt) {
+bool Session::SendPacket(Packet *pkt) {
   MutexLock lock(mutex_);
-
-  Session::DPResult res;
   char ch;
 
-
-  if (NULL == io_) return DPR_ERROR;
-
-  // If we are ignoring ACKs..
-  if (GetFlags() & IGNORE_ACK) return SendPacketOnly(pkt);
-
   do {
-    res = SendPacketOnly(pkt);
-    // Verify we sent OK
-    if (res != DPR_OK) break;
+    if (!SendPacketOnly(pkt)) return false;
 
     // If ACKs are off, we are done.
     if (GetFlags() & IGNORE_ACK) break;
 
     // Otherwise, poll for '+'
-    if (GetChar(&ch) == DPR_ERROR) return DPR_ERROR;
+    if (!GetChar(&ch)) return false;
 
     // Retry if we didn't get a '+'
   } while (ch != '+');
 
-  return res;
+  return true;
 }
 
 
-Session::DPResult Session::SendPacketOnly(Packet *pkt) {
+bool Session::SendPacketOnly(Packet *pkt) {
   MutexLock lock(mutex_);
 
   const char *ptr;
@@ -162,9 +166,11 @@ Session::DPResult Session::SendPacketOnly(Packet *pkt) {
 
 // We do not take the mutex here since we already have it
 // this function is protected so it can't be called directly.
-Session::DPResult Session::SendStream(const char *out) {
+bool Session::SendStream(const char *out) {
   int32_t len = static_cast<int32_t>(strlen(out));
   int32_t sent = 0;
+
+  assert(io_);
 
   while (sent < len) {
     const char *cur = &out[sent];
@@ -174,33 +180,33 @@ Session::DPResult Session::SendStream(const char *out) {
       IPlatform::LogWarning("Send of %d bytes : '%s' failed.\n", len, out);
       io_->Disconnect();
       connected_ = false;
-      return DPR_ERROR;
+      return false;
     }
 
     sent += tx;
   }
 
   if (GetFlags() & DEBUG_SEND) IPlatform::LogInfo("TX %s\n", out);
-  return DPR_OK;
+  return true;
 }
 
 
 // Attempt to receive a packet
-Session::DPResult Session::GetPacket(Packet *pkt) {
+bool Session::GetPacket(Packet *pkt) {
+  assert(io_);
+
   MutexLock lock(mutex_);
 
   char run_xsum, fin_xsum, ch;
   std::string in;
   int has_seq, offs;
 
-  // If nothing is waiting, return NONE
-  if (io_->ReadWaitWithTimeout(kSessionTimeoutMs) == DPR_NO_DATA) {
-    return DPR_NO_DATA;
-  }
+  // If nothing is waiting, return false
+  if (!io_->ReadWaitWithTimeout(kSessionTimeoutMs)) return false;
 
   // Toss characters until we see a start of command
   do {
-    if (GetChar(&ch) == DPR_ERROR) return DPR_ERROR;
+    if (!GetChar(&ch)) return false;
     in += ch;
   } while (ch != '$');
 
@@ -209,9 +215,7 @@ Session::DPResult Session::GetPacket(Packet *pkt) {
   offs    = 0;
 
   // If nothing is waiting, return NONE
-  if (io_->ReadWaitWithTimeout(kSessionTimeoutMs) == DPR_NO_DATA) {
-    return DPR_NO_DATA;
-  }
+  if (!io_->ReadWaitWithTimeout(kSessionTimeoutMs)) return false;
 
   // Clear the stream
   pkt->Clear();
@@ -222,7 +226,7 @@ Session::DPResult Session::GetPacket(Packet *pkt) {
 
   // Stream in the characters
   while (1) {
-    if (GetChar(&ch) == DPR_ERROR) return DPR_ERROR;
+    if (!GetChar(&ch)) return false;
 
     in += ch;
      // Check SEQ statemachine  xx:
@@ -253,14 +257,14 @@ Session::DPResult Session::GetPacket(Packet *pkt) {
 
 
   // Get two Nibble XSUM
-  if (GetChar(&ch) == DPR_ERROR) return DPR_ERROR;
+  if (!GetChar(&ch)) return false;
   in += ch;
 
   int val;
   NibbleToInt(ch, & val);
   fin_xsum = val << 4;
 
-  if (GetChar(&ch) == DPR_ERROR) return DPR_ERROR;
+  if (!GetChar(&ch)) return false;
   in += ch;
   NibbleToInt(ch, &val);
   fin_xsum |= val;
@@ -277,12 +281,12 @@ Session::DPResult Session::GetPacket(Packet *pkt) {
     pkt->GetRawChar(&ch);
     if (ch != ':') {
       IPlatform::LogError("RX mismatched SEQ.\n");
-      return DPR_ERROR;
+      return false;
     }
   }
 
   // If ACKs are off, we are done.
-  if (GetFlags() & IGNORE_ACK) return DPR_OK;
+  if (GetFlags() & IGNORE_ACK) return true;
 
   // If the XSUMs don't match, signal bad packet
   if (fin_xsum == run_xsum) {
@@ -304,7 +308,7 @@ Session::DPResult Session::GetPacket(Packet *pkt) {
     goto retry;
   }
 
-  return DPR_OK;
+  return true;
 }
 
 }  // End of namespace gdb_rsp

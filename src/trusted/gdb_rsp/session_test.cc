@@ -193,8 +193,16 @@ int TestSession() {
 
   // Create a "loopback" session by using the same
   // FIFO for ingress and egress.
-  Session cli(new TestTransport(&vec, &vec));
-  Session srv(new TestTransport(&vec, &vec));
+  Session cli;
+  Session srv;
+
+  if (cli.Init(NULL)) {
+    printf("Initializing with NULL did not fail.\n");
+    errs++;
+  }
+
+  cli.Init(new TestTransport(&vec, &vec));
+  srv.Init(new TestTransport(&vec, &vec));
 
   // Check, Set,Clear,Get flags.
   cli.ClearFlags(static_cast<uint32_t>(-1));
@@ -226,15 +234,16 @@ int TestSession() {
   const char tx[] = { "$1234#ca+" };
   const char rx[] = { "+$OK#9a" };
   GoldenTransport gold(rx, tx, 2);
-  Session uni(&gold);
+  Session uni;
+  uni.Init(&gold);
 
   pktOut.Clear();
   pktOut.AddString(str);
-  if (uni.SendPacket(&pktOut) != Session::DPR_OK) {
+  if (!uni.SendPacket(&pktOut)) {
     printf("Send failed.\n");
     errs++;
   }
-  if (uni.GetPacket(&pktIn) != Session::DPR_OK) {
+  if (!uni.GetPacket(&pktIn)) {
     printf("Get failed.\n");
     errs++;
   }
@@ -258,7 +267,8 @@ int TestSession() {
 
   // Check that a failed read/write reports DC
   DCSocketTransport dctrans;
-  Session dctest(&dctrans);
+  Session dctest;
+  dctest.Init(&dctrans);
   if (!dctest.Connected()) {
     printf("Expecting dctest to be connected.\n");
     errs++;

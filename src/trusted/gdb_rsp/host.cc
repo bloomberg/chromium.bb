@@ -116,7 +116,6 @@ bool Host::Init() {
   }
 
   // Must support and use property read method to get CPU type
-  if (!HasProperty("qXfer:properties:read")) return false;
   if (!ReadObject("features", "target.xml", &reply)) return false;
 
   // Search for start of "architecture" tag
@@ -431,15 +430,12 @@ bool Host::Request(const string& req, string *resp) {
 }
 
 bool Host::SendOnly(Packet *tx) {
-  return session_->SendPacketOnly(tx) != Session::DPR_ERROR;
+  return session_->SendPacketOnly(tx);
 }
 
 bool Host::Send(Packet *tx, Packet *rx) {
-  if (session_->SendPacket(tx) == Session::DPR_ERROR) return false;
-
-  if (session_->GetPacket(rx) == Session::DPR_ERROR) return false;
-
-  return true;
+  if (!session_->SendPacket(tx)) return false;
+  return session_->GetPacket(rx);
 }
 
 }  // namespace gdb_rsp
