@@ -193,8 +193,12 @@ void SpeechInputBubbleGtk::UpdateLayout() {
 }
 
 void SpeechInputBubbleGtk::SetImage(const SkBitmap& image) {
-  // TODO(satish): Implement.
-  NOTREACHED();
+  if (image.isNull())
+    return;
+
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&image);
+  gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
+  g_object_unref(pixbuf);
 }
 
 }  // namespace
