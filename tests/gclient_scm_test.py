@@ -56,7 +56,7 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
 
 class SVNWrapperTestCase(BaseTestCase):
   class OptionsObject(object):
-     def __init__(self, test_case, verbose=False, revision=None):
+     def __init__(self, verbose=False, revision=None):
       self.verbose = verbose
       self.revision = revision
       self.manually_grab_svn_rev = True
@@ -67,7 +67,7 @@ class SVNWrapperTestCase(BaseTestCase):
       self.stdout = gclient_scm.sys.stdout
 
   def Options(self, *args, **kwargs):
-    return self.OptionsObject(self, *args, **kwargs)
+    return self.OptionsObject(*args, **kwargs)
 
   def setUp(self):
     BaseTestCase.setUp(self)
@@ -476,7 +476,7 @@ class GitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
                          unittest.TestCase):
   """This class doesn't use pymox."""
   class OptionsObject(object):
-     def __init__(self, test_case, verbose=False, revision=None):
+     def __init__(self, verbose=False, revision=None):
       self.verbose = verbose
       self.revision = revision
       self.manually_grab_svn_rev = True
@@ -532,7 +532,7 @@ reset refs/heads/master
 from :3
 """
   def Options(self, *args, **kwargs):
-    return self.OptionsObject(self, *args, **kwargs)
+    return self.OptionsObject(*args, **kwargs)
 
   def CreateGitRepo(self, git_import, path):
     """Do it for real."""
