@@ -502,7 +502,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
 }
 
 // This tests bug 11761: FindInPage terminates search prematurely.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FAILS_FindInPagePrematureEnd) {
+// This test is not expected to pass until bug 11761 is fixed.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       DISABLED_FindInPagePrematureEnd) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our special focus tracking page.
@@ -983,9 +985,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 // linux views.  Investigate and fix.  http://crbug.com/40948
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_NoIncognitoPrepopulate DISABLED_NoIncognitoPrepopulate
-#elif defined (OS_WIN)
-// On windows, this test is flaky. http://crbug.com/40948
-#define MAYBE_NoIncognitoPrepopulate FLAKY_NoIncognitoPrepopulate
 #else
 #define MAYBE_NoIncognitoPrepopulate NoIncognitoPrepopulate
 #endif
@@ -1058,15 +1057,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarTextForBrowser(browser()));
 }
 
-// See http://crbug.com/45594. On Windows, it crashes sometimes.
-#if defined(OS_WIN)
-#define MAYBE_ActivateLinkNavigatesPage DISABLED_ActivateLinkNavigatesPage
-#else
-#define MAYBE_ActivateLinkNavigatesPage ActivateLinkNavigatesPage
-#endif
 // This makes sure that dismissing the find bar with kActivateSelection works.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       MAYBE_ActivateLinkNavigatesPage) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test content.
