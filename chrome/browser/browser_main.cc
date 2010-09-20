@@ -930,6 +930,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // run before threads and windows are created.
   InitializeBrokerServices(parameters, parsed_command_line);
 
+  // Initialize histogram statistics gathering system.
+  StatisticsRecorder statistics;
+
   PrefService* local_state = InitializeLocalState(parsed_command_line,
                                                   is_first_run);
 
@@ -1030,9 +1033,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     WarnAboutMinimumSystemRequirements();
 
   InitializeNetworkOptions(parsed_command_line);
-
-  // Initialize histogram statistics gathering system.
-  StatisticsRecorder statistics;
 
   // Initialize histogram synchronizer system. This is a singleton and is used
   // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
