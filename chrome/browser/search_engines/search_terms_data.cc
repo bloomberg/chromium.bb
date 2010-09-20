@@ -10,7 +10,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "googleurl/src/gurl.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif
