@@ -518,7 +518,8 @@ TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
   EXPECT_EQ(L"Default Title", GetTabTitle());
 }
 
-TEST_F(SessionHistoryTest, HistoryLength) {
+// http://code.google.com/p/chromium/issues/detail?id=56267
+TEST_F(SessionHistoryTest, DISABLED_HistoryLength) {
   ASSERT_TRUE(test_server_.Start());
 
   int length;
