@@ -68,12 +68,10 @@
  * Example 2: x86-64.
  *
  * The layout of the combined area is the same as for x86-32; the TDB
- * address is accessed via a intrinsic, __tls_get_addr(), which takes
- * a parameter, the relative symbol offset.
+ * address is accessed via a intrinsic, __nacl_read_tp().
  *
- *      mov    $-0x20, %rdi           ; TLS offset
- *      callq  __tls_get_addr
- *      mov    (%r15,%rax,1),%eax     ; sandboxed load from r15 "segment".
+ *      callq  __nacl_read_tp            ; load TDB address into eax.
+ *      mov    -0x20(%r15,%rax,1),%eax   ; sandboxed load from r15 "segment".
  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  *
