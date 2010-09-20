@@ -60,6 +60,10 @@ cr.define('options', function() {
       }
     },
 
+    /**
+     * Set enabled and checked state of the commit button.
+     * @private
+     */
     validateCommitButton_: function() {
       var somethingToImport =
           $('import-history').checked || $('import-favorites').checked ||
@@ -67,28 +71,41 @@ cr.define('options', function() {
       $('import-data-commit').disabled = !somethingToImport;
     },
 
+    /**
+     * Set enabled and checked states a checkbox element.
+     * @param {Object} checkbox A checkbox element.
+     * @param {boolean} enabled The enabled state of the chekbox.
+     * @private
+     */
+    setUpCheckboxState_: function(checkbox, enabled) {
+      checkbox.disabled = !enabled;
+      checkbox.checked = enabled;
+    },
+
+    /**
+     * Update the enabled and checked states of all checkboxes.
+     * @private
+     */
     updateCheckboxes_: function() {
       var index = $('import-browsers').selectedIndex;
       var browserProfile = ImportDataOverlay.browserProfiles[index];
-      $('import-history').disabled = !browserProfile['history'];
-      $('import-history').checked = browserProfile['history'];
-      $('import-favorites').disabled = !browserProfile['favorites'];
-      $('import-favorites').checked = browserProfile['favorites'];
-      $('import-passwords').disabled = !browserProfile['passwords'];
-      $('import-passwords').checked = browserProfile['passwords'];
-      $('import-search').disabled = !browserProfile['search'];
-      $('import-search').checked = browserProfile['search'];
+      var importOptions = ['history', 'favorites', 'passwords', 'search'];
+      for (var i = 0; i < importOptions.length; i++) {
+        var checkbox = $('import-' + importOptions[i]);
+        this.setUpCheckboxState_(checkbox, browserProfile[importOptions[i]]);
+      }
     },
 
     /**
      * Update the supported browsers popup with given entries.
-     * @param {Array} list of supported browsers name.
+     * @param {array} browsers List of supported browsers name.
+     * @private
      */
     updateSupportedBrowsers_: function(browsers) {
       ImportDataOverlay.browserProfiles = browsers;
-      browserSelect = $('import-browsers');
+      var browserSelect = $('import-browsers');
       browserSelect.textContent = '';
-      browserCount = browsers.length;
+      var browserCount = browsers.length;
 
       if (browserCount == 0) {
         var option = new Option(templateData.no_profile_found, 0);
@@ -96,10 +113,9 @@ cr.define('options', function() {
 
         var checkboxes =
             document.querySelectorAll(
-            '#import-checkboxes input[type=checkbox]');
+                '#import-checkboxes input[type=checkbox]');
         for (var i = 0; i < checkboxes.length; i++) {
-          checkboxes[i].checked = false;
-          checkboxes[i].disabled = true;
+          setUpCheckboxState_(checkboxes[i], false);
         }
       } else {
         for (var i = 0; i < browserCount; i++) {
@@ -114,19 +130,27 @@ cr.define('options', function() {
     },
   };
 
+  /**
+   * Update the supported browsers popup with given entries.
+   * @param {array} list of supported browsers name.
+   */
   ImportDataOverlay.updateSupportedBrowsers = function(browsers) {
     ImportDataOverlay.getInstance().updateSupportedBrowsers_(browsers);
   };
 
+  /**
+   * Update the UI to reflect whether an import operation is in progress.
+   * @param {boolean} state True if an import operation is in progress.
+   */
   ImportDataOverlay.setImportingState = function(state) {
     if (state) {
-      ImportDataOverlay.getInstance().updateCheckboxes_();
-    } else {
       var checkboxes =
           document.querySelectorAll('#import-checkboxes input[type=checkbox]');
       for (var i = 0; i < checkboxes.length; i++) {
         checkboxes[i].disabled = true;
       }
+    } else {
+      ImportDataOverlay.getInstance().updateCheckboxes_();
     }
     $('import-browsers').disabled = state;
     $('import-data-commit').disabled = state;
@@ -145,6 +169,9 @@ cr.define('options', function() {
     }
   };
 
+  /**
+   * Remove the import overlay from display.
+   */
   ImportDataOverlay.dismiss = function() {
     ImportDataOverlay.setImportingState(false);
     OptionsPage.clearOverlays();
