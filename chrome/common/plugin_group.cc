@@ -280,22 +280,36 @@ void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
   UpdateActivePlugin(plugin);
 }
 
+string16 PluginGroup::GetGroupName() const {
+  if (!group_name_.empty())
+    return group_name_;
+  DCHECK_EQ(1u, web_plugin_infos_.size());
+  FilePath::StringType path =
+      web_plugin_infos_[0].path.BaseName().RemoveExtension().value();
+#if defined(OS_POSIX)
+  return UTF8ToUTF16(path);
+#elif defined(OS_WIN)
+  return WideToUTF16(path);
+#endif
+}
+
 DictionaryValue* PluginGroup::GetSummary() const {
   DictionaryValue* result = new DictionaryValue();
-  result->SetString("name", group_name_);
+  result->SetString("name", GetGroupName());
   result->SetBoolean("enabled", enabled_);
   return result;
 }
 
 DictionaryValue* PluginGroup::GetDataForUI() const {
+  string16 name = GetGroupName();
   DictionaryValue* result = new DictionaryValue();
-  result->SetString("name", group_name_);
+  result->SetString("name", name);
   result->SetString("description", description_);
   result->SetString("version", version_->GetString());
   result->SetString("update_url", update_url_);
   result->SetBoolean("critical", IsVulnerable());
 
-  bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
+  bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(name);
   ListValue* plugin_files = new ListValue();
   bool all_plugins_disabled_by_policy = true;
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {

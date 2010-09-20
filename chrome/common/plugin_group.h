@@ -94,8 +94,9 @@ class PluginGroup {
   // Returns whether the plugin group is enabled or not.
   bool Enabled() const { return enabled_; }
 
-  // Returns this group's name
-  const string16& GetGroupName() const { return group_name_; }
+  // Returns this group's name, or the filename without extension if the name
+  // is empty.
+  string16 GetGroupName() const;
 
   // Returns the description of the highest-priority plug-in in the group.
   const string16& description() const { return description_; }
