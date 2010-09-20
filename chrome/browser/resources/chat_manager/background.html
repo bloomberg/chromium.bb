@@ -53,9 +53,6 @@ to route both incoming and outgoing chats through this central roster.
           }
         }
       });
-      if (centralRosterJid) {
-        port.postMessage({jid: centralRosterJid});
-      }
     // New central jid broadcaster.
     // Add listener for jid changes, and track port for forwarding chats.
     } else if (port.name == 'centralJidBroadcaster') {
@@ -79,8 +76,12 @@ to route both incoming and outgoing chats through this central roster.
   });
 
   // Listen for requests from our content scripts.
-  chrome.extension.onRequest.addListener(function(request, sender) {
+  chrome.extension.onRequest.addListener(
+      function(request, sender, sendResponse) {
     switch (request.msg) {
+      case ChatBridgeEventTypes.CENTRAL_USER_WATCHER:
+        sendResponse({jid: centralRosterJid});
+        break;
       // For new initiated chats, forward to the central roster port.
       case ChatBridgeEventTypes.SHOW_CHAT:
       case ChatBridgeEventTypes.START_VIDEO:

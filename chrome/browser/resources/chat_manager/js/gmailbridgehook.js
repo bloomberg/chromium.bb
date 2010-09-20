@@ -10,6 +10,10 @@ var centralJidListenerGmailPort;
 // The gmail page div used to funnel events through.
 var divGmailHandler;
 
+// The current central roster Jid.
+// Requested and cached as early as possible.
+var centralRosterJid;
+
 /**
  * Triggered on a user initiated chat request. Forward to extension to be
  * processed by the Chrome central roster.
@@ -21,33 +25,67 @@ function forwardChatEvent(event) {
 }
 
 /**
+ * Forward central roster Jid to page.
+ * @param {string} jid the central roster Jid.
+ */
+function dispatchCentralJid(jid) {
+  var outgoingChatEvent = document.createEvent('MessageEvent');
+  outgoingChatEvent.initMessageEvent(
+      ChatBridgeEventTypes.CENTRAL_USER_UPDATE,
+      true, true, jid);
+  divGmailHandler.dispatchEvent(outgoingChatEvent);
+}
+
+/**
  * Setup central roster jid listener.
  * @param {MessageEvent} event the event.
  */
 function setupCentralRosterJidListener(event) {
   if (!centralJidListenerGmailPort) {
+    if (centralRosterJid) {
+      dispatchCentralJid(centralRosterJid);
+    }
     centralJidListenerGmailPort = chrome.extension.connect(
         {name: 'centralJidListener'});
     centralJidListenerGmailPort.onMessage.addListener(function(msg) {
-      var centralRosterJid = msg.jid;
-      var outgoingChatEvent = document.createEvent('MessageEvent');
-      outgoingChatEvent.initMessageEvent(
-          ChatBridgeEventTypes.CENTRAL_USER_UPDATE,
-          true, true, centralRosterJid);
-      divGmailHandler.dispatchEvent(outgoingChatEvent);
+      centralRosterJid = msg.jid;
+      dispatchCentralJid(centralRosterJid);
     });
   }
 }
 
-// Search for communication channel div.
-divGmailHandler = document.getElementById('mainElement');
-if (divGmailHandler) {
-  divGmailHandler.addEventListener(ChatBridgeEventTypes.SHOW_CHAT,
-      forwardChatEvent, false);
-  divGmailHandler.addEventListener(ChatBridgeEventTypes.START_VIDEO,
-      forwardChatEvent, false);
-  divGmailHandler.addEventListener(ChatBridgeEventTypes.START_VOICE,
-      forwardChatEvent, false);
-  divGmailHandler.addEventListener(ChatBridgeEventTypes.CENTRAL_USER_WATCHER,
-      setupCentralRosterJidListener, false);
+/**
+ * When the page loads, search for the communication channel div.
+ */
+function onPageLoaded() {
+  divGmailHandler = document.getElementById('mainElement');
+  if (divGmailHandler) {
+    divGmailHandler.addEventListener(
+        ChatBridgeEventTypes.SHOW_CHAT,
+        forwardChatEvent, false);
+    divGmailHandler.addEventListener(
+        ChatBridgeEventTypes.START_VIDEO,
+        forwardChatEvent, false);
+    divGmailHandler.addEventListener(
+        ChatBridgeEventTypes.START_VOICE,
+        forwardChatEvent, false);
+    divGmailHandler.addEventListener(
+        ChatBridgeEventTypes.CENTRAL_USER_WATCHER,
+        setupCentralRosterJidListener, false);
+  }
 }
+
+// Retrieve the initial central roster Jid and cache the result.
+chrome.extension.sendRequest(
+    {msg: ChatBridgeEventTypes.CENTRAL_USER_WATCHER}, function(response) {
+      centralRosterJid = response.jid;
+
+      // The initial centralRosterJid is sent in setupCentralRosterJidListener,
+      // but if it's already been called, send it here.
+      if (centralJidListenerGmailPort && centralRosterJid) {
+        dispatchCentralJid(centralRosterJid);
+      }
+    }
+);
+
+window.addEventListener("load", onPageLoaded, false);

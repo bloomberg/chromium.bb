@@ -15,6 +15,10 @@ var centralJidListenerChatPort;
 // The chat page div used to funnel events through.
 var divRosterHandler;
 
+// The current central roster Jid.
+// Requested and cached as early as possible.
+var centralRosterJid;
+
 /**
  * Triggered on a user initiated chat request. Forward to extension to be
  * processed by the Chrome central roster.
@@ -51,6 +55,18 @@ function dispatchChatEvent(chatType, chatJid) {
 }
 
 /**
+ * Forward central roster Jid to page.
+ * @param {string} jid the central roster Jid.
+ */
+function dispatchCentralJid(jid) {
+  var outgoingChatEvent = document.createEvent('MessageEvent');
+  outgoingChatEvent.initMessageEvent(
+      ChatBridgeEventTypes.CENTRAL_USER_UPDATE,
+      true, true, jid);
+  divRosterHandler.dispatchEvent(outgoingChatEvent);
+}
+
+/**
  * Manage two-way communication with the central roster. Updated jid's are
  * forwarded to the background, while chats are forwarded to the page.
  * @param {MessageEvent} event the new central roster jid event.
@@ -64,7 +80,7 @@ function centralRosterHandler(event) {
       dispatchChatEvent(msg.chatType, chatJid);
     });
   }
-  var centralRosterJid = event.data;
+  centralRosterJid = event.data;
   centralJidBroadcasterPort.postMessage({jid: centralRosterJid});
 }
 
@@ -74,30 +90,53 @@ function centralRosterHandler(event) {
  */
 function setupCentralRosterJidListener(event) {
   if (!centralJidListenerChatPort) {
+    if (centralRosterJid) {
+      dispatchCentralJid(centralRosterJid);
+    }
     centralJidListenerChatPort = chrome.extension.connect(
         {name: 'centralJidListener'});
     centralJidListenerChatPort.onMessage.addListener(function(msg) {
-      var centralRosterJid = msg.jid;
-      var outgoingChatEvent = document.createEvent('MessageEvent');
-      outgoingChatEvent.initMessageEvent(
-          ChatBridgeEventTypes.CENTRAL_USER_UPDATE,
-          true, true, centralRosterJid);
-      divRosterHandler.dispatchEvent(outgoingChatEvent);
+      centralRosterJid = msg.jid;
+      dispatchCentralJid(centralRosterJid);
     });
   }
 }
 
-// Search for communication channel div.
-divRosterHandler = document.getElementById('roster_comm_link');
-if (divRosterHandler) {
-  divRosterHandler.addEventListener(ChatBridgeEventTypes.SHOW_CHAT,
-      forwardChatEvent, false);
-  divRosterHandler.addEventListener(ChatBridgeEventTypes.NEW_VIDEO_CHAT,
-      forwardChatEvent, false);
-  divRosterHandler.addEventListener(ChatBridgeEventTypes.NEW_VOICE_CHAT,
-      forwardChatEvent, false);
-  divRosterHandler.addEventListener(ChatBridgeEventTypes.CENTRAL_USER_SET,
-      centralRosterHandler, false);
-  divRosterHandler.addEventListener(ChatBridgeEventTypes.CENTRAL_USER_WATCHER,
-      setupCentralRosterJidListener, false);
+/**
+ * When the page loads, search for the communication channel div.
+ */
+function onPageLoaded() {
+  divRosterHandler = document.getElementById('roster_comm_link');
+  if (divRosterHandler) {
+    divRosterHandler.addEventListener(
+        ChatBridgeEventTypes.SHOW_CHAT,
+        forwardChatEvent, false);
+    divRosterHandler.addEventListener(
+        ChatBridgeEventTypes.NEW_VIDEO_CHAT,
+        forwardChatEvent, false);
+    divRosterHandler.addEventListener(
+        ChatBridgeEventTypes.NEW_VOICE_CHAT,
+        forwardChatEvent, false);
+    divRosterHandler.addEventListener(
+        ChatBridgeEventTypes.CENTRAL_USER_SET,
+        centralRosterHandler, false);
+    divRosterHandler.addEventListener(
+        ChatBridgeEventTypes.CENTRAL_USER_WATCHER,
+        setupCentralRosterJidListener, false);
+  }
 }
+
+// Retrieve the initial central roster Jid and cache the result.
+chrome.extension.sendRequest(
+    {msg: ChatBridgeEventTypes.CENTRAL_USER_WATCHER}, function(response) {
+      centralRosterJid = response.jid;
+
+      // The initial centralRosterJid is sent in setupCentralRosterJidListener,
+      // but if it's already been called, send it here.
+      if (centralJidListenerChatPort && centralRosterJid) {
+        dispatchCentralJid(centralRosterJid);
+      }
+    }
+);
+
+window.addEventListener("load", onPageLoaded, false);
