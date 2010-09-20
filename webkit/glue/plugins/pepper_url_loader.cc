@@ -8,12 +8,14 @@
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/dev/ppb_url_loader_dev.h"
+#include "third_party/ppapi/c/dev/ppb_url_loader_trusted_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
@@ -152,6 +154,18 @@ const PPB_URLLoader_Dev ppb_urlloader = {
   &Close
 };
 
+void GrantUniversalAccess(PP_Resource loader_id) {
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
+  if (!loader)
+    return;
+
+  loader->GrantUniversalAccess();
+}
+
+const PPB_URLLoaderTrusted_Dev ppb_urlloadertrusted = {
+  &GrantUniversalAccess
+};
+
 }  // namespace
 
 URLLoader::URLLoader(PluginInstance* instance)
@@ -164,7 +178,8 @@ URLLoader::URLLoader(PluginInstance* instance)
       total_bytes_to_be_received_(-1),
       user_buffer_(NULL),
       user_buffer_size_(0),
-      done_status_(PP_ERROR_WOULDBLOCK) {
+      done_status_(PP_ERROR_WOULDBLOCK),
+      has_universal_access_(false) {
 }
 
 URLLoader::~URLLoader() {
@@ -188,6 +203,12 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request(request->ToWebURLRequest(frame));
+
+  // Check if we are allowed to access this URL.
+  if (!has_universal_access_ &&
+      !frame->securityOrigin().canRequest(web_request.url()))
+    return PP_ERROR_NOACCESS;
+
   frame->dispatchWillSendRequest(web_request);
 
   loader_.reset(WebKit::webKitClient()->createURLLoader());
@@ -257,6 +278,10 @@ void URLLoader::Close() {
   NOTIMPLEMENTED();  // TODO(darin): Implement me.
 }
 
+void URLLoader::GrantUniversalAccess() {
+  has_universal_access_ = true;
+}
+
 void URLLoader::willSendRequest(WebURLLoader* loader,
                                 WebURLRequest& new_request,
                                 const WebURLResponse& redirect_response) {
@@ -301,7 +326,7 @@ void URLLoader::didReceiveData(WebURLLoader* loader,
   }
 }
 
-void URLLoader::didFinishLoading(WebURLLoader* loader, double finishTime) {
+void URLLoader::didFinishLoading(WebURLLoader* loader, double finish_time) {
   done_status_ = PP_OK;
   RunCallback(done_status_);
 }

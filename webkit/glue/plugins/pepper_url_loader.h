@@ -14,6 +14,7 @@
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PPB_URLLoader_Dev;
+struct PPB_URLLoaderTrusted_Dev;
 
 namespace pepper {
 
@@ -30,6 +31,10 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   // exposed to the plugin.
   static const PPB_URLLoader_Dev* GetInterface();
 
+  // Returns a pointer to the interface implementing PPB_URLLoaderTrusted that
+  // is exposed to the plugin.
+  static const PPB_URLLoaderTrusted_Dev* GetTrustedInterface();
+
   // Resource overrides.
   URLLoader* AsURLLoader() { return this; }
 
@@ -40,6 +45,9 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
                            PP_CompletionCallback callback);
   int32_t FinishStreamingToFile(PP_CompletionCallback callback);
   void Close();
+
+  // PPB_URLLoaderTrusted implementation.
+  void GrantUniversalAccess();
 
   // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(WebKit::WebURLLoader* loader,
@@ -55,7 +63,8 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   virtual void didReceiveData(WebKit::WebURLLoader* loader,
                               const char* data,
                               int data_length);
-  virtual void didFinishLoading(WebKit::WebURLLoader* loader, double finishTime);
+  virtual void didFinishLoading(WebKit::WebURLLoader* loader,
+                                double finish_time);
   virtual void didFail(WebKit::WebURLLoader* loader,
                        const WebKit::WebURLError& error);
 
@@ -85,6 +94,7 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   char* user_buffer_;
   size_t user_buffer_size_;
   int32_t done_status_;
+  bool has_universal_access_;
 };
 
 }  // namespace pepper

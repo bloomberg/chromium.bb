@@ -28,6 +28,7 @@
 #include "third_party/ppapi/c/dev/ppb_testing_dev.h"
 #include "third_party/ppapi/c/dev/ppb_transport_dev.h"
 #include "third_party/ppapi/c/dev/ppb_url_loader_dev.h"
+#include "third_party/ppapi/c/dev/ppb_url_loader_trusted_dev.h"
 #include "third_party/ppapi/c/dev/ppb_url_request_info_dev.h"
 #include "third_party/ppapi/c/dev/ppb_url_response_info_dev.h"
 #include "third_party/ppapi/c/dev/ppb_url_util_dev.h"
@@ -223,6 +224,8 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
     return Transport::GetInterface();
   if (strcmp(name, PPB_URLLOADER_DEV_INTERFACE) == 0)
+    return URLLoader::GetInterface();
+  if (strcmp(name, PPB_URLLOADERTRUSTED_DEV_INTERFACE) == 0)
     return URLLoader::GetInterface();
   if (strcmp(name, PPB_URLREQUESTINFO_DEV_INTERFACE) == 0)
     return URLRequestInfo::GetInterface();
