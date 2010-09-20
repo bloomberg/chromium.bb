@@ -1549,6 +1549,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     parent_ = static_cast<GLES2DecoderImpl*>(parent)->AsWeakPtr();
 
   if (!MakeCurrent()) {
+    LOG(ERROR) << "GLES2DecoderImpl::Initialize failed because "
+               << "MakeCurrent failed.";
     Destroy();
     return false;
   }
@@ -1556,6 +1558,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   CHECK_GL_ERROR();
 
   if (!group_->Initialize()) {
+    LOG(ERROR) << "GLES2DecoderImpl::Initialize failed becaue "
+               << "ContextGroup failed to initialize.";
     Destroy();
     return false;
   }
@@ -1565,6 +1569,11 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   // Check supported extensions.
   depth24_stencil8_oes_supported_ =
       context_->HasExtension("GL_OES_packed_depth_stencil");
+  if (depth24_stencil8_oes_supported_) {
+    LOG(INFO) << "GL_OES_packed_depth_stencil supported.";
+  } else {
+    LOG(INFO) << "GL_OES_packed_depth_stencil not supported.";
+  }
 
   // We have to enable vertex array 0 on OpenGL or it won't render. Note that
   // OpenGL ES 2.0 does not have this issue.
@@ -1622,7 +1631,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     // of the frame buffers is okay.
     pending_offscreen_size_ = size;
     if (!UpdateOffscreenFrameBufferSize()) {
-      DLOG(ERROR) << "Could not allocate offscreen buffer storage.";
+      LOG(ERROR) << "Could not allocate offscreen buffer storage.";
       Destroy();
       return false;
     }
@@ -1660,13 +1669,13 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
         group_->extension_flags().oes_standard_derivatives ? 1 : 0;
     vertex_translator_.reset(new ShaderTranslator);
     if (!vertex_translator_->Init(EShLangVertex, &resources)) {
-        DLOG(ERROR) << "Could not initialize vertex shader translator.";
+        LOG(ERROR) << "Could not initialize vertex shader translator.";
         Destroy();
         return false;
     }
     fragment_translator_.reset(new ShaderTranslator);
     if (!fragment_translator_->Init(EShLangFragment, &resources)) {
-        DLOG(ERROR) << "Could not initialize fragment shader translator.";
+        LOG(ERROR) << "Could not initialize fragment shader translator.";
         Destroy();
         return false;
     }
@@ -1935,6 +1944,8 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   // Reallocate the offscreen target buffers.
   if (!offscreen_target_color_texture_->AllocateStorage(
       pending_offscreen_size_)) {
+    LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
+               << "to allocate storage for offscreen target buffer.";
     return false;
   }
 
@@ -1946,16 +1957,23 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
       !depth24_stencil8_oes_supported_) {
     if (!offscreen_target_depth_render_buffer_->AllocateStorage(
         pending_offscreen_size_, GL_DEPTH_COMPONENT16)) {
+      LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
+                 << "to allocate storage for offscreen target depth buffer.";
       return false;
     }
 
     if (!offscreen_target_stencil_render_buffer_->AllocateStorage(
         pending_offscreen_size_, GL_STENCIL_INDEX8)) {
+      LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
+                 << "to allocate storage for offscreen target stencil buffer.";
       return false;
     }
   } else {
     if (!offscreen_target_depth_render_buffer_->AllocateStorage(
         pending_offscreen_size_, GL_DEPTH24_STENCIL8)) {
+      LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
+                 << "to allocate storage for offscreen target "
+                 << "depth stencil buffer.";
       return false;
     }
   }
@@ -1978,6 +1996,8 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   }
   if (offscreen_target_frame_buffer_->CheckStatus() !=
       GL_FRAMEBUFFER_COMPLETE) {
+      LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
+                 << "because offscreen FBO was incomplete.";
     return false;
   }
 
@@ -2027,6 +2047,9 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
         offscreen_saved_color_texture_.get());
     if (offscreen_target_frame_buffer_->CheckStatus() !=
         GL_FRAMEBUFFER_COMPLETE) {
+        LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
+                   << "because offscreen FBO was incomplete prior ro clearing "
+                   << "offscreen saved texture.";
       return false;
     }
 
@@ -3404,7 +3427,7 @@ GLenum GLES2DecoderImpl::GetGLError() {
 void GLES2DecoderImpl::SetGLError(GLenum error, const char* msg) {
   if (msg) {
     last_error_ = msg;
-    DLOG(ERROR) << last_error_;
+    LOG(ERROR) << last_error_;
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
 }
@@ -5294,8 +5317,11 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
     // First check to see if a deferred offscreen render buffer resize is
     // pending.
-    if (!UpdateOffscreenFrameBufferSize())
+    if (!UpdateOffscreenFrameBufferSize()) {
+      LOG(ERROR) << "Context lost because reallocation of offscreen FBO "
+                 << "failed.";
       return error::kLostContext;
+    }
 
     if (parent_) {
       // Copy the target frame buffer to the saved offscreen texture.
@@ -5311,8 +5337,10 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
         glFlush();
     }
   } else {
-    if (!context_->SwapBuffers())
+    if (!context_->SwapBuffers()) {
+      LOG(ERROR) << "Context lost because SwapBuffers failed.";
       return error::kLostContext;
+    }
   }
 
   // TODO(kbr): when the back buffer is multisampled, then at least on Mac

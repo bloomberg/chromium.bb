@@ -62,6 +62,8 @@ bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
                             size,
                             parent_decoder,
                             parent_texture_id)) {
+    LOG(ERROR) << "GPUProcessor::InitializeCommon failed because decoder "
+               << "failed to initialize.";
     Destroy();
     return false;
   }
@@ -88,9 +90,11 @@ void GPUProcessor::ProcessCommands() {
     return;
 
   if (decoder_.get()) {
-    // TODO(apatrick): need to do more than this on failure.
-    if (!decoder_->MakeCurrent())
+    if (!decoder_->MakeCurrent()) {
+      LOG(ERROR) << "Context lost because MakeCurrent failed.";
+      command_buffer_->SetParseError(error::kLostContext);
       return;
+    }
   }
 
   parser_->set_put(state.put_offset);

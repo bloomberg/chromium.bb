@@ -63,6 +63,7 @@ bool GLContext::InitializeOneOff() {
   if (!InitializeBestGLBindings(
            kAllowedGLImplementations,
            kAllowedGLImplementations + arraysize(kAllowedGLImplementations))) {
+    LOG(ERROR) << "InitializeBestGLBindings failed.";
     return false;
   }
 
@@ -81,11 +82,12 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
   if (CGLChoosePixelFormat(attribs,
                            &pixel_format,
                            &num_pixel_formats) != kCGLNoError) {
-    DLOG(ERROR) << "Error choosing pixel format.";
+    LOG(ERROR) << "Error choosing pixel format.";
     Destroy();
     return false;
   }
   if (!pixel_format) {
+    LOG(ERROR) << "pixel_format == 0.";
     return false;
   }
 
@@ -96,30 +98,31 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
   CGLError res = CGLCreateContext(pixel_format, shared_handle, &context_);
   CGLDestroyPixelFormat(pixel_format);
   if (res != kCGLNoError) {
-    DLOG(ERROR) << "Error creating context.";
+    LOG(ERROR) << "Error creating context.";
     Destroy();
     return false;
   }
   if (CGLCreatePBuffer(1, 1,
                        GL_TEXTURE_2D, GL_RGBA,
                        0, &pbuffer_) != kCGLNoError) {
-    DLOG(ERROR) << "Error creating pbuffer.";
+    LOG(ERROR) << "Error creating pbuffer.";
     Destroy();
     return false;
   }
   if (CGLSetPBuffer(context_, pbuffer_, 0, 0, 0) != kCGLNoError) {
-    DLOG(ERROR) << "Error attaching pbuffer to context.";
+    LOG(ERROR) << "Error attaching pbuffer to context.";
     Destroy();
     return false;
   }
 
   if (!MakeCurrent()) {
     Destroy();
-    DLOG(ERROR) << "Couldn't make context current for initialization.";
+    LOG(ERROR) << "Couldn't make context current for initialization.";
     return false;
   }
 
   if (!InitializeCommon()) {
+    LOG(ERROR) << "GLContext::InitializeCommon failed.";
     Destroy();
     return false;
   }
@@ -142,7 +145,7 @@ void PbufferGLContext::Destroy() {
 bool PbufferGLContext::MakeCurrent() {
   if (!IsCurrent()) {
     if (CGLSetCurrentContext(context_) != kCGLNoError) {
-      DLOG(ERROR) << "Unable to make gl context current.";
+      LOG(ERROR) << "Unable to make gl context current.";
       return false;
     }
   }

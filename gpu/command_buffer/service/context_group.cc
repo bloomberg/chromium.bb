@@ -235,13 +235,19 @@ bool ContextGroup::Initialize() {
   // Lookup GL things we need to know.
   GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs_);
   const GLuint kGLES2RequiredMinimumVertexAttribs = 8u;
-  if (max_vertex_attribs_ < kGLES2RequiredMinimumVertexAttribs)
+  if (max_vertex_attribs_ < kGLES2RequiredMinimumVertexAttribs) {
+    LOG(ERROR) << "ContextGroup::Initialize failed because too few "
+               << "vertex attributes supported.";
     return false;
+  }
 
   GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units_);
   const GLuint kGLES2RequiredMinimumTextureUnits = 8u;
-  if (max_texture_units_ < kGLES2RequiredMinimumTextureUnits)
+  if (max_texture_units_ < kGLES2RequiredMinimumTextureUnits) {
+    LOG(ERROR) << "ContextGroup::Initialize failed because too few "
+               << "texture units supported.";
     return false;
+  }
 
   GLint max_texture_size;
   GLint max_cube_map_texture_size;
@@ -273,6 +279,8 @@ bool ContextGroup::Initialize() {
   }
 
   if (!texture_manager_->Initialize()) {
+    LOG(ERROR) << "Context::Group::Initialize failed because texture manager "
+               << "failed to initialize.";
     return false;
   }
 

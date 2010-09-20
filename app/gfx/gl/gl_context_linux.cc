@@ -166,6 +166,7 @@ bool GLContext::InitializeOneOff() {
   if (!InitializeBestGLBindings(
            kAllowedGLImplementations,
            kAllowedGLImplementations + arraysize(kAllowedGLImplementations))) {
+    LOG(ERROR) << "InitializeBestGLBindings failed.";
     return false;
   }
 
@@ -223,6 +224,7 @@ bool ViewGLContext::Initialize(bool multisampled) {
   }
 
   if (!InitializeCommon()) {
+    LOG(ERROR) << "GLContext::InitlializeCommon failed.";
     Destroy();
     return false;
   }
@@ -288,6 +290,7 @@ void* ViewGLContext::GetHandle() {
 
 bool OSMesaViewGLContext::Initialize() {
   if (!osmesa_context_.Initialize(OSMESA_BGRA, NULL)) {
+    LOG(ERROR) << "OSMesaGLContext::Initialize failed.";
     Destroy();
     return false;
   }
@@ -347,8 +350,10 @@ bool OSMesaViewGLContext::IsOffscreen() {
 bool OSMesaViewGLContext::SwapBuffers() {
   // Update the size before blitting so that the blit size is exactly the same
   // as the window.
-  if (!UpdateSize())
+  if (!UpdateSize()) {
+    LOG(ERROR) << "Failed to update size of OSMesaGLContext.";
     return false;
+  }
 
   gfx::Size size = osmesa_context_.GetSize();
 
@@ -529,6 +534,7 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
   }
 
   if (!InitializeCommon()) {
+    LOG(ERROR) << "GLContext::InitializeCommon failed.";
     Destroy();
     return false;
   }
@@ -641,6 +647,7 @@ bool PixmapGLContext::Initialize(GLContext* shared_context) {
   }
 
   if (!InitializeCommon()) {
+    LOG(ERROR) << "GLContext::InitializeCommon failed.";
     Destroy();
     return false;
   }

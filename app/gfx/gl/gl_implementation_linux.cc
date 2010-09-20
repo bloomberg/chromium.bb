@@ -40,8 +40,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
       FilePath module_path;
-      if (!PathService::Get(base::DIR_MODULE, &module_path))
+      if (!PathService::Get(base::DIR_MODULE, &module_path)) {
+        LOG(ERROR) << "PathService::Get failed.";
         return false;
+      }
 
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append("libosmesa.so"));
@@ -67,7 +69,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary library = base::LoadNativeLibrary(
           FilePath("libGL.so.1"));
       if (!library) {
-        DLOG(INFO) << "libGL.so.1 not found.";
+        LOG(ERROR) << "libGL.so.1 not found.";
         return false;
       }
 
@@ -88,7 +90,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary egl_library = base::LoadNativeLibrary(
           FilePath("libEGL.so"));
       if (!egl_library) {
-        DLOG(INFO) << "libEGL.so not found";
+        DLOG(ERROR) << "libEGL.so not found";
         return false;
       }
 
@@ -101,7 +103,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
           FilePath("libGLESv2.so"));
       if (!gles_library) {
         base::UnloadNativeLibrary(egl_library);
-        DLOG(INFO) << "libGLESv2.so not found";
+        DLOG(ERROR) << "libGLESv2.so not found";
         return false;
       }
 

@@ -26,14 +26,16 @@ bool InitializeGLBindings(GLImplementation implementation) {
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
       FilePath module_path;
-      if (!PathService::Get(base::DIR_MODULE, &module_path))
+      if (!PathService::Get(base::DIR_MODULE, &module_path)) {
+        LOG(ERROR) << "PathService::Get failed.";
         return false;
+      }
 
       // When using OSMesa, just use OSMesaGetProcAddress to find entry points.
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append("libosmesa.dylib"));
       if (!library) {
-        LOG(INFO) << "libosmesa.so not found";
+        DLOG(INFO) << "libosmesa.so not found";
         return false;
       }
 
@@ -54,7 +56,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary library = base::LoadNativeLibrary(
           FilePath(kOpenGLFrameworkPath));
       if (!library) {
-        LOG(INFO) << "OpenGL framework not found";
+        LOG(ERROR) << "OpenGL framework not found";
         return false;
       }
 

@@ -35,11 +35,15 @@ bool BaseEGLContext::InitializeOneOff() {
   EGLNativeDisplayType native_display = EGL_DEFAULT_DISPLAY;
 #endif
   g_display = eglGetDisplay(native_display);
-  if (!g_display)
+  if (!g_display) {
+    LOG(ERROR) << "eglGetDisplay failed.";
     return false;
+  }
 
-  if (!eglInitialize(g_display, NULL, NULL) == EGL_TRUE)
+  if (!eglInitialize(g_display, NULL, NULL)) {
+    LOG(ERROR) << "eglInitialize failed.";
     return false;
+  }
 
   // Choose an EGL configuration.
   static const EGLint kConfigAttribs[] = {
@@ -64,11 +68,14 @@ bool BaseEGLContext::InitializeOneOff() {
                        NULL,
                        0,
                        &num_configs)) {
+    LOG(ERROR) << "eglChooseConfig failed.";
     return false;
   }
 
-  if (num_configs == 0)
+  if (num_configs == 0) {
+    LOG(ERROR) << "No suitable EGL configs found.";
     return false;
+  }
 
   scoped_array<EGLConfig> configs(new EGLConfig[num_configs]);
   if (!eglChooseConfig(g_display,
@@ -76,6 +83,7 @@ bool BaseEGLContext::InitializeOneOff() {
                        configs.get(),
                        num_configs,
                        &num_configs)) {
+    LOG(ERROR) << "eglChooseConfig failed.";
     return false;
   }
 
@@ -108,6 +116,7 @@ bool NativeViewEGLContext::Initialize() {
   surface_ = eglCreateWindowSurface(g_display, g_config, native_window, NULL);
 
   if (!surface_) {
+    LOG(ERROR) << "eglCreateWindowSurface failed.";
     Destroy();
     return false;
   }
@@ -115,16 +124,19 @@ bool NativeViewEGLContext::Initialize() {
   // Create a context.
   context_ = eglCreateContext(g_display, g_config, NULL, NULL);
   if (!context_) {
+    LOG(ERROR) << "eglCreateContext failed.";
     Destroy();
     return false;
   }
 
   if (!MakeCurrent()) {
+    LOG(ERROR) << "MakeCurrent failed.";
     Destroy();
     return false;
   }
 
   if (!InitializeCommon()) {
+    LOG(ERROR) << "GLContext::InitializeCommon failed.";
     Destroy();
     return false;
   }

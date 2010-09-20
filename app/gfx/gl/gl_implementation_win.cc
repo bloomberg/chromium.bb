@@ -37,13 +37,15 @@ bool InitializeGLBindings(GLImplementation implementation) {
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
       FilePath module_path;
-      if (!PathService::Get(base::DIR_MODULE, &module_path))
+      if (!PathService::Get(base::DIR_MODULE, &module_path)) {
+        LOG(ERROR) << "PathService::Get failed.";
         return false;
+      }
 
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append(L"osmesa.dll"));
       if (!library) {
-        LOG(INFO) << "osmesa.dll not found";
+        DLOG(INFO) << "osmesa.dll not found";
         return false;
       }
 
@@ -70,7 +72,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary egl_library = base::LoadNativeLibrary(
           module_path.Append(L"libegl.dll"));
       if (!egl_library) {
-        LOG(INFO) << "libegl.dll not found.";
+        LOG(ERROR) << "libegl.dll not found.";
         return false;
       }
 

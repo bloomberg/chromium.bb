@@ -42,6 +42,8 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
     // not hold on to the reference. It simply extracts the underlying GL
     // context in order to share the namespace with another context.
     if (!surface_->Initialize(context.get(), false)) {
+      LOG(ERROR) << "GPUProcessor::Initialize failed to "
+                 << "initialize AcceleratedSurface.";
       Destroy();
       return false;
     }

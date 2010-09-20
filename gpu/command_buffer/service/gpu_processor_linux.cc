@@ -36,8 +36,10 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
     context.reset(gfx::GLContext::CreateOffscreenGLContext(parent_context));
   }
 
-  if (!context.get())
+  if (!context.get()) {
+    LOG(ERROR) << "GPUProcessor::Initialize failed";
     return false;
+  }
 
   return InitializeCommon(context.release(),
                           size,

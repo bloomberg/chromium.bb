@@ -28,11 +28,17 @@ CommandBufferService::~CommandBufferService() {
 
 bool CommandBufferService::Initialize(int32 size) {
   // Fail if already initialized.
-  if (ring_buffer_.get())
+  if (ring_buffer_.get()) {
+    LOG(ERROR) << "CommandBufferService::Initialize "
+               << "failed because already initialized.";
     return false;
+  }
 
-  if (size <= 0 || size > kMaxCommandBufferSize)
+  if (size <= 0 || size > kMaxCommandBufferSize) {
+    LOG(ERROR) << "CommandBufferService::Initialize "
+               << "because command buffer size was invalid.";
     return false;
+  }
 
   num_entries_ = size / sizeof(CommandBufferEntry);
 
@@ -44,6 +50,10 @@ bool CommandBufferService::Initialize(int32 size) {
 
   num_entries_ = 0;
   ring_buffer_.reset();
+
+  LOG(ERROR) << "CommandBufferService::Initialize failed because ring buffer "
+             << "could not be created or mapped ";
+
   return false;
 }
 

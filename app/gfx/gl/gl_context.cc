@@ -25,12 +25,16 @@ bool GLContext::HasExtension(const char* name) {
 }
 
 bool GLContext::InitializeCommon() {
-  if (!MakeCurrent())
+  if (!MakeCurrent()) {
+    LOG(ERROR) << "MakeCurrent failed.";
     return false;
+  }
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  if (glGetError() != GL_NO_ERROR)
+  if (glGetError() != GL_NO_ERROR) {
+    LOG(ERROR) << "glClear failed.";
     return false;
+  }
 
   return true;
 }

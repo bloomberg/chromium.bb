@@ -34,10 +34,13 @@ bool OSMesaGLContext::Initialize(GLuint format, GLContext* shared_context) {
                                     8,  // stencil bits
                                     0,  // accum bits
                                     shared_handle);
-  if (!context_)
+  if (!context_) {
+    LOG(ERROR) << "OSMesaCreateContextExt failed.";
     return false;
+  }
 
   if (!MakeCurrent()) {
+    LOG(ERROR) << "MakeCurrent failed.";
     Destroy();
     return false;
   }
@@ -46,6 +49,7 @@ bool OSMesaGLContext::Initialize(GLuint format, GLContext* shared_context) {
   OSMesaPixelStore(OSMESA_Y_UP, 0);
 
   if (!InitializeCommon()) {
+    LOG(ERROR) << "GLContext::InitializeCommon failed.";
     Destroy();
     return false;
   }
