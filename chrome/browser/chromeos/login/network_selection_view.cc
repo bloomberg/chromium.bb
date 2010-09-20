@@ -183,8 +183,8 @@ void NetworkSelectionView::Init() {
 
   proxy_settings_link_ = new views::Link();
   proxy_settings_link_->SetController(this);
-  proxy_settings_link_->SetVisible(false);
-  proxy_settings_link_->SetFocusable(false);
+  proxy_settings_link_->SetVisible(true);
+  proxy_settings_link_->SetFocusable(true);
 
   AddChildView(welcome_label_);
   AddChildView(select_language_label_);
@@ -367,7 +367,7 @@ bool NetworkSelectionView::IsContinueEnabled() const {
 void NetworkSelectionView::LinkActivated(views::Link* source, int) {
   if (source == proxy_settings_link_) {
     if (!proxy_settings_dialog_.get()) {
-      static const char kProxySettingsURL[] = "chrome://options";
+      static const char kProxySettingsURL[] = "chrome://options/proxy";
       proxy_settings_dialog_.reset(new LoginHtmlDialog(
           this,
           GetNativeWindow(),
