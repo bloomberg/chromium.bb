@@ -303,6 +303,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // invoke it from the message loop.
   void ShutdownHost();
 
+  // Used to determine whether or not to enable accessibility.
+  bool IsVoiceOverRunning();
+
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object unless is_popup_menu_ is true.
   // In that case, cocoa_view_ is never inserted into the view hierarchy, so

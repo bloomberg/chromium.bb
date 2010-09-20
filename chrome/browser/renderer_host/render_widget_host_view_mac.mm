@@ -401,8 +401,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
                   initWithRenderWidgetHostViewMac:this] autorelease];
   render_widget_host_->set_view(this);
 
-  renderer_accessible_ = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableRendererAccessibility);
+  // Turn on accessibility only if one or both of these flags is true.
+  renderer_accessible_ = IsVoiceOverRunning() ||
+                             CommandLine::ForCurrentProcess()->HasSwitch(
+                                 switches::kForceRendererAccessibility);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -982,6 +984,12 @@ void RenderWidgetHostViewMac::ShutdownHost() {
   shutdown_factory_.RevokeAll();
   render_widget_host_->Shutdown();
   // Do not touch any members at this point, |this| has been deleted.
+}
+
+bool RenderWidgetHostViewMac::IsVoiceOverRunning() {
+  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+  [user_defaults addSuiteNamed:@"com.apple.universalaccess"];
+  return 1 == [user_defaults integerForKey:@"voiceOverOnOffKey"];
 }
 
 namespace {
