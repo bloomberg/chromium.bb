@@ -450,6 +450,9 @@ ssl3_FindOrbit(const unsigned char *data, unsigned int length, void *ptr)
 
 /* ssl3_CanSnapStart returns true if we are able to perform Snap Start on
 ** the given socket.
+**   extensions: on successful return, this is filled in with the contents of
+**       the server's predicted extensions. This points within
+**       |ss->ssl3.serverHelloPredictionData|.
 **   resuming: PR_TRUE iff we wish to attempt a Snap Start resume
 **   out_orbit: if this function returns PR_TRUE, then |out_orbit| is filled
 **       with the server's predicted orbit value.
@@ -458,13 +461,12 @@ ssl3_FindOrbit(const unsigned char *data, unsigned int length, void *ptr)
 ** be modified on failure).
 */
 static PRBool
-ssl3_CanSnapStart(sslSocket *ss, PRBool resuming,
+ssl3_CanSnapStart(sslSocket *ss, SECItem *extensions, PRBool resuming,
                   unsigned char out_orbit[8]) {
     const unsigned char *server_hello;
     unsigned int server_hello_len, session_id_len, cipher_suite_offset;
     unsigned int extensions_offset, cipher_suite, compression_method;
     unsigned char orbit[9];
-    SECItem extensions;
     SECStatus rv;
     SSL3ProtocolVersion version;
 
@@ -508,12 +510,12 @@ ssl3_CanSnapStart(sslSocket *ss, PRBool resuming,
     }
     ss->ssl3.hs.compression = ssl_compression_null;
 
-    extensions.data = (unsigned char *) server_hello + extensions_offset;
-    extensions.len = server_hello_len - extensions_offset;
+    extensions->data = (unsigned char *) server_hello + extensions_offset;
+    extensions->len = server_hello_len - extensions_offset;
 
     /* The last byte is used to indictate that the previous eight are valid. */
     orbit[8] = 0;
-    if (!ssl3_ForEachExtension(&extensions, resuming, ssl3_FindOrbit, orbit))
+    if (!ssl3_ForEachExtension(extensions, resuming, ssl3_FindOrbit, orbit))
         return PR_FALSE;
 
     if (!orbit[8])
@@ -562,6 +564,68 @@ ssl3_UpdateClientHelloLengths(sslSocket *ss,
     PutBE16(&ss->sec.ci.sendBuf.buf[offset], new_length);
 }
 
+/* ssl3_FindServerNPNExtension is a callback function for ssl3_ForEachExtension.
+ * It looks for a Next Protocol Negotiation and saves the payload of the
+ * extension in the given SECItem */
+static void
+ssl3_FindServerNPNExtension(const unsigned char* data, unsigned int length,
+                            void *ctx)
+{
+    SECItem *server_npn_extension = (SECItem*) ctx;
+
+    unsigned int extension_num = GetBE16(data);
+    if (extension_num == ssl_next_proto_neg_xtn && length >= 4) {
+        server_npn_extension->data = (unsigned char*)data + 4;
+        server_npn_extension->len = length - 4;
+    }
+}
+
+/* ssl3_MaybeWriteNextProtocol deals with the interaction of Next Protocol
+ * Negotiation and Snap Start. It's called just before we serialise the embedded
+ * Finished message in the extension. At this point, if NPN is enabled, we have
+ * to include a NextProtocol message. */
+static SECStatus
+ssl3_MaybeWriteNextProtocol(sslSocket *ss, SECItem *server_hello_extensions)
+{
+    PRUint16 i16;
+    SECItem server_npn_extension;
+
+    for (i16 = 0; i16 < ss->xtnData.numAdvertised; i16++) {
+        if (ss->xtnData.advertised[i16] == ssl_next_proto_neg_xtn)
+            break;
+    }
+
+    if (i16 == ss->xtnData.numAdvertised) {
+        /* We didn't send an NPN extension, so no need to do anything here. */
+        return SECSuccess;
+    }
+
+    memset(&server_npn_extension, 0, sizeof(server_npn_extension));
+
+    ssl3_ForEachExtension(
+        server_hello_extensions, PR_FALSE /* is_resuming: value doesn't matter
+        in this case */, ssl3_FindServerNPNExtension, &server_npn_extension);
+
+    if (server_npn_extension.data == NULL) {
+        /* We predicted that the server doesn't support NPN, so nothing to do
+         * here. */
+        return SECSuccess;
+    }
+
+    ssl3_ClientHandleNextProtoNegoXtn(ss, ssl_next_proto_neg_xtn,
+                                      &server_npn_extension);
+
+    if (ss->ssl3.nextProtoState == SSL_NEXT_PROTO_NO_SUPPORT) {
+        /* The server's predicted NPN extension was malformed. We're didn't pick
+         * a protocol so we won't send a NextProtocol message. However, this is
+         * probably fatal to the connection. */
+        return SECSuccess;
+    }
+
+    return ssl3_AppendSnapStartHandshakeRecord(ss, ssl3_SendNextProto,
+                                               PR_TRUE /* encrypt */);
+}
+
 /* ssl3_SendSnapStartXtn appends a Snap Start extension. It assumes that the
  * inchoate ClientHello is in |ss->sec.ci.sendBuf|. */
 PRInt32
@@ -579,6 +643,7 @@ ssl3_SendSnapStartXtn(sslSocket *ss, PRBool append, PRUint32 maxBytes)
     unsigned int snap_start_extension_len_offset, original_sendbuf_len;
     ssl3CipherSpec *temp;
     sslSessionID *sid;
+    SECItem server_extensions;
 
     if (!ss->opt.enableSnapStart)
         return 0;
@@ -609,7 +674,7 @@ ssl3_SendSnapStartXtn(sslSocket *ss, PRBool append, PRUint32 maxBytes)
         resuming = PR_TRUE;
     }
 
-    if (!ssl3_CanSnapStart(ss, resuming, orbit))
+    if (!ssl3_CanSnapStart(ss, &server_extensions, resuming, orbit))
         return ssl3_SendEmptySnapStartXtn(ss, append, maxBytes);
 
     /* At this point we are happy that we are going to send a non-empty Snap
@@ -689,6 +754,7 @@ ssl3_SendSnapStartXtn(sslSocket *ss, PRBool append, PRUint32 maxBytes)
 
         if (sid->peerCert != NULL) {
             ss->sec.peerCert = CERT_DupCertificate(sid->peerCert);
+            ssl3_CopyPeerCertsFromSID(ss, sid);
         }
 
         rv = ssl3_InitPendingCipherSpec(ss, NULL /* re-use master secret */);
@@ -739,6 +805,10 @@ ssl3_SendSnapStartXtn(sslSocket *ss, PRBool append, PRUint32 maxBytes)
     ss->ssl3.cwSpec->write_seq_num.high = 0;
     ss->ssl3.cwSpec->write_seq_num.low  = 0;
     ssl_ReleaseSpecWriteLock(ss);
+
+    rv = ssl3_MaybeWriteNextProtocol(ss, &server_extensions);
+    if (rv != SECSuccess)
+        goto loser;
 
     /* Write Finished */
     rv = ssl3_AppendSnapStartHandshakeRecord(ss, ssl3_SendSnapStartFinished,
@@ -796,9 +866,11 @@ loser:
 
 SECStatus ssl3_ClientHandleSnapStartXtn(sslSocket *ss, PRUint16 ex_type,
                                         SECItem *data) {
-    /* This is a no-op handler for when the server echos our Snap Start
-     * extension. The work of saving the ServerHello is done in
-     * ssl3_HandleServerHello, where its contents are available. */
+    /* The work of saving the ServerHello is done in ssl3_HandleServerHello,
+     * where its contents are available. Here we renognise that the saved
+     * ServerHello message contains a Snap Start extension and mark it as
+     * valid. */
+    ss->ssl3.serverHelloPredictionDataValid = PR_TRUE;
     return SECSuccess;
 }
 
@@ -857,8 +929,13 @@ SSL_GetPredictedServerHelloData(PRFileDesc *fd, const unsigned char **data,
         return SECFailure;
     }
 
-    *data = ss->ssl3.serverHelloPredictionData.data;
-    *data_len = ss->ssl3.serverHelloPredictionData.len;
+    if (!ss->ssl3.serverHelloPredictionDataValid) {
+        *data = NULL;
+        *data_len = 0;
+    } else {
+        *data = ss->ssl3.serverHelloPredictionData.data;
+        *data_len = ss->ssl3.serverHelloPredictionData.len;
+    }
     return SECSuccess;
 }
 
