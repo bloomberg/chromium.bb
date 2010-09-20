@@ -543,12 +543,11 @@ struct tm* localtime_r(const time_t* timep, struct tm* result) {
   } else {
     typedef struct tm* (*LocaltimeRFunction)(const time_t* timep,
                                              struct tm* result);
-    static LocaltimeRFunction libc_localtime_r;
-    static bool have_libc_localtime_r = false;
-    if (!have_libc_localtime_r) {
-      libc_localtime_r = (LocaltimeRFunction) dlsym(RTLD_NEXT, "localtime_r");
-      have_libc_localtime_r = true;
-    }
+    // This static declaration is desugared by the compiler into a locked
+    // initialisation which will only call dlsym once, across all threads.
+    // See: http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01598.html
+    static LocaltimeRFunction libc_localtime_r =
+        (LocaltimeRFunction) dlsym(RTLD_NEXT, "localtime_r");
 
     if (!libc_localtime_r) {
       // See |localtime|, above.
