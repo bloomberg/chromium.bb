@@ -56,20 +56,7 @@ cr.define('options', function() {
       };
 
       Preferences.getInstance().addEventListener('autofill.enabled',
-          this.updateEnabledState_.bind(this));
-    },
-
-    /**
-     * Sets the enabled state of the button controls based on the current state
-     * of the |autoFillEnabled| checkbox.
-     * @private
-     */
-    updateEnabledState_: function() {
-      var disabled = !$('autoFillEnabled').checked;
-      $('addAddressButton').disabled = disabled;
-      $('addCreditCardButton').disabled = disabled;
-      $('autoFillEditButton').disabled = disabled;
-      $('autoFillRemoveButton').disabled = disabled;
+          this.updateButtonState_.bind(this));
     },
 
     /**
@@ -192,13 +179,18 @@ cr.define('options', function() {
     },
 
     /**
+     * Sets the enabled state of the AutoFill Add Address and Credit Card
+     * buttons on the current state of the |autoFillEnabled| checkbox.
      * Sets the enabled state of the AutoFill Edit and Remove buttons based on
      * the current selection in the profile list.
      * @private
      */
     updateButtonState_: function() {
+      var disabled = !$('autoFillEnabled').checked;
+      $('addAddressButton').disabled = disabled;
+      $('addCreditCardButton').disabled = disabled;
       $('autoFillRemoveButton').disabled = $('autoFillEditButton').disabled =
-          ($('profileList').selectedIndex == -1);
+          disabled || ($('profileList').selectedIndex == -1);
     },
 
     /**
