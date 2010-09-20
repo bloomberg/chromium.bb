@@ -32,7 +32,7 @@ deps = {
     (Var("googlecode_url") % "googletest") + "/trunk@435",
 
   "src/third_party/angle":
-    (Var("googlecode_url") % "angleproject") + "/trunk@425",
+    (Var("googlecode_url") % "angleproject") + "/trunk@429",
 
   "src/third_party/WebKit":
     "/trunk/deps/third_party/WebKit@33467",
