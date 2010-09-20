@@ -92,11 +92,15 @@ class GIT(object):
     results = []
     if status:
       for statusline in status.splitlines():
-        m = re.match('^(\w)\t(.+)$', statusline)
+        # 3-way merges can cause the status can be 'MMM' instead of 'M'. This
+        # can happen when the user has 2 local branches and he diffs between
+        # these 2 branches instead diffing to upstream.
+        m = re.match('^(\w)+\t(.+)$', statusline)
         if not m:
           raise gclient_utils.Error(
               'status currently unsupported: %s' % statusline)
-        results.append(('%s      ' % m.group(1), m.group(2)))
+        # Only grab the first letter.
+        results.append(('%s      ' % m.group(1)[0], m.group(2)))
     return results
 
   @staticmethod
