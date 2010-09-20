@@ -132,6 +132,10 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/stackwalker_sparc.h \
 	src/processor/stackwalker_x86.cc \
 	src/processor/stackwalker_x86.h \
+	src/processor/static_map_iterator-inl.h \
+	src/processor/static_map_iterator.h \
+  	src/processor/static_map-inl.h \
+  	src/processor/static_map.h \  
 	src/processor/tokenize.cc \
 	src/processor/tokenize.h \
 	src/processor/udp_network.cc \
@@ -162,6 +166,7 @@ check_PROGRAMS = \
 	src/processor/network_source_line_resolver_unittest \
 	src/processor/network_source_line_resolver_server_unittest \
 	src/processor/network_source_line_server_unittest \
+	src/processor/static_map_unittest \
 	src/processor/pathname_stripper_unittest \
 	src/processor/postfix_evaluator_unittest \
 	src/processor/range_map_unittest \
@@ -398,6 +403,19 @@ src_processor_network_source_line_server_unittest_LDADD = \
 	src/processor/network_source_line_server.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/udp_network.lo
+
+src_processor_static_map_unittest_SOURCES = \
+	src/processor/static_map_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/src/gmock-all.cc
+src_processor_static_map_unittest_CPPFLAGS = \
+  -I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+  -I$(top_srcdir)/src/testing/gtest \
+  -I$(top_srcdir)/src/testing
+src_processor_static_map_unittest_LDADD = \
+	src/processor/logging.lo \
+	src/processor/pathname_stripper.lo
 
 src_processor_pathname_stripper_unittest_SOURCES = \
 	src/processor/pathname_stripper_unittest.cc
