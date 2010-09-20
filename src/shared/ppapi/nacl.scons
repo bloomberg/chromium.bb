@@ -167,7 +167,7 @@ cpp_headers = [
     # End ppapi.gyp
     # Updated automatically by update-scons.py.
     # From ppapi.gyp:ppapi_cpp:cpp/[^/]*\.h
-    'cpp/module_embedder.h'
+    'cpp/module_embedder.h',
     # End ppapi.gyp
     ]
 
