@@ -78,6 +78,8 @@ class ShellIntegration {
       const string16& extension_app_id);
 
 #if defined(USE_X11)
+  static std::string GetDesktopName(base::Environment* env);
+
   static bool GetDesktopShortcutTemplate(base::Environment* env,
                                          std::string* output);
 

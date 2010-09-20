@@ -6,6 +6,7 @@
 #include "app/resource_bundle.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/common/chrome_switches.h"
@@ -26,12 +28,72 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
+#if defined(OS_LINUX)
+#include <unistd.h>
+#include "base/environment.h"
+#include "base/file_util.h"
+#include "base/task.h"
+#include "base/utf_string_conversions.h"
+#include "base/xdg_util.h"
+#include "chrome/common/chrome_version_info.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_util.h"
+#endif
+
+#if defined(OS_LINUX)
+static const FilePath::CharType kAutostart[] = "autostart";
+static const FilePath::CharType kConfig[] = ".config";
+static const char kXdgConfigHome[] = "XDG_CONFIG_HOME";
+
+class EnableLaunchOnStartupTask : public Task {
+ public:
+  explicit EnableLaunchOnStartupTask(bool should_launch)
+    : should_launch_(should_launch) {
+  }
+
+  virtual void Run() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    scoped_ptr<base::Environment> environment(base::Environment::Create());
+    scoped_ptr<chrome::VersionInfo> version_info(new chrome::VersionInfo());
+    FilePath autostart_directory =
+        base::GetXDGDirectory(environment.get(), kXdgConfigHome, kConfig);
+    autostart_directory = autostart_directory.Append(kAutostart);
+    FilePath desktop_file = autostart_directory.Append(
+        ShellIntegration::GetDesktopName(environment.get()));
+    if (should_launch_) {
+      if (!file_util::DirectoryExists(autostart_directory) &&
+          !file_util::CreateDirectory(autostart_directory)) {
+        LOG(WARNING) << "Failed to register launch on login.";
+        return;
+      }
+      std::string wrapper_script;
+      if (!environment->GetVar("CHROME_WRAPPER", &wrapper_script)) {
+        LOG(WARNING) << "Failed to register launch on login.";
+        return;
+      }
+      std::string desktop_file_contents =
+          "[Desktop Entry]\n"
+          "Type=Application\n"
+          "Terminal=false\n"
+          "Exec=" + wrapper_script + "\n"
+          "Name=" + version_info->Name() + "\n";
+      if (file_util::WriteFile(desktop_file, desktop_file_contents.c_str(),
+                               desktop_file_contents.length()))
+        LOG(WARNING) << "Failed to register launch on login.";
+    } else if (!file_util::Delete(desktop_file, false)) {
+      LOG(WARNING) << "Failed to deregister launch on login.";
+    }
+  }
+
+ private:
+  bool should_launch_;
+};
 #endif
 
 #if defined(OS_WIN)
@@ -241,13 +303,13 @@ void BackgroundModeManager::OnBackgroundAppUninstalled() {
 }
 
 void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
-  // TODO(BUG43382): Add code for other platforms to enable/disable launch on
-  // startup.
   // This functionality is only defined for default profile, currently.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
     return;
-
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX)
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+                         new EnableLaunchOnStartupTask(should_launch));
+#elif defined(OS_MACOSX)
   if (should_launch) {
     // Return if Chrome is already a Login Item (avoid overriding user choice).
     if (mac_util::CheckLoginItemStatus(NULL))

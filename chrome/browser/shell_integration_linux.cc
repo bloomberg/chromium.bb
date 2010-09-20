@@ -40,20 +40,6 @@
 
 namespace {
 
-std::string GetDesktopName(base::Environment* env) {
-#if defined(GOOGLE_CHROME_BUILD)
-  return "google-chrome.desktop";
-#else  // CHROMIUM_BUILD
-  // Allow $CHROME_DESKTOP to override the built-in value, so that development
-  // versions can set themselves as the default without interfering with
-  // non-official, packaged versions using the built-in value.
-  std::string name;
-  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
-    return name;
-  return "chromium-browser.desktop";
-#endif
-}
-
 // Helper to launch xdg scripts. We don't want them to ask any questions on the
 // terminal etc.
 bool LaunchXdgUtility(const std::vector<std::string>& argv) {
@@ -192,6 +178,21 @@ void CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
 }
 
 }  // namespace
+
+// static
+std::string ShellIntegration::GetDesktopName(base::Environment* env) {
+#if defined(GOOGLE_CHROME_BUILD)
+  return "google-chrome.desktop";
+#else  // CHROMIUM_BUILD
+  // Allow $CHROME_DESKTOP to override the built-in value, so that development
+  // versions can set themselves as the default without interfering with
+  // non-official, packaged versions using the built-in value.
+  std::string name;
+  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
+    return name;
+  return "chromium-browser.desktop";
+#endif
+}
 
 // We delegate the difficulty of setting the default browser in Linux desktop
 // environments to a new xdg utility, xdg-settings. We have to include a copy of
