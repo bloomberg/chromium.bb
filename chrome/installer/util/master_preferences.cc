@@ -165,11 +165,9 @@ DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
 
 DictionaryValue* ParseDistributionPreferences(
     const FilePath& master_prefs_path) {
-  if (!file_util::PathExists(master_prefs_path)) {
-    LOG(WARNING) << "Master preferences file not found: "
-                 << master_prefs_path.value();
+  if (!file_util::PathExists(master_prefs_path))
     return NULL;
-  }
+
   std::string json_data;
   if (!file_util::ReadFileToString(master_prefs_path, &json_data)) {
     LOG(WARNING) << "Failed to read master prefs file.";
