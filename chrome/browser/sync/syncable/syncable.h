@@ -41,11 +41,8 @@ class ReadNode;
 
 namespace syncable {
 class Entry;
-}
 
-std::ostream& operator<<(std::ostream& s, const syncable::Entry& e);
-
-namespace syncable {
+std::ostream& operator<<(std::ostream& s, const Entry& e);
 
 class DirectoryBackingStore;
 
@@ -342,7 +339,7 @@ struct EntryKernel {
 // A read-only meta entry.
 class Entry {
   friend class Directory;
-  friend std::ostream& ::operator << (std::ostream& s, const Entry& e);
+  friend std::ostream& operator << (std::ostream& s, const Entry& e);
 
  public:
   // After constructing, you must check good() to test whether the Get

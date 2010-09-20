@@ -1506,7 +1506,6 @@ namespace {
   } separator;
   class DumpColon {
   } colon;
-}  // namespace
 
 inline FastDump& operator<<(FastDump& dump, const DumpSeparator&) {
   dump.out_->sputn(", ", 2);
@@ -1517,26 +1516,13 @@ inline FastDump& operator<<(FastDump& dump, const DumpColon&) {
   dump.out_->sputn(": ", 2);
   return dump;
 }
+}  // namespace
 
-std::ostream& operator<<(std::ostream& stream, const syncable::Entry& entry) {
+namespace syncable {
+
+std::ostream& operator<<(std::ostream& stream, const Entry& entry) {
   // Using ostreams directly here is dreadfully slow, because a mutex is
   // acquired for every <<.  Users noticed it spiking CPU.
-  using syncable::BEGIN_FIELDS;
-  using syncable::BIT_FIELDS_END;
-  using syncable::BIT_TEMPS_BEGIN;
-  using syncable::BIT_TEMPS_END;
-  using syncable::BitField;
-  using syncable::BitTemp;
-  using syncable::EntryKernel;
-  using syncable::ID_FIELDS_END;
-  using syncable::INT64_FIELDS_END;
-  using syncable::IdField;
-  using syncable::Int64Field;
-  using syncable::PROTO_FIELDS_END;
-  using syncable::ProtoField;
-  using syncable::STRING_FIELDS_END;
-  using syncable::StringField;
-  using syncable::g_metas_columns;
 
   int i;
   FastDump s(&stream);
@@ -1572,17 +1558,19 @@ std::ostream& operator<<(std::ostream& stream, const syncable::Entry& entry) {
   return stream;
 }
 
-std::ostream& operator<<(std::ostream& s, const syncable::Blob& blob) {
-  for (syncable::Blob::const_iterator i = blob.begin(); i != blob.end(); ++i)
+std::ostream& operator<<(std::ostream& s, const Blob& blob) {
+  for (Blob::const_iterator i = blob.begin(); i != blob.end(); ++i)
     s << std::hex << std::setw(2)
       << std::setfill('0') << static_cast<unsigned int>(*i);
   return s << std::dec;
 }
 
-FastDump& operator<<(FastDump& dump, const syncable::Blob& blob) {
+FastDump& operator<<(FastDump& dump, const Blob& blob) {
   if (blob.empty())
     return dump;
   string buffer(base::HexEncode(&blob[0], blob.size()));
   dump.out_->sputn(buffer.c_str(), buffer.size());
   return dump;
 }
+
+}  // namespace syncable

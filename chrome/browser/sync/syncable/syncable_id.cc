@@ -13,20 +13,17 @@ using std::string;
 
 namespace syncable {
 const Id kNullId;  // Currently == root.
-}  // namespace syncable
 
-ostream& operator << (ostream& out, const syncable::Id& id) {
+ostream& operator<<(ostream& out, const Id& id) {
   out << id.s_;
   return out;
 }
 
 using browser_sync::FastDump;
-FastDump& operator << (FastDump& dump, const syncable::Id& id) {
+FastDump& operator<<(FastDump& dump, const Id& id) {
   dump.out_->sputn(id.s_.data(), id.s_.size());
   return dump;
 }
-
-namespace syncable {
 
 string Id::GetServerId() const {
   // Currently root is the string "0". We need to decide on a true value.

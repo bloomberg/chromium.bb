@@ -345,12 +345,11 @@ bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
   return true;
 }
 
-}  // namespace browser_sync
-
-std::ostream& operator << (std::ostream& s,
-                           const struct browser_sync::HttpResponse& hr) {
+std::ostream& operator << (std::ostream& s, const struct HttpResponse& hr) {
   s << " Response Code (bogus on error): " << hr.response_code;
   s << " Content-Length (bogus on error): " << hr.content_length;
   s << " Server Status: " << hr.server_status;
   return s;
 }
+
+}  // namespace browser_sync

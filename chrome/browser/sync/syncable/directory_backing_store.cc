@@ -286,6 +286,7 @@ bool DirectoryBackingStore::BeginLoad() {
   if (ret)
     return true;
   // Something's gone wrong. Nuke the database and try again.
+  using ::operator<<;  // For string16.
   LOG(ERROR) << "Sync database " << backing_filepath_.value()
              << " corrupt. Deleting and recreating.";
   file_util::Delete(backing_filepath_, false);

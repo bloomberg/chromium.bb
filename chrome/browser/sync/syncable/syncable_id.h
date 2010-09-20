@@ -28,11 +28,10 @@ class Id;
 class MockConnectionManager;
 class SQLStatement;
 
-std::ostream& operator << (std::ostream& out, const syncable::Id& id);
-browser_sync::FastDump& operator <<
-  (browser_sync::FastDump& out, const syncable::Id& id);
-
 namespace syncable {
+
+std::ostream& operator<<(std::ostream& out, const Id& id);
+browser_sync::FastDump& operator<<(browser_sync::FastDump& out, const Id& id);
 
 // For historical reasons, 3 concepts got everloaded into the Id:
 // 1. A unique, opaque identifier for the object.
@@ -49,10 +48,9 @@ class Id {
                          syncable::EntryKernel** kernel);
   friend struct syncable::IdRowTraits;
   friend int BindFields(const EntryKernel& entry, SQLStatement* statement);
-  friend std::ostream& ::operator << (std::ostream& out,
-                                      const syncable::Id& id);
-  friend browser_sync::FastDump& ::operator <<
-    (browser_sync::FastDump& out, const syncable::Id& id);
+  friend std::ostream& operator<<(std::ostream& out, const Id& id);
+  friend browser_sync::FastDump& operator<<
+    (browser_sync::FastDump& out, const Id& id);
   friend class MockConnectionManager;
   friend class SyncableIdTest;
  public:

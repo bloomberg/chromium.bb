@@ -376,9 +376,8 @@ bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
                                  syncable::DirectoryManager* manager,
                                  const std::string& share);
 
-}  // namespace browser_sync
+std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr);
 
-std::ostream& operator<<(std::ostream& s,
-    const struct browser_sync::HttpResponse& hr);
+}  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_NET_SERVER_CONNECTION_MANAGER_H_

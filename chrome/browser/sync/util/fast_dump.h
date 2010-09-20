@@ -28,34 +28,31 @@ class FastDump {
   ostream::sentry sentry_;
   streambuf* const out_;
 };
-}  // namespace browser_sync
 
-inline browser_sync::FastDump& operator <<
-  (browser_sync::FastDump& dump, int64 n) {
+inline FastDump& operator << (FastDump& dump, int64 n) {
   string numbuf(base::Int64ToString(n));
   const char* number = numbuf.c_str();
   dump.out_->sputn(number, numbuf.length());
   return dump;
 }
 
-inline browser_sync::FastDump& operator <<
-  (browser_sync::FastDump& dump, int32 n) {
+inline FastDump& operator << (FastDump& dump, int32 n) {
   string numbuf(base::IntToString(n));
   const char* number = numbuf.c_str();
   dump.out_->sputn(number, numbuf.length());
   return dump;
 }
 
-inline browser_sync::FastDump& operator <<
-  (browser_sync::FastDump& dump, const char* s) {
+inline FastDump& operator << (FastDump& dump, const char* s) {
   dump.out_->sputn(s, strlen(s));
   return dump;
 }
 
-inline browser_sync::FastDump& operator <<
-  (browser_sync::FastDump& dump, const string& s) {
+inline FastDump& operator << (FastDump& dump, const string& s) {
   dump.out_->sputn(s.data(), s.size());
   return dump;
 }
+
+}  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_UTIL_FAST_DUMP_H_
