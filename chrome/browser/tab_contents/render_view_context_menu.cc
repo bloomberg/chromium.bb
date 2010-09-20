@@ -166,8 +166,7 @@ static ExtensionMenuItem::List GetRelevantExtensionItems(
 
     const GURL& target_url =
         params.src_url.is_empty() ? params.link_url : params.src_url;
-    if (!target_url.is_empty() &&
-        !ExtensionPatternMatch(item->target_url_patterns(), target_url))
+    if (!ExtensionPatternMatch(item->target_url_patterns(), target_url))
       continue;
 
     result.push_back(*i);

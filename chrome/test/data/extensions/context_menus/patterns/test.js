@@ -11,23 +11,20 @@ var make_browsertest_proceed = function() {
 var patterns = ["http://*.google.com/*", "https://*.google.com/*"];
 
 window.onload = function() {
-  // Create one item that does have a documentUrlPattern and targetUrlPattern.
+  // Create one item that does have a documentUrlPattern.
   var properties1 = {
-    "title": "test_item1", "documentUrlPatterns": patterns,
-    "targetUrlPatterns": patterns
+    "title": "test_item1", "documentUrlPatterns": patterns
   };
   chrome.contextMenus.create(properties1);
 
-  // Create an item that initially doesn't have a documentUrlPattern and
-  // targetUrlPattern, then update it, and trigger the rest of the c++ code in
-  // the browser test by navigating the tab.
+  // Create an item that initially doesn't have a documentUrlPattern, then
+  // update it, and then proceed with the c++ code in the browser test.
   var properties2 = { "title": "test_item2" };
 
   var id2;
   id2 = chrome.contextMenus.create(properties2,
                                                 function() {
-    var update_properties = { "documentUrlPatterns": patterns,
-                              "targetUrlPatterns": patterns };
+    var update_properties = { "documentUrlPatterns": patterns };
     chrome.contextMenus.update(id2, update_properties,
                                make_browsertest_proceed);
   });
