@@ -20,6 +20,27 @@
 #include "app/win_util.h"
 #endif
 
+#if defined(USE_X11)
+#include "app/x11_util.h"
+#include "app/x11_util_internal.h"
+#endif
+
+#if defined(USE_X11)
+namespace {
+
+int GpuX11ErrorHandler(Display* d, XErrorEvent* error) {
+  LOG(ERROR) << x11_util::GetErrorEventDescription(d, error);
+  return 0;
+}
+
+void SetGpuX11ErrorHandlers() {
+  // Set up the error handlers so that only general errors aren't fatal.
+  x11_util::SetX11ErrorHandlers(GpuX11ErrorHandler, NULL);
+}
+
+}
+#endif
+
 // Main function for starting the Gpu process.
 int GpuMain(const MainFunctionParams& parameters) {
 #if defined(USE_LINUX_BREAKPAD)
@@ -43,6 +64,10 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   GpuProcess gpu_process;
   gpu_process.set_main_thread(new GpuThread());
+
+#if defined(USE_X11)
+  SetGpuX11ErrorHandlers();
+#endif
 
   main_message_loop.Run();
 

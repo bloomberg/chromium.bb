@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
 #include "base/thread.h"
 #include "app/x11_util_internal.h"
 #include "gfx/rect.h"
@@ -834,17 +835,43 @@ void SetX11ErrorHandlers(XErrorHandler error_handler,
       io_error_handler ? io_error_handler : DefaultX11IOErrorHandler);
 }
 
-std::string GetErrorEventDescription(Display* dpy, XErrorEvent* error_event) {
-  char buf[255];
-  XGetErrorText(dpy, error_event->error_code, buf, 254);
+std::string GetErrorEventDescription(Display *dpy,
+                                     XErrorEvent *error_event) {
+  char error_str[256];
+  char request_str[256];
+
+  XGetErrorText(dpy, error_event->error_code, error_str, sizeof(error_str));
+
+  strncpy(request_str, "Unknown", sizeof(request_str));
+  if (error_event->request_code < 128) {
+    std::string num = base::UintToString(error_event->request_code);
+    XGetErrorDatabaseText(
+        dpy, "XRequest", num.c_str(), "Unknown", request_str,
+        sizeof(request_str));
+  }  else {
+    int num_ext;
+    char **ext_list = XListExtensions(dpy, &num_ext);
+
+    for (int i = 0; i < num_ext; i++) {
+      int ext_code, first_event, first_error;
+      XQueryExtension(dpy, ext_list[i], &ext_code, &first_event, &first_error);
+      if (error_event->request_code == ext_code) {
+        std::string msg = StringPrintf(
+            "%s.%d", ext_list[i], error_event->minor_code);
+        XGetErrorDatabaseText(
+            dpy, "XRequest", msg.c_str(), "Unknown", request_str,
+            sizeof(request_str));
+        break;
+      }
+    }
+    XFreeExtensionList(ext_list);
+  }
+
   return base::StringPrintf(
-      "X Error detected: %s "
-      "(serial: %lu, error_code: %u, request_code: %u, minor_code: %u)",
-      buf,
-      error_event->serial,
-      error_event->error_code,
-      error_event->request_code,
-      error_event->minor_code);
+      "X Error detected: serial %lu, error_code %u (%s), "
+      "request_code %u minor_code %u (%s)",
+      error_event->serial, error_event->error_code, error_str,
+      error_event->request_code, error_event->minor_code, request_str);
 }
 // ----------------------------------------------------------------------------
 // End of x11_util_internal.h
