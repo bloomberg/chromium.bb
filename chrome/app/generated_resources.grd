@@ -8524,7 +8524,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 	Accept and continue »
       </message>
       <message name="IDS_EULA_SYSTEM_SECURITY_SETTINGS_LINK" desc="Link from the EULA wizard screen">
-	System security settings
+        System security setting
       </message>
       <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by centrally-administered policy">
 	This option is controlled by an enterprise policy. Please contact your administrator for more information.
