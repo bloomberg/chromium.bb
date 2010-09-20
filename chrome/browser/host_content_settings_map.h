@@ -230,9 +230,6 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void ResetToDefaults();
 
-  // Whether this settings map is associated with an OTR session.
-  bool IsOffTheRecord();
-
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

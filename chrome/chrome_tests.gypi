@@ -1035,6 +1035,7 @@
         'browser/cocoa/wrench_menu_button_cell_unittest.mm',
         'browser/cocoa/wrench_menu_controller_unittest.mm',
         'browser/command_updater_unittest.cc',
+        'browser/content_exceptions_table_model_unittest.cc',
         'browser/cookies_tree_model_unittest.cc',
         'browser/debugger/devtools_manager_unittest.cc',
         'browser/device_orientation/provider_unittest.cc',

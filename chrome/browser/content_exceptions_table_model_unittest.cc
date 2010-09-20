@@ -1,0 +1,34 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/content_exceptions_table_model.h"
+
+#include "chrome/test/testing_profile.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class ContentExceptionsTableModelTest : public testing::Test {
+ public:
+  ContentExceptionsTableModelTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+
+ protected:
+  MessageLoop message_loop_;
+  ChromeThread ui_thread_;
+};
+
+TEST_F(ContentExceptionsTableModelTest, Incognito) {
+  TestingProfile profile;
+  TestingProfile* otr_profile = new TestingProfile();
+  otr_profile->set_off_the_record(true);
+  ContentExceptionsTableModel model(profile.GetHostContentSettingsMap(),
+                                    otr_profile->GetHostContentSettingsMap(),
+                                    CONTENT_SETTINGS_TYPE_COOKIES);
+  delete otr_profile;
+  model.AddException(HostContentSettingsMap::Pattern("example.com"),
+                     CONTENT_SETTING_BLOCK, true);
+}
+
+}  // namespace
