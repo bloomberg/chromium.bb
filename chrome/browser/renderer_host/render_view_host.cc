@@ -132,7 +132,6 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       sudden_termination_allowed_(false),
       session_storage_namespace_(session_storage),
       is_extension_process_(false),
-      autofill_query_id_(0),
       save_accessibility_tree_for_testing_(false) {
   if (!session_storage_namespace_) {
     session_storage_namespace_ =
@@ -1726,7 +1725,6 @@ void RenderViewHost::AutoFillSuggestionsReturned(
     const std::vector<string16>& labels,
     const std::vector<string16>& icons,
     const std::vector<int>& unique_ids) {
-  autofill_query_id_ = query_id;
   autofill_values_.assign(names.begin(), names.end());
   autofill_labels_.assign(labels.begin(), labels.end());
   autofill_icons_.assign(icons.begin(), icons.end());
@@ -1735,18 +1733,6 @@ void RenderViewHost::AutoFillSuggestionsReturned(
 
 void RenderViewHost::AutocompleteSuggestionsReturned(
     int query_id, const std::vector<string16>& suggestions) {
-  // When query IDs match we are responding to an AutoFill and Autocomplete
-  // combined query response.
-  // Otherwise Autocomplete is canceling, so we only send suggestions (usually
-  // an empty list).
-  if (autofill_query_id_ != query_id) {
-    // Autocomplete is canceling.
-    autofill_values_.clear();
-    autofill_labels_.clear();
-    autofill_icons_.clear();
-    autofill_unique_ids_.clear();
-  }
-
   // Combine AutoFill and Autocomplete values into values and labels.
   for (size_t i = 0; i < suggestions.size(); ++i) {
     bool unique = true;

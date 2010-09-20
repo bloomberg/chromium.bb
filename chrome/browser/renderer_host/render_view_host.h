@@ -755,7 +755,6 @@ class RenderViewHost : public RenderWidgetHost {
 
   // AutoFill and Autocomplete suggestions.  We accumulate these separately and
   // send them back to the renderer together.
-  int autofill_query_id_;
   std::vector<string16> autofill_values_;
   std::vector<string16> autofill_labels_;
   std::vector<string16> autofill_icons_;
