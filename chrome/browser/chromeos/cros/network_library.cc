@@ -343,10 +343,22 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                             const std::string& identity,
                             const std::string& certpath) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      ConnectToNetworkWithCertInfo(network.service_path().c_str(),
-                       password.empty() ? NULL : password.c_str(),
-                       identity.empty() ? NULL : identity.c_str(),
-                       certpath.empty() ? NULL : certpath.c_str());
+      if (ConnectToNetworkWithCertInfo(network.service_path().c_str(),
+          password.empty() ? NULL : password.c_str(),
+          identity.empty() ? NULL : identity.c_str(),
+          certpath.empty() ? NULL : certpath.c_str())) {
+        // Update local cache and notify listeners.
+        WifiNetwork* wifi = GetWirelessNetworkByPath(
+            wifi_networks_, network.service_path());
+        if (wifi) {
+          wifi->set_passphrase(password);
+          wifi->set_identity(identity);
+          wifi->set_cert_path(certpath);
+          wifi->set_connecting(true);
+          wifi_ = *wifi;
+        }
+        NotifyNetworkChanged();
+      }
     }
   }
 
@@ -364,9 +376,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         SetAutoConnect(service->service_path, auto_connect);
         // Now connect to that service.
         ConnectToNetworkWithCertInfo(service->service_path,
-                         password.empty() ? NULL : password.c_str(),
-                         identity.empty() ? NULL : identity.c_str(),
-                         certpath.empty() ? NULL : certpath.c_str());
+            password.empty() ? NULL : password.c_str(),
+            identity.empty() ? NULL : identity.c_str(),
+            certpath.empty() ? NULL : certpath.c_str());
 
         // Clean up ServiceInfo object.
         FreeServiceInfo(service);
@@ -379,21 +391,47 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   void ConnectToCellularNetwork(CellularNetwork network) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      ConnectToNetwork(network.service_path().c_str(), NULL);
+      if (ConnectToNetwork(network.service_path().c_str(), NULL)) {
+        // Update local cache and notify listeners.
+        CellularNetwork* cellular = GetWirelessNetworkByPath(
+            cellular_networks_, network.service_path());
+        if (cellular) {
+          cellular->set_connecting(true);
+          cellular_ = *cellular;
+        }
+        NotifyNetworkChanged();
+      }
     }
   }
 
   void DisconnectFromWirelessNetwork(const WirelessNetwork& network) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      DisconnectFromNetwork(network.service_path().c_str());
+      if (DisconnectFromNetwork(network.service_path().c_str())) {
+        // Update local cache and notify listeners.
+        if (network.type() == TYPE_WIFI) {
+          WifiNetwork* wifi = GetWirelessNetworkByPath(
+              wifi_networks_, network.service_path());
+          if (wifi) {
+            wifi->set_connected(false);
+            wifi_ = WifiNetwork();
+          }
+        } else if (network.type() == TYPE_CELLULAR) {
+          CellularNetwork* cellular = GetWirelessNetworkByPath(
+              cellular_networks_, network.service_path());
+          if (cellular) {
+            cellular->set_connected(false);
+            cellular_ = CellularNetwork();
+          }
+        }
+        NotifyNetworkChanged();
+      }
     }
   }
 
   void SaveCellularNetwork(const CellularNetwork& network) {
     // Update the wifi network in the local cache.
     CellularNetwork* cellular = GetWirelessNetworkByPath(
-        cellular_networks_,
-        network.service_path());
+        cellular_networks_, network.service_path());
     if (cellular)
       *cellular = network;
 
@@ -405,8 +443,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   void SaveWifiNetwork(const WifiNetwork& network) {
     // Update the wifi network in the local cache.
-    WifiNetwork* wifi = GetWirelessNetworkByPath(wifi_networks_,
-                                                 network.service_path());
+    WifiNetwork* wifi = GetWirelessNetworkByPath(
+        wifi_networks_, network.service_path());
     if (wifi)
       *wifi = network;
 
@@ -422,7 +460,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   void ForgetWirelessNetwork(const std::string& service_path) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      DeleteRememberedService(service_path.c_str());
+      if (DeleteRememberedService(service_path.c_str())) {
+        // Update local cache and notify listeners.
+        std::remove_if(remembered_wifi_networks_.begin(),
+                       remembered_wifi_networks_.end(),
+                       WirelessNetwork::ServicePathEq(service_path));
+        std::remove_if(remembered_cellular_networks_.begin(),
+                       remembered_cellular_networks_.end(),
+                       WirelessNetwork::ServicePathEq(service_path));
+        NotifyNetworkChanged();
+      }
     }
   }
 
@@ -753,6 +800,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     EnableNetworkDevice(device, enable);
   }
 
+  void NotifyNetworkChanged() {
+    FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
+  }
+
   void UpdateNetworkStatus() {
     // Make sure we run on UI thread.
     if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
@@ -794,7 +845,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     connected_devices_ = system->connected_technologies;
     offline_mode_ = system->offline_mode;
 
-    FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
+    NotifyNetworkChanged();
     FreeSystemInfo(system);
   }
 
@@ -883,6 +934,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
       const std::string& path, CellularNetwork* result) const { return false; }
   void RequestWifiScan() {}
   bool GetWifiAccessPoints(WifiAccessPointVector* result) { return false; }
+
   void ConnectToWifiNetwork(WifiNetwork network,
                             const std::string& password,
                             const std::string& identity,
