@@ -79,12 +79,14 @@ class Target {
   // setting sig_done_.
   void Run(Session *ses);
 
-  // This function should be called when the platform
-  // detects an signal/exception from a tracked thread.
+  // This function causes the target to track the state
+  // of the specified thread and make it availible to
+  // a connected host.
   void TrackThread(port::IThread *thread);
 
-  // This function should be called when the platform
-  // detects an signal/exception from a tracked thread.
+  // This function causes the target to stop tracking the
+  // state of the specified thread, which will no longer
+  // be visible to the host.
   void IgnoreThread(port::IThread *thread);
 
  protected:

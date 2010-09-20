@@ -172,7 +172,7 @@ void Target::Run(Session *ses) {
           ses->SendPacket(&reply);
         }
       }
-    } while (1);
+    } while (ses->Connected());
 
 
     // Now that we are done, we want to continue in the "correct order".

@@ -5,7 +5,6 @@
  */
 
 
-
 // This module provides interfaces for writing to and reading from a
 // GDB RSP connection.  The connection uses a generic transport
 // object for sending packets from one endpoint to another.  The session
@@ -38,6 +37,8 @@ namespace gdb_rsp {
 
 class Packet;
 
+// Session is not inteded to be derived from, protected members are
+// protected only for unit testing purposes.
 class Session {
  public:
   Session();
@@ -71,7 +72,7 @@ class Session {
   Session(const Session&);
   Session &operator=(const Session&);
 
- private:
+ protected:
   port::IMutex *mutex_;     // Lock to enforce correct response order.
   port::ITransport *io_;    // Transport object not owned by the Session.
   uint32_t flags_;          // Session flags for Sequence/Ack generation.

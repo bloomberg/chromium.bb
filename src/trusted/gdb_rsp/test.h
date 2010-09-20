@@ -27,8 +27,10 @@ int VerifyPacket(gdb_rsp::Packet *wr, gdb_rsp::Packet *rd,
                  void *ctx, PacketFunc_t tx);
 
 int TestAbi();
+int TestHost();
 int TestPacket();
 int TestSession();
+int TestTarget();
 int TestUtil();
 
 #endif  // NATIVE_CLIENT_GDB_RSP_TEST_H_

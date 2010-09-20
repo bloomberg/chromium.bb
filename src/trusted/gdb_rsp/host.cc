@@ -65,7 +65,9 @@ void Host::Thread::SetRegister(uint32_t index, const void *src) {
 }
 
 
-Host::Host(Session *session) : session_(session), abi_(NULL) { }
+// Construct unitialzied
+Host::Host(Session *session) : session_(session), abi_(NULL),
+                               status_(HS_UNINIT) { }
 
 Host::~Host() { }
 
@@ -182,11 +184,75 @@ bool Host::Update() {
     resp.GetBlock(thread->ctx_, abi_->GetContextSize());
   }
 
+  // Update the current state
   string reply;
   if (Request("?", &reply)) return ParseStopPacket(reply.data());
 
+  // If we are not "broken" then we must have failed to update
+  return false;
+}
+
+bool Host::GetThreads(ThreadVector_t* threads) const {
+  // We can get threads if stopped
+  if (HS_STOPPED != status_) return false;
+
+  threads->clear();
+  ThreadMap_t::const_iterator itr  = threads_.begin();
+  while (itr != threads_.end()) {
+    threads->push_back(itr->first);
+    itr++;
+  }
+
   return true;
 }
+
+bool Host::Step() {
+  Packet out;
+
+  // We can only step if we are stopped
+  if (HS_STOPPED != status_) return false;
+
+  out.AddRawChar('s');
+  if (SendOnly(&out)) {
+    // We are running again (even if we expect to immediately break)
+    status_ = HS_RUNNING;
+    return true;
+  }
+
+  return false;
+}
+
+bool Host::Continue() {
+  Packet out;
+
+  // We can only step if we are stopped
+  if (HS_STOPPED != status_) return false;
+
+  out.AddRawChar('c');
+  if (SendOnly(&out)) {
+    // We are running again
+    status_ = HS_RUNNING;
+    return true;
+  }
+
+  return false;
+}
+
+// Wait to see if we receive a break
+bool Host::WaitForBreak() {
+  // We can not wait if we are not running
+  if (HS_RUNNING != status_) return false;
+
+  Packet rx;
+  std::string str;
+  if (session_->GetPacket(&rx) == false) return false;
+
+  rx.GetString(&str);
+  if (ParseStopPacket(str.data())) return Update();
+  return false;
+}
+
+
 
 Host::Thread* Host::GetThread(uint32_t id) {
   ThreadMap_t::const_iterator itr;
@@ -324,14 +390,23 @@ bool Host::ReadObject(const char *type, const char *name, string *reply) {
 
 bool Host::Break() {
   char brk[2] = { 0x03, 0x00 };
+
+  // We can only break if running
+  if (HS_RUNNING != status_) return false;
+
+  status_ = HS_STOPPING;
   return RequestOnly(brk);
 }
 
 bool Host::Detach() {
+  // We can only detach if stopped
+  if (HS_STOPPED != status_) return false;
+
   return RequestOnly("d");
 }
 
 int32_t Host::GetSignal() {
+  // We always return the lasted cached value
   return lastSignal_;
 }
 
@@ -344,6 +419,9 @@ bool Host::GetMemory(void *dst, uint64_t addr, uint32_t size) {
   uint32_t maxTX = 1024;
   string reply;
   Packet pktReq, pktReply;
+
+  // We can only access memory if stopped
+  if (HS_STOPPED != status_) return false;
 
   if (ReadProperty("PacketSize", &reply)) {
     maxTX = strtoul(reply.data(), NULL, 16);
@@ -379,6 +457,9 @@ bool Host::SetMemory(const void *src, uint64_t addr, uint32_t size) {
   uint32_t maxTX = 1024;
   string reply;
   Packet pktReq, pktReply;
+
+  // We can only access memory if stopped
+  if (HS_STOPPED != status_) return false;
 
   if (ReadProperty("PacketSize", &reply)) {
     maxTX = strtoul(reply.data(), NULL, 16);
