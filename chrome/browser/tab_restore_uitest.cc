@@ -507,13 +507,8 @@ TEST_F(TabRestoreUITest, MAYBE_RestoreWithExistingSiteInstance) {
 // Tests that the SiteInstances used for entries in a restored tab's history
 // are given appropriate max page IDs, even if the renderer for the entry
 // already exists.  (Bug 1204135)
-#if defined(OS_WIN)
-// http://crbug.com/55380 - NavigateToURL to making this flaky
-#define MAYBE_RestoreCrossSiteWithExistingSiteInstance FLAKY_RestoreCrossSiteWithExistingSiteInstance
-#else
-#define MAYBE_RestoreCrossSiteWithExistingSiteInstance RestoreCrossSiteWithExistingSiteInstance
-#endif
-TEST_F(TabRestoreUITest, MAYBE_RestoreCrossSiteWithExistingSiteInstance) {
+// http://crbug.com/55380 - NavigateToURL to making this flaky on all platforms
+TEST_F(TabRestoreUITest, FLAKY_RestoreCrossSiteWithExistingSiteInstance) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
