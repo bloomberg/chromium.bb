@@ -665,11 +665,9 @@
    bug_39963_b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN12_GLOBAL__N_127ChromeCookieMonsterDelegateC2EP7Profile
-   fun:_ZN12_GLOBAL__N_127ChromeCookieMonsterDelegateC1EP7Profile
+   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_*ChromeCookieMonsterDelegateC1EP7Profile
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   fun:_ZN12_GLOBAL__N_120FactoryForExtensionsC2EP7ProfileRK8FilePathb
-   fun:_ZN12_GLOBAL__N_120FactoryForExtensionsC1EP7ProfileRK8FilePathb
+   ...
    fun:_ZN29ChromeURLRequestContextGetter31CreateOffTheRecordForExtensionsEP7Profile
    fun:_ZN23OffTheRecordProfileImpl30GetRequestContextForExtensionsEv
    fun:_ZN21ResourceMessageFilterC2EP22ResourceDispatcherHostiP17AudioRendererHostP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
