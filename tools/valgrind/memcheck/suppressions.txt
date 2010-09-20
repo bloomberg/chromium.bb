@@ -650,7 +650,7 @@
    bug_39963_a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_*ChromeCookieMonsterDelegateC1EP7Profile
+   fun:*ChromeCookieMonsterDelegateC1EP7Profile
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    ...
    fun:_ZN11ProfileImpl36RegisterExtensionWithRequestContextsEP9Extension
@@ -665,12 +665,14 @@
    bug_39963_b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_*ChromeCookieMonsterDelegateC1EP7Profile
+   ...
+   fun:*ChromeCookieMonsterDelegateC1EP7Profile
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    ...
+   fun:*20FactoryForExtensionsC1EP7ProfileRK8FilePathb
    fun:_ZN29ChromeURLRequestContextGetter31CreateOffTheRecordForExtensionsEP7Profile
    fun:_ZN23OffTheRecordProfileImpl30GetRequestContextForExtensionsEv
-   fun:_ZN21ResourceMessageFilterC2EP22ResourceDispatcherHostiP17AudioRendererHostP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
+   ...
    fun:_ZN21ResourceMessageFilterC1EP22ResourceDispatcherHostiP17AudioRendererHostP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
    fun:_ZN24BrowserRenderProcessHost4InitEb
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
@@ -2530,6 +2532,7 @@
    fun:_ZNK28MockRenderProcessHostFactory23CreateRenderProcessHostEP7Profile
    fun:_ZN12SiteInstance10GetProcessEv
    fun:_ZN14RenderViewHostC2EP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   ...
    fun:_ZN18TestRenderViewHostC1EP12SiteInstanceP22RenderViewHostDelegatei
    fun:_ZN25TestRenderViewHostFactory20CreateRenderViewHostEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
    fun:_ZN21RenderViewHostFactory6CreateEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
