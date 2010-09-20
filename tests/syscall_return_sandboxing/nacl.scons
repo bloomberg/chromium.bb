@@ -5,10 +5,6 @@
 
 Import('env')
 
-# tests in this directory contain (inline) assembler
-if ARGUMENTS.get('bitcode'):
-  Return()
-
 # NOTE:  because we want to compile everything to bitcode before linking
 # NOTE:  assembler source files requires special trickery, for now we
 # NOTE:  have hacked tools/llvm/llvm-fake.py
@@ -29,15 +25,8 @@ def GetAssemblerFile(env):
     raise Exception, 'unknown architecture'
 
 
-# TODO(bsy): remove adding pthread once we figure out how to eliminate
-# srpc library being added by default in nacl builds.  We don't
-# actually need srpc, so all we're doing is bloating the nexe
-# unnecessarily.
-#
 env.ComponentProgram('syscall_return_sandboxing.nexe',
-                     ['syscall_return_sandboxing.c', GetAssemblerFile(env)],
-                     EXTRA_LIBS=['pthread'],
-                     )
+                     ['syscall_return_sandboxing.c', GetAssemblerFile(env)])
 node = env.CommandSelLdrTestNacl(
     'syscall_return_sandboxing.out',
     command=[env.File('syscall_return_sandboxing.nexe')])

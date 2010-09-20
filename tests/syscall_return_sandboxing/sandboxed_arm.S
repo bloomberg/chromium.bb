@@ -32,6 +32,13 @@ bad:    pop {lr}
         bx lr
 
 
+        bkpt 0x7777
+        /*
+         * Put a disallowed instruction here to ensure that the bkpt
+         * data bundle marker works.  If the marker does not work, then
+         * whether this code passes the validator is a matter of chance.
+         */
+        mov pc, r0
 addrOfGetTimeOfDaySyscallAddr:
         .word GETTIMEOFDAY_ADDR
 addrOfTimeBuf:
