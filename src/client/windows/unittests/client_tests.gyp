@@ -41,9 +41,11 @@
         'minidump_test.cc',
         'dump_analysis.cc',
         'dump_analysis.h',
+        'crash_generation_server_test.cc'
       ],
       'dependencies': [
-        'gtest.gyp:gtest',
+        'testing.gyp:gtest',
+        'testing.gyp:gmock',
         '../breakpad_client.gyp:common',
         '../crash_generation/crash_generation.gyp:crash_generation_server',
         '../crash_generation/crash_generation.gyp:crash_generation_client',

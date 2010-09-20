@@ -44,7 +44,6 @@
       ],
       'sources': [
         '<(DEPTH)/testing/gtest/src/gtest-all.cc',
-        '<(DEPTH)/testing/gtest/src/gtest_main.cc',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -53,5 +52,26 @@
         ]
       },
     },
+    {
+      'target_name': 'gmock',
+      'type': '<(library)',
+      'include_dirs': [
+        '<(DEPTH)/testing/include',
+        '<(DEPTH)/testing/',
+        '<(DEPTH)/testing/gtest',
+        '<(DEPTH)/testing/gtest/include',
+      ],
+      'sources': [
+        '<(DEPTH)/testing/src/gmock-all.cc',
+        '<(DEPTH)/testing/src/gmock_main.cc',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(DEPTH)/testing/include',
+          '<(DEPTH)/testing/gtest/include',
+        ]
+      },
+    },
+
   ],
 }

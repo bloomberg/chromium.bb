@@ -40,7 +40,7 @@
         './handler/exception_handler.gyp:*',
         './sender/crash_report_sender.gyp:*',
         './unittests/client_tests.gyp:*',
-        './unittests/gtest.gyp:*',
+        './unittests/testing.gyp:*',
       ]
     },
     {
