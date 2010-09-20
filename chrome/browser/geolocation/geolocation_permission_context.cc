@@ -206,6 +206,23 @@ GeolocationInfoBarQueueController::~GeolocationInfoBarQueueController() {
 void GeolocationInfoBarQueueController::CreateInfoBarRequest(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame, const GURL& embedder) {
+  // This makes sure that no duplicates are added to
+  // |pending_infobar_requests_| as an artificial permission request may
+  // already exist in the queue as per
+  // GeolocationPermissionContext::StartUpdatingRequested
+  // See http://crbug.com/51899 for more details.
+  // TODO(joth): Once we have CLIENT_BASED_GEOLOCATION and
+  // WTF_USE_PREEMPT_GEOLOCATION_PERMISSION set in WebKit we should be able to
+  // just use a DCHECK to check if a duplicate is attempting to be added.
+  PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
+  while (i != pending_infobar_requests_.end()) {
+    if (i->Equals(render_process_id, render_view_id, bridge_id)) {
+      // The request already exists.
+      DCHECK(i->IsForPair(requesting_frame, embedder));
+      return;
+    }
+    ++i;
+  }
   PendingInfoBarRequest pending_infobar_request;
   pending_infobar_request.render_process_id = render_process_id;
   pending_infobar_request.render_view_id = render_view_id;
