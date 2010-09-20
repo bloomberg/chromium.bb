@@ -421,6 +421,15 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
           'sources': [ '<@(test_shell_windows_resource_files)' ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
