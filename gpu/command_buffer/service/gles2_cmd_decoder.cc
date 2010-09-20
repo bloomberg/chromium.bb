@@ -1646,9 +1646,12 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   // OpenGL ES 2.0 implicitly enables the desktop GL capability
   // VERTEX_PROGRAM_POINT_SIZE and doesn't expose this enum. This fact
   // isn't well documented; it was discovered in the Khronos OpenGL ES
-  // mailing list archives.
+  // mailing list archives. It also implicitly enables the desktop GL
+  // capability GL_POINT_SPRITE to provide access to the gl_PointCoord
+  // variable in fragment shaders.
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    glEnable(GL_POINT_SPRITE);
   }
 
   if (use_shader_translator_) {

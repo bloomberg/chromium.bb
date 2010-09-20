@@ -85,6 +85,10 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
       .Times(1)
       .RetiresOnSaturation();
 
+  EXPECT_CALL(*gl_, Enable(GL_POINT_SPRITE))
+      .Times(1)
+      .RetiresOnSaturation();
+
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
   Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
   shared_memory_offset_ = kSharedMemoryOffset;
