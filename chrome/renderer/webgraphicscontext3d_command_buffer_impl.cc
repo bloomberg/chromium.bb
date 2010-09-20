@@ -20,11 +20,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/render_view.h"
 #include "chrome/renderer/webgles2context_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : context_(NULL),
+      web_view_(NULL),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -32,6 +34,14 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
+#if defined(OS_MACOSX)
+  if (web_view_) {
+    RenderView* renderview = RenderView::FromWebView(web_view_);
+    DCHECK(plugin_handle_ != gfx::kNullPluginWindow);
+    renderview->DestroyFakePluginWindowHandle(plugin_handle_);
+    plugin_handle_ = gfx::kNullPluginWindow;
+  }
+#endif
   if (context_) {
     ggl::DestroyContext(context_);
   }
@@ -41,11 +51,65 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
     bool render_directly_to_web_view) {
-  // TODO(kbr): implement this fully once WebView::graphicsContext3D()
-  // is exposed upstream.
-  return initialize(attributes, web_view);
+  RenderThread* render_thread = RenderThread::current();
+  if (!render_thread)
+    return false;
+  GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
+  if (!host)
+    return false;
+  DCHECK(host->state() == GpuChannelHost::CONNECTED);
+
+  if (render_directly_to_web_view) {
+    RenderView* renderview = RenderView::FromWebView(web_view);
+    if (!renderview)
+      return false;
+    gfx::NativeViewId view_id;
+#if !defined(OS_MACOSX)
+    view_id = renderview->host_window();
+#else
+    plugin_handle_ = renderview->AllocateFakePluginWindowHandle(
+        /*opaque=*/true, /*root=*/true);
+    view_id = static_cast<gfx::NativeViewId>(plugin_handle_);
+#endif
+    web_view_ = web_view;
+    context_ = ggl::CreateViewContext(
+        host, view_id,
+        renderview->routing_id());
+  } else {
+    bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableAcceleratedCompositing);
+    ggl::Context* parent_context = NULL;
+    // If GPU compositing is enabled we need to create a GL context that shares
+    // resources with the compositor's context.
+    if (compositing_enabled) {
+      // Asking for the WebGraphicsContext3D on the WebView will force one to
+      // be created if it doesn't already exist. When the compositor is created
+      // for the view it will use the same context.
+      WebKit::WebGraphicsContext3D* view_context =
+          web_view->graphicsContext3D();
+      if (view_context) {
+        WebGraphicsContext3DCommandBufferImpl* context_impl =
+            static_cast<WebGraphicsContext3DCommandBufferImpl*>(view_context);
+        parent_context = context_impl->context_;
+      }
+    }
+    context_ = ggl::CreateOffscreenContext(host,
+                                           parent_context,
+                                           gfx::Size(1, 1));
+    web_view_ = NULL;
+  }
+  if (!context_)
+    return false;
+  // TODO(gman): Remove this.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisableGLSLTranslator)) {
+    DisableShaderTranslation(context_);
+  }
+  return true;
 }
 
+// TODO(kbr): remove this entire method as soon as the compositor has
+// switched to use GraphicsContext3D.
 bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view) {
@@ -148,11 +212,15 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
   cached_height_ = height;
   makeContextCurrent();
 
-  ggl::ResizeOffscreenContext(context_, gfx::Size(width, height));
-
-  // Force a SwapBuffers to get the framebuffer to resize, even though
-  // we aren't directly rendering from the back buffer yet.
-  ggl::SwapBuffers(context_);
+  if (web_view_) {
+#if defined(OS_MACOSX)
+    ggl::ResizeOnscreenContext(context_, gfx::Size(width, height));
+#endif
+  } else {
+    ggl::ResizeOffscreenContext(context_, gfx::Size(width, height));
+    // Force a SwapBuffers to get the framebuffer to resize.
+    ggl::SwapBuffers(context_);
+  }
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scanline_.reset(new uint8[width * 4]);

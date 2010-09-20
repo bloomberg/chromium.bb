@@ -12,6 +12,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/renderer/ggl/ggl.h"
+#include "gfx/native_widget_types.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
@@ -375,6 +376,12 @@ class WebGraphicsContext3DCommandBufferImpl
  private:
   // The GGL context we use for OpenGL rendering.
   ggl::Context* context_;
+  // If rendering directly to WebView, weak pointer to it.
+  WebKit::WebView* web_view_;
+#if defined(OS_MACOSX)
+  // "Fake" plugin window handle in browser process for the compositor's output.
+  gfx::PluginWindowHandle plugin_handle_;
+#endif
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
   int cached_width_, cached_height_;
