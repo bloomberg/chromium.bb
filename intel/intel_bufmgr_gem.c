@@ -1336,8 +1336,6 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 		target_bo_gem->reloc_tree_fences = 1;
 	bo_gem->reloc_tree_fences += target_bo_gem->reloc_tree_fences;
 
-	/* Flag the target to disallow further relocations in it. */
-
 	bo_gem->relocs[bo_gem->reloc_count].offset = offset;
 	bo_gem->relocs[bo_gem->reloc_count].delta = target_offset;
 	bo_gem->relocs[bo_gem->reloc_count].target_handle =
