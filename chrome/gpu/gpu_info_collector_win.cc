@@ -26,7 +26,13 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 
   egl::Display* display = static_cast<egl::Display*>(
       gfx::BaseEGLContext::GetDisplay());
+  if (!display)
+    return false;
+
   IDirect3DDevice9* device = display->getDevice();
+  if (!device)
+    return false;
+
   IDirect3D9* d3d = NULL;
   if (FAILED(device->GetDirect3D(&d3d)))
     return false;
