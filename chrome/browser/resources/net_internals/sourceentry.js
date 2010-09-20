@@ -9,8 +9,7 @@
  *
  * @constructor
  */
-function SourceEntry(parentView, id, maxPreviousSourceId) {
-  this.id_ = id;
+function SourceEntry(parentView, maxPreviousSourceId) {
   this.maxPreviousSourceId_ = maxPreviousSourceId;
   this.entries_ = [];
   this.parentView_ = parentView;
@@ -253,7 +252,7 @@ SourceEntry.prototype.getSelectionCheckbox = function() {
 };
 
 SourceEntry.prototype.getSourceId = function() {
-  return this.id_;
+  return this.entries_[0].source.id;
 };
 
 /**

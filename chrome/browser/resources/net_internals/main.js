@@ -30,6 +30,7 @@ function onLoaded() {
                                       'filterInput',
                                       'filterCount',
                                       'deleteSelected',
+                                      'deleteAll',
                                       'selectAll',
                                       'sortById',
                                       'sortBySource',
@@ -69,7 +70,8 @@ function onLoaded() {
   var dataView = new DataView("dataTabContent", "exportedDataText",
                               "exportToText", "securityStrippingCheckbox",
                               "passivelyCapturedCount",
-                              "activelyCapturedCount");
+                              "activelyCapturedCount",
+                              "dataViewDeleteAll");
 
   // Create a view which will display the results and controls for connection
   // tests.
@@ -156,10 +158,12 @@ function BrowserBridge() {
   this.serviceProviders_ = new PollableDataHelper('onServiceProvidersChanged');
 
   // Cache of the data received.
-  // TODO(eroman): the controls to clear data in the "Requests" tab should be
-  //               affecting this as well.
   this.passivelyCapturedEvents_ = [];
   this.activelyCapturedEvents_ = [];
+
+  // Next unique id to be assigned to a log entry without a source.
+  // Needed to simplify deletion, identify associated GUI elements, etc.
+  this.nextSourcelessEventId_ = -1;
 }
 
 /**
@@ -236,6 +240,11 @@ BrowserBridge.prototype.receivedLogEntry = function(logEntry) {
   // Silently drop entries received before ready to receive them.
   if (!this.areLogTypesReady_())
     return;
+  // Assign unique ID, if needed.
+  if (logEntry.source.id == 0) {
+    logEntry.source.id = this.nextSourcelessEventId_;
+    --this.nextSourcelessEventId_;
+  }
   if (!logEntry.wasPassivelyCaptured)
     this.activelyCapturedEvents_.push(logEntry);
   for (var i = 0; i < this.logObservers_.length; ++i)
@@ -474,6 +483,46 @@ BrowserBridge.prototype.getAllActivelyCapturedEvents = function() {
  */
 BrowserBridge.prototype.getAllPassivelyCapturedEvents = function() {
   return this.passivelyCapturedEvents_;
+};
+
+/**
+ * Deletes actively and passively captured events with source IDs in
+ * |sourceIds|.
+ */
+BrowserBridge.prototype.deleteEventsBySourceId = function(sourceIds) {
+  sourceIdDict = {};
+  for (var i = 0; i < sourceIds.length; i++)
+    sourceIdDict[sourceIds[i]] = true;
+
+  // Returns a copy of |eventList| with all events with source IDs
+  // in |dict| removed.
+  var removeEventsInDict = function(eventList, dict) {
+    var newList = [];
+    for (var i = 0; i < eventList.length; ++i) {
+      var id = eventList[i].source.id;
+      if (!dict[id])
+        newList.push(eventList[i]);
+    }
+    return newList;
+  };
+
+  this.activelyCapturedEvents_ =
+    removeEventsInDict(this.activelyCapturedEvents_, sourceIdDict);
+  this.passivelyCapturedEvents_ =
+    removeEventsInDict(this.passivelyCapturedEvents_, sourceIdDict);
+
+  for (var i = 0; i < this.logObservers_.length; ++i)
+    this.logObservers_[i].onLogEntriesDeleted(sourceIds);
+};
+
+/**
+ * Deletes all actively and passively captured events.
+ */
+BrowserBridge.prototype.deleteAllEvents = function() {
+  this.activelyCapturedEvents_ = [];
+  this.passivelyCapturedEvents_ = [];
+  for (var i = 0; i < this.logObservers_.length; ++i)
+    this.logObservers_[i].onAllLogEntriesDeleted();
 };
 
 BrowserBridge.prototype.doPolling_ = function() {

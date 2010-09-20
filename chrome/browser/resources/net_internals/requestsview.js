@@ -26,15 +26,12 @@
  * @constructor
  */
 function RequestsView(tableBodyId, filterInputId, filterCountId,
-                      deleteSelectedId, selectAllId, sortByIdId,
+                      deleteSelectedId, deleteAllId, selectAllId, sortByIdId,
                       sortBySourceTypeId, sortByDescriptionId,
                       tabHandlesContainerId, logTabId, timelineTabId,
                       detailsLogBoxId, detailsTimelineBoxId,
                       topbarId, middleboxId, bottombarId, sizerId) {
   View.call(this);
-
-  // Next unique id to be assigned to a log entry without a source.
-  this.nextId_ = -1;
 
   // Used for sorting entries with automatically assigned IDs.
   this.maxReceivedSourceId_ = 0;
@@ -53,9 +50,6 @@ function RequestsView(tableBodyId, filterInputId, filterCountId,
   this.splitterView_ = new ResizableVerticalSplitView(
       leftPane, this.detailsView_, new DivView(sizerId));
 
-  this.sourceIdToEntryMap_ = {};
-  this.currentSelectedSources_ = [];
-
   g_browser.addLogObserver(this);
 
   this.tableBody_ = document.getElementById(tableBodyId);
@@ -69,6 +63,9 @@ function RequestsView(tableBodyId, filterInputId, filterCountId,
   document.getElementById(deleteSelectedId).onclick =
       this.deleteSelected_.bind(this);
 
+  document.getElementById(deleteAllId).onclick =
+      g_browser.deleteAllEvents.bind(g_browser);
+
   document.getElementById(selectAllId).addEventListener(
       'click', this.selectAll_.bind(this), true);
 
@@ -81,17 +78,27 @@ function RequestsView(tableBodyId, filterInputId, filterCountId,
   document.getElementById(sortByDescriptionId).addEventListener(
       'click', this.sortByDescription_.bind(this), true);
 
-  this.numPrefilter_ = 0;
-  this.numPostfilter_ = 0;
-
   // Sets sort order and filter.
   this.setFilter_('');
 
-  this.invalidateFilterCounter_();
-  this.invalidateDetailsView_();
+  this.initializeSourceList_();
 }
 
 inherits(RequestsView, View);
+
+/**
+ * Initializes the list of source entries.  If source entries are already,
+ * being displayed, removes them all in the process.
+ */
+RequestsView.prototype.initializeSourceList_ = function() {
+  this.currentSelectedSources_ = [];
+  this.sourceIdToEntryMap_ = {};
+  this.tableBody_.innerHTML = '';
+  this.numPrefilter_ = 0;
+  this.numPostfilter_ = 0;
+  this.invalidateFilterCounter_();
+  this.invalidateDetailsView_();
+};
 
 // How soon after updating the filter list the counter should be updated.
 RequestsView.REPAINT_FILTER_COUNTER_TIMEOUT_MS = 0;
@@ -387,17 +394,11 @@ RequestsView.prototype.InsertionSort_ = function(sourceEntry) {
 RequestsView.prototype.onLogEntryAdded = function(logEntry) {
   var id = logEntry.source.id;
 
-  // Assign a unique source ID, if it has no source.
-  if (logEntry.source.type == LogSourceType.NONE) {
-    id = this.nextId_;
-    --this.nextId_;
-  }
-
   // Lookup the source.
   var sourceEntry = this.sourceIdToEntryMap_[id];
 
   if (!sourceEntry) {
-    sourceEntry = new SourceEntry(this, id, this.maxReceivedSourceId_);
+    sourceEntry = new SourceEntry(this, this.maxReceivedSourceId_);
     this.sourceIdToEntryMap_[id] = sourceEntry;
     this.incrementPrefilterCount(1);
     if (id > this.maxReceivedSourceId_)
@@ -414,6 +415,29 @@ RequestsView.prototype.onLogEntryAdded = function(logEntry) {
   //               still active.  This can result in incorrect sorting, until
   //               Sort_ is called.
   this.InsertionSort_(sourceEntry);
+};
+
+/**
+ * Called whenever some log events are deleted.  |sourceIds| lists
+ * the source IDs of all deleted log entries.
+ */
+RequestsView.prototype.onLogEntriesDeleted = function(sourceIds) {
+  for (var i = 0; i < sourceIds.length; ++i) {
+    var id = sourceIds[i];
+    var entry = this.sourceIdToEntryMap_[id];
+    if (entry) {
+      entry.remove();
+      delete this.sourceIdToEntryMap_[id];
+      this.incrementPrefilterCount(-1);
+    }
+  }
+};
+
+/**
+ * Called whenever all log events are deleted.
+ */
+RequestsView.prototype.onAllLogEntriesDeleted = function(offset) {
+  this.initializeSourceList_();
 };
 
 RequestsView.prototype.incrementPrefilterCount = function(offset) {
@@ -443,15 +467,12 @@ RequestsView.prototype.clearSelection = function() {
 };
 
 RequestsView.prototype.deleteSelected_ = function() {
-  var prevSelection = this.currentSelectedSources_;
-  this.currentSelectedSources_ = [];
-
-  for (var i = 0; i < prevSelection.length; ++i) {
-    var entry = prevSelection[i];
-    entry.remove();
-    delete this.sourceIdToEntryMap_[entry.getSourceId()];
-    this.incrementPrefilterCount(-1);
+  var sourceIds = [];
+  for (var i = 0; i < this.currentSelectedSources_.length; ++i) {
+    var entry = this.currentSelectedSources_[i];
+    sourceIds.push(entry.getSourceId());
   }
+  g_browser.deleteEventsBySourceId(sourceIds);
 };
 
 RequestsView.prototype.selectAll_ = function(event) {
@@ -464,8 +485,10 @@ RequestsView.prototype.selectAll_ = function(event) {
   event.preventDefault();
 };
 
-// If already using the specified sort method, flips direction.  Otherwise,
-// removes pre-existing sort parameter before adding the new one.
+/**
+ * If already using the specified sort method, flips direction.  Otherwise,
+ * removes pre-existing sort parameter before adding the new one.
+ */
 RequestsView.prototype.toggleSortMethod_ = function(sortMethod) {
   // Remove old sort directives, if any.
   var filterText = this.parseSortDirectives_(this.getFilterText_());

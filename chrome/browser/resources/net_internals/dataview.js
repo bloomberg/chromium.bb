@@ -17,7 +17,8 @@ function DataView(mainBoxId,
                   exportTextButtonId,
                   securityStrippingCheckboxId,
                   passivelyCapturedCountId,
-                  activelyCapturedCountId) {
+                  activelyCapturedCountId,
+                  deleteAllId) {
   DivView.call(this, mainBoxId);
 
   this.textPre_ = document.getElementById(outputTextBoxId);
@@ -31,6 +32,9 @@ function DataView(mainBoxId,
       document.getElementById(activelyCapturedCountId);
   this.passivelyCapturedCountBox_ =
       document.getElementById(passivelyCapturedCountId);
+  document.getElementById(deleteAllId).onclick =
+      g_browser.deleteAllEvents.bind(g_browser);
+
   this.updateEventCounts_();
 
   g_browser.addLogObserver(this);
@@ -42,6 +46,21 @@ inherits(DataView, DivView);
  * Called whenever a new event is received.
  */
 DataView.prototype.onLogEntryAdded = function(logEntry) {
+  this.updateEventCounts_();
+};
+
+/**
+ * Called whenever some log events are deleted.  |sourceIds| lists
+ * the source IDs of all deleted log entries.
+ */
+DataView.prototype.onLogEntriesDeleted = function(sourceIds) {
+  this.updateEventCounts_();
+};
+
+/**
+ * Called whenever all log events are deleted.
+ */
+DataView.prototype.onAllLogEntriesDeleted = function() {
   this.updateEventCounts_();
 };
 
