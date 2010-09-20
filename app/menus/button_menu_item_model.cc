@@ -18,6 +18,15 @@ string16 ButtonMenuItemModel::Delegate::GetLabelForCommandId(
   return string16();
 }
 
+bool ButtonMenuItemModel::Delegate::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool ButtonMenuItemModel::Delegate::DoesCommandIdDismissMenu(
+    int command_id) const {
+  return true;
+}
+
 struct ButtonMenuItemModel::Item {
   int command_id;
   ButtonType type;
@@ -106,10 +115,21 @@ bool ButtonMenuItemModel::IsEnabledAt(int index) const {
   return IsCommandIdEnabled(items_[index].command_id);
 }
 
+bool ButtonMenuItemModel::DismissesMenuAt(int index) const {
+  return DoesCommandIdDismissMenu(items_[index].command_id);
+}
+
 bool ButtonMenuItemModel::IsCommandIdEnabled(int command_id) const {
   if (delegate_)
     return delegate_->IsCommandIdEnabled(command_id);
   return true;
 }
+
+bool ButtonMenuItemModel::DoesCommandIdDismissMenu(int command_id) const {
+  if (delegate_)
+    return delegate_->DoesCommandIdDismissMenu(command_id);
+  return true;
+}
+
 
 }  // namespace menus

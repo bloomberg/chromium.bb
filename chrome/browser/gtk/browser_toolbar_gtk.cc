@@ -230,6 +230,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
   wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
   g_signal_connect(wrench_menu_->widget(), "show",
                    G_CALLBACK(OnWrenchMenuShowThunk), this);
+  registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
+                 Source<Profile>(browser_->profile()));
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
@@ -379,6 +381,10 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     UpdateRoundedness();
   } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
     MaybeShowUpgradeReminder();
+  } else if (type == NotificationType::ZOOM_LEVEL_CHANGED) {
+    // If our zoom level changed, we need to tell the menu to update its state,
+    // since the menu could still be open.
+    wrench_menu_->UpdateMenu();
   } else {
     NOTREACHED();
   }

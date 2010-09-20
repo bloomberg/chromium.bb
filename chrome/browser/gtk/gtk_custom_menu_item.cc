@@ -9,6 +9,7 @@
 
 enum {
   BUTTON_PUSHED,
+  TRY_BUTTON_PUSHED,
   LAST_SIGNAL
 };
 
@@ -102,6 +103,16 @@ static void gtk_custom_menu_item_class_init(GtkCustomMenuItemClass* klass) {
                    NULL, NULL,
                    gtk_marshal_NONE__INT,
                    G_TYPE_NONE, 1, GTK_TYPE_INT);
+  // TODO(erg): Change from BOOL__POINTER to BOOLEAN__INTEGER when we get to
+  // use a modern GTK+.
+  custom_menu_item_signals[TRY_BUTTON_PUSHED] =
+      g_signal_new("try-button-pushed",
+                   G_OBJECT_CLASS_TYPE(gobject_class),
+                   G_SIGNAL_RUN_LAST,
+                   0,
+                   NULL, NULL,
+                   gtk_marshal_BOOL__POINTER,
+                   G_TYPE_BOOLEAN, 1, GTK_TYPE_INT);
 }
 
 static void gtk_custom_menu_item_finalize(GObject *object) {
@@ -389,4 +400,35 @@ void gtk_custom_menu_item_select_item_by_direction(
 gboolean gtk_custom_menu_item_is_in_clickable_region(
     GtkCustomMenuItem* menu_item) {
   return menu_item->currently_selected_button != NULL;
+}
+
+gboolean gtk_custom_menu_item_try_no_dismiss_command(
+    GtkCustomMenuItem* menu_item) {
+  GtkCustomMenuItem* custom_item = GTK_CUSTOM_MENU_ITEM(menu_item);
+  gboolean activated = TRUE;
+
+  // We work with |currently_selected_button| instead of
+  // |previously_selected_button| since we haven't been "deselect"ed yet.
+  gpointer id_ptr = g_object_get_data(
+      G_OBJECT(custom_item->currently_selected_button), "command-id");
+  if (id_ptr != NULL) {
+    int command_id = GPOINTER_TO_INT(id_ptr);
+    g_signal_emit(custom_item, custom_menu_item_signals[TRY_BUTTON_PUSHED], 0,
+                  command_id, &activated);
+  }
+
+  return activated;
+}
+
+void gtk_custom_menu_item_foreach_button(GtkCustomMenuItem* menu_item,
+                                         GtkCallback callback,
+                                         gpointer callback_data) {
+  // Even though we're filtering |all_widgets| on GTK_IS_BUTTON(), this isn't
+  // equivalent to |button_widgets| because we also want the button-labels.
+  for (GList* i = menu_item->all_widgets; i && GTK_IS_BUTTON(i->data);
+       i = g_list_next(i)) {
+    if (GTK_IS_BUTTON(i->data)) {
+      callback(GTK_WIDGET(i->data), callback_data);
+    }
+  }
 }

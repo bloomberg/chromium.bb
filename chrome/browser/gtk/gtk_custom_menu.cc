@@ -60,7 +60,8 @@ static gboolean gtk_custom_menu_button_press(GtkWidget* widget,
 }
 
 // When processing a button event, abort processing if the cursor isn't in a
-// clickable region.
+// clickable region. If it's in a button that doesn't dismiss the menu, fire
+// that event and abort having the normal GtkMenu code run.
 static gboolean gtk_custom_menu_button_release(GtkWidget* widget,
                                                GdkEventButton* event) {
   GtkWidget* menu_item = gtk_menu_shell_get_item(
@@ -69,6 +70,11 @@ static gboolean gtk_custom_menu_button_release(GtkWidget* widget,
     if (!gtk_custom_menu_item_is_in_clickable_region(
             GTK_CUSTOM_MENU_ITEM(menu_item))) {
       // Stop processing this event. This isn't a clickable region.
+      return TRUE;
+    }
+
+    if (gtk_custom_menu_item_try_no_dismiss_command(
+            GTK_CUSTOM_MENU_ITEM(menu_item))) {
       return TRUE;
     }
   }

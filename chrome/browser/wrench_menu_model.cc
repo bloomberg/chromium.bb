@@ -54,6 +54,9 @@ EncodingMenuModel::EncodingMenuModel(Browser* browser)
   Build();
 }
 
+EncodingMenuModel::~EncodingMenuModel() {
+}
+
 void EncodingMenuModel::Build() {
   EncodingMenuController::EncodingMenuItemList encoding_menu_items;
   EncodingMenuController encoding_menu_controller;
@@ -117,6 +120,9 @@ void EncodingMenuModel::ExecuteCommand(int command_id) {
 ZoomMenuModel::ZoomMenuModel(menus::SimpleMenuModel::Delegate* delegate)
     : SimpleMenuModel(delegate) {
   Build();
+}
+
+ZoomMenuModel::~ZoomMenuModel() {
 }
 
 void ZoomMenuModel::Build() {
@@ -191,6 +197,10 @@ WrenchMenuModel::WrenchMenuModel(menus::AcceleratorProvider* provider,
 WrenchMenuModel::~WrenchMenuModel() {
   if (tabstrip_model_)
     tabstrip_model_->RemoveObserver(this);
+}
+
+bool WrenchMenuModel::DoesCommandIdDismissMenu(int command_id) const {
+  return command_id != IDC_ZOOM_MINUS && command_id != IDC_ZOOM_PLUS;
 }
 
 bool WrenchMenuModel::IsLabelForCommandIdDynamic(int command_id) const {
