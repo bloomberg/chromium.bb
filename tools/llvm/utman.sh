@@ -120,7 +120,7 @@ readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
 readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 
 # Current milestones in each repo
-readonly LLVM_REV=e1e4163a5fa2
+readonly LLVM_REV=1baf6b5b69de
 readonly LLVM_GCC_REV=6da5d51ee4ac
 readonly NEWLIB_REV=03ddd92d699d
 readonly BINUTILS_REV=a5b54c0cc733
@@ -890,6 +890,7 @@ llvm-make() {
   RunWithLog llvm.make \
     env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS="${MAKE_OPTS}" \
+           SANDBOX_LLVM=0 \
            CC=${CC} \
            CXX=${CXX} \
            make ${MAKE_OPTS} all
@@ -1656,8 +1657,8 @@ llvm-tools-sb-configure() {
     target=x86_64
   fi
 
-  local flags="-m${bitsize} -O2 -static -I${NACL_TOOLCHAIN}/${nacl}/include \
-      -L${NACL_TOOLCHAIN}/${nacl}/lib -lnosys"
+  local flags="-m${bitsize} -static -I${NACL_TOOLCHAIN}/${nacl}/include \
+      -L${NACL_TOOLCHAIN}/${nacl}/lib"
   spushd ${objdir}
   RunWithLog \
       llvm.tools.${arch}.sandboxed.configure \
@@ -1674,7 +1675,7 @@ llvm-tools-sb-configure() {
         --prefix=${installdir} \
         --host=nacl \
         --disable-jit \
-        --enable-optimized \
+        --disable-optimized \
         --target=${CROSS_TARGET_ARM} \
         --enable-targets=${target} \
         --enable-pic=no \
@@ -1705,6 +1706,7 @@ llvm-tools-sb-make() {
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
       SANDBOX_LLVM=1 \
+      KEEP_SYMBOLS=1 \
       VERBOSE=1 \
       make tools-only ${MAKE_OPTS}
 
@@ -1724,6 +1726,7 @@ llvm-tools-sb-install() {
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
       SANDBOX_LLVM=1 \
+      KEEP_SYMBOLS=1 \
       make install ${MAKE_OPTS}
 
   spopd
@@ -1885,11 +1888,13 @@ build-sandboxed-translators() {
   StepBanner "32-bit X86" "Sandboxing"
   StepBanner "----------" "----------"
   binutils-sb x8632
+  llvm-tools-sb x8632
   echo ""
 
   StepBanner "64-bit X86" "Sandboxing"
   StepBanner "----------" "----------"
   binutils-sb x8664
+  llvm-tools-sb x8664
   echo ""
 }
 
@@ -1903,11 +1908,6 @@ install-translators() {
         "Run this script with build-sandboxed-translators"
   assert-dir "${PNACL_CLIENT_TC_X8664}" \
         "Run this script with build-sandboxed-translators"
-
-# TODO(abetul): Replace llc's with 32/64 bit sandboxed executables.
-  assert-file "${INSTALL_DIR}/bin/llc" "Install PNaCl toolchain."
-  cp "${INSTALL_DIR}/bin/llc" "${PNACL_CLIENT_TC_X8632}/bin"
-  cp "${INSTALL_DIR}/bin/llc" "${PNACL_CLIENT_TC_X8664}/bin"
 
   scons-build-sel_ldr x86-32
   cp "./scons-out/opt-linux-x86-32/staging/sel_ldr" \
