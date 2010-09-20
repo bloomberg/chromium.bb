@@ -190,6 +190,22 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
 }
 
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  controller()->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
+
+  EXPECT_EQ(controller()->GetEulaScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
+  controller()->OnExit(chromeos::ScreenObserver::EULA_BACK);
+
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+}
+
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_login_screen_, Show()).Times(1);
@@ -244,5 +260,5 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, Accelerators) {
   EXPECT_EQ(controller()->GetEulaScreen(), controller()->current_screen());
 }
 
-COMPILE_ASSERT(chromeos::ScreenObserver::EXIT_CODES_COUNT == 17,
+COMPILE_ASSERT(chromeos::ScreenObserver::EXIT_CODES_COUNT == 18,
                add_tests_for_new_control_flow_you_just_introduced);

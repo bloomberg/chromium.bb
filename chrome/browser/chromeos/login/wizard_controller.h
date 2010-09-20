@@ -255,6 +255,7 @@ class WizardController : public chromeos::ScreenObserver,
 
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorNetwork);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorUpdate);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowEulaDeclined);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest,
                            ControlFlowLanguageOnLogin);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest,

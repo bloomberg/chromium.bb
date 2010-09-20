@@ -119,7 +119,7 @@ class EulaView
   views::Label* oem_eula_label_;
   DOMView* oem_eula_view_;
   views::Link* system_security_settings_link_;
-  views::NativeButton* cancel_button_;
+  views::NativeButton* back_button_;
   views::NativeButton* continue_button_;
 
   chromeos::ScreenObserver* observer_;

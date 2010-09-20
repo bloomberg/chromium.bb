@@ -35,6 +35,7 @@ class ScreenObserver {
     USER_IMAGE_SELECTED,
     USER_IMAGE_SKIPPED,
     EULA_ACCEPTED,
+    EULA_BACK,
     REGISTRATION_SUCCESS,
     REGISTRATION_SKIPPED,
     EXIT_CODES_COUNT  // not a real code, must be the last

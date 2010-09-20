@@ -90,7 +90,7 @@ EulaView::EulaView(chromeos::ScreenObserver* observer)
       oem_eula_label_(NULL),
       oem_eula_view_(NULL),
       system_security_settings_link_(NULL),
-      cancel_button_(NULL),
+      back_button_(NULL),
       continue_button_(NULL),
       observer_(observer) {
 }
@@ -231,9 +231,8 @@ void EulaView::Init() {
   system_security_settings_link_->SetController(this);
   layout->AddView(system_security_settings_link_);
 
-  cancel_button_ = new views::NativeButton(this, std::wstring());
-  cancel_button_->SetEnabled(false);
-  layout->AddView(cancel_button_);
+  back_button_ = new views::NativeButton(this, std::wstring());
+  layout->AddView(back_button_);
 
   continue_button_ = new views::NativeButton(this, std::wstring());
   layout->AddView(continue_button_);
@@ -265,8 +264,8 @@ void EulaView::UpdateLocalizedStrings() {
       l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTINGS_LINK));
   continue_button_->SetLabel(
       l10n_util::GetString(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON));
-  cancel_button_->SetLabel(
-      l10n_util::GetString(IDS_CANCEL));
+  back_button_->SetLabel(
+      l10n_util::GetString(IDS_ACCNAME_BACK));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -292,8 +291,9 @@ void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
 #endif
     }
     observer_->OnExit(ScreenObserver::EULA_ACCEPTED);
+  } else if (sender == back_button_) {
+    observer_->OnExit(ScreenObserver::EULA_BACK);
   }
-  // TODO(glotov): handle cancel button.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -810,6 +810,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case EULA_ACCEPTED:
       OnEulaAccepted();
       break;
+    case EULA_BACK:
+      ShowNetworkScreen();
+      break;
     case REGISTRATION_SUCCESS:
       OnRegistrationSuccess();
       break;
