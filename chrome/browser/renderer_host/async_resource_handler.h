@@ -44,8 +44,6 @@ class AsyncResourceHandler : public ResourceHandler {
  private:
   ~AsyncResourceHandler();
 
-  void PopulateTimingInfo(URLRequest* request, ResourceResponse* response);
-
   scoped_refptr<SharedIOBuffer> read_buffer_;
   ResourceDispatcherHost::Receiver* receiver_;
   int process_id_;

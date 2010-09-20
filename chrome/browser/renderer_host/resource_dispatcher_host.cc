@@ -395,7 +395,6 @@ void ResourceDispatcherHost::BeginRequest(
           status,
           std::string(),   // No security info needed, connection was not
           base::Time()));  // established.
-                            
     }
     return;
   }
@@ -409,7 +408,11 @@ void ResourceDispatcherHost::BeginRequest(
   // Construct the event handler.
   scoped_refptr<ResourceHandler> handler;
   if (sync_result) {
-    handler = new SyncResourceHandler(receiver_, request_data.url, sync_result);
+    handler = new SyncResourceHandler(receiver_,
+                                      child_id,
+                                      request_data.url,
+                                      sync_result,
+                                      this);
   } else {
     handler = new AsyncResourceHandler(receiver_,
                                        child_id,

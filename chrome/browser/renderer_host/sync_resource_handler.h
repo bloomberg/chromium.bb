@@ -21,8 +21,10 @@ class IOBuffer;
 class SyncResourceHandler : public ResourceHandler {
  public:
   SyncResourceHandler(ResourceDispatcherHost::Receiver* receiver,
+                      int process_id,
                       const GURL& url,
-                      IPC::Message* result_message);
+                      IPC::Message* result_message,
+                      ResourceDispatcherHost* resource_dispatcher_host);
 
   bool OnUploadProgress(int request_id, uint64 position, uint64 size);
   bool OnRequestRedirected(int request_id, const GURL& new_url,
@@ -46,7 +48,9 @@ class SyncResourceHandler : public ResourceHandler {
 
   SyncLoadResult result_;
   ResourceDispatcherHost::Receiver* receiver_;
+  int process_id_;
   IPC::Message* result_message_;
+  ResourceDispatcherHost* rdh_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_SYNC_RESOURCE_HANDLER_H_

@@ -9,7 +9,6 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
@@ -89,27 +88,6 @@ AsyncResourceHandler::AsyncResourceHandler(
 AsyncResourceHandler::~AsyncResourceHandler() {
 }
 
-void AsyncResourceHandler::PopulateTimingInfo(URLRequest* request,
-                                              ResourceResponse* response) {
-  if (!(request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING))
-    return;
-
-  ChromeNetLog* chrome_net_log = static_cast<ChromeNetLog*>(
-      request->net_log().net_log());
-  if (chrome_net_log == NULL)
-    return;
-
-  uint32 source_id = request->net_log().source().id;
-  LoadTimingObserver* observer = chrome_net_log->load_timing_observer();
-  LoadTimingObserver::URLRequestRecord* record =
-      observer->GetURLRequestRecord(source_id);
-  if (record) {
-    response->response_head.connection_id = record->socket_log_id;
-    response->response_head.connection_reused = record->socket_reused;
-    response->response_head.load_timing = record->timing;
-  }
-}
-
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
                                             uint64 position,
                                             uint64 size) {
@@ -125,7 +103,7 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
   *defer = true;
   URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(process_id_, request_id));
-  PopulateTimingInfo(request, response);
+  LoadTimingObserver::PopulateTimingInfo(request, response);
   return receiver_->Send(new ViewMsg_Resource_ReceivedRedirect(
       routing_id_, request_id, new_url, response->response_head));
 }
@@ -139,8 +117,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // or of having to layout the new content twice.
   URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(process_id_, request_id));
-
-  PopulateTimingInfo(request, response);
+  LoadTimingObserver::PopulateTimingInfo(request, response);
 
   ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
   if (info->resource_type() == ResourceType::MAIN_FRAME) {

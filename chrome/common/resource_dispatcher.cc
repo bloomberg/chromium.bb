@@ -254,6 +254,11 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   response->headers = result.headers;
   response->mime_type = result.mime_type;
   response->charset = result.charset;
+  response->request_time = result.request_time;
+  response->response_time = result.response_time;
+  response->connection_id = result.connection_id;
+  response->connection_reused = result.connection_reused;
+  response->load_timing = result.load_timing;
   response->data.swap(result.data);
 }
 

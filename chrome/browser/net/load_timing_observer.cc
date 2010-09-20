@@ -6,7 +6,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/time.h"
+#include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/common/resource_response.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_netlog_params.h"
 
 using base::Time;
@@ -75,6 +78,28 @@ void LoadTimingObserver::OnAddEntry(net::NetLog::EventType type,
     OnAddConnectJobEntry(type, time, source, phase, params);
   else if (source.type == net::NetLog::SOURCE_SOCKET)
     OnAddSocketEntry(type, time, source, phase, params);
+}
+
+// static
+void LoadTimingObserver::PopulateTimingInfo(URLRequest* request,
+                                            ResourceResponse* response) {
+  if (!(request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING))
+    return;
+
+  ChromeNetLog* chrome_net_log = static_cast<ChromeNetLog*>(
+      request->net_log().net_log());
+  if (chrome_net_log == NULL)
+    return;
+
+  uint32 source_id = request->net_log().source().id;
+  LoadTimingObserver* observer = chrome_net_log->load_timing_observer();
+  LoadTimingObserver::URLRequestRecord* record =
+      observer->GetURLRequestRecord(source_id);
+  if (record) {
+    response->response_head.connection_id = record->socket_log_id;
+    response->response_head.connection_reused = record->socket_reused;
+    response->response_head.load_timing = record->timing;
+  }
 }
 
 void LoadTimingObserver::OnAddURLRequestEntry(
