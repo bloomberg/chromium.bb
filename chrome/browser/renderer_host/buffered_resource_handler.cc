@@ -133,7 +133,6 @@ bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
     if (KeepBuffering(*bytes_read))
       return true;
 
-    LOG(INFO) << "Finished buffering " << request_->url().spec();
     *bytes_read = bytes_read_;
 
     // Done buffering, send the pending ResponseStarted event.
@@ -201,7 +200,6 @@ bool BufferedResourceHandler::DelayResponse() {
     // enough data to decode the doctype in order to select the rendering
     // mode.
     should_buffer_ = true;
-    LOG(INFO) << "To buffer: " << request_->url().spec();
     return true;
   }
 
