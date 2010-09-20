@@ -66,7 +66,7 @@ def _RegistryGetValue(key, value):
   if p.returncode:
     return None
   # Extract value.
-  match = re.search(r'REG_\w+[ ]+([^\r]+)\r\n', text)
+  match = re.search(r'REG_\w+\s+([^\r]+)\r\n', text)
   if not match:
     return None
   return match.group(1)
