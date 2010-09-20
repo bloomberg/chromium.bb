@@ -1965,6 +1965,15 @@
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
           ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
         }],
       ],
     },  # target safe_browsing_tests
