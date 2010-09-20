@@ -25,7 +25,7 @@
 # one of the running instances.
 if [ $# -eq 0 ]; then
   pid=$(ls -l /proc/*/exe 2>/dev/null |
-        sed '/\/chrome$/s,.*/proc/\([^/]*\)/exe.*,\1,;t;d' |
+        sed '/\/chrome\( .deleted.\)\?$/s,.*/proc/\([^/]*\)/exe.*,\1,;t;d' |
         while read p; do
           xargs -0 </proc/$p/cmdline 2>/dev/null|grep -q -- --type= && continue
           echo "$p"
@@ -34,13 +34,13 @@ if [ $# -eq 0 ]; then
 else
   pid="$1"
 fi
-ls -l "/proc/$pid/exe" 2>/dev/null|egrep -q '/chrome$' || {
+ls -l "/proc/$pid/exe" 2>/dev/null|egrep -q '/chrome( .deleted.)?$' || {
   echo "Cannot find any running instance of Chrome" >&2; exit 1; }
 while :; do
   ppid="$(ps h --format ppid --pid "$pid" 2>/dev/null)"
   [ -n "$ppid" ] || {
     echo "Cannot find any running instance of Chrome" >&2; exit 1; }
-  ls -l "/proc/$ppid/exe" 2>/dev/null|egrep -q '/chrome$' &&
+  ls -l "/proc/$ppid/exe" 2>/dev/null|egrep -q '/chrome( .deleted.)?$' &&
     pid="$ppid" || break
 done
 xargs -0 </proc/$p/cmdline 2>/dev/null|grep -q -- --type= && {
@@ -68,22 +68,29 @@ identify() {
         echo "Process $child is a \"$plugin\" plugin"
         identify "$child"
         ;;
-      renderer|worker)
+      renderer|worker|gpu-process)
         # The seccomp sandbox has exactly one child process that has no other
         # threads. This is the trusted helper process.
         seccomp="$(ps h --format pid --ppid $child|xargs)"
-        if [ $(echo "$seccomp" | wc -w) -eq 1 ] &&
-           [ $(ls /proc/$seccomp/task 2>/dev/null | wc -w) -eq 1 ] &&
-           ls -l /proc/$seccomp/exe 2>/dev/null | egrep -q '/chrome$'; then
-          echo -n "Process $child is a sandboxed $type (seccomp helper:" \
-                  "$seccomp)"
-          [ -d /proc/$child/cwd/. ] || echo -n "; setuid sandbox is active"
-          echo
+        if [ -d /proc/$child/cwd/. ]; then
+          if [ $(echo "$seccomp" | wc -w) -eq 1 ] &&
+             [ $(ls /proc/$seccomp/task 2>/dev/null | wc -w) -eq 1 ] &&
+             ls -l /proc/$seccomp/exe 2>/dev/null |
+               egrep -q '/chrome( .deleted.)?$'; then
+            echo "Process $child is a sandboxed $type (seccomp helper:" \
+                 "$seccomp)"
+          else
+            echo "Process $child is a $type"
+            identify "$child"
+          fi
         else
-          echo -n "Process $child is a $type"
-          [ -d /proc/$child/cwd/. ] || echo -n "; setuid sandbox is active"
-          echo
-          identify "$child"
+          if [ $(echo "$seccomp" | wc -w) -eq 1 ]; then
+            echo "Process $child is a setuid sandboxed $type (seccomp" \
+                 "helper: $seccomp)"
+          else
+            echo "Process $child is a $type; setuid sandbox is active"
+            identify "$child"
+          fi
         fi
         ;;
       zygote)
@@ -100,6 +107,27 @@ identify() {
   return $foundzygote
 }
 
+cmpcmdline() {
+  # Checks that the command line arguments for pid $1 are a superset of the
+  # commandline arguments for pid $2.
+  # Any additional function arguments $3, $4, ... list options that should
+  # be ignored for the purpose of this comparison.
+  local pida="$1"
+  local pidb="$2"
+  shift; shift
+  local super=("$@" $(xargs -0 </proc/"$pida"/cmdline)) 2>/dev/null
+  local sub=($(xargs -0 </proc/"$pidb"/cmdline)) 2>/dev/null
+  local i j
+  [ ${#sub[*]} -eq 0 -o ${#super[*]} -eq 0 ] && return 1
+  for i in $(seq 0 $((${#sub[*]}-1))); do
+    for j in $(seq 0 $((${#super[*]}-1))); do
+      [ "x${sub[$i]}" = "x${super[$j]}" ] && continue 2
+    done
+    return 1
+  done
+  return 0
+}
+
 
 echo "The browser's main pid is: $pid"
 if identify "$pid"; then
@@ -107,16 +135,12 @@ if identify "$pid"; then
   # sandbox causes it to be reparented to "init". When this happens, we can
   # no longer associate it with the browser with 100% certainty. We make a
   # best effort by comparing command line strings.
-  cmdline="$(xargs -0 </proc/$pid/cmdline |
-             sed 's,\(/chrome \),\1--type=zygote ,;t
-                  s,\(/chrome\)$,\1 --type=zygote,;t;d')" 2>/dev/null
-  [ -n "$cmdline" ] &&
-    for i in $(ps h --format pid --ppid 1); do
-      if [ "$cmdline" = "$(xargs -0 </proc/$i/cmdline)" ]; then
-        echo -n "Process $i is the zygote"
-        [ -d /proc/$i/cwd/. ] || echo -n "; setuid sandbox is active"
-        echo
-        identify "$i"
-      fi
-    done
+  for i in $(ps h --format pid --ppid 1); do
+    if cmpcmdline "$pid" "$i" "--type=zygote"; then
+      echo -n "Process $i is the zygote"
+      [ -d /proc/$i/cwd/. ] || echo -n "; setuid sandbox is active"
+      echo
+      identify "$i"
+    fi
+  done
 fi
