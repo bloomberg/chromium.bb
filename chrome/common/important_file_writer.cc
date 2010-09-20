@@ -57,20 +57,14 @@ class WriteToDiskTask : public Task {
       return;
     }
 
-    if (file_util::ReplaceFile(tmp_file_path, path_)) {
-      LogSuccess();
+    if (!file_util::ReplaceFile(tmp_file_path, path_)) {
+      file_util::Delete(tmp_file_path, false);
+      LogFailure("could not rename temporary file");
       return;
     }
-
-    file_util::Delete(tmp_file_path, false);
-    LogFailure("could not rename temporary file");
   }
 
  private:
-  void LogSuccess() {
-    LOG(INFO) << "successfully saved " << path_.value();
-  }
-
   void LogFailure(const std::string& message) {
     LOG(WARNING) << "failed to write " << path_.value()
                  << ": " << message;
