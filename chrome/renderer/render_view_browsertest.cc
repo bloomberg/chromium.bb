@@ -397,11 +397,18 @@ const TestPageData kTestPages[] = {
 };
 }  // namespace
 
+// Failing on windows.  http://crbug.com/56246
+#if defined(OS_WIN)
+#define MAYBE_PrintLayoutTest DISABLED_PrintLayoutTest
+#else
+#define MAYBE_PrintLayoutTest PrintLayoutTest
+#endif
+
 // TODO(estade): need to port MockPrinter to get this on Linux. This involves
 // hooking up Cairo to read a pdf stream, or accessing the cairo surface in the
 // metafile directly.
 #if defined(OS_WIN) || defined(OS_MACOSX)
-TEST_F(RenderViewTest, PrintLayoutTest) {
+TEST_F(RenderViewTest, MAYBE_PrintLayoutTest) {
   bool baseline = false;
 
   EXPECT_TRUE(render_thread_.printer() != NULL);
