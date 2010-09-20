@@ -193,6 +193,14 @@ DataView.prototype.onExportToText_ = function() {
   for (var statName in httpCacheStats)
     text.push(statName + ': ' + httpCacheStats[statName]);
 
+  text.push('');
+  text.push('----------------------------------------------');
+  text.push(' Socket pools');
+  text.push('----------------------------------------------');
+  text.push('');
+
+  this.appendSocketPoolsAsText_(text);
+
   // Open a new window to display this text.
   this.setText_(text.join('\n'));
 
@@ -254,6 +262,22 @@ DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
 
     out.push(PrintSourceEntriesAsText(eventList,
         this.securityStrippingCheckbox_.checked));
+  }
+};
+
+DataView.prototype.appendSocketPoolsAsText_ = function(text) {
+  var socketPools = SocketPoolWrapper.createArrayFrom(
+      g_browser.socketPoolInfo_.currentData_);
+  var tablePrinter = SocketPoolWrapper.createTablePrinter(socketPools);
+  text.push(tablePrinter.toText(2));
+
+  text.push('');
+
+  for (var i = 0; i < socketPools.length; ++i) {
+    if (socketPools[i].origPool.groups == undefined)
+      continue;
+    var groupTablePrinter = socketPools[i].createGroupTablePrinter();
+    text.push(groupTablePrinter.toText(2));
   }
 };
 

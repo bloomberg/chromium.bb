@@ -133,7 +133,7 @@ PrintSourceEntriesAsText = function(sourceEntries, doSecurityStripping) {
   }
 
   // Format the table for fixed-width text.
-  return tablePrinter.toText();
+  return tablePrinter.toText(0);
 }
 
 function getTextForExtraParams(entry, doSecurityStripping) {

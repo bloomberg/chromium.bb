@@ -82,7 +82,7 @@ function onLoaded() {
                                         "httpCacheStats");
 
   var socketsView = new SocketsView("socketsTabContent",
-                                    "socketTabTbody",
+                                    "socketPoolDiv",
                                     "socketPoolGroupsDiv");
 
 

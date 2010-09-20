@@ -115,13 +115,26 @@ function makeRepeatedString(str, count) {
 }
 
 /**
- * TablePrinter is a helper to format a table as ascii art.
+ * TablePrinter is a helper to format a table as ascii art or an HTML table.
  *
- * Usage: call addRow() and addCell() repeatedly to specify the data. Ones
- * all the fields have been inputted, call toText() to format it as text.
+ * Usage: call addRow() and addCell() repeatedly to specify the data.
+ *
+ * addHeaderCell() can optionally be called to specify header cells for a
+ * single header row.  The header row appears at the top of an HTML formatted
+ * table, and uses thead and th tags.  In ascii tables, the header is separated
+ * from the table body by a partial row of dashes.
+ *
+ * setTitle() can optionally be used to set a title that is displayed before
+ * the header row.  In HTML tables, it uses the title class and in ascii tables
+ * it's between two rows of dashes.
+ *
+ * Once all the fields have been input, call toText() to format it as text or
+ * toHTML() to format it as HTML.
  */
 function TablePrinter() {
   this.rows_ = [];
+  this.hasHeaderRow_ = false;
+  this.title_ = null;
 }
 
 function TablePrinterCell(value) {
@@ -146,6 +159,27 @@ TablePrinter.prototype.addCell = function(cellText) {
   var r = this.rows_[this.rows_.length - 1];
   var cell = new TablePrinterCell(cellText);
   r.push(cell);
+  return cell;
+};
+
+TablePrinter.prototype.setTitle = function(title) {
+  this.title_ = title;
+};
+
+/**
+ * Adds a header row, if not already present, and adds a new column to it,
+ * setting its contents to |headerText|.
+ *
+ * @returns {!TablePrinterCell} the cell that was added.
+ */
+TablePrinter.prototype.addHeaderCell = function(headerText) {
+  // Insert empty new row at start of |rows_| if currently no header row.
+  if (!this.hasHeaderRow_) {
+    this.rows_.splice(0, 0, []);
+    this.hasHeaderRow_ = true;
+  }
+  var cell = new TablePrinterCell(headerText);
+  this.rows_[0].push(cell);
   return cell;
 };
 
@@ -175,9 +209,10 @@ TablePrinter.prototype.getCell_ = function(rowIndex, columnIndex) {
 
 /**
  * Returns a formatted text representation of the table data.
+ * |spacing| indicates number of extra spaces, if any, to add between
+ * columns.
  */
-TablePrinter.prototype.toText = function() {
-  var numRows = this.rows_.length;
+TablePrinter.prototype.toText = function(spacing) {
   var numColumns = this.getNumColumns();
 
   // Figure out the maximum width of each column.
@@ -186,6 +221,20 @@ TablePrinter.prototype.toText = function() {
   for (var i = 0; i < numColumns; ++i)
     columnWidths[i] = 0;
 
+  // If header row is present, temporarily add a spacer row to |rows_|.
+  if (this.hasHeaderRow_) {
+    var headerSpacerRow = [];
+    for (var c = 0; c < numColumns; ++c) {
+      var cell = this.getCell_(0, c);
+      if (!cell)
+        continue;
+      var spacerStr = makeRepeatedString('-', cell.text.length);
+      headerSpacerRow.push(new TablePrinterCell(spacerStr));
+    }
+    this.rows_.splice(1, 0, headerSpacerRow);
+  }
+
+  var numRows = this.rows_.length;
   for (var c = 0; c < numColumns; ++c) {
     for (var r = 0; r < numRows; ++r) {
       var cell = this.getCell_(r, c);
@@ -195,13 +244,26 @@ TablePrinter.prototype.toText = function() {
     }
   }
 
-  // Print each row.
   var out = [];
+
+  // Print title, if present.
+  if (this.title_) {
+    var titleSpacerStr = makeRepeatedString('-', this.title_.length);
+    out.push(titleSpacerStr);
+    out.push('\n');
+    out.push(this.title_);
+    out.push('\n');
+    out.push(titleSpacerStr);
+    out.push('\n');
+  }
+
+  // Print each row.
+  var spacingStr = makeRepeatedString(' ', spacing);
   for (var r = 0; r < numRows; ++r) {
     for (var c = 0; c < numColumns; ++c) {
       var cell = this.getCell_(r, c);
       if (cell) {
-        // Padd the cell with spaces to make it fit the maximum column width.
+        // Pad the cell with spaces to make it fit the maximum column width.
         var padding = columnWidths[c] - cell.text.length;
         var paddingStr = makeRepeatedString(' ', padding);
 
@@ -212,11 +274,65 @@ TablePrinter.prototype.toText = function() {
           out.push(cell.text);
           out.push(paddingStr);
         }
+        out.push(spacingStr);
       }
     }
     out.push('\n');
   }
 
+  // Remove spacer row under the header row, if one was added.
+  if (this.hasHeaderRow_)
+    this.rows_.splice(1, 1);
+
   return out.join('');
+};
+
+/**
+ * Adds a new HTML table to the node |parent| using the specified style.
+ */
+TablePrinter.prototype.toHTML = function(parent, style) {
+  var numRows = this.rows_.length;
+  var numColumns = this.getNumColumns();
+
+  var table = addNode(parent, 'table');
+  table.setAttribute('class', style);
+
+  var thead = addNode(table, 'thead');
+  var tbody = addNode(table, 'tbody');
+
+  // Add title, if needed.
+  if (this.title_) {
+    var tableTitleRow = addNode(thead, 'tr');
+    var tableTitle = addNodeWithText(tableTitleRow, 'th', this.title_);
+    tableTitle.colSpan = numColumns;
+    changeClassName(tableTitle, 'title', true);
+  }
+
+  // Fill table body, adding header row first, if needed.
+  for (var r = 0; r < numRows; ++r) {
+    var cellType;
+    var row;
+    if (r == 0 && this.hasHeaderRow_) {
+      row = addNode(thead, 'tr');
+      cellType = 'th';
+    } else {
+      row = addNode(tbody, 'tr');
+      cellType = 'td';
+    }
+    for (var c = 0; c < numColumns; ++c) {
+      var cell = this.getCell_(r, c);
+      if (cell) {
+        var tableCell = addNodeWithText(row, cellType, cell.text);
+        if (cell.alignRight)
+          tableCell.alignRight = true;
+        // If allowing overflow on the rightmost cell of a row,
+        // make the cell span the rest of the columns.  Otherwise,
+        // ignore the flag.
+        if (cell.allowOverflow && !this.getCell_(r, c + 1))
+          tableCell.colSpan = numColumns - c;
+      }
+    }
+  }
+  return table;
 };
 
