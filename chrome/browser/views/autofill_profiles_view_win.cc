@@ -56,6 +56,23 @@ const int kDialogPadding = 7;
 const int kSubViewHorizotalInsets = 18;
 const int kSubViewVerticalInsets = 5;
 
+// This is a helper to compare items that were just created with items returned
+// from the db.
+// ProfileType could be either AutofillProfile or CreditCard.
+// The second argument could have an incomplete ID (0) - change it to first
+// argument's id for comparison and then change it back.
+template<class ProfileType> bool IsEqualDataWithIncompleteId(
+    ProfileType const * data_to_compare, ProfileType* data_with_incomplete_id) {
+  if (!data_with_incomplete_id->unique_id()) {
+    data_with_incomplete_id->set_unique_id(data_to_compare->unique_id());
+    bool are_equal = (*data_with_incomplete_id == *data_with_incomplete_id);
+    data_with_incomplete_id->set_unique_id(0);
+    return are_equal;
+  } else {
+    return (*data_with_incomplete_id == *data_with_incomplete_id);
+  }
+}
+
 };  // namespace
 
 /////////////////////////////////////////////////////////////////////////////
@@ -137,11 +154,13 @@ void AutoFillProfilesView::AddClicked(int group_type) {
     profiles_set_.push_back(EditableSetInfo(&address));
     added_item_index = profiles_set_.size() - 1;
     it = profiles_set_.begin() + added_item_index;
+    unique_ids_to_indexes_[0] = profiles_set_.size() - 1;
   } else if (group_type == ContentListTableModel::kCreditCardGroup) {
     CreditCard credit_card(std::wstring(), 0);
     credit_card_set_.push_back(EditableSetInfo(&credit_card));
     added_item_index = profiles_set_.size() + credit_card_set_.size() - 1;
     it = credit_card_set_.begin() + (credit_card_set_.size() - 1);
+    unique_ids_to_indexes_[0] = credit_card_set_.size() - 1;
   } else {
     NOTREACHED();
   }
@@ -397,11 +416,32 @@ void AutoFillProfilesView::OnPersonalDataChanged() {
   // rebuilds the map before sending the update. Thus all received profiles or
   // credit cards should be already present (thus id match check) or new.
   std::map<int, size_t>::const_iterator found_id;
+  std::map<int, size_t>::const_iterator not_complete_id =
+      unique_ids_to_indexes_.find(0);
+
+  AutoFillProfile *profile_with_null_id = NULL;
+  CreditCard *cc_with_null_id = NULL;
+  if (not_complete_id != unique_ids_to_indexes_.end()) {
+    if (not_complete_id->second < profiles_set_.size() &&
+        !profiles_set_[not_complete_id->second].address.unique_id()) {
+      profile_with_null_id = &profiles_set_[not_complete_id->second].address;
+    }
+    if (not_complete_id->second < credit_card_set_.size() &&
+        !credit_card_set_[not_complete_id->second].credit_card.unique_id()) {
+      cc_with_null_id = &credit_card_set_[not_complete_id->second].credit_card;
+    }
+  }
   for (std::vector<AutoFillProfile*>::const_iterator address_it =
            personal_data_manager_->profiles().begin();
        address_it != personal_data_manager_->profiles().end();
        ++address_it) {
     found_id = unique_ids_to_indexes_.find((*address_it)->unique_id());
+    // Check if the returned data is for new item.
+    if (found_id == unique_ids_to_indexes_.end() && profile_with_null_id) {
+      if (IsEqualDataWithIncompleteId<AutoFillProfile>(*address_it,
+                                                     profile_with_null_id))
+        found_id = not_complete_id;
+    }
     if (found_id == unique_ids_to_indexes_.end()) {
       // New one - add.
       profiles_set_.push_back(EditableSetInfo(*address_it));
@@ -411,7 +451,8 @@ void AutoFillProfilesView::OnPersonalDataChanged() {
         DCHECK(false);
       } else {
         // Update current profile - verify that unique ids match.
-        DCHECK(profiles_set_[found_id->second].address.unique_id() ==
+        DCHECK(!profiles_set_[found_id->second].address.unique_id() ||
+               profiles_set_[found_id->second].address.unique_id() ==
                (*address_it)->unique_id());
         profiles_set_[found_id->second] = EditableSetInfo(*address_it);
       }
@@ -424,6 +465,11 @@ void AutoFillProfilesView::OnPersonalDataChanged() {
        cc_it != personal_data_manager_->credit_cards().end();
        ++cc_it) {
     found_id = unique_ids_to_indexes_.find((*cc_it)->unique_id());
+    // Check if the returned data is for new item.
+    if (found_id == unique_ids_to_indexes_.end() && cc_with_null_id) {
+      if (IsEqualDataWithIncompleteId<CreditCard>(*cc_it, cc_with_null_id))
+        found_id = not_complete_id;
+    }
     if (found_id == unique_ids_to_indexes_.end()) {
       // New one - add.
       credit_card_set_.push_back(EditableSetInfo(*cc_it));
@@ -433,12 +479,16 @@ void AutoFillProfilesView::OnPersonalDataChanged() {
         DCHECK(false);
       } else {
         // Update current credit card - verify that unique ids match.
-        DCHECK(credit_card_set_[found_id->second].credit_card.unique_id() ==
+        DCHECK(!credit_card_set_[found_id->second].credit_card.unique_id() ||
+               credit_card_set_[found_id->second].credit_card.unique_id() ==
                (*cc_it)->unique_id());
         credit_card_set_[found_id->second] = EditableSetInfo(*cc_it);
       }
     }
   }
+
+  UpdateIdToIndexes();
+
   if (table_model_.get())
     table_model_->Refresh();
 
