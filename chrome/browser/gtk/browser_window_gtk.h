@@ -264,9 +264,10 @@ class BrowserWindowGtk : public BrowserWindow,
   void SaveWindowPosition();
 
   // Set the bounds of the current window. If |exterior| is true, set the size
-  // of the window itself, otherwise set the bounds of the web contents. In
-  // either case, set the position of the window.
-  void SetBoundsImpl(const gfx::Rect& bounds, bool exterior);
+  // of the window itself, otherwise set the bounds of the web contents.
+  // If |move| is true, set the position of the window, otherwise leave the
+  // position to the WM.
+  void SetBoundsImpl(const gfx::Rect& bounds, bool exterior, bool move);
 
   // Callback for when the custom frame alignment needs to be redrawn.
   // The content area includes the toolbar and web page but not the tab strip.
