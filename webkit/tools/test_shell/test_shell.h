@@ -278,6 +278,8 @@ public:
 
     static void SetAllowScriptsToCloseWindows();
 
+    static void SetAccelerated2dCanvasEnabled(bool enabled);
+
     WebPreferences* GetWebPreferences() { return web_prefs_; }
 
     // Some layout tests hardcode a file:///tmp/LayoutTests URL.  We get around

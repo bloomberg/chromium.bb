@@ -444,6 +444,12 @@ void TestShell::SetAllowScriptsToCloseWindows() {
 }
 
 // static
+void TestShell::SetAccelerated2dCanvasEnabled(bool enabled) {
+  if (web_prefs_)
+    web_prefs_->accelerated_2d_canvas_enabled = enabled;
+}
+
+// static
 void TestShell::ResetWebPreferences() {
     DCHECK(web_prefs_);
 

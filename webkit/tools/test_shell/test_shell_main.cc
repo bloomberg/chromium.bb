@@ -215,6 +215,9 @@ int main(int argc, char* argv[]) {
   if (!parsed_command_line.HasSwitch(switches::kUseGL))
     gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
 
+  if (parsed_command_line.HasSwitch(test_shell::kEnableAccel2DCanvas))
+    TestShell::SetAccelerated2dCanvasEnabled(true);
+
   // Treat the first argument as the initial URL to open.
   GURL starting_url;
 
