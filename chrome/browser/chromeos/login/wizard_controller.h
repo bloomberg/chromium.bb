@@ -130,6 +130,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Returns partner startup customization document owned by WizardController.
   const chromeos::StartupCustomizationDocument* GetCustomization() const;
 
+  // If being at register screen proceeds to the next one.
+  void SkipRegistration();
+
   // Registers OOBE preferences.
   static void RegisterPrefs(PrefService* local_state);
 

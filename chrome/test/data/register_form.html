@@ -39,15 +39,18 @@ function load() {
 function processMessage(e) {
   // TODO(nkostylev): e.origin is passed as null and not checked.
   // Probably because it's served from chrome:// scheme.
-  if (e.data.domain != hostUrl)
+  if (e.data.domain != hostUrl) {
+    registration(false);
     return;
+  }
  
   if (e.data.type == 'set_user_info') {
-    // TODO(nkostylev): Extract all available system/user info.
-    // http://crosbug.com/4813
     var info = e.data.payload;
     $('info').textContent = 'OS: ' + info.os_name + ', ' +
-        info.os_version + ' SKU:' + info.system_sku;
+        info.os_version + ' SKU:' + info.system_sku + ', system hwqual: ' +
+        info.system_hwqual + ', SN: ' + info.system_serial + ', lang: ' +
+        info.os_language + ', connection: ' + info.os_connection + ', user: ' +
+        info.user_email;
   }
 
   $('messageInfo').textContent = 'e.origin: ' + e.origin +

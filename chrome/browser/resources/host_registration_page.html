@@ -32,9 +32,11 @@ function $(o) {
   return document.getElementById(o);
 }
 
-function processMessage(e) {
-  if (e.data.domain != registrationUrl)
-    return;    
+function processMessage(e) {  
+  if (e.data.domain != registrationUrl){
+    skipRegistration();
+    return;
+  }    
  
   if (e.data.type == 'get_user_info') {
     chrome.send('getUserInfo', []);  

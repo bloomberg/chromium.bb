@@ -93,7 +93,8 @@ void RegistrationScreen::OnPageLoaded() {
 }
 
 void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
-  CloseScreen(ScreenObserver::CONNECTION_FAILED);
+  LOG(ERROR) << "Error loading registration page: " << url;
+  CloseScreen(ScreenObserver::REGISTRATION_SKIPPED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

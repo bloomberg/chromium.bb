@@ -18,18 +18,76 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #endif
 
 namespace {
+
+// Host page JS API callback names.
+const char kJsCallbackGetRegistrationUrl[] = "getRegistrationUrl";
+const char kJsCallbackUserInfo[] = "getUserInfo";
+
+// Host page JS API function names.
+const wchar_t kJsApiSetRegistrationUrl[] = L"setRegistrationUrl";
+const wchar_t kJsApiSetUserInfo[] = L"setUserInfo";
+const wchar_t kJsApiSkipRegistration[] = L"skipRegistration";
+
 // Constant value for os_name sent in setUserInfo.
 const char kOSName[] = "ChromeOS";
+
+// MachineInfo keys names.
+const char kMachineInfoSystemHwqual[] = "hardware_class";
+const char kMachineInfoSerialNumber[] = "serial_number";
+
+// Types of network connection.
+const char kConnectionEthernet[] = "ethernet";
+const char kConnectionWifi[] = "wifi";
+const char kConnection3g[] = "3g";
+const char kUndefinedValue[] = "undefined";
+
+// Utility function that returns string corresponding to currently active
+// connection type |kConnectionEthernet|kConnectionWifi|kConnection3g|.
+// If multiple interfaces are connected, result is based on the
+// priority Ethernet-Wifi-Cellular.
+// If there's no interface that's connected, interface that's in connecting
+// state is considered as the active one.
+// Otherwise |kUndefinedValue| is returned.
+#if defined(OS_CHROMEOS)
+static std::string GetConnectionType() {
+  if (!chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    LOG(ERROR) << "CrosLibrary is not loaded.";
+    return kUndefinedValue;
+  }
+
+  chromeos::NetworkLibrary* network_lib =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (network_lib->ethernet_connected())
+    return kConnectionEthernet;
+  else if (network_lib->wifi_connected())
+    return kConnectionWifi;
+  else if (network_lib->cellular_connected())
+    return kConnection3g;
+  // Connection might have been lost and is in reconnecting state at this point.
+  else if (network_lib->ethernet_connecting())
+    return kConnectionEthernet;
+  else if (network_lib->wifi_connecting())
+    return kConnectionWifi;
+  else if (network_lib->cellular_connecting())
+    return kConnection3g;
+  else
+    return kUndefinedValue;
+}
+#endif
+
 }  // namespace
 
 class RegisterPageUIHTMLSource : public ChromeURLDataManager::DataSource {
@@ -74,6 +132,9 @@ class RegisterPageHandler : public DOMMessageHandler,
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(chromeos::VersionLoader::Handle handle, std::string version);
 #endif
+
+  // Skips registration logging |error_msg| with log type ERROR.
+  void SkipRegistration(const std::string& error_msg);
 
   // Sends message to host registration page with system/user info data.
   void SendUserInfo();
@@ -151,9 +212,9 @@ void RegisterPageHandler::Init() {
 
 void RegisterPageHandler::RegisterMessages() {
 #if defined(OS_CHROMEOS)
-  dom_ui_->RegisterMessageCallback("getRegistrationUrl",
+  dom_ui_->RegisterMessageCallback(kJsCallbackGetRegistrationUrl,
       NewCallback(this, &RegisterPageHandler::HandleGetRegistrationUrl));
-  dom_ui_->RegisterMessageCallback("getUserInfo",
+  dom_ui_->RegisterMessageCallback(kJsCallbackUserInfo,
       NewCallback(this, &RegisterPageHandler::HandleGetUserInfo));
 #endif
 }
@@ -165,11 +226,15 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
     const std::string& url = WizardController::default_controller()->
         GetCustomization()->registration_url();
     LOG(INFO) << "Loading registration form with URL: " << url;
+    GURL register_url(url);
+    if (!register_url.is_valid()) {
+      SkipRegistration("Registration URL defined in manifest is invalid.");
+      return;
+    }
     StringValue url_value(url);
-    dom_ui_->CallJavascriptFunction(L"setRegistrationUrl", url_value);
+    dom_ui_->CallJavascriptFunction(kJsApiSetRegistrationUrl, url_value);
   } else {
-    LOG(ERROR) << "Startup manifest not defined.";
-    dom_ui_->CallJavascriptFunction(L"skipRegistration");
+    SkipRegistration("Startup manifest not defined.");
   }
 #endif
 }
@@ -181,8 +246,7 @@ void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
          &version_consumer_, NewCallback(this,
                                          &RegisterPageHandler::OnVersion));
   } else {
-    LOG(ERROR) << "Error loading cros library.";
-    dom_ui_->CallJavascriptFunction(L"skipRegistration");
+    SkipRegistration("CrosLibrary is not loaded.");
   }
 #endif
 }
@@ -195,11 +259,19 @@ void RegisterPageHandler::OnVersion(chromeos::VersionLoader::Handle handle,
 }
 #endif
 
+void RegisterPageHandler::SkipRegistration(const std::string& error_msg) {
+#if defined(OS_CHROMEOS)
+  LOG(ERROR) << error_msg;
+  if (WizardController::default_controller())
+    WizardController::default_controller()->SkipRegistration();
+  else
+    dom_ui_->CallJavascriptFunction(kJsApiSkipRegistration);
+#endif
+}
+
 void RegisterPageHandler::SendUserInfo() {
 #if defined(OS_CHROMEOS)
   DictionaryValue value;
-  // TODO(nkostylev): Extract all available system/user info.
-  // http://crosbug.com/4813
 
   std::string system_sku;
   if (WizardController::default_controller() &&
@@ -207,27 +279,35 @@ void RegisterPageHandler::SendUserInfo() {
     system_sku = WizardController::default_controller()->
         GetCustomization()->product_sku();
   } else {
-    LOG(ERROR) << "Startup manifest not defined.";
-    dom_ui_->CallJavascriptFunction(L"skipRegistration");
+    SkipRegistration("Startup manifest not defined.");
     return;
   }
 
+  chromeos::SystemLibrary* sys_lib =
+      chromeos::CrosLibrary::Get()->GetSystemLibrary();
+
   // Required info.
-  value.SetString("system_hwqual", "hardware qual identifier");
+  std::string system_hwqual;
+  std::string serial_number;
+  if (!sys_lib->GetMachineStatistic(kMachineInfoSystemHwqual, &system_hwqual) ||
+      !sys_lib->GetMachineStatistic(kMachineInfoSerialNumber, &serial_number)) {
+    SkipRegistration("Failed to get required machine info.");
+    return;
+  }
+  value.SetString("system_hwqual", system_hwqual);
   value.SetString("system_sku", system_sku);
-  value.SetString("system_serial", "serial number");
+  value.SetString("system_serial", serial_number);
   value.SetString("os_language", g_browser_process->GetApplicationLocale());
   value.SetString("os_name", kOSName);
   value.SetString("os_version", version_);
-  value.SetString("os_connection", "connection type");
+  value.SetString("os_connection", GetConnectionType());
   value.SetString("user_email", "");
 
   // Optional info.
   value.SetString("user_first_name", "");
   value.SetString("user_last_name", "");
 
-  LOG(INFO) << "Sending user info to host page";
-  dom_ui_->CallJavascriptFunction(L"setUserInfo", value);
+  dom_ui_->CallJavascriptFunction(kJsApiSetUserInfo, value);
 #endif
 }
 

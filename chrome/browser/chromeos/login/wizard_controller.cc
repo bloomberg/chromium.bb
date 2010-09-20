@@ -433,6 +433,13 @@ void WizardController::ShowEulaScreen() {
 }
 
 void WizardController::ShowRegistrationScreen() {
+  if (!GetCustomization() &&
+      !GURL(GetCustomization()->registration_url()).is_valid()) {
+    LOG(INFO) <<
+        "Skipping registration screen: manifest not defined or invalid URL.";
+    OnRegistrationSkipped();
+    return;
+  }
   LOG(INFO) << "Showing registration screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetRegistrationScreen());
@@ -456,6 +463,13 @@ void WizardController::SetCustomization(
 const chromeos::StartupCustomizationDocument*
     WizardController::GetCustomization() const {
   return customization_.get();
+}
+
+void WizardController::SkipRegistration() {
+  if (current_screen_ == GetRegistrationScreen())
+    OnRegistrationSkipped();
+  else
+    LOG(ERROR) << "Registration screen is not active.";
 }
 
 // static
