@@ -122,7 +122,8 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_Disallowed) {
 // Test for bug #1159553 -- A synchronous xhr (whose content-type is
 // downloadable) would trigger download and hang the renderer process,
 // if executed while navigating to a new page.
-TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_DuringUnload) {
+// Disabled -- http://code.google.com/p/chromium/issues/detail?id=56264
+TEST_F(ResourceDispatcherTest, DISABLED_SyncXMLHttpRequest_DuringUnload) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
