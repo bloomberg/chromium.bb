@@ -93,6 +93,10 @@ class TabSpecificContentSettings
   virtual void OnCookieAccessed(const GURL& url,
                                 const std::string& cookie_line,
                                 bool blocked_by_policy);
+  virtual void OnIndexedDBAccessed(const GURL& url,
+                                   const string16& name,
+                                   const string16& description,
+                                   bool blocked_by_policy);
   virtual void OnLocalStorageAccessed(const GURL& url,
                                       DOMStorageType storage_type,
                                       bool blocked_by_policy);

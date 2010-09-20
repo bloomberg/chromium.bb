@@ -13,7 +13,9 @@
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "ipc/ipc_message.h"
 
+class HostContentSettingsMap;
 class IndexedDBKey;
+class Profile;
 class SerializedScriptValue;
 struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
 struct ViewHostMsg_IDBFactoryOpen_Params;
@@ -34,8 +36,7 @@ class IndexedDBDispatcherHost
     : public base::RefCountedThreadSafe<IndexedDBDispatcherHost> {
  public:
   // Only call the constructor from the UI thread.
-  IndexedDBDispatcherHost(IPC::Message::Sender* sender,
-                          WebKitContext* webkit_context);
+  IndexedDBDispatcherHost(IPC::Message::Sender* sender, Profile* profile);
 
   // Only call from ResourceMessageFilter on the IO thread.
   void Init(int process_id, base::ProcessHandle process_handle);
@@ -225,6 +226,9 @@ class IndexedDBDispatcherHost
 
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;
+
+  // Tells us whether the user wants to allow databases to be opened.
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Only access on WebKit thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;

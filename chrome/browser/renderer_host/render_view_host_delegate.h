@@ -366,6 +366,15 @@ class RenderViewHostDelegate {
                                   const std::string& cookie_line,
                                   bool blocked_by_policy) = 0;
 
+    // Called when a specific indexed db factory in the current page was
+    // accessed. If access was blocked due to the user's content settings,
+    // |blocked_by_policy| should be true, and this function should invoke
+    // OnContentBlocked.
+    virtual void OnIndexedDBAccessed(const GURL& url,
+                                     const string16& name,
+                                     const string16& description,
+                                     bool blocked_by_policy) = 0;
+
     // Called when a specific local storage area in the current page was
     // accessed. If access was blocked due to the user's content settings,
     // |blocked_by_policy| should be true, and this function should invoke

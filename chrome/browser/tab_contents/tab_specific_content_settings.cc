@@ -106,6 +106,17 @@ void TabSpecificContentSettings::OnCookieAccessed(
   }
 }
 
+void TabSpecificContentSettings::OnIndexedDBAccessed(
+    const GURL& url,
+    const string16& name,
+    const string16& description,
+    bool blocked_by_policy) {
+  if (blocked_by_policy)
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  else
+    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+}
+
 void TabSpecificContentSettings::OnLocalStorageAccessed(
     const GURL& url,
     DOMStorageType storage_type,

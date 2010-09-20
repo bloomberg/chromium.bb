@@ -235,7 +235,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(indexed_db_dispatcher_host_(
-          new IndexedDBDispatcherHost(this, profile->GetWebKitContext()))),
+          new IndexedDBDispatcherHost(this, profile))),
       ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
           new DatabaseDispatcherHost(profile->GetDatabaseTracker(), this,
               profile->GetHostContentSettingsMap()))),

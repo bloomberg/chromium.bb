@@ -5,15 +5,20 @@
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/in_process_webkit/indexed_db_callbacks.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/serialized_script_value.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
@@ -48,9 +53,10 @@ const FilePath::CharType kIndexedDBStorageDirectory[] =
 }
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    IPC::Message::Sender* sender, WebKitContext* webkit_context)
+    IPC::Message::Sender* sender, Profile* profile)
     : sender_(sender),
-      webkit_context_(webkit_context),
+      webkit_context_(profile->GetWebKitContext()),
+      host_content_settings_map_(profile->GetHostContentSettingsMap()),
       ALLOW_THIS_IN_INITIALIZER_LIST(database_dispatcher_host_(
           new DatabaseDispatcherHost(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(index_dispatcher_host_(
@@ -233,15 +239,36 @@ void IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction) {
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const ViewHostMsg_IDBFactoryOpen_Params& params) {
-  // TODO(jorlow): Check the content settings map and use params.routing_id_
-  //               if it's necessary to ask the user for permission.
-
   FilePath base_path = webkit_context_->data_path();
   FilePath indexed_db_path;
   if (!base_path.empty())
     indexed_db_path = base_path.Append(kIndexedDBStorageDirectory);
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  GURL host(string16(WebSecurityOrigin::createFromDatabaseIdentifier(
+      params.origin_).toString()));
+
+  ContentSetting content_setting =
+      host_content_settings_map_->GetContentSetting(
+          host, CONTENT_SETTINGS_TYPE_COOKIES, "");
+
+  CallRenderViewHostContentSettingsDelegate(
+      process_id_, params.routing_id_,
+      &RenderViewHostDelegate::ContentSettings::OnIndexedDBAccessed,
+      host, params.name_, params.description_,
+      content_setting == CONTENT_SETTING_BLOCK);
+
+  if (content_setting == CONTENT_SETTING_BLOCK) {
+    // TODO(jorlow): Change this to the proper error code once we figure out
+    // one.
+    int error_code = 0; // Defined by the IndexedDB spec.
+    static string16 error_message = ASCIIToUTF16(
+        "The user denied permission to open the database.");
+    Send(new ViewMsg_IDBCallbacksError(params.response_id_, error_code,
+                                       error_message));
+    return;
+  }
+
   Context()->GetIDBFactory()->open(
       params.name_, params.description_,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
