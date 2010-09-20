@@ -15,7 +15,7 @@ import unittest
 import __builtin__
 
 # Fixes include path.
-from super_mox import mox, TestCaseUtils, SuperMoxTestBase
+from super_mox import mox, StdoutCheck, TestCaseUtils, SuperMoxTestBase
 
 import gclient_scm
 
@@ -30,25 +30,9 @@ class GCBaseTestCase(object):
     else:
       self.fail('%s not raised' % msg)
 
-  def setUp(self):
-    self.stdout = StringIO.StringIO()
-
-  def tearDown(self):
-    try:
-      self.stdout.getvalue()
-      self.fail()
-    except AttributeError:
-      pass
-
-  def checkstdout(self, expected):
-    value = self.stdout.getvalue()
-    self.stdout.close()
-    self.assertEquals(expected, value)
-
 
 class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
   def setUp(self):
-    GCBaseTestCase.setUp(self)
     SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCall')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCallAndFilter')
@@ -64,11 +48,9 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureStatus')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'RunAndGetFileList')
     self._scm_wrapper = gclient_scm.CreateSCM
-    gclient_scm.sys.stdout.flush = lambda: None
     gclient_scm.scm.SVN.current_version = None
 
   def tearDown(self):
-    GCBaseTestCase.tearDown(self)
     SuperMoxTestBase.tearDown(self)
 
 
@@ -82,7 +64,7 @@ class SVNWrapperTestCase(BaseTestCase):
       self.force = False
       self.reset = False
       self.nohooks = False
-      self.stdout = test_case.stdout
+      self.stdout = gclient_scm.sys.stdout
 
   def Options(self, *args, **kwargs):
     return self.OptionsObject(self, *args, **kwargs)
@@ -101,13 +83,11 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # If you add a member, be sure to add the relevant test!
     self.compareMembers(self._scm_wrapper('svn://a'), members)
-    self.checkstdout('')
 
   def testUnsupportedSCM(self):
     args = ['gopher://foo', self.root_dir, self.relpath]
     exception_msg = 'No SCM found for url gopher://foo'
     self.assertRaisesError(exception_msg, self._scm_wrapper, *args)
-    self.checkstdout('')
 
   def testSVNFullUrlForRelativeUrl(self):
     self.url = 'svn://a/b/c/d'
@@ -116,7 +96,6 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'svn://a/b/crap')
-    self.checkstdout('')
 
   def testGITFullUrlForRelativeUrl(self):
     self.url = 'git://a/b/c/d'
@@ -125,7 +104,6 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'git://a/b/c/crap')
-    self.checkstdout('')
 
   def testRunCommandException(self):
     options = self.Options(verbose=False)
@@ -138,11 +116,10 @@ class SVNWrapperTestCase(BaseTestCase):
     exception = "Unsupported argument(s): %s" % ','.join(self.args)
     self.assertRaisesError(exception, scm.RunCommand,
                            'update', options, self.args)
-    self.checkstdout('')
 
   def testRunCommandUnknown(self):
     # TODO(maruel): if ever used.
-    self.checkstdout('')
+    pass
 
   def testRevertMissing(self):
     options = self.Options(verbose=True)
@@ -186,7 +163,6 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
-    self.checkstdout('')
 
   def testRevert2Files(self):
     options = self.Options(verbose=True)
@@ -262,7 +238,6 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     file_list = []
     self.assertEqual(scm.status(options, self.args, file_list), None)
-    self.checkstdout('')
 
   # TODO(maruel):  TEST REVISIONS!!!
   # TODO(maruel):  TEST RELOCATE!!!
@@ -291,7 +266,6 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
-    self.checkstdout('')
 
   def testUpdateUpdate(self):
     options = self.Options(verbose=True)
@@ -333,7 +307,6 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
-    self.checkstdout('')
 
   def testUpdateSingleCheckout(self):
     options = self.Options(verbose=True)
@@ -371,15 +344,12 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.CaptureInfo(
         gclient_scm.os.path.join(base_path, ".")).AndReturn(file_info)
     gclient_scm.scm.SVN.CaptureInfo(file_info['URL']).AndReturn(file_info)
-    options.stdout.write("\n_____ %s at 42" % self.relpath)
-    options.stdout.write('\n')
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
-    self.checkstdout(
-        2 * ('\n_____ %s at 42\n' % self.relpath))
+    self.checkstdout('\n_____ %s at 42\n' % self.relpath)
 
   def testUpdateSingleCheckoutSVN14(self):
     options = self.Options(verbose=True)
@@ -407,7 +377,6 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
-    self.checkstdout('')
 
   def testUpdateSingleCheckoutSVNUpgrade(self):
     options = self.Options(verbose=True)
@@ -503,7 +472,8 @@ class SVNWrapperTestCase(BaseTestCase):
         ('________ found .git directory; skipping %s\n' % self.relpath))
 
 
-class GitWrapperTestCase(GCBaseTestCase, TestCaseUtils, unittest.TestCase):
+class GitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
+                         unittest.TestCase):
   """This class doesn't use pymox."""
   class OptionsObject(object):
      def __init__(self, test_case, verbose=False, revision=None):
@@ -514,7 +484,7 @@ class GitWrapperTestCase(GCBaseTestCase, TestCaseUtils, unittest.TestCase):
       self.force = False
       self.reset = False
       self.nohooks = False
-      self.stdout = test_case.stdout
+      self.stdout = gclient_scm.sys.stdout
 
   sample_git_import = """blob
 mark :1
@@ -587,7 +557,6 @@ from :3
     return True
 
   def setUp(self):
-    GCBaseTestCase.setUp(self)
     TestCaseUtils.setUp(self)
     unittest.TestCase.setUp(self)
     self.url = 'git://foo'
@@ -595,11 +564,10 @@ from :3
     self.relpath = '.'
     self.base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
+    StdoutCheck.setUp(self)
 
   def tearDown(self):
-    if not self.enabled:
-      self.checkstdout('')
-    GCBaseTestCase.tearDown(self)
+    StdoutCheck.tearDown(self)
     TestCaseUtils.tearDown(self)
     unittest.TestCase.tearDown(self)
     rmtree(self.root_dir)
@@ -613,8 +581,6 @@ from :3
 
     # If you add a member, be sure to add the relevant test!
     self.compareMembers(gclient_scm.CreateSCM(url=self.url), members)
-    if self.enabled:
-      self.checkstdout('')
 
   def testRevertMissing(self):
     if not self.enabled:
@@ -839,10 +805,11 @@ from :3
     end = ('] test\n 1 files changed, 1 insertions(+), '
          '1 deletions(-)\n\n_____ . at refs/heads/master\n'
          'Attempting rebase onto refs/remotes/origin/master...\n')
-    self.assertTrue(self.stdout.getvalue().startswith(start))
-    self.assertTrue(self.stdout.getvalue().endswith(end))
-    self.assertEquals(len(self.stdout.getvalue()), len(start) + len(end) + 7)
-    self.stdout.close()
+    self.assertTrue(gclient_scm.sys.stdout.getvalue().startswith(start))
+    self.assertTrue(gclient_scm.sys.stdout.getvalue().endswith(end))
+    self.assertEquals(len(gclient_scm.sys.stdout.getvalue()),
+                      len(start) + len(end) + 7)
+    gclient_scm.sys.stdout.close()
 
   def testUpdateNotGit(self):
     if not self.enabled:
@@ -858,7 +825,6 @@ from :3
                  '\t\trm -rf .\n'
                  '\tAnd run gclient sync again\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
-    self.checkstdout('')
 
   def testRevinfo(self):
     if not self.enabled:
@@ -868,7 +834,6 @@ from :3
                                 relpath=self.relpath)
     rev_info = scm.revinfo(options, (), None)
     self.assertEquals(rev_info, '069c602044c5388d2d15c3f875b057c852003458')
-    self.checkstdout('')
 
 
 if __name__ == '__main__':

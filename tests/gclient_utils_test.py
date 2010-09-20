@@ -110,12 +110,18 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n'
     self._inner(args, test_string)
+    self.checkstdout('\n________ running \'boo foo bar\' in \'bleh\'\n'
+        'ahah\naccb\nallo\naddb\n\n'
+        '________ running \'boo foo bar\' in \'bleh\'\nahah\naccb\nallo\naddb\n')
 
   def testNoLF(self):
     # Exactly as testCheckCallAndFilterAndHeader without trailing \n
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb'
     self._inner(args, test_string)
+    self.checkstdout('\n________ running \'boo foo bar\' in \'bleh\'\n'
+        'ahah\naccb\nallo\naddb\n'
+        '________ running \'boo foo bar\' in \'bleh\'\nahah\naccb\nallo\naddb')
 
 
 class SplitUrlRevisionTestCase(GclientUtilBase):

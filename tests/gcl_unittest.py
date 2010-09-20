@@ -258,6 +258,9 @@ class CMDuploadUnittest(GclTestsBase):
     self.mox.ReplayAll()
 
     gcl.CMDupload(['naame', '-r', 'georges@example.com'])
+    self.checkstdout('*** Upload does not submit a try; use gcl try to submit '
+        'a try. ***\n'
+        '*** Upload does not submit a try; use gcl try to submit a try. ***\n')
 
   def testServerOverride(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
@@ -290,6 +293,9 @@ class CMDuploadUnittest(GclTestsBase):
     self.mox.ReplayAll()
 
     gcl.CMDupload(['naame', '--server=a', '--no_watchlists'])
+    self.checkstdout('*** Upload does not submit a try; use gcl try to submit '
+        'a try. ***\n'
+        '*** Upload does not submit a try; use gcl try to submit a try. ***\n')
 
   def testNormal(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
@@ -324,6 +330,9 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.CMDupload(['naame', '--no_watchlists'])
     self.assertEquals(change_info.issue, 1)
     self.assertEquals(change_info.patchset, 2)
+    self.checkstdout('*** Upload does not submit a try; use gcl try to submit '
+        'a try. ***\n'
+        '*** Upload does not submit a try; use gcl try to submit a try. ***\n')
 
   def testNoServer(self):
     self.mox.StubOutWithMock(gcl.sys, 'stderr')

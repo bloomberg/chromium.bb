@@ -10,6 +10,7 @@ import os
 import random
 import shutil
 import string
+import StringIO
 import subprocess
 import sys
 
@@ -86,7 +87,28 @@ class TestCaseUtils(object):
     pass
 
 
-class SuperMoxTestBase(TestCaseUtils, mox.MoxTestBase):
+class StdoutCheck(object):
+  def setUp(self):
+    # Override the mock with a StringIO, it's much less painful to test.
+    self._old_stdout = sys.stdout
+    sys.stdout = StringIO.StringIO()
+    sys.stdout.flush = lambda: None
+
+  def tearDown(self):
+    try:
+      # If sys.stdout was used, self.checkstdout() must be called.
+      self.assertEquals('', sys.stdout.getvalue())
+    except AttributeError:
+      pass
+    sys.stdout = self._old_stdout
+
+  def checkstdout(self, expected):
+    value = sys.stdout.getvalue()
+    sys.stdout.close()
+    self.assertEquals(expected, value)
+
+
+class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):
   def setUp(self):
     """Patch a few functions with know side-effects."""
     TestCaseUtils.setUp(self)
@@ -104,9 +126,11 @@ class SuperMoxTestBase(TestCaseUtils, mox.MoxTestBase):
     self.MockList(shutil, ('rmtree'))
     self.MockList(subprocess, ('call', 'Popen'))
     # Don't mock stderr since it confuses unittests.
-    self.MockList(sys, ('stdin', 'stdout'))
+    self.MockList(sys, ('stdin'))
+    StdoutCheck.setUp(self)
 
   def tearDown(self):
+    StdoutCheck.tearDown(self)
     TestCaseUtils.tearDown(self)
     mox.MoxTestBase.tearDown(self)
 
