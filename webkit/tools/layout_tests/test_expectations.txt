@@ -11,3 +11,4 @@ BUGJOHNNYG LINUX : plugins/embed-attributes-style.html = IMAGE
 
 // atwilson will upstream
 BUGWK46163 : media/video-controls-with-mutation-event-handler.html = CRASH
+BUG56277 : canvas/philip/tests/2d.imageData.get.source.outside.html = FAIL
