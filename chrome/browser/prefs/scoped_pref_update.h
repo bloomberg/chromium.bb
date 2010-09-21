@@ -14,8 +14,6 @@
 class ScopedPrefUpdate {
  public:
   ScopedPrefUpdate(PrefService* service, const char* path);
-  // TODO(viettrungluu): deprecate:
-  ScopedPrefUpdate(PrefService* service, const wchar_t* path);
   ~ScopedPrefUpdate();
 
  private:
