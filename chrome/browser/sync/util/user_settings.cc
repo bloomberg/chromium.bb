@@ -178,7 +178,10 @@ bool UserSettings::Init(const FilePath& settings_path) {
     ScopedDBHandle dbhandle(this);
     if (dbhandle_)
       sqlite3_close(dbhandle_);
-    CHECK_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(settings_path, &dbhandle_));
+
+    if (SQLITE_OK != sqlite_utils::OpenSqliteDb(settings_path, &dbhandle_))
+      return false;
+
     // In the worst case scenario, the user may hibernate his computer during
     // one of our transactions.
     sqlite3_busy_timeout(dbhandle_, numeric_limits<int>::max());

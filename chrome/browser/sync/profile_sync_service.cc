@@ -446,6 +446,11 @@ void ProfileSyncService::SetSyncSetupCompleted() {
   PrefService* prefs = profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSyncHasSetupCompleted, true);
   prefs->SetBoolean(prefs::kSyncSuppressStart, false);
+
+  // Indicate that setup has been completed on the new credentials store
+  // so that we don't try to migrate.
+  prefs->SetBoolean(prefs::kSyncCredentialsMigrated, true);
+
   prefs->ScheduleSavePersistentPrefs();
 }
 
@@ -567,7 +572,7 @@ void ProfileSyncService::UpdateAuthErrorState(
 
 void ProfileSyncService::OnAuthError() {
   UpdateAuthErrorState(backend_->GetAuthError());
- }
+}
 
 void ProfileSyncService::OnStopSyncingPermanently() {
   if (SetupInProgress()) {
