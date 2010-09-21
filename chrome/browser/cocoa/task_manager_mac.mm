@@ -179,7 +179,7 @@ class SortHelper {
   NSInteger row = [tableView_ clickedRow];
   if (row < 0)
     return;  // Happens e.g. if the table header is double-clicked.
-  taskManager_->ActivateProcess(row);
+  taskManager_->ActivateProcess(viewToModelMap_[row]);
 }
 
 - (NSTableView*)tableView {
