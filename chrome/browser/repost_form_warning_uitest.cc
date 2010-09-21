@@ -52,8 +52,8 @@ TEST_F(RepostFormWarningTest, MAYBE_TestDoubleReload) {
   ASSERT_TRUE(tab->NavigateToURL(test_server.GetURL("bar")));
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/47228
+#if defined(OS_WIN) || defined(OS_LINUX)
+// http://crbug.com/47228 && http://crbug.com/56401
 #define MAYBE_TestLoginAfterRepost FLAKY_TestLoginAfterRepost
 #else
 #define MAYBE_TestLoginAfterRepost TestLoginAfterRepost
