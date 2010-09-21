@@ -16,7 +16,9 @@
 #import "chrome/browser/cocoa/l10n_util.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/plugin_group.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -241,14 +243,13 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   } else {
     for (std::set<std::string>::iterator it = plugins.begin();
          it != plugins.end(); ++it) {
-      WebPluginInfo plugin;
       NSString* name;
-      if (NPAPI::PluginList::Singleton()->
-          GetPluginInfoByPath(FilePath(*it), &plugin)) {
-        name = base::SysUTF16ToNSString(plugin.name);
-      } else {
+      PluginUpdater::PluginMap groups;
+      PluginUpdater::GetPluginUpdater()->GetPluginGroups(&groups);
+      if (groups.find(*it) != groups.end())
+        name = base::SysUTF16ToNSString(groups[*it]->GetGroupName());
+      else
         name = base::SysUTF8ToNSString(*it);
-      }
       [pluginArray addObject:name];
     }
     [blockedResourcesField_

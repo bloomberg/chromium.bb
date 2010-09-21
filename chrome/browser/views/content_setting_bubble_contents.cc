@@ -13,12 +13,14 @@
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/plugin_group.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
@@ -206,15 +208,11 @@ void ContentSettingBubbleContents::InitControlLayout() {
   if (!plugins.empty()) {
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
-      WebPluginInfo plugin;
       std::wstring name;
-#if defined(OS_POSIX)
-      FilePath path(*it);
-#elif defined(OS_WIN)
-      FilePath path(UTF8ToWide(*it));
-#endif
-      if (NPAPI::PluginList::Singleton()->GetPluginInfoByPath(path, &plugin))
-        name = UTF16ToWide(plugin.name);
+      PluginUpdater::PluginMap groups;
+      PluginUpdater::GetPluginUpdater()->GetPluginGroups(&groups);
+      if (groups.find(*it) != groups.end())
+        name = UTF16ToWide(groups[*it]->GetGroupName());
       else
         name = UTF8ToWide(*it);
       layout->StartRow(0, single_column_set_id);

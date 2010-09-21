@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PLUGIN_UPDATER_H_
 #pragma once
 
-#include  <vector>
+#include  <map>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -24,7 +24,13 @@ struct WebPluginInfo;
 
 class PluginUpdater : public NotificationObserver {
  public:
-  // Get a list of all the Plugin groups.
+  typedef std::map<std::string, linked_ptr<PluginGroup> > PluginMap;
+
+  // Get a map from identifier to plugin group for all plugin groups.
+  void GetPluginGroups(PluginMap* plugin_groups);
+
+  // Get a list of all the plugin groups. The caller should take ownership
+  // of the returned ListValue.
   ListValue* GetPluginGroupsData();
 
   // Enable or disable a plugin group.
@@ -61,9 +67,6 @@ class PluginUpdater : public NotificationObserver {
   bool enable_internal_pdf_;
 
   DictionaryValue* CreatePluginFileSummary(const WebPluginInfo& plugin);
-
-  // Convert to a List of Groups
-  void GetPluginGroups(std::vector<linked_ptr<PluginGroup> >* plugin_groups);
 
   // Force plugins to be disabled due to policy. |plugins| contains
   // the list of StringValues of the names of the policy-disabled plugins.

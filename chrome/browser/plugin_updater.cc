@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/sys_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -26,8 +27,10 @@ PluginUpdater::PluginUpdater() : enable_internal_pdf_(true) {
 }
 
 // Convert to a List of Groups
-void PluginUpdater::GetPluginGroups(
-    std::vector<linked_ptr<PluginGroup> >* plugin_groups) {
+void PluginUpdater::GetPluginGroups(PluginMap* plugin_groups) {
+  DCHECK(plugin_groups);
+
+  plugin_groups->clear();
   // Read all plugins and convert them to plugin groups
   std::vector<WebPluginInfo> web_plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(false, &web_plugins);
@@ -39,8 +42,22 @@ void PluginUpdater::GetPluginGroups(
     PluginGroup* group = PluginGroup::FindGroupMatchingPlugin(
         *plugin_groups, web_plugin);
     if (!group) {
-      group = PluginGroup::FindHardcodedPluginGroup(web_plugin);
-      plugin_groups->push_back(linked_ptr<PluginGroup>(group));
+      group = PluginGroup::CopyOrCreatePluginGroup(web_plugin);
+      std::string identifier = group->identifier();
+      // If the identifier is not unique, use the full path. This means that we
+      // probably won't be able to search for this group by identifier, but at
+      // least it's going to be in the set of plugin groups, and if there
+      // is already a plug-in with the same filename, it's probably going to
+      // handle the same MIME types (and it has a higher priority), so this one
+      // is not going to run anyway.
+      if (plugin_groups->find(identifier) != plugin_groups->end())
+#if defined(OS_POSIX)
+        identifier = web_plugin.path.value();
+#elif defined(OS_WIN)
+        identifier = base::SysWideToUTF8(web_plugin.path.value());
+#endif
+      DCHECK(plugin_groups->find(identifier) == plugin_groups->end());
+      (*plugin_groups)[identifier] = linked_ptr<PluginGroup>(group);
     }
     group->AddPlugin(web_plugin, i);
   }
@@ -57,33 +74,33 @@ DictionaryValue* PluginUpdater::CreatePluginFileSummary(
 }
 
 ListValue* PluginUpdater::GetPluginGroupsData() {
-  std::vector<linked_ptr<PluginGroup> > plugin_groups;
+  PluginMap plugin_groups;
   GetPluginGroups(&plugin_groups);
 
   // Construct DictionaryValues to return to the UI
   ListValue* plugin_groups_data = new ListValue();
-  for (std::vector<linked_ptr<PluginGroup> >::iterator it =
+  for (PluginMap::const_iterator it =
        plugin_groups.begin();
        it != plugin_groups.end();
        ++it) {
-    plugin_groups_data->Append((*it)->GetDataForUI());
+    plugin_groups_data->Append(it->second->GetDataForUI());
   }
   return plugin_groups_data;
 }
 
 void PluginUpdater::EnablePluginGroup(bool enable, const string16& group_name) {
-  std::vector<linked_ptr<PluginGroup> > plugin_groups;
+  PluginMap plugin_groups;
   GetPluginGroups(&plugin_groups);
 
-  for (std::vector<linked_ptr<PluginGroup> >::iterator it =
+  for (PluginMap::const_iterator it =
        plugin_groups.begin();
        it != plugin_groups.end();
        ++it) {
-    if ((*it)->GetGroupName() == group_name) {
+    if (it->second->GetGroupName() == group_name) {
       if (PluginGroup::IsPluginNameDisabledByPolicy(group_name))
         enable = false;
-      if ((*it)->Enabled() != enable) {
-        (*it)->Enable(enable);
+      if (it->second->Enabled() != enable) {
+        it->second->Enable(enable);
         NotificationService::current()->Notify(
             NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
             Source<PluginUpdater>(this),
@@ -154,13 +171,13 @@ void PluginUpdater::DisablePluginsFromPolicy(const ListValue* plugin_names) {
       NPAPI::PluginList::Singleton()->DisablePlugin(plugin_iter->path);
   }
 
-  std::vector<linked_ptr<PluginGroup> > plugin_groups;
+  PluginMap plugin_groups;
   GetPluginGroups(&plugin_groups);
-  std::vector<linked_ptr<PluginGroup> >::iterator it;
+  PluginMap::iterator it;
   for (it = plugin_groups.begin(); it != plugin_groups.end(); ++it) {
-    string16 current_group_name = (*it)->GetGroupName();
+    string16 current_group_name = it->second->GetGroupName();
     if (PluginGroup::IsPluginNameDisabledByPolicy(current_group_name))
-      (*it)->Enable(false);
+      it->second->Enable(false);
   }
 
   NotificationService::current()->Notify(
@@ -276,14 +293,10 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
 }
 
 void PluginUpdater::DisableOutdatedPluginGroups() {
-  std::vector<linked_ptr<PluginGroup> > groups;
+  PluginMap groups;
   GetPluginGroups(&groups);
-  for (std::vector<linked_ptr<PluginGroup> >::iterator it =
-       groups.begin();
-       it != groups.end();
-       ++it) {
-    (*it)->DisableOutdatedPlugins();
-  }
+  for (PluginMap::iterator it = groups.begin(); it != groups.end(); ++it)
+    it->second->DisableOutdatedPlugins();
 }
 
 void PluginUpdater::UpdatePreferences(Profile* profile) {
@@ -306,17 +319,15 @@ void PluginUpdater::UpdatePreferences(Profile* profile) {
   }
 
   // Add the groups as well.
-  std::vector<linked_ptr<PluginGroup> > plugin_groups;
+  PluginMap plugin_groups;
   GetPluginGroups(&plugin_groups);
-  for (std::vector<linked_ptr<PluginGroup> >::iterator it =
-       plugin_groups.begin();
-       it != plugin_groups.end();
-       ++it) {
+  for (PluginMap::iterator it = plugin_groups.begin();
+       it != plugin_groups.end(); ++it) {
     // Don't save preferences for vulnerable pugins.
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableOutdatedPlugins) ||
-        !(*it)->IsVulnerable()) {
-      plugins_list->Append((*it)->GetSummary());
+        !it->second->IsVulnerable()) {
+      plugins_list->Append(it->second->GetSummary());
     }
   }
 }

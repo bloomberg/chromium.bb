@@ -44,6 +44,7 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -74,6 +75,7 @@
 #include "chrome/common/font_loader_mac.h"
 #endif
 #include "chrome/common/notification_service.h"
+#include "chrome/common/plugin_group.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -780,11 +782,10 @@ void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
     info->enabled = info->enabled &&
         plugin_service_->PrivatePluginAllowedForURL(info->path, policy_url);
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-#if defined(OS_POSIX)
-    std::string resource = info->path.value();
-#elif defined(OS_WIN)
-    std::string resource = base::SysWideToUTF8(info->path.value());
-#endif
+    PluginUpdater::PluginMap groups;
+    PluginUpdater::GetPluginUpdater()->GetPluginGroups(&groups);
+    PluginGroup* group = PluginGroup::FindGroupMatchingPlugin(groups, *info);
+    std::string resource = group->identifier();
     *setting = map->GetNonDefaultContentSetting(
         policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource);
     if (*setting == CONTENT_SETTING_DEFAULT) {

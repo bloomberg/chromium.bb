@@ -2373,7 +2373,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (!found)
     return NULL;
 
-  scoped_ptr<PluginGroup> group(PluginGroup::FindHardcodedPluginGroup(info));
+  scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
   group->AddPlugin(info, 0);
 
   if (!info.enabled) {
@@ -2389,13 +2389,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
 
   if (info.path.value() != kDefaultPluginLibraryName) {
     std::string resource;
-    if (cmd->HasSwitch(switches::kEnableResourceContentSettings)) {
-#if defined(OS_POSIX)
-      resource = info.path.value();
-#elif defined(OS_WIN)
-      resource = base::SysWideToUTF8(info.path.value());
-#endif
-    }
+    if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
+      resource = group->identifier();
     if (setting == CONTENT_SETTING_BLOCK) {
       DCHECK(!cmd->HasSwitch(switches::kDisableClickToPlay));
       DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);

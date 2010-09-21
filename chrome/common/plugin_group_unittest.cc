@@ -16,13 +16,13 @@
 #include "webkit/glue/plugins/webplugininfo.h"
 
 static const PluginGroupDefinition kPluginDef = {
-    "MyPlugin", "MyPlugin", "", "", "3.0.44", "http://latest/" };
+    "myplugin", "MyPlugin", "MyPlugin", "", "", "3.0.44", "http://latest/" };
 static const PluginGroupDefinition kPluginDef3 = {
-    "MyPlugin 3", "MyPlugin", "0", "4", "3.0.44", "http://latest" };
+    "myplugin-3", "MyPlugin 3", "MyPlugin", "0", "4", "3.0.44", "http://latest" };
 static const PluginGroupDefinition kPluginDef4 = {
-    "MyPlugin 4", "MyPlugin", "4", "5", "4.0.44", "http://latest" };
+    "myplugin-4", "MyPlugin 4", "MyPlugin", "4", "5", "4.0.44", "http://latest" };
 static const PluginGroupDefinition kPluginDefNotVulnerable = {
-    "MyPlugin", "MyPlugin", "", "", "", "http://latest" };
+    "myplugin-latest", "MyPlugin", "MyPlugin", "", "", "", "http://latest" };
 
 // name, path, version, desc, mime_types, enabled.
 static WebPluginInfo kPlugin2043 = {
