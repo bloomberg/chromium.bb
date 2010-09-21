@@ -169,24 +169,24 @@ class CookieMonster : public CookieStore {
   // creation date.
   CookieList GetAllCookiesForURL(const GURL& url);
 
-  // Delete all of the cookies.
+  // Deletes all of the cookies.
   int DeleteAll(bool sync_to_store);
-  // Delete all of the cookies that have a creation_date greater than or equal
+  // Deletes all of the cookies that have a creation_date greater than or equal
   // to |delete_begin| and less than |delete_end|
   int DeleteAllCreatedBetween(const base::Time& delete_begin,
                               const base::Time& delete_end,
                               bool sync_to_store);
-  // Delete all of the cookies that have a creation_date more recent than the
+  // Deletes all of the cookies that have a creation_date more recent than the
   // one passed into the function via |delete_after|.
   int DeleteAllCreatedAfter(const base::Time& delete_begin, bool sync_to_store);
 
-  // Delete all cookies that match the host of the given URL
+  // Deletes all cookies that match the host of the given URL
   // regardless of path.  This includes all http_only and secure cookies,
   // but does not include any domain cookies that may apply to this host.
   // Returns the number of cookies deleted.
   int DeleteAllForHost(const GURL& url);
 
-  // Delete one specific cookie.
+  // Deletes one specific cookie.
   bool DeleteCanonicalCookie(const CanonicalCookie& cookie);
 
   // Override the default list of schemes that are allowed to be set in
