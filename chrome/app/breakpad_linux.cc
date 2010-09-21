@@ -520,7 +520,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
       while (reader.GetNextEntry(&name)) {
         int i;
         if (my_strtoui(&i, name) && i > 2 && i != fd)
-          IGNORE_RET(sys_close(fd));
+          IGNORE_RET(sys_close(i));
         reader.PopEntry();
       }
 
