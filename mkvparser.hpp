@@ -335,6 +335,98 @@ private:
 };
 
 
+class CuePoint
+{
+public:
+    void Parse(IMkvReader*, long long start, long long size);
+
+    long long m_timecode;               //absolute but unscaled
+    long long GetTime(Segment*) const;  //absolute and scaled (ns units)
+
+    struct TrackPosition
+    {
+        long long m_track;
+        long long m_pos;  //of cluster
+        long long m_block;
+        //codec_state  //defaults to 0
+        //reference = clusters containing req'd referenced blocks
+        //  reftime = timecode of the referenced block
+    };
+
+#if 0  //TODO
+    typedef std::list<TrackPosition> track_positions_t;
+    track_positions_t m_track_positions;
+
+    const TrackPosition* Find(const Track*) const;
+
+    class CompareTime : std::binary_function<long long, CuePoint, bool>
+    {
+        CompareTime& operator=(const CompareTime&);
+    public:
+        Segment* const m_pSegment;
+
+        explicit CompareTime(Segment* p) : m_pSegment(p) {}
+        CompareTime(const CompareTime& rhs) : m_pSegment(rhs.m_pSegment) {}
+
+        long long GetTime(const CuePoint& cp) const
+        {
+            return cp.GetTime(m_pSegment);
+        }
+
+        bool operator()(long long left_ns, const CuePoint& cp) const
+        {
+            return (left_ns < GetTime(cp));
+        }
+
+        bool operator()(const CuePoint& cp, long long right_ns) const
+        {
+            return (GetTime(cp) < right_ns);
+        }
+
+        bool operator()(const CuePoint& lhs, const CuePoint& rhs) const
+        {
+            return (lhs.m_timecode < rhs.m_timecode);
+        }
+    };
+#endif
+
+private:
+    void ParseTrackPosition(IMkvReader*, long long, long long);
+
+};
+
+
+class Cues
+{
+    Cues(const Cues&);
+    Cues& operator=(const Cues&);
+
+public:
+    Segment* const m_pSegment;
+    const long long m_start;
+    const long long m_size;
+
+    Cues(Segment*, long long start, long long size);
+
+    bool Find(  //lower bound of time_ns
+        long long time_ns,
+        const Track*,
+        const CuePoint*&,
+        const CuePoint::TrackPosition*&) const;
+
+    bool FindNext(  //upper_bound of time_ns
+        long long time_ns,
+        const Track*,
+        const CuePoint*&,
+        const CuePoint::TrackPosition*&) const;
+
+private:
+    CuePoint* m_cue_points;
+    size_t m_cue_counts_count;
+
+};
+
+
 class Cluster
 {
     Cluster(const Cluster&);
@@ -426,16 +518,28 @@ public:
         Cluster*&,
         const BlockEntry*&);
 
+    const Cues* GetCues() const;
+
 private:
     long long m_pos;  //absolute file posn; what has been consumed so far
     SegmentInfo* m_pInfo;
     Tracks* m_pTracks;
+    Cues* m_pCues;
     Cluster** m_clusters;
-    size_t m_clusterCount;
+    size_t m_clusterCount;  //number of entries
+    size_t m_clusterSize;   //array size
 
     void ParseSeekHead(long long pos, long long size, size_t*);
     void ParseSeekEntry(long long pos, long long size, size_t*);
     void ParseSecondarySeekHead(long long off, size_t*);
+    void ParseCues(long long off);
+
+    bool SearchCues(
+        long long time_ns,
+        Track*,
+        Cluster*&,
+        const BlockEntry*&);
+
 };
 
 

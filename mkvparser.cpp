@@ -21,7 +21,6 @@ void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision)
     minor = 0;
     build = 0;
     revision = 1;
-    return;
 }
 
 long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
@@ -808,7 +807,9 @@ Segment::Segment(
     m_pos(start),
     m_pInfo(NULL),
     m_pTracks(NULL),
-    m_clusterCount(0)
+    m_pCues(NULL),
+    m_clusterCount(0),
+    m_clusterSize(0)
 {
 }
 
@@ -829,6 +830,9 @@ Segment::~Segment()
 
     delete m_pTracks;
     delete m_pInfo;
+
+    //TODO:
+    //delete m_pCues;
 }
 
 
@@ -944,6 +948,7 @@ long long Segment::ParseHeaders()
     assert(m_pos <= stop);
 
     bool bQuit = false;
+
     while ((m_pos < stop) && !bQuit)
     {
         long long pos = m_pos;
@@ -1000,32 +1005,28 @@ long long Segment::ParseHeaders()
         if (id == 0x0549A966)  //Segment Info ID
         {
             assert(m_pInfo == NULL);
-            m_pInfo = new  SegmentInfo(this, pos, size);
-            assert(m_pInfo);  //TODO
 
-            if (m_pTracks)
-                bQuit = true;
+            m_pInfo = new SegmentInfo(this, pos, size);
+            assert(m_pInfo);  //TODO
         }
         else if (id == 0x0654AE6B)  //Tracks ID
         {
             assert(m_pTracks == NULL);
-            m_pTracks = new  Tracks(this, pos, size);
-            assert(m_pTracks);  //TODO
 
-            if (m_pInfo)
-                bQuit = true;
+            m_pTracks = new Tracks(this, pos, size);
+            assert(m_pTracks);  //TODO
+        }
+        else if (id == 0x0C53BB6B)  //Cues ID
+        {
+            assert(m_pCues == NULL);
+
+#if 0  //TODO
+            m_pCues = new Cues(this, pos, size);
+            assert(m_pCues);  //TODO
+#endif
         }
         else if (id == 0x0F43B675)  //Cluster ID
         {
-#if 0
-            if (m_pInfo == NULL)  //TODO: liberalize
-                ;
-            else if (m_pTracks == NULL)
-                ;
-            else
-                //ParseCluster(idpos, pos, size);
-                Cluster::Parse(this, m_clusters, pos, size);
-#endif
             bQuit = true;
         }
 
@@ -1048,7 +1049,6 @@ long Segment::ParseCluster(Cluster*& pCluster, long long& pos_) const
 
     long long pos = m_pos;
     long long off = -1;
-
 
     while (pos < stop)
     {
@@ -1082,16 +1082,14 @@ long Segment::ParseCluster(Cluster*& pCluster, long long& pos_) const
         pos += size;  //consume payload
         assert(pos <= stop);
 
-        if (off >= 0)
+        if (id == 0x0F43B675)  //Cluster ID
         {
-            pos_ = idpos;
+            off = idpos - m_start;  // >= 0 means we found a cluster
             break;
         }
-
-        if (id == 0x0F43B675)  //Cluster ID
-            off = idpos - m_start;
     }
 
+#if 0
     Segment* const this_ = const_cast<Segment*>(this);
     const size_t idx = m_clusterCount;
 
@@ -1130,6 +1128,88 @@ long Segment::ParseCluster(Cluster*& pCluster, long long& pos_) const
 
     pCluster = Cluster::Parse(this_, idx, off);
     return 0L;
+#else
+    assert(pos <= stop);
+
+    //Indicate to caller how much of file has been consumed. This is
+    //used later in AddCluster to adjust the current parse position
+    //(the value cached in the segment object itself) to the
+    //file position value just past the cluster we parsed.
+
+    if (off < 0)  //we did not found any more clusters
+    {
+        pos_ = stop;  //pos_ >= 0 here means EOF (cluster is NULL)
+        return 0;     //TODO: confirm this return value
+    }
+
+    //We found a cluster.  Now read something, to ensure that it is
+    //fully loaded in the network cache.
+
+    if (pos >= stop)  //we parsed the entire segment
+    {
+        //We did find a cluster, but it was very last element in the segment.
+        //Our preference is that the loop above runs 1 1/2 times:
+        //the first pass finds the cluster, and the second pass
+        //finds the element the follows the cluster.  In this case, however,
+        //we reached the end of the file without finding another element,
+        //so we didn't actually read anything yet associated with "end of the
+        //cluster".  And we must perform an actual read, in order
+        //to guarantee that all of the data that belongs to this
+        //cluster has been loaded into the network cache.  So instead
+        //of reading the next element that follows the cluster, we
+        //read the last byte of the cluster (which is also the last
+        //byte in the file).
+
+        //Read the last byte of the file. (Reading 0 bytes at pos
+        //might work too -- it would depend on how the reader is
+        //implemented.  Here we take the more conservative approach,
+        //since this makes fewer assumptions about the network
+        //reader abstraction.)
+
+        unsigned char b;
+
+        const int result = m_pReader->Read(pos - 1, 1, &b);
+        assert(result == 0);
+
+        pos_ = stop;
+    }
+    else
+    {
+        long len;
+        const __int64 idpos = pos;
+
+        const __int64 id = SyncReadUInt(m_pReader, pos, stop, len);
+
+        if (id < 0)  //error
+            return static_cast<long>(id);
+
+        if (id == 0)
+            return E_BUFFER_NOT_FULL;
+
+        pos += len;  //consume id
+        assert(pos < stop);
+
+        const __int64 size = SyncReadUInt(m_pReader, pos, stop, len);
+
+        if (size < 0)  //error
+            return static_cast<long>(size);
+
+        pos_ = idpos;
+    }
+
+    //We found a cluster, and it has been completely loaded into the
+    //network cache.  (We can guarantee this because we actually read
+    //the EBML tag that follows the cluster, or, if we reached EOF,
+    //because we actually read the last byte of the cluster).
+
+    Segment* const this_ = const_cast<Segment*>(this);
+
+    pCluster = Cluster::Parse(this_, m_clusterCount, off);
+    assert(pCluster);
+    assert(pCluster->m_index == m_clusterCount);
+
+    return 0;
+#endif
 }
 
 
@@ -1141,7 +1221,35 @@ bool Segment::AddCluster(Cluster* pCluster, long long pos)
     assert(pos <= stop);
 
     if (pCluster)
-        m_clusters[pos] = pCluster;
+    {
+        size_t& size = m_clusterSize;
+        assert(size >= m_clusterCount);
+
+        const size_t idx = pCluster->m_index;
+        assert(idx == m_clusterCount);
+
+        if (idx >= size)
+        {
+            const size_t n = (size <= 0) ? 2048 : 2 * size;
+
+            Cluster** const qq = new Cluster*[n];
+            Cluster** q = qq;
+
+            Cluster** p = m_clusters;
+            Cluster** const pp = p + m_clusterCount;
+
+            while (p != pp)
+                *p++ = *q++;
+
+            delete[] m_clusters;
+
+            m_clusters = qq;
+            size = n;
+        }
+
+        m_clusters[idx] = pCluster;
+        ++m_clusterCount;
+    }
 
     m_pos = pos;  //m_pos >= stop is now we know we have all clusters
 
@@ -1155,7 +1263,8 @@ long Segment::Load()
     //and pos designates start of payload.  We need to find the
     //inner (level 1) elements.
     const long long stop = m_start + m_size;
-#ifdef _DEBUG
+
+#ifdef _DEBUG  //TODO: this is really Microsoft-specific
     {
         long long total, available;
 
@@ -1166,9 +1275,6 @@ long Segment::Load()
     }
 #endif
     long long index = m_pos;
-
-    //TODO: we don't want to count clusters here.
-    //Just do a lazy init.
 
     m_clusterCount = 0;
 
@@ -1229,6 +1335,7 @@ long Segment::Load()
                 delete[] fileposition_of_clusters;
                 fileposition_of_clusters = temp;
             }
+
             fileposition_of_clusters[m_clusterCount] = idpos;
             ++m_clusterCount;
         }
@@ -1248,18 +1355,29 @@ long Segment::Load()
             fileposition_of_clusters = new long long[size_of_cluster_pos];
             memset(fileposition_of_clusters, 0, size_of_cluster_pos);
         }
+
         index += size;
     }
 
     if (m_clusterCount == 0)
         return -1L;
 
+    //TODO: we shouldn't need the local filepos_of_clusters array;
+    //just write into the m_clusters array directly.
+
     m_clusters = new Cluster*[m_clusterCount];
 
     for (size_t i = 0; i < m_clusterCount; ++i)
         m_clusters[i] = Cluster::Parse(this, i, fileposition_of_clusters[i]);
 
-    delete[] fileposition_of_clusters;
+    m_clusterSize = m_clusterCount;
+
+    delete[] fileposition_of_clusters;  //TODO: optimize this away
+
+    //TODO: why do we have this separate loop?  It appears that all
+    //it does it find the Tracks element -- but we could have done
+    //that in the loop above (the same as we do for the SegmentInfo
+    //element).
 
     while (m_pos < stop)
     {
@@ -1319,22 +1437,8 @@ long Segment::Load()
 
     assert(m_clusters);
 
-    //TODO: see notes above.  This check is here (temporarily) to ensure
-    //that the first seekhead has entries for the clusters (because that's
-    //when they're loaded).  In case we are given a file that lists the
-    //clusters in a second seekhead, the worst thing that happens is that
-    //we treat this as an invalid file (which is better then simply
-    //asserting somewhere).  But that's only a work-around.  What we need
-    //to do is be able to handle having multiple seekheads, and having
-    //clusters listed somewhere besides the first seekhead.
-    //
-    //if (m_clusters == NULL)
-    //    return E_FILE_FORMAT_INVALID;
+    //TODO: we need to parse the Cues element
 
-    //NOTE: we stop parsing when we reach the first cluster, under the
-    //assumption all clusters are named in some SeekHead.  Clusters
-    //will have been (pre)loaded, so we indicate that we have all clusters
-    //by adjusting the parse position:
     m_pos = stop;  //means "we have all clusters"
 
     return 0L;
@@ -1345,6 +1449,7 @@ void Segment::ParseSeekHead(long long start, long long size_, size_t* pIndex)
 {
     long long pos = start;
     const long long stop = start + size_;
+
     while (pos < stop)
     {
         long len;
@@ -2088,7 +2193,9 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
             const Block* const pBlock = pBlockEntry->GetBlock();
             assert(pBlock);
 
-            if (pBlock->GetTrackNumber() == static_cast<unsigned long>(m_info.number))
+            const long long tn = pBlock->GetTrackNumber();
+
+            if (tn == m_info.number)
                 return 0;
 
             pBlockEntry = pCluster->GetNext(pBlockEntry);
@@ -2113,7 +2220,11 @@ long Track::GetNext(
 {
     assert(pCurrEntry);
     assert(!pCurrEntry->EOS());  //?
-    assert(pCurrEntry->GetBlock()->GetTrackNumber() == static_cast<unsigned long>(m_info.number));
+
+    const Block* const pCurrBlock = pCurrEntry->GetBlock();
+    const long long tn = pCurrBlock->GetTrackNumber();
+    tn;
+    assert(tn == m_info.number);
 
 #if 0
     const Cluster* const pCurrCluster = pCurrEntry->GetCluster();
@@ -2228,7 +2339,9 @@ long Track::GetNext(
             const Block* const pNextBlock = pNextEntry->GetBlock();
             assert(pNextBlock);
 
-            if (pNextBlock->GetTrackNumber() == static_cast<unsigned long>(m_info.number))
+            const long long tn = pNextBlock->GetTrackNumber();
+
+            if (tn == m_info.number)
                 return 0;
 
             pNextEntry = pCluster->GetNext(pNextEntry);
