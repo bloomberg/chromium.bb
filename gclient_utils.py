@@ -549,8 +549,8 @@ class WorkItem(object):
   # A unique string representing this work item.
   name = None
 
-  def run(self, work_queue, options):
-    """work_queue and options are passed as keyword arguments so they should be
+  def run(self, work_queue):
+    """work_queue is passed as keyword argument so it should be
     the last parameters of the function when you override it."""
     pass
 
@@ -661,7 +661,7 @@ class ExecutionQueue(object):
         self.running.append(t)
       else:
         t.join()
-        t.kwargs['options'].stdout.full_flush()
+        sys.stdout.full_flush()
         if self.progress:
           self.progress.update(1)
         assert not t.item.name in self.ran
@@ -672,10 +672,7 @@ class ExecutionQueue(object):
     if self.jobs > 1:
       # Start the thread.
       index = len(self.ran) + len(self.running) + 1
-      # Copy 'options'.
-      task_kwargs = kwargs.copy()
-      task_kwargs['options'] = copy.copy(task_kwargs['options'])
-      new_thread = self._Worker(task_item, index, args, task_kwargs)
+      new_thread = self._Worker(task_item, index, args, kwargs)
       self.running.append(new_thread)
       new_thread.start()
     else:

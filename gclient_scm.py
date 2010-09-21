@@ -23,13 +23,12 @@ class DiffFilterer(object):
   original_prefix = "--- "
   working_prefix = "+++ "
 
-  def __init__(self, relpath, stdout):
+  def __init__(self, relpath):
     # Note that we always use '/' as the path separator to be
     # consistent with svn's cygwin-style output on Windows
     self._relpath = relpath.replace("\\", "/")
     self._current_file = ""
     self._replacement_file = ""
-    self._stdout = stdout
 
   def SetCurrentFile(self, current_file):
     self._current_file = current_file
@@ -48,7 +47,7 @@ class DiffFilterer(object):
       if (line.startswith(self.original_prefix) or
           line.startswith(self.working_prefix)):
         line = self._Replace(line)
-    self._stdout.write(line + '\n')
+    print(line)
 
 
 ### SCM abstraction layer
@@ -153,8 +152,7 @@ class GitWrapper(SCMWrapper):
     gclient_utils.CheckCallAndFilter(
         ['git', 'diff', merge_base],
         cwd=self.checkout_path,
-        filter_fn=DiffFilterer(self.relpath, options.stdout).Filter,
-        stdout=options.stdout)
+        filter_fn=DiffFilterer(self.relpath).Filter)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -185,7 +183,7 @@ class GitWrapper(SCMWrapper):
     printed_path = False
     verbose = []
     if options.verbose:
-      options.stdout.write("\n_____ %s%s\n" % (self.relpath, rev_str))
+      print('\n_____ %s%s' % (self.relpath, rev_str))
       verbose = ['--verbose']
       printed_path = True
 
@@ -206,7 +204,7 @@ class GitWrapper(SCMWrapper):
       if not verbose:
         # Make the output a little prettier. It's nice to have some whitespace
         # between projects when cloning.
-        options.stdout.write('\n')
+        print('')
       return
 
     if not os.path.exists(os.path.join(self.checkout_path, '.git')):
@@ -266,16 +264,15 @@ class GitWrapper(SCMWrapper):
         # Hackish but at that point, git is known to work so just checking for
         # 502 in stderr should be fine.
         if '502' in e.stderr:
-          options.stdout.write(str(e) + '\n')
-          options.stdout.write('Sleeping %.1f seconds and retrying...\n' %
-                               backoff_time)
+          print(str(e))
+          print('Sleeping %.1f seconds and retrying...' % backoff_time)
           time.sleep(backoff_time)
           backoff_time *= 1.3
           continue
         raise
 
     if verbose:
-      options.stdout.write(remote_output)
+      print(remote_output.strip())
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
@@ -287,7 +284,7 @@ class GitWrapper(SCMWrapper):
       self._CheckDetachedHead(rev_str, options)
       self._Capture(['checkout', '--quiet', '%s^0' % revision])
       if not printed_path:
-        options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
+        print('\n_____ %s%s' % (self.relpath, rev_str))
     elif current_type == 'hash':
       # case 1
       if scm.GIT.IsGitSvn(self.checkout_path) and upstream_branch is not None:
@@ -314,7 +311,7 @@ class GitWrapper(SCMWrapper):
       # case 4
       new_base = revision.replace('heads', 'remotes/origin')
       if not printed_path:
-        options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
+        print('\n_____ %s%s' % (self.relpath, rev_str))
       switch_error = ("Switching upstream branch from %s to %s\n"
                      % (upstream_branch, new_base) +
                      "Please merge or rebase manually:\n" +
@@ -325,15 +322,14 @@ class GitWrapper(SCMWrapper):
       # case 3 - the default case
       files = self._Capture(['diff', upstream_branch, '--name-only']).split()
       if verbose:
-        options.stdout.write('Trying fast-forward merge to branch : %s\n' %
-            upstream_branch)
+        print('Trying fast-forward merge to branch : %s' % upstream_branch)
       try:
         merge_output = scm.GIT.Capture(['merge', '--ff-only', upstream_branch],
             cwd=self.checkout_path)
       except gclient_utils.CheckCallError, e:
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
           if not printed_path:
-            options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
+            print('\n_____ %s%s' % (self.relpath, rev_str))
             printed_path = True
           while True:
             try:
@@ -354,34 +350,34 @@ class GitWrapper(SCMWrapper):
                                         "cd %s && git " % self.checkout_path
                                         + "rebase %s" % upstream_branch)
             elif re.match(r'skip|s', action, re.I):
-              options.stdout.write('Skipping %s\n' % self.relpath)
+              print('Skipping %s' % self.relpath)
               return
             else:
-              options.stdout.write('Input not recognized\n')
+              print('Input not recognized')
         elif re.match("error: Your local changes to '.*' would be "
                       "overwritten by merge.  Aborting.\nPlease, commit your "
                       "changes or stash them before you can merge.\n",
                       e.stderr):
           if not printed_path:
-            options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
+            print('\n_____ %s%s' % (self.relpath, rev_str))
             printed_path = True
           raise gclient_utils.Error(e.stderr)
         else:
           # Some other problem happened with the merge
           logging.error("Error during fast-forward merge in %s!" % self.relpath)
-          options.stdout.write(e.stderr + '\n')
+          print(e.stderr)
           raise
       else:
         # Fast-forward merge was successful
         if not re.match('Already up-to-date.', merge_output) or verbose:
           if not printed_path:
-            options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
+            print('\n_____ %s%s' % (self.relpath, rev_str))
             printed_path = True
-          options.stdout.write(merge_output)
+          print(merge_output.strip())
           if not verbose:
             # Make the output a little prettier. It's nice to have some
             # whitespace between projects when syncing.
-            options.stdout.write('\n')
+            print('')
 
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
@@ -394,8 +390,7 @@ class GitWrapper(SCMWrapper):
                                 % (self.relpath, rev_str))
 
     if verbose:
-      options.stdout.write('Checked out revision %s\n' %
-          self.revinfo(options, (), None))
+      print('Checked out revision %s' % self.revinfo(options, (), None))
 
   def revert(self, options, args, file_list):
     """Reverts local modifications.
@@ -405,8 +400,7 @@ class GitWrapper(SCMWrapper):
     if not os.path.isdir(self.checkout_path):
       # revert won't work if the directory doesn't exist. It needs to
       # checkout instead.
-      options.stdout.write('\n_____ %s is missing, synching instead\n' %
-          self.relpath)
+      print('\n_____ %s is missing, synching instead' % self.relpath)
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
@@ -431,9 +425,8 @@ class GitWrapper(SCMWrapper):
   def status(self, options, args, file_list):
     """Display status information."""
     if not os.path.isdir(self.checkout_path):
-      options.stdout.write(
-          ('\n________ couldn\'t run status in %s:\nThe directory '
-           'does not exist.\n') % self.checkout_path)
+      print(('\n________ couldn\'t run status in %s:\n'
+             'The directory does not exist.') % self.checkout_path)
     else:
       merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
       self._Run(['diff', '--name-status', merge_base], options)
@@ -457,7 +450,7 @@ class GitWrapper(SCMWrapper):
     if not options.verbose:
       # git clone doesn't seem to insert a newline properly before printing
       # to stdout
-      options.stdout.write('\n')
+      print('')
 
     clone_cmd = ['clone']
     if revision.startswith('refs/heads/'):
@@ -482,15 +475,15 @@ class GitWrapper(SCMWrapper):
         # read". In the meantime, just make sure .git exists.
         if (e.args[0] == 'git command clone returned 128' and
             os.path.exists(os.path.join(self.checkout_path, '.git'))):
-          options.stdout.write(str(e) + '\n')
-          options.stdout.write('Retrying...\n')
+          print(str(e))
+          print('Retrying...')
           continue
         raise e
 
     if detach_head:
       # Squelch git's very verbose detached HEAD warning and use our own
       self._Capture(['checkout', '--quiet', '%s^0' % revision])
-      options.stdout.write(
+      print(
         ('Checked out %s to a detached HEAD. Before making any commits\n'
          'in this repo, you should use \'git checkout <branch>\' to switch to\n'
          'an existing branch or use \'git checkout origin -b <branch>\' to\n'
@@ -504,11 +497,11 @@ class GitWrapper(SCMWrapper):
     if newbase:
       revision = newbase
     if not printed_path:
-      options.stdout.write('\n_____ %s : Attempting rebase onto %s...\n' % (
+      print('\n_____ %s : Attempting rebase onto %s...' % (
           self.relpath, revision))
       printed_path = True
     else:
-      options.stdout.write('Attempting rebase onto %s...\n' % revision)
+      print('Attempting rebase onto %s...' % revision)
 
     # Build the rebase command here using the args
     # git rebase [options] [--onto <newbase>] <upstream> [<branch>]
@@ -543,7 +536,7 @@ class GitWrapper(SCMWrapper):
                                       "cd %s && git " % self.checkout_path
                                       + "%s" % ' '.join(rebase_cmd))
           elif re.match(r'show|s', rebase_action, re.I):
-            options.stdout.write('\n%s\n' % e.stderr.strip())
+            print('\n%s' % e.stderr.strip())
             continue
           else:
             gclient_utils.Error("Input not recognized")
@@ -553,19 +546,18 @@ class GitWrapper(SCMWrapper):
                                   "Fix the conflict and run gclient again.\n"
                                   "See 'man git-rebase' for details.\n")
       else:
-        options.stdout.write(e.stdout.strip() + '\n')
-        options.stdout.write('Rebase produced error output:\n%s\n' %
-            e.stderr.strip())
+        print(e.stdout.strip())
+        print('Rebase produced error output:\n%s' % e.stderr.strip())
         raise gclient_utils.Error("Unrecognized error, please merge or rebase "
                                   "manually.\ncd %s && git " %
                                   self.checkout_path
                                   + "%s" % ' '.join(rebase_cmd))
 
-    options.stdout.write(rebase_output)
+    print(rebase_output.strip())
     if not options.verbose:
       # Make the output a little prettier. It's nice to have some
       # whitespace between projects when syncing.
-      options.stdout.write('\n')
+      print('')
 
   @staticmethod
   def _CheckMinVersion(min_version):
@@ -624,8 +616,7 @@ class GitWrapper(SCMWrapper):
       name = ('saved-by-gclient-' +
               self._Capture(['rev-parse', '--short', 'HEAD']))
       self._Capture(['branch', name])
-      options.stdout.write(
-          '\n_____ found an unreferenced commit and saved it as \'%s\'\n' %
+      print('\n_____ found an unreferenced commit and saved it as \'%s\'' %
           name)
 
   def _GetCurrentBranch(self):
@@ -642,7 +633,7 @@ class GitWrapper(SCMWrapper):
   def _Run(self, args, options, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
     gclient_utils.CheckCallAndFilterAndHeader(['git'] + args,
-        always=options.verbose, stdout=options.stdout, **kwargs)
+        always=options.verbose, **kwargs)
 
 
 class SVNWrapper(SCMWrapper):
@@ -680,8 +671,7 @@ class SVNWrapper(SCMWrapper):
         ['svn', 'diff', '-x', '--ignore-eol-style'] + args,
         cwd=self.checkout_path,
         print_stdout=False,
-        filter_fn=DiffFilterer(self.relpath, options.stdout).Filter,
-        stdout=options.stdout)
+        filter_fn=DiffFilterer(self.relpath).Filter)
 
   def update(self, options, args, file_list):
     """Runs svn to update or transparently checkout the working copy.
@@ -694,8 +684,7 @@ class SVNWrapper(SCMWrapper):
     # Only update if git is not controlling the directory.
     git_path = os.path.join(self.checkout_path, '.git')
     if os.path.exists(git_path):
-      options.stdout.write('________ found .git directory; skipping %s\n' %
-          self.relpath)
+      print('________ found .git directory; skipping %s' % self.relpath)
       return
 
     if args:
@@ -757,8 +746,7 @@ class SVNWrapper(SCMWrapper):
       can_switch = ((from_info['Repository Root'] != to_info['Repository Root'])
                     and (from_info['UUID'] == to_info['UUID']))
       if can_switch:
-        options.stdout.write('\n_____ relocating %s to a new checkout\n' %
-            self.relpath)
+        print('\n_____ relocating %s to a new checkout' % self.relpath)
         # We have different roots, so check if we can switch --relocate.
         # Subversion only permits this if the repository UUIDs match.
         # Perform the switch --relocate, then rewrite the from_url
@@ -786,8 +774,7 @@ class SVNWrapper(SCMWrapper):
                    'there is local changes in %s. Delete the directory and '
                    'try again.') % (url, self.checkout_path))
         # Ok delete it.
-        options.stdout.write('\n_____ switching %s to a new checkout\n' %
-            self.relpath)
+        print('\n_____ switching %s to a new checkout' % self.relpath)
         gclient_utils.RemoveDirectory(self.checkout_path)
         # We need to checkout.
         command = ['checkout', url, self.checkout_path]
@@ -799,7 +786,7 @@ class SVNWrapper(SCMWrapper):
     # number of the existing directory, then we don't need to bother updating.
     if not options.force and str(from_info['Revision']) == revision:
       if options.verbose or not forced_revision:
-        options.stdout.write('\n_____ %s%s\n' % (self.relpath, rev_str))
+        print('\n_____ %s%s' % (self.relpath, rev_str))
       return
 
     command = ['update', self.checkout_path]
@@ -843,15 +830,9 @@ class SVNWrapper(SCMWrapper):
     if not os.path.isdir(self.checkout_path):
       # svn revert won't work if the directory doesn't exist. It needs to
       # checkout instead.
-      options.stdout.write('\n_____ %s is missing, synching instead\n' %
-          self.relpath)
+      print('\n_____ %s is missing, synching instead' % self.relpath)
       # Don't reuse the args.
       return self.update(options, [], file_list)
-
-    # Do a flush of sys.stdout every 10 secs or so otherwise it may never be
-    # flushed fast enough for buildbot.
-    last_flushed_at = time.time()
-    sys.stdout.flush()
 
     for file_status in scm.SVN.CaptureStatus(self.checkout_path):
       file_path = os.path.join(self.checkout_path, file_status[1])
@@ -863,13 +844,7 @@ class SVNWrapper(SCMWrapper):
       if logging.getLogger().isEnabledFor(logging.INFO):
         logging.info('%s%s' % (file[0], file[1]))
       else:
-        options.stdout.write(file_path + '\n')
-        # Flush at least 10 seconds between line writes.  We wait at least 10
-        # seconds to avoid overloading the reader that called us with output,
-        # which can slow busy readers down.
-        if (time.time() - last_flushed_at) > 10:
-          last_flushed_at = time.time()
-          sys.stdout.flush()
+        print(file_path)
 
       if file_status[0].isspace():
         logging.error('No idea what is the status of %s.\n'
@@ -917,9 +892,9 @@ class SVNWrapper(SCMWrapper):
     command = ['status'] + args
     if not os.path.isdir(self.checkout_path):
       # svn status won't work if the directory doesn't exist.
-      options.stdout.write(
-          ('\n________ couldn\'t run \'%s\' in \'%s\':\nThe directory '
-           'does not exist.') % (' '.join(command), self.checkout_path))
+      print(('\n________ couldn\'t run \'%s\' in \'%s\':\n'
+             'The directory does not exist.') %
+                (' '.join(command), self.checkout_path))
       # There's no file list to retrieve.
     else:
       self._RunAndGetFileList(command, options, file_list)
@@ -932,13 +907,13 @@ class SVNWrapper(SCMWrapper):
     """Runs a commands that goes to stdout."""
     kwargs.setdefault('cwd', self.checkout_path)
     gclient_utils.CheckCallAndFilterAndHeader(['svn'] + args,
-        always=options.verbose, stdout=options.stdout, **kwargs)
+        always=options.verbose, **kwargs)
 
   def _RunAndGetFileList(self, args, options, file_list, cwd=None):
     """Runs a commands that goes to stdout and grabs the file listed."""
     cwd = cwd or self.checkout_path
     scm.SVN.RunAndGetFileList(options.verbose, args, cwd=cwd,
-        file_list=file_list, stdout=options.stdout)
+        file_list=file_list)
 
   @staticmethod
   def _AddAdditionalUpdateFlags(command, options, revision):

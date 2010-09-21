@@ -1203,8 +1203,6 @@ def Main(argv):
       options.entries_filename = options.config_filename + '_entries'
       if options.jobs < 1:
         parser.error('--jobs must be 1 or higher')
-      # TODO(maruel): Temporary, to be removed.
-      options.stdout = sys.stdout
 
       # These hacks need to die.
       if not hasattr(options, 'revisions'):

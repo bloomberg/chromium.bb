@@ -64,7 +64,6 @@ class SVNWrapperTestCase(BaseTestCase):
       self.force = False
       self.reset = False
       self.nohooks = False
-      self.stdout = gclient_scm.sys.stdout
 
   def Options(self, *args, **kwargs):
     return self.OptionsObject(*args, **kwargs)
@@ -137,8 +136,7 @@ class SVNWrapperTestCase(BaseTestCase):
                                           ['checkout', self.url, base_path,
                                            '--force'],
                                           cwd=self.root_dir,
-                                          file_list=files_list,
-                                          stdout=options.stdout)
+                                          file_list=files_list)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -155,8 +153,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['update', '--revision', 'BASE'],
                                           cwd=base_path,
-                                          file_list=mox.IgnoreArg(),
-                                          stdout=options.stdout)
+                                          file_list=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -184,8 +181,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['update', '--revision', 'BASE'],
                                           cwd=base_path,
-                                          file_list=mox.IgnoreArg(),
-                                          stdout=options.stdout)
+                                          file_list=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -214,8 +210,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['update', '--revision', 'BASE'],
                                           cwd=base_path,
-                                          file_list=mox.IgnoreArg(),
-                                          stdout=options.stdout)
+                                          file_list=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -228,10 +223,9 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     gclient_scm.os.path.isdir(base_path).AndReturn(True)
-    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
-                                          ['status'] + self.args,
-                                          cwd=base_path, file_list=[],
-                                          stdout=options.stdout).AndReturn(None)
+    gclient_scm.scm.SVN.RunAndGetFileList(
+        options.verbose, ['status'] + self.args,
+        cwd=base_path, file_list=[]).AndReturn(None)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -260,8 +254,7 @@ class SVNWrapperTestCase(BaseTestCase):
                                           ['checkout', self.url, base_path,
                                            '--force'],
                                           cwd=self.root_dir,
-                                          file_list=files_list,
-                                          stdout=options.stdout)
+                                          file_list=files_list)
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -301,7 +294,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['update', base_path] + additional_args,
-        cwd=self.root_dir, file_list=files_list, stdout=options.stdout)
+        cwd=self.root_dir, file_list=files_list)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -333,9 +326,9 @@ class SVNWrapperTestCase(BaseTestCase):
     files_list = self.mox.CreateMockAnything()
     gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(
         ['svn', 'checkout', '--depth', 'empty', self.url, base_path],
-        always=True, cwd=self.root_dir, stdout=options.stdout)
+        always=True, cwd=self.root_dir)
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose, ['update', 'DEPS'],
-        cwd=base_path, file_list=files_list, stdout=options.stdout)
+        cwd=base_path, file_list=files_list)
 
     # Now we fall back on scm.update().
     gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
@@ -371,7 +364,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(
         ['svn', 'export', gclient_scm.os.path.join(self.url, 'DEPS'),
             gclient_scm.os.path.join(base_path, 'DEPS')],
-        always=True, cwd=self.root_dir, stdout=options.stdout)
+        always=True, cwd=self.root_dir)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -406,9 +399,9 @@ class SVNWrapperTestCase(BaseTestCase):
     files_list = self.mox.CreateMockAnything()
     gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(
         ['svn', 'checkout', '--depth', 'empty', self.url, base_path],
-        always=True, cwd=self.root_dir, stdout=options.stdout)
+        always=True, cwd=self.root_dir)
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose, ['update', 'DEPS'],
-        cwd=base_path, file_list=files_list, stdout=options.stdout)
+        cwd=base_path, file_list=files_list)
 
     # Now we fall back on scm.update().
     gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
@@ -484,7 +477,6 @@ class GitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.force = False
       self.reset = False
       self.nohooks = False
-      self.stdout = gclient_scm.sys.stdout
 
   sample_git_import = """blob
 mark :1
