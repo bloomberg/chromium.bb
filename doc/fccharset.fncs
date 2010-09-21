@@ -51,6 +51,17 @@ returning FcFalse on failure, either as a result of a constant set or from
 running out of memory. 
 @@
 
+@RET@		FcBool 
+@FUNC@		FcCharSetDelChar
+@TYPE1@		FcCharSet *		@ARG1@		fcs
+@TYPE2@		FcChar32% 		@ARG2@		ucs4 
+@PURPOSE@	Add a character to a charset
+@DESC@
+<function>FcCharSetDelChar</function> deletes a single unicode char from the set,
+returning FcFalse on failure, either as a result of a constant set or from
+running out of memory.
+@@
+
 @RET@		FcCharSet *
 @FUNC@		FcCharSetCopy
 @TYPE1@		FcCharSet *		@ARG1@		src

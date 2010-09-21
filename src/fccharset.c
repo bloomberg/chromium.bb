@@ -262,6 +262,23 @@ FcCharSetAddChar (FcCharSet *fcs, FcChar32 ucs4)
     return FcTrue;
 }
 
+FcBool
+FcCharSetDelChar (FcCharSet *fcs, FcChar32 ucs4)
+{
+    FcCharLeaf	*leaf;
+    FcChar32	*b;
+
+    if (fcs->ref == FC_REF_CONSTANT)
+	return FcFalse;
+    leaf = FcCharSetFindLeaf (fcs, ucs4);
+    if (!leaf)
+	return FcTrue;
+    b = &leaf->map[(ucs4 & 0xff) >> 5];
+    *b &= ~(1 << (ucs4 & 0x1f));
+    /* We don't bother removing the leaf if it's empty */
+    return FcTrue;
+}
+
 /*
  * An iterator for the leaves of a charset
  */

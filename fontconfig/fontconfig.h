@@ -423,6 +423,9 @@ FcCharSetDestroy (FcCharSet *fcs);
 FcPublic FcBool
 FcCharSetAddChar (FcCharSet *fcs, FcChar32 ucs4);
 
+FcPublic FcBool
+FcCharSetDelChar (FcCharSet *fcs, FcChar32 ucs4);
+
 FcPublic FcCharSet*
 FcCharSetCopy (FcCharSet *src);
 
