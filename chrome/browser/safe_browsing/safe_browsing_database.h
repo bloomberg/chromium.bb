@@ -135,9 +135,12 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   void WriteBloomFilter();
 
   // Helpers for handling database corruption.
-  // OnHandleCorruptDatabase() runs ResetDatabase(),
-  // HandleCorruptDatabase() posts OnHandleCorruptDatabase() to the
-  // current thread.
+  // |OnHandleCorruptDatabase()| runs |ResetDatabase()| and sets
+  // |corruption_detected_|, |HandleCorruptDatabase()| posts
+  // |OnHandleCorruptDatabase()| to the current thread, to be run
+  // after the current task completes.
+  // TODO(shess): Wire things up to entirely abort the update
+  // transaction when this happens.
   void HandleCorruptDatabase();
   void OnHandleCorruptDatabase();
 
@@ -178,6 +181,11 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Used to schedule resetting the database because of corruption.
   ScopedRunnableMethodFactory<SafeBrowsingDatabaseNew> reset_factory_;
+
+  // Set if corruption is detected during the course of an update.
+  // Causes the update functions to fail with no side effects, until
+  // the next call to |UpdateStarted()|.
+  bool corruption_detected_;
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_

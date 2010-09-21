@@ -177,7 +177,8 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   void ReadChunkNumbers();
   bool WriteChunkNumbers();
 
-  // Flush in memory temporary caches.
+  // Flush in-memory temporary caches.  |lookup_lock_| must be locked
+  // by caller.
   void ClearUpdateCaches();
 
   // Encode the list id in the lower bit of the chunk.

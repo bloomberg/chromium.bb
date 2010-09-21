@@ -290,7 +290,10 @@ void SafeBrowsingDatabaseBloom::UpdateFinished(bool update_succeeded) {
   // We won't need the chunk caches until the next update (which will read them
   // from the database), so free their memory as they may contain thousands of
   // entries.
-  ClearUpdateCaches();
+  {
+    AutoLock lock(lookup_lock_);
+    ClearUpdateCaches();
+  }
 }
 
 bool SafeBrowsingDatabaseBloom::Open() {
@@ -1403,7 +1406,7 @@ bool SafeBrowsingDatabaseBloom::WriteChunkNumbers() {
 }
 
 void SafeBrowsingDatabaseBloom::ClearUpdateCaches() {
-  AutoLock lock(lookup_lock_);
+  lookup_lock_.AssertAcquired();
   add_del_cache_.clear();
   sub_del_cache_.clear();
   add_chunk_cache_.clear();

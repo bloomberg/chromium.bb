@@ -192,7 +192,8 @@ FilePath SafeBrowsingDatabase::BloomFilterForFilename(
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(SafeBrowsingStore* store)
     : creation_loop_(MessageLoop::current()),
       store_(store),
-      ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)),
+      corruption_detected_(false) {
   DCHECK(store_.get());
 }
 
@@ -431,7 +432,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
                                            const SBChunkList& chunks) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 
-  if (chunks.empty())
+  if (corruption_detected_ || chunks.empty())
     return;
 
   const base::Time insert_start = base::Time::Now();
@@ -452,7 +453,7 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
     const std::vector<SBChunkDelete>& chunk_deletes) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 
-  if (chunk_deletes.empty())
+  if (corruption_detected_ || chunk_deletes.empty())
     return;
 
   const std::string& list_name = chunk_deletes.front().list_name;
@@ -526,11 +527,16 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
   lists->push_back(malware);
   lists->push_back(phishing);
 
+  corruption_detected_ = false;
+
   return true;
 }
 
 void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
+
+  if (corruption_detected_)
+    return;
 
   // Unroll any partially-received transaction.
   if (!update_succeeded) {
@@ -644,6 +650,7 @@ void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
 
 void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
   UMA_HISTOGRAM_COUNTS("SB2.HandleCorrupt", 1);
+  corruption_detected_ = true;  // Stop updating the database.
   ResetDatabase();
   DCHECK(false) << "SafeBrowsing database was corrupt and reset";
 }

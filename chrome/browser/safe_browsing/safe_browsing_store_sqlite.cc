@@ -53,11 +53,6 @@ SafeBrowsingStoreSqlite::~SafeBrowsingStoreSqlite() {
 }
 
 bool SafeBrowsingStoreSqlite::Delete() {
-  // The database should not be open at this point.  TODO(shess): It
-  // can be open if corruption was detected while opening the
-  // database.  Ick.
-  DCHECK(!db_);
-
   // The file must be closed, both so that the journal file is deleted
   // by SQLite, and because open files cannot be deleted on Windows.
   if (!Close()) {
@@ -96,8 +91,12 @@ bool SafeBrowsingStoreSqlite::OnCorruptDatabase() {
 }
 
 bool SafeBrowsingStoreSqlite::Open() {
-  if (db_)
+  // This case should never happen, but if it does we shouldn't leak
+  // handles.
+  if (db_) {
+    NOTREACHED() << " Database was already open in Open().";
     return true;
+  }
 
   if (sqlite_utils::OpenSqliteDb(filename_, &db_) != SQLITE_OK) {
     sqlite3_close(db_);

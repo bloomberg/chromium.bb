@@ -146,6 +146,29 @@ void DeleteChunksFromSet(const base::hash_set<int32>& deleted,
   }
 }
 
+// Sanity-check the header against the file's size to make sure our
+// vectors aren't gigantic.  This doubles as a cheap way to detect
+// corruption without having to checksum the entire file.
+bool FileHeaderSanityCheck(const FilePath& filename,
+                           const FileHeader& header) {
+  int64 size = 0;
+  if (!file_util::GetFileSize(filename, &size))
+    return false;
+
+  int64 expected_size = sizeof(FileHeader);
+  expected_size += header.add_chunk_count * sizeof(int32);
+  expected_size += header.sub_chunk_count * sizeof(int32);
+  expected_size += header.add_prefix_count * sizeof(SBAddPrefix);
+  expected_size += header.sub_prefix_count * sizeof(SBSubPrefix);
+  expected_size += header.add_hash_count * sizeof(SBAddFullHash);
+  expected_size += header.sub_hash_count * sizeof(SBSubFullHash);
+  expected_size += sizeof(MD5Digest);
+  if (size != expected_size)
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 SafeBrowsingStoreFile::SafeBrowsingStoreFile()
@@ -279,24 +302,9 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
     return true;
   }
 
-  // Check that the file size makes sense given the header.  This is a
-  // cheap way to protect against header corruption while deferring
-  // the checksum calculation until the end of the update.
   // TODO(shess): Under POSIX it is possible that this could size a
   // file different from the file which was opened.
-  int64 size = 0;
-  if (!file_util::GetFileSize(filename_, &size))
-    return OnCorruptDatabase();
-
-  int64 expected_size = sizeof(FileHeader);
-  expected_size += header.add_chunk_count * sizeof(int32);
-  expected_size += header.sub_chunk_count * sizeof(int32);
-  expected_size += header.add_prefix_count * sizeof(SBAddPrefix);
-  expected_size += header.sub_prefix_count * sizeof(SBSubPrefix);
-  expected_size += header.add_hash_count * sizeof(SBAddFullHash);
-  expected_size += header.sub_hash_count * sizeof(SBSubFullHash);
-  expected_size += sizeof(MD5Digest);
-  if (size != expected_size)
+  if (!FileHeaderSanityCheck(filename_, header))
     return OnCorruptDatabase();
 
   // Pull in the chunks-seen data for purposes of implementing
@@ -390,6 +398,9 @@ bool SafeBrowsingStoreFile::DoUpdate(
     if (header.magic != kFileMagic || header.version != kFileVersion)
       return OnCorruptDatabase();
 
+    if (!FileHeaderSanityCheck(filename_, header))
+      return OnCorruptDatabase();
+
     // Re-read the chunks-seen data to get to the later data in the
     // file and calculate the checksum.  No new elements should be
     // added to the sets.
@@ -429,11 +440,30 @@ bool SafeBrowsingStoreFile::DoUpdate(
   if (!FileRewind(new_file_.get()))
     return false;
 
+  // Get chunk file's size for validating counts.
+  int64 size = 0;
+  if (!file_util::GetFileSize(TemporaryFileForFilename(filename_), &size))
+    return OnCorruptDatabase();
+
   // Append the accumulated chunks onto the vectors read from |file_|.
   for (int i = 0; i < chunks_written_; ++i) {
     ChunkHeader header;
 
+    int64 ofs = ftell(new_file_.get());
+    if (ofs == -1)
+      return false;
+
     if (!ReadArray(&header, 1, new_file_.get(), NULL))
+      return false;
+
+    // As a safety measure, make sure that the header describes a sane
+    // chunk, given the remaining file size.
+    int64 expected_size = ofs + sizeof(ChunkHeader);
+    expected_size += header.add_prefix_count * sizeof(SBAddPrefix);
+    expected_size += header.sub_prefix_count * sizeof(SBSubPrefix);
+    expected_size += header.add_hash_count * sizeof(SBAddFullHash);
+    expected_size += header.sub_hash_count * sizeof(SBSubFullHash);
+    if (expected_size > size)
       return false;
 
     // TODO(shess): If the vectors were kept sorted, then this code
