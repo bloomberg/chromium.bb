@@ -146,9 +146,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileClient1HasData) {
 
   AutoFillProfiles expected_profiles;
   expected_profiles.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(MARION, expected_profiles[0]);
+  FillProfile(PROFILE_MARION, expected_profiles[0]);
   expected_profiles.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(HOMER, expected_profiles[1]);
+  FillProfile(PROFILE_HOMER, expected_profiles[1]);
   AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
   AddProfile(GetPersonalDataManager(0), *expected_profiles[1]);
 
@@ -162,17 +162,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileClient1HasData) {
   STLDeleteElements(&expected_profiles);
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
-                       ProfileSameLabelOnDifferentClients) {
+// TestScribe ID - 426761.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ConflictLabels) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   AutoFillProfiles profiles1;
   profiles1.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(HOMER, profiles1[0]);
+  FillProfile(PROFILE_HOMER, profiles1[0]);
 
   AutoFillProfiles profiles2;
   profiles2.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(MARION, profiles2[0]);
+  FillProfile(PROFILE_MARION, profiles2[0]);
   profiles2[0]->set_label(ASCIIToUTF16("Shipping"));
 
   AddProfile(GetPersonalDataManager(0), *profiles1[0]);
@@ -197,9 +197,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
 
   AutoFillProfiles expected_profiles;
   expected_profiles.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(HOMER, expected_profiles[0]);
+  FillProfile(PROFILE_HOMER, expected_profiles[0]);
   expected_profiles.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(HOMER, expected_profiles[1]);
+  FillProfile(PROFILE_HOMER, expected_profiles[1]);
 
   AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
   AddProfile(GetPersonalDataManager(0), *expected_profiles[1]);
@@ -218,14 +218,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   STLDeleteElements(&expected_profiles);
 }
 
-
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileSteady) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Client0 adds a profile.
   AutoFillProfiles expected_profiles;
   expected_profiles.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(HOMER, expected_profiles[0]);
+  FillProfile(PROFILE_HOMER, expected_profiles[0]);
   AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
   EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
@@ -236,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileSteady) {
 
   // Client1 adds a profile.
   expected_profiles.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(MARION, expected_profiles[1]);
+  FillProfile(PROFILE_MARION, expected_profiles[1]);
   AddProfile(GetPersonalDataManager(1), *expected_profiles[1]);
   EXPECT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
 
@@ -247,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileSteady) {
 
   // Client0 adds a conflicting profile.
   expected_profiles.push_back(new AutoFillProfile(string16(), 0));
-  FillProfile(MARION, expected_profiles[2]);
+  FillProfile(PROFILE_MARION, expected_profiles[2]);
   AddProfile(GetPersonalDataManager(0), *expected_profiles[2]);
   EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
@@ -293,4 +292,224 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileSteady) {
       GetAllAutoFillProfiles(GetPersonalDataManager(0))));
   EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
       GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+}
+
+// TestScribe ID - 426757.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddEmptyProfile) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AutoFillProfiles expected_profiles;
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_NULL, expected_profiles[0]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+  STLDeleteElements(&expected_profiles);
+}
+
+// TestScribe ID - 422839.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddProfile) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AutoFillProfiles expected_profiles;
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_HOMER, expected_profiles[0]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+  STLDeleteElements(&expected_profiles);
+}
+
+// TestScribe ID - 425335.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddMultipleProfiles) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AutoFillProfiles expected_profiles;
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_MARION, expected_profiles[0]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
+
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_HOMER, expected_profiles[1]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[1]);
+
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_NULL, expected_profiles[2]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[2]);
+
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_FRASIER, expected_profiles[3]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[3]);
+
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(
+      GetAllAutoFillProfiles(GetPersonalDataManager(1)),
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  STLDeleteElements(&expected_profiles);
+}
+
+// TestScribe ID - 426758.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddUnicodeProfile) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  AutofillKeys expected_keys;
+  const string16 kUnicodeString = WideToUTF16(L"\u00CE\u00F1\u0163\u00E9");
+  expected_keys.insert(AutofillKey(kUnicodeString, kUnicodeString));
+  AddFormFieldsToWebData(GetWebDataService(0), expected_keys);
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+
+  AutofillKeys synced_keys;
+  GetAllAutofillKeys(GetWebDataService(1), &synced_keys);
+
+  EXPECT_EQ(expected_keys, synced_keys);
+}
+
+// TestScribe ID - 425337.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DeleteProfile) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AutoFillProfiles expected_profiles;
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_MARION, expected_profiles[0]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+
+  delete expected_profiles.front();
+  expected_profiles.erase(expected_profiles.begin());
+  RemoveProfile(GetPersonalDataManager(1), ASCIIToUTF16("Billing"));
+  EXPECT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+}
+
+// TestScribe ID - 426760.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, MergeProfiles) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AutoFillProfiles expected_profiles;
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_HOMER, expected_profiles[0]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
+
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_NULL, expected_profiles[1]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[1]);
+
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_MARION, expected_profiles[2]);
+  AddProfile(GetPersonalDataManager(1), *expected_profiles[2]);
+
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_FRASIER, expected_profiles[3]);
+  AddProfile(GetPersonalDataManager(1), *expected_profiles[3]);
+  EXPECT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+  STLDeleteElements(&expected_profiles);
+}
+
+// TestScribe ID - 426756.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, UpdateFields) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AutoFillProfiles expected_profiles;
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_HOMER, expected_profiles[0]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+
+  expected_profiles[0]->SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Lisa"));
+  expected_profiles[0]->SetInfo(
+                AutoFillType(EMAIL_ADDRESS), ASCIIToUTF16("grrrl@TV.com"));
+  UpdateProfile(GetPersonalDataManager(0), ASCIIToUTF16("Billing"),
+                AutoFillType(NAME_FIRST), ASCIIToUTF16("Lisa"));
+  UpdateProfile(GetPersonalDataManager(0), ASCIIToUTF16("Billing"),
+                AutoFillType(EMAIL_ADDRESS), ASCIIToUTF16("grrrl@TV.com"));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(
+      GetAllAutoFillProfiles(GetPersonalDataManager(0)),
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+  STLDeleteElements(&expected_profiles);
+}
+
+// TestScribe ID - 426755.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, UpdateLabel) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AutoFillProfiles profiles0;
+  profiles0.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_HOMER, profiles0[0]);
+
+  AutoFillProfiles profiles1;
+  profiles1.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_MARION, profiles1[0]);
+  profiles1[0]->set_label(ASCIIToUTF16("Shipping"));
+
+  AddProfile(GetPersonalDataManager(0), *profiles0[0]);
+  AddProfile(GetPersonalDataManager(1), *profiles1[0]);
+
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(profiles0,
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  EXPECT_TRUE(CompareAutoFillProfiles(profiles0,
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+  STLDeleteElements(&profiles0);
+  STLDeleteElements(&profiles1);
+}
+
+// TestScribe ID - 432634.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ConflictFields) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AutoFillProfiles expected_profiles;
+  expected_profiles.push_back(new AutoFillProfile(string16(), 0));
+  FillProfile(PROFILE_HOMER, expected_profiles[0]);
+  AddProfile(GetPersonalDataManager(0), *expected_profiles[0]);
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(0))));
+  EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+
+  UpdateProfile(GetPersonalDataManager(0), ASCIIToUTF16("Billing"),
+                AutoFillType(NAME_FIRST), ASCIIToUTF16("Lisa"));
+  UpdateProfile(GetPersonalDataManager(1), ASCIIToUTF16("Billing"),
+                AutoFillType(NAME_FIRST), ASCIIToUTF16("Bart"));
+
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+
+  EXPECT_TRUE(CompareAutoFillProfiles(
+      GetAllAutoFillProfiles(GetPersonalDataManager(0)),
+      GetAllAutoFillProfiles(GetPersonalDataManager(1))));
+  STLDeleteElements(&expected_profiles);
 }

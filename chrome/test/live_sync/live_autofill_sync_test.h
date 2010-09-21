@@ -96,23 +96,34 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
 };
 
 enum ProfileType {
-  MARION,
-  HOMER
+  PROFILE_MARION,
+  PROFILE_HOMER,
+  PROFILE_FRASIER,
+  PROFILE_NULL
 };
 
 void FillProfile(ProfileType type, AutoFillProfile* profile) {
   switch (type) {
-    case MARION:
+    case PROFILE_MARION:
       autofill_unittest::SetProfileInfo(profile,
         "Billing", "Marion", "Mitchell", "Morrison",
         "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
         "91601", "US", "12345678910", "01987654321");
       break;
-    case HOMER:
+    case PROFILE_HOMER:
       autofill_unittest::SetProfileInfo(profile,
         "Shipping", "Homer", "J.", "Simpson",
         "homer@snpp.com", "SNPP", "1 Main St", "PO Box 1", "Springfield", "MA",
         "94101", "US", "14155551212", "14155551313");
+      break;
+    case PROFILE_FRASIER:
+      autofill_unittest::SetProfileInfo(profile,
+        "Business", "Frasier", "Winslow", "Crane",
+        "", "randomness", "", "Apt. 4", "Seattle", "WA",
+        "99121", "US", "0000000000", "ABCDEFGHIJK");
+    case PROFILE_NULL:
+      autofill_unittest::SetProfileInfo(profile,
+        "", "key", "", "", "", "", "", "", "", "", "", "", "", "");
       break;
   }
 }
