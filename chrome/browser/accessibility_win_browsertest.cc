@@ -323,18 +323,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestRendererAccessibilityTree) {
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
   // the accessibility tree is being requested from the renderer.
-  AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  document_checker.SetExpectedState(
+  AccessibleChecker document1_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
+  document1_checker.SetExpectedState(
       STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED |
       STATE_SYSTEM_BUSY);
-  document_checker.CheckAccessible(GetRendererAccessible());
+  document1_checker.CheckAccessible(GetRendererAccessible());
 
   // Wait for the initial accessibility tree to load. Busy state should clear.
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
-  document_checker.SetExpectedState(
+  document1_checker.SetExpectedState(
       STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED);
-  document_checker.CheckAccessible(GetRendererAccessible());
+  document1_checker.CheckAccessible(GetRendererAccessible());
 
   GURL tree_url(
       "data:text/html,<html><head><title>Accessibility Win Test</title></head>"
@@ -348,10 +348,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker button_checker(L"push", ROLE_SYSTEM_PUSHBUTTON, L"push");
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
   AccessibleChecker body_checker(L"", L"BODY", L"");
+  AccessibleChecker document2_checker(
+    L"Accessibility Win Test", ROLE_SYSTEM_DOCUMENT, L"");
   body_checker.AppendExpectedChild(&button_checker);
   body_checker.AppendExpectedChild(&checkbox_checker);
-  document_checker.AppendExpectedChild(&body_checker);
-  document_checker.CheckAccessible(GetRendererAccessible());
+  document2_checker.AppendExpectedChild(&body_checker);
+  document2_checker.CheckAccessible(GetRendererAccessible());
 
   // Check that document accessible has a parent accessible.
   ScopedComPtr<IAccessible> document_accessible(GetRendererAccessible());
