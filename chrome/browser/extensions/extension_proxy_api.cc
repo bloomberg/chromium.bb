@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_proxy_api.h"
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/common/notification_service.h"
@@ -147,7 +148,7 @@ bool UseCustomProxySettingsFunction::ApplyProxyRules(
       proxy_pref.append(proxy_server[i].host);
       if (proxy_server[i].port != ProxyServer::INVALID_PORT) {
         proxy_pref.append(":");
-        proxy_pref.append(StringPrintf("%d", proxy_server[i].port));
+        proxy_pref.append(base::StringPrintf("%d", proxy_server[i].port));
       }
     }
   }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ref_counted.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -66,8 +67,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
 
   // Test setup.
   bool result = false;
-  std::wstring register_listeners_js = StringPrintf(L"setListenersOnTab(%d)",
-                                                    tab_id);
+  std::wstring register_listeners_js = base::StringPrintf(
+      L"setListenersOnTab(%d)", tab_id);
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", register_listeners_js, &result);
   EXPECT_TRUE(result);
@@ -122,8 +123,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
 
   // Test setup.
   bool result = false;
-  std::wstring register_listeners_js = StringPrintf(L"setListenersOnTab(%d)",
-                                                    tab_id);
+  std::wstring register_listeners_js = base::StringPrintf(
+      L"setListenersOnTab(%d)", tab_id);
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host_one->render_view_host(), L"", register_listeners_js, &result);
   EXPECT_TRUE(result);
@@ -134,7 +135,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
       tab_contents->render_view_host()));
 
   // Register listeners from the second extension as well.
-  std::wstring script = StringPrintf(L"registerListenersForTab(%d)", tab_id);
+  std::wstring script = base::StringPrintf(L"registerListenersForTab(%d)",
+                                           tab_id);
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host_two->render_view_host(), L"", script, &result);
   EXPECT_TRUE(result);

@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionGalleryInstallApiTest,
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
-  std::string base_url = StringPrintf(
+  std::string base_url = base::StringPrintf(
       "http://www.example.com:%u/files/extensions/",
       test_server()->host_port_pair().port());
 

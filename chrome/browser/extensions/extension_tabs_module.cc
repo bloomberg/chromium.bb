@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -969,7 +970,8 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
       image_data->data.size());
 
   base::Base64Encode(stream_as_string, &base64_result);
-  base64_result.insert(0, StringPrintf("data:%s;base64,", mime_type.c_str()));
+  base64_result.insert(0, base::StringPrintf("data:%s;base64,",
+                                             mime_type.c_str()));
   result_.reset(new StringValue(base64_result));
   SendResponse(true);
 }

@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -503,7 +504,7 @@ void PopupShowFunction::Observe(NotificationType type,
 // static
 void PopupEventRouter::OnPopupClosed(Profile* profile,
                                      int routing_id) {
-  std::string full_event_name = StringPrintf(
+  std::string full_event_name = base::StringPrintf(
       extension_popup_module_events::kOnPopupClosed,
       routing_id);
 

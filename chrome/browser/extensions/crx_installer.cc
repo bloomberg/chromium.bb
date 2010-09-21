@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/singleton.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -171,7 +172,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
       !original_url_.SchemeIsFile() &&
       apps_require_extension_mime_type_ &&
       original_mime_type_ != Extension::kMimeType) {
-    ReportFailureFromFileThread(StringPrintf(
+    ReportFailureFromFileThread(base::StringPrintf(
         "Applications must be served with content type %s.",
         Extension::kMimeType));
     return;
@@ -192,7 +193,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // Make sure the expected id matches.
   // TODO(aa): Also support expected version?
   if (!expected_id_.empty() && expected_id_ != extension->id()) {
-    ReportFailureFromFileThread(StringPrintf(
+    ReportFailureFromFileThread(base::StringPrintf(
         "ID in new extension manifest (%s) does not match expected id (%s)",
         extension->id().c_str(),
         expected_id_.c_str()));
@@ -208,7 +209,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
 
     for (size_t i = 0; i < extension_->web_extent().patterns().size(); ++i) {
       if (!pattern.MatchesHost(extension_->web_extent().patterns()[i].host())) {
-        ReportFailureFromFileThread(StringPrintf(
+        ReportFailureFromFileThread(base::StringPrintf(
             "Apps must be served from the host that they affect."));
         return;
       }

@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/thread.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_thread.h"
@@ -86,9 +87,9 @@ class MockService : public ExtensionUpdateService {
     for (int i = 1; i <= count; i++) {
       DictionaryValue manifest;
       manifest.SetString(extension_manifest_keys::kVersion,
-                         StringPrintf("%d.0.0.0", i));
+                         base::StringPrintf("%d.0.0.0", i));
       manifest.SetString(extension_manifest_keys::kName,
-                         StringPrintf("Extension %d", i));
+                         base::StringPrintf("Extension %d", i));
       if (update_url)
         manifest.SetString(extension_manifest_keys::kUpdateURL, *update_url);
       Extension* e = prefs_.AddExtensionWithManifest(manifest);
@@ -124,7 +125,7 @@ void CreateTestPendingExtensions(int count, const GURL& update_url,
     const bool kInstallSilently = true;
     const Extension::State kInitialState = Extension::ENABLED;
     const bool kInitialIncognitoEnabled = false;
-    std::string id = GenerateId(StringPrintf("extension%i", i));
+    std::string id = GenerateId(base::StringPrintf("extension%i", i));
     (*pending_extensions)[id] =
         PendingExtensionInfo(update_url, crx_type, kIsFromSync,
                              kInstallSilently, kInitialState,

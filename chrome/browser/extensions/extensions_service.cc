@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -1726,8 +1727,9 @@ void ExtensionsService::ReportExtensionLoadError(
 
   // TODO(port): note that this isn't guaranteed to work properly on Linux.
   std::string path_str = WideToUTF8(extension_path.ToWStringHack());
-  std::string message = StringPrintf("Could not load extension from '%s'. %s",
-                                     path_str.c_str(), error.c_str());
+  std::string message = base::StringPrintf(
+      "Could not load extension from '%s'. %s",
+      path_str.c_str(), error.c_str());
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
 }
 

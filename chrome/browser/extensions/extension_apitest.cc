@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -151,7 +152,7 @@ Extension* ExtensionApiTest::GetSingleLoadedExtension() {
       continue;
 
     if (found_extension_index != -1) {
-      message_ = StringPrintf(
+      message_ = base::StringPrintf(
           "Expected only one extension to be present.  Found %u.",
           static_cast<unsigned>(service->extensions()->size()));
       return NULL;

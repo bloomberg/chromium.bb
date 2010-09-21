@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_devtools_events.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
@@ -81,7 +82,7 @@ void ExtensionDevToolsBridge::SendMessageToClient(const IPC::Message& msg) {
 void ExtensionDevToolsBridge::OnDispatchToAPU(const std::string& data) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
-  std::string json = StringPrintf("[%s]", data.c_str());
+  std::string json = base::StringPrintf("[%s]", data.c_str());
   profile_->GetExtensionMessageService()->DispatchEventToRenderers(
       on_page_event_name_, json, profile_, GURL());
 }

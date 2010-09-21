@@ -8,6 +8,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 
 // These string constants and the formats used in this file must stay
 // in sync with chrome/renderer/resources/extension_process_bindings.js
@@ -36,17 +37,17 @@ bool ExtensionDevToolsEvents::IsDevToolsEventName(
 
 // static
 std::string ExtensionDevToolsEvents::OnPageEventNameForTab(int tab_id) {
-  return StringPrintf("%s%d.%s",
-                      kDevToolsEventPrefix,
-                      tab_id,
-                      kOnPageEventName);
+  return base::StringPrintf("%s%d.%s",
+                            kDevToolsEventPrefix,
+                            tab_id,
+                            kOnPageEventName);
 }
 
 // static
 std::string ExtensionDevToolsEvents::OnTabCloseEventNameForTab(int tab_id) {
-  return StringPrintf("%s%d.%s",
-                      kDevToolsEventPrefix,
-                      tab_id,
-                      kOnTabCloseEventName);
+  return base::StringPrintf("%s%d.%s",
+                            kDevToolsEventPrefix,
+                            tab_id,
+                            kOnTabCloseEventName);
 }
 

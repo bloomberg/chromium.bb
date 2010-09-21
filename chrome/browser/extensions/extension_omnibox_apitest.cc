@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -31,13 +32,13 @@
 namespace {
 
 std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
-  std::wstring output(StringPrintf(L"{%d} ", result.size()));
+  std::wstring output(base::StringPrintf(L"{%d} ", result.size()));
   for (size_t i = 0; i < result.size(); ++i) {
     AutocompleteMatch match = result.match_at(i);
     std::wstring provider_name(ASCIIToWide(match.provider->name()));
-    output.append(StringPrintf(L"[\"%ls\" by \"%ls\"] ",
-                               match.contents.c_str(),
-                               provider_name.c_str()));
+    output.append(base::StringPrintf(L"[\"%ls\" by \"%ls\"] ",
+                                     match.contents.c_str(),
+                                     provider_name.c_str()));
   }
   return output;
 }
