@@ -673,8 +673,9 @@ void ScreenLocker::Show() {
 
   // Exit fullscreen.
   Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);
-  if (browser->window()->IsFullscreen()) {
+  // browser can be NULL if we receive a lock request before the first browser
+  // window is shown.
+  if (browser && browser->window()->IsFullscreen()) {
     browser->ToggleFullscreenMode();
   }
 
