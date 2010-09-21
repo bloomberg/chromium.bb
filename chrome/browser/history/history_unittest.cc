@@ -43,6 +43,7 @@
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -697,7 +698,7 @@ TEST_F(HistoryTest, Segments) {
 // This just tests history system -> thumbnail database integration, the actual
 // thumbnail tests are in its own file.
 TEST_F(HistoryTest, Thumbnails) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+  if (history::TopSites::IsEnabled())
     return;  // TopSitesTest replaces this.
 
   scoped_refptr<HistoryService> history(new HistoryService);

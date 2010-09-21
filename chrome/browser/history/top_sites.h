@@ -56,6 +56,9 @@ class TopSites :
  public:
   explicit TopSites(Profile* profile);
 
+  // Returns whether top sites is enabled.
+  static bool IsEnabled();
+
   class MockHistoryService {
     // A mockup of a HistoryService used for testing TopSites.
    public:

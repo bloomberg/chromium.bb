@@ -68,6 +68,11 @@ TopSites::TopSites(Profile* profile) : profile_(profile),
       GetMutableDictionary(prefs::kNTPMostVisitedPinnedURLs);
 }
 
+// static
+bool TopSites::IsEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTopSites);
+}
+
 TopSites::~TopSites() {
   timer_.Stop();
 }

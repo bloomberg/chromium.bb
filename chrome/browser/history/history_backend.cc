@@ -22,6 +22,7 @@
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"
@@ -582,11 +583,12 @@ void HistoryBackend::InitImpl() {
 
   // Thumbnail database.
   thumbnail_db_.reset(new ThumbnailDatabase());
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
-    if (!db_->needs_version_18_migration()) {
-      // No convertion needed - use new filename right away.
-      thumbnail_name = GetFaviconsFileName();
-    }
+  if (history::TopSites::IsEnabled()) {
+    // TODO(sky): once we reenable top sites this needs to be fixed.
+    // if (!db_->needs_version_18_migration()) {
+    // No convertion needed - use new filename right away.
+    // thumbnail_name = GetFaviconsFileName();
+    // }
   }
   if (thumbnail_db_->Init(thumbnail_name,
                           history_publisher_.get()) != sql::INIT_OK) {
@@ -599,11 +601,12 @@ void HistoryBackend::InitImpl() {
     thumbnail_db_.reset();
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
-    if (db_->needs_version_18_migration()) {
-      LOG(INFO) << "Starting TopSites migration";
-      delegate_->StartTopSitesMigration();
-    }
+  if (history::TopSites::IsEnabled()) {
+    // TODO(sky): fix when reenabling top sites migration.
+    // if (db_->needs_version_18_migration()) {
+    // LOG(INFO) << "Starting TopSites migration";
+    // delegate_->StartTopSitesMigration();
+    // }
   }
 
   // Archived database.

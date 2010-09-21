@@ -8,20 +8,22 @@
 #include "app/sql/transaction.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#endif
 #include "base/ref_counted_memory.h"
 #include "base/time.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_publisher.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/thumbnail_score.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 
 namespace history {
 
@@ -130,7 +132,7 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
 
 bool ThumbnailDatabase::InitThumbnailTable() {
   if (!db_.DoesTableExist("thumbnails")) {
-    if (!CommandLine::ForCurrentProcess()-> HasSwitch(switches::kNoTopSites)) {
+    if (history::TopSites::IsEnabled()) {
       use_top_sites_ = true;
       return true;
     }

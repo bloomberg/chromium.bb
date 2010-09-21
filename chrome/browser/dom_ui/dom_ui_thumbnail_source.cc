@@ -6,10 +6,8 @@
 
 #include "app/resource_bundle.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/jpeg_codec.h"
@@ -28,7 +26,7 @@ DOMUIThumbnailSource::~DOMUIThumbnailSource() {
 void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (history::TopSites::IsEnabled()) {
     history::TopSites* top_sites = profile_->GetTopSites();
     RefCountedBytes* data = NULL;
     if (top_sites->GetPageThumbnail(GURL(path), &data)) {
@@ -38,7 +36,7 @@ void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
       SendDefaultThumbnail(request_id);
     }
     return;
-  }  // end --top-sites switch
+  }
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs) {

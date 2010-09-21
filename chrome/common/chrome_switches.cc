@@ -522,6 +522,9 @@ const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 // Enable tabbed options, ie: dom-ui version of options window.
 const char kEnableTabbedOptions[]           = "enable-tabbed-options";
 
+// Enables TopSites.
+const char kEnableTopSites[]                = "enable-top-sites";
+
 // Whether or not the touch events API is exposed.
 const char kEnableTouch[]                   = "enable-touch";
 
@@ -774,9 +777,6 @@ const char kNoSandbox[]                     = "no-sandbox";
 // Does not automatically open a browser window on startup (used when launching
 // Chrome for the purpose of hosting background apps).
 const char kNoStartupWindow[]               = "no-startup-window";
-
-// Don't use TopSites; use old ThumbnailDatabase code instead.
-const char kNoTopSites[]                    = "no-top-sites";
 
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.

@@ -15,6 +15,7 @@
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "gfx/codec/jpeg_codec.h"
@@ -72,7 +73,7 @@ class ThumbnailDatabaseTest : public testing::Test {
 };
 
 TEST_F(ThumbnailDatabaseTest, AddDelete) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+  if (history::TopSites::IsEnabled())
     return;  // TopSitesTest replaces this.
 
   ThumbnailDatabase db;
@@ -117,7 +118,7 @@ TEST_F(ThumbnailDatabaseTest, AddDelete) {
 }
 
 TEST_F(ThumbnailDatabaseTest, UseLessBoringThumbnails) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+  if (history::TopSites::IsEnabled())
     return;  // TopSitesTest replaces this.
 
   ThumbnailDatabase db;
@@ -154,7 +155,7 @@ TEST_F(ThumbnailDatabaseTest, UseLessBoringThumbnails) {
 }
 
 TEST_F(ThumbnailDatabaseTest, UseAtTopThumbnails) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+  if (history::TopSites::IsEnabled())
     return;  // TopSitesTest replaces this.
 
   ThumbnailDatabase db;
@@ -228,7 +229,7 @@ TEST_F(ThumbnailDatabaseTest, UseAtTopThumbnails) {
 }
 
 TEST_F(ThumbnailDatabaseTest, ThumbnailTimeDegradation) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+  if (history::TopSites::IsEnabled())
     return;  // TopSitesTest replaces this.
 
   ThumbnailDatabase db;
@@ -275,7 +276,7 @@ TEST_F(ThumbnailDatabaseTest, NeverAcceptTotallyBoringThumbnail) {
   // should replace a thumbnail with another because of reasons other
   // than straight up boringness score, still reject because the
   // thumbnail is totally boring.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+  if (history::TopSites::IsEnabled())
     return;  // TopSitesTest replaces this.
 
   ThumbnailDatabase db;
@@ -349,7 +350,7 @@ TEST_F(ThumbnailDatabaseTest, NeverAcceptTotallyBoringThumbnail) {
 }
 
 TEST_F(ThumbnailDatabaseTest, NeedsMigrationToTopSites) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+  if (history::TopSites::IsEnabled())
     return;  // TopSitesTest replaces this.
 
   ThumbnailDatabase db;

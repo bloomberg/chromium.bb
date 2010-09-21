@@ -56,8 +56,7 @@ void ComputeDatabaseMetrics(const FilePath& history_name,
 }  // namespace
 
 HistoryDatabase::HistoryDatabase()
-    : needs_version_17_migration_(false),
-      needs_version_18_migration_(false) {
+    : needs_version_17_migration_(false) {
 }
 
 HistoryDatabase::~HistoryDatabase() {
@@ -134,11 +133,7 @@ void HistoryDatabase::BeginExclusiveMode() {
 
 // static
 int HistoryDatabase::GetCurrentVersion() {
-  // If we don't use TopSites, we stay at the last pre-TopSites version.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
-    return 17;  // Last pre-TopSites version.
-  else
-    return kCurrentVersionNumber;
+  return kCurrentVersionNumber;
 }
 
 void HistoryDatabase::BeginTransaction() {
@@ -280,17 +275,14 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
     meta_table_.SetVersionNumber(cur_version);
   }
 
-  if (cur_version == 17)
-    needs_version_18_migration_ = true;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites) &&
-      (cur_version == 18 || cur_version == 19)) {
-    // Set DB version back to pre-top sites.
-    cur_version = 17;
+  if (cur_version == 17) {
+    // Version 17 was for thumbnails to top sites migration. We ended up
+    // disabling it though, so 17->18 does nothing.
+    ++cur_version;
     meta_table_.SetVersionNumber(cur_version);
   }
 
-  if (needs_version_18_migration_ || cur_version == 18) {
+  if (cur_version == 18) {
     // This is the version prior to adding url_source column. We need to
     // migrate the database.
     cur_version = 19;
@@ -299,9 +291,8 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
 
   // When the version is too old, we just try to continue anyway, there should
   // not be a released product that makes a database too old for us to handle.
-  LOG_IF(WARNING, (cur_version < GetCurrentVersion() &&
-                   !needs_version_18_migration_)) <<
-      "History database version " << cur_version << " is too old to handle.";
+  LOG_IF(WARNING, cur_version < GetCurrentVersion()) <<
+         "History database version " << cur_version << " is too old to handle.";
 
   return sql::INIT_OK;
 }
@@ -332,14 +323,7 @@ void HistoryDatabase::MigrateTimeEpoch() {
 #endif
 
 void HistoryDatabase::MigrationToTopSitesDone() {
-  // Migration should only happen for version 17 and 19.
-  int version = meta_table_.GetVersionNumber();
-  DCHECK(17 == version || 19 == version);
-  if (17 == version) {
-    // We should be migrating from 17 to 18.
-    meta_table_.SetVersionNumber(18);
-  }
-  needs_version_18_migration_ = false;
+  // TODO(sky): implement me.
 }
 
 }  // namespace history
