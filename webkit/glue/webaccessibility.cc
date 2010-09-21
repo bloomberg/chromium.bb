@@ -314,6 +314,8 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
   if (role == WebAccessibility::ROLE_DOCUMENT ||
       role == WebAccessibility::ROLE_WEB_AREA) {
     WebKit::WebDocument document = src.document();
+    if (name.empty())
+      name = document.title();
     attributes[ATTR_DOC_TITLE] = document.title();
     attributes[ATTR_DOC_URL] = document.frame()->url().spec().utf16();
     if (document.isXHTMLDocument())
