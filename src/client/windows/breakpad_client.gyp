@@ -41,6 +41,7 @@
         './sender/crash_report_sender.gyp:*',
         './unittests/client_tests.gyp:*',
         './unittests/testing.gyp:*',
+        './tests/crash_generation_app/crash_generation_app.gyp:*',
       ]
     },
     {
@@ -48,7 +49,6 @@
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)',
-	'<(DEPTH)/third_party/glog/glog/src/windows/',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
