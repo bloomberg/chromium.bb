@@ -1155,7 +1155,7 @@
    bug_22450
    Memcheck:Leak
    fun:_Znw*
-   fun:*DefaultClientSocketFactory21CreateTCPClientSocketERKNS_11AddressListEPNS_6NetLogE
+   fun:*DefaultClientSocketFactory21CreateTCPClientSocketERKNS_11AddressListEPNS_6NetLogE*
    fun:_ZN3net13TCPConnectJob12DoTCPConnectEv
    fun:_ZN3net13TCPConnectJob6DoLoopEi
    fun:_ZN3net13TCPConnectJob12OnIOCompleteEi
@@ -2669,17 +2669,12 @@
    fun:_ZN11ProfileImpl15InitSyncServiceERKSs
    fun:_ZN11ProfileImpl21GetProfileSyncServiceERKSs
    fun:_ZN11ProfileImpl21GetProfileSyncServiceEv
-   fun:_ZN7Profile16IsSyncAccessibleEv
-   fun:_ZN7Browser31UpdateCommandsForFullscreenModeEb
-   fun:_ZN7Browser16InitCommandStateEv
+   ...
    fun:_ZN7BrowserC1ENS_4TypeEP7Profile
-   fun:_ZN7Browser6CreateEP7Profile
-   fun:_ZN11BrowserInit17LaunchWithProfile17OpenTabsInBrowserEP7BrowserbRKSt6vectorINS0_3TabESaIS4_EE
-   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
-   fun:_ZN11BrowserInit17LaunchWithProfile17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS2_EE
+   ...
    fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7Profileb
    fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
    fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
-   fun:_Z11BrowserMainRK18MainFunctionParams
 }
+
