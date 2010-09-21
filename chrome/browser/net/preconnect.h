@@ -40,7 +40,7 @@ class Preconnect : public net::StreamFactory::StreamRequestDelegate {
                                    UrlInfo::ResolutionMotivation motivation);
 
   // StreamRequestDelegate interface
-  virtual void OnStreamReady(net::HttpStreamHandle* stream);
+  virtual void OnStreamReady(net::HttpStream* stream);
   virtual void OnStreamFailed(int status);
   virtual void OnCertificateError(int status, const net::SSLInfo& ssl_info);
   virtual void OnNeedsProxyAuth(const net::HttpResponseInfo& proxy_response,

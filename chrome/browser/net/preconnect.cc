@@ -13,7 +13,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
-#include "net/http/http_stream_handle.h"
+#include "net/http/http_stream.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -106,7 +106,7 @@ void Preconnect::Connect(const GURL& url) {
                                 &stream_request_job_);
 }
 
-void Preconnect::OnStreamReady(net::HttpStreamHandle* stream) {
+void Preconnect::OnStreamReady(net::HttpStream* stream) {
   delete stream;
   delete this;
 }

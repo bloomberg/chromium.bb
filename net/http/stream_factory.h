@@ -19,7 +19,6 @@ class HttpAuthController;
 class HttpNetworkSession;
 class HttpResponseInfo;
 class HttpStream;
-class HttpStreamHandle;
 class ProxyInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
@@ -39,7 +38,7 @@ class StreamFactory {
 
     // This is the success case.
     // |stream| is now owned by the delegate.
-    virtual void OnStreamReady(HttpStreamHandle* stream) = 0;
+    virtual void OnStreamReady(HttpStream* stream) = 0;
 
     // This is the failure to create a stream case.
     virtual void OnStreamFailed(int status) = 0;
@@ -148,4 +147,3 @@ class StreamFactory {
 }  // namespace net
 
 #endif  // NET_HTTP_STREAM_FACTORY_H_
-
