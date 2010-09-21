@@ -38,8 +38,8 @@ class PhishingDOMFeatureExtractor {
   // Creates a PhishingDOMFeatureExtractor for the specified RenderView.
   // The PhishingDOMFeatureExtrator should be destroyed prior to destroying
   // the RenderView.  |clock| is used for timing feature extractor operations,
-  // and may be mocked for testing.  PhishingDOMFeatureExtractor takes
-  // ownership of the clock.
+  // and may be mocked for testing.  The caller maintains ownership of the
+  // clock.
   PhishingDOMFeatureExtractor(RenderView* render_view,
                               FeatureExtractorClock* clock);
   ~PhishingDOMFeatureExtractor();
@@ -119,8 +119,8 @@ class PhishingDOMFeatureExtractor {
   // Non-owned pointer to the view that we will extract features from.
   RenderView* render_view_;
 
-  // Owned pointer to our clock.
-  scoped_ptr<FeatureExtractorClock> clock_;
+  // Non-owned pointer to our clock.
+  FeatureExtractorClock* clock_;
 
   // The output parameters from the most recent call to ExtractFeatures().
   FeatureMap* features_;  // The caller keeps ownership of this.

@@ -421,7 +421,6 @@ bool PhishingDOMFeatureExtractor::IsExternalDomain(const GURL& url,
 
 void PhishingDOMFeatureExtractor::InsertFeatures() {
   DCHECK(page_feature_state_.get());
-  features_->Clear();
 
   if (page_feature_state_->total_links > 0) {
     // Add a feature for the fraction of times the page links to an external
