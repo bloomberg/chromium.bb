@@ -58,8 +58,10 @@ class MockDeviceDataProviderImpl
     return instance_;
   }
 
-  MockDeviceDataProviderImpl() : start_calls_(0), stop_calls_(0),
-      got_data_(true) {
+  MockDeviceDataProviderImpl()
+      : start_calls_(0),
+        stop_calls_(0),
+        got_data_(true) {
   }
 
   virtual ~MockDeviceDataProviderImpl() {
@@ -69,11 +71,11 @@ class MockDeviceDataProviderImpl
 
   // DeviceDataProviderImplBase implementation.
   virtual bool StartDataProvider() {
-    start_calls_++;
+    ++start_calls_;
     return true;
   }
   virtual void StopDataProvider() {
-    stop_calls_++;
+    ++stop_calls_;
   }
   virtual bool GetData(DataType* data_out) {
     CHECK(data_out);
@@ -354,12 +356,16 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
 TEST_F(GeolocationNetworkProviderTest, MultipleStartProvider) {
   scoped_ptr<LocationProviderBase> provider_1(CreateProvider(true));
   scoped_ptr<LocationProviderBase> provider_2(CreateProvider(true));
+  ASSERT_TRUE(gateway_data_provider_);
+  ASSERT_TRUE(radio_data_provider_);
+  ASSERT_TRUE(wifi_data_provider_);
   EXPECT_EQ(0, gateway_data_provider_->start_calls_);
   EXPECT_EQ(0, radio_data_provider_->start_calls_);
   EXPECT_EQ(0, wifi_data_provider_->start_calls_);
   EXPECT_EQ(0, gateway_data_provider_->stop_calls_);
   EXPECT_EQ(0, radio_data_provider_->stop_calls_);
   EXPECT_EQ(0, wifi_data_provider_->stop_calls_);
+
   // Start first provider.
   EXPECT_TRUE(provider_1->StartProvider(false));
   EXPECT_EQ(1, gateway_data_provider_->start_calls_);
