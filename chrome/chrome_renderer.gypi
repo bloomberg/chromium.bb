@@ -223,8 +223,6 @@
         'renderer/user_script_slave.h',
         'renderer/visitedlink_slave.cc',
         'renderer/visitedlink_slave.h',
-        'renderer/webgles2context_impl.cc',
-        'renderer/webgles2context_impl.h',
         'renderer/webgraphicscontext3d_command_buffer_impl.cc',
         'renderer/webgraphicscontext3d_command_buffer_impl.h',
         'renderer/webplugin_delegate_proxy.cc',

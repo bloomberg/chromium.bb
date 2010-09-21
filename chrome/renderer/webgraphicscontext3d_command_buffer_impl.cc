@@ -21,7 +21,6 @@
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
-#include "chrome/renderer/webgles2context_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
@@ -113,39 +112,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
 bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view) {
-  bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableAcceleratedCompositing);
-  ggl::Context* parent_context = NULL;
-  // If GPU compositing is enabled we need to create a GL context that shares
-  // resources with the compositor's context.
-  if (compositing_enabled) {
-    // Asking for the GLES2Context on the WebView will force one to be created
-    // if it doesn't already exist. When the compositor is created for the view
-    // it will use the same context.
-    WebKit::WebGLES2Context* view_gles2_context = web_view->gles2Context();
-    if (!view_gles2_context)
-      return false;
-    WebGLES2ContextImpl* context_impl =
-        static_cast<WebGLES2ContextImpl*>(view_gles2_context);
-    parent_context = context_impl->context();
-  }
-
-  RenderThread* render_thread = RenderThread::current();
-  if (!render_thread)
-    return false;
-  GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
-  if (!host)
-    return false;
-  DCHECK(host->state() == GpuChannelHost::CONNECTED);
-  context_ = ggl::CreateOffscreenContext(host, parent_context, gfx::Size(1, 1));
-  if (!context_)
-    return false;
-  // TODO(gman): Remove this.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableGLSLTranslator)) {
-    DisableShaderTranslation(context_);
-  }
-  return true;
+  return false;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {

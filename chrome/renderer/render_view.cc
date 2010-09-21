@@ -80,7 +80,6 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
-#include "chrome/renderer/webgles2context_impl.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/websharedworker_proxy.h"
@@ -2458,18 +2457,6 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     // Add the chrome specific audio renderer.
     factory->AddFactory(
         AudioRendererImpl::CreateFactory(audio_message_filter()));
-  }
-
-  // TODO(hclam): Need to inject Gles2VideoDecodeContext here. Also I need
-  // to create a factory for FFmpegVideoDecoder here so that it can use
-  // the Gles2VideoDecodeContext.
-  if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
-      !cmd_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
-    // Add the hardware video decoder factory.
-    factory->AddFactory(IpcVideoDecoder::CreateFactory(
-        MessageLoop::current(),
-        reinterpret_cast<WebGLES2ContextImpl*>(
-            webview()->gles2Context())->context()));
   }
 
   WebApplicationCacheHostImpl* appcache_host =
