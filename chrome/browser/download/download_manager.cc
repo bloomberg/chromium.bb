@@ -127,6 +127,8 @@ void DownloadManager::Shutdown() {
   in_progress_.clear();
   dangerous_finished_.clear();
   STLDeleteValues(&downloads_);
+  STLDeleteContainerPointers(save_page_downloads_.begin(),
+                             save_page_downloads_.end());
 
   file_manager_ = NULL;
 
@@ -785,6 +787,10 @@ int DownloadManager::RemoveAllDownloads() {
   }
   // The null times make the date range unbounded.
   return RemoveDownloadsBetween(base::Time(), base::Time());
+}
+
+void DownloadManager::SavePageAsDownloadStarted(DownloadItem* download_item) {
+  save_page_downloads_.push_back(download_item);
 }
 
 // Initiate a download of a specific URL. We send the request to the

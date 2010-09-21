@@ -301,14 +301,9 @@ SavePackage::~SavePackage() {
   STLDeleteValues(&in_progress_items_);
   STLDeleteValues(&saved_failed_items_);
 
-  if (download_) {
-    // We call this to remove the view from the shelf. It will invoke
-    // DownloadManager::RemoveDownload, but since the fake DownloadItem is not
-    // owned by DownloadManager, it will do nothing to our fake item.
-    download_->Remove(false);
-    delete download_;
-    download_ = NULL;
-  }
+  // The DownloadItem is owned by DownloadManager.
+  download_ = NULL;
+
   file_manager_ = NULL;
 
   // If there's an outstanding save dialog, make sure it doesn't call us back

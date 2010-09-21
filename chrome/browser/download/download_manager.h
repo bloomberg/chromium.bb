@@ -135,6 +135,9 @@ class DownloadManager
   // deleted is returned back to the caller.
   int RemoveAllDownloads();
 
+  // Called when a Save Page As download is started.
+  void SavePageAsDownloadStarted(DownloadItem* download_item);
+
   // Download the object at the URL. Used in cases such as "Save Link As..."
   void DownloadUrl(const GURL& url,
                    const GURL& referrer,
@@ -306,6 +309,10 @@ class DownloadManager
   DownloadMap downloads_;
   DownloadMap in_progress_;
   DownloadMap dangerous_finished_;
+
+  // Collection of all save-page-as downloads in this profile.
+  // It owns the DownloadItems.
+  std::vector<DownloadItem*> save_page_downloads_;
 
   // True if the download manager has been initialized and requires a shutdown.
   bool shutdown_needed_;
