@@ -123,9 +123,11 @@ gChildPIDs = []
 
    Details:
      ProcessUtilTest.SpawnChild: chokes in __gcov_fork on 10.6
+     IPCFuzzingTest.MsgBadPayloadArgs: ditto
 """
 gTestExclusions = {
-  'darwin2': { 'base_unittests': ('ProcessUtilTest.SpawnChild',) }
+  'darwin2': { 'base_unittests': ('ProcessUtilTest.SpawnChild',),
+               'ipc_tests': ('IPCFuzzingTest.MsgBadPayloadArgs',), }
 }
 
 
@@ -734,9 +736,13 @@ class Coverage(object):
       if start_dir.endswith('chrome'):
         print 'coverage_posix.py: doing a "cd .." to accomodate Linux/make PWD'
         os.chdir('..')
-    if start_dir.endswith('build'):
-      print 'coverage_posix.py: doing a "cd src" to accomodate buildbot PWD'
-      os.chdir('src')
+    elif self.IsMac():
+      pass
+    else:
+      # windows
+      if start_dir.endswith('build'):
+        print 'coverage_posix.py: doing a "cd src" to accomodate buildbot PWD'
+        os.chdir('src')
 
     command = [self.mcov,
                '--directory',
