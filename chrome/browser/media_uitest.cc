@@ -67,7 +67,13 @@ class MediaTest : public UITest {
 #define MAYBE_VideoBearSilentWebm VideoBearSilentWebm
 #define MAYBE_VideoBearMp4 VideoBearMp4
 #define MAYBE_VideoBearSilentMp4 VideoBearSilentMp4
+
+#if defined(OS_LINUX)
+// Test fails on linux: http://crbug.com/56364
+#define MAYBE_MediaUILayoutTest DISABLED_MediaUILayoutTest
+#else
 #define MAYBE_MediaUILayoutTest MediaUILayoutTest
+#endif
 
 #endif
 
