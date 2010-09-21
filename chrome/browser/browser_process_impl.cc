@@ -143,12 +143,13 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   google_url_tracker_.reset();
   intranet_redirect_detector_.reset();
 
+  // Need to clear the desktop notification balloons before the io_thread_ and
+  // before the profiles, since if there are any still showing we will access
+  // those things during teardown.
+  notification_ui_manager_.reset();
+
   // Need to clear profiles (download managers) before the io_thread_.
   profile_manager_.reset();
-
-  // Need to clear the desktop notification balloons before the io_thread_,
-  // since if there are any left showing we will post tasks.
-  notification_ui_manager_.reset();
 
   // Debugger must be cleaned up before IO thread and NotificationService.
   debugger_wrapper_ = NULL;
