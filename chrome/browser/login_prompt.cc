@@ -395,6 +395,11 @@ class LoginDialogTask : public Task {
   void MakeInputForPasswordManager(
       std::vector<PasswordForm>* password_manager_input) {
     PasswordForm dialog_form;
+    // username_element and password_element need to be set. The value
+    // for both do not matter, but if they are empty then the username+password
+    // will never be saved.
+    dialog_form.username_element = ASCIIToUTF16("username");
+    dialog_form.password_element = ASCIIToUTF16("password");
     if (LowerCaseEqualsASCII(auth_info_->scheme, "basic")) {
       dialog_form.scheme = PasswordForm::SCHEME_BASIC;
     } else if (LowerCaseEqualsASCII(auth_info_->scheme, "digest")) {
