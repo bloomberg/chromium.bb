@@ -204,11 +204,12 @@ void BrowserToolbarGtk::Init(Profile* profile,
                        FALSE, FALSE, 0);
   }
 
+  wrench_menu_image_ = gtk_image_new_from_pixbuf(
+      theme_provider_->GetRTLEnabledPixbufNamed(IDR_TOOLS));
   wrench_menu_button_.reset(new CustomDrawButton(
       GtkThemeProvider::GetFrom(profile_),
       IDR_TOOLS, IDR_TOOLS_P, IDR_TOOLS_H, 0,
-      gtk_image_new_from_pixbuf(
-          theme_provider_->GetRTLEnabledPixbufNamed(IDR_TOOLS))));
+      wrench_menu_image_));
   GtkWidget* wrench_button = wrench_menu_button_->widget();
 
   gtk_widget_set_tooltip_text(
@@ -386,6 +387,14 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     // buttons don't get a halo color from the background.  When using Chromium
     // themes, we want to let the background show through the toolbar.
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), use_gtk);
+
+    if (use_gtk) {
+      // We need to manually update the icon if we are in GTK mode. (Note that
+      // we set the initial value in Init()).
+      gtk_image_set_from_pixbuf(
+          GTK_IMAGE(wrench_menu_image_),
+          theme_provider_->GetRTLEnabledPixbufNamed(IDR_TOOLS));
+    }
 
     UpdateRoundedness();
   } else if (type == NotificationType::UPGRADE_RECOMMENDED) {

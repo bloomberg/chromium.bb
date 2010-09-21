@@ -203,6 +203,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
   scoped_ptr<CustomDrawButton> wrench_menu_button_;
 
+  // The image shown in GTK+ mode in the wrench button.
+  GtkWidget* wrench_menu_image_;
+
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
 
