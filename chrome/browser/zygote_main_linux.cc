@@ -4,6 +4,7 @@
 
 #include <dlfcn.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <sys/epoll.h>
 #include <sys/prctl.h>
 #include <sys/signal.h>
@@ -504,7 +505,37 @@ static bool g_am_zygote_or_renderer = false;
 // We also considered patching the function in place, but this would again by
 // platform specific and the above technique seems to work well enough.
 
-static void WarnOnceAboutBrokenDlsym();
+typedef struct tm* (*LocaltimeFunction)(const time_t* timep);
+typedef struct tm* (*LocaltimeRFunction)(const time_t* timep,
+                                         struct tm* result);
+
+static pthread_once_t g_libc_localtime_funcs_guard = PTHREAD_ONCE_INIT;
+static LocaltimeFunction g_libc_localtime;
+static LocaltimeRFunction g_libc_localtime_r;
+
+static void InitLibcLocaltimeFunctions() {
+  g_libc_localtime = reinterpret_cast<LocaltimeFunction>(
+                         dlsym(RTLD_NEXT, "localtime"));
+  g_libc_localtime_r = reinterpret_cast<LocaltimeRFunction>(
+                         dlsym(RTLD_NEXT, "localtime_r"));
+
+  if (!g_libc_localtime || !g_libc_localtime_r) {
+    // http://code.google.com/p/chromium/issues/detail?id=16800
+    //
+    // Nvidia's libGL.so overrides dlsym for an unknown reason and replaces
+    // it with a version which doesn't work. In this case we'll get a NULL
+    // result. There's not a lot we can do at this point, so we just bodge it!
+    LOG(ERROR) << "Your system is broken: dlsym doesn't work! This has been "
+                  "reported to be caused by Nvidia's libGL. You should expect"
+                  " time related functions to misbehave. "
+                  "http://code.google.com/p/chromium/issues/detail?id=16800";
+  }
+
+  if (!g_libc_localtime)
+    g_libc_localtime = gmtime;
+  if (!g_libc_localtime_r)
+    g_libc_localtime_r = gmtime_r;
+}
 
 struct tm* localtime(const time_t* timep) {
   if (g_am_zygote_or_renderer) {
@@ -514,25 +545,9 @@ struct tm* localtime(const time_t* timep) {
                                 sizeof(timezone_string));
     return &time_struct;
   } else {
-    typedef struct tm* (*LocaltimeFunction)(const time_t* timep);
-    // This static declaration is desugared by the compiler into a locked
-    // initialisation which will only call dlsym once, across all threads.
-    // See: http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01598.html
-    static LocaltimeFunction libc_localtime =
-        (LocaltimeFunction) dlsym(RTLD_NEXT, "localtime");
-
-    if (!libc_localtime) {
-      // http://code.google.com/p/chromium/issues/detail?id=16800
-      //
-      // Nvidia's libGL.so overrides dlsym for an unknown reason and replaces
-      // it with a version which doesn't work. In this case we'll get a NULL
-      // result. There's not a lot we can do at this point, so we just bodge it!
-      WarnOnceAboutBrokenDlsym();
-
-      return gmtime(timep);
-    }
-
-    return libc_localtime(timep);
+    CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
+                             InitLibcLocaltimeFunctions));
+    return g_libc_localtime(timep);
   }
 }
 
@@ -541,36 +556,12 @@ struct tm* localtime_r(const time_t* timep, struct tm* result) {
     ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
     return result;
   } else {
-    typedef struct tm* (*LocaltimeRFunction)(const time_t* timep,
-                                             struct tm* result);
-    // This static declaration is desugared by the compiler into a locked
-    // initialisation which will only call dlsym once, across all threads.
-    // See: http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01598.html
-    static LocaltimeRFunction libc_localtime_r =
-        (LocaltimeRFunction) dlsym(RTLD_NEXT, "localtime_r");
-
-    if (!libc_localtime_r) {
-      // See |localtime|, above.
-      WarnOnceAboutBrokenDlsym();
-
-      return gmtime_r(timep, result);
-    }
-
-    return libc_localtime_r(timep, result);
+    CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
+                             InitLibcLocaltimeFunctions));
+    return g_libc_localtime_r(timep, result);
   }
 }
 
-// See the comments at the callsite in |localtime| about this function.
-static void WarnOnceAboutBrokenDlsym() {
-  static bool have_shown_warning = false;
-  if (!have_shown_warning) {
-    LOG(ERROR) << "Your system is broken: dlsym doesn't work! This has been "
-                  "reported to be caused by Nvidia's libGL. You should expect "
-                  "time related functions to misbehave. "
-                  "http://code.google.com/p/chromium/issues/detail?id=16800";
-    have_shown_warning = true;
-  }
-}
 #endif  // !CHROMIUM_SELINUX
 
 // This function triggers the static and lazy construction of objects that need
