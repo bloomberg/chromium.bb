@@ -1024,6 +1024,8 @@
         'browser/cocoa/notifications/balloon_view.mm',
         'browser/cocoa/nsmenuitem_additions.h',
         'browser/cocoa/nsmenuitem_additions.mm',
+        'browser/cocoa/nswindow_additions.h',
+        'browser/cocoa/nswindow_additions.mm',
         'browser/cocoa/objc_method_swizzle.h',
         'browser/cocoa/objc_method_swizzle.mm',
         'browser/cocoa/objc_zombie.h',

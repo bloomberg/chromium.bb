@@ -33,6 +33,7 @@
 #import "chrome/browser/cocoa/fullscreen_window.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_editor.h"
+#import "chrome/browser/cocoa/nswindow_additions.h"
 #import "chrome/browser/cocoa/sad_tab_controller.h"
 #import "chrome/browser/cocoa/sidebar_controller.h"
 #import "chrome/browser/cocoa/status_bubble_mac.h"
@@ -1792,6 +1793,11 @@ willAnimateFromState:(bookmarks::VisualState)oldState
     DCHECK(savedRegularWindow_);
     destWindow = [savedRegularWindow_ autorelease];
     savedRegularWindow_ = nil;
+
+    CGSWorkspaceID workspace;
+    if ([window cr_workspace:&workspace]) {
+      [destWindow cr_moveToWorkspace:workspace];
+    }
   }
   DCHECK(destWindow);
 
