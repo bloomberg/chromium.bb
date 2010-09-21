@@ -26,6 +26,7 @@
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
+#include "chrome/browser/dom_ui/tips_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -518,6 +519,8 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
 
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);
+  if (NewTabUI::WebResourcesEnabled())
+    TipsHandler::RegisterUserPrefs(prefs);
 
   UpdateUserPrefsVersion(prefs);
 }

@@ -96,6 +96,7 @@ class ProfileImpl : public Profile,
   virtual StatusTray* GetStatusTray();
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
+  virtual void InitWebResources();
   virtual NTPResourceCache* GetNTPResourceCache();
   virtual FilePath last_selected_directory();
   virtual void set_last_selected_directory(const FilePath& path);

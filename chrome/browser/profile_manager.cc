@@ -180,6 +180,9 @@ bool ProfileManager::AddProfile(Profile* profile, bool init_extensions) {
   profiles_.insert(profiles_.end(), profile);
   if (init_extensions)
     profile->InitExtensions();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kDisableWebResources))
+    profile->InitWebResources();
   return true;
 }
 

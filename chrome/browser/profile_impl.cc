@@ -440,6 +440,14 @@ void ProfileImpl::InitExtensions() {
   }
 }
 
+void ProfileImpl::InitWebResources() {
+  if (web_resource_service_)
+    return;
+
+  web_resource_service_ = new WebResourceService(this);
+  web_resource_service_->StartAfterDelay();
+}
+
 NTPResourceCache* ProfileImpl::GetNTPResourceCache() {
   if (!ntp_resource_cache_.get())
     ntp_resource_cache_.reset(new NTPResourceCache(this));

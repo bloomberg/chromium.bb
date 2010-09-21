@@ -432,6 +432,9 @@ class Profile {
 
   virtual void InitExtensions() = 0;
 
+  // Start up service that gathers data from a web resource feed.
+  virtual void InitWebResources() = 0;
+
   // Returns the new tab page resource cache.
   virtual NTPResourceCache* GetNTPResourceCache() = 0;
 

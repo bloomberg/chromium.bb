@@ -874,26 +874,29 @@ const char kNTPMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 // Page.
 const char kNTPMostVisitedPinnedURLs[] = "ntp.pinned_urls";
 
-// Data downloaded from resource pages (JSON, RSS) to be displayed in the
-// recommendations portion of the NTP.
-const char kNTPTipsCache[] = "ntp.tips_cache";
+// Data downloaded from resource pages (JSON, RSS) to be used to dynamically
+// deliver data for the new tab page.
+const char kNTPWebResourceCache[] = "ntp.web_resource_cache";
 
-// Last time of update of tips_cache.
-const char kNTPTipsCacheUpdate[] = "ntp.tips_cache_update";
+// Last time of update of web_resource_cache.
+const char kNTPWebResourceCacheUpdate[] = "ntp.web_resource_cache_update";
 
-// Last server used to fill tips_cache.
-const char kNTPTipsServer[] = "ntp.tips_server";
+// Last server used to fill web_resource_cache.
+const char kNTPWebResourceServer[] = "ntp.web_resource_server";
 
 // Which sections should be visible on the new tab page
 // 1 - Show the most visited sites in a grid
 // 2 - Show the most visited sites as a list
 // 4 - Show the recent section
-// 8 - Show tips
-// 16 - show sync status
+// 8 - (Show tips -- DEPRECATED)
+// 16 - Show sync status
 const char kNTPShownSections[] = "ntp.shown_sections";
 
 // This pref is used for migrating the prefs for the NTP
 const char kNTPPrefVersion[] = "ntp.pref_version";
+
+// Used if the NTP should show a custom logo rather than the standard one.
+const char kNTPCustomLogo[] = "ntp.custom_logo";
 
 // A boolean specifying whether dev tools window should be opened docked.
 const char kDevToolsOpenDocked[] = "devtools.open_docked";

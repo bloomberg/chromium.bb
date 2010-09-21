@@ -288,6 +288,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
   localized_strings.SetString("web_store_url",
       GetUrlWithLang(GURL(Extension::ChromeStoreURL())));
+  localized_strings.SetString("customlogo",
+        profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogo) &&
+            profile_->GetPrefs()->GetBoolean(prefs::kNTPCustomLogo) ?
+        "true" : "false");
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.

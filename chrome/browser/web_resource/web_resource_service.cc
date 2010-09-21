@@ -16,6 +16,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -23,6 +25,7 @@
 
 const char* WebResourceService::kCurrentTipPrefName = "current_tip";
 const char* WebResourceService::kTipCachePrefName = "tips";
+const char* WebResourceService::kCustomLogoId = "1";
 
 class WebResourceService::WebResourceFetcher
     : public URLFetcher::Delegate {
@@ -192,12 +195,8 @@ const char* WebResourceService::kDefaultResourceServer =
   "https://clients2.google.com/tools/service/npredir?r=chrometips_win&hl=";
 #endif
 
-const char* WebResourceService::kResourceDirectoryName =
-    "Resources";
-
 WebResourceService::WebResourceService(Profile* profile)
     : prefs_(profile->GetPrefs()),
-      web_resource_dir_(profile->GetPath().AppendASCII(kResourceDirectoryName)),
       in_fetch_(false) {
   Init();
 }
@@ -207,21 +206,22 @@ WebResourceService::~WebResourceService() { }
 void WebResourceService::Init() {
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_ = new WebResourceFetcher(this);
-  prefs_->RegisterStringPref(prefs::kNTPTipsCacheUpdate, "0");
+  prefs_->RegisterStringPref(prefs::kNTPWebResourceCacheUpdate, "0");
+  prefs_->RegisterBooleanPref(prefs::kNTPCustomLogo, false);
   std::string locale = g_browser_process->GetApplicationLocale();
 
-  if (prefs_->HasPrefPath(prefs::kNTPTipsServer)) {
-     web_resource_server_ = prefs_->GetString(prefs::kNTPTipsServer);
+  if (prefs_->HasPrefPath(prefs::kNTPWebResourceServer)) {
+     web_resource_server_ = prefs_->GetString(prefs::kNTPWebResourceServer);
      // If we are in the correct locale, initialization is done.
      if (EndsWith(web_resource_server_, locale, false))
        return;
   }
 
-  // If we have not yet set a server, or if the tips server is set to the wrong
-  // locale, reset the server and force an immediate update of tips.
+  // If we have not yet set a server, or if the web resource server is set to
+  // the wrong locale, reset the server and force an immediate update.
   web_resource_server_ = kDefaultResourceServer;
   web_resource_server_.append(locale);
-  prefs_->SetString(prefs::kNTPTipsCacheUpdate, "");
+  prefs_->SetString(prefs::kNTPWebResourceCacheUpdate, "");
 }
 
 void WebResourceService::EndFetch() {
@@ -230,41 +230,7 @@ void WebResourceService::EndFetch() {
 
 void WebResourceService::OnWebResourceUnpacked(
   const DictionaryValue& parsed_json) {
-  // Get dictionary of cached preferences.
-  web_resource_cache_ =
-      prefs_->GetMutableDictionary(prefs::kNTPTipsCache);
-
-  // The list of individual tips.
-  ListValue* tip_holder = new ListValue();
-  web_resource_cache_->Set(WebResourceService::kTipCachePrefName, tip_holder);
-
-  DictionaryValue* topic_dict;
-  ListValue* answer_list;
-  std::string topic_id;
-  std::string inproduct;
-  int tip_counter = 0;
-
-  if (parsed_json.GetDictionary("topic", &topic_dict)) {
-    if (topic_dict->GetString("topic_id", &topic_id))
-      web_resource_cache_->SetString("topic_id", topic_id);
-    if (topic_dict->GetList("answers", &answer_list)) {
-      for (ListValue::const_iterator tip_iter = answer_list->begin();
-           tip_iter != answer_list->end(); ++tip_iter) {
-        if (!(*tip_iter)->IsType(Value::TYPE_DICTIONARY))
-          continue;
-        DictionaryValue* a_dic =
-            static_cast<DictionaryValue*>(*tip_iter);
-        if (a_dic->GetString("inproduct", &inproduct)) {
-          tip_holder->Append(Value::CreateStringValue(inproduct));
-        }
-        tip_counter++;
-      }
-      // If we have tips, set current tip to zero.
-      if (!inproduct.empty())
-        web_resource_cache_->SetInteger(
-          WebResourceService::kCurrentTipPrefName, 0);
-    }
-  }
+  UnpackLogoSignal(parsed_json);
   EndFetch();
 }
 
@@ -272,9 +238,9 @@ void WebResourceService::StartAfterDelay() {
   int delay = kStartResourceFetchDelay;
   // Check whether we have ever put a value in the web resource cache;
   // if so, pull it out and see if it's time to update again.
-  if (prefs_->HasPrefPath(prefs::kNTPTipsCacheUpdate)) {
+  if (prefs_->HasPrefPath(prefs::kNTPWebResourceCacheUpdate)) {
     std::string last_update_pref =
-      prefs_->GetString(prefs::kNTPTipsCacheUpdate);
+        prefs_->GetString(prefs::kNTPWebResourceCacheUpdate);
     if (!last_update_pref.empty()) {
       double last_update_value;
       base::StringToDouble(last_update_pref, &last_update_value);
@@ -297,7 +263,81 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
   client->Start();
 
   // Update resource server and cache update time in preferences.
-  prefs_->SetString(prefs::kNTPTipsCacheUpdate,
+  prefs_->SetString(prefs::kNTPWebResourceCacheUpdate,
       base::DoubleToString(base::Time::Now().ToDoubleT()));
-  prefs_->SetString(prefs::kNTPTipsServer, web_resource_server_);
+  prefs_->SetString(prefs::kNTPWebResourceServer, web_resource_server_);
+}
+
+void WebResourceService::UnpackTips(const DictionaryValue& parsed_json) {
+  // Get dictionary of cached preferences.
+  web_resource_cache_ =
+      prefs_->GetMutableDictionary(prefs::kNTPWebResourceCache);
+
+  // The list of individual tips.
+  ListValue* tip_holder = new ListValue();
+  web_resource_cache_->Set(WebResourceService::kTipCachePrefName, tip_holder);
+
+  DictionaryValue* topic_dict;
+  ListValue* answer_list;
+  std::string topic_id;
+  std::string answer_id;
+  std::string inproduct;
+  int tip_counter = 0;
+
+  if (parsed_json.GetDictionary("topic", &topic_dict)) {
+    if (topic_dict->GetString("topic_id", &topic_id))
+      web_resource_cache_->SetString("topic_id", topic_id);
+    if (topic_dict->GetList("answers", &answer_list)) {
+      for (ListValue::const_iterator tip_iter = answer_list->begin();
+           tip_iter != answer_list->end(); ++tip_iter) {
+        if (!(*tip_iter)->IsType(Value::TYPE_DICTIONARY))
+          continue;
+        DictionaryValue* a_dic =
+            static_cast<DictionaryValue*>(*tip_iter);
+        if (a_dic->GetString("inproduct", &inproduct)) {
+          tip_holder->Append(Value::CreateStringValue(inproduct));
+        }
+        tip_counter++;
+      }
+      // If tips exist, set current index to 0.
+      if (!inproduct.empty()) {
+        web_resource_cache_->SetInteger(
+          WebResourceService::kCurrentTipPrefName, 0);
+      }
+    }
+  }
+}
+
+void WebResourceService::UnpackLogoSignal(const DictionaryValue& parsed_json) {
+  DictionaryValue* topic_dict;
+  ListValue* answer_list;
+  std::string logo_id;
+
+  if (parsed_json.GetDictionary("topic", &topic_dict)) {
+    if (topic_dict->GetList("answers", &answer_list)) {
+      for (ListValue::const_iterator tip_iter = answer_list->begin();
+           tip_iter != answer_list->end(); ++tip_iter) {
+        if (!(*tip_iter)->IsType(Value::TYPE_DICTIONARY))
+          continue;
+        DictionaryValue* a_dic =
+            static_cast<DictionaryValue*>(*tip_iter);
+        if (a_dic->GetString("logo_id", &logo_id)) {
+          prefs_->SetBoolean(prefs::kNTPCustomLogo,
+                             LowerCaseEqualsASCII(logo_id, kCustomLogoId));
+          NotificationService* service = NotificationService::current();
+          service->Notify(NotificationType::BROWSER_THEME_CHANGED,
+                          Source<WebResourceService>(this),
+                          NotificationService::NoDetails());
+          return;
+        }
+      }
+    }
+  }
+  // If no logo_id is found in the tips, show regular logo.
+  prefs_->SetBoolean(prefs::kNTPCustomLogo,
+                     LowerCaseEqualsASCII(logo_id, kCustomLogoId));
+  NotificationService* service = NotificationService::current();
+  service->Notify(NotificationType::BROWSER_THEME_CHANGED,
+                  Source<WebResourceService>(this),
+                  NotificationService::NoDetails());
 }

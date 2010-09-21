@@ -494,6 +494,10 @@ class OffTheRecordProfileImpl : public Profile,
     NOTREACHED();
   }
 
+  virtual void InitWebResources() {
+    NOTREACHED();
+  }
+
   virtual NTPResourceCache* GetNTPResourceCache() {
     // Just return the real profile resource cache.
     return profile_->GetNTPResourceCache();

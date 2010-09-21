@@ -321,11 +321,12 @@ extern const char kExtensionSidebarWidth[];
 
 extern const char kNTPMostVisitedURLsBlacklist[];
 extern const char kNTPMostVisitedPinnedURLs[];
-extern const char kNTPTipsCache[];
-extern const char kNTPTipsCacheUpdate[];
-extern const char kNTPTipsServer[];
+extern const char kNTPWebResourceCache[];
+extern const char kNTPWebResourceCacheUpdate[];
+extern const char kNTPWebResourceServer[];
 extern const char kNTPShownSections[];
 extern const char kNTPPrefVersion[];
+extern const char kNTPCustomLogo[];
 
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsSplitLocation[];

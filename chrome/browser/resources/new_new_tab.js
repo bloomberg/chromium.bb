@@ -515,9 +515,18 @@ function themeChanged(hasAttribution) {
 }
 
 function updateAttribution() {
-  var imageId =
-      document.documentElement.getAttribute('hasattribution') == 'true' ?
-      'IDR_THEME_NTP_ATTRIBUTION' : 'IDR_PRODUCT_LOGO';
+  // Default value for standard NTP with no theme attribution or custom logo.
+  logEvent('updateAttribution called');
+  var imageId = 'IDR_PRODUCT_LOGO';
+  // Theme attribution always overrides custom logos.
+  if (document.documentElement.getAttribute('hasattribution') == 'true') {
+    logEvent('updateAttribution called with THEME ATTR');
+    imageId = 'IDR_THEME_NTP_ATTRIBUTION';
+  } else if (document.documentElement.getAttribute('customlogo') == 'true') {
+    logEvent('updateAttribution with CUSTOMLOGO');
+    imageId = 'IDR_CUSTOM_PRODUCT_LOGO';
+  }
+
   $('attribution-img').src = 'chrome://theme/' + imageId + '?' + Date.now();
 }
 

@@ -30,6 +30,7 @@ class WebResourceService
 
   static const char* kCurrentTipPrefName;
   static const char* kTipCachePrefName;
+  static const char* kCustomLogoId;
 
   // Default server from which to gather resources.
   static const char* kDefaultResourceServer;
@@ -50,11 +51,43 @@ class WebResourceService
   // Puts parsed json data in the right places, and writes to prefs file.
   void OnWebResourceUnpacked(const DictionaryValue& parsed_json);
 
+  // Unpack the web resource as a set of tips. Expects json in the form of:
+  // {
+  //   "lang": "en",
+  //   "topic": {
+  //     "topid_id": "24013",
+  //     "topics": [
+  //     ],
+  //     "answers": [
+  //       {
+  //         "answer_id": "18625",
+  //         "inproduct": "Text here will be shown as a tip",
+  //       },
+  //       ...
+  //     ]
+  //   }
+  // }
+  //
+  void UnpackTips(const DictionaryValue& parsed_json);
+
+  // Unpack the web resource as a custom logo signal. Expects json in the form
+  // of:
+  // {
+  //   "topic": {
+  //     "answers": [
+  //       {
+  //         "logo_id": "1"
+  //       },
+  //       ...
+  //     ]
+  //   }
+  // }
+  //
+  void UnpackLogoSignal(const DictionaryValue& parsed_json);
+
   // We need to be able to load parsed resource data into preferences file,
   // and get proper install directory.
   PrefService* prefs_;
-
-  FilePath web_resource_dir_;
 
   // Server from which we are currently pulling web resource data.
   std::string web_resource_server_;
@@ -72,18 +105,11 @@ class WebResourceService
   // kCacheUpdateDelay time, and silently exit.
   bool in_fetch_;
 
-  // Maximum number of cached resources available.
-  static const int kMaxResourceCacheSize = 6;
-
   // Delay on first fetch so we don't interfere with startup.
   static const int kStartResourceFetchDelay = 5000;
 
-  // Delay between calls to update the cache (48 hours).
-  static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
-
-  // Name of directory inside the profile where we will store resource-related
-  // data (for now, thumbnail images).
-  static const char* kResourceDirectoryName;
+  // Delay between calls to update the cache (12 hours).
+  static const int kCacheUpdateDelay = 12 * 60 * 60 * 1000;
 
   DISALLOW_COPY_AND_ASSIGN(WebResourceService);
 };
