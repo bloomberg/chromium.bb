@@ -620,6 +620,10 @@ bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
   else if (text_differs)
     paste_state_ = NONE;
 
+  // Modifying the selection counts as accepting the autocompleted text.
+  const bool user_text_changed =
+      text_differs || (selection_differs && !inline_autocomplete_text_.empty());
+
   // If something has changed while the control key is down, prevent
   // "ctrl-enter" until the control key is released.  When we do this, we need
   // to update the popup if it's open, since the desired_tld will have changed.
@@ -628,19 +632,23 @@ bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
     control_key_state_ = DOWN_WITH_CHANGE;
     if (!text_differs && !popup_->IsOpen())
       return false;  // Don't open the popup for no reason.
-  } else if (!text_differs &&
-             (inline_autocomplete_text_.empty() || !selection_differs)) {
+  } else if (!user_text_changed) {
     return false;
   }
 
   const bool had_keyword = KeywordIsSelected();
 
-  // Modifying the selection counts as accepting the autocompleted text.
-  InternalSetUserText(UserTextFromDisplayText(new_text));
-  has_temporary_text_ = false;
+  // If the user text has not changed, we do not want to change the model's
+  // state associated with the text.  Otherwise, we can get surprising behavior
+  // where the autocompleted text unexpectedly reappears, e.g. crbug.com/55983
+  if (user_text_changed) {
+    InternalSetUserText(UserTextFromDisplayText(new_text));
+    has_temporary_text_ = false;
 
-  // Track when the user has deleted text so we won't allow inline autocomplete.
-  just_deleted_text_ = just_deleted_text;
+    // Track when the user has deleted text so we won't allow inline
+    // autocomplete.
+    just_deleted_text_ = just_deleted_text;
+  }
 
   // Disable the fancy keyword UI if the user didn't already have a visible
   // keyword and is not at the end of the edit.  This prevents us from showing
