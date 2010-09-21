@@ -2307,22 +2307,6 @@
    bug_51057_b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net9HttpCache24GetBackendForTransactionEPNS0_11TransactionE
-   fun:_ZN3net9HttpCache11Transaction12DoGetBackendEv
-   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
-   fun:_ZN3net9HttpCache11Transaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
-   fun:_ZN17URLRequestHttpJob16StartTransactionEv
-   fun:_ZN17URLRequestHttpJob24OnCanGetCookiesCompletedEi
-   fun:_ZN17URLRequestHttpJob23AddCookieHeaderAndStartEv
-   fun:_ZN17URLRequestHttpJob5StartEv
-   fun:_ZN10URLRequest8StartJobEP13URLRequestJob
-   fun:_ZN10URLRequest5StartEv
-   fun:_ZN10URLFetcher4Core15StartURLRequestEv
-}
-{
-   bug_51057_c
-   Memcheck:Leak
-   fun:_Znw*
    fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsN3net8internal26ClientSocketPoolBaseHelper5GroupEEEE8allocateEjPKv
    fun:_ZNSt8_Rb_treeISsSt4pairIKSsN3net8internal26ClientSocketPoolBaseHelper5GroupEESt10_Select1stIS6_ESt4lessISsESaIS6_EE11_M_get_nodeEv
    fun:_ZNSt8_Rb_treeISsSt4pairIKSsN3net8internal26ClientSocketPoolBaseHelper5GroupEESt10_Select1stIS6_ESt4lessISsESaIS6_EE14_M_create_nodeERKS6_
@@ -2344,6 +2328,49 @@
    fun:_ZN12CallbackImplIN3net9HttpCache11TransactionEMS2_FviE6Tuple1IiEE13RunWithParamsERKS6_
    fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
    fun:_ZN3net9HttpCache8WorkItem17NotifyTransactionEiPNS0_11ActiveEntryE
+}
+
+{
+   bug_56359_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net9HttpCache24GetBackendForTransactionEPNS0_11TransactionE
+   fun:_ZN3net9HttpCache11Transaction12DoGetBackendEv
+   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
+   fun:_ZN3net9HttpCache11Transaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN17URLRequestHttpJob16StartTransactionEv
+   fun:_ZN17URLRequestHttpJob24OnCanGetCookiesCompletedEi
+   fun:_ZN17URLRequestHttpJob23AddCookieHeaderAndStartEv
+   fun:_ZN17URLRequestHttpJob5StartEv
+   fun:_ZN10URLRequest8StartJobEP13URLRequestJob
+   fun:_ZN10URLRequest5StartEv
+   fun:_ZN10URLFetcher4Core15StartURLRequestEv
+}
+{
+   bug_56359_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN3sql9MetaTable19PrepareSetStatementEPNS_9StatementEPKc
+   fun:_ZN3sql9MetaTable8SetValueEPKci
+   fun:_ZN3sql9MetaTable16SetVersionNumberEi
+   fun:_ZN3sql9MetaTable4InitEPNS_10ConnectionEii
+   fun:_ZN27SQLitePersistentCookieStore21EnsureDatabaseVersionEPN3sql10ConnectionE
+   fun:_ZN27SQLitePersistentCookieStore4LoadEPSt6vectorIPN3net13CookieMonster15CanonicalCookieESaIS4_EE
+   fun:_ZN3net13CookieMonster9InitStoreEv
+   fun:_ZN3net13CookieMonster15InitIfNecessaryEv
+   fun:_ZN3net13CookieMonster21GetCookiesWithOptionsERK4GURLRKNS_13CookieOptionsE
+   fun:_ZN17URLRequestHttpJob24OnCanGetCookiesCompletedEi
+   fun:_ZN17URLRequestHttpJob23AddCookieHeaderAndStartEv
+   fun:_ZN17URLRequestHttpJob5StartEv
+   fun:_ZN10URLRequest8StartJobEP13URLRequestJob
+   fun:_ZN10URLRequest5StartEv
+   fun:_ZN10URLFetcher4Core15StartURLRequestEv
+   fun:_Z16DispatchToMethodIN10URLFetcher4CoreEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN10URLFetcher4CoreEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
 }
 {
    bug_51153
