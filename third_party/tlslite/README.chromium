@@ -25,7 +25,3 @@ Local Modifications:
   default to a certificate_types of [rsa_sign] in CertificateRequest. Apple's
   Secure Transport library rejects an empty list and raises an SSL protocol
   error.
-- patches/false_start_corking.patch: tlslite/TLSRecordLayer.py was changed to
-  report if data was pending on the socket when a Finished handshake message is
-  processed. This allows us to test that our SSL client sockets are corking
-  False Start application data correctly.
