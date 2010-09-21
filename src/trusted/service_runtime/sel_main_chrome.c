@@ -21,6 +21,7 @@
 #include "native_client/src/trusted/service_runtime/expiration.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
+#include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
@@ -56,7 +57,8 @@ static void StopForDebuggerInit(const struct NaClApp *state) {
 #endif
 }
 
-int NaClMainForChromium(int handle_count, const NaClHandle *handles) {
+int NaClMainForChromium(int handle_count, const NaClHandle *handles,
+                        int debug) {
   char *av[1];
   int ac = 1;
   const char **envp;
@@ -163,6 +165,12 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles) {
   if (LOAD_OK != errcode) {
     goto done;
   }
+
+
+  /*
+   * Enable debugging if requested.
+   */
+  if (debug) NaClDebugSetAllow(1);
 
   /*
    * only nap->ehdrs.e_entry is usable, no symbol table is
