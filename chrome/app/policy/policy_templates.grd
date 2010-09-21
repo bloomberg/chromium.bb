@@ -8,6 +8,8 @@ templates and will be translated for each locale. -->
   <outputs>
     <output filename="app/policy/windows/admx/chrome.admx" type="admx" lang="en" />
     <output filename="app/policy/windows/admx/en-US/chrome.adml" type="adml" lang="en" />
+    <output filename="app/policy/common/html/policy_list.html" type="doc" lang="en" />
+
     <output filename="app/policy/windows/adm/am/chrome.adm" type="adm" lang="am" />
     <output filename="app/policy/windows/adm/ar/chrome.adm" type="adm" lang="ar" />
     <output filename="app/policy/windows/adm/bg/chrome.adm" type="adm" lang="bg" />
@@ -522,6 +524,74 @@ templates and will be translated for each locale. -->
     </message>
     <!-- End Chrome Frame messages -->
 
+    <!-- Generated documentation messages -->
+    <message name="IDS_POLICY_DOC_DATA_TYPE"
+             desc="Caption text of the field 'data type' in the summary chart of a policy in the generated documentation">
+      Data type:
+    </message>
+    <message name="IDS_POLICY_DOC_WIN_REG_LOC"
+             desc="Caption text of the field 'windows registry location' in the summary chart of a policy in the generated documentation">
+      Windows registry location:
+    </message>
+    <message name="IDS_POLICY_DOC_MAC_LINUX_PREF_NAME"
+             desc="Caption text of the field 'mac/linux preference name' in the summary chart of a policy in the generated documentation">
+      Mac/Linux preference name:
+    </message>
+    <message name="IDS_POLICY_DOC_SUPPORTED_ON_PLATFORMS"
+             desc="Caption text of the list of 'platforms where this policy is supported' in the summary chart of a policy in the generated documentation">
+      Supported on platforms:
+    </message>
+    <message name="IDS_POLICY_DOC_SUPPORTED_IN_PRODUCTS"
+             desc="Caption text of the list of 'products where this policy is supported' in the summary chart of a policy in the generated documentation">
+      Supported in products:
+    </message>
+    <message name="IDS_POLICY_DOC_SUPPORTED_FEATURES"
+             desc="Caption text of the list of 'policy features that this policy supports' in the summary chart of a policy in the generated documentation">
+      Supported features:
+    </message>
+    <message name="IDS_POLICY_DOC_DESCRIPTION"
+             desc="Caption text of the 'description text' in the summary chart of a policy in the generated documentation">
+      Description:
+    </message>
+    <message name="IDS_POLICY_DOC_EXAMPLE_VALUE"
+             desc="Caption text of the field 'example value' in the summary chart of a policy in the generated documentation">
+      Example value:
+    </message>
+    <message name="IDS_POLICY_DOC_INTRO"
+             desc="Introduction text for the generated policy documentation">
+      This is the list of policies that Chromium respects.
+
+      You don't need to change these settings by hand!  You can download easy-to-use templates from
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">$5<ex>
+        http://www.chromium.org/administrators/policy-templates</ex></ph>.
+    </message>
+    <message name="IDS_POLICY_DOC_NOTE"
+             desc="Warning notice for policies in the generated policy documentation">
+      NOTE: there are some issues about this policy, visit
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">$6<ex>
+        http://www.chromium.org/administrators/policy-list-3/serious-problem</ex></ph> for more details.
+    </message>
+    <message name="IDS_POLICY_DOC_BACK_TO_TOP"
+             desc="Text of a link in the generated policy documentation, that takes the user to the top of the page">
+      Back to top
+    </message>
+    <message name="IDS_POLICY_DOC_SUPPORTED"
+             desc="Appears next to the name of each supported feature in the 'list of supported policy features' in the generated policy documentation">
+      Yes
+    </message>
+    <message name="IDS_POLICY_DOC_NOT_SUPPORTED"
+             desc="Appears next to the name of each unsupported feature in the 'list of supported policy features' in the generated policy documentation">
+      No
+    </message>
+    <message name="IDS_POLICY_DOC_NAME_COLUMN_TITLE"
+             desc="Appears at the top of the policy summary table, over the column of policy names, in the generated policy documentation">
+      Policy Name
+    </message>
+    <message name="IDS_POLICY_DOC_DESCRIPTION_COLUMN_TITLE"
+             desc="Appears at the top of the policy summary table, over the column of short policy descriptions, in the generated policy documentation">
+      Description
+    </message>
+    <!-- End of generated documentation messages  -->
     </messages>
   </release>
 </grit>

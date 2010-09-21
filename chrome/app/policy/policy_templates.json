@@ -22,14 +22,15 @@
 #   'string' - a string value
 #   'enum' - the user can select its value from a collection of items
 #   'main' - a boolean value with additional semantics:
-#     A group can have at most one main policy and it must have a value of true
-#     if the policy group is enabled, false if the group is disabled or no
-#     value if the policy is not specified. Chrome will see this policy no
-#     differently than other policies, but depending on the platform, the GUI
-#     of the templates might reflect the fact that these policies are 'main'.
-#     For example on Windows this policy will be assigned to the Enable/Disable
-#     buttons of the group, and if it is set to Disabled then other policies of
-#     the group will not be visible to Chrome.
+#     A group can have at most one main policy and it must have a value of True
+#     if the policy group is enabled, False if the group is disabled and not
+#     configured (not visible to Chrome at all) if the rest of the group is
+#     not configured. Chrome will see this policy no differently than other
+#     policies, but depending on the platform, the GUI of the templates might
+#     reflect the fact that these policies are 'main'. For example on Windows
+#     this policy will be assigned to the Enable/Disable buttons of the group,
+#     and if it is set to Disabled then other policies of the group will not be
+#     visible to Chrome.
 #   'list' - a list of string values
 #
 # Policy group descriptions, policy captions and similar texts are localized
@@ -94,6 +95,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': 'http://chromium.org',
         }
       }],
     },
@@ -106,6 +108,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': True,
         }
       }],
     },
@@ -118,7 +121,8 @@
           'platforms': ['win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 0},
-        }
+          'example_value': 'en',
+        },
       }]
     },
     {
@@ -128,8 +132,10 @@
         'type': 'main',
         'annotations': {
           'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
-        }
+          'example_value': True,
+        },
       }]
     },
     {
@@ -141,6 +147,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': True,
         }
       }],
     },
@@ -153,6 +160,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 0},
+          'example_value': True,
         }
       }],
     },
@@ -165,6 +173,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 0},
+          'example_value': True,
         }
       }]
     },
@@ -177,6 +186,10 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 0},
+          'example_value': True,
+          'problem_href':
+            'http://www.chromium.org/administrators/'
+            'policy-list-3/metrics-reporting-enabled',
         }
       }],
     },
@@ -189,6 +202,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': True,
         }
       }]
     },
@@ -201,6 +215,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': False,
         }
       }]
     },
@@ -213,6 +228,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': False,
         }
       }]
     },
@@ -225,6 +241,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
         }
       }]
     },
@@ -237,6 +254,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': True,
         }
       }]
     },
@@ -256,6 +274,7 @@
             'platforms': ['linux', 'mac', 'win'],
             'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
+            'example_value': 2,
           }
         },
         {
@@ -265,6 +284,7 @@
             'platforms': ['linux', 'mac', 'win'],
             'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
+            'example_value': '123.123.123.123:8080',
           }
         },
         {
@@ -274,6 +294,7 @@
             'platforms': ['linux', 'mac', 'win'],
             'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
+            'example_value': 'http://internal.site/example.pac'
           }
         },
         {
@@ -283,6 +304,7 @@
             'platforms': ['linux', 'mac', 'win'],
             'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
+            'example_value': 'http://www.example1.com,http://www.example2.com,http://internalsite/',
           }
         },
       ]
@@ -296,6 +318,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': ['extension_id1', 'extension_id2']
         }
       }]
     },
@@ -308,6 +331,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': ['extension_id1', 'extension_id2']
         }
       }]
     },
@@ -320,6 +344,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': True
         }
       }]
     },
@@ -337,6 +362,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': 4,
         }
       },{
         'name': 'RestoreOnStartupURLs',
@@ -345,6 +371,7 @@
           'platforms': ['linux', 'mac', 'win'],
           'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
+          'example_value': ['http://example.com', 'http://chromium.org'],
         }
       }]
     },
@@ -361,6 +388,7 @@
           'platforms': ['win'],
           'products': ['chrome_frame'],
           'features': {'dynamic_refresh': 0},
+          'example_value': 1,
         }
       }, {
         'name': 'RenderInChromeFrameList',
@@ -369,6 +397,7 @@
           'platforms': ['win'],
           'products': ['chrome_frame'],
           'features': {'dynamic_refresh': 0},
+          'example_value': ['http://www.example.com', 'http://www.example.edu'],
         }
       }, {
         'name': 'RenderInHostList',
@@ -377,12 +406,14 @@
           'platforms': ['win'],
           'products': ['chrome_frame'],
           'features': {'dynamic_refresh': 0},
+          'example_value': ['http://www.example.com', 'http://www.example.edu'],
         }
       }],
     },
   ],
   'placeholders': [
     # Note: keys $1 and $3 are reserved for Chromium and Chromium Frame.
+    # Key $6 is reserved for doc_writer.
     {
       'key': '$2',
       'value': 'http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett'
@@ -390,6 +421,10 @@
     {
       'key': '$4',
       'value': 'http://www.chromium.org/developers/how-tos/chrome-frame-getting-started'
+    },
+    {
+      'key': '$5',
+      'value': 'http://www.chromium.org/administrators/policy-templates'
     },
   ]
 }

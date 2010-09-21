@@ -52,6 +52,11 @@ class TestSuiteAll(unittest.TestSuite):
         import plist_strings_writer_unittest
     from grit.format.policy_templates.writers \
         import adm_writer_unittest
+    from grit.format.policy_templates.writers \
+        import adml_writer_unittest
+    from grit.format.policy_templates.writers \
+        import admx_writer_unittest
+    from grit.format.policy_templates.writers import doc_writer_unittest
 
     test_classes = [
       base_unittest.NodeUnittest,
@@ -85,6 +90,9 @@ class TestSuiteAll(unittest.TestSuite):
       plist_writer_unittest.PListWriterUnittest,
       plist_strings_writer_unittest.PListStringsWriterUnittest,
       adm_writer_unittest.AdmWriterUnittest,
+      admx_writer_unittest.AdmxWriterUnittest,
+      adml_writer_unittest.AdmlWriterUnittest,
+      doc_writer_unittest.DocWriterUnittest,
       # add test classes here...
     ]
 

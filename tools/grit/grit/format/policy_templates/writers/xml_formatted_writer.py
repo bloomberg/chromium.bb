@@ -3,16 +3,15 @@
 # found in the LICENSE file.
 
 
-from xml.dom.minidom import Document
-from xml.dom.minidom import Node
-from template_writer import TemplateWriter
+from xml.dom import minidom
+from grit.format.policy_templates.writers import template_writer
 
 
-class XMLFormattedWriter(TemplateWriter):
+class XMLFormattedWriter(template_writer.TemplateWriter):
   '''Helper class for generating XML-based templates.
   '''
 
-  def AddElement(self, parent, name, attrs = {}, text = None):
+  def AddElement(self, parent, name, attrs=None, text=None):
     '''
     Adds a new XML Element as a child to an existing element or the Document.
 
@@ -27,14 +26,20 @@ class XMLFormattedWriter(TemplateWriter):
     Returns:
       The created new element.
     '''
-    if isinstance(parent, Document):
-      doc = parent
-    else:
-      doc = parent.ownerDocument
+    if attrs == None:
+      attrs = {}
+
+    doc = parent.ownerDocument
     element = doc.createElement(name)
     for key, value in attrs.iteritems():
-      element.attributes[key] = value
+      element.setAttribute(key, value)
     if text:
-      element.appendChild( doc.createTextNode(text) )
+      element.appendChild(doc.createTextNode(text))
     parent.appendChild(element)
     return element
+
+  def AddText(self, parent, text):
+    '''Adds text to a parent node.
+    '''
+    doc = parent.ownerDocument
+    parent.appendChild(doc.createTextNode(text))

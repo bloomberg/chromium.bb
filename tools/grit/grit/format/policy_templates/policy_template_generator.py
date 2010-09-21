@@ -107,7 +107,12 @@ class PolicyTemplateGenerator:
       if 'policies' in group:
         # Iterate through all the policies in the current group.
         for policy in group['policies']:
+          # Add messages to the policy.
           self._AddMessagesToPolicy(policy)
+          # Store a reference to the group of the policy. This makes
+          # it easier to look up messages of the group when we have
+          # a policy, like in PListStringsWriter and DocWriter.
+          policy['parent'] = group
 
   def _GetPoliciesForWriter(self, template_writer, group):
     '''Filters the list of policies in a group for a writer.

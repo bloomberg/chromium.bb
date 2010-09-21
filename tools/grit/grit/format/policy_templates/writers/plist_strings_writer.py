@@ -20,6 +20,7 @@ class PListStringsWriter(template_writer.TemplateWriter):
   [lang].lproj subdirectories of the manifest bundle.
   '''
 
+  # TODO(gfeher): This function is duplicated in DocWriter.
   def _GetLocalizedPolicyMessage(self, policy, msg_id):
     '''Looks up localized caption or description for a policy.
     If the policy does not have the required message, then it is
@@ -35,7 +36,7 @@ class PListStringsWriter(template_writer.TemplateWriter):
     if msg_id in policy:
       msg = policy[msg_id]
     else:
-      msg = self._policy_group[msg_id]
+      msg = policy['parent'][msg_id]
     return msg
 
   def _AddToStringTable(self, item_name, caption, desc):
@@ -73,10 +74,10 @@ class PListStringsWriter(template_writer.TemplateWriter):
     self._AddToStringTable(policy['name'], caption, desc)
 
   def BeginPolicyGroup(self, group):
-    self._policy_group = group
+    pass
 
   def EndPolicyGroup(self):
-    self._policy_group = None
+    pass
 
   def BeginTemplate(self):
     self._AddToStringTable(

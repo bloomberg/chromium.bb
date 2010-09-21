@@ -181,7 +181,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
       if output.GetType() in ('rc_header', 'resource_map_header',
           'resource_map_source', 'resource_file_map_source'):
         encoding = 'cp1252'
-      elif output.GetType() in ['js_map_format', 'plist', 'plist_strings']:
+      elif output.GetType() in ('js_map_format', 'plist', 'plist_strings',
+          'doc'):
         encoding = 'utf_8'
       else:
         # TODO(gfeher) modify here to set utf-8 encoding for admx/adml

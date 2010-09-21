@@ -29,10 +29,6 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
   # describe the presentation of Policy-Groups and Policies.
   _presentation_table_elem = None
 
-  # The active Policy-Group. At any given point in time this contains the
-  # Policy-Group that is processed.
-  _active_policy_group = None
-
   # The active ADML "presentation" element. At any given point in time this
   # contains the "presentation" element for the Policy-Group that is processed.
   _active_presentation_elem = None
@@ -200,8 +196,6 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     Args:
       group: The Policy-Group to generate ADML elements for.
     '''
-    self._active_policy_group = group
-
     # Add ADML "string" elements to the string-table that are required by a
     # Policy-Group.
     id = group['name']
