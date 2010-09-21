@@ -90,14 +90,9 @@ void WifiConfigView::ContentsChanged(views::Textfield* sender,
 bool WifiConfigView::HandleKeystroke(
     views::Textfield* sender,
     const views::Textfield::Keystroke& keystroke) {
-  if (sender == passphrase_textfield_) {
-    if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
-      parent_->Accept();
-      return true;
-    } else if (keystroke.GetKeyboardCode() == app::VKEY_ESCAPE) {
-      parent_->Cancel();
-      return true;
-    }
+  if (sender == passphrase_textfield_ &&
+      keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+    parent_->GetDialogClientView()->AcceptWindow();
   }
   return false;
 }
