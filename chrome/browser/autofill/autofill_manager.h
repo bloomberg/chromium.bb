@@ -207,7 +207,8 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   scoped_ptr<FormStructure> upload_form_structure_;
 
   // The InfoBar that asks for permission to store credit card information.
-  scoped_ptr<AutoFillCCInfoBarDelegate> cc_infobar_;
+  // Deletes itself when closed.
+  AutoFillCCInfoBarDelegate* cc_infobar_;
 
   friend class TestAutoFillManager;
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);

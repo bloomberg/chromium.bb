@@ -435,10 +435,15 @@ void AutoFillManager::HandleSubmit() {
   CreditCard* credit_card;
   personal_data_->GetImportedFormData(&profile, &credit_card);
 
-  if (credit_card) {
-    cc_infobar_.reset(new AutoFillCCInfoBarDelegate(tab_contents_, this));
-  } else {
+  if (!credit_card) {
     UploadFormData();
+    return;
+  }
+
+  // Show an infobar to offer to save the credit card info.
+  if (tab_contents_) {
+    tab_contents_->AddInfoBar(new AutoFillCCInfoBarDelegate(tab_contents_,
+                                                            this));
   }
 }
 

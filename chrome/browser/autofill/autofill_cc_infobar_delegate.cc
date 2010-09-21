@@ -23,8 +23,6 @@ AutoFillCCInfoBarDelegate::AutoFillCCInfoBarDelegate(TabContents* tab_contents,
                                                      AutoFillManager* host)
     : ConfirmInfoBarDelegate(tab_contents),
       host_(host) {
-  if (tab_contents)
-    tab_contents->AddInfoBar(this);
 }
 
 AutoFillCCInfoBarDelegate::~AutoFillCCInfoBarDelegate() {
@@ -43,9 +41,7 @@ void AutoFillCCInfoBarDelegate::InfoBarClosed() {
     host_->OnInfoBarClosed(false);
     host_ = NULL;
   }
-
-  // This will delete us.
-  ConfirmInfoBarDelegate::InfoBarClosed();
+  delete this;
 }
 
 string16 AutoFillCCInfoBarDelegate::GetMessageText() const {
