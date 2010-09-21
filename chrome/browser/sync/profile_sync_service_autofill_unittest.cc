@@ -49,7 +49,6 @@ using testing::DoDefault;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::Invoke;
-using testing::Mock;
 using testing::Return;
 using testing::SaveArg;
 using testing::SetArgumentPointee;
@@ -842,19 +841,21 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
 
 TEST_F(ProfileSyncServiceAutofillTest,
        ProcessUserChangeUpdateProfileRelabelConflict) {
-  std::vector<AutoFillProfile*> native_profiles;
-  native_profiles.push_back(new AutoFillProfile(string16(), 0));
-  native_profiles.push_back(new AutoFillProfile(string16(), 0));
-  autofill_unittest::SetProfileInfo(native_profiles[0],
+  AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
+  autofill_unittest::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
-  autofill_unittest::SetProfileInfo(native_profiles[1],
+  AutoFillProfile* native_profile2 = new AutoFillProfile(string16(), 0);
+  autofill_unittest::SetProfileInfo(native_profile2,
       "ExistingLabel", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
-  AutoFillProfile marion(*native_profiles[1]);
-  AutoFillProfile josephine(*native_profiles[0]);
+  std::vector<AutoFillProfile*> native_profiles;
+  native_profiles.push_back(native_profile);
+  native_profiles.push_back(native_profile2);
+  AutoFillProfile marion(*native_profile2);
+  AutoFillProfile josephine_update(*native_profile);
 
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)). WillOnce(Return(true));
   EXPECT_CALL(web_database_, GetAutoFillProfiles(_)).
@@ -863,45 +864,32 @@ TEST_F(ProfileSyncServiceAutofillTest,
   CreateRootTask task(this, syncable::AUTOFILL);
   StartSyncService(&task, false);
   ASSERT_TRUE(task.success());
-  MessageLoop::current()->RunAllPending();
-  Mock::VerifyAndClearExpectations(&web_database_);
-  native_profiles.clear();  // Contents freed.
 
-  // Update josephine twice with marion's label.  The second time ought to be
-  // idempotent, settling on the same name and not triggering a sync upload.
-  for (int pass = 0; pass < 2; ++pass) {
-    AutoFillProfile josephine_update(josephine);
-    josephine_update.set_label(ASCIIToUTF16("ExistingLabel"));
+  josephine_update.set_label(ASCIIToUTF16("ExistingLabel"));
+  AutoFillProfile relabelled_profile;
+  EXPECT_CALL(web_database_, UpdateAutoFillProfile(
+      ProfileMatchesExceptLabel(josephine_update))).
+      WillOnce(DoAll(SaveArg<0>(&relabelled_profile), Return(true)));
+  EXPECT_CALL(*personal_data_manager_, Refresh());
 
-    AutoFillProfile relabelled_profile;
-    EXPECT_CALL(web_database_, UpdateAutoFillProfile(
-        ProfileMatchesExceptLabel(josephine_update))).
-        WillOnce(DoAll(SaveArg<0>(&relabelled_profile), Return(true)));
-    EXPECT_CALL(*personal_data_manager_, Refresh());
+  AutofillProfileChange change(AutofillProfileChange::UPDATE,
+                               josephine_update.Label(), &josephine_update,
+                               ASCIIToUTF16("Billing"));
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
+                   Details<AutofillProfileChange>(&change));
 
-    AutofillProfileChange change(AutofillProfileChange::UPDATE,
-                                 josephine_update.Label(), &josephine_update,
-                                 josephine.Label());
-    scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
-    notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
-                     Source<WebDataService>(web_data_service_.get()),
-                     Details<AutofillProfileChange>(&change));
-    MessageLoop::current()->RunAllPending();  // Run the Refresh task.
-    Mock::VerifyAndClearExpectations(&web_database_);
-
-    std::vector<AutofillEntry> new_sync_entries;
-    std::vector<AutoFillProfile> new_sync_profiles;
-    ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
-                                             &new_sync_profiles));
-    ASSERT_EQ(2U, new_sync_profiles.size());
-    marion.set_unique_id(0);  // The sync DB doesn't store IDs.
-    EXPECT_EQ(marion, new_sync_profiles[1]);
-    EXPECT_TRUE(ProfilesMatchExceptLabelImpl(josephine_update,
-                                             new_sync_profiles[0]));
-    EXPECT_EQ(ASCIIToUTF16("ExistingLabel2"), new_sync_profiles[0].Label());
-    EXPECT_EQ(ASCIIToUTF16("ExistingLabel2"), relabelled_profile.Label());
-    josephine = relabelled_profile;
-  }
+  std::vector<AutofillEntry> new_sync_entries;
+  std::vector<AutoFillProfile> new_sync_profiles;
+  ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
+                                           &new_sync_profiles));
+  ASSERT_EQ(2U, new_sync_profiles.size());
+  marion.set_unique_id(0);  // The sync DB doesn't store IDs.
+  EXPECT_EQ(marion, new_sync_profiles[1]);
+  EXPECT_TRUE(ProfilesMatchExceptLabelImpl(josephine_update,
+                                           new_sync_profiles[0]));
+  EXPECT_EQ(new_sync_profiles[0].Label(), relabelled_profile.Label());
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {

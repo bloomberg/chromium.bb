@@ -107,21 +107,9 @@ class AutofillChangeProcessor : public ChangeProcessor,
   // This method should be called on an ADD notification from the chrome model.
   // |tag| contains the unique sync client tag identifier for |profile|, which
   // is derived from the profile label using ProfileLabelToTag.
-  // |existing_unique_label| is the current label of the object, if any; this
-  // is an allowed value, because it's taken by the item in question.
-  // For new items, set |existing_unique_label| to the empty string.
-  void ChangeProfileLabelIfAlreadyTaken(
-      sync_api::BaseTransaction* trans,
-      const string16& existing_unique_label,
-      AutoFillProfile* profile,
+  void HandleMoveAsideIfNeeded(
+      sync_api::BaseTransaction* trans, AutoFillProfile* profile,
       std::string* tag);
-
-  // Reassign the label of the profile, write this back to the web database,
-  // and update |tag| with the tag corresponding to the new label.
-  void OverrideProfileLabel(
-      const string16& new_label,
-      AutoFillProfile* profile_to_update,
-      std::string* tag_to_update);
 
   // Helper to create a sync node with tag |tag|, storing |profile| as
   // the node's AutofillSpecifics.
