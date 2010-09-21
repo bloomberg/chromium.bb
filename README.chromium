@@ -1,0 +1,13 @@
+Name: libsrtp
+URL: http://srtp.sourceforge.net
+License File: LICENSE
+
+Contains sources of libSRTP used by Chrome.
+The current version contains copy of the libsrtp CVS from 2010-09-20. Command
+used to obtain this copy:
+
+  cvs -d:pserver:anonymous@srtp.cvs.sourceforge.net:/cvsroot/srtp co -P srtp
+
+Following files are not included in this copy:
+ 1. The configure script.
+ 2. All .cvsignore files.
