@@ -161,6 +161,10 @@ class TLSRecordLayer:
         #Fault we will induce, for testing purposes
         self.fault = None
 
+        # Set to true if we observe a corked False Start (i.e., there's a
+        # record pending when we read the Finished.)
+        self.corkedFalseStart = False
+
     #*********************************************************
     # Public Functions START
     #*********************************************************
@@ -713,6 +717,11 @@ class TLSRecordLayer:
                     yield ClientKeyExchange(constructorType, \
                                             self.version).parse(p)
                 elif subType == HandshakeType.finished:
+                    try:
+                      m = self.sock.recv(1, socket.MSG_PEEK | socket.MSG_DONTWAIT)
+                      self.corkedFalseStart = len(m) == 1
+                    except:
+                      pass
                     yield Finished(self.version).parse(p)
                 else:
                     raise AssertionError()
