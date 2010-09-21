@@ -81,5 +81,26 @@
   'chromeos': [
     # you cannot resize browser window on chromeos
     '-browser.BrowserTest.testWindowResize',
+    # Importer tests are invalid on chromeos since chrome is the only browser
+    '-imports',
+
+    # crbug.com/42823
+    '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
+    # chrome/test/data/plugins dir missing in autotest pkg. crosbug.com/6855
+    '-browser.BrowserTest.testCanLoadFlash',
+    '-browser.BrowserTest.testFlashLoadsAfterKill',
+    '-browser.BrowserTest.testSingleFlashPluginProcess',
+    '-infobars.InfobarTest.testPluginCrashInfobar',
+    '-omnibox',  # http://crbug.com/44203
+    # crosbug.com/6856
+    '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
+    '-prefs.PrefsTest.testSessionRestoreURLs',
+    '-prefs.PrefsTest.testSessionRestore',
+    '-translate.TranslateTest.testSessionRestore',
+    '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
+    '-downloads.DownloadsTest.testZip',
+    '-downloads.DownloadsTest.testZipInIncognito',
+    '-downloads.DownloadsTest.testCrazyFilenames',
+    '-translate.TranslateTest.testDownloadsNotTranslated',
   ],
 }
