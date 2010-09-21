@@ -421,7 +421,7 @@ public:
     Cluster* GetCluster(long long time_nanoseconds);
 
     void GetCluster(
-        __int64 time_nanoseconds,
+        long long time_nanoseconds,
         Track*,
         Cluster*&,
         const BlockEntry*&);

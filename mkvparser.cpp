@@ -1650,7 +1650,7 @@ Cluster* Segment::GetCluster(long long time_ns)
 
 
 void Segment::GetCluster(
-    __int64 time_ns,
+    long long time_ns,
     Track* pTrack,
     Cluster*& pCluster,
     const BlockEntry*& pBlockEntry)
@@ -2088,7 +2088,7 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
             const Block* const pBlock = pBlockEntry->GetBlock();
             assert(pBlock);
 
-            if (pBlock->GetTrackNumber() == m_info.number)
+            if (pBlock->GetTrackNumber() == static_cast<unsigned long>(m_info.number))
                 return 0;
 
             pBlockEntry = pCluster->GetNext(pBlockEntry);
@@ -2113,7 +2113,7 @@ long Track::GetNext(
 {
     assert(pCurrEntry);
     assert(!pCurrEntry->EOS());  //?
-    assert(pCurrEntry->GetBlock()->GetTrackNumber() == m_info.number);
+    assert(pCurrEntry->GetBlock()->GetTrackNumber() == static_cast<unsigned long>(m_info.number));
 
 #if 0
     const Cluster* const pCurrCluster = pCurrEntry->GetCluster();
@@ -2228,7 +2228,7 @@ long Track::GetNext(
             const Block* const pNextBlock = pNextEntry->GetBlock();
             assert(pNextBlock);
 
-            if (pNextBlock->GetTrackNumber() == m_info.number)
+            if (pNextBlock->GetTrackNumber() == static_cast<unsigned long>(m_info.number))
                 return 0;
 
             pNextEntry = pCluster->GetNext(pNextEntry);
