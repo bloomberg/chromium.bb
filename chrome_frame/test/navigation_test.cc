@@ -287,7 +287,6 @@ TEST_P(FullTabNavigationTest, FLAKY_RestrictedSite) {
     return;
   }
   MockWindowObserver win_observer_mock;
-
   ScopedComPtr<IInternetSecurityManager> security_manager;
   HRESULT hr = security_manager.CreateInstance(CLSID_InternetSecurityManager);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -295,25 +294,25 @@ TEST_P(FullTabNavigationTest, FLAKY_RestrictedSite) {
   hr = security_manager->SetZoneMapping(URLZONE_UNTRUSTED,
       GetTestUrl(L"").c_str(), SZM_CREATE);
 
-  EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(ie_mock_, OnFileDownload(_, _))
+      .Times(testing::AnyNumber());
   server_mock_.ExpectAndServeAnyRequests(GetParam());
 
   ProtocolPatchMethod patch_method = GetPatchMethod();
 
+  const wchar_t* kDialogClass = L"#32770";
   const char* kAlertDlgCaption = "Security Alert";
 
-  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(
-      _,
-      testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(GetSimplePageUrl())),
-      _, _, _, _, _))
-    .Times(1)
-    .WillOnce(WatchWindow(&win_observer_mock, kAlertDlgCaption));
+  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
+      testing::Field(&VARIANT::bstrVal,
+      testing::StrCaseEq(GetSimplePageUrl())), _, _, _, _, _))
+      .Times(1)
+      .WillOnce(WatchWindow(&win_observer_mock, kDialogClass));
 
   if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
-    EXPECT_CALL(ie_mock_, OnBeforeNavigate2(
-        _,
-        testing::Field(&VARIANT::bstrVal, testing::HasSubstr(L"res://")),
-        _, _, _, _, _))
+    EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
+        testing::Field(&VARIANT::bstrVal,
+        testing::HasSubstr(L"res://")), _, _, _, _, _))
         .Times(testing::AtMost(1));
   }
 
@@ -321,12 +320,11 @@ TEST_P(FullTabNavigationTest, FLAKY_RestrictedSite) {
       testing::Field(&VARIANT::bstrVal, StrEq(GetSimplePageUrl()))))
       .Times(testing::AtMost(1));
 
-  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+  EXPECT_CALL(win_observer_mock, OnWindowDetected(_, StrEq(kAlertDlgCaption)))
       .Times(1)
-      .WillOnce(DoCloseWindow());
-  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
-      .Times(1)
-      .WillOnce(CloseBrowserMock(&ie_mock_));
+      .WillOnce(testing::DoAll(
+          DoCloseWindow(),
+          CloseBrowserMock(&ie_mock_)));
 
   LaunchIEAndNavigate(GetSimplePageUrl());
 

@@ -6,7 +6,6 @@
 #define CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
 
 #include <windows.h>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/platform_thread.h"
@@ -127,35 +126,28 @@ ACTION_P2(AccSetValue, matcher, value) {
   }
 }
 
-namespace { // NOLINT
-template<typename R> R AccInWindow(testing::Action<R(HWND)> action, HWND hwnd) {
-  return action.Perform(typename testing::Action<R(HWND)>::ArgumentTuple(hwnd));
-}
-}
-
-ACTION_P2(AccDoDefaultActionInBrowser, mock, matcher) {
-  AccInWindow<void>(AccDoDefaultAction(matcher),
-                    mock->event_sink()->GetBrowserWindow());
-}
-
 ACTION_P2(AccDoDefaultActionInRenderer, mock, matcher) {
-  AccInWindow<void>(AccDoDefaultAction(matcher),
-                    mock->event_sink()->GetRendererWindow());
+  HWND window = mock->event_sink()->GetRendererWindow();
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(window, matcher, &object)) {
+    EXPECT_TRUE(object->DoDefaultAction());
+  }
 }
 
 ACTION_P2(AccLeftClickInBrowser, mock, matcher) {
-  AccInWindow<void>(AccLeftClick(matcher),
-                    mock->event_sink()->GetBrowserWindow());
-}
-
-ACTION_P2(AccLeftClickInRenderer, mock, matcher) {
-  AccInWindow<void>(AccLeftClick(matcher),
-                    mock->event_sink()->GetRendererWindow());
+  HWND window = mock->event_sink()->GetBrowserWindow();
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(window, matcher, &object)) {
+    EXPECT_TRUE(object->LeftClick());
+  }
 }
 
 ACTION_P3(AccSetValueInBrowser, mock, matcher, value) {
-  AccInWindow<void>(AccSetValue(matcher, value),
-                    mock->event_sink()->GetBrowserWindow());
+  HWND window = mock->event_sink()->GetBrowserWindow();
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(window, matcher, &object)) {
+    EXPECT_TRUE(object->SetValue(value));
+  }
 }
 
 ACTION_P2(AccWatchForOneValueChange, observer, matcher) {
@@ -180,8 +172,8 @@ ACTION_P(PostCharMessage, character_code) {
 }
 
 ACTION_P2(PostCharMessageToRenderer, mock, character_code) {
-  AccInWindow<void>(PostCharMessage(character_code),
-                    mock->event_sink()->GetRendererWindow());
+  HWND window = mock->event_sink()->GetRendererWindow();
+  ::PostMessage(window, WM_CHAR, character_code, 0);
 }
 
 ACTION_P2(PostCharMessagesToRenderer, mock, character_codes) {
@@ -199,21 +191,7 @@ ACTION_P(StopWindowWatching, mock) {
   mock->StopWatching();
 }
 
-ACTION_P(WatchWindowProcess, mock_observer) {
-  mock_observer->WatchProcessForHwnd(arg0);
-}
-
-ACTION_P2(WatchBrowserProcess, mock_observer, mock) {
-  AccInWindow<void>(WatchWindowProcess(mock_observer),
-                    mock->event_sink()->GetBrowserWindow());
-}
-
-ACTION_P2(WatchRendererProcess, mock_observer, mock) {
-  AccInWindow<void>(WatchWindowProcess(mock_observer),
-                    mock->event_sink()->GetRendererWindow());
-}
-
-namespace { // NOLINT
+namespace {
 
 void DoCloseWindowNow(HWND hwnd) {
   ::PostMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
@@ -240,15 +218,6 @@ ACTION(KillChromeFrameProcesses) {
 }
 
 // Verifying actions
-ACTION_P(AccExpect, matcher) {
-  scoped_refptr<AccObject> object;
-  EXPECT_TRUE(FindAccObjectInWindow(arg0, matcher, &object));
-}
-
-ACTION_P2(AccExpectInRenderer, mock, matcher) {
-  AccInWindow<void>(AccExpect(matcher),
-                    mock->event_sink()->GetRendererWindow());
-}
 
 ACTION_P(ExpectRendererHasFocus, mock) {
   mock->event_sink()->ExpectRendererWindowHasFocus();

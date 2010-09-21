@@ -8,7 +8,6 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <string>
-#include <vector>
 
 #include "base/file_path.h"
 #include "base/string_number_conversions.h"
@@ -204,55 +203,18 @@ class MockPropertyNotifySinkListener : public PropertyNotifySinkListener {
   ScopedComPtr<IUnknown> event_source_;
 };
 
-// Allows tests to observe when processes exit.
-class MockObjectWatcherDelegate : public base::ObjectWatcher::Delegate {
- public:
-  // base::ObjectWatcher::Delegate implementation
-  MOCK_METHOD1(OnObjectSignaled, void (HANDLE process_handle));  // NOLINT
-
-  virtual ~MockObjectWatcherDelegate() {
-    // Would be nice to free them when OnObjectSignaled is called, too, but
-    // it doesn't seem worth it.
-    for (std::vector<HANDLE>::iterator it = process_handles_.begin();
-         it != process_handles_.end(); ++it) {
-      ::CloseHandle(*it);
-    }
-  }
-
-  // Registers this instance to watch |process_handle| for termination.
-  void WatchProcess(HANDLE process_handle) {
-    process_handles_.push_back(process_handle);
-    object_watcher_.StartWatching(process_handle, this);
-  }
-
-  // Registers this instance to watch |hwnd|'s owning process for termination.
-  void WatchProcessForHwnd(HWND hwnd) {
-    DWORD pid = 0;
-    ::GetWindowThreadProcessId(hwnd, &pid);
-    EXPECT_TRUE(pid);
-    if (pid != 0) {
-      HANDLE process_handle = ::OpenProcess(SYNCHRONIZE, FALSE, pid);
-      EXPECT_TRUE(process_handle);
-      if (process_handle != NULL) {
-        WatchProcess(process_handle);
-      }
-    }
-  }
-
- private:
-  std::vector<HANDLE> process_handles_;
-  base::ObjectWatcher object_watcher_;
-};
 
 // Mocks a window observer so that tests can detect new windows.
 class MockWindowObserver : public WindowObserver {
  public:
-  // WindowObserver implementation
-  MOCK_METHOD1(OnWindowOpen, void (HWND hwnd));  // NOLINT
-  MOCK_METHOD1(OnWindowClose, void (HWND hwnd));  // NOLINT
+  // Override WindowObserver methods.
+  MOCK_METHOD2(OnWindowDetected, void (HWND hwnd,  // NOLINT
+                                       const std::string& caption));
 
-  void WatchWindow(std::string caption_pattern) {
-    window_watcher_.AddObserver(this, caption_pattern);
+  // Watch for all windows of the given class type.
+  void WatchWindow(const wchar_t* window_class) {
+    DCHECK(window_class);
+    window_watcher_.AddObserver(this, WideToUTF8(window_class));
   }
 
  private:
