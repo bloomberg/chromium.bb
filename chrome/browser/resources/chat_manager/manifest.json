@@ -1,7 +1,7 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDrlwvcbUtVrbQvI7EPV1BTa63N8YkbBToHzxlMl0IzSBwOV+TUOsHE8vRq0HZWuwMAGeH8WdWVC3HRNdES8lScjlzxb1TsTQJAsF+hLXgcjgCUSSSGCfFzypvuvKsRQTx0d02yfWKJa47o0Ws5wL72NVtc7c51HujwWYg+Mz01wIDAQAB",
   "name": "Google Chat Manager",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "icons": {
     "128": "128.png",
     "24": "24.png",
