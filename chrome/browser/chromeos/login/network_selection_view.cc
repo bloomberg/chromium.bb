@@ -45,10 +45,17 @@ enum kLayoutColumnsets {
   THROBBER_ROW,
 };
 
+enum kContentsLayoutColumnsets {
+  WELCOME_ROW,
+  CONTENTS_ROW,
+};
+
 // Grid layout constants.
 const int kBorderSize = 10;
+const int kWelcomeTitlePadding = 10;
 const int kPaddingColumnWidth = 55;
-const int kMediumPaddingColumnWidth = 30;
+const int kMediumPaddingColumnWidth = 20;
+const int kControlPaddingRow = 15;
 
 // Fixed size for language/network controls height.
 const int kSelectionBoxHeight = 29;
@@ -66,7 +73,7 @@ const int kMenuVerticalOffset = 3;
 // menu button visual width when being in pushed state.
 const int kMenuWidthOffset = 6;
 
-const SkColor kWelcomeColor = 0xFF1D6AB1;
+const SkColor kWelcomeColor = 0xFFCDD3D6;
 
 }  // namespace
 
@@ -132,7 +139,8 @@ class NotifyingMenuButton : public views::MenuButton {
 };
 
 NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
-    : languages_menubutton_(NULL),
+    : contents_view_(NULL),
+      languages_menubutton_(NULL),
       welcome_label_(NULL),
       select_language_label_(NULL),
       select_network_label_(NULL),
@@ -149,8 +157,51 @@ NetworkSelectionView::~NetworkSelectionView() {
   throbber_ = NULL;
 }
 
+void NetworkSelectionView::AddControlsToLayout(const gfx::Size& size,
+    views::GridLayout* contents_layout) {
+  if (IsConnecting()) {
+    const int v_padding = (size.height() -
+        throbber_->GetPreferredSize().height()) / 2;
+    contents_layout->AddPaddingRow(0, v_padding);
+    contents_layout->StartRow(0, THROBBER_ROW);
+    contents_layout->AddView(connecting_network_label_);
+    contents_layout->AddView(throbber_);
+    contents_layout->AddPaddingRow(0, v_padding);
+  } else {
+    const int v_padding = (size.height() -
+        3 * kControlPaddingRow - 2 * kSelectionBoxHeight -
+        proxy_settings_link_->GetPreferredSize().height() -
+        continue_button_->GetPreferredSize().height()) / 2;
+    contents_layout->AddPaddingRow(0, v_padding);
+    contents_layout->StartRow(0, STANDARD_ROW);
+    contents_layout->AddView(select_language_label_);
+    contents_layout->AddView(languages_menubutton_, 1, 1,
+                    GridLayout::FILL, GridLayout::FILL,
+                    languages_menubutton_->GetPreferredSize().width(),
+                    kSelectionBoxHeight);
+    contents_layout->AddPaddingRow(0, kControlPaddingRow);
+    contents_layout->StartRow(0, STANDARD_ROW);
+    contents_layout->AddView(select_network_label_);
+    contents_layout->AddView(network_dropdown_, 1, 1,
+                    GridLayout::FILL, GridLayout::FILL,
+                    network_dropdown_->GetPreferredSize().width(),
+                    kSelectionBoxHeight);
+    contents_layout->AddPaddingRow(0, kControlPaddingRow);
+    contents_layout->StartRow(0, STANDARD_ROW);
+    contents_layout->SkipColumns(1);
+    contents_layout->AddView(proxy_settings_link_, 1, 1,
+                    GridLayout::LEADING, GridLayout::CENTER);
+    contents_layout->AddPaddingRow(0, kControlPaddingRow);
+    contents_layout->StartRow(0, STANDARD_ROW);
+    contents_layout->SkipColumns(1);
+    contents_layout->AddView(continue_button_, 1, 1,
+                    GridLayout::LEADING, GridLayout::CENTER);
+    contents_layout->AddPaddingRow(0, v_padding);
+  }
+}
+
 void NetworkSelectionView::InitLayout() {
-  const gfx::Size screen_size = delegate_->size();
+  gfx::Size screen_size = delegate_->size();
   const int widest_label = std::max(
       select_language_label_->GetPreferredSize().width(),
       select_network_label_->GetPreferredSize().width());
@@ -159,11 +210,34 @@ void NetworkSelectionView::InitLayout() {
   delegate_->language_switch_menu()->SetFirstLevelMenuWidth(
       dropdown_width - kMenuWidthOffset);
 
-  views::GridLayout* layout = new views::GridLayout(this);
-  layout_ = layout;
-  SetLayoutManager(layout);
+  // Define layout and column set for entire screen (welcome + screen).
+  views::GridLayout* screen_layout = new views::GridLayout(this);
+  SetLayoutManager(screen_layout);
+  views::ColumnSet* column_set = screen_layout->AddColumnSet(WELCOME_ROW);
+  const int welcome_width = screen_size.width() - 2 * kWelcomeTitlePadding -
+      2 * kBorderSize;
+  column_set->AddPaddingColumn(0, kWelcomeTitlePadding + kBorderSize);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+                        GridLayout::FIXED, welcome_width, welcome_width);
+  column_set->AddPaddingColumn(0, kWelcomeTitlePadding + kBorderSize);
+  column_set = screen_layout->AddColumnSet(CONTENTS_ROW);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+      GridLayout::FIXED, screen_size.width(), screen_size.width());
+  screen_layout->StartRow(0, WELCOME_ROW);
+  screen_layout->AddView(welcome_label_);
+  screen_layout->StartRow(0, CONTENTS_ROW);
+  screen_layout->AddView(contents_view_);
 
-  views::ColumnSet* column_set = layout->AddColumnSet(STANDARD_ROW);
+  // Welcome label size might have been changed after adding to grid layout.
+  // Screen size includes welcome label height & border on each side.
+  screen_size.set_height(screen_size.height() - 2 * kBorderSize -
+                         welcome_label_->GetPreferredSize().height());
+
+  // Define layout and column set for screen contents.
+  views::GridLayout* contents_layout = new views::GridLayout(contents_view_);
+  contents_view_->SetLayoutManager(contents_layout);
+
+  column_set = contents_layout->AddColumnSet(STANDARD_ROW);
   column_set->AddPaddingColumn(0, kPaddingColumnWidth);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                         GridLayout::FIXED, widest_label, widest_label);
@@ -175,7 +249,7 @@ void NetworkSelectionView::InitLayout() {
   const int h_padding = (screen_size.width() - 2 * kBorderSize -
       connecting_network_label_->GetPreferredSize().width() -
       throbber_->GetPreferredSize().width()) / 2;
-  column_set = layout->AddColumnSet(THROBBER_ROW);
+  column_set = contents_layout->AddColumnSet(THROBBER_ROW);
   column_set->AddPaddingColumn(0, h_padding);
   column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
@@ -184,48 +258,17 @@ void NetworkSelectionView::InitLayout() {
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, h_padding);
 
-  if (!connecting_network_label_->IsVisible()) {
-    layout->AddPaddingRow(0, 85);
-    layout->StartRow(0, STANDARD_ROW);
-    layout->AddView(select_language_label_);
-    layout->AddView(languages_menubutton_, 1, 1,
-                    GridLayout::FILL, GridLayout::FILL,
-                    languages_menubutton_->GetPreferredSize().width(),
-                    kSelectionBoxHeight);
-    layout->AddPaddingRow(0, 15);
-    layout->StartRow(0, STANDARD_ROW);
-    layout->AddView(select_network_label_);
-    layout->AddView(network_dropdown_, 1, 1,
-                    GridLayout::FILL, GridLayout::FILL,
-                    network_dropdown_->GetPreferredSize().width(),
-                    kSelectionBoxHeight);
-    layout->AddPaddingRow(0, 15);
-    layout->StartRow(0, STANDARD_ROW);
-    layout_->SkipColumns(1);
-    layout->AddView(proxy_settings_link_, 1, 1,
-                    GridLayout::LEADING, GridLayout::CENTER);
-    layout->AddPaddingRow(0, 15);
-    layout->StartRow(0, STANDARD_ROW);
-    layout_->SkipColumns(1);
-    layout->AddView(continue_button_, 1, 1,
-                    GridLayout::LEADING, GridLayout::CENTER);
-    layout->AddPaddingRow(0, 80);
-  } else {
-    const int v_padding = (height() - 2 * kBorderSize -
-        throbber_->GetPreferredSize().height()) / 2;
-    layout->AddPaddingRow(0, v_padding);
-    layout->StartRow(0, THROBBER_ROW);
-    layout->AddView(connecting_network_label_);
-    layout->AddView(throbber_);
-    layout->AddPaddingRow(0, v_padding);
-  }
+  AddControlsToLayout(screen_size, contents_layout);
 }
 
 void NetworkSelectionView::Init() {
+  contents_view_ = new views::View();
+
   // Use rounded rect background.
   views::Painter* painter = CreateWizardPainter(
       &BorderDefinition::kScreenBorder);
-  set_background(views::Background::CreateBackgroundPainter(true, painter));
+  contents_view_->set_background(
+      views::Background::CreateBackgroundPainter(true, painter));
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font welcome_label_font =

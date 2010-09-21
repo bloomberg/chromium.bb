@@ -25,9 +25,9 @@ namespace {
 // Time in seconds for connection timeout.
 const int kConnectionTimeoutSec = 15;
 
-// Considering 10px shadow from each side.
+// Considering 10px shadow from each side & welcome title height at 30px.
 const int kWelcomeScreenWidth = 580;
-const int kWelcomeScreenHeight = 305;
+const int kWelcomeScreenHeight = 335;
 
 }  // namespace
 

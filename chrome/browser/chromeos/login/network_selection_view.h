@@ -15,6 +15,10 @@
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_delegate.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 namespace views {
 class Combobox;
 class GridLayout;
@@ -72,6 +76,13 @@ class NetworkSelectionView : public views::View,
   virtual void OnDialogClosed() {}
 
  private:
+  // Add screen controls to the contents layout specified.
+  // Based on state (connecting to the network or not)
+  // different controls are added.
+  void AddControlsToLayout(const gfx::Size& size,
+                           views::GridLayout* contents_layout);
+
+  // Initializes grid layout of the screen. Called on language change too.
   void InitLayout();
 
   // Delete and recreate native controls that
@@ -81,7 +92,10 @@ class NetworkSelectionView : public views::View,
   // Updates text on label with currently connecting network.
   void UpdateConnectingNetworkLabel();
 
-  // Dialog controls.
+  // View that contains defines screen contents.
+  views::View* contents_view_;
+
+  // Screen controls.
   views::MenuButton* languages_menubutton_;
   views::Label* welcome_label_;
   views::Label* select_language_label_;
@@ -100,8 +114,6 @@ class NetworkSelectionView : public views::View,
 
   // Dialog used for to launch proxy settings.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
-
-  views::GridLayout* layout_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSelectionView);
 };
