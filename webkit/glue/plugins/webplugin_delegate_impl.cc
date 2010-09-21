@@ -161,9 +161,19 @@ void WebPluginDelegateImpl::SetFocus(bool focused) {
   // This is called when internal WebKit focus (the focused element on the page)
   // changes, but plugins need to know about OS-level focus, so we have an extra
   // layer of focus tracking.
+  //
+  // On Windows, historically browsers did not set focus events to windowless
+  // plugins when the toplevel window focus changes. Sending such focus events
+  // breaks full screen mode in Flash because it will come out of full screen
+  // mode when it loses focus, and its full screen window causes the browser to
+  // lose focus.
   has_webkit_focus_ = focused;
+#ifndef OS_WIN
   if (containing_view_has_focus_)
     SetPluginHasFocus(focused);
+#else
+  SetPluginHasFocus(focused);
+#endif
 }
 
 void WebPluginDelegateImpl::SetPluginHasFocus(bool focused) {
@@ -177,7 +187,9 @@ void WebPluginDelegateImpl::SetContentAreaHasFocus(bool has_focus) {
   containing_view_has_focus_ = has_focus;
   if (!windowless_)
     return;
+#ifndef OS_WIN  // See SetFocus above.
   SetPluginHasFocus(containing_view_has_focus_ && has_webkit_focus_);
+#endif
 }
 
 NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
