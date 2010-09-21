@@ -428,7 +428,7 @@ void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
   GtkStyle*  style  = gtk_rc_get_style(scrollbar);
   GdkPixmap* pm     = gdk_pixmap_new(window->window, kWidth, kHeight, -1);
   GdkRectangle rect = { 0, 0, kWidth, kHeight };
-  unsigned char data[3*kWidth*kHeight];
+  unsigned char data[3 * kWidth * kHeight];
   for (int i = 0; i < 3; ++i) {
     if (i < 2) {
       // Thumb part
@@ -443,19 +443,19 @@ void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
     }
     GdkPixbuf* pb = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB,
                                              FALSE, 8, kWidth, kHeight,
-                                             3*kWidth, 0, 0);
+                                             3 * kWidth, 0, 0);
     gdk_pixbuf_get_from_drawable(pb, pm, NULL, 0, 0, 0, 0, kWidth, kHeight);
 
     // Sample pixels
     int components[3] = { 0 };
-    for (int y = 2; y < kHeight-2; ++y) {
+    for (int y = 2; y < kHeight - 2; ++y) {
       for (int c = 0; c < 3; ++c) {
         // Sample a vertical slice of pixels at about one-thirds from the
         // left edge. This allows us to avoid any fixed graphics that might be
         // located at the edges or in the center of the scrollbar.
         // Each pixel is made up of a red, green, and blue component; taking up
         // a total of three bytes.
-        components[c] += data[3*(kWidth/3 + y*kWidth) + c];
+        components[c] += data[3 * (kWidth / 3 + y * kWidth) + c];
       }
     }
     GdkColor* color = i == 0 ? thumb_active_color :
@@ -469,9 +469,9 @@ void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
     // We now need to scale the colors from the 0..255 range, to the wider
     // 0..65535 range, and we need to actually compute the average color; so,
     // we divide by the total number of pixels in the sample.
-    color->red   = components[0] * 65535 / (255*(kHeight-4));
-    color->green = components[1] * 65535 / (255*(kHeight-4));
-    color->blue  = components[2] * 65535 / (255*(kHeight-4));
+    color->red   = components[0] * 65535 / (255 * (kHeight - 4));
+    color->green = components[1] * 65535 / (255 * (kHeight - 4));
+    color->blue  = components[2] * 65535 / (255 * (kHeight - 4));
 
     g_object_unref(pb);
   }
