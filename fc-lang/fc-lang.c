@@ -76,10 +76,14 @@ fatal (const char *file, int lineno, const char *msg)
 }
 
 static char *
-get_line (FILE *f, char *line, int *lineno)
+get_line (FILE *f, char *buf, int *lineno)
 {
     char    *hash;
+    char    *line;
     int	    end;
+
+next:
+    line = buf;
     if (!fgets (line, 1024, f))
 	return 0;
     ++(*lineno);
@@ -87,12 +91,15 @@ get_line (FILE *f, char *line, int *lineno)
     if (hash)
 	*hash = '\0';
 
+    while (line[0] && isspace (line[0]))
+      line++;
     end = strlen (line);
     while (end > 0 && isspace (line[end-1]))
       line[--end] = '\0';
 
-    if (line[0] == '\0' || line[0] == '\n' || line[0] == '\032' || line[0] == '\r')
-	return get_line (f, line, lineno);
+    if (line[0] == '\0' || line[0] == '\n' || line[0] == '\r')
+      goto next;
+
     return line;
 }
 
@@ -125,16 +132,18 @@ scanopen (char *file)
  * Comments begin with '#'
  */
 
-static const FcCharSet *
+static FcCharSet *
 scan (FILE *f, char *file, FcCharSetFreezer *freezer)
 {
     FcCharSet	    *c = 0;
     FcCharSet	    *n;
+    FcBool	    del;
     int		    start, end, ucs4;
-    char	    line[1024];
+    char	    buf[1024];
+    char	    *line;
     int		    lineno = 0;
 
-    while (get_line (f, line, &lineno))
+    while ((line = get_line (f, buf, &lineno)))
     {
 	if (!strncmp (line, "include", 7))
 	{
@@ -158,6 +167,12 @@ scan (FILE *f, char *file, FcCharSetFreezer *freezer)
 	    FcCharSetDestroy (n);
 	    continue;
 	}
+	del = FcFalse;
+	if (line[0] == '-')
+	{
+	  del = FcTrue;
+	  line++;
+	}
 	if (strchr (line, '-'))
 	{
 	    if (sscanf (line, "%x-%x", &start, &end) != 2)
@@ -173,7 +188,7 @@ scan (FILE *f, char *file, FcCharSetFreezer *freezer)
 	    c = FcCharSetCreate ();
 	for (ucs4 = start; ucs4 <= end; ucs4++)
 	{
-	    if (!FcCharSetAddChar (c, ucs4))
+	    if (!((del ? FcCharSetDelChar : FcCharSetAddChar) (c, ucs4)))
 		fatal (file, lineno, "out of memory");
 	}
     }
@@ -231,8 +246,8 @@ typedef struct _Entry {
 
 static int compare (const void *a, const void *b)
 {
-    const Entry const *as = a, *bs = b;
-    return FcStrCmpIgnoreCase (as->file, bs->file);
+    const Entry *as = a, *bs = b;
+    return FcStrCmpIgnoreCase ((const FcChar8 *) as->file, (const FcChar8 *) bs->file);
 }
 
 #define MAX_LANG	    1024
@@ -245,7 +260,7 @@ int
 main (int argc, char **argv)
 {
     static Entry	entries[MAX_LANG];
-    static const FcCharSet	*sets[MAX_LANG];
+    static FcCharSet	*sets[MAX_LANG];
     static int		duplicate[MAX_LANG];
     static int		country[MAX_LANG];
     static char		*names[MAX_LANG];
