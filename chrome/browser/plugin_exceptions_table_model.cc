@@ -41,21 +41,21 @@ void PluginExceptionsTableModel::RemoveRows(const Rows& rows) {
                            CONTENT_SETTINGS_TYPE_PLUGINS,
                            resources_[entry.plugin_id],
                            CONTENT_SETTING_DEFAULT);
-    row_counts_[entry.plugin_id]--;
-    // If we remove the last exception for a plugin, recreate all groups to get
-    // correct IDs.
-    if (row_counts_[entry.plugin_id] == 0)
-      reload_all = true;
     settings_.erase(settings_.begin() + *it);
+    row_counts_[entry.plugin_id]--;
+    if (!reload_all) {
+      // If we remove the last exception for a plugin, recreate all groups
+      // to get correct IDs.
+      if (row_counts_[entry.plugin_id] == 0)  {
+        reload_all = true;
+      } else {
+        observer_->OnItemsRemoved(*it, 1);
+      }
+    }
   }
   if (reload_all) {
     // This also notifies the observer.
     ReloadSettings();
-  } else if (observer_) {
-    for (Rows::const_reverse_iterator it = rows.rbegin();
-         it != rows.rend(); ++it) {
-      observer_->OnItemsRemoved(*it, 1);
-    }
   }
 }
 

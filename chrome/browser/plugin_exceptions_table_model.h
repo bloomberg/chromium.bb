@@ -63,8 +63,8 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
   void ClearSettings();
   void ReloadSettings();
 
-  HostContentSettingsMap* map_;
-  HostContentSettingsMap* otr_map_;
+  scoped_refptr<HostContentSettingsMap> map_;
+  scoped_refptr<HostContentSettingsMap> otr_map_;
 
   std::deque<SettingsEntry> settings_;
   std::deque<int> row_counts_;

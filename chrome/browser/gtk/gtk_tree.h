@@ -13,6 +13,7 @@
 #include "app/table_model_observer.h"
 #include "app/tree_model.h"
 #include "base/basictypes.h"
+#include "chrome/browser/remove_rows_table_model.h"
 
 class TableModel;
 
@@ -44,6 +45,17 @@ void GetSelectedIndices(GtkTreeSelection* selection, std::set<int>* out);
 // A helper class for populating a GtkListStore from a TableModel.
 class TableAdapter : public TableModelObserver {
  public:
+
+  enum ColumnID {
+    COL_TITLE = 0,
+    COL_IS_HEADER,
+    COL_IS_SEPARATOR,
+    COL_GROUP_ID,
+    COL_WEIGHT,
+    COL_WEIGHT_SET,
+    COL_LAST_ID
+  };
+
   class Delegate {
    public:
     // Should fill in the column and row.
@@ -66,8 +78,9 @@ class TableAdapter : public TableModelObserver {
   };
 
   // |table_model| may be NULL.
-  explicit TableAdapter(Delegate* delegate, GtkListStore* list_store,
-                        TableModel* table_model);
+  TableAdapter(Delegate* delegate,
+               GtkListStore* list_store,
+               TableModel* table_model);
   virtual ~TableAdapter() {}
 
   // Replace the TableModel with a different one.  If the list store currenty
@@ -76,6 +89,24 @@ class TableAdapter : public TableModelObserver {
   // created with a NULL |table_model|.
   void SetModel(TableModel* table_model);
 
+  // Add all model rows corresponding to the given list store indices to |rows|.
+  void MapListStoreIndicesToModelRows(const std::set<int>& list_store_indices,
+                                      RemoveRowsTableModel::Rows* model_rows);
+
+  // GtkTreeModel callbacks:
+  // Callback checking whether a row should be drawn as a separator.
+  static gboolean OnCheckRowIsSeparator(GtkTreeModel* model,
+                                        GtkTreeIter* iter,
+                                        gpointer user_data);
+
+  // Callback checking whether a row may be selected.  We use some rows in the
+  // table as headers/separators for the groups, which should not be selectable.
+  static gboolean OnSelectionFilter(GtkTreeSelection* selection,
+                                    GtkTreeModel* model,
+                                    GtkTreePath* path,
+                                    gboolean path_currently_selected,
+                                    gpointer user_data);
+
   // TableModelObserver implementation.
   virtual void OnModelChanged();
   virtual void OnItemsChanged(int start, int length);
@@ -83,6 +114,13 @@ class TableAdapter : public TableModelObserver {
   virtual void OnItemsRemoved(int start, int length);
 
  private:
+  // Return whether the row pointed to by |iter| is a group row, i.e. a group
+  // header, or a separator.
+  bool IsGroupRow(GtkTreeIter* iter) const;
+
+  // Return the index into the list store for the given model row.
+  int GetListStoreIndexForModelRow(int model_row) const;
+
   // Add the values from |row| of the TableModel.
   void AddNodeToList(int row);
 

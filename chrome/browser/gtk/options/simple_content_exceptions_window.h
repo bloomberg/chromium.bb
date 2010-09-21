@@ -25,15 +25,10 @@ class SimpleContentExceptionsWindow
 
   // gtk_tree::TableAdapter::Delegate implementation:
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
+  virtual void OnAnyModelUpdateStart();
+  virtual void OnAnyModelUpdate();
 
  private:
-  // Column ids for |list_store_|.
-  enum {
-    COL_HOSTNAME,
-    COL_ACTION,
-    COL_COUNT
-  };
-
   // Takes ownership of |model|.
   SimpleContentExceptionsWindow(GtkWindow* parent,
                                 RemoveRowsTableModel* model,
@@ -41,8 +36,6 @@ class SimpleContentExceptionsWindow
 
   // Updates which buttons are enabled.
   void UpdateButtonState();
-
-  void GetSelectedRows(RemoveRowsTableModel::Rows* rows);
 
   // Callbacks for the buttons.
   CHROMEGTK_CALLBACK_0(SimpleContentExceptionsWindow, void, Remove);
@@ -72,6 +65,10 @@ class SimpleContentExceptionsWindow
 
   // The current user selection from |treeview_|.
   GtkTreeSelection* treeview_selection_;
+
+  // Whether to ignore selection changes. This is set during model updates,
+  // when the list store may be inconsistent with the table model.
+  bool ignore_selection_changes_;
 
   // Buttons.
   GtkWidget* remove_button_;

@@ -17,6 +17,11 @@ namespace {
 // Singleton for exception window.
 SimpleContentExceptionsWindow* instance = NULL;
 
+enum {
+  COL_ACTION = gtk_tree::TableAdapter::COL_LAST_ID,
+  COL_COUNT
+};
+
 }  // namespace
 
 // static
@@ -36,18 +41,35 @@ void SimpleContentExceptionsWindow::ShowExceptionsWindow(
 SimpleContentExceptionsWindow::SimpleContentExceptionsWindow(
     GtkWindow* parent,
     RemoveRowsTableModel* model,
-    int title_message_id) {
+    int title_message_id)
+      : ignore_selection_changes_(false) {
   // Build the model adapters that translate views and TableModels into
   // something GTK can use.
-  list_store_ = gtk_list_store_new(COL_COUNT, G_TYPE_STRING, G_TYPE_STRING);
+  list_store_ = gtk_list_store_new(COL_COUNT,
+                                   G_TYPE_STRING,
+                                   G_TYPE_BOOLEAN,
+                                   G_TYPE_BOOLEAN,
+                                   G_TYPE_INT,
+                                   G_TYPE_INT,
+                                   G_TYPE_BOOLEAN,
+                                   G_TYPE_STRING);
   treeview_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_store_));
   g_object_unref(list_store_);
+
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview_), TRUE);
+  gtk_tree_view_set_row_separator_func(
+      GTK_TREE_VIEW(treeview_),
+      gtk_tree::TableAdapter::OnCheckRowIsSeparator,
+      NULL,
+      NULL);
 
   // Set up the properties of the treeview
   GtkTreeViewColumn* hostname_column = gtk_tree_view_column_new_with_attributes(
       l10n_util::GetStringUTF8(IDS_EXCEPTIONS_HOSTNAME_HEADER).c_str(),
       gtk_cell_renderer_text_new(),
-      "text", COL_HOSTNAME,
+      "text", gtk_tree::TableAdapter::COL_TITLE,
+      "weight", gtk_tree::TableAdapter::COL_WEIGHT,
+      "weight-set", gtk_tree::TableAdapter::COL_WEIGHT_SET,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview_), hostname_column);
 
@@ -61,6 +83,11 @@ SimpleContentExceptionsWindow::SimpleContentExceptionsWindow(
   treeview_selection_ = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(treeview_));
   gtk_tree_selection_set_mode(treeview_selection_, GTK_SELECTION_MULTIPLE);
+  gtk_tree_selection_set_select_function(
+      treeview_selection_,
+      gtk_tree::TableAdapter::OnSelectionFilter,
+      NULL,
+      NULL);
   g_signal_connect(treeview_selection_, "changed",
                    G_CALLBACK(OnTreeSelectionChangedThunk), this);
 
@@ -127,9 +154,9 @@ SimpleContentExceptionsWindow::SimpleContentExceptionsWindow(
 }
 
 void SimpleContentExceptionsWindow::SetColumnValues(int row,
-                                                         GtkTreeIter* iter) {
+                                                    GtkTreeIter* iter) {
   std::wstring hostname = model_->GetText(row, IDS_EXCEPTIONS_HOSTNAME_HEADER);
-  gtk_list_store_set(list_store_, iter, COL_HOSTNAME,
+  gtk_list_store_set(list_store_, iter, gtk_tree::TableAdapter::COL_TITLE,
                      WideToUTF8(hostname).c_str(), -1);
 
   std::wstring action = model_->GetText(row, IDS_EXCEPTIONS_ACTION_HEADER);
@@ -137,27 +164,31 @@ void SimpleContentExceptionsWindow::SetColumnValues(int row,
                      WideToUTF8(action).c_str(), -1);
 }
 
+void SimpleContentExceptionsWindow::OnAnyModelUpdateStart() {
+  ignore_selection_changes_ = true;
+}
+
+void SimpleContentExceptionsWindow::OnAnyModelUpdate() {
+  ignore_selection_changes_ = false;
+}
+
 void SimpleContentExceptionsWindow::UpdateButtonState() {
   int row_count = gtk_tree_model_iter_n_children(
       GTK_TREE_MODEL(list_store_), NULL);
 
   RemoveRowsTableModel::Rows rows;
-  GetSelectedRows(&rows);
+  std::set<int> indices;
+  gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
+  model_adapter_->MapListStoreIndicesToModelRows(indices, &rows);
   gtk_widget_set_sensitive(remove_button_, model_->CanRemoveRows(rows));
   gtk_widget_set_sensitive(remove_all_button_, row_count > 0);
 }
 
-void SimpleContentExceptionsWindow::GetSelectedRows(
-    RemoveRowsTableModel::Rows* rows) {
-  std::set<int> indices;
-  gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
-  for (std::set<int>::iterator i = indices.begin(); i != indices.end(); ++i)
-    rows->insert(*i);
-}
-
 void SimpleContentExceptionsWindow::Remove(GtkWidget* widget) {
   RemoveRowsTableModel::Rows rows;
-  GetSelectedRows(&rows);
+  std::set<int> indices;
+  gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
+  model_adapter_->MapListStoreIndicesToModelRows(indices, &rows);
   model_->RemoveRows(rows);
   UpdateButtonState();
 }
@@ -174,5 +205,6 @@ void SimpleContentExceptionsWindow::OnWindowDestroy(GtkWidget* widget) {
 
 void SimpleContentExceptionsWindow::OnTreeSelectionChanged(
     GtkWidget* selection) {
-  UpdateButtonState();
+  if (!ignore_selection_changes_)
+    UpdateButtonState();
 }

@@ -92,17 +92,107 @@ void TableAdapter::SetModel(TableModel* table_model) {
   table_model_->SetObserver(this);
 }
 
+bool TableAdapter::IsGroupRow(GtkTreeIter* iter) const {
+  if (!table_model_->HasGroups())
+    return false;
+  gboolean is_header = false;
+  gboolean is_separator = false;
+  gtk_tree_model_get(GTK_TREE_MODEL(list_store_),
+                     iter,
+                     COL_IS_HEADER,
+                     &is_header,
+                     COL_IS_SEPARATOR,
+                     &is_separator,
+                     -1);
+  return is_header || is_separator;
+}
+
+static int OffsetForGroupIndex(size_t group_index) {
+  // Every group consists of a header and a separator row, and there is a blank
+  // row between groups.
+  return 3 * group_index + 2;
+}
+
+void TableAdapter::MapListStoreIndicesToModelRows(
+    const std::set<int>& list_store_indices,
+    RemoveRowsTableModel::Rows* model_rows) {
+  if (!table_model_->HasGroups()) {
+    for (std::set<int>::const_iterator it = list_store_indices.begin();
+         it != list_store_indices.end();
+         ++it) {
+      model_rows->insert(*it);
+    }
+    return;
+  }
+
+  const TableModel::Groups& groups = table_model_->GetGroups();
+  TableModel::Groups::const_iterator group_it = groups.begin();
+  for (std::set<int>::const_iterator list_store_it = list_store_indices.begin();
+       list_store_it != list_store_indices.end();
+       ++list_store_it) {
+    int list_store_index = *list_store_it;
+    GtkTreeIter iter;
+    bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_),
+                                       &iter,
+                                       NULL,
+                                       list_store_index);
+    if (!rv) {
+      NOTREACHED();
+      return;
+    }
+    int group = -1;
+    gtk_tree_model_get(GTK_TREE_MODEL(list_store_),
+                       &iter,
+                       COL_GROUP_ID,
+                       &group,
+                       -1);
+    while (group_it->id != group) {
+      ++group_it;
+      if (group_it == groups.end()) {
+        NOTREACHED();
+        return;
+      }
+    }
+    int offset = OffsetForGroupIndex(group_it - groups.begin());
+    model_rows->insert(list_store_index - offset);
+  }
+}
+
+int TableAdapter::GetListStoreIndexForModelRow(int model_row) const {
+  if (!table_model_->HasGroups())
+    return model_row;
+  int group = table_model_->GetGroupID(model_row);
+  const TableModel::Groups& groups = table_model_->GetGroups();
+  for (TableModel::Groups::const_iterator it = groups.begin();
+       it != groups.end(); ++it) {
+    if (it->id == group) {
+      return model_row + OffsetForGroupIndex(it - groups.begin());
+    }
+  }
+  NOTREACHED();
+  return -1;
+}
+
 void TableAdapter::AddNodeToList(int row) {
   GtkTreeIter iter;
-  if (row == 0) {
+  int list_store_index = GetListStoreIndexForModelRow(row);
+  if (list_store_index == 0) {
     gtk_list_store_prepend(list_store_, &iter);
   } else {
     GtkTreeIter sibling;
     gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &sibling, NULL,
-                                  row - 1);
+                                  list_store_index - 1);
     gtk_list_store_insert_after(list_store_, &iter, &sibling);
   }
 
+  if (table_model_->HasGroups()) {
+    gtk_list_store_set(list_store_,
+                       &iter,
+                       COL_WEIGHT, PANGO_WEIGHT_NORMAL,
+                       COL_WEIGHT_SET, TRUE,
+                       COL_GROUP_ID, table_model_->GetGroupID(row),
+                       -1);
+  }
   delegate_->SetColumnValues(row, &iter);
 }
 
@@ -110,20 +200,68 @@ void TableAdapter::OnModelChanged() {
   delegate_->OnAnyModelUpdateStart();
   gtk_list_store_clear(list_store_);
   delegate_->OnModelChanged();
+
+  if (table_model_->HasGroups()) {
+    const TableModel::Groups& groups = table_model_->GetGroups();
+    for (TableModel::Groups::const_iterator it = groups.begin();
+         it != groups.end(); ++it) {
+      GtkTreeIter iter;
+      if (it != groups.begin()) {
+        // Blank row between groups.
+        gtk_list_store_append(list_store_, &iter);
+        gtk_list_store_set(list_store_, &iter, COL_IS_HEADER, TRUE, -1);
+      }
+      // Group title.
+      gtk_list_store_append(list_store_, &iter);
+      gtk_list_store_set(list_store_,
+                         &iter,
+                         COL_WEIGHT,
+                         PANGO_WEIGHT_BOLD,
+                         COL_WEIGHT_SET,
+                         TRUE,
+                         COL_TITLE,
+                         WideToUTF8(it->title).c_str(),
+                         COL_IS_HEADER,
+                         TRUE,
+                         -1);
+      // Group separator.
+      gtk_list_store_append(list_store_, &iter);
+      gtk_list_store_set(list_store_,
+                         &iter,
+                         COL_IS_HEADER,
+                         TRUE,
+                         COL_IS_SEPARATOR,
+                         TRUE,
+                         -1);
+    }
+  }
+
   for (int i = 0; i < table_model_->RowCount(); ++i)
     AddNodeToList(i);
   delegate_->OnAnyModelUpdate();
 }
 
 void TableAdapter::OnItemsChanged(int start, int length) {
+  if (length == 0)
+    return;
   delegate_->OnAnyModelUpdateStart();
+  int list_store_index = GetListStoreIndexForModelRow(start);
   GtkTreeIter iter;
-  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,
-                                          NULL, start);
+  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_),
+                                          &iter,
+                                          NULL,
+                                          list_store_index);
   for (int i = 0; i < length; ++i) {
     if (!rv) {
       NOTREACHED();
       return;
+    }
+    while (IsGroupRow(&iter)) {
+      rv = gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store_), &iter);
+      if (!rv) {
+        NOTREACHED();
+        return;
+      }
     }
     delegate_->SetColumnValues(start + i, &iter);
     rv = gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store_), &iter);
@@ -140,18 +278,64 @@ void TableAdapter::OnItemsAdded(int start, int length) {
 }
 
 void TableAdapter::OnItemsRemoved(int start, int length) {
+  if (length == 0)
+    return;
   delegate_->OnAnyModelUpdateStart();
+  // When this method is called, the model has already removed the items, so
+  // accessing items in the model from |start| on may not be possible anymore.
+  // Therefore we use the item right before that, if it exists.
+  int list_store_index = 0;
+  if (start > 0)
+    list_store_index = GetListStoreIndexForModelRow(start - 1) + 1;
   GtkTreeIter iter;
-  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,
-                                          NULL, start);
+  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_),
+                                          &iter,
+                                          NULL,
+                                          list_store_index);
+  if (!rv) {
+    NOTREACHED();
+    return;
+  }
   for (int i = 0; i < length; ++i) {
-    if (!rv) {
-      NOTREACHED();
-      return;
+    while (IsGroupRow(&iter)) {
+      rv = gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store_), &iter);
+      if (!rv) {
+        NOTREACHED();
+        return;
+      }
     }
-    rv = gtk_list_store_remove(list_store_, &iter);
+    gtk_list_store_remove(list_store_, &iter);
   }
   delegate_->OnAnyModelUpdate();
+}
+
+// static
+gboolean TableAdapter::OnCheckRowIsSeparator(GtkTreeModel* model,
+                                             GtkTreeIter* iter,
+                                             gpointer user_data) {
+  gboolean is_separator;
+  gtk_tree_model_get(model,
+                     iter,
+                     COL_IS_SEPARATOR,
+                     &is_separator,
+                     -1);
+  return is_separator;
+}
+
+// static
+gboolean TableAdapter::OnSelectionFilter(GtkTreeSelection* selection,
+                                         GtkTreeModel* model,
+                                         GtkTreePath* path,
+                                         gboolean path_currently_selected,
+                                         gpointer user_data) {
+  GtkTreeIter iter;
+  if (!gtk_tree_model_get_iter(model, &iter, path)) {
+    NOTREACHED();
+    return TRUE;
+  }
+  gboolean is_header;
+  gtk_tree_model_get(model, &iter, COL_IS_HEADER, &is_header, -1);
+  return !is_header;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

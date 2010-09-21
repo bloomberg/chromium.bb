@@ -19,12 +19,34 @@
 // as a friend.
 namespace plugin_test_internal {
 
+using ::testing::_;
+using ::testing::InSequence;
+using ::testing::Invoke;
+
 class MockTableModelObserver : public TableModelObserver {
  public:
+  explicit MockTableModelObserver(TableModel* model)
+      : model_(model) {
+    ON_CALL(*this, OnItemsRemoved(_, _))
+        .WillByDefault(
+            Invoke(this, &MockTableModelObserver::CheckOnItemsRemoved));
+  }
+
   MOCK_METHOD0(OnModelChanged, void());
   MOCK_METHOD2(OnItemsChanged, void(int start, int length));
   MOCK_METHOD2(OnItemsAdded, void(int start, int length));
   MOCK_METHOD2(OnItemsRemoved, void(int start, int length));
+
+ private:
+  void CheckOnItemsRemoved(int start, int length) {
+    if (!model_)
+      return;
+    // This method is called *after* the items have been removed, so we check if
+    // the first removed item was still inside the correct range.
+    EXPECT_LT(start, model_->RowCount() + 1);
+  }
+
+  TableModel* model_;
 };
 
 class PluginExceptionsTableModelTest : public testing::Test {
@@ -126,7 +148,7 @@ TEST_F(PluginExceptionsTableModelTest, Basic) {
 }
 
 TEST_F(PluginExceptionsTableModelTest, RemoveOneRow) {
-  MockTableModelObserver observer;
+  MockTableModelObserver observer(table_model_.get());
   table_model_->SetObserver(&observer);
 
   EXPECT_CALL(observer, OnItemsRemoved(1, 1));
@@ -140,7 +162,7 @@ TEST_F(PluginExceptionsTableModelTest, RemoveOneRow) {
 }
 
 TEST_F(PluginExceptionsTableModelTest, RemoveLastRowInGroup) {
-  MockTableModelObserver observer;
+  MockTableModelObserver observer(table_model_.get());
   table_model_->SetObserver(&observer);
 
   EXPECT_CALL(observer, OnModelChanged());
@@ -150,11 +172,31 @@ TEST_F(PluginExceptionsTableModelTest, RemoveLastRowInGroup) {
   EXPECT_EQ(2, table_model_->RowCount());
   EXPECT_EQ(1, static_cast<int>(table_model_->GetGroups().size()));
   CheckInvariants();
+
+  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  EXPECT_CALL(observer, OnModelChanged());
+  map->SetContentSetting(HostContentSettingsMap::Pattern("[*.]blurp.net"),
+                         CONTENT_SETTINGS_TYPE_PLUGINS,
+                         "bar",
+                         CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(3, table_model_->RowCount());
+
+  InSequence s;
+  EXPECT_CALL(observer, OnItemsRemoved(2, 1));
+  EXPECT_CALL(observer, OnItemsRemoved(0, 1));
+  rows.clear();
+  rows.insert(0);
+  rows.insert(2);
+  table_model_->RemoveRows(rows);
+  EXPECT_EQ(1, table_model_->RowCount());
+  EXPECT_EQ(1, static_cast<int>(table_model_->GetGroups().size()));
+  CheckInvariants();
+
   table_model_->SetObserver(NULL);
 }
 
 TEST_F(PluginExceptionsTableModelTest, RemoveAllRows) {
-  MockTableModelObserver observer;
+  MockTableModelObserver observer(table_model_.get());
   table_model_->SetObserver(&observer);
 
   EXPECT_CALL(observer, OnModelChanged());
