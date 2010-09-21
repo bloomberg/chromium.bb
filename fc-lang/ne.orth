@@ -23,3 +23,4 @@
 #
 # Nepali (Devanagari script) (NE)
 include hi.orth
+-090C-090E	# See bug 30685
