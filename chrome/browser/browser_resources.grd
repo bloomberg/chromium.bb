@@ -74,6 +74,7 @@ without changes to the corresponding grd file. eadeae-->
         <include name="IDR_OFFLINE_LOAD_HTML" file="resources\offline_load.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SLIDESHOW_HTML" file="resources\slideshow.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_TALK_APP_MANIFEST" file="resources\chat_manager\manifest.json" type="BINDATA" />
       </if>
     </includes>
   </release>

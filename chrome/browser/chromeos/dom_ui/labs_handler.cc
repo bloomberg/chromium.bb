@@ -39,4 +39,9 @@ void LabsHandler::GetLocalizedValues(
      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADVANCEDFS));
   localized_strings->SetString("advanced_filesystem",
      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_ADVANCEDFS_DESCRIPTION));
+
+  localized_strings->SetString("talk_title",
+     l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_TALK));
+  localized_strings->SetString("talk",
+     l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_TALK_DESCRIPTION));
 }

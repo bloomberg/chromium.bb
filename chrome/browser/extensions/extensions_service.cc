@@ -805,7 +805,6 @@ void ExtensionsService::ClearExtensionData(const GURL& extension_url) {
 void ExtensionsService::EnableExtension(const std::string& extension_id) {
   Extension* extension = GetExtensionByIdInternal(extension_id, false, true);
   if (!extension) {
-    NOTREACHED() << "Trying to enable an extension that isn't disabled.";
     return;
   }
 

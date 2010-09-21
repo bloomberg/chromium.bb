@@ -14,6 +14,7 @@
 #include "chrome/common/notification_observer.h"
 
 class PrefService;
+class Profile;
 
 namespace chromeos {
 
@@ -23,7 +24,7 @@ namespace chromeos {
 // When the preferences change, we change the settings to reflect the new value.
 class Preferences : public NotificationObserver {
  public:
-  Preferences() {}
+  explicit Preferences(Profile* profile);
   virtual ~Preferences() {}
 
   // This method will register the prefs associated with Chrome OS settings.
@@ -37,13 +38,12 @@ class Preferences : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
- protected:
+ private:
   // This will set the OS settings when the preference changes.
   // If this method is called with NULL, it will set all OS settings to what's
   // stored in the preferences.
-  virtual void NotifyPrefChanged(const std::string* pref_name);
+  void NotifyPrefChanged(const std::string* pref_name);
 
- private:
   // Writes boolean |value| to the input method (IBus) configuration daemon.
   // |section| (e.g. "general") and |name| (e.g. "use_global_engine") should
   // not be NULL.
@@ -83,6 +83,11 @@ class Preferences : public NotificationObserver {
   // underlying XKB API requires it.
   void UpdateAutoRepeatRate();
 
+  // Updates whether the Talk app is enabled.
+  void UpdateTalkApp();
+
+  Profile* profile_;
+
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;
@@ -120,6 +125,9 @@ class Preferences : public NotificationObserver {
   BooleanPrefMember language_xkb_auto_repeat_enabled_;
   IntegerPrefMember language_xkb_auto_repeat_delay_pref_;
   IntegerPrefMember language_xkb_auto_repeat_interval_pref_;
+
+  // Labs preferences.
+  IntegerPrefMember labs_talk_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

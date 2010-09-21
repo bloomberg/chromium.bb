@@ -18,7 +18,9 @@
 #include "chrome/common/notification_registrar.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/preferences.h"
+namespace chromeos {
+class Preferences;
+}
 #endif
 
 // The default profile implementation.
@@ -242,7 +244,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::Preferences chromeos_preferences_;
+  scoped_ptr<chromeos::Preferences> chromeos_preferences_;
 
   scoped_refptr<chromeos::ProxyConfigServiceImpl>
       chromeos_proxy_config_service_impl_;

@@ -302,6 +302,12 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
   browser::RegisterUserPrefs(prefs_.get());
   profile_.reset(profile);
 
+  // TODO(scherkus): Remove this when we no longer need to have Talk
+  // component extension state as a preference http://crbug.com/56429
+  DictionaryValue* dict =
+      prefs_->GetMutableDictionary("extensions.settings");
+  dict->Remove("ggnioahjipcehijkhpdjekioddnjoben", NULL);
+
   service_ = new ExtensionsService(profile_.get(),
                                    CommandLine::ForCurrentProcess(),
                                    prefs_.get(),

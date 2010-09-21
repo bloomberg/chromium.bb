@@ -100,6 +100,10 @@
 #include "chrome/browser/password_manager/password_store_x.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/preferences.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 
@@ -337,7 +341,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       SSLConfigServiceManager::CreateDefaultManager(this));
 
 #if defined(OS_CHROMEOS)
-  chromeos_preferences_.Init(prefs);
+  chromeos_preferences_.reset(new chromeos::Preferences(this));
+  chromeos_preferences_->Init(prefs);
 #endif
 
   pinned_tab_service_.reset(new PinnedTabService(this));
@@ -414,6 +419,13 @@ void ProfileImpl::InitExtensions() {
     component_extensions.push_back(
         std::make_pair("docs_app", IDR_DOCS_APP_MANIFEST));
   }
+
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+  if (Extension::AppsAreEnabled()) {
+    component_extensions.push_back(
+        std::make_pair("chat_manager", IDR_TALK_APP_MANIFEST));
+  }
+#endif
 
   for (ComponentExtensionList::iterator iter = component_extensions.begin();
     iter != component_extensions.end(); ++iter) {

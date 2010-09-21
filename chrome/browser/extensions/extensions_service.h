@@ -242,8 +242,8 @@ class ExtensionsService
   void UninstallExtension(const std::string& extension_id,
                           bool external_uninstall);
 
-  // Enable or disable an extension. The extension must be in the opposite state
-  // before calling.
+  // Enable or disable an extension. No action if the extension is already
+  // enabled/disabled.
   void EnableExtension(const std::string& extension_id);
   void DisableExtension(const std::string& extension_id);
 

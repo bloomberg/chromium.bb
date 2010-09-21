@@ -12,8 +12,10 @@
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/touchpad_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "unicode/timezone.h"
@@ -21,6 +23,11 @@
 namespace chromeos {
 
 static const char kFallbackInputMethodLocale[] = "en-US";
+static const char kTalkAppExtensionId[] = "ggnioahjipcehijkhpdjekioddnjoben";
+
+Preferences::Preferences(Profile* profile)
+    : profile_(profile) {
+}
 
 // static
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
@@ -33,6 +40,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   if (prefs->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
   }
+  prefs->RegisterIntegerPref(prefs::kLabsTalkEnabled, 0);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 3);
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
@@ -170,6 +178,8 @@ void Preferences::Init(PrefService* prefs) {
       prefs::kLanguageXkbAutoRepeatDelay, prefs, this);
   language_xkb_auto_repeat_interval_pref_.Init(
       prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
+
+  labs_talk_enabled_.Init(prefs::kLabsTalkEnabled, prefs, this);
 
   // Initialize touchpad settings to what's saved in user preferences.
   NotifyPrefChanged(NULL);
@@ -327,6 +337,11 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
                      (*pref_name == prefs::kLanguageXkbAutoRepeatInterval))) {
     UpdateAutoRepeatRate();
   }
+
+  // Listen for explicit changes as ExtensionsService handles startup case.
+  if (pref_name && *pref_name == prefs::kLabsTalkEnabled) {
+    UpdateTalkApp();
+  }
 }
 
 void Preferences::SetLanguageConfigBoolean(const char* section,
@@ -415,6 +430,19 @@ void Preferences::UpdateAutoRepeatRate() {
   DCHECK(rate.initial_delay_in_ms > 0);
   DCHECK(rate.repeat_interval_in_ms > 0);
   CrosLibrary::Get()->GetKeyboardLibrary()->SetAutoRepeatRate(rate);
+}
+
+void Preferences::UpdateTalkApp() {
+  if (!profile_->GetExtensionsService()->is_ready()) {
+    NOTREACHED() << "Extensions service should be ready";
+    return;
+  }
+
+  if (labs_talk_enabled_.GetValue() == 0) {
+    profile_->GetExtensionsService()->DisableExtension(kTalkAppExtensionId);
+  } else {
+    profile_->GetExtensionsService()->EnableExtension(kTalkAppExtensionId);
+  }
 }
 
 }  // namespace chromeos

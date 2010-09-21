@@ -372,6 +372,10 @@ const char kLabsAdvancedFilesystemEnabled[] =
 // A boolean pref which turns on the mediaplayer.
 const char kLabsMediaplayerEnabled[] = "settings.labs.mediaplayer";
 
+// An integer pref which maps to the extension state for Talk.
+const char kLabsTalkEnabled[] =
+    "extensions.settings.ggnioahjipcehijkhpdjekioddnjoben.state";
+
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.
