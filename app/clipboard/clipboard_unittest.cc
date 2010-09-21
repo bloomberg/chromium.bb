@@ -140,6 +140,26 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
 #endif  // defined(OS_WIN)
 }
 
+#if defined(OS_LINUX)
+// Regression test for crbug.com/56298 (pasting empty HTML crashes Linux).
+TEST_F(ClipboardTest, EmptyHTMLTest) {
+  Clipboard clipboard;
+  // ScopedClipboardWriter doesn't let us write empty data to the clipboard.
+  clipboard.clipboard_data_ = new Clipboard::TargetMap();
+  // The 1 is so the compiler doesn't warn about allocating an empty array.
+  char* empty = new char[1];
+  clipboard.InsertMapping("text/html", empty, 0U);
+  clipboard.SetGtkClipboard();
+
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  string16 markup_result;
+  std::string url_result;
+  clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &markup_result, &url_result);
+  EXPECT_TRUE(ClipboardContentsIsExpected(string16(), markup_result));
+}
+#endif
+
 // TODO(estade): Port the following test (decide what target we use for urls)
 #if !defined(OS_POSIX) || defined(OS_MACOSX)
 TEST_F(ClipboardTest, BookmarkTest) {

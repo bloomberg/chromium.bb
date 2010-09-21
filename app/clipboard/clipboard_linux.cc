@@ -350,7 +350,7 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   }
 
   // If there is a terminating NULL, drop it.
-  if (markup->at(markup->length() - 1) == '\0')
+  if (!markup->empty() && markup->at(markup->length() - 1) == '\0')
     markup->resize(markup->length() - 1);
 
   gtk_selection_data_free(data);

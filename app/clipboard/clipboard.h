@@ -187,6 +187,7 @@ class Clipboard {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ClipboardTest, SharedBitmapTest);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardTest, EmptyHTMLTest);
 
   void DispatchObject(ObjectType type, const ObjectMapParams& params);
 
