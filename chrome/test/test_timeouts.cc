@@ -11,7 +11,11 @@
 
 namespace {
 
-void InitializeTimeout(const char* switch_name, int* value) {
+// Sets value to the greatest of:
+// 1) value's current value.
+// 2) min_value.
+// 3) the numerical value given by switch_name on the command line.
+void InitializeTimeout(const char* switch_name, int min_value, int* value) {
   DCHECK(value);
   if (CommandLine::ForCurrentProcess()->HasSwitch(switch_name)) {
     std::string string_value(
@@ -20,6 +24,15 @@ void InitializeTimeout(const char* switch_name, int* value) {
     base::StringToInt(string_value, &timeout);
     *value = std::max(*value, timeout);
   }
+  *value = std::max(*value, min_value);
+}
+
+// Sets value to the greatest of:
+// 1) value's current value.
+// 2) 0
+// 3) the numerical value given by switch_name on the command line.
+void InitializeTimeout(const char* switch_name, int* value) {
+  InitializeTimeout(switch_name, 0, value);
 }
 
 }  // namespace
@@ -54,19 +67,20 @@ void TestTimeouts::Initialize() {
   }
   initialized_ = true;
 
-  // The timeout values should be increasing in the right order, and while
-  // initially they are, overrides may not respect this. Move the checks to
-  // before the point at which they get overridden while all build scripts
-  // are updated.
-  // TODO(robertshield): Move these checks back once the bots are updated.
+  // Note that these timeouts MUST be initialized in the correct order as
+  // per the CHECKS below.
+  InitializeTimeout(switches::kUiTestActionTimeout, &action_timeout_ms_);
+  InitializeTimeout(switches::kUiTestActionMaxTimeout, action_timeout_ms_,
+                    &action_max_timeout_ms_);
+  InitializeTimeout(switches::kTestLargeTimeout, action_max_timeout_ms_,
+                    &large_test_timeout_ms_);
+  InitializeTimeout(switches::kUiTestTimeout, large_test_timeout_ms_,
+                    &huge_test_timeout_ms_);
+
+  // The timeout values should be increasing in the right order.
   CHECK(action_timeout_ms_ <= action_max_timeout_ms_);
   CHECK(action_max_timeout_ms_ <= large_test_timeout_ms_);
   CHECK(large_test_timeout_ms_ <= huge_test_timeout_ms_);
-
-  InitializeTimeout(switches::kUiTestActionTimeout, &action_timeout_ms_);
-  InitializeTimeout(switches::kUiTestActionMaxTimeout, &action_max_timeout_ms_);
-  InitializeTimeout(switches::kTestLargeTimeout, &large_test_timeout_ms_);
-  InitializeTimeout(switches::kUiTestTimeout, &huge_test_timeout_ms_);
 
   InitializeTimeout(switches::kUiTestSleepTimeout, &sleep_timeout_ms_);
   InitializeTimeout(switches::kUiTestCommandExecutionTimeout,
