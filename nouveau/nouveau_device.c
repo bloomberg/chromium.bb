@@ -49,7 +49,7 @@ nouveau_device_open_existing(struct nouveau_device **dev, int close,
 	if (!ver)
 		return -EINVAL;
 
-	if ((ver->version_major == 0 && ver->version_patchlevel != 16) &&
+	if ((ver->version_major == 0 && ver->version_patchlevel != 16) ||
 	     ver->version_major > 1) {
 		nouveau_device_close((void *)&nvdev);
 		return -EINVAL;
