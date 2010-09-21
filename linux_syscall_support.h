@@ -3238,19 +3238,6 @@ struct kernel_statfs {
                          int, flags)
     LSS_INLINE _syscall3(ssize_t, sendmsg, int, s, const struct kernel_msghdr*,
                          msg, int, flags)
-    LSS_INLINE _syscall6(ssize_t, sendto, int, s, const void*, buf, size_t, len,
-                         int, falgs, const struct kernel_sockaddr*, to,
-                         unsigned int, tolen)
-    LSS_INLINE _syscall2(int, shutdown, int, s, int, how)
-    LSS_INLINE _syscall3(int, socket, int, domain, int, type, int, protocol)
-    LSS_INLINE _syscall4(int, socketpair, int, d, int, type, int, protocol,
-                         int*, sv)
-  #endif
-  #if defined(__ARM_EABI__)
-    LSS_INLINE _syscall3(ssize_t, recvmsg, int, s, struct kernel_msghdr*, msg,
-                         int, flags)
-    LSS_INLINE _syscall3(ssize_t, sendmsg, int, s, const struct kernel_msghdr*,
-                         msg, int, flags)
     LSS_INLINE _syscall6(ssize_t, sendto, int, s, const void*, buf, size_t,len,
                          int, flags, const struct kernel_sockaddr*, to,
                          unsigned int, tolen)
