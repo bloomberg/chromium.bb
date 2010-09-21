@@ -320,16 +320,30 @@ RegR13
 RegR14
 RegR15
 
-# Stack register, based on address size - ESP in 32-bits, RSP in 64-bits.
-RegRESP
-# Use AL, AX, EAX, or RAX, based on operand size.
-RegREAX
-# Use DL, DX, EDX, or RDX, based on operand size.
-RegREDX
 # Use EIP or RIP, based on address size - EIP in 32-bits, RIP in 64-bits.
 RegREIP
-# Use EBP or RBP, based on 32/64 bit model.
+
+# The following define the choice of register, based on operand size, as in the
+# following table:
+#  Entry     16 bits   32 bits   64 bits
+#  -------------------------------------
+#  REAX           AX       EAX       RAX
+#  REBX           BX       EBX       RBX
+#  RECX           CX       ECX       RCX
+#  REDX           DX       EDX       RDX
+#  RESP           SP       ESP       RSP
+#  REBP           BP       EBP       RSP
+#  RESI           SI       ESI       RSI
+#  REDI           DI       EDI       RDI
+RegREAX
+RegREBX
+RegRECX
+RegREDX
+RegRESP
 RegREBP
+RegRESI
+RegREDI
+
 # Use DS:(E)DI, like that specified in movsb, movsw, and movsd, and movsq instructions.
 RegDS_EDI
 # Use ES:(E)DI, like that specified in the insb, insw, and insd instructions.

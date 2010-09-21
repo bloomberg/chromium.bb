@@ -73,515 +73,323 @@ Target: x86-64 bit mode
 *** NoPrefix ***
 
   --- 00 ---
-  00                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Add $E, $G
+  00                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Add $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 01 ---
-  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $E, $G
+  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
-  01                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Add $E, $G
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
   --- 02 ---
-  02                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Add $G, $E
+  02                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Add $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 03 ---
-  03                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $G, $E
+  03                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Gv, $Ev
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
-  03                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Add $G, $E
-      G_Operand               OpUse OpSet OpDest
-      E_Operand               OpUse
   --- 04 ---
-  04                          386L OpcodeHasImmed OpcodeLockable OperandSize_b
-    Add %AL, $I
+  04                          386L OpcodeHasImmed_b OpcodeLockable
+    Add %al, $Ib
       RegAL                   OpUse OpSet OpDest
       I_Operand               OpUse
   --- 05 ---
-  05                          386L OpcodeHasImmed OpcodeLockable OperandSize_v
-    Add %EAX, $I
-      RegEAX                  OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  05                          386L OpcodeUsesRexW OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Add %RAX, $I
-      RegRAX                  OpUse OpSet OpDest
-      I_Operand               OpUse
-  05                          386L OpcodeHasImmed OpcodeLockable OperandSize_w
-    Add %AX, $I
-      RegAX                   OpUse OpSet OpDest
+  05                          386L OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $rAXv, $Iz
+      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
   --- 08 ---
-  08                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Or $E, $G
+  08                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Or $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 09 ---
-  09                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Or $E, $G
+  09                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Or $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
-  09                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Or $E, $G
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
   --- 0a ---
-  0a                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Or $G, $E
+  0a                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Or $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 0b ---
-  0b                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Or $G, $E
+  0b                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Or $Gv, $Ev
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
-  0b                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Or $G, $E
-      G_Operand               OpUse OpSet OpDest
-      E_Operand               OpUse
   --- 0c ---
-  0c                          386L OpcodeHasImmed OpcodeLockable OperandSize_b
-    Or %AL, $I
+  0c                          386L OpcodeHasImmed_b OpcodeLockable
+    Or %al, $Ib
       RegAL                   OpUse OpSet OpDest
       I_Operand               OpUse
   --- 0d ---
-  0d                          386L OpcodeHasImmed OpcodeLockable OperandSize_v
-    Or %EAX, $I
-      RegEAX                  OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  0d                          386L OpcodeUsesRexW OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Or %RAX, $I
-      RegRAX                  OpUse OpSet OpDest
-      I_Operand               OpUse
-  0d                          386L OpcodeHasImmed OpcodeLockable OperandSize_w
-    Or %AX, $I
-      RegAX                   OpUse OpSet OpDest
+  0d                          386L OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Or $rAXv, $Iz
+      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
   --- 10 ---
-  10                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Adc $E, $G
+  10                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Adc $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 11 ---
-  11                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Adc $E, $G
+  11                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Adc $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
-  11                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Adc $E, $G
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
   --- 12 ---
-  12                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Adc $G, $E
+  12                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Adc $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 13 ---
-  13                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Adc $G, $E
+  13                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Adc $Gv, $Ev
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
-  13                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Adc $G, $E
-      G_Operand               OpUse OpSet OpDest
-      E_Operand               OpUse
   --- 14 ---
-  14                          386L OpcodeHasImmed OpcodeLockable OperandSize_b
-    Adc %AL, $I
+  14                          386L OpcodeHasImmed_b OpcodeLockable
+    Adc %al, $Ib
       RegAL                   OpUse OpSet OpDest
       I_Operand               OpUse
   --- 15 ---
-  15                          386L OpcodeHasImmed OpcodeLockable OperandSize_v
-    Adc %EAX, $I
-      RegEAX                  OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  15                          386L OpcodeUsesRexW OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Adc %RAX, $I
-      RegRAX                  OpUse OpSet OpDest
-      I_Operand               OpUse
-  15                          386L OpcodeHasImmed OpcodeLockable OperandSize_w
-    Adc %AX, $I
-      RegAX                   OpUse OpSet OpDest
+  15                          386L OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Adc $rAXv, $Iz
+      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
   --- 18 ---
-  18                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Sbb $E, $G
+  18                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Sbb $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 19 ---
-  19                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Sbb $E, $G
+  19                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sbb $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
-  19                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Sbb $E, $G
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
   --- 1a ---
-  1a                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Sbb $G, $E
+  1a                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Sbb $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 1b ---
-  1b                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Sbb $G, $E
+  1b                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sbb $Gv, $Ev
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
-  1b                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Sbb $G, $E
-      G_Operand               OpUse OpSet OpDest
-      E_Operand               OpUse
   --- 1c ---
-  1c                          386L OpcodeHasImmed OpcodeLockable OperandSize_b
-    Sbb %AL, $I
+  1c                          386L OpcodeHasImmed_b OpcodeLockable
+    Sbb %al, $Ib
       RegAL                   OpUse OpSet OpDest
       I_Operand               OpUse
   --- 1d ---
-  1d                          386L OpcodeHasImmed OpcodeLockable OperandSize_v
-    Sbb %EAX, $I
-      RegEAX                  OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  1d                          386L OpcodeUsesRexW OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Sbb %RAX, $I
-      RegRAX                  OpUse OpSet OpDest
-      I_Operand               OpUse
-  1d                          386L OpcodeHasImmed OpcodeLockable OperandSize_w
-    Sbb %AX, $I
-      RegAX                   OpUse OpSet OpDest
+  1d                          386L OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sbb $rAXv, $Iz
+      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
   --- 20 ---
-  20                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    And $E, $G
+  20                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    And $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 21 ---
-  21                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    And $E, $G
+  21                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    And $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
-  21                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    And $E, $G
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
   --- 22 ---
-  22                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    And $G, $E
+  22                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    And $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 23 ---
-  23                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    And $G, $E
+  23                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    And $Gv, $Ev
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
-  23                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    And $G, $E
-      G_Operand               OpUse OpSet OpDest
-      E_Operand               OpUse
   --- 24 ---
-  24                          386L OpcodeHasImmed OpcodeLockable OperandSize_b
-    And %AL, $I
+  24                          386L OpcodeHasImmed_b OpcodeLockable
+    And %al, $Ib
       RegAL                   OpUse OpSet OpDest
       I_Operand               OpUse
   --- 25 ---
-  25                          386L OpcodeHasImmed OpcodeLockable OperandSize_v
-    And %EAX, $I
-      RegEAX                  OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  25                          386L OpcodeUsesRexW OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    And %RAX, $I
-      RegRAX                  OpUse OpSet OpDest
-      I_Operand               OpUse
-  25                          386L OpcodeHasImmed OpcodeLockable OperandSize_w
-    And %AX, $I
-      RegAX                   OpUse OpSet OpDest
+  25                          386L OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    And $rAXv, $Iz
+      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
   --- 28 ---
-  28                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Sub $E, $G
+  28                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Sub $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 29 ---
-  29                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Sub $E, $G
+  29                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sub $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
-  29                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Sub $E, $G
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
   --- 2a ---
-  2a                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Sub $G, $E
+  2a                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Sub $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 2b ---
-  2b                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Sub $G, $E
+  2b                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sub $Gv, $Ev
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
-  2b                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Sub $G, $E
-      G_Operand               OpUse OpSet OpDest
-      E_Operand               OpUse
   --- 2c ---
-  2c                          386L OpcodeHasImmed OpcodeLockable OperandSize_b
-    Sub %AL, $I
+  2c                          386L OpcodeHasImmed_b OpcodeLockable
+    Sub %al, $Ib
       RegAL                   OpUse OpSet OpDest
       I_Operand               OpUse
   --- 2d ---
-  2d                          386L OpcodeHasImmed OpcodeLockable OperandSize_v
-    Sub %EAX, $I
-      RegEAX                  OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  2d                          386L OpcodeUsesRexW OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Sub %RAX, $I
-      RegRAX                  OpUse OpSet OpDest
-      I_Operand               OpUse
-  2d                          386L OpcodeHasImmed OpcodeLockable OperandSize_w
-    Sub %AX, $I
-      RegAX                   OpUse OpSet OpDest
+  2d                          386L OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sub $rAXv, $Iz
+      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
   --- 30 ---
-  30                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Xor $E, $G
+  30                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Xor $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 31 ---
-  31                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Xor $E, $G
+  31                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xor $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
-  31                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Xor $E, $G
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
   --- 32 ---
-  32                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Xor $G, $E
+  32                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Xor $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 33 ---
-  33                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Xor $G, $E
+  33                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xor $Gv, $Ev
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
-  33                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Xor $G, $E
-      G_Operand               OpUse OpSet OpDest
-      E_Operand               OpUse
   --- 34 ---
-  34                          386L OpcodeHasImmed OpcodeLockable OperandSize_b
-    Xor %AL, $I
+  34                          386L OpcodeHasImmed_b OpcodeLockable
+    Xor %al, $Ib
       RegAL                   OpUse OpSet OpDest
       I_Operand               OpUse
   --- 35 ---
-  35                          386L OpcodeHasImmed OpcodeLockable OperandSize_v
-    Xor %EAX, $I
-      RegEAX                  OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  35                          386L OpcodeUsesRexW OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Xor %RAX, $I
-      RegRAX                  OpUse OpSet OpDest
-      I_Operand               OpUse
-  35                          386L OpcodeHasImmed OpcodeLockable OperandSize_w
-    Xor %AX, $I
-      RegAX                   OpUse OpSet OpDest
+  35                          386L OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xor $rAXv, $Iz
+      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
   --- 38 ---
-  38                          386 OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Cmp $E, $G
+  38                          386 OpcodeUsesModRm OperandSize_b
+    Cmp $Eb, $Gb
       E_Operand               OpUse
       G_Operand               OpUse
   --- 39 ---
-  39                          386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Cmp $E, $G
-      E_Operand               OpUse OperandZeroExtends_v
-      G_Operand               OpUse
-  39                          386 OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Cmp $E, $G
+  39                          386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o
+    Cmp $Ev, $Gv
       E_Operand               OpUse
       G_Operand               OpUse
   --- 3a ---
-  3a                          386 OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Cmp $G, $E
+  3a                          386 OpcodeUsesModRm OperandSize_b
+    Cmp $Gb, $Eb
       G_Operand               OpUse
       E_Operand               OpUse
   --- 3b ---
-  3b                          386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Cmp $G, $E
-      G_Operand               OpUse OperandZeroExtends_v
-      E_Operand               OpUse
-  3b                          386 OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Cmp $G, $E
+  3b                          386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o
+    Cmp $Gv, $Ev
       G_Operand               OpUse
       E_Operand               OpUse
   --- 3c ---
-  3c                          386 OpcodeHasImmed OpcodeLockable OperandSize_b
-    Cmp %AL, $I
+  3c                          386 OpcodeHasImmed_b
+    Cmp %al, $Ib
       RegAL                   OpUse
       I_Operand               OpUse
   --- 3d ---
-  3d                          386 OpcodeHasImmed OpcodeLockable OperandSize_v
-    Cmp %EAX, $I
-      RegEAX                  OpUse OperandZeroExtends_v
-      I_Operand               OpUse
-  3d                          386 OpcodeUsesRexW OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Cmp %RAX, $I
-      RegRAX                  OpUse
-      I_Operand               OpUse
-  3d                          386 OpcodeHasImmed OpcodeLockable OperandSize_w
-    Cmp %AX, $I
-      RegAX                   OpUse
+  3d                          386 OpcodeHasImmed_z OperandSize_w OperandSize_v OperandSize_o
+    Cmp $rAXv, $Iz
+      RegREAX                 OpUse
       I_Operand               OpUse
   --- 50 ---
-  50 - r0                     386 OpcodePlusR OperandSize_w
-    Push {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpUse
-  50 - r0                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  50 - r0                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 51 ---
-  51 - r1                     386 OpcodePlusR OperandSize_w
-    Push {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpUse
-  51 - r1                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  51 - r1                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 52 ---
-  52 - r2                     386 OpcodePlusR OperandSize_w
-    Push {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpUse
-  52 - r2                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  52 - r2                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 53 ---
-  53 - r3                     386 OpcodePlusR OperandSize_w
-    Push {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpUse
-  53 - r3                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  53 - r3                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 54 ---
-  54 - r4                     386 OpcodePlusR OperandSize_w
-    Push {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpUse
-  54 - r4                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  54 - r4                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 55 ---
-  55 - r5                     386 OpcodePlusR OperandSize_w
-    Push {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpUse
-  55 - r5                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  55 - r5                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 56 ---
-  56 - r6                     386 OpcodePlusR OperandSize_w
-    Push {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpUse
-  56 - r6                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  56 - r6                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 57 ---
-  57 - r7                     386 OpcodePlusR OperandSize_w
-    Push {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpUse
-  57 - r7                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  57 - r7                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
   --- 58 ---
-  58 - r0                     386 OpcodePlusR OperandSize_w
-    Pop {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
-  58 - r0                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  58 - r0                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 59 ---
-  59 - r1                     386 OpcodePlusR OperandSize_w
-    Pop {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
-  59 - r1                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  59 - r1                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5a ---
-  5a - r2                     386 OpcodePlusR OperandSize_w
-    Pop {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
-  5a - r2                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  5a - r2                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5b ---
-  5b - r3                     386 OpcodePlusR OperandSize_w
-    Pop {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
-  5b - r3                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  5b - r3                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5c ---
-  5c - r4                     386 OpcodePlusR OperandSize_w
-    Pop {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
-  5c - r4                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  5c - r4                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5d ---
-  5d - r5                     386 OpcodePlusR OperandSize_w
-    Pop {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
-  5d - r5                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  5d - r5                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5e ---
-  5e - r6                     386 OpcodePlusR OperandSize_w
-    Pop {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
-  5e - r6                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  5e - r6                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 5f ---
-  5f - r7                     386 OpcodePlusR OperandSize_w
-    Pop {%RESP}, $/r
-      RegRESP                 OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
-  5f - r7                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  5f - r7                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
   --- 63 ---
@@ -594,13 +402,9 @@ Target: x86-64 bit mode
       G_Operand               OpSet
       E_Operand               OpUse
   --- 68 ---
-  68                          386 OpcodeHasImmed OperandSize_w
-    Push {%RESP}, $I
-      RegRESP                 OpUse OpSet OpImplicit
-      I_Operand               OpUse
-  68                          386 OpcodeHasImmed_v OperandSize_o OperandSizeDefaultIs64
-    Push {%RESP}, $I
-      RegRESP                 OpUse OpSet OpImplicit
+  68                          386 OpcodeHasImmed_z OperandSizeDefaultIs64
+    Push {%rsp}, $Iz
+      RegRSP                  OpUse OpSet OpImplicit
       I_Operand               OpUse
   --- 69 ---
   69                          386 OpcodeUsesModRm OpcodeHasImmed OperandSize_w OperandSize_v
@@ -614,9 +418,9 @@ Target: x86-64 bit mode
       E_Operand               OpUse
       I_Operand               OpUse
   --- 6a ---
-  6a                          386 OpcodeHasImmed OperandSize_b
-    Push {%RESP}, $I
-      RegRESP                 OpUse OpSet OpImplicit
+  6a                          386 OpcodeHasImmed_b OperandSizeDefaultIs64
+    Push {%rsp}, $Ib
+      RegRSP                  OpUse OpSet OpImplicit
       I_Operand               OpUse
   --- 6b ---
   6b                          386 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
@@ -738,231 +542,103 @@ Target: x86-64 bit mode
       RegREIP                 OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 80 ---
-  80 / 0                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    Add $E, $I
+  80 / 0                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
+    Add $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 1                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    Or $E, $I
+  80 / 1                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
+    Or $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 2                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    Adc $E, $I
+  80 / 2                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
+    Adc $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 3                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    Sbb $E, $I
+  80 / 3                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
+    Sbb $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 4                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    And $E, $I
+  80 / 4                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
+    And $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 5                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    Sub $E, $I
+  80 / 5                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
+    Sub $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 6                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    Xor $E, $I
+  80 / 6                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
+    Xor $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  80 / 7                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    Cmp $E, $I
+  80 / 7                      386L OpcodeInModRm OpcodeHasImmed OperandSize_b
+    Cmp $Eb, $Ib
       E_Operand               OpUse
       I_Operand               OpUse
   --- 81 ---
-  81 / 0                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_w
-    Add $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  81 / 0                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_v
-    Add $E, $I
+  81 / 0                      386L OpcodeInModRm OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Ev, $Iz
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  81 / 0                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Add $E, $I
+  81 / 1                      386L OpcodeInModRm OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Or $Ev, $Iz
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  81 / 1                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_w
-    Or $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  81 / 1                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_v
-    Or $E, $I
+  81 / 2                      386L OpcodeInModRm OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Adc $Ev, $Iz
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  81 / 1                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Or $E, $I
+  81 / 3                      386L OpcodeInModRm OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sbb $Ev, $Iz
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  81 / 2                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_w
-    Adc $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  81 / 2                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_v
-    Adc $E, $I
+  81 / 4                      386L OpcodeInModRm OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    And $Ev, $Iz
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  81 / 2                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Adc $E, $I
+  81 / 5                      386L OpcodeInModRm OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sub $Ev, $Iz
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  81 / 3                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_w
-    Sbb $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  81 / 3                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_v
-    Sbb $E, $I
+  81 / 6                      386L OpcodeInModRm OpcodeHasImmed_z OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xor $Ev, $Iz
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  81 / 3                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Sbb $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  81 / 4                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_w
-    And $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  81 / 4                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_v
-    And $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  81 / 4                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    And $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  81 / 5                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_w
-    Sub $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  81 / 5                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_v
-    Sub $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  81 / 5                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Sub $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  81 / 6                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_w
-    Xor $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  81 / 6                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_v
-    Xor $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  81 / 6                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Xor $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  81 / 7                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_w
-    Cmp $E, $I
+  81 / 7                      386L OpcodeInModRm OpcodeHasImmed_z OperandSize_w OperandSize_v OperandSize_o
+    Cmp $Ev, $Iz
       E_Operand               OpUse
-      I_Operand               OpUse
-  81 / 7                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_v
-    Cmp $E, $I
-      E_Operand               OpUse OperandZeroExtends_v
-      I_Operand               OpUse
-  81 / 7                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_v OpcodeLockable OperandSize_o
-    Cmp $E, $I
-      E_Operand               OpUse OperandZeroExtends_v
       I_Operand               OpUse
   --- 83 ---
-  83 / 0                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w
-    Add $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  83 / 0                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    Add $E, $I
+  83 / 0                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Ev, $Ib
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  83 / 0                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    Add $E, $I
+  83 / 1                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Or $Ev, $Ib
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  83 / 1                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w
-    Or $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  83 / 1                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    Or $E, $I
+  83 / 2                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Adc $Ev, $Ib
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  83 / 1                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    Or $E, $I
+  83 / 3                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sbb $Ev, $Ib
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  83 / 2                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w
-    Adc $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  83 / 2                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    Adc $E, $I
+  83 / 4                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    And $Ev, $Ib
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  83 / 2                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    Adc $E, $I
+  83 / 5                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sub $Ev, $Ib
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  83 / 3                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w
-    Sbb $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  83 / 3                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    Sbb $E, $I
+  83 / 6                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xor $Ev, $Ib
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
-  83 / 3                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    Sbb $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  83 / 4                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w
-    And $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  83 / 4                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    And $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  83 / 4                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    And $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  83 / 5                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w
-    Sub $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  83 / 5                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    Sub $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  83 / 5                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    Sub $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  83 / 6                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w
-    Xor $E, $I
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
-  83 / 6                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    Xor $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  83 / 6                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    Xor $E, $I
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      I_Operand               OpUse
-  83 / 7                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w
-    Cmp $E, $I
+  83 / 7                      386L OpcodeInModRm OpcodeHasImmed_b OperandSize_w OperandSize_v OperandSize_o
+    Cmp $Ev, $Ib
       E_Operand               OpUse
-      I_Operand               OpUse
-  83 / 7                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    Cmp $E, $I
-      E_Operand               OpUse OperandZeroExtends_v
-      I_Operand               OpUse
-  83 / 7                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    Cmp $E, $I
-      E_Operand               OpUse OperandZeroExtends_v
       I_Operand               OpUse
   --- 84 ---
   84                          386 OpcodeUsesModRm OpcodeRex OperandSize_b
@@ -1048,86 +724,50 @@ Target: x86-64 bit mode
       S_Operand               OpSet
       E_Operand               OpUse
   --- 8f ---
-  8f / 0                      386 OpcodeInModRm OperandSize_w
-    Pop {%RESP}, $E
-      RegRESP                 OpUse OpSet OpImplicit
-      E_Operand               OpSet
-  8f / 0                      386 OpcodeInModRm OperandSize_o
-    Pop {%RSP}, $E
+  8f / 0                      386 OpcodeInModRm OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $Ev
       RegRSP                  OpUse OpSet OpImplicit
-      E_Operand               OpSet
+      E_Operand               OpSet OpDest
   --- 90 ---
-  90 - r0                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v
-    Xchg $/r, %REAX
+  90 - r0                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
       G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
       RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
-  90 - r0                     386L OpcodeUsesRexW OpcodePlusR OpcodeLockable OperandSize_o
-    Xchg $/r, %RAX
-      G_OpcodeBase            OpUse OpSet OpDest
-      RegRAX                  OpUse OpSet OpDest
   --- 91 ---
-  91 - r1                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v
-    Xchg $/r, %REAX
+  91 - r1                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
       G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
       RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
-  91 - r1                     386L OpcodeUsesRexW OpcodePlusR OpcodeLockable OperandSize_o
-    Xchg $/r, %RAX
-      G_OpcodeBase            OpUse OpSet OpDest
-      RegRAX                  OpUse OpSet OpDest
   --- 92 ---
-  92 - r2                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v
-    Xchg $/r, %REAX
+  92 - r2                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
       G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
       RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
-  92 - r2                     386L OpcodeUsesRexW OpcodePlusR OpcodeLockable OperandSize_o
-    Xchg $/r, %RAX
-      G_OpcodeBase            OpUse OpSet OpDest
-      RegRAX                  OpUse OpSet OpDest
   --- 93 ---
-  93 - r3                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v
-    Xchg $/r, %REAX
+  93 - r3                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
       G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
       RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
-  93 - r3                     386L OpcodeUsesRexW OpcodePlusR OpcodeLockable OperandSize_o
-    Xchg $/r, %RAX
-      G_OpcodeBase            OpUse OpSet OpDest
-      RegRAX                  OpUse OpSet OpDest
   --- 94 ---
-  94 - r4                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v
-    Xchg $/r, %REAX
+  94 - r4                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
       G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
       RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
-  94 - r4                     386L OpcodeUsesRexW OpcodePlusR OpcodeLockable OperandSize_o
-    Xchg $/r, %RAX
-      G_OpcodeBase            OpUse OpSet OpDest
-      RegRAX                  OpUse OpSet OpDest
   --- 95 ---
-  95 - r5                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v
-    Xchg $/r, %REAX
+  95 - r5                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
       G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
       RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
-  95 - r5                     386L OpcodeUsesRexW OpcodePlusR OpcodeLockable OperandSize_o
-    Xchg $/r, %RAX
-      G_OpcodeBase            OpUse OpSet OpDest
-      RegRAX                  OpUse OpSet OpDest
   --- 96 ---
-  96 - r6                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v
-    Xchg $/r, %REAX
+  96 - r6                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
       G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
       RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
-  96 - r6                     386L OpcodeUsesRexW OpcodePlusR OpcodeLockable OperandSize_o
-    Xchg $/r, %RAX
-      G_OpcodeBase            OpUse OpSet OpDest
-      RegRAX                  OpUse OpSet OpDest
   --- 97 ---
-  97 - r7                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v
-    Xchg $/r, %REAX
+  97 - r7                     386L OpcodePlusR OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
       G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
       RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
-  97 - r7                     386L OpcodeUsesRexW OpcodePlusR OpcodeLockable OperandSize_o
-    Xchg $/r, %RAX
-      G_OpcodeBase            OpUse OpSet OpDest
-      RegRAX                  OpUse OpSet OpDest
   --- 98 ---
   98                          386 OperandSize_w
     Cbw {%AX}, {%AL}
@@ -1161,19 +801,23 @@ Target: x86-64 bit mode
   9b                          X87 
     Fwait
   --- 9c ---
-  9c                          ILLEGAL OperandSize_w
-    Pushf {%RESP}
-      RegRESP                 OpUse OpSet OpImplicit
-  9c                          ILLEGAL OperandSize_o OperandSizeDefaultIs64
-    Pushfq {%RSP}
+  9c                          ILLEGAL OperandSize_w NaClIllegal
+    Pushf {%rsp}, {$Fvw}
       RegRSP                  OpUse OpSet OpImplicit
+      RegRFLAGS               OpUse OpImplicit
+  9c                          ILLEGAL OperandSize_o NaClIllegal OperandSizeDefaultIs64
+    Pushfq {%rsp}, {$Fvq}
+      RegRSP                  OpUse OpSet OpImplicit
+      RegRFLAGS               OpUse OpImplicit
   --- 9d ---
-  9d                          ILLEGAL OperandSize_w
-    Popf {%RESP}
-      RegRESP                 OpUse OpSet OpImplicit
-  9d                          ILLEGAL OperandSize_v
-    Popfq {%RSP}
+  9d                          ILLEGAL OperandSize_w NaClIllegal
+    Popf {%rsp}, {$Fvw}
       RegRSP                  OpUse OpSet OpImplicit
+      RegRFLAGS               OpSet OpImplicit
+  9d                          ILLEGAL OperandSize_o NaClIllegal OperandSizeDefaultIs64
+    Popfq {%rsp}, {$Fvq}
+      RegRSP                  OpUse OpSet OpImplicit
+      RegRFLAGS               OpSet OpImplicit
   --- a0 ---
   a0                          386 OpcodeHasImmed_Addr OperandSize_b
     Mov %AL, $O
@@ -1573,16 +1217,16 @@ Target: x86-64 bit mode
       E_Operand               OpUse OpSet
       I_Operand
   --- c2 ---
-  c2                          RETURN OpcodeHasImmed_w
-    Ret {%REIP}, {%RESP}, $I
-      RegREIP                 OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
-      I_Operand               OpUse OperandNear
+  c2                          RETURN OpcodeHasImmed_w NaClIllegal OperandSizeDefaultIs64
+    Ret {%rip}, {%rsp}, $Iw
+      RegRIP                  OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
+      I_Operand               OpUse
   --- c3 ---
-  c3                          RETURN 
-    Ret {%REIP}, {%RESP}
-      RegREIP                 OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
+  c3                          RETURN NaClIllegal OperandSizeDefaultIs64
+    Ret {%rip}, {%rsp}
+      RegRIP                  OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
   --- c6 ---
   c6 / 0                      386 OpcodeInModRm OpcodeHasImmed OpcodeRex OperandSize_b
     Mov $E, $I
@@ -1607,21 +1251,21 @@ Target: x86-64 bit mode
       I_Operand               OpUse
       I2_Operand              OpUse
   --- c9 ---
-  c9                          386 
-    Leave {%REBP}, {%RESP}
+  c9                          386 OperandSize_w OperandSize_v OperandSize_o NaClIllegal OperandSizeDefaultIs64
+    Leave {%rsp}, {$rBPv}
+      RegRSP                  OpSet OpImplicit
       RegREBP                 OpUse OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
   --- ca ---
-  ca                          RETURN OpcodeHasImmed_w
-    Ret {%REIP}, {%RESP}, $I
-      RegREIP                 OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
-      I_Operand               OpUse OperandFar
+  ca                          RETURN OpcodeHasImmed_w NaClIllegal
+    Ret {%rip}, {%rsp}, $Iw
+      RegRIP                  OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
+      I_Operand               OpUse
   --- cb ---
-  cb                          RETURN 
-    Ret {%REIP}, {%RESP}
-      RegREIP                 OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
+  cb                          RETURN NaClIllegal
+    Ret {%rip}, {%rsp}
+      RegRIP                  OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
   --- cc ---
   cc                          ILLEGAL 
     Int3
@@ -2084,15 +1728,15 @@ Target: x86-64 bit mode
       RegREAX                 OpSet
       I_Operand               OpUse
   --- e8 ---
-  e8                          ILLEGAL OpcodeHasImmed_v OperandSize_w
-    Call {%RIP}, {%RSP}, $I
+  e8                          JMPZ OpcodeHasImmed_v OperandSize_w NaClIllegal
+    Call {%rip}, {%rsp}, $Jzw
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
-  e8                          JMPZ OpcodeHasImmed OperandSize_v
-    Call {%REIP}, {%RESP}, $I
-      RegREIP                 OpUse OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
+  e8                          JMPZ OpcodeHasImmed_v OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Call {%rip}, {%rsp}, $Jz
+      RegRIP                  OpUse OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e9 ---
   e9                          JMPZ OpcodeHasImmed_v
@@ -2258,12 +1902,8 @@ Target: x86-64 bit mode
     Jmp {%REIP}, $M
       RegREIP                 OpSet OpImplicit
       Mw_Operand              OpUse
-  ff / 6                      386 OpcodeInModRm OperandSize_w
-    Push {%RESP}, $E
-      RegRESP                 OpUse OpSet OpImplicit
-      E_Operand               OpUse
-  ff / 6                      386 OpcodeInModRm OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $E
+  ff / 6                      386 OpcodeInModRm OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $Ev
       RegRSP                  OpUse OpSet OpImplicit
       E_Operand               OpUse
 

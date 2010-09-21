@@ -1,6 +1,6 @@
 00000000: 00 00                                        add %ds:[%eax], %al
   00                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
-    Add $E, $G
+    Add $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
 NaClExpVector[10] = {
@@ -17,7 +17,7 @@ NaClExpVector[10] = {
 };
 00000000: 00 c0                                        add %al, %al
   00                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
-    Add $E, $G
+    Add $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
 NaClExpVector[4] = {
@@ -28,8 +28,8 @@ NaClExpVector[4] = {
 };
 00000000: 01 c0                                        add %eax, %eax
   01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $E, $G
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+    Add $Ev, $Gv
+      E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
@@ -39,8 +39,8 @@ NaClExpVector[4] = {
 };
 00000000: 03 18                                        add %ebx, %ds:[%eax]
   03                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $G, $E
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+    Add $Gv, $Ev
+      G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
 NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
@@ -56,8 +56,8 @@ NaClExpVector[10] = {
 };
 00000000: 03 1d 20 00 00 00                            add %ebx, 0x20
   03                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $G, $E
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+    Add $Gv, $Ev
+      G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
@@ -67,7 +67,7 @@ NaClExpVector[4] = {
 };
 00000000: 02 04 00                                     add %al, %ds:[%eax+%eax*1]
   02                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
-    Add $G, $E
+    Add $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
 NaClExpVector[10] = {

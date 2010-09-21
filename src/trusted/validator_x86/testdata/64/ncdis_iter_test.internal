@@ -1,6 +1,6 @@
 0000000000000000: 00 c0                                        add %al, %al
-  00                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Add $E, $G
+  00                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Add $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
 NaClExpVector[4] = {
@@ -10,8 +10,8 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
 0000000000000000: 01 c0                                        add %eax, %eax
-  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $E, $G
+  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
@@ -21,8 +21,8 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 0000000000000000: 41 01 c3                                     add %r11d, %eax
-  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $E, $G
+  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
@@ -32,8 +32,8 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 0000000000000000: 44 01 d8                                     add %eax, %r11d
-  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $E, $G
+  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Ev, $Gv
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
@@ -43,9 +43,9 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %r11d, ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 01 c3                                     add %rbx, %rax
-  01                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Add $E, $G
-      E_Operand               OpUse OpSet OpDest
+  01                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Ev, $Gv
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
@@ -54,8 +54,8 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
 0000000000000000: 67 03 18                                     add %ebx, [%eax]
-  03                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Add $G, $E
+  03                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Add $Gv, $Ev
       G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[8] = {
@@ -69,8 +69,8 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 02 04 00                                     add %al, [%rax+%rax*1]
-  02                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Add $G, $E
+  02                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Add $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
 NaClExpVector[8] = {
@@ -84,8 +84,8 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 67 02 04 00                                  add %al, [%eax+%eax*1]
-  02                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Add $G, $E
+  02                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Add $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
 NaClExpVector[8] = {
@@ -99,8 +99,8 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 48 83 ec 08                                  sub %rsp, 0x8
-  83 / 5                      386L OpcodeUsesRexW OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_o
-    Sub $E, $I
+  83 / 5                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Sub $Ev, $Ib
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       I_Operand               OpUse
 NaClExpVector[4] = {
@@ -110,10 +110,10 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 00000000004003d4: e8 83 00 00 00                               call 0x40045c
-  e8                          JMPZ OpcodeHasImmed OperandSize_v
-    Call {%REIP}, {%RESP}, $I
-      RegREIP                 OpUse OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
+  e8                          JMPZ OpcodeHasImmed_v OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Call {%rip}, {%rsp}, $Jz
+      RegRIP                  OpUse OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
@@ -124,10 +124,10 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x40045c, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 00000000004003de: e8 7d 05 00 00                               call 0x400960
-  e8                          JMPZ OpcodeHasImmed OperandSize_v
-    Call {%REIP}, {%RESP}, $I
-      RegREIP                 OpUse OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
+  e8                          JMPZ OpcodeHasImmed_v OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Call {%rip}, {%rsp}, $Jz
+      RegRIP                  OpUse OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
@@ -138,10 +138,10 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x400960, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: c3                                           ret
-  c3                          RETURN 
-    Ret {%REIP}, {%RESP}
-      RegREIP                 OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
+  c3                          RETURN NaClIllegal OperandSizeDefaultIs64
+    Ret {%rip}, {%rsp}
+      RegRIP                  OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
@@ -149,8 +149,8 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: ff 35 ea 0d 20 00                            push [%rip+0x200dea]
-  ff / 6                      386 OpcodeInModRm OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $E
+  ff / 6                      386 OpcodeInModRm OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $Ev
       RegRSP                  OpUse OpSet OpImplicit
       E_Operand               OpUse
 NaClExpVector[8] = {
@@ -184,9 +184,9 @@ NaClExpVector[8] = {
 NaClExpVector[0] = {
 };
 0000000000000000: 68 00 00 00 00                               push 0x0
-  68                          386 OpcodeHasImmed_v OperandSize_o OperandSizeDefaultIs64
-    Push {%RESP}, $I
-      RegRESP                 OpUse OpSet OpImplicit
+  68                          386 OpcodeHasImmed_z OperandSizeDefaultIs64
+    Push {%rsp}, $Iz
+      RegRSP                  OpUse OpSet OpImplicit
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
@@ -217,8 +217,8 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %rdx, ExprUsed | ExprSize64 },
 };
 0000000000000000: 5e                                           pop %rsi
-  5e - r6                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Pop {%RSP}, $/r
+  5e - r6                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpSet OpDest
 NaClExpVector[4] = {
@@ -306,15 +306,15 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x4004b3, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: c9                                           leave
-  c9                          386 
-    Leave {%REBP}, {%RESP}
+  c9                          386 OperandSize_w OperandSize_v OperandSize_o NaClIllegal OperandSizeDefaultIs64
+    Leave {%rsp}, {$rBPv}
+      RegRSP                  OpSet OpImplicit
       RegREBP                 OpUse OpSet OpImplicit
-      RegRESP                 OpUse OpSet OpImplicit
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rsp, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
   1f                          386 
@@ -374,9 +374,9 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %edi, ExprUsed | ExprSize32 },
 };
 0000000000000000: 3b 45 fc                                     cmp %eax, [%rbp-0x4]
-  3b                          386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
-    Cmp $G, $E
-      G_Operand               OpUse OperandZeroExtends_v
+  3b                          386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o
+    Cmp $Gv, $Ev
+      G_Operand               OpUse
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
@@ -389,9 +389,9 @@ NaClExpVector[8] = {
   { ExprConstant[0] , -0x4, ExprSize8 | ExprSignedHex },
 };
 0000000000000000: 83 7d f8 08                                  cmp [%rbp-0x8], 0x8
-  83 / 7                      386L OpcodeInModRm OpcodeHasImmed_b OpcodeLockable OperandSize_v
-    Cmp $E, $I
-      E_Operand               OpUse OperandZeroExtends_v
+  83 / 7                      386L OpcodeInModRm OpcodeHasImmed_b OperandSize_w OperandSize_v OperandSize_o
+    Cmp $Ev, $Ib
+      E_Operand               OpUse
       I_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
@@ -1204,20 +1204,26 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
 0000000000000000: 9c                                           pushfq
-  9c                          ILLEGAL OperandSize_o OperandSizeDefaultIs64
-    Pushfq {%RSP}
+  9c                          ILLEGAL OperandSize_o NaClIllegal OperandSizeDefaultIs64
+    Pushfq {%rsp}, {$Fvq}
       RegRSP                  OpUse OpSet OpImplicit
-NaClExpVector[2] = {
+      RegRFLAGS               OpUse OpImplicit
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %rflags, ExprUsed },
 };
 0000000000000000: 9d                                           popfq
-  9d                          ILLEGAL OperandSize_v
-    Popfq {%RSP}
+  9d                          ILLEGAL OperandSize_o NaClIllegal OperandSizeDefaultIs64
+    Popfq {%rsp}, {$Fvq}
       RegRSP                  OpUse OpSet OpImplicit
-NaClExpVector[2] = {
+      RegRFLAGS               OpSet OpImplicit
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %rflags, ExprSet },
 };
 0000000000000000: ac                                           lodsb
   ac                          ILLEGAL OperandSize_b
@@ -1335,8 +1341,8 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 80 e4 df                                     and %ah, 0xdf
-  80 / 4                      386L OpcodeInModRm OpcodeHasImmed OpcodeRex OpcodeLockable OperandSize_b
-    And $E, $I
+  80 / 4                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
+    And $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
 NaClExpVector[4] = {
@@ -1346,8 +1352,8 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0xdf, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 22 24 25 df 00 00 00                         and %ah, [0xdf]
-  22                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    And $G, $E
+  22                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    And $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
 NaClExpVector[8] = {
@@ -1361,8 +1367,8 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0xdf, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 40 22 24 25 df 00 00 00                      and %spl, [0xdf]
-  22                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    And $G, $E
+  22                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    And $Gb, $Eb
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
 NaClExpVector[8] = {
@@ -1391,9 +1397,9 @@ NaClExpVector[8] = {
   { ExprConstant[0] , -0x1, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 64 48 33 14 25 28 00 00 00                   xor %rdx, %fs:[0x28]
-  33                          386L OpcodeUsesRexW OpcodeUsesModRm OpcodeLockable OperandSize_o
-    Xor $G, $E
-      G_Operand               OpUse OpSet OpDest
+  33                          386L OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v OperandSize_o
+    Xor $Gv, $Ev
+      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
@@ -2462,8 +2468,8 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
 };
 0000000000000000: 55                                           push %rbp
-  55 - r5                     386 OpcodePlusR OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $/r
+  55 - r5                     386 OpcodePlusR OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
       G_OpcodeBase            OpUse
 NaClExpVector[4] = {
@@ -2873,8 +2879,8 @@ NaClExpVector[0] = {
 NaClExpVector[0] = {
 };
 0000000000000000: 41 ff 74 3f 20                               push [%r15+%rdi*1+0x20]
-  ff / 6                      386 OpcodeInModRm OperandSize_o OperandSizeDefaultIs64
-    Push {%RSP}, $E
+  ff / 6                      386 OpcodeInModRm OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+    Push {%rsp}, $Ev
       RegRSP                  OpUse OpSet OpImplicit
       E_Operand               OpUse
 NaClExpVector[8] = {
@@ -3077,8 +3083,8 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 26 66 e8 00 01 02 03                         call 0x3020107
-  e8                          ILLEGAL OpcodeHasImmed_v OperandSize_w
-    Call {%RIP}, {%RSP}, $I
+  e8                          JMPZ OpcodeHasImmed_v OperandSize_w NaClIllegal
+    Call {%rip}, {%rsp}, $Jzw
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -3314,8 +3320,8 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 26 64 65 00 01                               add %gs:[%rcx], %al
-  00                          386L OpcodeUsesModRm OpcodeRex OpcodeLockable OperandSize_b
-    Add $E, $G
+  00                          386L OpcodeUsesModRm OpcodeLockable OperandSize_b
+    Add $Eb, $Gb
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
 NaClExpVector[10] = {

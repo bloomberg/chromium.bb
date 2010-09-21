@@ -191,7 +191,16 @@ typedef enum {
 /* kModRMOpcodeGroups doesn't work as a const int since it is used */
 /* as an array dimension */
 #define kNaClMRMGroupsRange 20
+
+/* Define the maximum value that can be encoded in the modrm mod field. */
 #define kModRMOpcodeGroupSize 8
+
+/* Define the maximum register value that can be encoded into the opcode
+ * byte.
+ */
+#define kMaxRegisterIndexInOpcode 8
+
+
 
 /* information derived from the opcode, wherever it happens to be */
 typedef enum {

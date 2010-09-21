@@ -1469,6 +1469,23 @@ static NaClExp* NaClAppendMod11EffectiveAddress(
                               NaClGetGenRmRegister(state), modrm_reg_kind);
 }
 
+static NaClExp* NaClAppendBasedOnSize(NaClOpKind reg_2b,
+                                      NaClOpKind reg_4b,
+                                      NaClOpKind reg_8b,
+                                      NaClInstState* state) {
+  switch (state->operand_size) {
+    case 2:
+      return NaClAppendReg(reg_2b, &state->nodes);
+    case 4:
+      return NaClAppendReg(reg_4b, &state->nodes);
+    case 8:
+      return NaClAppendReg(reg_8b, &state->nodes);
+    default:
+      return NaClFatal("can't translate register group: operand size not valid",
+                       state);
+  }
+}
+
 /* Compute the effect address using the Mod/Rm and SIB bytes. */
 static NaClExp* NaClAppendEffectiveAddress(
     NaClInstState* state, NaClOp* operand, NaClModRmRegKind modrm_reg_kind) {
@@ -1682,40 +1699,26 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
     case RegXMM14:
     case RegXMM15:
       return NaClAppendReg(operand->kind, &state->nodes);
-    case RegRESP:
-      return NaClAppendReg(state->address_size == 64 ? RegRSP : RegESP,
-                           &state->nodes);
-    case RegREAX:
-      switch (state->operand_size) {
-        case 1:
-          return NaClAppendReg(RegAL, &state->nodes);
-        case 2:
-          return NaClAppendReg(RegAX, &state->nodes);
-        case 4:
-        default:
-          return NaClAppendReg(RegEAX, &state->nodes);
-        case 8:
-          return NaClAppendReg(RegRAX, &state->nodes);
-      }
-      break;
-    case RegREDX:
-      switch (state->operand_size) {
-        case 1:
-          return NaClAppendReg(RegDL, &state->nodes);
-        case 2:
-          return NaClAppendReg(RegDX, &state->nodes);
-        case 4:
-          return NaClAppendReg(RegEDX, &state->nodes);
-        case 8:
-          return NaClAppendReg(RegRDX, &state->nodes);
-      }
-      break;
     case RegREIP:
       return NaClAppendReg(state->address_size == 64 ? RegRIP : RegEIP,
                            &state->nodes);
+
+    case RegREAX:
+      return NaClAppendBasedOnSize(RegAX, RegEAX, RegRAX, state);
+    case RegREBX:
+      return NaClAppendBasedOnSize(RegBX, RegEBX, RegRBX, state);
+    case RegRECX:
+      return NaClAppendBasedOnSize(RegCX, RegECX, RegRCX, state);
+    case RegREDX:
+      return NaClAppendBasedOnSize(RegDX, RegEDX, RegRDX, state);
+    case RegRESP:
+      return NaClAppendBasedOnSize(RegSP, RegESP, RegRSP, state);
     case RegREBP:
-      return NaClAppendReg(state->address_size == 64 ? RegRBP : RegEBP,
-                           &state->nodes);
+      return NaClAppendBasedOnSize(RegBP, RegEBP, RegRBP, state);
+    case RegRESI:
+      return NaClAppendBasedOnSize(RegSI, RegESI, RegRSI, state);
+    case RegREDI:
+      return NaClAppendBasedOnSize(RegDI, RegEDI, RegRSI, state);
 
     case RegDS_EDI:
       return NaClAppendDS_EDI(state);
@@ -1730,9 +1733,6 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
       return NaClAppendConst(1,
                             NACL_EFLAG(ExprSize8) | NACL_EFLAG(ExprUnsignedHex),
                             &state->nodes);
-      /* TODO(karl) fill in the rest of the possibilities of type
-       * NaClOpKind, or remove them if not needed.
-       */
     default:
       /* Give up, use the default of undefined. */
       break;

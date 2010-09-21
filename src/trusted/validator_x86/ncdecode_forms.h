@@ -32,12 +32,12 @@ struct NaClSymbolTable;
  * Note: Most instruction defines an OpDest flag. This flag is associated with
  * the first (visible) operand of the instruction, corresponding to the
  * Dest argument. A few instructions (such as compare and exchange operations)
- * define both the source and the destinations with the flag OpDest. Compare's
- * do this because the operations an commutative (meaning that operands can
- * be listed in any order). Exchange operations change the value of both
- * arguments, and therefore have multiple destinations.
+ * define both the source and the destinations with the flag OpDest. Compare
+ * and exchange operation does this because the operation is commutative
+ * (meaning that operands can be listed in any order). Exchange operations
+ * change the value of both arguments, and therefore have multiple destinations.
  *
- * The current use of operand flag OpDest is to define what operands can
+ * The current use of operand flag OpDest is used to define what operands can
  * be locked, when the lock prefix is used.
  *
  * Reading the text associated with each instruction, one should be able to
@@ -63,6 +63,12 @@ typedef enum NaClInstCat {
                * dest := f() for some f (i.e. f gets the value on
                * top of the stack).
                */
+  Call,       /* Implicit ip first argument that is updated. Stack second
+               * argument that is updated. Third argument is used.
+               */
+  Return,     /* Implicit ip first argument that is set. Stack second
+               * argument that is updated. Third argument, if given, is used.
+               */
   Jump,       /* Implicit first (IP) argument is updated to the
                * value of the Dest argument.
                */
@@ -75,16 +81,6 @@ typedef enum NaClInstCat {
 
 /* Returns the name for the given enumerated value. */
 const char* NaClInstCatName(NaClInstCat cat);
-
-/* Returns the operand flags for the destination argument of the instruction,
- * given the category of instruction.
- */
-NaClOpFlags NaClGetDestFlags(NaClInstCat icat);
-
-/* Returns the operand flags for the source argument of the instruction,
- * given the category of instruction.
- */
-NaClOpFlags NaClGetSourceFlags(NaClInstCat icat);
 
 /* Adds OpSet/OpUse/OpDest flags to operands to the current instruction,
  * based on the given instruction categorization.
@@ -169,7 +165,8 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
  * ss - A scalar single-precision floating-point operand (scalar single).
  * v - A word, doubleword, or quadword, depending on the effective operand size.
  *
- * Note: These character encodings come from Appendix A of the AMD manual.
+ * Note: These character encodings come from Appendix A of the manual cited
+ * below.
  * TODO(karl): Remove using these macros once code has been updated to use
  * the new form of modeling at the end of this header file.
  */
@@ -509,6 +506,10 @@ DECLARE_BINARY_OINST(Vdq, I__);
  * the value of the register defined is the string '+R' (where R is in 0..7),
  * and must immediately follow the sequence of hex values (and must appear
  * before the colon).
+
+ * Note: If the instruction uses an operand print form that uses the modrm
+ * value (such as $E or $G), then it is not necessary to add the
+ * /r suffix to the sequence of hex values.
  *
  * After the colon, the mnemonic name of the instruction must appear. An
  * arbitrary number of spaces can appear between the colon, and the mnemonic
@@ -534,20 +535,21 @@ DECLARE_BINARY_OINST(Vdq, I__);
  * Programmer's manual Volume 3: General-Purpose and System Instructions".
  * Exceptions are made for descriptions used in that appendex, but are
  * not documented in this section. For clarity, the rules are explicitly
- * defined as follows: A print form consists of a FORM,
- * and a SIZE specification, by concatenation the two names together.
+ * defined as follows: A print form consists of a FORM, followed by
+ * a SIZE specification.
  *
  * Valid FORMs are:
  *   A - Far pointer is encoded in the instruction.
  *   C - Control register specified by the ModRM reg field.
  *   D - Debug register specified by the ModRM reg field.
  *   E - General purpose register or memory operand specified by the ModRm
- *       bytes. Memory addresses can be computed from a segment register,
+ *       byte. Memory addresses can be computed from a segment register,
  *       SIB byte, and/or displacement.
  *   F - rFLAGS register.
  *   G - General purpose register specified by the ModRm reg field.
  *   I - Immediate value.
- *   J - The instruciton includes a relative offset that is added to the rIP.
+ *   J - The instruciton includes a relative offset that is added to the rIP
+ *       register.
  *   M - A memory operand specified by the ModRM byte.
  *   O - The offset of an operand is encoded in the instruction. There is no
  *       ModRm byte in the instruction. Complex addressing using the SIB byte
@@ -583,6 +585,12 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *   rSI - The register SI, ESI, or RSI, depending on SIZE.
  *   rSP - The register SP, ESP, or RSP, depending on SIZE.
  *
+ * Note: r8 is not in the manual cited above. It has been added to deal with
+ * instructions with an embedded register in the opcode. In such cases, this
+ * value allows a single defining call to be used (within a for loop),
+ * rather than writing eight separate rules (one for each possible register
+ * value).
+ *
  * Valid SIZEs are:
  *   a - Two 16-bit or 32-bit memory operands, depending on the effective
  *       operand size. Used in the BOUND instruction.
@@ -604,9 +612,18 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *   ss - A scalar single-precision floating-point operand (scalar single).
  *   v - A word, doubleword, or quadword, depending on the effective operand
  *       size.
+ *   vw - A word only when the effective operand size matches.
+ *   vd - A doubleword only when the effective operand size matches.
+ *   vo - A quadword only when the effective operand size matches.
  *   w - A word, irrespective of the effective operand size.
  *   z - A word if the effective operand size is 16 bits, or a doubleword
  *       if the effective operand size is 32 or 64 bits.
+ *   zw - A word only when the effective operand size matches.
+ *   zd - A doubleword only when the effective operand size is 32 or 64 bits.
+ *
+ * Note: vw, vd, vo, zw, and zd are not in the manual cited above. However,
+ * they have been added so that sub-variants of an instruction (not specified
+ * in the manual) can be specified.
  *
  * In addition, this code adds the following special print forms:
  *    One - The literal constant 1.

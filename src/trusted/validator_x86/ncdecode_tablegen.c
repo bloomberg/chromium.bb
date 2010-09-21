@@ -381,11 +381,15 @@ static char* NaClDefaultOperandsDesc(NaClInst* inst) {
         case RegR13:
         case RegR14:
         case RegR15:
-        case RegRESP:
-        case RegREAX:
-        case RegREDX:
         case RegREIP:
+        case RegREAX:
+        case RegREBX:
+        case RegRECX:
+        case RegREDX:
+        case RegRESP:
         case RegREBP:
+        case RegRESI:
+        case RegREDI:
         case RegDS_EDI:
         case RegES_EDI:
         case RegST0:
@@ -1115,6 +1119,7 @@ static Bool NaClIFlagsMatchesRunMode(NaClIFlags flags) {
 
 /* Check that the flags defined for an opcode make sense. */
 static void NaClApplySanityChecksToInst() {
+  const NaClIFlags operand_sizes = NaClOperandSizes(current_inst);
   if (!apply_sanity_checks) return;
   if ((current_inst->flags & NACL_IFLAG(OpcodeInModRm)) &&
       (current_inst->flags & NACL_IFLAG(OpcodeUsesModRm))) {
@@ -1139,19 +1144,19 @@ static void NaClApplySanityChecksToInst() {
         "Can't specify both OpcodeInModRm and OpcodePlusR");
   }
   if ((current_inst->flags & NACL_IFLAG(OpcodeHasImmed_b)) &&
-      (current_inst->flags & NACL_IFLAG(OperandSize_b))) {
+      (operand_sizes == NACL_IFLAG(OperandSize_b))) {
     NaClFatalInst(
         "Size implied by OperandSize_b, use OpcodeHasImmed "
         "rather than OpcodeHasImmed_b");
   }
   if ((current_inst->flags & NACL_IFLAG(OpcodeHasImmed_w)) &&
-      (current_inst->flags & NACL_IFLAG(OperandSize_w))) {
+      (operand_sizes == NACL_IFLAG(OperandSize_w))) {
     NaClFatalInst(
         "Size implied by OperandSize_w, use OpcodeHasImmed "
         "rather than OpcodeHasImmed_w");
   }
   if ((current_inst->flags & NACL_IFLAG(OpcodeHasImmed_v)) &&
-      (current_inst->flags & NACL_IFLAG(OperandSize_v))) {
+      (operand_sizes == NACL_IFLAG(OperandSize_v))) {
     NaClFatalInst(
         "Size implied by OperandSize_v, use OpcodeHasImmed "
         "rather than OpcodeHasImmed_v");

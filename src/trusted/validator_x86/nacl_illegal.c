@@ -8,6 +8,15 @@
  *
  * Note: This is used by the x86-64 validator to decide what instructions
  * should be flagged as illegal.
+ *
+ * Note: This code doesn't include rules to check for the case of
+ * instructions that are near (relative) jumps with operand word size,
+ * when decoding 64-bit instructions. These instructions are marked
+ * illegal separately by DEF_OPERAND(Jzw) in ncdecode_forms.c
+ * See Call/Jcc instructions in Intel document
+ * 253666-030US - March 2009, "Intel 654 and IA-32 Architectures
+ * Software Developer's Manual, Volume2A", which specifies that
+ * such instructions are not supported on all platforms.
  */
 
 #include "native_client/src/trusted/validator_x86/nacl_illegal.h"
@@ -22,6 +31,21 @@ static const NaClMnemonic kNaClIllegalOp[] = {
    * generator model, this list will be extended.
    */
   InstDas,
+  InstLeave,
+};
+
+static const NaClNameOpcodeSeq kNaClIllegalOpSeq[] = {
+  /* The AMD manual shows 0x82 as a synonym for 0x80 in 32-bit mode only.
+   * They are illegal in 64-bit mode. We omit them for both cases.
+   */
+  { InstAdd , { 0x82 , SL(0) , END_OPCODE_SEQ } },
+  { InstOr  , { 0x82 , SL(1) , END_OPCODE_SEQ } },
+  { InstAdc , { 0x82 , SL(2) , END_OPCODE_SEQ } },
+  { InstSbb , { 0x82 , SL(3) , END_OPCODE_SEQ } },
+  { InstAnd , { 0x82 , SL(4) , END_OPCODE_SEQ } },
+  { InstSub , { 0x82 , SL(5) , END_OPCODE_SEQ } },
+  { InstXor , { 0x82 , SL(6) , END_OPCODE_SEQ } },
+  { InstCmp , { 0x82 , SL(7) , END_OPCODE_SEQ } },
 };
 
 void NaClAddNaClIllegalIfApplicable() {
@@ -29,8 +53,8 @@ void NaClAddNaClIllegalIfApplicable() {
   NaClInst* inst = NaClGetDefInst();
 
   /* TODO(karl) Once all instructions have been modified to be explicitly
-   * marked as illegal, remove the corresponding switch from nc_illegal.c,
-   * since it will no longer be needed.
+   * marked as illegal, remove the corresponding switch from nc_illegal.c.
+   *
    * Note: As instructions are modified to use the new generator model,
    * The file testdata/64/modeled_insts.txt will reflect it by showing
    * the NaClIllegal flag.
@@ -55,8 +79,9 @@ void NaClAddNaClIllegalIfApplicable() {
       is_illegal = TRUE;
       break;
     default:
-      if (NaClInInstructionSet(kNaClIllegalOp, NACL_ARRAY_SIZE(kNaClIllegalOp),
-                               NULL, 0)) {
+      if (NaClInInstructionSet(
+              kNaClIllegalOp, NACL_ARRAY_SIZE(kNaClIllegalOp),
+              kNaClIllegalOpSeq, NACL_ARRAY_SIZE(kNaClIllegalOpSeq))) {
         is_illegal = TRUE;
       }
       break;
