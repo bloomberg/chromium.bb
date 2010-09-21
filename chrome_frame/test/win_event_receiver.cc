@@ -5,6 +5,8 @@
 #include "chrome_frame/test/win_event_receiver.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/object_watcher.h"
 #include "base/string_util.h"
 
 #include "chrome_frame/function_stub.h"
@@ -68,18 +70,93 @@ void WinEventReceiver::WinEventHook(WinEventReceiver* me, HWINEVENTHOOK hook,
   me->listener_->OnEventReceived(event, hwnd, object_id, child_id);
 }
 
-// WindowWatchdog methods
-void WindowWatchdog::AddObserver(WindowObserver* observer,
-                                 const std::string& window_class) {
-  if (observers_.empty())
-    win_event_receiver_.SetListenerForEvent(this, EVENT_OBJECT_SHOW);
+// Notifies WindowWatchdog when the process owning a given window exits.
+//
+// If the process terminates before its handle may be obtained, this class will
+// still properly notifyy the WindowWatchdog.
+//
+// Notification is always delivered via a message loop task in the message loop
+// that is active when the instance is constructed.
+class WindowWatchdog::ProcessExitObserver
+    : public base::ObjectWatcher::Delegate {
+ public:
+  // Initiates the process watch. Will always return without notifying the
+  // watchdog.
+  ProcessExitObserver(WindowWatchdog* window_watchdog, HWND hwnd);
+  virtual ~ProcessExitObserver();
 
-  WindowObserverEntry new_entry = { observer, window_class };
+  // base::ObjectWatcher::Delegate implementation
+  virtual void OnObjectSignaled(HANDLE process_handle);
+
+ private:
+  WindowWatchdog* window_watchdog_;
+  HANDLE process_handle_;
+  HWND hwnd_;
+
+  ScopedRunnableMethodFactory<ProcessExitObserver> method_task_factory_;
+  base::ObjectWatcher object_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessExitObserver);
+};
+
+WindowWatchdog::ProcessExitObserver::ProcessExitObserver(
+    WindowWatchdog* window_watchdog, HWND hwnd)
+    : window_watchdog_(window_watchdog),
+      process_handle_(NULL),
+      hwnd_(hwnd),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_task_factory_(this)) {
+  DWORD pid = 0;
+  ::GetWindowThreadProcessId(hwnd, &pid);
+  if (pid != 0) {
+    process_handle_ = ::OpenProcess(SYNCHRONIZE, FALSE, pid);
+  }
+
+  if (process_handle_ != NULL) {
+    object_watcher_.StartWatching(process_handle_, this);
+  } else {
+    // Process is gone, so the window must be gone too. Notify our observer!
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_task_factory_.NewRunnableMethod(
+            &ProcessExitObserver::OnObjectSignaled, HANDLE(NULL)));
+  }
+}
+
+WindowWatchdog::ProcessExitObserver::~ProcessExitObserver() {
+  if (process_handle_ != NULL) {
+    ::CloseHandle(process_handle_);
+  }
+}
+
+void WindowWatchdog::ProcessExitObserver::OnObjectSignaled(
+    HANDLE process_handle) {
+  window_watchdog_->OnHwndProcessExited(hwnd_);
+}
+
+WindowWatchdog::WindowWatchdog() {}
+
+void WindowWatchdog::AddObserver(WindowObserver* observer,
+                                 const std::string& caption_pattern) {
+  if (observers_.empty()) {
+    // SetListenerForEvents takes an event_min and event_max.
+    // EVENT_OBJECT_DESTROY, EVENT_OBJECT_SHOW, and EVENT_OBJECT_HIDE are
+    // consecutive, in that order; hence we supply only DESTROY and HIDE to
+    // denote exactly the required set.
+    win_event_receiver_.SetListenerForEvents(
+        this, EVENT_OBJECT_DESTROY, EVENT_OBJECT_HIDE);
+  }
+
+  ObserverEntry new_entry = {
+      observer,
+      caption_pattern,
+      OpenWindowList() };
+
   observers_.push_back(new_entry);
 }
 
 void WindowWatchdog::RemoveObserver(WindowObserver* observer) {
-  for (ObserverMap::iterator i = observers_.begin(); i != observers_.end();) {
+  for (ObserverEntryList::iterator i = observers_.begin();
+       i != observers_.end(); ) {
     i = (observer == i->observer) ? observers_.erase(i) : ++i;
   }
 
@@ -87,31 +164,93 @@ void WindowWatchdog::RemoveObserver(WindowObserver* observer) {
     win_event_receiver_.StopReceivingEvents();
 }
 
-void WindowWatchdog::OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
-                                     LONG child_id) {
-  // We need to look for top level windows and a natural check is for
-  // WS_CHILD. Instead, checking for WS_CAPTION allows us to filter
-  // out other stray popups
-  if (!(WS_CAPTION & GetWindowLong(hwnd, GWL_STYLE)))
-    return;
-
-  char class_name[MAX_PATH] = {0};
-  ::GetClassNameA(hwnd, class_name, arraysize(class_name));
-
-  ObserverMap interested_observers;
-  for (ObserverMap::iterator i = observers_.begin();
-      i != observers_.end(); i++) {
-    if (0 == lstrcmpA(i->window_class.c_str(), class_name)) {
-      interested_observers.push_back(*i);
-    }
-  }
-
+std::string WindowWatchdog::GetWindowCaption(HWND hwnd) {
   std::string caption;
   int len = ::GetWindowTextLength(hwnd) + 1;
   ::GetWindowTextA(hwnd, WriteInto(&caption, len), len);
 
-  for (ObserverMap::iterator i = interested_observers.begin();
-      i != interested_observers.end(); i++) {
-    i->observer->OnWindowDetected(hwnd, caption);
+  return caption;
+}
+
+void WindowWatchdog::HandleOnOpen(HWND hwnd) {
+  std::string caption = GetWindowCaption(hwnd);
+
+  // Instantiated only if there is at least one interested observer. Each
+  // interested observer will maintain a reference to this object, such that it
+  // is deleted when the last observer disappears.
+  linked_ptr<ProcessExitObserver> process_exit_observer;
+
+  // Identify the interested observers and mark them as watching this HWND for
+  // close.
+  ObserverEntryList interested_observers;
+  for (ObserverEntryList::iterator entry_iter = observers_.begin();
+       entry_iter != observers_.end(); ++entry_iter) {
+    if (MatchPattern(caption, entry_iter->caption_pattern)) {
+      if (process_exit_observer == NULL) {
+        process_exit_observer.reset(new ProcessExitObserver(this, hwnd));
+      }
+
+      entry_iter->open_windows.push_back(
+          OpenWindowEntry(hwnd, process_exit_observer));
+
+      interested_observers.push_back(*entry_iter);
+    }
   }
+
+  // Notify the interested observers in a separate pass in case AddObserver or
+  // RemoveObserver is called as a side-effect of the notification.
+  for (ObserverEntryList::iterator entry_iter = interested_observers.begin();
+       entry_iter != interested_observers.end(); ++entry_iter) {
+    entry_iter->observer->OnWindowOpen(hwnd);
+  }
+}
+
+void WindowWatchdog::HandleOnClose(HWND hwnd) {
+  // Identify the interested observers, reaping OpenWindow entries as
+  // appropriate
+  ObserverEntryList interested_observers;
+  for (ObserverEntryList::iterator entry_iter = observers_.begin();
+       entry_iter != observers_.end(); ++entry_iter) {
+    size_t num_open_windows = entry_iter->open_windows.size();
+
+    OpenWindowList::iterator window_iter = entry_iter->open_windows.begin();
+    while (window_iter != entry_iter->open_windows.end()) {
+      if (hwnd == window_iter->first) {
+        window_iter = entry_iter->open_windows.erase(window_iter);
+      } else {
+        ++window_iter;
+      }
+    }
+
+    if (num_open_windows != entry_iter->open_windows.size()) {
+      interested_observers.push_back(*entry_iter);
+    }
+  }
+
+  // Notify the interested observers in a separate pass in case AddObserver or
+  // RemoveObserver is called as a side-effect of the notification.
+  for (ObserverEntryList::iterator entry_iter = interested_observers.begin();
+    entry_iter != interested_observers.end(); ++entry_iter) {
+    entry_iter->observer->OnWindowClose(hwnd);
+  }
+}
+
+void WindowWatchdog::OnEventReceived(
+    DWORD event, HWND hwnd, LONG object_id, LONG child_id) {
+  // We need to look for top level windows and a natural check is for
+  // WS_CHILD. Instead, checking for WS_CAPTION allows us to filter
+  // out other stray popups
+  if (!WS_CAPTION & GetWindowLong(hwnd, GWL_STYLE)) {
+    return;
+  }
+  if (event == EVENT_OBJECT_SHOW) {
+    HandleOnOpen(hwnd);
+  } else {
+    DCHECK(event == EVENT_OBJECT_DESTROY || event == EVENT_OBJECT_HIDE);
+    HandleOnClose(hwnd);
+  }
+}
+
+void WindowWatchdog::OnHwndProcessExited(HWND hwnd) {
+  HandleOnClose(hwnd);
 }

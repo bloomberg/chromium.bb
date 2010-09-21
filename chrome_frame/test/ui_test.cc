@@ -112,23 +112,23 @@ TEST_P(FullTabUITest, FLAKY_CtrlN) {
   // events for New Window, but for Crl+N we don't get any
   // OnNewWindowX notifications. :(
   MockWindowObserver win_observer_mock;
-  const wchar_t* kIEFrameClass = L"IEFrame";
+
+  const char* kNewWindowTitlePattern = "*Internet Explorer*";
   EXPECT_CALL(ie_mock_, OnLoad(is_cf, StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kIEFrameClass),
+          WatchWindow(&win_observer_mock, kNewWindowTitlePattern),
           SetFocusToRenderer(&ie_mock_),
           DelaySendChar(&loop_, 1000, 'n', simulate_input::CONTROL)));
 
-  // Watch for new window
-  const char* kNewWindowTitle = "Internet Explorer";
-  EXPECT_CALL(win_observer_mock,
-              OnWindowDetected(_, testing::HasSubstr(kNewWindowTitle)))
-      .WillOnce(testing::DoAll(
-          DoCloseWindow(),
-          CloseBrowserMock(&ie_mock_)));
+  // Watch for new window. It appears that the window close message cannot be
+  // reliably delivered immediately upon receipt of the window open event.
+  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+      .WillOnce(DelayDoCloseWindow(500));
+
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIEAndNavigate(GetSimplePageUrl());
-  // TODO(kkania): The new window does not close properly sometimes.
 }
 
 // Test that ctrl+r does cause a refresh.
@@ -389,20 +389,20 @@ TEST_F(ContextMenuTest, CFPageInfo) {
   InSequence expect_in_sequence_for_scope;
 
   // View page information.
-  const wchar_t* kPageInfoWindowClass = L"Chrome_WidgetWin_0";
+  const char* kPageInfoCaption = "Security Information";
   EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kPageInfoWindowClass),
+          WatchWindow(&win_observer_mock, kPageInfoCaption),
           OpenContextMenuAsync()));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"View page info")));
 
   // Expect page info dialog to pop up. Dismiss the dialog with 'Esc' key
-  const char* kPageInfoCaption = "Security Information";
-  EXPECT_CALL(win_observer_mock, OnWindowDetected(_, StrEq(kPageInfoCaption)))
-      .WillOnce(testing::DoAll(
-          DoCloseWindow(),
-          CloseBrowserMock(&ie_mock_)));
+  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+      .WillOnce(DoCloseWindow());
+
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+    .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
@@ -413,22 +413,20 @@ TEST_F(ContextMenuTest, CFInspector) {
   InSequence expect_in_sequence_for_scope;
 
   // Open developer tools.
-  const wchar_t* kPageInfoWindowClass = L"Chrome_WidgetWin_0";
+  // Devtools begins life with "Untitled" caption and it changes
+  // later to the 'Developer Tools - <url> form.
+  const char* kPageInfoCaptionPattern = "Untitled*";
   EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kPageInfoWindowClass),
+          WatchWindow(&win_observer_mock, kPageInfoCaptionPattern),
           OpenContextMenuAsync()));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Inspect element")));
 
-  // Devtools begins life with "Untitled" caption and it changes
-  // later to the 'Developer Tools - <url> form.
-  const char* kPageInfoCaption = "Untitled";
-  EXPECT_CALL(win_observer_mock,
-              OnWindowDetected(_, testing::StartsWith(kPageInfoCaption)))
-      .WillOnce(testing::DoAll(
-          DelayDoCloseWindow(5000),  // wait to catch possible crash
-          DelayCloseBrowserMock(&loop_, 5500, &ie_mock_)));
+  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+      .WillOnce(DelayDoCloseWindow(5000));  // wait to catch possible crash
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
                           kChromeFrameLongNavigationTimeoutInSeconds * 2);
@@ -437,13 +435,14 @@ TEST_F(ContextMenuTest, CFInspector) {
 TEST_F(ContextMenuTest, CFSaveAs) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockWindowObserver win_observer_mock;
+
   InSequence expect_in_sequence_for_scope;
 
   // Open 'Save As' dialog.
-  const wchar_t* kSaveDlgClass = L"#32770";
+  const char* kSaveDlgCaption = "Save As";
   EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kSaveDlgClass),
+          WatchWindow(&win_observer_mock, kSaveDlgCaption),
           OpenContextMenuAsync()));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Save as...")));
@@ -454,12 +453,14 @@ TEST_F(ContextMenuTest, CFSaveAs) {
   temp_file_path = temp_file_path.ReplaceExtension(L".htm");
   ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
 
-  EXPECT_CALL(win_observer_mock, OnWindowDetected(_, StrEq("Save As")))
+  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
       .WillOnce(testing::DoAll(
           AccSetValue(AccObjectMatcher(L"File name:", L"", L"simple*"),
-                            temp_file_path.value()),
-          AccDoDefaultAction(AccObjectMatcher(L"Save", L"push button")),
-          CloseWhenFileSaved(&ie_mock_, temp_file_path, 5000)));
+                      temp_file_path.value()),
+          AccDoDefaultAction(AccObjectMatcher(L"Save", L"push button"))));
+
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+      .WillOnce(CloseWhenFileSaved(&ie_mock_, temp_file_path, 5000));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
                           kChromeFrameLongNavigationTimeoutInSeconds * 2);

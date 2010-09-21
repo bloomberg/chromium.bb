@@ -9,6 +9,10 @@
 
 #include <string>
 #include <vector>
+#include <utility>
+
+#include "base/linked_ptr.h"
+#include "base/object_watcher.h"
 
 struct FunctionStub;
 
@@ -54,39 +58,79 @@ class WinEventReceiver {
   FunctionStub* hook_stub_;
 };
 
-// Observes window show events. Used with WindowWatchdog.
+// Receives notifications when a window is opened or closed.
 class WindowObserver {
  public:
   virtual ~WindowObserver() {}
-  // Called when a window has been shown.
-  virtual void OnWindowDetected(HWND hwnd, const std::string& caption) = 0;
+  virtual void OnWindowOpen(HWND hwnd) = 0;
+  virtual void OnWindowClose(HWND hwnd) = 0;
 };
 
-// Watch a for window to be shown with the given window class name.
-// If found, call the observer interested in it.
+// Notifies observers when windows whose captions match specified patterns
+// open or close. When a window opens, its caption is compared to the patterns
+// associated with each observer. Observers registered with matching patterns
+// are notified of the window's opening and will be notified when the same
+// window is closed (including if the owning process terminates without closing
+// the window).
+//
+// Changes to a window's caption while it is open do not affect the set of
+// observers to be notified when it closes.
+//
+// Observers are not notified of the closing of windows that were already open
+// when they were registered.
+//
+// Observers may call AddObserver and/or RemoveObserver during notifications.
+//
+// Each instance of this class must only be accessed from a single thread, and
+// that thread must be running a message loop.
 class WindowWatchdog : public WinEventListener {
  public:
-  // Register for notifications for |window_class|. An observer can register
-  // for multiple notifications.
-  void AddObserver(WindowObserver* observer, const std::string& window_class);
+  WindowWatchdog();
+  // Register |observer| to be notified when windows matching |caption_pattern|
+  // are opened or closed. A single observer may be registered multiple times.
+  // If a single window caption matches multiple registrations of a single
+  // observer, the observer will be notified once per matching registration.
+  void AddObserver(WindowObserver* observer,
+                   const std::string& caption_pattern);
 
-  // Remove all entries for |observer|.
+  // Remove all registrations of |observer|. The |observer| will not be notified
+  // during or after this call.
   void RemoveObserver(WindowObserver* observer);
 
  private:
-  struct WindowObserverEntry {
+  class ProcessExitObserver;
+
+  // The Delegate object is actually a ProcessExitObserver, but declaring
+  // it as such would require fully declaring the ProcessExitObserver class
+  // here in order for linked_ptr to access its destructor.
+  typedef std::pair<HWND, linked_ptr<base::ObjectWatcher::Delegate> >
+    OpenWindowEntry;
+  typedef std::vector<OpenWindowEntry> OpenWindowList;
+
+  struct ObserverEntry {
     WindowObserver* observer;
-    std::string window_class;
+    std::string caption_pattern;
+    OpenWindowList open_windows;
   };
 
-  typedef std::vector<WindowObserverEntry> ObserverMap;
+  typedef std::vector<ObserverEntry> ObserverEntryList;
 
-  // Overriden from WinEventListener.
-  virtual void OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
-                               LONG child_id);
+  // WinEventListener implementation.
+  virtual void OnEventReceived(
+    DWORD event, HWND hwnd, LONG object_id, LONG child_id);
 
-  ObserverMap observers_;
+  static std::string GetWindowCaption(HWND hwnd);
+
+  void HandleOnOpen(HWND hwnd);
+  void HandleOnClose(HWND hwnd);
+  void OnHwndProcessExited(HWND hwnd);
+
+  ObserverEntryList observers_;
   WinEventReceiver win_event_receiver_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowWatchdog);
 };
+
+
 
 #endif  // CHROME_FRAME_TEST_WIN_EVENT_RECEIVER_H_
