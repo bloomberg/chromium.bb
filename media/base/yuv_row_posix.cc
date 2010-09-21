@@ -552,10 +552,10 @@ extern void PICConvertYUVToRGB32Row(const uint8* y_buf,
   "movntq %mm1,0x0(%ebp)\n"
   "add    $0x8,%ebp\n"
 ".Lconvertend:"
-  "sub    $0x2,0x34(%esp)\n"
+  "subl   $0x2,0x34(%esp)\n"
   "jns    .Lconvertloop\n"
 
-  "and    $0x1,0x34(%esp)\n"
+  "andl   $0x1,0x34(%esp)\n"
   "je     .Lconvertdone\n"
 
   "movzbl (%edi),%eax\n"
@@ -633,10 +633,10 @@ extern void PICScaleYUVToRGB32Row(const uint8* y_buf,
   "movntq %mm1,0x0(%ebp)\n"
   "add    $0x8,%ebp\n"
 "Lscaleend:"
-  "sub    $0x2,0x34(%esp)\n"
+  "subl   $0x2,0x34(%esp)\n"
   "jns    Lscaleloop\n"
 
-  "and    $0x1,0x34(%esp)\n"
+  "andl   $0x1,0x34(%esp)\n"
   "je     Lscaledone\n"
 
   "mov    %ebx,%eax\n"
