@@ -12,6 +12,12 @@
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_type.h"
+#include "views/controls/textfield/native_textfield_gtk.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "views/controls/textfield/gtk_views_textview.h"
+#include "views/controls/textfield/gtk_views_entry.h"
+#endif
 
 namespace {
 
@@ -209,6 +215,20 @@ void AccessibilityEventRouterGtk::InstallEventListener(
       signal_id, 0, hook_func, reinterpret_cast<gpointer>(this), NULL);
   installed_hooks_.push_back(InstalledHook(signal_id, hook_id));
 }
+
+bool AccessibilityEventRouterGtk::IsPassword(GtkWidget* widget) {
+  bool is_password = false;
+#if defined (TOOLKIT_VIEWS)
+  is_password = (GTK_IS_ENTRY(widget) &&
+                 GTK_VIEWS_ENTRY(widget)->host != NULL &&
+                 GTK_VIEWS_ENTRY(widget)->host->IsPassword()) ||
+                (GTK_IS_TEXT_VIEW(widget) &&
+                 GTK_VIEWS_TEXTVIEW(widget)->host != NULL &&
+                 GTK_VIEWS_TEXTVIEW(widget)->host->IsPassword());
+#endif
+  return is_password;
+}
+
 
 void AccessibilityEventRouterGtk::InstallEventListeners() {
   // Create and destroy each type of widget we need signals for,
@@ -476,7 +496,7 @@ void AccessibilityEventRouterGtk::SendEntryNotification(
   gint start_pos;
   gint end_pos;
   gtk_editable_get_selection_bounds(GTK_EDITABLE(widget), &start_pos, &end_pos);
-  AccessibilityTextBoxInfo info(profile, name, false);
+  AccessibilityTextBoxInfo info(profile, name, IsPassword(widget));
   info.SetValue(value, start_pos, end_pos);
   SendAccessibilityNotification(type, &info);
 }
@@ -494,7 +514,7 @@ void AccessibilityEventRouterGtk::SendTextViewNotification(
   gtk_text_buffer_get_selection_bounds(buffer, &sel_start, &sel_end);
   int start_pos = gtk_text_iter_get_offset(&sel_start);
   int end_pos = gtk_text_iter_get_offset(&sel_end);
-  AccessibilityTextBoxInfo info(profile, name, false);
+  AccessibilityTextBoxInfo info(profile, name, IsPassword(widget));
   info.SetValue(value, start_pos, end_pos);
   SendAccessibilityNotification(type, &info);
 }

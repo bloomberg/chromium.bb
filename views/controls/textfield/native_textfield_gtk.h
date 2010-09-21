@@ -41,6 +41,7 @@ class NativeTextfieldGtk : public NativeControlGtk,
   virtual void UpdateFont();
   virtual void UpdateIsPassword();
   virtual void UpdateEnabled();
+  virtual bool IsPassword();
   virtual gfx::Insets CalculateInsets();
   virtual void SetHorizontalMargins(int left, int right);
   virtual void SetFocus();

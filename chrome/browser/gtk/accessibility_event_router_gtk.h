@@ -18,6 +18,11 @@
 #include "chrome/browser/accessibility_events.h"
 
 class Profile;
+#if defined (TOOLKIT_VIEWS)
+namespace views {
+class NativeTextfieldGtk;
+}
+#endif
 
 // Allows us to use (GtkWidget*) in a hash_map with gcc.
 namespace __gnu_cxx {
@@ -133,6 +138,7 @@ class AccessibilityEventRouterGtk {
   void SendTextViewNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
 
+  bool IsPassword(GtkWidget* widget);
   void InstallEventListeners();
   void RemoveEventListeners();
 
