@@ -6,12 +6,11 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/chromeos/proxy_config_service.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/profile.h"
-#include "net/proxy/proxy_config.h"
 
 namespace chromeos {
+
+//------------------ CrosSettingsProviderProxy: public methods -----------------
 
 CrosSettingsProviderProxy::CrosSettingsProviderProxy() { }
 
@@ -36,26 +35,24 @@ void CrosSettingsProviderProxy::Set(const std::string& path,
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      uri += ":";
-      uri += config.single_proxy.server.host_port_pair().port();
+      AppendPortIfValid(config.single_proxy, &uri);
       config_service->UISetProxyConfigToSingleProxy(
           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == "cros.proxy.singlehttpport") {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = config.single_proxy.server.host_port_pair().host();
-      uri += ":";
-      uri += val;
-      config_service->UISetProxyConfigToSingleProxy(
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+      std::string uri;
+      if (FormServerUriIfValid(config.single_proxy, val, &uri)) {
+        config_service->UISetProxyConfigToSingleProxy(
+            net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+      }
     }
   } else if (path == "cros.proxy.httpurl") {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      uri += ":";
-      uri += config.http_proxy.server.host_port_pair().port();
+      AppendPortIfValid(config.http_proxy, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("http",
           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
@@ -63,7 +60,7 @@ void CrosSettingsProviderProxy::Set(const std::string& path,
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      uri += config.https_proxy.server.host_port_pair().port();
+      AppendPortIfValid(config.https_proxy, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("https",
           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTPS));
     }
@@ -77,8 +74,36 @@ void CrosSettingsProviderProxy::Set(const std::string& path,
         else
           config_service->UISetProxyConfigToAutoDetect();
       } else if (val == 2) {
-        config_service->UISetProxyConfigToProxyPerScheme("http",
-            net::ProxyServer());
+        if (config.single_proxy.server.is_valid()) {
+          config_service->UISetProxyConfigToSingleProxy(
+              config.single_proxy.server);
+        } else {
+          bool set_config = false;
+          if (config.http_proxy.server.is_valid()) {
+            config_service->UISetProxyConfigToProxyPerScheme("http",
+                config.http_proxy.server);
+            set_config = true;
+          }
+          if (config.https_proxy.server.is_valid()) {
+            config_service->UISetProxyConfigToProxyPerScheme("https",
+                config.https_proxy.server);
+            set_config = true;
+          }
+          if (config.ftp_proxy.server.is_valid()) {
+            config_service->UISetProxyConfigToProxyPerScheme("ftp",
+                config.ftp_proxy.server);
+            set_config = true;
+          }
+          if (config.socks_proxy.server.is_valid()) {
+            config_service->UISetProxyConfigToProxyPerScheme("socks",
+                config.socks_proxy.server);
+            set_config = true;
+          }
+          if (!set_config) {
+            config_service->UISetProxyConfigToProxyPerScheme("http",
+                net::ProxyServer());
+          }
+        }
       } else {
         config_service->UISetProxyConfigToDirect();
       }
@@ -87,16 +112,17 @@ void CrosSettingsProviderProxy::Set(const std::string& path,
     bool val;
     if (in_value->GetAsBoolean(&val)) {
       if (val)
-        config_service->UISetProxyConfigToSingleProxy(config.http_proxy.server);
+        config_service->UISetProxyConfigToSingleProxy(
+            config.single_proxy.server);
       else
         config_service->UISetProxyConfigToProxyPerScheme("http",
             config.http_proxy.server);
     }
-  } else if (path == "cros.proxy.ftp") {
+  } else if (path == "cros.proxy.ftpurl") {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      uri += config.ftp_proxy.server.host_port_pair().port();
+      AppendPortIfValid(config.ftp_proxy, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("ftp",
           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
@@ -104,44 +130,45 @@ void CrosSettingsProviderProxy::Set(const std::string& path,
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      uri += config.socks_proxy.server.host_port_pair().port();
+      AppendPortIfValid(config.socks_proxy, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("socks",
          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_SOCKS4));
     }
   } else if (path == "cros.proxy.httpport") {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = config.http_proxy.server.host_port_pair().host() +
-                          ":" + val;
-      config_service->UISetProxyConfigToProxyPerScheme("http",
-         net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+      std::string uri;
+      if (FormServerUriIfValid(config.http_proxy, val, &uri)) {
+        config_service->UISetProxyConfigToProxyPerScheme("http",
+           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+      }
     }
   } else if (path == "cros.proxy.httpsport") {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = config.https_proxy.server.host_port_pair().host();
-      uri += ":";
-      uri += val;
-      config_service->UISetProxyConfigToProxyPerScheme("https",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTPS));
+      std::string uri;
+      if (FormServerUriIfValid(config.https_proxy, val, &uri)) {
+        config_service->UISetProxyConfigToProxyPerScheme("https",
+            net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTPS));
+      }
     }
   } else if (path == "cros.proxy.ftpport") {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = config.ftp_proxy.server.host_port_pair().host();
-      uri += ":";
-      uri += val;
-      config_service->UISetProxyConfigToProxyPerScheme("ftp",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+      std::string uri;
+      if (FormServerUriIfValid(config.ftp_proxy, val, &uri)) {
+        config_service->UISetProxyConfigToProxyPerScheme("ftp",
+            net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+      }
     }
   } else if (path == "cros.proxy.socksport") {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = config.socks_proxy.server.host_port_pair().host();
-      uri += ":";
-      uri += val;
-      config_service->UISetProxyConfigToProxyPerScheme("socks",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_SOCKS5));
+      std::string uri;
+      if (FormServerUriIfValid(config.socks_proxy, val, &uri)) {
+        config_service->UISetProxyConfigToProxyPerScheme("socks",
+            net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_SOCKS5));
+      }
     }
   } else if (path == "cros.proxy.ignorelist") {
     net::ProxyBypassRules bypass_rules;
@@ -173,28 +200,18 @@ bool CrosSettingsProviderProxy::Get(const std::string& path,
   config_service->UIGetProxyConfig(&config);
 
   if (path == "cros.proxy.pacurl") {
-    if (config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT) {
-      data = Value::CreateStringValue(
-          config.automatic_proxy.pac_url.spec());
+    if (config.automatic_proxy.pac_url.is_valid()) {
+      data = Value::CreateStringValue(config.automatic_proxy.pac_url.spec());
       found = true;
     }
   } else if (path == "cros.proxy.singlehttp") {
-    data = Value::CreateStringValue(
-        config.single_proxy.server.host_port_pair().host());
-    found = true;
+    found = (data = CreateServerHostValue(config.single_proxy));
   } else if (path == "cros.proxy.singlehttpport") {
-    data = Value::CreateIntegerValue(
-        config.single_proxy.server.host_port_pair().port());
-    found = true;
+    found = (data = CreateServerPortValue(config.single_proxy));
   } else if (path == "cros.proxy.httpurl") {
-    data = Value::CreateStringValue(
-        config.http_proxy.server.host_port_pair().host());
-    found = true;
+    found = (data = CreateServerHostValue(config.http_proxy));
   } else if (path == "cros.proxy.httpsurl") {
-    data = Value::CreateStringValue(
-        config.https_proxy.server.host_port_pair().host());
-    found = true;
+    found = (data = CreateServerHostValue(config.https_proxy));
   } else if (path == "cros.proxy.type") {
     if (config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT ||
@@ -211,49 +228,21 @@ bool CrosSettingsProviderProxy::Get(const std::string& path,
     }
     found = true;
   } else if (path == "cros.proxy.single") {
-    if (config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY) {
-      data = Value::CreateBooleanValue(true);
-    } else {
-      data = Value::CreateBooleanValue(false);
-    }
+    data = Value::CreateBooleanValue(config.mode ==
+        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY);
     found = true;
-  } else if (path == "cros.proxy.http") {
-    net::ProxyServer& server = config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY ?
-        config.single_proxy.server : config.http_proxy.server;
-    data = Value::CreateStringValue(server.host_port_pair().host());
-    found = true;
-  } else if (path == "cros.proxy.https") {
-    data = Value::CreateStringValue(
-        config.https_proxy.server.host_port_pair().host());
-    found = true;
-  } else if (path == "cros.proxy.ftp") {
-    data = Value::CreateStringValue(
-        config.ftp_proxy.server.host_port_pair().host());
-    found = true;
+  } else if (path == "cros.proxy.ftpurl") {
+    found = (data = CreateServerHostValue(config.ftp_proxy));
   } else if (path == "cros.proxy.socks") {
-    data = Value::CreateStringValue(
-        config.socks_proxy.server.host_port_pair().host());
-    found = true;
+    found = (data = CreateServerHostValue(config.socks_proxy));
   } else if (path == "cros.proxy.httpport") {
-    net::ProxyServer& server = config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY ?
-        config.single_proxy.server : config.http_proxy.server;
-    data = Value::CreateIntegerValue(server.host_port_pair().port());
-    found = true;
+    found = (data = CreateServerPortValue(config.http_proxy));
   } else if (path == "cros.proxy.httpsport") {
-    data = Value::CreateIntegerValue(
-        config.https_proxy.server.host_port_pair().port());
-    found = true;
+    found = (data = CreateServerPortValue(config.https_proxy));
   } else if (path == "cros.proxy.ftpport") {
-    data = Value::CreateIntegerValue(
-        config.ftp_proxy.server.host_port_pair().port());
-    found = true;
+    found = (data = CreateServerPortValue(config.ftp_proxy));
   } else if (path == "cros.proxy.socksport") {
-    data = Value::CreateIntegerValue(
-        config.socks_proxy.server.host_port_pair().port());
-    found = true;
+    found = (data = CreateServerPortValue(config.socks_proxy));
   } else if (path == "cros.proxy.ignorelist") {
     ListValue* list =  new ListValue();
     net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
@@ -277,6 +266,38 @@ bool CrosSettingsProviderProxy::Get(const std::string& path,
 
 bool CrosSettingsProviderProxy::HandlesSetting(const std::string& path) {
   return ::StartsWithASCII(path, "cros.proxy", true);
+}
+
+//----------------- CrosSettingsProviderProxy: private methods -----------------
+
+void CrosSettingsProviderProxy::AppendPortIfValid(
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    std::string* server_uri) {
+  if (proxy.server.is_valid())
+    *server_uri += ":" + proxy.server.host_port_pair().port();
+}
+
+bool CrosSettingsProviderProxy::FormServerUriIfValid(
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    const std::string& port_num, std::string* server_uri) {
+  if (!proxy.server.is_valid())
+    return false;
+  *server_uri = proxy.server.host_port_pair().host() + ":" + port_num;
+  return true;
+}
+
+Value* CrosSettingsProviderProxy::CreateServerHostValue(
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const {
+  return proxy.server.is_valid() ?
+         Value::CreateStringValue(proxy.server.host_port_pair().host()) :
+         NULL;
+}
+
+Value* CrosSettingsProviderProxy::CreateServerPortValue(
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const {
+  return proxy.server.is_valid() ?
+         Value::CreateIntegerValue(proxy.server.host_port_pair().port()) :
+         NULL;
 }
 
 }  // namespace chromeos

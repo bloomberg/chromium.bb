@@ -9,6 +9,7 @@
 #include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 
 namespace chromeos {
 
@@ -20,6 +21,19 @@ class CrosSettingsProviderProxy : public CrosSettingsProvider {
   virtual bool HandlesSetting(const std::string& path);
 
  private:
+  void AppendPortIfValid(
+      const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+      std::string* server_uri);
+
+  bool FormServerUriIfValid(
+      const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+      const std::string& port_num, std::string* server_uri);
+
+  Value* CreateServerHostValue(
+      const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const;
+
+  Value* CreateServerPortValue(
+      const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const;
 
   DISALLOW_COPY_AND_ASSIGN(CrosSettingsProviderProxy);
 };
