@@ -257,12 +257,13 @@ PP_Var ObjectProxy::Call(PP_Var method_name,
   }
   uint32_t argv_length = kMaxVarSize;
   nacl::scoped_array<char> argv_chars(Serialize(argv, argc, &argv_length));
-  if (argv_chars == NULL) {
+  // |argv_chars| can be NULL only if |argc| is 0, otherwise an error occurred.
+  if (argv_chars == NULL && argc > 0) {
     return ret;
   }
   uint32_t ex_in_length = kMaxVarSize;
   nacl::scoped_array<char> ex_in_chars(Serialize(exception, 1, &ex_in_length));
-  if (ex_in_chars == NULL) {
+  if (ex_in_chars == NULL && exception != NULL) {
     return ret;
   }
   uint32_t ex_length = kMaxVarSize;
