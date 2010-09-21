@@ -50,7 +50,7 @@ class PhishingTermFeatureExtractor {
   // destroyed.
   //
   // |clock| is used for timing feature extractor operations, and may be mocked
-  // for testing.  The caller keeps ownership of the clock.
+  // for testing.  PhishingTermFeatureExtractor takes ownership of the clock.
   PhishingTermFeatureExtractor(
       const base::hash_set<std::string>* page_term_hashes,
       const base::hash_set<std::string>* page_word_hashes,
@@ -129,8 +129,8 @@ class PhishingTermFeatureExtractor {
   // The maximum number of words in an n-gram.
   size_t max_words_per_term_;
 
-  // Non-owned pointer to our clock.
-  FeatureExtractorClock* clock_;
+  // Owned pointer to our clock.
+  scoped_ptr<FeatureExtractorClock> clock_;
 
   // The output parameters from the most recent call to ExtractFeatures().
   const string16* page_text_;  // The caller keeps ownership of this.

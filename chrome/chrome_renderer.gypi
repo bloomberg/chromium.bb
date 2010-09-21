@@ -199,8 +199,6 @@
         'renderer/safe_browsing/feature_extractor_clock.h',
         'renderer/safe_browsing/features.cc',
         'renderer/safe_browsing/features.h',
-        'renderer/safe_browsing/phishing_classifier.cc',
-        'renderer/safe_browsing/phishing_classifier.h',
         'renderer/safe_browsing/phishing_dom_feature_extractor.cc',
         'renderer/safe_browsing/phishing_dom_feature_extractor.h',
         'renderer/safe_browsing/phishing_term_feature_extractor.cc',

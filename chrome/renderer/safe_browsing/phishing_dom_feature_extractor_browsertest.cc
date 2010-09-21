@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
-#include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/render_view_fake_resources_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -24,10 +24,17 @@ namespace safe_browsing {
 
 class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
  protected:
+  class MockClock : public FeatureExtractorClock {
+   public:
+    MOCK_METHOD0(Now, base::TimeTicks());
+  };
+
   virtual void SetUp() {
     // Set up WebKit and the RenderView.
     RenderViewFakeResourcesTest::SetUp();
-    extractor_.reset(new PhishingDOMFeatureExtractor(view_, &clock_));
+
+    clock_ = new MockClock();
+    extractor_.reset(new PhishingDOMFeatureExtractor(view_, clock_));
   }
 
   virtual void TearDown() {
@@ -51,14 +58,14 @@ class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
     message_loop_.Quit();
   }
 
-  MockFeatureExtractorClock clock_;
   scoped_ptr<PhishingDOMFeatureExtractor> extractor_;
+  MockClock* clock_;  // owned by extractor_
   bool success_;  // holds the success value from ExtractFeatures
 };
 
 TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
   // This test doesn't exercise the extraction timing.
-  EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
+  EXPECT_CALL(*clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
       "<html><head><body>"
       "<form action=\"query\"><input type=text><input type=checkbox></form>"
@@ -116,7 +123,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
 
 TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   // This test doesn't exercise the extraction timing.
-  EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
+  EXPECT_CALL(*clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://www.host.com/"] =
       "<html><head><body>"
       "<a href=\"http://www2.host.com/abc\">link</a>"
@@ -158,7 +165,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
 
 TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
   // This test doesn't exercise the extraction timing.
-  EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
+  EXPECT_CALL(*clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
       "<html><head><script></script><script></script></head></html>";
 
@@ -189,7 +196,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
 
 TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   // This test doesn't exercise the extraction timing.
-  EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
+  EXPECT_CALL(*clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
   // Test that features are aggregated across all frames.
   responses_["http://host.com/"] =
@@ -259,7 +266,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
   // Note that this assumes kClockCheckGranularity = 10 and
   // kMaxTimePerChunkMs = 50.
   base::TimeTicks now = base::TimeTicks::Now();
-  EXPECT_CALL(clock_, Now())
+  EXPECT_CALL(*clock_, Now())
       // Time check at the start of extraction.
       .WillOnce(Return(now))
       // Time check at the start of the first chunk of work.
@@ -296,13 +303,13 @@ TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
   ASSERT_TRUE(ExtractFeatures(&features));
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
   // Make sure none of the mock expectations carry over to the next test.
-  ::testing::Mock::VerifyAndClearExpectations(&clock_);
+  ::testing::Mock::VerifyAndClearExpectations(clock_);
 
   // Now repeat the test with the same page, but advance the clock faster so
   // that the extraction time exceeds the maximum total time for the feature
   // extractor.  Extraction should fail.  Note that this assumes
   // kMaxTotalTimeMs = 500.
-  EXPECT_CALL(clock_, Now())
+  EXPECT_CALL(*clock_, Now())
       // Time check at the start of extraction.
       .WillOnce(Return(now))
       // Time check at the start of the first chunk of work.
