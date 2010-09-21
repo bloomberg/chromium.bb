@@ -94,13 +94,28 @@ void ExtensionSidebarEventRouter::OnStateChanged(
 }
 
 
+// List is considered empty if it is actually empty or contains just one value,
+// either 'null' or 'undefined'.
+static bool IsArgumentListEmpty(const ListValue* arguments) {
+  if (arguments->empty())
+    return true;
+  if (arguments->GetSize() == 1) {
+    Value* first_value = 0;
+    if (!arguments->Get(0, &first_value))
+      return true;
+    if (first_value->GetType() == Value::TYPE_NULL)
+      return true;
+  }
+  return false;
+}
+
 bool SidebarFunction::RunImpl() {
   if (!args_.get())
     return false;
 
   DictionaryValue* details = NULL;
   DictionaryValue default_details;
-  if (args_->empty()) {
+  if (IsArgumentListEmpty(args_.get())) {
     details = &default_details;
   } else {
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));

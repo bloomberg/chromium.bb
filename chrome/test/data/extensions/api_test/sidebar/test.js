@@ -212,6 +212,26 @@ var tests = [
     });
   },
 
+  function crashTest() {
+    // Chrome should not crash on this request.
+    chrome.sidebar.getState(undefined, function(state) {
+      assertEq('hidden', state);
+      chrome.sidebar.getState(null, function(state) {
+        assertEq('hidden', state);
+        // Also check that it really does return state of the current tab.
+        showSidebarForCurrentTab(function() {
+          chrome.sidebar.getState(undefined, function(state) {
+            assertEq('shown', state);
+            chrome.sidebar.getState(null, function(state) {
+              assertEq('shown', state);
+              hideSidebarForCurrentTab(pass());
+            });
+          });
+        });
+      });
+    });
+  },
+
   function testSetFunctions() {
     showSidebarForCurrentTab(function() {
       // TODO(alekseys): test unicode strings.
