@@ -110,6 +110,7 @@ class RemoveButton : public views::TextButton {
     SetHighlightColor(SK_ColorWHITE);
     SetHoverColor(SK_ColorWHITE);
     SetIcon(icon_);
+    set_border(NULL);
     UpdatePosition();
   }
 
