@@ -49,9 +49,8 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/blob_url_request_job_factory.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 #include "chrome/browser/plugin_service.h"
@@ -1192,8 +1191,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
-
-  profile->GetDefaultRequestContext()->set_is_main(true);
 
   // Convert active labs into switches. Modifies the current command line.
   about_labs::ConvertLabsToSwitches(profile, CommandLine::ForCurrentProcess());
