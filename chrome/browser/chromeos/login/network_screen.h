@@ -34,10 +34,10 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
 
   // NetworkScreenDelegate implementation:
   virtual void ClearErrors();
-
   virtual LanguageSwitchMenu* language_switch_menu() {
     return &language_switch_menu_;
   }
+  virtual gfx::Size size() const { return GetScreenSize(); }
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

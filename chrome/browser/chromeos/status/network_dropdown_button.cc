@@ -36,6 +36,10 @@ NetworkDropdownButton::~NetworkDropdownButton() {
   CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
 }
 
+void NetworkDropdownButton::Refresh() {
+  NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkDropdownButton, NetworkLibrary::Observer implementation:
 

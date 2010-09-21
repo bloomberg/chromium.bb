@@ -17,6 +17,7 @@
 
 namespace views {
 class Combobox;
+class GridLayout;
 class Label;
 class NativeButton;
 class Throbber;
@@ -42,10 +43,6 @@ class NetworkSelectionView : public views::View,
   // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
 
-  // views::View: implementation:
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-
   // Returns top level native window for the view.
   gfx::NativeWindow GetNativeWindow() const;
 
@@ -69,13 +66,14 @@ class NetworkSelectionView : public views::View,
 
  protected:
   // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(View* child);
   virtual void OnLocaleChanged();
 
   // LoginHtmlDialog::Delegate implementation:
   virtual void OnDialogClosed() {}
 
  private:
+  void InitLayout();
+
   // Delete and recreate native controls that
   // fail to update preferred size after string update.
   void RecreateNativeControls();
@@ -94,9 +92,6 @@ class NetworkSelectionView : public views::View,
   views::Throbber* throbber_;
   views::Link* proxy_settings_link_;
 
-  // Tab index of continue button.
-  int continue_button_order_index_;
-
   // NetworkScreen delegate.
   NetworkScreenDelegate* delegate_;
 
@@ -105,6 +100,8 @@ class NetworkSelectionView : public views::View,
 
   // Dialog used for to launch proxy settings.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
+
+  views::GridLayout* layout_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSelectionView);
 };

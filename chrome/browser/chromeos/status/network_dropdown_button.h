@@ -26,6 +26,9 @@ class NetworkDropdownButton : public views::MenuButton,
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* obj);
 
+  // Refreshes button state. Used when language has been changed.
+  void Refresh();
+
  protected:
   // NetworkMenu implementation:
   virtual bool IsBrowserMode() const { return browser_mode_; }

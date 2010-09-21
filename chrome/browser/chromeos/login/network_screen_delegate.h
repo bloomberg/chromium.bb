@@ -11,6 +11,10 @@
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 namespace chromeos {
 
 class LanguageSwitchMenu;
@@ -23,6 +27,8 @@ class NetworkScreenDelegate : public views::ButtonListener,
   virtual void ClearErrors() = 0;
 
   virtual LanguageSwitchMenu* language_switch_menu() = 0;
+
+  virtual gfx::Size size() const = 0;
 
  protected:
   virtual ~NetworkScreenDelegate() {}
