@@ -297,7 +297,7 @@ void ProfileSyncService::RegisterPreferences() {
 #endif
 
   pref_service->RegisterBooleanPref(prefs::kSyncBookmarks, true);
-  pref_service->RegisterBooleanPref(prefs::kSyncPasswords, enable_by_default);
+  pref_service->RegisterBooleanPref(prefs::kSyncPasswords, false);
   pref_service->RegisterBooleanPref(prefs::kSyncPreferences, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncAutofill, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);

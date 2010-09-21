@@ -372,6 +372,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
  private:
   friend class ProfileSyncServiceTest;
+  friend class ProfileSyncServicePasswordTest;
   friend class ProfileSyncServicePreferenceTest;
   friend class ProfileSyncServiceSessionTest;
   friend class ProfileSyncServiceTestHarness;

@@ -28,6 +28,7 @@
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/profile_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -142,6 +143,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(&factory_, &profile_,
                                                 "test_user", false, root_task));
+      service_->RegisterPreferences();
+      profile_.GetPrefs()->SetBoolean(prefs::kSyncPasswords, true); 
       service_->set_num_expected_resumes(num_resume_expectations);
       service_->set_num_expected_pauses(num_pause_expectations);
       PasswordDataTypeController* data_type_controller =
