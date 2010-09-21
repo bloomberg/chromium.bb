@@ -9,6 +9,8 @@
 
 #import "chrome/browser/cocoa/applescript/bookmark_node_applescript.h"
 
+@class BookmarkItemAppleScript;
+
 // Represent a bookmark folder scriptable object in applescript.
 @interface BookmarkFolderAppleScript : BookmarkNodeAppleScript {
 
@@ -38,12 +40,13 @@
 - (NSArray*)bookmarkItems;
 
 // Inserts a bookmark item at the end.
-- (void)insertInBookmarkItems:(id)aBookmarkItem;
+- (void)insertInBookmarkItems:(BookmarkItemAppleScript*)aBookmarkItem;
 
 // Inserts a bookmark item at some position in the list.
 // Called by applescript which takes care of bounds checking, make sure of it
 // before calling directly.
-- (void)insertInBookmarkItems:(id)aBookmarkItem atIndex:(int)index;
+- (void)insertInBookmarkItems:(BookmarkItemAppleScript*)aBookmarkItem
+                      atIndex:(int)index;
 
 // Removes a bookmarks folder from the list.
 // Called by applescript which takes care of bounds checking, make sure of it

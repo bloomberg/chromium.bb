@@ -49,15 +49,6 @@
 #include "app/win_util.h"
 #endif
 
-namespace {
-
-// Used to sort download items based on descending start time.
-bool CompareStartTime(DownloadItem* first, DownloadItem* second) {
-  return first->start_time() > second->start_time();
-}
-
-}  // namespace
-
 DownloadManager::DownloadManager()
     : shutdown_needed_(false),
       profile_(NULL),

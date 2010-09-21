@@ -125,7 +125,7 @@ class GoogleServiceAuthError {
   // The error information.
   const State& state() const { return state_; }
   const Captcha& captcha() const { return captcha_; }
-  const int network_error() const {
+  int network_error() const {
     return network_error_;
   }
 

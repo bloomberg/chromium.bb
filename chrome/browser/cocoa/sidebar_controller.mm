@@ -53,7 +53,7 @@ const int kMinWebWidth = 50;
   [super dealloc];
 }
 
-- (NSView*)view {
+- (NSSplitView*)view {
   return splitView_.get();
 }
 

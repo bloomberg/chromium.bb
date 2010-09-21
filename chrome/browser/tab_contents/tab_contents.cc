@@ -1543,12 +1543,6 @@ void TabContents::AddPopup(TabContents* new_contents,
   }
 }
 
-namespace {
-bool TransitionIsReload(PageTransition::Type transition) {
-  return PageTransition::StripQualifier(transition) == PageTransition::RELOAD;
-}
-}
-
 void TabContents::ExpireInfoBars(
     const NavigationController::LoadCommittedDetails& details) {
   // Only hide InfoBars when the user has done something that makes the main

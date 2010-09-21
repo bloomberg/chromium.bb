@@ -849,7 +849,7 @@ RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque,
   gfx::PluginWindowHandle handle =
       plugin_container_manager_.AllocateFakePluginWindowHandle(opaque, root);
 
-  scoped_nsobject<NSView> plugin_view(
+  scoped_nsobject<AcceleratedPluginView> plugin_view(
       [[AcceleratedPluginView alloc] initWithRenderWidgetHostViewMac:this
                                                         pluginHandle:handle]);
   [plugin_view setHidden:YES];

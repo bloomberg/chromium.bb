@@ -111,13 +111,16 @@ FilePath GetWebAppDataDirectory(const FilePath& root_dir,
   return root_dir.Append(GetWebAppDir(url));
 }
 
+#if defined(TOOLKIT_VIEWS)
 // Predicator for sorting images from largest to smallest.
 bool IconPrecedes(
     const webkit_glue::WebApplicationInfo::IconInfo& left,
     const webkit_glue::WebApplicationInfo::IconInfo& right) {
   return left.width < right.width;
 }
+#endif
 
+#if defined(OS_WIN)
 // Calculates image checksum using MD5.
 void GetImageCheckSum(const SkBitmap& image, MD5Digest* digest) {
   DCHECK(digest);
@@ -126,7 +129,6 @@ void GetImageCheckSum(const SkBitmap& image, MD5Digest* digest) {
   MD5Sum(image.getPixels(), image.getSize(), digest);
 }
 
-#if defined(OS_WIN)
 // Saves |image| as an |icon_file| with the checksum.
 bool SaveIconWithCheckSum(const FilePath& icon_file, const SkBitmap& image) {
   if (!IconUtil::CreateIconFileFromSkBitmap(image, icon_file))

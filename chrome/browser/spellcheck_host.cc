@@ -31,11 +31,13 @@ FilePath GetFirstChoiceFilePath(const std::string& language) {
   return SpellCheckCommon::GetVersionedFileName(language, dict_dir);
 }
 
+#if defined(OS_WIN)
 FilePath GetFallbackFilePath(const FilePath& first_choice) {
   FilePath dict_dir;
   PathService::Get(chrome::DIR_USER_DATA, &dict_dir);
   return dict_dir.Append(first_choice.BaseName());
 }
+#endif
 
 }  // namespace
 

@@ -59,10 +59,10 @@ class TabStripModelObserverBridge;
 
   // Stores all preview layers. The order in here matches the order in
   // the tabstrip model.
-  scoped_nsobject<NSArray> allThumbnailLayers_;
+  scoped_nsobject<NSMutableArray> allThumbnailLayers_;
 
-  scoped_nsobject<NSArray> allFaviconLayers_;
-  scoped_nsobject<NSArray> allTitleLayers_;
+  scoped_nsobject<NSMutableArray> allFaviconLayers_;
+  scoped_nsobject<NSMutableArray> allTitleLayers_;
 
   // Manages the state of all layers.
   scoped_ptr<tabpose::TileSet> tileSet_;

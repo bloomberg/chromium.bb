@@ -227,6 +227,7 @@ bool IsLocalePartiallyPopulated(const std::string& locale_name) {
   return !IsLocaleNameTranslated("en", locale_name);
 }
 
+#if !defined(OS_MACOSX)
 bool IsLocaleAvailable(const std::string& locale,
                        const FilePath& locale_path) {
   // If locale has any illegal characters in it, we don't want to try to
@@ -324,6 +325,7 @@ std::string GetSystemLocale() {
   }
   return ret;
 }
+#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // Split and normalize the language list specified by LANGUAGE environment.

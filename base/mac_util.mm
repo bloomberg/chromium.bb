@@ -53,7 +53,7 @@ void SetUIMode() {
 bool WasLaunchedAsLoginItem() {
   ProcessSerialNumber psn = { 0, kCurrentProcess };
 
-  scoped_nsobject<NSDictionary> process_info(
+  scoped_nsobject<const NSDictionary> process_info(
       reinterpret_cast<const NSDictionary*>(
           ProcessInformationCopyDictionary(&psn,
               kProcessDictionaryIncludeAllInformationMask)));
@@ -62,7 +62,7 @@ bool WasLaunchedAsLoginItem() {
   ProcessSerialNumber parent_psn =
       { (temp >> 32) & 0x00000000FFFFFFFFLL, temp & 0x00000000FFFFFFFFLL };
 
-  scoped_nsobject<NSDictionary> parent_info(
+  scoped_nsobject<const NSDictionary> parent_info(
       reinterpret_cast<const NSDictionary*>(
           ProcessInformationCopyDictionary(&parent_psn,
               kProcessDictionaryIncludeAllInformationMask)));
@@ -86,8 +86,9 @@ LSSharedFileListItemRef GetLoginItemForApp() {
     return NULL;
   }
 
-  scoped_nsobject<NSArray> login_items_array(reinterpret_cast<const NSArray*>(
-      LSSharedFileListCopySnapshot(login_items, NULL)));
+  scoped_nsobject<const NSArray> login_items_array(
+      reinterpret_cast<const NSArray*>(
+        LSSharedFileListCopySnapshot(login_items, NULL)));
 
   NSURL* url = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
 

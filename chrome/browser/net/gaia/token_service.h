@@ -115,16 +115,16 @@ class TokenService : public GaiaAuthConsumer,
 
   // For legacy services with their own auth routines, they can just read
   // the LSID out directly. Deprecated.
-  const bool HasLsid() const;
+  bool HasLsid() const;
   const std::string& GetLsid() const;
   // Did we get a proper LSID?
-  const bool AreCredentialsValid() const;
+  bool AreCredentialsValid() const;
 
   // Tokens will be fetched for all services(sync, talk) in the background.
   // Results come back via event channel. Services can also poll before events
   // are issued.
   void StartFetchingTokens();
-  const bool HasTokenForService(const char* const service) const;
+  bool HasTokenForService(const char* const service) const;
   const std::string& GetTokenForService(const char* const service) const;
 
   // For tests only. Doesn't save to the WebDB.
