@@ -350,16 +350,20 @@ class DeviceDataProvider : public NonThreadSafe {
   // Adds a listener, which will be called back with DeviceDataUpdateAvailable
   // whenever new data is available. Returns the singleton instance.
   static DeviceDataProvider* Register(ListenerInterface* listener) {
+    bool need_to_start_thread = false;
     if (!instance_) {
       instance_ = new DeviceDataProvider();
+      need_to_start_thread = true;
     }
     DCHECK(instance_);
     DCHECK(instance_->CalledOnValidThread());
     instance_->AddListener(listener);
     // Start the provider after adding the listener, to avoid any race in
     // it receiving an early callback.
-    bool started = instance_->StartDataProvider();
-    DCHECK(started);
+    if (need_to_start_thread) {
+      bool started = instance_->StartDataProvider();
+      DCHECK(started);
+    }
     return instance_;
   }
 

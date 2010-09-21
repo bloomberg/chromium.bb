@@ -58,7 +58,8 @@ class MockDeviceDataProviderImpl
     return instance_;
   }
 
-  MockDeviceDataProviderImpl() : got_data_(true) {
+  MockDeviceDataProviderImpl() : start_calls_(0), stop_calls_(0),
+      got_data_(true) {
   }
 
   virtual ~MockDeviceDataProviderImpl() {
@@ -68,9 +69,12 @@ class MockDeviceDataProviderImpl
 
   // DeviceDataProviderImplBase implementation.
   virtual bool StartDataProvider() {
+    start_calls_++;
     return true;
   }
-  virtual void StopDataProvider() {}
+  virtual void StopDataProvider() {
+    stop_calls_++;
+  }
   virtual bool GetData(DataType* data_out) {
     CHECK(data_out);
     *data_out = data_;
@@ -86,6 +90,8 @@ class MockDeviceDataProviderImpl
   }
 
   void set_got_data(bool got_data) { got_data_ = got_data; }
+  int start_calls_;
+  int stop_calls_;
 
  private:
   static MockDeviceDataProviderImpl<DataType>* instance_;
@@ -343,6 +349,38 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
 
   // No wifi data so expect an empty request.
   CheckEmptyRequestIsValid(fetcher->upload_data());
+}
+
+TEST_F(GeolocationNetworkProviderTest, MultipleStartProvider) {
+  scoped_ptr<LocationProviderBase> provider_1(CreateProvider(true));
+  scoped_ptr<LocationProviderBase> provider_2(CreateProvider(true));
+  EXPECT_EQ(0, gateway_data_provider_->start_calls_);
+  EXPECT_EQ(0, radio_data_provider_->start_calls_);
+  EXPECT_EQ(0, wifi_data_provider_->start_calls_);
+  EXPECT_EQ(0, gateway_data_provider_->stop_calls_);
+  EXPECT_EQ(0, radio_data_provider_->stop_calls_);
+  EXPECT_EQ(0, wifi_data_provider_->stop_calls_);
+  // Start first provider.
+  EXPECT_TRUE(provider_1->StartProvider(false));
+  EXPECT_EQ(1, gateway_data_provider_->start_calls_);
+  EXPECT_EQ(1, radio_data_provider_->start_calls_);
+  EXPECT_EQ(1, wifi_data_provider_->start_calls_);
+  // Start second provider.
+  EXPECT_TRUE(provider_2->StartProvider(false));
+  EXPECT_EQ(1, gateway_data_provider_->start_calls_);
+  EXPECT_EQ(1, radio_data_provider_->start_calls_);
+  EXPECT_EQ(1, wifi_data_provider_->start_calls_);
+
+  // Stop first provider.
+  provider_1->StopProvider();
+  EXPECT_EQ(0, gateway_data_provider_->stop_calls_);
+  EXPECT_EQ(0, radio_data_provider_->stop_calls_);
+  EXPECT_EQ(0, wifi_data_provider_->stop_calls_);
+  // Stop second provider.
+  provider_2->StopProvider();
+  EXPECT_EQ(1, gateway_data_provider_->stop_calls_);
+  EXPECT_EQ(1, radio_data_provider_->stop_calls_);
+  EXPECT_EQ(1, wifi_data_provider_->stop_calls_);
 }
 
 TEST_F(GeolocationNetworkProviderTest, MultiRegistrations) {

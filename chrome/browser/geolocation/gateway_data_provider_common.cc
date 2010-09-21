@@ -15,11 +15,12 @@ GatewayDataProviderCommon::GatewayDataProviderCommon()
 GatewayDataProviderCommon::~GatewayDataProviderCommon() {
   // Thread must be stopped before entering destructor chain to avoid race
   // conditions; see comment in DeviceDataProvider::Unregister.
-  DCHECK(!IsRunning()) << "Must call StopDataProvider before destroying me";
+  DCHECK(!IsRunning()); // Must call StopDataProvider before destroying me.
 }
 
 bool GatewayDataProviderCommon::StartDataProvider() {
   DCHECK(CalledOnClientThread());
+  DCHECK(!IsRunning());  // StartDataProvider must only be called once.
   return Start();
 }
 
