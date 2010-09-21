@@ -94,6 +94,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Overridden from MenuGtk::Delegate:
   virtual void StoppedShowing();
   virtual GtkIconSet* GetIconSetForId(int idr);
+  virtual bool AlwaysShowImages();
 
   // Overridden from menus::AcceleratorProvider:
   virtual bool GetAcceleratorForCommandId(int id,

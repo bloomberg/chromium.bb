@@ -335,6 +335,15 @@ GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
   return theme_provider_->GetIconSetForId(idr);
 }
 
+// Always show images because we desire that the upgrade icon always show when
+// an upgrade is available regardless of the system setting.
+// TODO(estade): Currently we do not show any other icons in this
+// menu, even though arguably if the system preference is set to show icons,
+// we should show them for Quit, Save, Print, etc.
+bool BrowserToolbarGtk::AlwaysShowImages() {
+  return true;
+}
+
 // menus::AcceleratorProvider
 
 bool BrowserToolbarGtk::GetAcceleratorForCommandId(
