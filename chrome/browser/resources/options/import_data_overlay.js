@@ -115,7 +115,7 @@ cr.define('options', function() {
             document.querySelectorAll(
                 '#import-checkboxes input[type=checkbox]');
         for (var i = 0; i < checkboxes.length; i++) {
-          setUpCheckboxState_(checkboxes[i], false);
+          this.setUpCheckboxState_(checkboxes[i], false);
         }
       } else {
         for (var i = 0; i < browserCount; i++) {
