@@ -153,7 +153,7 @@ bool SessionManager::Create(std::string* id) {
 #if defined(OS_POSIX)
   char* user_data_dir = getenv("CHROME_UI_TESTS_USER_DATA_DIR");
   if (user_data_dir) {
-    browser_directory.Append(user_data_dir);
+    browser_directory = browser_directory.Append(user_data_dir);
   }
 #endif
 
@@ -249,4 +249,3 @@ Session* SessionManager::GetSession(const std::string& id) const {
   return it->second;
 }
 }  // namespace webdriver
-
