@@ -28,9 +28,7 @@ void CoreOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
   // Main
   localized_strings->SetString("title",
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-
+      l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
   localized_strings->SetString("browserPage",
       l10n_util::GetStringUTF16(IDS_OPTIONS_GENERAL_TAB_LABEL));
   localized_strings->SetString("personalPage",

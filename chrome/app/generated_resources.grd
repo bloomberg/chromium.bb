@@ -5780,6 +5780,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         To hide access to this program, you need to uninstall it by using\n<ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph> in Control Panel.\n\nWould you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph>?
       </message>
 
+      <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
+        Settings
+      </message>
+
       <!-- Options Window -->
       <if expr="os != 'darwin'">
         <message name="IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE" desc="The label in the checkbox that enables background mode for installed web apps.">
