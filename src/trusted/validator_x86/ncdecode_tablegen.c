@@ -1607,17 +1607,17 @@ static void NaClInitInstTables() {
 }
 
 static void NaClDefPrefixBytes() {
-  NaClEncodePrefixName(0x26, "kPrefixSEGES");
-  NaClEncodePrefixName(0x2e, "kPrefixSEGCS");
-  NaClEncodePrefixName(0x36, "kPrefixSEGSS");
-  NaClEncodePrefixName(0x3e, "kPrefixSEGDS");
-  NaClEncodePrefixName(0x64, "kPrefixSEGFS");
-  NaClEncodePrefixName(0x65, "kPrefixSEGGS");
-  NaClEncodePrefixName(0x66, "kPrefixDATA16");
-  NaClEncodePrefixName(0x67, "kPrefixADDR16");
-  NaClEncodePrefixName(0xf0, "kPrefixLOCK");
-  NaClEncodePrefixName(0xf2, "kPrefixREPNE");
-  NaClEncodePrefixName(0xf3, "kPrefixREP");
+  NaClEncodePrefixName(kValueSEGES,  "kPrefixSEGES");
+  NaClEncodePrefixName(kValueSEGCS,  "kPrefixSEGCS");
+  NaClEncodePrefixName(kValueSEGSS,  "kPrefixSEGSS");
+  NaClEncodePrefixName(kValueSEGDS,  "kPrefixSEGDS");
+  NaClEncodePrefixName(kValueSEGFS,  "kPrefixSEGFS");
+  NaClEncodePrefixName(kValueSEGGS,  "kPrefixSEGGS");
+  NaClEncodePrefixName(kValueDATA16, "kPrefixDATA16");
+  NaClEncodePrefixName(kValueADDR16, "kPrefixADDR16");
+  NaClEncodePrefixName(kValueLOCK,   "kPrefixLOCK");
+  NaClEncodePrefixName(kValueREPNE,  "kPrefixREPNE");
+  NaClEncodePrefixName(kValueREP,    "kPrefixREP");
 
   if (NACL_FLAGS_run_mode == X86_64) {
     int i;

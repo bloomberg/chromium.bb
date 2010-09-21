@@ -23,6 +23,19 @@ typedef void (*NCDecoderPairAction)(const struct NCDecoderState *mstate_old,
                                     const struct NCDecoderState *mstate_new);
 typedef void (*NCDecoderStats)(struct NCValidatorState *vstate);
 
+/* Defines the corresponding byte encodings for each of the prefixes. */
+#define kValueSEGCS  0x2e
+#define kValueSEGSS  0x36
+#define kValueSEGFS  0x64
+#define kValueSEGGS  0x65
+#define kValueDATA16 0x66
+#define kValueADDR16 0x67
+#define kValueREPNE  0xf2
+#define kValueREP    0xf3
+#define kValueLOCK   0xf0
+#define kValueSEGES  0x26
+#define kValueSEGDS  0x3e
+
 /* Using a bit mask here. Hopefully nobody will be offended.
  * Prefix usage: 0x2e and 0x3e are used as branch prediction hints
  *               0x64 and 0x65 needed for TLS

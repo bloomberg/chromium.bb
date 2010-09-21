@@ -1211,14 +1211,31 @@ static NaClExp* NaClAppendMemoryOffset(NaClInstState* state,
                 displacement->value,
                 displacement->flags));
   if (NACL_TARGET_SUBARCH == 64) {
-    if (state->prefix_mask & kPrefixSEGFS) {
-      root = NaClAppendSegmentAddress(state);
-      n = NaClAppendReg(RegFS, &state->nodes);
-      n->flags |= NACL_EFLAG(ExprUsed);
-    } else if (state->prefix_mask & kPrefixSEGGS) {
-      root = NaClAppendSegmentAddress(state);
-      n = NaClAppendReg(RegGS, &state->nodes);
-      n->flags |= NACL_EFLAG(ExprUsed);
+    if (state->prefix_mask & (kPrefixSEGFS | kPrefixSEGGS)) {
+      int i;
+      NaClOpKind seg_reg = RegUnknown;
+
+      /* Note: We need to find the LAST segment prefix byte, since it overrides
+       * other segment prefix bytes, if multiple segment prefixes are specified.
+       */
+      for (i = state->num_prefix_bytes - 1;
+           (seg_reg == RegUnknown) && (i >= 0); --i) {
+        switch (state->mpc[i]) {
+          case kValueSEGFS:
+            seg_reg = RegFS;
+            break;
+          case kValueSEGGS:
+            seg_reg = RegGS;
+            break;
+          default:
+            break;
+        }
+      }
+      if (seg_reg != RegUnknown) {
+        root = NaClAppendSegmentAddress(state);
+        n = NaClAppendReg(seg_reg, &state->nodes);
+        n->flags |= NACL_EFLAG(ExprUsed);
+      }
     }
     if (root == NULL) {
       root = NaClAppendMemOffsetNode(state);
