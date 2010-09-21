@@ -27,8 +27,9 @@ class DiagnosticErrorDelegate : public ErrorDelegate {
 
   virtual int OnError(int error, Connection* connection,
                       Statement* stmt) {
-    NOTREACHED() << "sqlite error " << error << ": " <<
-        connection->GetErrorMessage();
+    NOTREACHED() << "sqlite error " << error
+                 << ", errno " << connection->GetLastErrno()
+                 << ": " << connection->GetErrorMessage();
     RecordErrorInHistogram(error);
     return error;
   }

@@ -258,6 +258,17 @@ int Connection::GetErrorCode() const {
   return sqlite3_errcode(db_);
 }
 
+int Connection::GetLastErrno() const {
+  if (!db_)
+    return -1;
+
+  int err = 0;
+  if (SQLITE_OK != sqlite3_file_control(db_, NULL, SQLITE_LAST_ERRNO, &err))
+    return -2;
+
+  return err;
+}
+
 const char* Connection::GetErrorMessage() const {
   if (!db_)
     return "sql::Connection has no connection.";
