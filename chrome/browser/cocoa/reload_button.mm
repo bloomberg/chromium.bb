@@ -6,6 +6,7 @@
 
 #include "base/nsimage_cache_mac.h"
 #include "chrome/app/chrome_dll_resource.h"
+#import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/view_id_util.h"
 
 namespace {
@@ -66,6 +67,14 @@ NSString* const kStopImageName = @"stop_Template.pdf";
   } else if (force || ![self isMouseInside]) {
     [self setImage:nsimage_cache::ImageNamed(kReloadImageName)];
     [self setTag:IDC_RELOAD];
+
+    // This button's cell may not have received a mouseExited event, and
+    // therefore it could still think that the mouse is inside the button.  Make
+    // sure the cell's sense of mouse-inside matches the local sense, to prevent
+    // drawing artifacts.
+    id cell = [self cell];
+    if ([cell respondsToSelector:@selector(setMouseInside:animate:)])
+      [cell setMouseInside:[self isMouseInside] animate:NO];
     [self setEnabled:YES];
   } else if ([self tag] == IDC_STOP) {
     pendingReloadMode_ = YES;
