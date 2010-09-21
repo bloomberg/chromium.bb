@@ -13,6 +13,8 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/trace_event.h"
 #include "base/win_util.h"
@@ -300,6 +302,37 @@ bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
   return true;
 }
 
+// Launches the privileged flash broker, used when flash is sandboxed.
+// The broker is the same flash dll, except that it uses a different
+// entrypoint (BrokerMain) and it is hosted in windows' generic surrogate
+// process rundll32. After launching the broker we need to pass to
+// the flash plugin the process id of the broker via the command line
+// using --flash-broker=pid.
+// More info about rundll32 at http://support.microsoft.com/kb/164787.
+bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
+  FilePath rundll;
+  if (!PathService::Get(base::DIR_SYSTEM, &rundll))
+    return false;
+  rundll = rundll.AppendASCII("rundll32.exe");
+  // Rundll32 cannot handle paths with spaces, so we use the short path.
+  wchar_t short_path[MAX_PATH];
+  if (0 == ::GetShortPathNameW(plugin_path.value().c_str(),
+                               short_path, arraysize(short_path)))
+    return false;
+  std::wstring cmd_final =
+      base::StringPrintf(L"%ls %ls,BrokerMain browser=chrome",
+                         rundll.value().c_str(),
+                         short_path);
+  base::ProcessHandle process;
+  if (!base::LaunchApp(cmd_final, false, true, &process))
+    return false;
+
+  cmd_line->AppendSwitchASCII("flash-broker",
+                              base::Int64ToString(::GetProcessId(process)));
+  ::CloseHandle(process);
+  return true;
+}
+
 // Creates a sandbox for the built-in flash plugin running in a restricted
 // environment. This is a work in progress and for the time being do not
 // pay attention to the duplication between this function and the above
@@ -309,8 +342,10 @@ bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
   policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
+
   if (win_util::GetWinVersion() > win_util::WINVERSION_XP)
     initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;
+
   policy->SetTokenLevel(initial_token, sandbox::USER_LIMITED);
 
   policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
@@ -325,20 +360,12 @@ bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
                         sandbox::TargetPolicy::REG_ALLOW_ANY,
                         policy))
     return false;
-
-  // Use a different data folder for flash data. This needs to be
-  // reverted once we stop the experiments.
-  FilePath flash_path;
-  PathService::Get(chrome::DIR_USER_DATA, &flash_path);
-  flash_path = flash_path.AppendASCII("swflash");
-  ::SetEnvironmentVariableW(L"CHROME_FLASH_ROOT",
-                            flash_path.ToWStringHack().c_str());
   return true;
 }
 
 // Adds the custom policy rules for a given plugin. |trusted_plugins| contains
 // the comma separate list of plugin dll names that should not be sandboxed.
-bool AddPolicyForPlugin(const CommandLine* cmd_line,
+bool AddPolicyForPlugin(CommandLine* cmd_line,
                         sandbox::TargetPolicy* policy) {
   std::wstring plugin_dll = cmd_line->
       GetSwitchValueNative(switches::kPluginPath);
@@ -358,8 +385,15 @@ bool AddPolicyForPlugin(const CommandLine* cmd_line,
   FilePath builtin_flash;
   if (PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_flash)) {
     FilePath plugin_path(plugin_dll);
-    if (plugin_path == builtin_flash)
+    if (plugin_path == builtin_flash) {
+      // Spawn the flash broker and apply sandbox policy.
+      if (!LoadFlashBroker(plugin_path, cmd_line)) {
+        // Could not start the broker, use a very weak policy instead.
+        DLOG(WARNING) << "Failed to start flash broker";
+        return ApplyPolicyForTrustedPlugin(policy);
+      }
       return ApplyPolicyForBuiltInFlashPlugin(policy);
+    }
   }
 
   PluginPolicyCategory policy_category =
