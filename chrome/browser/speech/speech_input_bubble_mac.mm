@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/speech_input_window_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "skia/ext/skia_utils_mac.h"
 
 namespace {
 
@@ -29,51 +30,69 @@ class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
 
  private:
   scoped_nsobject<SpeechInputWindowController> window_;
+  TabContents* tab_contents_;
+  Delegate* delegate_;
+  gfx::Rect element_rect_;
 };
 
 SpeechInputBubbleImpl::SpeechInputBubbleImpl(TabContents* tab_contents,
                                              Delegate* delegate,
-                                             const gfx::Rect& element_rect) {
+                                             const gfx::Rect& element_rect)
+    : tab_contents_(tab_contents),
+      delegate_(delegate),
+      element_rect_(element_rect) {
+}
+
+SpeechInputBubbleImpl::~SpeechInputBubbleImpl() {
+  if (window_.get())
+    [window_.get() close];
+}
+
+void SpeechInputBubbleImpl::SetImage(const SkBitmap& image) {
+  if (window_.get())
+    [window_.get() setImage:gfx::SkBitmapToNSImage(image)];
+}
+
+void SpeechInputBubbleImpl::Show() {
+  if (window_.get()) {
+    [window_.get() show];
+    return;
+  }
+
   // Find the screen coordinates for the given tab and position the bubble's
   // arrow anchor point inside that to point at the bottom-left of the html
   // input element rect.
-  gfx::NativeView view = tab_contents->view()->GetNativeView();
+  gfx::NativeView view = tab_contents_->view()->GetNativeView();
   NSRect tab_bounds = [view bounds];
   NSPoint anchor = NSMakePoint(
-      tab_bounds.origin.x + element_rect.x() + kBubbleTargetOffsetX,
-      tab_bounds.origin.y + tab_bounds.size.height - element_rect.y() -
-      element_rect.height());
+      tab_bounds.origin.x + element_rect_.x() + kBubbleTargetOffsetX,
+      tab_bounds.origin.y + tab_bounds.size.height - element_rect_.y() -
+      element_rect_.height());
   anchor = [view convertPoint:anchor toView:nil];
   anchor = [[view window] convertBaseToScreen:anchor];
 
   window_.reset([[SpeechInputWindowController alloc]
-      initWithParentWindow:tab_contents->view()->GetTopLevelNativeWindow()
-                  delegate:delegate
+      initWithParentWindow:tab_contents_->view()->GetTopLevelNativeWindow()
+                  delegate:delegate_
                 anchoredAt:anchor]);
-}
 
-SpeechInputBubbleImpl::~SpeechInputBubbleImpl() {
-  [window_.get() close];
-}
-
-void SpeechInputBubbleImpl::SetImage(const SkBitmap& image) {
-  // TODO(satish): Implement.
-  NOTREACHED();
-}
-
-void SpeechInputBubbleImpl::Show() {
-  // TODO(satish): Implement.
-  NOTREACHED();
+  UpdateLayout();
 }
 
 void SpeechInputBubbleImpl::Hide() {
-  // TODO(satish): Implement.
-  NOTREACHED();
+  if (!window_.get())
+    return;
+
+  [window_.get() close];
+  window_.reset();
 }
 
 void SpeechInputBubbleImpl::UpdateLayout() {
-  // TODO(satish): Implement.
-  NOTREACHED();
+  if (!window_.get())
+    return;
+
+  [window_.get() updateLayout:display_mode()
+                  messageText:message_text()];
 }
 
 }  // namespace

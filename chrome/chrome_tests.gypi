@@ -1785,6 +1785,7 @@
         'browser/sessions/tab_restore_service_browsertest.cc',
         'browser/speech/enable_speech_input_switch_browsertest.cc',
         'browser/speech/speech_input_browsertest.cc',
+        'browser/speech/speech_input_bubble_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager_browsertest.cc',
         'browser/views/browser_actions_container_browsertest.cc',

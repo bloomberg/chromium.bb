@@ -21,6 +21,7 @@
   IBOutlet NSImageView* iconImage_;
   IBOutlet NSTextField* instructionLabel_;
   IBOutlet NSButton* cancelButton_;
+  IBOutlet NSButton* tryAgainButton_;
 }
 
 // Initialize the window. |anchoredAt| is in screen coordinates.
@@ -31,8 +32,25 @@
 // Handler for the cancel button.
 - (IBAction)cancel:(id)sender;
 
-// Inform the user that audio recording has ended and recognition is underway.
-- (void)didStartRecognition;
+// Handler for the try again button.
+- (IBAction)tryAgain:(id)sender;
+
+// Updates the UI with data related to the given display mode.
+- (void)updateLayout:(SpeechInputBubbleBase::DisplayMode)mode
+         messageText:(const string16&)messageText;
+
+// Makes the speech input bubble visible on screen.
+- (void)show;
+
+// Hides the speech input bubble away from screen. This does NOT release the
+// controller and the window.
+- (void)hide;
+
+// Sets the image to be displayed in the bubble's status ImageView. A future
+// call to updateLayout may change the image.
+// TODO(satish): Clean that up and move it into the platform independent
+// SpeechInputBubbleBase class.
+- (void)setImage:(NSImage*)image;
 
 @end
 
