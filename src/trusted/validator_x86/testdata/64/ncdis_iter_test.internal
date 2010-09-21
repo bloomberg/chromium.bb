@@ -3287,6 +3287,70 @@ NaClExpVector[6] = {
   { OperandReference[1] , 2, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
 };
+0000000000000000: 48 0f ac c1 10                               shrd %rcx, %rax, 0x10
+  0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v OperandSize_o
+    Shrd $E, $G, $I
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse
+      I_Operand               OpUse
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %rcx, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x10, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: 0f ac c1 10                                  shrd %ecx, %eax, 0x10
+  0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v OperandSize_o
+    Shrd $E, $G, $I
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse
+      I_Operand               OpUse
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x10, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: 0f ad 45 bc                                  shrd [%rbp-0x44], %eax, %cl
+  0f ad                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o
+    Shrd $E, $G, %CL
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse
+      RegCL                   OpUse
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , -0x44, ExprSize8 | ExprSignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
+};
+0000000000000000: 48 0f ad 45 bc                               shrd [%rbp-0x44], %rax, %cl
+  0f ad                       386 OpcodeUsesModRm OperandSize_w OperandSize_v OperandSize_o
+    Shrd $E, $G, %CL
+      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse
+      RegCL                   OpUse
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , -0x44, ExprSize8 | ExprSignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
+};
 0000000000000000: 8c 00                                        mov [%rax], %es
   8c                          ILLEGAL ModRmRegSOperand OpcodeUsesModRm OperandSize_w OperandSize_v
     Mov $E, %Sreg

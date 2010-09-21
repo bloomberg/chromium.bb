@@ -52,3 +52,5 @@
 -i=67e300                                #00000000: 67 e3 00                                     jcxz 0x3
 -i=0f16d1                                #00000000: 0f 16 d1                                     movlhps %xmm2, %xmm1
 -i=0f16a500000000                        #00000000: 0f 16 a5 00 00 00 00                         movhps %xmm4, %ss:[%ebp]
+-i=0facc110                              #00000000: 0f ac c1 10                                  shrd %ecx, %eax, 0x10
+-i=0fad45bc                              #00000000: 0f ad 45 bc                                  shrd %ss:[%ebp-0x44], %eax, %cl

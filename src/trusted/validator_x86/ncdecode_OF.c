@@ -259,6 +259,14 @@ void NaClDef0FInsts() {
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xab, Prefix0F, InstBts, Binary);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal));
 
+  /* ISE reviewers suggested omitting shrd. */
+  DEF_BINST(Ev_, Gv_)(NACLi_386, 0xac, Prefix0F, InstShrd, Binary);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+
+  DEF_BINST(Ev_, Gv_)(NACLi_386, 0xad, Prefix0F, InstShrd, Binary);
+  NaClDefOp(RegCL, NACL_OPFLAG(OpUse));
+
   NaClDefInvalidIcode(Prefix660F, 0xae);
   NaClDefInvalidIcode(PrefixF20F, 0xae);
   NaClDefInvalidIcode(PrefixF30F, 0xae);

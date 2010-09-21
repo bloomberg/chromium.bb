@@ -2589,6 +2589,18 @@ Target: x86-32 bit mode
     Bts $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
+  --- ac ---
+  0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
+    Shrd $E, $G, $I
+      E_Operand               OpUse OpSet OpDest
+      G_Operand               OpUse
+      I_Operand               OpUse
+  --- ad ---
+  0f ad                       386 OpcodeUsesModRm OperandSize_w OperandSize_v
+    Shrd $E, $G, %CL
+      E_Operand               OpUse OpSet OpDest
+      G_Operand               OpUse
+      RegCL                   OpUse
   --- ae ---
   0f ae / 5                   SSE2 OpcodeInModRm ModRmModIs0x3
     Lfence
