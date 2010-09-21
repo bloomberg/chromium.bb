@@ -86,7 +86,6 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
 void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
   const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 2 * 60;  // 2 Minutes.
@@ -224,7 +223,6 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   // printing resources, since we don't need them anymore.
   DidFinishPrinting(print_cancelled);
 }
-#endif  // OS_MACOSX || OS_WIN
 
 void PrintWebViewHelper::DidFinishPrinting(bool success) {
   if (!success) {

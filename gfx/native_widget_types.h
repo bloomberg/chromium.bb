@@ -104,20 +104,20 @@ static inline NativeView NativeViewFromId(NativeViewId id) {
   return reinterpret_cast<NativeView>(id);
 }
 #define NativeViewFromIdInBrowser(x) NativeViewFromId(x)
-#elif defined(OS_MACOSX)
-// On the Mac, a NativeView is a pointer to an object, and is useless outside
-// the process in which it was created. NativeViewFromId should only be used
-// inside the appropriate platform ifdef outside of the browser.
+#elif defined(OS_MACOSX) || defined(USE_X11)
+// On Mac and Linux, a NativeView is a pointer to an object, and is useless
+// outside the process in which it was created. NativeViewFromId should only be
+// used inside the appropriate platform ifdef outside of the browser.
 // (NativeViewFromIdInBrowser can be used everywhere in the browser.) If your
 // cross-platform design involves a call to NativeViewFromId from outside the
-// browser it will never work on the Mac and is fundamentally broken.
+// browser it will never work on Mac or Linux and is fundamentally broken.
 
 // Please do not call this from outside the browser. It won't work; the name
 // should give you a subtle hint.
 static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
   return reinterpret_cast<NativeView>(id);
 }
-#endif
+#endif  // defined(OS_MACOSX) || defined(USE_X11)
 
 // Convert a NativeView to a NativeViewId.  See the comments at the top of
 // this file.

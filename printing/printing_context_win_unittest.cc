@@ -10,6 +10,16 @@
 
 // This test is automatically disabled if no printer is available.
 class PrintingContextTest : public PrintingTest<testing::Test> {
+ public:
+  void PrintSettingsCallback(printing::PrintingContext::Result result) {
+    result_ = result;
+  }
+
+ protected:
+  printing::PrintingContext::Result result() const { return result_; }
+
+ private:
+  printing::PrintingContext::Result result_;
 };
 
 // This is a fake PrintDlgEx implementation that sets the right fields in
@@ -105,8 +115,13 @@ TEST_F(PrintingContextTest, Base) {
 TEST_F(PrintingContextTest, PrintAll) {
   printing::PrintingContext context;
   context.SetPrintDialog(&PrintDlgExMock);
-  ASSERT_EQ(printing::PrintingContext::OK,
-      context.AskUserForSettings(NULL, 123, false));
+  context.AskUserForSettings(
+      NULL,
+      123,
+      false,
+      NewCallback(static_cast<PrintingContextTest*>(this),
+                  &PrintingContextTest::PrintSettingsCallback));
+  ASSERT_EQ(printing::PrintingContext::OK, result());
   printing::PrintSettings settings = context.settings();
   EXPECT_EQ(settings.ranges.size(), 0);
 }

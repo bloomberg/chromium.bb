@@ -92,11 +92,11 @@ void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
                         OnMsgOpenChannelToExtension)
-#if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetDefaultPrintSettings,
                         OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptedPrint,
                         OnScriptedPrint)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidPrintPage, OnDidPrintPage)

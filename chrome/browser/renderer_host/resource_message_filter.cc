@@ -159,7 +159,6 @@ class WriteClipboardTask : public Task {
 void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
                                    ViewMsg_Print_Params* params) {
   DCHECK(params);
-#if defined(OS_WIN) || defined(OS_MACOSX)
   params->page_size = settings.page_setup_device_units().physical_size();
   params->printable_size.SetSize(
       settings.page_setup_device_units().content_area().width(),
@@ -176,9 +175,6 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
   // Always use an invalid cookie.
   params->document_cookie = 0;
   params->selection_only = settings.selection_only;
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 class ClearCacheCompletion : public net::CompletionCallback {
@@ -497,10 +493,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
                                       OnGetDefaultPrintSettings)
-#if defined(OS_WIN) || defined(OS_MACOSX)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ScriptedPrint,
                                       OnScriptedPrint)
-#endif
 #if defined(OS_MACOSX)
       IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB,
                           OnAllocTransportDIB)
@@ -1183,8 +1177,6 @@ void ResourceMessageFilter::OnGetDefaultPrintSettingsReply(
   }
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-
 void ResourceMessageFilter::OnScriptedPrint(
     const ViewHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
@@ -1234,8 +1226,6 @@ void ResourceMessageFilter::OnScriptedPrintReply(
     printer_query->StopWorker();
   }
 }
-
-#endif  // OS_WIN || OS_MACOSX
 
 // static
 Clipboard* ResourceMessageFilter::GetClipboard() {

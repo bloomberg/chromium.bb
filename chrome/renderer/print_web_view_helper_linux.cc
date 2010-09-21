@@ -46,42 +46,6 @@ static void FillDefaultPrintParams(ViewMsg_Print_Params* params) {
   params->desired_dpi = params->dpi;
 }
 
-void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
-  // If still not finished with earlier print request simply ignore.
-  if (IsPrinting())
-    return;
-
-  ViewMsg_Print_Params default_settings;
-  FillDefaultPrintParams(&default_settings);
-  double content_width, content_height;
-
-  {
-    // PrepareFrameAndViewForPrint instance must be destructed before calling
-    // PrintPages where another instance is created.
-    PrepareFrameAndViewForPrint prepare(default_settings,
-                                        frame,
-                                        frame->view());
-    GetPageSizeAndMarginsInPoints(frame, 0, default_settings,
-                                  &content_width, &content_height,
-                                  NULL, NULL, NULL, NULL);
-  }
-
-  default_settings.dpi = printing::kPointsPerInch;
-  default_settings.min_shrink = 1.25;
-  default_settings.max_shrink = 2.0;
-  default_settings.desired_dpi = printing::kPointsPerInch;
-  default_settings.document_cookie = 0;
-  default_settings.selection_only = false;
-
-  default_settings.printable_size = gfx::Size(
-      static_cast<int>(content_width), static_cast<int>(content_height));
-
-  ViewMsg_PrintPages_Params print_settings;
-  print_settings.params = default_settings;
-
-  PrintPages(print_settings, frame);
-}
-
 void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                     WebFrame* frame) {
   PrepareFrameAndViewForPrint prep_frame_view(params.params,

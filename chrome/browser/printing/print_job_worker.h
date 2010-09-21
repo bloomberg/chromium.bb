@@ -87,6 +87,11 @@ class PrintJobWorker : public base::Thread {
   void GetSettingsWithUI(gfx::NativeView parent_view,
                          int document_page_count,
                          bool has_selection);
+
+  // The callback used by PrintingContext::GetSettingsWithUI() to notify this
+  // object that the print settings are set.  This is needed in order to bounce
+  // back into the IO thread for GetSettingsDone().
+  void GetSettingsWithUIDone(PrintingContext::Result result);
 #endif
 
   // Reports settings back to owner_.

@@ -136,10 +136,10 @@ PrintingContext::~PrintingContext() {
   ResetSettings();
 }
 
-PrintingContext::Result PrintingContext::AskUserForSettings(
-    HWND view,
-    int max_pages,
-    bool has_selection) {
+void PrintingContext::AskUserForSettings(HWND view,
+                                         int max_pages,
+                                         bool has_selection,
+                                         PrintSettingsCallback* callback) {
   DCHECK(!in_print_job_);
   dialog_box_dismissed_ = false;
 
@@ -190,11 +190,11 @@ PrintingContext::Result PrintingContext::AskUserForSettings(
   {
     if ((*print_dialog_func_)(&dialog_options) != S_OK) {
       ResetSettings();
-      return FAILED;
+      callback->Run(FAILED);
     }
   }
   // TODO(maruel):  Support PD_PRINTTOFILE.
-  return ParseDialogResultEx(dialog_options);
+  callback->Run(ParseDialogResultEx(dialog_options));
 }
 
 PrintingContext::Result PrintingContext::UseDefaultSettings() {

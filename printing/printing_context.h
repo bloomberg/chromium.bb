@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #if !(defined(OS_WIN) || defined(OS_MACOSX))
 // TODO(port) Remove after implementing PrintingContext::context()
 #include "base/logging.h"
@@ -50,10 +51,18 @@ class PrintingContext {
   PrintingContext();
   ~PrintingContext();
 
+  // Callback of AskUserForSettings, used to notify the PrintJobWorker when
+  // print settings are available.
+  typedef Callback1<Result>::Type PrintSettingsCallback;
+
   // Asks the user what printer and format should be used to print. Updates the
-  // context with the select device settings.
-  Result AskUserForSettings(gfx::NativeView parent_view, int max_pages,
-                            bool has_selection);
+  // context with the select device settings. The result of the call is returned
+  // in the callback. This is necessary for Linux, which only has an
+  // asynchronous printing API.
+  void AskUserForSettings(gfx::NativeView parent_view,
+                          int max_pages,
+                          bool has_selection,
+                          PrintSettingsCallback* callback);
 
 #if defined(OS_WIN) && defined(UNIT_TEST)
   // Sets a fake PrintDlgEx function pointer in tests.

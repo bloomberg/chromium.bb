@@ -16,6 +16,8 @@
 
 typedef struct HDC__* HDC;
 typedef struct _devicemodeW DEVMODE;
+typedef struct _GtkPrintSettings GtkPrintSettings;
+typedef struct _GtkPageSetup GtkPageSetup;
 
 namespace printing {
 
@@ -39,6 +41,13 @@ class PrintSettings {
   // Reads the settings from the given PMPrinter and PMPageFormat.
   void Init(PMPrinter printer, PMPageFormat page_format,
             const PageRanges& new_ranges, bool print_selection_only);
+#elif defined(OS_LINUX)
+  // Initializes the settings from the given GtkPrintSettings and GtkPageSetup.
+  // TODO(jhawkins): This method is a mess across the platforms. Refactor.
+  void Init(GtkPrintSettings* settings,
+            GtkPageSetup* page_setup,
+            const PageRanges& new_ranges,
+            bool print_selection_onl);
 #endif
 
   // Set printer printable area in in device units.

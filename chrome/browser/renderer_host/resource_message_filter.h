@@ -303,7 +303,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetDefaultPrintSettingsReply(
       scoped_refptr<printing::PrinterQuery> printer_query,
       IPC::Message* reply_msg);
-#if defined(OS_WIN) || defined(OS_MACOSX)
+
   // A javascript code requested to print the current page. The renderer host
   // have to show to the user the print dialog and returns the selected print
   // settings.
@@ -313,7 +313,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
       scoped_refptr<printing::PrinterQuery> printer_query,
       int routing_id,
       IPC::Message* reply_msg);
-#endif
+
   // Browser side transport DIB allocation
   void OnAllocTransportDIB(size_t size,
                            bool cache_in_browser,

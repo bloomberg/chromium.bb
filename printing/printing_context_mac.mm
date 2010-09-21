@@ -28,8 +28,10 @@ PrintingContext::~PrintingContext() {
 }
 
 
-PrintingContext::Result PrintingContext::AskUserForSettings(
-    gfx::NativeView parent_view, int max_pages, bool has_selection) {
+void PrintingContext::AskUserForSettings(gfx::NativeView parent_view,
+                                         int max_pages,
+                                         bool has_selection,
+                                         PrintSettingsCallback* callback) {
   DCHECK([NSThread isMainThread]);
 
   // We deliberately don't feed max_pages into the dialog, because setting
@@ -62,11 +64,11 @@ PrintingContext::Result PrintingContext::AskUserForSettings(
   // Will require restructuring the PrintingContext API to use a callback.
   NSInteger selection = [panel runModalWithPrintInfo:printInfo];
   if (selection != NSOKButton) {
-    return CANCEL;
+    callback->Run(CANCEL);
   }
 
   ParsePrintInfo([panel printInfo]);
-  return OK;
+  callback->Run(OK);
 }
 
 PrintingContext::Result PrintingContext::UseDefaultSettings() {

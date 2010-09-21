@@ -4,6 +4,9 @@
 
 #include "printing/printing_context.h"
 
+#include <gtk/gtk.h>
+#include <gtk/gtkprintunixdialog.h>
+
 #include "base/logging.h"
 
 namespace printing {
@@ -22,22 +25,34 @@ PrintingContext::~PrintingContext() {
   ResetSettings();
 }
 
-PrintingContext::Result PrintingContext::AskUserForSettings(
+void PrintingContext::AskUserForSettings(
     gfx::NativeView parent_view,
     int max_pages,
-    bool has_selection) {
-
+    bool has_selection,
+    PrintSettingsCallback* callback) {
   NOTIMPLEMENTED();
-
-  return FAILED;
+  callback->Run(OK);
 }
 
 PrintingContext::Result PrintingContext::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
-  NOTIMPLEMENTED();
+  ResetSettings();
 
-  return FAILED;
+  GtkWidget* dialog = gtk_print_unix_dialog_new(NULL, NULL);
+  GtkPrintSettings* settings =
+      gtk_print_unix_dialog_get_settings(GTK_PRINT_UNIX_DIALOG(dialog));
+  GtkPageSetup* page_setup =
+      gtk_print_unix_dialog_get_page_setup(GTK_PRINT_UNIX_DIALOG(dialog));
+
+  PageRanges ranges_vector;  // Nothing to initialize for default settings.
+  settings_.Init(settings, page_setup, ranges_vector, false);
+
+  g_object_unref(settings);
+  // |page_setup| is owned by dialog, so it does not need to be unref'ed.
+  gtk_widget_destroy(dialog);
+
+  return OK;
 }
 
 PrintingContext::Result PrintingContext::InitWithSettings(

@@ -76,6 +76,8 @@
           'dependencies': [
             # For FT_Init_FreeType and friends.
             '../build/linux/system.gyp:freetype2',
+            '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:gtkprint',
           ],
         }],
       ],

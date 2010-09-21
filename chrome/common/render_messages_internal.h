@@ -1682,7 +1682,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetDefaultPrintSettings,
                              ViewMsg_Print_Params /* default_settings */)
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
   // It's the renderer that controls the printing process when it is generated
   // by javascript. This step is about showing UI to the user to select the
   // final print settings. The output parameter is the same as
@@ -1691,7 +1690,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              ViewHostMsg_ScriptedPrint_Params,
                              ViewMsg_PrintPages_Params
                                  /* settings chosen by the user*/)
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   // WebKit and JavaScript error messages to log to the console
   // or debugger UI.

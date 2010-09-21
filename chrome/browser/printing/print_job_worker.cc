@@ -85,9 +85,11 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
                           parent_view, document_page_count,
                           has_selection));
 #else
-    PrintingContext::Result result = printing_context_.AskUserForSettings(
-        parent_view, document_page_count, has_selection);
-    GetSettingsDone(result);
+    printing_context_.AskUserForSettings(
+        parent_view,
+        document_page_count,
+        has_selection,
+        NewCallback(this, &PrintJobWorker::GetSettingsDone));
 #endif
   } else {
     PrintingContext::Result result = printing_context_.UseDefaultSettings();
@@ -116,8 +118,14 @@ void PrintJobWorker::GetSettingsWithUI(gfx::NativeView parent_view,
                                        bool has_selection) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  PrintingContext::Result result = printing_context_.AskUserForSettings(
-      parent_view, document_page_count, has_selection);
+  printing_context_.AskUserForSettings(
+      parent_view,
+      document_page_count,
+      has_selection,
+      NewCallback(this, &PrintJobWorker::GetSettingsWithUIDone));
+}
+
+void PrintJobWorker::GetSettingsWithUIDone(PrintingContext::Result result) {
   message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &PrintJobWorker::GetSettingsDone, result));
 }
