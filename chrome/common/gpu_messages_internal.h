@@ -337,10 +337,10 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
 
   // Allocate video frames for output of the hardware video decoder.
   IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_AllocateVideoFrames,
-                      int32, /* Numer of video frames to generate */
-                      int32, /* Width of the video frame */
-                      int32, /* Height of the video frame */
-                      media::VideoFrame::Format /* Format of the video frame */)
+                      int32,  /* Number of video frames to generate */
+                      uint32, /* Width of the video frame */
+                      uint32, /* Height of the video frame */
+                      media::VideoFrame::Format) /* Format of the video frame */
 
   // Release all video frames allocated for a hardware video decoder.
   IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_ReleaseAllVideoFrames)

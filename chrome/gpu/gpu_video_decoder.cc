@@ -343,7 +343,11 @@ void GpuVideoDecoder::SendFillBufferDone(
 
 void GpuVideoDecoder::SendAllocateVideoFrames(
     int n, size_t width, size_t height, media::VideoFrame::Format format) {
-  // TODO(hclam): Actually send the message.
+  if (!channel_->Send(
+          new GpuVideoDecoderHostMsg_AllocateVideoFrames(
+              route_id(), n, width, height, format))) {
+    LOG(ERROR) << "GpuVideoDecoderMsg_AllocateVideoFrames failed";
+  }
 }
 
 void GpuVideoDecoder::SendReleaseAllVideoFrames() {
