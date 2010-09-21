@@ -78,6 +78,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
   EXPECT_TRUE(result);
 }
 
+// Tests that an extension which is enabled for incognito mode doesn't
+// accidentially create and incognito profile.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DontCreateIncognitoProfile) {
+  ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
+  ASSERT_TRUE(
+      RunExtensionTestIncognito("incognito/enumerate_tabs")) << message_;
+  ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
+}
+
 // Tests that the APIs in an incognito-enabled extension work properly.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   host_resolver()->AddRule("*", "127.0.0.1");

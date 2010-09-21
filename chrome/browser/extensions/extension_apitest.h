@@ -69,6 +69,9 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // |extension_name| is a directory in "test/data/extensions/api_test".
   bool RunExtensionTest(const char* extension_name);
 
+  // Same as RunExtensionTest, but enables the extension for incognito mode.
+  bool RunExtensionTestIncognito(const char* extension_name);
+
   // If not empty, Load |extension_name|, load |page_url| and wait for pass /
   // fail notification from the extension API on the page. Note that if
   // |page_url| is not a valid url, it will be treated as a resource within
@@ -93,7 +96,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
  private:
   bool RunExtensionTestImpl(const char* extension_name,
-                            const std::string& test_page);
+                            const std::string& test_page,
+                            bool enable_incogntio);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_

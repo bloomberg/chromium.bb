@@ -78,13 +78,17 @@ void ExtensionApiTest::ResultCatcher::Observe(
 }
 
 bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
-  return RunExtensionTestImpl(extension_name, "");
+  return RunExtensionTestImpl(extension_name, "", false);
+}
+
+bool ExtensionApiTest::RunExtensionTestIncognito(const char* extension_name) {
+  return RunExtensionTestImpl(extension_name, "", true);
 }
 
 bool ExtensionApiTest::RunExtensionSubtest(const char* extension_name,
                                            const std::string& page_url) {
   DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  return RunExtensionTestImpl(extension_name, page_url);
+  return RunExtensionTestImpl(extension_name, page_url, false);
 }
 
 bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
@@ -94,7 +98,8 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
 // Load |extension_name| extension and/or |page_url| and wait for
 // PASSED or FAILED notification.
 bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
-                                            const std::string& page_url) {
+                                            const std::string& page_url,
+                                            bool enable_incognito) {
   ResultCatcher catcher;
   DCHECK(!std::string(extension_name).empty() || !page_url.empty()) <<
       "extension_name and page_url cannot both be empty";
@@ -102,7 +107,10 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
 
   if (!std::string(extension_name).empty()) {
     LOG(INFO) << "Loading Extension: " << extension_name;
-    if (!LoadExtension(test_data_dir_.AppendASCII(extension_name))) {
+    bool loaded = enable_incognito ?
+        LoadExtensionIncognito(test_data_dir_.AppendASCII(extension_name)) :
+        LoadExtension(test_data_dir_.AppendASCII(extension_name));
+    if (!loaded) {
       message_ = "Failed to load extension.";
       return false;
     }

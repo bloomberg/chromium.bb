@@ -1,0 +1,7 @@
+{
+  "name": "incognito apitest",
+  "version": "0.1",
+  "description": "test that an incognito extension can't accidentially create an OTR profile",
+  "background_page": "background.html",
+  "permissions": ["tabs"]
+}

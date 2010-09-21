@@ -190,7 +190,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id, Profile* profile,
   TabStripModel* target_tab_strip;
   TabContents* target_contents;
   Profile* incognito_profile =
-      include_incognito ? profile->GetOffTheRecordProfile() : NULL;
+      include_incognito && profile->HasOffTheRecordProfile() ?
+          profile->GetOffTheRecordProfile() : NULL;
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end(); ++iter) {
     target_browser = *iter;
@@ -269,7 +270,8 @@ bool GetAllWindowsFunction::RunImpl() {
 
   result_.reset(new ListValue());
   Profile* incognito_profile =
-      include_incognito() ? profile()->GetOffTheRecordProfile() : NULL;
+      include_incognito() && profile()->HasOffTheRecordProfile() ?
+          profile()->GetOffTheRecordProfile() : NULL;
   for (BrowserList::const_iterator browser = BrowserList::begin();
     browser != BrowserList::end(); ++browser) {
       // Only examine browsers in the current profile that have windows.
@@ -1056,7 +1058,8 @@ static Browser* GetBrowserInProfileWithId(Profile* profile,
                                           bool include_incognito,
                                           std::string* error_message) {
   Profile* incognito_profile =
-      include_incognito ? profile->GetOffTheRecordProfile() : NULL;
+      include_incognito && profile->HasOffTheRecordProfile() ?
+          profile->GetOffTheRecordProfile() : NULL;
   for (BrowserList::const_iterator browser = BrowserList::begin();
        browser != BrowserList::end(); ++browser) {
     if (((*browser)->profile() == profile ||
