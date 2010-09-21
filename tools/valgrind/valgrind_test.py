@@ -41,6 +41,11 @@ class BaseTool(object):
   TMP_DIR = "testing.tmp"
 
   def __init__(self):
+    # If we have a testing.tmp directory, we didn't cleanup last time.
+    if os.path.exists(BaseTool.TMP_DIR):
+      shutil.rmtree(BaseTool.TMP_DIR)
+    os.mkdir(BaseTool.TMP_DIR)
+
     self.option_parser_hooks = []
 
   def ToolName(self):
@@ -418,7 +423,7 @@ class ValgrindTool(BaseTool):
     os.putenv("BROWSER_WRAPPER", indirect_fname)
     logging.info('export BROWSER_WRAPPER=' + indirect_fname)
 
-  def CreateAnalyzer(self, filenames):
+  def CreateAnalyzer(self):
     raise NotImplementedError, "This method should be implemented " \
                                "in the tool-specific subclass"
 
@@ -767,8 +772,33 @@ class DrMemory(BaseTool):
 # RaceVerifier support. See
 # http://code.google.com/p/data-race-test/wiki/RaceVerifier for more details.
 
+class ThreadSanitizerRV1Analyzer(tsan_analyze.TsanAnalyzer):
+  """ TsanAnalyzer that saves race reports to a file. """
+
+  TMP_FILE = "rvlog.tmp"
+
+  def __init__(self, source_dir, use_gdb):
+    super(ThreadSanitizerRV1Analyzer, self).__init__(source_dir, use_gdb)
+    self.out = open(self.TMP_FILE, "w")
+
+  def Report(self, files, check_sanity=False):
+    reports = self.GetReports(files)
+    for report in reports:
+      print >>self.out, report
+    if len(reports) > 0:
+      logging.info("RaceVerifier pass 1 of 2, found %i reports" % len(reports))
+      return -1
+    return 0
+
+  def CloseOutputFile(self):
+    self.out.close()
+
+
 class ThreadSanitizerRV1Mixin(object):
-  """First pass: run ThreadSanitizer as usual, but don't clean up logs"""
+  """RaceVerifier first pass.
+
+  Runs ThreadSanitizer as usual, but hides race reports and collects them in a
+  temporary file"""
 
   def __init__(self):
     super(ThreadSanitizerRV1Mixin, self).__init__()
@@ -777,13 +807,17 @@ class ThreadSanitizerRV1Mixin(object):
   def ExtendOptionParser(self, parser):
     parser.set_defaults(hybrid="yes")
 
-  def ParseArgv(self, args):
-    ret = super(ThreadSanitizerRV1Mixin, self).ParseArgv(args)
-    self._nocleanup_on_exit = True
-    return ret
+  def CreateAnalyzer(self):
+    use_gdb = common.IsMac()
+    self.analyzer = ThreadSanitizerRV1Analyzer(self._source_dir, use_gdb)
+    return self.analyzer
+
+  def Cleanup(self):
+    super(ThreadSanitizerRV1Mixin, self).Cleanup()
+    self.analyzer.CloseOutputFile()
 
 class ThreadSanitizerRV2Mixin(object):
-  """Second pass: run the same command line in RaceVerifier mode"""
+  """RaceVerifier second pass."""
 
   def __init__(self):
     super(ThreadSanitizerRV2Mixin, self).__init__()
@@ -796,10 +830,15 @@ class ThreadSanitizerRV2Mixin(object):
 
   def ToolSpecificFlags(self):
     proc = super(ThreadSanitizerRV2Mixin, self).ToolSpecificFlags()
-    proc += ['--race-verifier=' + self.TMP_DIR + '/race.log',
+    proc += ['--race-verifier=%s' % ThreadSanitizerRV1Analyzer.TMP_FILE,
              '--race-verifier-sleep-ms=%d' %
              int(self._options.race_verifier_sleep_ms)]
     return proc
+
+  def Cleanup(self):
+    super(ThreadSanitizerRV2Mixin, self).Cleanup()
+    os.unlink(ThreadSanitizerRV1Analyzer.TMP_FILE)
+
 
 class ThreadSanitizerRV1Posix(ThreadSanitizerRV1Mixin, ThreadSanitizerPosix):
   pass
@@ -818,6 +857,8 @@ class ThreadSanitizerRV2Windows(ThreadSanitizerRV2Mixin,
 class RaceVerifier(object):
   """Runs tests under RaceVerifier/Valgrind."""
 
+  MORE_INFO_URL = "http://code.google.com/p/data-race-test/wiki/RaceVerifier"
+
   def RV1Factory(self):
     if common.IsWindows():
       return ThreadSanitizerRV1Windows()
@@ -830,23 +871,22 @@ class RaceVerifier(object):
     else:
       return ThreadSanitizerRV2Posix()
 
-  def JoinLogs(self):
-    """Concatenate all logs from the first pass"""
-    filenames = glob.glob(BaseTool.TMP_DIR + "/tsan" + ".*")
-    out_filename = BaseTool.TMP_DIR + "/race.log"
-    data = [open(fn, "r").read() for fn in filenames]
-    open(out_filename, "w").write("\n".join(data))
-
   def Main(self, args, check_sanity):
+    logging.info("Running a TSan + RaceVerifier test. For more information, " +
+                 "see " + self.MORE_INFO_URL)
     cmd1 = self.RV1Factory()
     ret = cmd1.Main(args, check_sanity)
     # Verify race reports, if there are any.
     if ret == -1:
-      self.JoinLogs()
+      logging.info("Starting pass 2 of 2. Running the same binary in " +
+                   "RaceVerifier mode to confirm possible race reports.")
+      logging.info("For more information, see " + self.MORE_INFO_URL)
       cmd2 = self.RV2Factory()
       ret = cmd2.Main(args, check_sanity)
     else:
-      logging.info("No reports, skipping RaceVerifier step")
+      logging.info("No reports, skipping RaceVerifier second pass")
+    logging.info("Please see " + self.MORE_INFO_URL + " for more information " +
+                 "on RaceVerifier")
     return ret
 
 
@@ -873,11 +913,6 @@ class ToolFactory:
                                                                  platform_name)
 
 def RunTool(argv, module):
-  # If we have a testing.tmp directory, we didn't cleanup last time.
-  if os.path.exists(BaseTool.TMP_DIR):
-    shutil.rmtree(BaseTool.TMP_DIR)
-  os.mkdir(BaseTool.TMP_DIR)
-
   # TODO(timurrrr): customize optparse instead
   tool_name = "memcheck"
   args = argv[1:]
