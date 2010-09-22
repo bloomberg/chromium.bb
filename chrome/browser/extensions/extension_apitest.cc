@@ -103,10 +103,8 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
   ResultCatcher catcher;
   DCHECK(!std::string(extension_name).empty() || !page_url.empty()) <<
       "extension_name and page_url cannot both be empty";
-  LOG(INFO) << "Running ExtensionApiTest";
 
   if (!std::string(extension_name).empty()) {
-    LOG(INFO) << "Loading Extension: " << extension_name;
     bool loaded = enable_incognito ?
         LoadExtensionIncognito(test_data_dir_.AppendASCII(extension_name)) :
         LoadExtension(test_data_dir_.AppendASCII(extension_name));

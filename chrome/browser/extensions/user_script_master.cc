@@ -174,7 +174,6 @@ static bool LoadScriptContent(UserScript::File* script_file) {
     script_file->set_content(content);
   }
 
-  LOG(INFO) << "Loaded user script file: " << path.value();
   return true;
 }
 

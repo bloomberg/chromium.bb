@@ -1060,8 +1060,6 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
 }
 
 void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
-  LOG(INFO) << "Sending EXTENSION_UNLOADED";
-
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_UNLOADED,
       Source<Profile>(profile_),

@@ -279,8 +279,4 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
   } else {
     NOTREACHED();
   }
-
-  LOG(INFO) << "Injected " << num_scripts << " scripts and " << num_css <<
-      " css files into " << frame->url().spec().data();
-  return;
 }
