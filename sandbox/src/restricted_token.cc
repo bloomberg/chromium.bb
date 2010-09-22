@@ -138,8 +138,8 @@ unsigned RestrictedToken::GetRestrictedTokenHandle(HANDLE *token_handle) const {
                                   ::GetCurrentProcess(),
                                   token_handle,
                                   TOKEN_ALL_ACCESS,
-                                  TRUE,  // Inherit handle.
-                                  0);  // No options.
+                                  FALSE,  // Don't inherit.
+                                  0);
 
   if (new_token != effective_token_)
     ::CloseHandle(new_token);
@@ -176,8 +176,8 @@ unsigned RestrictedToken::GetRestrictedTokenHandleForImpersonation(
                                   ::GetCurrentProcess(),
                                   token_handle,
                                   TOKEN_ALL_ACCESS,
-                                  TRUE,  // Inherit handle.
-                                  0);  // No options.
+                                  FALSE,  // Don't inherit.
+                                  0);
 
   ::CloseHandle(impersonation_token);
 
