@@ -186,7 +186,7 @@ static bool FillFormImpl(FormElements* fe, const FormData& data) {
     WebKit::WebInputElement& element = it->second;
     if (!element.value().isEmpty())  // Don't overwrite pre-filled values.
       continue;
-    if (element.inputType() == WebInputElement::Password &&
+    if (element.isPasswordField() &&
         (!element.isEnabledFormControl() || element.hasAttribute("readonly"))) {
       continue;  // Don't fill uneditable password fields.
     }
@@ -314,7 +314,7 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
     attribute_name = "src";
   } else if (element.hasTagName("input")) {
     const WebInputElement input = element.toConst<WebInputElement>();
-    if (input.inputType() == WebInputElement::Image) {
+    if (input.isImageButton()) {
       attribute_name = "src";
     }
   } else if (element.hasTagName("body") ||

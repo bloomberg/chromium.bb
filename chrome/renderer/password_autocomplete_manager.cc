@@ -131,10 +131,11 @@ bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
     WebKit::WebInputElement& element = it->second;
     if (!element.value().isEmpty())  // Don't overwrite pre-filled values.
       continue;
-    if (element.inputType() == WebKit::WebInputElement::Password &&
+    if (element.isPasswordField() &&
         (!element.isEnabledFormControl() || element.hasAttribute("readonly"))) {
       continue;  // Don't fill uneditable password fields.
     }
+    // TODO(tkent): Check maxlength and pattern.
     element.setValue(data_map[it->first]);
     element.setAutofilled(true);
     element.dispatchFormControlChangeEvent();
@@ -266,7 +267,7 @@ bool PasswordAutocompleteManager::TextDidChangeInTextField(
     return false;
 
   if (!element.isEnabledFormControl() ||
-      element.inputType() != WebKit::WebInputElement::Text ||
+      !element.isText() ||
       !element.autoComplete() || element.isReadOnly()) {
     return false;
   }

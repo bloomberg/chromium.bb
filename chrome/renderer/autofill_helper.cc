@@ -229,8 +229,8 @@ void AutoFillHelper::ShowSuggestions(
   // We need to call non-const methods.
   WebInputElement element(const_element);
   if (!element.isEnabledFormControl() ||
-      element.inputType() != WebInputElement::Text ||
-      element.inputType() == WebInputElement::Password ||
+      !element.isText() ||
+      element.isPasswordField() ||
       !element.autoComplete() || element.isReadOnly()) {
     return;
   }
