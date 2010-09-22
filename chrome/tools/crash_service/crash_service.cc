@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/win_util.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
+#include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/sender/crash_report_sender.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
