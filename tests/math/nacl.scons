@@ -31,14 +31,6 @@ Import('env')
 
 #--- Version that tests errno conditions
 
-# TODO(jvoung): enable this on x86-64 once we either:
-# stop generating SHRD, or have the validator accept SHRD
-if (env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '64' and
-    ARGUMENTS.get('bitcode')):
-   TEST_SUITES = []
-else:
-   TEST_SUITES = ['small_tests']
-
 env.StaticObject('float_math', 'float_math.c')
 env.ComponentProgram('float_math.nexe',
                      'float_math',
@@ -49,7 +41,7 @@ node = env.CommandSelLdrTestNacl(
   exit_status='55',
   )
 env.AddNodeToTestSuite(node,
-                       TEST_SUITES,
+                       ['small_tests'],
                        'run_float_math_test')
 
 #--- Version that uses -fno-math-errno and doesn't test errno conditions
@@ -73,5 +65,5 @@ node = noerrno_env.CommandSelLdrTestNacl(
   exit_status='55',
   )
 noerrno_env.AddNodeToTestSuite(node,
-                               TEST_SUITES,
+                               ['small_tests'],
                               'run_float_math_noerrno_test')
