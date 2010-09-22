@@ -128,7 +128,7 @@ bool TextDatabase::Init() {
   // better performance (we're typically seek rather than bandwidth limited).
   // This only has an effect before any tables have been created, otherwise
   // this is a NOP. Must be a power of 2 and a max of 8192.
-  db_.set_page_size(2096);
+  db_.set_page_size(4096);
 
   // The default cache size is 2000 which give >8MB of data. Since we will often
   // have 2-3 of these objects, each with their own 8MB, this adds up very fast.
