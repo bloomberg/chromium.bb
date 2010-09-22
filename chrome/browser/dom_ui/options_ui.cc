@@ -197,10 +197,8 @@ OptionsUI::~OptionsUI() {
 
 // static
 RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
-// TODO(csilv): uncomment this once we have a FAVICON
-//  return ResourceBundle::GetSharedInstance().
-//      LoadDataResourceBytes(IDR_OPTIONS_FAVICON);
-  return NULL;
+  return ResourceBundle::GetSharedInstance().
+      LoadDataResourceBytes(IDR_SETTINGS_FAVICON);
 }
 
 void OptionsUI::InitializeHandlers() {
