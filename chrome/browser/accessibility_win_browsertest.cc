@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 // accessibility trees like AccExplorer32 should be able to drill into the
 // cached renderer accessibility tree.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       FAILS_ContainsRendererAccessibilityTree) {
+                       DISABLED_ContainsRendererAccessibilityTree) {
   GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   GetRendererAccessible();
