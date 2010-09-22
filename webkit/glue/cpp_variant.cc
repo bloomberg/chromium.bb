@@ -228,8 +228,8 @@ std::vector<std::wstring> CppVariant::ToStringVector() const {
         length = NPVARIANT_TO_INT32(length_value);
       WebBindings::releaseVariantValue(&length_value);
 
-      // For sanity, only allow 100 items.
-      length = std::min(100, length);
+      // For sanity, only allow 60000 items.
+      length = std::min(60000, length);
       for (int i = 0; i < length; ++i) {
         // Get each of the items.
         std::string index = StringPrintf("%d", i);
