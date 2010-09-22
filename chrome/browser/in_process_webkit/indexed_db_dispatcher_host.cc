@@ -109,13 +109,13 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(process_handle_);
 
   switch (message.type()) {
-    case ViewHostMsg_IDBCursorDestroyed::ID:
     case ViewHostMsg_IDBCursorDirection::ID:
     case ViewHostMsg_IDBCursorKey::ID:
     case ViewHostMsg_IDBCursorValue::ID:
     case ViewHostMsg_IDBCursorUpdate::ID:
     case ViewHostMsg_IDBCursorContinue::ID:
     case ViewHostMsg_IDBCursorRemove::ID:
+    case ViewHostMsg_IDBCursorDestroyed::ID:
     case ViewHostMsg_IDBFactoryOpen::ID:
     case ViewHostMsg_IDBFactoryAbortPendingTransactions::ID:
     case ViewHostMsg_IDBDatabaseName::ID:
@@ -141,12 +141,12 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBObjectStoreKeyPath::ID:
     case ViewHostMsg_IDBObjectStoreIndexNames::ID:
     case ViewHostMsg_IDBObjectStoreGet::ID:
-    case ViewHostMsg_IDBObjectStoreOpenCursor::ID:
     case ViewHostMsg_IDBObjectStorePut::ID:
     case ViewHostMsg_IDBObjectStoreRemove::ID:
     case ViewHostMsg_IDBObjectStoreCreateIndex::ID:
     case ViewHostMsg_IDBObjectStoreIndex::ID:
     case ViewHostMsg_IDBObjectStoreRemoveIndex::ID:
+    case ViewHostMsg_IDBObjectStoreOpenCursor::ID:
     case ViewHostMsg_IDBObjectStoreDestroyed::ID:
     case ViewHostMsg_IDBTransactionDestroyed::ID:
     case ViewHostMsg_IDBTransactionObjectStore::ID:
@@ -512,8 +512,14 @@ bool IndexedDBDispatcherHost::IndexDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::IndexDispatcherHost,
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBIndexName, OnName)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBIndexStoreName, OnStoreName)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBIndexKeyPath, OnKeyPath)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBIndexUnique, OnUnique)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBIndexOpenObjectCursor,
+                        OnOpenObjectCursor)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBIndexOpenCursor, OnOpenCursor)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBIndexGetObject, OnGetObject)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBIndexGet, OnGet)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBIndexDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -532,6 +538,12 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnName(
     int32 object_id, IPC::Message* reply_msg) {
   parent_->SyncGetter<string16, ViewHostMsg_IDBIndexName>(
       &map_, object_id, reply_msg, &WebIDBIndex::name);
+}
+
+void IndexedDBDispatcherHost::IndexDispatcherHost::OnStoreName(
+    int32 object_id, IPC::Message* reply_msg) {
+  parent_->SyncGetter<string16, ViewHostMsg_IDBIndexStoreName>(
+      &map_, object_id, reply_msg, &WebIDBIndex::storeName);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnKeyPath(
