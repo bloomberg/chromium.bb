@@ -18,7 +18,10 @@ namespace net {
 class SSLNonSensitiveHostInfo :
     public base::RefCountedThreadSafe<SSLNonSensitiveHostInfo> {
  public:
-  virtual ~SSLNonSensitiveHostInfo() { }
+  // Start will commence the lookup. This must be called before any other
+  // methods. By opportunistically calling this early, it may be possible to
+  // overlap this object's lookup and reduce latency.
+  virtual void Start() = 0;
 
   // WaitForDataReady returns OK if the fetch of the requested data has
   // completed. Otherwise it returns ERR_IO_PENDING and will call |callback| on
@@ -42,6 +45,10 @@ class SSLNonSensitiveHostInfo :
   // this object and the store operation will still complete. This can only be
   // called once WaitForDataReady has returned OK or called its callback.
   virtual void Set(const std::string& new_data) = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<SSLNonSensitiveHostInfo>;
+  virtual ~SSLNonSensitiveHostInfo() { }
 };
 
 }  // namespace net

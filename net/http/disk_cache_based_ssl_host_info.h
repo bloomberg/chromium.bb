@@ -10,6 +10,7 @@
 #include "base/lock.h"
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "net/base/completion_callback.h"
 #include "net/base/ssl_non_sensitive_host_info.h"
 #include "net/disk_cache/disk_cache.h"
 
@@ -25,34 +26,35 @@ class DiskCacheBasedSSLHostInfo : public SSLNonSensitiveHostInfo,
                                   public NonThreadSafe {
  public:
   DiskCacheBasedSSLHostInfo(const std::string& hostname, HttpCache* http_cache);
-  ~DiskCacheBasedSSLHostInfo();
 
   // Implementation of SSLNonSensitiveHostInfo
+  virtual void Start();
   virtual int WaitForDataReady(CompletionCallback* callback);
   virtual const std::string& data() const { return data_; }
   virtual void Set(const std::string& new_data);
 
  private:
+  ~DiskCacheBasedSSLHostInfo();
   std::string key() const;
 
   void DoLoop(int rv);
 
-  void DoGetBackendComplete(int rv);
-  void DoOpenComplete(int rv);
-  void DoReadComplete(int rv);
-  void DoWriteComplete(int rv);
-  void DoCreateComplete(int rv);
+  int DoGetBackendComplete(int rv);
+  int DoOpenComplete(int rv);
+  int DoReadComplete(int rv);
+  int DoWriteComplete(int rv);
+  int DoCreateComplete(int rv);
 
-  void DoGetBackend();
-  void DoOpen();
-  void DoRead();
-  void DoCreate();
-  void DoWrite();
+  int DoGetBackend();
+  int DoOpen();
+  int DoRead();
+  int DoCreate();
+  int DoWrite();
 
   // WaitForDataReadyDone is the terminal state of the read operation.
-  void WaitForDataReadyDone();
+  int WaitForDataReadyDone();
   // SetDone is the terminal state of the write operation.
-  void SetDone();
+  int SetDone();
 
   enum State {
     GET_BACKEND,
@@ -61,14 +63,17 @@ class DiskCacheBasedSSLHostInfo : public SSLNonSensitiveHostInfo,
     OPEN_COMPLETE,
     READ,
     READ_COMPLETE,
+    WAIT_FOR_DATA_READY_DONE,
     CREATE,
     CREATE_COMPLETE,
     WRITE,
     WRITE_COMPLETE,
+    SET_DONE,
     NONE,
   };
 
-  scoped_ptr<CompletionCallback> callback_;
+  scoped_refptr<CancelableCompletionCallback<DiskCacheBasedSSLHostInfo> >
+      callback_;
   State state_;
   bool ready_;
   std::string new_data_;
