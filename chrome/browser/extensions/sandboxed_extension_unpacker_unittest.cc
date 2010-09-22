@@ -176,18 +176,19 @@ TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
   ASSERT_TRUE(unpacker_->DumpImagesToFile());
   ASSERT_TRUE(unpacker_->DumpMessageCatalogsToFile());
 
-  // Check timestamp on _locales/en_US/messages.json.
+  // Set timestamp on _locales/en_US/messages.json into the past.
   FilePath messages_file;
   messages_file = GetInstallPath().Append(Extension::kLocaleFolder)
       .AppendASCII("en_US")
       .Append(Extension::kMessagesFilename);
   base::PlatformFileInfo old_info;
   EXPECT_TRUE(file_util::GetFileInfo(messages_file, &old_info));
+  base::Time old_time =
+      old_info.last_modified - base::TimeDelta::FromSeconds(2);
+  EXPECT_TRUE(file_util::SetLastModifiedTime(messages_file, old_time));
+  // Refresh old_info, just to be sure.
+  EXPECT_TRUE(file_util::GetFileInfo(messages_file, &old_info));
 
-  // unpacker_->Run unpacks the extension. OnUnpackSucceeded overwrites some
-  // of the files. To force timestamp on overwriten files to be different we use
-  // Sleep(1s). See comment on file_util::CountFilesCreatedAfter.
-  PlatformThread::Sleep(1000);
   OnUnpackSucceeded();
 
   // Check that there is newer _locales/en_US/messages.json file.
