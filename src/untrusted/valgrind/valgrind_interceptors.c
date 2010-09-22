@@ -182,6 +182,7 @@ INLINE static size_t handle_malloc_after(size_t ptr, size_t size) {
 INLINE static void handle_free(OrigFn fn, size_t ptr) {
   uint64_t base;
   size_t size, old_ptr;
+  size_t orig_ptr = ptr;
   if (!ptr)
     return;
   start_ignore_all_accesses_and_sync();
@@ -191,7 +192,14 @@ INLINE static void handle_free(OrigFn fn, size_t ptr) {
   /* Tell TSan about deallocated memory. */
   VG_CREQ_v_W(TSREQ_FREE, base + kRedZoneSize);
   VALGRIND_MAKE_MEM_DEFINED(base, kRedZoneSize);
-  assert(((size_t*)ptr)[0] == kMallocMagic);
+  if (((size_t*)ptr)[0] != kMallocMagic) {
+    char buf[100];
+    snprintf(buf, 100,
+        "Bad free(%p). Did we miss a memory allocation? Please file a bug.\n",
+        (void*)orig_ptr);
+    VALGRIND_PRINTF_BACKTRACE(buf);
+    assert(0 && "bad free");
+  }
   size = ((size_t*)ptr)[1];
   assert(((size_t*)ptr)[2] == kMallocMagic);
   /* Tell memcheck that this memory is poisoned now.
