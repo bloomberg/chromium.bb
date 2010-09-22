@@ -11,23 +11,21 @@
     'common_sources': [
       'debug_stub.h',
       'debug_stub.cc',
+      'event_common.cc',
+      'platform_common.cc',
+      'transport_common.cc',
     ],
     'conditions': [
-      ['OS=="linux"', {
+      ['OS=="linux" or OS=="mac"', {
         'platform_sources': [
-          'linux/debug_stub_linux.cc',
-        ],
-      }],
-      ['OS=="mac"', {
-        'platform_sources': [
-          'osx/debug_stub_osx.cc',
+          'posix/debug_stub_posix.cc',
+          'posix/mutex_impl.cc',
+          'posix/platform_impl.cc',
+          'posix/thread_impl.cc',
         ],
       }],
       ['OS=="win"', {
         'platform_sources': [
-          'event_common.cc',
-          'platform_common.cc',
-          'transport_common.cc',
           'win/debug_stub_win.cc',
           'win/mutex_impl.cc',
           'win/platform_impl.cc',
@@ -48,9 +46,6 @@
         ],
       }],
       ['target_base=="debug_stub"', {
-        'include_dirs': [
-          '<(DEPTH)/gdb_utils/src',
-        ],
         'sources': [
           '<@(common_sources)',
           '<@(platform_sources)',
@@ -71,6 +66,9 @@
       'variables': {
         'target_base': 'debug_stub',
       },
+      'dependencies': [
+        '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp',
+      ],
     },
     # ---------------------------------------------------------------------
     {
@@ -95,6 +93,9 @@
             'target_base': 'debug_stub',
             'win_target': 'x64',
           },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
+          ],
         },
         # ---------------------------------------------------------------------
         {

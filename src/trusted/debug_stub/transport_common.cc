@@ -12,6 +12,8 @@
 #define SOCKET_HANDLE SOCKET
 #else
 
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -21,8 +23,15 @@
 #define closesocket close
 #endif
 
+#include <stdlib.h>
+#include <string>
+
+#include "native_client/src/trusted/gdb_rsp/util.h"
 #include "native_client/src/trusted/port/platform.h"
 #include "native_client/src/trusted/port/transport.h"
+
+using gdb_rsp::stringvec;
+using gdb_rsp::StringSplit;
 
 namespace port {
 
@@ -92,6 +101,67 @@ class Transport : public ITransport {
   SOCKET_HANDLE handle_;
 };
 
+// Convert string in the form of [addr][:port] where addr is a
+// IPv4 address or host name, and port is a 16b tcp/udp port.
+// Both portions are optional, and only the portion of the address
+// provided is updated.  Values are provided in network order.
+static bool StringToIPv4(const std::string &instr, uint32_t *addr,
+                         uint16_t *port) {
+  // Make a copy so the are unchanged unless we succeed
+  uint32_t outaddr = *addr;
+  uint16_t outport = *port;
+
+  // Substrings of the full ADDR:PORT
+  std::string addrstr;
+  std::string portstr;
+
+  // We should either have one or two tokens in the form of:
+  //  IP - IP, NUL
+  //  IP: -  IP, NUL
+  //  :PORT - NUL, PORT
+  //  IP:PORT - IP, PORT
+
+  // Search for the port marker
+  size_t portoff = instr.find(':');
+
+  // If we found a ":" before the end, get both substrings
+  if ((portoff != std::string::npos) && (portoff + 1 < instr.size())) {
+    addrstr = instr.substr(0, portoff-1);
+    portstr = instr.substr(portoff + 1, std::string::npos);
+  } else {
+    // otherwise the entire string is the addr portion.
+    addrstr = instr;
+    portstr = "";
+  }
+
+  // If the address portion was provided, update it
+  if (addrstr.size()) {
+    struct hostent *host = gethostbyname(addrstr.data());
+
+    // Check that we found an IPv4 host
+    if ((NULL == host) || (AF_INET != host->h_addrtype))  return false;
+
+    // Make sure the IP list isn't empty.
+    if (0 == host->h_addr_list[0]) return false;
+
+    // Use the first one.
+    uint32_t *addrarray = reinterpret_cast<uint32_t*>(host->h_addr_list);
+    outaddr = addrarray[0];
+  }
+
+  // if the port portion was provided, then update it
+  if (portstr.size()) {
+    int val = atoi(portstr.data());
+    if ((val < 0) || (val > 65535)) return false;
+    outport = ntohs(static_cast<uint16_t>(val));
+  }
+
+  // We haven't failed, so set the values
+  *addr = outaddr;
+  *port = outport;
+  return true;
+}
+
 
 static SOCKET_HANDLE s_ServerSock;
 
@@ -101,46 +171,40 @@ static bool SocketInit() {
     IPlatform::LogError("Failed to create socket.\n");
     return false;
   }
-  struct sockaddr_in saddr;
-  socklen_t addrlen = (socklen_t) sizeof(saddr);
-  saddr.sin_family = AF_INET;
-  // TODO(noelallen) use environment and default to 127.0.0.1
-  saddr.sin_addr.s_addr = htonl(0);
-  saddr.sin_port = htons(4014);
-
-  if (bind(s_ServerSock, (struct sockaddr *) &saddr, addrlen)) {
-    IPlatform::LogError("Failed to bind server.\n");
-    return false;
-  }
-
-  if (listen(s_ServerSock, 1)) {
-    IPlatform::LogError("Failed to listen.\n");
-    return false;
-  }
 
   return true;
 }
 
-static bool SocketsAvailible() {
+static bool SocketsAvailable() {
   static bool _init = SocketInit();
   return _init;
 }
 
-ITransport* ITransport::Connect(const char *addr) {
-  if (!SocketsAvailible())
-    return NULL;
+static bool BuildSockAddr(const char *addr, struct sockaddr_in *sockaddr) {
+  std::string addrstr = addr;
+  uint32_t *pip = reinterpret_cast<uint32_t*>(&sockaddr->sin_addr.s_addr);
+  uint16_t *pport = reinterpret_cast<uint16_t*>(&sockaddr->sin_port);
 
-  SOCKET s = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  sockaddr->sin_family = AF_INET;
+  return StringToIPv4(addrstr, pip, pport);
+}
+
+ITransport* ITransport::Connect(const char *addr) {
+  if (!SocketsAvailable()) return NULL;
+
+  SOCKET_HANDLE s = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (s == -1) {
     IPlatform::LogError("Failed to create connection socket.\n");
     return NULL;
   }
 
   struct sockaddr_in saddr;
-  socklen_t addrlen = (socklen_t) sizeof(saddr);
   saddr.sin_family = AF_INET;
   saddr.sin_addr.s_addr = htonl(0x7F000001);
   saddr.sin_port = htons(4014);
+
+  // Override portions address that are provided
+  if (addr) BuildSockAddr(addr, &saddr);
 
   if (::connect(s, reinterpret_cast<sockaddr*>(&saddr), sizeof(saddr)) != 0) {
     IPlatform::LogError("Failed to connect.\n");
@@ -151,10 +215,38 @@ ITransport* ITransport::Connect(const char *addr) {
 }
 
 ITransport* ITransport::Accept(const char *addr) {
-  if (!SocketsAvailible()) return NULL;
+  static bool listening = false;
+  if (!SocketsAvailable()) return NULL;
 
-  SOCKET s = ::accept(s_ServerSock, NULL, 0);
-  return new Transport(s);
+  if (!listening) {
+    struct sockaddr_in saddr;
+    socklen_t addrlen = static_cast<socklen_t>(sizeof(saddr));
+    saddr.sin_family = AF_INET;
+    saddr.sin_addr.s_addr = htonl(0x7F000001);
+    saddr.sin_port = htons(4014);
+
+    // Override portions address that are provided
+    if (addr) BuildSockAddr(addr, &saddr);
+
+    if (bind(s_ServerSock, reinterpret_cast<struct sockaddr *>(&saddr), addrlen)) {
+      IPlatform::LogError("Failed to bind server.\n");
+      return NULL;
+    }
+
+    if (listen(s_ServerSock, 1)) {
+      IPlatform::LogError("Failed to listen.\n");
+      return NULL;
+    }
+
+    listening = true;
+  }
+
+  if (listening) {
+    SOCKET_HANDLE s = ::accept(s_ServerSock, NULL, 0);
+    return new Transport(s);
+  }
+
+  return NULL;
 }
 
 void ITransport::Free(ITransport* itrans) {

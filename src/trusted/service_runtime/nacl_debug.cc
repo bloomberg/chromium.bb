@@ -24,6 +24,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+/* Enable Debuggging */
+#define NACL_DEBUG_STUB 1
+
 using port::IPlatform;
 using port::IThread;
 using port::ITransport;

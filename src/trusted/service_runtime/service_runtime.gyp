@@ -213,6 +213,8 @@
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+        '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp',
+        '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub',
       ],
       'conditions': [
         ['target_arch=="arm"', {
@@ -244,11 +246,6 @@
         ['OS=="win" and win32_breakpad==1', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/nacl_breakpad/nacl_breakpad.gyp:nacl_breakpad',
-          ],
-        }],
-        ['nacl_debug_stub==1', {
-          'dependencies': [
-          '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub',
           ],
         }],
       ],
@@ -323,9 +320,6 @@
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
             '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
             '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub64',
-          ],
-          'defines': [
-            'NACL_DEBUG_STUB'
           ],
           'conditions': [
             ['nacl_standalone==0 and OS=="win"', {

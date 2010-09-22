@@ -43,9 +43,6 @@
     'win32_breakpad%': 0,
     'win64_breakpad%': 1,
 
-    # The NaCl debugger functionality should be turned off until it's ready
-    'nacl_debug_stub%': 0,
-
     # Doing this in a sub-dict so that it can be referred to below.
     'variables': {
       # By default we assume that we are building as part of Chrome
@@ -165,11 +162,6 @@
       ['win_target=="x32" and <(win32_breakpad)==1', {
         'defines': [
           'NACL_BREAKPAD'
-        ],
-      }],
-      ['<(nacl_debug_stub)==1', {
-        'defines': [
-          'NACL_DEBUG_STUB'
         ],
       }],
     ],
