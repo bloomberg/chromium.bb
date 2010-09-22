@@ -96,8 +96,8 @@ ProcessResult MinidumpProcessor::Process(
         dump, &process_state->crash_address_);
   }
 
-   // This will just return an empty string if it doesn't exist.
-   process_state->assertion_ = GetAssertion(dump);
+  // This will just return an empty string if it doesn't exist.
+  process_state->assertion_ = GetAssertion(dump);
 
   MinidumpModuleList *module_list = dump->GetModuleList();
 
@@ -267,7 +267,7 @@ ProcessResult MinidumpProcessor::Process(
   if (!dump.Read()) {
      BPLOG(ERROR) << "Minidump " << dump.path() << " could not be read";
      return PROCESS_ERROR_MINIDUMP_NOT_FOUND;
-   }
+  }
 
   return Process(&dump, process_state);
 }
@@ -730,14 +730,17 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
           // This information is useful in addition to the code address, which
           // will be present in the crash thread's instruction field anyway.
           if (raw_exception->exception_record.number_parameters >= 1) {
-            switch (raw_exception->exception_record.exception_information[0]) {
-              case 0:
+            MDAccessViolationTypeWin av_type =
+                static_cast<MDAccessViolationTypeWin>
+                (raw_exception->exception_record.exception_information[0]);
+            switch (av_type) {
+              case MD_ACCESS_VIOLATION_WIN_READ:
                 reason = "EXCEPTION_ACCESS_VIOLATION_READ";
                 break;
-              case 1:
+              case MD_ACCESS_VIOLATION_WIN_WRITE:
                 reason = "EXCEPTION_ACCESS_VIOLATION_WRITE";
                 break;
-              case 8:
+              case MD_ACCESS_VIOLATION_WIN_EXEC:
                 reason = "EXCEPTION_ACCESS_VIOLATION_EXEC";
                 break;
               default:
@@ -814,8 +817,8 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
           reason = "EXCEPTION_HEAP_CORRUPTION";
           break;
         case MD_EXCEPTION_CODE_WIN_UNHANDLED_CPP_EXCEPTION:
-	  reason = "Unhandled C++ Exception";
-	  break;
+          reason = "Unhandled C++ Exception";
+          break;
         default:
           BPLOG(INFO) << "Unknown exception reason " << reason;
           break;
@@ -1064,8 +1067,7 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
 }
 
 // static
-string MinidumpProcessor::GetAssertion(Minidump *dump)
-{
+string MinidumpProcessor::GetAssertion(Minidump *dump) {
   MinidumpAssertion *assertion = dump->GetAssertion();
   if (!assertion)
     return "";

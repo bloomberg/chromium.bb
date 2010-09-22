@@ -172,7 +172,8 @@ am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/binarystream.lo src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
-	src/processor/exploitability.lo src/processor/logging.lo \
+	src/processor/exploitability.lo \
+	src/processor/exploitability_win.lo src/processor/logging.lo \
 	src/processor/minidump.lo src/processor/minidump_processor.lo \
 	src/processor/network_source_line_resolver.lo \
 	src/processor/network_source_line_server.lo \
@@ -284,7 +285,8 @@ src_processor_minidump_processor_unittest_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo src/processor/cfi_frame_info.lo \
-	src/processor/exploitability.lo src/processor/logging.lo \
+	src/processor/exploitability.lo \
+	src/processor/exploitability_win.lo src/processor/logging.lo \
 	src/processor/minidump_processor.lo src/processor/minidump.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo src/processor/stackwalker.lo \
@@ -302,7 +304,8 @@ src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/binarystream.lo src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
-	src/processor/exploitability.lo src/processor/logging.lo \
+	src/processor/exploitability.lo \
+	src/processor/exploitability_win.lo src/processor/logging.lo \
 	src/processor/minidump.lo src/processor/minidump_processor.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo \
@@ -335,7 +338,8 @@ src_processor_network_source_line_resolver_server_unittest_DEPENDENCIES =  \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/binarystream.lo src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
-	src/processor/exploitability.lo src/processor/logging.lo \
+	src/processor/exploitability.lo \
+	src/processor/exploitability_win.lo src/processor/logging.lo \
 	src/processor/minidump_processor.lo src/processor/minidump.lo \
 	src/processor/network_source_line_resolver.lo \
 	src/processor/network_source_line_server.lo \
@@ -427,8 +431,8 @@ src_processor_stackwalker_selftest_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo src/processor/exploitability.lo \
-	src/processor/logging.lo src/processor/minidump.lo \
-	src/processor/pathname_stripper.lo \
+	src/processor/exploitability_win.lo src/processor/logging.lo \
+	src/processor/minidump.lo src/processor/pathname_stripper.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
 	src/processor/stackwalker_arm.lo \
@@ -736,6 +740,8 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/contained_range_map-inl.h \
 	src/processor/contained_range_map.h \
 	src/processor/exploitability.cc \
+	src/processor/exploitability_win.h \
+	src/processor/exploitability_win.cc \
 	src/processor/linked_ptr.h \
 	src/processor/logging.h \
 	src/processor/logging.cc \
@@ -902,6 +908,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
 	src/processor/exploitability.lo \
+	src/processor/exploitability_win.lo \
 	src/processor/logging.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -974,6 +981,7 @@ src_processor_network_source_line_resolver_server_unittest_LDADD = \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
 	src/processor/exploitability.lo \
+	src/processor/exploitability_win.lo \
 	src/processor/logging.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -1053,6 +1061,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
 	src/processor/exploitability.lo \
+	src/processor/exploitability_win.lo \
 	src/processor/logging.lo \
 	src/processor/minidump.lo \
 	src/processor/pathname_stripper.lo \
@@ -1162,6 +1171,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/call_stack.lo \
 	src/processor/cfi_frame_info.lo \
 	src/processor/exploitability.lo \
+	src/processor/exploitability_win.lo \
 	src/processor/logging.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
@@ -1493,6 +1503,8 @@ src/processor/call_stack.lo: src/processor/$(am__dirstamp) \
 src/processor/cfi_frame_info.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/exploitability.lo: src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/exploitability_win.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/logging.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -1955,6 +1967,8 @@ mostlyclean-compile:
 	-rm -f src/processor/contained_range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/exploitability.$(OBJEXT)
 	-rm -f src/processor/exploitability.lo
+	-rm -f src/processor/exploitability_win.$(OBJEXT)
+	-rm -f src/processor/exploitability_win.lo
 	-rm -f src/processor/logging.$(OBJEXT)
 	-rm -f src/processor/logging.lo
 	-rm -f src/processor/minidump.$(OBJEXT)
@@ -2082,6 +2096,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/cfi_frame_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability_win.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/logging.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_dump.Po@am__quote@

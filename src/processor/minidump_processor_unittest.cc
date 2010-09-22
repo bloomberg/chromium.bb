@@ -58,10 +58,10 @@ class MockMinidump : public Minidump {
   MockMinidump() : Minidump("") {
   }
 
-  MOCK_METHOD0(Read,bool());
+  MOCK_METHOD0(Read, bool());
   MOCK_CONST_METHOD0(path, string());
-  MOCK_CONST_METHOD0(header,const MDRawHeader*());
-  MOCK_METHOD0(GetThreadList,MinidumpThreadList*());
+  MOCK_CONST_METHOD0(header, const MDRawHeader*());
+  MOCK_METHOD0(GetThreadList, MinidumpThreadList*());
 };
 }
 
@@ -179,7 +179,6 @@ class MockSymbolSupplier : public SymbolSupplier {
 };
 
 class MinidumpProcessorTest : public ::testing::Test {
-
 };
 
 TEST_F(MinidumpProcessorTest, TestCorruptMinidumps) {
@@ -257,9 +256,9 @@ TEST_F(MinidumpProcessorTest, TestExploitilityEngine) {
   ASSERT_EQ(processor.Process(minidump_file, &state),
             google_breakpad::PROCESS_OK);
 
-  // Test that exploitability module correctly fails to supply
-  // an engine for this platform
-  ASSERT_EQ(google_breakpad::EXPLOITABILITY_ERR_NOENGINE,
+  // Test that the supplied dump registers as HIGH. This dump demonstrates
+  // a write access violation to an address which is not near null.
+  ASSERT_EQ(google_breakpad::EXPLOITABILITY_HIGH,
             state.exploitability());
 }
 
@@ -342,8 +341,7 @@ TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
   state.Clear();
   supplier.set_interrupt(true);
   ASSERT_EQ(processor.Process(minidump_file, &state),
-            google_breakpad::PROCESS_SYMBOL_SUPPLIER_INTERRUPTED
-            );
+            google_breakpad::PROCESS_SYMBOL_SUPPLIER_INTERRUPTED);
 }
 }  // namespace
 
