@@ -1614,10 +1614,20 @@ llvm-tools-sb() {
     exit -1
   fi
 
-  llvm-tools-sb-clean ${arch}
-  llvm-tools-sb-configure ${arch}
-  llvm-tools-sb-make ${arch}
-  llvm-tools-sb-install ${arch}
+  if llvm-tools-sb-needs-configure "${arch}"; then
+    llvm-tools-sb-clean "${arch}"
+    llvm-tools-sb-configure "${arch}"
+  else
+    SkipBanner "LLVM-TOOLS-SB" "configure ${arch}"
+  fi
+
+  if llvm-tools-sb-needs-make "${arch}"; then
+    llvm-tools-sb-make "${arch}"
+  else
+    SkipBanner "LLVM-TOOLS-SB" "make ${arch}"
+  fi
+
+  llvm-tools-sb-install "${arch}"
 }
 
 llvm-tools-sb-needs-configure() {
@@ -1675,7 +1685,7 @@ llvm-tools-sb-configure() {
         --prefix=${installdir} \
         --host=nacl \
         --disable-jit \
-        --disable-optimized \
+        --enable-optimized \
         --target=${CROSS_TARGET_ARM} \
         --enable-targets=${target} \
         --enable-pic=no \
@@ -1708,7 +1718,7 @@ llvm-tools-sb-make() {
       SANDBOX_LLVM=1 \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
-      make tools-only ${MAKE_OPTS}
+      make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O0 tools-only ${MAKE_OPTS}
 
   ts-touch-commit "${objdir}"
 
