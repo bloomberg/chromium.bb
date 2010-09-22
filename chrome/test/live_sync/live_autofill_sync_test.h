@@ -256,7 +256,7 @@ class LiveAutofillSyncTest : public LiveSyncTest {
     pdm->Refresh();
     MessageLoop::current()->Run();
     pdm->RemoveObserver(&observer);
-    return pdm->profiles();
+    return pdm->web_profiles();
   }
 
   bool CompareAutoFillProfiles(const AutoFillProfiles& expected_profiles,

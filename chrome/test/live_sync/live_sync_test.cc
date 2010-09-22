@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -142,6 +143,11 @@ void LiveSyncTest::SetUp() {
   // would be invoked before each test.
   if (!cl->HasSwitch(switches::kSyncServiceURL))
     SetUpLocalTestServer();
+
+  // Mock the Mac Keychain service.  The real Keychain can block on user input.
+#if defined(OS_MACOSX)
+    Encryptor::UseMockKeychain(true);
+#endif
 
   // Yield control back to the InProcessBrowserTest framework.
   InProcessBrowserTest::SetUp();

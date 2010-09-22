@@ -133,8 +133,11 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
 
   // The PersonalDataManager will update the unique IDs when saving the
   // profiles, so we have to update the expectations.
+  // Same for labels.
   profile0.set_unique_id(update[0].unique_id());
   profile1.set_unique_id(update[1].unique_id());
+  profile0.set_label(update[0].Label());
+  profile1.set_label(update[1].Label());
 
   const std::vector<AutoFillProfile*>& results1 = personal_data_->profiles();
   ASSERT_EQ(2U, results1.size());
@@ -152,7 +155,10 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
   personal_data_->SetProfiles(&update);
 
   // Set the expected unique ID for profile2.
+  // Same for labels.
+  profile0.set_label(update[0].Label());
   profile2.set_unique_id(update[1].unique_id());
+  profile2.set_label(update[1].Label());
 
   // AutoFillProfile IDs are re-used, so the third profile to be added will have
   // a unique ID that matches the old unique ID of the removed profile1, even
@@ -179,7 +185,9 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
   // Verify that we've loaded the profiles from the web database.
   const std::vector<AutoFillProfile*>& results3 = personal_data_->profiles();
   ASSERT_EQ(2U, results3.size());
+  profile0.set_label(results3.at(0)->Label());
   EXPECT_EQ(profile0, *results3.at(0));
+  profile2.set_label(results3.at(1)->Label());
   EXPECT_EQ(profile2, *results3.at(1));
 }
 
@@ -213,8 +221,11 @@ TEST_F(PersonalDataManagerTest, SetCreditCards) {
 
   // The PersonalDataManager will update the unique IDs when saving the
   // credit cards, so we have to update the expectations.
+  // Same for labels.
   creditcard0.set_unique_id(update[0].unique_id());
   creditcard1.set_unique_id(update[1].unique_id());
+  creditcard0.set_label(update[0].Label());
+  creditcard1.set_label(update[1].Label());
 
   const std::vector<CreditCard*>& results1 = personal_data_->credit_cards();
   ASSERT_EQ(2U, results1.size());
@@ -232,7 +243,9 @@ TEST_F(PersonalDataManagerTest, SetCreditCards) {
   personal_data_->SetCreditCards(&update);
 
   // Set the expected unique ID for creditcard2.
+  // Same for labels.
   creditcard2.set_unique_id(update[1].unique_id());
+  creditcard2.set_label(update[1].Label());
 
   // CreditCard IDs are re-used, so the third credit card to be added will have
   // a unique ID that matches the old unique ID of the removed creditcard1, even
@@ -301,8 +314,11 @@ TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
 
   // The PersonalDataManager will update the unique IDs when saving the
   // profiles, so we have to update the expectations.
+  // Same for labels.
   profile0.set_unique_id(update[0].unique_id());
   profile1.set_unique_id(update[1].unique_id());
+  profile0.set_label(update[0].Label());
+  profile1.set_label(update[1].Label());
 
   const std::vector<AutoFillProfile*>& results1 = personal_data_->profiles();
   ASSERT_EQ(2U, results1.size());
@@ -317,8 +333,11 @@ TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
 
   // The PersonalDataManager will update the unique IDs when saving the
   // credit cards, so we have to update the expectations.
+  // Same for labels.
   creditcard0.set_unique_id(update_cc[0].unique_id());
   creditcard1.set_unique_id(update_cc[1].unique_id());
+  creditcard0.set_label(update_cc[0].Label());
+  creditcard1.set_label(update_cc[1].Label());
 
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(2U, results2.size());
@@ -490,6 +509,8 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 
   profile0.set_unique_id(update[0].unique_id());
   profile1.set_unique_id(update[1].unique_id());
+  profile0.set_label(update[0].Label());
+  profile1.set_label(update[1].Label());
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -581,6 +602,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
       NULL, NULL, NULL);
   const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
   ASSERT_EQ(1U, results.size());
+  expected.set_label(results[0]->Label());
   EXPECT_EQ(expected, *results[0]);
 }
 
@@ -659,6 +681,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
       NULL, NULL, NULL);
   const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
   ASSERT_EQ(1U, results.size());
+  expected->set_label(results[0]->Label());
   EXPECT_EQ(*expected, *results[0]);
 
   // Now create a completely different profile.
@@ -691,12 +714,14 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   autofill_unittest::SetProfileInfo(expected.get(), NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL, NULL);
+  expected->set_label(results2[0]->Label());
   EXPECT_EQ(*expected, *results2[0]);
 
   expected.reset(new AutoFillProfile(string16(), 2));
   autofill_unittest::SetProfileInfo(expected.get(), NULL, "John", NULL,
       "Adams", "second@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL);
+  expected->set_label(results2[1]->Label());
   EXPECT_EQ(*expected, *results2[1]);
 
   // Submit a form with new data for the first profile.
@@ -738,11 +763,13 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   autofill_unittest::SetProfileInfo(expected.get(), NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL, NULL);
+  expected->set_label(results3[0]->Label());
   EXPECT_EQ(*expected, *results3[0]);
 
   expected.reset(new AutoFillProfile(string16(), 2));
   autofill_unittest::SetProfileInfo(expected.get(), NULL, "John", NULL,
       "Adams", "second@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL);
+  expected->set_label(results3[1]->Label());
   EXPECT_EQ(*expected, *results3[1]);
 }

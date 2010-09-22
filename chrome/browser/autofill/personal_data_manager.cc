@@ -50,6 +50,11 @@ class DereferenceFunctor {
   }
 };
 
+template<typename T>
+T* address_of(T& v) {
+  return &v;
+}
+
 }  // namespace
 
 PersonalDataManager::~PersonalDataManager() {
@@ -284,6 +289,15 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
       wds->UpdateAutoFillProfile(*iter);
     }
   }
+
+  // Ensure that profile labels are up to date.  Currently, sync relies on
+  // labels to identify a profile.
+  // TODO(dhollowa): We need to deprecate labels and update the way sync
+  // identifies profiles.
+  std::vector<AutoFillProfile*> profile_pointers(profiles->size());
+  std::transform(profiles->begin(), profiles->end(), profile_pointers.begin(),
+      address_of<AutoFillProfile>);
+  AutoFillProfile::AdjustInferredLabels(&profile_pointers);
 
   // Add the new profiles to the web database.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
