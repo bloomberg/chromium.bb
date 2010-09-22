@@ -56,6 +56,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/switch_utils.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "ipc/ipc_logging.h"
 #include "webkit/database/database_tracker.h"
@@ -755,18 +756,7 @@ bool BrowserProcessImpl::CanAutorestartForUpdate() const {
          Upgrade::IsUpdatePendingRestart();
 }
 
-// Switches enumerated here will be removed when a background instance of
-// Chrome restarts itself. If your key is designed to only be used once,
-// or if it does not make sense when restarting a background instance to
-// pick up an automatic update, be sure to add it to this list.
-const char* const kSwitchesToRemoveOnAutorestart[] = {
-  switches::kApp,
-  switches::kFirstRun,
-  switches::kImport,
-  switches::kImportFromFile,
-  switches::kMakeDefaultBrowser
-};
-
+// Switches to add when auto-restarting Chrome.
 const char* const kSwitchesToAddOnAutorestart[] = {
   switches::kNoStartupWindow
 };
@@ -778,10 +768,7 @@ void BrowserProcessImpl::RestartPersistentInstance() {
   std::map<std::string, CommandLine::StringType> switches =
       old_cl->GetSwitches();
 
-  // Remove the keys that we shouldn't pass through during restart.
-  for (size_t i = 0; i < arraysize(kSwitchesToRemoveOnAutorestart); i++) {
-    switches.erase(kSwitchesToRemoveOnAutorestart[i]);
-  }
+  switches::RemoveSwitchesForAutostart(&switches);
 
   // Append the rest of the switches (along with their values, if any)
   // to the new command line
@@ -796,7 +783,7 @@ void BrowserProcessImpl::RestartPersistentInstance() {
   }
 
   // Ensure that our desired switches are set on the new process.
-  for (size_t i = 0; i < arraysize(kSwitchesToAddOnAutorestart); i++) {
+  for (size_t i = 0; i < arraysize(kSwitchesToAddOnAutorestart); ++i) {
     if (!new_cl->HasSwitch(kSwitchesToAddOnAutorestart[i]))
       new_cl->AppendSwitch(kSwitchesToAddOnAutorestart[i]);
   }

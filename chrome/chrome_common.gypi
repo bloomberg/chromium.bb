@@ -114,6 +114,8 @@
           'common/sandbox_policy.h',
           'common/serialized_script_value.cc',
           'common/serialized_script_value.h',
+          'common/switch_utils.cc',
+          'common/switch_utils.h',
           'common/time_format.cc',
           'common/time_format.h',
           'common/chrome_version_info.h',

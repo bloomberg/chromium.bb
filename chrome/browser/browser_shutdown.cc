@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_plugin_lib.h"
+#include "chrome/common/switch_utils.h"
 #include "net/predictor_api.h"
 
 #if defined(OS_WIN)
@@ -176,6 +177,8 @@ void Shutdown() {
     scoped_ptr<CommandLine> new_cl(new CommandLine(old_cl.GetProgram()));
     std::map<std::string, CommandLine::StringType> switches =
         old_cl.GetSwitches();
+    // Remove the switches that shouldn't persist across restart.
+    switches::RemoveSwitchesForAutostart(&switches);
     // Append the old switches to the new command line.
     for (std::map<std::string, CommandLine::StringType>::const_iterator i =
         switches.begin(); i != switches.end(); ++i) {
