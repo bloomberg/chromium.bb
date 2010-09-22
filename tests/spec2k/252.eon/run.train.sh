@@ -10,9 +10,7 @@ EMU_HACK=${EMU_HACK:-yes}
 
 DASHDASH=""
 if [[ "${PREFIX}" =~ sel_ldr ]] ; then
- # TODO(robertm): remove -c option
- # c.f.: http://code.google.com/p/nativeclient/issues/detail?id=717
- DASHDASH="-c --"
+  DASHDASH="--"
 fi
 
 rm -f  *.out chair.* materials spectra.dat  eon.dat pixel_*
