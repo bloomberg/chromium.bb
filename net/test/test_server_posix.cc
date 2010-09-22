@@ -32,13 +32,35 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   if (type_ == TYPE_HTTPS_CLIENT_AUTH)
     command_line.push_back("--ssl-client-auth");
 
-  base::file_handle_mapping_vector no_mappings;
-  if (!base::LaunchApp(command_line, no_mappings, false, &process_handle_)) {
+  int pipefd[2];
+  if (pipe(pipefd) != 0) {
+    PLOG(ERROR) << "Could not create pipe.";
+    return false;
+  }
+
+  // Save the read half. The write half is sent to the child.
+  child_fd_ = pipefd[0];
+  child_fd_closer_.reset(&child_fd_);
+  file_util::ScopedFD write_closer(&pipefd[1]);
+  base::file_handle_mapping_vector map_write_fd;
+  map_write_fd.push_back(std::make_pair(pipefd[1], pipefd[1]));
+
+  command_line.push_back("--startup-pipe=" + base::IntToString(pipefd[1]));
+
+  if (!base::LaunchApp(command_line, map_write_fd, false, &process_handle_)) {
     LOG(ERROR) << "Failed to launch " << command_line[0] << " ...";
     return false;
   }
 
   return true;
+}
+
+bool TestServer::WaitToStart() {
+  char buf[8];
+  ssize_t n = HANDLE_EINTR(read(child_fd_, buf, sizeof(buf)));
+  // We don't need the FD anymore.
+  child_fd_closer_.reset(NULL);
+  return n > 0;
 }
 
 bool TestServer::CheckCATrusted() {

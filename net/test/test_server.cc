@@ -27,7 +27,6 @@
 #include "net/base/host_resolver.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/tcp_client_socket.h"
-#include "net/socket/tcp_pinger.h"
 #include "net/test/python_utils.h"
 #include "testing/platform_test.h"
 
@@ -254,22 +253,6 @@ bool TestServer::SetPythonPath() {
   AppendToPythonPath(generated_code_dir.Append(FILE_PATH_LITERAL("sync_pb")));
 
   return true;
-}
-
-bool TestServer::WaitToStart() {
-  net::AddressList addr;
-  if (!GetAddressList(&addr))
-    return false;
-
-  net::TCPPinger pinger(addr);
-  int rv = pinger.Ping(
-      base::TimeDelta::FromMilliseconds(kServerConnectionTimeoutMs),
-      kServerConnectionAttempts);
-  bool result = (rv == net::OK);
-  if (!result) {
-    LOG(ERROR) << "Failed to connect to server";
-  }
-  return result;
 }
 
 FilePath TestServer::GetRootCertificatePath() {

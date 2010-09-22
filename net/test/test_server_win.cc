@@ -34,7 +34,7 @@ bool LaunchTestServerAsJob(const std::wstring& cmdline,
   // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this.
   if (!CreateProcess(NULL,
                      const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
-                     FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL,
+                     TRUE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL,
                      &startup_info, &process_info)) {
     LOG(ERROR) << "Could not create process.";
     return false;
@@ -107,6 +107,36 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   if (type_ == TYPE_HTTPS_CLIENT_AUTH)
     command_line.append(L" --ssl-client-auth");
 
+  HANDLE child_read = NULL;
+  HANDLE child_write = NULL;
+  if (!CreatePipe(&child_read, &child_write, NULL, 0)) {
+    PLOG(ERROR) << "Failed to create pipe";
+    return false;
+  }
+  child_fd_.Set(child_read);
+  ScopedHandle scoped_child_write(child_write);
+
+  // Have the child inherit the write half.
+  if (!SetHandleInformation(child_write, HANDLE_FLAG_INHERIT,
+                            HANDLE_FLAG_INHERIT)) {
+    PLOG(ERROR) << "Failed to enable pipe inheritance";
+    return false;
+  }
+
+  // Pass the handle on the command-line. Although HANDLE is a
+  // pointer, truncating it on 64-bit machines is okay. See
+  // http://msdn.microsoft.com/en-us/library/aa384203.aspx
+  //
+  // "64-bit versions of Windows use 32-bit handles for
+  // interoperability. When sharing a handle between 32-bit and 64-bit
+  // applications, only the lower 32 bits are significant, so it is
+  // safe to truncate the handle (when passing it from 64-bit to
+  // 32-bit) or sign-extend the handle (when passing it from 32-bit to
+  // 64-bit)."
+  command_line.append(
+      L" --startup-pipe=" +
+      ASCIIToWide(base::IntToString(reinterpret_cast<uintptr_t>(child_write))));
+
   if (!LaunchTestServerAsJob(command_line,
                              true,
                              &process_handle_,
@@ -116,6 +146,14 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   }
 
   return true;
+}
+
+bool TestServer::WaitToStart() {
+  char buf[8];
+  DWORD bytes_read;
+  BOOL result = ReadFile(child_fd_, buf, sizeof(buf), &bytes_read, NULL);
+  child_fd_.Close();
+  return result && bytes_read > 0;
 }
 
 bool TestServer::CheckCATrusted() {
