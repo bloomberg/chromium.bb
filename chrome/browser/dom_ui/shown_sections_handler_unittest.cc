@@ -15,35 +15,30 @@
 class ShownSectionsHandlerTest : public testing::Test {
 };
 
+namespace {
+
+int MigratePrefValue(PrefService* prefs, int starting_value) {
+  prefs->SetInteger(prefs::kNTPShownSections, starting_value);
+  ShownSectionsHandler::MigrateUserPrefs(prefs, 1, 3);
+  return prefs->GetInteger(prefs::kNTPShownSections);
+}
+
+}
+
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
   scoped_ptr<PrefService> pref(new TestingPrefService);
 
-  // Set an *old* value
   pref->RegisterIntegerPref(prefs::kNTPShownSections, 0);
-  pref->SetInteger(prefs::kNTPShownSections, THUMB);
 
-  ShownSectionsHandler::MigrateUserPrefs(pref.get(), 0, 1);
+  EXPECT_EQ(APPS, MigratePrefValue(pref.get(), APPS));
+  EXPECT_EQ(THUMB, MigratePrefValue(pref.get(), THUMB));
+  EXPECT_EQ(APPS, MigratePrefValue(pref.get(), APPS | THUMB));
 
-  int shown_sections = pref->GetInteger(prefs::kNTPShownSections);
+  // 2 is not currently used, but older state may contain it and we should do
+  // something reasonable.
+  EXPECT_EQ(THUMB, MigratePrefValue(pref.get(), 3));
 
-  EXPECT_TRUE(shown_sections & THUMB);
-  EXPECT_FALSE(shown_sections & LIST);
-  EXPECT_FALSE(shown_sections & RECENT);
-  EXPECT_TRUE(shown_sections & TIPS);
-  EXPECT_TRUE(shown_sections & SYNC);
-}
-
-TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
-  scoped_ptr<PrefService> pref(new TestingPrefService);
-
-  // Set an *old* value
-  pref->RegisterIntegerPref(prefs::kNTPShownSections, 0);
-  pref->SetInteger(prefs::kNTPShownSections, LIST);
-
-  ShownSectionsHandler::MigrateUserPrefs(pref.get(), 1, 2);
-
-  int shown_sections = pref->GetInteger(prefs::kNTPShownSections);
-
-  EXPECT_TRUE(shown_sections & THUMB);
-  EXPECT_FALSE(shown_sections & LIST);
+  // 0 can't correspond to any section, but we should still do something
+  // reasonable.
+  EXPECT_EQ(THUMB, MigratePrefValue(pref.get(), 0));
 }

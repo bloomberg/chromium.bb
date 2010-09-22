@@ -12,7 +12,7 @@ function getAppsCallback(data) {
 
   if (data.apps.length == 0) {
     appsSection.classList.add('disabled');
-    layoutSections();
+    setShownSections(Section.THUMB);
     return;
   }
 

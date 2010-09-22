@@ -23,8 +23,8 @@ namespace {
 // was changed to hide/show the most visited thumbnails.
 void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
   // If the oldmode HAD either thumbs or lists visible.
-  bool old_had_it = (old_mode & THUMB) || (old_mode & LIST);
-  bool new_has_it = (new_mode & THUMB) || (new_mode & LIST);
+  bool old_had_it = old_mode & THUMB;
+  bool new_has_it = new_mode & THUMB;
 
   if (old_had_it && !new_has_it) {
     UserMetrics::RecordAction(
@@ -43,9 +43,7 @@ void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
 
 // static
 int ShownSectionsHandler::GetShownSections(PrefService* prefs) {
-  int sections = prefs->GetInteger(prefs::kNTPShownSections);
-  sections &= ~RECENT;
-  return sections;
+  return prefs->GetInteger(prefs::kNTPShownSections);
 }
 
 ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
@@ -95,8 +93,7 @@ void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {
 
 // static
 void ShownSectionsHandler::RegisterUserPrefs(PrefService* pref_service) {
-  pref_service->RegisterIntegerPref(prefs::kNTPShownSections,
-                                    THUMB | RECENT | TIPS | SYNC | APPS);
+  pref_service->RegisterIntegerPref(prefs::kNTPShownSections, THUMB);
 }
 
 // static
@@ -106,17 +103,15 @@ void ShownSectionsHandler::MigrateUserPrefs(PrefService* pref_service,
   bool changed = false;
   int shown_sections = pref_service->GetInteger(prefs::kNTPShownSections);
 
-  if (old_pref_version < 1) {
-    // TIPS was used in early builds of the NNTP but since it was removed before
-    // Chrome 3.0 we want to ensure that it is shown by default.
-    shown_sections |= TIPS | SYNC;
-    changed = true;
-  }
+  if (old_pref_version < 3) {
+    // In version 3, we went from being able to show multiple sections to being
+    // able to show only one expanded at a time. The only two expandable
+    // sections are APPS and THUMBS.
+    if (shown_sections & APPS)
+      shown_sections = APPS;
+    else
+      shown_sections = THUMB;
 
-  if (old_pref_version < 2) {
-    // LIST is no longer used. Change to THUMB.
-    shown_sections &= ~LIST;
-    shown_sections |= THUMB;
     changed = true;
   }
 

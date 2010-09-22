@@ -14,13 +14,10 @@ class Value;
 class PrefService;
 
 // Use for the shown sections bitmask.
+// Currently, only the THUMB and APPS sections can be toggled by the user. Other
+// sections are shown automatically if they have data, and hidden otherwise.
 enum Section {
   THUMB = 1,
-  LIST = 2,
-  RECENT = 4,
-  TIPS = 8,
-  SYNC = 16,
-  DEBUG = 32,
   APPS = 64
 };
 

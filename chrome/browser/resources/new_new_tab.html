@@ -67,11 +67,6 @@ registerCallback('setShownSections');
  */
 var Section = {
   THUMB: 1,
-  // LIST is no longer used
-  RECENT: 4,
-  // TIPS is no longer used
-  SYNC: 16,
-  DEBUG: 32,
   APPS: 64
 };
 
@@ -222,7 +217,6 @@ cr.ui.decorate('button[menu]', cr.ui.MenuButton);
 <script>
   updateSimpleSection('apps', Section.APPS);
   updateSimpleSection('most-visited', Section.THUMB);
-  updateSimpleSection('recently-closed', Section.RECENT);
   layoutSections();
 </script>
 </html>
