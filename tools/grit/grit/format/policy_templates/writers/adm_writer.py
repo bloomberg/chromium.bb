@@ -25,6 +25,27 @@ class AdmWriter(template_writer.TemplateWriter):
     'list': 'LISTBOX'}
   NEWLINE = '\r\n'
 
+  # TODO(gfeher): Get rid of this logic by renaming the messages in the .grd
+  #               file. Before that, all the writers should switch to using
+  #               this logic.
+  def _GetLocalizedPolicyMessage(self, policy, msg_id):
+    '''Looks up localized caption or description for a policy.
+    If the policy does not have the required message, then it is
+    inherited from the group.
+
+    Args:
+      policy: The data structure of the policy.
+      msg_id: Either 'caption' or 'desc'.
+
+    Returns:
+      The corresponding message for the policy.
+    '''
+    if msg_id in policy:
+      msg = policy[msg_id]
+    else:
+      msg = policy['parent'][msg_id]
+    return msg
+
   def _AddGuiString(self, name, value):
     # Escape newlines in the value.
     value = value.replace('\n','\\n')
@@ -55,32 +76,29 @@ class AdmWriter(template_writer.TemplateWriter):
     self._PrintLine('SUPPORTED !!SUPPORTED_WINXPSP2')
     self._PrintLine('#endif', -1)
 
-  def WritePolicy(self, policy):
-    policy_type = policy['type']
-    policy_name = policy['name']
-    if policy_type == 'main':
-      self._PrintLine('VALUENAME "%s"' % policy_name )
-      self._PrintLine('VALUEON NUMERIC 1')
-      self._PrintLine('VALUEOFF NUMERIC 0')
-      return
+  def _WritePart(self, policy):
+    '''Writes the PART ... END PART section of a policy.
 
-    policy_part_name = policy_name + '_Part'
-    self._AddGuiString(policy_part_name, policy['caption'])
+    Args:
+      policy: The policy to write to the output.
+    '''
+    policy_caption = self._GetLocalizedPolicyMessage(policy, 'caption')
+    policy_part_name = policy['name'] + '_Part'
+    self._AddGuiString(policy_part_name, policy_caption)
 
-    self._PrintLine()
     # Print the PART ... END PART section:
-    self._PrintLine(
-        'PART !!%s  %s' % (policy_part_name, self.TYPE_TO_INPUT[policy_type]),
-        1)
-    if policy_type == 'list':
+    self._PrintLine()
+    adm_type = self.TYPE_TO_INPUT[policy['type']]
+    self._PrintLine('PART !!%s  %s' % (policy_part_name, adm_type), 1)
+    if policy['type'] == 'list':
       # Note that the following line causes FullArmor ADMX Migrator to create
       # corrupt ADMX files. Please use admx_writer to get ADMX files.
       self._PrintLine('KEYNAME "%s\\%s"' %
-                      (self.config['win_reg_key_name'], policy_name))
+                      (self.config['win_reg_key_name'], policy['name']))
       self._PrintLine('VALUEPREFIX ""')
     else:
-      self._PrintLine('VALUENAME "%s"' % policy_name)
-    if policy_type == 'enum':
+      self._PrintLine('VALUENAME "%s"' % policy['name'])
+    if policy['type'] == 'enum':
       self._PrintLine('ITEMLIST', 1)
       for item in policy['items']:
         self._PrintLine('NAME !!%s_DropDown VALUE NUMERIC %s' %
@@ -89,18 +107,39 @@ class AdmWriter(template_writer.TemplateWriter):
       self._PrintLine('END ITEMLIST', -1)
     self._PrintLine('END PART', -1)
 
-  def BeginPolicyGroup(self, group):
-    group_explain_name = group['name'] + '_Explain'
-    self._AddGuiString(group['name'] + '_Policy', group['caption'])
-    self._AddGuiString(group_explain_name, group['desc'])
+  def WritePolicy(self, policy):
+    policy_desc = self._GetLocalizedPolicyMessage(policy, 'desc')
+    policy_caption = self._GetLocalizedPolicyMessage(policy, 'caption')
 
-    self._PrintLine('POLICY !!%s_Policy' % group['name'], 1)
+    self._AddGuiString(policy['name'] + '_Policy', policy_caption)
+    self._PrintLine('POLICY !!%s_Policy' % policy['name'], 1)
     self._WriteSupported()
-    self._PrintLine('EXPLAIN !!' + group_explain_name)
+    policy_explain_name = policy['name'] + '_Explain'
+    self._AddGuiString(policy_explain_name, policy_desc)
+    self._PrintLine('EXPLAIN !!' + policy_explain_name)
 
-  def EndPolicyGroup(self):
+    if policy['type'] == 'main':
+      self._PrintLine('VALUENAME "%s"' % policy['name'])
+      self._PrintLine('VALUEON NUMERIC 1')
+      self._PrintLine('VALUEOFF NUMERIC 0')
+    else:
+      self._WritePart(policy)
+
     self._PrintLine('END POLICY', -1)
     self._PrintLine()
+
+  def BeginPolicyGroup(self, group):
+    self._open_category = len(group['policies']) > 1
+    # Open a category for the policies if there is more than one in the
+    # group.
+    if self._open_category:
+      category_name = group['name'] + '_Category'
+      self._AddGuiString(category_name, group['caption'])
+      self._PrintLine('CATEGORY !!' + category_name, 1)
+
+  def EndPolicyGroup(self):
+    if self._open_category:
+      self._PrintLine('END CATEGORY', -1)
 
   def BeginTemplate(self):
     category_path = self.config['win_category_path']

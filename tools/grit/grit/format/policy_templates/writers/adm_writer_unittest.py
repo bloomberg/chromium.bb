@@ -89,11 +89,11 @@ chromium="Chromium"'''
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
 
-      POLICY !!MainGroup_Policy
+      POLICY !!MainPolicy_Policy
         #if version >= 4
           SUPPORTED !!SUPPORTED_WINXPSP2
         #endif
-        EXPLAIN !!MainGroup_Explain
+        EXPLAIN !!MainPolicy_Explain
         VALUENAME "MainPolicy"
         VALUEON NUMERIC 1
         VALUEOFF NUMERIC 0
@@ -106,8 +106,8 @@ chromium="Chromium"'''
 SUPPORTED_WINXPSP2="At least Windows 3.12"
 google="Google"
 googlechrome="Google Chrome"
-MainGroup_Policy="Caption of main."
-MainGroup_Explain="Description of main."'''
+MainPolicy_Policy="Caption of main."
+MainPolicy_Explain="Description of main."'''
     self.CompareOutputs(output, expected_output)
 
   def testStringPolicy(self):
@@ -139,11 +139,11 @@ With a newline.</message>
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
-    POLICY !!StringGroup_Policy
+    POLICY !!StringPolicy_Policy
       #if version >= 4
         SUPPORTED !!SUPPORTED_WINXPSP2
       #endif
-      EXPLAIN !!StringGroup_Explain
+      EXPLAIN !!StringPolicy_Explain
 
       PART !!StringPolicy_Part  EDITTEXT
         VALUENAME "StringPolicy"
@@ -155,8 +155,8 @@ With a newline.</message>
 [Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.13"
 chromium="Chromium"
-StringGroup_Policy="Caption of group."
-StringGroup_Explain="Description of group.\\nWith a newline."
+StringPolicy_Policy="Caption of policy."
+StringPolicy_Explain="Description of group.\\nWith a newline."
 StringPolicy_Part="Caption of policy."
 '''
     self.CompareOutputs(output, expected_output)
@@ -197,11 +197,11 @@ StringPolicy_Part="Caption of policy."
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
 
-      POLICY !!EnumGroup_Policy
+      POLICY !!EnumPolicy_Policy
         #if version >= 4
           SUPPORTED !!SUPPORTED_WINXPSP2
         #endif
-        EXPLAIN !!EnumGroup_Explain
+        EXPLAIN !!EnumPolicy_Explain
 
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
@@ -219,8 +219,8 @@ StringPolicy_Part="Caption of policy."
 SUPPORTED_WINXPSP2="At least Windows 3.14"
 google="Google"
 googlechrome="Google Chrome"
-EnumGroup_Policy="Caption of group."
-EnumGroup_Explain="Description of group."
+EnumPolicy_Policy="Caption of policy."
+EnumPolicy_Explain="Description of policy."
 EnumPolicy_Part="Caption of policy."
 ProxyServerDisabled_DropDown="Option1"
 ProxyServerAutoDetect_DropDown="Option2"
@@ -256,11 +256,11 @@ With a newline.</message>
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
-    POLICY !!ListGroup_Policy
+    POLICY !!ListPolicy_Policy
       #if version >= 4
         SUPPORTED !!SUPPORTED_WINXPSP2
       #endif
-      EXPLAIN !!ListGroup_Explain
+      EXPLAIN !!ListPolicy_Explain
 
       PART !!ListPolicy_Part  LISTBOX
         KEYNAME "Software\\Policies\\Chromium\\ListPolicy"
@@ -273,8 +273,8 @@ With a newline.</message>
 [Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.15"
 chromium="Chromium"
-ListGroup_Policy="Caption of list group."
-ListGroup_Explain="Description of list group.\\nWith a newline."
+ListPolicy_Policy="Caption of list policy."
+ListPolicy_Explain="Description of list group.\\nWith a newline."
 ListPolicy_Part="Caption of list policy."
 '''
     self.CompareOutputs(output, expected_output)
@@ -313,6 +313,83 @@ ListPolicy_Part="Caption of list policy."
 [Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.16"
 chromium="Chromium"
+'''
+    self.CompareOutputs(output, expected_output)
+
+  def testPolicyGroup(self):
+    # Tests a policy group that has more than one policies.
+    grd = self.PrepareTest('''
+      {
+        'policy_groups': [
+          {
+            'name': 'Group1',
+            'policies': [{
+              'name': 'Policy1',
+              'type': 'list',
+              'annotations': {'platforms': ['win']}
+            },{
+              'name': 'Policy2',
+              'type': 'string',
+              'annotations': {'platforms': ['win']}
+            }],
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_GROUP_GROUP1_CAPTION">Caption of group.</message>
+          <message name="IDS_POLICY_GROUP_GROUP1_DESC">Description of group.</message>
+          <message name="IDS_POLICY_POLICY1_DESC">Description of policy1.
+With a newline.</message>
+          <message name="IDS_POLICY_POLICY2_DESC">Description of policy2.
+With a newline.</message>
+          <message name="IDS_POLICY_POLICY1_CAPTION">Caption of policy1.</message>
+          <message name="IDS_POLICY_POLICY2_CAPTION">Caption of policy2.</message>
+          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.16</message>
+        </messages>
+      ''')
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+    expected_output = '''CLASS MACHINE
+  CATEGORY !!chromium
+    KEYNAME "Software\\Policies\\Chromium"
+
+    CATEGORY !!Group1_Category
+      POLICY !!Policy1_Policy
+        #if version >= 4
+          SUPPORTED !!SUPPORTED_WINXPSP2
+        #endif
+        EXPLAIN !!Policy1_Explain
+
+        PART !!Policy1_Part  LISTBOX
+          KEYNAME "Software\\Policies\\Chromium\\Policy1"
+          VALUEPREFIX ""
+        END PART
+      END POLICY
+
+      POLICY !!Policy2_Policy
+        #if version >= 4
+          SUPPORTED !!SUPPORTED_WINXPSP2
+        #endif
+        EXPLAIN !!Policy2_Explain
+
+        PART !!Policy2_Part  EDITTEXT
+          VALUENAME "Policy2"
+        END PART
+      END POLICY
+
+    END CATEGORY
+  END CATEGORY
+
+[Strings]
+SUPPORTED_WINXPSP2="At least Windows 3.16"
+chromium="Chromium"
+Group1_Category="Caption of group."
+Policy1_Policy="Caption of policy1."
+Policy1_Explain="Description of policy1.\\nWith a newline."
+Policy1_Part="Caption of policy1."
+Policy2_Policy="Caption of policy2."
+Policy2_Explain="Description of policy2.\\nWith a newline."
+Policy2_Part="Caption of policy2."
 '''
     self.CompareOutputs(output, expected_output)
 
