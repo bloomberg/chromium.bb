@@ -875,6 +875,12 @@ void FormManager::FillFormField(WebKit::WebFormControlElement* field,
 
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
+    // TODO(dhollowa): The call here to |setSuggestedValue| is a work-around
+    // to a WebKit change in r67122.  See http://crbug.com/56081 for details.
+    // Once the core issue is fixed in WebKit, this work-around should be
+    // removed.
+    input_element.setSuggestedValue(
+        data->value().substr(0, input_element.maxLength()));
     input_element.setValue(data->value().substr(0, input_element.maxLength()));
     input_element.setAutofilled(true);
   } else if (field->formControlType() == WebString::fromUTF8("select-one")) {
