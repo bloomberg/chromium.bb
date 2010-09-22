@@ -27,10 +27,10 @@ UpdateRecommendedDialog::UpdateRecommendedDialog(GtkWindow* parent) {
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str(),
       parent,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      l10n_util::GetStringUTF8(IDS_RESTART_AND_UPDATE).c_str(),
-      GTK_RESPONSE_ACCEPT,
       l10n_util::GetStringUTF8(IDS_NOT_NOW).c_str(),
       GTK_RESPONSE_REJECT,
+      l10n_util::GetStringUTF8(IDS_RESTART_AND_UPDATE).c_str(),
+      GTK_RESPONSE_ACCEPT,
       NULL);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);

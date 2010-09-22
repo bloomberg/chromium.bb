@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -34,9 +35,26 @@
 namespace {
 
 // How often to check for an upgrade.
-// TODO(finnur): Once we have a good way of determining which branch the user
-// is on at runtime we should check more frequently for the dev branch.
-const int kCheckForUpgradeEveryMs = 24 * 60 * 60 * 1000;  // Check daily.
+int GetCheckForUpgradeEveryMs() {
+  // Check for a value passed via the command line.
+  int interval_ms;
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  std::string interval =
+      cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
+  if (!interval.empty() && base::StringToInt(interval, &interval_ms))
+    return interval_ms * 1000; // Command line value is in seconds.
+
+  // Otherwise check once an hour for dev channel and once a day for all other
+  // channels/builds.
+  const std::string channel = platform_util::GetVersionStringModifier();
+  int hours;
+  if (channel == "dev")
+    hours = 1;
+  else
+    hours = 24;
+
+  return hours * 60 * 60 * 1000;
+}
 
 // How long to wait before notifying the user about the upgrade.
 const int kNotifyUserAfterMs = 0;
@@ -147,15 +165,8 @@ UpgradeDetector::UpgradeDetector()
   if (keystone_glue::KeystoneEnabled())
 #endif
   {
-    int interval_ms = kCheckForUpgradeEveryMs;
-    const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-    std::string interval =
-        cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
-    if (!interval.empty() && base::StringToInt(interval, &interval_ms))
-      interval_ms *= 1000;  // Command line value is in seconds.
-
     detect_upgrade_timer_.Start(
-        base::TimeDelta::FromMilliseconds(interval_ms),
+        base::TimeDelta::FromMilliseconds(GetCheckForUpgradeEveryMs()),
         this, &UpgradeDetector::CheckForUpgrade);
   }
 #endif
