@@ -89,7 +89,18 @@ class OutOfProcTestRunner : public tests::TestRunner {
     new_cmd_line.AppendSwitch(base::TestSuite::kStrictFailureHandling);
 
     base::ProcessHandle process_handle;
+#if defined(OS_POSIX)
+    // On POSIX, we launch the test in a new process group with pgid equal to
+    // its pid. Any child processes that the test may create will inherit the
+    // same pgid. This way, if the test is abruptly terminated, we can clean up
+    // any orphaned child processes it may have left behind.
+    base::environment_vector no_env;
+    base::file_handle_mapping_vector no_files;
+    if (!base::LaunchAppInNewProcessGroup(new_cmd_line.argv(), no_env, no_files,
+                                          false, &process_handle))
+#else
     if (!base::LaunchApp(new_cmd_line, false, false, &process_handle))
+#endif
       return false;
 
     int test_terminate_timeout_ms = kDefaultTestTimeoutMs;
@@ -111,6 +122,13 @@ class OutOfProcTestRunner : public tests::TestRunner {
 
       // Ensure that the process terminates.
       base::KillProcess(process_handle, -1, true);
+
+#if defined(OS_POSIX)
+      // On POSIX, we need to clean up any child processes that the test might
+      // have created. On windows, child processes are automatically cleaned up
+      // using JobObjects.
+      base::KillProcessGroup(process_handle);
+#endif
     }
 
     return exit_code == 0;
