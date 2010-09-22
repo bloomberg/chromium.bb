@@ -18,6 +18,11 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/cpp/module.h"
 
+namespace {
+const char* kSrcAttribute = "src";  // The "src" attr of the <embed> tag.
+const char* kNexesAttribute = "nexes";  // The "nexes" attr of the <embed> tag.
+}  // namespace
+
 namespace plugin {
 
 PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
@@ -59,9 +64,18 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
                              const_cast<char**>(argn),
                              const_cast<char**>(argv));
   if (status) {
-    for (uint32_t i = 0; i < argc; ++i) {
-      if (strcmp(argn[i], "src") == 0)
-        status = RequestNaClModule(argv[i]);
+    const char* src_attr = LookupArgument(kSrcAttribute);
+    PLUGIN_PRINTF(("PluginPpapi::Init (src_attr=%s)\n", src_attr));
+    if (src_attr != NULL) {
+      status = RequestNaClModule(src_attr);
+    } else {
+      // If there was no "src" attribute, then look for a "nexes" attribute
+      // and try to load the ISA defined for this particular sandbox.
+      const char* nexes_attr = LookupArgument(kNexesAttribute);
+      PLUGIN_PRINTF(("PluginPpapi::Init (nexes_attr=%s)\n", nexes_attr));
+      if (nexes_attr != NULL) {
+        status = SetNexesPropertyImpl(nexes_attr);
+      }
     }
   }
 
