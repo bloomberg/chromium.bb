@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
@@ -135,6 +136,9 @@ void NewUserView::Init() {
   language_switch_menu_.InitLanguageMenu();
   languages_menubutton_ = new views::MenuButton(
       NULL, std::wstring(), &language_switch_menu_, true);
+  languages_menubutton_->set_menu_marker(
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_MENU_DROPARROW_SHARP));
   languages_menubutton_->SetFocusable(true);
   AddChildView(languages_menubutton_);
 

@@ -48,6 +48,7 @@
         <include name="IDR_MAXIMIZE_P" file="linux_maximize_p.png" type="BINDATA" />
       </if>
       <include name="IDR_MENU_DROPARROW" file="menu_droparrow.png" type="BINDATA" />
+      <include name="IDR_MENU_DROPARROW_SHARP" file="menu_droparrow_sharp.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_MINIMIZE" file="minimize.png" type="BINDATA" />
         <include name="IDR_MINIMIZE_H" file="minimize_h.png" type="BINDATA" />
