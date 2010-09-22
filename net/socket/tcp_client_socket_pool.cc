@@ -72,11 +72,11 @@ TCPConnectJob::~TCPConnectJob() {
 
 LoadState TCPConnectJob::GetLoadState() const {
   switch (next_state_) {
-    case kStateResolveHost:
-    case kStateResolveHostComplete:
+    case STATE_RESOLVE_HOST:
+    case STATE_RESOLVE_HOST_COMPLETE:
       return LOAD_STATE_RESOLVING_HOST;
-    case kStateTCPConnect:
-    case kStateTCPConnectComplete:
+    case STATE_TCP_CONNECT:
+    case STATE_TCP_CONNECT_COMPLETE:
       return LOAD_STATE_CONNECTING;
     default:
       NOTREACHED();
@@ -85,7 +85,7 @@ LoadState TCPConnectJob::GetLoadState() const {
 }
 
 int TCPConnectJob::ConnectInternal() {
-  next_state_ = kStateResolveHost;
+  next_state_ = STATE_RESOLVE_HOST;
   start_time_ = base::TimeTicks::Now();
   return DoLoop(OK);
 }
@@ -97,25 +97,25 @@ void TCPConnectJob::OnIOComplete(int result) {
 }
 
 int TCPConnectJob::DoLoop(int result) {
-  DCHECK_NE(next_state_, kStateNone);
+  DCHECK_NE(next_state_, STATE_NONE);
 
   int rv = result;
   do {
     State state = next_state_;
-    next_state_ = kStateNone;
+    next_state_ = STATE_NONE;
     switch (state) {
-      case kStateResolveHost:
+      case STATE_RESOLVE_HOST:
         DCHECK_EQ(OK, rv);
         rv = DoResolveHost();
         break;
-      case kStateResolveHostComplete:
+      case STATE_RESOLVE_HOST_COMPLETE:
         rv = DoResolveHostComplete(rv);
         break;
-      case kStateTCPConnect:
+      case STATE_TCP_CONNECT:
         DCHECK_EQ(OK, rv);
         rv = DoTCPConnect();
         break;
-      case kStateTCPConnectComplete:
+      case STATE_TCP_CONNECT_COMPLETE:
         rv = DoTCPConnectComplete(rv);
         break;
       default:
@@ -123,25 +123,25 @@ int TCPConnectJob::DoLoop(int result) {
         rv = ERR_FAILED;
         break;
     }
-  } while (rv != ERR_IO_PENDING && next_state_ != kStateNone);
+  } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
 
   return rv;
 }
 
 int TCPConnectJob::DoResolveHost() {
-  next_state_ = kStateResolveHostComplete;
+  next_state_ = STATE_RESOLVE_HOST_COMPLETE;
   return resolver_.Resolve(params_->destination(), &addresses_, &callback_,
                            net_log());
 }
 
 int TCPConnectJob::DoResolveHostComplete(int result) {
   if (result == OK)
-    next_state_ = kStateTCPConnect;
+    next_state_ = STATE_TCP_CONNECT;
   return result;
 }
 
 int TCPConnectJob::DoTCPConnect() {
-  next_state_ = kStateTCPConnectComplete;
+  next_state_ = STATE_TCP_CONNECT_COMPLETE;
   set_socket(client_socket_factory_->CreateTCPClientSocket(
         addresses_, net_log().net_log(), net_log().source()));
   connect_start_time_ = base::TimeTicks::Now();

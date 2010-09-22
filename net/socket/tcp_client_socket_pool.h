@@ -72,11 +72,11 @@ class TCPConnectJob : public ConnectJob {
 
  private:
   enum State {
-    kStateResolveHost,
-    kStateResolveHostComplete,
-    kStateTCPConnect,
-    kStateTCPConnectComplete,
-    kStateNone,
+    STATE_RESOLVE_HOST,
+    STATE_RESOLVE_HOST_COMPLETE,
+    STATE_TCP_CONNECT,
+    STATE_TCP_CONNECT_COMPLETE,
+    STATE_NONE,
   };
 
   // Begins the host resolution and the TCP connect.  Returns OK on success
