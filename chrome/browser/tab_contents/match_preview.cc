@@ -505,6 +505,11 @@ void MatchPreview::SetOmniboxBounds(const gfx::Rect& bounds) {
 }
 
 void MatchPreview::DestroyPreviewContents() {
+  if (!preview_contents_.get()) {
+    // We're not showing anything, nothing to do.
+    return;
+  }
+
   delegate_->HideMatchPreview();
   delete ReleasePreviewContents(false);
 }

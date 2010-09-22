@@ -3266,8 +3266,7 @@ void Browser::ShowMatchPreview() {
 }
 
 void Browser::HideMatchPreview() {
-  if (match_preview_->tab_contents() == GetSelectedTabContents())
-    window_->HideMatchPreview();
+  window_->HideMatchPreview();
 }
 
 void Browser::CommitMatchPreview() {
