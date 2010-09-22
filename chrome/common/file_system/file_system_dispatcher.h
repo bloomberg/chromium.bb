@@ -8,24 +8,19 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_util_proxy.h"
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
-
-namespace WebKit {
-struct WebFileInfo;
-class WebFileSystemCallbacks;
-struct WebFileSystemEntry;
-}
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 namespace base {
 struct PlatformFileInfo;
 }
 
-struct ViewMsg_FileSystem_DidReadDirectory_Params;
+class FilePath;
 
 // Dispatches and sends file system related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
@@ -37,45 +32,38 @@ class FileSystemDispatcher {
 
   bool OnMessageReceived(const IPC::Message& msg);
 
-  void Move(
-      const string16& src_path,
-      const string16& dest_path,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void Copy(
-      const string16& src_path,
-      const string16& dest_path,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void Remove(
-      const string16& path,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void ReadMetadata(
-      const string16& path,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void Create(
-      const string16& path,
-      bool exclusive,
-      bool for_directory,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void Exists(
-      const string16& path,
-      bool for_directory,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  void ReadDirectory(
-      const string16& path,
-      WebKit::WebFileSystemCallbacks* callbacks);
+  bool Move(const FilePath& src_path,
+            const FilePath& dest_path,
+            fileapi::FileSystemCallbackDispatcher* dispatcher);
+  bool Copy(const FilePath& src_path,
+            const FilePath& dest_path,
+            fileapi::FileSystemCallbackDispatcher* dispatcher);
+  bool Remove(const FilePath& path,
+              fileapi::FileSystemCallbackDispatcher* dispatcher);
+  bool ReadMetadata(const FilePath& path,
+                    fileapi::FileSystemCallbackDispatcher* dispatcher);
+  bool Create(const FilePath& path,
+              bool exclusive,
+              bool is_directory,
+              bool recursive,
+              fileapi::FileSystemCallbackDispatcher* dispatcher);
+  bool Exists(const FilePath& path,
+              bool for_directory,
+              fileapi::FileSystemCallbackDispatcher* dispatcher);
+  bool ReadDirectory(const FilePath& path,
+                     fileapi::FileSystemCallbackDispatcher* dispatcher);
 
  private:
   void DidSucceed(int request_id);
-  void DidReadMetadata(
-      int request_id,
-      const base::PlatformFileInfo& file_info);
+  void DidReadMetadata(int request_id,
+                       const base::PlatformFileInfo& file_info);
   void DidReadDirectory(
-      const ViewMsg_FileSystem_DidReadDirectory_Params& params);
-  void DidFail(
       int request_id,
-      WebKit::WebFileError);
+      const std::vector<base::file_util_proxy::Entry>& entries,
+      bool has_more);
+  void DidFail(int request_id, base::PlatformFileError error_code);
 
-  IDMap<WebKit::WebFileSystemCallbacks> callbacks_;
+  IDMap<fileapi::FileSystemCallbackDispatcher, IDMapOwnPointer> dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcher);
 };

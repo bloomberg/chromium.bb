@@ -13,9 +13,8 @@
 #include "base/platform_file.h"
 #include "base/scoped_callback_factory.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/file_system/chrome_file_system_operation.h"
 #include "chrome/common/render_messages.h"
-#include "webkit/fileapi/file_system_operation_client.h"
+#include "webkit/fileapi/file_system_operation.h"
 
 class FileSystemHostContext;
 class HostContentSettingsMap;
@@ -23,12 +22,12 @@ class Receiver;
 class ResourceMessageFilter;
 
 class FileSystemDispatcherHost
-    : public base::RefCountedThreadSafe<FileSystemDispatcherHost>,
-      public fileapi::FileSystemOperationClient {
+    : public base::RefCountedThreadSafe<FileSystemDispatcherHost> {
  public:
   FileSystemDispatcherHost(IPC::Message::Sender* sender,
                            FileSystemHostContext* file_system_host_context,
                            HostContentSettingsMap* host_content_settings_map);
+  ~FileSystemDispatcherHost();
   void Init(base::ProcessHandle process_handle);
   void Shutdown();
 
@@ -46,25 +45,16 @@ class FileSystemDispatcherHost
   void OnCreate(int request_id,
                 const FilePath& path,
                 bool exclusive,
-                bool is_directory);
+                bool is_directory,
+                bool recursive);
   void OnExists(int request_id, const FilePath& path, bool is_directory);
   void OnReadDirectory(int request_id, const FilePath& path);
   void Send(IPC::Message* message);
-
-  // FileSystemOperationClient methods.
-  virtual void DidFail(WebKit::WebFileError status,
-      fileapi::FileSystemOperation* operation);
-  virtual void DidSucceed(fileapi::FileSystemOperation* operation);
-  virtual void DidReadMetadata(
-      const base::PlatformFileInfo& info,
-      fileapi::FileSystemOperation* operation);
-  virtual void DidReadDirectory(
-      const std::vector<base::file_util_proxy::Entry>& entries,
-      bool has_more, fileapi::FileSystemOperation* operation);
+  void RemoveCompletedOperation(int request_id);
 
  private:
-  // Creates a new ChromeFileSystemOperation.
-  ChromeFileSystemOperation* GetNewOperation(int request_id);
+  // Creates a new FileSystemOperation.
+  fileapi::FileSystemOperation* GetNewOperation(int request_id);
 
   // Checks the validity of a given |path|. Returns true if the given |path|
   // is valid as a path for FileSystem API. Otherwise it sends back a
@@ -85,7 +75,7 @@ class FileSystemDispatcherHost
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Keeps ongoing file system operations.
-  typedef IDMap<ChromeFileSystemOperation, IDMapOwnPointer> OperationsMap;
+  typedef IDMap<fileapi::FileSystemOperation, IDMapOwnPointer> OperationsMap;
   OperationsMap operations_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);

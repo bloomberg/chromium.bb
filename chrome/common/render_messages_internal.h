@@ -47,6 +47,12 @@ class SkBitmap;
 struct ThumbnailScore;
 class WebCursor;
 
+namespace base {
+namespace file_util_proxy {
+struct Entry;
+}
+}
+
 namespace IPC {
 struct ChannelHandle;
 class Message;
@@ -1035,11 +1041,14 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidReadMetadata,
                        int /* request_id */,
                        base::PlatformFileInfo)
-  IPC_MESSAGE_CONTROL1(ViewMsg_FileSystem_DidReadDirectory,
-                       ViewMsg_FileSystem_DidReadDirectory_Params)
+  IPC_MESSAGE_CONTROL3(ViewMsg_FileSystem_DidReadDirectory,
+                       int /* request_id */,
+                       std::vector<base::file_util_proxy::Entry> /* entries */,
+                       bool /* has_more */)
+
   IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidFail,
                        int /* request_id */,
-                       WebKit::WebFileError /* error_code */)
+                       base::PlatformFileError /* error_code */)
 
   // The response to ViewHostMsg_AsyncOpenFile.
   IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
@@ -2816,11 +2825,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        FilePath /* path */)
 
   // WebFileSystem::create() message.
-  IPC_MESSAGE_CONTROL4(ViewHostMsg_FileSystem_Create,
+  IPC_MESSAGE_CONTROL5(ViewHostMsg_FileSystem_Create,
                        int /* request_id */,
                        FilePath /* path */,
                        bool /* exclusive */,
-                       bool /* is_directory */)
+                       bool /* is_directory */,
+                       bool /* recursive */)
 
   // WebFileSystem::exists() messages.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Exists,

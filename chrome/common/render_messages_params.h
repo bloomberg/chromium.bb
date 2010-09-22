@@ -964,20 +964,6 @@ struct ViewHostMsg_OpenFileSystemRequest_Params {
   int64 requested_size;
 };
 
-struct ViewMsg_FileSystem_DidReadDirectory_Params {
-  ViewMsg_FileSystem_DidReadDirectory_Params();
-  ~ViewMsg_FileSystem_DidReadDirectory_Params();
-
-  // The response should have this id.
-  int request_id;
-
-  // A vector of directory entries.
-  std::vector<base::file_util_proxy::Entry> entries;
-
-  // Indicates if there will be more entries.
-  bool has_more;
-};
-
 struct ViewHostMsg_AccessibilityNotification_Params {
   enum NotificationType {
     // The node checked state has changed.
@@ -1253,14 +1239,6 @@ struct ParamTraits<ViewHostMsg_DomMessage_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_OpenFileSystemRequest_Params> {
   typedef ViewHostMsg_OpenFileSystemRequest_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_FileSystem_DidReadDirectory_Params> {
-  typedef ViewMsg_FileSystem_DidReadDirectory_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

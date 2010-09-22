@@ -106,7 +106,6 @@ struct ViewMsg_ExtensionsUpdated_Params;
 struct ViewMsg_DeviceOrientationUpdated_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_OpenFileSystemRequest_Params;
-struct ViewMsg_FileSystem_DidReadDirectory_Params;
 struct ViewHostMsg_AccessibilityNotification_Params;
 
 // Values that may be OR'd together to form the 'flags' parameter of the

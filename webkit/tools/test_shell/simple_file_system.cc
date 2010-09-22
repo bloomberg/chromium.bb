@@ -10,23 +10,101 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystemEntry.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/glue/webkit_glue.h"
 
+using WebKit::WebFileInfo;
 using WebKit::WebFileSystemCallbacks;
+using WebKit::WebFileSystemEntry;
 using WebKit::WebString;
+using WebKit::WebVector;
 
-TestShellFileSystemOperation::TestShellFileSystemOperation(
-    fileapi::FileSystemOperationClient* client,
-    scoped_refptr<base::MessageLoopProxy> proxy,
-    WebFileSystemCallbacks* callbacks)
-    : fileapi::FileSystemOperation(client, proxy), callbacks_(callbacks) { }
+namespace {
+
+WebKit::WebFileError PlatformFileErrorToWebFileError(
+    base::PlatformFileError error_code) {
+  switch (error_code) {
+    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
+      return WebKit::WebFileErrorNotFound;
+    case base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
+    case base::PLATFORM_FILE_ERROR_EXISTS:
+    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
+      return WebKit::WebFileErrorInvalidModification;
+    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
+      return WebKit::WebFileErrorNoModificationAllowed;
+    case base::PLATFORM_FILE_ERROR_FAILED:
+      return WebKit::WebFileErrorInvalidState;
+    case base::PLATFORM_FILE_ERROR_ABORT:
+      return WebKit::WebFileErrorAbort;
+    default:
+      return WebKit::WebFileErrorInvalidModification;
+  }
+}
+
+class TestShellFileSystemCallbackDispatcher
+    : public fileapi::FileSystemCallbackDispatcher {
+ public:
+  TestShellFileSystemCallbackDispatcher(
+      SimpleFileSystem* file_system,
+      WebFileSystemCallbacks* callbacks)
+      : file_system_(file_system),
+        callbacks_(callbacks),
+        request_id_(-1) {
+  }
+
+  void set_request_id(int request_id) { request_id_ = request_id; }
+
+  virtual void DidSucceed() {
+    callbacks_->didSucceed();
+    file_system_->RemoveCompletedOperation(request_id_);
+  }
+
+  virtual void DidReadMetadata(const base::PlatformFileInfo& info) {
+    WebFileInfo web_file_info;
+    web_file_info.modificationTime = info.last_modified.ToDoubleT();
+    callbacks_->didReadMetadata(web_file_info);
+    file_system_->RemoveCompletedOperation(request_id_);
+  }
+
+  virtual void DidReadDirectory(
+      const std::vector<base::file_util_proxy::Entry>& entries,
+      bool has_more) {
+    std::vector<WebFileSystemEntry> web_entries_vector;
+    for (std::vector<base::file_util_proxy::Entry>::const_iterator it =
+             entries.begin(); it != entries.end(); ++it) {
+      WebFileSystemEntry entry;
+      entry.name = webkit_glue::FilePathStringToWebString(it->name);
+      entry.isDirectory = it->is_directory;
+      web_entries_vector.push_back(entry);
+    }
+    WebVector<WebKit::WebFileSystemEntry> web_entries =
+        web_entries_vector;
+    callbacks_->didReadDirectory(web_entries, has_more);
+    file_system_->RemoveCompletedOperation(request_id_);
+  }
+
+  virtual void DidOpenFileSystem(const string16&, const FilePath&) {
+    NOTREACHED();
+  }
+
+  virtual void DidFail(base::PlatformFileError error_code) {
+    callbacks_->didFail(PlatformFileErrorToWebFileError(error_code));
+    file_system_->RemoveCompletedOperation(request_id_);
+  }
+
+ private:
+  SimpleFileSystem* file_system_;
+  WebFileSystemCallbacks* callbacks_;
+  int request_id_;
+};
+
+} // namespace
 
 SimpleFileSystem::~SimpleFileSystem() {
   // Drop all the operations.
   for (OperationsMap::const_iterator iter(&operations_);
-       !iter.IsAtEnd(); iter.Advance()) {
+       !iter.IsAtEnd(); iter.Advance())
     operations_.Remove(iter.GetCurrentKey());
-  }
 }
 
 void SimpleFileSystem::move(
@@ -72,7 +150,7 @@ void SimpleFileSystem::createDirectory(
     const WebString& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
   FilePath filepath(webkit_glue::WebStringToFilePath(path));
 
-  GetNewOperation(callbacks)->CreateDirectory(filepath, exclusive);
+  GetNewOperation(callbacks)->CreateDirectory(filepath, exclusive, false);
 }
 
 void SimpleFileSystem::fileExists(
@@ -96,65 +174,18 @@ void SimpleFileSystem::readDirectory(
   GetNewOperation(callbacks)->ReadDirectory(filepath);
 }
 
-void SimpleFileSystem::DidFail(WebKit::WebFileError status,
-    fileapi::FileSystemOperation* operation) {
-  WebFileSystemCallbacks* callbacks =
-      static_cast<TestShellFileSystemOperation*>(operation)->callbacks();
-  callbacks->didFail(status);
-  RemoveOperation(operation);
-}
-
-void SimpleFileSystem::DidSucceed(fileapi::FileSystemOperation* operation) {
-  WebFileSystemCallbacks* callbacks =
-      static_cast<TestShellFileSystemOperation*>(operation)->callbacks();
-  callbacks->didSucceed();
-  RemoveOperation(operation);
-}
-
-void SimpleFileSystem::DidReadMetadata(
-    const base::PlatformFileInfo& info,
-    fileapi::FileSystemOperation* operation) {
-  WebFileSystemCallbacks* callbacks =
-      static_cast<TestShellFileSystemOperation*>(operation)->callbacks();
-  WebKit::WebFileInfo web_file_info;
-  web_file_info.modificationTime = info.last_modified.ToDoubleT();
-  callbacks->didReadMetadata(web_file_info);
-  RemoveOperation(operation);
-}
-
-void SimpleFileSystem::DidReadDirectory(
-    const std::vector<base::file_util_proxy::Entry>& entries,
-    bool has_more, fileapi::FileSystemOperation* operation) {
-  WebFileSystemCallbacks* callbacks =
-      static_cast<TestShellFileSystemOperation*>(operation)->callbacks();
-  std::vector<WebKit::WebFileSystemEntry> web_entries_vector;
-  for (std::vector<base::file_util_proxy::Entry>::const_iterator it =
-       entries.begin(); it != entries.end(); ++it) {
-    WebKit::WebFileSystemEntry entry;
-    entry.name = webkit_glue::FilePathStringToWebString(it->name);
-    entry.isDirectory = it->is_directory;
-    web_entries_vector.push_back(entry);
-  }
-  WebKit::WebVector<WebKit::WebFileSystemEntry> web_entries =
-      web_entries_vector;
-  callbacks->didReadDirectory(web_entries, false);
-  RemoveOperation(operation);
-}
-
-TestShellFileSystemOperation* SimpleFileSystem::GetNewOperation(
+fileapi::FileSystemOperation* SimpleFileSystem::GetNewOperation(
     WebFileSystemCallbacks* callbacks) {
-  scoped_ptr<TestShellFileSystemOperation> operation(
-      new TestShellFileSystemOperation(
-          this,
-          base::MessageLoopProxy::CreateForCurrentThread(), callbacks));
-  int32 request_id = operations_.Add(operation.get());
-  operation->set_request_id(request_id);
-  return operation.release();
+  // This pointer will be owned by |operation|.
+  TestShellFileSystemCallbackDispatcher* dispatcher =
+      new TestShellFileSystemCallbackDispatcher(this, callbacks);
+  fileapi::FileSystemOperation* operation = new fileapi::FileSystemOperation(
+      dispatcher, base::MessageLoopProxy::CreateForCurrentThread());
+  int32 request_id = operations_.Add(operation);
+  dispatcher->set_request_id(request_id);
+  return operation;
 }
 
-void SimpleFileSystem::RemoveOperation(
-    fileapi::FileSystemOperation* operation) {
-  int request_id = static_cast<TestShellFileSystemOperation*>(
-      operation)->request_id();
+void SimpleFileSystem::RemoveCompletedOperation(int request_id) {
   operations_.Remove(request_id);
 }

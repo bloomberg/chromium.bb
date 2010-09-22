@@ -374,6 +374,7 @@
         '../../database/database_tracker_unittest.cc',
         '../../database/database_util_unittest.cc',
         '../../database/quota_table_unittest.cc',
+        '../../fileapi/file_system_operation_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
         '../../glue/context_menu_unittest.cc',
         '../../glue/cpp_bound_class_unittest.cc',

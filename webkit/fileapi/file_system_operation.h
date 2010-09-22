@@ -13,10 +13,11 @@
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
+#include "base/scoped_ptr.h"
 
 namespace fileapi {
 
-class FileSystemOperationClient;
+class FileSystemCallbackDispatcher;
 
 // This class is designed to serve one-time file system operation per instance.
 // Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,
@@ -24,15 +25,16 @@ class FileSystemOperationClient;
 // this object and it should be called no more than once.
 class FileSystemOperation {
  public:
-  FileSystemOperation(
-      FileSystemOperationClient* client,
-      scoped_refptr<base::MessageLoopProxy> proxy);
+  FileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
+                      scoped_refptr<base::MessageLoopProxy> proxy);
+  ~FileSystemOperation();
 
   void CreateFile(const FilePath& path,
                   bool exclusive);
 
   void CreateDirectory(const FilePath& path,
-                       bool exclusive);
+                       bool exclusive,
+                       bool recursive);
 
   void Copy(const FilePath& src_path,
             const FilePath& dest_path);
@@ -82,13 +84,14 @@ class FileSystemOperation {
       base::PlatformFileError rv,
       const std::vector<base::file_util_proxy::Entry>& entries);
 
-  // Not owned.
-  FileSystemOperationClient* client_;
+  scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
 
   base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;
 
+#ifndef NDEBUG
   // A flag to make sure we call operation only once per instance.
   bool operation_pending_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
 };
@@ -96,4 +99,3 @@ class FileSystemOperation {
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
-

@@ -4,44 +4,32 @@
 
 #include "webkit/fileapi/file_system_operation.h"
 
-#include "webkit/fileapi/file_system_operation_client.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
-
-namespace {
-// Utility method for error conversions.
-WebKit::WebFileError PlatformFileErrorToWebFileError(
-    base::PlatformFileError rv) {
-  switch (rv) {
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
-        return WebKit::WebFileErrorNotFound;
-    case base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
-    case base::PLATFORM_FILE_ERROR_EXISTS:
-    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
-         return WebKit::WebFileErrorInvalidModification;
-    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-        return WebKit::WebFileErrorNoModificationAllowed;
-    default:
-        return WebKit::WebFileErrorInvalidModification;
-  }
-}
-}  // namespace
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 namespace fileapi {
 
 FileSystemOperation::FileSystemOperation(
-    FileSystemOperationClient* client,
+    FileSystemCallbackDispatcher* dispatcher,
     scoped_refptr<base::MessageLoopProxy> proxy)
     : proxy_(proxy),
-      client_(client),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      operation_pending_(false) {
-  DCHECK(client_);
+      dispatcher_(dispatcher),
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(dispatcher);
+#ifndef NDEBUG
+  operation_pending_ = false;
+#endif
+}
+
+FileSystemOperation::~FileSystemOperation() {
 }
 
 void FileSystemOperation::CreateFile(const FilePath& path,
                                      bool exclusive) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
+#endif
+
   base::FileUtilProxy::CreateOrOpen(
     proxy_, path, base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ,
     callback_factory_.NewCallback(
@@ -50,18 +38,25 @@ void FileSystemOperation::CreateFile(const FilePath& path,
 }
 
 void FileSystemOperation::CreateDirectory(const FilePath& path,
-                                          bool exclusive) {
+                                          bool exclusive,
+                                          bool recursive) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
-  base::FileUtilProxy::CreateDirectory(proxy_, path, exclusive,
-      false /* recursive */, callback_factory_.NewCallback(
+#endif
+
+  base::FileUtilProxy::CreateDirectory(
+      proxy_, path, exclusive, recursive, callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
 
 void FileSystemOperation::Copy(const FilePath& src_path,
                                const FilePath& dest_path) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
+#endif
+
   base::FileUtilProxy::Copy(proxy_, src_path, dest_path,
       callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
@@ -69,45 +64,63 @@ void FileSystemOperation::Copy(const FilePath& src_path,
 
 void FileSystemOperation::Move(const FilePath& src_path,
                                const FilePath& dest_path) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
+#endif
+
   base::FileUtilProxy::Move(proxy_, src_path, dest_path,
       callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
 
 void FileSystemOperation::DirectoryExists(const FilePath& path) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
+#endif
+
   base::FileUtilProxy::GetFileInfo(proxy_, path, callback_factory_.NewCallback(
       &FileSystemOperation::DidDirectoryExists));
 }
 
 void FileSystemOperation::FileExists(const FilePath& path) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
+#endif
+
   base::FileUtilProxy::GetFileInfo(proxy_, path, callback_factory_.NewCallback(
       &FileSystemOperation::DidFileExists));
 }
 
 void FileSystemOperation::GetMetadata(const FilePath& path) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
+#endif
+
   base::FileUtilProxy::GetFileInfo(proxy_, path, callback_factory_.NewCallback(
       &FileSystemOperation::DidGetMetadata));
 }
 
 void FileSystemOperation::ReadDirectory(const FilePath& path) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
+#endif
+
   base::FileUtilProxy::ReadDirectory(proxy_, path,
       callback_factory_.NewCallback(
           &FileSystemOperation::DidReadDirectory));
 }
 
 void FileSystemOperation::Remove(const FilePath& path) {
+#ifndef NDEBUG
   DCHECK(!operation_pending_);
   operation_pending_ = true;
+#endif
+
   base::FileUtilProxy::Delete(proxy_, path, callback_factory_.NewCallback(
       &FileSystemOperation::DidFinishFileOperation));
 }
@@ -126,17 +139,17 @@ void FileSystemOperation::DidCreateFileNonExclusive(
   // Suppress the already exists error and report success.
   if (rv == base::PLATFORM_FILE_OK ||
       rv == base::PLATFORM_FILE_ERROR_EXISTS)
-    client_->DidSucceed(this);
+    dispatcher_->DidSucceed();
   else
-    client_->DidFail(PlatformFileErrorToWebFileError(rv), this);
+    dispatcher_->DidFail(rv);
 }
 
 void FileSystemOperation::DidFinishFileOperation(
     base::PlatformFileError rv) {
   if (rv == base::PLATFORM_FILE_OK)
-    client_->DidSucceed(this);
+    dispatcher_->DidSucceed();
   else
-    client_->DidFail(PlatformFileErrorToWebFileError(rv), this);
+    dispatcher_->DidFail(rv);
 }
 
 void FileSystemOperation::DidDirectoryExists(
@@ -144,14 +157,11 @@ void FileSystemOperation::DidDirectoryExists(
     const base::PlatformFileInfo& file_info) {
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
-      client_->DidSucceed(this);
+      dispatcher_->DidSucceed();
     else
-      client_->DidFail(WebKit::WebFileErrorInvalidState,
-                       this);
-  } else {
-    // Something else went wrong.
-    client_->DidFail(PlatformFileErrorToWebFileError(rv), this);
-  }
+      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_FAILED);
+  } else
+    dispatcher_->DidFail(rv);
 }
 
 void FileSystemOperation::DidFileExists(
@@ -159,34 +169,29 @@ void FileSystemOperation::DidFileExists(
     const base::PlatformFileInfo& file_info) {
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
-      client_->DidFail(WebKit::WebFileErrorInvalidState,
-                       this);
+      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_FAILED);
     else
-      client_->DidSucceed(this);
-  } else {
-    // Something else went wrong.
-    client_->DidFail(PlatformFileErrorToWebFileError(rv), this);
-  }
+      dispatcher_->DidSucceed();
+  } else
+    dispatcher_->DidFail(rv);
 }
 
 void FileSystemOperation::DidGetMetadata(
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info) {
   if (rv == base::PLATFORM_FILE_OK)
-    client_->DidReadMetadata(file_info, this);
+    dispatcher_->DidReadMetadata(file_info);
   else
-    client_->DidFail(PlatformFileErrorToWebFileError(rv), this);
+    dispatcher_->DidFail(rv);
 }
 
 void FileSystemOperation::DidReadDirectory(
     base::PlatformFileError rv,
     const std::vector<base::file_util_proxy::Entry>& entries) {
   if (rv == base::PLATFORM_FILE_OK)
-    client_->DidReadDirectory(
-        entries, false /* has_more */ , this);
+    dispatcher_->DidReadDirectory(entries, false /* has_more */);
   else
-    client_->DidFail(PlatformFileErrorToWebFileError(rv), this);
+    dispatcher_->DidFail(rv);
 }
 
 }  // namespace fileapi
-

@@ -14,9 +14,9 @@
         '<(DEPTH)/net/net.gyp:net',
       ],
       'sources': [
+        'file_system_callback_dispatcher.h',
         'file_system_operation.cc',
         'file_system_operation.h',
-        'file_system_operation_client.h',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

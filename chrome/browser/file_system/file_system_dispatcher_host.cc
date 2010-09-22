@@ -10,13 +10,13 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/file_system/browser_file_system_callback_dispatcher.h"
 #include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 #include "webkit/glue/webkit_glue.h"
 
 // A class to hold an ongoing openFileSystem completion task.
@@ -85,6 +85,9 @@ FileSystemDispatcherHost::FileSystemDispatcherHost(
   DCHECK(message_sender_);
 }
 
+FileSystemDispatcherHost::~FileSystemDispatcherHost() {
+}
+
 void FileSystemDispatcherHost::Init(base::ProcessHandle process_handle) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(!shutdown_);
@@ -96,12 +99,6 @@ void FileSystemDispatcherHost::Init(base::ProcessHandle process_handle) {
 void FileSystemDispatcherHost::Shutdown() {
   message_sender_ = NULL;
   shutdown_ = true;
-
-  // Drop all the operations.
-  for (OperationsMap::const_iterator iter(&operations_);
-       !iter.IsAtEnd(); iter.Advance()) {
-    operations_.Remove(iter.GetCurrentKey());
-  }
 }
 
 bool FileSystemDispatcherHost::OnMessageReceived(
@@ -182,11 +179,12 @@ void FileSystemDispatcherHost::OnReadMetadata(
 }
 
 void FileSystemDispatcherHost::OnCreate(
-    int request_id, const FilePath& path, bool exclusive, bool is_directory) {
+    int request_id, const FilePath& path, bool exclusive,
+    bool is_directory, bool recursive) {
   if (!CheckValidFileSystemPath(path, request_id))
     return;
   if (is_directory)
-    GetNewOperation(request_id)->CreateDirectory(path, exclusive);
+    GetNewOperation(request_id)->CreateDirectory(path, exclusive, recursive);
   else
     GetNewOperation(request_id)->CreateFile(path, exclusive);
 }
@@ -208,46 +206,6 @@ void FileSystemDispatcherHost::OnReadDirectory(
   GetNewOperation(request_id)->ReadDirectory(path);
 }
 
-void FileSystemDispatcherHost::DidFail(
-    WebKit::WebFileError status,
-    fileapi::FileSystemOperation* operation) {
-  int request_id =
-      static_cast<ChromeFileSystemOperation*>(operation)->request_id();
-  Send(new ViewMsg_FileSystem_DidFail(request_id, status));
-  operations_.Remove(request_id);
-}
-
-void FileSystemDispatcherHost::DidSucceed(
-    fileapi::FileSystemOperation* operation) {
-  int request_id =
-      static_cast<ChromeFileSystemOperation*>(operation)->request_id();
-  Send(new ViewMsg_FileSystem_DidSucceed(request_id));
-  operations_.Remove(request_id);
-}
-
-void FileSystemDispatcherHost::DidReadMetadata(
-    const base::PlatformFileInfo& info,
-    fileapi::FileSystemOperation* operation) {
-  int request_id =
-      static_cast<ChromeFileSystemOperation*>(operation)->request_id();
-  Send(new ViewMsg_FileSystem_DidReadMetadata(request_id, info));
-  operations_.Remove(request_id);
-}
-
-void FileSystemDispatcherHost::DidReadDirectory(
-    const std::vector<base::file_util_proxy::Entry>& entries,
-    bool has_more,
-    fileapi::FileSystemOperation* operation) {
-  int request_id =
-      static_cast<ChromeFileSystemOperation*>(operation)->request_id();
-  ViewMsg_FileSystem_DidReadDirectory_Params params;
-  params.request_id = request_id;
-  params.entries = entries;
-  params.has_more = has_more;
-  Send(new ViewMsg_FileSystem_DidReadDirectory(params));
-  operations_.Remove(request_id);
-}
-
 void FileSystemDispatcherHost::Send(IPC::Message* message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!shutdown_ && message_sender_)
@@ -262,16 +220,24 @@ bool FileSystemDispatcherHost::CheckValidFileSystemPath(
   // |path| is under the valid FileSystem root path for this host context.
   if (!context_->CheckValidFileSystemPath(path)) {
     Send(new ViewMsg_FileSystem_DidFail(
-        request_id, WebKit::WebFileErrorSecurity));
+        request_id, base::PLATFORM_FILE_ERROR_SECURITY));
     return false;
   }
   return true;
 }
 
-ChromeFileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
+fileapi::FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
     int request_id) {
-  scoped_ptr<ChromeFileSystemOperation> operation(
-      new ChromeFileSystemOperation(request_id, this));
-  operations_.AddWithID(operation.get(), request_id);
-  return operation.release();
+  BrowserFileSystemCallbackDispatcher* dispatcher =
+      new BrowserFileSystemCallbackDispatcher(this, request_id);
+  fileapi::FileSystemOperation* operation = new fileapi::FileSystemOperation(
+      dispatcher,
+      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
+  operations_.AddWithID(operation, request_id);
+  return operation;
+}
+
+void FileSystemDispatcherHost::RemoveCompletedOperation(int request_id) {
+  DCHECK(operations_.Lookup(request_id));
+  operations_.Remove(request_id);
 }
