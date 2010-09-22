@@ -88,6 +88,13 @@ void CoreOptionsHandler::Uninitialize() {
   }
 }
 
+DOMMessageHandler* CoreOptionsHandler::Attach(DOMUI* dom_ui) {
+  DOMMessageHandler* result = DOMMessageHandler::Attach(dom_ui);
+  DCHECK(dom_ui_);
+  registrar_.Init(dom_ui_->GetProfile()->GetPrefs());
+  return result;
+}
+
 void CoreOptionsHandler::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
@@ -138,9 +145,7 @@ Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
 }
 
 void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
-  DCHECK(dom_ui_);
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
-  pref_service->AddPrefObserver(pref_name.c_str(), this);
+  registrar_.Add(pref_name.c_str(), this);
 }
 
 void CoreOptionsHandler::SetPref(const std::string& pref_name,
@@ -185,9 +190,7 @@ void CoreOptionsHandler::ProcessUserMetric(Value::ValueType pref_type,
 }
 
 void CoreOptionsHandler::StopObservingPref(const std::string& path) {
-  DCHECK(dom_ui_);
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
-  pref_service->RemovePrefObserver(path.c_str(), this);
+  registrar_.Remove(path.c_str(), this);
 }
 
 void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {

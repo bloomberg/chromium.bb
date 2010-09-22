@@ -202,9 +202,6 @@ GeneralPageView::GeneralPageView(Profile* profile)
 }
 
 GeneralPageView::~GeneralPageView() {
-  profile()->GetPrefs()->RemovePrefObserver(prefs::kRestoreOnStartup, this);
-  profile()->GetPrefs()->RemovePrefObserver(
-      prefs::kURLsToRestoreOnStartup, this);
   if (startup_custom_pages_table_)
     startup_custom_pages_table_->SetModel(NULL);
   default_browser_worker_->ObserverDestroyed();
@@ -341,8 +338,9 @@ void GeneralPageView::InitControlLayout() {
 #endif
 
   // Register pref observers that update the controls when a pref changes.
-  profile()->GetPrefs()->AddPrefObserver(prefs::kRestoreOnStartup, this);
-  profile()->GetPrefs()->AddPrefObserver(prefs::kURLsToRestoreOnStartup, this);
+  registrar_.Init(profile()->GetPrefs());
+  registrar_.Add(prefs::kRestoreOnStartup, this);
+  registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
 
   new_tab_page_is_home_page_.Init(prefs::kHomePageIsNewTabPage,
       profile()->GetPrefs(), this);

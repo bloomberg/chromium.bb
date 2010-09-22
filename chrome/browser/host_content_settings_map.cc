@@ -230,10 +230,11 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // Read exceptions.
   ReadExceptions(false);
 
-  prefs->AddPrefObserver(prefs::kDefaultContentSettings, this);
-  prefs->AddPrefObserver(prefs::kContentSettingsPatterns, this);
-  prefs->AddPrefObserver(prefs::kBlockThirdPartyCookies, this);
-  prefs->AddPrefObserver(prefs::kBlockNonsandboxedPlugins, this);
+  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
+  pref_change_registrar_.Add(prefs::kContentSettingsPatterns, this);
+  pref_change_registrar_.Add(prefs::kBlockThirdPartyCookies, this);
+  pref_change_registrar_.Add(prefs::kBlockNonsandboxedPlugins, this);
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
@@ -909,11 +910,7 @@ void HostContentSettingsMap::UnregisterObservers() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!profile_)
     return;
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->RemovePrefObserver(prefs::kDefaultContentSettings, this);
-  prefs->RemovePrefObserver(prefs::kContentSettingsPatterns, this);
-  prefs->RemovePrefObserver(prefs::kBlockThirdPartyCookies, this);
-  prefs->RemovePrefObserver(prefs::kBlockNonsandboxedPlugins, this);
+  pref_change_registrar_.RemoveAll();
   notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;

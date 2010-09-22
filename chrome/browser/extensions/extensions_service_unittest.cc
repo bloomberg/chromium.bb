@@ -2476,8 +2476,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
-  service = new ExtensionsService(profile.get(), command_line.get(),
-      profile->GetPrefs(), install_dir, false);
+  service = profile->CreateExtensionsService(command_line.get(), install_dir);
   EXPECT_TRUE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -2487,8 +2486,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   command_line->AppendSwitch(switches::kDisableExtensions);
-  service = new ExtensionsService(profile.get(), command_line.get(),
-      profile->GetPrefs(), install_dir, false);
+  service = profile->CreateExtensionsService(command_line.get(), install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -2497,8 +2495,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  service = new ExtensionsService(profile.get(), command_line.get(),
-      profile->GetPrefs(), install_dir, false);
+  service = profile->CreateExtensionsService(command_line.get(), install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -2508,8 +2505,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
-  service = new ExtensionsService(profile.get(), command_line.get(),
-      profile->GetPrefs(), install_dir, false);
+  service = profile->CreateExtensionsService(command_line.get(), install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();

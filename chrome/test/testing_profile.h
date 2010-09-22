@@ -23,6 +23,7 @@ class CookieMonster;
 class AutocompleteClassifier;
 class BookmarkModel;
 class BrowserThemeProvider;
+class CommandLine;
 class DesktopNotificationService;
 class FaviconService;
 class FindBarState;
@@ -86,6 +87,14 @@ class TestingProfile : public Profile {
   // ownership of |theme_provider|.
   void UseThemeProvider(BrowserThemeProvider* theme_provider);
 
+  // Creates an ExtensionsService initialized with the testing profile and
+  // returns it. The profile keeps its own copy of a scoped_refptr to the
+  // ExtensionsService to make sure that is still alive to be notified when the
+  // profile is destroyed.
+  scoped_refptr<ExtensionsService> CreateExtensionsService(
+      const CommandLine* command_line,
+      const FilePath& install_directory);
+
   TestingPrefService* GetTestingPrefService();
 
   virtual ProfileId GetRuntimeId() {
@@ -109,7 +118,7 @@ class TestingProfile : public Profile {
   virtual ChromeAppCacheService* GetAppCacheService() { return NULL; }
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual VisitedLinkMaster* GetVisitedLinkMaster() { return NULL; }
-  virtual ExtensionsService* GetExtensionsService() { return NULL; }
+  virtual ExtensionsService* GetExtensionsService();
   virtual UserScriptMaster* GetUserScriptMaster() { return NULL; }
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
     return NULL;
@@ -345,6 +354,10 @@ class TestingProfile : public Profile {
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
+
+  // For properly notifying the ExtensionsService when the profile
+  // is disposed.
+  scoped_refptr<ExtensionsService> extensions_service_;
 
   // We use a temporary directory to store testing profile data.
   ScopedTempDir temp_dir_;

@@ -9,16 +9,11 @@
 PrefChangeRegistrar::PrefChangeRegistrar() : service_(NULL) {}
 
 PrefChangeRegistrar::~PrefChangeRegistrar() {
-  if (service_) {
-    for (std::set<ObserverRegistration>::const_iterator it = observers_.begin();
-         it != observers_.end(); ++it) {
-      service_->RemovePrefObserver(it->first.c_str(), it->second);
-    }
-  }
+  RemoveAll();
 }
 
 void PrefChangeRegistrar::Init(PrefService* service) {
-  DCHECK(!service_);
+  DCHECK(IsEmpty() || service_ == service);
   service_ = service;
 }
 
@@ -50,4 +45,18 @@ void PrefChangeRegistrar::Remove(const char* path, NotificationObserver* obs) {
   }
   service_->RemovePrefObserver(it->first.c_str(), it->second);
   observers_.erase(it);
+}
+
+void PrefChangeRegistrar::RemoveAll() {
+  if (service_) {
+    for (std::set<ObserverRegistration>::const_iterator it = observers_.begin();
+         it != observers_.end(); ++it) {
+      service_->RemovePrefObserver(it->first.c_str(), it->second);
+    }
+    observers_.clear();
+  }
+}
+
+bool PrefChangeRegistrar::IsEmpty() const {
+  return observers_.empty();
 }

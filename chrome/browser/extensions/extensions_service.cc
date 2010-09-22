@@ -548,8 +548,9 @@ ExtensionsService::ExtensionsService(Profile* profile,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                  NotificationService::AllSources());
-  prefs->AddPrefObserver(prefs::kExtensionInstallAllowList, this);
-  prefs->AddPrefObserver(prefs::kExtensionInstallDenyList, this);
+  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
+  pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, this);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -1188,11 +1189,7 @@ void ExtensionsService::UpdateExtensionBlacklist(
 }
 
 void ExtensionsService::DestroyingProfile() {
-  profile_->GetPrefs()->RemovePrefObserver(
-      prefs::kExtensionInstallAllowList, this);
-  profile_->GetPrefs()->RemovePrefObserver(
-      prefs::kExtensionInstallDenyList, this);
-
+  pref_change_registrar_.RemoveAll();
   profile_ = NULL;
 }
 

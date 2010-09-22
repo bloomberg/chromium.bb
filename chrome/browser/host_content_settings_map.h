@@ -18,6 +18,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -285,6 +286,7 @@ class HostContentSettingsMap
   Profile* profile_;
 
   NotificationRegistrar notification_registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;

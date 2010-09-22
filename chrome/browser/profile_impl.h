@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/spellcheck_host_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -144,6 +145,7 @@ class ProfileImpl : public Profile,
   }
 
   NotificationRegistrar registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   FilePath path_;
   FilePath base_cache_path_;

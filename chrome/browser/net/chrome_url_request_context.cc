@@ -526,8 +526,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
 ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
     Profile* profile,
     ChromeURLRequestContextFactory* factory)
-  : prefs_(NULL),
-    factory_(factory),
+  : factory_(factory),
     url_request_context_(NULL) {
   DCHECK(factory);
 
@@ -539,7 +538,7 @@ ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
 ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {
   CheckCurrentlyOnIOThread();
 
-  DCHECK(!prefs_) << "Probably didn't call CleanupOnUIThread";
+  DCHECK(registrar_.IsEmpty()) << "Probably didn't call CleanupOnUIThread";
 
   // Either we already transformed the factory into a URLRequestContext, or
   // we still have a pending factory.
@@ -652,13 +651,8 @@ ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
 
 void ChromeURLRequestContextGetter::CleanupOnUIThread() {
   CheckCurrentlyOnMainThread();
-
-  if (prefs_) {
-    // Unregister for pref notifications.
-    prefs_->RemovePrefObserver(prefs::kAcceptLanguages, this);
-    prefs_->RemovePrefObserver(prefs::kDefaultCharset, this);
-    prefs_ = NULL;
-  }
+  // Unregister for pref notifications.
+  registrar_.RemoveAll();
 }
 
 void ChromeURLRequestContextGetter::OnNewExtensions(
@@ -710,10 +704,9 @@ void ChromeURLRequestContextGetter::Observe(
 void ChromeURLRequestContextGetter::RegisterPrefsObserver(Profile* profile) {
   CheckCurrentlyOnMainThread();
 
-  prefs_ = profile->GetPrefs();
-
-  prefs_->AddPrefObserver(prefs::kAcceptLanguages, this);
-  prefs_->AddPrefObserver(prefs::kDefaultCharset, this);
+  registrar_.Init(profile->GetPrefs());
+  registrar_.Add(prefs::kAcceptLanguages, this);
+  registrar_.Add(prefs::kDefaultCharset, this);
 }
 
 // static

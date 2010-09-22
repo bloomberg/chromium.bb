@@ -23,7 +23,8 @@ class PrefChangeRegistrar {
   PrefChangeRegistrar();
   virtual ~PrefChangeRegistrar();
 
-  // Must be called before adding or removing observers.
+  // Must be called before adding or removing observers. Can be called more
+  // than once as long as the value of |service| doesn't change.
   void Init(PrefService* service);
 
   // Adds an pref observer for the specified pref |path| and |obs| observer
@@ -37,6 +38,12 @@ class PrefChangeRegistrar {
   // Add.
   void Remove(const char* path,
               NotificationObserver* obs);
+
+  // Removes all observers that have been previously added with a call to Add.
+  void RemoveAll();
+
+  // Returns true if no pref observers are registered.
+  bool IsEmpty() const;
 
  private:
   typedef std::pair<std::string, NotificationObserver*> ObserverRegistration;

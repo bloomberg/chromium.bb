@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
@@ -851,8 +852,10 @@ TEST_F(TranslateManagerTest, NeverTranslateLanguagePref) {
 
   // Select never translate this language.
   PrefService* prefs = contents()->profile()->GetPrefs();
-  prefs->AddPrefObserver(TranslatePrefs::kPrefTranslateLanguageBlacklist,
-                         &pref_observer_);
+  PrefChangeRegistrar registrar;
+  registrar.Init(prefs);
+  registrar.Add(TranslatePrefs::kPrefTranslateLanguageBlacklist,
+                &pref_observer_);
   TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
   EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
@@ -881,8 +884,6 @@ TEST_F(TranslateManagerTest, NeverTranslateLanguagePref) {
 
   // There should be a translate infobar.
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
-  prefs->RemovePrefObserver(TranslatePrefs::kPrefTranslateLanguageBlacklist,
-                            &pref_observer_);
 }
 
 // Tests the "Never translate this site" pref.
@@ -897,8 +898,10 @@ TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
 
   // Select never translate this site.
   PrefService* prefs = contents()->profile()->GetPrefs();
-  prefs->AddPrefObserver(TranslatePrefs::kPrefTranslateSiteBlacklist,
-                         &pref_observer_);
+  PrefChangeRegistrar registrar;
+  registrar.Init(prefs);
+  registrar.Add(TranslatePrefs::kPrefTranslateSiteBlacklist,
+                &pref_observer_);
   TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
@@ -927,16 +930,16 @@ TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
 
   // There should be a translate infobar.
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
-  prefs->RemovePrefObserver(TranslatePrefs::kPrefTranslateSiteBlacklist,
-                            &pref_observer_);
 }
 
 // Tests the "Always translate this language" pref.
 TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   // Select always translate French to English.
   PrefService* prefs = contents()->profile()->GetPrefs();
-  prefs->AddPrefObserver(TranslatePrefs::kPrefTranslateWhitelists,
-                         &pref_observer_);
+  PrefChangeRegistrar registrar;
+  registrar.Init(prefs);
+  registrar.Add(TranslatePrefs::kPrefTranslateWhitelists,
+                &pref_observer_);
   TranslatePrefs translate_prefs(prefs);
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateWhitelists);
   translate_prefs.WhitelistLanguagePair("fr", "en");
@@ -985,8 +988,6 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
-  prefs->RemovePrefObserver(TranslatePrefs::kPrefTranslateWhitelists,
-                            &pref_observer_);
 }
 
 // Context menu.

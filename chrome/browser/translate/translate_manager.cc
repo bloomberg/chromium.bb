@@ -248,7 +248,7 @@ void TranslateManager::Observe(NotificationType type,
       // We should know about this profile since we are listening for
       // notifications on it.
       DCHECK(count > 0);
-      profile->GetPrefs()->RemovePrefObserver(prefs::kAcceptLanguages, this);
+      pref_change_registrar_.Remove(prefs::kAcceptLanguages, this);
       break;
     }
     case NotificationType::PREF_CHANGED: {
@@ -340,6 +340,8 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   PrefService* prefs = tab->profile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kEnableTranslate))
     return;
+
+  pref_change_registrar_.Init(prefs);
 
   // Allow disabling of translate from the command line to assist with
   // automated browser testing.
@@ -533,7 +535,7 @@ bool TranslateManager::IsAcceptLanguage(TabContents* tab,
     notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                                 Source<Profile>(tab->profile()));
     // Also start listening for changes in the accept languages.
-    tab->profile()->GetPrefs()->AddPrefObserver(prefs::kAcceptLanguages, this);
+    pref_change_registrar_.Add(prefs::kAcceptLanguages, this);
 
     iter = accept_languages_.find(pref_service);
   }

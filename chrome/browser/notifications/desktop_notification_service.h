@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -135,6 +136,8 @@ class DesktopNotificationService : public NotificationObserver {
   // Non-owned pointer to the notification manager which manages the
   // UI for desktop toasts.
   NotificationUIManager* ui_manager_;
+
+  PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };
