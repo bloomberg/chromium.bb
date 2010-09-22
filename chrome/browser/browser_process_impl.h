@@ -182,8 +182,8 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   bool checked_for_new_frames_;
   bool using_new_frames_;
 
-  // This service just sits around and makes thumanails for tabs. It does
-  // nothing in the cosntructor so we don't have to worry about lazy init.
+  // This service just sits around and makes thumbnails for tabs. It does
+  // nothing in the constructor so we don't have to worry about lazy init.
   ThumbnailGenerator thumbnail_generator_;
 
   // An event that notifies when we are shutting-down.
