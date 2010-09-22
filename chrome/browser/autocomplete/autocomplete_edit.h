@@ -22,6 +22,10 @@ class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompleteEditView;
 
+namespace gfx {
+class Rect;
+}
+
 // TODO(pkasting): The names and contents of the classes in
 // this file are temporary.  I am in hack-and-slash mode right now.
 // http://code.google.com/p/chromium/issues/detail?id=6772
@@ -40,6 +44,9 @@ class AutocompleteEditController {
 
   // Sent prior to OnAutoCompleteAccept and before the model has been reverted.
   virtual void OnAutocompleteWillAccept() = 0;
+
+  // Invoked when the popup is going to change its bounds to |bounds|.
+  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) = 0;
 #else
   // TODO: port.
 #endif
@@ -307,6 +314,9 @@ class AutocompleteEditModel : public NotificationObserver {
                              bool text_differs,
                              bool just_deleted_text,
                              bool at_end_of_edit);
+
+  // Invoked when the popup is going to change its bounds to |bounds|.
+  void PopupBoundsChangedTo(const gfx::Rect& bounds);
 
  private:
   enum PasteState {

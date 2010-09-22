@@ -672,6 +672,12 @@ bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
   return true;
 }
 
+void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
+#if defined(TOOLKIT_VIEWS)
+  controller_->OnPopupBoundsChanged(bounds);
+#endif
+}
+
 // Return true if the suggestion type warrants a TCP/IP preconnection.
 // i.e., it is now highly likely that the user will select the related domain.
 static bool IsPreconnectable(AutocompleteMatch::Type type) {

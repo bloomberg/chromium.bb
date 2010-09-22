@@ -108,6 +108,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void OpenTabpose();
   virtual void ShowMatchPreview();
   virtual void HideMatchPreview();
+  virtual gfx::Rect GetMatchPreviewBounds();
 
   // Overridden from NotificationObserver
   virtual void Observe(NotificationType type,

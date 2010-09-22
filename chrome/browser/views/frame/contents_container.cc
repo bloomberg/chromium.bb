@@ -110,6 +110,12 @@ void ContentsContainer::SetActiveTopMargin(int margin) {
   InvalidateLayout();
 }
 
+gfx::Rect ContentsContainer::GetPreviewBounds() {
+  gfx::Point screen_loc;
+  ConvertPointToScreen(this, &screen_loc);
+  return gfx::Rect(screen_loc, size());
+}
+
 void ContentsContainer::Layout() {
   // The active view always gets the full bounds.
   active_->SetBounds(0, active_top_margin_, width(),

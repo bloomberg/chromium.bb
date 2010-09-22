@@ -323,6 +323,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ToggleTabStripMode();
   virtual void ShowMatchPreview();
   virtual void HideMatchPreview();
+  virtual gfx::Rect GetMatchPreviewBounds();
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;

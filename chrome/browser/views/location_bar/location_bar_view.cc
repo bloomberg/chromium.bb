@@ -746,6 +746,12 @@ void LocationBarView::OnAutocompleteWillAccept() {
   update_match_preview_ = false;
 }
 
+void LocationBarView::OnPopupBoundsChanged(const gfx::Rect& bounds) {
+  MatchPreview* match_preview = delegate_->GetMatchPreview();
+  if (match_preview)
+    match_preview->SetOmniboxBounds(bounds);
+}
+
 void LocationBarView::OnAutocompleteAccept(
     const GURL& url,
     WindowOpenDisposition disposition,

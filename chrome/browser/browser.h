@@ -776,6 +776,7 @@ class Browser : public TabStripModelDelegate,
   virtual void HideMatchPreview();
   virtual void CommitMatchPreview();
   virtual void SetSuggestedText(const string16& text);
+  virtual gfx::Rect GetMatchPreviewBounds();
 
   // Command and state updating ///////////////////////////////////////////////
 

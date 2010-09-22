@@ -8,6 +8,10 @@
 
 #include "base/string16.h"
 
+namespace gfx {
+class Rect;
+}
+
 // MatchPreview's delegate. Normally the Browser implements this.  See
 // MatchPreview for details.
 class MatchPreviewDelegate {
@@ -24,6 +28,10 @@ class MatchPreviewDelegate {
 
   // Invoked when the suggested text is to change to |text|.
   virtual void SetSuggestedText(const string16& text) = 0;
+
+  // Returns the bounds the match preview will be placed in, in screen
+  // coordinates.
+  virtual gfx::Rect GetMatchPreviewBounds() = 0;
 
  protected:
   virtual ~MatchPreviewDelegate() {}

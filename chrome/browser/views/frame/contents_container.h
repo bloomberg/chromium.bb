@@ -36,6 +36,10 @@ class ContentsContainer : public views::View {
   // Sets the active top margin.
   void SetActiveTopMargin(int margin);
 
+  // Returns the bounds of the preview. If the preview isn't active this
+  // retuns the bounds the preview would be shown at.
+  gfx::Rect GetPreviewBounds();
+
   // View overrides:
   virtual void Layout();
 

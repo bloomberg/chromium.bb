@@ -105,6 +105,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void OpenTabpose() {}
   virtual void ShowMatchPreview() {}
   virtual void HideMatchPreview() {}
+  virtual gfx::Rect GetMatchPreviewBounds() { return gfx::Rect(); }
 
  protected:
   virtual void DestroyBrowser() {}

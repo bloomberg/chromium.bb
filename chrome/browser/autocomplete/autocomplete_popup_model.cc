@@ -14,6 +14,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/rect.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupModel
@@ -291,6 +292,12 @@ void AutocompletePopupModel::Observe(NotificationType type,
     SetHoveredLine(kNoMatch);
 
   view_->UpdatePopupAppearance();
+
+#if defined(TOOLKIT_VIEWS)
+  edit_model_->PopupBoundsChangedTo(view_->GetTargetBounds());
+#else
+  // TODO: port
+#endif
 }
 
 const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(

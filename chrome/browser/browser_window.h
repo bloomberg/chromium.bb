@@ -318,6 +318,11 @@ class BrowserWindow {
   // Invoked when the match preview's tab contents should be hidden.
   virtual void HideMatchPreview() = 0;
 
+  // Returns the desired bounds for match preview in screen coordinates. Note
+  // that if match preview isn't currently visible this returns the bounds the
+  // match preview would be placed at.
+  virtual gfx::Rect GetMatchPreviewBounds() = 0;
+
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 

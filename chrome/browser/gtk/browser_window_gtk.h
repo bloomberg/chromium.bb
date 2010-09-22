@@ -125,6 +125,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ToggleTabStripMode() {}
   virtual void ShowMatchPreview();
   virtual void HideMatchPreview();
+  virtual gfx::Rect GetMatchPreviewBounds();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

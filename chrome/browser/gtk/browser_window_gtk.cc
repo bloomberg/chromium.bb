@@ -1143,6 +1143,12 @@ void BrowserWindowGtk::HideMatchPreview() {
   NOTIMPLEMENTED();
 }
 
+gfx::Rect BrowserWindowGtk::GetMatchPreviewBounds() {
+  // TODO: implement me
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }

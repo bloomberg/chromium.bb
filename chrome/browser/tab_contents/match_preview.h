@@ -12,6 +12,7 @@
 #include "base/timer.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/page_transition_types.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
 struct AutocompleteMatch;
@@ -42,6 +43,11 @@ class MatchPreview {
               const AutocompleteMatch& match,
               const string16& user_text,
               string16* suggested_text);
+
+  // Sets the bounds of the omnibox (in screen coordinates). The bounds are
+  // remembered until the preview is committed or destroyed. This is only used
+  // when showing results for a search provider that supports instant.
+  void SetOmniboxBounds(const gfx::Rect& bounds);
 
   // Destroys the preview TabContents. Does nothing if the preview TabContents
   // has not been created.
@@ -85,6 +91,17 @@ class MatchPreview {
   // Invoked once the page has finished loading and the script has been sent.
   void PageFinishedLoading();
 
+  // Returns the bounds of the omnibox in terms of the preview tab contents.
+  gfx::Rect GetOmniboxBoundsInTermsOfPreview();
+
+  // Are we waiting for the preview page to finish loading?
+  bool is_waiting_for_load() const {
+    return frame_load_observer_.get() != NULL;
+  }
+
+  // Are we showing instant results?
+  bool is_showing_instant() const { return template_url_id_ != 0; }
+
   MatchPreviewDelegate* delegate_;
 
   // The TabContents last passed to |Update|.
@@ -113,6 +130,9 @@ class MatchPreview {
   // If we're showing instant results this is the ID of the TemplateURL driving
   // the results. A value of 0 means there is no TemplateURL.
   TemplateURLID template_url_id_;
+
+  // See description above setter.
+  gfx::Rect omnibox_bounds_;
 
   scoped_ptr<FrameLoadObserver> frame_load_observer_;
 

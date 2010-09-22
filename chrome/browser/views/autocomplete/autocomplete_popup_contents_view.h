@@ -61,6 +61,7 @@ class AutocompletePopupContentsView : public views::View,
   virtual bool IsOpen() const;
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
+  virtual gfx::Rect GetTargetBounds();
   virtual void PaintUpdatesNow();
   virtual void OnDragCanceled();
   virtual AutocompletePopupModel* GetModel();

@@ -30,6 +30,13 @@ class AutocompletePopupView {
   // mean opening or closing the window.
   virtual void UpdatePopupAppearance() = 0;
 
+#if defined(TOOLKIT_VIEWS)
+  // Returns the target bounds for the popup. This returns the popup's current
+  // bounds when not animating, or the desired target bounds when animating.
+  // The return value is in screen coordinates.
+  virtual gfx::Rect GetTargetBounds() = 0;
+#endif
+
   // Paint any pending updates.
   virtual void PaintUpdatesNow() = 0;
 

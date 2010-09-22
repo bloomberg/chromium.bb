@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/favicon_service.h"
@@ -37,18 +38,41 @@ namespace {
 
 const char kUserInputScript[] =
     "if (window.chrome.userInput) window.chrome.userInput(\"$1\");";
+const char kUserDoneScript[] =
+    "if (window.chrome.userWantsQuery) window.chrome.userWantsQuery(\"$1\");";
+const char kSetOmniboxBoundsScript[] =
+    "if (window.chrome.setOmniboxDimensions) "
+    "window.chrome.setOmniboxDimensions($1, $2, $3, $4);";
 
 // Sends the user input script to |tab_contents|. |text| is the text the user
 // input into the omnibox.
 void SendUserInputScript(TabContents* tab_contents,
                          const string16& text,
                          bool done) {
-  // TODO: support done.
   string16 escaped_text(text);
   ReplaceSubstringsAfterOffset(&escaped_text, 0L, ASCIIToUTF16("\""),
                                ASCIIToUTF16("\\\""));
-  string16 script = ReplaceStringPlaceholders(ASCIIToUTF16(kUserInputScript),
-                                              escaped_text, NULL);
+  string16 script = ReplaceStringPlaceholders(
+      ASCIIToUTF16(done ? kUserDoneScript : kUserInputScript),
+      escaped_text,
+      NULL);
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      std::wstring(),
+      UTF16ToWide(script));
+}
+
+// Sends the script for setting the bounds of the omnibox to |tab_contents|.
+void SendOmniboxBoundsScript(TabContents* tab_contents,
+                             const gfx::Rect& bounds) {
+  std::vector<string16> bounds_vector;
+  bounds_vector.push_back(base::IntToString16(bounds.x()));
+  bounds_vector.push_back(base::IntToString16(bounds.y()));
+  bounds_vector.push_back(base::IntToString16(bounds.width()));
+  bounds_vector.push_back(base::IntToString16(bounds.height()));
+  string16 script = ReplaceStringPlaceholders(
+      ASCIIToUTF16(kSetOmniboxBoundsScript),
+      bounds_vector,
+      NULL);
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
       std::wstring(),
       UTF16ToWide(script));
@@ -94,6 +118,12 @@ class MatchPreview::FrameLoadObserver : public NotificationObserver {
         if (!active_entry || active_entry->page_id() != page_id ||
             active_entry->unique_id() != unique_id_) {
           return;
+        }
+
+        if (match_preview_) {
+          gfx::Rect bounds = match_preview_->GetOmniboxBoundsInTermsOfPreview();
+          if (!bounds.IsEmpty())
+            SendOmniboxBoundsScript(tab_contents_, bounds);
         }
 
         SendUserInputScript(tab_contents_, text_, send_done_);
@@ -434,7 +464,7 @@ void MatchPreview::Update(TabContents* tab_contents,
   if (template_url && template_url->supports_instant() &&
       TemplateURL::SupportsReplacement(template_url)) {
     if (template_url_id == template_url_id_) {
-      if (frame_load_observer_.get()) {
+      if (is_waiting_for_load()) {
         // The page hasn't loaded yet. We'll send the script down when it does.
         frame_load_observer_->set_text(user_text_);
         return;
@@ -454,11 +484,24 @@ void MatchPreview::Update(TabContents* tab_contents,
       frame_load_observer_.reset(new FrameLoadObserver(this, user_text_));
     }
   } else {
+    template_url_id_ = 0;
     frame_load_observer_.reset(NULL);
     preview_contents_->controller().LoadURL(url_, GURL(), match.transition);
   }
 
   template_url_id_ = template_url_id;
+}
+
+void MatchPreview::SetOmniboxBounds(const gfx::Rect& bounds) {
+  if (omnibox_bounds_ == bounds)
+    return;
+
+  omnibox_bounds_ = bounds;
+  if (preview_contents_.get() && is_showing_instant() &&
+      !is_waiting_for_load()) {
+    SendOmniboxBoundsScript(preview_contents_.get(),
+                            GetOmniboxBoundsInTermsOfPreview());
+  }
 }
 
 void MatchPreview::DestroyPreviewContents() {
@@ -472,6 +515,7 @@ void MatchPreview::CommitCurrentPreview() {
 }
 
 TabContents* MatchPreview::ReleasePreviewContents(bool commit_history) {
+  omnibox_bounds_ = gfx::Rect();
   template_url_id_ = 0;
   url_ = GURL();
   user_text_.clear();
@@ -525,4 +569,15 @@ void MatchPreview::PreviewDidPaint() {
 void MatchPreview::PageFinishedLoading() {
   // FrameLoadObserver deletes itself after this call.
   FrameLoadObserver* unused ALLOW_UNUSED = frame_load_observer_.release();
+}
+
+gfx::Rect MatchPreview::GetOmniboxBoundsInTermsOfPreview() {
+  if (omnibox_bounds_.IsEmpty())
+    return omnibox_bounds_;
+
+  gfx::Rect preview_bounds(delegate_->GetMatchPreviewBounds());
+  return gfx::Rect(omnibox_bounds_.x() - preview_bounds.x(),
+                   omnibox_bounds_.y() - preview_bounds.y(),
+                   omnibox_bounds_.width(),
+                   omnibox_bounds_.height());
 }

@@ -574,6 +574,12 @@ void BrowserWindowCocoa::HideMatchPreview() {
   NOTIMPLEMENTED();
 }
 
+gfx::Rect BrowserWindowCocoa::GetMatchPreviewBounds() {
+  // TODO: implement me
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

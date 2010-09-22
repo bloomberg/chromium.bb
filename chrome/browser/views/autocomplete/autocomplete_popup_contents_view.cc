@@ -730,6 +730,10 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   SchedulePaint();
 }
 
+gfx::Rect AutocompletePopupContentsView::GetTargetBounds() {
+  return target_bounds_;
+}
+
 void AutocompletePopupContentsView::PaintUpdatesNow() {
   // TODO(beng): remove this from the interface.
 }

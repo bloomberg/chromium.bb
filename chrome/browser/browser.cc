@@ -3288,6 +3288,10 @@ void Browser::SetSuggestedText(const string16& text) {
   window()->GetLocationBar()->SetSuggestedText(text);
 }
 
+gfx::Rect Browser::GetMatchPreviewBounds() {
+  return window()->GetMatchPreviewBounds();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):
 

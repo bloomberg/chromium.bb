@@ -1375,6 +1375,10 @@ void BrowserView::HideMatchPreview() {
   preview_container_ = NULL;
 }
 
+gfx::Rect BrowserView::GetMatchPreviewBounds() {
+  return contents_->GetPreviewBounds();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 
