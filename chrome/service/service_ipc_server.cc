@@ -14,18 +14,22 @@ ServiceIPCServer::ServiceIPCServer(const std::string& channel_name)
 }
 
 bool ServiceIPCServer::Init() {
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  IPC::Logging::current()->SetIPCSender(this);
+#endif
+  sync_message_filter_ =
+      new IPC::SyncMessageFilter(g_service_process->shutdown_event());
+  CreateChannel();
+  return true;
+}
+
+void ServiceIPCServer::CreateChannel() {
   channel_.reset(new IPC::SyncChannel(channel_name_,
       IPC::Channel::MODE_SERVER, this, NULL,
       g_service_process->io_thread()->message_loop(), true,
       g_service_process->shutdown_event()));
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  IPC::Logging::current()->SetIPCSender(this);
-#endif
-
-  sync_message_filter_ =
-      new IPC::SyncMessageFilter(g_service_process->shutdown_event());
+  DCHECK(sync_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
-  return true;
 }
 
 ServiceIPCServer::~ServiceIPCServer() {
@@ -47,6 +51,10 @@ ServiceIPCServer::~ServiceIPCServer() {
 }
 
 void ServiceIPCServer::OnChannelError() {
+  // When a client (typically a browser process) disconnects, the pipe is
+  // closed and we get an OnChannelError. Since we want to keep servicing
+  // client requests, we will recreate the channel.
+  CreateChannel();
 }
 
 bool ServiceIPCServer::Send(IPC::Message* msg) {

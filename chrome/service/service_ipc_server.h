@@ -49,6 +49,9 @@ class ServiceIPCServer : public IPC::Channel::Listener,
   void OnHello();
   void OnShutdown();
 
+  // Helper method to create the sync channel.
+  void CreateChannel();
+
   std::string channel_name_;
   scoped_ptr<IPC::SyncChannel> channel_;
 
