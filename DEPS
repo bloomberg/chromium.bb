@@ -4,7 +4,7 @@ vars = {
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "67965",
   "ffmpeg_revision": "58574",
-  "skia_revision": "593",
+  "skia_revision": "599",
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
   "nacl_revision": "3186",
