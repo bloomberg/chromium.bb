@@ -207,6 +207,16 @@ class BaseTool(object):
     logging.info("elapsed time: %02d:%02d:%02d" % (hours, minutes, seconds))
     return retcode
 
+  def Run(self, args, module):
+    MODULES_TO_SANITY_CHECK = ["base"]
+
+    # TODO(timurrrr): this is a temporary workaround for http://crbug.com/47844
+    if self.ToolName() == "tsan" and common.IsMac():
+      MODULES_TO_SANITY_CHECK = []
+
+    check_sanity = module in MODULES_TO_SANITY_CHECK
+    return self.Main(args, check_sanity)
+
 
 class ValgrindTool(BaseTool):
   """Abstract class for running Valgrind tools.
@@ -871,6 +881,9 @@ class RaceVerifier(object):
     else:
       return ThreadSanitizerRV2Posix()
 
+  def ToolName(self):
+    return "tsan"
+
   def Main(self, args, check_sanity):
     logging.info("Running a TSan + RaceVerifier test. For more information, " +
                  "see " + self.MORE_INFO_URL)
@@ -888,6 +901,9 @@ class RaceVerifier(object):
     logging.info("Please see " + self.MORE_INFO_URL + " for more information " +
                  "on RaceVerifier")
     return ret
+
+  def Run(self, args, module):
+   return self.Main(args, False)
 
 
 class ToolFactory:
@@ -912,32 +928,9 @@ class ToolFactory:
     raise RuntimeError, "Unknown tool (tool=%s, platform=%s)" % (tool_name,
                                                                  platform_name)
 
-def RunTool(argv, module):
-  # TODO(timurrrr): customize optparse instead
-  tool_name = "memcheck"
-  args = argv[1:]
-  for arg in args:
-    if arg.startswith("--tool="):
-      tool_name = arg[7:]
-      args.remove(arg)
-      break
+def CreateTool(tool):
+  return ToolFactory().Create(tool)
 
-  tool = ToolFactory().Create(tool_name)
-  MODULES_TO_SANITY_CHECK = ["base"]
-
-  # TODO(timurrrr): this is a temporary workaround for http://crbug.com/47844
-  if tool_name == "tsan" and common.IsMac():
-    MODULES_TO_SANITY_CHECK = []
-
-  check_sanity = module in MODULES_TO_SANITY_CHECK
-  return tool.Main(args, check_sanity)
-
-if __name__ == "__main__":
-  if sys.argv.count("-v") > 0 or sys.argv.count("--verbose") > 0:
-    logging_utils.config_root(logging.DEBUG)
-  else:
-    logging_utils.config_root()
-  # TODO(timurrrr): valgrind tools may use -v/--verbose as well
-
-  ret = RunTool(sys.argv)
-  sys.exit(ret)
+if __name__ == '__main__':
+  logging.error(sys.argv[0] + " can not be run from command line")
+  sys.exit(1)

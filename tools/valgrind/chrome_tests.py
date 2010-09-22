@@ -85,10 +85,9 @@ class ChromeTests:
     # an absolute Unix-style path
     self._source_dir = os.path.abspath(self._source_dir).replace('\\', '/')
     valgrind_test_script = os.path.join(script_dir, "valgrind_test.py")
-    self._command_preamble = [valgrind_test_script,
-                              "--source_dir=%s" % (self._source_dir)]
+    self._command_preamble = ["--source_dir=%s" % (self._source_dir)]
 
-  def _DefaultCommand(self, module, exe=None, valgrind_test_args=None):
+  def _DefaultCommand(self, tool, module, exe=None, valgrind_test_args=None):
     '''Generates the default command array that most tests will use.'''
     module_dir = os.path.join(self._source_dir, module)
 
@@ -121,7 +120,7 @@ class ChromeTests:
 
     cmd = list(self._command_preamble)
     for directory in self._data_dirs:
-      tool_name = self._options.valgrind_tool
+      tool_name = tool.ToolName();
       suppression_file = os.path.join(directory,
           "%s/suppressions.txt" % tool_name)
       if os.path.exists(suppression_file):
@@ -134,7 +133,6 @@ class ChromeTests:
         if os.path.exists(suppression_file_platform):
           cmd.append("--suppressions=%s" % suppression_file_platform)
 
-    cmd.append("--tool=%s" % self._options.valgrind_tool)
     if self._options.valgrind_tool_flags:
       cmd += self._options.valgrind_tool_flags.split(" ")
     if valgrind_test_args != None:
@@ -157,7 +155,7 @@ class ChromeTests:
     logging.info("running test %s" % (self._test))
     return self._test_list[self._test](self)
 
-  def _ReadGtestFilterFile(self, name, cmd):
+  def _ReadGtestFilterFile(self, tool, name, cmd):
     '''Read a file which is a list of tests to filter out with --gtest_filter
     and append the command-line option to cmd.
     '''
@@ -166,12 +164,12 @@ class ChromeTests:
       gtest_filter_files = [
           os.path.join(directory, name + ".gtest.txt"),
           os.path.join(directory, name + ".gtest-%s.txt" % \
-              self._options.valgrind_tool)]
+              tool.ToolName())]
       for platform_suffix in common.PlatformNames():
         gtest_filter_files += [
           os.path.join(directory, name + ".gtest_%s.txt" % platform_suffix),
           os.path.join(directory, name + ".gtest-%s_%s.txt" % \
-              (self._options.valgrind_tool, platform_suffix))]
+              (tool.ToolName(), platform_suffix))]
       for filename in gtest_filter_files:
         if os.path.exists(filename):
           logging.info("reading gtest filters from %s" % filename)
@@ -205,8 +203,9 @@ class ChromeTests:
       cmd.append("--gtest_filter=%s" % gtest_filter)
 
   def SimpleTest(self, module, name, valgrind_test_args=None, cmd_args=None):
-    cmd = self._DefaultCommand(module, name, valgrind_test_args)
-    self._ReadGtestFilterFile(name, cmd)
+    tool = valgrind_test.CreateTool(self._options.valgrind_tool)
+    cmd = self._DefaultCommand(tool, module, name, valgrind_test_args)
+    self._ReadGtestFilterFile(tool, name, cmd)
     if cmd_args:
       cmd.extend(["--"])
       cmd.extend(cmd_args)
@@ -218,7 +217,7 @@ class ChromeTests:
                                               self._options.build_dir))
     else:
       os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
-    return valgrind_test.RunTool(cmd, module)
+    return tool.Run(cmd, module)
 
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
@@ -237,7 +236,7 @@ class ChromeTests:
 
   def TestNotifier(self):
     return self.SimpleTest("chrome", "notifier_unit_tests")
-  
+
   def TestPrinting(self):
     return self.SimpleTest("chrome", "printing_unittests")
 
@@ -298,7 +297,8 @@ class ChromeTests:
     # but we'll use the --indirect flag to valgrind_test.py
     # to avoid valgrinding python.
     # Start by building the valgrind_test.py commandline.
-    cmd = self._DefaultCommand("webkit")
+    tool = valgrind_test.CreateTool(self._options.valgrind_tool)
+    cmd = self._DefaultCommand(tool, "webkit")
     cmd.append("--trace_children")
     cmd.append("--indirect")
     cmd.append("--ignore_exit_code")
@@ -334,11 +334,11 @@ class ChromeTests:
         script_cmd.append("--test-list=%s" % self._args[0])
       else:
         script_cmd.extend(self._args)
-    self._ReadGtestFilterFile("layout", script_cmd)
+    self._ReadGtestFilterFile(tool, "layout", script_cmd)
     # Now run script_cmd with the wrapper in cmd
     cmd.extend(["--"])
     cmd.extend(script_cmd)
-    return valgrind_test.RunTool(cmd, "layout")
+    return tool.Run(cmd, "layout")
 
   def TestLayout(self):
     # A "chunk file" is maintained in the local directory so that each test
