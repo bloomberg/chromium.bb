@@ -9522,6 +9522,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Korean keyboard layout
       </message>
 
+      <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't log in because user is not whitelisted.">
+        Sorry, you are not allowed to login on this device.
+      </message>
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't log in because password is invalid">
         Sorry, your password could not be verified. Please try again.
       </message>

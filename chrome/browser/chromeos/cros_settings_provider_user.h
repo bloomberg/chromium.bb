@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 
-class DictionaryValue;
+class ListValue;
+class PrefService;
 
 namespace chromeos {
 
@@ -22,6 +22,15 @@ class UserCrosSettingsProvider : public CrosSettingsProvider,
  public:
   UserCrosSettingsProvider();
   virtual ~UserCrosSettingsProvider();
+
+  // Registers cached users settings in preferences.
+  static void RegisterPrefs(PrefService* local_state);
+
+  // Helper functions to access cached settings.
+  static bool cached_allow_bwsi();
+  static bool cached_allow_guest();
+  static bool cached_show_users_on_signin();
+  static const ListValue* cached_whitelist();
 
   // CrosSettingsProvider implementation.
   virtual void Set(const std::string& path, Value* in_value);
@@ -40,10 +49,9 @@ class UserCrosSettingsProvider : public CrosSettingsProvider,
   void UnwhitelistUser(const std::string& email);
 
  private:
-  void StartFetchingBoolSetting(const std::string& name, bool default_value);
-  void LoadUserWhitelist();
+  void StartFetchingBoolSetting(const std::string& name);
+  ListValue* GetUserWhitelist() const;
 
-  scoped_ptr<DictionaryValue> cache_;
   bool current_user_is_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCrosSettingsProvider);

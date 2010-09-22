@@ -122,18 +122,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
 
-  const std::vector<UserManager::User>& users = UserManager::Get()->GetUsers();
-
-  bool first_login = true;
-  for (std::vector<UserManager::User>::const_iterator it = users.begin();
-       it < users.end(); ++it) {
-    std::string user_email = it->email();
-    if (username == user_email) {
-      first_login = false;
-      break;
-    }
-  }
-
+  bool first_login = !UserManager::Get()->IsKnownUser(username);
   UserManager::Get()->UserLoggedIn(username);
 
   // Now launch the initial browser window.

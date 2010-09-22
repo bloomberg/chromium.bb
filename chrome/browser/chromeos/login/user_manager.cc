@@ -215,6 +215,18 @@ void UserManager::RemoveUser(const std::string& email) {
   prefs->SavePersistentPrefs();
 }
 
+bool UserManager::IsKnownUser(const std::string& email) {
+  std::vector<User> users = GetUsers();
+  for (std::vector<User>::iterator it = users.begin();
+       it < users.end();
+       ++it) {
+    if (it->email() == email)
+      return true;
+  }
+
+  return false;
+}
+
 void UserManager::SetLoggedInUserImage(const SkBitmap& image) {
   if (logged_in_user_.email().empty())
     return;

@@ -69,6 +69,9 @@ class UserManager : public UserImageLoader::Delegate,
   // Remove user from persistent list. NOTE: user's data won't be removed.
   void RemoveUser(const std::string& email);
 
+  // Returns true if given user has logged into the device before.
+  bool IsKnownUser(const std::string& email);
+
   // Returns the logged-in user.
   const User& logged_in_user() {
     return logged_in_user_;

@@ -14,12 +14,14 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -70,6 +72,20 @@ void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
   }
 }
 
+// Returns true if given email is in user whitelist.
+// Note this function is for display purpose only and should use
+// CheckWhitelist op for the real whitelist check.
+bool IsEmailInCachedWhitelist(const std::string& email) {
+  StringValue email_value(email);
+  const ListValue* whitelist = UserCrosSettingsProvider::cached_whitelist();
+  for (ListValue::const_iterator i(whitelist->begin());
+      i != whitelist->end(); ++i) {
+    if ((*i)->Equals(&email_value))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 ExistingUserController*
@@ -90,18 +106,28 @@ ExistingUserController::ExistingUserController(
     delete_scheduled_instance_->Delete();
 
   // Caclulate the max number of users from available screen size.
-  size_t max_users = kMaxUsers;
-  int screen_width = background_bounds.width();
-  if (screen_width > 0) {
-    max_users = std::max(static_cast<size_t>(2), std::min(kMaxUsers,
-        static_cast<size_t>((screen_width - login::kUserImageSize)
-                            / (UserController::kUnselectedSize +
-                               UserController::kPadding))));
-  }
+  if (UserCrosSettingsProvider::cached_show_users_on_signin()) {
+    size_t max_users = kMaxUsers;
+    int screen_width = background_bounds.width();
+    if (screen_width > 0) {
+      max_users = std::max(static_cast<size_t>(2), std::min(kMaxUsers,
+          static_cast<size_t>((screen_width - login::kUserImageSize)
+                              / (UserController::kUnselectedSize +
+                                 UserController::kPadding))));
+    }
 
-  size_t visible_users_count = std::min(users.size(), max_users - 1);
-  for (size_t i = 0; i < visible_users_count; ++i)
-    controllers_.push_back(new UserController(this, users[i]));
+    size_t visible_users_count = std::min(users.size(), max_users - 1);
+    for (size_t i = 0; i < users.size(); ++i) {
+      if (controllers_.size() == visible_users_count)
+        break;
+
+      // TODO(xiyuan): Clean user profile whose email is not in whitelist.
+      if (UserCrosSettingsProvider::cached_allow_guest() ||
+          IsEmailInCachedWhitelist(users[i].email())) {
+        controllers_.push_back(new UserController(this, users[i]));
+      }
+    }
+  }
 
   // Add the view representing the guest user last.
   controllers_.push_back(new UserController(this));
@@ -117,7 +143,8 @@ void ExistingUserController::Init() {
       background_view_->SetOobeProgressBarVisible(true);
       background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
     } else {
-      background_view_->SetGoIncognitoButtonVisible(true, this);
+      background_view_->SetGoIncognitoButtonVisible(
+          UserCrosSettingsProvider::cached_allow_bwsi(), this);
     }
 
     background_window_->Show();
@@ -210,6 +237,40 @@ void ExistingUserController::Login(UserController* source,
     num_login_attempts_ = 0;
   }
 
+  password_ = password;
+
+  if (UserCrosSettingsProvider::cached_allow_guest()) {
+    // Starts authentication if guest login is allowed.
+    StartAuthentication();
+  } else {
+    // Otherwise, do whitelist check first.
+    SignedSettingsHelper::Get()->StartCheckWhitelistOp(
+        controllers_[selected_view_index_]->user().email(), this);
+  }
+
+  // Disable clicking on other windows.
+  SendSetLoginState(false);
+}
+
+void ExistingUserController::OnCheckWhiteListCompleted(
+    bool success, const std::string& email) {
+  if (success) {
+    // Whitelist check passed, continue with authentication.
+    StartAuthentication();
+  } else {
+    // Otherwise, show whitelist check error.
+    ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
+
+    // Reenable userview and use ClearAndEnablePassword to keep username on
+    // screen with the error bubble.
+    controllers_[selected_view_index_]->ClearAndEnablePassword();
+
+    // Reenable clicking on other windows.
+    SendSetLoginState(true);
+  }
+}
+
+void ExistingUserController::StartAuthentication() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
   ChromeThread::PostTask(
@@ -218,15 +279,17 @@ void ExistingUserController::Login(UserController* source,
                         &Authenticator::AuthenticateToLogin,
                         profile,
                         controllers_[selected_view_index_]->user().email(),
-                        UTF16ToUTF8(password),
+                        UTF16ToUTF8(password_),
                         login_token_,
                         login_captcha_));
-
-  // Disable clicking on other windows.
-  SendSetLoginState(false);
+  password_.clear();
 }
 
 void ExistingUserController::LoginOffTheRecord() {
+  // Check allow_bwsi in case this call is fired from key accelerator.
+  if (!UserCrosSettingsProvider::cached_allow_bwsi())
+    return;
+
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
@@ -402,7 +465,8 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
 
   AppendStartUrlToCmdline();
-  if (selected_view_index_ + 1 == controllers_.size()) {
+  if (selected_view_index_ + 1 == controllers_.size() &&
+      !UserManager::Get()->IsKnownUser(username)) {
     // For new user login don't launch browser until we pass image screen.
     LoginUtils::Get()->EnableBrowserLaunch(false);
     LoginUtils::Get()->CompleteLogin(username, credentials);

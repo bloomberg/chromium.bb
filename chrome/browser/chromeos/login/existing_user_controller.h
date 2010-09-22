@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -47,7 +48,8 @@ class ExistingUserController : public WmMessageListener::Observer,
                                public LoginStatusConsumer,
                                public MessageBubbleDelegate,
                                public CaptchaView::Delegate,
-                               public PasswordChangedView::Delegate {
+                               public PasswordChangedView::Delegate,
+                               public SignedSettingsHelper::Callback {
  public:
   // Initializes views for known users. |background_bounds| determines the
   // bounds of background view.
@@ -116,6 +118,10 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void RecoverEncryptedData(const std::string& old_password);
   virtual void ResyncEncryptedData();
 
+  // SignedSettingsHelper::Callback
+  virtual void OnCheckWhiteListCompleted(bool success,
+                                         const std::string& email);
+
   // Adds start url to command line.
   void AppendStartUrlToCmdline();
 
@@ -132,6 +138,9 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // Send message to window manager to enable/disable click on other windows.
   void SendSetLoginState(bool is_login);
+
+  // Starts authentication.
+  void StartAuthentication();
 
   // Bounds of the background window.
   const gfx::Rect background_bounds_;
@@ -185,6 +194,9 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // Help application used for help dialogs.
   scoped_ptr<HelpAppLauncher> help_app_;
+
+  // Password for the current login attempt.
+  string16 password_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };
