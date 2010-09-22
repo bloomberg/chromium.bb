@@ -1308,7 +1308,7 @@ def main(argv):
   try:
     GetRepositoryRoot()
   except gclient_utils.Error:
-    print('To use gcl, you need to be in a subversion checkout.')
+    print >> sys.stderr, 'To use gcl, you need to be in a subversion checkout.'
     return 1
 
   # Create the directories where we store information about changelists if it
@@ -1326,8 +1326,17 @@ def main(argv):
     # Unknown command, try to pass that to svn
     return CMDpassthru(argv)
   except gclient_utils.Error, e:
-    print('Got an exception')
-    print(str(e))
+    print >> sys.stderr, 'Got an exception'
+    print >> sys.stderr, str(e)
+    return 1
+  except urllib2.HTTPError, e:
+    if e.code != 500:
+      raise
+    print >> sys.stderr, (
+        'AppEngine is misbehaving and returned HTTP %d, again. Keep faith '
+        'and retry or visit go/isgaeup.\n%s') % (e.code, e.reason)
+    return 1
+
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv[1:]))
