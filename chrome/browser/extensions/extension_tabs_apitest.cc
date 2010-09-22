@@ -9,9 +9,13 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
+// Tabs started crashing on CrOS and hanging browser tests
+// http://crbug.com/56479
+#if defined(OS_CHROMEOS)
+#define MAYBE_Tabs DISABLED_Tabs
 // Tabs is flaky on chromeos, windows, linux views and linux dbg.
 // http://crbug.com/48920
-#if defined(OS_LINUX) || defined(OS_WIN)
+#elif defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_Tabs FLAKY_Tabs
 #elif defined(OS_MACOSX)
 // Tabs appears to timeout, or maybe crash on mac.
