@@ -358,6 +358,13 @@ AddRefModule::~AddRefModule() {
   _pAtlModule->Unlock();
 }
 
+bool IsChrome(RendererType renderer_type) {
+  DCHECK_GE(renderer_type, RENDERER_TYPE_UNDETERMINED);
+  DCHECK_LE(renderer_type, RENDERER_TYPE_OTHER);
+  return renderer_type >= RENDERER_TYPE_CHROME_MIN &&
+    renderer_type <= RENDERER_TYPE_CHROME_MAX;
+}
+
 namespace {
 const char kIEImageName[] = "iexplore.exe";
 const char kFirefoxImageName[] = "firefox.exe";
@@ -420,8 +427,11 @@ IEVersion GetIEVersion() {
           case 7:
             ie_version = IE_7;
             break;
+          case 8:
+            ie_version = IE_8;
+            break;
           default:
-            ie_version = HIWORD(high) >= 8 ? IE_8 : IE_UNSUPPORTED;
+            ie_version = HIWORD(high) >= 9 ? IE_9 : IE_UNSUPPORTED;
             break;
         }
       } else {
@@ -710,20 +720,26 @@ bool IsGcfDefaultRenderer() {
   return is_default != 0;
 }
 
-bool IsOptInUrl(const wchar_t* url) {
+RendererType RendererTypeForUrl(const std::wstring& url) {
   // First check if the default renderer settings are specified by policy.
   // If so, then that overrides the user settings.
   Singleton<PolicySettings> policy;
-  PolicySettings::RendererForUrl renderer = policy->GetRendererForUrl(url);
+  PolicySettings::RendererForUrl renderer = policy->GetRendererForUrl(
+      url.c_str());
   if (renderer != PolicySettings::RENDERER_NOT_SPECIFIED) {
-    return (renderer == PolicySettings::RENDER_IN_CHROME_FRAME);
+    // We may know at this point that policy says do NOT render in Chrome Frame.
+    // To maintain consistency, we return RENDERER_TYPE_UNDETERMINED so that
+    // content sniffing, etc. still take place.
+    // TODO(tommi): Clarify the intent here.
+    return (renderer == PolicySettings::RENDER_IN_CHROME_FRAME) ?
+        RENDERER_TYPE_CHROME_OPT_IN_URL : RENDERER_TYPE_UNDETERMINED;
   }
 
   RegKey config_key;
   if (!config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ))
-    return false;
+    return RENDERER_TYPE_UNDETERMINED;
 
-  bool load_in_chrome_frame = false;
+  RendererType renderer_type = RENDERER_TYPE_UNDETERMINED;
 
   const wchar_t* url_list_name = NULL;
   int render_in_cf_by_default = FALSE;
@@ -731,7 +747,7 @@ bool IsOptInUrl(const wchar_t* url) {
                          reinterpret_cast<DWORD*>(&render_in_cf_by_default));
   if (render_in_cf_by_default) {
     url_list_name = kRenderInHostUrlList;
-    load_in_chrome_frame = true;  // change the default to true.
+    renderer_type = RENDERER_TYPE_CHROME_DEFAULT_RENDERER;
   } else {
     url_list_name = kRenderInGCFUrlList;
   }
@@ -747,11 +763,12 @@ bool IsOptInUrl(const wchar_t* url) {
   }
 
   if (match_found) {
-    // The lists are there to opt out of whatever is the default.
-    load_in_chrome_frame = !load_in_chrome_frame;
+    renderer_type = render_in_cf_by_default ?
+      RENDERER_TYPE_UNDETERMINED :
+      RENDERER_TYPE_CHROME_OPT_IN_URL;
   }
 
-  return load_in_chrome_frame;
+  return renderer_type;
 }
 
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,

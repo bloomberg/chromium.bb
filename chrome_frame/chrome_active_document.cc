@@ -260,14 +260,19 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   }
 
   std::string referrer(mgr ? mgr->referrer() : EmptyString());
+  RendererType renderer_type = cf_url.is_chrome_protocol() ?
+      RENDERER_TYPE_CHROME_GCF_PROTOCOL : RENDERER_TYPE_UNDETERMINED;
 
   // With CTransaction patch we have more robust way to grab the referrer for
   // each top-level-switch-to-CF request by peeking at our sniffing data
-  // object that lives inside the bind context.
+  // object that lives inside the bind context.  We also remember the reason
+  // we're rendering the document in Chrome.
   if (g_patch_helper.state() == PatchHelper::PATCH_PROTOCOL && info) {
     scoped_refptr<ProtData> prot_data = info->get_prot_data();
-    if (prot_data)
+    if (prot_data) {
       referrer = prot_data->referrer();
+      renderer_type = prot_data->renderer_type();
+    }
   }
 
   // For gcf: URLs allow only about and view-source schemes to pass through for
@@ -288,9 +293,14 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   if (!cf_url.is_chrome_protocol() && !cf_url.attach_to_external_tab())
     url_fetcher_->SetInfoForUrl(url.c_str(), moniker_name, bind_context);
 
-  THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
-                                          cf_url.is_chrome_protocol(),
-                                          0, 1, 2);
+  // Log a metric indicating why GCF is rendering in Chrome.
+  // (Note: we only track the renderer type when using the CTransaction patch.
+  // When the code for the browser service patch and for the moniker patch is
+  // removed, this conditional can also go away.)
+  if (RENDERER_TYPE_UNDETERMINED != renderer_type) {
+    THREAD_SAFE_UMA_LAUNCH_TYPE_COUNT(renderer_type);
+  }
+
   return S_OK;
 }
 

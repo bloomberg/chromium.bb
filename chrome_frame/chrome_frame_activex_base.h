@@ -262,8 +262,8 @@ END_MSG_MAP()
       THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.IEVersion",
                                               GetIEVersion(),
                                               IE_INVALID,
-                                              IE_8,
-                                              IE_8 + 1);
+                                              IE_9,
+                                              IE_9 + 1);
     }
 
     return S_OK;

@@ -273,11 +273,15 @@ bool IsAdditionallySupportedContentType(const wchar_t* status_text) {
 }
 
 // Returns:
-// CHROME: if suggested mime type is a supported one and at least one of the
-//         following is true: 1) X-UA-Compatible tag is in HTTP headers.
-//                            2) Url is listed in OptInURLs registry key.
-// OTHER: if suggested mime type is not text/html.
-// UNDETERMINED: if suggested mime type is text/html.
+// RENDERER_TYPE_OTHER: if suggested mime type is not text/html.
+// RENDERER_TYPE_UNDETERMINED: if suggested mime type is text/html.
+// RENDERER_TYPE_CHROME_RESPONSE_HEADER: X-UA-Compatible tag is in HTTP headers.
+// RENDERER_TYPE_CHROME_DEFAULT_RENDERER: GCF is the default renderer and the
+//                                        Url is not listed in the
+//                                        RenderInHostUrls registry key.
+// RENDERER_TYPE_CHROME_OPT_IN_URL: GCF is not the default renderer and the Url
+//                                  is listed in the RenderInGcfUrls registry
+//                                  key.
 RendererType DetermineRendererTypeFromMetaData(
     const wchar_t* suggested_mime_type,
     const std::wstring& url,
@@ -288,10 +292,13 @@ RendererType DetermineRendererTypeFromMetaData(
       IsAdditionallySupportedContentType(suggested_mime_type);
 
   if (!is_supported_content_type)
-    return OTHER;
+    return RENDERER_TYPE_OTHER;
 
-  if (!url.empty() && IsOptInUrl(url.c_str())) {
-    return CHROME;
+  if (!url.empty()) {
+    RendererType renderer_type = RendererTypeForUrl(url);
+    if (IsChrome(renderer_type)) {
+      return renderer_type;
+    }
   }
 
   if (info) {
@@ -301,24 +308,24 @@ RendererType DetermineRendererTypeFromMetaData(
     HRESULT hr = info->QueryInfo(HTTP_QUERY_CUSTOM, buffer, &len, &flags, NULL);
     if (hr == S_OK && len > 0) {
       if (StrStrIA(buffer, "chrome=1")) {
-        return CHROME;
+        return RENDERER_TYPE_CHROME_RESPONSE_HEADER;
       }
     }
   }
 
   // We can (and want) to sniff the content.
   if (is_text_html) {
-    return UNDETERMINED;
+    return RENDERER_TYPE_UNDETERMINED;
   }
 
   // We cannot sniff the content.
-  return OTHER;
+  return RENDERER_TYPE_OTHER;
 }
 
 RendererType DetermineRendererType(void* buffer, DWORD size, bool last_chance) {
-  RendererType type = UNDETERMINED;
+  RendererType renderer_type = RENDERER_TYPE_UNDETERMINED;
   if (last_chance)
-    type = OTHER;
+    renderer_type = RENDERER_TYPE_OTHER;
 
   std::wstring html_contents;
   // TODO(joshia): detect and handle different content encodings
@@ -330,10 +337,10 @@ RendererType DetermineRendererType(void* buffer, DWORD size, bool last_chance) {
   std::wstring xua_compat_content;
   UtilGetXUACompatContentValue(html_contents, &xua_compat_content);
   if (StrStrI(xua_compat_content.c_str(), kChromeContentPrefix)) {
-    type = CHROME;
+    renderer_type = RENDERER_TYPE_CHROME_HTTP_EQUIV;
   }
 
-  return type;
+  return renderer_type;
 }
 
 // ProtData
@@ -341,8 +348,8 @@ ProtData::ProtData(IInternetProtocol* protocol,
                    InternetProtocol_Read_Fn read_fun, const wchar_t* url)
     : has_suggested_mime_type_(false), has_server_mime_type_(false),
       buffer_size_(0), buffer_pos_(0),
-      renderer_type_(UNDETERMINED), protocol_(protocol), read_fun_(read_fun),
-      url_(url) {
+      renderer_type_(RENDERER_TYPE_UNDETERMINED), protocol_(protocol),
+      read_fun_(read_fun), url_(url) {
   memset(buffer_, 0, arraysize(buffer_));
   DLOG(INFO) << __FUNCTION__ << " " << this;
 
@@ -358,7 +365,7 @@ ProtData::~ProtData() {
 }
 
 HRESULT ProtData::Read(void* buffer, ULONG size, ULONG* size_read) {
-  if (renderer_type_ == UNDETERMINED) {
+  if (renderer_type_ == RENDERER_TYPE_UNDETERMINED) {
     return E_PENDING;
   }
 
@@ -389,23 +396,26 @@ HRESULT ProtData::Read(void* buffer, ULONG size, ULONG* size_read) {
 
 // Attempt to detect ChromeFrame from HTTP headers when
 // BINDSTATUS_MIMETYPEAVAILABLE is received.
-// There are three possible outcomes: CHROME/OTHER/UNDETERMINED.
-// If UNDETERMINED we are going to sniff the content later in ReportData().
+// There are three possible outcomes: CHROME_*/OTHER/UNDETERMINED.
+// If RENDERER_TYPE_UNDETERMINED we are going to sniff the content later in
+// ReportData().
 //
 // With not-so-well-written software (mime filters/protocols/protocol patchers)
 // BINDSTATUS_MIMETYPEAVAILABLE might be fired multiple times with different
 // values for the same client.
 // If the renderer_type_ member is:
-// CHROME - 2nd (and any subsequent) BINDSTATUS_MIMETYPEAVAILABLE is ignored.
-// OTHER  - 2nd (and any subsequent) BINDSTATUS_MIMETYPEAVAILABLE is
-//          passed through.
-// UNDETERMINED - Try to detect ChromeFrame from HTTP headers (acts as if this
-//                is the first time BINDSTATUS_MIMETYPEAVAILABLE is received).
+// RENDERER_TYPE_CHROME_* - 2nd (and any subsequent)
+//                          BINDSTATUS_MIMETYPEAVAILABLE is ignored.
+// RENDERER_TYPE_OTHER  - 2nd (and any subsequent) BINDSTATUS_MIMETYPEAVAILABLE
+//                        is passed through.
+// RENDERER_TYPE_UNDETERMINED - Try to detect ChromeFrame from HTTP headers
+//                              (acts as if this is the first time
+//                              BINDSTATUS_MIMETYPEAVAILABLE is received).
 HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
                                  ULONG status_code, LPCWSTR status_text) {
   switch (status_code) {
     case BINDSTATUS_DIRECTBIND:
-      renderer_type_ = OTHER;
+      renderer_type_ = RENDERER_TYPE_OTHER;
       break;
 
     case BINDSTATUS_REDIRECTING:
@@ -427,7 +437,7 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
       // and "converted" to BTO, events will be re-fired for the new sink,
       // but we may skip the renderer_type_ determination since it's already
       // done.
-      if (renderer_type_ == UNDETERMINED) {
+      if (renderer_type_ == RENDERER_TYPE_UNDETERMINED) {
         // This may seem awkward. CBinding's implementation of IWinInetHttpInfo
         // will forward to CTransaction that will forward to the real protocol.
         // We may ask CTransaction (our protocol_ member) for IWinInetHttpInfo.
@@ -437,21 +447,21 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
                                                            url_, info);
       }
 
-      if (renderer_type_ == CHROME) {
-        // Suggested mime type is "text/html" and we either have OptInUrl
-        // or X-UA-Compatible HTTP headers.
+      if (IsChrome(renderer_type_)) {
+        // Suggested mime type is "text/html" and we have DEFAULT_RENDERER,
+        // OPT_IN_URL, or RESPONSE_HEADER.
         DLOG(INFO) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
                    << kChromeMimeType;
         SaveReferrer(delegate);
         delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
-      } else if (renderer_type_ == OTHER) {
+      } else if (renderer_type_ == RENDERER_TYPE_OTHER) {
         // Suggested mime type is not "text/html" - we are not interested in
         // this request anymore.
         FireSuggestedMimeType(delegate);
       } else {
         // Suggested mime type is "text/html"; We will try to sniff the
         // HTML content in ReportData.
-        DCHECK_EQ(UNDETERMINED, renderer_type_);
+        DCHECK_EQ(RENDERER_TYPE_UNDETERMINED, renderer_type_);
       }
       return S_OK;
   }
@@ -463,7 +473,7 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
 
 HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
                               DWORD flags, ULONG progress, ULONG max_progress) {
-  if (renderer_type_ != UNDETERMINED) {
+  if (renderer_type_ != RENDERER_TYPE_UNDETERMINED) {
     // We are just pass through now, avoid false positive crash reports.
     ExceptionBarrierReportOnlyModule barrier;
     return delegate->ReportData(flags, progress, max_progress);
@@ -478,19 +488,19 @@ HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
 
   renderer_type_ = DetermineRendererType(buffer_, buffer_size_, last_chance);
 
-  if (renderer_type_ == UNDETERMINED) {
+  if (renderer_type_ == RENDERER_TYPE_UNDETERMINED) {
     // do not report anything, we need more data.
     return S_OK;
   }
 
-  if (renderer_type_ == CHROME) {
+  if (IsChrome(renderer_type_)) {
     DLOG(INFO) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
         << kChromeMimeType;
     SaveReferrer(delegate);
     delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
   }
 
-  if (renderer_type_ == OTHER) {
+  if (renderer_type_ == RENDERER_TYPE_OTHER) {
     FireSuggestedMimeType(delegate);
   }
 
@@ -509,9 +519,9 @@ HRESULT ProtData::ReportResult(IInternetProtocolSink* delegate, HRESULT result,
                                DWORD error, LPCWSTR result_text) {
   // We may receive ReportResult without ReportData, if the connection fails
   // for example.
-  if (renderer_type_ == UNDETERMINED) {
+  if (renderer_type_ == RENDERER_TYPE_UNDETERMINED) {
     DLOG(INFO) << "ReportResult received but renderer type is yet unknown.";
-    renderer_type_ = OTHER;
+    renderer_type_ = RENDERER_TYPE_OTHER;
     FireSuggestedMimeType(delegate);
   }
 
@@ -565,7 +575,7 @@ void ProtData::FireSuggestedMimeType(IInternetProtocolSink* delegate) {
 }
 
 void ProtData::SaveReferrer(IInternetProtocolSink* delegate) {
-  DCHECK_EQ(CHROME, renderer_type_);
+  DCHECK(IsChrome(renderer_type_));
   ScopedComPtr<IWinInetHttpInfo> info;
   info.QueryFrom(delegate);
   if (info) {

@@ -180,7 +180,35 @@ typedef enum IEVersion {
   IE_6,
   IE_7,
   IE_8,
+  IE_9,
 };
+
+// The renderer to be used for a page.  Values for Chrome also convey the
+// reason why Chrome is used.
+enum RendererType {
+  RENDERER_TYPE_UNDETERMINED = 0,
+  RENDERER_TYPE_CHROME_MIN,
+  // NOTE: group all _CHROME_ values together below here, as they are used for
+  // generating metrics reported via UMA (adjust MIN/MAX as needed).
+  RENDERER_TYPE_CHROME_GCF_PROTOCOL = RENDERER_TYPE_CHROME_MIN,
+  RENDERER_TYPE_CHROME_HTTP_EQUIV,
+  RENDERER_TYPE_CHROME_RESPONSE_HEADER,
+  RENDERER_TYPE_CHROME_DEFAULT_RENDERER,
+  RENDERER_TYPE_CHROME_OPT_IN_URL,
+  RENDERER_TYPE_CHROME_WIDGET,
+  // NOTE: all _CHOME_ values must go above here (adjust MIN/MAX as needed).
+  RENDERER_TYPE_CHROME_MAX = RENDERER_TYPE_CHROME_WIDGET,
+  RENDERER_TYPE_OTHER,
+};
+
+// Returns true if the given RendererType represents Chrome.
+bool IsChrome(RendererType renderer_type);
+
+// Convenience macro for logging a sample for the launch type metric.
+#define THREAD_SAFE_UMA_LAUNCH_TYPE_COUNT(sample) \
+  THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.LaunchType", sample, \
+  RENDERER_TYPE_CHROME_MIN, RENDERER_TYPE_CHROME_MAX, \
+  RENDERER_TYPE_CHROME_MAX + 1 - RENDERER_TYPE_CHROME_MIN)
 
 // To get the IE version when Chrome Frame is hosted in IE.  Make sure that
 // the hosting browser is IE before calling this function, otherwise NON_IE
@@ -252,7 +280,11 @@ bool IsUnpinnedMode();
 bool IsGcfDefaultRenderer();
 
 // Check if this url is opting into Chrome Frame based on static settings.
-bool IsOptInUrl(const wchar_t* url);
+// Returns one of:
+// - RENDERER_TYPE_UNDETERMINED if not opt-in or if explicit opt-out
+// - RENDERER_TYPE_CHROME_DEFAULT_RENDERER
+// - RENDERER_TYPE_CHROME_OPT_IN_URL
+RendererType RendererTypeForUrl(const std::wstring& url);
 
 // A shortcut for QueryService
 template <typename T>

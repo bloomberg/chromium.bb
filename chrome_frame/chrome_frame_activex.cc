@@ -473,6 +473,9 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
       DLOG(ERROR) << "Failed to navigate to url:" << utf8_url;
       return E_FAIL;
     }
+
+    // Log a metric that Chrome Frame is being used in Widget mode
+    THREAD_SAFE_UMA_LAUNCH_TYPE_COUNT(RENDERER_TYPE_CHROME_WIDGET);
   }
 
   return hr;

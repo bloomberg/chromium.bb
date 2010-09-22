@@ -171,7 +171,7 @@ void SniffData::DetermineRendererType(bool last_chance) {
   if (is_undetermined()) {
     if (last_chance)
       renderer_type_ = OTHER;
-    if (IsOptInUrl(url_.c_str())) {
+    if (IsChrome(RendererTypeForUrl(url_.c_str()))) {
       renderer_type_ = CHROME;
     } else {
       if (is_cache_valid() && cache_) {

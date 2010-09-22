@@ -408,6 +408,8 @@ IEVersion GetInstalledIEVersion() {
       return IE_7;
     case '8':
       return IE_8;
+    case '9':
+      return IE_9;
     default:
       break;
   }
@@ -421,7 +423,7 @@ FilePath GetProfilePathForIE() {
   // have their profiles moved into "Temporary Internet Files".
   // The code below basically retrieves the version of IE and computes
   // the profile directory accordingly.
-  if (GetInstalledIEVersion() == IE_8) {
+  if (GetInstalledIEVersion() >= IE_8) {
     profile_path = GetProfilePath(kIEProfileName);
   } else {
     profile_path = GetIETemporaryFilesFolder();
