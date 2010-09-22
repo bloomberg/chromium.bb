@@ -71,7 +71,7 @@ BuildAndRunSetups() {
   pushd ${SPEC_BASE}
   for setup in ${setups}; do
     if ! AnnotatedMayFailRun "${setup}" \
-      "./run_all.sh" TimedBuildAndRunBenchmarks ${setup} train 179.art; then
+      "./run_all.sh" TimedBuildAndRunBenchmarks ${setup}; then
       did_fail=1
     fi
   done
