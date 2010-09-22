@@ -598,7 +598,7 @@
    fun:main
 }
 {
-   bug_50297a
+   bug_50297_a
    Memcheck:Cond
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
@@ -609,13 +609,14 @@
    fun:_ZN11MessageLoop11RunInternalEv
 }
 {
-   bug_50297b
+   bug_50297_b
    Memcheck:Cond
    fun:_ZN6Pickle8FindNextEmPKcS1_
    fun:_ZN3IPC7Message8FindNextEPKcS2_
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
+   ...
    fun:event_process_active
    fun:event_base_loop
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
