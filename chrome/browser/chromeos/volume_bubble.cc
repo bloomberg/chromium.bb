@@ -17,7 +17,7 @@ const int kBubbleShowTimeoutSec = 2;
 const int kAnimationDurationMs = 200;
 
 // Horizontal relative position: 0 - leftmost, 0.5 - center, 1 - rightmost.
-const double kVolumeBubbleXRatio = 0.18;
+const double kVolumeBubbleXRatio = 0.5;
 
 // Vertical gap from the bottom of the screen in pixels.
 const int kVolumeBubbleBottomGap = 30;
