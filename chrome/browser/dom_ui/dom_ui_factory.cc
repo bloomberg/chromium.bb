@@ -153,12 +153,12 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<RegisterPageUI>;
   if (url.host() == chrome::kChromeUISlideshowHost)
     return &NewDOMUI<SlideshowUI>;
-  if (url.host() == chrome::kChromeUIOptionsHost)
+  if (url.host() == chrome::kChromeUISettingsHost)
     return &NewDOMUI<OptionsUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
     return &NewDOMUI<SystemInfoUI>;
 #else
-  if (url.host() == chrome::kChromeUIOptionsHost) {
+  if (url.host() == chrome::kChromeUISettingsHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableTabbedOptions)) {
       return &NewDOMUI<OptionsUI>;
@@ -248,7 +248,7 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
   if (about_labs::IsEnabled() && page_url.host() == chrome::kChromeUILabsHost)
     return LabsUI::GetFaviconResourceBytes();
 
-  if (page_url.host() == chrome::kChromeUIOptionsHost)
+  if (page_url.host() == chrome::kChromeUISettingsHost)
     return OptionsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIPluginsHost)

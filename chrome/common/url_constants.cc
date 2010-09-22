@@ -65,7 +65,7 @@ const char kAboutVersionURL[] = "about:version";
 // to be used for testing.
 const char kAboutBrowserCrash[] = "about:inducebrowsercrashforrealz";
 
-const char kChromeUIAboutURL[] = "chrome://options/about";
+const char kChromeUIAboutURL[] = "chrome://settings/about";
 const char kChromeUIAppLauncherURL[] = "chrome://newtab/#mode=app-launcher";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUIBugReportURL[] = "chrome://bugreport/";
@@ -82,10 +82,10 @@ const char kChromeUIKeyboardURL[] = "chrome://keyboard/";
 const char kChromeUILabsURL[] = "chrome://labs/";
 const char kChromeUIMediaplayerURL[] = "chrome://mediaplayer/";
 const char kChromeUINewTabURL[] = "chrome://newtab";
-const char kChromeUIOptionsURL[] = "chrome://options/";
 const char kChromeUIPluginsURL[] = "chrome://plugins/";
 const char kChromeUIPrintURL[] = "chrome://print/";
 const char kChromeUIRegisterPageURL[] = "chrome://register/";
+const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 
@@ -106,12 +106,12 @@ const char kChromeUILabsHost[] = "labs";
 const char kChromeUIMediaplayerHost[] = "mediaplayer";
 const char kChromeUINetInternalsHost[] = "net-internals";
 const char kChromeUINewTabHost[] = "newtab";
-const char kChromeUIOptionsHost[] = "options";
 const char kChromeUIPluginsHost[] = "plugins";
 const char kChromeUIPrintHost[] = "print";
 const char kChromeUIRegisterPageHost[] = "register";
 const char kChromeUIRemotingHost[] = "remoting";
 const char kChromeUIResourcesHost[] = "resources";
+const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUISystemInfoHost[] = "system";

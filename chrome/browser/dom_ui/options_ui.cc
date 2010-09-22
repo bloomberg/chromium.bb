@@ -72,7 +72,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings)
-    : DataSource(chrome::kChromeUIOptionsHost, MessageLoop::current()) {
+    : DataSource(chrome::kChromeUISettingsHost, MessageLoop::current()) {
   DCHECK(localized_strings);
   localized_strings_.reset(localized_strings);
 }

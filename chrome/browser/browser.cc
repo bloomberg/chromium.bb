@@ -1826,7 +1826,7 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
 }
 
 void Browser::ShowOptionsTab(const std::string& sub_page) {
-  GURL url(chrome::kChromeUIOptionsURL + sub_page);
+  GURL url(chrome::kChromeUISettingsURL + sub_page);
 
   // See if there is already an options tab open that we can use.
   for (int i = 0; i < tabstrip_model_->count(); i++) {

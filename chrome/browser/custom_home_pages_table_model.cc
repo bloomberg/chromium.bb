@@ -113,7 +113,7 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
       const GURL url = browser->GetTabContentsAt(tab_index)->GetURL();
       if (!url.is_empty() &&
           !(url.SchemeIs(chrome::kChromeUIScheme) &&
-            url.host() == chrome::kChromeUIOptionsHost))
+            url.host() == chrome::kChromeUISettingsHost))
         Add(add_index++, url);
     }
   }

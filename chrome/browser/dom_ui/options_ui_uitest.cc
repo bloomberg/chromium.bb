@@ -43,7 +43,7 @@ TEST_F(OptionsUITest, LoadOptionsByURL) {
   ASSERT_TRUE(tab.get());
 
   // Go to the options tab via URL.
-  NavigateToURL(GURL(chrome::kChromeUIOptionsURL));
+  NavigateToURL(GURL(chrome::kChromeUISettingsURL));
   AssertIsOptionsPage(tab);
 }
 
