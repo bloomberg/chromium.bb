@@ -116,7 +116,8 @@ class SyncDataModelTest(unittest.TestCase):
       self.model = chromiumsync.SyncDataModel()
       request_types = [sync_type, chromiumsync.TOP_LEVEL]
 
-      version, changes = self.model.GetChangesFromTimestamp(request_types, 0)
+      version, changes, remaining = (
+          self.model.GetChangesFromTimestamp(request_types, 0))
 
       expected_count = self.ExpectedPermanentItemCount(sync_type)
       self.assertEqual(expected_count, version)
@@ -128,19 +129,24 @@ class SyncDataModelTest(unittest.TestCase):
         self.assertTrue(change.version <= version)
 
       # Test idempotence: another GetUpdates from ts=0 shouldn't recreate.
-      version, changes = self.model.GetChangesFromTimestamp(request_types, 0)
+      version, changes, remaining = (
+          self.model.GetChangesFromTimestamp(request_types, 0))
       self.assertEqual(expected_count, version)
       self.assertEqual(expected_count, len(changes))
+      self.assertEqual(0, remaining)
 
       # Doing a wider GetUpdates from timestamp zero shouldn't recreate either.
-      new_version, changes = self.model.GetChangesFromTimestamp(
-          chromiumsync.ALL_TYPES, 0)
+      new_version, changes, remaining = (
+          self.model.GetChangesFromTimestamp(chromiumsync.ALL_TYPES, 0))
       self.assertEqual(len(chromiumsync.SyncDataModel._PERMANENT_ITEM_SPECS),
                        new_version)
       self.assertEqual(new_version, len(changes))
-      version, changes = self.model.GetChangesFromTimestamp(request_types, 0)
+      self.assertEqual(0, remaining)
+      version, changes, remaining = (
+          self.model.GetChangesFromTimestamp(request_types, 0))
       self.assertEqual(new_version, version)
       self.assertEqual(expected_count, len(changes))
+      self.assertEqual(0, remaining)
 
   def testBatchSize(self):
     for sync_type in chromiumsync.ALL_TYPES[1:]:
@@ -153,19 +159,23 @@ class SyncDataModelTest(unittest.TestCase):
         entry.id_string = 'batch test %d' % i
         entry.specifics.CopyFrom(specifics)
         self.model._SaveEntry(entry)
-      version, changes = self.model.GetChangesFromTimestamp(request_types, 0)
+      last_bit = self.ExpectedPermanentItemCount(sync_type)
+      version, changes, changes_remaining = (
+          self.model.GetChangesFromTimestamp(request_types, 0))
       self.assertEqual(self.model._BATCH_SIZE, version)
-      version, changes = self.model.GetChangesFromTimestamp(request_types,
-                                                            version)
+      self.assertEqual(self.model._BATCH_SIZE*2 + last_bit, changes_remaining)
+      version, changes, changes_remaining = (
+          self.model.GetChangesFromTimestamp(request_types, version))
       self.assertEqual(self.model._BATCH_SIZE*2, version)
-      version, changes = self.model.GetChangesFromTimestamp(request_types,
-                                                            version)
+      self.assertEqual(self.model._BATCH_SIZE + last_bit, changes_remaining)
+      version, changes, changes_remaining = (
+          self.model.GetChangesFromTimestamp(request_types, version))
       self.assertEqual(self.model._BATCH_SIZE*3, version)
-      expected_dingleberry = self.ExpectedPermanentItemCount(sync_type)
-      version, changes = self.model.GetChangesFromTimestamp(request_types,
-                                                            version)
-      self.assertEqual(self.model._BATCH_SIZE*3 + expected_dingleberry,
-                       version)
+      self.assertEqual(last_bit, changes_remaining)
+      version, changes, changes_remaining = (
+          self.model.GetChangesFromTimestamp(request_types, version))
+      self.assertEqual(self.model._BATCH_SIZE*3 + last_bit, version)
+      self.assertEqual(0, changes_remaining)
 
       # Now delete a third of the items.
       for i in xrange(self.model._BATCH_SIZE*3 - 1, 0, -3):
@@ -175,19 +185,23 @@ class SyncDataModelTest(unittest.TestCase):
         self.model._SaveEntry(entry)
 
       # The batch counts shouldn't change.
-      version, changes = self.model.GetChangesFromTimestamp(request_types, 0)
+      version, changes, changes_remaining = (
+          self.model.GetChangesFromTimestamp(request_types, 0))
       self.assertEqual(self.model._BATCH_SIZE, len(changes))
-      version, changes = self.model.GetChangesFromTimestamp(request_types,
-                                                            version)
+      self.assertEqual(self.model._BATCH_SIZE*2 + last_bit, changes_remaining)
+      version, changes, changes_remaining = (
+          self.model.GetChangesFromTimestamp(request_types, version))
       self.assertEqual(self.model._BATCH_SIZE, len(changes))
-      version, changes = self.model.GetChangesFromTimestamp(request_types,
-                                                            version)
+      self.assertEqual(self.model._BATCH_SIZE + last_bit, changes_remaining)
+      version, changes, changes_remaining = (
+          self.model.GetChangesFromTimestamp(request_types, version))
       self.assertEqual(self.model._BATCH_SIZE, len(changes))
-      expected_dingleberry = self.ExpectedPermanentItemCount(sync_type)
-      version, changes = self.model.GetChangesFromTimestamp(request_types,
-                                                            version)
-      self.assertEqual(expected_dingleberry, len(changes))
-      self.assertEqual(self.model._BATCH_SIZE*4 + expected_dingleberry, version)
+      self.assertEqual(last_bit, changes_remaining)
+      version, changes, changes_remaining = (
+          self.model.GetChangesFromTimestamp(request_types, version))
+      self.assertEqual(last_bit, len(changes))
+      self.assertEqual(self.model._BATCH_SIZE*4 + last_bit, version)
+      self.assertEqual(0, changes_remaining)
 
   def testCommitEachDataType(self):
     for sync_type in chromiumsync.ALL_TYPES[1:]:
@@ -198,7 +212,7 @@ class SyncDataModelTest(unittest.TestCase):
       commit_session = {}
 
       # Start with a GetUpdates from timestamp 0, to populate permanent items.
-      original_version, original_changes = (
+      original_version, original_changes, changes_remaining = (
           self.model.GetChangesFromTimestamp([sync_type], 0))
 
       def DoCommit(original=None, id_string='', name=None, parent=None,
@@ -251,9 +265,10 @@ class SyncDataModelTest(unittest.TestCase):
         self.assertTrue(r.version > original_version)
       self.assertEqual(result1.parent_id_string, proto1.parent_id_string)
       self.assertEqual(result2.parent_id_string, result1.id_string)
-      version, changes = self.model.GetChangesFromTimestamp([sync_type],
-                                                            original_version)
+      version, changes, remaining = (
+          self.model.GetChangesFromTimestamp([sync_type], original_version))
       self.assertEqual(3, len(changes))
+      self.assertEqual(0, remaining)
       self.assertEqual(original_version + 3, version)
       self.assertEqual([result1, result2, result3], changes)
       for c in changes:
@@ -298,9 +313,10 @@ class SyncDataModelTest(unittest.TestCase):
         self.assertTrue(p is not self.model._entries[r.id_string],
                         "Commit didn't make a defensive copy.")
         self.assertTrue(r.version > p.version)
-      version, changes = self.model.GetChangesFromTimestamp([sync_type],
-                                                            original_version)
+      version, changes, remaining = (
+          self.model.GetChangesFromTimestamp([sync_type], original_version))
       self.assertEqual(5, len(changes))
+      self.assertEqual(0, remaining)
       self.assertEqual(original_version + 7, version)
       self.assertEqual([result3, result2b, result4, result1b, result5], changes)
       for c in changes:

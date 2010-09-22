@@ -9,9 +9,11 @@ The details of the protocol are described mostly by comments in the protocol
 buffer definition at chrome/browser/sync/protocol/sync.proto.
 """
 
+import cgi
 import copy
 import operator
 import random
+import sys
 import threading
 
 import app_specifics_pb2
@@ -395,9 +397,11 @@ class SyncDataModel(object):
         more recently than this value will be retrieved; older items will
         be filtered out.
     Returns:
-      A tuple of (version, entries).  Version is a new timestamp value, which
-      should be used as the starting point for the next query.  Entries is the
-      batch of entries meeting the current timestamp query.
+      A tuple of (version, entries, changes_remaining).  Version is a new
+      timestamp value, which should be used as the starting point for the
+      next query.  Entries is the batch of entries meeting the current
+      timestamp query.  Changes_remaining indicates the number of changes
+      left on the server after this batch.
     """
     if timestamp == 0:
       self._CreatePermanentItems(requested_types)
@@ -409,7 +413,7 @@ class SyncDataModel(object):
     batch = new_changes[:self._BATCH_SIZE]
     if not batch:
       # Client is up to date.
-      return (timestamp, [])
+      return (timestamp, [], 0)
 
     # Restrict batch to requested types.  Tombstones are untyped
     # and will always get included.
@@ -418,7 +422,7 @@ class SyncDataModel(object):
 
     # The new client timestamp is the timestamp of the last item in the
     # batch, even if that item was filtered out.
-    return (batch[-1].version, filtered)
+    return (batch[-1].version, filtered, len(new_changes) - len(batch))
 
   def _CheckVersionForCommit(self, entry):
     """Perform an optimistic concurrency check on the version number.
@@ -607,6 +611,7 @@ class SyncDataModel(object):
     self._SaveEntry(entry)
     return entry
 
+
 class TestServer(object):
   """An object to handle requests for one (and only one) Chrome Sync account.
 
@@ -619,8 +624,23 @@ class TestServer(object):
     # The implementation supports exactly one account; its state is here.
     self.account = SyncDataModel()
     self.account_lock = threading.Lock()
+    # Clients that have talked to us: a map from the full client ID
+    # to its nickname.
+    self.clients = {}
+    self.client_name_generator = ('+' * times + chr(c)
+        for times in xrange(0, sys.maxint) for c in xrange(ord('A'),ord('Z')))
 
-  def HandleCommand(self, raw_request):
+  def GetShortClientName(self, query):
+    parsed = cgi.parse_qs(query[query.find('?')+1:])
+    client_id = parsed.get('client_id')
+    if not client_id:
+      return '?'
+    client_id = client_id[0]
+    if client_id not in self.clients:
+      self.clients[client_id] = self.client_name_generator.next()
+    return self.clients[client_id]
+
+  def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.
 
     This is the main entry point for this class.  It is safe to call this
@@ -643,19 +663,21 @@ class TestServer(object):
       response = sync_pb2.ClientToServerResponse()
       response.error_code = sync_pb2.ClientToServerResponse.SUCCESS
       response.store_birthday = self.account.store_birthday
+      log_context = "[Client %s -> %s.py]" % (self.GetShortClientName(query),
+                                              __name__)
 
       if contents == sync_pb2.ClientToServerMessage.AUTHENTICATE:
-        print 'Authenticate'
+        print '%s Authenticate' % log_context
         # We accept any authentication token, and support only one account.
         # TODO(nick): Mock out the GAIA authentication as well; hook up here.
         response.authenticate.user.email = 'syncjuser@chromium'
         response.authenticate.user.display_name = 'Sync J User'
       elif contents == sync_pb2.ClientToServerMessage.COMMIT:
-        print 'Commit'
+        print '%s Commit' % log_context
         self.HandleCommit(request.commit, response.commit)
       elif contents == sync_pb2.ClientToServerMessage.GET_UPDATES:
-        print ('GetUpdates from timestamp %d' %
-               request.get_updates.from_timestamp)
+        print ('%s GetUpdates from timestamp %d' %
+               (log_context, request.get_updates.from_timestamp))
         self.HandleGetUpdates(request.get_updates, response.get_updates)
       return (200, response.SerializeToString())
     finally:
@@ -716,9 +738,10 @@ class TestServer(object):
     """
     update_response.SetInParent()
     requested_types = GetRequestedTypes(update_request)
-    new_timestamp, entries = self.account.GetChangesFromTimestamp(
+    new_timestamp, entries, remaining = self.account.GetChangesFromTimestamp(
         requested_types, update_request.from_timestamp)
 
+    update_response.changes_remaining = remaining
     # If the client is up to date, we are careful not to set the
     # new_timestamp field.
     if new_timestamp != update_request.from_timestamp:
