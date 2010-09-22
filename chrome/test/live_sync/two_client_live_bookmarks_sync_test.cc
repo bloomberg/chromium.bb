@@ -4,6 +4,7 @@
 
 #include "base/rand_util.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -2126,7 +2127,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   // Set up sync on both clients.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
   // Wait for changes to propagate.
   ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   // Let's make sure there aren't any duplicates after sync.
@@ -2135,3 +2135,228 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   BookmarkModelVerifier::ExpectModelsMatchIncludingFavicon(
       bm0, bm1, false);
 }
+
+// Test Scribe ID - 373504.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    MC_MergeBMFoldersWithDifferentBMs) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  BookmarkModel* profile0_bookmark_model = GetBookmarkModel(0);
+  BookmarkModel* profile1_bookmark_model = GetBookmarkModel(1);
+
+  const BookmarkNode* profile0_bookmark_bar =
+      profile0_bookmark_model->GetBookmarkBarNode();
+  const BookmarkNode* profile1_bookmark_bar =
+      profile1_bookmark_model->GetBookmarkBarNode();
+
+  // Let's add first bookmark folder and 2 bookmarks in profile0.
+  const BookmarkNode* profile0_folder = profile0_bookmark_model->AddGroup(
+      profile0_bookmark_bar, 0, ASCIIToUTF16("Folder_name"));
+  ASSERT_TRUE(profile0_folder != NULL);
+  const BookmarkNode* profile0_bookmark1 = profile0_bookmark_model->AddURL(
+      profile0_folder, 0, ASCIIToUTF16("bookmark1_name"),
+      GURL("http://www.bookmark1-url.com"));
+  ASSERT_TRUE(profile0_bookmark1 != NULL);
+  const BookmarkNode* profile0_bookmark3 = profile0_bookmark_model->AddURL(
+      profile0_folder, 1, ASCIIToUTF16("bookmark3_name"),
+      GURL("http://www.bookmark3-url.com"));
+  ASSERT_TRUE(profile0_bookmark3 != NULL);
+
+  // Let's add first bookmark folder and 2 bookmarks in profile1.
+  const BookmarkNode* profile1_folder = profile1_bookmark_model->AddGroup(
+      profile1_bookmark_bar, 0, ASCIIToUTF16("Folder_name"));
+  ASSERT_TRUE(profile1_folder != NULL);
+  const BookmarkNode* profile1_bookmark2 = profile1_bookmark_model->AddURL(
+      profile1_folder, 0, ASCIIToUTF16("bookmark2_name"),
+      GURL("http://www.bookmark2-url.com"));
+  ASSERT_TRUE(profile1_bookmark2 != NULL);
+  const BookmarkNode* profile1_bookmark4 = profile1_bookmark_model->AddURL(
+      profile1_folder, 1, ASCIIToUTF16("bookmark4_name"),
+      GURL("http://www.bookmark4-url.com"));
+  ASSERT_TRUE(profile1_bookmark4 != NULL);
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+  BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
+  BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
+                                           profile1_bookmark_model);
+}
+
+// Test Scribe ID - 373509.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    MC_MergeDifferentBMModelsModeratelyComplex) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  BookmarkModel* profile0_bookmark_model = GetBookmarkModel(0);
+  BookmarkModel* profile1_bookmark_model = GetBookmarkModel(1);
+
+  const BookmarkNode* profile0_bookmark_bar =
+      profile0_bookmark_model->GetBookmarkBarNode();
+  const BookmarkNode* profile1_bookmark_bar =
+      profile1_bookmark_model->GetBookmarkBarNode();
+
+  // Let's add some bookmarks in profile0.
+  for (int index = 0; index < 20; index++) {
+    string16 title = ASCIIToUTF16(StringPrintf("profile0_bookmark%d-name",
+                                               index));
+    string url = StringPrintf("http://www.profile0-bookmark%d-url.com", index);
+    const BookmarkNode* profile0_bookmark0 = profile0_bookmark_model->AddURL(
+        profile0_bookmark_bar, index, title, GURL(url));
+    ASSERT_TRUE(profile0_bookmark0 != NULL);
+  }
+
+  // Let's add some bookmarks within the folders in profile0.
+  for (int index = 20; index < 25; index++) {
+    string16 title = ASCIIToUTF16(StringPrintf("Profile0-Folder%d_name",
+                                               index));
+    const BookmarkNode* profile0_folder0 = profile0_bookmark_model->AddGroup(
+        profile0_bookmark_bar, index, title);
+    ASSERT_TRUE(profile0_folder0 != NULL);
+    for (int index = 0; index < 5; index++) {
+      string16 child_title = title +
+          ASCIIToUTF16(StringPrintf("-bookmark%d_name", index));
+      string url = StringPrintf(
+          "http://www.profile0-folder0-bookmark%d-url.com", index);
+      const BookmarkNode* profile0_bookmark1 = profile0_bookmark_model->AddURL(
+          profile0_folder0, index, child_title, GURL(url));
+      ASSERT_TRUE(profile0_bookmark1 != NULL);
+    }
+  }
+
+  // Let's add some bookmarks in profile1.
+  for (int index = 0; index < 20; index++) {
+    string16 title = ASCIIToUTF16(StringPrintf("profile1_bookmark%d_name",
+                                               index));
+    string url = StringPrintf("http://www.profile1-bookmark%d-ulr.com", index);
+    const BookmarkNode* profile1_bookmark0 = profile1_bookmark_model->AddURL(
+        profile1_bookmark_bar, index, title, GURL(url));
+    ASSERT_TRUE(profile1_bookmark0 != NULL);
+  }
+
+  // Let's add some bookmarks within the folders in profile1.
+  for (int index = 20; index < 25; index++) {
+    string16 title = ASCIIToUTF16(StringPrintf("Profile1-Folder%d_name",
+                                               index));
+    const BookmarkNode* profile1_folder0 = profile1_bookmark_model->AddGroup(
+        profile1_bookmark_bar, index, title);
+    ASSERT_TRUE(profile1_folder0 != NULL);
+    for (int index = 0; index < 5; index++) {
+      string16 child_title = title +
+          ASCIIToUTF16(StringPrintf("-bookmark%d_name", index));
+      string url = StringPrintf(
+          "http://www.profile1-folder0-bookmark%d-url.com", index);
+      const BookmarkNode* profile1_bookmark1 = profile1_bookmark_model->AddURL(
+          profile1_folder0, index, child_title, GURL(url));
+      ASSERT_TRUE(profile1_bookmark1 != NULL);
+    }
+  }
+
+  // Let's add same bookmarks in both the profiles.
+  for (int index = 25; index < 45; index++) {
+    string16 title = ASCIIToUTF16(StringPrintf("bookmark%d_name", index));
+    string url = StringPrintf("http://www.bookmark%d-url.com", index);
+    const BookmarkNode* profile0_bookmark = profile0_bookmark_model->AddURL(
+        profile0_bookmark_bar, index, title, GURL(url));
+    ASSERT_TRUE(profile0_bookmark != NULL);
+    const BookmarkNode* profile1_bookmark = profile1_bookmark_model->AddURL(
+        profile1_bookmark_bar, index, title, GURL(url));
+    ASSERT_TRUE(profile1_bookmark != NULL);
+  }
+
+  // Let's add same bookmark folders and bookmarks in those on both clients.
+  for (int index = 45; index < 50; index++) {
+    string16 title = ASCIIToUTF16(StringPrintf("Folder%d_name", index));
+    const BookmarkNode* profile0_folder = profile0_bookmark_model->AddGroup(
+        profile0_bookmark_bar, index, title);
+    ASSERT_TRUE(profile0_folder != NULL);
+    const BookmarkNode* profile1_folder = profile1_bookmark_model->AddGroup(
+        profile1_bookmark_bar, index, title);
+    ASSERT_TRUE(profile1_folder != NULL);
+    // Let's add same bookmarks in the folders created above.
+    for (int index = 0; index < 5; index++) {
+      string16 child_title = title +
+          ASCIIToUTF16(StringPrintf("-bookmark%d_name", index));
+      string url = StringPrintf("http://www.folder-bookmark%d-url.com", index);
+      const BookmarkNode* profile0_bookmark2 = profile0_bookmark_model->AddURL(
+          profile0_folder, index, child_title, GURL(url));
+      ASSERT_TRUE(profile0_bookmark2 != NULL);
+      const BookmarkNode* profile1_bookmark2 = profile1_bookmark_model->AddURL(
+          profile1_folder, index, child_title, GURL(url));
+      ASSERT_TRUE(profile1_bookmark2 != NULL);
+    }
+  }
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+  BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
+  BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
+                                           profile1_bookmark_model);
+}
+
+// Test Scribe ID - 386591.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    MC_MergeSimpleBMHierarchySubsetUnderBMFolder) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  BookmarkModel* profile0_bookmark_model = GetBookmarkModel(0);
+  BookmarkModel* profile1_bookmark_model = GetBookmarkModel(1);
+
+  const BookmarkNode* profile0_bookmark_bar =
+      profile0_bookmark_model->GetBookmarkBarNode();
+  const BookmarkNode* profile1_bookmark_bar =
+      profile1_bookmark_model->GetBookmarkBarNode();
+
+  {
+    // Let's create the hierarchy in profile0.
+    const BookmarkNode* profile0_folder = profile0_bookmark_model->AddGroup(
+        profile0_bookmark_bar, 0, ASCIIToUTF16("Folder_name"));
+    ASSERT_TRUE(profile0_folder != NULL);
+    const BookmarkNode* profile0_folder0 = profile0_bookmark_model->AddGroup(
+        profile0_folder, 0, ASCIIToUTF16("Folder0_name"));
+    ASSERT_TRUE(profile0_folder0 != NULL);
+    const BookmarkNode* profile0_bookmark1 = profile0_bookmark_model->AddURL(
+        profile0_folder0, 0, ASCIIToUTF16("bookmark1_name"),
+        GURL("http://www.bookmark1-url.com"));
+    ASSERT_TRUE(profile0_bookmark1 != NULL);
+    const BookmarkNode* profile0_folder2 = profile0_bookmark_model->AddGroup(
+        profile0_folder, 1, ASCIIToUTF16("Folder2_name"));
+    ASSERT_TRUE(profile0_folder2 != NULL);
+    const BookmarkNode* profile0_bookmark3 = profile0_bookmark_model->AddURL(
+        profile0_folder2, 0, ASCIIToUTF16("bookmark3_name"),
+        GURL("http://www.bookmark3-url.com"));
+    ASSERT_TRUE(profile0_bookmark3 != NULL);
+    const BookmarkNode* profile0_folder4 = profile0_bookmark_model->AddGroup(
+        profile0_folder, 2, ASCIIToUTF16("Folder4_name"));
+    ASSERT_TRUE(profile0_folder4 != NULL);
+    const BookmarkNode* profile0_bookmark5 = profile0_bookmark_model->AddURL(
+        profile0_folder4, 0, ASCIIToUTF16("bookmark1_name"),
+        GURL("http://www.bookmark1-url.com"));
+    ASSERT_TRUE(profile0_bookmark5 != NULL);
+
+    // Let's create the hierarchy for profile1.
+    const BookmarkNode* profile1_folder = profile1_bookmark_model->AddGroup(
+        profile1_bookmark_bar, 0, ASCIIToUTF16("Folder_name"));
+    ASSERT_TRUE(profile1_folder != NULL);
+    const BookmarkNode* profile1_folder0 = profile1_bookmark_model->AddGroup(
+        profile1_folder, 0, ASCIIToUTF16("Folder0_name"));
+    ASSERT_TRUE(profile1_folder0 != NULL);
+    const BookmarkNode* profile1_folder2 = profile1_bookmark_model->AddGroup(
+        profile1_folder, 1, ASCIIToUTF16("Folder2_name"));
+    ASSERT_TRUE(profile1_folder2 != NULL);
+    const BookmarkNode* profile1_bookmark3 = profile1_bookmark_model->AddURL(
+        profile1_folder2, 0, ASCIIToUTF16("bookmark3_name"),
+        GURL("http://www.bookmark3-url.com"));
+    ASSERT_TRUE(profile1_bookmark3 != NULL);
+    const BookmarkNode* profile1_folder4 = profile1_bookmark_model->AddGroup(
+        profile1_folder, 2, ASCIIToUTF16("Folder4_name"));
+    ASSERT_TRUE(profile1_folder4 != NULL);
+    const BookmarkNode* profile1_bookmark5 = profile1_bookmark_model->AddURL(
+        profile1_folder4, 0, ASCIIToUTF16("bookmark1_name"),
+        GURL("http://www.bookmark1-url.com"));
+    ASSERT_TRUE(profile1_bookmark5 != NULL);
+  }
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
+  BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
+                                           profile1_bookmark_model);
+}
+
