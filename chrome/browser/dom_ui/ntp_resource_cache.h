@@ -10,7 +10,6 @@
 #include "base/ref_counted.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 
 class Profile;
 class RefCountedBytes;
@@ -20,7 +19,7 @@ class RefCountedBytes;
 class NTPResourceCache : public NotificationObserver {
  public:
   explicit NTPResourceCache(Profile* profile);
-  virtual ~NTPResourceCache() {}
+  virtual ~NTPResourceCache();
 
   RefCountedBytes* GetNewTabHTML(bool is_off_the_record);
   RefCountedBytes* GetNewTabCSS(bool is_off_the_record);
@@ -44,7 +43,6 @@ class NTPResourceCache : public NotificationObserver {
   scoped_refptr<RefCountedBytes> new_tab_css_;
 
   NotificationRegistrar registrar_;
-  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

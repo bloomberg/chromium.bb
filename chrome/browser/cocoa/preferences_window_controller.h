@@ -9,7 +9,6 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 
 namespace PreferencesWindowControllerInternal {
 class PrefObserverBridge;
@@ -46,7 +45,6 @@ class ProfileSyncService;
   ProfileSyncService* syncService_;
   scoped_ptr<PreferencesWindowControllerInternal::PrefObserverBridge>
       observer_;  // Watches for pref changes.
-  PrefChangeRegistrar registrar_;  // Manages pref change observer registration.
   scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
   NSView* currentPrefsView_;  // weak ref - current prefs page view.
   scoped_ptr<PreferencesWindowControllerInternal::ManagedPrefsBannerState>

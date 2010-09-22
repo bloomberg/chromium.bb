@@ -27,10 +27,8 @@ HostZoomMap::HostZoomMap(Profile* profile)
   // Don't observe pref changes (e.g. from sync) in Incognito; once we create
   // the incognito window it should have no further connection to the main
   // profile/prefs.
-  if (!profile_->IsOffTheRecord()) {
-    pref_change_registrar_.Init(profile_->GetPrefs());
-    pref_change_registrar_.Add(prefs::kPerHostZoomLevels, this);
-  }
+  if (!profile_->IsOffTheRecord())
+    profile_->GetPrefs()->AddPrefObserver(prefs::kPerHostZoomLevels, this);
 }
 
 void HostZoomMap::Load() {
@@ -130,7 +128,7 @@ void HostZoomMap::Shutdown() {
                     NotificationType::PROFILE_DESTROYED,
                     Source<Profile>(profile_));
   if (!profile_->IsOffTheRecord())
-    pref_change_registrar_.RemoveAll();
+    profile_->GetPrefs()->RemovePrefObserver(prefs::kPerHostZoomLevels, this);
   profile_ = NULL;
 }
 

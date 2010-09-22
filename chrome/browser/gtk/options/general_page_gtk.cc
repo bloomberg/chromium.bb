@@ -95,9 +95,8 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
       InitDefaultBrowserGroup(), false);
 #endif
 
-  registrar_.Init(profile->GetPrefs());
-  registrar_.Add(prefs::kRestoreOnStartup, this);
-  registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
+  profile->GetPrefs()->AddPrefObserver(prefs::kRestoreOnStartup, this);
+  profile->GetPrefs()->AddPrefObserver(prefs::kURLsToRestoreOnStartup, this);
 
   new_tab_page_is_home_page_.Init(prefs::kHomePageIsNewTabPage,
       profile->GetPrefs(), this);
@@ -109,6 +108,10 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
 }
 
 GeneralPageGtk::~GeneralPageGtk() {
+  profile()->GetPrefs()->RemovePrefObserver(prefs::kRestoreOnStartup, this);
+  profile()->GetPrefs()->RemovePrefObserver(
+      prefs::kURLsToRestoreOnStartup, this);
+
   if (template_url_model_)
     template_url_model_->RemoveObserver(this);
 

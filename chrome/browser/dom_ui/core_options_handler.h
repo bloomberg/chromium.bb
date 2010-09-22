@@ -11,7 +11,6 @@
 
 #include "base/values.h"
 #include "chrome/browser/dom_ui/options_ui.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 
 // Core options UI handler.
 // Handles resource and JS calls common to all options sub-pages.
@@ -23,6 +22,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Uninitialize();
 
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -30,7 +30,6 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
 
  protected:
   // Fetches a pref value of given |pref_name|.
@@ -87,8 +86,6 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void HandleUserMetricsAction(const ListValue* args);
 
   void NotifyPrefChanged(const std::string* pref_name);
-
-  PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOptionsHandler);
 };

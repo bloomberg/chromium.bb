@@ -12,7 +12,6 @@
 #include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/notification_observer.h"
@@ -275,8 +274,6 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Cairo surfaces for each GdkDisplay.
   PerDisplaySurfaceMap per_display_surfaces_;
   PerDisplaySurfaceMap per_display_unthemed_surfaces_;
-
-  PrefChangeRegistrar registrar_;
 
   // This is a dummy widget that only exists so we have something to pass to
   // gtk_widget_render_icon().

@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -60,8 +59,6 @@ class PreferenceChangeProcessor : public ChangeProcessor,
 
   // Whether we are currently processing a preference change notification.
   bool processing_pref_change_;
-
-  PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceChangeProcessor);
 };

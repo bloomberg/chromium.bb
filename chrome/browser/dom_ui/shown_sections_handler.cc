@@ -50,8 +50,11 @@ int ShownSectionsHandler::GetShownSections(PrefService* prefs) {
 
 ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
     : pref_service_(pref_service) {
-  registrar_.Init(pref_service);
-  registrar_.Add(prefs::kNTPShownSections, this);
+  pref_service_->AddPrefObserver(prefs::kNTPShownSections, this);
+}
+
+ShownSectionsHandler::~ShownSectionsHandler() {
+  pref_service_->RemovePrefObserver(prefs::kNTPShownSections, this);
 }
 
 void ShownSectionsHandler::RegisterMessages() {

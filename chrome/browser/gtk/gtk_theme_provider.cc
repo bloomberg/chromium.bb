@@ -258,6 +258,7 @@ GtkThemeProvider::GtkThemeProvider()
 }
 
 GtkThemeProvider::~GtkThemeProvider() {
+  profile()->GetPrefs()->RemovePrefObserver(prefs::kUsesSystemTheme, this);
   gtk_widget_destroy(fake_window_);
   gtk_widget_destroy(fake_frame_);
   fake_label_.Destroy();
@@ -272,8 +273,7 @@ GtkThemeProvider::~GtkThemeProvider() {
 }
 
 void GtkThemeProvider::Init(Profile* profile) {
-  registrar_.Init(profile->GetPrefs());
-  registrar_.Add(prefs::kUsesSystemTheme, this);
+  profile->GetPrefs()->AddPrefObserver(prefs::kUsesSystemTheme, this);
   use_gtk_ = profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
 
   BrowserThemeProvider::Init(profile);

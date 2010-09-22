@@ -8,7 +8,6 @@
 
 #include "app/menus/simple_menu_model.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -142,9 +141,6 @@ class BackgroundModeManager
 
   // Reference to our status icon (if any) - owned by the StatusTray.
   StatusIcon* status_icon_;
-
-  // Ensure observed preferences are properly cleaned up.
-  PrefChangeRegistrar pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundModeManager);
 };

@@ -290,10 +290,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       &ProfileImpl::EnsureSessionServiceCreated);
 
   PrefService* prefs = GetPrefs();
-  pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
-  pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
-  pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
+  prefs->AddPrefObserver(prefs::kSpellCheckDictionary, this);
+  prefs->AddPrefObserver(prefs::kEnableSpellCheck, this);
+  prefs->AddPrefObserver(prefs::kEnableAutoSpellCorrect, this);
 
 #if defined(OS_MACOSX)
   // If the profile directory doesn't already have a cache directory and it
@@ -500,8 +499,11 @@ ProfileImpl::~ProfileImpl() {
   // The theme provider provides bitmaps to whoever wants them.
   theme_provider_.reset();
 
-  // Remove pref observers
-  pref_change_registrar_.RemoveAll();
+  // Remove pref observers.
+  PrefService* prefs = GetPrefs();
+  prefs->RemovePrefObserver(prefs::kSpellCheckDictionary, this);
+  prefs->RemovePrefObserver(prefs::kEnableSpellCheck, this);
+  prefs->RemovePrefObserver(prefs::kEnableAutoSpellCorrect, this);
 
   // Delete the NTP resource cache so we can unregister pref observers.
   ntp_resource_cache_.reset();

@@ -209,7 +209,6 @@ DesktopNotificationService::DesktopNotificationService(Profile* profile,
     NotificationUIManager* ui_manager)
     : profile_(profile),
       ui_manager_(ui_manager) {
-  registrar_.Init(profile_->GetPrefs());
   InitPrefs();
   StartObserving();
 }
@@ -254,15 +253,21 @@ void DesktopNotificationService::InitPrefs() {
 
 void DesktopNotificationService::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
-    registrar_.Add(prefs::kDesktopNotificationDefaultContentSetting, this);
-    registrar_.Add(prefs::kDesktopNotificationAllowedOrigins, this);
-    registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->AddPrefObserver(prefs::kDesktopNotificationDefaultContentSetting,
+                           this);
+    prefs->AddPrefObserver(prefs::kDesktopNotificationAllowedOrigins, this);
+    prefs->AddPrefObserver(prefs::kDesktopNotificationDeniedOrigins, this);
   }
 }
 
 void DesktopNotificationService::StopObserving() {
   if (!profile_->IsOffTheRecord()) {
-    registrar_.RemoveAll();
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->RemovePrefObserver(prefs::kDesktopNotificationDefaultContentSetting,
+                              this);
+    prefs->RemovePrefObserver(prefs::kDesktopNotificationAllowedOrigins, this);
+    prefs->RemovePrefObserver(prefs::kDesktopNotificationDeniedOrigins, this);
   }
 }
 

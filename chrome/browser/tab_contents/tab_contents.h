@@ -24,7 +24,6 @@
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/jsmessage_box_client.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
@@ -1057,9 +1056,6 @@ class TabContents : public PageNavigator,
 
   // Registers and unregisters us for notifications.
   NotificationRegistrar registrar_;
-
-  // Registers and unregisters for pref notifications.
-  PrefChangeRegistrar pref_change_registrar_;
 
   // Handles print preview and print job for this contents.
   scoped_ptr<printing::PrintViewManager> printing_;

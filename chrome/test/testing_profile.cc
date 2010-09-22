@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
-#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
@@ -208,8 +207,6 @@ TestingProfile::~TestingProfile() {
   if (top_sites_.get())
     top_sites_->ClearProfile();
   history::TopSites::DeleteTopSites(top_sites_);
-  if (extensions_service_.get())
-    extensions_service_->DestroyingProfile();
 }
 
 void TestingProfile::CreateFaviconService() {
@@ -318,17 +315,6 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
   theme_provider_.reset(theme_provider);
 }
 
-scoped_refptr<ExtensionsService> TestingProfile::CreateExtensionsService(
-    const CommandLine* command_line,
-    const FilePath& install_directory) {
-  extensions_service_ = new ExtensionsService(this,
-                                              command_line,
-                                              GetPrefs(),
-                                              install_directory,
-                                              false);
-  return extensions_service_;
-}
-
 FilePath TestingProfile::GetPath() {
   DCHECK(temp_dir_.IsValid());  // TODO(phajdan.jr): do it better.
   return temp_dir_.path();
@@ -342,10 +328,6 @@ webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
   if (!db_tracker_)
     db_tracker_ = new webkit_database::DatabaseTracker(GetPath(), false);
   return db_tracker_;
-}
-
-ExtensionsService* TestingProfile::GetExtensionsService() {
-  return extensions_service_.get();
 }
 
 net::CookieMonster* TestingProfile::GetCookieMonster() {

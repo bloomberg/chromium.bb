@@ -148,8 +148,7 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile,
                  NotificationService::AllSources());
 
   // Listen for changes to the background mode preference.
-  pref_registrar_.Init(profile_->GetPrefs());
-  pref_registrar_.Add(prefs::kBackgroundModeEnabled, this);
+  profile_->GetPrefs()->AddPrefObserver(prefs::kBackgroundModeEnabled, this);
 }
 
 BackgroundModeManager::~BackgroundModeManager() {
@@ -158,6 +157,10 @@ BackgroundModeManager::~BackgroundModeManager() {
   // because in an actual running system we'd get an APP_TERMINATING
   // notification before being destroyed.
   EndBackgroundMode();
+  // Manually remove our pref observer so we don't get notified for prefs
+  // changes (have to do it manually because we can't use the registrar for
+  // prefs notifications).
+  profile_->GetPrefs()->RemovePrefObserver(prefs::kBackgroundModeEnabled, this);
 }
 
 bool BackgroundModeManager::IsBackgroundModeEnabled() {

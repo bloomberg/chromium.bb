@@ -140,17 +140,31 @@ class PrefObserverDisabler {
     // Manually observe notifications for preferences that are grouped in
     // the HostContentSettingsMap or GeolocationContentSettingsMap.
     PrefService* prefs = profile_->GetPrefs();
-    registrar_.Init(prefs);
-    registrar_.Add(prefs::kBlockThirdPartyCookies, observer_.get());
-    registrar_.Add(prefs::kBlockNonsandboxedPlugins, observer_.get());
-    registrar_.Add(prefs::kDefaultContentSettings, observer_.get());
-    registrar_.Add(prefs::kGeolocationDefaultContentSetting, observer_.get());
+    prefs->AddPrefObserver(prefs::kBlockThirdPartyCookies, observer_.get());
+    prefs->AddPrefObserver(prefs::kBlockNonsandboxedPlugins, observer_.get());
+    prefs->AddPrefObserver(prefs::kDefaultContentSettings, observer_.get());
+    prefs->AddPrefObserver(prefs::kGeolocationDefaultContentSetting,
+                           observer_.get());
 
     // We don't need to observe changes in this value.
     lastSelectedTab_.Init(prefs::kContentSettingsWindowLastTabIndex,
                           profile_->GetPrefs(), NULL);
   }
   return self;
+}
+
+- (void)dealloc {
+  if (profile_) {
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->RemovePrefObserver(prefs::kBlockThirdPartyCookies, observer_.get());
+    prefs->RemovePrefObserver(prefs::kBlockNonsandboxedPlugins,
+                              observer_.get());
+    prefs->RemovePrefObserver(prefs::kDefaultContentSettings, observer_.get());
+    prefs->RemovePrefObserver(prefs::kGeolocationDefaultContentSetting,
+                              observer_.get());
+  }
+
+  [super dealloc];
 }
 
 - (void)closeExceptionsSheet {

@@ -195,7 +195,6 @@ Value* PreferenceChangeProcessor::ReadPreference(
 void PreferenceChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   pref_service_ = profile->GetPrefs();
-  registrar_.Init(pref_service_);
   StartObserving();
 }
 
@@ -211,7 +210,7 @@ void PreferenceChangeProcessor::StartObserving() {
   for (std::set<std::string>::const_iterator it =
       model_associator_->synced_preferences().begin();
       it != model_associator_->synced_preferences().end(); ++it) {
-    registrar_.Add((*it).c_str(), this);
+    pref_service_->AddPrefObserver((*it).c_str(), this);
   }
 }
 
@@ -220,7 +219,7 @@ void PreferenceChangeProcessor::StopObserving() {
   for (std::set<std::string>::const_iterator it =
       model_associator_->synced_preferences().begin();
       it != model_associator_->synced_preferences().end(); ++it) {
-    registrar_.Remove((*it).c_str(), this);
+    pref_service_->RemovePrefObserver((*it).c_str(), this);
   }
 }
 

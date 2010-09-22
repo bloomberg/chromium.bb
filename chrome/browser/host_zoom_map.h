@@ -15,7 +15,6 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -84,7 +83,6 @@ class HostZoomMap : public NotificationObserver,
   bool updating_preferences_;
 
   NotificationRegistrar registrar_;
-  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HostZoomMap);
 };

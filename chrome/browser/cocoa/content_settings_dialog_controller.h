@@ -7,7 +7,6 @@
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 
 // Index of the "enabled" and "disabled" radio group settings in all tabs except
@@ -51,7 +50,6 @@ class Profile;
   Profile* profile_;  // weak
   IntegerPrefMember lastSelectedTab_;
   BooleanPrefMember clearSiteDataOnExit_;
-  PrefChangeRegistrar registrar_;
   scoped_ptr<ContentSettingsDialogControllerInternal::PrefObserverBridge>
       observer_;  // Watches for pref changes.
 }
