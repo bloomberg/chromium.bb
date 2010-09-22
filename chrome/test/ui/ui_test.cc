@@ -159,16 +159,7 @@ void UITestBase::TearDown() {
   }
   EXPECT_EQ(expected_errors_, assertions.size()) << failures;
 
-  // Check for crashes during the test
-  FilePath crash_dump_path;
-  PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
-  int actual_crashes =
-      file_util::CountFilesCreatedAfter(crash_dump_path, test_start_time_);
-
-#if defined(OS_WIN)
-  // Each crash creates two dump files, so we divide by two here.
-  actual_crashes /= 2;
-#endif
+  int actual_crashes = GetCrashCount();
 
   std::wstring error_msg =
       L"Encountered an unexpected crash in the program during this test.";
@@ -670,6 +661,20 @@ bool UITestBase::CrashAwareSleep(int time_out_ms) {
 
 int UITestBase::GetBrowserProcessCount() {
   return GetRunningChromeProcesses(process_id_).size();
+}
+
+int UITestBase::GetCrashCount() {
+  FilePath crash_dump_path;
+  PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
+  int actual_crashes = file_util::CountFilesCreatedAfter(
+      crash_dump_path, test_start_time_);
+
+#if defined(OS_WIN)
+  // Each crash creates two dump files, so we divide by two here.
+  actual_crashes /= 2;
+#endif
+
+  return actual_crashes;
 }
 
 static DictionaryValue* LoadDictionaryValueFromPath(const FilePath& path) {

@@ -410,6 +410,9 @@ class UITestBase {
   // The count includes browser sub-processes.
   int GetBrowserProcessCount();
 
+  // Get the number of crash dumps we've logged since the test started.
+  int GetCrashCount();
+
   // Returns a copy of local state preferences. The caller is responsible for
   // deleting the returned object. Returns NULL if there is an error.
   DictionaryValue* GetLocalState();
