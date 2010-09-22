@@ -345,7 +345,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
    */
   int                   retval;
   int                   envc;
-  char const *const     *pp;
   size_t                size;
   size_t                ptr_tbl_size;
   int                   i;
@@ -366,11 +365,12 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   CHECK(argc > 0);
   CHECK(NULL != argv);
 
-  if (NULL == envv) {
-    envc = 0;
-  } else {
-    for (pp = envv, envc = 0; NULL != *pp; ++pp, ++envc)
-      ;
+  envc = 0;
+  if (NULL != envv) {
+    char const *const *pp;
+    for (pp = envv; NULL != *pp; ++pp) {
+      ++envc;
+    }
   }
   envv_len = 0;
   argv_len = malloc(argc * sizeof argv_len[0]);
