@@ -16,6 +16,7 @@ namespace chromeos {
 class LoginFailure {
  public:
   enum FailureReason {
+    NONE,
     COULD_NOT_MOUNT_CRYPTOHOME,
     COULD_NOT_MOUNT_TMPFS,
     DATA_REMOVAL_FAILED,  // Could not destroy your old data
@@ -43,6 +44,10 @@ class LoginFailure {
   static LoginFailure FromNetworkAuthFailure(
       const GoogleServiceAuthError& error) {
     return LoginFailure(NETWORK_AUTH_FAILED, error);
+  }
+
+  static LoginFailure None() {
+    return LoginFailure(NONE);
   }
 
   const std::string GetErrorString() const {

@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/issue_response_handler.h"
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
+#include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -49,42 +50,6 @@ class MockConsumer : public LoginStatusConsumer {
   MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
   MOCK_METHOD1(OnPasswordChangeDetected,
       void(const GaiaAuthConsumer::ClientLoginResult& result));
-};
-
-// Simulates a URL fetch by posting a delayed task.  This fetch expects to be
-// canceled, and fails the test if it is not
-class ExpectCanceledFetcher : public URLFetcher {
- public:
-  ExpectCanceledFetcher(bool success,
-                        const GURL& url,
-                        const std::string& results,
-                        URLFetcher::RequestType request_type,
-                        URLFetcher::Delegate* d)
-      : URLFetcher(url, request_type, d) {
-  }
-
-  virtual ~ExpectCanceledFetcher() {
-    task_->Cancel();
-  }
-
-  static void CompleteFetch() {
-    ADD_FAILURE() << "Fetch completed in ExpectCanceledFetcher!";
-    MessageLoop::current()->Quit();  // Allow exiting even if we mess up.
-  }
-
-  void Start() {
-    LOG(INFO) << "Delaying fetch completion in mock";
-    task_ = NewRunnableFunction(&ExpectCanceledFetcher::CompleteFetch);
-    ChromeThread::PostDelayedTask(ChromeThread::UI,
-                                  FROM_HERE,
-                                  task_,
-                                  100);
-  }
-
- private:
-  CancelableTask* task_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExpectCanceledFetcher);
 };
 
 class GoogleAuthenticatorTest : public ::testing::Test {

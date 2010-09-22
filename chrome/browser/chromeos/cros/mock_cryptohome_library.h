@@ -11,11 +11,25 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using ::testing::Invoke;
+using ::testing::_;
+
 namespace chromeos {
 
 class MockCryptohomeLibrary : public CryptohomeLibrary {
  public:
-  MockCryptohomeLibrary() {}
+  MockCryptohomeLibrary() {
+    ON_CALL(*this, AsyncCheckKey(_, _, _))
+        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::TwoString));
+    ON_CALL(*this, AsyncMigrateKey(_, _, _, _))
+        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::ThreeString));
+    ON_CALL(*this, AsyncMount(_, _, _))
+        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::TwoString));
+    ON_CALL(*this, AsyncMountForBwsi(_))
+        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::ZeroString));
+    ON_CALL(*this, AsyncRemove(_, _))
+        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::OneString));
+  }
   virtual ~MockCryptohomeLibrary() {}
   MOCK_METHOD2(CheckKey, bool(const std::string& user_email,
                               const std::string& passhash));
@@ -41,6 +55,41 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD2(AsyncRemove, bool(const std::string& user_email, Delegate* d));
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD0(GetSystemSalt, CryptohomeBlob(void));
+
+  void SetAsyncBehavior(bool outcome, int code) {
+    outcome_ = outcome;
+    code_ = code;
+  }
+
+  bool ThreeString(const std::string& user_email,
+                   const std::string& old_hash,
+                   const std::string& new_hash,
+                   Delegate* d) {
+    d->OnComplete(outcome_, code_);
+    return true;
+  }
+
+  bool TwoString(const std::string& user_email,
+                 const std::string& passhash,
+                 Delegate* d) {
+    d->OnComplete(outcome_, code_);
+    return true;
+  }
+
+  bool OneString(const std::string& user_email, Delegate* d) {
+    d->OnComplete(outcome_, code_);
+    return true;
+  }
+
+  bool ZeroString(Delegate* d) {
+    d->OnComplete(outcome_, code_);
+    return true;
+  }
+
+ private:
+  bool outcome_;
+  int code_;
+  DISALLOW_COPY_AND_ASSIGN(MockCryptohomeLibrary);
 };
 }  // namespace chromeos
 
