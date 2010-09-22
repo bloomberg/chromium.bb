@@ -175,6 +175,9 @@ deps = {
 
   "src/third_party/speex":
     "/trunk/deps/third_party/speex@56515",
+
+  "src/third_party/libsrtp/src":
+    "/trunk/deps/third_party/libsrtp@60080",
 }
 
 
