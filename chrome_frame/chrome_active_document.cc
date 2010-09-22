@@ -931,8 +931,8 @@ void ChromeActiveDocument::OnAttachExternalTab(int tab_handle,
 
   HRESULT hr = S_OK;
   if (popup_manager_) {
-    LPCWSTR popup_wnd_url = UTF8ToWide(params.url.spec()).c_str();
-    hr = popup_manager_->EvaluateNewWindow(popup_wnd_url, NULL, url_,
+    const std::wstring& url_wide = UTF8ToWide(params.url.spec());
+    hr = popup_manager_->EvaluateNewWindow(url_wide.c_str(), NULL, url_,
         NULL, FALSE, flags, 0);
   }
   // Allow popup
