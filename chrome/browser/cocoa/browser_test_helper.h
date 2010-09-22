@@ -29,8 +29,8 @@ class BrowserTestHelper {
  public:
   BrowserTestHelper()
       : ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE, &message_loop_),
-        io_thread_(ChromeThread::IO, &message_loop_) {
+        file_thread_(new ChromeThread(ChromeThread::FILE, &message_loop_)),
+        io_thread_(new ChromeThread(ChromeThread::IO, &message_loop_)) {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
@@ -50,6 +50,11 @@ class BrowserTestHelper {
     // Delete the testing profile on the UI thread. But first release the
     // browser, since it may trigger accesses to the profile upon destruction.
     browser_.reset();
+
+    // Drop any new tasks for the IO and FILE threads.
+    io_thread_.reset();
+    file_thread_.reset();
+
     message_loop_.DeleteSoon(FROM_HERE, profile_.release());
     message_loop_.RunAllPending();
   }
@@ -80,8 +85,8 @@ class BrowserTestHelper {
   scoped_ptr<Browser> browser_;
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
-  ChromeThread file_thread_;
-  ChromeThread io_thread_;
+  scoped_ptr<ChromeThread> file_thread_;
+  scoped_ptr<ChromeThread> io_thread_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_
