@@ -24,9 +24,13 @@ def GetAssemblerFile(env):
   else:
     raise Exception, 'unknown architecture'
 
+asm_env = env.Clone()
+if ARGUMENTS.get('bitcode'):
+  asm_env.Replace(CC=env['CC_NATIVE'])
+asm_obj = asm_env.ComponentObject(GetAssemblerFile(env))
 
 env.ComponentProgram('syscall_return_sandboxing.nexe',
-                     ['syscall_return_sandboxing.c', GetAssemblerFile(env)])
+                     ['syscall_return_sandboxing.c', asm_obj])
 node = env.CommandSelLdrTestNacl(
     'syscall_return_sandboxing.out',
     command=[env.File('syscall_return_sandboxing.nexe')])

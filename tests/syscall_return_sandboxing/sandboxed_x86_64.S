@@ -35,3 +35,4 @@ SyscallReturnIsSandboxed:
         andl $0xffffffe0, %ecx
         addq %r15, %rcx
         jmp *%rcx
+        .p2align 5 /* -- pnacl toolchain leaves "..." without this */
