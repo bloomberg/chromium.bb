@@ -28,7 +28,7 @@ class TestRunCommand(unittest.TestCase):
     self.mox.UnsetStubs()
     self.mox.VerifyAll()
 
-  def _assertCrEqual(self, expected, actual):
+  def _AssertCrEqual(self, expected, actual):
     """Helper method to compare two CommandResult objects.
 
     This is needed since assertEqual does not know how to compare two
@@ -43,7 +43,7 @@ class TestRunCommand(unittest.TestCase):
     self.assertEqual(expected.output, actual.output)
     self.assertEqual(expected.returncode, actual.returncode)
 
-  def _testCmd(self, cmd, sp_kv=dict(), rc_kv=dict()):
+  def _TestCmd(self, cmd, sp_kv=dict(), rc_kv=dict()):
     """Factor out common setup logic for testing --cmd.
 
     Args:
@@ -72,26 +72,26 @@ class TestRunCommand(unittest.TestCase):
     self.proc_mock.communicate(None).AndReturn((self.output, self.error))
     self.mox.ReplayAll()
     actual_result = cros_build_lib.RunCommand(cmd, **rc_kv)
-    self._assertCrEqual(expected_result, actual_result)
+    self._AssertCrEqual(expected_result, actual_result)
 
   def testReturnCodeZeroWithArrayCmd(self):
     """--enter_chroot=False and --cmd is an array of strings."""
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
     self.cmd = 'foo bar roger'
-    self._testCmd(cmd_list, rc_kv=dict(exit_code=True))
+    self._TestCmd(cmd_list, rc_kv=dict(exit_code=True))
 
   def testReturnCodeZeroWithArrayCmdEnterChroot(self):
     """--enter_chroot=True and --cmd is an array of strings."""
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
     self.cmd = './enter_chroot.sh -- %s' % ' '.join(cmd_list)
-    self._testCmd(cmd_list, rc_kv=dict(enter_chroot=True))
+    self._TestCmd(cmd_list, rc_kv=dict(enter_chroot=True))
 
   def testReturnCodeNotZeroErrorOkNotRaisesError(self):
     """Raise error when proc.communicate() returns non-zero."""
     self.proc_mock.returncode = 1
-    self._testCmd(self.cmd, rc_kv=dict(error_ok=True))
+    self._TestCmd(self.cmd, rc_kv=dict(error_ok=True))
 
   def testSubprocessCommunicateExceptionRaisesError(self):
     """Verify error raised by communicate() is caught."""
@@ -113,7 +113,7 @@ class TestRunCommand(unittest.TestCase):
     self.mox.ReplayAll()
     actual_result = cros_build_lib.RunCommand(self.cmd, error_ok=True,
                                               enter_chroot=True)
-    self._assertCrEqual(expected_result, actual_result)
+    self._AssertCrEqual(expected_result, actual_result)
 
 
 class TestListFiles(unittest.TestCase):
@@ -124,7 +124,7 @@ class TestListFiles(unittest.TestCase):
   def tearDown(self):
     shutil.rmtree(self.root_dir)
 
-  def _createNestedDir(self, dir_structure):
+  def _CreateNestedDir(self, dir_structure):
     for entry in dir_structure:
       full_path = os.path.join(os.path.join(self.root_dir, entry))
       # ensure dirs are created
@@ -147,18 +147,18 @@ class TestListFiles(unittest.TestCase):
     """Test that we are traversing the directory properly."""
     dir_structure = ['one/two/test.txt', 'one/blah.py',
                      'three/extra.conf']
-    self._createNestedDir(dir_structure)
+    self._CreateNestedDir(dir_structure)
 
     files = cros_build_lib.ListFiles(self.root_dir)
-    for file in files:
-      file = file.replace(self.root_dir, '').lstrip('/')
-      if file not in dir_structure:
-        self.fail('%s was not found in %s' % (file, dir_structure))
+    for f in files:
+      f = f.replace(self.root_dir, '').lstrip('/')
+      if f not in dir_structure:
+        self.fail('%s was not found in %s' % (f, dir_structure))
 
   def testEmptyFilePath(self):
     """Test that we return nothing when directories are empty."""
     dir_structure = ['one/', 'two/', 'one/a/']
-    self._createNestedDir(dir_structure)
+    self._CreateNestedDir(dir_structure)
     files = cros_build_lib.ListFiles(self.root_dir)
     self.assertEqual(files, [])
 
@@ -167,6 +167,63 @@ class TestListFiles(unittest.TestCase):
       cros_build_lib.ListFiles('/me/no/existe')
     except OSError, err:
       self.assertEqual(err.errno, errno.ENOENT)
+
+
+class HelperMethodMoxTests(unittest.TestCase):
+  """Tests for various helper methods using mox."""
+
+  def setUp(self):
+    self.mox = mox.Mox()
+    self.mox.StubOutWithMock(os.path, 'abspath')
+
+  def tearDown(self):
+    self.mox.UnsetStubs()
+    self.mox.VerifyAll()
+
+  def testGetSrcRoot(self):
+    test_path = '/tmp/foo/src/scripts/bar/more'
+    expected = '/tmp/foo/src/scripts'
+    os.path.abspath('.').AndReturn(test_path)
+    self.mox.ReplayAll()
+    actual = cros_build_lib.GetSrcRoot()
+    self.assertEqual(expected, actual)
+
+  def testGetOutputImageDir(self):
+    expected = '/tmp/foo/src/build/images/x86-generic/0.0.1-a1'
+    self.mox.StubOutWithMock(cros_build_lib, 'GetSrcRoot')
+    cros_build_lib.GetSrcRoot().AndReturn('/tmp/foo/src/scripts')
+    self.mox.ReplayAll()
+    actual = cros_build_lib.GetOutputImageDir('x86-generic', '0.0.1')
+    self.assertEqual(expected, actual)
+
+
+class HelperMethodSimpleTests(unittest.TestCase):
+  """Tests for various helper methods without using mox."""
+
+  def _TestChromeosVersion(self, test_str, expected=None):
+    actual = cros_build_lib.GetChromeosVersion(test_str)
+    self.assertEqual(expected, actual)
+
+  def testGetChromeosVersionWithValidVersionReturnsValue(self):
+    expected = '0.8.71.2010_09_10_1530'
+    test_str = ' CHROMEOS_VERSION_STRING=0.8.71.2010_09_10_1530 '
+    self._TestChromeosVersion(test_str, expected)
+
+  def testGetChromeosVersionWithMultipleVersionReturnsFirstMatch(self):
+    expected = '0.8.71.2010_09_10_1530'
+    test_str = (' CHROMEOS_VERSION_STRING=0.8.71.2010_09_10_1530 '
+                ' CHROMEOS_VERSION_STRING=10_1530 ')
+    self._TestChromeosVersion(test_str, expected)
+
+  def testGetChromeosVersionWithInvalidVersionReturnsDefault(self):
+    test_str = ' CHROMEOS_VERSION_STRING=invalid_version_string '
+    self._TestChromeosVersion(test_str)
+
+  def testGetChromeosVersionWithEmptyInputReturnsDefault(self):
+    self._TestChromeosVersion('')
+
+  def testGetChromeosVersionWithNoneInputReturnsDefault(self):
+    self._TestChromeosVersion(None)
 
 
 if __name__ == '__main__':

@@ -5,6 +5,7 @@
 """Common python commands used by various build scripts."""
 
 import os
+import re
 import subprocess
 import sys
 
@@ -31,19 +32,24 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                cwd=None, input=None, enter_chroot=False, shell=False):
   """Runs a command.
 
-  Keyword arguments:
-    cmd - cmd to run.  Should be input to subprocess.Popen.
-    print_cmd -- prints the command before running it.
-    error_ok -- does not raise an exception on error.
-    error_message -- prints out this message when an error occurrs.
-    exit_code -- returns the return code of the shell command.
-    redirect_stdout -- returns the stdout.
-    redirect_stderr -- holds stderr output until input is communicated.
-    cwd -- the working directory to run this cmd.
-    input -- input to pipe into this command through stdin.
-    enter_chroot -- this command should be run from within the chroot.  If set,
+  Args:
+    cmd: cmd to run.  Should be input to subprocess.Popen.
+    print_cmd: prints the command before running it.
+    error_ok: does not raise an exception on error.
+    error_message: prints out this message when an error occurrs.
+    exit_code: returns the return code of the shell command.
+    redirect_stdout: returns the stdout.
+    redirect_stderr: holds stderr output until input is communicated.
+    cwd: the working directory to run this cmd.
+    input: input to pipe into this command through stdin.
+    enter_chroot: this command should be run from within the chroot.  If set,
       cwd must point to the scripts directory.
-    shell -- If shell is True, the specified command will be executed through the shell.
+    shell: If shell is True, the specified command will be executed through
+      the shell.
+
+  Returns:
+    A CommandResult object.
+
   Raises:
     Exception:  Raises generic exception on error with optional error_message.
   """
@@ -51,13 +57,14 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   stdout = None
   stderr = None
   stdin = None
-  output = ''
   cmd_result = CommandResult()
 
   # Modify defaults based on parameters.
-  if redirect_stdout:  stdout = subprocess.PIPE
-  if redirect_stderr:  stderr = subprocess.PIPE
-  if input:  stdin = subprocess.PIPE
+  if redirect_stdout: stdout = subprocess.PIPE
+  if redirect_stderr: stderr = subprocess.PIPE
+  # TODO(sosa): gpylint complains about redefining built-in 'input'.
+  #   Can we rename this variable?
+  if input: stdin = subprocess.PIPE
   if isinstance(cmd, basestring):
     if enter_chroot: cmd = './enter_chroot.sh -- ' + cmd
     cmd_str = cmd
@@ -82,7 +89,8 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       msg = ('Command "%s" failed.\n' % cmd_str +
              (error_message or cmd_result.error or cmd_result.output or ''))
       raise RunCommandError(msg)
-  except Exception,e:
+  # TODO(sosa): is it possible not to use the catch-all Exception here?
+  except Exception, e:
     if not error_ok:
       raise
     else:
@@ -105,7 +113,7 @@ class Color(object):
   def Color(self, color, text):
     """Returns text with conditionally added color escape sequences.
 
-    Keyword arguments:
+    Args:
       color: Text color -- one of the color constants defined in this class.
       text: The text to color.
 
@@ -125,7 +133,7 @@ class Color(object):
 def Die(message):
   """Emits a red error message and halts execution.
 
-  Keyword arguments:
+  Args:
     message: The message to be emitted before exiting.
   """
   print >> sys.stderr, (
@@ -133,10 +141,11 @@ def Die(message):
   sys.exit(1)
 
 
+# pylint: disable-msg=W0622
 def Warning(message):
   """Emits a yellow warning message and continues execution.
 
-  Keyword arguments:
+  Args:
     message: The message to be emitted.
   """
   print >> sys.stderr, (
@@ -146,7 +155,7 @@ def Warning(message):
 def Info(message):
   """Emits a blue informational message and continues execution.
 
-  Keyword arguments:
+  Args:
     message: The message to be emitted.
   """
   print >> sys.stderr, (
@@ -156,7 +165,7 @@ def Info(message):
 def ListFiles(base_dir):
   """Recurively list files in a directory.
 
-  Keyword arguments:
+  Args:
     base_dir: directory to start recursively listing in.
 
   Returns:
@@ -175,3 +184,69 @@ def ListFiles(base_dir):
         directories.append(fullpath)
 
   return files_list
+
+
+def IsInsideChroot():
+  """Returns True if we are inside chroot."""
+  return os.path.exists('/etc/debian_chroot')
+
+
+def GetSrcRoot():
+  """Get absolute path to src/scripts/ directory.
+
+  Assuming test script will always be run from descendent of src/scripts.
+
+  Returns:
+    A string, absolute path to src/scripts directory. None if not found.
+  """
+  src_root = None
+  match_str = '/src/scripts/'
+  test_script_path = os.path.abspath('.')
+
+  path_list = re.split(match_str, test_script_path)
+  if path_list:
+    src_root = os.path.join(path_list[0], match_str.strip('/'))
+    Info ('src_root = %r' % src_root)
+  else:
+    Info ('No %r found in %r' % (match_str, test_script_path))
+
+  return src_root
+
+
+def GetChromeosVersion(str_obj):
+  """Helper method to parse output for CHROMEOS_VERSION_STRING.
+
+  Args:
+    str_obj: a string, which may contain Chrome OS version info.
+
+  Returns:
+    A string, value of CHROMEOS_VERSION_STRING environment variable set by
+      chromeos_version.sh. Or None if not found.
+  """
+  if str_obj is not None:
+    match = re.search('CHROMEOS_VERSION_STRING=([0-9_.]+)', str_obj)
+    if match and match.group(1):
+      Info ('CHROMEOS_VERSION_STRING = %s' % match.group(1))
+      return match.group(1)
+
+  Info ('CHROMEOS_VERSION_STRING NOT found')
+  return None
+
+
+def GetOutputImageDir(board, cros_version):
+  """Construct absolute path to output image directory.
+
+  Args:
+    board: a string.
+    cros_version: a string, Chrome OS version.
+
+  Returns:
+    a string: absolute path to output directory.
+  """
+  src_root = GetSrcRoot()
+  rel_path = 'build/images/%s' % board
+  # ASSUME: --build_attempt always sets to 1
+  version_str = '-'.join([cros_version, 'a1'])
+  output_dir = os.path.join(os.path.dirname(src_root), rel_path, version_str)
+  Info ('output_dir = %s' % output_dir)
+  return output_dir
