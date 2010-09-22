@@ -142,6 +142,10 @@ bool PasswordFormManager::IsNewLogin() {
 
 bool PasswordFormManager::HasValidPasswordForm() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  // Non-HTML password forms (primarily HTTP and FTP autentication)
+  // do not contain username_element and password_element values.
+  if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
+    return true;
   return !observed_form_.username_element.empty() &&
       !observed_form_.password_element.empty();
 }

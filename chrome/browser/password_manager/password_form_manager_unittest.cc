@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,32 +200,65 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
 TEST_F(PasswordFormManagerTest, TestValidForms) {
   // User submits credentials for the observed form.
   PasswordForm credentials = *observed_form();
+  credentials.scheme = PasswordForm::SCHEME_HTML;
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = saved_match()->password_value;
-  credentials.preferred = true;
 
+  // Form with both username_element and password_element.
   PasswordFormManager manager1(profile(), NULL, credentials, false);
   SimulateMatchingPhase(&manager1, false);
-  manager1.ProvisionallySave(credentials);
-
-  // Valid form.
   EXPECT_TRUE(manager1.HasValidPasswordForm());
 
+  // Form without a username_element but with a password_element.
   credentials.username_element.clear();
   PasswordFormManager manager2(profile(), NULL, credentials, false);
   SimulateMatchingPhase(&manager2, false);
-  manager2.ProvisionallySave(credentials);
-
-  // Invalid form - no username.
   EXPECT_FALSE(manager2.HasValidPasswordForm());
 
+  // Form without a password_element but with a username_element.
   credentials.username_element = saved_match()->username_element;
   credentials.password_element.clear();
   PasswordFormManager manager3(profile(), NULL, credentials, false);
   SimulateMatchingPhase(&manager3, false);
-  manager3.ProvisionallySave(credentials);
-
-  // Invalid form - no password.
   EXPECT_FALSE(manager3.HasValidPasswordForm());
+
+  // Form with neither a password_element nor a username_element.
+  credentials.username_element.clear();
+  credentials.password_element.clear();
+  PasswordFormManager manager4(profile(), NULL, credentials, false);
+  SimulateMatchingPhase(&manager4, false);
+  EXPECT_FALSE(manager4.HasValidPasswordForm());
 }
 
+TEST_F(PasswordFormManagerTest, TestValidFormsBasic) {
+  // User submits credentials for the observed form.
+  PasswordForm credentials = *observed_form();
+  credentials.scheme = PasswordForm::SCHEME_BASIC;
+  credentials.username_value = saved_match()->username_value;
+  credentials.password_value = saved_match()->password_value;
+
+  // Form with both username_element and password_element.
+  PasswordFormManager manager1(profile(), NULL, credentials, false);
+  SimulateMatchingPhase(&manager1, false);
+  EXPECT_TRUE(manager1.HasValidPasswordForm());
+
+  // Form without a username_element but with a password_element.
+  credentials.username_element.clear();
+  PasswordFormManager manager2(profile(), NULL, credentials, false);
+  SimulateMatchingPhase(&manager2, false);
+  EXPECT_TRUE(manager2.HasValidPasswordForm());
+
+  // Form without a password_element but with a username_element.
+  credentials.username_element = saved_match()->username_element;
+  credentials.password_element.clear();
+  PasswordFormManager manager3(profile(), NULL, credentials, false);
+  SimulateMatchingPhase(&manager3, false);
+  EXPECT_TRUE(manager3.HasValidPasswordForm());
+
+  // Form with neither a password_element nor a username_element.
+  credentials.username_element.clear();
+  credentials.password_element.clear();
+  PasswordFormManager manager4(profile(), NULL, credentials, false);
+  SimulateMatchingPhase(&manager4, false);
+  EXPECT_TRUE(manager4.HasValidPasswordForm());
+}
