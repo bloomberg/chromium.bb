@@ -232,26 +232,26 @@ message SyncEntity {
   optional string client_defined_unique_tag = 23;
 };
 
+// This message contains diagnostic information used to correlate
+// commit-related traffic with extensions-related mutations to the
+// data models in chromium.  It plays no functional role in
+// processing this CommitMessage.
+message ChromiumExtensionsActivity {
+  // The human-readable ID identifying the extension responsible
+  // for the traffic reported in this ChromiumExtensionsActivity.
+  optional string extension_id = 1;
+
+  // How many times the extension successfully invoked a write
+  // operation through the bookmarks API since the last CommitMessage.
+  optional uint32 bookmark_writes_since_last_commit = 2;
+};
+
 message CommitMessage {
   repeated SyncEntity entries = 1;
 
   // A GUID that identifies the committing sync client.  This value will be
   // returned as originator_cache_guid for any new items.
   optional string cache_guid = 2;
-
-  // This message contains diagnostic information used to correlate
-  // commit-related traffic with extensions-related mutations to the
-  // data models in chromium.  It plays no functional role in
-  // processing this CommitMessage.
-  message ChromiumExtensionsActivity {
-    // The human-readable ID identifying the extension responsible
-    // for the traffic reported in this ChromiumExtensionsActivity.
-    optional string extension_id = 1;
-
-    // How many times the extension successfully invoked a write
-    // operation through the bookmarks API since the last CommitMessage.
-    optional uint32 bookmark_writes_since_last_commit = 2;
-  }
 
   repeated ChromiumExtensionsActivity extensions_activity = 3;
 };
@@ -293,6 +293,11 @@ message GetUpdatesMessage {
   // requested_types may contain multiple EntitySpecifics extensions -- in this
   // event, the server will return items of all the indicated types.
   optional EntitySpecifics requested_types = 4;
+
+  // Client-requested limit on the maximum number of updates to return at once.
+  // The server may opt to return fewer updates than this amount, but it should
+  // not return more.
+  optional int32 batch_size = 5;
 };
 
 message AuthenticateMessage {

@@ -62,7 +62,7 @@ message TabNavigation {
   // frame.
   optional string state = 5;
   // Types of transitions between pages.
-  enum PageTransition{
+  enum PageTransition {
     LINK = 0;
     TYPED = 1;
     AUTO_BOOKMARK = 2;
