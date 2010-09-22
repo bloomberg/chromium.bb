@@ -1334,7 +1334,7 @@ def main(argv):
       raise
     print >> sys.stderr, (
         'AppEngine is misbehaving and returned HTTP %d, again. Keep faith '
-        'and retry or visit go/isgaeup.\n%s') % (e.code, e.reason)
+        'and retry or visit go/isgaeup.\n%s') % (e.code, str(e))
     return 1
 
 
