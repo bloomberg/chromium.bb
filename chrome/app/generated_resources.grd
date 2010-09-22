@@ -3876,7 +3876,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BAD_FLAGS_WARNING_MESSAGE" desc="Message shown when an unsupported command-line flag is used. [Keep it short so it fits in the infobar.]">
         You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.
       </message>
-      
+
       <!-- about:system strings -->
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_ABOUT_SYS_TITLE" desc="about:system page title">
@@ -4541,7 +4541,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_PASSWORDS_CHKBOX" desc="Checkbox for deleting Passwords">
         Clear saved passwords
       </message>
-      <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for AutoFill">
+      <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for Autofill">
         Clear saved form data
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Text for OK button on dialog">
@@ -6034,87 +6034,87 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
-        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form AutoFill group">
+        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form Autofill group">
           Form autofill:
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the form autofill group">
-          Form AutoFill
+        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the form Autofill group">
+          Form Autofill
         </message>
       </if>
-      <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the AutoFill credit card request infobar.">
+      <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
         Do you want Chrome to save this credit card information for completing web forms?
       </message>
-      <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable AutoFill' radio button">
-        Enable AutoFill to fill out web forms in a single click
+      <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable Autofill' radio button">
+        Enable Autofill to fill out web forms in a single click
       </message>
-      <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable AutoFill' radio button">
-        Disable AutoFill
+      <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable Autofill' radio button">
+        Disable Autofill
       </message>
-      <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the AutoFill credit card request infobar accept button.">
+      <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">
         Save info
       </message>
-      <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the AutoFill credit card request infobar deny button.">
+      <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
         Don't save
       </message>
-      <message name="IDS_AUTOFILL_LEARN_MORE" desc="Text to show for the AutoFill Learn more link.">
+      <message name="IDS_AUTOFILL_LEARN_MORE" desc="Text to show for the Autofill Learn more link.">
         Learn more
       </message>
-      <message name="IDS_AUTOFILL_CC_LEARN_MORE" desc="Text to show for the AutoFill credit card request infobar Learn more link.">
+      <message name="IDS_AUTOFILL_CC_LEARN_MORE" desc="Text to show for the Autofill credit card request infobar Learn more link.">
         Learn more
       </message>
       <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
         Clear form
       </message>
       <if expr="os != 'darwin'">
-        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the AutoFill dialog.">
-          AutoFill Options
+        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
+          Autofill Options
         </message>
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the AutoFill options menu entry and button.">
-          AutoFill options
+        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options menu entry and button.">
+          Autofill options
         </message>
       </if>
       <if expr="os == 'darwin'">
-        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the AutoFill dialog.">
-          AutoFill Preferences
+        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
+          Autofill Preferences
         </message>
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the AutoFill options menu entry and button.">
-          AutoFill preferences
+        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options menu entry and button.">
+          Autofill preferences
         </message>
       </if>
-      <message name="IDS_AUTOFILL_LOADING" desc="The indicator that AutoFill data is being loaded.">
+      <message name="IDS_AUTOFILL_LOADING" desc="The indicator that Autofill data is being loaded.">
         Loading...
       </message>
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
         Include addresses from my Address Book card
       </message>
-      <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the AutoFill dialog.">
+      <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
         Addresses
       </message>
-      <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="The name of the Credit Cards group of the AutoFill dialog.">
+      <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="The name of the Credit Cards group of the Autofill dialog.">
         Credit Cards
       </message>
-      <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new AutoFill address.">
+      <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new Autofill address.">
         Add address...
       </message>
-      <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new AutoFill credit card.">
+      <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new Autofill credit card.">
         Add credit card...
       </message>
       <message name="IDS_AUTOFILL_EDIT_BUTTON"
-               desc="Text of the edit button in the autofill editor">
+               desc="Text of the edit button in the Autofill editor">
         Edit...
       </message>
-      <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit AutoFill address dialog.">
+      <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog.">
         Edit address
       </message>
-      <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit AutoFill address dialog for the new entry.">
+      <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog for the new entry.">
         Add an address
       </message>
-      <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit AutoFill credit card dialog.">
+      <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog.">
         Edit credit card
       </message>
-      <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit AutoFill credit card dialog the new entry.">
+      <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog the new entry.">
         Add a credit card
       </message>
       <message name="IDS_AUTOFILL_LIST_HEADER_LABEL" desc="The text on the list view header over the label.">
@@ -6123,7 +6123,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_LIST_HEADER_SUMMARY" desc="The text on the list view header over the summary.">
         Summary
       </message>
-      <message name="IDS_AUTOFILL_DELETE_BUTTON" desc="The label of the button that deletes an AutoFill profile.">
+      <message name="IDS_AUTOFILL_DELETE_BUTTON" desc="The label of the button that deletes an Autofill profile.">
         Remove
       </message>
       <message name="IDS_AUTOFILL_BAD_LABEL_TOOLTIP" desc="Tooltip that appears over the wrong label.">
@@ -6289,13 +6289,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_DIALOG_SAME_AS_BILLING" desc="The label of the same as billing entry.">
         same as billing
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the AutoFill dialog.">
+      <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the Autofill dialog.">
         Save
       </message>
-      <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link on the AutoFill dialog.">
-        About AutoFill
+      <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link on the Autofill dialog.">
+        About Autofill
       </message>
-      <message name="IDS_AUTOFILL_HELP_URL" desc="The url of the Help link on the AutoFill dialog.">
+      <message name="IDS_AUTOFILL_HELP_URL" desc="The url of the Help link on the Autofill dialog.">
         http://www.google.com/support/chrome/bin/answer.py?answer=142893
       </message>
 
@@ -7446,8 +7446,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_DATATYPE_PREFERENCES" desc="Preferences, one of the data types that we allow syncing.">
         Preferences
       </message>
-      <message name="IDS_SYNC_DATATYPE_AUTOFILL" desc="Form AutoFill items, one of the data types that we allow syncing.">
-        AutoFill
+      <message name="IDS_SYNC_DATATYPE_AUTOFILL" desc="Form Autofill items, one of the data types that we allow syncing.">
+        Autofill
       </message>
       <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
         Themes
