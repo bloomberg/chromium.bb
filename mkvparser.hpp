@@ -529,9 +529,11 @@ private:
     size_t m_clusterCount;  //number of entries
     size_t m_clusterSize;   //array size
 
-    void ParseSeekHead(long long pos, long long size, size_t*);
-    void ParseSeekEntry(long long pos, long long size, size_t*);
-    void ParseSecondarySeekHead(long long off, size_t*);
+    void AppendCluster(Cluster*);
+
+    //void ParseSeekHead(long long pos, long long size, size_t*);
+    //void ParseSeekEntry(long long pos, long long size, size_t*);
+    //void ParseSecondarySeekHead(long long off, size_t*);
     void ParseCues(long long off);
 
     bool SearchCues(

@@ -808,6 +808,7 @@ Segment::Segment(
     m_pInfo(NULL),
     m_pTracks(NULL),
     m_pCues(NULL),
+    m_clusters(NULL),
     m_clusterCount(0),
     m_clusterSize(0)
 {
@@ -1222,33 +1223,10 @@ bool Segment::AddCluster(Cluster* pCluster, long long pos)
 
     if (pCluster)
     {
-        size_t& size = m_clusterSize;
-        assert(size >= m_clusterCount);
-
-        const size_t idx = pCluster->m_index;
-        assert(idx == m_clusterCount);
-
-        if (idx >= size)
-        {
-            const size_t n = (size <= 0) ? 2048 : 2 * size;
-
-            Cluster** const qq = new Cluster*[n];
-            Cluster** q = qq;
-
-            Cluster** p = m_clusters;
-            Cluster** const pp = p + m_clusterCount;
-
-            while (p != pp)
-                *p++ = *q++;
-
-            delete[] m_clusters;
-
-            m_clusters = qq;
-            size = n;
-        }
-
-        m_clusters[idx] = pCluster;
-        ++m_clusterCount;
+        AppendCluster(pCluster);
+        assert(m_clusters);
+        assert(m_clusterSize > pCluster->m_index);
+        assert(m_clusters[pCluster->m_index] == pCluster);
     }
 
     m_pos = pos;  //m_pos >= stop is now we know we have all clusters
@@ -1257,8 +1235,66 @@ bool Segment::AddCluster(Cluster* pCluster, long long pos)
 }
 
 
+void Segment::AppendCluster(Cluster* pCluster)
+{
+    assert(pCluster);
+
+    size_t& size = m_clusterSize;
+    assert(size >= m_clusterCount);
+
+    const size_t idx = pCluster->m_index;
+    assert(idx == m_clusterCount);
+
+    if (idx < size)
+    {
+        m_clusters[idx] = pCluster;
+        ++m_clusterCount;
+
+        return;
+    }
+
+    size_t n;
+
+    if (size > 0)
+        n = 2 * size;
+    else if (m_pInfo == 0)
+        n = 2048;
+    else
+    {
+        const long long ns = m_pInfo->GetDuration();
+
+        if (ns <= 0)
+            2048;
+
+        const long long nn = (ns + 999999999LL) / 1000000000LL;
+
+        n = static_cast<size_t>(nn);
+    }
+
+    Cluster** const qq = new Cluster*[n];
+    Cluster** q = qq;
+
+    Cluster** p = m_clusters;
+    Cluster** const pp = p + m_clusterCount;
+
+    while (p != pp)
+        *p++ = *q++;
+
+    delete[] m_clusters;
+
+    m_clusters = qq;
+    size = n;
+
+    m_clusters[idx] = pCluster;
+    ++m_clusterCount;
+}
+
 long Segment::Load()
 {
+    assert(m_clusters == NULL);
+    assert(m_clusterSize == 0);
+    assert(m_clusterCount == 0);
+
     //Outermost (level 0) segment object has been constructed,
     //and pos designates start of payload.  We need to find the
     //inner (level 1) elements.
@@ -1274,9 +1310,9 @@ long Segment::Load()
         assert(stop <= total);
     }
 #endif
-    long long index = m_pos;
 
-    m_clusterCount = 0;
+#if 0
+    long long index = m_pos;
 
     long long* fileposition_of_clusters = NULL;
     size_t size_of_cluster_pos = 0;
@@ -1442,9 +1478,112 @@ long Segment::Load()
     m_pos = stop;  //means "we have all clusters"
 
     return 0L;
+#else
+    while (m_pos < stop)
+    {
+        long long pos = m_pos;
+
+        long len;
+
+        long long result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        const long long idpos = pos;
+        const long long id = ReadUInt(m_pReader, idpos, len);
+
+        if (id < 0)  //error
+            return static_cast<long>(id);
+
+        pos += len;  //consume ID
+
+        //Read Size
+        result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        const long long size = ReadUInt(m_pReader, pos, len);
+
+        if (size < 0)  //error
+            return static_cast<long>(size);
+
+        pos += len;  //consume length of size of element
+
+        //Pos now points to start of payload
+
+        if ((pos + size) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        if (id == 0x0F43B675)  //Cluster ID
+        {
+            const size_t idx = m_clusterCount;
+            const long long off = idpos - m_start;
+
+            Cluster* const pCluster = Cluster::Parse(this, idx, off);
+            assert(pCluster);
+            assert(pCluster->m_index == idx);
+
+            AppendCluster(pCluster);
+            assert(m_clusters);
+            assert(m_clusterSize > idx);
+            assert(m_clusters[idx] == pCluster);
+        }
+        else if (id == 0x0C53BB6B)  //Cues ID
+        {
+            assert(m_pCues == NULL);
+
+#if 0  //TODO
+            m_pCues = new Cues(this, pos, size);
+            assert(m_pCues);  //TODO
+#endif
+        }
+        else if (id == 0x0549A966)  //SegmentInfo ID
+        {
+            assert(m_pInfo == NULL);
+
+            m_pInfo = new  SegmentInfo(this, pos, size);
+            assert(m_pInfo);
+        }
+        else if (id == 0x0654AE6B)  //Tracks ID
+        {
+            assert(m_pTracks == NULL);
+
+            m_pTracks = new Tracks(this, pos, size);
+            assert(m_pTracks);  //TODO
+        }
+
+        m_pos = pos + size;  //consume payload
+    }
+
+    assert(m_pos >= stop);
+
+    if (m_pInfo == NULL)
+        return E_FILE_FORMAT_INVALID;  //TODO: ignore this case?
+
+    if (m_pTracks == NULL)
+        return E_FILE_FORMAT_INVALID;
+
+    if (m_clusters == NULL)  //TODO: ignore this case?
+        return E_FILE_FORMAT_INVALID;
+
+    //TODO: decide whether we require Cues element
+    //if (m_pCues == NULL)
+    //   return E_FILE_FORMAT_INVALID;
+
+    return 0;
+#endif
 }
 
 
+#if 0
 void Segment::ParseSeekHead(long long start, long long size_, size_t* pIndex)
 {
     long long pos = start;
@@ -1594,6 +1733,7 @@ void Segment::ParseSeekEntry(long long start, long long size_, size_t* pIndex)
         ParseSecondarySeekHead(seekOff, pIndex);
     }
 }
+#endif
 
 
 long long Segment::Unparsed() const
@@ -2862,7 +3002,7 @@ void Cluster::Load()
 
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
-    long long pos = -m_start;
+    long long pos = m_pSegment->m_start - m_start;
 
     long len;
 
@@ -2928,6 +3068,7 @@ Cluster* Cluster::Parse(
     assert(pSegment);
     assert(off >= 0);
     assert(off < pSegment->m_size);
+
     Cluster* const pCluster = new Cluster(pSegment, idx, -off);
     assert(pCluster);
 
