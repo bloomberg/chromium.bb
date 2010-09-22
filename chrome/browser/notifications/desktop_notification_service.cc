@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/histogram.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_child_process_host.h"

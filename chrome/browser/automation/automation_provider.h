@@ -17,17 +17,18 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_channel.h"
 #if defined(OS_WIN)
+#include "gfx/native_widget_types.h"
 #include "views/event.h"
 #endif  // defined(OS_WIN)
 
@@ -47,12 +48,15 @@ class AutomationExtensionTracker;
 class AutomationResourceMessageFilter;
 class AutomationTabTracker;
 class AutomationWindowTracker;
+class Browser;
 class CreditCard;
 class DictionaryValue;
+class DownloadItem;
 class Extension;
 class ExtensionPortContainer;
 class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
+class FilePath;
 class InitialLoadObserver;
 class ListValue;
 class LoginHandler;
@@ -60,6 +64,8 @@ class MetricEventDurationObserver;
 class NavigationController;
 class NavigationControllerRestoredObserver;
 class Profile;
+class RenderViewHost;
+class TabContents;
 struct AutocompleteMatchData;
 
 namespace gfx {

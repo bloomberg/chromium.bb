@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
+#include "chrome/browser/automation/automation_provider.h"
 #include "chrome/test/automation/automation_messages.h"
 
 namespace {

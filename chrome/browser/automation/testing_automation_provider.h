@@ -10,8 +10,9 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_registrar.h"
+
+class TemplateURLModel;
 
 // This is an automation provider containing testing calls.
 class TestingAutomationProvider : public AutomationProvider,

@@ -15,6 +15,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context.h"

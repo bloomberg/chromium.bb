@@ -15,7 +15,6 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/histogram.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -23,6 +22,7 @@
 #include "net/base/cookie_store.h"
 
 class GURL;
+class Histogram;
 
 namespace net {
 
@@ -100,21 +100,10 @@ class CookieMonster : public CookieStore {
   // creation/deletion of cookies.
   CookieMonster(PersistentCookieStore* store, Delegate* delegate);
 
-#ifdef UNIT_TEST
+  // Only used during unit testing.
   CookieMonster(PersistentCookieStore* store,
                 Delegate* delegate,
-                int last_access_threshold_milliseconds)
-      : initialized_(false),
-        use_effective_domain_key_scheme_(use_effective_domain_key_default_),
-        store_(store),
-        last_access_threshold_(base::TimeDelta::FromMilliseconds(
-            last_access_threshold_milliseconds)),
-        delegate_(delegate),
-        last_statistic_record_time_(base::Time::Now()) {
-    InitializeHistograms();
-    SetDefaultCookieableSchemes();
-  }
-#endif
+                int last_access_threshold_milliseconds);
 
   // Parses the string with the cookie time (very forgivingly).
   static base::Time ParseCookieTime(const std::string& time_string);
@@ -441,7 +430,7 @@ class CookieMonster::CanonicalCookie {
   // the resulting CanonicalCookies should not be relied on to be canonical
   // unless the caller has done appropriate validation and canonicalization
   // themselves.
-  CanonicalCookie() { }
+  CanonicalCookie();
   CanonicalCookie(const std::string& name,
                   const std::string& value,
                   const std::string& domain,
@@ -451,23 +440,14 @@ class CookieMonster::CanonicalCookie {
                   const base::Time& creation,
                   const base::Time& last_access,
                   bool has_expires,
-                  const base::Time& expires)
-      : name_(name),
-        value_(value),
-        domain_(domain),
-        path_(path),
-        creation_date_(creation),
-        last_access_date_(last_access),
-        expiry_date_(expires),
-        has_expires_(has_expires),
-        secure_(secure),
-        httponly_(httponly) {
-  }
+                  const base::Time& expires);
 
   // This constructor does canonicalization but not validation.
   // The result of this constructor should not be relied on in contexts
   // in which pre-validation of the ParsedCookie has not been done.
   CanonicalCookie(const GURL& url, const ParsedCookie& pc);
+
+  ~CanonicalCookie();
 
   // Supports the default copy constructor.
 

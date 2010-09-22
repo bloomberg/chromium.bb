@@ -7,6 +7,14 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/automation_messages.h"
 
+AutomationResourceTrackerImpl::AutomationResourceTrackerImpl(
+    IPC::Message::Sender* sender)
+    : sender_(sender) {
+}
+
+AutomationResourceTrackerImpl::~AutomationResourceTrackerImpl() {
+}
+
 int AutomationResourceTrackerImpl::AddImpl(void* resource) {
   if (ContainsResourceImpl(resource))
     return resource_to_handle_[resource];

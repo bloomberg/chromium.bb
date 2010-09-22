@@ -17,6 +17,7 @@ namespace net {
 class DNSSECKeySet {
  public:
   DNSSECKeySet();
+  ~DNSSECKeySet();
 
   // AddKey adds a key to the trusted set.
   //   dnskey: the RRDATA of a DNSKEY.

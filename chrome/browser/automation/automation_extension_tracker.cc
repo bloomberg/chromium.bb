@@ -20,6 +20,10 @@ AutomationExtensionTracker::AutomationExtensionTracker(
 AutomationExtensionTracker::~AutomationExtensionTracker() {
 }
 
+void AutomationExtensionTracker::AddObserver(Extension* resource) {}
+
+void AutomationExtensionTracker::RemoveObserver(Extension* resource) {}
+
 void AutomationExtensionTracker::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {

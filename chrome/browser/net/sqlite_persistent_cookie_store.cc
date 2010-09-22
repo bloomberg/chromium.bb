@@ -10,6 +10,7 @@
 #include "app/sql/transaction.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

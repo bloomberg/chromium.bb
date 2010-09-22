@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/string_piece.h"
-#include "net/base/dnssec_keyset.h"
 
 namespace net {
 
@@ -67,14 +66,7 @@ class DNSSECChainVerifier {
                                  base::StringPiece b);
 
  private:
-  struct Zone {
-    base::StringPiece name;
-    // The number of consecutive labels which |name| shares with |target_|,
-    // counting right-to-left from the root.
-    unsigned matching_labels;
-    DNSSECKeySet trusted_keys;
-    Zone* prev;
-  };
+  struct Zone;
 
   bool U8(uint8*);
   bool U16(uint16*);

@@ -48,6 +48,7 @@
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
@@ -1697,6 +1698,31 @@ std::string CookieMonster::ParsedCookie::DebugString() const {
   return out;
 }
 
+CookieMonster::CanonicalCookie::CanonicalCookie() {
+}
+
+CookieMonster::CanonicalCookie::CanonicalCookie(const std::string& name,
+                                                const std::string& value,
+                                                const std::string& domain,
+                                                const std::string& path,
+                                                bool secure,
+                                                bool httponly,
+                                                const base::Time& creation,
+                                                const base::Time& last_access,
+                                                bool has_expires,
+                                                const base::Time& expires)
+    : name_(name),
+    value_(value),
+    domain_(domain),
+    path_(path),
+    creation_date_(creation),
+    last_access_date_(last_access),
+    expiry_date_(expires),
+    has_expires_(has_expires),
+    secure_(secure),
+    httponly_(httponly) {
+}
+
 CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
                                                 const ParsedCookie& pc)
     : name_(pc.Name()),
@@ -1722,6 +1748,23 @@ CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
   // Caller is responsible for passing in good arguments.
   DCHECK(result);
   domain_ = cookie_domain;
+}
+
+CookieMonster::CookieMonster(PersistentCookieStore* store,
+                             Delegate* delegate,
+                             int last_access_threshold_milliseconds)
+    : initialized_(false),
+    use_effective_domain_key_scheme_(use_effective_domain_key_default_),
+    store_(store),
+    last_access_threshold_(base::TimeDelta::FromMilliseconds(
+        last_access_threshold_milliseconds)),
+    delegate_(delegate),
+    last_statistic_record_time_(base::Time::Now()) {
+  InitializeHistograms();
+  SetDefaultCookieableSchemes();
+}
+
+CookieMonster::CanonicalCookie::~CanonicalCookie() {
 }
 
 CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(

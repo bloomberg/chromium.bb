@@ -10,6 +10,7 @@
 #include "base/sha2.h"
 #include "base/string_util.h"
 #include "net/base/dns_util.h"
+#include "net/base/dnssec_keyset.h"
 
 // We don't have a location for the spec yet, so we'll include it here until it
 // finds a better home.
@@ -138,6 +139,15 @@ static const unsigned char kRootKey[] = {
 static const uint16 kRootKeyID = 19036;
 
 namespace net {
+
+struct DNSSECChainVerifier::Zone {
+  base::StringPiece name;
+  // The number of consecutive labels which |name| shares with |target_|,
+  // counting right-to-left from the root.
+  unsigned matching_labels;
+  DNSSECKeySet trusted_keys;
+  Zone* prev;
+};
 
 DNSSECChainVerifier::DNSSECChainVerifier(const std::string& target,
                                          const base::StringPiece& chain)

@@ -21,6 +21,9 @@ DNSSECKeySet::DNSSECKeySet()
     : ignore_timestamps_(false) {
 }
 
+DNSSECKeySet::~DNSSECKeySet() {
+}
+
 bool DNSSECKeySet::AddKey(const base::StringPiece& dnskey) {
   uint16 keyid = DNSKEYToKeyID(dnskey);
   std::string der_encoded = ASN1WrapDNSKEY(dnskey);

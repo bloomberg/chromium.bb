@@ -9,6 +9,12 @@
 
 namespace net {
 
+HTTPSProber::HTTPSProber() {
+}
+
+HTTPSProber::~HTTPSProber() {
+}
+
 bool HTTPSProber::HaveProbed(const std::string& host) const {
   return probed_.find(host) != probed_.end();
 }

@@ -20,6 +20,9 @@ TabContents* AutomationExtensionFunction::api_handler_tab_ = NULL;
 AutomationExtensionFunction::PendingFunctionsMap
     AutomationExtensionFunction::pending_functions_;
 
+AutomationExtensionFunction::AutomationExtensionFunction() {
+}
+
 void AutomationExtensionFunction::SetArgs(const ListValue* args) {
   // Need to JSON-encode for sending over the wire to the automation user.
   base::JSONWriter::Write(args, false, &args_);
@@ -163,4 +166,7 @@ bool AutomationExtensionFunction::InterceptMessageFromExternalHost(
   }
 
   return false;
+}
+
+AutomationExtensionFunction::~AutomationExtensionFunction() {
 }

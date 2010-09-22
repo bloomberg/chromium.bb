@@ -9,6 +9,7 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/string_util.h"

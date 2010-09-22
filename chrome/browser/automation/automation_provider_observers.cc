@@ -11,6 +11,8 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/save_package.h"
@@ -1109,7 +1111,8 @@ void LoginManagerObserver::Observe(NotificationType type,
 }
 #endif
 
-AutomationProviderBookmarkModelObserver::AutomationProviderBookmarkModelObserver(
+AutomationProviderBookmarkModelObserver::
+AutomationProviderBookmarkModelObserver(
     AutomationProvider* provider,
     IPC::Message* reply_message,
     BookmarkModel* model) {
@@ -1119,7 +1122,8 @@ AutomationProviderBookmarkModelObserver::AutomationProviderBookmarkModelObserver
   model_->AddObserver(this);
 }
 
-AutomationProviderBookmarkModelObserver::~AutomationProviderBookmarkModelObserver() {
+AutomationProviderBookmarkModelObserver::
+~AutomationProviderBookmarkModelObserver() {
   model_->RemoveObserver(this);
 }
 

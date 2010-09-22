@@ -5,6 +5,7 @@
 #define CHROME_FRAME_TEST_NET_TEST_AUTOMATION_RESOURCE_MESSAGE_FILTER_H_
 
 #include "chrome/browser/automation/automation_provider.h"
+#include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
 
 // Performs the same duties as AutomationResourceMessageFilter but with one
@@ -22,7 +23,7 @@
 class TestAutomationResourceMessageFilter
     : public AutomationResourceMessageFilter {
  public:
-  TestAutomationResourceMessageFilter(AutomationProvider* automation);
+  explicit TestAutomationResourceMessageFilter(AutomationProvider* automation);
 
   virtual bool Send(IPC::Message* message);
 

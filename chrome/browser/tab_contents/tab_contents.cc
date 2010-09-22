@@ -17,6 +17,7 @@
 #include "app/text_elider.h"
 #include "base/auto_reset.h"
 #include "base/file_version_info.h"
+#include "base/histogram.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
 #include "base/string16.h"

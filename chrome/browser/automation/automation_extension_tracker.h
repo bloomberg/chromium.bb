@@ -23,10 +23,10 @@ class AutomationExtensionTracker
   // extension, is the one who sends the notification about extension
   // uninstalls. Instead of using this method, one observer is added for all
   // extensions in the constructor.
-  virtual void AddObserver(Extension* resource) {}
+  virtual void AddObserver(Extension* resource);
 
   // See related comment above as to why this method is empty.
-  virtual void RemoveObserver(Extension* resource) {}
+  virtual void RemoveObserver(Extension* resource);
 
   // Overriding AutomationResourceTracker Observe. AutomationResourceTracker's
   // Observe expects the NotificationSource to be the object that is closing.

@@ -10,9 +10,8 @@
 
 #include <string>
 
-#include "chrome/browser/automation/automation_provider.h"
-
 class Value;
+class AutomationProvider;
 
 namespace IPC {
 class Message;

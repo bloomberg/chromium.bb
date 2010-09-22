@@ -33,7 +33,8 @@ class HTTPSProberDelegate {
 // transparently upgrading from HTTP to HTTPS (for example, for SPDY).
 class HTTPSProber : public URLRequest::Delegate {
  public:
-  HTTPSProber() {}
+  HTTPSProber();
+  ~HTTPSProber();
 
   // HaveProbed returns true if the given host is known to have been probed
   // since the browser was last started.

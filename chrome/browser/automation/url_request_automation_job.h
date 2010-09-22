@@ -7,18 +7,21 @@
 #define CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 #pragma once
 
-#include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/common/ref_counted_util.h"
-#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
 class AutomationResourceMessageFilter;
 
+namespace net {
+class HttpResponseHeaders;
+class HttpResponseInfo;
+}
+
 namespace IPC {
 class Message;
 struct AutomationURLResponse;
-};
+}
 
 // URLRequestJob implementation that loads the resources using
 // automation.

@@ -21,7 +21,7 @@ class TabContents;
 // automation interface, so that extensions can be tested using UITests.
 class AutomationExtensionFunction : public AsyncExtensionFunction {
  public:
-  AutomationExtensionFunction() { }
+  AutomationExtensionFunction();
 
   // ExtensionFunction implementation.
   virtual void SetArgs(const ListValue* args);
@@ -59,7 +59,7 @@ class AutomationExtensionFunction : public AsyncExtensionFunction {
                                                const std::string& target);
 
  private:
-  ~AutomationExtensionFunction() {}
+  ~AutomationExtensionFunction();
 
   // Weak reference, lifetime managed by the ExternalTabContainer instance
   // owning the TabContents in question.

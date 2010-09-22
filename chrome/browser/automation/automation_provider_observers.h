@@ -20,7 +20,6 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
