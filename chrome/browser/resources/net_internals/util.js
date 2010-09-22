@@ -105,6 +105,18 @@ function getKeyWithValue(map, value) {
 }
 
 /**
+ * Looks up |key| in |map|, and returns the resulting entry, if  there is one.
+ * Otherwise, returns |key|.  Intended primarily for use with incomplete
+ * tables, and for reasonable behavior with system enumerations that may be
+ * extended in the future.
+ */
+function tryGetValueWithKey(map, key) {
+  if (key in map)
+    return map[key];
+  return key;
+}
+
+/**
  * Builds a string by repeating |str| |count| times.
  */
 function makeRepeatedString(str, count) {

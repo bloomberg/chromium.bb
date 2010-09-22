@@ -96,6 +96,10 @@ DataView.prototype.onExportToText_ = function() {
             ' (' + ClientInfo.official +
             ' ' + ClientInfo.cl +
             ') ' + ClientInfo.version_mod);
+  // Third value in first set of parentheses in user-agent string.
+  var platform = /\(.*?;.*?; (.*?);/.exec(navigator.userAgent);
+  if (platform)
+    text.push('Platform: ' + platform[1]);
   text.push('Command line: ' + ClientInfo.command_line);
 
   text.push('');
@@ -200,6 +204,47 @@ DataView.prototype.onExportToText_ = function() {
   text.push('');
 
   this.appendSocketPoolsAsText_(text);
+
+  if (g_browser.isPlatformWindows()) {
+    text.push('');
+    text.push('----------------------------------------------');
+    text.push(' Winsock layered service providers');
+    text.push('----------------------------------------------');
+    text.push('');
+
+    var serviceProviders = g_browser.serviceProviders_.currentData_;
+    var layeredServiceProviders = serviceProviders.service_providers;
+    for (var i = 0; i < layeredServiceProviders.length; ++i) {
+      var provider = layeredServiceProviders[i];
+      text.push('name: ' + provider.name);
+      text.push('version: ' + provider.version);
+      text.push('type: ' +
+                ServiceProvidersView.getLayeredServiceProviderType(provider));
+      text.push('socket_type: ' +
+                ServiceProvidersView.getSocketType(provider));
+      text.push('socket_protocol: ' +
+                ServiceProvidersView.getProtocolType(provider));
+      text.push('path: ' + provider.path);
+      text.push('');
+    }
+
+    text.push('');
+    text.push('----------------------------------------------');
+    text.push(' Winsock namespace providers');
+    text.push('----------------------------------------------');
+    text.push('');
+
+    var namespaceProviders = serviceProviders.namespace_providers;
+    for (var i = 0; i < namespaceProviders.length; ++i) {
+      var provider = namespaceProviders[i];
+      text.push('name: ' + provider.name);
+      text.push('version: ' + provider.version);
+      text.push('type: ' +
+                ServiceProvidersView.getNamespaceProviderType(provider));
+      text.push('active: ' + provider.active);
+      text.push('');
+    }
+  }
 
   // Open a new window to display this text.
   this.setText_(text.join('\n'));
