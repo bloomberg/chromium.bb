@@ -4580,7 +4580,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cookies
       </message>
       <message name="IDS_MODIFY_COOKIE_STORING_LABEL" desc="Label at the top of Cookies tab of Content Settings dialog">
-        Modify how cookies and other site data are saved on your computer
+        Cookie Settings:
       </message>
       <message name="IDS_COOKIES_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data to be stored on your computer.">
         Allow local data to be set (recommended)
