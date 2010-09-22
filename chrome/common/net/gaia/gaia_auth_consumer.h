@@ -48,6 +48,11 @@ class GaiaAuthConsumer {
                                        const std::string& auth_token) {}
   virtual void OnIssueAuthTokenFailure(const std::string& service,
                                        const GoogleServiceAuthError& error) {}
+
+  virtual void OnGetUserInfoSuccess(const std::string& key,
+                                    const std::string& value) {}
+  virtual void OnGetUserInfoKeyNotFound(const std::string& key) {}
+  virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error) {}
 };
 
 #endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTH_CONSUMER_H_

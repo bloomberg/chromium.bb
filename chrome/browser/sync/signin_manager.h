@@ -62,19 +62,21 @@ class SigninManager : public GaiaAuthConsumer {
   // GaiaAuthConsumer
   virtual void OnClientLoginSuccess(const ClientLoginResult& result);
   virtual void OnClientLoginFailure(const GoogleServiceAuthError& error);
-  virtual void OnIssueAuthTokenSuccess(const std::string& service,
-                                       const std::string& auth_token) {
-    NOTREACHED();
-  }
-  virtual void OnIssueAuthTokenFailure(const std::string& service,
-                                       const GoogleServiceAuthError& error) {
-    NOTREACHED();
-  }
+  virtual void OnGetUserInfoSuccess(const std::string& key,
+                                    const std::string& value);
+  virtual void OnGetUserInfoKeyNotFound(const std::string& key);
+  virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error);
 
  private:
   Profile* profile_;
   std::string username_;
   std::string password_;  // This is kept empty whenever possible.
+
+  // Result of the last client login, kept pending the lookup of the
+  // canonical email.
+  ClientLoginResult last_result_;
+
+  // Actual client login handler.
   scoped_ptr<GaiaAuthenticator2> client_login_;
 };
 

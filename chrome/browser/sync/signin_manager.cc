@@ -12,6 +12,8 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
+const char kGetInfoEmailKey[] = "email";
+
 // static
 void SigninManager::RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "");
@@ -60,6 +62,7 @@ void SigninManager::StartSignIn(const std::string& username,
 
 void SigninManager::SignOut() {
   client_login_.reset();
+  last_result_ = ClientLoginResult();
   username_.clear();
   password_.clear();
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username_);
@@ -69,6 +72,16 @@ void SigninManager::SignOut() {
 }
 
 void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
+  last_result_ = result;
+  // Make a request for the canonical email address.
+  client_login_->StartGetUserInfo(result.lsid, kGetInfoEmailKey);
+}
+
+void SigninManager::OnGetUserInfoSuccess(const std::string& key,
+                                         const std::string& value) {
+  DCHECK(key == kGetInfoEmailKey);
+
+  username_ = value;
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username_);
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
@@ -80,9 +93,22 @@ void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
 
   password_.clear();  // Don't need it anymore.
 
-  profile_->GetTokenService()->UpdateCredentials(result);
+  profile_->GetTokenService()->UpdateCredentials(last_result_);
   DCHECK(profile_->GetTokenService()->AreCredentialsValid());
   profile_->GetTokenService()->StartFetchingTokens();
+}
+
+void SigninManager::OnGetUserInfoKeyNotFound(const std::string& key) {
+  DCHECK(key == kGetInfoEmailKey);
+  LOG(ERROR) << "Account is not associated with a valid email address. "
+             << "Login failed.";
+  OnClientLoginFailure(GoogleServiceAuthError(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+}
+
+void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
+  LOG(ERROR) << "Unable to retreive the canonical email address. Login failed.";
+  OnClientLoginFailure(error);
 }
 
 void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {

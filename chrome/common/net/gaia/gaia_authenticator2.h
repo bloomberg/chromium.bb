@@ -32,6 +32,7 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   // The URLs for different calls in the Google Accounts programmatic login API.
   static const char kClientLoginUrl[];
   static const char kIssueAuthTokenUrl[];
+  static const char kGetUserInfoUrl[];
 
   // Magic string indicating that, while a second factor is still
   // needed to complete authentication, the user provided the right password.
@@ -60,6 +61,13 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
                            const std::string& lsid,
                            const char* const service);
 
+  // Start a request to get a particular key from user info.
+  // GaiaAuthConsumer will be called back on the same thread when
+  // results come back.
+  // You can't make more than one request at a time.
+  void StartGetUserInfo(const std::string& lsid,
+                        const std::string& info_key);
+
   // Implementation of URLFetcher::Delegate
   void OnURLFetchComplete(const URLFetcher* source,
                           const GURL& url,
@@ -85,6 +93,8 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   static const char kClientLoginCaptchaFormat[];
   // The format of the POST body for IssueAuthToken.
   static const char kIssueAuthTokenFormat[];
+  // The format of the POSt body for GetUserInfo.
+  static const char kGetUserInfoFormat[];
 
   // Constants for parsing ClientLogin errors.
   static const char kAccountDeletedError[];
@@ -105,6 +115,10 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   void OnIssueAuthTokenFetched(const std::string& data,
                                const URLRequestStatus& status,
                                int response_code);
+
+  void OnGetUserInfoFetched(const std::string& data,
+                            const URLRequestStatus& status,
+                            int response_code);
 
   // Tokenize the results of a ClientLogin fetch.
   static void ParseClientLoginResponse(const std::string& data,
@@ -140,6 +154,9 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   static std::string MakeIssueAuthTokenBody(const std::string& sid,
                                             const std::string& lsid,
                                             const char* const service);
+  // Supply the lsid returned from ClientLogin in order to fetch
+  // user information.
+  static std::string MakeGetUserInfoBody(const std::string& lsid);
 
   // Create a fetcher useable for making any Gaia request.
   static URLFetcher* CreateGaiaFetcher(URLRequestContextGetter* getter,
@@ -154,11 +171,13 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   std::string source_;
   const GURL client_login_gurl_;
   const GURL issue_auth_token_gurl_;
+  const GURL get_user_info_gurl_;
 
   // While a fetch is going on:
   scoped_ptr<URLFetcher> fetcher_;
   std::string request_body_;
-  std::string requested_service_;  // Currently tracked for IssueAuthToken only
+  std::string requested_service_;   // Currently tracked for IssueAuthToken only
+  std::string requested_info_key_;  // Currently tracked for GetUserInfo only
   bool fetch_pending_;
 
   friend class GaiaAuthenticator2Test;
