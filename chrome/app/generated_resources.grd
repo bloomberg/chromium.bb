@@ -9633,6 +9633,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       Custom Files
     </message>
 
+    <!-- Cloud Print Strings -->
+    <message name="IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE" desc="The message to display when the cloud print token has expired.">
+      The credentials used to share your printers have expired. Please click here to re-enter your username and password.
+    </message>
+
     </messages>
 
     <structures fallback_to_english="true">

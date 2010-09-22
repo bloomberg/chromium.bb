@@ -10,8 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "chrome/browser/profile.h"
-
+#include "base/ref_counted.h"
 
 class Profile;
 
@@ -30,8 +29,22 @@ class CloudPrintProxyService {
   virtual void EnableForUser(const std::string& auth_token);
   virtual void DisableForUser();
 
- protected:
+  bool ShowTokenExpiredNotification();
+
+ private:
+  // NotificationDelegate implementation for the token expired notification.
+  class TokenExpiredNotificationDelegate;
+  friend class TokenExpiredNotificationDelegate;
+
+  Profile* profile_;
+  scoped_refptr<TokenExpiredNotificationDelegate> token_expired_delegate_;
+
   void Shutdown();
+  void OnTokenExpiredNotificationError();
+  void OnTokenExpiredNotificationClosed(bool by_user);
+  void OnTokenExpiredNotificationClick();
+  void TokenExpiredNotificationDone();
+
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyService);
 };

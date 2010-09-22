@@ -226,6 +226,7 @@ extern const char kNoProxyServer[];
 extern const char kNoReferrers[];
 extern const char kNoSandbox[];
 extern const char kNoStartupWindow[];
+extern const char kNotifyCloudPrintTokenExpired[];
 extern const char kNumPacThreads[];
 extern const char kOpenInNewWindow[];
 extern const char kOrganicInstall[];

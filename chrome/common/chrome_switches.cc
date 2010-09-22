@@ -778,6 +778,10 @@ const char kNoSandbox[]                     = "no-sandbox";
 // Chrome for the purpose of hosting background apps).
 const char kNoStartupWindow[]               = "no-startup-window";
 
+// Show a desktop notification that the cloud print token has expired and
+// that user needs to re-authenticate.
+const char kNotifyCloudPrintTokenExpired[] = "notify-cp-token-expired";
+
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";

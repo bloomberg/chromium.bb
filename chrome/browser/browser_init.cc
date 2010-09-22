@@ -35,6 +35,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -1040,6 +1041,13 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       CreateAutomationProvider<AutomationProvider>(automation_channel_id,
                                                    profile, expected_tabs);
     }
+  }
+
+  // If we have been invoked to display a desktop notification on behalf of
+  // the service process, we do not want to open any browser windows.
+  if (command_line.HasSwitch(switches::kNotifyCloudPrintTokenExpired)) {
+    silent_launch = true;
+    profile->GetCloudPrintProxyService()->ShowTokenExpiredNotification();
   }
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
