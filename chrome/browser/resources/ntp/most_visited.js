@@ -605,11 +605,6 @@ var MostVisited = (function() {
         a.style.backgroundImage = url('chrome://favicon/' + item.url);
         a.className = 'item';
         this.miniview.appendChild(span);
-
-        if ((a.offsetLeft + a.offsetWidth) > this.miniview.offsetWidth) {
-          this.miniview.removeChild(span);
-          return;
-        }
       }
       updateMiniviewClipping(this.miniview);
     },
