@@ -90,6 +90,10 @@ fun:*png_write*
 # This function generates 25% of memory accesses in net_unittests
 fun:*icu_4_2*UnicodeSet*add*
 
+# SQLite has lots of tiny functions and produce too many segments on some tests.
+# See http://crbug.com/56511
+fun_hist:*sqlite*
+
 # There's some weird failure test going on in this tiny test function in sqlite
 fun_r:threadLockingTest
 
