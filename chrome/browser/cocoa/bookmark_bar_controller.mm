@@ -874,7 +874,12 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // Enable or disable items.  We are the menu delegate for both the bar
 // and for bookmark folder buttons.
-- (BOOL)validateUserInterfaceItem:(id)item {
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)anItem {
+  // NSUserInterfaceValidations says that the passed-in object has type
+  // |id<NSValidatedUserInterfaceItem>|, but this function needs to call the
+  // NSObject method -isKindOfClass: on the parameter. In theory, this is not
+  // correct, but this is probably a bug in the method signature.
+  NSMenuItem* item = static_cast<NSMenuItem*>(anItem);
   // Yes for everything we don't explicitly deny.
   if (![item isKindOfClass:[NSMenuItem class]])
     return YES;

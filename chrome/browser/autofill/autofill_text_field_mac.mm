@@ -24,10 +24,16 @@
   }
 }
 
-- (void)setObjectValue:(id)object {
-  if (isCreditCardField_ && [object isKindOfClass:[NSString class]]) {
+- (void)setObjectValue:(id<NSCopying>)anObject {
+  // -[NSControl setObjectValue:] says that the passed-in object has type
+  // |id<NSCopying>|, but this function needs to call the NSObject method
+  // -isKindOfClass: on the parameter. In theory, this is not correct, but this
+  // is probably a bug in the method signature.
+  NSObject<NSCopying>* object = static_cast<NSObject<NSCopying>*>(anObject);
+  if (isCreditCardField_ &&
+      [object isKindOfClass:[NSString class]]) {
     // Obfuscate the number.
-    NSString* string = object;
+    NSString* string = static_cast<NSString*>(object);
     CreditCard card;
     card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
                  base::SysNSStringToUTF16(string));

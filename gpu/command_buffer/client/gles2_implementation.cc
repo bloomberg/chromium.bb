@@ -311,8 +311,8 @@ class ClientSideBufferHelper {
         size_t bytes_per_element =
             GLES2Util::GetGLTypeSizeForTexturesAndBuffers(info.type()) *
             info.size();
-        GLsizei real_stride =
-            info.stride() ? info.stride() : bytes_per_element;
+        GLsizei real_stride = info.stride() ?
+            info.stride() : static_cast<GLsizei>(bytes_per_element);
         GLsizei bytes_collected = CollectData(
             info.pointer(), bytes_per_element, real_stride, num_elements);
         gl->BufferSubData(
@@ -814,8 +814,8 @@ void GLES2Implementation::ShaderSource(
   uint32 total_size = 1;
   for (GLsizei ii = 0; ii < count; ++ii) {
     if (source[ii]) {
-      total_size +=
-          (length && length[ii] >= 0) ? length[ii] : strlen(source[ii]);
+      total_size += (length && length[ii] >= 0) ?
+          static_cast<size_t>(length[ii]) : strlen(source[ii]);
     }
   }
 
@@ -826,7 +826,8 @@ void GLES2Implementation::ShaderSource(
   for (GLsizei ii = 0; ii <= count; ++ii) {
     const char* src = ii < count ? source[ii] : "";
     if (src) {
-      uint32 size = ii < count ? (length ? length[ii] : strlen(src)) : 1;
+      uint32 size = ii < count ?
+          (length ? static_cast<size_t>(length[ii]) : strlen(src)) : 1;
       while (size) {
         uint32 part_size = std::min(size, max_size);
         void* buffer = transfer_buffer_.Alloc(part_size);

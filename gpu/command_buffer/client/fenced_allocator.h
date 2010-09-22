@@ -212,7 +212,9 @@ class FencedAllocatorWrapper {
   // Gets the offset to a memory block given the base memory and the address.
   // It translates NULL to FencedAllocator::kInvalidOffset.
   FencedAllocator::Offset GetOffset(void *pointer) {
-    return pointer ? static_cast<char *>(pointer) - static_cast<char *>(base_) :
+    return pointer ?
+        static_cast<FencedAllocator::Offset>(
+            static_cast<char*>(pointer) - static_cast<char*>(base_)) :
         FencedAllocator::kInvalidOffset;
   }
 
