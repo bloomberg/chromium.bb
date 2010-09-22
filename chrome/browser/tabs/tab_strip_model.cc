@@ -660,7 +660,8 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandTogglePinned:
       return !IsAppTab(context_index);
     case CommandBookmarkAllTabs:
-      return delegate_->CanBookmarkAllTabs();
+      return browser_defaults::bookmarks_enabled &&
+          delegate_->CanBookmarkAllTabs();
     case CommandUseVerticalTabs:
       return true;
     default:
