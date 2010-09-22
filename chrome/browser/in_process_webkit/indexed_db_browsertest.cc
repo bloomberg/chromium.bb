@@ -52,25 +52,14 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Fails after WebKit roll 67957:68016, http://crbug.com/56509
-#if defined(OS_LINUX)
-#define MAYBE_CursorTest FAILS_CursorTest
-#define MAYBE_IndexTest FAILS_IndexTest
-#define MAYBE_KeyPathTest FAILS_KeyPathTest
-#else
-#define MAYBE_CursorTest CursorTest
-#define MAYBE_IndexTest IndexTest
-#define MAYBE_KeyPathTest KeyPathTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_CursorTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_IndexTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_KeyPathTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
