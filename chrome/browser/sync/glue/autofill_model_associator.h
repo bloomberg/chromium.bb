@@ -121,7 +121,14 @@ class AutofillModelAssociator
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }
 
-  static string16 MakeUniqueLabel(const string16& non_unique_label,
+  // Compute and apply suffix to a label so that the resulting label is
+  // unique in the sync database.
+  // |new_non_unique_label| is the colliding label which is to be uniquified.
+  // |existing_unique_label| is the current label of the object, if any; this
+  // is treated as a unique label even if colliding.  If no such label is
+  // available, |existing_unique_label| may be empty.
+  static string16 MakeUniqueLabel(const string16& new_non_unique_label,
+                                  const string16& existing_unique_label,
                                   sync_api::BaseTransaction* trans);
 
  private:
