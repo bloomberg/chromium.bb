@@ -1174,7 +1174,7 @@ void BrowserAccessibility::InitRoleAndState(LONG web_role,
     case WebAccessibility::ROLE_GROUP:
       GetAttribute(WebAccessibility::ATTR_HTML_TAG, &role_name_);
       if (role_name_.empty())
-        role_name_ = L"DIV";
+        role_name_ = L"div";
       ia2_role_ = IA2_ROLE_SECTION;
       break;
     case WebAccessibility::ROLE_HEADING:

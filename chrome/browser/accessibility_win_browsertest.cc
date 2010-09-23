@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Check the browser's copy of the renderer accessibility tree.
   AccessibleChecker button_checker(L"push", ROLE_SYSTEM_PUSHBUTTON, L"push");
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
-  AccessibleChecker body_checker(L"", L"BODY", L"");
+  AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document2_checker(
     L"Accessibility Win Test", ROLE_SYSTEM_DOCUMENT, L"");
   body_checker.AppendExpectedChild(&button_checker);
@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
   checkbox_checker.SetExpectedState(
       STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
-  AccessibleChecker body_checker(L"", L"BODY", L"");
+  AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   body_checker.AppendExpectedChild(&checkbox_checker);
   document_checker.AppendExpectedChild(&body_checker);
@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check the browser's copy of the renderer accessibility tree.
-  AccessibleChecker body_checker(L"", L"BODY", L"");
+  AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   document_checker.AppendExpectedChild(&body_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
@@ -451,10 +451,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check the browser's copy of the renderer accessibility tree.
   AccessibleChecker static_text_checker(L"", ROLE_SYSTEM_TEXT, L"old value");
-  AccessibleChecker text_field_div_checker(L"", L"DIV", L"");
+  AccessibleChecker text_field_div_checker(L"", L"div", L"");
   AccessibleChecker text_field_checker(L"", ROLE_SYSTEM_TEXT, L"old value");
   text_field_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
-  AccessibleChecker body_checker(L"", L"BODY", L"");
+  AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   text_field_div_checker.AppendExpectedChild(&static_text_checker);
   text_field_checker.AppendExpectedChild(&text_field_div_checker);

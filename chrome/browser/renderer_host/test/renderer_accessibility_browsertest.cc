@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   ASSERT_EQ(1U, tree.children.size());
   const WebAccessibility& body = tree.children[0];
   EXPECT_EQ(WebAccessibility::ROLE_GROUP, body.role);
-  EXPECT_STREQ("BODY", GetAttr(body, WebAccessibility::ATTR_HTML_TAG).c_str());
+  EXPECT_STREQ("body", GetAttr(body, WebAccessibility::ATTR_HTML_TAG).c_str());
   EXPECT_STREQ("block", GetAttr(body, WebAccessibility::ATTR_DISPLAY).c_str());
 
   // Check properties of the two children of the BODY element.
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   const WebAccessibility& button = body.children[0];
   EXPECT_EQ(WebAccessibility::ROLE_BUTTON, button.role);
   EXPECT_STREQ(
-      "INPUT", GetAttr(button, WebAccessibility::ATTR_HTML_TAG).c_str());
+      "input", GetAttr(button, WebAccessibility::ATTR_HTML_TAG).c_str());
   EXPECT_STREQ("push", UTF16ToUTF8(button.name).c_str());
   EXPECT_STREQ(
       "inline-block", GetAttr(button, WebAccessibility::ATTR_DISPLAY).c_str());
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   const WebAccessibility& checkbox = body.children[1];
   EXPECT_EQ(WebAccessibility::ROLE_CHECKBOX, checkbox.role);
   EXPECT_STREQ(
-      "INPUT", GetAttr(checkbox, WebAccessibility::ATTR_HTML_TAG).c_str());
+      "input", GetAttr(checkbox, WebAccessibility::ATTR_HTML_TAG).c_str());
   EXPECT_STREQ(
       "inline-block",
       GetAttr(checkbox, WebAccessibility::ATTR_DISPLAY).c_str());

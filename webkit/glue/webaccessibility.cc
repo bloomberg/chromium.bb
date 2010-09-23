@@ -4,6 +4,7 @@
 
 #include "webkit/glue/webaccessibility.h"
 
+#include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityRole.h"
@@ -302,7 +303,10 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
 
   if (!node.isNull() && node.isElementNode()) {
     WebKit::WebElement element = node.to<WebKit::WebElement>();
-    attributes[ATTR_HTML_TAG] = element.tagName();
+    // TODO(ctguil): The tagName in WebKit is lower cased but
+    // HTMLElement::nodeName calls localNameUpper. Consider adding
+    // a WebElement method that returns the original lower cased tagName.
+    attributes[ATTR_HTML_TAG] = StringToLowerASCII(string16(element.tagName()));
     for (unsigned i = 0; i < element.attributes().length(); i++) {
       html_attributes.push_back(
           std::pair<string16, string16>(
