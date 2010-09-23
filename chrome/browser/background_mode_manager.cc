@@ -50,50 +50,6 @@
 static const FilePath::CharType kAutostart[] = "autostart";
 static const FilePath::CharType kConfig[] = ".config";
 static const char kXdgConfigHome[] = "XDG_CONFIG_HOME";
-
-class EnableLaunchOnStartupTask : public Task {
- public:
-  explicit EnableLaunchOnStartupTask(bool should_launch)
-    : should_launch_(should_launch) {
-  }
-
-  virtual void Run() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-    scoped_ptr<base::Environment> environment(base::Environment::Create());
-    scoped_ptr<chrome::VersionInfo> version_info(new chrome::VersionInfo());
-    FilePath autostart_directory =
-        base::GetXDGDirectory(environment.get(), kXdgConfigHome, kConfig);
-    autostart_directory = autostart_directory.Append(kAutostart);
-    FilePath desktop_file = autostart_directory.Append(
-        ShellIntegration::GetDesktopName(environment.get()));
-    if (should_launch_) {
-      if (!file_util::DirectoryExists(autostart_directory) &&
-          !file_util::CreateDirectory(autostart_directory)) {
-        LOG(WARNING) << "Failed to register launch on login.";
-        return;
-      }
-      std::string wrapper_script;
-      if (!environment->GetVar("CHROME_WRAPPER", &wrapper_script)) {
-        LOG(WARNING) << "Failed to register launch on login.";
-        return;
-      }
-      std::string desktop_file_contents =
-          "[Desktop Entry]\n"
-          "Type=Application\n"
-          "Terminal=false\n"
-          "Exec=" + wrapper_script + "\n"
-          "Name=" + version_info->Name() + "\n";
-      if (file_util::WriteFile(desktop_file, desktop_file_contents.c_str(),
-                               desktop_file_contents.length()))
-        LOG(WARNING) << "Failed to register launch on login.";
-    } else if (!file_util::Delete(desktop_file, false)) {
-      LOG(WARNING) << "Failed to deregister launch on login.";
-    }
-  }
-
- private:
-  bool should_launch_;
-};
 #endif
 
 #if defined(OS_WIN)
@@ -103,6 +59,65 @@ const wchar_t* kBackgroundModeRegistrySubkey =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 const wchar_t* kBackgroundModeRegistryKeyName = L"chromium";
 #endif
+
+#if defined(OS_LINUX)
+namespace {
+
+FilePath GetAutostartDirectory(base::Environment* environment) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  FilePath result =
+    base::GetXDGDirectory(environment, kXdgConfigHome, kConfig);
+  result = result.Append(kAutostart);
+  return result;
+}
+
+FilePath GetAutostartFilename(base::Environment* environment) {
+  FilePath directory = GetAutostartDirectory(environment);
+  return directory.Append(ShellIntegration::GetDesktopName(environment));
+}
+
+}  // namespace
+
+class DisableLaunchOnStartupTask : public Task {
+ public:
+  virtual void Run() {
+    scoped_ptr<base::Environment> environment(base::Environment::Create());
+    if (!file_util::Delete(GetAutostartFilename(environment.get()), false)) {
+      LOG(WARNING) << "Failed to deregister launch on login.";
+    }
+  }
+};
+
+// TODO(rickcam): Bug 56280: Share implementation with ShellIntegration
+class EnableLaunchOnStartupTask : public Task {
+ public:
+  virtual void Run() {
+    scoped_ptr<base::Environment> environment(base::Environment::Create());
+    scoped_ptr<chrome::VersionInfo> version_info(new chrome::VersionInfo());
+    FilePath autostart_directory = GetAutostartDirectory(environment.get());
+    FilePath autostart_file = GetAutostartFilename(environment.get());
+    if (!file_util::DirectoryExists(autostart_directory) &&
+        !file_util::CreateDirectory(autostart_directory)) {
+      LOG(WARNING) << "Failed to register launch on login.";
+      return;
+    }
+    std::string wrapper_script;
+    if (!environment->GetVar("CHROME_WRAPPER", &wrapper_script)) {
+      LOG(WARNING) << "Failed to register launch on login.";
+      return;
+    }
+    std::string autostart_file_contents =
+        "[Desktop Entry]\n"
+        "Type=Application\n"
+        "Terminal=false\n"
+        "Exec=" + wrapper_script + "\n"
+        "Name=" + version_info->Name() + "\n";
+    if (file_util::WriteFile(autostart_file, autostart_file_contents.c_str(),
+                             autostart_file_contents.length()))
+      LOG(WARNING) << "Failed to register launch on login.";
+  }
+};
+#endif  // defined(OS_LINUX)
 
 BackgroundModeManager::BackgroundModeManager(Profile* profile,
                                              CommandLine* command_line)
@@ -307,8 +322,12 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
     return;
 #if defined(OS_LINUX)
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                         new EnableLaunchOnStartupTask(should_launch));
+  if (should_launch)
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+                           new EnableLaunchOnStartupTask());
+  else
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+                           new DisableLaunchOnStartupTask());
 #elif defined(OS_MACOSX)
   if (should_launch) {
     // Return if Chrome is already a Login Item (avoid overriding user choice).
@@ -334,10 +353,8 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
     mac_util::RemoveFromLoginItems();
   }
 #elif defined(OS_WIN)
-  // TODO(BUG53597): Make RegKey mockable by adding virtual destructor and
-  //     factory method.
-  // TODO(BUG53600): Use distinct registry keys per flavor of chromium and
-  //     profile.
+  // TODO(rickcam): Bug 53597: Make RegKey mockable.
+  // TODO(rickcam): Bug 53600: Use distinct registry keys per flavor+profile.
   const wchar_t* key_name = kBackgroundModeRegistryKeyName;
   RegKey read_key(kBackgroundModeRegistryRootKey,
                   kBackgroundModeRegistrySubkey, KEY_READ);

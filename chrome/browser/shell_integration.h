@@ -78,6 +78,7 @@ class ShellIntegration {
       const string16& extension_app_id);
 
 #if defined(USE_X11)
+  // Returns filename of the desktop shortcut used to launch the browser.
   static std::string GetDesktopName(base::Environment* env);
 
   static bool GetDesktopShortcutTemplate(base::Environment* env,
