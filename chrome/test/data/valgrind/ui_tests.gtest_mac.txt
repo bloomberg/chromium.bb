@@ -58,8 +58,10 @@ NPAPITesterBase.NPObjectProxy
 NPAPITesterBase.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
+NPAPIVisiblePluginTester.OpenPopupWindowWithPlugin
 NPAPIVisiblePluginTester.PluginConvertPointTest
 NPAPIVisiblePluginTester.SelfDeletePluginInvokeInSynchronousPaint
+LayoutPluginTester.SelfDeletePluginGetUrl
 LayoutPluginTester.UnloadNoCrash
 
 # Possible timing related failure triggered only on mac valgrind bots.
