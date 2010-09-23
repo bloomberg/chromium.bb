@@ -662,12 +662,13 @@ class MinidumpWriter {
             // Try to get 128 bytes before and after the IP, but
             // settle for whatever's available.
             ip_memory_d.start_of_memory_range =
-              std::min(mapping.start_addr,
+              std::max(mapping.start_addr,
                        uintptr_t(ip - (kIPMemorySize / 2)));
+            uintptr_t end_of_range = 
+              std::min(uintptr_t(ip + (kIPMemorySize / 2)),
+                       uintptr_t(mapping.start_addr + mapping.size));
             ip_memory_d.memory.data_size =
-              std::min(ptrdiff_t(kIPMemorySize),
-                       ptrdiff_t(mapping.start_addr + mapping.size
-                                 - ip_memory_d.start_of_memory_range));
+              end_of_range - ip_memory_d.start_of_memory_range;
             break;
           }
         }
