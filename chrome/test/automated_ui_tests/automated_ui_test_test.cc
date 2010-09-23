@@ -11,14 +11,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
-#if defined(OS_MACOSX)
-// http://crbug.com/45882
-#define MAYBE_FindInPage FAILS_FindInPage
-#else  // !defined(OS_MACOSX)
-#define MAYBE_FindInPage FindInPage
-#endif
-
-TEST_F(AutomatedUITestBase, MAYBE_FindInPage) {
+TEST_F(AutomatedUITestBase, FindInPage) {
   ASSERT_TRUE(FindInPage());
   bool is_visible;
   ASSERT_TRUE(active_browser()->IsFindWindowFullyVisible(&is_visible));
