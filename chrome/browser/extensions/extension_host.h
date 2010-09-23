@@ -212,12 +212,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   void CreateRenderViewNow();
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual Browser* GetBrowser() const {
-    return view() ? view()->browser() : NULL;
-  }
-  virtual gfx::NativeView GetNativeViewOfHost() {
-    return view() ? view()->native_view() : NULL;
-  }
+  virtual Browser* GetBrowser() const;
+  virtual gfx::NativeView GetNativeViewOfHost();
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the

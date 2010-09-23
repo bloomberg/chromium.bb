@@ -36,6 +36,28 @@ class SendTask : public Task {
 
 //------------------------------------------------------------------------------
 
+ChannelProxy::MessageFilter::~MessageFilter() {}
+
+void ChannelProxy::MessageFilter::OnFilterAdded(Channel* channel) {}
+
+void ChannelProxy::MessageFilter::OnFilterRemoved() {}
+
+void ChannelProxy::MessageFilter::OnChannelConnected(int32 peer_pid) {}
+
+void ChannelProxy::MessageFilter::OnChannelError() {}
+
+void ChannelProxy::MessageFilter::OnChannelClosing() {}
+
+bool ChannelProxy::MessageFilter::OnMessageReceived(const Message& message) {
+  return false;
+}
+
+void ChannelProxy::MessageFilter::OnDestruct() {
+  delete this;
+}
+
+//------------------------------------------------------------------------------
+
 ChannelProxy::Context::Context(Channel::Listener* listener,
                                MessageFilter* filter,
                                MessageLoop* ipc_message_loop)
@@ -246,6 +268,10 @@ ChannelProxy::ChannelProxy(const std::string& channel_id, Channel::Mode mode,
                            bool create_pipe_now)
     : context_(context) {
   Init(channel_id, mode, ipc_thread, create_pipe_now);
+}
+
+ChannelProxy::~ChannelProxy() {
+  Close();
 }
 
 void ChannelProxy::Init(const std::string& channel_id, Channel::Mode mode,

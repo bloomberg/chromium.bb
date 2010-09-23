@@ -94,6 +94,7 @@ class CookiesFunction : public AsyncExtensionFunction {
 class GetCookieFunction : public CookiesFunction {
  public:
   GetCookieFunction();
+  ~GetCookieFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.get")
 
@@ -112,6 +113,7 @@ class GetCookieFunction : public CookiesFunction {
 class GetAllCookiesFunction : public CookiesFunction {
  public:
   GetAllCookiesFunction();
+  ~GetAllCookiesFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAll")
 
@@ -130,6 +132,7 @@ class GetAllCookiesFunction : public CookiesFunction {
 class SetCookieFunction : public CookiesFunction {
  public:
   SetCookieFunction();
+  ~SetCookieFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.set")
 
@@ -154,9 +157,7 @@ class RemoveCookieFunction : public CookiesFunction {
  public:
   virtual bool RunImpl();
   // RemoveCookieFunction is sync.
-  virtual void Run() {
-    SendResponse(RunImpl());
-  }
+  virtual void Run();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.remove")
 };
 
@@ -165,9 +166,7 @@ class GetAllCookieStoresFunction : public CookiesFunction {
  public:
   virtual bool RunImpl();
   // GetAllCookieStoresFunction is sync.
-  virtual void Run() {
-    SendResponse(RunImpl());
-  }
+  virtual void Run();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAllCookieStores")
 };
 

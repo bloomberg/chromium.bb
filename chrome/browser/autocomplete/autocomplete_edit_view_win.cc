@@ -629,6 +629,10 @@ int AutocompleteEditViewWin::GetIcon() const {
       toolbar_model_->GetIcon();
 }
 
+void AutocompleteEditViewWin::SetUserText(const std::wstring& text) {
+  SetUserText(text, text, true);
+}
+
 void AutocompleteEditViewWin::SetUserText(const std::wstring& text,
                                           const std::wstring& display_text,
                                           bool update_popup) {

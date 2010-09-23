@@ -25,6 +25,11 @@ CrashedExtensionInfoBarDelegate::CrashedExtensionInfoBarDelegate(
   DCHECK(!extension_id_.empty());
 }
 
+CrashedExtensionInfoBarDelegate* CrashedExtensionInfoBarDelegate::
+AsCrashedExtensionInfoBarDelegate() {
+  return this;
+}
+
 string16 CrashedExtensionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE,
       UTF8ToUTF16(extension_name_));

@@ -206,3 +206,7 @@ void PossibleURLModel::OnFavIconAvailable(
     }
   }
 }
+
+void PossibleURLModel::SetObserver(TableModelObserver* observer) {
+  observer_ = observer;
+}

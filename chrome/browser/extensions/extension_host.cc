@@ -212,6 +212,14 @@ void ExtensionHost::CreateRenderViewNow() {
   DCHECK(IsRenderViewLive());
 }
 
+Browser* ExtensionHost::GetBrowser() const {
+  return view() ? view()->browser() : NULL;
+}
+
+gfx::NativeView ExtensionHost::GetNativeViewOfHost() {
+  return view() ? view()->native_view() : NULL;
+}
+
 void ExtensionHost::NavigateToURL(const GURL& url) {
   // Prevent explicit navigation to another extension id's pages.
   // This method is only called by some APIs, so we still need to protect

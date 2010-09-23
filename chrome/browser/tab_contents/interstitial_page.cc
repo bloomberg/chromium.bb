@@ -398,6 +398,10 @@ void InterstitialPage::DomOperationResponse(const std::string& json_string,
     CommandReceived(json_string);
 }
 
+RendererPreferences InterstitialPage::GetRendererPrefs(Profile* profile) const {
+  return renderer_preferences_;
+}
+
 RenderViewHost* InterstitialPage::CreateRenderViewHost() {
   RenderViewHost* render_view_host = new RenderViewHost(
       SiteInstance::CreateSiteInstance(tab()->profile()),

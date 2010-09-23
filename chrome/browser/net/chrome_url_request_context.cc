@@ -891,6 +891,10 @@ void ChromeURLRequestContext::OnUnloadedExtension(const std::string& id) {
   }
 }
 
+bool ChromeURLRequestContext::IsExternal() const {
+  return false;
+}
+
 ChromeURLRequestContext::ChromeURLRequestContext(
     ChromeURLRequestContext* other) {
   CheckCurrentlyOnIOThread();

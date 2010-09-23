@@ -128,9 +128,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void ForwardMessageToExternalHost(const std::string& message,
                                             const std::string& origin,
                                             const std::string& target);
-  virtual bool IsExternalTabContainer() const {
-    return true;
-  };
+  virtual bool IsExternalTabContainer() const;
   virtual gfx::NativeWindow GetFrameNativeWindow();
 
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "app/table_model.h"
+#include "base/basictypes.h"
 
 class TableModelObserver;
 

@@ -17,8 +17,7 @@
 class ExternalHostBindings : public DOMBoundBrowserObject {
  public:
   ExternalHostBindings();
-  virtual ~ExternalHostBindings() {
-  }
+  virtual ~ExternalHostBindings();
 
   // The postMessage() function provided to Javascript.
   void postMessage(const CppArgumentList& args, CppVariant* result);

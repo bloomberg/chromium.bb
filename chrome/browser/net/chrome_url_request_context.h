@@ -151,9 +151,7 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   // Returns true if this context is an external request context, like
   // ChromeFrame.
-  virtual bool IsExternal() const {
-    return false;
-  }
+  virtual bool IsExternal() const;
 
  protected:
   // Copies the dependencies from |other| into |this|. If you use this

@@ -32,6 +32,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "media/base/filters.h"
 

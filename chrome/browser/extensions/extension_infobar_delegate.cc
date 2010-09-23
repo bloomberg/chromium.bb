@@ -58,6 +58,15 @@ void ExtensionInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
+ExtensionInfoBarDelegate*
+ExtensionInfoBarDelegate::AsExtensionInfoBarDelegate() {
+  return this;
+}
+
+InfoBarDelegate::Type ExtensionInfoBarDelegate::GetInfoBarType() {
+  return PAGE_ACTION_TYPE;
+}
+
 void ExtensionInfoBarDelegate::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {

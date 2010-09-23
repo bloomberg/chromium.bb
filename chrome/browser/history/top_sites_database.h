@@ -66,7 +66,7 @@ class TopSitesDatabase {
 class TopSitesDatabaseImpl : public TopSitesDatabase {
  public:
   TopSitesDatabaseImpl();
-  ~TopSitesDatabaseImpl() {}
+  virtual ~TopSitesDatabaseImpl();
 
   // Must be called after creation but before any other methods are called.
   // Returns true on success. If false, no other functions should be called.

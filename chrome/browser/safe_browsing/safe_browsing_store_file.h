@@ -124,28 +124,14 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // Delete any on-disk files, including the permanent storage.
   virtual bool Delete();
 
-  virtual bool BeginChunk() {
-    return ClearChunkBuffers();
-  }
-  virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
-    add_prefixes_.push_back(SBAddPrefix(chunk_id, prefix));
-    return true;
-  }
+  virtual bool BeginChunk();
+  virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix);
   virtual bool WriteAddHash(int32 chunk_id,
-                            base::Time receive_time, SBFullHash full_hash) {
-    add_hashes_.push_back(SBAddFullHash(chunk_id, receive_time, full_hash));
-    return true;
-  }
+                            base::Time receive_time, SBFullHash full_hash);
   virtual bool WriteSubPrefix(int32 chunk_id,
-                              int32 add_chunk_id, SBPrefix prefix) {
-    sub_prefixes_.push_back(SBSubPrefix(chunk_id, add_chunk_id, prefix));
-    return true;
-  }
+                              int32 add_chunk_id, SBPrefix prefix);
   virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                            SBFullHash full_hash) {
-    sub_hashes_.push_back(SBSubFullHash(chunk_id, add_chunk_id, full_hash));
-    return true;
-  }
+                            SBFullHash full_hash);
   virtual bool FinishChunk();
 
   virtual bool BeginUpdate();
@@ -157,33 +143,15 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
                             std::vector<SBAddFullHash>* add_full_hashes_result);
   virtual bool CancelUpdate();
 
-  virtual void SetAddChunk(int32 chunk_id) {
-    add_chunks_cache_.insert(chunk_id);
-  }
-  virtual bool CheckAddChunk(int32 chunk_id) {
-    return add_chunks_cache_.count(chunk_id) > 0;
-  }
-  virtual void GetAddChunks(std::vector<int32>* out) {
-    out->clear();
-    out->insert(out->end(), add_chunks_cache_.begin(), add_chunks_cache_.end());
-  }
-  virtual void SetSubChunk(int32 chunk_id) {
-    sub_chunks_cache_.insert(chunk_id);
-  }
-  virtual bool CheckSubChunk(int32 chunk_id) {
-    return sub_chunks_cache_.count(chunk_id) > 0;
-  }
-  virtual void GetSubChunks(std::vector<int32>* out) {
-    out->clear();
-    out->insert(out->end(), sub_chunks_cache_.begin(), sub_chunks_cache_.end());
-  }
+  virtual void SetAddChunk(int32 chunk_id);
+  virtual bool CheckAddChunk(int32 chunk_id);
+  virtual void GetAddChunks(std::vector<int32>* out);
+  virtual void SetSubChunk(int32 chunk_id);
+  virtual bool CheckSubChunk(int32 chunk_id);
+  virtual void GetSubChunks(std::vector<int32>* out);
 
-  virtual void DeleteAddChunk(int32 chunk_id) {
-    add_del_cache_.insert(chunk_id);
-  }
-  virtual void DeleteSubChunk(int32 chunk_id) {
-    sub_del_cache_.insert(chunk_id);
-  }
+  virtual void DeleteAddChunk(int32 chunk_id);
+  virtual void DeleteSubChunk(int32 chunk_id);
 
   // Returns the name of the temporary file used to buffer data for
   // |filename|.  Exported for unit tests.

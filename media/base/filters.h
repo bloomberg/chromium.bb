@@ -27,13 +27,13 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "base/scoped_ptr.h"
 #include "media/base/media_format.h"
 #include "media/base/video_frame.h"
+
+class MessageLoop;
 
 namespace media {
 
@@ -60,103 +60,61 @@ typedef Callback0::Type FilterCallback;
 
 class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
  public:
-  MediaFilter() : host_(NULL), message_loop_(NULL) {}
+  MediaFilter();
 
   // Sets the private member |host_|. This is the first method called by
   // the FilterHost after a filter is created.  The host holds a strong
   // reference to the filter.  The reference held by the host is guaranteed
   // to be released before the host object is destroyed by the pipeline.
-  virtual void set_host(FilterHost* host) {
-    DCHECK(host);
-    DCHECK(!host_);
-    host_ = host;
-  }
+  virtual void set_host(FilterHost* host);
 
-  virtual FilterHost* host() {
-    return host_;
-  }
+  virtual FilterHost* host();
 
   // Sets the private member |message_loop_|, which is used by filters for
   // processing asynchronous tasks and maintaining synchronized access to
   // internal data members.  The message loop should be running and exceed the
   // lifetime of the filter.
-  virtual void set_message_loop(MessageLoop* message_loop) {
-    DCHECK(message_loop);
-    DCHECK(!message_loop_);
-    message_loop_ = message_loop;
-  }
+  virtual void set_message_loop(MessageLoop* message_loop);
 
-  virtual MessageLoop* message_loop() {
-    return message_loop_;
-  }
+  virtual MessageLoop* message_loop();
 
   // The pipeline has resumed playback.  Filters can continue requesting reads.
   // Filters may implement this method if they need to respond to this call.
   // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Play(FilterCallback* callback) {
-    DCHECK(callback);
-    if (callback) {
-      callback->Run();
-      delete callback;
-    }
-  }
+  virtual void Play(FilterCallback* callback);
 
   // The pipeline has paused playback.  Filters should stop buffer exchange.
   // Filters may implement this method if they need to respond to this call.
   // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Pause(FilterCallback* callback) {
-    DCHECK(callback);
-    if (callback) {
-      callback->Run();
-      delete callback;
-    }
-  }
+  virtual void Pause(FilterCallback* callback);
 
   // The pipeline has been flushed.  Filters should return buffer to owners.
   // Filters may implement this method if they need to respond to this call.
   // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Flush(FilterCallback* callback) {
-    DCHECK(callback);
-    if (callback) {
-      callback->Run();
-      delete callback;
-    }
-  }
+  virtual void Flush(FilterCallback* callback);
 
   // The pipeline is being stopped either as a result of an error or because
   // the client called Stop().
   // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Stop(FilterCallback* callback) {
-    DCHECK(callback);
-    if (callback) {
-      callback->Run();
-      delete callback;
-    }
-  }
+  virtual void Stop(FilterCallback* callback);
 
   // The pipeline playback rate has been changed.  Filters may implement this
   // method if they need to respond to this call.
-  virtual void SetPlaybackRate(float playback_rate) {}
+  virtual void SetPlaybackRate(float playback_rate);
 
   // Carry out any actions required to seek to the given time, executing the
   // callback upon completion.
-  virtual void Seek(base::TimeDelta time, FilterCallback* callback) {
-    scoped_ptr<FilterCallback> seek_callback(callback);
-    if (seek_callback.get()) {
-      seek_callback->Run();
-    }
-  }
+  virtual void Seek(base::TimeDelta time, FilterCallback* callback);
 
   // This method is called from the pipeline when the audio renderer
   // is disabled. Filters can ignore the notification if they do not
   // need to react to this event.
-  virtual void OnAudioRendererDisabled() {
-  }
+  virtual void OnAudioRendererDisabled();
 
  protected:
   // Only allow scoped_refptr<> to delete filters.
   friend class base::RefCountedThreadSafe<MediaFilter>;
-  virtual ~MediaFilter() {}
+  virtual ~MediaFilter();
 
   FilterHost* host() const { return host_; }
   MessageLoop* message_loop() const { return message_loop_; }

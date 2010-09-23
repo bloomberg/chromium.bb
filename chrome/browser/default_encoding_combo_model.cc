@@ -24,6 +24,13 @@ DefaultEncodingComboboxModel::DefaultEncodingComboboxModel() {
   l10n_util::SortVectorWithStringKey(locale, &sorted_encoding_list_, true);
 }
 
+DefaultEncodingComboboxModel::~DefaultEncodingComboboxModel() {
+}
+
+int DefaultEncodingComboboxModel::GetItemCount() {
+  return static_cast<int>(sorted_encoding_list_.size());
+}
+
 string16 DefaultEncodingComboboxModel::GetItemAt(int index) {
   DCHECK(index >= 0 && index < GetItemCount());
   return WideToUTF16Hack(sorted_encoding_list_[index].encoding_display_name);

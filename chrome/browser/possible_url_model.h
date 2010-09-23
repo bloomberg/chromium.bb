@@ -50,9 +50,7 @@ class PossibleURLModel : public TableModel {
                                   bool expired,
                                   GURL icon_url);
 
-  virtual void SetObserver(TableModelObserver* observer) {
-    observer_ = observer;
-  }
+  virtual void SetObserver(TableModelObserver* observer);
 
  private:
   // The current profile.

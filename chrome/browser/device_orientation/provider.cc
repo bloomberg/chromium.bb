@@ -40,6 +40,14 @@ Provider* Provider::GetInstanceForTests() {
   return instance_;
 }
 
+Provider::Provider() {
+}
+
+Provider::~Provider() {
+  DCHECK(instance_ == this);
+  instance_ = NULL;
+}
+
 Provider* Provider::instance_ = NULL;
 
 } //  namespace device_orientation

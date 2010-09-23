@@ -145,6 +145,8 @@ bool CookiesFunction::ParseStoreContext(const DictionaryValue* details,
 
 GetCookieFunction::GetCookieFunction() {}
 
+GetCookieFunction::~GetCookieFunction() {}
+
 bool GetCookieFunction::RunImpl() {
   // Return false if the arguments are malformed.
   DictionaryValue* details;
@@ -210,6 +212,8 @@ void GetCookieFunction::RespondOnUIThread() {
 
 GetAllCookiesFunction::GetAllCookiesFunction() : details_(NULL) {}
 
+GetAllCookiesFunction::~GetAllCookiesFunction() {}
+
 bool GetAllCookiesFunction::RunImpl() {
   // Return false if the arguments are malformed.
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details_));
@@ -264,6 +268,9 @@ SetCookieFunction::SetCookieFunction()
     : secure_(false),
       http_only_(false),
       success_(false) {
+}
+
+SetCookieFunction::~SetCookieFunction() {
 }
 
 bool SetCookieFunction::RunImpl() {
@@ -408,6 +415,10 @@ bool RemoveCookieFunction::RunImpl() {
   return true;
 }
 
+void RemoveCookieFunction::Run() {
+  SendResponse(RunImpl());
+}
+
 bool GetAllCookieStoresFunction::RunImpl() {
   Profile* original_profile = profile();
   DCHECK(original_profile);
@@ -450,4 +461,8 @@ bool GetAllCookieStoresFunction::RunImpl() {
   }
   result_.reset(cookie_store_list);
   return true;
+}
+
+void GetAllCookieStoresFunction::Run() {
+  SendResponse(RunImpl());
 }

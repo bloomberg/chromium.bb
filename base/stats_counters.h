@@ -75,31 +75,18 @@
 class StatsCounter {
  public:
   // Create a StatsCounter object.
-  explicit StatsCounter(const std::string& name)
-       : counter_id_(-1) {
-    // We prepend the name with 'c:' to indicate that it is a counter.
-    name_ = "c:";
-    name_.append(name);
-  };
-
-  virtual ~StatsCounter() {}
+  explicit StatsCounter(const std::string& name);
+  virtual ~StatsCounter();
 
   // Sets the counter to a specific value.
-  void Set(int value) {
-    int* loc = GetPtr();
-    if (loc) *loc = value;
-  }
+  void Set(int value);
 
   // Increments the counter.
   void Increment() {
     Add(1);
   }
 
-  virtual void Add(int value) {
-    int* loc = GetPtr();
-    if (loc)
-      (*loc) += value;
-  }
+  virtual void Add(int value);
 
   // Decrements the counter.
   void Decrement() {
@@ -123,36 +110,10 @@ class StatsCounter {
   }
 
  protected:
-  StatsCounter()
-    : counter_id_(-1) {
-  }
+  StatsCounter();
 
   // Returns the cached address of this counter location.
-  int* GetPtr() {
-    StatsTable* table = StatsTable::current();
-    if (!table)
-      return NULL;
-
-    // If counter_id_ is -1, then we haven't looked it up yet.
-    if (counter_id_ == -1) {
-      counter_id_ = table->FindCounter(name_);
-      if (table->GetSlot() == 0) {
-        if (!table->RegisterThread("")) {
-          // There is no room for this thread.  This thread
-          // cannot use counters.
-          counter_id_ = 0;
-          return NULL;
-        }
-      }
-    }
-
-    // If counter_id_ is > 0, then we have a valid counter.
-    if (counter_id_ > 0)
-      return table->GetLocation(counter_id_, table->GetSlot());
-
-    // counter_id_ was zero, which means the table is full.
-    return NULL;
-  }
+  int* GetPtr();
 
   std::string name_;
   // The counter id in the table.  We initialize to -1 (an invalid value)
@@ -168,43 +129,24 @@ class StatsCounter {
 class StatsCounterTimer : protected StatsCounter {
  public:
   // Constructs and starts the timer.
-  explicit StatsCounterTimer(const std::string& name) {
-    // we prepend the name with 't:' to indicate that it is a timer.
-    name_ = "t:";
-    name_.append(name);
-  }
+  explicit StatsCounterTimer(const std::string& name);
+  virtual ~StatsCounterTimer();
 
   // Start the timer.
-  void Start() {
-    if (!Enabled())
-      return;
-    start_time_ = base::TimeTicks::Now();
-    stop_time_ = base::TimeTicks();
-  }
+  void Start();
 
   // Stop the timer and record the results.
-  void Stop() {
-    if (!Enabled() || !Running())
-      return;
-    stop_time_ = base::TimeTicks::Now();
-    Record();
-  }
+  void Stop();
 
   // Returns true if the timer is running.
-  bool Running() {
-    return Enabled() && !start_time_.is_null() && stop_time_.is_null();
-  }
+  bool Running();
 
   // Accept a TimeDelta to increment.
-  virtual void AddTime(base::TimeDelta time) {
-    Add(static_cast<int>(time.InMilliseconds()));
-  }
+  virtual void AddTime(base::TimeDelta time);
 
  protected:
   // Compute the delta between start and stop, in milliseconds.
-  void Record() {
-    AddTime(stop_time_ - start_time_);
-  }
+  void Record();
 
   base::TimeTicks start_time_;
   base::TimeTicks stop_time_;
@@ -216,18 +158,10 @@ class StatsCounterTimer : protected StatsCounter {
 class StatsRate : public StatsCounterTimer {
  public:
   // Constructs and starts the timer.
-  explicit StatsRate(const char* name)
-      : StatsCounterTimer(name),
-      counter_(name),
-      largest_add_(std::string(" ").append(name).append("MAX").c_str()) {
-  }
+  explicit StatsRate(const char* name);
+  virtual ~StatsRate();
 
-  virtual void Add(int value) {
-    counter_.Increment();
-    StatsCounterTimer::Add(value);
-    if (value > largest_add_.value())
-      largest_add_.Set(value);
-  }
+  virtual void Add(int value);
 
  private:
   StatsCounter counter_;

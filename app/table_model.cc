@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // TableColumn -----------------------------------------------------------------
@@ -73,6 +74,28 @@ static icu::Collator* collator = NULL;
 
 SkBitmap TableModel::GetIcon(int row) {
   return SkBitmap();
+}
+
+std::wstring TableModel::GetTooltip(int row) {
+  return std::wstring();
+}
+
+bool TableModel::HasGroups() {
+  return false;
+}
+
+TableModel::Groups TableModel::GetGroups() {
+  // If you override HasGroups to return true, you must override this as
+  // well.
+  NOTREACHED();
+  return std::vector<Group>();
+}
+
+int TableModel::GetGroupID(int row) {
+  // If you override HasGroups to return true, you must override this as
+  // well.
+  NOTREACHED();
+  return 0;
 }
 
 int TableModel::CompareValues(int row1, int row2, int column_id) {

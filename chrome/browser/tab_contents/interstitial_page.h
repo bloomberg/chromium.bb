@@ -128,9 +128,7 @@ class InterstitialPage : public NotificationObserver,
                            const std::wstring& title);
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id);
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const {
-    return renderer_preferences_;
-  }
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
 
   // Invoked when the page sent a command through DOMAutomation.
   virtual void CommandReceived(const std::string& command) {}

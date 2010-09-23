@@ -122,6 +122,10 @@ void PasswordManager::ClearProvisionalSave() {
   provisional_save_manager_.reset();
 }
 
+void PasswordManager::SetObserver(LoginModelObserver* observer) {
+  observer_ = observer;
+}
+
 void PasswordManager::DidStopLoading() {
   if (!provisional_save_manager_.get())
     return;

@@ -16,6 +16,9 @@ ExternalHostBindings::ExternalHostBindings() : frame_(NULL) {
   BindProperty("onmessage", &on_message_handler_);
 }
 
+ExternalHostBindings::~ExternalHostBindings() {
+}
+
 void ExternalHostBindings::postMessage(
     const CppArgumentList& args, CppVariant* result) {
   DCHECK(result);

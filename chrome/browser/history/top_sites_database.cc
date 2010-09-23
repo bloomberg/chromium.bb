@@ -14,6 +14,9 @@ namespace history {
 TopSitesDatabaseImpl::TopSitesDatabaseImpl() {
 }
 
+TopSitesDatabaseImpl::~TopSitesDatabaseImpl() {
+}
+
 bool TopSitesDatabaseImpl::Init(const FilePath& db_name) {
   // Settings copied from ThumbnailDatabase.
   db_.set_error_delegate(GetErrorHandlerForThumbnailDb());

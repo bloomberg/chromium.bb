@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/format_macros.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "media/base/filters.h"
 #include "media/base/mock_filter_host.h"

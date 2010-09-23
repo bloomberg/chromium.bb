@@ -661,6 +661,18 @@ void LocationBarViewGtk::Revert() {
   location_entry_->RevertAll();
 }
 
+const AutocompleteEditView* LocationBarViewGtk::location_entry() const {
+  return location_entry_.get();
+}
+
+AutocompleteEditView* LocationBarViewGtk::location_entry() {
+  return location_entry_.get();
+}
+
+LocationBarTesting* LocationBarViewGtk::GetLocationBarForTesting() {
+  return this;
+}
+
 int LocationBarViewGtk::PageActionVisibleCount() {
   int count = 0;
   gtk_container_foreach(GTK_CONTAINER(page_action_hbox_.get()),

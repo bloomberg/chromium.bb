@@ -11,6 +11,7 @@
 
 #include "app/tree_model.h"
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"

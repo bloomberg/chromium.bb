@@ -39,6 +39,7 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/lock.h"
 #include "base/shared_memory.h"

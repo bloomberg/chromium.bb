@@ -48,4 +48,14 @@ URLRequestJob* ConnectInterceptor::MaybeIntercept(URLRequest* request) {
   return NULL;
 }
 
+URLRequestJob* ConnectInterceptor::MaybeInterceptResponse(URLRequest* request) {
+  return NULL;
+}
+
+URLRequestJob* ConnectInterceptor::MaybeInterceptRedirect(
+    URLRequest* request,
+    const GURL& location) {
+  return NULL;
+}
+
 }  // namespace chrome_browser_net

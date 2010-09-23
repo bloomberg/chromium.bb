@@ -462,6 +462,10 @@ void ExternalTabContainer::ForwardMessageToExternalHost(
   }
 }
 
+bool ExternalTabContainer::IsExternalTabContainer() const {
+  return true;
+}
+
 gfx::NativeWindow ExternalTabContainer::GetFrameNativeWindow() {
   return hwnd();
 }

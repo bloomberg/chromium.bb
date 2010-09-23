@@ -311,6 +311,14 @@ void FindBarGtk::InitWidgets() {
   gtk_widget_show(widget());
 }
 
+FindBarController* FindBarGtk::GetFindBarController() const {
+  return find_bar_controller_;
+}
+
+void FindBarGtk::SetFindBarController(FindBarController* find_bar_controller) {
+  find_bar_controller_ = find_bar_controller;
+}
+
 void FindBarGtk::Show(bool animate) {
   if (animate) {
     slide_widget_->Open();

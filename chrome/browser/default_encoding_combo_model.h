@@ -17,12 +17,10 @@ class Profile;
 class DefaultEncodingComboboxModel : public ComboboxModel {
  public:
   DefaultEncodingComboboxModel();
-  virtual ~DefaultEncodingComboboxModel() {}
+  virtual ~DefaultEncodingComboboxModel();
 
   // Overridden from ComboboxModel.
-  virtual int GetItemCount() {
-    return static_cast<int>(sorted_encoding_list_.size());
-  }
+  virtual int GetItemCount();
 
   virtual string16 GetItemAt(int index);
 

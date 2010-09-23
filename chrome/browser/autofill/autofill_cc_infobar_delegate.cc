@@ -103,3 +103,6 @@ InfoBar* AutoFillCCInfoBarDelegate::CreateInfoBar() {
 }
 #endif  // defined(OS_WIN)
 
+InfoBarDelegate::Type AutoFillCCInfoBarDelegate::GetInfoBarType() {
+  return PAGE_ACTION_TYPE;
+}

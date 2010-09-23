@@ -41,12 +41,8 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
   virtual void InfoBarClosed();
   virtual InfoBar* CreateInfoBar();
-  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() {
-    return this;
-  }
-  virtual Type GetInfoBarType() {
-    return PAGE_ACTION_TYPE;
-  }
+  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
+  virtual Type GetInfoBarType();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

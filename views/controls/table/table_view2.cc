@@ -6,6 +6,7 @@
 #include "views/controls/table/table_view2.h"
 
 #include "app/table_model.h"
+#include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/table/table_view_observer.h"
 

@@ -431,6 +431,10 @@ int AutocompleteEditViewGtk::GetIcon() const {
       toolbar_model_->GetIcon();
 }
 
+void AutocompleteEditViewGtk::SetUserText(const std::wstring& text) {
+  SetUserText(text, text, true);
+}
+
 void AutocompleteEditViewGtk::SetUserText(const std::wstring& text,
                                           const std::wstring& display_text,
                                           bool update_popup) {

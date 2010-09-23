@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "unicode/coll.h"
 
 class SkBitmap;
@@ -44,9 +43,7 @@ class TableModel {
   // Returns the tooltip, if any, to show for a particular row.  If there are
   // multiple columns in the row, this will only be shown when hovering over
   // column zero.
-  virtual std::wstring GetTooltip(int row) {
-    return std::wstring();
-  }
+  virtual std::wstring GetTooltip(int row);
 
   // Returns true if the TableView has groups. Groups provide a way to visually
   // delineate the rows in a table view. When groups are enabled table view
@@ -54,25 +51,15 @@ class TableModel {
   // the group.
   //
   // On win2k a visual separator is not rendered for the group headers.
-  virtual bool HasGroups() { return false; }
+  virtual bool HasGroups();
 
   // Returns the groups.
   // This is only used if HasGroups returns true.
-  virtual Groups GetGroups() {
-    // If you override HasGroups to return true, you must override this as
-    // well.
-    NOTREACHED();
-    return std::vector<Group>();
-  }
+  virtual Groups GetGroups();
 
   // Returns the group id of the specified row.
   // This is only used if HasGroups returns true.
-  virtual int GetGroupID(int row) {
-    // If you override HasGroups to return true, you must override this as
-    // well.
-    NOTREACHED();
-    return 0;
-  }
+  virtual int GetGroupID(int row);
 
   // Sets the observer for the model. The TableView should NOT take ownership
   // of the observer.

@@ -62,9 +62,7 @@ class PasswordManager : public LoginModel {
   void ClearProvisionalSave();
 
   // LoginModel implementation.
-  virtual void SetObserver(LoginModelObserver* observer) {
-    observer_ = observer;
-  }
+  virtual void SetObserver(LoginModelObserver* observer);
 
  private:
   // Note about how a PasswordFormManager can transition from

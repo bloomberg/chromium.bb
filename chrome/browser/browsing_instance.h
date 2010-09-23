@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/hash_tables.h"
-#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/profile.h"
 
@@ -56,9 +55,7 @@ class SiteInstance;
 class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
  public:
   // Create a new BrowsingInstance.
-  explicit BrowsingInstance(Profile* profile)
-      : profile_(profile) {
-  }
+  explicit BrowsingInstance(Profile* profile);
 
   // Returns whether the process-per-site model is in use (globally or just for
   // the given url), in which case we should ensure there is only one
@@ -92,11 +89,7 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
   friend class base::RefCounted<BrowsingInstance>;
 
   // Virtual to allow tests to extend it.
-  virtual ~BrowsingInstance() {
-    // We should only be deleted when all of the SiteInstances that refer to
-    // us are gone.
-    DCHECK(site_instance_map_.empty());
-  }
+  virtual ~BrowsingInstance();
 
  private:
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per

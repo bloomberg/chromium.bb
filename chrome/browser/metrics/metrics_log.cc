@@ -83,6 +83,10 @@ std::string MetricsLog::GetVersionString() {
   return version;
 }
 
+MetricsLog* MetricsLog::AsMetricsLog() {
+  return this;
+}
+
 void MetricsLog::RecordIncrementalStabilityElements() {
   DCHECK(!locked_);
 

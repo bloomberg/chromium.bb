@@ -220,6 +220,35 @@ void SafeBrowsingStoreFile::Init(const FilePath& filename,
   corruption_callback_.reset(corruption_callback);
 }
 
+bool SafeBrowsingStoreFile::BeginChunk() {
+  return ClearChunkBuffers();
+}
+
+bool SafeBrowsingStoreFile::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
+  add_prefixes_.push_back(SBAddPrefix(chunk_id, prefix));
+  return true;
+}
+
+bool SafeBrowsingStoreFile::WriteAddHash(int32 chunk_id,
+                                         base::Time receive_time,
+                                         SBFullHash full_hash) {
+  add_hashes_.push_back(SBAddFullHash(chunk_id, receive_time, full_hash));
+  return true;
+}
+
+bool SafeBrowsingStoreFile::WriteSubPrefix(int32 chunk_id,
+                                           int32 add_chunk_id,
+                                           SBPrefix prefix) {
+  sub_prefixes_.push_back(SBSubPrefix(chunk_id, add_chunk_id, prefix));
+  return true;
+}
+
+bool SafeBrowsingStoreFile::WriteSubHash(int32 chunk_id, int32 add_chunk_id,
+                                         SBFullHash full_hash) {
+  sub_hashes_.push_back(SBSubFullHash(chunk_id, add_chunk_id, full_hash));
+  return true;
+}
+
 bool SafeBrowsingStoreFile::OnCorruptDatabase() {
   if (corruption_callback_.get())
     corruption_callback_->Run();
@@ -586,4 +615,38 @@ bool SafeBrowsingStoreFile::FinishUpdate(
 bool SafeBrowsingStoreFile::CancelUpdate() {
   old_store_.reset();
   return Close();
+}
+
+void SafeBrowsingStoreFile::SetAddChunk(int32 chunk_id) {
+  add_chunks_cache_.insert(chunk_id);
+}
+
+bool SafeBrowsingStoreFile::CheckAddChunk(int32 chunk_id) {
+  return add_chunks_cache_.count(chunk_id) > 0;
+}
+
+void SafeBrowsingStoreFile::GetAddChunks(std::vector<int32>* out) {
+  out->clear();
+  out->insert(out->end(), add_chunks_cache_.begin(), add_chunks_cache_.end());
+}
+
+void SafeBrowsingStoreFile::SetSubChunk(int32 chunk_id) {
+  sub_chunks_cache_.insert(chunk_id);
+}
+
+bool SafeBrowsingStoreFile::CheckSubChunk(int32 chunk_id) {
+  return sub_chunks_cache_.count(chunk_id) > 0;
+}
+
+void SafeBrowsingStoreFile::GetSubChunks(std::vector<int32>* out) {
+  out->clear();
+  out->insert(out->end(), sub_chunks_cache_.begin(), sub_chunks_cache_.end());
+}
+
+void SafeBrowsingStoreFile::DeleteAddChunk(int32 chunk_id) {
+  add_del_cache_.insert(chunk_id);
+}
+
+void SafeBrowsingStoreFile::DeleteSubChunk(int32 chunk_id) {
+  sub_del_cache_.insert(chunk_id);
 }

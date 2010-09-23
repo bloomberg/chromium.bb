@@ -5,6 +5,7 @@
 #include "base/watchdog.h"
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/platform_thread.h"
 
 using base::TimeDelta;
@@ -70,6 +71,10 @@ void Watchdog::Disarm() {
   state_ = DISARMED;
   // We don't need to signal, as the watchdog will eventually wake up, and it
   // will check its state and time, and act accordingly.
+}
+
+void Watchdog::Alarm() {
+  DLOG(INFO) << "Watchdog alarmed for " << thread_watched_name_;
 }
 
 //------------------------------------------------------------------------------

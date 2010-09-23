@@ -55,42 +55,38 @@ class ChannelProxy : public Message::Sender {
   class MessageFilter
       : public base::RefCountedThreadSafe<MessageFilter, MessageFilterTraits> {
    public:
-    virtual ~MessageFilter() {}
+    virtual ~MessageFilter();
 
     // Called on the background thread to provide the filter with access to the
     // channel.  Called when the IPC channel is initialized or when AddFilter
     // is called if the channel is already initialized.
-    virtual void OnFilterAdded(Channel* channel) {}
+    virtual void OnFilterAdded(Channel* channel);
 
     // Called on the background thread when the filter has been removed from
     // the ChannelProxy and when the Channel is closing.  After a filter is
     // removed, it will not be called again.
-    virtual void OnFilterRemoved() {}
+    virtual void OnFilterRemoved();
 
     // Called to inform the filter that the IPC channel is connected and we
     // have received the internal Hello message from the peer.
-    virtual void OnChannelConnected(int32 peer_pid) {}
+    virtual void OnChannelConnected(int32 peer_pid);
 
     // Called when there is an error on the channel, typically that the channel
     // has been closed.
-    virtual void OnChannelError() {}
+    virtual void OnChannelError();
 
     // Called to inform the filter that the IPC channel will be destroyed.
     // OnFilterRemoved is called immediately after this.
-    virtual void OnChannelClosing() {}
+    virtual void OnChannelClosing();
 
     // Return true to indicate that the message was handled, or false to let
     // the message be handled in the default way.
-    virtual bool OnMessageReceived(const Message& message) {
-      return false;
-    }
+    virtual bool OnMessageReceived(const Message& message);
 
     // Called when the message filter is about to be deleted.  This gives
     // derived classes the option of controlling which thread they're deleted
     // on etc.
-    virtual void OnDestruct() {
-      delete this;
-    }
+    virtual void OnDestruct();
   };
 
   struct MessageFilterTraits {
@@ -111,9 +107,7 @@ class ChannelProxy : public Message::Sender {
                Channel::Listener* listener, MessageFilter* filter,
                MessageLoop* ipc_thread_loop);
 
-  virtual ~ChannelProxy() {
-    Close();
-  }
+  virtual ~ChannelProxy();
 
   // Close the IPC::Channel.  This operation completes asynchronously, once the
   // background thread processes the command to close the channel.  It is ok to

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
 #define CHROME_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
 
-#include "base/logging.h"
 #include "base/ref_counted.h"
 
 namespace device_orientation {
@@ -42,11 +41,8 @@ class Provider : public base::RefCountedThreadSafe<Provider> {
   virtual void RemoveObserver(Observer* observer) = 0;
 
  protected:
-  Provider() {}
-  virtual ~Provider() {
-    DCHECK(instance_ == this);
-    instance_ = NULL;
-  }
+  Provider();
+  virtual ~Provider();
 
  private:
   friend class base::RefCountedThreadSafe<Provider>;

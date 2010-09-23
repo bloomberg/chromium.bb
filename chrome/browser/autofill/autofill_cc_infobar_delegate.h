@@ -39,9 +39,7 @@ class AutoFillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual InfoBar* CreateInfoBar();
 #endif  // defined(OS_WIN)
 
-  virtual Type GetInfoBarType() {
-    return PAGE_ACTION_TYPE;
-  }
+  virtual Type GetInfoBarType();
 
  private:
   // The AutoFillManager that initiated this InfoBar.

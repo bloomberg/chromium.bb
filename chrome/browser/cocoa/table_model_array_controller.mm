@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/table_model_array_controller.h"
 
 #include "app/table_model.h"
+#include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/remove_rows_table_model.h"
 

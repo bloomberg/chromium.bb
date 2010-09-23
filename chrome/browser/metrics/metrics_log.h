@@ -55,9 +55,7 @@ class MetricsLog : public MetricsLogBase {
   // Get the current version of the application as a string.
   static std::string GetVersionString();
 
-  virtual MetricsLog* AsMetricsLog() {
-    return this;
-  }
+  virtual MetricsLog* AsMetricsLog();
 
  private:
   // Returns the date at which the current metrics client ID was created as

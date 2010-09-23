@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_instance.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/chrome_switches.h"
@@ -13,6 +14,10 @@
 /*static*/
 BrowsingInstance::ProfileSiteInstanceMap
     BrowsingInstance::profile_site_instance_map_;
+
+BrowsingInstance::BrowsingInstance(Profile* profile)
+    : profile_(profile) {
+}
 
 bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   // Returns true if we should use the process-per-site model.  This will be
@@ -122,4 +127,10 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
     // Matches, so erase it.
     map->erase(i);
   }
+}
+
+BrowsingInstance::~BrowsingInstance() {
+  // We should only be deleted when all of the SiteInstances that refer to
+  // us are gone.
+  DCHECK(site_instance_map_.empty());
 }
