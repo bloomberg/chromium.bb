@@ -568,6 +568,20 @@
    fun:_ZN51ToolsSanityTest_SingleElementDeletedWithBraces_Test8TestBodyEv
 }
 {
+   Memcheck sanity test 14 (malloc/read uninit).
+   Memcheck:Cond
+   fun:_Z22ReadUninitializedValuePc
+   fun:_Z14MakeSomeErrorsPcm
+   fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
+}
+{
+   Memcheck sanity test 15 (new/read uninit).
+   Memcheck:Cond
+   fun:_Z22ReadUninitializedValuePc
+   fun:_Z14MakeSomeErrorsPcm
+   fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
+}
+{
    logging::InitLogging never frees filename. It would be hard to free properly.
    Memcheck:Leak
    ...

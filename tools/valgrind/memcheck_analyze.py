@@ -328,6 +328,8 @@ class MemcheckAnalyzer:
       "Memcheck sanity test 11 (write after delete).": 1,
       "Memcheck sanity test 12 (array deleted without []).": 1,
       "Memcheck sanity test 13 (single element deleted with []).": 1,
+      "Memcheck sanity test 14 (malloc/read uninit).": 1,
+      "Memcheck sanity test 15 (new/read uninit).": 1,
   }
 
   # Max time to wait for memcheck logs to complete.
