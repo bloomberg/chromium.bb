@@ -434,7 +434,7 @@ void WizardController::ShowEulaScreen() {
 }
 
 void WizardController::ShowRegistrationScreen() {
-  if (!GetCustomization() &&
+  if (!GetCustomization() ||
       !GURL(GetCustomization()->registration_url()).is_valid()) {
     LOG(INFO) <<
         "Skipping registration screen: manifest not defined or invalid URL.";
