@@ -15,7 +15,7 @@ LogUserSysTime() {
   local graph_label=$2
   local bench=$3
   local setup=$4
-  local temptime=`awk '{print $$1 + $$2}' ${time_file}`
+  local temptime=`awk '{print $1 + $2}' ${time_file}`
   LogPerf ${graph_label} ${bench} ${setup} ${temptime} "secs"
 }
 
