@@ -85,9 +85,16 @@ class UITestBase {
   // LaunchAnotherBrowserBlockUntilClosed.
   void LaunchBrowser(const CommandLine& cmdline, bool clear_profile);
 
+#if !defined(OS_MACOSX)
+  // This function is deliberately not defined on the Mac because re-using an
+  // existing browser process when launching from the command line isn't a
+  // concept that we support on the Mac; AppleEvents are the Mac solution for
+  // the same need. Any test based on this function doesn't apply to the Mac.
+
   // Launches an another browser process and waits for it to finish. Returns
   // true on success.
   bool LaunchAnotherBrowserBlockUntilClosed(const CommandLine& cmdline);
+#endif
 
   // Exits out browser instance.
   void QuitBrowser();

@@ -327,10 +327,10 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
   }
 }
 
-#if defined(OS_MACOSX)
-// Fails an SQL assertion on Mac: http://crbug.com/45108
-#define DontRestoreWhileIncognito DISABLED_DontRestoreWhileIncognito
-#endif
+#if !defined(OS_MACOSX)
+// These tests don't apply to the Mac version; see
+// LaunchAnotherBrowserBlockUntilClosed for details.
+
 // Creates a browser, goes incognito, closes browser, launches and make sure
 // we don't restore.
 //
@@ -376,38 +376,6 @@ TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
   ASSERT_TRUE(url != url1_);
 }
 
-// Creates two windows, closes one, restores, make sure only one window open.
-TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
-  NavigateToURL(url1_);
-
-  // Make sure we have one window.
-  int window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-  ASSERT_EQ(1, window_count);
-
-  // Open a second window.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
-                                                 true));
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-  ASSERT_EQ(2, window_count);
-
-  // Close it.
-  CloseWindow(1, 2);
-
-  // Restart and make sure we have only one window with one tab and the url
-  // is url1_.
-  QuitBrowserAndRestore(1);
-
-  AssertOneWindowWithOneTab();
-
-  ASSERT_EQ(url1_, GetActiveTabURL());
-}
-
-#if defined(OS_MACOSX)
-// Fails an SQL assertion on Mac: http://crbug.com/45108
-#define FLAKY_RestoreAfterClosingTabbedBrowserWithAppAndLaunching \
-    DISABLED_RestoreAfterClosingTabbedBrowserWithAppAndLaunching
-#endif
 // Launches an app window, closes tabbed browser, launches and makes sure
 // we restore the tabbed browser url.
 TEST_F(SessionRestoreUITest,
@@ -431,6 +399,35 @@ TEST_F(SessionRestoreUITest,
   // First restore the settings so we can connect to the browser.
   include_testing_id_ = include_testing_id_orig;
   // Restore the session with 1 tab.
+  QuitBrowserAndRestore(1);
+
+  AssertOneWindowWithOneTab();
+
+  ASSERT_EQ(url1_, GetActiveTabURL());
+}
+
+#endif  // !OS_MACOSX
+
+// Creates two windows, closes one, restores, make sure only one window open.
+TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
+  NavigateToURL(url1_);
+
+  // Make sure we have one window.
+  int window_count;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+
+  // Open a second window.
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
+                                                 true));
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(2, window_count);
+
+  // Close it.
+  CloseWindow(1, 2);
+
+  // Restart and make sure we have only one window with one tab and the url
+  // is url1_.
   QuitBrowserAndRestore(1);
 
   AssertOneWindowWithOneTab();

@@ -319,10 +319,12 @@ void UITestBase::LaunchBrowser(const CommandLine& arguments,
   process_id_ = base::GetProcId(process_);
 }
 
+#if !defined(OS_MACOSX)
 bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
     const CommandLine& cmdline) {
   return LaunchBrowserHelper(cmdline, true, NULL);
 }
+#endif
 
 void UITestBase::QuitBrowser() {
   if (SESSION_ENDING == shutdown_type_) {
