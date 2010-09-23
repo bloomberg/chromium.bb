@@ -1956,6 +1956,7 @@
       'dependencies': [
         'chrome',
         'test_support_common',
+        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
@@ -1966,6 +1967,7 @@
       ],
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
+        'app/chrome_dll.rc',
         'browser/safe_browsing/safe_browsing_test.cc',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
@@ -1976,7 +1978,20 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
+            'chrome_dll_version',
+            'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
+          ],
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
           ],
           'configurations': {
             'Debug_Base': {
