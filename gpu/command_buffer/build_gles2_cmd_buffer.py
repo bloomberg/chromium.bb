@@ -1613,7 +1613,8 @@ class CWriter(object):
     splitter = string.find('=')
     if splitter >= 0 and not string[splitter + 1] == '=' and splitter < 80:
       return splitter
-    parts = string.split('(')
+    # parts = string.split('(')
+    parts = re.split("(?<=[^\"])\(", string)
     fptr = re.compile('\*\w*\)')
     if len(parts) > 1:
       splitter = len(parts[0])
@@ -1631,7 +1632,7 @@ class CWriter(object):
     last_splitter = -1
     while not done:
       splitter = string[0:end].rfind(',')
-      if splitter < 0:
+      if splitter < 0 or (splitter > 0 and string[splitter - 1] == '"'):
         return last_splitter
       elif splitter >= 80:
         end = splitter
@@ -4451,10 +4452,10 @@ class Function(object):
         ["%s %s%s" % (arg.type, prefix, arg.name) for arg in args])
     return self.__GetArgList(arg_string, add_comma)
 
-  def MakeOriginalArgString(self, prefix, add_comma = False):
+  def MakeOriginalArgString(self, prefix, add_comma = False, separator = ", "):
     """Gets the list of arguments as they are in GL."""
     args = self.GetOriginalArgs()
-    arg_string = ", ".join(
+    arg_string = separator.join(
         ["%s%s" % (prefix, arg.name) for arg in args])
     return self.__GetArgList(arg_string, add_comma)
 
@@ -5047,12 +5048,23 @@ class GLGenerator(object):
       file.Write("%s GLES2%s(%s) {\n" %
                  (func.return_type, func.name,
                   func.MakeTypedOriginalArgString("")))
-      return_string = "return "
+      comma = ""
+      if len(func.GetOriginalArgs()):
+        comma = " << "
+      file.Write(
+          '  GPU_CLIENT_LOG("%s" << "("%s%s << ")");\n' %
+          (func.original_name, comma, func.MakeOriginalArgString(
+              "", separator=' << ", " << ')))
+      result_string = "%s result = " % func.return_type
+      return_string = (
+          '  GPU_CLIENT_LOG("return:" << result)\n  return result;\n')
       if func.return_type == "void":
+        result_string = ""
         return_string = ""
       file.Write("  %sgles2::GetGLContext()->%s(%s);\n" %
-                 (return_string, func.original_name,
+                 (result_string, func.original_name,
                   func.MakeOriginalArgString("")))
+      file.Write(return_string)
       file.Write("}\n")
 
     file.Write("\n")

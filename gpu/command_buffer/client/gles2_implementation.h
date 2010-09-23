@@ -18,6 +18,9 @@
 
 #define GLES2_SUPPORT_CLIENT_SIDE_BUFFERS 1
 
+// TODO(gman): replace with logging code expansion.
+#define GPU_CLIENT_LOG(args)
+
 namespace gpu {
 
 class MappedMemoryManager;
