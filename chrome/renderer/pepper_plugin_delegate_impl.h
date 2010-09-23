@@ -29,6 +29,8 @@ class WebFileChooserCompletion;
 struct WebFileChooserParams;
 }
 
+class TransportDIB;
+
 class PepperPluginDelegateImpl
     : public pepper::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl> {
@@ -40,6 +42,10 @@ class PepperPluginDelegateImpl
   // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
+
+  // Called by RenderView to implement the corresponding function in its base
+  // class RenderWidget (see that for more).
+  bool GetBitmapForOptimizedPluginPaint(gfx::Rect* bounds, TransportDIB** dib);
 
   // Called by RenderView when ViewMsg_AsyncOpenFile_ACK.
   void OnAsyncFileOpened(base::PlatformFileError error_code,

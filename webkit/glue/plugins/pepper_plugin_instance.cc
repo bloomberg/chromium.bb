@@ -247,6 +247,7 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
 #endif  // defined (OS_LINUX)
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
+      always_on_top_(false),
       fullscreen_container_(NULL) {
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   DCHECK(delegate);
@@ -498,6 +499,29 @@ void PluginInstance::ViewInitiatedPaint() {
 void PluginInstance::ViewFlushedPaint() {
   if (bound_graphics_2d_)
     bound_graphics_2d_->ViewFlushedPaint();
+}
+
+bool PluginInstance::GetBitmapForOptimizedPluginPaint(gfx::Rect* bounds,
+                                                      TransportDIB** dib) {
+  if (!always_on_top_)
+    return false;
+  if (!bound_graphics_2d_ || !bound_graphics_2d_->is_always_opaque())
+    return false;
+
+  // We specifically want to compare against the area covered by the backing
+  // store when seeing if we cover the given paint bounds, since the backing
+  // store could be smaller than the declared plugin area.
+  ImageData* image_data = bound_graphics_2d_->image_data();
+  gfx::Rect plugin_backing_store_rect(position_.origin(),
+                                      gfx::Size(image_data->width(),
+                                                image_data->height()));
+  if (!plugin_backing_store_rect.Contains(*bounds))
+    return false;
+
+  // TODO(brettw) implement detection for always-on-top.
+  *bounds = plugin_backing_store_rect;
+  *dib = image_data->platform_image()->GetTransportDIB();
+  return true;
 }
 
 string16 PluginInstance::GetSelectedText(bool html) {

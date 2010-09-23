@@ -4717,6 +4717,11 @@ void RenderView::DidFlushPaint() {
   }
 }
 
+bool RenderView::GetBitmapForOptimizedPluginPaint(gfx::Rect* bounds,
+                                                  TransportDIB** dib) {
+  return pepper_delegate_.GetBitmapForOptimizedPluginPaint(bounds, dib);
+}
+
 void RenderView::OnClearFocusedNode() {
   if (webview())
     webview()->clearFocusedNode();
