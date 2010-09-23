@@ -140,7 +140,7 @@ void Target::Run(Session *ses) {
         bool more = GetFirstThreadId(&curId);
         while (more) {
           if (curId != id) {
-            IThread *thread = threads_[id];
+            IThread *thread = threads_[curId];
             thread->Suspend();
           }
           more = GetNextThreadId(&curId);
@@ -178,11 +178,13 @@ void Target::Run(Session *ses) {
     // Now that we are done, we want to continue in the "correct order".
     // This means letting the active thread go first, in case we are single
     // stepping and want to catch it again.  This is a desired behavior but
-    // it is not gaurrenteed since another thread may already be in an
+    // it is not guaranteed since another thread may already be in an
     // exception state and next in line to notify the target.
 
     // If the run thread is not the exception thread, wake it up now.
-    if (GetRunThreadId() != id) {
+    uint32_t run_thread = GetRunThreadId();
+    if (run_thread != id
+        && run_thread != static_cast<uint32_t>(-1)) {
       IThread* thread = threads_[id];
       thread->Resume();
     }
@@ -196,7 +198,7 @@ void Target::Run(Session *ses) {
     bool more = GetFirstThreadId(&curId);
     while (more) {
       if ((curId != id) && (curId != GetRunThreadId())) {
-        IThread *thread = threads_[id];
+        IThread *thread = threads_[curId];
         thread->Resume();
       }
       more = GetNextThreadId(&curId);
