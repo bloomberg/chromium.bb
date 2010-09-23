@@ -974,3 +974,13 @@
    fun:RenderViewTest::SimulateElementClick
    fun:RenderViewTest_PageClickTracker_Test::TestBody
 }
+{
+   bug_56676
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_allocate_and_copy
+   fun:std::vector::operator=
+   fun:MockDispatcher::DidReadDirectory
+   fun:fileapi::FileSystemOperation::DidReadDirectory
+}
