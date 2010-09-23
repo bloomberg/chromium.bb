@@ -273,12 +273,10 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
+// TODO(andreip): remove this method entirely once WK rolls to r68143.
 void IndexedDBDispatcherHost::OnIDBFactoryAbortPendingTransactions(
     const std::vector<int32>& ids) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-
-  WebVector<int32> pendingIDs = ids;
-  Context()->GetIDBFactory()->abortPendingTransactions(pendingIDs);
 }
 
 //////////////////////////////////////////////////////////////////////
