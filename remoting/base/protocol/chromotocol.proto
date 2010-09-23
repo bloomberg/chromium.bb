@@ -96,6 +96,54 @@ message UpdateStreamPacketMessage {
   optional UpdateStreamEndRect end_rect = 3;
 }
 
+// TODO(ajwong): Determine if these fields should be optional or required.
+message RectangleFormat {
+  // X,Y coordinates (in screen pixels) for origin of this update.
+  required int32 x = 1;
+  required int32 y = 2;
+
+  // Width, height (in screen pixels) for this update.
+  required int32 width = 3;
+  required int32 height = 4;
+
+  // The encoding used for this image update.
+  optional UpdateStreamEncoding encoding = 5 [default = EncodingInvalid];
+
+  // The pixel format of this image.
+  optional PixelFormat pixel_format = 6 [default = PixelFormatRgb24];
+}
+
+message RectangleUpdatePacket {
+  // Bitmasks for use in the flags field below.
+  //
+  // The encoder may fragment one update into multiple packets depending on
+  // how the encoder outputs data.  Thus, one update can logically consist of
+  // multiple packets.  The FIRST_PACKET and LAST_PACKET flags are used to
+  // indicate the start and end of a logical update.  Here are notable
+  // consequences:
+  //  * Both FIRST_PACKET and LAST_PACKET may be set if an update is only
+  //    one packet long.
+  //  * The RectangleFormat is only supplied in a FIRST_PACKET.
+  //  * An local update cannot change format between a FIRST_PACKET and
+  //    a LAST_PACKET.
+  //  * All packets in one logical update must be processed in order, and
+  //    packets may not be skipped.
+  enum Flags {
+    FIRST_PACKET = 1;
+    LAST_PACKET = 2;
+  }
+  optional int32 flags = 1 [default = 0];
+
+  // The sequence number of the partial data for updating a rectangle.
+  optional int32 sequence_number = 2 [default = 0];
+
+  // This is provided on the first packet of the rectangle data, when
+  // the sequence_number is 0.
+  optional RectangleFormat format = 3;
+
+  optional bytes encoded_rect = 4;
+}
+
 // Defines the message that is sent from the host to the client.
 // Only one of these messages should be present.
 // NEXT ID: 5
@@ -104,6 +152,8 @@ message ChromotingHostMessage {
   optional BeginUpdateStreamMessage begin_update_stream = 2;
   optional EndUpdateStreamMessage end_update_stream = 3;
   optional UpdateStreamPacketMessage update_stream_packet = 4;
+
+  optional RectangleUpdatePacket rectangle_update = 5;
 }
 
 // Defines a keyboard event.
