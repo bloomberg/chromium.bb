@@ -73,6 +73,14 @@ const ListValue* UserCrosSettingsProvider::cached_whitelist() {
 }
 
 void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
+  if (!current_user_is_owner_) {
+    LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
+
+    // Revert UI change.
+    CrosSettings::Get()->FireObservers(path.c_str());
+    return;
+  }
+
   if (path == kAccountsPrefAllowBWSI ||
       path == kAccountsPrefAllowGuest ||
       path == kAccountsPrefShowUserNamesOnSignIn) {
@@ -97,8 +105,9 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
   if (path == kAccountsPrefAllowBWSI ||
       path == kAccountsPrefAllowGuest ||
       path == kAccountsPrefShowUserNamesOnSignIn) {
-    *out_value = Value::CreateBooleanValue(
-        g_browser_process->local_state()->GetBoolean(path.c_str()));
+    *out_value = CreateSettingsBooleanValue(
+        g_browser_process->local_state()->GetBoolean(path.c_str()),
+        !current_user_is_owner_);
     return true;
   } else if (path == kAccountsPrefUsers) {
     *out_value = GetUserWhitelist();
