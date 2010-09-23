@@ -321,6 +321,30 @@
           ],
         },
         {
+          # Breakpad r693 uses some files from src/processor in unit tests.
+          'target_name': 'breakpad_processor_support',
+          'type': '<(library)',
+
+          'sources': [
+            'src/processor/basic_code_modules.cc',
+            'src/processor/basic_code_modules.h',
+            'src/processor/logging.cc',
+            'src/processor/logging.h',
+            'src/processor/minidump.cc',
+            'src/processor/minidump.h',
+            'src/processor/pathname_stripper.cc',
+            'src/processor/pathname_stripper.h',
+          ],
+
+          'include_dirs': [
+            'src',
+            'src/client',
+            'src/third_party/linux/include',
+            '..',
+            '.',
+          ],
+        },
+        {
           'target_name': 'breakpad_unittests',
           'type': 'executable',
           'dependencies': [
@@ -328,6 +352,7 @@
             '../testing/gtest.gyp:gtestmain',
             '../testing/gmock.gyp:gmock',
             'breakpad_client',
+            'breakpad_processor_support',
           ],
 
           'sources': [

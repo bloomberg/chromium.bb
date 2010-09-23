@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,13 +15,11 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/win_util.h"
+#include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
 #include "breakpad/src/client/windows/sender/crash_report_sender.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-
-// TODO(cpu): Bug 1169078. There is a laundry list of things to do for this
-// application. They will be addressed as they are required.
 
 namespace {
 
@@ -478,4 +476,3 @@ PSECURITY_DESCRIPTOR CrashService::GetSecurityDescriptorForLowIntegrity() {
 
   return NULL;
 }
-
