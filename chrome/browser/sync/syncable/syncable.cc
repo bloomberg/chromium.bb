@@ -963,6 +963,19 @@ BaseTransaction::BaseTransaction(Directory* directory, const char* name,
 BaseTransaction::~BaseTransaction() {}
 
 void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
+  // Triggers the CALCULATE_CHANGES and TRANSACTION_ENDING events while
+  // holding dir_kernel_'s transaction_mutex and changes_channel mutex.
+  // Releases all mutexes upon completion.
+  if (!NotifyTransactionChangingAndEnding(originals_arg)) {
+    return;
+  }
+
+  // Triggers the TRANSACTION_COMPLETE event (and does not hold any mutexes).
+  NotifyTransactionComplete();
+}
+
+bool BaseTransaction::NotifyTransactionChangingAndEnding(
+    OriginalEntries* originals_arg) {
   dirkernel_->transaction_mutex.AssertAcquired();
 
   scoped_ptr<OriginalEntries> originals(originals_arg);
@@ -975,26 +988,37 @@ void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
 
   if (NULL == originals.get() || originals->empty()) {
     dirkernel_->transaction_mutex.Release();
-    return;
+    return false;
   }
 
-  AutoLock scoped_lock(dirkernel_->changes_channel_mutex);
-  // Tell listeners to calculate changes while we still have the mutex.
-  DirectoryChangeEvent event = { DirectoryChangeEvent::CALCULATE_CHANGES,
-                                 originals.get(), this, writer_ };
-  dirkernel_->changes_channel.Notify(event);
 
-  // Necessary for reads to be performed prior to transaction mutex release.
-  // Allows the listener to use the current transaction to perform reads.
-  DirectoryChangeEvent ending_event =
-      { DirectoryChangeEvent::TRANSACTION_ENDING,
-        NULL, this, INVALID };
-  dirkernel_->changes_channel.Notify(ending_event);
+  {
+    // Scoped_lock is only active through the calculate_changes and
+    // transaction_ending events.
+    AutoLock scoped_lock(dirkernel_->changes_channel_mutex);
 
-  dirkernel_->transaction_mutex.Release();
+    // Tell listeners to calculate changes while we still have the mutex.
+    DirectoryChangeEvent event = { DirectoryChangeEvent::CALCULATE_CHANGES,
+                                   originals.get(), this, writer_ };
+    dirkernel_->changes_channel.Notify(event);
 
-  // Directly after transaction mutex release, but lock on changes channel.
-  // You cannot be re-entrant to a transaction in this handler.
+    // Necessary for reads to be performed prior to transaction mutex release.
+    // Allows the listener to use the current transaction to perform reads.
+    DirectoryChangeEvent ending_event =
+        { DirectoryChangeEvent::TRANSACTION_ENDING,
+          NULL, this, INVALID };
+    dirkernel_->changes_channel.Notify(ending_event);
+
+    dirkernel_->transaction_mutex.Release();
+  }
+
+  return true;
+}
+
+void BaseTransaction::NotifyTransactionComplete() {
+  // Transaction is no longer holding any locks/mutexes, notify that we're
+  // complete (and commit any outstanding changes that should not be performed
+  // while holding mutexes).
   DirectoryChangeEvent complete_event =
       { DirectoryChangeEvent::TRANSACTION_COMPLETE,
         NULL, NULL, INVALID };

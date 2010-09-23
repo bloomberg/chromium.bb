@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 
+#include <bitset>
 #include <iomanip>
 #include <list>
 #include <string>
@@ -963,6 +964,8 @@ class SyncManager::SyncInternal
   // builds the list of sync-engine initiated changes that will be forwarded to
   // the SyncManager's Observers.
   virtual void HandleChannelEvent(const syncable::DirectoryChangeEvent& event);
+  void HandleTransactionCompleteChangeEvent(
+      const syncable::DirectoryChangeEvent& event);
   void HandleTransactionEndingChangeEvent(
       const syncable::DirectoryChangeEvent& event);
   void HandleCalculateChangesChangeEventFromSyncApi(
@@ -1160,8 +1163,16 @@ class SyncManager::SyncInternal
   // HandleChangeEvent during the CALCULATE_CHANGES step.  The changes are
   // segregated by model type, and are stored here to be processed and
   // forwarded to the observer slightly later, at the TRANSACTION_ENDING
-  // step by HandleTransactionEndingChangeEvent.
+  // step by HandleTransactionEndingChangeEvent. The list is cleared in the
+  // TRANSACTION_COMPLETE step by HandleTransactionCompleteChangeEvent.
   ChangeReorderBuffer change_buffers_[syncable::MODEL_TYPE_COUNT];
+
+  // Bit vector keeping track of which models need to have their
+  // OnChangesComplete observer set.
+  //
+  // Set by HandleTransactionEndingChangeEvent, cleared in
+  // HandleTransactionCompleteChangeEvent.
+  std::bitset<syncable::MODEL_TYPE_COUNT> model_has_change_;
 
   // The event listener hookup that is registered for HandleChangeEvent.
   scoped_ptr<browser_sync::ChannelHookup<syncable::DirectoryChangeEvent> >
@@ -1604,7 +1615,11 @@ void SyncManager::SyncInternal::OnIPAddressChanged() {
 // ApplyUpdates) to data_->changelist.
 void SyncManager::SyncInternal::HandleChannelEvent(
     const syncable::DirectoryChangeEvent& event) {
-  if (event.todo == syncable::DirectoryChangeEvent::TRANSACTION_ENDING) {
+  if (event.todo == syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE) {
+    // Safe to perform slow I/O operations now, go ahead and commit.
+    HandleTransactionCompleteChangeEvent(event);
+    return;
+  } else if (event.todo == syncable::DirectoryChangeEvent::TRANSACTION_ENDING) {
     HandleTransactionEndingChangeEvent(event);
     return;
   } else if (event.todo == syncable::DirectoryChangeEvent::CALCULATE_CHANGES) {
@@ -1616,6 +1631,24 @@ void SyncManager::SyncInternal::HandleChannelEvent(
     return;
   } else if (event.todo == syncable::DirectoryChangeEvent::SHUTDOWN) {
     dir_change_hookup_.reset();
+  }
+}
+
+void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
+    const syncable::DirectoryChangeEvent& event) {
+  // This notification happens immediately after the channel mutex is released
+  // This allows work to be performed without holding the WriteTransaction lock
+  // but before the transaction is finished.
+  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE);
+  if (!observer_)
+    return;
+
+  // Call commit
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    if (model_has_change_.test(i)) {
+      observer_->OnChangesComplete(syncable::ModelTypeFromInt(i));
+      model_has_change_.reset(i);
+    }
   }
 }
 
@@ -1662,6 +1695,7 @@ void SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
     if (!ordered_changes.empty()) {
       observer_->OnChangesApplied(syncable::ModelTypeFromInt(i), &trans,
                                   &ordered_changes[0], ordered_changes.size());
+      model_has_change_.set(i, true);
     }
     change_buffers_[i].Clear();
   }

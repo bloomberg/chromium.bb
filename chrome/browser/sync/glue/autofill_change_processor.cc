@@ -305,7 +305,6 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
 
-  std::vector<AutofillEntry> new_entries;
   for (int i = 0; i < change_count; ++i) {
     sync_api::SyncManager::ChangeRecord::Action action(changes[i].action);
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE == action) {
@@ -313,12 +312,13 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
           << "Autofill specifics data not present on delete!";
       const sync_pb::AutofillSpecifics& autofill =
           changes[i].specifics.GetExtension(sync_pb::autofill);
-      if (autofill.has_value())
-        ApplySyncAutofillEntryDelete(autofill);
-      else if (autofill.has_profile())
-        ApplySyncAutofillProfileDelete(autofill.profile(), changes[i].id);
-      else
+      if (autofill.has_value() || autofill.has_profile()) {
+        autofill_changes_.push_back(AutofillChangeRecord(changes[i].action,
+                                                         changes[i].id,
+                                                         autofill));
+      } else {
         NOTREACHED() << "Autofill specifics has no data!";
+      }
       continue;
     }
 
@@ -337,17 +337,59 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
     const sync_pb::AutofillSpecifics& autofill(
         sync_node.GetAutofillSpecifics());
     int64 sync_id = sync_node.GetId();
-    if (autofill.has_value())
-      ApplySyncAutofillEntryChange(action, autofill, &new_entries, sync_id);
-    else if (autofill.has_profile())
-      ApplySyncAutofillProfileChange(action, autofill.profile(), sync_id);
-    else
+    if (autofill.has_value() || autofill.has_profile()) {
+      autofill_changes_.push_back(AutofillChangeRecord(changes[i].action,
+                                                       sync_id, autofill));
+    } else {
       NOTREACHED() << "Autofill specifics has no data!";
+    }
   }
 
+  StartObserving();
+}
+
+void AutofillChangeProcessor::CommitChangesFromSyncModel() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  if (!running())
+    return;
+  StopObserving();
+
+  std::vector<AutofillEntry> new_entries;
+  for (unsigned int i = 0; i < autofill_changes_.size(); i++) {
+    // Handle deletions.
+    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
+        autofill_changes_[i].action_) {
+      if (autofill_changes_[i].autofill_.has_value()) {
+        ApplySyncAutofillEntryDelete(autofill_changes_[i].autofill_);
+      } else if (autofill_changes_[i].autofill_.has_profile()) {
+        ApplySyncAutofillProfileDelete(autofill_changes_[i].autofill_.profile(),
+                                       autofill_changes_[i].id_);
+      } else {
+        NOTREACHED() << "Autofill's CommitChanges received change with no"
+            " data!";
+      }
+      continue;
+    }
+
+    // Handle update/adds.
+    if (autofill_changes_[i].autofill_.has_value()) {
+      ApplySyncAutofillEntryChange(autofill_changes_[i].action_,
+                                   autofill_changes_[i].autofill_, &new_entries,
+                                   autofill_changes_[i].id_);
+    } else if (autofill_changes_[i].autofill_.has_profile()) {
+      ApplySyncAutofillProfileChange(autofill_changes_[i].action_,
+                                     autofill_changes_[i].autofill_.profile(),
+                                     autofill_changes_[i].id_);
+    } else {
+      NOTREACHED() << "Autofill's CommitChanges received change with no data!";
+    }
+  }
+  autofill_changes_.clear();
+
+  // Make changes
   if (!web_database_->UpdateAutofillEntries(new_entries)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
-        "Could not update autofill entries.");
+                                          "Could not update autofill entries.");
     return;
   }
 

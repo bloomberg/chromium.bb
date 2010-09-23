@@ -691,6 +691,19 @@ class SyncManager {
                                   const ChangeRecord* changes,
                                   int change_count) = 0;
 
+    // OnChangesComplete gets called when the TransactionComplete event is
+    // posted (after OnChangesApplied finishes), after the transaction lock
+    // and the change channel mutex are released.
+    //
+    // The purpose of this function is to support processors that require
+    // split-transactions changes. For example, if a model processor wants to
+    // perform blocking I/O due to a change, it should calculate the changes
+    // while holding the transaction lock (from within OnChangesApplied), buffer
+    // those changes, let the transaction fall out of scope, and then commit
+    // those changes from within OnChangesComplete (postponing the blocking
+    // I/O to when it no longer holds any lock).
+    virtual void OnChangesComplete(syncable::ModelType model_type) = 0;
+
     // A round-trip sync-cycle took place and the syncer has resolved any
     // conflicts that may have arisen.
     virtual void OnSyncCycleCompleted(

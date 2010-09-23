@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_CHANGE_PROCESSOR_H_
 #pragma once
 
+#include <vector>
+
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -52,6 +54,10 @@ class AutofillChangeProcessor : public ChangeProcessor,
       const sync_api::SyncManager::ChangeRecord* changes,
       int change_count);
 
+  // Commit any changes from ApplyChangesFromSyncModel buffered in
+  // autofill_changes_.
+  virtual void CommitChangesFromSyncModel();
+
   // Copy the properties of the given Autofill entry into the sync
   // node.
   static void WriteAutofillEntry(const AutofillEntry& entry,
@@ -67,6 +73,17 @@ class AutofillChangeProcessor : public ChangeProcessor,
   virtual void StopImpl();
 
  private:
+  struct AutofillChangeRecord {
+    sync_api::SyncManager::ChangeRecord::Action action_;
+    int64 id_;
+    sync_pb::AutofillSpecifics autofill_;
+    AutofillChangeRecord(sync_api::SyncManager::ChangeRecord::Action action,
+                         int64 id, const sync_pb::AutofillSpecifics& autofill)
+        : action_(action),
+          id_(id),
+          autofill_(autofill) { }
+  };
+
   void StartObserving();
   void StopObserving();
 
@@ -150,6 +167,10 @@ class AutofillChangeProcessor : public ChangeProcessor,
   NotificationRegistrar notification_registrar_;
 
   bool observing_;
+
+  // Record of changes from ApplyChangesFromSyncModel. These are then processed
+  // in CommitChangesFromSyncModel.
+  std::vector<AutofillChangeRecord> autofill_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillChangeProcessor);
 };

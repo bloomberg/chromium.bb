@@ -1053,6 +1053,8 @@ class BaseTransaction {
                   const char* source_file, int line, WriterTag writer);
 
   void UnlockAndLog(OriginalEntries* entries);
+  bool NotifyTransactionChangingAndEnding(OriginalEntries* entries);
+  virtual void NotifyTransactionComplete();
 
   Directory* const directory_;
   Directory::Kernel* const dirkernel_;  // for brevity

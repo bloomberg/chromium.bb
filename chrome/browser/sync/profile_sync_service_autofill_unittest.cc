@@ -8,6 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -15,10 +16,13 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/waitable_event.h"
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
+#include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
@@ -26,6 +30,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
+#include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
@@ -35,13 +40,28 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/profile_mock.h"
+#include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;
+using base::WaitableEvent;
 using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;
+using browser_sync::GROUP_DB;
+using browser_sync::kAutofillTag;
 using browser_sync::SyncBackendHostForProfileSyncTest;
+using browser_sync::SyncerUtil;
+using browser_sync::UnrecoverableErrorHandler;
+using syncable::CREATE_NEW_UPDATE_ITEM;
+using syncable::AUTOFILL;
+using syncable::DirectoryChangeEvent;
+using syncable::GET_BY_SERVER_TAG;
+using syncable::INVALID;
+using syncable::SERVER_PARENT_ID;
+using syncable::SERVER_SPECIFICS;
+using syncable::OriginalEntries;
+using syncable::WriterTag;
 using syncable::WriteTransaction;
 using testing::_;
 using testing::DoAll;
@@ -53,6 +73,10 @@ using testing::Mock;
 using testing::Return;
 using testing::SaveArg;
 using testing::SetArgumentPointee;
+
+namespace syncable {
+class Id;
+}
 
 class WebDatabaseMock : public WebDatabase {
  public:
@@ -277,6 +301,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   }
 
   friend class AddAutofillEntriesTask;
+  friend class FakeServerUpdater;
 
   ChromeThread db_thread_;
   scoped_refptr<ThreadNotificationService> notification_service_;
@@ -316,6 +341,139 @@ class AddAutofillEntriesTask : public Task {
   const std::vector<AutofillEntry>& entries_;
   const std::vector<AutoFillProfile>& profiles_;
   bool success_;
+};
+
+// Overload write transaction to use custom NotifyTransactionComplete
+static const bool kLoggingInfo = true;
+class WriteTransactionTest: public WriteTransaction {
+ public:
+  WriteTransactionTest(const ScopedDirLookup& directory,
+                       WriterTag writer, const char* source_file,
+                       int line,
+                       scoped_ptr<WaitableEvent> *wait_for_syncapi)
+      : WriteTransaction(directory, writer, source_file, line),
+        wait_for_syncapi_(wait_for_syncapi) { }
+
+  virtual void NotifyTransactionComplete() {
+    // This is where we differ. Force a thread change here, giving another
+    // thread a chance to create a WriteTransaction
+    (*wait_for_syncapi_)->Wait();
+
+    WriteTransaction::NotifyTransactionComplete();
+  }
+
+ private:
+  scoped_ptr<WaitableEvent> *wait_for_syncapi_;
+};
+
+// Our fake server updater. Needs the RefCountedThreadSafe inheritance so we can
+// post tasks with it.
+class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
+ public:
+  FakeServerUpdater(TestProfileSyncService *service,
+                    scoped_ptr<WaitableEvent> *wait_for_start,
+                    scoped_ptr<WaitableEvent> *wait_for_syncapi)
+      : entry_(ProfileSyncServiceAutofillTest::MakeAutofillEntry("0", "0", 0)),
+        service_(service),
+        wait_for_start_(wait_for_start),
+        wait_for_syncapi_(wait_for_syncapi),
+        is_finished_(false, false) { }
+
+  void Update() {
+    // This gets called in a modelsafeworker thread.
+    ASSERT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::DB));
+
+    UserShare* user_share = service_->backend()->GetUserShareHandle();
+    DirectoryManager* dir_manager = user_share->dir_manager.get();
+    ScopedDirLookup dir(dir_manager, user_share->name);
+    ASSERT_TRUE(dir.good());
+
+    // Create autofill protobuf
+    std::string tag = AutofillModelAssociator::KeyToTag(entry_.key().name(),
+                                                        entry_.key().value());
+    sync_pb::AutofillSpecifics new_autofill;
+    new_autofill.set_name(UTF16ToUTF8(entry_.key().name()));
+    new_autofill.set_value(UTF16ToUTF8(entry_.key().value()));
+    const std::vector<base::Time>& ts(entry_.timestamps());
+    for (std::vector<base::Time>::const_iterator timestamp = ts.begin();
+         timestamp != ts.end(); ++timestamp) {
+      new_autofill.add_usage_timestamp(timestamp->ToInternalValue());
+    }
+
+    sync_pb::EntitySpecifics entity_specifics;
+    entity_specifics.MutableExtension(sync_pb::autofill)->
+        CopyFrom(new_autofill);
+
+    {
+      // Tell main thread we've started
+      (*wait_for_start_)->Signal();
+
+      // Create write transaction.
+      WriteTransactionTest trans(dir, UNITTEST, __FILE__, __LINE__,
+                                 wait_for_syncapi_);
+
+      // Create actual entry based on autofill protobuf information.
+      // Simulates effects of SyncerUtil::UpdateLocalDataFromServerData
+      MutableEntry parent(&trans, GET_BY_SERVER_TAG, kAutofillTag);
+      MutableEntry item(&trans, CREATE, parent.Get(syncable::ID), tag);
+      ASSERT_TRUE(item.good());
+      item.Put(SPECIFICS, entity_specifics);
+      item.Put(SERVER_SPECIFICS, entity_specifics);
+      item.Put(BASE_VERSION, 1);
+      syncable::Id server_parent_id = ids_.NewServerId();
+      item.Put(syncable::ID, server_parent_id);
+      syncable::Id new_predecessor =
+          SyncerUtil::ComputePrevIdFromServerPosition(&trans, &item,
+          server_parent_id);
+      ASSERT_TRUE(item.PutPredecessor(new_predecessor));
+    }
+    LOG(INFO) << "FakeServerUpdater finishing.";
+    is_finished_.Signal();
+  }
+
+  void CreateNewEntry(const AutofillEntry& entry) {
+    entry_ = entry;
+    scoped_ptr<Callback0::Type> c(NewCallback((FakeServerUpdater *)this,
+                                              &FakeServerUpdater::Update));
+    std::vector<browser_sync::ModelSafeWorker*> workers;
+    service_->backend()->GetWorkers(&workers);
+
+    ASSERT_FALSE(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    if (!ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+         NewRunnableMethod(this, &FakeServerUpdater::Update))) {
+      NOTREACHED() << "Failed to post task to the db thread.";
+      return;
+    }
+  }
+
+  void CreateNewEntryAndWait(const AutofillEntry& entry) {
+    entry_ = entry;
+    scoped_ptr<Callback0::Type> c(NewCallback((FakeServerUpdater *)this,
+                                              &FakeServerUpdater::Update));
+    std::vector<browser_sync::ModelSafeWorker*> workers;
+    service_->backend()->GetWorkers(&workers);
+
+    ASSERT_FALSE(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    is_finished_.Reset();
+    if (!ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+         NewRunnableMethod(this, &FakeServerUpdater::Update))) {
+      NOTREACHED() << "Failed to post task to the db thread.";
+      return;
+    }
+    is_finished_.Wait();
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<FakeServerUpdater>;
+  ~FakeServerUpdater() { }
+
+  AutofillEntry entry_;
+  TestProfileSyncService *service_;
+  scoped_ptr<WaitableEvent> *wait_for_start_;
+  scoped_ptr<WaitableEvent> *wait_for_syncapi_;
+  WaitableEvent is_finished_;
+  syncable::Id parent_id_;
+  TestIdFactory ids_;
 };
 
 // TODO(skrul): Test abort startup.
@@ -1004,4 +1162,47 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
+}
+
+TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
+  EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
+  EXPECT_CALL(web_database_, GetAutoFillProfiles(_)).WillOnce(Return(true));
+  EXPECT_CALL(web_database_, UpdateAutofillEntries(_)).
+      WillRepeatedly(Return(true));
+  EXPECT_CALL(*personal_data_manager_, Refresh()).Times(3);
+  CreateRootTask task(this, syncable::AUTOFILL);
+  StartSyncService(&task, false);
+  ASSERT_TRUE(task.success());
+
+  // (true, false) means we have to reset after |Signal|, init to unsignaled.
+  scoped_ptr<WaitableEvent> wait_for_start(new WaitableEvent(true, false));
+  scoped_ptr<WaitableEvent> wait_for_syncapi(new WaitableEvent(true, false));
+  scoped_refptr<FakeServerUpdater> updater = new FakeServerUpdater(
+      service_.get(), &wait_for_start, &wait_for_syncapi);
+
+  // This server side update will stall waiting for CommitWaiter.
+  updater->CreateNewEntry(MakeAutofillEntry("server", "entry", 1));
+  wait_for_start->Wait();
+
+  AutofillEntry syncapi_entry(MakeAutofillEntry("syncapi", "entry", 2));
+  ASSERT_TRUE(AddAutofillSyncNode(syncapi_entry));
+  LOG(INFO) << "Syncapi update finished.";
+
+  // If we reach here, it means syncapi succeeded and we didn't deadlock. Yay!
+  // Signal FakeServerUpdater that it can complete.
+  wait_for_syncapi->Signal();
+
+  // Make another entry to ensure nothing broke afterwards and wait for finish
+  // to clean up.
+  updater->CreateNewEntryAndWait(MakeAutofillEntry("server2", "entry2", 3));
+
+  std::vector<AutofillEntry> sync_entries;
+  std::vector<AutoFillProfile> sync_profiles;
+  ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&sync_entries, &sync_profiles));
+  EXPECT_EQ(3U, sync_entries.size());
+  EXPECT_EQ(0U, sync_profiles.size());
+  for (size_t i = 0; i < sync_entries.size(); i++) {
+    LOG(INFO) << "Entry " << i << ": " << sync_entries[i].key().name() << ", "
+              << sync_entries[i].key().value();
+  }
 }

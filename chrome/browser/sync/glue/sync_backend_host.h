@@ -206,6 +206,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const sync_api::BaseTransaction* trans,
         const sync_api::SyncManager::ChangeRecord* changes,
         int change_count);
+    virtual void OnChangesComplete(syncable::ModelType model_type);
     virtual void OnSyncCycleCompleted(
         const sessions::SyncSessionSnapshot* snapshot);
     virtual void OnInitializationComplete();
@@ -323,6 +324,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     friend class SyncBackendHostForProfileSyncTest;
 
     ~Core();
+
+    // Return change processor for a particular model (return NULL on failure).
+    ChangeProcessor* GetProcessor(syncable::ModelType modeltype);
+
 
     // Sends a SYNC_PAUSED notification to the notification service on
     // the UI thread.

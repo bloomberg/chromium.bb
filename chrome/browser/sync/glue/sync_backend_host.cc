@@ -118,7 +118,7 @@ void SyncBackendHost::Initialize(
   // TODO(tim): This should be encryption-specific instead of passwords
   // specific.  For now we have to do this to avoid NIGORI node lookups when
   // we haven't downloaded that node.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncPasswords) ) {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncPasswords)) {
     registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
   }
 
@@ -521,16 +521,8 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   host_ = NULL;
 }
 
-void SyncBackendHost::Core::OnChangesApplied(
-    syncable::ModelType model_type,
-    const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
-  if (!host_ || !host_->frontend_) {
-    DCHECK(false) << "OnChangesApplied called after Shutdown?";
-    return;
-  }
-
+ChangeProcessor* SyncBackendHost::Core::GetProcessor(
+    syncable::ModelType model_type) {
   std::map<syncable::ModelType, ChangeProcessor*>::const_iterator it =
       host_->processors_.find(model_type);
 
@@ -542,11 +534,11 @@ void SyncBackendHost::Core::OnChangesApplied(
   // the UI thread so we will never drop any changes after model
   // association.
   if (it == host_->processors_.end())
-    return;
+    return NULL;
 
   if (!IsCurrentThreadSafeForModel(model_type)) {
     NOTREACHED() << "Changes applied on wrong thread.";
-    return;
+    return NULL;
   }
 
   // Now that we're sure we're on the correct thread, we can access the
@@ -555,10 +547,43 @@ void SyncBackendHost::Core::OnChangesApplied(
 
   // Ensure the change processor is willing to accept changes.
   if (!processor->IsRunning())
+    return NULL;
+
+  return processor;
+}
+
+void SyncBackendHost::Core::OnChangesApplied(
+    syncable::ModelType model_type,
+    const sync_api::BaseTransaction* trans,
+    const sync_api::SyncManager::ChangeRecord* changes,
+    int change_count) {
+  if (!host_ || !host_->frontend_) {
+    DCHECK(false) << "OnChangesApplied called after Shutdown?";
+    return;
+  }
+  ChangeProcessor* processor = GetProcessor(model_type);
+  if (!processor)
     return;
 
   processor->ApplyChangesFromSyncModel(trans, changes, change_count);
 }
+
+void SyncBackendHost::Core::OnChangesComplete(
+    syncable::ModelType model_type) {
+  if (!host_ || !host_->frontend_) {
+    DCHECK(false) << "OnChangesComplete called after Shutdown?";
+    return;
+  }
+
+  ChangeProcessor* processor = GetProcessor(model_type);
+  if (!processor)
+    return;
+
+  // This call just notifies the processor that it can commit, it already
+  // buffered any changes it plans to makes so needs no further information.
+  processor->CommitChangesFromSyncModel();
+}
+
 
 void SyncBackendHost::Core::OnSyncCycleCompleted(
     const SyncSessionSnapshot* snapshot) {
