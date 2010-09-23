@@ -95,7 +95,7 @@ void SpeechInputBubbleBase::SetRecognizingMode() {
 
 void SpeechInputBubbleBase::DoRecognizingAnimationStep() {
   SetImage(animation_frames_[animation_step_]);
-  if (++animation_step_ >= animation_frames_.size())
+  if (++animation_step_ >= static_cast<int>(animation_frames_.size()))
     animation_step_ = 0;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
