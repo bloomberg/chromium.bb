@@ -14,7 +14,6 @@
 #include "base/scoped_ptr.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
-#include "third_party/ppapi/c/pp_event.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
@@ -22,6 +21,7 @@
 #include "third_party/ppapi/cpp/var.h"
 
 class MessageLoop;
+struct PP_InputEvent;
 
 namespace base {
 class Thread;
@@ -50,7 +50,7 @@ class ChromotingInstance : public pp::Instance {
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
   virtual void Connect(const ClientConfig& config);
-  virtual bool HandleEvent(const PP_Event& event);
+  virtual bool HandleEvent(const PP_InputEvent& event);
   virtual pp::Var GetInstanceObject();
   virtual void ViewChanged(const pp::Rect& position, const pp::Rect& clip);
 

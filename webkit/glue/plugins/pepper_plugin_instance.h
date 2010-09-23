@@ -107,6 +107,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool HandleDocumentLoad(URLLoader* loader);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
                         WebKit::WebCursorInfo* cursor_info);
+  void FocusChanged(bool has_focus);
   PP_Var GetInstanceObject();
   void ViewChanged(const gfx::Rect& position, const gfx::Rect& clip);
 

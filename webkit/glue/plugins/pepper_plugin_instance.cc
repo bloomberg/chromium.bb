@@ -26,7 +26,7 @@
 #include "third_party/ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "third_party/ppapi/c/dev/ppp_find_dev.h"
 #include "third_party/ppapi/c/dev/ppp_zoom_dev.h"
-#include "third_party/ppapi/c/pp_event.h"
+#include "third_party/ppapi/c/pp_input_event.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
@@ -450,14 +450,21 @@ bool PluginInstance::HandleDocumentLoad(URLLoader* loader) {
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
                                       WebCursorInfo* cursor_info) {
-  scoped_ptr<PP_Event> pp_event(CreatePP_Event(event));
-  if (!pp_event.get())
-    return false;
+  std::vector<PP_InputEvent> pp_events;
+  CreatePPEvent(event, &pp_events);
 
-  bool rv = instance_interface_->HandleEvent(GetPPInstance(), pp_event.get());
+  // Each input event may generate more than one PP_InputEvent.
+  bool rv = false;
+  for (size_t i = 0; i < pp_events.size(); i++)
+    rv |= instance_interface_->HandleInputEvent(GetPPInstance(), &pp_events[i]);
+
   if (cursor_.get())
     *cursor_info = *cursor_;
   return rv;
+}
+
+void PluginInstance::FocusChanged(bool has_focus) {
+  instance_interface_->FocusChanged(GetPPInstance(), has_focus);
 }
 
 PP_Var PluginInstance::GetInstanceObject() {

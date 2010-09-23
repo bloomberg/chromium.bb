@@ -10,7 +10,7 @@
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PPB_Widget_Dev;
-struct PP_Event;
+struct PP_InputEvent;
 
 namespace pepper {
 
@@ -31,7 +31,7 @@ class Widget : public Resource  {
 
   // PPB_Widget implementation.
   virtual bool Paint(const PP_Rect* rect, ImageData* image) = 0;
-  virtual bool HandleEvent(const PP_Event* event) = 0;
+  virtual bool HandleEvent(const PP_InputEvent* event) = 0;
   bool GetLocation(PP_Rect* location);
   void SetLocation(const PP_Rect* location);
 

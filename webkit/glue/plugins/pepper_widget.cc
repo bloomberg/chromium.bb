@@ -33,7 +33,7 @@ bool Paint(PP_Resource resource, const PP_Rect* rect, PP_Resource image_id) {
   return widget->Paint(rect, image);
 }
 
-bool HandleEvent(PP_Resource resource, const PP_Event* event) {
+bool HandleEvent(PP_Resource resource, const PP_InputEvent* event) {
   scoped_refptr<Widget> widget(Resource::GetAs<Widget>(resource));
   return widget && widget->HandleEvent(event);
 }

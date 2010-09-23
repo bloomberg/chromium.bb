@@ -7,7 +7,9 @@
 
 #include "remoting/client/input_handler.h"
 
-#include "third_party/ppapi/c/pp_event.h"
+struct PP_InputEvent_Character;
+struct PP_InputEvent_Key;
+struct PP_InputEvent_Mouse;
 
 namespace remoting {
 
@@ -20,12 +22,12 @@ class PepperInputHandler : public InputHandler {
 
   void Initialize();
 
-  void HandleKeyEvent(bool keydown, const PP_Event_Key& event);
-  void HandleCharacterEvent(const PP_Event_Character& event);
+  void HandleKeyEvent(bool keydown, const PP_InputEvent_Key& event);
+  void HandleCharacterEvent(const PP_InputEvent_Character& event);
 
-  void HandleMouseMoveEvent(const PP_Event_Mouse& event);
+  void HandleMouseMoveEvent(const PP_InputEvent_Mouse& event);
   void HandleMouseButtonEvent(bool button_down,
-                              const PP_Event_Mouse& event);
+                              const PP_InputEvent_Mouse& event);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PepperInputHandler);

@@ -96,6 +96,7 @@ void WebPluginImpl::updateGeometry(
 }
 
 void WebPluginImpl::updateFocus(bool focused) {
+  instance_->FocusChanged(focused);
 }
 
 void WebPluginImpl::updateVisibility(bool visible) {

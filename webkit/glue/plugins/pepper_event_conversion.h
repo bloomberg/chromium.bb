@@ -5,7 +5,9 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_EVENT_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_EVENT_H_
 
-struct PP_Event;
+#include <vector>
+
+struct PP_InputEvent;
 
 namespace WebKit {
 class WebInputEvent;
@@ -13,13 +15,15 @@ class WebInputEvent;
 
 namespace pepper {
 
-// Creates a PP_Event from the given WebInputEvent.  If it fails, returns NULL.
-// The caller owns the created object on success.
-PP_Event* CreatePP_Event(const WebKit::WebInputEvent& event);
+// Converts the given WebKit event to one or possibly multiple PP_InputEvents.
+// The generated events will be filled into the given vector. On failure, no
+// events will ge generated and the vector will be empty.
+void CreatePPEvent(const WebKit::WebInputEvent& event,
+                   std::vector<PP_InputEvent>* pp_events);
 
-// Creates a WebInputEvent from the given PP_Event.  If it fails, returns NULL.
-// The caller owns the created object on success.
-WebKit::WebInputEvent* CreateWebInputEvent(const PP_Event& event);
+// Creates a WebInputEvent from the given PP_InputEvent.  If it fails, returns
+// NULL.  The caller owns the created object on success.
+WebKit::WebInputEvent* CreateWebInputEvent(const PP_InputEvent& event);
 
 }  // namespace pepper
 

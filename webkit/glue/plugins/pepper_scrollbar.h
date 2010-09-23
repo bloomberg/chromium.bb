@@ -38,7 +38,7 @@ class Scrollbar : public Widget, public WebKit::WebScrollbarClient {
 
   // PPB_Widget implementation.
   virtual bool Paint(const PP_Rect* rect, ImageData* image);
-  virtual bool HandleEvent(const PP_Event* event);
+  virtual bool HandleEvent(const PP_InputEvent* event);
   virtual void SetLocationInternal(const PP_Rect* location);
 
  private:

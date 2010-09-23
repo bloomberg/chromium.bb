@@ -19,7 +19,7 @@
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "third_party/ppapi/c/pp_event.h"
+#include "third_party/ppapi/c/pp_input_event.h"
 #include "third_party/ppapi/cpp/completion_callback.h"
 #include "third_party/ppapi/cpp/rect.h"
 
@@ -112,33 +112,34 @@ bool ChromotingInstance::CurrentlyOnPluginThread() const {
   return pepper_main_loop_dont_post_to_me_ == MessageLoop::current();
 }
 
-bool ChromotingInstance::HandleEvent(const PP_Event& event) {
+bool ChromotingInstance::HandleEvent(const PP_InputEvent& event) {
   DCHECK(CurrentlyOnPluginThread());
 
   PepperInputHandler* pih
       = static_cast<PepperInputHandler*>(input_handler_.get());
 
   switch (event.type) {
-    case PP_EVENT_TYPE_MOUSEDOWN:
+    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
       pih->HandleMouseButtonEvent(true, event.u.mouse);
       return true;
 
-    case PP_EVENT_TYPE_MOUSEUP:
+    case PP_INPUTEVENT_TYPE_MOUSEUP:
       pih->HandleMouseButtonEvent(false, event.u.mouse);
       return true;
 
-    case PP_EVENT_TYPE_MOUSEMOVE:
-    case PP_EVENT_TYPE_MOUSEENTER:
-    case PP_EVENT_TYPE_MOUSELEAVE:
+    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+    case PP_INPUTEVENT_TYPE_MOUSEENTER:
+    case PP_INPUTEVENT_TYPE_MOUSELEAVE:
       pih->HandleMouseMoveEvent(event.u.mouse);
       return true;
 
-    case PP_EVENT_TYPE_KEYDOWN:
-    case PP_EVENT_TYPE_KEYUP:
-      pih->HandleKeyEvent(event.type == PP_EVENT_TYPE_KEYDOWN, event.u.key);
+    case PP_INPUTEVENT_TYPE_KEYDOWN:
+    case PP_INPUTEVENT_TYPE_KEYUP:
+      pih->HandleKeyEvent(event.type == PP_INPUTEVENT_TYPE_KEYDOWN,
+                          event.u.key);
       return true;
 
-    case PP_EVENT_TYPE_CHAR:
+    case PP_INPUTEVENT_TYPE_CHAR:
       pih->HandleCharacterEvent(event.u.character);
       return true;
 

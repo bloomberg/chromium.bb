@@ -173,7 +173,7 @@ bool Scrollbar::Paint(const PP_Rect* rect, ImageData* image) {
   return true;
 }
 
-bool Scrollbar::HandleEvent(const PP_Event* event) {
+bool Scrollbar::HandleEvent(const PP_InputEvent* event) {
   scoped_ptr<WebInputEvent> web_input_event(CreateWebInputEvent(*event));
   if (!web_input_event.get())
     return false;
