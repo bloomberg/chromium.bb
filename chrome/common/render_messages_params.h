@@ -25,6 +25,7 @@
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
+#include "chrome/common/serialized_script_value.h"
 #include "chrome/common/window_container_type.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
@@ -671,13 +672,34 @@ struct ViewHostMsg_IDBIndexOpenCursor_Params {
 
   // The index the index belongs to.
   int32 idb_index_id_;
+
+  // The transaction this request belongs to.
+  int transaction_id_;
+};
+
+// Used to set a value in an object store.
+struct ViewHostMsg_IDBObjectStorePut_Params {
+  // The object store's id.
+  int32 idb_object_store_id_;
+
+  // The id any response should contain.
+  int32 response_id_;
+
+  // The value to set.
+  SerializedScriptValue serialized_value_;
+
+  // The key to set it on (may not be "valid"/set in some cases).
+  IndexedDBKey key_;
+
+  // If it already exists, don't update (just return an error).
+  bool add_only_;
+
+  // The transaction it's associated with.
+  int transaction_id_;
 };
 
 // Used to create an index.
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params {
-  ViewHostMsg_IDBObjectStoreCreateIndex_Params();
-  ~ViewHostMsg_IDBObjectStoreCreateIndex_Params();
-
   // The response should have this id.
   int32 response_id_;
 
@@ -716,6 +738,9 @@ struct ViewHostMsg_IDBObjectStoreOpenCursor_Params {
 
   // The object store the cursor belongs to.
   int32 idb_object_store_id_;
+
+  // The transaction this request belongs to.
+  int transaction_id_;
 };
 
 // Allows an extension to execute code in a tab.
@@ -1135,6 +1160,14 @@ struct ParamTraits<ViewHostMsg_IDBDatabaseCreateObjectStore_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params> {
   typedef ViewHostMsg_IDBIndexOpenCursor_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewHostMsg_IDBObjectStorePut_Params> {
+  typedef ViewHostMsg_IDBObjectStorePut_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
