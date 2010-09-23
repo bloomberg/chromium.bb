@@ -15,6 +15,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
@@ -46,6 +47,8 @@
 #elif defined(OS_POSIX)
 #include "chrome/browser/gtk/bookmark_bar_gtk.h"
 #endif
+
+using base::Time;
 
 namespace {
 
@@ -288,10 +291,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
   localized_strings.SetString("web_store_url",
       GetUrlWithLang(GURL(Extension::ChromeStoreURL())));
-  localized_strings.SetString("customlogo",
-        profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogo) &&
-            profile_->GetPrefs()->GetBoolean(prefs::kNTPCustomLogo) ?
-        "true" : "false");
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
@@ -311,6 +310,21 @@ void NTPResourceCache::CreateNewTabHTML() {
   const int shown_sections = ShownSectionsHandler::GetShownSections(
       profile_->GetPrefs());
   localized_strings.SetInteger("shown_sections", shown_sections);
+
+  // If the user has preferences for a start and end time for a custom logo,
+  // and the time now is between these two times, show the custom logo.
+  if (profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogoStart) &&
+      profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogoEnd)) {
+    Time start_time = Time::FromDoubleT(
+        profile_->GetPrefs()->GetReal(prefs::kNTPCustomLogoStart));
+    Time end_time = Time::FromDoubleT(
+        profile_->GetPrefs()->GetReal(prefs::kNTPCustomLogoEnd));
+    localized_strings.SetString("customlogo",
+        (start_time < Time::Now() && end_time > Time::Now()) ?
+        "true" : "false");
+  } else {
+    localized_strings.SetString("customlogo", "false");
+  }
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
       GetRawDataResource(IDR_NEW_NEW_TAB_HTML));

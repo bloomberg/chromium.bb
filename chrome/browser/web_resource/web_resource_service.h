@@ -28,9 +28,45 @@ class WebResourceService
   // the process that will parse the JSON, and then update the cache.
   void UpdateResourceCache(const std::string& json_data);
 
+  // Unpack the web resource as a set of tips. Expects json in the form of:
+  // {
+  //   "lang": "en",
+  //   "topic": {
+  //     "topid_id": "24013",
+  //     "topics": [
+  //     ],
+  //     "answers": [
+  //       {
+  //         "answer_id": "18625",
+  //         "inproduct": "Text here will be shown as a tip",
+  //       },
+  //       ...
+  //     ]
+  //   }
+  // }
+  //
+  // Public for unit testing.
+  void UnpackTips(const DictionaryValue& parsed_json);
+
+  // Unpack the web resource as a custom logo signal. Expects json in the form
+  // of:
+  // {
+  //   "topic": {
+  //     "answers": [
+  //       {
+  //         "custom_logo_start": "31/12/10 01:00",
+  //         "custom_logo_end": "31/01/11 01:00"
+  //       },
+  //       ...
+  //     ]
+  //   }
+  // }
+  //
+  // Public for unit testing.
+  void UnpackLogoSignal(const DictionaryValue& parsed_json);
+
   static const char* kCurrentTipPrefName;
   static const char* kTipCachePrefName;
-  static const char* kCustomLogoId;
 
   // Default server from which to gather resources.
   static const char* kDefaultResourceServer;
@@ -50,40 +86,6 @@ class WebResourceService
 
   // Puts parsed json data in the right places, and writes to prefs file.
   void OnWebResourceUnpacked(const DictionaryValue& parsed_json);
-
-  // Unpack the web resource as a set of tips. Expects json in the form of:
-  // {
-  //   "lang": "en",
-  //   "topic": {
-  //     "topid_id": "24013",
-  //     "topics": [
-  //     ],
-  //     "answers": [
-  //       {
-  //         "answer_id": "18625",
-  //         "inproduct": "Text here will be shown as a tip",
-  //       },
-  //       ...
-  //     ]
-  //   }
-  // }
-  //
-  void UnpackTips(const DictionaryValue& parsed_json);
-
-  // Unpack the web resource as a custom logo signal. Expects json in the form
-  // of:
-  // {
-  //   "topic": {
-  //     "answers": [
-  //       {
-  //         "logo_id": "1"
-  //       },
-  //       ...
-  //     ]
-  //   }
-  // }
-  //
-  void UnpackLogoSignal(const DictionaryValue& parsed_json);
 
   // We need to be able to load parsed resource data into preferences file,
   // and get proper install directory.
@@ -108,8 +110,8 @@ class WebResourceService
   // Delay on first fetch so we don't interfere with startup.
   static const int kStartResourceFetchDelay = 5000;
 
-  // Delay between calls to update the cache (12 hours).
-  static const int kCacheUpdateDelay = 12 * 60 * 60 * 1000;
+  // Delay between calls to update the cache (48 hours).
+  static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 
   DISALLOW_COPY_AND_ASSIGN(WebResourceService);
 };

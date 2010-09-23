@@ -899,8 +899,10 @@ const char kNTPShownSections[] = "ntp.shown_sections";
 // This pref is used for migrating the prefs for the NTP
 const char kNTPPrefVersion[] = "ntp.pref_version";
 
-// Used if the NTP should show a custom logo rather than the standard one.
-const char kNTPCustomLogo[] = "ntp.custom_logo";
+// Dates between which the NTP should show a custom logo rather than the
+// standard one.
+const char kNTPCustomLogoStart[] = "ntp.custom_logo_start";
+const char kNTPCustomLogoEnd[] = "ntp.custom_logo_end";
 
 // A boolean specifying whether dev tools window should be opened docked.
 const char kDevToolsOpenDocked[] = "devtools.open_docked";

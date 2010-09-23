@@ -25,7 +25,6 @@
 
 const char* WebResourceService::kCurrentTipPrefName = "current_tip";
 const char* WebResourceService::kTipCachePrefName = "tips";
-const char* WebResourceService::kCustomLogoId = "1";
 
 class WebResourceService::WebResourceFetcher
     : public URLFetcher::Delegate {
@@ -185,7 +184,6 @@ class WebResourceService::UnpackerClient
   bool got_response_;
 };
 
-// TODO(mirandac): replace these servers tomorrow!
 const char* WebResourceService::kDefaultResourceServer =
 #if defined(OS_MACOSX)
   "https://clients2.google.com/tools/service/npredir?r=chrometips_mac&hl=";
@@ -207,7 +205,8 @@ void WebResourceService::Init() {
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_ = new WebResourceFetcher(this);
   prefs_->RegisterStringPref(prefs::kNTPWebResourceCacheUpdate, "0");
-  prefs_->RegisterBooleanPref(prefs::kNTPCustomLogo, false);
+  prefs_->RegisterRealPref(prefs::kNTPCustomLogoStart, 0);
+  prefs_->RegisterRealPref(prefs::kNTPCustomLogoEnd, 0);
   std::string locale = g_browser_process->GetApplicationLocale();
 
   if (prefs_->HasPrefPath(prefs::kNTPWebResourceServer)) {
@@ -311,8 +310,19 @@ void WebResourceService::UnpackTips(const DictionaryValue& parsed_json) {
 void WebResourceService::UnpackLogoSignal(const DictionaryValue& parsed_json) {
   DictionaryValue* topic_dict;
   ListValue* answer_list;
-  std::string logo_id;
+  double old_logo_start = 0;
+  double old_logo_end = 0;
+  double logo_start = 0;
+  double logo_end = 0;
 
+  // Check for preexisting start and end values.
+  if (prefs_->HasPrefPath(prefs::kNTPCustomLogoStart) &&
+      prefs_->HasPrefPath(prefs::kNTPCustomLogoEnd)) {
+    old_logo_start = prefs_->GetReal(prefs::kNTPCustomLogoStart);
+    old_logo_end = prefs_->GetReal(prefs::kNTPCustomLogoEnd);
+  }
+
+  // Check for newly received start and end values.
   if (parsed_json.GetDictionary("topic", &topic_dict)) {
     if (topic_dict->GetList("answers", &answer_list)) {
       for (ListValue::const_iterator tip_iter = answer_list->begin();
@@ -321,23 +331,37 @@ void WebResourceService::UnpackLogoSignal(const DictionaryValue& parsed_json) {
           continue;
         DictionaryValue* a_dic =
             static_cast<DictionaryValue*>(*tip_iter);
-        if (a_dic->GetString("logo_id", &logo_id)) {
-          prefs_->SetBoolean(prefs::kNTPCustomLogo,
-                             LowerCaseEqualsASCII(logo_id, kCustomLogoId));
-          NotificationService* service = NotificationService::current();
-          service->Notify(NotificationType::BROWSER_THEME_CHANGED,
-                          Source<WebResourceService>(this),
-                          NotificationService::NoDetails());
-          return;
+        std::string logo_start_string;
+        std::string logo_end_string;
+        if (a_dic->GetString("custom_logo_start", &logo_start_string) &&
+            a_dic->GetString("custom_logo_end", &logo_end_string)) {
+          // If both times can be correctly parsed, then set new logo
+          // start and end times.
+          base::Time start_time;
+          base::Time end_time;
+          if (base::Time::FromString(
+                  ASCIIToWide(logo_start_string).c_str(), &start_time) &&
+              base::Time::FromString(
+                  ASCIIToWide(logo_end_string).c_str(), &end_time)) {
+            logo_start = start_time.ToDoubleT();
+            logo_end = end_time.ToDoubleT();
+          }
         }
       }
     }
   }
-  // If no logo_id is found in the tips, show regular logo.
-  prefs_->SetBoolean(prefs::kNTPCustomLogo,
-                     LowerCaseEqualsASCII(logo_id, kCustomLogoId));
-  NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::BROWSER_THEME_CHANGED,
-                  Source<WebResourceService>(this),
-                  NotificationService::NoDetails());
+
+  // If logo start or end times have changed, trigger a theme change so that
+  // the logo on the NTP is updated. This check is outside the reading of the
+  // web resource data, because the absence of dates counts as a triggering
+  // change if there were dates before.
+  if (!(old_logo_start == logo_start) ||
+      !(old_logo_end == logo_end)) {
+    prefs_->SetReal(prefs::kNTPCustomLogoStart, logo_start);
+    prefs_->SetReal(prefs::kNTPCustomLogoEnd, logo_end);
+    NotificationService* service = NotificationService::current();
+    service->Notify(NotificationType::BROWSER_THEME_CHANGED,
+                    Source<WebResourceService>(this),
+                    NotificationService::NoDetails());
+  }
 }

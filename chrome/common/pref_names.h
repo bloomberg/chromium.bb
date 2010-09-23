@@ -327,7 +327,8 @@ extern const char kNTPWebResourceCacheUpdate[];
 extern const char kNTPWebResourceServer[];
 extern const char kNTPShownSections[];
 extern const char kNTPPrefVersion[];
-extern const char kNTPCustomLogo[];
+extern const char kNTPCustomLogoStart[];
+extern const char kNTPCustomLogoEnd[];
 
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsSplitLocation[];
