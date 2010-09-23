@@ -1056,6 +1056,12 @@ IPC_BEGIN_MESSAGES(View)
                       IPC::PlatformFileForTransit /* file descriptor */,
                       int /* message_id */)
 
+  // A classification model for client-side phishing detection.
+  // The given file contains an encoded safe_browsing::ClientSideModel
+  // protocol buffer.
+  IPC_MESSAGE_CONTROL1(ViewMsg_SetPhishingModel,
+                       IPC::PlatformFileForTransit /* model_file */)
+
 IPC_END_MESSAGES(View)
 
 

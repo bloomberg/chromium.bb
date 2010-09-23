@@ -293,6 +293,8 @@ class RenderThread : public RenderThreadBase,
   void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle,
                                const GPUInfo& gpu_info);
 
+  void OnSetPhishingModel(IPC::PlatformFileForTransit model_file);
+
   void OnGetAccessibilityTree();
 
   // Gather usage statistics from the in-memory cache and inform our host.

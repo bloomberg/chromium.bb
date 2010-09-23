@@ -630,6 +630,7 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
                         OnSpellCheckEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(ViewMsg_GpuChannelEstablished, OnGpuChannelEstablished)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetPhishingModel, OnSetPhishingModel)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -1102,6 +1103,11 @@ void RenderThread::OnGpuChannelEstablished(
     // Otherwise cancel the connection.
     gpu_channel_ = NULL;
   }
+}
+
+void RenderThread::OnSetPhishingModel(IPC::PlatformFileForTransit model_file) {
+  // TODO(bryner): create a Scorer from the model file, and propagate it to the
+  // RenderViews so that they can create PhishingClassifiers.
 }
 
 scoped_refptr<base::MessageLoopProxy>
