@@ -66,7 +66,7 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'win_reg_key_name': 'MockKey',
       },
       messages=MockMessageDictionary())
-    self.writer.Prepare()
+    self.writer.Init()
 
     # It is not worth testing the exact content of style attributes.
     # Therefore we override them here with shorter texts.

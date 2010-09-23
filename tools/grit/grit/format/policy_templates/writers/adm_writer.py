@@ -168,7 +168,7 @@ class AdmWriter(template_writer.TemplateWriter):
       self._PrintLine('END CATEGORY', -1)
       self._PrintLine('', -1)
 
-  def Prepare(self):
+  def Init(self):
     self.policy_list = []
     self.str_list = ['[Strings]']
     self.indent = ''

@@ -89,12 +89,6 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
       for item in policy['items']:
         self.AddElement(range_list, 'integer', {}, item['value'])
 
-  def BeginPolicyGroup(self, group):
-    pass
-
-  def EndPolicyGroup(self):
-    pass
-
   def BeginTemplate(self):
     self._plist.attributes['version'] = '1'
     dict = self.AddElement(self._plist, 'dict')
@@ -108,10 +102,7 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
 
     self._array = self._AddKeyValuePair(dict, 'pfm_subkeys', 'array')
 
-  def EndTemplate(self):
-    pass
-
-  def Prepare(self):
+  def Init(self):
     dom_impl = minidom.getDOMImplementation('')
     doctype = dom_impl.createDocumentType(
         'plist',

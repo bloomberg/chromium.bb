@@ -73,22 +73,13 @@ class PListStringsWriter(template_writer.TemplateWriter):
 
     self._AddToStringTable(policy['name'], caption, desc)
 
-  def BeginPolicyGroup(self, group):
-    pass
-
-  def EndPolicyGroup(self):
-    pass
-
   def BeginTemplate(self):
     self._AddToStringTable(
         self.config['app_name'],
         self.config['app_name'],
         self.messages['IDS_POLICY_MAC_CHROME_PREFERENCES'])
 
-  def EndTemplate(self):
-    pass
-
-  def Prepare(self):
+  def Init(self):
     # A buffer for the lines of the string table being generated.
     self._out = []
 

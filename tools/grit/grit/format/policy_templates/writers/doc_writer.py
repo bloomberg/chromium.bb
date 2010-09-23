@@ -405,12 +405,6 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._AddPolicyRow(self._summary_tbody, policy)
     self._AddPolicySection(self._details_div, policy)
 
-  def BeginPolicyGroup(self, group):
-    pass
-
-  def EndPolicyGroup(self):
-    pass
-
   def BeginTemplate(self):
     # Add a <div> for the summary section.
     summary_div = self.AddElement(self._main_div, 'div')
@@ -438,10 +432,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     # Add a <div> for the detailed policy listing.
     self._details_div = self.AddElement(self._main_div, 'div')
 
-  def EndTemplate(self):
-    pass
-
-  def Prepare(self):
+  def Init(self):
     dom_impl = minidom.getDOMImplementation('')
     self._doc = dom_impl.createDocument(None, 'html', None)
     body = self.AddElement(self._doc.documentElement, 'body')

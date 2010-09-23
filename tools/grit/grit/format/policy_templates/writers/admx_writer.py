@@ -348,9 +348,6 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddElement(self._active_policy_elem, 'supportedOn',
                     {'ref': self.config['win_supported_os']})
 
-  def EndPolicyGroup(self):
-    return
-
   def BeginTemplate(self):
     '''Generates the skeleton of the ADMX template. An ADMX template contains
     an ADMX "PolicyDefinitions" element with four child nodes: "policies"
@@ -374,12 +371,6 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
                         self.config['win_category_path'])
     self._active_policies_elem = self.AddElement(policy_definitions_elem,
                                                  'policies')
-
-  def EndTemplate(self):
-    pass
-
-  def Prepare(self):
-    pass
 
   def GetTemplateText(self):
     return self._doc.toprettyxml(indent='  ')

@@ -114,24 +114,6 @@ class PolicyTemplateGenerator:
           # a policy, like in PListStringsWriter and DocWriter.
           policy['parent'] = group
 
-  def _GetPoliciesForWriter(self, template_writer, group):
-    '''Filters the list of policies in a group for a writer.
-
-    Args:
-      template_writer: The writer object.
-      group: The dictionary of the policy group.
-
-    Returns: The list of policies of the policy group that are compatible
-      with the writer.
-    '''
-    if not 'policies' in group:
-      return []
-    result = []
-    for policy in group['policies']:
-      if template_writer.IsPolicySupported(policy):
-        result.append(policy)
-    return result
-
   def GetTemplateText(self, template_writer):
     '''Generates the text of the template from the arguments given
     to the constructor, using a given TemplateWriter.
@@ -143,15 +125,4 @@ class PolicyTemplateGenerator:
     Returns:
       The text of the generated template.
     '''
-    template_writer.Prepare()
-    template_writer.BeginTemplate()
-    for group in self._policy_groups:
-      policies = self._GetPoliciesForWriter(template_writer, group)
-      if policies:
-        # Only write nonempty groups.
-        template_writer.BeginPolicyGroup(group)
-        for policy in policies:
-          template_writer.WritePolicy(policy)
-        template_writer.EndPolicyGroup()
-    template_writer.EndTemplate()
-    return template_writer.GetTemplateText()
+    return template_writer.WriteTemplate(self._policy_groups)

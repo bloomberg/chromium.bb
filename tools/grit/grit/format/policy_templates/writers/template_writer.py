@@ -30,11 +30,67 @@ class TemplateWriter(object):
     self.config = config
     self.messages = messages
 
-  def Prepare(self):
-    '''Initializes the internal buffer where the template will be
-    stored.
+  def IsPolicySupported(self, policy):
+    '''Checks if the given policy is supported by the writer.
+
+    Args:
+      policy: The dictionary of the policy.
+
+    Returns:
+      True if the writer chooses to include 'policy' in its output.
     '''
-    raise NotImplementedError()
+    for platform in self.platforms:
+      if platform in policy['annotations']['platforms']:
+        return True
+    return False
+
+  def _GetPoliciesForWriter(self, group):
+    '''Filters the list of policies in the passed group that are supported by
+    the writer.
+
+    Args:
+      group: The dictionary of the policy group.
+
+    Returns: The list of policies of the policy group that are compatible
+      with the writer.
+    '''
+    if not 'policies' in group:
+      return []
+    result = []
+    for policy in group['policies']:
+      if self.IsPolicySupported(policy):
+        result.append(policy)
+    return result
+
+  def Init(self):
+    '''Initializes the writer. If the WriteTemplate method is overridden, then
+    this method must be called as first step of each template generation
+    process.
+    '''
+    pass
+
+
+  def WriteTemplate(self, template):
+    '''Writes the given template definition.
+
+    Args:
+      template: Template definition to write.
+
+    Returns:
+      Generated output for the passed template definition.
+    '''
+    self.Init()
+    self.BeginTemplate()
+    for group in template:
+      policies = self._GetPoliciesForWriter(group)
+      if policies:
+        # Only write nonempty groups.
+        self.BeginPolicyGroup(group)
+        for policy in policies:
+          self.WritePolicy(policy)
+        self.EndPolicyGroup()
+    self.EndTemplate()
+    return self.GetTemplateText()
 
   def WritePolicy(self, policy):
     '''Appends the template text corresponding to a policy into the
@@ -52,13 +108,13 @@ class TemplateWriter(object):
     Args:
       group: The policy group as it is found in the JSON file.
     '''
-    raise NotImplementedError()
+    pass
 
   def EndPolicyGroup(self):
     '''Appends the template text corresponding to the end of a
     policy group into the internal buffer.
     '''
-    raise NotImplementedError()
+    pass
 
   def BeginTemplate(self):
     '''Appends the text corresponding to the beginning of the whole
@@ -70,8 +126,7 @@ class TemplateWriter(object):
     '''Appends the text corresponding to the end of the whole
     template into the internal buffer.
     '''
-    raise NotImplementedError()
-
+    pass
 
   def GetTemplateText(self):
     '''Gets the content of the internal template buffer.
@@ -80,17 +135,3 @@ class TemplateWriter(object):
       The generated template from the the internal buffer as a string.
     '''
     raise NotImplementedError()
-
-  def IsPolicySupported(self, policy):
-    '''Checks if the writer is interested in writing a given policy.
-
-    Args:
-      policy: The dictionary of the policy.
-
-    Returns:
-      True if the writer chooses to include 'policy' in its output.
-    '''
-    for platform in self.platforms:
-      if platform in policy['annotations']['platforms']:
-        return True
-    return False

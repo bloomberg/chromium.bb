@@ -207,9 +207,6 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     self._active_presentation_elem  = self.AddElement(
         self._presentation_table_elem, 'presentation', {'id': id})
 
-  def EndPolicyGroup(self):
-    pass
-
   def _AddBaseStrings(self, string_table_elem, build):
     ''' Adds ADML "string" elements to the string-table that are referenced by
     the ADMX file but not related to any specific Policy-Group or Policy.
@@ -241,12 +238,6 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     self._AddBaseStrings(self._string_table_elem, self.config['build'])
     self._presentation_table_elem = self.AddElement(resources_elem,
                                                    'presentationTable')
-
-  def EndTemplate(self):
-    pass
-
-  def Prepare(self):
-    pass
 
   def GetTemplateText(self):
     # Using "toprettyxml()" confuses the Windows Group Policy Editor

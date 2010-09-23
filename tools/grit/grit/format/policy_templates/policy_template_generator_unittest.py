@@ -49,7 +49,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     class LocalMockWriter(mock_writer.MockWriter):
       def __init__(self):
         self.log = 'init;'
-      def Prepare(self):
+      def Init(self):
         self.log += 'prepare;'
       def BeginTemplate(self):
         self.log += 'begin;'

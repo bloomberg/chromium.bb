@@ -32,7 +32,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
       'IDS_POLICY_WIN_SUPPORTED_WINXPSP2': 'Supported on Test OS or higher'
     }
     self.writer = adml_writer.GetWriter(config, messages)
-    self.writer.Prepare()
+    self.writer.Init()
 
   def _InitWriterForAddingPolicyGroups(self, writer):
     '''Initialize the writer for adding policy groups. This method must be

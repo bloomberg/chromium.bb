@@ -41,7 +41,7 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     # Grit messages.
     messages = {}
     self.writer = admx_writer.GetWriter(config, messages)
-    self.writer.Prepare()
+    self.writer.Init()
 
   def testEmpty(self):
     self.writer.BeginTemplate()
