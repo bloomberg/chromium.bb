@@ -53,10 +53,6 @@ class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
     return reinterpret_cast<intptr_t>(dib_.get());
   }
 
-  virtual TransportDIB* GetTransportDIB() const {
-    return dib_.get();
-  }
-
  private:
   int width_;
   int height_;
@@ -522,19 +518,6 @@ void PepperPluginDelegateImpl::ViewFlushedPaint() {
     if (active_instances_.find(*i) != active_instances_.end())
       (*i)->ViewFlushedPaint();
   }
-}
-
-bool PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
-    gfx::Rect* bounds,
-    TransportDIB** dib) {
-  for (std::set<pepper::PluginInstance*>::iterator i =
-           active_instances_.begin();
-       i != active_instances_.end(); ++i) {
-    pepper::PluginInstance* instance = *i;
-    if (instance->GetBitmapForOptimizedPluginPaint(bounds, dib))
-      return true;
-  }
-  return false;
 }
 
 void PepperPluginDelegateImpl::InstanceCreated(

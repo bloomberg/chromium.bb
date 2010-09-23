@@ -174,8 +174,7 @@ Graphics2D::Graphics2D(PluginModule* module)
     : Resource(module),
       bound_instance_(NULL),
       flushed_any_data_(false),
-      offscreen_flush_pending_(false),
-      is_always_opaque_(false) {
+      offscreen_flush_pending_(false) {
 }
 
 Graphics2D::~Graphics2D() {
@@ -194,7 +193,7 @@ bool Graphics2D::Init(int width, int height, bool is_always_opaque) {
     image_data_ = NULL;
     return false;
   }
-  is_always_opaque_ = is_always_opaque;
+
   return true;
 }
 
@@ -446,24 +445,13 @@ void Graphics2D::Paint(WebKit::WebCanvas* canvas,
   bounds.size.width = backing_bitmap.width();
   bounds.size.height = backing_bitmap.height();
 
-  // TODO(brettw) bug 56673: do a direct memcpy instead of going through CG
-  // if the is_always_opaque_ flag is set.
-
   CGContextDrawImage(canvas, bounds, image);
   CGContextRestoreGState(canvas);
 #else
-  SkPaint paint;
-  if (is_always_opaque_) {
-    // When we know the device is opaque, we can disable blending for slightly
-    // more optimized painting.
-    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  }
-
   gfx::Point origin(plugin_rect.origin().x(), plugin_rect.origin().y());
   canvas->drawBitmap(backing_bitmap,
                      SkIntToScalar(plugin_rect.origin().x()),
-                     SkIntToScalar(plugin_rect.origin().y()),
-                     &paint);
+                     SkIntToScalar(plugin_rect.origin().y()));
 #endif
 }
 

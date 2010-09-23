@@ -36,8 +36,6 @@ class Graphics2D : public Resource {
 
   bool Init(int width, int height, bool is_always_opaque);
 
-  bool is_always_opaque() const { return is_always_opaque_; }
-
   // Resource override.
   virtual Graphics2D* AsGraphics2D() { return this; }
 
@@ -167,10 +165,6 @@ class Graphics2D : public Resource {
   // later. This is set when one of those tasks is pending so that we can
   // enforce the "only one pending flush at a time" constraint in the API.
   bool offscreen_flush_pending_;
-
-  // Set to true if the plugin declares that this device will always be opaque.
-  // This allows us to do more optimized painting in some cases.
-  bool is_always_opaque_;
 
   DISALLOW_COPY_AND_ASSIGN(Graphics2D);
 };

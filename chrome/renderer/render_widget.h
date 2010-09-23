@@ -197,19 +197,6 @@ class RenderWidget : public IPC::Channel::Listener,
   virtual void DidInitiatePaint() {}
   virtual void DidFlushPaint() {}
 
-  // Detects if a suitable opaque plugin covers |*bounds| with no compositing
-  // necessary.
-  //
-  // Returns true if the paint can be handled by just blitting the plugin
-  // bitmap. In this case, the |*dib| parameter will contain the TransportDIB
-  // and the |*bounds| will be updated to contain the rect on the page that
-  // contains the given DIB (this may go off the visible page).
-  //
-  // A return value of false means optimized painting can not be used and we
-  // should continue with the normal painting code path.
-  virtual bool GetBitmapForOptimizedPluginPaint(gfx::Rect* bounds,
-                                                TransportDIB** dib);
-
   // Sets the "hidden" state of this widget.  All accesses to is_hidden_ should
   // use this method so that we can properly inform the RenderThread of our
   // state.
