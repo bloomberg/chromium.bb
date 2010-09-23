@@ -342,7 +342,7 @@ public:
 
     void Parse(IMkvReader*, long long start, long long size);
 
-    long long m_timecode;               //absolute but unscaled
+    long long GetTimeCode() const;      //absolute but unscaled
     long long GetTime(Segment*) const;  //absolute and scaled (ns units)
 
     struct TrackPosition
@@ -357,10 +357,13 @@ public:
         void Parse(IMkvReader*, long long, long long);
     };
 
+    const TrackPosition* Find(const Track*) const;
+
+private:
+    long long m_timecode;
     TrackPosition* m_track_positions;
     size_t m_track_positions_count;
 
-    const TrackPosition* Find(const Track*) const;
 };
 
 

@@ -1863,6 +1863,11 @@ const CuePoint::TrackPosition* CuePoint::Find(const Track* pTrack) const
 }
 
 
+long long CuePoint::GetTimeCode() const
+{
+    return m_timecode;
+}
+
 long long CuePoint::GetTime(Segment* pSegment) const
 {
     assert(pSegment);
@@ -3502,15 +3507,8 @@ Cluster::GetEntry(
     const BlockEntry* const pEntry = m_pEntries[index];
     assert(pEntry);
     assert(!pEntry->EOS());
-
-    const Block* const pBlock = pEntry->GetBlock();
-    pBlock;
-    assert(pBlock);
-    assert(pBlock->GetTrackNumber() == tp.m_track);
-
-    const long long timecode = pBlock->GetTimeCode(this);
-    timecode;
-    assert(timecode == cp.m_timecode);
+    assert(pEntry->GetBlock()->GetTrackNumber() == tp.m_track);
+    assert(pEntry->GetBlock()->GetTimeCode(this) == cp.GetTimeCode());
 
     return pEntry;
 }
