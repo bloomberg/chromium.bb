@@ -115,13 +115,18 @@ void BackgroundView::Init(const GURL& background_url) {
 // static
 views::Widget* BackgroundView::CreateWindowContainingView(
     const gfx::Rect& bounds,
+    const GURL& background_url,
     BackgroundView** view) {
   ResetXCursor();
 
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->Init(NULL, bounds);
   *view = new BackgroundView();
-  (*view)->Init(GURL());
+  (*view)->Init(background_url);
+
+  if ((*view)->ScreenSaverEnabled())
+    (*view)->ShowScreenSaver();
+
   window->SetContentsView(*view);
 
   (*view)->UpdateWindowType();

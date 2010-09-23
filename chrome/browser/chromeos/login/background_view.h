@@ -63,9 +63,12 @@ class BackgroundView : public views::View,
 
   // Creates a window containing an instance of WizardContentsView as the root
   // view. The caller is responsible for showing (and closing) the returned
-  // widget. The BackgroundView is set in |view|.
-  static views::Widget* CreateWindowContainingView(const gfx::Rect& bounds,
-                                                   BackgroundView** view);
+  // widget. The BackgroundView is set in |view|. If background_url is non
+  // empty, the content page of the url is displayed as a background.
+  static views::Widget* CreateWindowContainingView(
+      const gfx::Rect& bounds,
+      const GURL& background_url,
+      BackgroundView** view);
 
   // Toggles status area visibility.
   void SetStatusAreaVisible(bool visible);

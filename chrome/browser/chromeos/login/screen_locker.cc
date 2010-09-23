@@ -541,11 +541,9 @@ void ScreenLocker::Init() {
   lock_widget_->Show();
 
   // Configuring the background url.
-  std::string url_string = std::string();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kScreenSaverUrl)) {
-    url_string = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kScreenSaverUrl);
-  }
+  std::string url_string =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kScreenSaverUrl);
   background_view_ = new ScreenLockerBackgroundView(lock_widget_);
   background_view_->Init(GURL(url_string));
 

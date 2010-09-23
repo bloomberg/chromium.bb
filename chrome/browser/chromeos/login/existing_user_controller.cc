@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -135,8 +136,13 @@ ExistingUserController::ExistingUserController(
 
 void ExistingUserController::Init() {
   if (!background_window_) {
+    std::string url_string =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kScreenSaverUrl);
+
     background_window_ = BackgroundView::CreateWindowContainingView(
         background_bounds_,
+        GURL(url_string),
         &background_view_);
 
     if (!WizardController::IsDeviceRegistered()) {

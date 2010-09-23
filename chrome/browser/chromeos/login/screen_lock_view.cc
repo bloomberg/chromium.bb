@@ -69,23 +69,13 @@ void ScreenLockView::Init() {
 
   user_view_ = new UserView(this, false);
   views::View* main = new views::View();
-
-  static const BorderDefinition border = {
-    0 /* no padding */,
-    SK_ColorBLACK,
-    0 /* no shadow */,
-    SK_ColorBLACK,
-    5,
-    login::kBackgroundColor,
-    login::kBackgroundColor,
-  };
-
   // Use rounded rect background.
-  views::Painter* painter = CreateWizardPainter(&border);
+  views::Painter* painter =
+      CreateWizardPainter(&BorderDefinition::kUserBorder);
 
   main->set_background(
       views::Background::CreateBackgroundPainter(true, painter));
-  main->set_border(CreateWizardBorder(&border));
+  main->set_border(CreateWizardBorder(&BorderDefinition::kUserBorder));
 
   // Password field.
   password_field_ = new PasswordField();

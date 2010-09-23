@@ -283,6 +283,7 @@ void WizardController::ShowBackground(const gfx::Rect& bounds) {
   DCHECK(!background_widget_);
   background_widget_ =
       chromeos::BackgroundView::CreateWindowContainingView(bounds,
+                                                           GURL(),
                                                            &background_view_);
   background_view_->SetOobeProgressBarVisible(true);
   background_widget_->Show();
