@@ -98,6 +98,7 @@ void AppendCharEvent(const WebInputEvent& event,
                   sizeof(result.u.character.text));
 
     pp_events->push_back(result);
+    iter.Advance();
   }
 }
 
