@@ -406,7 +406,11 @@ void WrenchMenuModel::Build() {
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator();
 #if defined(OS_CHROMEOS)
-    AddItemWithStringId(IDC_EXIT, IDS_SIGN_OUT);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kBWSI)) {
+      AddItemWithStringId(IDC_EXIT, IDS_EXIT_GUEST_MODE);
+    } else {
+      AddItemWithStringId(IDC_EXIT, IDS_SIGN_OUT);
+    }
 #else
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
 #endif
