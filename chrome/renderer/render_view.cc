@@ -2587,7 +2587,6 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // Reset these counters as the RenderView could be reused for the next
     // navigation.
     page_id_ = -1;
-    next_page_id_ = 1;
     last_page_id_sent_to_browser_ = -1;
     OpenURL(url, referrer, default_policy);
     return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
