@@ -675,8 +675,6 @@ STDMETHODIMP ViewAccessibility::put_accValue(VARIANT var_id, BSTR put_val) {
 
 int32 ViewAccessibility::MSAAEvent(AccessibilityTypes::Event event) {
   switch (event) {
-    case AccessibilityTypes::EVENT_ALERT:
-      return EVENT_SYSTEM_ALERT;
     case AccessibilityTypes::EVENT_FOCUS:
       return EVENT_OBJECT_FOCUS;
     case AccessibilityTypes::EVENT_MENUSTART:
@@ -696,8 +694,6 @@ int32 ViewAccessibility::MSAAEvent(AccessibilityTypes::Event event) {
 
 int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
   switch (role) {
-    case AccessibilityTypes::ROLE_ALERT:
-      return ROLE_SYSTEM_ALERT;
     case AccessibilityTypes::ROLE_APPLICATION:
       return ROLE_SYSTEM_APPLICATION;
     case AccessibilityTypes::ROLE_BUTTONDROPDOWN:

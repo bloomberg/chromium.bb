@@ -127,7 +127,7 @@ InfoBar::~InfoBar() {
 bool InfoBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
-  *role = AccessibilityTypes::ROLE_ALERT;
+  *role = AccessibilityTypes::ROLE_PANE;
   return true;
 }
 
@@ -253,8 +253,6 @@ void InfoBar::InfoBarAdded() {
                                                          GetFocusManager()));
   }
 #endif
-
-  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
 }
 
 void InfoBar::InfoBarRemoved() {
