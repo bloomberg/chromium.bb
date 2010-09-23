@@ -473,7 +473,7 @@ public:
     bool AddCluster(Cluster*, long long);
 
     Tracks* GetTracks() const;
-    const SegmentInfo* const GetInfo() const;
+    const SegmentInfo* GetInfo() const;
     long long GetDuration() const;
 
     //NOTE: this turned out to be too inefficient.

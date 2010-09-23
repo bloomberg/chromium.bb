@@ -1201,11 +1201,12 @@ void Segment::AppendCluster(Cluster* pCluster)
         const long long ns = m_pInfo->GetDuration();
 
         if (ns <= 0)
-            2048;
-
-        const long long nn = (ns + 999999999LL) / 1000000000LL;
-
-        n = static_cast<size_t>(nn);
+            n = 2048;
+        else
+        {
+            const long long sec = (ns + 999999999LL) / 1000000000LL;
+            n = static_cast<size_t>(sec);
+        }
     }
 
     Cluster** const qq = new Cluster*[n];
@@ -2279,7 +2280,7 @@ Tracks* Segment::GetTracks() const
 }
 
 
-const SegmentInfo* const Segment::GetInfo() const
+const SegmentInfo* Segment::GetInfo() const
 {
     return m_pInfo;
 }
@@ -3493,7 +3494,7 @@ Cluster::GetEntry(
     LoadBlockEntries();
     assert(m_pEntries);  //TODO: handle empty cluster
     assert(m_entriesCount > 0);
-    assert(tp.m_block <= m_entriesCount);  //blocks are 1-based
+    assert(tp.m_block <= (long long)m_entriesCount);  //blocks are 1-based
 
     const size_t block = static_cast<size_t>(tp.m_block);
     const size_t index = block - 1;
