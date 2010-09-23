@@ -21,6 +21,10 @@ class ResourceDispatcherHost;
 class ResourceHandler;
 class SSLClientAuthHandler;
 
+namespace webkit_blob {
+class BlobData;
+}
+
 // Holds the data ResourceDispatcherHost associates with each request.
 // Retrieve this data by calling ResourceDispatcherHost::InfoForRequest.
 class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
@@ -160,6 +164,13 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   int host_renderer_id() const { return host_renderer_id_; }
   int host_render_view_id() const { return host_render_view_id_; }
 
+  // We hold a reference to the requested blob data to ensure it doesn't
+  // get finally released prior to the URLRequestJob being started.
+  webkit_blob::BlobData* requested_blob_data() const {
+    return requested_blob_data_.get();
+  }
+  void set_requested_blob_data(webkit_blob::BlobData* data);
+
  private:
   friend class ResourceDispatcherHost;
 
@@ -214,6 +225,7 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   base::TimeTicks last_upload_ticks_;
   bool waiting_for_upload_progress_ack_;
   int memory_cost_;
+  scoped_refptr<webkit_blob::BlobData> requested_blob_data_;
 
   // "Private" data accessible only to ResourceDispatcherHost (use the
   // accessors above for consistency).

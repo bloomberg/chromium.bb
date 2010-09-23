@@ -63,6 +63,7 @@ bool SyncResourceHandler::OnResponseStarted(int request_id,
   result_.headers = response->response_head.headers;
   result_.mime_type = response->response_head.mime_type;
   result_.charset = response->response_head.charset;
+  result_.download_file_path = response->response_head.download_file_path;
   result_.request_time = response->response_head.request_time;
   result_.response_time = response->response_head.response_time;
   result_.connection_id = response->response_head.connection_id;

@@ -303,13 +303,6 @@ IPC_BEGIN_MESSAGES(View)
                       int /* request_id */,
                       std::vector<char> /* data */)
 
-  // Sent as download progress is being made, size of the resource may be
-  // unknown, in that case |size| is -1.
-  IPC_MESSAGE_ROUTED3(ViewMsg_Resource_DownloadProgress,
-                      int /* request_id */,
-                      int64 /* position */,
-                      int64 /* size */)
-
   // Sent as upload progress is being made.
   IPC_MESSAGE_ROUTED3(ViewMsg_Resource_UploadProgress,
                       int /* request_id */,
@@ -329,6 +322,13 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED3(ViewMsg_Resource_DataReceived,
                       int /* request_id */,
                       base::SharedMemoryHandle /* data */,
+                      int /* data_len */)
+
+  // Sent when some data from a resource request has been downloaded to
+  // file. This is only called in the 'download_to_file' case and replaces
+  // ViewMsg_Resource_DataReceived in the call sequence in that case.
+  IPC_MESSAGE_ROUTED2(ViewMsg_Resource_DataDownloaded,
+                      int /* request_id */,
                       int /* data_len */)
 
   // Sent when the request has been completed.
@@ -1868,16 +1868,19 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
                       int /* request_id */)
 
+  // Sent when the renderer has processed a DataDownloaded message.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DataDownloaded_ACK,
+                      int /* request_id */)
+
+  // Sent when the renderer process deletes a resource loader.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_ResourceLoaderDeleted,
+                       int /* request_id */)
+
   // Sent when a provisional load on the main frame redirects.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_DidRedirectProvisionalLoad,
                       int /* page_id */,
                       GURL /* last url */,
                       GURL /* url redirected to */)
-
-  // Sent by the renderer process to acknowledge receipt of a
-  // DownloadProgress message.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_DownloadProgress_ACK,
-                      int /* request_id */)
 
   // Sent by the renderer process to acknowledge receipt of a
   // UploadProgress message.
