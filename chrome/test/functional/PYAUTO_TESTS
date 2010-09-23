@@ -101,6 +101,9 @@
     '-downloads.DownloadsTest.testZip',
     '-downloads.DownloadsTest.testZipInIncognito',
     '-downloads.DownloadsTest.testCrazyFilenames',
+    '-downloads.DownloadsTest.testBigZip',
+    '-downloads.DownloadsTest.testCancelDownload',
+    '-downloads.DownloadsTest.testPauseAndResume',
     '-translate.TranslateTest.testDownloadsNotTranslated',
   ],
 }
