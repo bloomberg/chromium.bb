@@ -77,8 +77,11 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // the user prefs are expected to be written out.
   void ScheduleWritePrefs();
 
-  // Returns true if the PrefValueStore contains the given preference with a
-  // non-default value set with the applicable (registered) type.
+  // Returns true if the PrefValueStore contains the given preference (i.e.,
+  // it's been registered), and a value with the correct type has been actively
+  // set in some pref store. The application default specified when the pref was
+  // registered does not count as an "actively set" value, but another pref
+  // store setting a value that happens to be equal to the default does.
   bool HasPrefPath(const char* name) const;
 
   // Called by the PrefNotifier when the value of the preference at |path| has
