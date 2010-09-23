@@ -88,6 +88,8 @@ class RenderWidget : public IPC::Channel::Listener,
     return host_window_;
   }
 
+  bool has_focus() const { return has_focus_; }
+
   // IPC::Channel::Listener
   virtual void OnMessageReceived(const IPC::Message& msg);
 
@@ -222,8 +224,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // Tells the renderer it does not have focus. Used to prevent us from getting
   // the focus on our own when the browser did not focus us.
   void ClearFocus();
-
-  bool has_focus() const { return has_focus_; }
 
   // Set the pending window rect.
   // Because the real render_widget is hosted in another process, there is

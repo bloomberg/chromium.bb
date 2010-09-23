@@ -107,9 +107,12 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool HandleDocumentLoad(URLLoader* loader);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
                         WebKit::WebCursorInfo* cursor_info);
-  void FocusChanged(bool has_focus);
   PP_Var GetInstanceObject();
   void ViewChanged(const gfx::Rect& position, const gfx::Rect& clip);
+
+  // Notifications about focus changes, see has_webkit_focus_ below.
+  void SetWebKitFocus(bool has_focus);
+  void SetContentAreaFocus(bool has_focus);
 
   // Notifications that the view has rendered the page and that it has been
   // flushed to the screen. These messages are used to send Flush callbacks to
@@ -139,6 +142,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
  private:
   bool LoadFindInterface();
   bool LoadZoomInterface();
+
+  // Determines if we think the plugin has focus, both content area and webkit
+  // (see has_webkit_focus_ below).
+  bool PluginHasFocus() const;
 
   // Queries the plugin for supported print formats and sets |format| to the
   // best format to use. Returns false if the plugin does not support any
@@ -177,6 +184,13 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // visible. This is in the plugin's coordinate system, so fully visible will
   // be (0, 0, w, h) regardless of scroll position.
   gfx::Rect clip_;
+
+  // We track two types of focus, one from WebKit, which is the focus among
+  // all elements of the page, one one from the browser, which is whether the
+  // tab/window has focus. We tell the plugin it has focus only when both of
+  // these values are set to true.
+  bool has_webkit_focus_;
+  bool has_content_area_focus_;
 
   // The current device context for painting in 2D.
   scoped_refptr<Graphics2D> bound_graphics_2d_;

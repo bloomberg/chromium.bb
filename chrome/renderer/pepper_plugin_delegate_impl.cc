@@ -523,6 +523,9 @@ void PepperPluginDelegateImpl::ViewFlushedPaint() {
 void PepperPluginDelegateImpl::InstanceCreated(
     pepper::PluginInstance* instance) {
   active_instances_.insert(instance);
+
+  // Set the initial focus.
+  instance->SetContentAreaFocus(render_view_->has_focus());
 }
 
 void PepperPluginDelegateImpl::InstanceDeleted(
@@ -637,6 +640,13 @@ void PepperPluginDelegateImpl::OnAsyncFileOpened(
   messages_waiting_replies_.Remove(message_id);
   callback->Run(error_code, file);
   delete callback;
+}
+
+void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
+  for (std::set<pepper::PluginInstance*>::iterator i =
+         active_instances_.begin();
+       i != active_instances_.end(); ++i)
+    (*i)->SetContentAreaFocus(has_focus);
 }
 
 scoped_refptr<base::MessageLoopProxy>

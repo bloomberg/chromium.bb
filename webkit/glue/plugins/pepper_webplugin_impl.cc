@@ -96,7 +96,7 @@ void WebPluginImpl::updateGeometry(
 }
 
 void WebPluginImpl::updateFocus(bool focused) {
-  instance_->FocusChanged(focused);
+  instance_->SetWebKitFocus(focused);
 }
 
 void WebPluginImpl::updateVisibility(bool visible) {

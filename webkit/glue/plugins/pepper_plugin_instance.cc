@@ -238,6 +238,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       instance_interface_(instance_interface),
       container_(NULL),
       full_frame_(false),
+      has_webkit_focus_(false),
+      has_content_area_focus_(false),
       find_identifier_(-1),
       plugin_find_interface_(NULL),
       plugin_zoom_interface_(NULL),
@@ -463,10 +465,6 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
   return rv;
 }
 
-void PluginInstance::FocusChanged(bool has_focus) {
-  instance_interface_->FocusChanged(GetPPInstance(), has_focus);
-}
-
 PP_Var PluginInstance::GetInstanceObject() {
   return instance_interface_->GetInstanceObject(GetPPInstance());
 }
@@ -488,6 +486,26 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   RectToPPRect(position_, &pp_position);
   RectToPPRect(clip_, &pp_clip);
   instance_interface_->ViewChanged(GetPPInstance(), &pp_position, &pp_clip);
+}
+
+void PluginInstance::SetWebKitFocus(bool has_focus) {
+  if (has_webkit_focus_ == has_focus)
+    return;
+
+  bool old_plugin_focus = PluginHasFocus();
+  has_webkit_focus_ = has_focus;
+  if (PluginHasFocus() != old_plugin_focus)
+    instance_interface_->FocusChanged(GetPPInstance(), PluginHasFocus());
+}
+
+void PluginInstance::SetContentAreaFocus(bool has_focus) {
+  if (has_content_area_focus_ == has_focus)
+    return;
+
+  bool old_plugin_focus = PluginHasFocus();
+  has_content_area_focus_ = has_focus;
+  if (PluginHasFocus() != old_plugin_focus)
+    instance_interface_->FocusChanged(GetPPInstance(), PluginHasFocus());
 }
 
 void PluginInstance::ViewInitiatedPaint() {
@@ -557,6 +575,10 @@ bool PluginInstance::LoadZoomInterface() {
   }
 
   return !!plugin_zoom_interface_;
+}
+
+bool PluginInstance::PluginHasFocus() const {
+  return has_webkit_focus_ && has_content_area_focus_;
 }
 
 bool PluginInstance::GetPreferredPrintOutputFormat(

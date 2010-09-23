@@ -46,6 +46,10 @@ class PepperPluginDelegateImpl
                          base::PlatformFile file,
                          int message_id);
 
+  // Notification that the render view has been focused or defocused. This
+  // notifies all of the plugins.
+  void OnSetFocus(bool has_focus);
+
   // pepper::PluginDelegate implementation.
   virtual void InstanceCreated(pepper::PluginInstance* instance);
   virtual void InstanceDeleted(pepper::PluginInstance* instance);
