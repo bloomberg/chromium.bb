@@ -51,7 +51,7 @@ wstring ExpectedTitleFromAuth(const wstring& username,
   return username + L"/" + password;
 }
 
-// http://crbug.com/55380 - NavigateToURL is making this flaky.
+// FLAKY: http://crbug.com/56670
 #if defined(OS_WIN)
 #define MAYBE_TestBasicAuth FLAKY_TestBasicAuth
 #elif defined(OS_LINUX)
@@ -81,7 +81,7 @@ TEST_F(LoginPromptTest, MAYBE_TestBasicAuth) {
             GetActiveTabTitle());
 }
 
-// http://crbug.com/55380 - NavigateToURL is making this flaky.
+// FLAKY: http://crbug.com/56670
 #if defined(OS_WIN)
 #define MAYBE_TestDigestAuth FLAKY_TestDigestAuth
 #elif defined(OS_LINUX)
@@ -137,7 +137,7 @@ TEST_F(LoginPromptTest, TestTwoAuths) {
   EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_), title);
 }
 
-// http://crbug.com/55380 - NavigateToURL is making this flaky.
+// FLAKY: http://crbug.com/56670
 #if defined(OS_WIN)
 #define MAYBE_TestCancelAuth FLAKY_TestCancelAuth
 #elif defined(OS_LINUX)
@@ -184,7 +184,7 @@ TEST_F(LoginPromptTest, MAYBE_TestCancelAuth) {
 }
 
 // If multiple tabs are looking for the same auth, the user should only have to
-// enter it once (http://crbug.com/8914).
+// enter it once.
 TEST_F(LoginPromptTest, SupplyRedundantAuths) {
   ASSERT_TRUE(test_server_.Start());
 
