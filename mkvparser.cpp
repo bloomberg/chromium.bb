@@ -2249,45 +2249,38 @@ bool Segment::SearchCues(
 
     Cluster** const jj = ii + m_clusterCount;
     Cluster** j = jj;
+    assert(j > i);
 
-    while (i < j)
+    for (;;)
     {
         //INVARIANT:
-        //[0, i) <= pTP->m_pos
+        //[0, i) < pTP->m_pos
         //[i, j) ?
         //[j, jj)  > pTP->m_pos
 
         Cluster** const k = i + (j - i) / 2;
         assert(k < jj);
 
-        Cluster* const pCluster = *k;
+        pCluster = *k;
         assert(pCluster);
 
-        const long long t = pCluster->GetTime();
+        const long long pos = _abs64(pCluster->m_pos);
+        assert(pos);
 
-        if (t <= _abs64(pCluster->m_pos))
+        if (pos < pTP->m_pos)
             i = k + 1;
-        else
+        else if (pos > pTP->m_pos)
             j = k;
+        else
+        {
+            pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
+            assert(pBlockEntry);
 
-        assert(i <= j);
+            return true;
+        }
+
+        assert(i < j);
     }
-
-    assert(i == j);
-    assert(i > ii);
-    assert(i <= jj);
-
-    Cluster** const k = i - 1;
-
-    pCluster = *k;
-    assert(pCluster);
-    assert(pCluster->m_pos);
-    assert(_abs64(pCluster->m_pos) == pTP->m_pos);
-
-    pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
-    assert(pBlockEntry);
-
-    return true;
 }
 
 
