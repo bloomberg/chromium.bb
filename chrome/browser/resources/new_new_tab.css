@@ -22,6 +22,12 @@ html[mode=app-launcher] {
   min-height: 100%;
 }
 
+body.loading #main {
+  /* We start out hidden to prevent glitchiness as the app and most visited
+  data flows in. */
+  visibility: hidden;
+}
+
 #main,
 .section,
 .maxiview {

@@ -9,8 +9,6 @@ var MAX_MINIVIEW_ITEMS = 15;
 // Extra spacing at the top of the layout.
 var LAYOUT_SPACING_TOP = 25;
 
-var loading = true;
-
 function updateSimpleSection(id, section) {
   var elm = $(id);
   var maxiview = getSectionMaxiview(elm);
@@ -585,7 +583,7 @@ var localStrings = new LocalStrings();
 // Things we know are not needed at startup go below here
 
 function afterTransition(f) {
-  if (loading) {
+  if (!isDoneLoading()) {
     // Make sure we do not use a timer during load since it slows down the UI.
     f();
   } else {
@@ -954,17 +952,24 @@ function mostVisitedPages(data, firstRun, hasBlacklistedUrls) {
   mostVisited.layout();
   layoutSections();
 
-  loading = false;
-
   // Remove class name in a timeout so that changes done in this JS thread are
   // not animated.
   window.setTimeout(function() {
     mostVisited.ensureSmallGridCorrect();
-    document.body.classList.remove('loading');
+    maybeDoneLoading();
   }, 1);
 
   // Only show the first run notification if first run.
   if (firstRun) {
     showFirstRunNotification();
   }
+}
+
+function maybeDoneLoading() {
+  if (mostVisited.data && apps.loaded)
+    document.body.classList.remove('loading');
+}
+
+function isDoneLoading() {
+  return !document.body.classList.contains('loading');
 }

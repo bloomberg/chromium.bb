@@ -13,22 +13,27 @@ function getAppsCallback(data) {
   if (data.apps.length == 0) {
     appsSection.classList.add('disabled');
     setShownSections(Section.THUMB);
-    return;
+  } else {
+    data.apps.forEach(function(app) {
+        appsSectionContent.appendChild(apps.createElement(app));
+    });
+
+    appsSectionContent.appendChild(apps.createWebStoreElement());
+
+    data.apps.slice(0, MAX_MINIVIEW_ITEMS).forEach(function(app) {
+      appsMiniview.appendChild(apps.createMiniviewElement(app));
+    });
+
+    appsSection.classList.remove('disabled');
   }
 
-  data.apps.forEach(function(app) {
-    appsSectionContent.appendChild(apps.createElement(app));
-  });
+  apps.loaded = true;
+  maybeDoneLoading();
 
-  appsSectionContent.appendChild(apps.createWebStoreElement());
-
-  data.apps.slice(0, MAX_MINIVIEW_ITEMS).forEach(function(app) {
-    appsMiniview.appendChild(apps.createMiniviewElement(app));
-  });
-
-  appsSection.classList.remove('disabled');
-  updateMiniviewClipping(appsMiniview);
-  layoutSections();
+  if (data.apps.length > 0 && isDoneLoading()) {
+    updateMiniviewClipping(appsMiniview);
+    layoutSections();
+  }
 }
 
 var apps = (function() {
@@ -143,6 +148,8 @@ var apps = (function() {
   });
 
   return {
+    loaded: false,
+
     createElement: function(app) {
       var div = createElement(app);
       var a = div.firstChild;
