@@ -1013,15 +1013,14 @@
     browser_->ExecuteCommand(command);
 }
 
-// StatusBubble delegate method: tell the status bubble how far above the bottom
-// of the window it should position itself.
-// TODO(alekseys): status bubble should respect web view bounds, not just its
-// vertical size. Now it can overlap sidebar contents. http://crbug.com/54882
-- (CGFloat)verticalOffsetForStatusBubble {
-  NSRect contents_bounds = [[sidebarController_ view] bounds];
-  NSView* baseView = [[self window] contentView];
-  return NSMinY([baseView convertRect:contents_bounds
-                             fromView:[sidebarController_ view]]);
+// StatusBubble delegate method: tell the status bubble the frame it should
+// position itself in.
+- (NSRect)statusBubbleBaseFrame {
+  NSView* baseView = [sidebarController_ view];
+  NSArray* contentsSubviews = [baseView subviews];
+  if ([contentsSubviews count] > 0)
+    baseView = [contentsSubviews objectAtIndex:0];
+  return [[baseView superview] convertRect:[baseView frame] toView:nil];
 }
 
 - (GTMWindowSheetController*)sheetController {

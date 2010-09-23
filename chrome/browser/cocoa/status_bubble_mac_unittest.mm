@@ -20,11 +20,36 @@
 // transitions.
 @interface StatusBubbleMacTestDelegate : NSObject {
  @private
+  NSWindow* window_;  // Weak.
+  NSPoint baseFrameOffset_;
   std::vector<StatusBubbleMac::StatusBubbleState> states_;
 }
+- (id)initWithWindow:(NSWindow*)window;
+- (void)forceBaseFrameOffset:(NSPoint)baseFrameOffset;
+- (NSRect)statusBubbleBaseFrame;
 - (void)statusBubbleWillEnterState:(StatusBubbleMac::StatusBubbleState)state;
 @end
 @implementation StatusBubbleMacTestDelegate
+- (id)initWithWindow:(NSWindow*)window {
+  if ((self = [super init])) {
+    window_ = window;
+    baseFrameOffset_ = NSMakePoint(0, 0);
+  }
+  return self;
+}
+- (void)forceBaseFrameOffset:(NSPoint)baseFrameOffset {
+  baseFrameOffset_ = baseFrameOffset;
+}
+- (NSRect)statusBubbleBaseFrame {
+  NSView* contentView = [window_ contentView];
+  NSRect baseFrame = [contentView convertRect:[contentView frame] toView:nil];
+  if (baseFrameOffset_.x > 0 || baseFrameOffset_.y > 0) {
+    baseFrame = NSOffsetRect(baseFrame, baseFrameOffset_.x, baseFrameOffset_.y);
+    baseFrame.size.width -= baseFrameOffset_.x;
+    baseFrame.size.height -= baseFrameOffset_.y;
+  }
+  return baseFrame;
+}
 - (void)statusBubbleWillEnterState:(StatusBubbleMac::StatusBubbleState)state {
   states_.push_back(state);
 }
@@ -52,7 +77,8 @@ class StatusBubbleMacTest : public CocoaTest {
     CocoaTest::SetUp();
     NSWindow* window = test_window();
     EXPECT_TRUE(window);
-    delegate_.reset([[StatusBubbleMacTestDelegate alloc] init]);
+    delegate_.reset(
+        [[StatusBubbleMacTestDelegate alloc] initWithWindow: window]);
     EXPECT_TRUE(delegate_.get());
     bubble_ = new StatusBubbleMacIgnoreMouseMoved(window, delegate_);
     EXPECT_TRUE(bubble_);
@@ -483,6 +509,31 @@ TEST_F(StatusBubbleMacTest, MovingWindowUpdatesPosition) {
   EXPECT_TRUE(NSEqualPoints([window frame].origin, [child frame].origin));
 }
 
+TEST_F(StatusBubbleMacTest, StatuBubbleRespectsBaseFrameLimits) {
+  NSWindow* window = test_window();
+
+  // Show the bubble and make sure it has the same origin as |window|.
+  bubble_->SetStatus(UTF8ToUTF16("Showing"));
+  NSWindow* child = GetWindow();
+  EXPECT_TRUE(NSEqualPoints([window frame].origin, [child frame].origin));
+
+  // Hide the bubble, change base frame offset, and show it again.
+  bubble_->Hide();
+
+  NSPoint baseFrameOffset = NSMakePoint(0, [window frame].size.height / 3);
+  EXPECT_GT(baseFrameOffset.y, 0);
+  [delegate_ forceBaseFrameOffset:baseFrameOffset];
+
+  bubble_->SetStatus(UTF8ToUTF16("Reshowing"));
+
+  // The bubble should reattach in the correct location.
+  child = GetWindow();
+  NSPoint expectedOrigin = [window frame].origin;
+  expectedOrigin.x += baseFrameOffset.x;
+  expectedOrigin.y += baseFrameOffset.y;
+  EXPECT_TRUE(NSEqualPoints(expectedOrigin, [child frame].origin));
+}
+
 TEST_F(StatusBubbleMacTest, ExpandBubble) {
   NSWindow* window = test_window();
   ASSERT_TRUE(window);
@@ -495,7 +546,7 @@ TEST_F(StatusBubbleMacTest, ExpandBubble) {
   EXPECT_TRUE(IsVisible());
   bubble_->SetURL(GURL("http://www.battersbox.com/peter_paul_and_mary.html"),
                   string16());
-  EXPECT_NSEQ(@"battersbox.com/peter_paul_and_\u2026", GetURLText());
+  EXPECT_TRUE([GetURLText() hasSuffix:@"\u2026"]);
   bubble_->ExpandBubble();
   EXPECT_TRUE(IsVisible());
   EXPECT_NSEQ(@"www.battersbox.com/peter_paul_and_mary.html", GetURLText());
@@ -505,7 +556,7 @@ TEST_F(StatusBubbleMacTest, ExpandBubble) {
   bubble_->SetStatus(UTF8ToUTF16("Showing"));
   bubble_->SetURL(GURL("http://www.snickersnee.com/pioneer_fishstix.html"),
                   string16());
-  EXPECT_NSEQ(@"snickersnee.com/pioneer_fishstix\u2026", GetURLText());
+  EXPECT_TRUE([GetURLText() hasSuffix:@"\u2026"]);
   // ...and that it expands again properly.
   bubble_->ExpandBubble();
   EXPECT_NSEQ(@"www.snickersnee.com/pioneer_fishstix.html", GetURLText());
@@ -522,13 +573,12 @@ TEST_F(StatusBubbleMacTest, ExpandBubble) {
 
   // Very long URL's will be cut off even in the expanded state.
   bubble_->SetStatus(UTF8ToUTF16("Showing"));
-  bubble_->SetURL(GURL(
-      "http://www.diewahrscheinlichlaengstepralinederwelt.com/duuuuplo.html"),
-          string16());
-  EXPECT_NSEQ(@"diewahrscheinli\u2026", GetURLText());
+  const char veryLongUrl[] =
+      "http://www.diewahrscheinlichlaengstepralinederwelt.com/duuuuplo.html";
+  bubble_->SetURL(GURL(veryLongUrl), string16());
+  EXPECT_TRUE([GetURLText() hasSuffix:@"\u2026"]);
   bubble_->ExpandBubble();
-  EXPECT_NSEQ(@"diewahrscheinlichlaengstepralinederwelt.com/duu\u2026",
-      GetURLText());
+  EXPECT_TRUE([GetURLText() hasSuffix:@"\u2026"]);
 }
 
 

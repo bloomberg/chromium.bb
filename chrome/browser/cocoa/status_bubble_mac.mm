@@ -24,7 +24,7 @@ namespace {
 const int kWindowHeight = 18;
 
 // The width of the bubble in relation to the width of the parent window.
-const double kWindowWidthPercent = 1.0 / 3.0;
+const CGFloat kWindowWidthPercent = 1.0 / 3.0;
 
 // How close the mouse can get to the infobubble before it starts sliding
 // off-screen.
@@ -272,18 +272,16 @@ void StatusBubbleMac::MouseMoved(
   NSPoint cursor_location = [NSEvent mouseLocation];
   --cursor_location.y;  // docs say the y coord starts at 1 not 0; don't ask why
 
+  // Bubble's base frame in |parent_| coordinates.
+  NSRect baseFrame;
+  if ([delegate_ respondsToSelector:@selector(statusBubbleBaseFrame)])
+    baseFrame = [delegate_ statusBubbleBaseFrame];
+  else
+    baseFrame = [[parent_ contentView] frame];
+
   // Get the normal position of the frame.
   NSRect window_frame = [window_ frame];
-  window_frame.origin = [parent_ frame].origin;
-
-  bool isShelfVisible = false;
-
-  // Adjust the position to sit on top of download and extension shelves.
-  // |delegate_| can be nil during unit tests.
-  if ([delegate_ respondsToSelector:@selector(verticalOffsetForStatusBubble)]) {
-    window_frame.origin.y += [delegate_ verticalOffsetForStatusBubble];
-    isShelfVisible = [delegate_ verticalOffsetForStatusBubble] > 0;
-  }
+  window_frame.origin = [parent_ convertBaseToScreen:baseFrame.origin];
 
   // Get the cursor position relative to the popup.
   cursor_location.x -= NSMaxX(window_frame);
@@ -312,7 +310,11 @@ void StatusBubbleMac::MouseMoved(
       isOnScreen = false;
     }
 
-    if (isOnScreen && !isShelfVisible) {
+    // If something is shown below tab contents (devtools, download shelf etc.),
+    // adjust the position to sit on top of it.
+    bool isAnyShelfVisible = NSMinY(baseFrame) > 0;
+
+    if (isOnScreen && !isAnyShelfVisible) {
       // Cap the offset and change the visual presentation of the bubble
       // depending on where it ends up (so that rounded corners square off
       // and mate to the edges of the tab content).
@@ -329,12 +331,12 @@ void StatusBubbleMac::MouseMoved(
       }
       window_frame.origin.y -= offset;
     } else {
-      // The bubble will obscure the download shelf.  Move the bubble to the
-      // right and reset Y offset_ to zero.
+      // Cannot move the bubble down without obscuring other content.
+      // Move it to the right instead.
       [[window_ contentView] setCornerFlags:kRoundedTopLeftCorner];
 
       // Subtract border width + bubble width.
-      window_frame.origin.x += NSWidth([parent_ frame]) - NSWidth(window_frame);
+      window_frame.origin.x += NSWidth(baseFrame) - NSWidth(window_frame);
     }
   } else {
     [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
@@ -632,9 +634,22 @@ void StatusBubbleMac::ExpandBubble() {
     return;
   }
 
+  NSRect actual_window_frame = [window_ frame];
+  // Adjust status bubble origin if bubble was moved to the right.
+  // TODO(alekseys): fix for RTL.
+  if (NSMinX(actual_window_frame) > NSMinX(window_frame)) {
+    actual_window_frame.origin.x =
+        NSMaxX(actual_window_frame) - NSWidth(window_frame);
+  }
+  actual_window_frame.size.width = NSWidth(window_frame);
+
+  // Do not expand if it's going to cover mouse location.
+  if (NSPointInRect([NSEvent mouseLocation], actual_window_frame))
+    return;
+
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:kExpansionDuration];
-  [[window_ animator] setFrame:window_frame display:YES];
+  [[window_ animator] setFrame:actual_window_frame display:YES];
   [NSAnimationContext endGrouping];
 }
 
@@ -666,18 +681,23 @@ void StatusBubbleMac::SwitchParentWindow(NSWindow* parent) {
 NSRect StatusBubbleMac::CalculateWindowFrame(bool expanded_width) {
   DCHECK(parent_);
 
+  NSRect screenRect;
+  if ([delegate_ respondsToSelector:@selector(statusBubbleBaseFrame)]) {
+    screenRect = [delegate_ statusBubbleBaseFrame];
+    screenRect.origin = [parent_ convertBaseToScreen:screenRect.origin];
+  } else {
+    screenRect = [parent_ frame];
+  }
+
   NSSize size = NSMakeSize(0, kWindowHeight);
   size = [[parent_ contentView] convertSize:size toView:nil];
 
-  NSRect rect = [parent_ frame];
-  rect.size.height = size.height;
-
-  const int kScrollbarWidth = 16; // see BrowserWindowController.
   if (expanded_width) {
-    rect.size.width = NSWidth(rect) - kScrollbarWidth;
+    size.width = screenRect.size.width;
   } else {
-    rect.size.width = static_cast<int>(kWindowWidthPercent * NSWidth(rect));
+    size.width = kWindowWidthPercent * screenRect.size.width;
   }
 
-  return rect;
+  screenRect.size = size;
+  return screenRect;
 }

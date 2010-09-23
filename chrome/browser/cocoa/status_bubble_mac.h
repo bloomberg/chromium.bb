@@ -161,12 +161,12 @@ class StatusBubbleMac : public StatusBubble {
 
 // Delegate interface
 @interface NSObject(StatusBubbleDelegate)
-// Called to query the delegate about the vertical offset (if any) that should
-// be applied to the StatusBubble's position.
-- (CGFloat)verticalOffsetForStatusBubble;
+// Called to query the delegate about the frame StatusBubble should position
+// itself in. Frame is returned in the parent window coordinates.
+- (NSRect)statusBubbleBaseFrame;
 
 // Called from SetState to notify the delegate of state changes.
 - (void)statusBubbleWillEnterState:(StatusBubbleMac::StatusBubbleState)state;
 @end
 
-#endif  // #ifndef CHROME_BROWSER_COCOA_STATUS_BUBBLE_MAC_H_
+#endif  // CHROME_BROWSER_COCOA_STATUS_BUBBLE_MAC_H_

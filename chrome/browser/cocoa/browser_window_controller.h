@@ -218,8 +218,8 @@ class TabContents;
 // "chrome/app/chrome_dll_resource.h" file.
 - (void)executeCommand:(int)command;
 
-// Delegate method for the status bubble to query about its vertical offset.
-- (CGFloat)verticalOffsetForStatusBubble;
+// Delegate method for the status bubble to query its base frame.
+- (NSRect)statusBubbleBaseFrame;
 
 // Show the bookmark bubble (e.g. user just clicked on the STAR)
 - (void)showBookmarkBubbleForURL:(const GURL&)url
