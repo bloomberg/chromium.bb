@@ -14,6 +14,7 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_profile.h"
+#include "chrome/test/thread_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -104,40 +105,15 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
   ui_test_utils::RunMessageLoop();
 }
 
-class WaitForWebKitThread
-    : public base::RefCountedThreadSafe<WaitForWebKitThread> {
- public:
-  void QuitUiMessageLoopAfterWebKitThreadNotified() {
-    ChromeThread::PostTask(ChromeThread::WEBKIT,
-                           FROM_HERE,
-                           NewRunnableMethod(
-                               this, &WaitForWebKitThread::RunInWebKitThread));
-  }
-
- private:
-  void RunInWebKitThread() {
-    ChromeThread::PostTask(ChromeThread::UI,
-                           FROM_HERE,
-                           NewRunnableMethod(
-                               this, &WaitForWebKitThread::RunInUiThread));
-  }
-
-  void RunInUiThread() {
-    MessageLoop::current()->Quit();
-  }
-};
-
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
       new BrowsingDataLocalStorageHelper(&testing_profile_));
   CreateLocalStorageFilesForTest();
   local_storage_helper->DeleteLocalStorageFile(
       GetLocalStoragePathForTestingProfile().Append(FilePath(kTestFile0)));
-  scoped_refptr<WaitForWebKitThread> wait_for_webkit_thread(
-      new WaitForWebKitThread);
-  wait_for_webkit_thread->QuitUiMessageLoopAfterWebKitThreadNotified();
-  // Blocks until WaitForWebKitThread is notified.
-  ui_test_utils::RunMessageLoop();
+  scoped_refptr<ThreadTestHelper> wait_for_webkit_thread(
+      new ThreadTestHelper(ChromeThread::WEBKIT));
+  ASSERT_TRUE(wait_for_webkit_thread->Run());
   // Ensure the file has been deleted.
   file_util::FileEnumerator file_enumerator(
       GetLocalStoragePathForTestingProfile(),

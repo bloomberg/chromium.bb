@@ -15,6 +15,7 @@
 
 class CannedBrowsingDataAppCacheHelper;
 class CannedBrowsingDataDatabaseHelper;
+class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
 class CookiesTreeModel;
 class Profile;
@@ -126,6 +127,9 @@ class TabSpecificContentSettings
     CannedBrowsingDataDatabaseHelper* databases() const {
       return databases_;
     }
+    CannedBrowsingDataIndexedDBHelper* indexed_dbs() const {
+      return indexed_dbs_;
+    }
     CannedBrowsingDataLocalStorageHelper* local_storages() const {
       return local_storages_;
     }
@@ -143,6 +147,7 @@ class TabSpecificContentSettings
     scoped_refptr<net::CookieMonster> cookies_;
     scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
     scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
+    scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
   };

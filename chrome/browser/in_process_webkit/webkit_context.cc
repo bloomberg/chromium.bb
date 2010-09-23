@@ -14,7 +14,8 @@ WebKitContext::WebKitContext(Profile* profile)
       is_incognito_(profile->IsOffTheRecord()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           dom_storage_context_(new DOMStorageContext(this))),
-      indexed_db_context_(new IndexedDBContext()) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          indexed_db_context_(new IndexedDBContext(this))) {
 }
 
 WebKitContext::~WebKitContext() {

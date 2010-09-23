@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "net/base/cookie_monster.h"
@@ -15,6 +16,7 @@ bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
   return cookies_->GetAllCookies().empty() &&
       appcaches_->empty() &&
       databases_->empty() &&
+      indexed_dbs_->empty() &&
       local_storages_->empty() &&
       session_storages_->empty();
 }
@@ -111,10 +113,15 @@ void TabSpecificContentSettings::OnIndexedDBAccessed(
     const string16& name,
     const string16& description,
     bool blocked_by_policy) {
-  if (blocked_by_policy)
+  if (blocked_by_policy) {
+    blocked_local_shared_objects_.indexed_dbs()->AddIndexedDB(
+        url, name, description);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  else
+  }else {
+    allowed_local_shared_objects_.indexed_dbs()->AddIndexedDB(
+        url, name, description);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+  }
 }
 
 void TabSpecificContentSettings::OnLocalStorageAccessed(
@@ -233,6 +240,7 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
     : cookies_(new net::CookieMonster(NULL, NULL)),
       appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
+      indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(profile)),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
 }
@@ -245,6 +253,7 @@ void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
   cookies_->DeleteAll(false);
   appcaches_->Reset();
   databases_->Reset();
+  indexed_dbs_->Reset();
   local_storages_->Reset();
   session_storages_->Reset();
 }

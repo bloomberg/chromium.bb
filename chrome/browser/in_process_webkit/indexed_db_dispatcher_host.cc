@@ -45,13 +45,6 @@ using WebKit::WebSecurityOrigin;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebVector;
 
-namespace {
-
-const FilePath::CharType kIndexedDBStorageDirectory[] =
-    FILE_PATH_LITERAL("IndexedDB");
-
-}
-
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     IPC::Message::Sender* sender, Profile* profile)
     : sender_(sender),
@@ -241,8 +234,10 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const ViewHostMsg_IDBFactoryOpen_Params& params) {
   FilePath base_path = webkit_context_->data_path();
   FilePath indexed_db_path;
-  if (!base_path.empty())
-    indexed_db_path = base_path.Append(kIndexedDBStorageDirectory);
+  if (!base_path.empty()) {
+    indexed_db_path = base_path.Append(
+        IndexedDBContext::kIndexedDBDirectory);
+  }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   GURL host(string16(WebSecurityOrigin::createFromDatabaseIdentifier(
