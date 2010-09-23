@@ -45,8 +45,8 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
 
 void RendererWebIDBTransactionImpl::abort()
 {
-  // TODO: implement
-  DCHECK(false);
+  RenderThread::current()->Send(new ViewHostMsg_IDBTransactionAbort(
+      idb_transaction_id_));
 }
 
 int RendererWebIDBTransactionImpl::id() const

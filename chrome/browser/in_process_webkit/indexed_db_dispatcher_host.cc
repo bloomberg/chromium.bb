@@ -141,6 +141,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBObjectStoreRemoveIndex::ID:
     case ViewHostMsg_IDBObjectStoreOpenCursor::ID:
     case ViewHostMsg_IDBObjectStoreDestroyed::ID:
+    case ViewHostMsg_IDBTransactionAbort::ID:
     case ViewHostMsg_IDBTransactionDestroyed::ID:
     case ViewHostMsg_IDBTransactionObjectStore::ID:
       break;
@@ -923,6 +924,7 @@ bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::TransactionDispatcherHost,
                            message, *msg_is_ok)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBTransactionAbort, OnAbort)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBTransactionObjectStore,
                                     OnObjectStore)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBTransactionDestroyed, OnDestroyed)
@@ -937,6 +939,16 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::Send(
   // never actually be called.
   NOTREACHED();
   parent_->Send(message);
+}
+
+void IndexedDBDispatcherHost::TransactionDispatcherHost::OnAbort(
+    int32 transaction_id) {
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &map_, transaction_id, 0, ViewHostMsg_IDBTransactionAbort::ID);
+  if (!idb_transaction)
+    return;
+
+  idb_transaction->abort();
 }
 
 void IndexedDBDispatcherHost::TransactionDispatcherHost::OnObjectStore(

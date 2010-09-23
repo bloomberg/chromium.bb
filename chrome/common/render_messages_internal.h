@@ -2547,6 +2547,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               string16, /* name */
                               int32 /* object_store_id */)
 
+  // WebIDBTransaction::abort() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionAbort,
+                       int32 /* idb_transaction_id */)
+
   // WebIDBTransaction::~WebIDBTransaction() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionDestroyed,
                        int32 /* idb_transaction_id */)
