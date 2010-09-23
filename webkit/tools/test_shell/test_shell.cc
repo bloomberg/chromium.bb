@@ -114,6 +114,7 @@ bool TestShell::allow_external_pages_ = false;
 int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
 bool TestShell::test_is_preparing_ = false;
 bool TestShell::test_is_pending_ = false;
+bool TestShell::accelerated_2d_canvas_enabled_ = false;
 
 TestShell::TestShell()
     : m_mainWnd(NULL),
@@ -445,8 +446,7 @@ void TestShell::SetAllowScriptsToCloseWindows() {
 
 // static
 void TestShell::SetAccelerated2dCanvasEnabled(bool enabled) {
-  if (web_prefs_)
-    web_prefs_->accelerated_2d_canvas_enabled = enabled;
+  accelerated_2d_canvas_enabled_ = enabled;
 }
 
 // static
@@ -511,6 +511,8 @@ void TestShell::ResetWebPreferences() {
         // LayoutTests were written with Safari Mac in mind which does not allow
         // tabbing to links by default.
         web_prefs_->tabs_to_links = false;
+        web_prefs_->accelerated_2d_canvas_enabled =
+            accelerated_2d_canvas_enabled_;
 
         // Allow those layout tests running as local files, i.e. under
         // LayoutTests/http/tests/local, to access http server.

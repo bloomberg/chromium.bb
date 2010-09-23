@@ -434,6 +434,9 @@ private:
     // True while a test is running
     static bool test_is_pending_;
 
+    // True if we're testing the accelerated canvas 2d path.
+    static bool accelerated_2d_canvas_enabled_;
+
     // True if driven from a nested message loop.
     bool is_modal_;
 

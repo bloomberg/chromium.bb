@@ -126,6 +126,9 @@ int main(int argc, char* argv[]) {
   bool allow_external_pages =
       parsed_command_line.HasSwitch(test_shell::kAllowExternalPages);
 
+  if (parsed_command_line.HasSwitch(test_shell::kEnableAccel2DCanvas))
+    TestShell::SetAccelerated2dCanvasEnabled(true);
+
   TestShell::InitLogging(suppress_error_dialogs,
                          layout_test_mode,
                          enable_gp_fault_error_box);
@@ -214,9 +217,6 @@ int main(int argc, char* argv[]) {
   // Unless specifically requested otherwise, default to OSMesa for GL.
   if (!parsed_command_line.HasSwitch(switches::kUseGL))
     gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
-
-  if (parsed_command_line.HasSwitch(test_shell::kEnableAccel2DCanvas))
-    TestShell::SetAccelerated2dCanvasEnabled(true);
 
   // Treat the first argument as the initial URL to open.
   GURL starting_url;
