@@ -363,8 +363,6 @@ SegmentID HistoryBackend::UpdateSegments(const GURL& url,
 }
 
 void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
-  DLOG(INFO) << "Adding page " << request->url.possibly_invalid_spec();
-
   if (!db_.get())
     return;
 
