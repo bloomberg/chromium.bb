@@ -1493,6 +1493,11 @@ void Browser::Search() {
     CloseTab();
     return;
   }
+
+  // Exit fullscreen to show omnibox.
+  if (window_->IsFullscreen())
+    ToggleFullscreenMode();
+
   // Otherwise just open it.
   NewTab();
 }
