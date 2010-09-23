@@ -39,12 +39,14 @@ def SendStack(last_tb, stack, url=None):
         'user': getpass.getuser(),
         'exception': last_tb,
         'host': socket.getfqdn(),
+        'cwd': os.getcwd(),
     }
     try:
       # That may not always work.
       params['exception'] = str(last_tb)
     except:
       pass
+    print '\n'.join('  %s: %s' % (k, v[0:50]) for k,v in params.iteritems())
     request = urllib.urlopen(url, urllib.urlencode(params))
     print request.read()
     request.close()
@@ -58,7 +60,7 @@ def CheckForException():
   if last_value and not isinstance(last_value, KeyboardInterrupt):
     last_tb = getattr(sys, 'last_traceback', None)
     if last_tb:
-      SendStack(repr(last_value), ''.join(traceback.format_tb(last_tb)))
+      SendStack(last_value, ''.join(traceback.format_tb(last_tb)))
 
 
 def Register():
