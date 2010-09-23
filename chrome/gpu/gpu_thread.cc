@@ -91,6 +91,8 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCollectGraphicsInfo)
     IPC_MESSAGE_HANDLER(GpuMsg_Crash,
                         OnCrash)
+    IPC_MESSAGE_HANDLER(GpuMsg_Hang,
+                        OnHang)
   IPC_END_MESSAGE_MAP_EX()
 }
 
@@ -167,4 +169,9 @@ void GpuThread::OnCrash() {
   // Good bye, cruel world.
   volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
   *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
+}
+
+void GpuThread::OnHang() {
+  for (;;)
+    PlatformThread::Sleep(1000);
 }
