@@ -1660,26 +1660,6 @@ bool Cues::FindNext(
     if ((m_cue_points == NULL) || (m_cue_points_count == 0))  //weird
         return false;
 
-#if 0
-    typedef cue_points_t::const_iterator iter_t;
-
-    const iter_t i = m_cue_points.begin();
-    const iter_t j = m_cue_points.end();
-
-    const CuePoint::CompareTime pred(m_pSegment);
-
-    const iter_t k = std::upper_bound(i, j, time_ns, pred);
-
-    if (k == j)  //time_ns is greater than max cue point
-        return false;
-
-    pCP = &*k;
-    assert(pCP->GetTime(m_pSegment) > time_ns);
-
-    pTP = pCP->Find(pTrack);
-
-    return (pTP != 0);
-#else
     const CuePoint* const ii = m_cue_points;
     const CuePoint* i = ii;
 
@@ -1717,7 +1697,6 @@ bool Cues::FindNext(
 
     pTP = pCP->Find(pTrack);
     return (pTP != 0);
-#endif
 }
 
 
