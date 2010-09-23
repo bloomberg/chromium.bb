@@ -50,10 +50,12 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
                               default_download_path);
 
+#if defined(OS_CHROMEOS)
   // Ensure that the download directory specified in the preferences exists.
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(&file_util::CreateDirectory, default_download_path));
+#endif  // defined(OS_CHROMEOS)
 
   // If the download path is dangerous we forcefully reset it. But if we do
   // so we set a flag to make sure we only do it once, to avoid fighting
