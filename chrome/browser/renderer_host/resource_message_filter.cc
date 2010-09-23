@@ -59,7 +59,7 @@
 #include "chrome/browser/search_engines/search_provider_install_state_dispatcher_host.h"
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
-#include "chrome/browser/task_manager.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui_thread_helpers.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"

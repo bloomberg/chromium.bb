@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager.h"
+#include "chrome/browser/task_manager/task_manager.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -24,7 +24,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/task_manager_resource_providers.h"
+#include "chrome/browser/task_manager/task_manager_resource_providers.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"

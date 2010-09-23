@@ -12,7 +12,7 @@
 #include "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/table_row_nsimage_cache.h"
-#include "chrome/browser/task_manager.h"
+#include "chrome/browser/task_manager/task_manager.h"
 
 @class WindowSizeAutosaver;
 class SkBitmap;

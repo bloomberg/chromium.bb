@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager_resource_providers.h"
+#include "chrome/browser/task_manager/task_manager_resource_providers.h"
 
 #include "build/build_config.h"
 

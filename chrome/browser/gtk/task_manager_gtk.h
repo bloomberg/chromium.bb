@@ -12,7 +12,7 @@
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/task_manager.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "grit/generated_resources.h"
 
 #if defined(TOOLKIT_VIEWS)

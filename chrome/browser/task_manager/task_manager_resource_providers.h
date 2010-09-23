@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_RESOURCE_PROVIDERS_H_
-#define CHROME_BROWSER_TASK_MANAGER_RESOURCE_PROVIDERS_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_RESOURCE_PROVIDERS_H_
+#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_RESOURCE_PROVIDERS_H_
 #pragma once
 
 #include <map>
@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/process_util.h"
-#include "chrome/browser/task_manager.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -393,4 +393,4 @@ class TaskManagerBrowserProcessResourceProvider
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserProcessResourceProvider);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_RESOURCE_PROVIDERS_H_
+#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_RESOURCE_PROVIDERS_H_
