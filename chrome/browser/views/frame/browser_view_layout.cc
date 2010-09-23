@@ -208,15 +208,10 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
   switch (view->GetID()) {
     case VIEW_ID_CONTENTS_SPLIT: {
       contents_split_ = view;
-      // TODO: this is fragile, fix.
-      if (SidebarManager::IsSidebarAllowed()) {
-        views::View* sidebar_split = contents_split_->GetChildViewAt(0);
-        contents_container_ = static_cast<ContentsContainer*>(
-            sidebar_split->GetChildViewAt(0));
-      } else {
-        contents_container_ = static_cast<ContentsContainer*>(
-            contents_split_->GetChildViewAt(0));
-      }
+      // We're installed as the LayoutManager before BrowserView creates the
+      // contents, so we have to set contents_container_ here rather than
+      // Installed.
+      contents_container_ = browser_view_->contents_;
       break;
     }
     case VIEW_ID_INFO_BAR_CONTAINER:
