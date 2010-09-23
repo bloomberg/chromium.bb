@@ -95,7 +95,6 @@ struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
 struct ViewHostMsg_IDBIndexOpenCursor_Params;
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params;
 struct ViewHostMsg_IDBObjectStoreOpenCursor_Params;
-struct ViewHostMsg_IDBObjectStorePut_Params;
 struct ViewMsg_ExecuteCode_Params;
 struct ViewHostMsg_CreateWorker_Params;
 struct ViewHostMsg_ShowNotification_Params;

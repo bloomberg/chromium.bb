@@ -181,11 +181,23 @@ ViewHostMsg_IDBFactoryOpen_Params::~ViewHostMsg_IDBFactoryOpen_Params() {
 ViewHostMsg_IDBDatabaseCreateObjectStore_Params::
     ViewHostMsg_IDBDatabaseCreateObjectStore_Params()
     : response_id_(0),
-      auto_increment_(false) {
+      auto_increment_(false),
+      idb_database_id_(0) {
 }
 
 ViewHostMsg_IDBDatabaseCreateObjectStore_Params::
     ~ViewHostMsg_IDBDatabaseCreateObjectStore_Params() {
+}
+
+ViewHostMsg_IDBObjectStoreCreateIndex_Params::
+    ViewHostMsg_IDBObjectStoreCreateIndex_Params()
+    : response_id_(0),
+      unique_(false),
+      idb_object_store_id_(0) {
+}
+
+ViewHostMsg_IDBObjectStoreCreateIndex_Params::
+    ~ViewHostMsg_IDBObjectStoreCreateIndex_Params() {
 }
 
 ViewHostMsg_IDBObjectStoreOpenCursor_Params::
@@ -193,8 +205,7 @@ ViewHostMsg_IDBObjectStoreOpenCursor_Params::
     : response_id_(0),
       flags_(0),
       direction_(0),
-      idb_object_store_id_(0),
-      transaction_id_(0) {
+      idb_object_store_id_(0) {
 }
 
 ViewHostMsg_IDBObjectStoreOpenCursor_Params::
@@ -1259,7 +1270,6 @@ void ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params>::Write(
   WriteParam(m, p.key_flags_);
   WriteParam(m, p.direction_);
   WriteParam(m, p.idb_index_id_);
-  WriteParam(m, p.transaction_id_);
 }
 
 bool ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params>::Read(
@@ -1272,8 +1282,7 @@ bool ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params>::Read(
       ReadParam(m, iter, &p->right_key_) &&
       ReadParam(m, iter, &p->key_flags_) &&
       ReadParam(m, iter, &p->direction_) &&
-      ReadParam(m, iter, &p->idb_index_id_) &&
-      ReadParam(m, iter, &p->transaction_id_);
+      ReadParam(m, iter, &p->idb_index_id_);
 }
 
 void ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params>::Log(
@@ -1291,50 +1300,6 @@ void ParamTraits<ViewHostMsg_IDBIndexOpenCursor_Params>::Log(
   LogParam(p.direction_, l);
   l->append(", ");
   LogParam(p.idb_index_id_, l);
-  l->append(",");
-  LogParam(p.transaction_id_, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewHostMsg_IDBObjectStorePut_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.idb_object_store_id_);
-  WriteParam(m, p.response_id_);
-  WriteParam(m, p.serialized_value_);
-  WriteParam(m, p.key_);
-  WriteParam(m, p.add_only_);
-  WriteParam(m, p.transaction_id_);
-}
-
-bool ParamTraits<ViewHostMsg_IDBObjectStorePut_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return
-      ReadParam(m, iter, &p->idb_object_store_id_) &&
-      ReadParam(m, iter, &p->response_id_) &&
-      ReadParam(m, iter, &p->serialized_value_) &&
-      ReadParam(m, iter, &p->key_) &&
-      ReadParam(m, iter, &p->add_only_) &&
-      ReadParam(m, iter, &p->transaction_id_);
-}
-
-void ParamTraits<ViewHostMsg_IDBObjectStorePut_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.idb_object_store_id_, l);
-  l->append(", ");
-  LogParam(p.response_id_, l);
-  l->append(", ");
-  LogParam(p.serialized_value_, l);
-  l->append(", ");
-  LogParam(p.key_, l);
-  l->append(", ");
-  LogParam(p.add_only_, l);
-  l->append(", ");
-  LogParam(p.transaction_id_, l);
   l->append(")");
 }
 
@@ -1385,7 +1350,6 @@ void ParamTraits<ViewHostMsg_IDBObjectStoreOpenCursor_Params>::Write(
   WriteParam(m, p.flags_);
   WriteParam(m, p.direction_);
   WriteParam(m, p.idb_object_store_id_);
-  WriteParam(m, p.transaction_id_);
 }
 
 bool ParamTraits<ViewHostMsg_IDBObjectStoreOpenCursor_Params>::Read(
@@ -1398,8 +1362,7 @@ bool ParamTraits<ViewHostMsg_IDBObjectStoreOpenCursor_Params>::Read(
       ReadParam(m, iter, &p->right_key_) &&
       ReadParam(m, iter, &p->flags_) &&
       ReadParam(m, iter, &p->direction_) &&
-      ReadParam(m, iter, &p->idb_object_store_id_) &&
-      ReadParam(m, iter, &p->transaction_id_);
+      ReadParam(m, iter, &p->idb_object_store_id_);
 }
 
 void ParamTraits<ViewHostMsg_IDBObjectStoreOpenCursor_Params>::Log(
@@ -1417,8 +1380,6 @@ void ParamTraits<ViewHostMsg_IDBObjectStoreOpenCursor_Params>::Log(
   LogParam(p.direction_, l);
   l->append(", ");
   LogParam(p.idb_object_store_id_, l);
-  l->append(",");
-  LogParam(p.transaction_id_, l);
   l->append(")");
 }
 
