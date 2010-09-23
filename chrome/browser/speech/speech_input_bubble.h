@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_H_
 #pragma once
 
+#include <vector>
+
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/task.h"
 
 namespace gfx {
 class Rect;
@@ -143,6 +146,13 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   }
 
  private:
+  void DoRecognizingAnimationStep();
+
+  // Task factory used for animation timer.
+  ScopedRunnableMethodFactory<SpeechInputBubbleBase> task_factory_;
+  int animation_step_;  // Current index/step of the animation.
+  std::vector<SkBitmap> animation_frames_;
+
   DisplayMode display_mode_;
   string16 message_text_;  // Text displayed in DISPLAY_MODE_MESSAGE
   // The current microphone image with volume level indication.
@@ -153,6 +163,8 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   static SkBitmap* mic_full_;  // Mic image with full volume.
   static SkBitmap* mic_empty_;  // Mic image with zero volume.
   static SkBitmap* mic_mask_;  // Gradient mask used by the volume indicator.
+  static SkBitmap* spinner_;  // Spinner image for the progress animation.
+  static const int kRecognizingAnimationStepMs;
 };
 
 // This typedef is to workaround the issue with certain versions of

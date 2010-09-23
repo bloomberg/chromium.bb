@@ -16,6 +16,8 @@ const int SpeechInputBubble::kBubbleTargetOffsetX = 5;
 SkBitmap* SpeechInputBubbleBase::mic_empty_ = NULL;
 SkBitmap* SpeechInputBubbleBase::mic_full_ = NULL;
 SkBitmap* SpeechInputBubbleBase::mic_mask_ = NULL;
+SkBitmap* SpeechInputBubbleBase::spinner_ = NULL;
+const int SpeechInputBubbleBase::kRecognizingAnimationStepMs = 100;
 
 SpeechInputBubble* SpeechInputBubble::Create(TabContents* tab_contents,
                                              Delegate* delegate,
@@ -31,7 +33,8 @@ SpeechInputBubble* SpeechInputBubble::Create(TabContents* tab_contents,
 }
 
 SpeechInputBubbleBase::SpeechInputBubbleBase()
-    : display_mode_(DISPLAY_MODE_RECORDING) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
+      display_mode_(DISPLAY_MODE_RECORDING) {
   if (!mic_empty_) {  // Static variables.
     mic_empty_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_SPEECH_INPUT_MIC_EMPTY);
@@ -39,6 +42,8 @@ SpeechInputBubbleBase::SpeechInputBubbleBase()
         IDR_SPEECH_INPUT_MIC_FULL);
     mic_mask_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_SPEECH_INPUT_MIC_MASK);
+    spinner_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_SPEECH_INPUT_SPINNER);
   }
 
   // Instance variables.
@@ -51,6 +56,17 @@ SpeechInputBubbleBase::SpeechInputBubbleBase()
   buffer_image_->setConfig(SkBitmap::kARGB_8888_Config, mic_empty_->width(),
                            mic_empty_->height());
   buffer_image_->allocPixels();
+
+  // The sprite image consists of all the animation frames put together in one
+  // horizontal/wide image. Each animation frame is square in shape within the
+  // sprite.
+  int frame_size = spinner_->height();
+  for (int x = 0; x < spinner_->width(); x += frame_size) {
+    SkBitmap frame;
+    spinner_->extractSubset(&frame,
+                            SkIRect::MakeXYWH(x, 0, frame_size, frame_size));
+    animation_frames_.push_back(frame);
+  }
 }
 
 SpeechInputBubbleBase::~SpeechInputBubbleBase() {
@@ -60,6 +76,7 @@ SpeechInputBubbleBase::~SpeechInputBubbleBase() {
 }
 
 void SpeechInputBubbleBase::SetRecordingMode() {
+  task_factory_.RevokeAll();
   display_mode_ = DISPLAY_MODE_RECORDING;
   UpdateLayout();
 }
@@ -67,9 +84,28 @@ void SpeechInputBubbleBase::SetRecordingMode() {
 void SpeechInputBubbleBase::SetRecognizingMode() {
   display_mode_ = DISPLAY_MODE_RECOGNIZING;
   UpdateLayout();
+
+  animation_step_ = 0;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      task_factory_.NewRunnableMethod(
+          &SpeechInputBubbleBase::DoRecognizingAnimationStep),
+      kRecognizingAnimationStepMs);
+}
+
+void SpeechInputBubbleBase::DoRecognizingAnimationStep() {
+  SetImage(animation_frames_[animation_step_]);
+  if (++animation_step_ >= animation_frames_.size())
+    animation_step_ = 0;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      task_factory_.NewRunnableMethod(
+          &SpeechInputBubbleBase::DoRecognizingAnimationStep),
+      kRecognizingAnimationStepMs);
 }
 
 void SpeechInputBubbleBase::SetMessage(const string16& text) {
+  task_factory_.RevokeAll();
   message_text_ = text;
   display_mode_ = DISPLAY_MODE_MESSAGE;
   UpdateLayout();

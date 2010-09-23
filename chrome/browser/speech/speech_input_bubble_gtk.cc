@@ -181,12 +181,13 @@ void SpeechInputBubbleGtk::UpdateLayout() {
     // button.
     gtk_label_set_text(GTK_LABEL(label_),
         l10n_util::GetStringUTF8(IDS_SPEECH_INPUT_BUBBLE_HEADING).c_str());
-    SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        display_mode() == DISPLAY_MODE_RECORDING ? IDR_SPEECH_INPUT_MIC_EMPTY :
-                                                   IDR_SPEECH_INPUT_PROCESSING);
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
-    gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
-    g_object_unref(pixbuf);
+    if (display_mode() == DISPLAY_MODE_RECORDING) {
+      SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_SPEECH_INPUT_MIC_EMPTY);
+      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
+      g_object_unref(pixbuf);
+    }
     gtk_widget_show(icon_);
     gtk_widget_hide(try_again_button_);
   }

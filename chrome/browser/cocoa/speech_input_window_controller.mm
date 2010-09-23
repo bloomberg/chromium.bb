@@ -149,10 +149,11 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
   } else {
     [instructionLabel_ setStringValue:l10n_util::GetNSString(
         IDS_SPEECH_INPUT_BUBBLE_HEADING)];
-    NSImage* icon = ResourceBundle::GetSharedInstance().GetNSImageNamed(
-        (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING ?
-        IDR_SPEECH_INPUT_MIC_EMPTY : IDR_SPEECH_INPUT_PROCESSING));
-    [iconImage_ setImage:icon];
+    if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
+      NSImage* icon = ResourceBundle::GetSharedInstance().GetNSImageNamed(
+          IDR_SPEECH_INPUT_MIC_EMPTY);
+      [iconImage_ setImage:icon];
+    }
     [iconImage_ setHidden:NO];
     [iconImage_ setNeedsDisplay:YES];
     [tryAgainButton_ setHidden:YES];

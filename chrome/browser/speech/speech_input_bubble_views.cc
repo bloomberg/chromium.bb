@@ -102,10 +102,9 @@ void ContentView::UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
 
   if (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE) {
     message_->SetText(UTF16ToWideHack(message_text));
-  } else {
+  } else if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
     icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) ?
-        IDR_SPEECH_INPUT_MIC_EMPTY : IDR_SPEECH_INPUT_PROCESSING));
+        IDR_SPEECH_INPUT_MIC_EMPTY));
   }
 }
 
