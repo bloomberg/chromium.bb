@@ -46,6 +46,14 @@ class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
  private:
   ~SystemInfoUIHTMLSource() {}
 
+  void SyslogsComplete(chromeos::LogDictionaryType* sys_info);
+
+  CancelableRequestConsumer consumer_;
+
+  // Stored data from StartDataRequest()
+  std::string path_;
+  int request_id_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUIHTMLSource);
 };
 
@@ -71,12 +79,29 @@ class SystemInfoHandler : public DOMMessageHandler,
 ////////////////////////////////////////////////////////////////////////////////
 
 SystemInfoUIHTMLSource::SystemInfoUIHTMLSource()
-    : DataSource(chrome::kChromeUISystemInfoHost, MessageLoop::current()) {
+    : DataSource(chrome::kChromeUISystemInfoHost, MessageLoop::current()),
+      request_id_(0) {
 }
 
 void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
                                               bool is_off_the_record,
                                               int request_id) {
+  path_ = path;
+  request_id_ = request_id;
+
+  chromeos::SyslogsLibrary* syslogs_lib =
+      chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
+  if (syslogs_lib) {
+    FilePath* tmpfilename = NULL;  // use default filepath.
+    syslogs_lib->RequestSyslogs(
+        tmpfilename,
+        &consumer_,
+        NewCallback(this, &SystemInfoUIHTMLSource::SyslogsComplete));
+  }
+}
+
+void SystemInfoUIHTMLSource::SyslogsComplete(
+    chromeos::LogDictionaryType* sys_info) {
   DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TITLE));
   strings.SetString("description",
@@ -93,24 +118,19 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE));
   SetFontAndTextDirection(&strings);
 
-  chromeos::SyslogsLibrary* syslogs_lib =
-      chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
-  scoped_ptr<chromeos::LogDictionaryType> sys_info;
-  if (syslogs_lib)
-    sys_info.reset(syslogs_lib->GetSyslogs(new FilePath()));
-  if (sys_info.get()) {
+  if (sys_info) {
      ListValue* details = new ListValue();
      strings.Set("details", details);
      chromeos::LogDictionaryType::iterator it;
-     for (it = sys_info.get()->begin(); it != sys_info.get()->end(); ++it) {
+     for (it = sys_info->begin(); it != sys_info->end(); ++it) {
        DictionaryValue* val = new DictionaryValue;
        val->SetString("stat_name", it->first);
        val->SetString("stat_value", it->second);
        details->Append(val);
      }
-     strings.SetString("anchor", path);
+     strings.SetString("anchor", path_);
+     delete sys_info;
   }
-
   static const base::StringPiece systeminfo_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_SYS_HTML));
@@ -121,7 +141,7 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
   html_bytes->data.resize(full_html.size());
   std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
 
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id_, html_bytes);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -122,7 +122,6 @@ const char kSandboxPath[] = "sandbox";
 #if defined(OS_CHROMEOS)
 const char kNetworkPath[] = "network";
 const char kOSCreditsPath[] = "os-credits";
-const char kSysPath[] = "system";
 #endif
 
 // Add path here to be included in about:about
@@ -150,7 +149,6 @@ const char *kAllAboutPaths[] = {
 #if defined(OS_CHROMEOS)
   kNetworkPath,
   kOSCreditsPath,
-  kSysPath,
 #endif
   };
 
@@ -789,50 +787,6 @@ std::string AboutSync() {
       sync_html, &strings , "t" /* template root node id */);
 }
 
-#if defined(OS_CHROMEOS)
-std::string AboutSys(const std::string& query) {
-  DictionaryValue strings;
-  strings.SetString("title", l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TITLE));
-  strings.SetString("description",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_DESC));
-  strings.SetString("table_title",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TABLE_TITLE));
-  strings.SetString("expand_all_btn",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_EXPAND_ALL));
-  strings.SetString("collapse_all_btn",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE_ALL));
-  strings.SetString("expand_btn",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_EXPAND));
-  strings.SetString("collapse_btn",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE));
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&strings);
-
-  chromeos::SyslogsLibrary* syslogs_lib =
-      chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
-  scoped_ptr<chromeos::LogDictionaryType> sys_info;
-  if (syslogs_lib)
-    sys_info.reset(syslogs_lib->GetSyslogs(new FilePath()));
-  if (sys_info.get()) {
-     ListValue* details = new ListValue();
-     strings.Set("details", details);
-     chromeos::LogDictionaryType::iterator it;
-     for (it = sys_info.get()->begin(); it != sys_info.get()->end(); ++it) {
-       DictionaryValue* val = new DictionaryValue;
-       val->SetString("stat_name", it->first);
-       val->SetString("stat_value", it->second);
-       details->Append(val);
-     }
-     strings.SetString("anchor", query);
-  }
-  static const base::StringPiece sys_html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_ABOUT_SYS_HTML));
-
-  return jstemplate_builder::GetTemplatesHtml(
-        sys_html, &strings , "t" /* template root node id */);
-}
-#endif
-
 std::string VersionNumberToString(uint32 value) {
   int hi = (value >> 8) & 0xff;
   int low = value & 0xff;
@@ -958,10 +912,6 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 #endif
   } else if (path == kSyncPath) {
     response = AboutSync();
-#if defined(OS_CHROMEOS)
-  } else if (path == kSysPath) {
-    response = AboutSys(info);
-#endif
   } else if (path == kGpuPath) {
     response = AboutGpu();
   }

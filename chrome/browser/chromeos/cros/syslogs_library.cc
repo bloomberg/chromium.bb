@@ -15,12 +15,42 @@ class SyslogsLibraryImpl : public SyslogsLibrary {
   SyslogsLibraryImpl() {}
   virtual ~SyslogsLibraryImpl() {}
 
-  LogDictionaryType* GetSyslogs(FilePath* tmpfilename) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      return chromeos::GetSystemLogs(tmpfilename);
-    }
-    return NULL;
+  virtual Handle RequestSyslogs(FilePath* tmpfilename,
+                                CancelableRequestConsumerBase* consumer,
+                                ReadCompleteCallback* callback) {
+    // Register the callback request.
+    scoped_refptr<CancelableRequest<ReadCompleteCallback> > request(
+           new CancelableRequest<ReadCompleteCallback>(callback));
+    AddRequest(request, consumer);
+
+    // Schedule a task on the FILE thread which will then trigger a request
+    // callback on the calling thread (e.g. UI) when complete.
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            this, &SyslogsLibraryImpl::ReadSyslogs, request, tmpfilename));
+
+    return request->handle();
   }
+
+ private:
+  // Called from FILE thread.
+  void ReadSyslogs(
+      scoped_refptr<CancelableRequest<ReadCompleteCallback> > request,
+      FilePath* tmpfilename) {
+    if (request->canceled())
+      return;
+
+    LogDictionaryType* logs = NULL;
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      logs = chromeos::GetSystemLogs(tmpfilename);
+    }
+
+    // Will call the callback on the calling thread.
+    request->ForwardResult(Tuple1<LogDictionaryType*>(logs));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SyslogsLibraryImpl);
 };
 
 class SyslogsLibraryStubImpl : public SyslogsLibrary {
@@ -28,12 +58,14 @@ class SyslogsLibraryStubImpl : public SyslogsLibrary {
   SyslogsLibraryStubImpl() {}
   virtual ~SyslogsLibraryStubImpl() {}
 
-  LogDictionaryType* GetSyslogs(FilePath* tmpfilename) {
-    return &log_dictionary_;
-  }
+  virtual Handle RequestSyslogs(FilePath* tmpfilename,
+                                CancelableRequestConsumerBase* consumer,
+                                ReadCompleteCallback* callback) {
+    if (callback)
+      callback->Run(Tuple1<LogDictionaryType*>(NULL));
 
- private:
-  LogDictionaryType log_dictionary_;
+    return 0;
+  }
 };
 
 // static
@@ -45,3 +77,7 @@ SyslogsLibrary* SyslogsLibrary::GetImpl(bool stub) {
 }
 
 }  // namespace chromeos
+
+// Allows InvokeLater without adding refcounting. SyslogsLibraryImpl is a
+// Singleton and won't be deleted until it's last InvokeLater is run.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::SyslogsLibraryImpl);
