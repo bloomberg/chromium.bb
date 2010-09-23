@@ -33,3 +33,18 @@ TEST(ExtensionIconSet, Basic) {
   EXPECT_EQ("", icons.Get(37, ExtensionIconSet::MATCH_SMALLER));
   EXPECT_EQ("", icons.Get(47, ExtensionIconSet::MATCH_BIGGER));
 }
+
+TEST(ExtensionIconSet, Values) {
+  ExtensionIconSet icons;
+  EXPECT_FALSE(icons.ContainsPath("foo"));
+
+  icons.Add(1, "foo");
+  icons.Add(2, "bar");
+
+  EXPECT_TRUE(icons.ContainsPath("foo"));
+  EXPECT_TRUE(icons.ContainsPath("bar"));
+  EXPECT_FALSE(icons.ContainsPath("baz"));
+
+  icons.Clear();
+  EXPECT_FALSE(icons.ContainsPath("foo"));
+}

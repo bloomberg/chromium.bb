@@ -182,7 +182,8 @@ void PostExtensionLoadedToContextGetter(ChromeURLRequestContextGetter* getter,
                         extension->incognito_split_mode(),
                         extension->web_extent(),
                         extension->GetEffectiveHostPermissions(),
-                        extension->api_permissions())));
+                        extension->api_permissions(),
+                        extension->icons())));
 }
 
 void PostExtensionUnloadedToContextGetter(ChromeURLRequestContextGetter* getter,

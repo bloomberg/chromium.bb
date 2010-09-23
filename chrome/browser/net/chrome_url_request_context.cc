@@ -867,6 +867,19 @@ bool ChromeURLRequestContext::CheckURLAccessToExtensionPermission(
                    permission_name) != api_permissions.end();
 }
 
+bool ChromeURLRequestContext::URLIsForExtensionIcon(const GURL& url) {
+  DCHECK(url.SchemeIs(chrome::kExtensionScheme));
+
+  ExtensionInfoMap::iterator iter = extension_info_.find(url.host());
+  if (iter == extension_info_.end())
+    return false;
+
+  std::string path = url.path();
+  DCHECK(path.length() > 0 && path[0] == '/');
+  path = path.substr(1);
+  return iter->second->icons.ContainsPath(path);
+}
+
 const std::string& ChromeURLRequestContext::GetUserAgent(
     const GURL& url) const {
   return webkit_glue::GetUserAgent(url);
@@ -1002,7 +1015,8 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
                   (*iter)->incognito_split_mode(),
                   (*iter)->web_extent(),
                   (*iter)->GetEffectiveHostPermissions(),
-                  (*iter)->api_permissions()));
+                  (*iter)->api_permissions(),
+                  (*iter)->icons()));
     }
   }
 

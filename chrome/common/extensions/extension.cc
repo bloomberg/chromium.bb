@@ -1147,6 +1147,16 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
               errors::kInvalidIconPath, key);
           return false;
         }
+
+        if (icon_path.size() > 0 && icon_path[0] == '/')
+          icon_path = icon_path.substr(1);
+
+        if (icon_path.empty()) {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              errors::kInvalidIconPath, key);
+          return false;
+        }
+
         icons_.Add(kIconSizes[i], icon_path);
       }
     }

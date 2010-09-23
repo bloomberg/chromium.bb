@@ -332,3 +332,12 @@ TEST_F(ExtensionManifestTest, DisallowExtensionPermissions) {
     }
   }
 }
+
+TEST_F(ExtensionManifestTest, NormalizeIconPaths) {
+  scoped_ptr<Extension> extension(
+      LoadAndExpectSuccess("normalize_icon_paths.json"));
+  EXPECT_EQ("16.png",
+            extension->icons().Get(16, ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("48.png",
+            extension->icons().Get(48, ExtensionIconSet::MATCH_EXACTLY));
+}

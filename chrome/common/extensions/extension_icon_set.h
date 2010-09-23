@@ -32,6 +32,9 @@ class ExtensionIconSet {
   };
   std::string Get(int size, MatchType match_type) const;
 
+  // Returns true if the set contains the specified path.
+  bool ContainsPath(const std::string& path) const;
+
  private:
   IconMap map_;
 };

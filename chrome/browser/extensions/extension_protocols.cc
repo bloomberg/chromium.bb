@@ -88,11 +88,15 @@ bool AllowExtensionResourceLoad(URLRequest* request,
     return true;
 
   // Disallow loading of packaged resources for hosted apps. We don't allow
-  // hybrid hosted/packaged apps.
+  // hybrid hosted/packaged apps. The one exception is access to icons, since
+  // some extensions want to be able to do things like create their own
+  // launchers.
   if (context->ExtensionHasWebExtent(request->url().host())) {
-    LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
-               << "hosted app.";
-    return false;
+    if (!context->URLIsForExtensionIcon(request->url())) {
+      LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
+                 << "hosted app.";
+      return false;
+    }
   }
 
   // Don't allow toplevel navigations to extension resources in incognito mode.

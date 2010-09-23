@@ -20,6 +20,7 @@
 #include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_registrar.h"
 #include "net/base/cookie_monster.h"
@@ -57,14 +58,16 @@ class ChromeURLRequestContext : public URLRequestContext {
                   bool incognito_split_mode,
                   const ExtensionExtent& extent,
                   const ExtensionExtent& effective_host_permissions,
-                  const std::vector<std::string>& api_permissions)
+                  const std::vector<std::string>& api_permissions,
+                  const ExtensionIconSet& icons)
         : name(name),
           path(path),
           default_locale(default_locale),
           incognito_split_mode(incognito_split_mode),
           extent(extent),
           effective_host_permissions(effective_host_permissions),
-          api_permissions(api_permissions) {
+          api_permissions(api_permissions),
+          icons(icons) {
     }
     const std::string name;
     const FilePath path;
@@ -73,6 +76,7 @@ class ChromeURLRequestContext : public URLRequestContext {
     const ExtensionExtent extent;
     const ExtensionExtent effective_host_permissions;
     std::vector<std::string> api_permissions;
+    ExtensionIconSet icons;
   };
 
   // Map of extension info by extension id.
@@ -105,6 +109,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   // Determine whether a URL has access to the specified extension permission.
   bool CheckURLAccessToExtensionPermission(const GURL& url,
                                            const char* permission_name);
+
+  // Returns true if the specified URL references the icon for an extension.
+  bool URLIsForExtensionIcon(const GURL& url);
 
   // Gets the path to the directory user scripts are stored in.
   FilePath user_script_dir_path() const {
