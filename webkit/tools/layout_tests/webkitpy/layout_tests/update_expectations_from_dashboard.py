@@ -28,17 +28,16 @@ except NameError:
 this_file = os.path.abspath(f)
 base_dir = this_file[0:this_file.find('webkit'+ os.sep + 'tools')]
 webkitpy_dir = os.path.join(base_dir, 'third_party', 'WebKit', 'WebKitTools',
-                            'Scripts', 'webkitpy')
-sys.path.append(os.path.join(webkitpy_dir, 'thirdparty'))
-sys.path.append(os.path.join(webkitpy_dir, 'layout_tests'))
+                            'Scripts')
+sys.path.append(webkitpy_dir)
 
 #
 # Now import the python packages we need from WebKit
 #
-import simplejson
+import webkitpy.thirdparty.simplejson as simplejson
 
-from layout_package import test_expectations
-import port
+from webkitpy.layout_tests.layout_package import test_expectations
+import webkitpy.layout_tests.port as port
 
 def get_port():
     class Options:
@@ -486,6 +485,9 @@ def main():
     logging.basicConfig(level=logging.INFO,
         format='%(message)s')
 
+    if len(sys.argv) != 2:
+        usage()
+        sys.exit(1)
     updates = simplejson.load(open(sys.argv[1]))
 
     port_obj = get_port()
@@ -494,6 +496,9 @@ def main():
     old_expectations = open(path_to_expectations).read()
     new_expectations = update_expectations(port_obj, old_expectations, updates)
     open(path_to_expectations, 'w').write(new_expectations)
+
+def usage():
+    print "usage: %s file_with_json_expectations_diff" % sys.argv[0]
 
 if '__main__' == __name__:
     main()
