@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_RENDER_THREAD_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -58,6 +59,10 @@ struct ChannelHandle;
 
 namespace WebKit {
 class WebStorageEventDispatcher;
+}
+
+namespace v8 {
+class Extension;
 }
 
 // The RenderThreadBase is the minimal interface that a RenderView/Widget
@@ -231,6 +236,13 @@ class RenderThread : public RenderThreadBase,
   // on the renderer's main thread.
   scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
 
+  // This function is called for every registered V8 extension each time a new
+  // script context is created. Returns true if the given V8 extension is
+  // allowed to run on the given URL and extension group.
+  bool AllowScriptExtension(const std::string& v8_extension_name,
+                            const GURL& url,
+                            int extension_group);
+
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
@@ -311,6 +323,10 @@ class RenderThread : public RenderThreadBase,
   // Schedule a call to IdleHandler with the given initial delay.
   void ScheduleIdleHandler(double initial_delay_s);
 
+  // Registers the given V8 extension with WebKit, and also tracks what pages
+  // it is allowed to run on.
+  void RegisterExtension(v8::Extension* extension, bool restrict_to_extensions);
+
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
@@ -370,6 +386,11 @@ class RenderThread : public RenderThreadBase,
 
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;
+
+  // Map of registered v8 extensions. The key is the extension name. The value
+  // is true if the extension should be restricted to extension-related
+  // contexts.
+  std::map<std::string, bool> v8_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };

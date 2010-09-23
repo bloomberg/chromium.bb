@@ -3408,6 +3408,23 @@ void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
   EventBindings::HandleContextCreated(frame, true);
 }
 
+bool RenderView::allowScriptExtension(WebFrame* frame,
+                                      const WebString& extension_name,
+                                      int extension_group) {
+  // NULL in unit tests.
+  if (!RenderThread::current())
+    return true;
+
+  // Note: we prefer the provisional URL here instead of the document URL
+  // because we might be currently loading an URL into a blank page.
+  // See http://code.google.com/p/chromium/issues/detail?id=10924
+  WebDataSource* ds = frame->provisionalDataSource();
+  if (!ds)
+    ds = frame->dataSource();
+  return RenderThread::current()->AllowScriptExtension(
+      extension_name.utf8(), ds->request().url(), extension_group);
+}
+
 void RenderView::logCrossFramePropertyAccess(WebFrame* frame,
                                              WebFrame* target,
                                              bool cross_origin,
