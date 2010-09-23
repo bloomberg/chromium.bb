@@ -5,6 +5,8 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
@@ -173,6 +175,9 @@ class PluginDelegate {
   // switches the plugin to fullscreen.
   virtual FullscreenContainer* CreateFullscreenContainer(
       PluginInstance* instance) = 0;
+
+  // Returns a string with the name of the default 8-bit char encoding.
+  virtual std::string GetDefaultEncoding() = 0;
 };
 
 }  // namespace pepper

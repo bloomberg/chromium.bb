@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 
+#include "app/l10n_util.h"
 #include "app/surface/transport_dib.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -16,6 +17,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
+#include "grit/locale_settings.h"
 #include "third_party/ppapi/c/dev/pp_video_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
@@ -646,4 +648,10 @@ pepper::FullscreenContainer*
 PepperPluginDelegateImpl::CreateFullscreenContainer(
     pepper::PluginInstance* instance) {
   return render_view_->CreatePepperFullscreenContainer(instance);
+}
+
+std::string PepperPluginDelegateImpl::GetDefaultEncoding() {
+  // TODO(brettw) bug 56615: Somehow get the preference for the default
+  // encoding here rather than using the global default for the UI language.
+  return l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
 }

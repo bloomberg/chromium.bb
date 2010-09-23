@@ -12,6 +12,10 @@
 #include "unicode/ucnv_cb.h"
 #include "unicode/ucnv_err.h"
 #include "unicode/ustring.h"
+#include "webkit/glue/plugins/pepper_plugin_delegate.h"
+#include "webkit/glue/plugins/pepper_plugin_instance.h"
+#include "webkit/glue/plugins/pepper_plugin_module.h"
+#include "webkit/glue/plugins/pepper_var.h"
 
 namespace pepper {
 
@@ -136,15 +140,20 @@ uint16_t* CharSetToUTF16(const char* input, uint32_t input_len,
   return ret_buf;
 }
 
-PP_Var GetDefaultCodePageForUILanguage() {
-  // TODO(brettw) bug 52865: Implement this function.
-  return PP_MakeVoid();
+PP_Var GetDefaultCharSet(PP_Module pp_module) {
+  PluginModule* module = PluginModule::FromPPModule(pp_module);
+  if (!module)
+    return PP_MakeVoid();
+
+  std::string encoding =
+      module->GetSomeInstance()->delegate()->GetDefaultEncoding();
+  return StringVar::StringToPPVar(module, encoding);
 }
 
 const PPB_CharSet_Dev ppb_charset = {
   &UTF16ToCharSet,
   &CharSetToUTF16,
-  &GetDefaultCodePageForUILanguage
+  &GetDefaultCharSet
 };
 
 }  // namespace

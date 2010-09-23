@@ -7,6 +7,7 @@
 #pragma once
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
@@ -69,6 +70,7 @@ class PepperPluginDelegateImpl
   virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
   virtual pepper::FullscreenContainer* CreateFullscreenContainer(
       pepper::PluginInstance* instance);
+  virtual std::string GetDefaultEncoding();
 
  private:
   // Pointer to the RenderView that owns us.
