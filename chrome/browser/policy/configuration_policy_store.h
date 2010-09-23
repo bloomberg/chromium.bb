@@ -52,6 +52,7 @@ class ConfigurationPolicyStore {
     kPolicyChromeFrameRendererSettings,
     kPolicyRenderInChromeFrameList,
     kPolicyRenderInHostList,
+    kPolicyJavascriptEnabled,
   };
 
   static const int kPolicyNoProxyServerMode = 0;

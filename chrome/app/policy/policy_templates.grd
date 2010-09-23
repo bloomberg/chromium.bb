@@ -216,6 +216,17 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
+    <message name="IDS_POLICY_GROUP_JAVASCRIPTENABLED_CAPTION" desc="Caption of the 'JavaScript enabled' policy settings page.">
+      Enable JavaScript
+    </message>
+    <message name="IDS_POLICY_GROUP_JAVASCRIPTENABLED_DESC" desc="Description of the 'JavaScript enabled' policy settings page.">
+      Enables JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      If this setting is enabled or not configured, web pages can use JavaScript.
+
+      If this setting is disabled, web pages cannot use JavaScript.
+    </message>
+
     <message name="IDS_POLICY_GROUP_AUTOFILLENABLED_CAPTION" desc="Caption of
       the 'autofill' policy settings page.">
     Enable AutoFill
@@ -229,7 +240,7 @@ templates and will be translated for each locale. -->
     If you enable this setting, AutoFill is always active.
 
     If you disable this setting, AutoFill is never active.
- 
+
     If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
@@ -245,7 +256,7 @@ templates and will be translated for each locale. -->
     If you enable this setting, the Home button is always shown.
 
     If you disable this setting, the Home button is never shown.
- 
+
     If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
     </message>
@@ -447,10 +458,10 @@ templates and will be translated for each locale. -->
       If you choose 'Open a list of URLs on startup', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-    </message>   
-   
+    </message>
+
     <message name="IDS_POLICY_RESTOREONSTARTUP_CAPTION" desc="Caption of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'.">
-      Action on startup 
+      Action on startup
     </message>
     <message name="IDS_POLICY_RESTOREONSTARTUP_DESC" desc="Description of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'">
       Allows you to specify the behavior on startup.

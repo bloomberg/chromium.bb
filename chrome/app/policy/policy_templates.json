@@ -165,6 +165,19 @@
       }],
     },
     {
+      'name': 'JavascriptEnabled',
+      'policies': [{
+        'name': 'JavascriptEnabled',
+        'type': 'main',
+        'annotations': {
+          'platforms': ['linux', 'mac', 'win'],
+          'products': ['chrome'],
+          'features': {'dynamic_refresh': 0},
+          'example_value': True,
+        }
+      }],
+    },
+    {
       'name': 'SafeBrowsingEnabled',
       'policies': [{
         'name': 'SafeBrowsingEnabled',

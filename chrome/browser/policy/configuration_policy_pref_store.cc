@@ -126,6 +126,8 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
       prefs::kPluginsPluginsBlacklist},
   { Value::TYPE_BOOLEAN, kPolicyShowHomeButton,
       prefs::kShowHomeButton },
+  { Value::TYPE_BOOLEAN, kPolicyJavascriptEnabled,
+      prefs::kWebKitJavascriptEnabled },
 };
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
@@ -213,6 +215,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
         Value::TYPE_BOOLEAN, key::kShowHomeButton },
     { ConfigurationPolicyStore::kPolicyPrintingEnabled,
         Value::TYPE_BOOLEAN, key::kPrintingEnabled },
+    { ConfigurationPolicyStore::kPolicyJavascriptEnabled,
+        Value::TYPE_BOOLEAN, key::kJavascriptEnabled },
   };
 
   ConfigurationPolicyProvider::StaticPolicyValueMap map = {
