@@ -45,6 +45,10 @@ class AutocompleteEditController {
   // Sent prior to OnAutoCompleteAccept and before the model has been reverted.
   virtual void OnAutocompleteWillAccept() = 0;
 
+  // Commits the suggested text. |typed_text| is the current text showing in the
+  // autocomplete. Returns true if the text was committed.
+  virtual bool OnCommitSuggestedText(const std::wstring& typed_text) = 0;
+
   // Invoked when the popup is going to change its bounds to |bounds|.
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) = 0;
 #else

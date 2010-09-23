@@ -746,6 +746,19 @@ void LocationBarView::OnAutocompleteWillAccept() {
   update_match_preview_ = false;
 }
 
+bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
+  MatchPreview* match_preview = delegate_->GetMatchPreview();
+  if (!match_preview || !suggested_text_view_ ||
+      suggested_text_view_->size().IsEmpty() ||
+      suggested_text_view_->GetText().empty()) {
+    return false;
+  }
+  // TODO(sky): I may need to route this through MatchPreview so that we don't
+  // fetch suggestions for the new combined text.
+  location_entry_->SetUserText(typed_text + suggested_text_view_->GetText());
+  return true;
+}
+
 void LocationBarView::OnPopupBoundsChanged(const gfx::Rect& bounds) {
   MatchPreview* match_preview = delegate_->GetMatchPreview();
   if (match_preview)

@@ -1825,10 +1825,22 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
   // WM_SYSKEYDOWN, so we need to check (flags & KF_ALTDOWN) in various places
   // in this function even with a WM_SYSKEYDOWN handler.
 
-  // Update LocationBarView::SkipDefaultKeyEventProcessing() as well when you
-  // add some key combinations here.
+  // If adding a new key that could possibly be an accelerator then you'll need
+  // to update LocationBarView::SkipDefaultKeyEventProcessing() as well.
   int count = repeat_count;
   switch (key) {
+    case VK_RIGHT:
+      // TODO(sky): figure out RTL.
+      if (base::i18n::IsRTL())
+        return false;
+      {
+        CHARRANGE selection;
+        GetSel(selection);
+        return (selection.cpMin == selection.cpMax) &&
+            (selection.cpMin == GetTextLength()) &&
+            controller_->OnCommitSuggestedText(GetText());
+      }
+
     case VK_RETURN:
       model_->AcceptInput((flags & KF_ALTDOWN) ?
           NEW_FOREGROUND_TAB : CURRENT_TAB, false);

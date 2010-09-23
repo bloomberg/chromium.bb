@@ -178,6 +178,7 @@ class LocationBarView : public LocationBar,
   virtual void OnAutocompleteWillClosePopup();
   virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
   virtual void OnAutocompleteWillAccept();
+  virtual bool OnCommitSuggestedText(const std::wstring& typed_text);
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
