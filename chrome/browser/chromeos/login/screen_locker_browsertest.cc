@@ -223,6 +223,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   }
   tester->InjectMockAuthenticator("user", "pass");
   tester->EnterPassword("pass");
+  ui_test_utils::RunAllPendingInMessageLoop();
   ScreenLocker::Hide();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
