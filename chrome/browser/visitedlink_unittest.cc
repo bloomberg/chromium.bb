@@ -161,10 +161,10 @@ class VisitedLinkTest : public testing::Test {
 
   // testing::Test
   virtual void SetUp() {
-    PathService::Get(base::DIR_TEMP, &history_dir_);
-    history_dir_ = history_dir_.Append(FILE_PATH_LITERAL("VisitedLinkTest"));
-    file_util::Delete(history_dir_, true);
-    file_util::CreateDirectory(history_dir_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    history_dir_ = temp_dir_.path().AppendASCII("VisitedLinkTest");
+    ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
 
     visited_file_ = history_dir_.Append(FILE_PATH_LITERAL("VisitedLinks"));
     listener_.SetUp();
@@ -172,8 +172,9 @@ class VisitedLinkTest : public testing::Test {
 
   virtual void TearDown() {
     ClearDB();
-    file_util::Delete(history_dir_, true);
   }
+
+  ScopedTempDir temp_dir_;
 
   MessageLoop message_loop_;
   ChromeThread ui_thread_;

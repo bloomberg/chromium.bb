@@ -29,6 +29,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -168,11 +169,9 @@ class HistoryTest : public testing::Test {
 
   // testing::Test
   virtual void SetUp() {
-    FilePath temp_dir;
-    PathService::Get(base::DIR_TEMP, &temp_dir);
-    history_dir_ = temp_dir.AppendASCII("HistoryTest");
-    file_util::Delete(history_dir_, true);
-    file_util::CreateDirectory(history_dir_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
+    ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
   }
 
   void DeleteBackend() {
@@ -187,9 +186,6 @@ class HistoryTest : public testing::Test {
 
     if (history_service_)
       CleanupHistoryService();
-
-    // Try to clean up the database file.
-    file_util::Delete(history_dir_, true);
 
     // Make sure we don't have any event pending that could disrupt the next
     // test.
@@ -265,6 +261,8 @@ class HistoryTest : public testing::Test {
       saved_redirects_.clear();
     MessageLoop::current()->Quit();
   }
+
+  ScopedTempDir temp_dir_;
 
   MessageLoopForUI message_loop_;
 

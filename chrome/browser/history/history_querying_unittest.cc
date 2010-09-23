@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,11 +87,9 @@ class HistoryQueryTest : public testing::Test {
 
  private:
   virtual void SetUp() {
-    FilePath temp_dir;
-    PathService::Get(base::DIR_TEMP, &temp_dir);
-    history_dir_ = temp_dir.AppendASCII("HistoryTest");
-    file_util::Delete(history_dir_, true);
-    file_util::CreateDirectory(history_dir_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
+    ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
 
     history_ = new HistoryService;
     if (!history_->Init(history_dir_, NULL)) {
@@ -124,13 +123,14 @@ class HistoryQueryTest : public testing::Test {
       history_ = NULL;
       MessageLoop::current()->Run();  // Wait for the other thread.
     }
-    file_util::Delete(history_dir_, true);
   }
 
   void QueryHistoryComplete(HistoryService::Handle, QueryResults* results) {
     results->Swap(&last_query_results_);
     MessageLoop::current()->Quit();  // Will return out to QueryHistory.
   }
+
+  ScopedTempDir temp_dir_;
 
   MessageLoop message_loop_;
 
