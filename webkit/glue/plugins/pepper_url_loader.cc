@@ -190,6 +190,11 @@ const PPB_URLLoader_Dev* URLLoader::GetInterface() {
   return &ppb_urlloader;
 }
 
+// static
+const PPB_URLLoaderTrusted_Dev* URLLoader::GetTrustedInterface() {
+  return &ppb_urlloadertrusted;
+}
+
 int32_t URLLoader::Open(URLRequestInfo* request,
                         PP_CompletionCallback callback) {
   if (loader_.get())

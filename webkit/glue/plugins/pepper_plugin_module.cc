@@ -226,7 +226,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_URLLOADER_DEV_INTERFACE) == 0)
     return URLLoader::GetInterface();
   if (strcmp(name, PPB_URLLOADERTRUSTED_DEV_INTERFACE) == 0)
-    return URLLoader::GetInterface();
+    return URLLoader::GetTrustedInterface();
   if (strcmp(name, PPB_URLREQUESTINFO_DEV_INTERFACE) == 0)
     return URLRequestInfo::GetInterface();
   if (strcmp(name, PPB_URLRESPONSEINFO_DEV_INTERFACE) == 0)
