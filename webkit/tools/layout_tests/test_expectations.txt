@@ -10,4 +10,4 @@ BUGJOHNNYG WIN : fast/canvas/webgl/tex-image-and-sub-image-2d-with-video.html = 
 BUGJOHNNYG LINUX : plugins/embed-attributes-style.html = IMAGE
 
 // atwilson will upstream
-BUGATWILSON : svg/W3C-SVG-1.1/masking-intro-01-f.svg = CRASH
+BUGATWILSON : svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE CRASH
