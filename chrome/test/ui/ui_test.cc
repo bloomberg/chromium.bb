@@ -43,6 +43,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/chrome_process_util.h"
+#include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/test_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -295,21 +296,8 @@ void UITestBase::LaunchBrowser(const CommandLine& arguments,
     temp_profile_dir_.reset(new ScopedTempDir());
     ASSERT_TRUE(temp_profile_dir_->CreateUniqueTempDir());
 
-    // Update the information about user data directory location on the ui_test
-    // side. Using PathService seems to be the most reliable, consistent way
-    // to do that.
-    ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, user_data_dir()));
-
-#if defined(OS_LINUX)
-    // Make sure the cache directory is inside our clear profile. Otherwise
-    // the cache may contain data from earlier tests that could break the
-    // current test.
-    //
-    // Note: we use an environment variable here, because we have to pass the
-    // value to the child process. This is the simplest way to do it.
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    env->SetVar("XDG_CACHE_HOME", user_data_dir().value());
-#endif
+    ASSERT_TRUE(
+        test_launcher_utils::OverrideUserDataDir(temp_profile_dir_->path()));
   }
 
   if (!template_user_data_.empty()) {

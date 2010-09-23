@@ -117,6 +117,8 @@
         'test/model_test_utils.h',
         'test/profile_mock.h',
         'test/test_browser_window.h',
+        'test/test_launcher_utils.cc',
+        'test/test_launcher_utils.h',
         'test/test_location_bar.h',
         'test/test_switches.cc',
         'test/test_switches.h',

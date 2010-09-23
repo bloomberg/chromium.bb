@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_nsautorelease_pool.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/browser.h"
@@ -32,6 +33,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
@@ -43,6 +45,7 @@
 #endif
 
 #if defined(OS_LINUX)
+#include "base/environment.h"
 #include "base/singleton.h"
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #include "chrome/browser/zygote_host_linux.h"
@@ -97,26 +100,33 @@ InProcessBrowserTest::~InProcessBrowserTest() {
 }
 
 void InProcessBrowserTest::SetUp() {
-  // Cleanup the user data dir.
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  ASSERT_LT(10, static_cast<int>(user_data_dir.value().size())) <<
-      "The user data directory name passed into this test was too "
-      "short to delete safely.  Please check the user-data-dir "
-      "argument and try again.";
-  ASSERT_TRUE(file_util::DieFileDie(user_data_dir, true));
+  // Remember the command line.  Normally this doesn't matter, because the test
+  // harness creates a new process for each test, but when the test harness is
+  // running in single process mode, we can't let one test's command-line
+  // changes (e.g. enabling DOM automation) affect other tests.
+  // TODO(phajdan.jr): This save/restore logic is unnecessary.  Remove it.
+  CommandLine* command_line = CommandLine::ForCurrentProcessMutable();
+  original_command_line_.reset(new CommandLine(*command_line));
 
-  // Recreate the user data dir. (PathService::Get guarantees that the directory
-  // exists if it returns true, but it only actually checks on the first call,
-  // the rest are cached.  Thus we need to recreate it ourselves to not break
-  // the PathService guarantee.)
-  ASSERT_TRUE(file_util::CreateDirectory(user_data_dir));
+  // Update the information about user data directory location before calling
+  // BrowserMain().  In some cases there will be no --user-data-dir switch (for
+  // example, when debugging).  If there is no switch, do nothing.
+  FilePath user_data_dir =
+      command_line->GetSwitchValuePath(switches::kUserDataDir);
+  if (user_data_dir.empty()) {
+    // TODO(rohitrao): Create a ScopedTempDir here if people have problems.
+    LOG(ERROR) << "InProcessBrowserTest is using the default user data dir.";
+  } else {
+    ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir));
+  }
 
   // The unit test suite creates a testingbrowser, but we want the real thing.
   // Delete the current one. We'll install the testing one in TearDown.
   delete g_browser_process;
   g_browser_process = NULL;
 
+  // Allow subclasses the opportunity to make changes to the default user data
+  // dir before running any tests.
   SetUpUserDataDirectory();
 
   // Don't delete the resources when BrowserMain returns. Many ui classes
@@ -124,13 +134,8 @@ void InProcessBrowserTest::SetUp() {
   // bundle we'll crash.
   browser_shutdown::delete_resources_on_shutdown = false;
 
-  // Remember the command line.  Normally this doesn't matter, because the test
-  // harness creates a new process for each test, but when the test harness is
-  // running in single process mode, we can't let one test's command-line
-  // changes (e.g. enabling DOM automation) affect other tests.
-  CommandLine* command_line = CommandLine::ForCurrentProcessMutable();
-  original_command_line_.reset(new CommandLine(*command_line));
-
+  // Allow subclasses the opportunity to make changes to the command line before
+  // running any tests.
   SetUpCommandLine(command_line);
 
 #if defined(OS_WIN)

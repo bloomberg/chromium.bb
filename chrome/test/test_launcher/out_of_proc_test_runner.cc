@@ -7,15 +7,17 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/scoped_nsautorelease_pool.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_suite.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/test_launcher/test_runner.h"
 #include "chrome/test/unit/chrome_test_suite.h"
 
 #if defined(OS_WIN)
 #include "base/base_switches.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/sandbox_policy.h"
 #include "sandbox/src/dep.h"
 #include "sandbox/src/sandbox_factory.h"
@@ -59,6 +61,10 @@ class OutOfProcTestRunner : public tests::TestRunner {
 
   // Returns true if the test succeeded, false if it failed.
   bool RunTest(const std::string& test_name) {
+    // Some of the below method calls will leak objects if there is no
+    // autorelease pool in place.
+    base::ScopedNSAutoreleasePool pool;
+
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
     CommandLine new_cmd_line(cmd_line->GetProgram());
     CommandLine::SwitchMap switches = cmd_line->GetSwitches();
@@ -72,6 +78,9 @@ class OutOfProcTestRunner : public tests::TestRunner {
     // process (restarting the browser in the same process is illegal after it
     // has been shut down and will actually crash).
     switches.erase(kGTestRepeatFlag);
+
+    // Strip out user-data-dir if present.  We will add it back in again later.
+    switches.erase(switches::kUserDataDir);
 
     for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
          iter != switches.end(); ++iter) {
@@ -87,6 +96,14 @@ class OutOfProcTestRunner : public tests::TestRunner {
     // Do not let the child ignore failures.  We need to propagate the
     // failure status back to the parent.
     new_cmd_line.AppendSwitch(base::TestSuite::kStrictFailureHandling);
+
+    // Create a new user data dir and pass it to the child.
+    ScopedTempDir temp_dir;
+    if (!temp_dir.CreateUniqueTempDir() || !temp_dir.IsValid()) {
+      LOG(ERROR) << "Error creating temp profile directory";
+      return false;
+    }
+    new_cmd_line.AppendSwitchPath(switches::kUserDataDir, temp_dir.path());
 
     base::ProcessHandle process_handle;
 #if defined(OS_POSIX)
