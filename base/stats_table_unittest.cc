@@ -75,7 +75,7 @@ const std::string kCounterDecrement = "CounterDecrement";
 // decremented by even threads.
 const std::string kCounterMixed = "CounterMixed";
 // The number of thread loops that we will do.
-const int kThreadLoops = 1000;
+const int kThreadLoops = 100;
 
 class StatsTableThread : public base::SimpleThread {
  public:
@@ -319,17 +319,21 @@ TEST_F(StatsTableTest, StatsCounterTimer) {
   EXPECT_TRUE(bar.start_time().is_null());
   EXPECT_TRUE(bar.stop_time().is_null());
 
+  const int kRunMs = 100;
+
   // Do some timing.
   bar.Start();
-  PlatformThread::Sleep(500);
+  PlatformThread::Sleep(kRunMs);
   bar.Stop();
-  EXPECT_LE(500, table.GetCounterValue("t:bar"));
+  EXPECT_GT(table.GetCounterValue("t:bar"), 0);
+  EXPECT_LE(kRunMs, table.GetCounterValue("t:bar"));
 
   // Verify that timing again is additive.
   bar.Start();
-  PlatformThread::Sleep(500);
+  PlatformThread::Sleep(kRunMs);
   bar.Stop();
-  EXPECT_LE(1000, table.GetCounterValue("t:bar"));
+  EXPECT_GT(table.GetCounterValue("t:bar"), 0);
+  EXPECT_LE(kRunMs * 2, table.GetCounterValue("t:bar"));
 }
 
 // Test some basic StatsRate operations
@@ -348,19 +352,21 @@ TEST_F(StatsTableTest, StatsRate) {
   EXPECT_EQ(0, table.GetCounterValue("c:baz"));
   EXPECT_EQ(0, table.GetCounterValue("t:baz"));
 
+  const int kRunMs = 100;
+
   // Do some timing.
   baz.Start();
-  PlatformThread::Sleep(500);
+  PlatformThread::Sleep(kRunMs);
   baz.Stop();
   EXPECT_EQ(1, table.GetCounterValue("c:baz"));
-  EXPECT_LE(500, table.GetCounterValue("t:baz"));
+  EXPECT_LE(kRunMs, table.GetCounterValue("t:baz"));
 
   // Verify that timing again is additive.
   baz.Start();
-  PlatformThread::Sleep(500);
+  PlatformThread::Sleep(kRunMs);
   baz.Stop();
   EXPECT_EQ(2, table.GetCounterValue("c:baz"));
-  EXPECT_LE(1000, table.GetCounterValue("t:baz"));
+  EXPECT_LE(kRunMs * 2, table.GetCounterValue("t:baz"));
 }
 
 // Test some basic StatsScope operations
@@ -381,24 +387,26 @@ TEST_F(StatsTableTest, StatsScope) {
   EXPECT_EQ(0, table.GetCounterValue("t:bar"));
   EXPECT_EQ(0, table.GetCounterValue("c:bar"));
 
+  const int kRunMs = 100;
+
   // Try a scope.
   {
     StatsScope<StatsCounterTimer> timer(foo);
     StatsScope<StatsRate> timer2(bar);
-    PlatformThread::Sleep(500);
+    PlatformThread::Sleep(kRunMs);
   }
-  EXPECT_LE(500, table.GetCounterValue("t:foo"));
-  EXPECT_LE(500, table.GetCounterValue("t:bar"));
+  EXPECT_LE(kRunMs, table.GetCounterValue("t:foo"));
+  EXPECT_LE(kRunMs, table.GetCounterValue("t:bar"));
   EXPECT_EQ(1, table.GetCounterValue("c:bar"));
 
   // Try a second scope.
   {
     StatsScope<StatsCounterTimer> timer(foo);
     StatsScope<StatsRate> timer2(bar);
-    PlatformThread::Sleep(500);
+    PlatformThread::Sleep(kRunMs);
   }
-  EXPECT_LE(1000, table.GetCounterValue("t:foo"));
-  EXPECT_LE(1000, table.GetCounterValue("t:bar"));
+  EXPECT_LE(kRunMs * 2, table.GetCounterValue("t:foo"));
+  EXPECT_LE(kRunMs * 2, table.GetCounterValue("t:bar"));
   EXPECT_EQ(2, table.GetCounterValue("c:bar"));
 
   DeleteShmem(kTableName);
