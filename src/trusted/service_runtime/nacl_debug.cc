@@ -20,6 +20,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
+#include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -86,6 +87,9 @@ struct NaClDebugState {
     if (NULL != getenv("NACL_DEBUG_ENABLE")) nacl_debug_allowed = 1;
 #endif
     status_ = nacl_debug_allowed ? NDS_ENABLED : NDS_DISABLED;
+
+    /* Initialize the stub if and only if debugging is enabled. */
+    if (status_) NaClDebugStubInit();
     break_ = 0;
   }
 

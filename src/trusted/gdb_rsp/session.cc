@@ -82,8 +82,9 @@ bool Session::GetChar(char *ch) {
   if (DataAvailable() == false) return false;
 
   int32_t len = io_->Read(ch, 1);
-  if (len == 0) return false;
-  if (len == -1) {
+
+  // If data is "availible" but we can't read, it must be closed.
+  if (len < 1) {
     io_->Disconnect();
     connected_ = false;
     return false;

@@ -126,7 +126,7 @@ static bool StringToIPv4(const std::string &instr, uint32_t *addr,
 
   // If we found a ":" before the end, get both substrings
   if ((portoff != std::string::npos) && (portoff + 1 < instr.size())) {
-    addrstr = instr.substr(0, portoff-1);
+    addrstr = instr.substr(0, portoff);
     portstr = instr.substr(portoff + 1, std::string::npos);
   } else {
     // otherwise the entire string is the addr portion.
@@ -136,17 +136,22 @@ static bool StringToIPv4(const std::string &instr, uint32_t *addr,
 
   // If the address portion was provided, update it
   if (addrstr.size()) {
-    struct hostent *host = gethostbyname(addrstr.data());
+    // Special case 0.0.0.0 which means any IPv4 interface
+    if (addrstr == "0.0.0.0") {
+      outaddr = 0;
+    } else {
+      struct hostent *host = gethostbyname(addrstr.data());
 
-    // Check that we found an IPv4 host
-    if ((NULL == host) || (AF_INET != host->h_addrtype))  return false;
+      // Check that we found an IPv4 host
+      if ((NULL == host) || (AF_INET != host->h_addrtype))  return false;
 
-    // Make sure the IP list isn't empty.
-    if (0 == host->h_addr_list[0]) return false;
+      // Make sure the IP list isn't empty.
+      if (0 == host->h_addr_list[0]) return false;
 
-    // Use the first one.
-    uint32_t *addrarray = reinterpret_cast<uint32_t*>(host->h_addr_list);
-    outaddr = addrarray[0];
+      // Use the first one.
+      uint32_t *addrarray = reinterpret_cast<uint32_t*>(host->h_addr_list);
+      outaddr = addrarray[0];
+    }
   }
 
   // if the port portion was provided, then update it
@@ -228,7 +233,8 @@ ITransport* ITransport::Accept(const char *addr) {
     // Override portions address that are provided
     if (addr) BuildSockAddr(addr, &saddr);
 
-    if (bind(s_ServerSock, reinterpret_cast<struct sockaddr *>(&saddr), addrlen)) {
+    struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
+    if (bind(s_ServerSock, psaddr, addrlen)) {
       IPlatform::LogError("Failed to bind server.\n");
       return NULL;
     }
@@ -243,7 +249,8 @@ ITransport* ITransport::Accept(const char *addr) {
 
   if (listening) {
     SOCKET_HANDLE s = ::accept(s_ServerSock, NULL, 0);
-    return new Transport(s);
+    if (-1 != s) return new Transport(s);
+    return NULL;
   }
 
   return NULL;

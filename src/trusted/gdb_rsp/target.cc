@@ -185,7 +185,7 @@ void Target::Run(Session *ses) {
     uint32_t run_thread = GetRunThreadId();
     if (run_thread != id
         && run_thread != static_cast<uint32_t>(-1)) {
-      IThread* thread = threads_[id];
+      IThread* thread = threads_[run_thread];
       thread->Resume();
     }
 
@@ -407,7 +407,8 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     case 'q': {
       string tmp;
       const char *str = &pktIn->GetPayload()[1];
-      PropertyMap_t::const_iterator itr = properties_.find(str);
+      stringvec toks = StringSplit(str, ":;");
+      PropertyMap_t::const_iterator itr = properties_.find(toks[0]);
 
       // If this is a thread query
       if (!strcmp(str, "fThreadInfo") || !strcmp(str, "sThreadInfo")) {
